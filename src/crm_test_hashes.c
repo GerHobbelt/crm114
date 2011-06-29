@@ -921,10 +921,11 @@ int test_avalanche4(strnhash_f hashfunc, int mode)
 
 
 
+#define test_avalanche(hashfunc)   \
+	test_avalancheA(hashfunc, #hashfunc)
 
 
-
-void test_avalanche(strnhash_f hashfunc)
+void test_avalancheA(strnhash_f hashfunc, const char *funcname)
 {
 	int countlen;
 
@@ -935,7 +936,7 @@ void test_avalanche(strnhash_f hashfunc)
 	memset(spread16, 0, sizeof(spread16));
 
 	countlen = test_avalanche1(hashfunc);
-	printf("\nSingle bit:\n");
+	printf("\nSingle bit (%s):\n", funcname);
 	show_stats(countlen);
 
 	memset(state, 0, sizeof(state));
@@ -943,7 +944,7 @@ void test_avalanche(strnhash_f hashfunc)
 	memset(spread16, 0, sizeof(spread16));
 
 	countlen = test_avalanche2(hashfunc);
-	printf("\nSample text (shifted):\n");
+	printf("\nSample text (shifted) (%s):\n", funcname);
 	show_stats(countlen);
 
 	memset(state, 0, sizeof(state));
@@ -951,7 +952,7 @@ void test_avalanche(strnhash_f hashfunc)
 	memset(spread16, 0, sizeof(spread16));
 
 	countlen = test_avalanche3(hashfunc);
-	printf("\nSample text token set:\n");
+	printf("\nSample text token set (%s):\n", funcname);
 	show_stats(countlen);
 
 	memset(state, 0, sizeof(state));
@@ -959,7 +960,7 @@ void test_avalanche(strnhash_f hashfunc)
 	memset(spread16, 0, sizeof(spread16));
 
 	countlen = test_avalanche4(hashfunc, 0);
-	printf("\nTest number series:\n");
+	printf("\nTest number series (%s):\n", funcname);
 	show_stats(countlen);
 
 	memset(state, 0, sizeof(state));
@@ -967,7 +968,7 @@ void test_avalanche(strnhash_f hashfunc)
 	memset(spread16, 0, sizeof(spread16));
 
 	countlen = test_avalanche4(hashfunc, 1);
-	printf("\nTest number series (spread):\n");
+	printf("\nTest number series (spread) (%s):\n", funcname);
 	show_stats(countlen);
 
 	printf("\n\n=================================================================\n\n");
@@ -3097,6 +3098,78 @@ crmhash_t fake12_hash(const unsigned char *str, int len, crmhash_t seed)
 
 
 
+crmhash_t fake13_hash(const unsigned char *str, int len, crmhash_t seed)
+{
+	int i;
+	crmhash_t ret;
+	uint64_t m;
+
+	// make sure len is divisable by 4 after this. Inspired by Duff's device - for those old enough to recall that bit :-)
+		{
+		crmhash_t n0 = len;
+		crmhash_t n1 = len;
+		crmhash_t n2 = len;
+		crmhash_t n3 = len;
+
+			switch (len & 0x03)
+			{
+			case 3:
+				n2 += *str++;
+			case 2:
+				n1 += *str++;
+			case 1:
+				n0 += *str++;
+			case 0:
+				break;
+			}
+		//n3 = (n3 << 0) + (n3 >> 32); 
+		n2 = (n2 << 8) + (n0 >> 24); 
+		n1 = (n1 << 16) + (n1 >> 16); 
+		n0 = (n0 << 24) + (n0 >> 8); // keep overflow bit(s) due to + len add there: ROL n opcode.
+
+		ret ^= n3 ^ n2 ^ n1 ^ n0;
+		
+		m = seed - ret;
+
+		m *= 1812433253UL; // 7
+}
+
+		len /= 4;
+
+	for (; len > 0; len--)
+	{
+		crmhash_t n0 = len;
+		crmhash_t n1 = len;
+		crmhash_t n2 = len;
+		crmhash_t n3 = len;
+
+				n3 += *str++;
+				n2 += *str++;
+				n1 += *str++;
+				n0 += *str++;
+
+		//n3 = (n3 << 0) + (n3 >> 32); 
+		n2 = (n2 << 8) + (n0 >> 24); 
+		n1 = (n1 << 16) + (n1 >> 16); 
+		n0 = (n0 << 24) + (n0 >> 8); // keep overflow bit(s) due to + len add there: ROL n opcode.
+
+		m -= (n3 ^ n2 ^ n1 ^ n0);
+
+		m *= 1812433253UL; // 7
+	}
+
+    /* Tempering */
+    ret ^= (m >> (11 + 32));
+    //ret ^= (ret >> 11);
+    ret ^= (ret << 7) & 0x9d2c5680UL;
+    ret ^= (ret << 15) & 0xefc60000UL;
+    ret ^= (m >> 18);
+
+	return ret;
+}
+
+
+
 
 
 
@@ -3113,7 +3186,7 @@ int main(void)
 {
 	int i = 0;
 
-#if 0
+#if 01
 #if 10
 	printf("\nTesting: old_crm114_hash\n\n");
 	test_avalanche(old_crm114_hash);
@@ -3131,7 +3204,7 @@ int main(void)
 	printf("\nTesting: mult_hash\n\n");
 	test_avalanche(mult_hash);
 
-#if 0
+#if 01
 	printf("\nTesting: mult2_hash\n\n");
 	test_avalanche(mult2_hash);
 
@@ -3172,16 +3245,13 @@ int main(void)
 	test_avalanche(mult7_hash);
 #endif
 
-	printf("\nTesting: fake7_hash (%.8x) (%d)\n\n", fake7_hash((void *)&i, sizeof(i), 0), (int)sizeof(i));
-	test_avalanche(fake7_hash);
-
 	printf("\nTesting: fake8_hash (%.8x) (%d)\n\n", fake8_hash((void *)&i, sizeof(i), 0), (int)sizeof(i));
 	test_avalanche(fake8_hash);
 
 	printf("\nTesting: fake9_hash (%.8x) (%d)\n\n", fake9_hash((void *)&i, sizeof(i), 0), (int)sizeof(i));
 	test_avalanche(fake9_hash);
 
-#if 0
+#if 01
 	printf("\nTesting: fake10_hash [Mersenne] (%.8x) (%d)\n\n", fake10_hash((void *)&i, sizeof(i), 0), (int)sizeof(i));
 	test_avalanche(fake10_hash);
 #endif
@@ -3191,6 +3261,9 @@ int main(void)
 
 	printf("\nTesting: fake12_hash (%.8x) (%d)\n\n", fake12_hash((void *)&i, sizeof(i), 0), (int)sizeof(i));
 	test_avalanche(fake12_hash);
+
+	printf("\nTesting: fake13_hash (%.8x) (%d)\n\n", fake13_hash((void *)&i, sizeof(i), 0), (int)sizeof(i));
+	test_avalanche(fake13_hash);
 
 	return 0;
 }

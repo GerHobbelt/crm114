@@ -1011,7 +1011,7 @@ syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ /[match_OS]alt_comm
                                     the UNIX realm).
 
 
-translate <flags> (:dest:) [:src] /from_charset/ /to_charset/
+translate <flags> (:dest:) [:src:] /from_charset/ /to_charset/
                                   - do a tr()-like translation of 8-bit
                                     characters in the from_charset to the
                                     corresponding characters in the to_charset.
@@ -1050,8 +1050,8 @@ translate <flags> (:dest:) [:src] /from_charset/ /to_charset/
 
 trap (:reason:) /trap_regex/      - traps faults from both FAULT statements
                                     and program errors occurring anywhere in
-                                    the preceding bracket-block.  If no fault
-                                    exists, TRAP does a SKIP to end of block.
+                                    the preceding bracket-block or single executable statement.
+                                    If no fault exists, TRAP does a SKIP to end of block.
                                     If there is a fault and the fault reason
                                     string matches the trap_regex, the fault
                                     is trapped, and execution continues with

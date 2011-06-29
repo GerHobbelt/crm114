@@ -1357,10 +1357,6 @@ Optional Features:
                           produce a smaller executable, which will report an
                           error when your scripts attempt to use this
                           classifier. (default: FSCM classifier is build-in)
-  --disable-SCM           do not include the SCM classifier. This will produce
-                          a smaller executable, which will report an error
-                          when your scripts attempt to use this classifier.
-                          (default: SCM classifier is build-in)
   --disable-Neural-Net    do not include the Neural-Net classifier. This will
                           produce a smaller executable, which will report an
                           error when your scripts attempt to use this
@@ -2700,42 +2696,6 @@ else
 
    { echo "$as_me:$LINENO: result: au contraire, mon ami, we want it!" >&5
 echo "${ECHO_T}au contraire, mon ami, we want it!" >&6; }
-
-fi
-
-
-{ echo "$as_me:$LINENO: checking if we don't want the SCM classifier" >&5
-echo $ECHO_N "checking if we don't want the SCM classifier... $ECHO_C" >&6; }
-# Check whether --enable-SCM was given.
-if test "${enable_SCM+set}" = set; then
-  enableval=$enable_SCM;
-   if eval "test x$enable_SCM = xno -o x$enable_experimental_classifiers = xno"; then
-     { echo "$as_me:$LINENO: result: no, we don't" >&5
-echo "${ECHO_T}no, we don't" >&6; }
-
-cat >>confdefs.h <<_ACEOF
-#define CRM_WITHOUT_SCM 1
-_ACEOF
-
-   else
-     { echo "$as_me:$LINENO: result: au contraire, mon ami, we want it!" >&5
-echo "${ECHO_T}au contraire, mon ami, we want it!" >&6; }
-   fi
-
-else
-
-   if eval "test x$enable_experimental_classifiers = xno"; then
-     { echo "$as_me:$LINENO: result: no, we don't" >&5
-echo "${ECHO_T}no, we don't" >&6; }
-
-cat >>confdefs.h <<_ACEOF
-#define CRM_WITHOUT_SCM 1
-_ACEOF
-
-   else
-     { echo "$as_me:$LINENO: result: au contraire, mon ami, we want it!" >&5
-echo "${ECHO_T}au contraire, mon ami, we want it!" >&6; }
-   fi
 
 fi
 

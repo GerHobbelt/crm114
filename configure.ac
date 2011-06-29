@@ -281,30 +281,6 @@ when your scripts attempt to use this classifier.
    AC_MSG_RESULT([au contraire, mon ami, we want it!])
   ])
 
-AC_MSG_CHECKING([if we don't want the SCM classifier])
-AC_ARG_ENABLE([SCM],
-  AC_HELP_STRING([--disable-SCM],
-    [do not include the SCM classifier.
-This will produce a smaller executable, which will report an error
-when your scripts attempt to use this classifier.
-(default: SCM classifier is build-in)]),
-  [
-   if eval "test x$enable_SCM = xno -o x$enable_experimental_classifiers = xno"; then
-     AC_MSG_RESULT([no, we don't])
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SCM, 1, [do not include the SCM classifier in the build])
-   else
-     AC_MSG_RESULT([au contraire, mon ami, we want it!])
-   fi
-  ],
-  [
-   if eval "test x$enable_experimental_classifiers = xno"; then
-     AC_MSG_RESULT([no, we don't])
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SCM, 1, [do not include the SCM classifier in the build])
-   else
-     AC_MSG_RESULT([au contraire, mon ami, we want it!])
-   fi
-  ])
-
 AC_MSG_CHECKING([if we don't want the Neural-Net classifier])
 AC_ARG_ENABLE([Neural-Net],
   AC_HELP_STRING([--disable-Neural-Net],

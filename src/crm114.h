@@ -578,8 +578,89 @@ int skip_nonblanks(const char *buf, int start, int bufsize);
 int skip_command_token(const char *buf, int start, int bufsize);
 
 
+///////////////////////////////////////////////////////////////////////////
+//
 //     The vector tokenizer - used to turn text into hash vectors.
 //
+///////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Returns the number of characters consumed in text[]; token itself is
+// returned in *match.
+// 
+// Negative return values signal errors.
+//
+struct magical_VT_userdef_tokenizer;
+
+typedef int VT_tokenizer_func(struct magical_VT_userdef_tokenizer *obj, // 'this' reference
+							  regmatch_t *match, // output
+						  regex_t *regcb,    // i/o
+						  const char *text,
+						  int textlen);
+
+typedef int VT_tokenizer_cleanup_func(struct magical_VT_userdef_tokenizer *obj); // 'this' reference
+
+///////////////////////////////////////////////////////////////////////////
+//
+// The struct which defines the tokenizer as used by the Vector Tokenizer.
+//
+// Any of its member may be zero: those will be assumed to be the default then.
+//
+typedef struct magical_VT_userdef_tokenizer
+{
+        const char           *regex;        // the parsing regex (might be ignored)
+        int                   regexlen;     //   length of the parsing regex
+		VT_tokenizer_func    *tokenizer;
+
+		VT_tokenizer_cleanup_func *cleanup; // call this when done; may be used to free() regex when applicable.
+}
+VT_USERDEF_TOKENIZER;
+
+///////////////////////////////////////////////////////////////////////////
+//
+// When you want to pass on user defined Vector Coefficient Matrices, use this.
+// 
+// Note that the coeff_array stores these matrices in the format
+//
+//   output_stride : pipe_iters : pipe_len  (MS to LS)
+//
+// meaning the coefficients are laid out thus:
+// - series of pipe_len column coefficients each (least significant), which means
+//   one Vector is a consecutive series of pipe_len coefficients.
+// - series of pipe_iters rows, where each row is a vector of pipe_len columns (= coefficients) 
+//   as described above.
+// - series of output_stride 2D matrices, each consisting of a series of pipe_iters vectors (rows)
+//
+// Hence the ordering in the coeff_array here is identical to the layout of the
+// predefined (default) coefficient 2D matrices provided with the Vector Tokenizer.
+//
+struct magical_VT_userdef_coeff_matrix;
+
+typedef int VT_coeff_matrix_cleanup_func(struct magical_VT_userdef_coeff_matrix *obj);
+
+typedef struct magical_VT_userdef_coeff_matrix
+{
+        const crmhash_t      *coeff_array;    // the pipeline coefficient control array
+        int                   pipe_len;       // how long a pipeline (== coeff_array col length)
+        int                   pipe_iters;     // how many rows are there in coeff_array
+        int                   output_stride;  // how many matrices (rows x cols) are there in coeff_array
+
+		VT_coeff_matrix_cleanup_func *cleanup; // call this when done; may be used to free() coeff_matrix when applicable.
+}
+VT_USERDEF_COEFF_MATRIX;
+
+
+
+int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX **userdefs_ref,  // the pipeline coefficient control array, etc.
+					const char *src, int srclen,
+					char *errmsg, int errmsgsize);
+
+
+
+
+
 
 int crm_vector_tokenize_selector
 (
@@ -587,11 +668,8 @@ int crm_vector_tokenize_selector
         const char           *text,         // input string (null-safe!)
         int                   textlen,      //   how many bytes of input.
         int                   start_offset, //     start tokenizing at this byte.
-        const char           *regex,        // the parsing regex (might be ignored)
-        int                   regexlen,     //   length of the parsing regex
-        const crmhash_t      *coeff_array,  // the pipeline coefficient control array
-        int                   pipe_len,     //  how long a pipeline (== coeff_array row length)
-        int                   pipe_iters,   //  how many rows are there in coeff_array
+        const VT_USERDEF_TOKENIZER *tokenizer,        // the parsing regex (might be ignored)
+        const VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
         crmhash_t            *features,     // where the output features go
         int                   featureslen,  //   how many output features (max)
         int                  *features_out, // how many longs did we actually use up
@@ -605,11 +683,8 @@ int crm_vector_tokenize
         const char          *text,            // input string (null-safe!)
         int                  textlen,         //   how many bytes of input.
         int                  start_offset,    //     start tokenizing at this byte.
-        const char          *regex,           // the parsing regex (might be ignored)
-        int                  regexlen,        //   length of the parsing regex
-        const crmhash_t     *coeff_array,     // the pipeline coefficient control array
-        int                  pipe_len,        //  how long a pipeline (== coeff_array col height)
-        int                  pipe_iters,      //  how many rows are there in coeff_array
+        const VT_USERDEF_TOKENIZER *tokenizer,   // the parsing regex (might be ignored)
+        const VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
         crmhash_t           *features,        // where the output features go
         int                  featureslen,     //   how many output features (max)
         int                  features_stride, //   Spacing (in words) between features
@@ -618,12 +693,21 @@ int crm_vector_tokenize
 );
 
 
+//
 //     crm execution-time debugging environment - an interpreter unto itself
 //
-int crm_debugger(void);
+
+typedef enum
+{
+	CRM_DBG_REASON_UNDEFINED = 0,
+	CRM_DBG_REASON_BREAKPOINT,
+	CRM_DBG_REASON_DEBUG_STATEMENT,
+	CRM_DBG_REASON_DEBUG_END_OF_PROGRAM,
+} crm_debug_reason_t;
+
+int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call);
 
 //     expand a variable or string with known length (8-bit and null-safe)
-
 int crm_nexpandvar(char *buf, int inlen, int maxlen);
 
 //     execute a FAULT triggering.
@@ -685,7 +769,8 @@ int crm_restrictvar(char *boxstring,
         char **outblock,
         int *outoffset,
         int *outlen,
-        char *errstr);
+        char *errstr,
+		int maxerrlen);
 
 
 //      crm114-specific regex compilation

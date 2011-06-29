@@ -890,10 +890,9 @@ int crm_zexpandvar(char *buf,
                             {
                                 q = fatalerror("Problem during math evaluation of ",
                                         mathtext);
-                                if (q == 0)
-                                    return inlen;
+                                return inlen;
 
-                                goto bailout;
+                                // goto bailout; -- same thing as 'return inlen' anyhow.
                             }
                             mm = strlen(mathtext);
                             for (m = 0; m < mm && id < maxlen; m++)
@@ -937,10 +936,9 @@ int crm_zexpandvar(char *buf,
                             {
                                 q = fatalerror("Problem during math evaluation of ",
                                         mathtext);
-                                if (q == 0)
-                                    return inlen;
+                                return inlen;
 
-                                goto bailout;
+                                // goto bailout; -- same thing as 'return inlen' anyhow.
                             }
                             mm = strlen(mathtext);
                             for (m = 0; m < mm && id < maxlen; m++)
@@ -1011,7 +1009,8 @@ int crm_restrictvar(char  *boxstring,
         char **outblock,
         int *outoffset,
         int *outlen,
-        char *errstr)
+        char *errstr,
+		int maxerrlen)
 {
     char datastring[MAX_PATTERN + 1];
     int datastringlen;
@@ -1035,6 +1034,8 @@ int crm_restrictvar(char  *boxstring,
     int in_subscript;
 
     int i, j;
+
+	CRM_ASSERT(maxerrlen > 16); // sanity check; error buffer must be sufficiently large.
 
     nw_start = 0;
     nw_len = 0;
@@ -1087,10 +1088,10 @@ int crm_restrictvar(char  *boxstring,
     //       Is it a real variable?
     if (((void *)vht[vmidx]) == NULL)
     {
-        strcpy(errstr,
-                "This program wants to use a nonexistent variable named: '");
-        strncat(errstr, varname, MAX_PATTERN - 128);
-        strcat(errstr, "'");
+        snprintf(errstr, maxerrlen,
+                "This program wants to use a nonexistent variable named: '%s'", 
+        varname);
+        errstr[maxerrlen - 1] = 0;
         return -2;
     }
 
@@ -1102,10 +1103,10 @@ int crm_restrictvar(char  *boxstring,
     if (vht[vmidx]->valtxt != tdw->filetext
         && vht[vmidx]->valtxt != cdw->filetext)
     {
-        errstr[0] = 0;
-        strcat(errstr, "Bogus text block (neither cdw nor tdw) on var ");
-        strncat(errstr, varname, MAX_PATTERN - 128);
-        strcat(errstr, "\n");
+        snprintf(errstr, maxerrlen, 
+        "Bogus text block (neither cdw nor tdw) on var '%s'",
+        varname);
+        errstr[maxerrlen - 1] = 0;
         return -2;
     }
 
@@ -1247,9 +1248,10 @@ int crm_restrictvar(char  *boxstring,
             int curstmt;
                     curstmt = csl->cstmt;
                     crm_regerror(i, &preg, tempbuf, data_window_size);
-                    strcpy(errstr,
-                            "Regular Expression Compilation Problem on: ");
-                    strncat(errstr, tempbuf, MAX_PATTERN - 128);
+                    snprintf(errstr, maxerrlen,
+                            "Regular Expression Compilation Problem on '%s'",
+                    tempbuf);
+        errstr[maxerrlen - 1] = 0;
                     return -2;
                 }
 
@@ -1269,7 +1271,7 @@ int crm_restrictvar(char  *boxstring,
                     int i;
 
                     i = 0;
-#if 0 // [i_a] this makes use of undocumented behaviour of TRE
+#if 0 // [i_a] this makes use of ?un?documented? behaviour of TRE - anyhow, why loop when you don't have to?
 					while (matches[i].rm_so >= 0)
                         i++;
 					i--;

@@ -22,6 +22,12 @@
 #include "crm114.h"
 
 
+
+#include <getopt.h>
+
+
+
+
 //
 //    Global variables
 

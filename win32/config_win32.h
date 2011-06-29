@@ -47,9 +47,6 @@
 /* do not include the OSB-Winnow classifier in the build */
 /* #undef CRM_WITHOUT_OSB_WINNOW */
 
-/* do not include the SCM classifier in the build */
-/* #undef CRM_WITHOUT_SCM */
-
 /* do not include the SKS classifier in the build */
 /* #undef CRM_WITHOUT_SKS */
 
@@ -533,7 +530,7 @@
 #undef HAVE___FUNC__
 
 /* Set host type */
-#define HOSTTYPE "windows-MS"
+#define HOSTTYPE "Windows-MS"
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
  * slash. */

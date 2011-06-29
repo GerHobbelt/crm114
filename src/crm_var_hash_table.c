@@ -39,7 +39,7 @@ void crm_vht_init(int argc, char **argv)
     vht = (VHT_CELL **)calloc(vht_size, sizeof(vht[0]));
     if (!vht)
         untrappableerror("Couldn't alloc VHT cell.\n",
-                "No VHT cells, no variables, so no can run.  Sorry.");
+            "No VHT cells, no variables, so no can run.  Sorry.");
 #ifndef CRM_DONT_ASSERT
     {
         int i;
@@ -303,8 +303,8 @@ void crm_vht_init(int argc, char **argv)
                 if (!GetFullPathName(dirbuf, CRM_MAX(MAX_VARNAME, MAX_PATH) + 1, fulldirbuf, NULL))
                 {
                     fatalerror_ex(SRC_LOC(),
-                            "Cannot fetch the expanded current directory (PWD) for directory '%s'",
-                            dirbuf);
+                        "Cannot fetch the expanded current directory (PWD) for directory '%s'",
+                        dirbuf);
                 }
                 else
                 {
@@ -462,20 +462,20 @@ void crm_vht_init(int argc, char **argv)
                         avalbuf[k] = 0;
                     }
                     if (user_trace)
-					{
+                    {
                         fprintf(stderr, "\n Setting cmdline var '%s' to '%s'\n",
-                                anamebuf, avalbuf);
-					}
-					crm_set_temp_var(anamebuf, avalbuf);
+                            anamebuf, avalbuf);
+                    }
+                    crm_set_temp_var(anamebuf, avalbuf);
                 }
                 else
                 {
                     fprintf(stderr,
-                            "\n ***Warning*** "
-                            "This program does not accept the "
-                            "flag '%s',\n", anamebuf);
+                        "\n ***Warning*** "
+                        "This program does not accept the "
+                        "flag '%s',\n", anamebuf);
                     fprintf(stderr,
-                            " so we'll just ignore it for now. \n");
+                        " so we'll just ignore it for now. \n");
                 }
             }
         }
@@ -488,9 +488,9 @@ void crm_vht_init(int argc, char **argv)
 //           late to fix it now.
 //
 //
-void crm_set_temp_nvar(char *varname, char *value, int  vallen)
+void crm_set_temp_nvar(char *varname, char *value, int vallen)
 {
-    int  namestart, namelen;
+    int namestart, namelen;
     int valstart;
     int i;
     int vnidx, vnlen;
@@ -498,14 +498,14 @@ void crm_set_temp_nvar(char *varname, char *value, int  vallen)
     //       do the internal_trace thing
     if (internal_trace)
         fprintf(stderr, "  setting temp-area variable %s to value %s\n",
-                varname, value);
+            varname, value);
 
     i = crm_nextword(varname, strlen(varname), 0, &vnidx, &vnlen);
     if (i == 0)
     {
         nonfatalerror("Somehow, you are assigning a value to a variable with "
-                "an unprintable name.  I'll permit it for now, but "
-                "your program is probably broken.", "");
+                      "an unprintable name.  I'll permit it for now, but "
+                      "your program is probably broken.", "");
     }
 
     if ((strlen(varname) + vallen + tdw->nchars + 64) > data_window_size)
@@ -513,7 +513,7 @@ void crm_set_temp_nvar(char *varname, char *value, int  vallen)
         fatalerror("This program has overflowed the ISOLATEd data "
                    "area with a variable that's just too big.  "
                    "The bad variable was named: ",
-                varname);
+            varname);
         if (engine_exit_base != 0)
         {
             exit(engine_exit_base + 22);
@@ -562,9 +562,9 @@ void crm_set_temp_nvar(char *varname, char *value, int  vallen)
         //
         //      now, we whack the actual VHT.
         crm_setvar(NULL, 0,
-                tdw->filetext, namestart, namelen,
-                tdw->filetext, valstart, vallen,
-                0, 0);
+            tdw->filetext, namestart, namelen,
+            tdw->filetext, valstart, vallen,
+            0, 0);
         //     that's it.
     }
     else
@@ -572,7 +572,7 @@ void crm_set_temp_nvar(char *varname, char *value, int  vallen)
         //   This variable is preexisting.  Perform an ALTER on it.
         //
         crm_destructive_alter_nvariable(&varname[vnidx], vnlen,
-                value, vallen);
+            value, vallen);
     }
 }
 
@@ -602,11 +602,11 @@ void crm_set_temp_var(char *varname, char *value)
 //           further down in the code here)
 
 void crm_set_windowed_nvar(char *varname,
-        int                     varlen,
-        char                    *valtext,
-        int                     start,
-        int                     len,
-        int                     stmtnum)
+                           int   varlen,
+                           char *valtext,
+                           int   start,
+                           int   len,
+                           int   stmtnum)
 {
     int i;
     int namestart, namelen;
@@ -616,12 +616,12 @@ void crm_set_windowed_nvar(char *varname,
     {
         int i;
         fprintf(stderr, "  setting data-window variable %s to value ",
-                varname);
+            varname);
 #if 0
         for (i = start; i < start + len; i++)
             fprintf(stderr, "%c", valtext[i]);
 #else
-			memnCdump(stderr, valtext + start, len);
+        memnCdump(stderr, valtext + start, len);
 #endif
         fprintf(stderr, "\n");
     }
@@ -651,9 +651,9 @@ void crm_set_windowed_nvar(char *varname,
         //
         //      now, we whack the actual VHT.
         crm_setvar(NULL, 0,
-                tdw->filetext, namestart, namelen,
-                valtext, start, len,
-                stmtnum, 0);
+            tdw->filetext, namestart, namelen,
+            valtext, start, len,
+            stmtnum, 0);
         //     that's it.
     }
     else
@@ -671,9 +671,9 @@ void crm_set_windowed_nvar(char *varname,
             if (internal_trace)
                 fprintf(stderr, "... old var\n");
             crm_setvar(NULL, 0,
-                    vht[i]->nametxt, vht[i]->nstart, vht[i]->nlen,
-                    valtext, start, len,
-                    stmtnum, 0);
+                vht[i]->nametxt, vht[i]->nstart, vht[i]->nlen,
+                valtext, start, len,
+                stmtnum, 0);
 
             //       Do we need to repair the leaked memory?  Only necessary if the
             //       old text was in the tdw area; this is harmless if the area
@@ -757,9 +757,9 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
     if (internal_trace)
         fprintf(stderr, " [ Compressing isolated data.  Length %d chars, "
                         "start %d, len %d ]\n",
-                tdw->nchars,
-                oldstart,
-                oldend - oldstart);
+            tdw->nchars,
+            oldstart,
+            oldend - oldstart);
 
     //      If oldstart >= oldend, then there's no compression to be done.
     //
@@ -773,7 +773,7 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
     if (oldtext != tdw->filetext)
     {
         fatalerror(" Request to compress non-TDW data.  This is bogus. ",
-                " Please file a bug report");
+            " Please file a bug report");
         return 0;
     }
 
@@ -894,9 +894,9 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
                 {
                     fprintf(stderr, " [ Compression split ]\n");
                     fprintf(stderr, " [ First part will be %d to %d ]\n",
-                            oldstart, newstart);
+                        oldstart, newstart);
                     fprintf(stderr, " [ Second part will be %d to %d ]\n",
-                            newend, oldend);
+                        newend, oldend);
                 }
                 //
                 //      Tricky bit here - we have to do the aft (ne-oe
@@ -919,7 +919,7 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
                 return reclaimed;
             }
         }
-end_of_vstring_tests:
+        end_of_vstring_tests:
         //    Now, repeat with the name string - all name strings are protected
         if (vht[j]
             && vht[j]->nametxt == tdw->filetext)
@@ -1028,9 +1028,9 @@ end_of_vstring_tests:
                 {
                     fprintf(stderr, " [ Compression split ]\n");
                     fprintf(stderr, " [ First part will be %d to %d ]\n",
-                            oldstart, newstart);
+                        oldstart, newstart);
                     fprintf(stderr, " [ Second part will be %d to %d ]\n",
-                            newend, oldend);
+                        newend, oldend);
                 }
                 //
                 //      Tricky bit here - we have to do the aft (ne-oe
@@ -1053,7 +1053,7 @@ end_of_vstring_tests:
                 return reclaimed;
             }
             //       and the semicolon to conform to the ANSI C standard
-end_of_nstring_tests:
+            end_of_nstring_tests:
             ;
         }
     }
@@ -1070,7 +1070,7 @@ end_of_nstring_tests:
         cutlen = oldstart - oldend - 1;
         if (cutlen > 0)
             fatalerror("Internal cut-length error in isolated var reclamation.",
-                    "  Please file a bug report");
+                "  Please file a bug report");
 
         //    Future Enhancement - dead zones of some small size should be
         //    allowed to stay.  This would speed up WINDOW a lot. (but we
@@ -1083,13 +1083,13 @@ end_of_nstring_tests:
             if (internal_trace)
             {
                 fprintf(stderr, " [ compression slice-splice at %d for %d chars ]\n",
-                        oldstart, cutlen);
+                    oldstart, cutlen);
             }
             crm_slice_and_splice_window(tdw, oldstart, cutlen);
             if (internal_trace)
             {
                 fprintf(stderr, " [ new isolated area will be %d bytes ]\n",
-                        tdw->nchars);
+                    tdw->nchars);
             }
         }
         return -(cutlen);
@@ -1103,11 +1103,11 @@ end_of_nstring_tests:
 //
 
 void crm_destructive_alter_nvariable(char *varname, int varlen,
-        char *newstr, int newlen)
+                                     char *newstr, int newlen)
 {
     int i;
     int vhtindex, oldlen, delta;
-int vlen;
+    int vlen;
 
     //      get the first variable name and verify it exists.
     //     GROT GROT GROT this should use nextword!!!
@@ -1128,14 +1128,14 @@ int vlen;
         // IGNORE FOR NOW
         crm_set_temp_nvar(&varname[i], newstr, newlen);
         nonfatalerror_ex(SRC_LOC(), " Attempt to alter the value of a nonexistent "
-                      "variable, so I'm creating an ISOLATED variable.  "
-                      "I hope that's OK.  The nonexistent variable is: "
-			"%d/%d: '%.*s'/'%.*s'",
-                vlen, varlen, vlen, &(varname[i]), varlen, varname);
-		return;
+                                    "variable, so I'm creating an ISOLATED variable.  "
+                                    "I hope that's OK.  The nonexistent variable is: "
+                                    "%d/%d: '%.*s'/'%.*s'",
+            vlen, varlen, vlen, &(varname[i]), varlen, varname);
+        return;
     }
 
-	//     make enough space in the input buffer to accept the new value
+    //     make enough space in the input buffer to accept the new value
     oldlen = vht[vhtindex]->vlen;
     delta = newlen - oldlen;
     mdw = NULL;
@@ -1159,7 +1159,7 @@ int vlen;
         for (i = 0; i < varlen; i++)
             fprintf(stderr, "%c", varname[i]);
 #else
-			memnCdump(stderr, varname, varlen);
+        memnCdump(stderr, varname, varlen);
 #endif
         fprintf(stderr, "<\n");
         //fprintf(stderr, "new value is: \n***%s***\n", newstr);
@@ -1168,7 +1168,7 @@ int vlen;
         for (i = 0; i < newlen; i++)
             fprintf(stderr, "%c", newstr[i]);
 #else
-			memnCdump(stderr, newstr, newlen);
+        memnCdump(stderr, newstr, newlen);
 #endif
         fprintf(stderr, "<***\n");
     }
@@ -1185,8 +1185,8 @@ int vlen;
     //     now we have space, and we can put in the characters from
     //     the new pattern
     memmove(&(mdw->filetext[vht[vhtindex]->vstart]),
-            newstr,
-            newlen);
+        newstr,
+        newlen);
 }
 
 
@@ -1213,7 +1213,7 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
     if (delta + mdw->nchars > data_window_size - 10)
     {
         fatalerror(" Data window trying to get too long.",
-                " Try increasing the data window maximum size.");
+            " Try increasing the data window maximum size.");
         goto bailout;
     }
 
@@ -1251,8 +1251,8 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
     }
     if (internal_trace)
         fprintf(stderr,
-                "buffer sliding, tailsrc: %p, taildest: %p, length: %d\n",
-                tailsrc, taildest, taillen);
+            "buffer sliding, tailsrc: %p, taildest: %p, length: %d\n",
+            tailsrc, taildest, taillen);
 
     //     and move the actual data
     if (taillen + 1 > 0)
@@ -1263,9 +1263,9 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
 
     //      and update all of our captured variables to have the right ptrs.
     crm_updatecaptures(mdw->filetext,
-            where,
-            delta);
-bailout:
+        where,
+        delta);
+    bailout:
     // semicolon to conform to the ANSI C standard
     ;
 }
@@ -1281,7 +1281,7 @@ while (delta + mdw->nchars > data_window_size - 1)
     odws = data_window_size;
     data_window_size = 4 * data_window_size;
     nonfatalerror(" Data window trying to get too long.",
-            " increasing data window... ");
+        " increasing data window... ");
     ndw = (char *)calloc(data_window_size, sizeof(ndw[0]));
     if (!ndw)
         untrappableerror("Couldn't alloc ndw.  This is bad too.\n", "");
@@ -1331,32 +1331,35 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
         for (i = 0; i < vht_size; i++)
         {
             if (vht[i] != NULL && vht[i]->nlen < 2)
-                fprintf(stderr, "Short length %d ", i);
+            {
+                fprintf(stderr, "Short length for i=%d: %d\n", i, vht[i]->nlen);
+            }
             if (vht[i] != NULL && vht[i]->nlen > 1)
             {
-        int corrupted = 0;
+                int corrupted = 0;
+
                 if (vht[i]->nametxt[vht[i]->nstart] != ':')
                 {
-                    fprintf(stderr, "Ztart corrupted ");
+                    fprintf(stderr, "Ztart corrupted; ");
                     corrupted = 1;
                 }
                 if (vht[i]->nametxt[vht[i]->nstart + vht[i]->nlen - 1] != ':')
                 {
-                    fprintf(stderr, "Zend corrupted ");
+                    fprintf(stderr, "Zend corrupted; ");
                     corrupted = 1;
                 }
                 if (corrupted)
                 {
-                    fprintf(stderr, " i %d len %d name = -",
-                            i, vht[i]->nlen);
+                    fprintf(stderr, " i=%d len=%d name='",
+                        i, vht[i]->nlen);
 #if 0
                     for (j = 0; j < vht[i]->nlen; j++)
                         fprintf(stderr, "%c",
-                                vht[i]->nametxt[vht[i]->nstart + j]);
+                            vht[i]->nametxt[vht[i]->nstart + j]);
 #else
-			memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+                    memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
-                    fprintf(stderr, "- ");
+                    fprintf(stderr, "'\n");
                 }
             }
         }
@@ -1371,7 +1374,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
         for (k = vsidx; k < vsidx + vslen; k++)
             fprintf(stderr, "%c", vname[k]);
 #else
-			memnCdump(stderr, vname + vsidx, vslen);
+        memnCdump(stderr, vname + vsidx, vslen);
 #endif
 
         fprintf(stderr, "- .\n");
@@ -1405,7 +1408,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
                 for (ic = 0; ic < vlen; ic++)
                     fprintf(stderr, "%c", vname[ic]);
 #else
-	memnCdump(stderr, vname, vlen);
+                memnCdump(stderr, vname, vlen);
 #endif
                 fprintf(stderr, "(len %d) not at %d (empty)\n", vlen, i);
                 fprintf(stderr, "Returning the index where it belonged.\n");
@@ -1416,8 +1419,8 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
         //  there's something here - is it what we have been seeking
         if (vlen == vht[i]->nlen
             && memcmp(&((vht[i]->nametxt)[vht[i]->nstart]),
-                    vname,
-                    vlen) == 0)
+                vname,
+                vlen) == 0)
         {
             //  Yes, we found it.
             if (internal_trace)
@@ -1428,10 +1431,10 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
                 for (ic = 0; ic < vht[i]->nlen; ic++)
                     fprintf(stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
 #else
-memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+                memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
                 fprintf(stderr, " (len %d) found at %d (",
-                        vlen, i);
+                    vlen, i);
                 if (vht[i]->valtxt == cdw->filetext)
                 {
                     fprintf(stderr, "(main)");
@@ -1441,7 +1444,7 @@ memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
                     fprintf(stderr, "(isol)");
                 }
                 fprintf(stderr, " s: %d, l:%d)\n",
-                        vht[i]->vstart, vht[i]->vlen);
+                    vht[i]->vstart, vht[i]->vlen);
             }
             return i;
         }
@@ -1451,13 +1454,13 @@ memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
             {
                 int ic;
                 fprintf(stderr, "\n Hash clash (at %d): wanted %s (len %d)",
-                        i, vname, vlen);
+                    i, vname, vlen);
                 fprintf(stderr, " but found '");
 #if 0
                 for (ic = 0; ic < vht[i]->nlen; ic++)
                     fprintf(stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
 #else
-	memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+                memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
                 fprintf(stderr, "' instead.");
             }
@@ -1475,7 +1478,8 @@ memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
         //   get close to overflow.
         if (i == (hc - 1))
         {
-            /* static */ char badvarname[MAX_VARNAME];
+            /* static */
+            char badvarname[MAX_VARNAME];
             strncpy(badvarname, &vname[vsidx], (vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1));
             badvarname[(vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1)] = 0;
             if (internal_trace)
@@ -1488,15 +1492,15 @@ memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
                     fprintf(stderr, "  var '");
 #if 0
                     for (ic = 0; ic < vht[index]->nlen; ic++)
-					{
+                    {
                         fprintf(stderr, "%c",
-                                (vht[index]->nametxt)[ic + vht[index]->nstart]);
-					}
+                            (vht[index]->nametxt)[ic + vht[index]->nstart]);
+                    }
 #else
-	memnCdump(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
+                    memnCdump(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
 #endif
-					fprintf(stderr, "'[%d] found at %d (",
-                            vht[index]->nlen,  index);
+                    fprintf(stderr, "'[%d] found at %d (",
+                        vht[index]->nlen,  index);
                     if (vht[index]->valtxt == cdw->filetext)
                     {
                         fprintf(stderr, "(main)");
@@ -1506,12 +1510,12 @@ memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
                         fprintf(stderr, "(isol)");
                     }
                     fprintf(stderr, " s: %d, l:%d)\n",
-                            vht[index]->vstart, vht[index]->vlen);
+                        vht[index]->vstart, vht[index]->vlen);
                 }
             }
             fatalerror(" Variable hash table overflow while looking "
                        "for variable: ",
-                    badvarname);
+                badvarname);
             done = 1;
             return 0;
         }
@@ -1528,17 +1532,17 @@ memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 //    of the cdw and tdw usage, etc.
 //
 void crm_setvar(
-        char *filename,
-        int   filedesc,
-        char *nametxt,
-        int nstart,
-        int nlen,
-        char *valtxt,
-        int vstart,
-        int vlen,
-        int linenumber,
-        int lazy_redirects
-               )
+    char *filename,
+    int   filedesc,
+    char *nametxt,
+    int   nstart,
+    int   nlen,
+    char *valtxt,
+    int   vstart,
+    int   vlen,
+    int   linenumber,
+    int   lazy_redirects
+    )
 {
     int i, j;   // some indices to bang on
 
@@ -1595,7 +1599,7 @@ void crm_setvar(
         //        fprintf(stderr, "%c", vht[i]->nametxt[vht[i]->nstart+j]);
         fwrite(&(vht[i]->nametxt[vht[i]->nstart]), 1, vht[i]->nlen, stderr);
 #else
-		memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+        memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
 
         fprintf(stderr, " at vht entry %d ", i);
@@ -1606,11 +1610,11 @@ void crm_setvar(
         //        fprintf(stderr, "%c", vht[i]->valtxt[vht[i]->vstart+j]);
         fwrite(&(vht[i]->valtxt[vht[i]->vstart]), 1, vht[i]->vlen, stderr);
 #else
-		memnCdump(stderr, vht[i]->valtxt + vht[i]->vstart, vht[i]->vlen);
+        memnCdump(stderr, vht[i]->valtxt + vht[i]->vstart, vht[i]->vlen);
 #endif
 
         fprintf(stderr, "- (start %d, length %d)",
-                vht[i]->vstart, vht[i]->vlen);
+            vht[i]->vstart, vht[i]->vlen);
 
         fprintf(stderr, "and %d lazy redirects", vht[i]->lazy_redirects);
 
@@ -1635,7 +1639,7 @@ int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len)
         // Yes, we found it.  Return the line number
         if (internal_trace)
             fprintf(stderr, "  looked up ... line number %d\n",
-                    vht[i]->linenumber);
+                vht[i]->linenumber);
         return vht[i]->linenumber;
     }
     else
@@ -1650,12 +1654,11 @@ int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len)
         deathfu[len] = 0;
         q = fatalerror("Control Referencinge a non-existent variable- this"
                        "is almost always a very _bad_ thing",
-                deathfu);
+            deathfu);
         //  If fatalerror found a TRAP for this error, cstmt now points to
         //  the TRAP - 1.  We want to go to the trap itself, no auto-incr...
         if (q == 0)
             return csl->cstmt + 1;
-
 #endif
     }
     return -1;
@@ -1678,7 +1681,7 @@ void crm_updatecaptures(char *text, int loc, int delta)
 
     if (internal_trace)
         fprintf(stderr, "\n    updating captured values start %d len %d\n",
-                loc, delta);
+            loc, delta);
 
     //        check each VHT entry for a need to relocate
     for (vht_index = 0; vht_index < vht_size; vht_index++)
@@ -1696,19 +1699,19 @@ void crm_updatecaptures(char *text, int loc, int delta)
 #if 0
                     for (i = 0; i < vht[vht_index]->nlen; i++)
                         fprintf(stderr, "%c",
-                                vht[vht_index]->nametxt[vht[vht_index]->nstart + i]);
+                            vht[vht_index]->nametxt[vht[vht_index]->nstart + i]);
 #else
-		memnCdump(stderr, vht[vht_index]->nametxt + vht[vht_index]->nstart,  vht[vht_index]->nlen);
+                    memnCdump(stderr, vht[vht_index]->nametxt + vht[vht_index]->nstart,  vht[vht_index]->nlen);
 #endif
                     fprintf(stderr, " ");
                     fprintf(stderr, " s: %d, l:%d/%d, e:%d n:%d ~ %d ...",
-                            vht[vht_index]->vstart,
-                            vht[vht_index]->vlen,
-                            vht[vht_index]->nlen,
-                            vht[vht_index]->vstart + vht[vht_index]->vlen,
-                            vht[vht_index]->nstart,
-                            vht[vht_index]->nstart + vht[vht_index]->nlen
-                           );
+                        vht[vht_index]->vstart,
+                        vht[vht_index]->vlen,
+                        vht[vht_index]->nlen,
+                        vht[vht_index]->vstart + vht[vht_index]->vlen,
+                        vht[vht_index]->nstart,
+                        vht[vht_index]->nstart + vht[vht_index]->nlen
+                        );
                 }
                 ostart = nstart = vht[vht_index]->vstart;
                 oend = nstart = ostart + vht[vht_index]->vlen;
@@ -1716,14 +1719,14 @@ void crm_updatecaptures(char *text, int loc, int delta)
                 nend = crm_mangle_offset(oend, loc, delta, 1);
                 if (internal_trace)
                     fprintf(stderr, "\n   index %d vstart/vlen upd: %d, %d ",
-                            vht_index,
-                            vht[vht_index]->vstart, vht[vht_index]->vlen);
+                        vht_index,
+                        vht[vht_index]->vstart, vht[vht_index]->vlen);
                 vht[vht_index]->vstart = nstart;
                 vht[vht_index]->vlen = nend - nstart;
                 if (internal_trace)
                     fprintf(stderr, "to %d, %d.\n",
-                            vht[vht_index]->vstart,
-                            vht[vht_index]->vlen);
+                        vht[vht_index]->vstart,
+                        vht[vht_index]->vlen);
                 //
                 //        And do the same for mstart/mlen (match start/length)
                 ostart = vht[vht_index]->mstart;
@@ -1732,14 +1735,14 @@ void crm_updatecaptures(char *text, int loc, int delta)
                 nend = crm_mangle_offset(oend, loc, delta, 1);
                 if (internal_trace)
                     fprintf(stderr, "\n index %d mstart/mlen upd: %d, %d  ",
-                            vht_index,
-                            vht[vht_index]->mstart, vht[vht_index]->mlen);
+                        vht_index,
+                        vht[vht_index]->mstart, vht[vht_index]->mlen);
                 vht[vht_index]->mstart = nstart;
                 vht[vht_index]->mlen = nend - nstart;
                 if (internal_trace)
                     fprintf(stderr, "to %d, %d.\n",
-                            vht[vht_index]->mstart,
-                            vht[vht_index]->mlen);
+                        vht[vht_index]->mstart,
+                        vht[vht_index]->mlen);
             }
             //      Don't forget entries that may be varNAMES, not just
             //      var values!
@@ -1758,21 +1761,21 @@ void crm_updatecaptures(char *text, int loc, int delta)
                 nend = crm_mangle_offset(oend, loc, delta, 1);
                 if (oend - ostart != orig_len)
                     fprintf(stderr, "Length change on %d!  Was %d, now %d ",
-                            vht_index,
-                            orig_len,
-                            oend - ostart);
+                        vht_index,
+                        orig_len,
+                        oend - ostart);
 
                 if (internal_trace)
                     fprintf(stderr,
-                            "\n      index %d nstart/nlen upd: %d, %d  ",
-                            vht_index,
-                            vht[vht_index]->nstart, vht[vht_index]->nlen);
+                        "\n      index %d nstart/nlen upd: %d, %d  ",
+                        vht_index,
+                        vht[vht_index]->nstart, vht[vht_index]->nlen);
                 vht[vht_index]->nstart = nstart;
                 vht[vht_index]->nlen = nend - nstart;
                 if (internal_trace)
                     fprintf(stderr, "to %d, %d.\n",
-                            vht[vht_index]->nstart,
-                            vht[vht_index]->nlen);
+                        vht[vht_index]->nstart,
+                        vht[vht_index]->nlen);
             }
         }
     }

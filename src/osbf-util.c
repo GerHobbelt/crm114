@@ -26,6 +26,10 @@
 
 #include "crm114_osbf.h"
 
+
+#include <getopt.h>
+
+
 //
 //    Global variables
 

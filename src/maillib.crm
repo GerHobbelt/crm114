@@ -133,7 +133,7 @@ isolate (:i_text:) /:*:m_text:/
             match (:c:) [:b:]  \
                     /([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
             isolate (:exp_text:) //
-            syscall (:*:c:) (:exp_text:) /:*:mime_decoder: / [0.1]
+            syscall (:*:c:) (:exp_text:) /:*:mime_decoder: /
 
             #   and stuff the result back into m_text for
             #   classification right in context.
@@ -158,9 +158,9 @@ isolate (:i_text:) /:*:m_text:/
             match [:m_text:] (:url:) /http:\/\/[[:graph:]]+/
             isolate (:wget_output:) //
             syscall /:*:url_fetch_cmd: :*:url: | :*:url_trim_cmd: / \
-                    () (:wget_output:) [0.1]
+                    () (:wget_output:)
             alter (:url:) /:*:url:\n  :*:wget_output:  \n/
-            eval /:@: :#:m_text: < (:*:decision_length: / 4) :/
+            eval /:@: :#:m_text: < (:*:decision_length: \/ 4) :/
             liaf
         }
     }
@@ -455,16 +455,36 @@ return
         #
         isolate (:tmp:) //
 		call /:verbosity:/ [reavercache_init: check if subtree exists already]
-        syscall () (:tmp:) /ls :*:text_cache: 2>&1 / [0.1]   # [i_a] why the redirect? both stdout and stderr are captured?
-        match [:tmp:] <absent> /texts/
-		call /:verbosity:/ [reavercache_init: create subdirectories]
-        syscall () () /mkdir :*:text_cache: / [0.1]
-        syscall () () /mkdir :*:text_cache:\/texts / [0.1]
-        syscall () () /mkdir :*:text_cache:\/prob_good / [0.1]
-        syscall () () /mkdir :*:text_cache:\/prob_spam / [0.1]
-        syscall () () /mkdir :*:text_cache:\/known_good / [0.1]
-        syscall () () /mkdir :*:text_cache:\/known_spam / [0.1]
-        syscall () () /mkdir :*:text_cache:\/empty / [0.1]
+		{
+			call /:verbosity:/ [reavercache_init: host type = ':*:_hosttype:']
+			match [:_hosttype:] /Windows-MS/
+			syscall () (:tmp:) /dir \/s \/b :*:text_cache: / 
+			call /:verbosity:/ [reavercache_init: subtree ls --> :*:tmp:]
+			match [:tmp:] <absent> /texts/
+			call /:verbosity:/ [reavercache_init: create subdirectories]
+			syscall () () /mkdir :*:text_cache: / [0.1]
+			syscall () () /mkdir :*:text_cache:\\texts / [0.1]
+			syscall () () /mkdir :*:text_cache:\\prob_good / [0.1]
+			syscall () () /mkdir :*:text_cache:\\prob_spam / [0.1]
+			syscall () () /mkdir :*:text_cache:\\known_good / [0.1]
+			syscall () () /mkdir :*:text_cache:\\known_spam / [0.1]
+			syscall () () /mkdir :*:text_cache:\\empty / [0.1]
+		}
+		alius
+		{
+			syscall () (:tmp:) /ls :*:text_cache: 2>&1 / [0.1]   # [i_a] why the redirect? both stdout and stderr are captured?
+			call /:verbosity:/ [reavercache_init: subtree ls --> :*:tmp:]
+			match [:tmp:] <absent> /texts/
+			call /:verbosity:/ [reavercache_init: create subdirectories]
+			syscall () () /mkdir :*:text_cache: /
+			syscall () () /mkdir :*:text_cache:\/texts /
+			syscall () () /mkdir :*:text_cache:\/prob_good /
+			syscall () () /mkdir :*:text_cache:\/prob_spam / [0.1]
+			syscall () () /mkdir :*:text_cache:\/known_good / [0.1]
+			syscall () () /mkdir :*:text_cache:\/known_spam / [0.1]
+			syscall () () /mkdir :*:text_cache:\/empty / [0.1]
+        }
+		call /:verbosity:/ [reavercache_init: subtree created]
     }
 }
 return
@@ -480,17 +500,25 @@ return
 	match [:text_cache:] /./   # Don't store it if no reavercache desired
 	call /:verbosity:/ [reavercache_store: going to store mail (flag: :*:text_cache:)]
 	isolate (:system_time: :msg_hash:) //
-	syscall () (:system_time:) /date +%Y%m%d_%H%M%S_%N / /[Windows-MS] date \/T && time \/T / [0.1]  # Win32: GROT GROT GROT!
-	call /:verbosity:/ [reavercache_store: date determined @ ':*:system_time:']
-	match [:system_time:] ( :: :cacheid: :cacheid2nd: ) /([[:graph:]]+)[^[:graph:]]*([[:graph:]]*)/
-	call /:verbosity:/ [reavercache_store: of which remains: ':*:cacheid:' + ':*:cacheid2nd:' ]
 	{
-		eval /:@: :#:cacheid2nd: > 0 /
+		match [:_hosttype:] /Windows-MS/
+		call /:verbosity:/ [reavercache_store: date determine for Win32]
+		syscall () (:system_time:) /date \/T && time \/T / [2.0 0.1]  # Win32: GROT GROT GROT!
+		call /:verbosity:/ [reavercache_store: date determined @ ':*:system_time:']
+		match [:system_time:] ( :: :cacheid: :cacheid2nd: ) /([[:graph:]]+)[^[:graph:]]*([[:graph:]]*)/
+		call /:verbosity:/ [reavercache_store: of which remains: ':*:cacheid:' + ':*:cacheid2nd:' ]
 		call /:verbosity:/ [reavercache_store: going to merge date and time into one line now for MS Windows]
-		alter (:cacheid:) /:*:cacheid::@:_:*:cacheid2nd:/
+		alter (:cacheid:) /:*:cacheid:_:*:cacheid2nd:/
 		call /:verbosity:/ [reavercache_store: before correction: ':*:cacheid:']
 		translate (:cacheid:) [:cacheid:] /^0-9_-/ //
 		call /:verbosity:/ [reavercache_store: after correction: ':*:cacheid:']
+	}
+	alius
+	{
+		syscall () (:system_time:) /date +%Y%m%d_%H%M%S_%N / 
+		call /:verbosity:/ [reavercache_store: date determined @ ':*:system_time:']
+		match [:system_time:] ( :: :cacheid: ) /([[:graph:]]+)..../
+		call /:verbosity:/ [reavercache_store: UNIX time: ':*:cacheid:']
 	}
 	call /:verbosity:/ [reavercache_store: cacheid: ':*:cacheid:']
 	hash (:msg_hash:) /:*:text:/

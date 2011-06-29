@@ -166,6 +166,9 @@
 //
 //          maximum number of weight vectors to be applied to the pipeline
 #define UNIFIED_VECTOR_LIMIT 256
+//
+//          maximum stride width for VT == maximum number of matrices to use.
+#define UNIFIED_VECTOR_STRIDE 4
 
 ////
 //         Winnow algorithm parameters here...
@@ -395,7 +398,7 @@
 
 
 
-#define CRM_WITH_OLD_HASH_FUNCTION         1
+// #define CRM_WITH_OLD_HASH_FUNCTION         1 -- [i_a] not used anymore
 
 #define CRM114_TEXT_HEADERBLOCK_SIZE       (4 * 1024)
 #define CRM114_MACHINE_HEADERBLOCK_SIZE    (4 * 1024)
@@ -407,9 +410,6 @@
 
 #undef CRM_WITHOUT_NEURAL_NET
 #define CRM_WITHOUT_NEURAL_NET 1
-
-#undef CRM_WITHOUT_SCM
-#define CRM_WITHOUT_SCM 1
 
 #undef CRM_WITHOUT_SKS
 #define CRM_WITHOUT_SKS 1

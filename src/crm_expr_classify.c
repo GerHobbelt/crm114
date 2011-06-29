@@ -51,7 +51,8 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txt,
             &start,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (i < 0)
     {
@@ -161,12 +162,14 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
     //  Use crm_restrictvar to get start & length to look at.
-    i = crm_restrictvar(box_text, apb->b1len,
+  i = crm_restrictvar(box_text, 
+		      apb->b1len, 
             NULL,
             &txt,
             &start,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -275,7 +278,8 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txt,
             &start,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -386,7 +390,8 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txt,
             &start,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -495,7 +500,8 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txt,
             &start,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -603,7 +609,8 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txt,
             &start,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -712,7 +719,8 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txt,
             &start,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -821,7 +829,8 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txt,
             &start,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -930,7 +939,8 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txt,
             &start,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (i > 0)
     {

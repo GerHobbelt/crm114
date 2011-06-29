@@ -96,11 +96,8 @@ int crm_vector_tokenize
         const char          *text,            // input string (null-safe!)
         int                  textlen,         //   how many bytes of input.
         int                  start_offset,    //     start tokenizing at this byte.
-        const char          *regex,           // the parsing regex (might be ignored)
-        int                  regexlen,        //   length of the parsing regex
-        const crmhash_t     *coeff_array,     // the pipeline coefficient control array
-        int                  pipe_len,        //  how long a pipeline (== coeff_array col height)
-        int                  pipe_iters,      //  how many rows are there in coeff_array
+        const VT_USERDEF_TOKENIZER *tokenizer,           // the parsing regex (might be ignored)
+        const VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
         crmhash_t           *features,        // where the output features go
         int                  featureslen,     //   how many output features (max)
         int                  features_stride, //   Spacing (in words) between features
@@ -178,7 +175,6 @@ int crm_vector_tokenize
         {
             //   Not done,we have another token (the text in text[match[0].rm_so,
             //    of length match[0].rm_eo - match[0].rm_so size)
-
             //
             if (user_trace)
             {
@@ -208,13 +204,8 @@ int crm_vector_tokenize
             //
             // for (i = UNIFIED_WINDOW_LEN; i > 0; i--)  // GerH points out that
             //  hashpipe [i] = hashpipe[i-1];            //  this smashes stack
-#if 0
-            for (i = UNIFIED_WINDOW_LEN - 1; i > 0; i--)
-                hashpipe[i] = hashpipe[i - 1];
-#else
             memmove(&hashpipe[1], hashpipe,
                     sizeof(hashpipe) - sizeof(hashpipe[0]));
-#endif
 
             hashpipe[0] = strnhash(&text[match[0].rm_so + text_offset],
                     match[0].rm_eo - match[0].rm_so);
@@ -224,10 +215,33 @@ int crm_vector_tokenize
             //
             for (irow = 0; irow < pipe_iters; irow++)
             {
-                crmhash_t ihash = 0;
+				// as we are creating a new hash from the combined tokens, it's better to not use the 
+				// old 'universal hash' method (new hash = old hash + position dependent multiplier * token hash)
+				// as there are hash methods available which has much better avalanche behaviour.
+				//
+				// Hence we'll use those by storing the hashes as is, then feeding it to the hash routine
+				// as if this collection of token hashes is input:
+#if 0
+				crmhash_t ihash = 0;
 
                 for (icol = 0; icol < pipe_len; icol++)
+				{
                     ihash += hashpipe[icol] * coeff_array[(pipe_len * irow) + icol];
+				}
+#else
+				crmhash_t ihash;
+			    crmhash_t collected_tokens[UNIFIED_WINDOW_LEN];  
+
+				for (icol = 0; icol < pipe_len; icol++)
+				{
+					crmhash_t universal_multiplier = coeff_array[(pipe_len * irow) + icol];
+					// assert: make sure the multiplier values are odd for proper spread.
+					CRM_ASSERT(universal_multiplier == 0 ? TRUE : (universal_multiplier & 1));
+					collected_tokens[icol] = hashpipe[icol] * universal_multiplier;
+				}
+            ihash = strnhash((const char *)&collected_tokens[0],
+                    pipe_len * sizeof(collected_tokens[0]));
+#endif
 
                 //    Stuff the final ihash value into features array
                 features[*features_out] = ihash;
@@ -357,8 +371,9 @@ static const crmhash_t unigram_coeff[] =
 //
 //     Now, some nice, easy-to-use code wrappers for commonly used
 //     versions of the vector tokenizer
+//
 //////////////////////////////////////////////////////////////////////////
-
+//
 //  crm_vector_tokenize_selector is the "single interface" to get
 //  the right vector tokenizer result given an classifier algorithm default,
 //  an int64 "flags", and a coeff vector with pipelen and pipe_iters
@@ -379,11 +394,8 @@ int crm_vector_tokenize_selector
         const char           *text,         // input string (null-safe!)
         int                   textlen,      //   how many bytes of input.
         int                   start_offset, //     start tokenizing at this byte.
-        const char           *regex,        // the parsing regex (might be ignored)
-        int                   regexlen,     //   length of the parsing regex
-        const crmhash_t      *coeff_array,  // the pipeline coefficient control array
-        int                   pipe_len,     //  how long a pipeline (== coeff_array col length)
-        int                   pipe_iters,   //  how many rows are there in coeff_array
+        const VT_USERDEF_TOKENIZER *tokenizer,        // the parsing regex (might be ignored)
+        const VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
         crmhash_t            *features,     // where the output features go
         int                   featureslen,  //   how many output features (max)
         int                  *features_out, // how many longs did we actually use up
@@ -407,20 +419,16 @@ int crm_vector_tokenize_selector
     //    should have been the same.
     //
     int64_t classifier_flags;
-    int featurebits;
 
-    const crmhash_t *hash_vec0;
-    int hash_len0;
-    int hash_iters0;
-    const crmhash_t *hash_vec1;
-    int hash_len1;
-    int hash_iters1;
+	const crmhash_t *hash_vec[UNIFIED_VECTOR_STRIDE] = {0};
+	int hash_len[UNIFIED_VECTOR_STRIDE] = {0};
+	int hash_iters[UNIFIED_VECTOR_STRIDE] = {0};
     int output_stride;
     const char *my_regex;
     int my_regex_len;
 
     // For slash-embedded pipeline definitions.
-    crmhash_t ca[UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];
+    crmhash_t ca[UNIFIED_VECTOR_STRIDE * UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];
 
     const char *string_kern_regex = ".";
     int string_kern_regex_len = 1;
@@ -429,13 +437,12 @@ int crm_vector_tokenize_selector
     //    Default is always the OSB featureset, 32-bit features.
     //
     classifier_flags = apb->sflags;
-    featurebits = 32;
-    hash_vec0 = osb1_coeff;
-  hash_len0 = OSB_BAYES_WINDOW_LEN;    // was 5
-  hash_iters0 = WIDTHOF(osb1_coeff) / OSB_BAYES_WINDOW_LEN; // should be 4
-  hash_vec1 = osb2_coeff;
-  hash_len1 = OSB_BAYES_WINDOW_LEN;     // was 5
-  hash_iters1 = WIDTHOF(osb2_coeff) / OSB_BAYES_WINDOW_LEN; // should be 4
+    hash_vec[0] = osb1_coeff;
+  hash_len[0] = OSB_BAYES_WINDOW_LEN;    // was 5
+  hash_iters[0] = WIDTHOF(osb1_coeff) / OSB_BAYES_WINDOW_LEN; // should be 4
+  hash_vec[1] = osb2_coeff;
+  hash_len[1] = OSB_BAYES_WINDOW_LEN;     // was 5
+  hash_iters[1] = WIDTHOF(osb2_coeff) / OSB_BAYES_WINDOW_LEN; // should be 4
     output_stride = 1;
 
     //    put in the passed-in regex values, if any.
@@ -448,14 +455,14 @@ int crm_vector_tokenize_selector
     //    If it's the Markov classifier, then different coeffs and a longer len
     if (classifier_flags & CRM_MARKOVIAN)
     {
-        hash_vec0 = markov1_coeff;
-        hash_vec1 = markov2_coeff;
-        hash_iters0 = WIDTHOF(markov1_coeff) / OSB_BAYES_WINDOW_LEN /* 16 */;
-        hash_iters1 = WIDTHOF(markov2_coeff) / OSB_BAYES_WINDOW_LEN /* 16 */;
+        hash_vec[0] = markov1_coeff;
+        hash_vec[1] = markov2_coeff;
+        hash_iters[0] = WIDTHOF(markov1_coeff) / OSB_BAYES_WINDOW_LEN /* 16 */;
+        hash_iters[1] = WIDTHOF(markov2_coeff) / OSB_BAYES_WINDOW_LEN /* 16 */;
     }
 
-    //     If it's one of the 64-bit-key classifiers, then the featurebits
-    //     need to be 64.
+    //     If it's one of the dual-hash (= 64-bit-key) classifiers, then the featurebits
+    //     need to be 64 --> stride = 2 (x 32 bits).
     if (classifier_flags & CRM_MARKOVIAN
         || classifier_flags & CRM_OSB
         || classifier_flags & CRM_WINNOW
@@ -463,7 +470,6 @@ int crm_vector_tokenize_selector
        )
     {
         //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
-        featurebits = 64;
         output_stride = 2;
     }
 
@@ -473,12 +479,12 @@ int crm_vector_tokenize_selector
     if (classifier_flags & CRM_STRING)
     {
         //      fprintf (stderr, "String Kernel");
-        hash_vec0 = string1_coeff;
-        hash_len0 = 5;
-        hash_iters0 = 1;
-        hash_vec1 = string2_coeff;
-        hash_len1 = 5;
-        hash_iters1 = 1;
+        hash_vec[0] = string1_coeff;
+        hash_len[0] = 5;
+        hash_iters[0] = 1;
+        hash_vec[1] = string2_coeff;
+        hash_len[1] = 5;
+        hash_iters[1] = 1;
         if (!my_regex)
         {
             my_regex = string_kern_regex;
@@ -490,12 +496,12 @@ int crm_vector_tokenize_selector
     //     things.
     if (classifier_flags & CRM_UNIGRAM)
     {
-        hash_vec0 = unigram_coeff;
-        hash_len0 = 1;
-        hash_iters0 = 1;
-        hash_vec1 = unigram_coeff;
-        hash_len1 = 1;
-        hash_iters1 = 1;
+    for (i = 0; i < output_stride; i++)
+    {
+        hash_vec[i] = unigram_coeff;
+        hash_len[i] = 1;
+        hash_iters[i] = 1;
+	}
     }
 
 
@@ -506,9 +512,9 @@ int crm_vector_tokenize_selector
   
   //     First check- did the user override the regex?
 
-  //    Did the user program specify a first slash paramter?  (only
+  //    Did the user program specify a first slash parameter?  (only
   //    override this if a regex was passed in)
-  if (! regex)
+  if (!regex)
     {
 		int s1len;
     char s1text[MAX_PATTERN]; 
@@ -518,166 +524,82 @@ int crm_vector_tokenize_selector
       s1len = crm_nexpandvar (s1text, s1len, MAX_PATTERN);
       my_regex = s1text;
       my_regex_len = s1len;
-    };
+    }
 
 
   //      Did the user specify a pipeline vector set ?   If so, it's
   //      in the second set of slashes.
-  {
-        char s2text[MAX_PATTERN];
-        int s2len;
-        int local_pipe_len;
-        int local_pipe_iters;
-        char *vt_weight_regex = "vector: ([ 0-9]*)";
-        regex_t regcb;
-        int regex_status;
-        regmatch_t match[5]; //  We'll only care about the second match
+  //
+  // Moved To EXtra Function
+  //
 
-        local_pipe_len = 0;
-        local_pipe_iters = 0;
-
-        //     get the second slash parameter (if used at all)
-        crm_get_pgm_arg(s2text, MAX_PATTERN, apb->s2start, apb->s2len);
-        s2len = apb->s2len;
-        s2len = crm_nexpandvar(s2text, s2len, MAX_PATTERN);
-
-        if (s2len > 0)
-        {
-            //   Compile up the regex to find the vector tokenizer weights
-            crm_regcomp
-            (&regcb, vt_weight_regex, strlen(vt_weight_regex),
-                    REG_ICASE | REG_EXTENDED);
-
-            //   Use the regex to find the vector tokenizer weights
-            regex_status =  crm_regexec(&regcb,
-                    s2text,
-                    s2len,
-                    5,
-                    match,
-                    REG_EXTENDED,
-                    NULL);
-
-            //   Did we actually get a match for the extended parameters?
-            if (regex_status == 0)
-            {
-                char *conv_ptr;
-                int i;
-
-                //  Yes, it matched.  Set up the pipeline coeffs specially.
-                //   The first parameter is the pipe length
-                conv_ptr = &s2text[match[1].rm_so];
-                local_pipe_len = strtol(conv_ptr, &conv_ptr, 0);
-                if (local_pipe_len > UNIFIED_WINDOW_LEN)
-                {
-                    nonfatalerror("You've specified a tokenizer pipe length "
-                                  "that is too long.", "  I'll trim it.");
-                    local_pipe_len = UNIFIED_WINDOW_LEN;
-                }
-                //fprintf (stderr, "local_pipe_len = %d\n", local_pipe_len);
-                //   The second parameter is the number of repeats
-                local_pipe_iters = strtol(conv_ptr, &conv_ptr, 0);
-                if (local_pipe_iters > UNIFIED_VECTOR_LIMIT)
-                {
-                    nonfatalerror("You've specified too high a tokenizer "
-                                  "iteration count.", "  I'll trim it.");
-                    local_pipe_iters = UNIFIED_VECTOR_LIMIT;
-                }
-                //fprintf (stderr, "pipe_iters = %d\n", local_pipe_iters);
-
-                //    Now, get the coefficients.
-                for (i = 0; i < local_pipe_len * local_pipe_iters; i++)
-                {
-                    ca[i] = strtol(conv_ptr, &conv_ptr, 0);
-                    //  fprintf (stderr, "coeff: %d\n", ca[i]);
-                }
-
-                //   If there was a numeric coeff array, use that, else
-                //   use our slash coeff array.
-                if (!coeff_array)
-                {
-                    coeff_array = ca;
-                    pipe_len = local_pipe_len;
-                    pipe_iters = local_pipe_iters;
-                }
-            }
-            //  free the compiled regex.
-            crm_regfree(&regcb);
-        }
-    }
-
-    //      if any non-default coeff array was given, use that instead.
+  //      if any non-default coeff array was given, use that instead.
     if (coeff_array)
     {
-        hash_vec0 = coeff_array;
-        //                    GROT GROT GROT --2nd array should be different from
-        //                    first array- how can we do that nonlinearly?
-        //                    This will work for now, but birthday clashes will
-        //                    happen more often in 64-bit featuresets
-        hash_vec1 = coeff_array;
+		int i;
+
+		if (pipe_stride < output_stride)
+		{
+
+		}
+		for (i = 0; i < pipe_stride; i++)
+		{
+			hash_vec[i] = coeff_array;
+		if (pipe_stride > 1)
+		{
+        hash_vec[1] = coeff_array;
+		}
     }
 
     if (pipe_len > 0)
     {
-        hash_len0 = pipe_len;
-        hash_len1 = pipe_len;
+    for (i = 0; i < output_stride; i++)
+    {
+        hash_len[i] = pipe_len;
+	}
     }
 
     if (pipe_iters > 0)
     {
-        hash_iters0 = pipe_iters;
-        hash_iters1 = pipe_iters;
+    for (i = 0; i < output_stride; i++)
+    {
+        hash_iters[i] = pipe_iters;
+	}
     }
 
     //    We now have our parameters all set, and we can run the vector hashing.
     //
-    if (output_stride == 1)
+	// Features for the different 'strides' are stored in interleaved format, e.g. 
+	// for stride=2 Markovian:
+	//
+	//   A
+	//   B
+	//   A
+	//   B
+	//   A
+	//   B
+	//   .
+	//   .
+	//   .
+	//
+    for (i = 0; i < output_stride; i++)
     {
-        crm_vector_tokenize(
+        int status = crm_vector_tokenize(
                 text,
                 textlen,
                 start_offset,
                 my_regex,
                 my_regex_len,
-                hash_vec0,
-                hash_len0,
-                hash_iters0,
-                features,
+                hash_vec[i],
+                hash_len[i],
+                hash_iters[i],
+                &features[i],
                 featureslen,
-                output_stride,                      //  stride 1 for 32-bit
+                output_stride,                      
                 features_out,
                 next_offset);
-    }
-    else
-    {
-        //        We're doing the 64-bit-int features for Markov/OSB
-        crm_vector_tokenize(
-                text,
-                textlen,
-                start_offset,
-                my_regex,
-                my_regex_len,
-                hash_vec0,
-                hash_len0,
-                hash_iters0,
-                features,
-                featureslen,
-                output_stride,                      //  stride 2 for 64-bit, offset 0
-                features_out,
-                next_offset);
-        crm_vector_tokenize(
-                text,
-                textlen,
-                start_offset,
-                my_regex,
-                my_regex_len,
-                hash_vec1,
-                hash_len1,
-                hash_iters1,
-                &features[1],
-                featureslen,
-                output_stride,                      //  stride 2 for 64-bit, offset 1 thanks to &features[1]
-                features_out,
-                next_offset);
+		if (status < 0)
+			return status;
     }
     return *features_out;
 }
@@ -705,8 +627,8 @@ int crm_vector_markov_1
             regex,
             regexlen,
             markov1_coeff,
-            5,
-            16,
+            MARKOVIAN_WINDOW_LEN,
+      WIDTHOF(markov1_coeff) / MARKOVIAN_WINDOW_LEN,  // should be 16
             features,
             featureslen,
             2,           //  stride 2 for 64-bit features
@@ -737,8 +659,8 @@ int crm_vector_markov_2
             regex,
             regexlen,
             markov2_coeff,
-            5,
-            16,
+            MARKOVIAN_WINDOW_LEN,
+      WIDTHOF(markov2_coeff) / MARKOVIAN_WINDOW_LEN,  // should be 16
             features,
             featureslen,
             2,              // Stride 2 for 64-bit features
@@ -877,7 +799,176 @@ int crm_vector_string_kernel2
 
 
 
+/*
+  Return coeff matrix in *coeff_matrix_ref; 
+  
+  *width, *height and *count are the parameters for the 3-dimensional matrix.
+
+  When *ca != NULL on input, it is assumed that *width, *height and *count 
+  point at the maximum sizes for each dimension.
+
+  When *ca == NULL on input, *ca will point to a malloc()ed 3-dimensional matrix
+  on successful return from this function.
+
+  In the latter case, any  *width, *height or *count non-zero value indicates a
+  valid 'sanity check' maximum size for that particular dimension.
+
+  When sanity/maximum sizes are surpassed, the function will produce an error message
+  in errmsg (maximum buffer size in errmsgsize) and return -2.
+
+  When other errors occur, such as failure to decode a matrix value element, this function
+  will write an error message to errmsg and return -1.
+
+  When successful, it will return 0.
+
+  On error, *coeff_matrix_ref nor *width, *height or *count will have been modified.
+*/
+int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX **userdefs_ref,  // the pipeline coefficient control array, etc.
+									const char *src, int srclen,
+									char *errmsg, int errmsgsize)
+  {
+        char s2text[MAX_PATTERN];
+        int s2len;
+        int local_pipe_len;
+        int local_pipe_iters;
+        regex_t regcb;
+        int regex_status;
+        regmatch_t match[5]; //  We'll only care about the second match
+
+                char *conv_ptr;
+                int i;
+
+        local_pipe_len = 0;
+        local_pipe_iters = 0;
+
+                //  Yes, it matched.  Set up the pipeline coeffs specially.
+                //   The first parameter is the pipe length
+                conv_ptr = &s2text[match[1].rm_so];
+                local_pipe_len = strtol(conv_ptr, &conv_ptr, 0);
+                if (local_pipe_len > UNIFIED_WINDOW_LEN)
+                {
+                    nonfatalerror("You've specified a tokenizer pipe length "
+                                  "that is too long.", "  I'll trim it.");
+                    local_pipe_len = UNIFIED_WINDOW_LEN;
+                }
+				if (internal_trace)
+                 fprintf (stderr, "local_pipe_len = %d\n", local_pipe_len);
+
+				//   The second parameter is the number of repeats
+                local_pipe_iters = strtol(conv_ptr, &conv_ptr, 0);
+                if (local_pipe_iters > UNIFIED_VECTOR_LIMIT)
+                {
+                    nonfatalerror("You've specified too high a tokenizer "
+                                  "iteration count.", "  I'll trim it.");
+                    local_pipe_iters = UNIFIED_VECTOR_LIMIT;
+                }
+				if (internal_trace)
+                  fprintf (stderr, "pipe_iters = %d\n", local_pipe_iters);
+
+                //    Now, get the coefficients.
+                for (i = 0; i < local_pipe_len * local_pipe_iters; i++)
+                {
+                    ca[i] = strtol(conv_ptr, &conv_ptr, 0);
+                    //  fprintf (stderr, "coeff: %d\n", ca[i]);
+                }
+				if (internal_trace)
+				{
+					int irow;
+					int icol;
+
+            for (irow = 0; irow < local_pipe_iters; irow++)
+            {
+                    fprintf (stderr, "coeff:");
+                for (icol = 0; icol < local_pipe_len; icol++)
+				{
+                    fprintf (stderr, " %6u", (unsigned int)ca[(local_pipe_len * irow) + icol]);
+				}
+                    fprintf (stderr, "\n");
+			}
+				}
+
+                //   If there was a numeric coeff array, use that, else
+                //   use our slash coeff array.
+                if (!coeff_array)
+                {
+                    coeff_array = ca;
+                    pipe_len = local_pipe_len;
+                    pipe_iters = local_pipe_iters;
+                }
+            }
+            //  free the compiled regex.
+            crm_regfree(&regcb);
+        }
+		return 0;
+    }
 
 
+
+
+
+
+int get_vt_vector_from_2nd_slasharg(crmhash_t **coeff_matrix_ref,
+									int *matrix_width_ref,
+									int *matrix_height_ref,
+									int *matrix_depth_ref,
+        const ARGPARSE_BLOCK       *apb,          // The args for this line of code
+									char *errmsg, int errmsgsize)
+  {
+        char s2text[MAX_PATTERN];
+        int s2len;
+        char *vt_weight_regex = "vector: ([ 0-9]*)";
+        regex_t regcb;
+        int regex_status;
+        regmatch_t match[5]; //  We'll only care about the second match
+
+        //     get the second slash parameter (if used at all)
+        crm_get_pgm_arg(s2text, MAX_PATTERN, apb->s2start, apb->s2len);
+        s2len = apb->s2len;
+        s2len = crm_nexpandvar(s2text, s2len, MAX_PATTERN);
+
+        if (s2len > 0)
+        {
+            //   Compile up the regex to find the vector tokenizer weights
+            regex_status = crm_regcomp(&regcb, vt_weight_regex, strlen(vt_weight_regex),
+                    REG_ICASE | REG_EXTENDED);
+			if (regex_status != 0)
+        {
+			char errmsg[1024];
+            
+			crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
+            nonfatalerror_ex(SRC_LOC(),
+				"Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
+                vt_weight_regex,
+                errmsg);
+			return -1;
+        }
+
+            //   Use the regex to find the vector tokenizer weights
+            regex_status = crm_regexec(&regcb,
+                    s2text,
+                    s2len,
+                    5,
+                    match,
+                    REG_EXTENDED,
+                    NULL);
+
+            //   Did we actually get a match for the extended parameters?
+            if (regex_status == 0)
+            {
+                //  Yes, it matched.  Set up the pipeline coeffs specially.
+                //   The first parameter is the pipe length
+                conv_ptr = &s2text[match[1].rm_so];
+
+
+				xxxx;
+			}
+		}
+		return 0;
+}
+
+
+
+
+Als je in de vector string , : en ; ondersteund, kun je direct copy-paste vanuit willekeurige Excel naar de matrix toe gooien.
 
 

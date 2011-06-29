@@ -193,7 +193,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &mdwptr,
             &source_start,
             &source_len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (internal_trace)
     {

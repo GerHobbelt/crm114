@@ -40,10 +40,10 @@ const FLAG_DEF crm_flags[] =
     { "basic", CRM_BASIC },
     { "backwards", CRM_BACKWARDS },
     { "literal", CRM_LITERAL },
-    { "nomultiline", CRM_BYLINE }, /* bit 10 */
+    { "nomultiline", CRM_NOMULTILINE }, /* bit 10 */
     { "byline", CRM_BYLINE },      /* bit 10 */
     { "bychar", CRM_BYCHAR },
-    { "string", CRM_BYCHAR },
+    { "string", CRM_STRING },
     { "bychunk", CRM_BYCHUNK },
     { "byeof", CRM_BYEOF },
     { "eofaccepts", CRM_EOFACCEPTS },

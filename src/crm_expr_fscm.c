@@ -214,6 +214,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
             CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
             classifier_info.classifier_bits = CRM_FSCM;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
             if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
             {

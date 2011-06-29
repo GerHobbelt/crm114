@@ -343,16 +343,32 @@ static int hidden_layer_size = NN_HIDDEN_LAYER_SIZE;
 
 
 /*
- * Another (as yet unimplemented) idea is to stripe the retina in a
- * pattern such that each neuron is "up against" every other neuron at
- * least once, but not as many times as the current "full crossbar"
- * system, which takes a long time to train.
- *
- * One way to do this is to label the points onto a fully connected graph
- * nodes, and then to take the graph nodes in pairwise (or larger) groups
- * such as, on edges, faces, or hyperfaces, so that every graph node is
- * taken against every other node and hence every input at one level is
- * "against" every other input.  However, we haven't implemented this.
+Another (as yet unimplemented) idea is to stripe the retina in a
+pattern such that each neuron is "up against" every other neuron at
+least once, but not as many times as the current "full crossbar"
+system, which takes a long time to train.
+
+One way to do this is to label the points onto a fully connected graph
+nodes, and then to take the graph nodes in pairwise (or larger) groups
+such as, on edges, faces, or hyperfaces, so that every graph node is
+taken against every other node and hence every input at one level is
+"against" every other input.  However, we haven't implemented this.
+
+Another yet unimplemented option is to go with a square "Hopfield"
+type network instead of the three-layer Kohonen network implemented
+here.  The problem with the Hopfield network is that although the
+learning method is simpler (simple Hebbian learning works - that is,
+clamp the known inputs and known outputs, then for each neuron if the
+inputs match outputs, increase the weights, else decrease the
+weights.) However, in a Hopfield the learning ability is smaller; for
+N neurons the number of patterns that can be learned is only N / (2
+log N), from McLiece (1987).  So, with 1000 neurons (1,000,000 coeffs,
+or a 4 megabyte backing storage file) we could learn only about 70
+patterns.
+
+This isn't to say we'll never implement a modified Hopfield net
+(with a large number of clamped "neurons") but it's not here yet.
+
  */
 
 
@@ -373,6 +389,7 @@ static int make_new_backing_file(const char *filename)
     }
 
     classifier_info.classifier_bits = CRM_NEURAL_NET;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
     if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
     {
@@ -923,8 +940,7 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     //     previously precompiled regex) and use the automagical code in
     //     vector_tokenize_selector to get the "right" parse regex from the
     //     user program's APB.
-    crm_vector_tokenize_selector
-    (apb,                     // the APB
+    crm_vector_tokenize_selector(apb,                     // the APB
         text,                 // intput string
         text_len,             // how many bytes
         0,                    // starting offset
@@ -1019,8 +1035,7 @@ static void nuke(NEURAL_NET_STRUCT *nn, int flag)
 //   Entry point for learning
 //    Basically, we use gradient descent.
 //
-int crm_neural_net_learn
-(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
  char *txtptr, int txtstart, int txtlen)
 {
     NEURAL_NET_STRUCT my_nn, *nn = &my_nn;
@@ -1352,7 +1367,7 @@ int crm_neural_net_learn
                 }
 
                 out_of_class = !!(apb->sflags & CRM_REFUTE);  // change bitpat to 1 bit
-                // if (out_of_class != 0) out_of_class = 1; // change bitpat to 1 bit
+                // if (out_of_class != 0) out_of_class = 1; -- [i_a] // change bitpat to 1 bit
                 if (internal_trace)
                 {
                     fprintf(stderr, "Sense writing %d\n", out_of_class);

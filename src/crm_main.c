@@ -311,6 +311,8 @@ int main(int argc, char **argv)
 	// force MSwin/Win32 console I/O into binary mode: treat \r\n and \n as completely different - like it is on *NIX boxes!
 #if defined(HAVE__SETMODE) && defined(HAVE__FILENO) && defined(O_BINARY)
 	(void)_setmode(_fileno(crm_stdin), O_BINARY);
+	(void)_setmode(_fileno(crm_stdout), O_BINARY);
+	(void)_setmode(_fileno(crm_stderr), O_BINARY);
 #endif
 
     //   copy program path/name into global static...
@@ -328,7 +330,7 @@ int main(int argc, char **argv)
     microgroom_stop_after = 0;
     min_pmax_pmin_ratio = OSBF_MIN_PMAX_PMIN_RATIO;
     ignore_environment_vars = 0;
-    debug_countdown = -1;
+    debug_countdown = -2; /* [i_a] special signal: debugger disabled, unless 'debug' command is found. */
     cycle_counter = 0;
     cmdline_break = -1;
     profile_execution = 0;
@@ -393,7 +395,7 @@ int main(int argc, char **argv)
             fprintf(stderr, " -b nn   sets a breakpoint on stmt nn\n");
             fprintf(stderr, " -d nn   run nn statements, then drop to debug\n");
             fprintf(stderr, " -e      ignore environment variables\n");
-            fprintf(stderr, " -E      set base for engine exit values\n");
+            fprintf(stderr, " -E nn   set base nn for engine exit values\n");
             fprintf(stderr, " -h      this help\n");
             fprintf(stderr, " -H n    select hash function N - handle this with the utmost care! (default=0)\n");
             fprintf(stderr, " -l n    listing (detail level 1 through 5)\n");
@@ -719,11 +721,10 @@ int main(int argc, char **argv)
             {
                 if (1 != sscanf(argv[i], "%d", &debug_countdown))
                 {
-#if 0
-					untrappableerror("Failed to decode the numeric -d argument [debug statement countdown]: ", argv[i]);
-#endif
+					// optional argument!
 					//  if next arg wasn't numeric, back up
 					i--;
+					// untrappableerror("Failed to decode the numeric -d argument [debug statement countdown]: ", argv[i]);
                 }
             }
             if (user_trace)
@@ -862,16 +863,6 @@ int main(int argc, char **argv)
 
 #if !defined (CRM_WITHOUT_OSB_WINNOW)
             snprintf(dst, len, "  OSB-Winnow\n");
-            dst[len - 1] = 0;
-            partlen = strlen(dst);
-            dst += partlen;
-            len -= partlen;
-#else
-            all_included = 0;
-#endif
-
-#if !defined (CRM_WITHOUT_SCM)
-            snprintf(dst, len, "  SCM\n");
             dst[len - 1] = 0;
             partlen = strlen(dst);
             dst += partlen;

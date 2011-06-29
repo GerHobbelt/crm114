@@ -19,7 +19,7 @@
 #    Auto shufflecount is based on the observation that the amount of data
 #    needed per unit is >= log2 (# of units).  So, if we execute that many
 #    passes we have effectively put enough "bits" into the shuffle.
-#    On the other hand, since there are more than one way to get to a
+#    On the other hand, since there is more than one way to get to a
 #    particular shuffle location, there is "aliasing", so we want something
 #    with significantly more bits than log2(#units).
 #  

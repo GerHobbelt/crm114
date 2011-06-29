@@ -293,15 +293,17 @@ typedef struct mythical_entropy_cell
 #define CRM_PMULC 32         // pmulc translates tokens to cluster names
 #define CRM_LAZY 33          // makes a "lazy" variable.  // [i_a] NOT IMPLEMENTED
 #define CRM_MUTATE 34
-#define CRM_CSS_MERGE 35
-#define CRM_CSS_DIFF 36
-#define CRM_CSS_BACKUP 37
-#define CRM_CSS_RESTORE 38
-#define CRM_CSS_INFO 39
-#define CRM_CSS_ANALYZE 40
-#define CRM_CSS_CREATE 41
+#define CRM_SORT 35
+#define CRM_CSS_MERGE 36
+#define CRM_CSS_DIFF 37
+#define CRM_CSS_BACKUP 38
+#define CRM_CSS_RESTORE 39
+#define CRM_CSS_INFO 40
+#define CRM_CSS_ANALYZE 41
+#define CRM_CSS_CREATE 42
+#define CRM_INSERT 43
 
-#define CRM_UNIMPLEMENTED 42
+#define CRM_UNIMPLEMENTED 44
 
 
 
@@ -474,6 +476,7 @@ typedef struct mythical_stmt_type
 typedef struct crm_porta_header_info
 {
     int64_t classifier_bits;
+	int32_t hash_version_in_use;
     union
     {
         char args[512];

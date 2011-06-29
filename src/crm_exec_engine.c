@@ -183,9 +183,9 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
     if (debug_countdown > 0)
         debug_countdown--;
     if (debug_countdown == 0
-        || csl->mct[csl->cstmt]->stmt_break == 1)
+        || csl->mct[csl->cstmt]->stmt_break)
     {
-        i = crm_debugger();
+		i = crm_debugger(csl, (csl->mct[csl->cstmt]->stmt_break ? CRM_DBG_REASON_BREAKPOINT : CRM_DBG_REASON_UNDEFINED));
         if (i == -1)
         {
             if (engine_exit_base != 0)
@@ -204,6 +204,17 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
     if (user_trace)
     {
         fprintf(stderr, "\nExecuting line %d :\n", csl->cstmt);
+        fprintf(stderr, " -->  ");
+#if 0
+        for (i = 0; i < slen; i++)
+            fprintf(stderr, "%c",
+                    csl->filetext[csl->mct[csl->cstmt]->fchar + i]);
+#else
+			memnCdump(stderr, 
+csl->filetext + csl->mct[csl->cstmt]->fchar,
+	slen);
+#endif
+        fprintf(stderr, "\n");
     }
 
 
@@ -285,7 +296,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //      exit (retval);
             status = retval;
             done = 1;
-            goto invoke_exit;
+            goto invoke_done;
         }
         break;
 
@@ -672,6 +683,14 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 		crm_expr_mutate(csl, apb);
 #else
 		fatalerror("Shucks, this version, like, does not (yet) support the MUTATE command, like, you know? ", "This is _so_ unfair!");
+#endif
+		break;
+
+    case CRM_SORT:
+#if 0
+		crm_expr_sort(csl, apb);
+#else
+		fatalerror("Shucks, this version, like, does not (yet) support the SORT command, like, you know? ", "This is _so_ unfair!");
 #endif
 		break;
 
@@ -1194,6 +1213,29 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
         if (user_trace)
             fprintf(stderr, "executing a DEBUG statement - drop to debug\n");
         debug_countdown = 0;
+		// we need to call the debugger here, because otherwise we get 'fringe' errors because
+		// we would not be able to determine _inside_ the debugger, when the current_statement-1 points
+		// at a CRM_DEBUG opcode such as this one, if the debugger was actually triggered from an
+		// embedded debug statement or from a previous debugger instruction, which just ended us
+		// at debug-line+1, such as some 'j' command.
+		//
+		// Hence we're going to tell the debugger explicitly it was this 'debug' command that
+		// caused it to be called; the debugger then MUST pop up and any run-N-statements or
+		// step-out/until-return/whatever runs will be forcibly aborted.
+		i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_STATEMENT);
+        if (i == -1)
+        {
+            if (engine_exit_base != 0)
+            {
+                exit(engine_exit_base + 6);
+            }
+            else
+            {
+                exit(EXIT_SUCCESS);
+            }
+        }
+        if (i == 1)
+            goto invoke_top;
         break;
 
     case CRM_CLUMP:
@@ -1260,13 +1302,41 @@ invoke_bailout:
 
 invoke_done:
 
-    //     give the debugger one last chance to do things.
-    if (debug_countdown == 0)
-        i = crm_debugger();
-    if (csl->cstmt < csl->nstmts)
-        goto invoke_top;
+    //  grab end-of-statement timers ?
+    if (profile_execution)
+    {
+        times(&timer2);
+        csl->mct[tstmt]->stmt_utime += (timer2.tms_utime - timer1.tms_utime);
+        csl->mct[tstmt]->stmt_stime += (timer2.tms_stime - timer1.tms_stime);
+    }
 
-invoke_exit:
+	//     give the debugger one last chance to do things.
+    if (debug_countdown > -2) // also pop up the debugger when in 'continue' or 'counted' run
+	{
+		int end_stmt_nr = csl->cstmt;
+
+		i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_END_OF_PROGRAM);
+        if (i == -1)
+        {
+            if (engine_exit_base != 0)
+            {
+                exit(engine_exit_base + 6);
+            }
+            else
+            {
+                exit(EXIT_SUCCESS);
+            }
+        }
+        // prevent looping when 'fail'ing to end from inside the debugger, as we're already there anyhow.
+		if (i == 1)
+		{
+		if (csl->cstmt < csl->nstmts && end_stmt_nr != csl->cstmt)
+		{
+			// only loop when debugger actually _changed_ the execution position!
+			goto invoke_top;
+		}
+		}
+	}
 
     //     if we asked for an output profile, give it to us.
     if (profile_execution)

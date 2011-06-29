@@ -174,7 +174,7 @@
 //                                                  space padding rule: a
 //                                                  zero-padded number!
 //
-//    Host Type       20                "windows-MS:" (host type as
+//    Host Type       20                "Windows-MS:" (host type as
 //                                         determined by the ./configure
 //                                         script. If unknown, use "???" or
 //                                         "unknown" instead)
@@ -1096,6 +1096,12 @@ int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_n
             if (!(acceptable_classifiers & d->classifier_info.classifier_bits))
                 return 10;
         }
+		
+		if (d->classifier_info.hash_version_in_use != selected_hashfunction)
+		{
+			return 11;
+		}
+
 
 
 
@@ -1109,7 +1115,7 @@ int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_n
 
             e = strstr(p, "EOF\nexit;\n" CRM_PORTABILITY_HEADER_TEXT_SENTINEL);
             if (!e)
-                return 11;
+                return 42;
 
             len = e - p;
             if (len > 0)

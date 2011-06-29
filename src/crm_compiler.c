@@ -29,15 +29,15 @@ static const STMT_TABLE_TYPE stmt_table[] =
     //  text         internal       nlen exec?  min max   min max  min max  flags
     //   rep           code                    slashargs  parens    boxes   
     //
-    { "\n",        CRM_NOOP,          1,  0,     0,  0,    0,  0,   0,  0,    0 },
-    { ";",         CRM_NOOP,          1,  0,     0,  0,    0,  0,   0,  0,    0 }, /* [i_a] added */
+	{ "\n",        CRM_BOGUS,         1,  0,     0,  0,    0,  0,   0,  0,    0 }, /* [i_a] this is also the item used for the CRM_BOGUS sentinel */
+	{ ";",         CRM_NOOP,          1,  0,     0,  0,    0,  0,   0,  0,    0 }, /* [i_a] added */
     { "#",         CRM_NOOP,          1,  0,     0,  0,    0,  0,   0,  0,    0 },
-    { "insert",    CRM_NOOP,          6,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { "insert",    CRM_INSERT,        6,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "noop",      CRM_NOOP,          4,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "exit",      CRM_EXIT,          4,  1,     0,  0,    0,  1,   0,  0,    0 },
-    { "{",   CRM_OPENBRACKET,         1,  0,     0,  0,    0,  0,   0,  0,    0 },
-    { "}",   CRM_CLOSEBRACKET,        1,  0,     0,  0,    0,  0,   0,  0,    0 },
-    { "goto",      CRM_GOTO,          4,  0,     1,  1,    0,  0,   0,  0,    0 },
+	{ "{",         CRM_OPENBRACKET,   1,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { "}",         CRM_CLOSEBRACKET,  1,  0,     0,  0,    0,  0,   0,  0,    0 },
+	{ "goto",      CRM_GOTO,          4,  0,     1,  1,    0,  0,   0,  0,    0 },
     { "match",     CRM_MATCH,         5,  1,     1,  1,    0,  1,   0,  1,    
       CRM_ABSENT | CRM_NOCASE | CRM_LITERAL | CRM_FROMSTART                 
       | CRM_FROMCURRENT | CRM_FROMNEXT | CRM_FROMEND | CRM_NEWEND           
@@ -71,9 +71,11 @@ static const STMT_TABLE_TYPE stmt_table[] =
     { "routine",   CRM_ROUTINE,       7,  1,     0,  0,    0,  0,   0,  0,    0 },
     { "return",    CRM_RETURN,        6,  1,     0,  1,    0,  0,   0,  0,    0 },
     { "debug",     CRM_DEBUG,         5,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { "lazy",      CRM_LAZY,          4,  1,     0,  1,    1,  1,   0,  0,  CRM_DEFAULT },
     { "clump",     CRM_CLUMP,         5,  1,     0,  1,    1,  1,   0,  1,  CRM_UNIQUE | CRM_UNIGRAM | CRM_BYCHUNK | CRM_REFUTE },
     { "pmulc",     CRM_PMULC,         5,  1,     0,  1,    0,  0,   0,  1,  CRM_UNIQUE | CRM_UNIGRAM | CRM_BYCHUNK | CRM_REFUTE },
-    { "mutate",    CRM_MUTATE,        7,  1,     0,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT },
+    { "mutate",    CRM_MUTATE,        7,  1,     0,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_BYCHAR | CRM_NOMULTILINE | CRM_BYLINE | CRM_BYCHUNK | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT | CRM_STRING | CRM_ABSENT },
+    { "sort",      CRM_SORT,          4,  1,     0,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_BYCHAR | CRM_NOMULTILINE | CRM_BYLINE | CRM_BYCHUNK | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT | CRM_STRING | CRM_BACKWARDS },
     { "cssmerge",  CRM_CSS_MERGE,     8,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT | CRM_UNIQUE | CRM_MICROGROOM },
     { "cssdiff",   CRM_CSS_DIFF,      7,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT | CRM_UNIQUE },
     { "cssbackup", CRM_CSS_BACKUP,    9,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT },
@@ -283,8 +285,8 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     //  have we seen an action statement yet?
     int seenaction;
 
-    //   counters for looking through the statemt archetype table.
-    int stab_idx;
+//    //   counters for looking through the statemt archetype table.
+//    int stab_idx;
 
     /* int stab_max; */
 
@@ -395,6 +397,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         csl->mct[stmtnum]->stmt_utime = 0;
         csl->mct[stmtnum]->stmt_stime = 0;
         csl->mct[stmtnum]->stmt_type = CRM_BOGUS;
+		csl->mct[stmtnum]->stmt_def = &stmt_table[0];
         csl->mct[stmtnum]->nest_level = bracketlevel;
         csl->mct[stmtnum]->fail_index = 0;
         csl->mct[stmtnum]->liaf_index = 0;
@@ -593,7 +596,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //            Fill in the MCT entry with what we've learned.
         //
         csl->mct[stmtnum]->stmt_type = stab_stmtcode;
-		csl->mct[stmtnum]->stmt_def = (stab_index >= 0 ? &stmt_table[stab_index] : NULL);
+		csl->mct[stmtnum]->stmt_def = (stab_index >= 0 ? &stmt_table[stab_index] : &stmt_table[0]);
         if (stab_stmtcode == CRM_OPENBRACKET)
         {
             bracketlevel++;

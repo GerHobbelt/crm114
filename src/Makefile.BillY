@@ -731,6 +731,10 @@ src_gzip: tarfile
 	rm -rf crm114-$(VERSION).src.tar.gz
 	gzip crm114-$(VERSION).src.tar
 
+src_7zip: tarfile
+	rm -rf crm114-$(VERSION).src.tar.7z
+	7za crm114-$(VERSION).src.tar.7z crm114-$(VERSION).src.tar
+
 i386_tarfile: all
 	rm -rf crm114-$(VERSION).i386
 	mkdir crm114-$(VERSION).i386
@@ -767,7 +771,7 @@ css_gzip: css_tarfile
 	rm -rf crm114-$(VERSION).css.tar.gz
 	gzip crm114-$(VERSION).css.tar
 
-distribution: src_gzip i386_gzip css_gzip
+distribution: src_gzip i386_gzip css_gzip src_7zip
 	md5sum crm114-$(VERSION).*.tar.gz
 
 rsync:  FORCE

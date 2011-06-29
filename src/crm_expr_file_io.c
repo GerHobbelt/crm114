@@ -117,9 +117,9 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             nonfatalerror_ex(SRC_LOC(), "Failed to decode the input expression pre-IO file offset number '%s'.",
                 fileoffset);
         }
-		if (user_trace)
-			fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
-				fileoffset, offset);
+        if (user_trace)
+            fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
+                fileoffset, offset);
     }
     else
     {
@@ -144,9 +144,9 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             iolen = 0;
         else if (iolen > data_window_size)
             iolen = data_window_size;
-		if (user_trace)
-			fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
-				fileiolen, iolen);
+        if (user_trace)
+            fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
+                fileiolen, iolen);
     }
     else
     {
@@ -252,47 +252,47 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
         if (use_readline && is_stdin_or_null(fp))
         {
-			fgets(inbuf, data_window_size - 1, (fp ? fp : stdin));
-            inbuf[data_window_size - 1] = 0; 
+            fgets(inbuf, data_window_size - 1, (fp ? fp : stdin));
+            inbuf[data_window_size - 1] = 0;
         }
 #endif
-		else
-		{
-        //        Are we in <byline> mode?  If so, read one char at a time.
-        if (!till_eof)
-        {
-            //    grab characters in a loop, terminated by EOF or newline
-            ichar = 0;
-            if (feof(fp))
-                clearerr(fp);
-            while (!feof(fp)
-                   && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
-                   && (till_eof || (ichar == 0 || inbuf[ichar - 1] != '\n'))
-                   && ichar <= iolen)
-            {
-                int c = fgetc(fp);
-                if (c != EOF)
-                {
-                    inbuf[ichar] = c;
-                    ichar++;
-                }
-            }
-            if (ichar > 0 && inbuf[ichar] == '\n')
-                ichar--; //   get rid of any present newline
-            // [i_a] GROT GROT GROT: how about MAC and PC (CR and CRLF instead of LF as line terminators) */
-            inbuf[ichar] = 0;   // and put a null on the end of it.
-        }
         else
         {
-            //    Nope, we are in full-block mode, read the whole block in
-            //    a single I/O if we can.
-            ichar = 0;
-            if (feof(fp))
-                clearerr(fp);                      // reset any EOF
-            ichar = fread(inbuf, 1, iolen, fp);    // do a block I/O
-            inbuf[ichar] = 0;                      // null at the end
+            //        Are we in <byline> mode?  If so, read one char at a time.
+            if (!till_eof)
+            {
+                //    grab characters in a loop, terminated by EOF or newline
+                ichar = 0;
+                if (feof(fp))
+                    clearerr(fp);
+                while (!feof(fp)
+                       && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
+                       && (till_eof || (ichar == 0 || inbuf[ichar - 1] != '\n'))
+                       && ichar <= iolen)
+                {
+                    int c = fgetc(fp);
+                    if (c != EOF)
+                    {
+                        inbuf[ichar] = c;
+                        ichar++;
+                    }
+                }
+                if (ichar > 0 && inbuf[ichar] == '\n')
+                    ichar--; //   get rid of any present newline
+                // [i_a] GROT GROT GROT: how about MAC and PC (CR and CRLF instead of LF as line terminators) */
+                inbuf[ichar] = 0; // and put a null on the end of it.
+            }
+            else
+            {
+                //    Nope, we are in full-block mode, read the whole block in
+                //    a single I/O if we can.
+                ichar = 0;
+                if (feof(fp))
+                    clearerr(fp);                   // reset any EOF
+                ichar = fread(inbuf, 1, iolen, fp); // do a block I/O
+                inbuf[ichar] = 0;                   // null at the end
+            }
         }
-		}
         crm_set_temp_nvar(vname, inbuf, ichar);
     }
 
@@ -500,13 +500,13 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     fnam);
             }
         }
-		 // [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster
-		if (isatty(fileno(outf)))
-		{
-			CRM_ASSERT(!file_was_fopened);
-			fflush(outf);
-		}
-		if (file_was_fopened)
+        // [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster
+        if (isatty(fileno(outf)))
+        {
+            CRM_ASSERT(!file_was_fopened);
+            fflush(outf);
+        }
+        if (file_was_fopened)
         {
             fclose(outf);
         }

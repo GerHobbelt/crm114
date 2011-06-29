@@ -630,7 +630,7 @@ isolate ( :spamcss: :nonspamcss: )
                   (:classify_status:)
                 match [:classify_status:] <nomultiline> \
                         /^#0.* pR: ([-. 0-9]+)/ (:: :pr:)
-                eval /:@: :*:pr: < :*:thick_threshold: :/
+                eval /:@: :*:pr: < :*:good_threshold: :/    # was comparison against 'think_threshold'
                 output [:*:fileprefix:nonspamtext.txt] \
                         <append> /\n\n:*:cmd_txt:\n/
                 #
@@ -639,9 +639,6 @@ isolate ( :spamcss: :nonspamcss: )
                 learn <:*:clf:> (:*:fileprefix::*:nonspamcss:) [:text:] /:*:lcr:/
                 call /:mungmail_add:/ [X-CRM114-Action: LEARNED NONSPAM]
                 call /:mungmail_unique:/ [X-CRM114-Status: Good (Learn)]
-                accept
-                exit /:*:accepted_mail_exit_code:/
-
                 accept
                 exit /:*:accepted_mail_exit_code:/
         }
@@ -728,7 +725,8 @@ isolate ( :spamcss: :nonspamcss: )
                     (:classify_status:)
             match [:classify_status:] <nomultiline> \
                     /^#0.* pR: ([-. 0-9]+)/ (:: :pr:)
-            eval /:@: :*:pr: < :*:thick_threshold: : /
+            # eval /:@: :*:pr: < (0 - :*:thick_threshold:) : /
+            eval /:@: :*:pr: < :*:spam_threshold: : /
             #
             #     write out the pre-mutilation text, with newlines
             #
@@ -741,22 +739,22 @@ isolate ( :spamcss: :nonspamcss: )
         }
         alius
         {
-                #    Did the user specify "--force" on the command line?
-                match [:force:] /SET/
-                #
-                #     write out the pre-mutilation text, with newlines
-                #
-                output [:*:fileprefix:spamtext.txt] <append> /\n\n:*:cmd_txt: \n/
-                learn < :*:clf:> (:*:fileprefix::*:spamcss:) [:text:] /:*:lcr:/
-                call /:mungmail_add:/ [X-CRM114-Action: LEARNED SPAM (FORCED)]
-                call /:mungmail_unique:/ [X-CRM114-Status: Good (Spam Learn)]
-                accept
-                exit /:*:accepted_mail_exit_code:/
+            #    Did the user specify "--force" on the command line?
+            match [:force:] /SET/
+            #
+            #     write out the pre-mutilation text, with newlines
+            #
+            output [:*:fileprefix:spamtext.txt] <append> /\n\n:*:cmd_txt: \n/
+            learn < :*:clf:> (:*:fileprefix::*:spamcss:) [:text:] /:*:lcr:/
+            call /:mungmail_add:/ [X-CRM114-Action: LEARNED SPAM (FORCED)]
+            call /:mungmail_unique:/ [X-CRM114-Status: Good (Spam Learn)]
+            accept
+            exit /:*:accepted_mail_exit_code:/
         }
         alius
         {
             call /:mungmail_add:/ [X-CRM114-Action: LEARN AS SPAM UNNECESSARY- ALREADY CLASSIFIED CORRECTLY - NO ACTION TAKEN]
-                call /:mungmail_unique:/ [X-CRM114-Status: Good (Spam Learn)]
+            call /:mungmail_unique:/ [X-CRM114-Status: Good (Spam Learn)]
 
             accept
             exit /:*:accepted_mail_exit_code:/

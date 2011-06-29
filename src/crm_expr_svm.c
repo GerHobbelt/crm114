@@ -1375,7 +1375,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
             if (user_trace)
                 fprintf(stderr, "Opening a svm file %s for append.\n", file1);
-            hashf = fopen(file1, "ab");
+            hashf = fopen(file1, "ab+");
             if (hashf == NULL)
             {
                 fatalerror("For some reason, I was unable to append-open the svm file named ",
@@ -1400,6 +1400,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
                     classifier_info.classifier_bits = CRM_SVM;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
                     if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                     {
@@ -2111,6 +2112,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
                                     classifier_info.classifier_bits = CRM_SVM;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
                                     if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                                     {
@@ -2170,6 +2172,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
                                     classifier_info.classifier_bits = CRM_SVM;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
                                     if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                                     {
@@ -2269,6 +2272,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
                         classifier_info.classifier_bits = CRM_SVM;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
                         if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                         {
@@ -2694,6 +2698,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     if (user_trace)
     {
+      fprintf(stderr,"sorted hashes:\n");
+      for (i=0;i<hashcounts;i++)
+	{
+	  fprintf(stderr, "hashes[%ld]=%lud\n",i,hashes[i].hash);
+	}
         fprintf(stderr, "Total unique hashes generated: %d\n", hashcounts);
     }
 
@@ -2742,14 +2751,16 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (k1 != 0)
         {
-            nonfatalerror("Sorry, We can't classify with empty .svm file"
-                          " ", file1);
+	  nonfatalerror ("Refuting from nonexistent data cannot be done!"
+			 " More specifically, this data file doesn't exist: ",
+			 file1);
             return 0;
         }
         else if (k2 != 0)
         {
-            nonfatalerror("Sorry, We can't classify with empty .svm file"
-                          " ", file2);
+      nonfatalerror ("Refuting from nonexistent data cannot be done!"
+		     " More specifically, this data file doesn't exist: ",
+		     file2);
             return 0;
         }
         else

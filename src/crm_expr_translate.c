@@ -105,7 +105,8 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &mdwptr,
             &offset,
             &len,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
 
     if (internal_trace)
         fprintf(stderr,
@@ -190,8 +191,12 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         int i2;
         fprintf(stderr, "Result of TRANSLATE: -");
+#if 0
         for (i2 = 0; i2 < retlen; i2++)
             fputc(tempbuf[i2], stderr);
+#else
+		memnCdump(stderr, tempbuf, retlen);
+#endif
         fprintf(stderr, "- len %d\n", retlen);
     }
     crm_destructive_alter_nvariable(destination + dst_nstart, destination_len, /* [i_a] */

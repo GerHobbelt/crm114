@@ -36,7 +36,7 @@
    Example:
 
    Try running mailreaver's 'syscall /date +%Y%m%d_%H%M%S_%N /' without
-   an extra /[Windows-MS].../ alternative specified and you can twiddle
+   an extra /Windows-MS/ alternative specified and you can twiddle
    your thumbs until you've died of old age as Windows 'date.exe' will
    accept NOTHING ELSE but one of these:
    
@@ -272,6 +272,9 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
         if (eof)
             break;
 
+		if (bytesRead == 0)
+			Sleep(p->timeout);
+
         status = WaitForInputIdle(p->from_minion, p->timeout);
     }
 
@@ -431,6 +434,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			break;
 	}
 
+			if (timeout < 200)
+				timeout = 200;
 
     //     Sanity check - <async> is incompatible with <keep>
     //
@@ -1429,6 +1434,9 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (!eof /* && charsread > 0 */ && done + 2 <
                             (data_window_size >> SYSCALL_WINDOW_RATIO))
                         {
+							if (charsread == 0)
+								Sleep(timeout);
+
                             status = WaitForInputIdle(hminion, timeout);
                             // wait a little while before we try to fetch another bit of data...
                             continue; // goto readloop;

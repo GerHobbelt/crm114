@@ -166,7 +166,7 @@ int memnCdump(FILE *dst, const char *src, int len)
 {
 case '\\':
 	buf[j++] = '\\';
-	buf[j++] = 'n';
+	buf[j++] = '\\';
 	break;
 
 	

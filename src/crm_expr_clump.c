@@ -128,6 +128,7 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
     }
 
     classifier_info.classifier_bits = CRM_CLUMP;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
     if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
     {
@@ -1065,7 +1066,8 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txtptr,
             &txtstart,
             &txtlen,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
     if (i < 0)
     {
         int curstmt;
@@ -1342,6 +1344,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
             classifier_info.classifier_bits = CRM_CLUMP;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
             if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
             {
@@ -1488,7 +1491,8 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txtptr,
             &txtstart,
             &txtlen,
-            errstr);
+            errstr,
+			WIDTHOF(errstr));
     if (i < 0)
     {
         int curstmt;

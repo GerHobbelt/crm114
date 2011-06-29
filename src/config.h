@@ -43,9 +43,6 @@
 /* do not include the OSB-Winnow classifier in the build */
 /* #undef CRM_WITHOUT_OSB_WINNOW */
 
-/* do not include the SCM classifier in the build */
-/* #undef CRM_WITHOUT_SCM */
-
 /* do not include the SKS classifier in the build */
 /* #undef CRM_WITHOUT_SKS */
 
@@ -568,7 +565,7 @@
 #define PROTOTYPES 1
 
 /* revision code of the software */
-#define REVISION "1995"
+#define REVISION "2036"
 
 /* Define to 1 if the `setvbuf' function takes the buffering type as its
    second argument and the buffer pointer as the third, as on System V before
@@ -591,7 +588,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1995"
+#define TAR_FILENAME_POSTFIX "Ger-2036"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

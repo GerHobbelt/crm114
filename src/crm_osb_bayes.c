@@ -209,6 +209,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
             classifier_info.classifier_bits = CRM_OSB_BAYES;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
             if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
             {

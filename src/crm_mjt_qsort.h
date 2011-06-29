@@ -179,12 +179,12 @@
                 if (QSORT_LT(_hi, _mid))                                                  \
                 {                                                                         \
                     _QSORT_SWAP(_mid, _hi, _hold);                                        \
-/*    else							*/                        \
-/*      goto _jump_over;					*/                        \
+                    /*    else							*/                                \
+                    /*      goto _jump_over;					*/                        \
                     if (QSORT_LT(_mid, _lo))                                              \
                         _QSORT_SWAP(_mid, _lo, _hold);                                    \
                 }                                                                         \
-/*  _jump_over:;						*/                        \
+                /*  _jump_over:;						*/                                \
                                                                                           \
                 _left_ptr  = _lo + 1;                                                     \
                 _right_ptr = _hi - 1;                                                     \
@@ -298,13 +298,13 @@
                         _hold = *_trav;                                                   \
                                                                                           \
                         for (_hi = _lo = _trav; --_lo >= _tmp_ptr; _hi = _lo)             \
-                                                                         {                \
-                                                                             *_hi = *_lo; \
-                                                                         }                \
-                                                                         *_hi = _hold;    \
-                                                                         }                \
-                                                                         }                \
-                                                                         }                \
-                                                                         }                \
-                                                                         }
+                        {                                                                 \
+                            *_hi = *_lo;                                                  \
+                        }                                                                 \
+                        *_hi = _hold;                                                     \
+                    }                                                                     \
+                }                                                                         \
+            }                                                                             \
+        }                                                                                 \
+    }
 

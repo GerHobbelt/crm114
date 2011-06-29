@@ -223,6 +223,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
 
         classifier_info.classifier_bits = CRM_MARKOVIAN;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {

@@ -597,6 +597,7 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned int buckets,
         CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
         classifier_info.classifier_bits = CRM_OSBF;
+		classifier_info.hash_version_in_use = selected_hashfunction;
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
