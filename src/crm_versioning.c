@@ -22,7 +22,7 @@
 #include "crm114.h"
 
 
-#if !defined (CRM_WITHOUT_VERSIONING_HEADER)
+#if !defined(CRM_WITHOUT_VERSIONING_HEADER)
 
 
 
@@ -537,13 +537,13 @@
 typedef union
 {
     uint32_t hex;
-    float    f;
+    float f;
 } crm_i2f_t;
 
 typedef union
 {
     uint64_t hex;
-    double   d;
+    double d;
 } crm_i2d_t;
 
 
@@ -696,7 +696,7 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
     if (!f)
         return -1;
 
-#if !defined (CRM_WITHOUT_VERSIONING_HEADER)
+#if !defined(CRM_WITHOUT_VERSIONING_HEADER)
     /* first, write the ID elements and human readable info */
     if (classifier_info->classifier_bits & CRM_SKS)
     {
@@ -748,12 +748,12 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
     }
 
     ret = fprintf(f, "%s%-10.10s:%-35.35s:%-35.35s:%04d:%-20.20s:\ncat <<-EOF\n",
-            CRM_PORTABILITY_HEADER_SEQUENCE,
-            class_id,
-            VERSION,
-            REVISION,
-            1,
-            HOSTTYPE);
+                  CRM_PORTABILITY_HEADER_SEQUENCE,
+                  class_id,
+                  VERSION,
+                  REVISION,
+                  1,
+                  HOSTTYPE);
     if (ret <= 0)
         return -1;
 
@@ -916,14 +916,14 @@ int crm_correct_for_version_header(void **ptr, int *len, int *has_header)
     ret = is_crm_headered_mmapped_file(s, *len);
     if (ret)
     {
-#if !defined (CRM_WITHOUT_VERSIONING_HEADER)
+#if !defined(CRM_WITHOUT_VERSIONING_HEADER)
         s += CRM114_HEADERBLOCK_SIZE;
         if (len)
         {
             if (*len < CRM114_HEADERBLOCK_SIZE)
             {
                 fatalerror("The CRM114 'headered' CSS file is corrupt: file size is too small.",
-                        "Please recover a backup with a correct version/portability header or seek help.");
+                           "Please recover a backup with a correct version/portability header or seek help.");
                 return -1;
             }
             else
@@ -935,7 +935,7 @@ int crm_correct_for_version_header(void **ptr, int *len, int *has_header)
         *has_header = 1;
 #else
         fatalerror("This CRM114 build cannot cope with the new 'headered' CSS file format.",
-                "Please rebuild with version/portability header support or seek a prebuilt CRM114 binary that can.");
+                   "Please rebuild with version/portability header support or seek a prebuilt CRM114 binary that can.");
         ret = -1;   /* cannot cope with version-headered files */
 #endif
     }
@@ -1180,24 +1180,19 @@ const char *crm_decode_header_err2msg(int errorcode)
         return "CSS database header: Endian markers do not match this platform; this may be a non-native database or the database is corrupted.";
 
     case 5:
-        return
-            "CSS database header: Floating point markers do not match this platform; this may be a non-native database or the database is corrupted.";
+        return "CSS database header: Floating point markers do not match this platform; this may be a non-native database or the database is corrupted.";
 
     case 6:
-        return
-            "CSS database header: 'CRM114' text marker does not match this platform; this may be a non-native database or the database is corrupted.";
+        return "CSS database header: 'CRM114' text marker does not match this platform; this may be a non-native database or the database is corrupted.";
 
     case 7:
-        return
-            "CSS database header: Decoded host type and/or version markers do not match this platform; this is a non-native database or the database is corrupted.";
+        return "CSS database header: Decoded host type and/or version markers do not match this platform; this is a non-native database or the database is corrupted.";
 
     case 8:
-        return
-            "CSS database header: Decoded version/release numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
+        return "CSS database header: Decoded version/release numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
 
     case 9:
-        return
-            "CSS database header: integer size numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
+        return "CSS database header: integer size numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
 
     case 10:
         return

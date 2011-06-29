@@ -113,9 +113,9 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
     {
         fev = nonfatalerror_ex(SRC_LOC(),
-                "\nYou didn't specify a valid filename: '%.*s'\n",
-                (int)hlen,
-                htext);
+                               "\nYou didn't specify a valid filename: '%.*s'\n",
+                               (int)hlen,
+                               htext);
         return fev;
     }
     j += i;
@@ -153,11 +153,11 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             char dirbuf[DIRBUFSIZE_MAX];
 
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your new CORRELATE file %s for writing; (full path: '%s') errno=%d(%s)\n",
-                    learnfilename,
-                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
-                    errno,
-                    errno_descr(errno));
+                                "\n Couldn't open your new CORRELATE file %s for writing; (full path: '%s') errno=%d(%s)\n",
+                                learnfilename,
+                                mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
+                                errno,
+                                errno_descr(errno));
             return fev;
         }
 
@@ -167,8 +167,8 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
             fev = nonfatalerror_ex(SRC_LOC(),
-                    "\n Couldn't write header to file %s; errno=%d(%s)\n",
-                    learnfilename, errno, errno_descr(errno));
+                                   "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                                   learnfilename, errno, errno_descr(errno));
             fclose(f);
             return fev;
         }
@@ -200,11 +200,11 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             char dirbuf[DIRBUFSIZE_MAX];
 
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your CORRELATE file %s for append; (full path: '%s') errno=%d(%s)\n",
-                    learnfilename,
-                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
-                    errno,
-                    errno_descr(errno));
+                                "\n Couldn't open your CORRELATE file %s for append; (full path: '%s') errno=%d(%s)\n",
+                                learnfilename,
+                                mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
+                                errno,
+                                errno_descr(errno));
             return fev;
         }
 
@@ -229,9 +229,9 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                 fclose(f);
                 fev = nonfatalerror_ex(SRC_LOC(), "Couldn't write the header to the .hypsvm file named '%s': error %d(%s)",
-                        learnfilename,
-                        err,
-                        errno_descr(err));
+                                       learnfilename,
+                                       err,
+                                       errno_descr(err));
                 return fev;
             }
 
@@ -262,7 +262,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             int q = fatalerror_ex(SRC_LOC(), "Attempt to LEARN from an illegal variable '%.*s'. How very bizarre.", llen, ltext);
             return q;
         }
-		vhtindex = crm_vht_lookup(vht, ltext, llen, csl->calldepth);
+        vhtindex = crm_vht_lookup(vht, ltext, llen, csl->calldepth);
     }
     else
     {
@@ -276,7 +276,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         CRM_ASSERT(f != NULL);
         fclose(f);
         q = nonfatalerror(" Attempt to LEARN from a nonexistent variable ",
-                ltext);
+                          ltext);
         return q;
     }
     mdw = NULL;
@@ -303,7 +303,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             fprintf(stderr, "learning the text (len %d) :", textlen);
             fwrite4stdio(&(mdw->filetext[textoffset]),
-                    ((textlen < 128) ? textlen : 128), stderr);
+                         ((textlen < 128) ? textlen : 128), stderr);
             fprintf(stderr, "\n");
         }
 
@@ -321,9 +321,9 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             // try to correct the failure by ditching the new, partially(?) written(?) data
             truncate(learnfilename, old_fileoffset);
             fev = nonfatalerror_ex(SRC_LOC(), "Failed to append the 'learn' text to the correlation file '%s': error %d(%s)\n",
-                    learnfilename,
-                    err,
-                    errno_descr(err));
+                                   learnfilename,
+                                   err,
+                                   errno_descr(err));
             return fev;
         }
     }
@@ -496,9 +496,9 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
         if (crm_nextword(htext,
-                    hlen, fn_start_here,
-                    &fnstart, &fnlen)
-            && fnlen > 0)
+                         hlen, fn_start_here,
+                         &fnstart, &fnlen)
+           && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = 0;
@@ -514,7 +514,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (vbar_seen)
                 {
                     nonfatalerror("Only one '|' allowed in a CLASSIFY.\n",
-                            "We'll ignore it for now.");
+                                  "We'll ignore it for now.");
                 }
                 else
                 {
@@ -531,7 +531,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (k != 0)
                 {
                     nonfatalerror("Nonexistent Classify table named: ",
-                            fname);
+                                  fname);
                 }
                 else
                 {
@@ -539,7 +539,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (maxhash >= MAX_CLASSIFIERS)
                     {
                         nonfatalerror("Too many classifier files.",
-                                "Some may have been disregarded");
+                                      "Some may have been disregarded");
                     }
                     else
                     {
@@ -548,16 +548,16 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         hashlens[maxhash] = statbuf.st_size;
                         // [i_a] hashlens[maxhash] must be fixed for the header size!
                         hashes[maxhash] = crm_mmap_file(fname,
-                                0,
-                                hashlens[maxhash],
-                                PROT_READ,
-                                MAP_SHARED,
-                                CRM_MADV_RANDOM,
-                                &hashlens[maxhash]);
+                                                        0,
+                                                        hashlens[maxhash],
+                                                        PROT_READ,
+                                                        MAP_SHARED,
+                                                        CRM_MADV_RANDOM,
+                                                        &hashlens[maxhash]);
                         if (hashes[maxhash] == MAP_FAILED)
                         {
                             nonfatalerror("Couldn't memory-map the table file",
-                                    fname);
+                                          fname);
                         }
                         else
                         {
@@ -583,7 +583,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             if (!hashname[maxhash])
                             {
                                 untrappableerror(
-                                        "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
+                                    "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
                             }
                             else
                             {
@@ -743,7 +743,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     for (k = 0; k < maxhash; k++)
     {
         if (hashlens[k] > 0
-            && total_features > 0)
+           && total_features > 0)
         {
             //     Note that we don't normalize the probabilities yet- we do
             //     that down below.
@@ -895,10 +895,10 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //
         snprintf(buf, WIDTHOF(buf), "Best match to file #%d (%s) "
                                     "prob: %6.4f  pR: %6.4f\n",
-                bestseen,
-                hashname[bestseen],
-                ptc[bestseen],
-                (log10(ptc[bestseen]) - log10(remainder)));
+                 bestseen,
+                 hashname[bestseen],
+                 ptc[bestseen],
+                 (log10(ptc[bestseen]) - log10(remainder)));
         buf[WIDTHOF(buf) - 1] = 0;
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
@@ -920,17 +920,17 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
             }
             snprintf(buf, WIDTHOF(buf),
-                    "#%d (%s):"
-                    " features: %d, L1: %lld L2: %lld L3: %lld, L4: %lld prob: %3.2e, pR: %6.2f\n",
-                    k,
-                    hashname[k],
-                    hashlens[k],
-                    (long long int)linear_hits[k],
-                    (long long int)square_hits[k],
-                    (long long int)cube_hits[k],
-                    (long long int)quad_hits[k],
-                    ptc[k],
-                    (log10(ptc[k]) - log10(remainder)));
+                     "#%d (%s):"
+                     " features: %d, L1: %lld L2: %lld L3: %lld, L4: %lld prob: %3.2e, pR: %6.2f\n",
+                     k,
+                     hashname[k],
+                     hashlens[k],
+                     (long long int)linear_hits[k],
+                     (long long int)square_hits[k],
+                     (long long int)cube_hits[k],
+                     (long long int)quad_hits[k],
+                     ptc[k],
+                     (log10(ptc[k]) - log10(remainder)));
             buf[WIDTHOF(buf) - 1] = 0;
             // strcat (stext, buf);
             if (strlen(stext) + strlen(buf) <= stext_maxlen)
@@ -944,7 +944,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             nonfatalerror("WARNING: not enough room in the buffer to create "
                           "the statistics text.  Perhaps you could try bigger "
                           "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-                    " ");
+                          " ");
         }
         if (svlen > 0)
         {
@@ -964,7 +964,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //    and do what we do for a FAIL here
         CRM_ASSERT(csl->cstmt >= 0);
         CRM_ASSERT(csl->cstmt <= csl->nstmts);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -995,9 +995,9 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 
@@ -1005,9 +1005,9 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 #endif
@@ -1020,9 +1020,9 @@ int crm_expr_correlate_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 
@@ -1030,9 +1030,9 @@ int crm_expr_correlate_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 
@@ -1040,9 +1040,9 @@ int crm_expr_correlate_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 
@@ -1050,9 +1050,9 @@ int crm_expr_correlate_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 
@@ -1060,9 +1060,9 @@ int crm_expr_correlate_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 
@@ -1070,9 +1070,9 @@ int crm_expr_correlate_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 
@@ -1080,9 +1080,9 @@ int crm_expr_correlate_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 
@@ -1090,9 +1090,9 @@ int crm_expr_correlate_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Correlate");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Correlate");
 }
 
 

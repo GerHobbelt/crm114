@@ -61,7 +61,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     varnamelen = crm_nexpandvar(varname, varnamelen, MAX_VARNAME, vht, tdw);
     // [i_a] standardized code: get_pgm+nexpand+nextword to get a variable identifier from a parameter
     if (!crm_nextword(varname, varnamelen, 0, &varnamestart, &varnamelen)
-        || varnamelen < 2)
+       || varnamelen < 2)
     {
         // we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
 
@@ -134,7 +134,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             break;
 
         newvallen = crm_qexpandvar(tempbuf, newvallen,
-                data_window_size, &qex_stat, vht, tdw);
+                                   data_window_size, &qex_stat, vht, tdw);
         CRM_ASSERT(newvallen < data_window_size);
         tempbuf[newvallen] = 0;
     }
@@ -144,7 +144,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         nonfatalerror("The variable you're attempting to EVAL seems to eval "
                       "infinitely, and hence I cannot compute it.  I did try "
                       "a lot, though.  I got this far before I gave up: ",
-                tempbuf);
+                      tempbuf);
         return 0;
     }
 
@@ -166,7 +166,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             fprintf(stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %d\n", csl->cstmt);
         CRM_ASSERT(csl->cstmt >= 0);
         CRM_ASSERT(csl->cstmt <= csl->nstmts);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -211,22 +211,22 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         // we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
 
         nonfatalerror(
-                "This statement is missing the variable to alter,\n",
-                "so I'll ignore the whole statement.");
+            "This statement is missing the variable to alter,\n",
+            "so I'll ignore the whole statement.");
         return 0;
     }
 
     //      do variable substitution on the variable name
     varnamelen = crm_nexpandvar(varname, varnamelen, MAX_VARNAME, vht, tdw);
     if (!crm_nextword(varname, varnamelen, 0, &varnamestart, &varnamelen)
-        || varnamelen < 2)
+       || varnamelen < 2)
     {
         // we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
 
         nonfatalerror(
-                "The variable you're asking me to alter has an utterly bogus\n"
-                "name or has not been specified at all\n",
-                "so I'll ignore the whole statement.");
+            "The variable you're asking me to alter has an utterly bogus\n"
+            "name or has not been specified at all\n",
+            "so I'll ignore the whole statement.");
         return 0;
     }
 

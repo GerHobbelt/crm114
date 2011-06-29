@@ -23,7 +23,7 @@
 
 
 
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
 
 /*
  * Win32 - new syscall handling per 20080401 - no April 1st joke! -:
@@ -95,16 +95,16 @@
 
 
 
-#if defined (CRM_USE_OLD_WIN32_SYCALL_CODE)
+#if defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
 
 typedef struct
 {
     void  *my_ptr;
     HANDLE to_minion;
     char  *inbuf;
-    int    inlen;
-    int    internal_trace;
-    int    keep_proc;
+    int inlen;
+    int internal_trace;
+    int keep_proc;
 } pusherparams;
 
 typedef struct
@@ -113,8 +113,8 @@ typedef struct
     HANDLE from_minion;
     time_t timeout;
     time_t abort_timeout;
-    int    internal_trace;
-    int    keep_proc;
+    int internal_trace;
+    int keep_proc;
 } suckerparams;
 
 
@@ -189,7 +189,7 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
 
     //  we're in the sucker process here- just throw away
     //  everything till we get EOF, then exit.
-    for ( ; ;)
+    for (;;)
     {
         exit_code = (DWORD)-1;
         status = GetExitCodeProcess(p->from_minion, &exit_code);
@@ -237,7 +237,7 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
             if (large_int.HighPart || large_int.LowPart)
             {
                 if (!ReadFile(p->from_minion, obuf,
-                            OUTBUF_SIZE, &bytesRead, NULL))
+                              OUTBUF_SIZE, &bytesRead, NULL))
                 {
                     error = GetLastError();
                     switch (error)
@@ -343,7 +343,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int keep_proc;
     int async_mode;
 
-#if defined (HAVE_WORKING_FORK) && defined (HAVE_FORK) && defined (HAVE_PIPE)
+#if defined(HAVE_WORKING_FORK) && defined(HAVE_FORK) && defined(HAVE_PIPE)
     int charsread;
     int to_minion[2];
     int from_minion[2];
@@ -351,7 +351,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     pid_t pusher;
     pid_t sucker;
     pid_t random_child;
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
     DWORD charsread;
     HANDLE to_minion[2];
     HANDLE from_minion[2];
@@ -365,7 +365,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     double pollcycle_setting = 0.0;
     double run_timeout_setting = 0.0;
 
-#if defined (HAVE_WAITPID)
+#if defined(HAVE_WAITPID)
     if (user_trace)
         fprintf(stderr, "executing a SYSCALL statement");
 
@@ -378,7 +378,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     while ((random_child = waitpid(0, &status, WNOHANG)) > 0)
         ;
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
     timeout = MINION_SLEEP_USEC / 1000; // need milliseconds for Sleep()
     if (MINION_SLEEP_USEC > 0 && timeout == 0)
     {
@@ -445,7 +445,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         nonfatalerror("This syscall uses both async and keep, but async is "
                       "incompatible with keep.  Since keep is safer"
                       "we will use that.\n",
-                "You need to fix this program.");
+                      "You need to fix this program.");
         async_mode = 0;
     }
 
@@ -510,8 +510,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //      allow the boxed [string] syntax as well as the slash /string/
     //      syntax for now.
     //    GROT GROT GROT
-	cmd_len = 0; 
-sys_cmd[0] = 0;
+    cmd_len = 0;
+    sys_cmd[0] = 0;
     if (apb->s1len > 0)
     {
         cmd_len = crm_get_pgm_arg(sys_cmd, MAX_PATTERN, apb->s1start, apb->s1len);
@@ -556,18 +556,18 @@ sys_cmd[0] = 0;
         exp_keep_len = 0;
     }
 
-#if defined (HAVE_DUP2) && defined (HAVE_WORKING_FORK) && defined (HAVE_FORK) \
-    && defined (HAVE_PIPE) && defined (HAVE_WAITPID) && defined (HAVE_SYSTEM)
+#if defined(HAVE_DUP2) && defined(HAVE_WORKING_FORK) && defined(HAVE_FORK) \
+    && defined(HAVE_PIPE) && defined(HAVE_WAITPID) && defined(HAVE_SYSTEM)
     cnt = 0;
     if (*exp_keep_buf)
     {
         cnt = sscanf(exp_keep_buf, "MINION PROC PID: %d from-pipe: %d to-pipe: %d",
-                &minion,
-                &from_minion[0],
-                &to_minion[1]);
+                     &minion,
+                     &from_minion[0],
+                     &to_minion[1]);
     }
     if (!(cnt == 3
-          || (cnt == 0 && (*exp_keep_buf == 0 || strncmp(exp_keep_buf, "DEAD MINION", WIDTHOF("DEAD MINION") - 1) == 0))))
+         || (cnt == 0 && (*exp_keep_buf == 0 || strncmp(exp_keep_buf, "DEAD MINION", WIDTHOF("DEAD MINION") - 1) == 0))))
     {
         nonfatalerror("Failed to decode the syscall minion setup: ", exp_keep_buf);
         return 1;
@@ -588,7 +588,7 @@ sys_cmd[0] = 0;
         if (status1 > 0 || status2 > 0)
         {
             nonfatalerror("Problem setting up the to/from pipes to a minion. ",
-                    "Perhaps the system file descriptor table is full?");
+                          "Perhaps the system file descriptor table is full?");
             return 1;
         }
 
@@ -600,12 +600,12 @@ sys_cmd[0] = 0;
 
         if (minion < 0)
         {
-            nonfatalerror_ex(SRC_LOC(), 
-                    "Tried to fork your minion, but it failed. "
-                    "Your system may have run out of process slots. "
-                            "errno = %d(%s)",
-                            errno,
-                            errno_descr(errno));
+            nonfatalerror_ex(SRC_LOC(),
+                             "Tried to fork your minion, but it failed. "
+                             "Your system may have run out of process slots. "
+                             "errno = %d(%s)",
+                             errno,
+                             errno_descr(errno));
             return 1;
         }
 
@@ -655,14 +655,14 @@ sys_cmd[0] = 0;
                 {
                     char pidstr[32];
                     pid_t pid;
-#if defined (HAVE_GETPID)
+#if defined(HAVE_GETPID)
                     pid = getpid();
                     sprintf(pidstr, "%d", (int)pid);
                     crm_set_temp_var(":_pid:", pidstr, -1, 0);
                     if (user_trace)
                         fprintf(stderr, "My new PID is %s\n", pidstr);
 #endif
-#if defined (HAVE_GETPPID)
+#if defined(HAVE_GETPPID)
                     pid = getppid();
                     sprintf(pidstr, "%d", (int)pid);
                     crm_set_temp_var(":_ppid:", pidstr, -1, 0);
@@ -670,7 +670,7 @@ sys_cmd[0] = 0;
                 }
                 //   See if we have redirection of stdin and stdout
                 while (crm_nextword(sys_cmd, strlen(sys_cmd), vstart + vlen,
-                               &vstart, &vlen))
+                                    &vstart, &vlen))
                 {
                     char filename[MAX_PATTERN];
                     if (sys_cmd[vstart] == '<')
@@ -718,7 +718,7 @@ sys_cmd[0] = 0;
                         }
                     }
                 }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                 csl->next_stmt_due_to_jump = varline;
                 // csl->cstmt = varline;
 #else
@@ -787,22 +787,22 @@ sys_cmd[0] = 0;
                         "LSB"
                     };
                     untrappableerror_ex(SRC_LOC(),
-                            "This program tried a shell command that "
-                            "didn't run correctly.\n"
-                            "The command was >%s< and returned code %d "
-                            "(mode = %s --> %s = %d / %s = %d)\n"
-                            "errno = %d(%s)",
-                            sys_cmd,
-                            retcode,
-                            mode_str[exit_mode],
-                            first_val_str[exit_mode],
-                            (WIFEXITED(retcode)
-                             ? WEXITSTATUS(retcode)
-                             : WSTOPSIG(retcode)),
-                            second_val_str[exit_mode],
-                            WTERMSIG(retcode),
-                            errno,
-                            errno_descr(errno));
+                                        "This program tried a shell command that "
+                                        "didn't run correctly.\n"
+                                        "The command was >%s< and returned code %d "
+                                        "(mode = %s --> %s = %d / %s = %d)\n"
+                                        "errno = %d(%s)",
+                                        sys_cmd,
+                                        retcode,
+                                        mode_str[exit_mode],
+                                        first_val_str[exit_mode],
+                                        (WIFEXITED(retcode)
+                                         ? WEXITSTATUS(retcode)
+                                         : WSTOPSIG(retcode)),
+                                        second_val_str[exit_mode],
+                                        WTERMSIG(retcode),
+                                        errno,
+                                        errno_descr(errno));
                 }
                 exit(WEXITSTATUS(retcode));
             }
@@ -880,11 +880,11 @@ readloop:
             usleep(timeout);
             charsread =
                 read(from_minion[0],
-                        &outbuf[done],
-                        (data_window_size >> SYSCALL_WINDOW_RATIO) - done - 2);
+                     &outbuf[done],
+                     (data_window_size >> SYSCALL_WINDOW_RATIO) - done - 2);
             done = done + charsread;
             if (charsread > 0
-                && done + 2 < (data_window_size >> SYSCALL_WINDOW_RATIO))
+               && done + 2 < (data_window_size >> SYSCALL_WINDOW_RATIO))
                 goto readloop;
             if (done < 0)
                 done = 0;
@@ -898,8 +898,8 @@ readloop:
             //fcntl (from_minion[0], F_SETFL, O_NONBLOCK);
             //      usleep (timeout);
             charsread = read(from_minion[0],
-                    &outbuf[done],
-                    (data_window_size >> SYSCALL_WINDOW_RATIO));
+                             &outbuf[done],
+                             (data_window_size >> SYSCALL_WINDOW_RATIO));
             done = charsread;
             if (done < 0)
                 done = 0;
@@ -916,8 +916,8 @@ readloop:
         //   away asynchronously... and exits when it gets EOF.
         //
         if (async_mode
-            || (outlen >= ((data_window_size >> SYSCALL_WINDOW_RATIO) - 2)
-                && keep_proc == 0))
+           || (outlen >= ((data_window_size >> SYSCALL_WINDOW_RATIO) - 2)
+              && keep_proc == 0))
         {
 #if 10      // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
             fflush(stdout);
@@ -932,8 +932,8 @@ readloop:
                 {
                     usleep(timeout);
                     charsread = read(from_minion[0],
-                            &outbuf[0],
-                            data_window_size >> SYSCALL_WINDOW_RATIO);
+                                     &outbuf[0],
+                                     data_window_size >> SYSCALL_WINDOW_RATIO);
                     //  in the sucker here, don't use engine_exit_base exit
                     if (charsread == 0)
                         exit(EXIT_SUCCESS);
@@ -963,14 +963,14 @@ readloop:
             fprintf(stderr, "   saving minion state: %s \n",
                     exp_keep_buf);
         crm_destructive_alter_nvariable(keep_buf, keep_len,
-                exp_keep_buf,
-                strlen(exp_keep_buf),
-				csl->calldepth);
+                                        exp_keep_buf,
+                                        strlen(exp_keep_buf),
+                                        csl->calldepth);
     }
     //      If we're keeping this minion process around, record the useful
     //      information, like pid, in and out pipes, etc.
     if (keep_proc || async_mode)
-    { }
+    {}
     else
     {
         int minion_exit_status = 254 << 8; // exit code 254 signals a waitpid() returning without an exit code!
@@ -989,8 +989,8 @@ readloop:
         if (strlen(keep_buf) > 0 && !crm_is_legal_variable(keep_buf, strlen(keep_buf)))
         {
             nonfatalerror_ex(
-                    SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?",
-                    keep_buf);
+                SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?",
+                keep_buf);
         }
         if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf), csl->calldepth))
         {
@@ -1007,14 +1007,14 @@ readloop:
             if (keep_len > 0)
             {
                 crm_destructive_alter_nvariable(keep_buf, keep_len,
-                        exit_value_string,
-                        strlen(exit_value_string),
-						csl->calldepth);
+                                                exit_value_string,
+                                                strlen(exit_value_string),
+                                                csl->calldepth);
             }
         }
     }
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
-#if defined (CRM_USE_OLD_WIN32_SYCALL_CODE)
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
+#if defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
 
     if (0)
     {
@@ -1031,12 +1031,12 @@ readloop:
         if (*exp_keep_buf)
         {
             cnt = sscanf(exp_keep_buf, "MINION PROC PID: %d from-pipe: %p to-pipe: %p",
-                    &minion,
-                    &from_minion[0],
-                    &to_minion[1]);
+                         &minion,
+                         &from_minion[0],
+                         &to_minion[1]);
         }
         if (!(cnt == 3
-              || (cnt == 0 && (*exp_keep_buf == 0 || strncmp(exp_keep_buf, "DEAD MINION", WIDTHOF("DEAD MINION") - 1) == 0))))
+             || (cnt == 0 && (*exp_keep_buf == 0 || strncmp(exp_keep_buf, "DEAD MINION", WIDTHOF("DEAD MINION") - 1) == 0))))
         {
             return nonfatalerror("Failed to decode the syscall minion setup: ", exp_keep_buf);
         }
@@ -1154,15 +1154,15 @@ readloop:
 
                     // Create the child process.
                     status = CreateProcess(NULL,
-                            sys_cmd,                                              // command line
-                            NULL,                                                 // process security attributes
-                            NULL,                                                 // primary thread security attributes
-                            TRUE,                                                 // handles are inherited
-                            CREATE_DEFAULT_ERROR_MODE /* | CREATE_NEW_CONSOLE */, // creation flags
-                            NULL,                                                 // use parent's environment
-                            NULL,                                                 // use parent's current directory
-                            &si,                                                  // STARTUPINFO pointer
-                            &pi);                                                 // receives PROCESS_INFORMATION
+                                           sys_cmd,                                              // command line
+                                           NULL,                                                 // process security attributes
+                                           NULL,                                                 // primary thread security attributes
+                                           TRUE,                                                 // handles are inherited
+                                           CREATE_DEFAULT_ERROR_MODE /* | CREATE_NEW_CONSOLE */, // creation flags
+                                           NULL,                                                 // use parent's environment
+                                           NULL,                                                 // use parent's current directory
+                                           &si,                                                  // STARTUPINFO pointer
+                                           &pi);                                                 // receives PROCESS_INFORMATION
                     if (!status)
                     {
                         error = GetLastError();
@@ -1185,13 +1185,13 @@ readloop:
 
                     // use the undamaged sys_cmd entry for error reporting...
                     nonfatalerror_ex(
-                            SRC_LOC(), "This program tried a shell command that "
-                                       "didn't run correctly.\n"
-                                       "command >>%s<< - CreateProcess returned %d(0x%08lx:%s)\n",
-                            sys_cmd_2nd,
-                            (int)error,
-                            (int)error,
-                            errmsg);
+                        SRC_LOC(), "This program tried a shell command that "
+                                   "didn't run correctly.\n"
+                                   "command >>%s<< - CreateProcess returned %d(0x%08lx:%s)\n",
+                        sys_cmd_2nd,
+                        (int)error,
+                        (int)error,
+                        errmsg);
                 }
                 else
                 {
@@ -1216,7 +1216,7 @@ readloop:
                     if (!CloseHandle(pi.hThread))
                     {
                         fatalerror_Win32("Failed to close the execution thread handle for minion",
-                                sys_cmd);
+                                         sys_cmd);
                     }
 #endif
                 }
@@ -1318,18 +1318,18 @@ readloop:
                 pp->keep_proc = keep_proc;
                 pp->to_minion = to_minion[1];
                 pusher_thread_handle = (HANDLE)_beginthreadex(NULL,
-                        0,
-                        pusher_proc,
-                        pp,
-                        CREATE_SUSPENDED,
-                        &hThread);
+                                                              0,
+                                                              pusher_proc,
+                                                              pp,
+                                                              CREATE_SUSPENDED,
+                                                              &hThread);
                 if (pusher_thread_handle == 0)
                 {
                     fatalerror_ex(SRC_LOC(),
-                            "Failed to init the pusher thread: "
-                            "error code %d (%s)",
-                            errno,
-                            errno_descr(errno));
+                                  "Failed to init the pusher thread: "
+                                  "error code %d (%s)",
+                                  errno,
+                                  errno_descr(errno));
                 }
                 else
                 {
@@ -1371,7 +1371,7 @@ readloop:
 
                     //   synchronous read- read till we hit EOF, which is read
                     //   returning a char count of zero.
-                    for ( ; ;)
+                    for (;;)
                     {
                         DWORD exit_code;
 
@@ -1446,9 +1446,9 @@ readloop:
                             if (large_int.HighPart || large_int.LowPart)
                             {
                                 if (!ReadFile(from_minion[0],
-                                            outbuf + done,
-                                            readlen,
-                                            &charsread, NULL))
+                                              outbuf + done,
+                                              readlen,
+                                              &charsread, NULL))
                                 {
                                     error = GetLastError();
                                     switch (error)
@@ -1464,7 +1464,7 @@ readloop:
 
                                     default:
                                         fatalerror_Win32("Failed to sync-read any data from the minion",
-                                                sys_cmd);
+                                                         sys_cmd);
                                         break;
                                     }
                                 }
@@ -1548,8 +1548,8 @@ readloop:
                         if (large_int.HighPart || large_int.LowPart)
                         {
                             if (!ReadFile(from_minion[0],
-                                        &outbuf[done],
-                                        (data_window_size >> SYSCALL_WINDOW_RATIO), &charsread, NULL))
+                                          &outbuf[done],
+                                          (data_window_size >> SYSCALL_WINDOW_RATIO), &charsread, NULL))
                             {
                                 fatalerror_Win32("Failed to async read any data from the minion", sys_cmd);
                             }
@@ -1571,7 +1571,7 @@ readloop:
                 //   away asynchronously... and exits when it gets EOF.
                 //
                 if (async_mode || (outlen >= ((data_window_size >> SYSCALL_WINDOW_RATIO) - 2)
-                                   && keep_proc == 0))
+                                  && keep_proc == 0))
                 {
                     unsigned int hThread;
                     // allocate fire & forget memory to pass to the sucker thread to use...
@@ -1588,18 +1588,18 @@ readloop:
                     sp->keep_proc = keep_proc;
 
                     sucker_thread_handle = (HANDLE)_beginthreadex(NULL,
-                            0,
-                            sucker_proc,
-                            sp,
-                            CREATE_SUSPENDED,
-                            &hThread);
+                                                                  0,
+                                                                  sucker_proc,
+                                                                  sp,
+                                                                  CREATE_SUSPENDED,
+                                                                  &hThread);
                     if (sucker_thread_handle == 0)
                     {
                         fatalerror_ex(SRC_LOC(),
-                                "Failed to start the sucker thread: "
-                                "error code %d (%s)",
-                                errno,
-                                errno_descr(errno));
+                                      "Failed to start the sucker thread: "
+                                      "error code %d (%s)",
+                                      errno,
+                                      errno_descr(errno));
                     }
                     else
                     {
@@ -1639,9 +1639,9 @@ readloop:
                 if (internal_trace)
                     fprintf(stderr, "   saving minion state: %s\n", exp_keep_buf);
                 crm_destructive_alter_nvariable(keep_buf, keep_len,
-                        exp_keep_buf,
-                        (int)strlen(exp_keep_buf),
-						csl->calldepth);
+                                                exp_keep_buf,
+                                                (int)strlen(exp_keep_buf),
+                                                csl->calldepth);
             }
 
             //      If we're keeping this minion process around, record the useful
@@ -1669,8 +1669,8 @@ readloop:
                 if (strlen(keep_buf) > 0 && !crm_is_legal_variable(keep_buf, strlen(keep_buf)))
                 {
                     nonfatalerror_ex(
-                            SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?",
-                            keep_buf);
+                        SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?",
+                        keep_buf);
                 }
                 if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf), csl->calldepth))
                 {
@@ -1686,9 +1686,9 @@ readloop:
                     if (keep_len > 0)
                     {
                         crm_destructive_alter_nvariable(keep_buf, keep_len,
-                                exit_value_string,
-                                (int)strlen(exit_value_string),
-								csl->calldepth);
+                                                        exit_value_string,
+                                                        (int)strlen(exit_value_string),
+                                                        csl->calldepth);
                     }
                 }
                 if (!CloseHandle(hminion))

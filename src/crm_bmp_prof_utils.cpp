@@ -142,7 +142,7 @@ const STMT_DEF_TYPE *get_stmt_def(int opcode)
 typedef struct
 {
     crmhash_t hash;
-    char      token[16];
+    char token[16];
 } HASH_CHECKCACHE_ELEM;
 
 
@@ -200,7 +200,7 @@ void remove_hash_checkcache_node(int index)
     if (l != -1 && r != -1)
     {
         // complex case: connect as described above.
-        for ( ; ;)
+        for (;;)
         {
             if (h_nodes[l].right == -1)
             {
@@ -345,7 +345,7 @@ int insert_hash_checkcache_node(int index)
     else
     {
         // traverse tree to find insertion point: if we are equal, we make ourselves parent, if we are less, we go left, if we are more, we go right.
-        for ( ; ;)
+        for (;;)
         {
             int hd = (h_store[i].hash == h_store[index].hash ? 0 : h_store[i].hash < h_store[index].hash ? -1 : 1);
 
@@ -495,7 +495,7 @@ int find_hash_checkcache_node(crmhash_t hash, const char *str)
     else
     {
         // traverse tree to find matching node, if we are less, we go left, if we are more, we go right.
-        for ( ; ;)
+        for (;;)
         {
             int hd = (h_store[i].hash == hash ? 0 : h_store[i].hash < hash ? -1 : 1);
             int sd = strncmp(h_store[i].token, str, WIDTHOF(h_store[i].token));
@@ -594,7 +594,7 @@ int add_hash_checkcache_node(crmhash_t hash, const char *str)
         else
         {
             // pad with NUL bytes
-            for ( ; i < WIDTHOF(sn->token); i++)
+            for (; i < WIDTHOF(sn->token); i++)
             {
                 sn->token[i] = 0;
             }

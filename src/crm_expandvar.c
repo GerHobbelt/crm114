@@ -71,15 +71,15 @@
 int crm_nexpandvar(char *buf, size_t inlen, size_t maxlen, VHT_CELL **vht, CSL_CELL *tdw)
 {
     return crm_zexpandvar(buf,
-            inlen,
-            maxlen,
-            NULL,
-            CRM_EVAL_ANSI
-            | CRM_EVAL_STRINGVAR
-            | CRM_EVAL_REDIRECT
-            | CRM_EVAL_STRINGLEN,                   // [i_a] VERY handy to have :#: available in 'output' statements and the like
-            vht,
-            tdw);
+                          inlen,
+                          maxlen,
+                          NULL,
+                          CRM_EVAL_ANSI
+                          | CRM_EVAL_STRINGVAR
+                          | CRM_EVAL_REDIRECT
+                          | CRM_EVAL_STRINGLEN,     // [i_a] VERY handy to have :#: available in 'output' statements and the like
+                          vht,
+                          tdw);
 }
 
 //
@@ -88,16 +88,16 @@ int crm_nexpandvar(char *buf, size_t inlen, size_t maxlen, VHT_CELL **vht, CSL_C
 int crm_qexpandvar(char *buf, size_t inlen, size_t maxlen, int *qex_stat, VHT_CELL **vht, CSL_CELL *tdw)
 {
     return crm_zexpandvar(buf,
-            inlen,
-            maxlen,
-            qex_stat,
-            CRM_EVAL_ANSI
-            | CRM_EVAL_STRINGVAR
-            | CRM_EVAL_REDIRECT
-            | CRM_EVAL_STRINGLEN
-            | CRM_EVAL_MATH,
-            vht,
-            tdw);
+                          inlen,
+                          maxlen,
+                          qex_stat,
+                          CRM_EVAL_ANSI
+                          | CRM_EVAL_STRINGVAR
+                          | CRM_EVAL_REDIRECT
+                          | CRM_EVAL_STRINGLEN
+                          | CRM_EVAL_MATH,
+                          vht,
+                          tdw);
 }
 
 
@@ -145,10 +145,10 @@ static char *vname = NULL;
 // C string instead of a binary data block.
 //
 int crm_zexpandvar(char *buf,
-        size_t           inlen,
-        size_t           maxlen,
+        size_t inlen,
+        size_t maxlen,
         int             *retstat,
-        int              exec_bitmask,
+        int exec_bitmask,
         VHT_CELL       **vht,
         CSL_CELL        *tdw)
 {
@@ -174,7 +174,7 @@ int crm_zexpandvar(char *buf,
     if (inlen > maxlen)
     {
         fatalerror("You have blown the gaskets while building a string.  Orig string was: ",
-                buf);
+                   buf);
 
         /* return (inlen); -- this is a serious buffer overflow risk as any
         * using routines will assume the maxlen will never be surpassed! */
@@ -200,7 +200,7 @@ int crm_zexpandvar(char *buf,
         {
             CRM_ASSERT(id < maxlen);
             if (buf[is] != '\\'                //  not a backslash --> verbatim.
-                || is >= inlen - 1)            //  last char is always verbatim
+               || is >= inlen - 1)             //  last char is always verbatim
             {
                 buf[id] = buf[is];
                 id++;
@@ -428,7 +428,7 @@ int crm_zexpandvar(char *buf,
     if (tbuf == NULL || vname == NULL)
     {
         fatalerror("Couldn't allocate memory for Q-variable expansion!",
-                "Try making the window set smaller with the -w option");
+                   "Try making the window set smaller with the -w option");
         return inlen;
     }
 
@@ -451,9 +451,9 @@ int crm_zexpandvar(char *buf,
         for (is = 0; is < inlen && id < maxlen; is++)
         {
             if (is <= inlen - 5             //  check only if :*:c:" possible
-                && buf[is] == ':'
-                && buf[is + 1] == '*'
-                && (buf[is + 2] == ':'))
+               && buf[is] == ':'
+               && buf[is + 1] == '*'
+               && (buf[is + 2] == ':'))
             {
                 //    copy everything from the colon to the second colon
                 //    (or the end of the string) into the vname buffer.
@@ -462,8 +462,8 @@ int crm_zexpandvar(char *buf,
                 vname[1] = buf[is++];
                 vlen = 2;
                 while (is < maxlen
-                       && is < inlen
-                       && buf[is - 1] != ':')                // make sure we copy the terminatiung colon too!
+                      && is < inlen
+                      && buf[is - 1] != ':')                 // make sure we copy the terminatiung colon too!
                 {
                     vname[vlen] = buf[is];
                     is++;
@@ -574,9 +574,9 @@ int crm_zexpandvar(char *buf,
         for (is = 0; is < inlen && id < maxlen; is++)
         {
             if (is <= inlen - 5             //  check only if :*:c:" possible
-                && buf[is] == ':'
-                && buf[is + 1] == '+'
-                && (buf[is + 2] == ':'))
+               && buf[is] == ':'
+               && buf[is + 1] == '+'
+               && (buf[is + 2] == ':'))
             {
                 //   yes, it's probably an expansion of some sort.
                 //    copy everything from the colon to the second colon
@@ -586,8 +586,8 @@ int crm_zexpandvar(char *buf,
                 vname[1] = buf[is++];
                 vlen = 2;
                 while (is < maxlen
-                       && is < inlen
-                       && buf[is - 1] != ':')                // make sure we copy the terminatiung colon too!
+                      && is < inlen
+                      && buf[is - 1] != ':')                 // make sure we copy the terminatiung colon too!
                 {
                     vname[vlen] = buf[is];
                     is++;
@@ -708,9 +708,9 @@ int crm_zexpandvar(char *buf,
         for (is = 0; is < inlen && id < maxlen; is++)
         {
             if (is <= inlen - 5             //  check only if :#:c:" possible
-                && buf[is] == ':'
-                && (buf[is + 1] == '#')
-                && buf[is + 2] == ':')
+               && buf[is] == ':'
+               && (buf[is + 1] == '#')
+               && buf[is + 2] == ':')
             {
                 //    copy everything from the colon to the second colon
                 //    into the vname buffer.
@@ -719,8 +719,8 @@ int crm_zexpandvar(char *buf,
                 vname[1] = buf[is++];
                 vlen = 2;
                 while (is < maxlen
-                       && is < inlen
-                       && buf[is - 1] != ':')                // make sure we copy the terminatiung colon too!
+                      && is < inlen
+                      && buf[is - 1] != ':')                 // make sure we copy the terminatiung colon too!
                 {
                     vname[vlen] = buf[is];
                     is++;
@@ -829,9 +829,9 @@ int crm_zexpandvar(char *buf,
         for (is = 0; is < inlen && id < maxlen; is++)
         {
             if (is <= inlen - 5             //  check only if :*:c:" possible
-                && buf[is] == ':'
-                && (buf[is + 1] == '@')
-                && buf[is + 2] == ':')
+               && buf[is] == ':'
+               && (buf[is + 1] == '@')
+               && buf[is + 2] == ':')
             {
                 //    copy everything from the colon to the second colon
                 //    into the vname buffer.
@@ -840,8 +840,8 @@ int crm_zexpandvar(char *buf,
                 vname[1] = buf[is++];
                 vlen = 2;
                 while (is < maxlen
-                       && is < inlen
-                       && buf[is - 1] != ':')                // make sure we copy the terminatiung colon too!
+                      && is < inlen
+                      && buf[is - 1] != ':')                 // make sure we copy the terminatiung colon too!
                 {
                     vname[vlen] = buf[is];
                     is++;
@@ -883,7 +883,7 @@ int crm_zexpandvar(char *buf,
                         if (retstat && *retstat < 0)
                         {
                             fatalerror("Problem during math evaluation of ",
-                                    mathtext);
+                                       mathtext);
                             // fixup for said option for callers to have them 'legally' write a NUL sentinel one byte BEYOND the returned buffersize.
                             if (inlen >= maxlen)
                                 inlen--;
@@ -930,7 +930,7 @@ int crm_zexpandvar(char *buf,
                     if (retstat && *retstat < 0)
                     {
                         fatalerror("Problem during math evaluation of ",
-                                mathtext);
+                                   mathtext);
                         // fixup for said option for callers to have them 'legally' write a NUL sentinel one byte BEYOND the returned buffersize.
                         if (inlen >= maxlen)
                             inlen--;
@@ -998,13 +998,13 @@ int crm_zexpandvar(char *buf,
 //     nextwords, you're done.
 //
 int crm_restrictvar(char *boxstring,
-        int               boxstrlen,
+        int boxstrlen,
         int              *vht_idx,
         char            **outblock,
         int              *outoffset,
         int              *outlen,
         char             *errstr,
-        int               maxerrlen)
+        int maxerrlen)
 {
     char datastring[MAX_PATTERN + 1];
     int datastringlen;
@@ -1052,7 +1052,7 @@ int crm_restrictvar(char *boxstring,
 
     //     Get the variable name.
     if (crm_nextword(datastring, datastringlen, nw_start, &nw_start, &nw_len)
-        && nw_len > 0)
+       && nw_len > 0)
     {
         if (internal_trace)
         {
@@ -1083,8 +1083,8 @@ int crm_restrictvar(char *boxstring,
     if (!crm_is_legal_variable(varname, varnamelen))
     {
         snprintf(errstr, maxerrlen,
-                "This program wants to use an illegal variable named: '%.*s'",
-                varnamelen, varname);
+                 "This program wants to use an illegal variable named: '%.*s'",
+                 varnamelen, varname);
         errstr[maxerrlen - 1] = 0;
         return -2;
     }
@@ -1099,8 +1099,8 @@ int crm_restrictvar(char *boxstring,
     if (vht[vmidx] == NULL)
     {
         snprintf(errstr, maxerrlen,
-                "This program wants to use a nonexistent variable named: '%s'",
-                varname);
+                 "This program wants to use a nonexistent variable named: '%s'",
+                 varname);
         errstr[maxerrlen - 1] = 0;
         return -2;
     }
@@ -1111,11 +1111,11 @@ int crm_restrictvar(char *boxstring,
         mdw = tdw->filetext;
     //  sanity check - must be tdw or cdw for searching!
     if (vht[vmidx]->valtxt != tdw->filetext
-        && vht[vmidx]->valtxt != cdw->filetext)
+       && vht[vmidx]->valtxt != cdw->filetext)
     {
         snprintf(errstr, maxerrlen,
-                "Bogus text block (neither cdw nor tdw) on var '%s'",
-                varname);
+                 "Bogus text block (neither cdw nor tdw) on var '%s'",
+                 varname);
         errstr[maxerrlen - 1] = 0;
         return -2;
     }
@@ -1142,7 +1142,7 @@ int crm_restrictvar(char *boxstring,
 
         //      get the next word
         if (!crm_nextword(datastring, datastringlen, nw_start + nw_len, &nw_start, &nw_len)
-            || nw_len <= 0)
+           || nw_len <= 0)
         {
             //     Are we done?
             if (user_trace)
@@ -1178,8 +1178,8 @@ int crm_restrictvar(char *boxstring,
             {
                 j = 0;
                 nonfatalerror("Var-restriction has negative start or length.",
-                        "  Sorry, but negative start/lengths are not "
-                        "allowed, as it's a possible security exploit.");
+                              "  Sorry, but negative start/lengths are not "
+                              "allowed, as it's a possible security exploit.");
             }
             //      Do the offset/length alternation thing.
             if (in_subscript == 0)
@@ -1247,10 +1247,10 @@ int crm_restrictvar(char *boxstring,
                 regex_start = nw_start + 1;                   // regex starts +1 past start of str
                 nw_len = 0;                                   // nw_len is next open char idx.
                 while ((regex_start < datastringlen
-                        && datastring[regex_start] != '/')
-                       || (regex_start < datastringlen
-                           && datastring[regex_start] == '/'
-                           && datastring[regex_start - 1] == '\\'))
+                       && datastring[regex_start] != '/')
+                      || (regex_start < datastringlen
+                         && datastring[regex_start] == '/'
+                         && datastring[regex_start - 1] == '\\'))
                 {
                     //   overwrite escaped slashes?
                     if (datastring[regex_start] == '/')
@@ -1277,8 +1277,8 @@ int crm_restrictvar(char *boxstring,
                     curstmt = csl->cstmt;
                     crm_regerror(i, &preg, tempbuf, data_window_size);
                     snprintf(errstr, maxerrlen,
-                            "Regular Expression Compilation Problem on '%s'",
-                            tempbuf);
+                             "Regular Expression Compilation Problem on '%s'",
+                             tempbuf);
                     errstr[maxerrlen - 1] = 0;
                     return -2;
                 }
@@ -1291,7 +1291,7 @@ int crm_restrictvar(char *boxstring,
                 //    Time to run the match
                 start_ptr = &(mdw[actual_offset]);
                 j = crm_regexec(&preg, start_ptr, actual_len,
-                        WIDTHOF(matches), matches, 0, NULL);
+                                WIDTHOF(matches), matches, 0, NULL);
                 if (j == 0)
                 {
                     //    Yes, the regex matched.  Find the innermost

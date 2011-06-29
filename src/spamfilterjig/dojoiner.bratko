@@ -1,0 +1,5 @@
+#!/bin/csh
+
+src/boo2 < ~/www/bratko/tmp/${1}.all.spss0 > xxx
+src/boo2 < ~/www/bratko/tmp/${2}.all.spss0 > yyy
+src/joiner xxx yyy

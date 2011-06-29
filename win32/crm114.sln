@@ -1,486 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_zlib_buildall", "..\..\zlib\libzlib_buildall.vcproj", "{9B37C6A4-3146-416B-9E4F-6CF87D1D87ED}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{7B186539-BDE8-40B3-B8B0-5756AE1F0820} = {7B186539-BDE8-40B3-B8B0-5756AE1F0820}
-		{B65C7048-DFFA-4F63-858A-9DD1C673E885} = {B65C7048-DFFA-4F63-858A-9DD1C673E885}
-		{AA6666AA-E09F-4135-9C0C-4FE50C3C654B} = {AA6666AA-E09F-4135-9C0C-4FE50C3C654B}
-		{97BFD8EF-CDC2-4590-B613-0463FE67C0A3} = {97BFD8EF-CDC2-4590-B613-0463FE67C0A3}
-		{CA799A30-748D-4356-8B57-1A4D01418D90} = {CA799A30-748D-4356-8B57-1A4D01418D90}
-		{6C91A61A-87D0-4011-A060-22725C3BC33B} = {6C91A61A-87D0-4011-A060-22725C3BC33B}
-		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {6895750E-3DF8-4C1C-AC14-DB70859F5FEB}
-		{99FCB505-163C-41B3-8958-AD3B55CB6CF3} = {99FCB505-163C-41B3-8958-AD3B55CB6CF3}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minigzip", "..\..\zlib\minigzip.vcproj", "{99FCB505-163C-41B3-8958-AD3B55CB6CF3}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {6895750E-3DF8-4C1C-AC14-DB70859F5FEB}
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testzlib", "..\..\zlib\contrib\testzlib\testzlib.vcproj", "{AA6666AA-E09F-4135-9C0C-4FE50C3C654B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gzappend", "..\..\zlib\contrib\gzappend\gzappend.vcproj", "{7B186539-BDE8-40B3-B8B0-5756AE1F0820}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "puff", "..\..\zlib\contrib\puff\puff.vcproj", "{B65C7048-DFFA-4F63-858A-9DD1C673E885}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "untgz", "..\..\zlib\contrib\untgz\untgz.vcproj", "{CA799A30-748D-4356-8B57-1A4D01418D90}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minizip", "..\..\zlib\contrib\minizip\minizip.vcproj", "{6C91A61A-87D0-4011-A060-22725C3BC33B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {6895750E-3DF8-4C1C-AC14-DB70859F5FEB}
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minizlib", "..\..\zlib\contrib\minizip\minizlib.vcproj", "{6895750E-3DF8-4C1C-AC14-DB70859F5FEB}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miniunzip", "..\..\zlib\contrib\minizip\miniunzip.vcproj", "{97BFD8EF-CDC2-4590-B613-0463FE67C0A3}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {6895750E-3DF8-4C1C-AC14-DB70859F5FEB}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssl_crypt_dll", "..\..\openssl\i_a_win32\openssl_crypt_dll.vcproj", "{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssl_dll", "..\..\openssl\i_a_win32\openssl_dll.vcproj", "{E35AB405-0391-45E6-B669-070372EB559B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383} = {EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383}
-		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssl_lib", "..\..\openssl\i_a_win32\openssl_lib.vcproj", "{64209D98-CD42-4EBD-97CA-299161CF946A}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{9DE41B37-B0C0-4FB2-960B-3FC6544394C3} = {9DE41B37-B0C0-4FB2-960B-3FC6544394C3}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssl_util_dll", "..\..\openssl\i_a_win32\openssl_util_dll.vcproj", "{E9B52DF1-BD8C-41AB-AF36-1E4EF516492E}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383} = {EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383}
-		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
-		{E35AB405-0391-45E6-B669-070372EB559B} = {E35AB405-0391-45E6-B669-070372EB559B}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ia_ssl_win32", "..\..\openssl\i_a_win32\ia_ssl_win32.vcproj", "{58FBC69A-8E9B-462D-8B75-289A031A4CEB}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{E9B52DF1-BD8C-41AB-AF36-1E4EF516492E} = {E9B52DF1-BD8C-41AB-AF36-1E4EF516492E}
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_openssl_buildall", "..\..\openssl\i_a_win32\openssl_buildall.vcproj", "{8E3DB9C7-FF47-49F8-B415-0038E1EA759D}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{E35AB405-0391-45E6-B669-070372EB559B} = {E35AB405-0391-45E6-B669-070372EB559B}
-		{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383} = {EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383}
-		{64209D98-CD42-4EBD-97CA-299161CF946A} = {64209D98-CD42-4EBD-97CA-299161CF946A}
-		{58FBC69A-8E9B-462D-8B75-289A031A4CEB} = {58FBC69A-8E9B-462D-8B75-289A031A4CEB}
-		{E9B52DF1-BD8C-41AB-AF36-1E4EF516492E} = {E9B52DF1-BD8C-41AB-AF36-1E4EF516492E}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthread_dll", "..\..\pthreads\pthread.vcproj", "{5D459BA0-5EEB-47D3-A1C4-6B55C8D37EC0}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthread_lib", "..\..\pthreads\pthread_lib.vcproj", "{A063DFAD-6995-4E1A-AFFF-E43DC11E95B1}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthread_test", "..\..\pthreads\tests\Debug.vcproj", "{510AAB56-492A-4EF6-85AC-AD0F02BF5639}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{5D459BA0-5EEB-47D3-A1C4-6B55C8D37EC0} = {5D459BA0-5EEB-47D3-A1C4-6B55C8D37EC0}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IlmImf", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\IlmImf\IlmImf.vcproj", "{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{76ADDB29-9C6A-442C-9BA9-764C050F75DD} = {76ADDB29-9C6A-442C-9BA9-764C050F75DD}
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-		{39E34F88-DD2E-4A1C-96B7-624EA55FC1D7} = {39E34F88-DD2E-4A1C-96B7-624EA55FC1D7}
-		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IlmImfTest", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\IlmImfTest\IlmImfTest.vcproj", "{5FF57359-FC61-472E-ABDD-30D3BC4A5E9E}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-		{76ADDB29-9C6A-442C-9BA9-764C050F75DD} = {76ADDB29-9C6A-442C-9BA9-764C050F75DD}
-		{39E34F88-DD2E-4A1C-96B7-624EA55FC1D7} = {39E34F88-DD2E-4A1C-96B7-624EA55FC1D7}
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IlmImfExamples", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\IlmImfExamples\IlmImfExamples.vcproj", "{50755A60-BCC4-4C6F-B77F-0420493F343B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrenvmap", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrenvmap\exrenvmap.vcproj", "{90B61C5D-E217-46EC-B9E6-B67FC86AF42F}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrheader", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrheader\exrheader.vcproj", "{EFD7DCE5-55D9-4486-8C0C-F9884213624F}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrmakepreview", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrmakepreview\exrmakepreview.vcproj", "{00A40B08-A3AD-4E20-BA36-FD528B647CBE}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrmaketiled", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrmaketiled\exrmaketiled.vcproj", "{27A4D882-0F4D-44DE-8912-D1A13CF18184}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrstdattr", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrstdattr\exrstdattr.vcproj", "{7D3BC4DB-C194-43A7-B9A8-DD8C9F9E7945}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Half", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\Half\Half.vcproj", "{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{E48FA0E3-41C3-463E-850D-F8D51D80EDA6} = {E48FA0E3-41C3-463E-850D-F8D51D80EDA6}
-		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
-		{A791C204-A758-498F-8576-5139506C8A93} = {A791C204-A758-498F-8576-5139506C8A93}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HalfTest", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\HalfTest\HalfTest.vcproj", "{3F8BC6EF-70BC-4E76-92CE-6311AC16AD5D}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Iex", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\Iex\Iex.vcproj", "{C46B9A53-86D8-4B7F-AB15-B2C04518A195}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IexTest", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\IexTest\IexTest.vcproj", "{2AC61699-4F82-4FE6-A328-A03D9B242434}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IlmThread", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\IlmThread\IlmThread.vcproj", "{76ADDB29-9C6A-442C-9BA9-764C050F75DD}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Imath", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\Imath\Imath.vcproj", "{39E34F88-DD2E-4A1C-96B7-624EA55FC1D7}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImathTest", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\ImathTest\ImathTest.vcproj", "{E9CCABF4-1AD9-4E4C-8C28-A001679CDC5B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{39E34F88-DD2E-4A1C-96B7-624EA55FC1D7} = {39E34F88-DD2E-4A1C-96B7-624EA55FC1D7}
-		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzlib_dll", "..\..\zlib\libzlib_dll.vcproj", "{74FF2F85-52D7-48A2-B76F-4DACF9736E3C}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzlib_lib", "..\..\zlib\libzlib_lib.vcproj", "{9DE41B37-B0C0-4FB2-960B-3FC6544394C3}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "createDLL", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\createDLL\createDLL.vcproj", "{10BEB970-1565-4944-8768-81BD05DD0A3A}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eLUT", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\eLUT\eLUT.vcproj", "{A791C204-A758-498F-8576-5139506C8A93}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "toFloat", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\toFloat\toFloat.vcproj", "{E48FA0E3-41C3-463E-850D-F8D51D80EDA6}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenEXR Tools", "OpenEXR Tools", "{2EAB66A9-3675-4ADE-9BEE-EBCEF736E999}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exr2aces", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exr2aces\exr2aces.vcproj", "{226BD800-4CD5-404F-B768-1956042C97B7}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
-		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm114", "crm114.vcproj", "{4A077629-8590-434C-9486-0D069DF341A4}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
-		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssdiff", "cssdiff.vcproj", "{4A077629-8590-434C-9486-0D069DF341A1}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
-		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssmerge", "cssmerge.vcproj", "{4A077629-8590-434C-9486-0D069DF341A5}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
-		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssutil", "cssutil.vcproj", "{4A077629-8590-434C-9486-0D069DF341A3}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
-		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "obsf-util", "osbf-util.vcproj", "{4A077629-8590-434C-9486-0D069DF341A2}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
-		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtre_dll", "..\..\libtre\win32\libtre_dll.vcproj", "{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtre_lib", "..\..\libtre\win32\libtre_lib.vcproj", "{B3002C27-B40B-413E-BDB4-13E6678F199B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "retest", "..\..\libtre\win32\retest.vcproj", "{7437BF7D-E5EF-4580-9222-1EE3727A6E62}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm_test_vector_tokenizer", "crm_test_VT.vcproj", "{B7D2D4D5-9F5D-4E39-9020-7C09963888A5}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
-		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm114full_lib", "libcrm114.vcproj", "{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm_bmp_prof", "crm_bmp_prof.vcproj", "{5595B3F2-E162-45D2-9E66-81413C226818}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
-		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenEXR", "OpenEXR", "{4E83CCA3-E76C-4D82-8F73-DD4E39FCB307}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 	ProjectSection(SolutionItems) = preProject
 		..\..\OpenEXR\documentation\CtlManual.pdf = ..\..\OpenEXR\documentation\CtlManual.pdf
 		..\..\OpenEXR\documentation\OpenEXRColorManagement.pdf = ..\..\OpenEXR\documentation\OpenEXRColorManagement.pdf
@@ -493,78 +16,302 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenEXR", "OpenEXR", "{4E83
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{C121AACB-0173-4EED-97D8-104C9934F5EB}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{799E4E2D-8A57-48C4-A58D-6A116984B216}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test Apps", "Test Apps", "{5131B2E9-3420-4210-AAAD-E41F50F1C6FB}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Zlib", "Zlib", "{4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TRE regex", "TRE regex", "{5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenSSL", "OpenSSL", "{89616ADD-3EFD-4170-A768-28E80547D48F}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Win32 pthreads", "Win32 pthreads", "{3077D004-338D-42FB-BB2B-1D5B1861FEC9}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_zlib_buildall", "..\..\zlib\libzlib_buildall.vcproj", "{9B37C6A4-3146-416B-9E4F-6CF87D1D87ED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7B186539-BDE8-40B3-B8B0-5756AE1F0820} = {7B186539-BDE8-40B3-B8B0-5756AE1F0820}
+		{B65C7048-DFFA-4F63-858A-9DD1C673E885} = {B65C7048-DFFA-4F63-858A-9DD1C673E885}
+		{AA6666AA-E09F-4135-9C0C-4FE50C3C654B} = {AA6666AA-E09F-4135-9C0C-4FE50C3C654B}
+		{97BFD8EF-CDC2-4590-B613-0463FE67C0A3} = {97BFD8EF-CDC2-4590-B613-0463FE67C0A3}
+		{CA799A30-748D-4356-8B57-1A4D01418D90} = {CA799A30-748D-4356-8B57-1A4D01418D90}
+		{6C91A61A-87D0-4011-A060-22725C3BC33B} = {6C91A61A-87D0-4011-A060-22725C3BC33B}
+		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {6895750E-3DF8-4C1C-AC14-DB70859F5FEB}
+		{99FCB505-163C-41B3-8958-AD3B55CB6CF3} = {99FCB505-163C-41B3-8958-AD3B55CB6CF3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minigzip", "..\..\zlib\minigzip.vcproj", "{99FCB505-163C-41B3-8958-AD3B55CB6CF3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {6895750E-3DF8-4C1C-AC14-DB70859F5FEB}
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testzlib", "..\..\zlib\contrib\testzlib\testzlib.vcproj", "{AA6666AA-E09F-4135-9C0C-4FE50C3C654B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gzappend", "..\..\zlib\contrib\gzappend\gzappend.vcproj", "{7B186539-BDE8-40B3-B8B0-5756AE1F0820}"
+	ProjectSection(ProjectDependencies) = postProject
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "puff", "..\..\zlib\contrib\puff\puff.vcproj", "{B65C7048-DFFA-4F63-858A-9DD1C673E885}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "untgz", "..\..\zlib\contrib\untgz\untgz.vcproj", "{CA799A30-748D-4356-8B57-1A4D01418D90}"
+	ProjectSection(ProjectDependencies) = postProject
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minizip", "..\..\zlib\contrib\minizip\minizip.vcproj", "{6C91A61A-87D0-4011-A060-22725C3BC33B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {6895750E-3DF8-4C1C-AC14-DB70859F5FEB}
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minizlib", "..\..\zlib\contrib\minizip\minizlib.vcproj", "{6895750E-3DF8-4C1C-AC14-DB70859F5FEB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miniunzip", "..\..\zlib\contrib\minizip\miniunzip.vcproj", "{97BFD8EF-CDC2-4590-B613-0463FE67C0A3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {6895750E-3DF8-4C1C-AC14-DB70859F5FEB}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssl_crypt_dll", "..\..\openssl\i_a_win32\openssl_crypt_dll.vcproj", "{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383}"
+	ProjectSection(ProjectDependencies) = postProject
+		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssl_dll", "..\..\openssl\i_a_win32\openssl_dll.vcproj", "{E35AB405-0391-45E6-B669-070372EB559B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383} = {EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383}
+		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssl_lib", "..\..\openssl\i_a_win32\openssl_lib.vcproj", "{64209D98-CD42-4EBD-97CA-299161CF946A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9DE41B37-B0C0-4FB2-960B-3FC6544394C3} = {9DE41B37-B0C0-4FB2-960B-3FC6544394C3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openssl_util_dll", "..\..\openssl\i_a_win32\openssl_util_dll.vcproj", "{E9B52DF1-BD8C-41AB-AF36-1E4EF516492E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383} = {EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383}
+		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
+		{E35AB405-0391-45E6-B669-070372EB559B} = {E35AB405-0391-45E6-B669-070372EB559B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ia_ssl_win32", "..\..\openssl\i_a_win32\ia_ssl_win32.vcproj", "{58FBC69A-8E9B-462D-8B75-289A031A4CEB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E9B52DF1-BD8C-41AB-AF36-1E4EF516492E} = {E9B52DF1-BD8C-41AB-AF36-1E4EF516492E}
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_openssl_buildall", "..\..\openssl\i_a_win32\openssl_buildall.vcproj", "{8E3DB9C7-FF47-49F8-B415-0038E1EA759D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E35AB405-0391-45E6-B669-070372EB559B} = {E35AB405-0391-45E6-B669-070372EB559B}
+		{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383} = {EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383}
+		{64209D98-CD42-4EBD-97CA-299161CF946A} = {64209D98-CD42-4EBD-97CA-299161CF946A}
+		{58FBC69A-8E9B-462D-8B75-289A031A4CEB} = {58FBC69A-8E9B-462D-8B75-289A031A4CEB}
+		{E9B52DF1-BD8C-41AB-AF36-1E4EF516492E} = {E9B52DF1-BD8C-41AB-AF36-1E4EF516492E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthread_dll", "..\..\pthreads\pthread.vcproj", "{5D459BA0-5EEB-47D3-A1C4-6B55C8D37EC0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthread_lib", "..\..\pthreads\pthread_lib.vcproj", "{A063DFAD-6995-4E1A-AFFF-E43DC11E95B1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthread_test", "..\..\pthreads\tests\Debug.vcproj", "{510AAB56-492A-4EF6-85AC-AD0F02BF5639}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5D459BA0-5EEB-47D3-A1C4-6B55C8D37EC0} = {5D459BA0-5EEB-47D3-A1C4-6B55C8D37EC0}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IlmImf", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\IlmImf\IlmImf.vcproj", "{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{76ADDB29-9C6A-442C-9BA9-764C050F75DD} = {76ADDB29-9C6A-442C-9BA9-764C050F75DD}
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {74FF2F85-52D7-48A2-B76F-4DACF9736E3C}
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+		{39E34F88-DD2E-4A1C-96B7-624EA55FC1D7} = {39E34F88-DD2E-4A1C-96B7-624EA55FC1D7}
+		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IlmImfTest", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\IlmImfTest\IlmImfTest.vcproj", "{5FF57359-FC61-472E-ABDD-30D3BC4A5E9E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+		{76ADDB29-9C6A-442C-9BA9-764C050F75DD} = {76ADDB29-9C6A-442C-9BA9-764C050F75DD}
+		{39E34F88-DD2E-4A1C-96B7-624EA55FC1D7} = {39E34F88-DD2E-4A1C-96B7-624EA55FC1D7}
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IlmImfExamples", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\IlmImfExamples\IlmImfExamples.vcproj", "{50755A60-BCC4-4C6F-B77F-0420493F343B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrenvmap", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrenvmap\exrenvmap.vcproj", "{90B61C5D-E217-46EC-B9E6-B67FC86AF42F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrheader", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrheader\exrheader.vcproj", "{EFD7DCE5-55D9-4486-8C0C-F9884213624F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrmakepreview", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrmakepreview\exrmakepreview.vcproj", "{00A40B08-A3AD-4E20-BA36-FD528B647CBE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrmaketiled", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrmaketiled\exrmaketiled.vcproj", "{27A4D882-0F4D-44DE-8912-D1A13CF18184}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exrstdattr", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exrstdattr\exrstdattr.vcproj", "{7D3BC4DB-C194-43A7-B9A8-DD8C9F9E7945}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Half", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\Half\Half.vcproj", "{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E48FA0E3-41C3-463E-850D-F8D51D80EDA6} = {E48FA0E3-41C3-463E-850D-F8D51D80EDA6}
+		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
+		{A791C204-A758-498F-8576-5139506C8A93} = {A791C204-A758-498F-8576-5139506C8A93}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HalfTest", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\HalfTest\HalfTest.vcproj", "{3F8BC6EF-70BC-4E76-92CE-6311AC16AD5D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Iex", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\Iex\Iex.vcproj", "{C46B9A53-86D8-4B7F-AB15-B2C04518A195}"
+	ProjectSection(ProjectDependencies) = postProject
+		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IexTest", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\IexTest\IexTest.vcproj", "{2AC61699-4F82-4FE6-A328-A03D9B242434}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IlmThread", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\IlmThread\IlmThread.vcproj", "{76ADDB29-9C6A-442C-9BA9-764C050F75DD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Imath", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\Imath\Imath.vcproj", "{39E34F88-DD2E-4A1C-96B7-624EA55FC1D7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {10BEB970-1565-4944-8768-81BD05DD0A3A}
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImathTest", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\ImathTest\ImathTest.vcproj", "{E9CCABF4-1AD9-4E4C-8C28-A001679CDC5B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{39E34F88-DD2E-4A1C-96B7-624EA55FC1D7} = {39E34F88-DD2E-4A1C-96B7-624EA55FC1D7}
+		{C46B9A53-86D8-4B7F-AB15-B2C04518A195} = {C46B9A53-86D8-4B7F-AB15-B2C04518A195}
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzlib_dll", "..\..\zlib\libzlib_dll.vcproj", "{74FF2F85-52D7-48A2-B76F-4DACF9736E3C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzlib_lib", "..\..\zlib\libzlib_lib.vcproj", "{9DE41B37-B0C0-4FB2-960B-3FC6544394C3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "createDLL", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\createDLL\createDLL.vcproj", "{10BEB970-1565-4944-8768-81BD05DD0A3A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eLUT", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\eLUT\eLUT.vcproj", "{A791C204-A758-498F-8576-5139506C8A93}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "toFloat", "..\..\OpenEXR\ilmbase\vc\vc8\IlmBase\toFloat\toFloat.vcproj", "{E48FA0E3-41C3-463E-850D-F8D51D80EDA6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exr2aces", "..\..\OpenEXR\OpenEXR\vc\vc8\OpenEXR\exr2aces\exr2aces.vcproj", "{226BD800-4CD5-404F-B768-1956042C97B7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {7DF42126-D237-41D3-9ABE-A3ACC8BAC56E}
+		{9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128} = {9EDB5C0F-BFD0-4A59-BB93-F06A52BB0128}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm114", "crm114.vcproj", "{4A077629-8590-434C-9486-0D069DF341A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
+		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssdiff", "cssdiff.vcproj", "{4A077629-8590-434C-9486-0D069DF341A1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
+		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssmerge", "cssmerge.vcproj", "{4A077629-8590-434C-9486-0D069DF341A5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
+		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssutil", "cssutil.vcproj", "{4A077629-8590-434C-9486-0D069DF341A3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
+		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "obsf-util", "osbf-util.vcproj", "{4A077629-8590-434C-9486-0D069DF341A2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
+		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtre_dll", "..\..\libtre\win32\libtre_dll.vcproj", "{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtre_lib", "..\..\libtre\win32\libtre_lib.vcproj", "{B3002C27-B40B-413E-BDB4-13E6678F199B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "retest", "..\..\libtre\win32\retest.vcproj", "{7437BF7D-E5EF-4580-9222-1EE3727A6E62}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm_test_vector_tokenizer", "crm_test_VT.vcproj", "{B7D2D4D5-9F5D-4E39-9020-7C09963888A5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
+		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm114full_lib", "libcrm114.vcproj", "{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm_bmp_prof", "crm_bmp_prof.vcproj", "{5595B3F2-E162-45D2-9E66-81413C226818}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
+		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jig_reporter", "jig_reporter.vcproj", "{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jig_rungen", "jig_rungen.vcproj", "{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcrm114_NG_dll", "libcrm114_NG.vcproj", "{202D8670-C05F-48A0-97F3-CF531C84C34A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mk_excel", "..\..\ExcelFunctions4Henk\msvc2005\mk_excel.vcproj", "{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcrm114_test1", "libcrm114_t1.vcproj", "{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{202D8670-C05F-48A0-97F3-CF531C84C34A} = {202D8670-C05F-48A0-97F3-CF531C84C34A}
 	EndProjectSection
 EndProject
 Global
@@ -1201,61 +948,30 @@ Global
 		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Release|Win32.Build.0 = Release|Win32
 		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Release|x64.ActiveCfg = Release|x64
 		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Release|x64.Build.0 = Release|x64
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|Itanium.ActiveCfg = Debug|Itanium
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|Itanium.Build.0 = Debug|Itanium
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|Win32.ActiveCfg = Debug|Win32
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|Win32.Build.0 = Debug|Win32
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|x64.ActiveCfg = Debug|x64
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|x64.Build.0 = Debug|x64
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|Itanium.ActiveCfg = Release|Itanium
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|Itanium.Build.0 = Release|Itanium
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|Win32.ActiveCfg = Release|Win32
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|Win32.Build.0 = Release|Win32
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|x64.ActiveCfg = Release|x64
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|x64.Build.0 = Release|x64
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|Itanium.ActiveCfg = Debug|Itanium
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|Itanium.Build.0 = Debug|Itanium
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|Win32.Build.0 = Debug|Win32
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|x64.ActiveCfg = Debug|x64
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|x64.Build.0 = Debug|x64
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|Itanium.ActiveCfg = Release|Itanium
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|Itanium.Build.0 = Release|Itanium
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|Win32.ActiveCfg = Release|Win32
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|Win32.Build.0 = Release|Win32
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|x64.ActiveCfg = Release|x64
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|x64.Build.0 = Release|x64
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Debug|Itanium.ActiveCfg = Debug|Itanium
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Debug|Itanium.Build.0 = Debug|Itanium
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Debug|Win32.Build.0 = Debug|Win32
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Debug|x64.ActiveCfg = Debug|x64
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Debug|x64.Build.0 = Debug|x64
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Release|Itanium.ActiveCfg = Release|Itanium
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Release|Itanium.Build.0 = Release|Itanium
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Release|Win32.ActiveCfg = Release|Win32
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Release|Win32.Build.0 = Release|Win32
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Release|x64.ActiveCfg = Release|x64
+		{3D8198D3-11EC-4D6D-A27C-EF2359F05DB8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2} = {799E4E2D-8A57-48C4-A58D-6A116984B216}
-		{89616ADD-3EFD-4170-A768-28E80547D48F} = {799E4E2D-8A57-48C4-A58D-6A116984B216}
-		{3077D004-338D-42FB-BB2B-1D5B1861FEC9} = {799E4E2D-8A57-48C4-A58D-6A116984B216}
 		{4E83CCA3-E76C-4D82-8F73-DD4E39FCB307} = {799E4E2D-8A57-48C4-A58D-6A116984B216}
 		{2EAB66A9-3675-4ADE-9BEE-EBCEF736E999} = {799E4E2D-8A57-48C4-A58D-6A116984B216}
+		{4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2} = {799E4E2D-8A57-48C4-A58D-6A116984B216}
 		{5418E8FF-7892-41CB-875B-D2DC5E9D0FD8} = {799E4E2D-8A57-48C4-A58D-6A116984B216}
-		{AA6666AA-E09F-4135-9C0C-4FE50C3C654B} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{7B186539-BDE8-40B3-B8B0-5756AE1F0820} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{B65C7048-DFFA-4F63-858A-9DD1C673E885} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{CA799A30-748D-4356-8B57-1A4D01418D90} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{6C91A61A-87D0-4011-A060-22725C3BC33B} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{97BFD8EF-CDC2-4590-B613-0463FE67C0A3} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{9DE41B37-B0C0-4FB2-960B-3FC6544394C3} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{9B37C6A4-3146-416B-9E4F-6CF87D1D87ED} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{99FCB505-163C-41B3-8958-AD3B55CB6CF3} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
-		{E35AB405-0391-45E6-B669-070372EB559B} = {89616ADD-3EFD-4170-A768-28E80547D48F}
-		{64209D98-CD42-4EBD-97CA-299161CF946A} = {89616ADD-3EFD-4170-A768-28E80547D48F}
-		{E9B52DF1-BD8C-41AB-AF36-1E4EF516492E} = {89616ADD-3EFD-4170-A768-28E80547D48F}
-		{58FBC69A-8E9B-462D-8B75-289A031A4CEB} = {89616ADD-3EFD-4170-A768-28E80547D48F}
-		{8E3DB9C7-FF47-49F8-B415-0038E1EA759D} = {89616ADD-3EFD-4170-A768-28E80547D48F}
-		{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383} = {89616ADD-3EFD-4170-A768-28E80547D48F}
-		{A063DFAD-6995-4E1A-AFFF-E43DC11E95B1} = {3077D004-338D-42FB-BB2B-1D5B1861FEC9}
-		{510AAB56-492A-4EF6-85AC-AD0F02BF5639} = {3077D004-338D-42FB-BB2B-1D5B1861FEC9}
-		{5D459BA0-5EEB-47D3-A1C4-6B55C8D37EC0} = {3077D004-338D-42FB-BB2B-1D5B1861FEC9}
+		{89616ADD-3EFD-4170-A768-28E80547D48F} = {799E4E2D-8A57-48C4-A58D-6A116984B216}
+		{3077D004-338D-42FB-BB2B-1D5B1861FEC9} = {799E4E2D-8A57-48C4-A58D-6A116984B216}
+		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {4E83CCA3-E76C-4D82-8F73-DD4E39FCB307}
 		{5FF57359-FC61-472E-ABDD-30D3BC4A5E9E} = {4E83CCA3-E76C-4D82-8F73-DD4E39FCB307}
 		{50755A60-BCC4-4C6F-B77F-0420493F343B} = {4E83CCA3-E76C-4D82-8F73-DD4E39FCB307}
 		{90B61C5D-E217-46EC-B9E6-B67FC86AF42F} = {4E83CCA3-E76C-4D82-8F73-DD4E39FCB307}
@@ -1271,21 +987,39 @@ Global
 		{39E34F88-DD2E-4A1C-96B7-624EA55FC1D7} = {4E83CCA3-E76C-4D82-8F73-DD4E39FCB307}
 		{E9CCABF4-1AD9-4E4C-8C28-A001679CDC5B} = {4E83CCA3-E76C-4D82-8F73-DD4E39FCB307}
 		{226BD800-4CD5-404F-B768-1956042C97B7} = {4E83CCA3-E76C-4D82-8F73-DD4E39FCB307}
-		{7DF42126-D237-41D3-9ABE-A3ACC8BAC56E} = {4E83CCA3-E76C-4D82-8F73-DD4E39FCB307}
-		{A791C204-A758-498F-8576-5139506C8A93} = {2EAB66A9-3675-4ADE-9BEE-EBCEF736E999}
-		{E48FA0E3-41C3-463E-850D-F8D51D80EDA6} = {2EAB66A9-3675-4ADE-9BEE-EBCEF736E999}
-		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {2EAB66A9-3675-4ADE-9BEE-EBCEF736E999}
+		{4A077629-8590-434C-9486-0D069DF341A1} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
 		{4A077629-8590-434C-9486-0D069DF341A5} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
 		{4A077629-8590-434C-9486-0D069DF341A3} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
 		{4A077629-8590-434C-9486-0D069DF341A2} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
 		{5595B3F2-E162-45D2-9E66-81413C226818} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
-		{4A077629-8590-434C-9486-0D069DF341A1} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
 		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
 		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
+		{10BEB970-1565-4944-8768-81BD05DD0A3A} = {2EAB66A9-3675-4ADE-9BEE-EBCEF736E999}
+		{A791C204-A758-498F-8576-5139506C8A93} = {2EAB66A9-3675-4ADE-9BEE-EBCEF736E999}
+		{E48FA0E3-41C3-463E-850D-F8D51D80EDA6} = {2EAB66A9-3675-4ADE-9BEE-EBCEF736E999}
+		{B7D2D4D5-9F5D-4E39-9020-7C09963888A5} = {5131B2E9-3420-4210-AAAD-E41F50F1C6FB}
+		{9B37C6A4-3146-416B-9E4F-6CF87D1D87ED} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{99FCB505-163C-41B3-8958-AD3B55CB6CF3} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{AA6666AA-E09F-4135-9C0C-4FE50C3C654B} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{7B186539-BDE8-40B3-B8B0-5756AE1F0820} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{B65C7048-DFFA-4F63-858A-9DD1C673E885} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{CA799A30-748D-4356-8B57-1A4D01418D90} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{6C91A61A-87D0-4011-A060-22725C3BC33B} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{6895750E-3DF8-4C1C-AC14-DB70859F5FEB} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{97BFD8EF-CDC2-4590-B613-0463FE67C0A3} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{74FF2F85-52D7-48A2-B76F-4DACF9736E3C} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{9DE41B37-B0C0-4FB2-960B-3FC6544394C3} = {4AD153B9-7CEC-4EBF-B95D-628BE57EEBF2}
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}
 		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}
 		{7437BF7D-E5EF-4580-9222-1EE3727A6E62} = {5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}
-		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}
-		{B7D2D4D5-9F5D-4E39-9020-7C09963888A5} = {5131B2E9-3420-4210-AAAD-E41F50F1C6FB}
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B} = {5131B2E9-3420-4210-AAAD-E41F50F1C6FB}
+		{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383} = {89616ADD-3EFD-4170-A768-28E80547D48F}
+		{E35AB405-0391-45E6-B669-070372EB559B} = {89616ADD-3EFD-4170-A768-28E80547D48F}
+		{64209D98-CD42-4EBD-97CA-299161CF946A} = {89616ADD-3EFD-4170-A768-28E80547D48F}
+		{E9B52DF1-BD8C-41AB-AF36-1E4EF516492E} = {89616ADD-3EFD-4170-A768-28E80547D48F}
+		{58FBC69A-8E9B-462D-8B75-289A031A4CEB} = {89616ADD-3EFD-4170-A768-28E80547D48F}
+		{8E3DB9C7-FF47-49F8-B415-0038E1EA759D} = {89616ADD-3EFD-4170-A768-28E80547D48F}
+		{5D459BA0-5EEB-47D3-A1C4-6B55C8D37EC0} = {3077D004-338D-42FB-BB2B-1D5B1861FEC9}
+		{A063DFAD-6995-4E1A-AFFF-E43DC11E95B1} = {3077D004-338D-42FB-BB2B-1D5B1861FEC9}
+		{510AAB56-492A-4EF6-85AC-AD0F02BF5639} = {3077D004-338D-42FB-BB2B-1D5B1861FEC9}
 	EndGlobalSection
 EndGlobal

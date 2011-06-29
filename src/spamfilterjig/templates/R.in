@@ -1,0 +1,3 @@
+x = read.table("NAME",header=TRUE)
+r = glm(formula = x$err ~ x$seq10k, family=binomial(logit))
+summary(r)

@@ -24,7 +24,7 @@
 
 
 
-#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+#if !defined(CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
 
 /*
  * Code to register and log profiling events; these events can be processed by an additional
@@ -96,16 +96,16 @@ void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument
     int i;
     CRM_ANALYSIS_PROFILE_ELEMENT store;
 
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
     LARGE_INTEGER ticks;
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
     struct timespec timer1;
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
     struct timeval timer1;
-#elif defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+#elif defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
     struct tms timer1;
     clock_t timer2;
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
     clock_t timer1;
 #else
     // nada
@@ -117,13 +117,13 @@ void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument
 
     memset(&store, 0, sizeof(store));         // memset() is 'better' than 'store={0} init', because on MSVC at least the latter does not touch the alignment bytes between the fields and having 'random data' in there may complicate header decoding
 
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
     if (!QueryPerformanceCounter(&ticks))
     {
         ticks.QuadPart = 0;
     }
     store.time_mark = ticks.QuadPart;
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
     if (!clock_gettime(CLOCK_REALTIME, &timer1))
     {
         store.time_mark = ((int64_t)timer1.tv_sec) * 1000000000LL + timer1.tv_nsec;
@@ -132,7 +132,7 @@ void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument
     {
         store.time_mark = 0; // unknown; due to error
     }
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
     if (!gettimeofday(&timer1))
     {
         store.time_mark = ((int64_t)timer1.tv_sec) * 1000000LL + timer1.tv_usec;
@@ -141,7 +141,7 @@ void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument
     {
         store.time_mark = 0; // unknown; due to error
     }
-#elif defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+#elif defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
     struct tms timer1;
     timer2 = times(&timer1);
     if (times2 == (clock) - 1)
@@ -152,7 +152,7 @@ void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument
     {
         store.time_mark = timer2;
     }
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
     timer1 = clock();
     if (times1 == (clock) - 1)
     {
@@ -226,9 +226,9 @@ void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument
         fclose(cfg->fd);
         cfg->fd = NULL;
         untrappableerror_ex(SRC_LOC(), "Cannot write analysis profile data to file '%s'! We're pooped. Error %d(%s)",
-                cfg->filepath,
-                errno,
-                errno_descr(errno));
+                            cfg->filepath,
+                            errno,
+                            errno_descr(errno));
         return;
     }
 }
@@ -242,7 +242,7 @@ void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument
 //
 static int64_t crm_analysis_get_timer_freq(int64_t *clock_rez)
 {
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
     LARGE_INTEGER freq;
 
     if (QueryPerformanceFrequency(&freq))
@@ -256,7 +256,7 @@ static int64_t crm_analysis_get_timer_freq(int64_t *clock_rez)
         *clock_rez = 0;
         return 0;
     }
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
     struct timespec timer1;
     if (!clock_getres(CLOCK_REALTIME, &timer1))
     {
@@ -272,12 +272,12 @@ static int64_t crm_analysis_get_timer_freq(int64_t *clock_rez)
     }
     return 1000000000;     // nanoseconds
 
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
     *clock_rez = 0;     // unknown
     return 1000000;     // microseconds rez
 
-#elif defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
-#if defined (HAVE_SYSCONF)
+#elif defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
+#if defined(HAVE_SYSCONF)
     // from the man page: Applications should use sysconf(_SC_CLK_TCK) to determine the number of clock ticks per second as it may vary from system to system.
     long int ret = sysconf(_SC_CLK_TCK);
     if (ret == -1)
@@ -295,7 +295,7 @@ static int64_t crm_analysis_get_timer_freq(int64_t *clock_rez)
 
 #endif // HAVE_SYSCONF
 
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
     *clock_rez = 0;            // unknown
     return CLOCKS_PER_SEC;     // this is the divisor, NOT the actual accuracy!
 
@@ -335,7 +335,7 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
         args_length = (int)strlen(args);
     }
 
-    for (state = 0; ; state++)
+    for (state = 0;; state++)
     {
         int start;
         int len;
@@ -386,10 +386,10 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
 
                 fatalerror_ex(SRC_LOC(), "We cannot open the analysis file '%s' while setting up the analysis session. "
                                          "We're pooped. (full path: '%s') errno=%d(%s)",
-                        cfg->filepath,
-                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), cfg->filepath),
-                        errno,
-                        errno_descr(errno));
+                              cfg->filepath,
+                              mk_absolute_path(dirbuf, WIDTHOF(dirbuf), cfg->filepath),
+                              errno,
+                              errno_descr(errno));
                 free(cfg->filepath);
                 return 1;
             }
@@ -402,10 +402,10 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
             if (len >= 40 || len < 1)
             {
                 nonfatalerror_ex(
-                        SRC_LOC(), "Illegal analysis marker specified: '%.*s'. "
-                                   "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
-                        len,
-                        wp);
+                    SRC_LOC(), "Illegal analysis marker specified: '%.*s'. "
+                               "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
+                    len,
+                    wp);
             }
             else
             {
@@ -484,18 +484,18 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
                     else if (matchcount == 0)
                     {
                         nonfatalerror_ex(
-                                SRC_LOC(), "Unidentified analysis marker specified: '%.*s'. "
-                                           "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
-                                len,
-                                wp);
+                            SRC_LOC(), "Unidentified analysis marker specified: '%.*s'. "
+                                       "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
+                            len,
+                            wp);
                     }
                     else
                     {
                         nonfatalerror_ex(
-                                SRC_LOC(), "Ambiguous analysis marker shorthand specified: '%.*s'. "
-                                           "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
-                                len,
-                                wp);
+                            SRC_LOC(), "Ambiguous analysis marker shorthand specified: '%.*s'. "
+                                       "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
+                            len,
+                            wp);
                     }
                 }
             }
@@ -590,7 +590,7 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
         cfg->fd = NULL;
         fatalerror_ex(SRC_LOC(), "We cannot stat the analysis file '%s' while setting up the analysis session. "
                                  "We're pooped.",
-                cfg->filepath);
+                      cfg->filepath);
         free(cfg->filepath);
         return 1;
     }
@@ -617,9 +617,9 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
                     fclose(cfg->fd);
                     cfg->fd = NULL;
                     untrappableerror_ex(SRC_LOC(), "Cannot pad existing analysis profile file '%s'! We're pooped. Error %d(%s)",
-                            cfg->filepath,
-                            errno,
-                            errno_descr(errno));
+                                        cfg->filepath,
+                                        errno,
+                                        errno_descr(errno));
                     return 1;
                 }
             }
@@ -630,9 +630,9 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
                 fclose(cfg->fd);
                 cfg->fd = NULL;
                 untrappableerror_ex(SRC_LOC(), "Cannot write NUL session sentinel to existing analysis profile file '%s'! We're pooped. Error %d(%s)",
-                        cfg->filepath,
-                        errno,
-                        errno_descr(errno));
+                                    cfg->filepath,
+                                    errno,
+                                    errno_descr(errno));
                 return 1;
             }
         }
@@ -650,9 +650,9 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
             fclose(cfg->fd);
             cfg->fd = NULL;
             untrappableerror_ex(SRC_LOC(), "Cannot write analysis profile file header to file '%s'! We're pooped. Error %d(%s)",
-                    cfg->filepath,
-                    errno,
-                    errno_descr(errno));
+                                cfg->filepath,
+                                errno,
+                                errno_descr(errno));
             return 1;
         }
     }

@@ -85,7 +85,7 @@ void free_debugger_data(void)
         free(dbg_last_command);
         dbg_last_command = NULL;
     }
-    if (mytty && mytty != stdin) 
+    if (mytty && mytty != stdin)
     {
         fclose(mytty);
         mytty = NULL;
@@ -108,7 +108,7 @@ int dbg_decode_step_mode(char **arg)
     char *dbg_arg = *arg;
     int cmd_done_len = 0;
 
-    for ( ; dbg_arg; dbg_arg++)
+    for (; dbg_arg; dbg_arg++)
     {
         switch (*dbg_arg)
         {
@@ -195,10 +195,10 @@ int dbg_decode_step_mode(char **arg)
  * -3: non-numeric cruft immediately after ./, which do not match any of 'accepted_follow_chars'
  */
 int decode_line_number_range(const char *buf,
-        int                              buflen,
+        int buflen,
         int                             *start,
         int                             *end,
-        int                              current,
+        int current,
         const char                      *accepted_follow_chars)
 {
     char s[256];
@@ -282,7 +282,7 @@ int decode_line_number_range(const char *buf,
             ret += i + 1;                     // one past the '$'
         }
         else if (!accepted_follow_chars
-                 || !strchr(accepted_follow_chars, s2[i]))
+                || !strchr(accepted_follow_chars, s2[i]))
         {
             // failed to decode: cruft following the initial . or ,
             return -3;
@@ -501,7 +501,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                     }
                     // when we get here, we couldn't/wouldn't expand for some reason:
                     // copy parameter verbatim to 'end':
-                    for ( ; dbg_arg <= end && i < WIDTHOF(buf);)
+                    for (; dbg_arg <= end && i < WIDTHOF(buf);)
                     {
                         buf[i++] = *dbg_arg++;
                     }
@@ -711,14 +711,14 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
 
 
 
-#if defined (CRM_WITHOUT_MJT_INLINED_QSORT)
+#if defined(CRM_WITHOUT_MJT_INLINED_QSORT)
 
 static int dbg_vht_compare(const void *a, const void *b)
 {
     return strncmp((*(VHT_CELL **)a)->nametxt + (*(VHT_CELL **)a)->nstart,
-            (*(VHT_CELL **)b)->nametxt + (*(VHT_CELL **)b)->nstart,
-            CRM_MAX((*(VHT_CELL **)a)->nlen,
-                    (*(VHT_CELL **)b)->nlen));
+                   (*(VHT_CELL **)b)->nametxt + (*(VHT_CELL **)b)->nstart,
+                   CRM_MAX((*(VHT_CELL **)a)->nlen,
+                           (*(VHT_CELL **)b)->nlen));
 }
 
 #else
@@ -757,8 +757,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
     CRM_ASSERT(csl != NULL);
 
     if (csl != NULL
-        && csl->cstmt >= 0 && csl->cstmt <= /* !!! */ csl->nstmts
-        && csl->mct[csl->cstmt] != NULL)
+       && csl->cstmt >= 0 && csl->cstmt <= /* !!! */ csl->nstmts
+       && csl->mct[csl->cstmt] != NULL)
     {
         current_crm_command = csl->mct[csl->cstmt];
 
@@ -770,7 +770,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
     if (!current_crm_command || !current_crm_commanddef)
     {
         untrappableerror("The debugger has found that the CRM114 compiler screwed up somewhere. ",
-                "The inspected statement doesn't seem valid. You may scream now...");
+                         "The inspected statement doesn't seem valid. You may scream now...");
 
         inside_debugger = 0;         // signal the other code section we're now LEAVING the debugger!
 
@@ -887,15 +887,15 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
         user_trace = 1;
         if (user_trace)
             fprintf(stderr, "Opening the user terminal for debugging I/O\n");
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
         mytty = fopen("CON", "rb");
 #else
         mytty = fopen("/dev/tty", "rb");
 #endif
-	if (!mytty)
-	{
-		mytty = stdin;
-	}
+        if (!mytty)
+        {
+            mytty = stdin;
+        }
         clearerr(mytty);
     }
     if (!show_expr_list)
@@ -904,7 +904,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
         if (!show_expr_list)
         {
             untrappableerror("Cannot allocate debugger expression show list",
-                    "Stick a fork in us; we're _done_.");
+                             "Stick a fork in us; we're _done_.");
         }
         show_expr_list[0] = NULL;
     }
@@ -914,7 +914,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
         if (!dbg_inbuf)
         {
             untrappableerror("Cannot allocate debugger input buffer",
-                    "Stick a fork in us; we're _done_.");
+                             "Stick a fork in us; we're _done_.");
         }
         dbg_inbuf[0] = 0;
 
@@ -922,7 +922,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
         if (!dbg_outbuf)
         {
             untrappableerror("Cannot allocate debugger output buffer",
-                    "Stick a fork in us; we're _done_.");
+                             "Stick a fork in us; we're _done_.");
         }
         dbg_outbuf[0] = 0;
 
@@ -930,7 +930,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
         if (!dbg_last_command)
         {
             untrappableerror("Cannot allocate debugger input recall buffer",
-                    "Stick a fork in us; we're _done_.");
+                             "Stick a fork in us; we're _done_.");
         }
         dbg_last_command[0] = 0;
     }
@@ -959,7 +959,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
     }
 
 
-    for ( ; !parsing_done;)
+    for (; !parsing_done;)
     {
         // show watched expressions:
         int watch;
@@ -996,7 +996,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         user_trace = old_user_trace;
                         internal_trace = old_internal_trace;
                         untrappableerror("cannot allocate buffer to display watched expressions.",
-                                "Stick a fork in us; we're _done_.");
+                                         "Stick a fork in us; we're _done_.");
                     }
                 }
 
@@ -1057,9 +1057,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                     }
 
                     retval = crm_zexpandvar(show_expr_buffer, (int)strlen(
-                                    show_expr_buffer), data_window_size,
-                            &retval,
-                            expand_flags, vht, tdw);
+                                                show_expr_buffer), data_window_size,
+                                            &retval,
+                                            expand_flags, vht, tdw);
 
                     fprintf(stderr,
                             "[#%2d]: '%s' (%d) /%s/\n",
@@ -1085,9 +1085,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                     step_mode_str[0] = 'E';
                 }
                 step_mode_str[1] = 'i';
-                switch (dbg_step_mode &
-                        (SM_STEP_INTO | SM_STEP_OVER_CALL | SM_STEP_OUT_RETURN |
-                         SM_STEP_OUT_BRACED_SCOPE))
+                switch (dbg_step_mode
+                        & (SM_STEP_INTO | SM_STEP_OVER_CALL | SM_STEP_OUT_RETURN
+                           | SM_STEP_OUT_BRACED_SCOPE))
                 {
                 case 0:
                     break;
@@ -1165,8 +1165,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                 ichar = 0;
 
                 while (!feof(mytty)
-                       && ichar < dbg_iobuf_size - 1
-                       && (dbg_inbuf[ichar - 1] != '\n'))
+                      && ichar < dbg_iobuf_size - 1
+                      && (dbg_inbuf[ichar - 1] != '\n'))
                 {
                     dbg_inbuf[ichar] = fgetc(mytty);
                     ichar++;
@@ -1429,8 +1429,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                 //
                 // With a 'thank you' to 'C' boolean evauation preventing crashes in the conditional :-)
                 if (!strchr(last_e_expression, ':')
-                    || !strchr("*+#@", strchr(last_e_expression, ':')[1])
-                    || ':' != strchr(last_e_expression, ':')[2])
+                   || !strchr("*+#@", strchr(last_e_expression, ':')[1])
+                   || ':' != strchr(last_e_expression, ':')[2])
                 {
                     // add every variable matching the specified regex
                     int i;
@@ -1485,7 +1485,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         if (!vht_ref)
                         {
                             untrappableerror("Cannot allocate debugger memory",
-                                    "Stick a fork in us; we're _done_.");
+                                             "Stick a fork in us; we're _done_.");
                         }
 
                         len = 0;
@@ -1508,9 +1508,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
                                 // see if this variable matches our regex:
                                 status = crm_regexec(&preg,
-                                        varname, varlen,
-                                        WIDTHOF(match), match,
-                                        0, NULL);
+                                                     varname, varlen,
+                                                     WIDTHOF(match), match,
+                                                     0, NULL);
                                 if (status != REG_OK && status != REG_NOMATCH)
                                 {
                                     CRM_ASSERT(dbg_outbuf);
@@ -1560,7 +1560,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
                             // note that the variable comes with its own ':' delimiters already!
                             snprintf(dbg_outbuf, dbg_iobuf_size, ":*%.*s",
-                                    vht_ref[i]->nlen, vht_ref[i]->nametxt + vht_ref[i]->nstart);
+                                     vht_ref[i]->nlen, vht_ref[i]->nametxt + vht_ref[i]->nstart);
                             dbg_outbuf[dbg_iobuf_size - 1] = 0;
 
                             // make sure the expression isn't in the list already:
@@ -1577,13 +1577,13 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                                 if (!show_expr_list)
                                 {
                                     untrappableerror("Cannot allocate debugger memory",
-                                            "Stick a fork in us; we're _done_.");
+                                                     "Stick a fork in us; we're _done_.");
                                 }
                                 show_expr_list[j] = strdup(dbg_outbuf);
                                 if (!show_expr_list[j])
                                 {
                                     untrappableerror("Cannot allocate debugger memory",
-                                            "Stick a fork in us; we're _done_.");
+                                                     "Stick a fork in us; we're _done_.");
                                 }
                                 show_expr_list[j + 1] = NULL;
 
@@ -1616,13 +1616,13 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         if (!show_expr_list)
                         {
                             untrappableerror("Cannot allocate debugger memory",
-                                    "Stick a fork in us; we're _done_.");
+                                             "Stick a fork in us; we're _done_.");
                         }
                         show_expr_list[j] = strdup(last_e_expression);
                         if (!show_expr_list[j])
                         {
                             untrappableerror("Cannot allocate debugger memory",
-                                    "Stick a fork in us; we're _done_.");
+                                             "Stick a fork in us; we're _done_.");
                         }
                         show_expr_list[j + 1] = NULL;
 
@@ -1749,9 +1749,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
                                 // see if this variable matches our regex:
                                 status = crm_regexec(&preg,
-                                        varname, varlen,
-                                        WIDTHOF(match), match,
-                                        0, NULL);
+                                                     varname, varlen,
+                                                     WIDTHOF(match), match,
+                                                     0, NULL);
                                 if (status != REG_OK && status != REG_NOMATCH)
                                 {
                                     CRM_ASSERT(dbg_outbuf);
@@ -1837,11 +1837,11 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                 cmd_done_len = (int)strcspn(dbg_inbuf, ";\r\n");
 
                 i = decode_line_number_range(&dbg_inbuf[1],
-                        0,
-                        &stmtnum,
-                        &endstmtnum,
-                        csl->cstmt,
-                        ";");
+                                             0,
+                                             &stmtnum,
+                                             &endstmtnum,
+                                             csl->cstmt,
+                                             ";");
 
                 if (i < 0)
                 {
@@ -1874,7 +1874,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
                     fprintf(stderr,
                             "\n--- listing: --------------------------------------------\n");
-                    for ( ; stmtnum <= endstmtnum; stmtnum++)
+                    for (; stmtnum <= endstmtnum; stmtnum++)
                     {
                         int stmt_len;
 
@@ -1910,7 +1910,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         int tstart;
                         int tlen;
                         if (crm_nextword(dbg_arg, (int)strlen(dbg_arg), 0,
-                                    &tstart, &tlen))
+                                         &tstart, &tlen))
                         {
                             crm_memmove(dbg_inbuf, &dbg_arg[tstart], tlen);
                             dbg_inbuf[tlen] = 0;
@@ -1948,7 +1948,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                     {
                         fprintf(stderr, "Next statement is statement %d\n", nextstmt);
 
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                         csl->next_stmt_due_to_jump = nextstmt;
                         csl->next_stmt_due_to_debugger = nextstmt;
                         csl->next_stmt_due_to_fail = -1;
@@ -1965,7 +1965,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         if (!current_crm_command || !current_crm_commanddef)
                         {
                             untrappableerror("The debugger has found that the CRM114 compiler screwed up somewhere. ",
-                                    "The inspected statement doesn't seem valid. You may scream now...");
+                                             "The inspected statement doesn't seem valid. You may scream now...");
 
                             inside_debugger = 0;                     // signal the other code section we're now LEAVING the debugger!
 
@@ -2013,7 +2013,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         int tstart;
                         int tlen;
                         if (crm_nextword(dbg_arg, (int)strlen(dbg_arg), 0,
-                                    &tstart, &tlen))
+                                         &tstart, &tlen))
                         {
                             tlen = CRM_MIN(tlen, WIDTHOF(dbg_inbuf) - 1);
                             crm_memmove(dbg_inbuf, &dbg_arg[tstart], tlen);
@@ -2107,7 +2107,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                     cmd_done_len = (int)strcspn(dbg_arg, "\r\n");
 
                     if (crm_nextword(dbg_arg, (int)strlen(dbg_arg), 0,
-                                &vstart, &vlen))
+                                     &vstart, &vlen))
                     {
                         vlen = CRM_MIN(vlen, WIDTHOF(dbg_inbuf) - 1);
                         crm_memmove(dbg_inbuf, &dbg_arg[vstart], vlen);
@@ -2136,8 +2136,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
                         CRM_ASSERT(oend - ostart < dbg_iobuf_size - 1);
                         crm_memmove(dbg_outbuf,
-                                &dbg_inbuf[ostart],
-                                oend - ostart);
+                                    &dbg_inbuf[ostart],
+                                    oend - ostart);
                         dbg_outbuf[oend - ostart] = 0;
                         olen = crm_nexpandvar(dbg_outbuf, oend - ostart, dbg_iobuf_size, vht, tdw);
                         crm_destructive_alter_nvariable(dbg_inbuf, vlen, dbg_outbuf, olen, csl->calldepth);
@@ -2160,7 +2160,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
             debug_countdown = 0;
             dbg_step_mode |= SM_PENDING;
 
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = current_crm_command->fail_index;
             csl->next_stmt_due_to_debugger = current_crm_command->fail_index;
             csl->next_stmt_due_to_jump = -1;
@@ -2177,7 +2177,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
             if (!current_crm_command || !current_crm_commanddef)
             {
                 untrappableerror("The debugger has found that the CRM114 compiler screwed up somewhere. ",
-                        "The inspected statement doesn't seem valid. You may scream now...");
+                                 "The inspected statement doesn't seem valid. You may scream now...");
 
                 inside_debugger = 0;                 // signal the other code section we're now LEAVING the debugger!
 
@@ -2200,7 +2200,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
             debug_countdown = 0;
             dbg_step_mode |= SM_PENDING;
 
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_jump = csl->mct[csl->cstmt]->liaf_index;
             csl->next_stmt_due_to_debugger = csl->mct[csl->cstmt]->liaf_index;
             csl->next_stmt_due_to_fail = -1;
@@ -2217,7 +2217,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
             if (!current_crm_command || !current_crm_commanddef)
             {
                 untrappableerror("The debugger has found that the CRM114 compiler screwed up somewhere. ",
-                        "The inspected statement doesn't seem valid. You may scream now...");
+                                 "The inspected statement doesn't seem valid. You may scream now...");
 
                 inside_debugger = 0;                 // signal the other code section we're now LEAVING the debugger!
 
@@ -2247,7 +2247,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                 if (!vht_ref)
                 {
                     untrappableerror("Cannot allocate debugger memory",
-                            "Stick a fork in us; we're _done_.");
+                                     "Stick a fork in us; we're _done_.");
                 }
 
                 len = 0;
@@ -2280,8 +2280,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                             width_decades, vht_ref[i]->nlen,
                             (vht_ref[i]->valtxt == NULL ? "LABEL" : "?VAR?"));
                     fwrite_ASCII_Cfied(stderr,
-                            vht_ref[i]->nametxt + vht_ref[i]->nstart,
-                            vht_ref[i]->nlen);
+                                       vht_ref[i]->nametxt + vht_ref[i]->nstart,
+                                       vht_ref[i]->nlen);
                     fprintf(stderr, "'\n");
                 }
 

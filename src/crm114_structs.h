@@ -108,10 +108,10 @@ struct mythical_stmt_type;
 typedef struct mythical_vht_cell
 {
     char *filename;      // file where defined (or NULL)
-    int   filedesc;      // filedesc of defining file (or NULL)
+    int filedesc;        // filedesc of defining file (or NULL)
     char *nametxt;       // block of text that hosts the variable name
-    int   nstart;        // index into nametxt to start of varname
-    int   nlen;          // length of name
+    int nstart;          // index into nametxt to start of varname
+    int nlen;            // length of name
     char *valtxt;        // text block that hosts the captured value
                          // vstart, vlen, mstart, and mlen are all measured
                          // from the _start_ of valtxt, mstart relative to
@@ -124,9 +124,9 @@ typedef struct mythical_vht_cell
                          //   plus mstart is where you could put a NULL if you
                          //    wanted to.
     int linenumber;      // linenumber of this variable (if known, else -1)
-    int scope_depth;     
-	int out_of_scope;	// set to !0 when getting out of scope. Implies this variable is 'deleted'
-    int lazy_redirects;  // how many lazy redirects are allowed (0 by default);
+    int scope_depth;
+    int out_of_scope; // set to !0 when getting out of scope. Implies this variable is 'deleted'
+    int lazy_redirects; // how many lazy redirects are allowed (0 by default);
 } VHT_CELL;
 
 //   The argparse block is filled in at run time, though at least in
@@ -141,19 +141,19 @@ typedef struct mythical_vht_cell
 typedef struct mythical_argparse_block
 {
     char    *a1start;    // '<>' angle delimited field: options
-    int      a1len;
+    int a1len;
     char    *p1start;    // '()' parentheses delimited field: varlist #1
-    int      p1len;
+    int p1len;
     char    *p2start;    // '()' parentheses delimited field: varlist #2
-    int      p2len;
+    int p2len;
     char    *p3start;    // '()' parentheses delimited field: varlist #3
-    int      p3len;
+    int p3len;
     char    *b1start;    // '[]' boxes delimited field: domain limits
-    int      b1len;
+    int b1len;
     char    *s1start;    // '//' slash delimited field: regex set #1
-    int      s1len;
+    int s1len;
     char    *s2start;    // '//' slash delimited field: regex set #2
-    int      s2len;
+    int s2len;
     uint64_t sflags;
 } ARGPARSE_BLOCK;
 
@@ -171,13 +171,13 @@ typedef struct mythical_mct_cell
 #else
     ARGPARSE_BLOCK *apb;        // the argparse block for this statement
 #endif
-    int     start;                                  // zero-base index of start of statement (inclusive)
-    int     fchar;                                  // zero-base index of non-blank stmt (for prettyprint)
-    int     achar;                                  // zero-base index of start of args;
+    int start;                                      // zero-base index of start of statement (inclusive)
+    int fchar;                                      // zero-base index of non-blank stmt (for prettyprint)
+    int achar;                                      // zero-base index of start of args;
     int64_t stmt_utime;                             // user time spent in this statement line;
     int64_t stmt_stime;                             // system time spent in this statement line;
-    int     stmt_exec_count;                        // number of times this line was executed
-    int     stmt_type;                              // statement type of this line
+    int stmt_exec_count;                            // number of times this line was executed
+    int stmt_type;                                  // statement type of this line
     const struct mythical_stmt_type *stmt_def;      // statement type definition of this line
     int nest_level;                                 // nesting level of this statement
     int fail_index;                                 // if this statement failed, where would we go?
@@ -198,30 +198,30 @@ struct mythical_csl_cell;
 typedef struct mythical_csl_cell
 {
     char      *filename;                 // filename if any
-    int        rdwr;                     // 0=readonly, 1=rdwr
-    int        filedes;                  // file descriptor it's open on (if any)
+    int rdwr;                            // 0=readonly, 1=rdwr
+    int filedes;                         // file descriptor it's open on (if any)
     char      *filetext;                 // text buffer
-    int        nchars;                   // characters of data we have
-    crmhash_t  hash;                     // hash of this data (if done)
+    int nchars;                          // characters of data we have
+    crmhash_t hash;                      // hash of this data (if done)
     MCT_CELL **mct;                      // microcompile (if compiled)
-    int        mct_size;                 // number of slots available in the MCT
-    int        nstmts;                   // how many statements in the microcompile
-    int        preload_window;           // do we preload the window or not?
-    int        cstmt;                    // current executing statement of this file
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+    int mct_size;                        // number of slots available in the MCT
+    int nstmts;                          // how many statements in the microcompile
+    int preload_window;                  // do we preload the window or not?
+    int cstmt;                           // current executing statement of this file
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     int cstmt_recall;                    // current executing statement of this file; may NOT be edited outside the exec engine
     int next_stmt_due_to_trap;           // subsequent statement that will be executed, due to trap/fault; -1 if irrelevant
     int next_stmt_due_to_fail;           // subsequent statement that will be executed, due to fail; -1 if irrelevant
     int next_stmt_due_to_jump;           // subsequent statement that will be executed, due to trap; -1 if irrelevant
     int next_stmt_due_to_debugger;       // subsequent statement that will be executed, due to debugger activity; -1 if irrelevant
 #endif
-    struct mythical_csl_cell *caller;    // pointer to this file's caller (if any)
-    int return_vht_cell;                 // index into the VHT to stick the return value
-    int calldepth;                       // how many calls deep is this stack frame
-    int aliusstk[MAX_BRACKETDEPTH];      // the status stack for ALIUS
-	int *vht_var_collection;				// array of variables (indexes into the VHT) which have been created in this scope
-	int vht_var_collection_size;		
-	int vht_var_collection_fill;		
+    struct mythical_csl_cell *caller;                           // pointer to this file's caller (if any)
+    int return_vht_cell;                                        // index into the VHT to stick the return value
+    int calldepth;                                              // how many calls deep is this stack frame
+    int aliusstk[MAX_BRACKETDEPTH];                             // the status stack for ALIUS
+    int *vht_var_collection;                                    // array of variables (indexes into the VHT) which have been created in this scope
+    int vht_var_collection_size;
+    int vht_var_collection_fill;
 
     unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
     unsigned int filetext_allocated : 1; // if the filetext was allocated on the heap.
@@ -277,15 +277,15 @@ typedef struct
 {
     crmhash_t hash;
     crmhash_t key;
-    uint32_t  value;
+    uint32_t value;
 } FEATUREBUCKET_STRUCT;
 
 
 typedef struct
 {
     unsigned char version[4];
-    uint32_t      flags;
-    uint32_t      skip_to;
+    uint32_t flags;
+    uint32_t skip_to;
 } FEATURE_HEADER_STRUCT;
 
 
@@ -293,7 +293,7 @@ typedef struct
 {
     crmhash_t hash;
     crmhash_t key;
-#if defined (GER) && 0   // will be stored on disc! fixed format!
+#if defined(GER) && 0    // will be stored on disc! fixed format!
     double value;
 #else
     float value;
@@ -319,7 +319,7 @@ typedef struct mythical_entropy_alphabet_slot
 //  28 byte header, 24 bytes alph (52 tot).  Pare: 16 header, 16 alph (36 tot)
 typedef struct mythical_entropy_cell
 {
-    double  fir_prior;
+    double fir_prior;
     int32_t fir_larger;
     int32_t fir_smaller;
     int32_t firlat_slot;
@@ -481,18 +481,18 @@ typedef struct
 typedef struct mythical_stmt_type
 {
     char    *stmt_name;   // text representation
-    int      stmt_code;   // internal opcode ID
-    int      namelen;     // == strlen(stmt_name)
+    int stmt_code;        // internal opcode ID
+    int namelen;          // == strlen(stmt_name)
     unsigned is_executable          : 1;
     unsigned has_non_standard_flags : 1;
-    int      minangles;   // <>
-    int      maxangles;
-    int      minslashes;  // /.../
-    int      maxslashes;
-    int      minparens;   // ()
-    int      maxparens;
-    int      minboxes;    // []
-    int      maxboxes;
+    int minangles;        // <>
+    int maxangles;
+    int minslashes;       // /.../
+    int maxslashes;
+    int minparens;        // ()
+    int maxparens;
+    int minboxes;         // []
+    int maxboxes;
     uint64_t flags_allowed_mask;
 } STMT_TABLE_TYPE;
 
@@ -595,33 +595,33 @@ typedef struct crm_porta_header_info
 typedef struct
 {
     unsigned char marker[16];      /* the HEX(FF) byte + 15 bytes of NUL filler */
-    int32_t       i32;
+    int32_t i32;
 } i32_align_test_t;
 
 typedef struct
 {
     unsigned char marker[16];      /* the HEX(FF) byte + 15 bytes of NUL filler */
-    int64_t       i64;
+    int64_t i64;
 } i64_align_test_t;
 
 typedef struct
 {
     unsigned char marker[16];      /* the HEX(FF) byte + 15 bytes of NUL filler */
-    float         f;
+    float f;
 } float_align_test_t;
 
 typedef struct
 {
     unsigned char marker[16];      /* the HEX(FF) byte + 15 bytes of NUL filler */
-    double        d;
+    double d;
 } double_align_test_t;
 
 typedef union
 {
-    unsigned char       filler[32];
-    i32_align_test_t    i32;
-    i64_align_test_t    i64;
-    float_align_test_t  f;
+    unsigned char filler[32];
+    i32_align_test_t i32;
+    i64_align_test_t i64;
+    float_align_test_t f;
     double_align_test_t d;
 } align_test_t;
 
@@ -629,32 +629,32 @@ typedef union
 typedef union
 {
     unsigned char filler[16];
-    int32_t       i32;
+    int32_t i32;
 } i32_endian_test_t;
 
 typedef union
 {
     unsigned char filler[16];
-    int64_t       i64;
+    int64_t i64;
 } i64_endian_test_t;
 
 typedef union
 {
     unsigned char filler[16];
-    float         f;
+    float f;
 } float_endian_test_t;
 
 typedef union
 {
     unsigned char filler[16];
-    double        d;
+    double d;
 } double_endian_test_t;
 
 
 typedef union
 {
     unsigned char filler[16];
-    int32_t       i32;
+    int32_t i32;
 } i32_arg_t;
 
 
@@ -751,7 +751,7 @@ typedef struct
 
 
 
-#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+#if !defined(CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
 
 
 /*

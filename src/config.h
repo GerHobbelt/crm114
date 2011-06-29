@@ -8,76 +8,76 @@
 /* #undef CRM_DONT_ASSERT */
 
 /* #define as 1: do NOT include any experimental classifiers in the build.
-   #define as 0: explicitly request INclusion in the build. #undef: assume
-   INclusion in the build (i.e. use the default set in crm114_config.h) */
+ #define as 0: explicitly request INclusion in the build. #undef: assume
+ * INclusion in the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_PRODUCTION_CLASSIFIERS_ONLY */
 
 /* #define as 1: do NOT include the Bit-Entropy classifier in the build.
-   #define as 0: explicitly request INclusion in the build. #undef: assume
-   INclusion in the build (i.e. use the default set in crm114_config.h) */
+ #define as 0: explicitly request INclusion in the build. #undef: assume
+ * INclusion in the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_BIT_ENTROPY */
 
 /* #define as 1: do NOT include BMP-assited analysis in the build. #define as
-   0: explicitly request INclusion in the build. #undef: assume INclusion in
-   the build (i.e. use the default set in crm114_config.h) */
+ * 0: explicitly request INclusion in the build. #undef: assume INclusion in
+ * the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
 /* #define as 1: do NOT include the CLUMP classifier in the build. #define as
-   0: explicitly request INclusion in the build. #undef: assume INclusion in
-   the build (i.e. use the default set in crm114_config.h) */
+ * 0: explicitly request INclusion in the build. #undef: assume INclusion in
+ * the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_CLUMP */
 
 /* #define as 1: do NOT include the Correlate classifier in the build. #define
-   as 0: explicitly request INclusion in the build. #undef: assume INclusion
-   in the build (i.e. use the default set in crm114_config.h) */
+ * as 0: explicitly request INclusion in the build. #undef: assume INclusion
+ * in the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_CORRELATE */
 
 /* #define as 1: do NOT include the FSCM classifier in the build. #define as
-   0: explicitly request INclusion in the build. #undef: assume INclusion in
-   the build (i.e. use the default set in crm114_config.h) */
+ * 0: explicitly request INclusion in the build. #undef: assume INclusion in
+ * the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_FSCM */
 
 /* #define as 1: do NOT include the Markov classifier in the build. #define as
-   0: explicitly request INclusion in the build. #undef: assume INclusion in
-   the build (i.e. use the default set in crm114_config.h) */
+ * 0: explicitly request INclusion in the build. #undef: assume INclusion in
+ * the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_MARKOV */
 
 /* do not use the custom inline qsort by Michael Tokarev */
 /* #undef CRM_WITHOUT_MJT_INLINED_QSORT */
 
 /* #define as 1: do NOT include the Neural-Net classifier in the build.
-   #define as 0: explicitly request INclusion in the build. #undef: assume
-   INclusion in the build (i.e. use the default set in crm114_config.h) */
+#define as 0: explicitly request INclusion in the build. #undef: assume
+*  INclusion in the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_NEURAL_NET */
 
 /* #define as 1: do NOT include the OSBF classifier in the build. #define as
-   0: explicitly request INclusion in the build. #undef: assume INclusion in
-   the build (i.e. use the default set in crm114_config.h) */
+ * 0: explicitly request INclusion in the build. #undef: assume INclusion in
+ * the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_OSBF */
 
 /* #define as 1: do NOT include the OSB-Bayes classifier in the build. #define
-   as 0: explicitly request INclusion in the build. #undef: assume INclusion
-   in the build (i.e. use the default set in crm114_config.h) */
+ * as 0: explicitly request INclusion in the build. #undef: assume INclusion
+ * in the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_OSB_BAYES */
 
 /* #define as 1: do NOT include the OSB-Hyperspace classifier in the build.
-   #define as 0: explicitly request INclusion in the build. #undef: assume
-   INclusion in the build (i.e. use the default set in crm114_config.h) */
+ #define as 0: explicitly request INclusion in the build. #undef: assume
+ * INclusion in the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_OSB_HYPERSPACE */
 
 /* #define as 1: do NOT include the OSB-Winnow classifier in the build.
-   #define as 0: explicitly request INclusion in the build. #undef: assume
-   INclusion in the build (i.e. use the default set in crm114_config.h) */
+#define as 0: explicitly request INclusion in the build. #undef: assume
+*  INclusion in the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_OSB_WINNOW */
 
 /* #define as 1: do NOT include the SKS classifier in the build. #define as 0:
-   explicitly request INclusion in the build. #undef: assume INclusion in the
-   build (i.e. use the default set in crm114_config.h) */
+ * explicitly request INclusion in the build. #undef: assume INclusion in the
+ * build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_SKS */
 
 /* #define as 1: do NOT include the SVM classifier in the build. #define as 0:
-   explicitly request INclusion in the build. #undef: assume INclusion in the
-   build (i.e. use the default set in crm114_config.h) */
+ * explicitly request INclusion in the build. #undef: assume INclusion in the
+ * build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_SVM */
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
@@ -282,7 +282,7 @@
 #define HAVE_MADVISE 1
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
-   to 0 otherwise. */
+ * to 0 otherwise. */
 #define HAVE_MALLOC 1
 
 /* Define to 1 if you have the <math.h> header file. */
@@ -322,15 +322,15 @@
 #define HAVE_NETINET_IN_H 1
 
 /* Define if run-time library offers nanosecond time interval in struct
-   stat:c/m/atimensec. */
+ * stat:c/m/atimensec. */
 /* #undef HAVE_NSEC_STAT_TIMENSEC */
 
 /* Define if run-time library offers nanosecond time interval in struct
-   stat:c/m/atime_nsec. */
+ * stat:c/m/atime_nsec. */
 /* #undef HAVE_NSEC_STAT_TIME_NSEC */
 
 /* Define if run-time library offers nanosecond time interval in struct
-   stat:c/m/atim.tv_nsec. */
+ * stat:c/m/atim.tv_nsec. */
 #define HAVE_NSEC_STAT_TIM_TV_NSEC 1
 
 /* Define to 1 if the system has the type `pid_t'. */
@@ -352,12 +352,12 @@
 #define HAVE_PRAGMA_PACK 1
 
 /* Define if compiler does not listen strictly to large <size>s in #pragma
-   pack(<size>) but applies further member packing instead when none of the
-   (basic) members are <size> bytes or more. */
+ * pack(<size>) but applies further member packing instead when none of the
+ * (basic) members are <size> bytes or more. */
 #define HAVE_PRAGMA_PACK_OVERSMART_COMPILER 1
 
 /* Define if compiler supports #pragma pack(push) / pack(pop) and
-   pack(<size>). */
+ * pack(<size>). */
 #define HAVE_PRAGMA_PACK_PUSH_POP 1
 
 /* Define to 1 if you have the <process.h> header file. */
@@ -394,7 +394,7 @@
 #define HAVE_READLINE_READLINE_H 1
 
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
-   and to 0 otherwise. */
+ * and to 0 otherwise. */
 #define HAVE_REALLOC 1
 
 /* REs support */
@@ -419,7 +419,7 @@
 #define HAVE_STAT 1
 
 /* Define to 1 if `stat' has the bug that it succeeds when given the
-   zero-length file name argument. */
+ * zero-length file name argument. */
 /* #undef HAVE_STAT_EMPTY_STRING_BUG */
 
 /* Define to 1 if you have the <stdarg.h> header file. */
@@ -510,14 +510,14 @@
 #define HAVE_SYSTEM 1
 
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
-   */
+ */
 /* #undef HAVE_SYS_DIR_H */
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #define HAVE_SYS_MMAN_H 1
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
-   */
+ */
 /* #undef HAVE_SYS_NDIR_H */
 
 /* Define to 1 if you have the <sys/param.h> header file. */
@@ -635,23 +635,23 @@
 #define HOSTTYPE "linux-gnu"
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
-   slash. */
+ * slash. */
 #define LSTAT_FOLLOWS_SLASHED_SYMLINK 1
 
 /* Define to 1 if your processor stores words with the most significant byte
-   first (like Motorola and SPARC, unlike Intel and VAX). */
+ * first (like Motorola and SPARC, unlike Intel and VAX). */
 /* #undef MACHINE_IS_BIG_ENDIAN */
 
 /* Define to 1 if your processor stores words with the least significant byte
-   first (like Intel and VAX). */
+ * first (like Intel and VAX). */
 #define MACHINE_IS_LITTLE_ENDIAN 1
 
 /* Define to 1 if `major', `minor', and `makedev' are declared in <mkdev.h>.
-   */
+ */
 /* #undef MAJOR_IN_MKDEV */
 
 /* Define to 1 if `major', `minor', and `makedev' are declared in
-   <sysmacros.h>. */
+ * <sysmacros.h>. */
 /* #undef MAJOR_IN_SYSMACROS */
 
 /* directory where BillY's original crm114 distro resides */
@@ -721,10 +721,10 @@
 #define VER_SUFFIX ""
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
-   significant byte first (like Motorola and SPARC, unlike Intel and VAX). */
+ * significant byte first (like Motorola and SPARC, unlike Intel and VAX). */
 #if defined __BIG_ENDIAN__
-# define WORDS_BIGENDIAN 1
-#elif ! defined __LITTLE_ENDIAN__
+#define WORDS_BIGENDIAN 1
+#elif !defined __LITTLE_ENDIAN__
 /* # undef WORDS_BIGENDIAN */
 #endif
 
@@ -732,25 +732,25 @@
 /* #undef _MINIX */
 
 /* Define to 2 if the system does not provide POSIX.1 features except with
-   this defined. */
+ * this defined. */
 /* #undef _POSIX_1_SOURCE */
 
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 /* #undef _POSIX_SOURCE */
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
-   #define below would cause a syntax error. */
+ * <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+ #define below would cause a syntax error. */
 /* #undef _UINT32_T */
 
 /* Define for Solaris 2.5.1 so the uint64_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
-   #define below would cause a syntax error. */
+ * <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+ #define below would cause a syntax error. */
 /* #undef _UINT64_T */
 
 /* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
-   #define below would cause a syntax error. */
+ * <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+ #define below would cause a syntax error. */
 /* #undef _UINT8_T */
 
 /* Define to 1 if type `char' is unsigned and you are not using gcc.  */
@@ -760,23 +760,23 @@
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
-# define _ALL_SOURCE 1
+#define _ALL_SOURCE 1
 #endif
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
-# define _GNU_SOURCE 1
+#define _GNU_SOURCE 1
 #endif
 /* Enable threading extensions on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
-# define _POSIX_PTHREAD_SEMANTICS 1
+#define _POSIX_PTHREAD_SEMANTICS 1
 #endif
 /* Enable extensions on HP NonStop.  */
 #ifndef _TANDEM_SOURCE
-# define _TANDEM_SOURCE 1
+#define _TANDEM_SOURCE 1
 #endif
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
-# define __EXTENSIONS__ 1
+#define __EXTENSIONS__ 1
 #endif
 
 
@@ -784,25 +784,25 @@
 /* #undef const */
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
-   calls it, or to nothing if 'inline' is not supported under any name.  */
+ * calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
 /* #undef inline */
 #endif
 
 /* Define to the type of a signed integer type of width exactly 16 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef int16_t */
 
 /* Define to the type of a signed integer type of width exactly 32 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef int32_t */
 
 /* Define to the type of a signed integer type of width exactly 64 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef int64_t */
 
 /* Define to the type of a signed integer type of width exactly 8 bits if such
-   a type exists and the standard includes do not define it. */
+ * a type exists and the standard includes do not define it. */
 /* #undef int8_t */
 
 /* Define to rpl_malloc if the replacement function should be used. */
@@ -827,24 +827,25 @@
 /* #undef ssize_t */
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef uint16_t */
 
 /* Define to the type of an unsigned integer type of width exactly 32 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef uint32_t */
 
 /* Define to the type of an unsigned integer type of width exactly 64 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef uint64_t */
 
 /* Define to the type of an unsigned integer type of width exactly 8 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef uint8_t */
 
 /* Define as `fork' if `vfork' does not work. */
 /* #undef vfork */
 
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
-   code using `volatile' can become incorrect without. Disable with care. */
+ * code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
+

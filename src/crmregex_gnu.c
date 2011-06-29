@@ -27,7 +27,7 @@
 #include "crm114.h"
 
 
-#if defined (HAVE_GNU_REGEX)
+#if defined(HAVE_GNU_REGEX)
 
 
 //  Cache for regex compilations
@@ -35,9 +35,9 @@ typedef struct
 {
     char    *regex;
     regex_t *preg; // ptr to struct of {int, void*}
-    int      regex_len;
-    int      cflags;
-    int      status;
+    int regex_len;
+    int cflags;
+    int status;
 } REGEX_CACHE_BLOCK;
 
 
@@ -61,7 +61,7 @@ int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
         if (null_errored == 0)
         {
             fatalerror("The regex contains a NUL inside the stated length,",
-                    "but your GNU regex library can't handle embedded NULs.  Therefore, treat all results WITH GREAT SUSPICION.");
+                       "but your GNU regex library can't handle embedded NULs.  Therefore, treat all results WITH GREAT SUSPICION.");
             null_errored = 1;
         }
     }
@@ -108,7 +108,7 @@ int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
             fprintf(stderr, "Checking the regex cache for %s\n",
                     regex);
         j = 0;
-#if defined (REGEX_CACHE_LINEAR_SEARCH)
+#if defined(REGEX_CACHE_LINEAR_SEARCH)
         //
         //          Linear Search uses a strict LRU algorithm to cache
         //          the precompiled regexes.
@@ -119,8 +119,8 @@ int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
         {
             i++;
             if (regex_len == regex_cache[i].regex_len
-                && cflags == regex_cache[i].cflags
-                && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
+               && cflags == regex_cache[i].cflags
+               && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
             {
                 //  We Found It!   Put it into the _temp vars...
                 if (internal_trace)
@@ -133,7 +133,7 @@ int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
                 found_it = 1; /* [i_a] bugfix for special case where i == 0 here */
             }
         }
-#elif defined (REGEX_CACHE_RANDOM_ACCESS)
+#elif defined(REGEX_CACHE_RANDOM_ACCESS)
         //
         //             Random Access uses an associative cache based on
         //             the hash of the regex (mod the size of the cache).
@@ -141,8 +141,8 @@ int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
         found_it = 0;
         i = strnhash(regex, regex_len) % CRM_REGEX_CACHESIZE;
         if (regex_len == regex_cache[i].regex_len
-            && cflags == regex_cache[i].cflags
-            && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
+           && cflags == regex_cache[i].cflags
+           && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
         {
             //  We Found It!   Put it into the _temp vars...
             if (internal_trace)
@@ -182,7 +182,7 @@ int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
             if (ppreg_temp == NULL)
             {
                 fatalerror("Unable to allocate a pattern register buffer header.  ",
-                        "This is hopeless.  ");
+                           "This is hopeless.  ");
             }
             //
             //   If we get here, we're OK on GNU Regex
@@ -199,7 +199,7 @@ int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
         //     at index i,
 
 
-#if defined (REGEX_CACHE_LINEAR_SEARCH)
+#if defined(REGEX_CACHE_LINEAR_SEARCH)
         //   If we're in linear search, we move 0 through i-1 down to 1
         //   through i and then we stuff the _temp vars into the [i] cache
         //   area.  Note that if it was the final slot (at
@@ -244,7 +244,7 @@ int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
         regex_cache[0].status    = status_temp;
         regex_cache[0].cflags    = cflags_temp;
 
-#elif defined (REGEX_CACHE_RANDOM_ACCESS)
+#elif defined(REGEX_CACHE_RANDOM_ACCESS)
 
         //
         //      In a random access system, we just overwrite the single
@@ -301,7 +301,7 @@ int crm_regexec(regex_t *preg, const char *string, int string_len,
     if (!string)
     {
         nonfatalerror("crm_regexec - Regular Expression Execution Problem:\n",
-                "NULL pointer to the string to match .");
+                      "NULL pointer to the string to match .");
         return REG_NOMATCH;
     }
 
@@ -325,12 +325,12 @@ int crm_regexec(regex_t *preg, const char *string, int string_len,
             fprintf(stderr, "\nRegexec  strlen: %d, stated_len: %d \n",
                     strlen(string), string_len);
             nonfatalerror("Your data window contained a NUL inside the stated length,",
-                    "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");
+                          "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");
             null_errored = 1;
         }
     }
     if (aux_string == NULL
-        || strlen(aux_string) < 1)
+       || strlen(aux_string) < 1)
     {
         regexresult = regexec(preg, string, nmatch, pmatch, eflags);
     }
@@ -342,10 +342,10 @@ int crm_regexec(regex_t *preg, const char *string, int string_len,
         pblock.cost_del = 0;
         //  parse out the aux string for approximation parameters
         if (4 != sscanf(aux_string, "%d %d %d %d",
-                    &pblock.cost_subst,
-                    &pblock.cost_ins,
-                    &pblock.max_cost,
-                    &pblock.cost_del))
+                        &pblock.cost_subst,
+                        &pblock.cost_ins,
+                        &pblock.max_cost,
+                        &pblock.cost_del))
         {
             fatalerror("Failed to decode 4 numeric cost parameters for approximate matching ", aux_string);
         }

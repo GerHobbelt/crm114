@@ -60,7 +60,7 @@ extern char *tempbuf;
 #endif
 
 
-#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+#if !defined(CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
 extern CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg;
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
@@ -69,7 +69,7 @@ extern CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg;
 
 //    the microcompiler
 int crm_microcompiler(CSL_CELL *csl,
-        VHT_CELL              **vht);
+        VHT_CELL **vht);
 
 
 //  hash function for variable tables
@@ -80,13 +80,13 @@ crmhash64_t strnhash64(const char *str, size_t len);
 //  string translate function - for the TRANSLATE function
 int strntrn(
         unsigned char *datastr,
-        int           *datastrlen,
-        int            maxdatastrlen,
+        int *datastrlen,
+        int maxdatastrlen,
         unsigned char *fromstr,
-        int            fromstrlen,
+        int fromstrlen,
         unsigned char *tostr,
-        int            tostrlen,
-        uint64_t       flags);
+        int tostrlen,
+        uint64_t flags);
 
 
 //   basic math evaluator top function
@@ -107,19 +107,19 @@ void crm_destructive_alter_nvariable(const char *varname, int varlen,
 
 //  setting a program label in the VHT
 void crm_setvar(
-int *vhtidx,
-char *filename,        // file where first defined (or NULL)
-int   filedesc,        // filedesc of defining file (or NULL)
-char *nametxt,         // block of text hosting variable name
-int   nstart,          // index into nametxt to start varname
-int   nlen,            // length of name
-char *valtxt,          // text block hosts the captured value
-int   vstart,          // index of start of cap. value
-int   vlen,            // length of captured value
-int   linenumber,      // linenumber (if pgm, else -1)
-// int   lazy_redirects,  // if nonzero, this is a lazy redirect
-     int calldepth          
-	 );
+        int *vhtidx,
+        char *filename, // file where first defined (or NULL)
+        int filedesc,   // filedesc of defining file (or NULL)
+        char *nametxt,  // block of text hosting variable name
+        int nstart,     // index into nametxt to start varname
+        int nlen,       // length of name
+        char *valtxt,   // text block hosts the captured value
+        int vstart,     // index of start of cap. value
+        int vlen,       // length of captured value
+        int linenumber, // linenumber (if pgm, else -1)
+  // int lazy_redirects,  // if nonzero, this is a lazy redirect
+        int calldepth
+               );
 
 //   put a variable and a value into the temporary area
 void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int calldepth, int keep_in_outer_scope);
@@ -127,21 +127,21 @@ void crm_set_temp_var(const char *varname, const char *value, int calldepth, int
 
 //   put a variable and a window-based value into the temp area
 void crm_set_windowed_var(char *varname,
-        char                   *text,
-        int                     start,
-        int                     len,
-        int                     stmtnum);
+        char *text,
+        int start,
+        int len,
+        int stmtnum);
 
 //   put a counted-length var and a data-window-based value into the temp area.
-void crm_set_windowed_nvar(int *vhtidx, 
-						   char *varname,
-        int                      varlen,
-        char                    *valtext,
-        int                      start,
-        int                      len,
-        int                      stmtnum,
-		int calldepth,
-int keep_in_outer_scope);
+void crm_set_windowed_nvar(int *vhtidx,
+        char *varname,
+        int varlen,
+        char *valtext,
+        int start,
+        int len,
+        int stmtnum,
+        int calldepth,
+        int keep_in_outer_scope);
 
 //    set a program label.
 void crm_setpgmlabel(int start, int end, int stmtnum);
@@ -272,10 +272,10 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
 //     get the next word in the input.  (note- the regex stops only when
 //     one hits a NULL, which may yield a slightly bogus result.
 int crm_nextword(const char *input,
-        int                  inlen,
-        int                  starthere,
-        int                 *start,
-        int                 *len);
+        int inlen,
+        int starthere,
+        int *start,
+        int *len);
 
 int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -753,7 +753,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_isolate_this(int *vptr,
         char *nametext, int namestart, int namelen,
         char *valuetext, int valuestart, int valuelen,
-		int keep_in_outer_scope);
+        int keep_in_outer_scope);
 
 //  INPUT - do input
 int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -778,17 +778,17 @@ int crm_expr_mutate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 //      parse a CRM114 statement; this is mostly a setup routine for
 //     the generic parser.
 int crm_statement_parse(char *in,
-        int                   slen,
-        MCT_CELL             *mct,
-        ARGPARSE_BLOCK       *apb);
+        int slen,
+        MCT_CELL *mct,
+        ARGPARSE_BLOCK *apb);
 
 
 //    and a generic parser routine for parsing a line according
 //    to the type of quoting done.
 int crm_generic_parse_line(
         char *txt,                       //   the start of the program line
-        int   len,                       //   how long is the line
-        int   maxargs,                   //   howm many things to search for (max)
+        int len,                         //   how long is the line
+        int maxargs,                     //   howm many things to search for (max)
         int  *ftype,                     //   type of thing found (index by schars)
         int  *fstart,                    //   starting location of found arg
         int  *flen                       //   length of found arg
@@ -866,8 +866,8 @@ typedef int VT_tokenizer_cleanup_func (struct magical_VT_userdef_tokenizer *obj)
 typedef struct magical_VT_userdef_tokenizer
 {
     const char *input_text;         // used to remember the input text to tokenize ...
-    int         input_textlen;      // ... and its length in bytes
-    int         input_next_offset;  // position where to continue grabbing the next token
+    int input_textlen;              // ... and its length in bytes
+    int input_next_offset;          // position where to continue grabbing the next token
 
     int max_big_token_count;  // maximum number of 'big' tokens allowed to be merged into a single 'feature' a la OSBF
     int max_token_length;     /* merge tokens longer than this with the next one into a single feature a la OSBF.
@@ -884,12 +884,12 @@ typedef struct magical_VT_userdef_tokenizer
     ///////////// regex-only tokenizers; others may abuse this too /////////////////
 
     const char *regex;                // the parsing regex (might be ignored)
-    int         regexlen;             // length of the parsing regex
-    int         regex_compiler_flags; // set of regcomp() flags, e.g. REG_ICASE
+    int regexlen;                     // length of the parsing regex
+    int regex_compiler_flags;         // set of regcomp() flags, e.g. REG_ICASE
 
     /////////////// support flags, to be used by tokenizer() and cleanup()
 
-    int      padding_length;                    // number of hashes to pad at start / end
+    int padding_length;                         // number of hashes to pad at start / end
     unsigned pad_start                : 1;      // pad start with 'deadbeef'
     unsigned pad_end_with_first_chunk : 1;      // pad end with stored start tokens
 
@@ -907,14 +907,14 @@ typedef struct magical_VT_userdef_tokenizer
     unsigned not_at_sos : 1;  /* 0 when at Start Of Stream */
 
     /////////////// internal use: stores the compiled regex and additional info to step through the input
-    regex_t    regcb;                   // the compiled regex
+    regex_t regcb;                      // the compiled regex
     regmatch_t match[7];                // nevertheless, we PROBABLY only care about the outermost match
 
     // recall for first N token hashes, to be appended at the end (end padding)
     crmhash_t *padding_store;
-    int        padding_in_store;
-    int        padding_written_at_start;
-    int        padding_written_at_end;
+    int padding_in_store;
+    int padding_written_at_start;
+    int padding_written_at_end;
 }
 VT_USERDEF_TOKENIZER;
 
@@ -964,9 +964,9 @@ typedef struct magical_VT_userdef_coeff_matrix
         unsigned unique : 1;        // bool: unique feature hashes: each hash occurs only once; implies 'sorted' hash collection
         unsigned sorted_output : 1;
 
-		// flag determined by the VT engine itself:
-		unsigned arne_optimization_allowed: 1; 
-		unsigned cm_is_position_dependent: 1;
+        // flag determined by the VT engine itself:
+        unsigned arne_optimization_allowed : 1;
+        unsigned cm_is_position_dependent : 1;
     } flags;
 
 
@@ -990,12 +990,12 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
 int config_vt_coeff_matrix_and_tokenizer(ARGPARSE_BLOCK *apb,  // The args for this line of code
         VHT_CELL **vht,
         CSL_CELL *tdw,
-        VT_USERDEF_TOKENIZER *tokenizer, // the parsing regex (might be ignored)
+        VT_USERDEF_TOKENIZER *tokenizer,    // the parsing regex (might be ignored)
         VT_USERDEF_COEFF_MATRIX *our_coeff  // the pipeline coefficient control array, etc.
-);
+                                        );
 int transfer_matrix_to_VT(VT_USERDEF_COEFF_MATRIX *dst,
-						const int *src, 
-						size_t src_x, size_t src_y, size_t src_z);
+        const int *src,
+        size_t src_x, size_t src_y, size_t src_z);
 
 
 
@@ -1004,35 +1004,35 @@ int transfer_matrix_to_VT(VT_USERDEF_COEFF_MATRIX *dst,
 
 int crm_vector_tokenize_selector
 (
- ARGPARSE_BLOCK *apb,            // The args for this line of code
+        ARGPARSE_BLOCK *apb,     // The args for this line of code
         VHT_CELL **vht,
         CSL_CELL *tdw,
-        const char *text,            // input string (null-safe!)
-        int textlen,         //   how many bytes of input.
-        int start_offset,    //     start tokenizing at this byte.
+        const char *text,                         // input string (null-safe!)
+        int textlen,                              //   how many bytes of input.
+        int start_offset,                         //     start tokenizing at this byte.
         VT_USERDEF_TOKENIZER    *tokenizer,       // the parsing regex (might be ignored)
         VT_USERDEF_COEFF_MATRIX *userdef_coeff,   // the pipeline coefficient control array, etc.
         crmhash_t               *features,        // where the output features go
-        int featureslen,     //   how many output features (max)
-        uint32_t *feature_weights, // feature weight per feature
-        uint32_t *order_no,        // order_no (starting at 0) per feature
-        int *features_out     // how many feature-slots did we actually use up
+        int featureslen,                          //   how many output features (max)
+        uint32_t *feature_weights,                // feature weight per feature
+        uint32_t *order_no,                       // order_no (starting at 0) per feature
+        int *features_out                         // how many feature-slots did we actually use up
 );
 
 // this interface method is provided only for those that 'know what they're doing',
 // i.e. (unit) test code such as testtocvek:
 int crm_vector_tokenize
 (
-        const char *text,               // input string (null-safe!)
-        int textlen,            //   how many bytes of input.
-        int start_offset,       //     start tokenizing at this byte.
-        VT_USERDEF_TOKENIZER *tokenizer,          // the regex tokenizer (elements in struct MAY be changed)
+        const char *text,                                  // input string (null-safe!)
+        int textlen,                                       //   how many bytes of input.
+        int start_offset,                                  //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER *tokenizer,                   // the regex tokenizer (elements in struct MAY be changed)
         const VT_USERDEF_COEFF_MATRIX *our_coeff,          // the pipeline coefficient control array, etc.
-        crmhash_t *features_buffer,    // where the output features go
-        int features_bufferlen, //   how many output features (max)
-        uint32_t *feature_weights,    // feature weight per feature
-        uint32_t *order_no,           // order_no (starting at 0) per feature
-        int *features_out        // how many longs did we actually use up
+        crmhash_t *features_buffer,                        // where the output features go
+        int features_bufferlen,                            //   how many output features (max)
+        uint32_t *feature_weights,                         // feature weight per feature
+        uint32_t *order_no,                                // order_no (starting at 0) per feature
+        int *features_out                                  // how many longs did we actually use up
 );
 
 
@@ -1059,9 +1059,9 @@ int crm_trigger_fault(const char *reason);
 
 //     do an microgroom of a hashed file.
 int crm_microgroom(FEATUREBUCKET_TYPE *h,
-        unsigned char                 *seen_features,
-        int                            hs,
-        unsigned int                   hindex);
+        unsigned char *seen_features,
+        int hs,
+        unsigned int hindex);
 void crm_packcss(FEATUREBUCKET_TYPE *h,
         unsigned char *seen_features,
         int hs, int packstart, int packlen);
@@ -1071,9 +1071,9 @@ void crm_packseg(FEATUREBUCKET_TYPE *h,
 //
 //     and microgrooming for winnow files
 int crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
-        unsigned char                                 *seen_features,
-        unsigned int                                   hfsize,
-        unsigned int                                   hindex);
+        unsigned char *seen_features,
+        unsigned int hfsize,
+        unsigned int hindex);
 
 void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
         unsigned char *xhashes,
@@ -1101,22 +1101,22 @@ int crm_qexpandvar(char *buf, size_t inlen, size_t maxlen, int *retstat, VHT_CEL
 
 //              generic (everything, as you want it, bitmasked) expansion
 int crm_zexpandvar(char *buf,
-        size_t           inlen,
-        size_t           maxlen,
+        size_t inlen,
+        size_t maxlen,
         int             *retstat,
-        int              exec_bitmask,
+        int exec_bitmask,
         VHT_CELL       **vht,
         CSL_CELL        *tdw);
 
 //       Var-restriction operators  (do []-vars, like subscript and regex )
 int crm_restrictvar(char *boxstring,
-        int               boxstrlen,
+        int boxstrlen,
         int              *vht_idx,
         char            **outblock,
         int              *outoffset,
         int              *outlen,
         char             *errstr,
-        int               maxerrlen);
+        int maxerrlen);
 
 
 //      crm114-specific regex compilation
@@ -1213,25 +1213,25 @@ __attribute__((__format__(__printf__, 4, 0)));
 void reset_nonfatalerrorreporting(void);
 
 void generate_err_reason_msg(char *reason,
-        int                        reason_bufsize,
-        int                        srclineno,
+        int reason_bufsize,
+        int srclineno,
         const char                *srcfile_full,
         const char                *funcname,
         const char                *errortype_str,
         const char                *encouraging_msg,
         CSL_CELL                  *csl,
-        int                        script_codeline,
+        int script_codeline,
         const char                *fmt,
-        va_list                    args);
+        va_list args);
 void generate_err_reason_msg_va(char *reason,
-        int                           reason_bufsize,
-        int                           srclineno,
+        int reason_bufsize,
+        int srclineno,
         const char                   *srcfile_full,
         const char                   *funcname,
         const char                   *errortype_str,
         const char                   *encouraging_msg,
         CSL_CELL                     *csl,
-        int                           script_codeline,
+        int script_codeline,
         const char                   *fmt,
         ...);
 
@@ -1293,7 +1293,7 @@ void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *funcnam
 const char *errno_descr(int errno_number);
 /* const char *syserr_descr(int errno_number); */
 
-#if defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)
 /*
  * return a string containing the errorcode description.
  */
@@ -1312,9 +1312,9 @@ static inline void fatalerror_Win32_(int lineno, const char *file, const char *f
     Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
 
     fatalerror_ex(lineno, file, funcname, msg,
-            (int)error,
-            (int)error,
-            errmsg);
+                  (int)error,
+                  (int)error,
+                  errmsg);
 }
 
 
@@ -1330,9 +1330,9 @@ static inline int nonfatalerror_Win32_(int lineno, const char *file, const char 
     Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
 
     return nonfatalerror_ex(lineno, file, funcname, msg,
-            (int)error,
-            (int)error,
-            errmsg);
+                            (int)error,
+                            (int)error,
+                            errmsg);
 }
 
 
@@ -1343,7 +1343,7 @@ static inline int nonfatalerror_Win32_(int lineno, const char *file, const char 
  * Diagnostics: Memory checks / analysis
  */
 
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)) && defined(_DEBUG)
 
 extern _CrtMemState crm_memdbg_state_snapshot1;
 extern int trigger_memdump;
@@ -1387,10 +1387,10 @@ ssize_t fwrite_ASCII_Cfied(FILE *dst, const char *src, size_t len);
 
 
 
-typedef int show_instruction_spec_writer_cb(const char *str, int len, void *propagator);
+typedef int show_instruction_spec_writer_cb (const char *str, int len, void *propagator);
 
 /*
-   code to print the script language specification, whole or part.
+ * code to print the script language specification, whole or part.
  */
 int show_instruction_spec(int opcode_id, show_instruction_spec_writer_cb *cb, void *propagator);
 int show_instruction_flags(uint64_t flags, show_instruction_spec_writer_cb *cb, void *propagator);
@@ -1424,7 +1424,7 @@ const char *crm_decode_header_err2msg(int errorcode);
 
 
 
-#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+#if !defined(CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
 //
 // The brunt of the profile tracking code is this one:
 //
@@ -1459,7 +1459,7 @@ static /* inline */ int64_t cvt_chars2int64(const char *str, size_t len)
 {
     union
     {
-        char    c[8];
+        char c[8];
         int64_t ll;
     } v = { { 0 } };
     if (len > 8)
@@ -1477,9 +1477,9 @@ static /* inline */ int64_t cvt_chars2int64(const char *str, size_t len)
 
 #else
 
-#define crm_init_analysis				/**/
-#define crm_terminate_analysis			/**/
-#define cvt_chars2int64					/**/
+#define crm_init_analysis                               /**/
+#define crm_terminate_analysis                          /**/
+#define cvt_chars2int64                                 /**/
 
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 

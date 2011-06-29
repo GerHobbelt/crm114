@@ -50,12 +50,12 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i < 0)
     {
@@ -73,7 +73,7 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -100,10 +100,10 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 #if 0
     //     Joe thinks that this should be a table or a loop.
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
+    classifier_flags = classifier_flags
+                       & (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+                          | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+                          | CRM_NEURAL_NET);
 #endif
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 0, "L", (unsigned long long int)classifier_flags);
@@ -209,12 +209,12 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -231,7 +231,7 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -353,12 +353,12 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -375,7 +375,7 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -499,12 +499,12 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -521,7 +521,7 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -643,12 +643,12 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -665,7 +665,7 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -786,12 +786,12 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -808,7 +808,7 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -930,12 +930,12 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -952,7 +952,7 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -1075,12 +1075,12 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -1097,7 +1097,7 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -1220,12 +1220,12 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -1242,7 +1242,7 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -1366,12 +1366,12 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            NULL,
-            &txt,
-            &start,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        NULL,
+                        &txt,
+                        &start,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -1388,7 +1388,7 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;

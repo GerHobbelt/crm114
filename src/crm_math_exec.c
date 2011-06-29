@@ -37,7 +37,7 @@ int strmath(char *buf, int inlen, int maxlen, int *retstat)
     if (inlen < 0)
     {
         fatalerror("Bug in caller to strmath() - it makes no sense to",
-                " have a negative length string!\n");
+                   " have a negative length string!\n");
         return 0;
     }
 
@@ -115,7 +115,7 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
         if (sp < 0)
         {
             errstat = nonfatalerror("Stack Underflow in math evaluation",
-                    "");
+                                    "");
             return 0;
         }
 
@@ -123,7 +123,7 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
         {
             errstat = nonfatalerror("Stack Overflow in math evaluation.\n "
                                     "CRM114 Barbie says 'This math is too hard'.",
-                    buf);
+                                    buf);
             return 0;
         }
 
@@ -191,7 +191,7 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                 if (sp > 0)
                 {
                     sp--;
-                    stack[sp] = stack[sp] * stack[sp + 1];
+                    stack[sp] = stack[sp] *stack[sp + 1];
                     sinc = 1;
                 }
             }
@@ -230,8 +230,8 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                 sp--;
                 if (stack[sp] < 0.0
                     /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
-                    && ((int64_t)(stack[sp + 1])) >= stack[sp + 1] - FLT_EPSILON
-                    && ((int64_t)(stack[sp + 1])) <= stack[sp + 1] + FLT_EPSILON)
+                   && ((int64_t)(stack[sp + 1])) >= stack[sp + 1] - FLT_EPSILON
+                   && ((int64_t)(stack[sp + 1])) <= stack[sp + 1] + FLT_EPSILON)
                 {
                     stack[sp] = stack[sp] / 0.0;
                 }
@@ -268,7 +268,7 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                     sp--;
                     /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
                     if ((stack[sp] <= stack[sp + 1] + FLT_EPSILON)
-                        || (stack[sp] >= stack[sp + 1] - FLT_EPSILON))
+                       || (stack[sp] >= stack[sp + 1] - FLT_EPSILON))
                     /* if (stack[sp] == stack[sp + 1]) */
                     {
                         if (retstat)
@@ -294,7 +294,7 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                     sp--;
                     /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
                     if ((stack[sp] > stack[sp + 1] + FLT_EPSILON)
-                        || (stack[sp] < stack[sp + 1] - FLT_EPSILON))
+                       || (stack[sp] < stack[sp + 1] - FLT_EPSILON))
                     /* if (stack[sp] != stack[sp + 1]) */
                     {
                         if (retstat)
@@ -426,39 +426,39 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                     if (buf[ip] == 'x' || buf[ip] == 'X')
                     {
                         if (((int)stack[sp + 1]) <= stack[sp + 1] + FLT_EPSILON
-                            && ((int)stack[sp + 1]) >= stack[sp + 1] - FLT_EPSILON)
+                           && ((int)stack[sp + 1]) >= stack[sp + 1] - FLT_EPSILON)
                         {
                             snprintf(outformat, WIDTHOF(outformat), "%%%.0g%s%c",
-                                    stack[sp + 1],
-#if defined (_MSC_VER)
-                                    "I64",
-#elif defined (HAVE_LONG_LONG_INT) && (SIZEOF_LONG_INT < 8)
-                                    "ll",
+                                     stack[sp + 1],
+#if defined(_MSC_VER)
+                                     "I64",
+#elif defined(HAVE_LONG_LONG_INT) && (SIZEOF_LONG_INT < 8)
+                                     "ll",
 #else
-                                    "l",
+                                     "l",
 #endif
-                                    (short)buf[ip]);
+                                     (short)buf[ip]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                         else
                         {
                             snprintf(outformat, WIDTHOF(outformat), "%%0%.0g%s%c",
-                                    stack[sp + 1],
-#if defined (_MSC_VER)
-                                    "I64",
-#elif defined (HAVE_LONG_LONG_INT) && (SIZEOF_LONG_INT < 8)
-                                    "ll",
+                                     stack[sp + 1],
+#if defined(_MSC_VER)
+                                     "I64",
+#elif defined(HAVE_LONG_LONG_INT) && (SIZEOF_LONG_INT < 8)
+                                     "ll",
 #else
-                                    "l",
+                                     "l",
 #endif
-                                    (short)buf[ip]);
+                                     (short)buf[ip]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                     }
                     else
                     {
                         if (((int)stack[sp + 1]) <= stack[sp + 1] + FLT_EPSILON
-                            && ((int)stack[sp + 1]) >= stack[sp + 1] - FLT_EPSILON)
+                           && ((int)stack[sp + 1]) >= stack[sp + 1] - FLT_EPSILON)
                         {
                             snprintf(outformat, WIDTHOF(outformat), "%%%.0g.0%c", stack[sp + 1], buf[ip]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
@@ -485,10 +485,10 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                     }
                     else
                     {
-#if defined (_MSC_VER)
+#if defined(_MSC_VER)
                         int64_t intpart;
                         intpart = (int64_t)stack[sp];
-#elif defined (HAVE_LONG_LONG_INT) && (SIZEOF_LONG_INT < 8)
+#elif defined(HAVE_LONG_LONG_INT) && (SIZEOF_LONG_INT < 8)
                         long long int intpart;
                         intpart = (long long int)stack[sp];
 #else
@@ -509,7 +509,7 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                     //   back conversion; the only effect is to store the
                     //   format string for later.
                     if (buf[ip] != 'x'
-                        && buf[ip] != 'X')
+                       && buf[ip] != 'X')
                     {
                         stack[sp] = strtod(tempstring, NULL);
                     }
@@ -534,7 +534,7 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
             //         why are you using parenthesis in RPN code??
             {
                 nonfatalerror("It's just silly to use parenthesis in RPN!",
-                        " Perhaps you should check your setups?");
+                              " Perhaps you should check your setups?");
                 sinc = 1;
             }
             break;
@@ -595,7 +595,7 @@ int math_formatter(double value, char *format, char *buf, int buflen)
         //  preconversion to integer; use that strlen() does not count
         //  the null termination.
         if (format[strlen(format) - 1] == 'x'
-            || format[strlen(format) - 1] == 'X')
+           || format[strlen(format) - 1] == 'X')
         {
             int64_t equiv;
             if (internal_trace)
@@ -759,7 +759,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
         if (sp >= DEFAULT_MATHSTK_LIMIT)
         {
             errstat = nonfatalerror("Stack Overflow in math evaluation. ",
-                    "CRM114 Barbie says 'This math is too hard'.");
+                                    "CRM114 Barbie says 'This math is too hard'.");
             if (retstat)
                 *retstat = 0;
             return 0;
@@ -820,7 +820,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
 
             default:
                 errstat = nonfatalerror("Math expression makes no sense",
-                        " (need to have a number here).");
+                                        " (need to have a number here).");
                 if (retstat)
                     *retstat = 0;
                 return 0;
@@ -897,7 +897,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
 
             default:
                 errstat = nonfatalerror("Math needs an operator in: ",
-                        buf);
+                                        buf);
                 if (retstat)
                     *retstat = 0;
                 return 0;
@@ -954,7 +954,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
 
             default:
                 errstat = nonfatalerror("Math is missing a number in: ",
-                        buf);
+                                        buf);
                 if (retstat)
                     *retstat = 0;
                 return 0;
@@ -1001,8 +1001,8 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                 //    since we don't do complex numbers (yet) handle as NaN
                 if (leftarg[sp] < 0.0
                     /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
-                    && ((int64_t)(leftarg[sp])) >= leftarg[sp] - FLT_EPSILON
-                    && ((int64_t)(leftarg[sp])) <= leftarg[sp] + FLT_EPSILON)
+                   && ((int64_t)(leftarg[sp])) >= leftarg[sp] - FLT_EPSILON
+                   && ((int64_t)(leftarg[sp])) <= leftarg[sp] + FLT_EPSILON)
                 {
                     leftarg[sp] /= 0.0;
                 }
@@ -1127,32 +1127,32 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                     if (opstack[sp] == 'x' || opstack[sp] == 'X')
                     {
                         if (((int)rightarg) <= rightarg + FLT_EPSILON
-                            && ((int)rightarg) >= rightarg - FLT_EPSILON)
+                           && ((int)rightarg) >= rightarg - FLT_EPSILON)
                         {
                             snprintf(outformat, WIDTHOF(outformat), "%%%.0gll%c",
-                                    rightarg, (short)opstack[sp]);
+                                     rightarg, (short)opstack[sp]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                         else
                         {
                             snprintf(outformat, WIDTHOF(outformat), "%%0%.0gll%c",
-                                    rightarg, (short)opstack[sp]);
+                                     rightarg, (short)opstack[sp]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                     }
                     else
                     {
                         if (((int)rightarg) <= rightarg + FLT_EPSILON
-                            && ((int)rightarg) >= rightarg - FLT_EPSILON)
+                           && ((int)rightarg) >= rightarg - FLT_EPSILON)
                         {
                             snprintf(outformat, WIDTHOF(outformat), "%%%.0g.0%c",
-                                    rightarg, (short)opstack[sp]);
+                                     rightarg, (short)opstack[sp]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                         else
                         {
                             snprintf(outformat, WIDTHOF(outformat), "%%%g%c",
-                                    rightarg, (short)opstack[sp]);
+                                     rightarg, (short)opstack[sp]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                     }
@@ -1164,7 +1164,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                     //      can't take IEEE floating point as inputs.
 
                     if (opstack[sp] != 'x'
-                        && opstack[sp] != 'X')
+                       && opstack[sp] != 'X')
                     {
                         if (internal_trace)
                             fprintf(stderr, "Normal convert ");
@@ -1193,7 +1193,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
 
             default:
                 errstat = nonfatalerror("Math operator makes no sense in: ",
-                        buf);
+                                        buf);
                 if (retstat)
                     *retstat = 0;
                 return 0;
@@ -1207,7 +1207,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
         if (sp < 0)
         {
             errstat = nonfatalerror("Too many close parenthesis in this math: ",
-                    buf);
+                                    buf);
             if (retstat)
                 *retstat = 0;
             return 0;
@@ -1223,7 +1223,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
     if (sp != 0)
     {
         errstat = nonfatalerror("Not enough close parenthesis in this math: ",
-                buf);
+                                buf);
         if (retstat)
             *retstat = 0;
         return 0;

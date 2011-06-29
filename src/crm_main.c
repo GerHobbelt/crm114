@@ -120,7 +120,7 @@ char *outbuf = NULL;
 char *tempbuf = NULL;
 
 
-#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+#if !defined(CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
 CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = { 0 };
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
@@ -140,13 +140,13 @@ void free_stack_item(CSL_CELL *csl)
     if (!csl)
         return;
 
-mark_vars_as_out_of_scope(csl);
+    mark_vars_as_out_of_scope(csl);
 
-	if (csl->vht_var_collection)
-	{
-		free(csl->vht_var_collection);
-	}
-	csl->vht_var_collection = NULL;
+    if (csl->vht_var_collection)
+    {
+        free(csl->vht_var_collection);
+    }
+    csl->vht_var_collection = NULL;
 
     if (csl->mct && csl->mct_allocated)
     {
@@ -191,7 +191,7 @@ void free_stack(CSL_CELL *csl)
 {
     CSL_CELL *caller;
 
-    for ( ; csl != NULL; csl = caller)
+    for (; csl != NULL; csl = caller)
     {
         caller = csl->caller;
 
@@ -216,45 +216,45 @@ static void crm_final_cleanup(void)
 
     crm_munmap_all();
 
-					if (internal_trace)
-					{
-						int index;
-				int b;
+    if (internal_trace)
+    {
+        int index;
+        int b;
 
-						fprintf(stderr, "Variable Hash Table Dump @ scope depth %d\n", csl->calldepth);
-						for (b = INT_MAX, index = 0; index < vht_size; index++)
-						{
-if (vht[index] == NULL)
-{
-	if (b > index)
-	{
-		b = index;
-}
-continue;
-}
-if (index >0 && vht[index - 1] == NULL)
-{
-							fprintf(stderr, "empty slots in range %d .. %d\n", b, index);
-b = INT_MAX;
-}
-							fprintf(stderr, "  var '");
-							fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
-							fprintf(stderr, "'[%d] found at %d (",
-									vht[index]->nlen,  index);
-							if (vht[index]->valtxt == cdw->filetext)
-							{
-								fprintf(stderr, "(main)");
-							}
-							else
-							{
-								fprintf(stderr, "(isol)");
-							}
-							fprintf(stderr, " s: %d, l:%d,%s scope: %d)\n",
-									vht[index]->vstart, vht[index]->vlen,
-	(vht[index]->out_of_scope ? " (out-of-scope)" : ""),
-vht[index]->scope_depth);
-						}
-					}
+        fprintf(stderr, "Variable Hash Table Dump @ scope depth %d\n", csl->calldepth);
+        for (b = INT_MAX, index = 0; index < vht_size; index++)
+        {
+            if (vht[index] == NULL)
+            {
+                if (b > index)
+                {
+                    b = index;
+                }
+                continue;
+            }
+            if (index > 0 && vht[index - 1] == NULL)
+            {
+                fprintf(stderr, "empty slots in range %d .. %d\n", b, index);
+                b = INT_MAX;
+            }
+            fprintf(stderr, "  var '");
+            fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
+            fprintf(stderr, "'[%d] found at %d (",
+                    vht[index]->nlen,  index);
+            if (vht[index]->valtxt == cdw->filetext)
+            {
+                fprintf(stderr, "(main)");
+            }
+            else
+            {
+                fprintf(stderr, "(isol)");
+            }
+            fprintf(stderr, " s: %d, l:%d,%s scope: %d)\n",
+                    vht[index]->vstart, vht[index]->vlen,
+                    (vht[index]->out_of_scope ? " (out-of-scope)" : ""),
+                    vht[index]->scope_depth);
+        }
+    }
 
     free_stack(csl); // expects a live vht...
     csl = NULL;
@@ -296,77 +296,77 @@ char stderr_buf[65536];
 
 struct write_spec_prop
 {
-	FILE *o;
-	int pos;
+    FILE *o;
+    int pos;
 };
 
 static int write_spec_bit(const char *str, int len, void *propagator)
 {
-	struct write_spec_prop *p = (struct write_spec_prop *)propagator;
-	int ret = 0;
+    struct write_spec_prop *p = (struct write_spec_prop *)propagator;
+    int ret = 0;
 
-	if (len == -1)
-		len = strlen(str);
+    if (len == -1)
+        len = strlen(str);
 
-	if (len > 0)
-	{
-		// check if it still fits on this line or is end-of-line:
-		if (str[0] == '\n')
-		{
-			// rude hackish code: 'knows' we send "\n" strings as opcode 'line terminators'.
-			ret = fwrite(str, len, 1, p->o);
-			if (ret < 0)
-				return -1;
+    if (len > 0)
+    {
+        // check if it still fits on this line or is end-of-line:
+        if (str[0] == '\n')
+        {
+            // rude hackish code: 'knows' we send "\n" strings as opcode 'line terminators'.
+            ret = fwrite(str, len, 1, p->o);
+            if (ret < 0)
+                return -1;
 
-			p->pos = 0;
-		}
-		else if (p->pos + len >= 79)
-		{
-			// split or wrap?
-			const char *ws2 = str - 1;
-			const char *ws;
+            p->pos = 0;
+        }
+        else if (p->pos + len >= 79)
+        {
+            // split or wrap?
+            const char *ws2 = str - 1;
+            const char *ws;
 
-			do
-			{
-					ws = ws2;
-				  ws2 = memchr(ws2 + 1, ' ', len - (ws2 + 1 - str));
-			}  while (ws2 && ws2 - str + p->pos < 79);
-			
-			if (ws)
-			{
-				ret = fwrite(str, ws + 1 - str, 1, p->o);
-				if (ret < 0)
-					return -1;
-			}
-			else
-			{
-				ws = str - 1;
-			}
+            do
+            {
+                ws = ws2;
+                ws2 = memchr(ws2 + 1, ' ', len - (ws2 + 1 - str));
+            }  while (ws2 && ws2 - str + p->pos < 79);
 
-			fwrite("\n        ", 9, 1, p->o);
-			p->pos = 8;
-			// indent!
+            if (ws)
+            {
+                ret = fwrite(str, ws + 1 - str, 1, p->o);
+                if (ret < 0)
+                    return -1;
+            }
+            else
+            {
+                ws = str - 1;
+            }
 
-			if (len - (ws + 1 - str) > 0)
-			{
-				ret = fwrite(ws + 1, len - (ws + 1 - str), 1, p->o);
-				if (ret < 0)
-					return -1;
+            fwrite("\n        ", 9, 1, p->o);
+            p->pos = 8;
+            // indent!
 
-				p->pos += len - (ws + 1 - str);
-			}
-		}
-		else
-		{
-			ret = fwrite(str, len, 1, p->o);
-			if (ret < 0)
-				return -1;
+            if (len - (ws + 1 - str) > 0)
+            {
+                ret = fwrite(ws + 1, len - (ws + 1 - str), 1, p->o);
+                if (ret < 0)
+                    return -1;
 
-			p->pos += len;
-		}
-	}
+                p->pos += len - (ws + 1 - str);
+            }
+        }
+        else
+        {
+            ret = fwrite(str, len, 1, p->o);
+            if (ret < 0)
+                return -1;
 
-	return 0;
+            p->pos += len;
+        }
+    }
+
+    return 0;
 }
 
 
@@ -394,7 +394,7 @@ int main(int argc, char **argv)
     setvbuf(stderr, stderr_buf, _IOFBF, sizeof(stderr_buf));
 #endif
 
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)) && defined(_DEBUG)
     /*
      * Hook in our client-defined reporting function.
      * Every time a _CrtDbgReport is called to generate
@@ -455,12 +455,12 @@ int main(int argc, char **argv)
 
     atexit(crm_final_cleanup);
 
-#if defined (HAVE__SET_OUTPUT_FORMAT)
+#if defined(HAVE__SET_OUTPUT_FORMAT)
     _set_output_format(_TWO_DIGIT_EXPONENT);     // force MSVC (& others?) to produce floating point %f with 2 digits for power component instead of 3 for easier comparison with 'knowngood'.
 #endif
 
     // force MSwin/Win32 console I/O into binary mode: treat \r\n and \n as completely different - like it is on *NIX boxes!
-#if defined (HAVE__SETMODE) && defined (HAVE__FILENO) && defined (O_BINARY)
+#if defined(HAVE__SETMODE) && defined(HAVE__FILENO) && defined(O_BINARY)
     (void)_setmode(_fileno(crm_stdin), O_BINARY);
     (void)_setmode(_fileno(crm_stdout), O_BINARY);
     (void)_setmode(_fileno(crm_stderr), O_BINARY);
@@ -519,7 +519,7 @@ int main(int argc, char **argv)
     csl->caller = NULL;
     csl->calldepth = 0;
     csl->aliusstk[0]  = 0; // this gets initted later.
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     csl->cstmt_recall = 0;
     csl->next_stmt_due_to_fail = -1;
     csl->next_stmt_due_to_trap = -1;
@@ -548,7 +548,7 @@ int main(int argc, char **argv)
         if (i)
         {
             untrappableerror_ex(SRC_LOC(), "Failed to init analysis code using env.var. CRM114_PROFILING settings: '%s': error code %d. Urck!",
-                    profile_argset, i);
+                                profile_argset, i);
         }
     }
 #endif
@@ -560,8 +560,8 @@ int main(int argc, char **argv)
         //   is this a plea for help?
         if (
             (strncmp(argv[i], "-?", 2) == 0)
-            || (strncmp(argv[i], "-h", 2) == 0)
-            || (argc == 1))
+           || (strncmp(argv[i], "-h", 2) == 0)
+           || (argc == 1))
         {
             fprintf(stderr, " CRM114 version %s, rev %s (regex engine: %s) (OS: %s)\n",
                     VERSION,
@@ -612,14 +612,14 @@ int main(int argc, char **argv)
                             "         for stderr. This implies that '-err 1' is essentially\n"
                             "         identical to the UNIX shell '2>&1' redirection.\n");
             fprintf(stderr, " -Bill   makes us act like BillY vanilla crm114\n");
-	fprintf(stderr, " -RT     ensure tests are as reproducible across platforms as possible.\n"
+            fprintf(stderr, " -RT     ensure tests are as reproducible across platforms as possible.\n"
                             "         One of the implications is that the random generator will be\n"
                             "         seeded with a fixed value so random values are deterministic.\n");
 #ifndef CRM_DONT_ASSERT
             fprintf(stderr, " -Cdbg   direct developer support: trigger the C/IDE debugger when an\n"
                             "         internal error is hit.\n");
 #endif
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)) && defined(_DEBUG)
             fprintf(stderr, " -memdump\n"
                             "         direct developer support: dump all detected memory leaks\n");
 #endif
@@ -995,7 +995,7 @@ int main(int argc, char **argv)
                 if (chdir(argv[i]))
                 {
                     untrappableerror_ex(SRC_LOC(), "Sorry, couldn't chdir to '%s'; errno=%d(%s)\n",
-                            argv[i], errno, errno_descr(errno));
+                                        argv[i], errno, errno_descr(errno));
                 }
             }
             goto end_command_line_parse_loop;
@@ -1008,7 +1008,7 @@ int main(int argc, char **argv)
             int len = WIDTHOF(cs);
             char *dst = cs;
             int partlen;
-			struct write_spec_prop prop = {0};
+            struct write_spec_prop prop = { 0 };
 
             //   NOTE - version info goes to stdout, not stderr, just like GCC does
             fprintf(stdout, " This is CRM114, version %s, rev %s (%s) (OS: %s)\n",
@@ -1181,10 +1181,10 @@ int main(int argc, char **argv)
             }
 
             fprintf(stdout, "\nScript language:\n"
-				"  Reserved words (instructions) + attributes / format:\n");
+                            "  Reserved words (instructions) + attributes / format:\n");
 
-			prop.o = stdout;
-			show_instruction_spec(-1, write_spec_bit, &prop);
+            prop.o = stdout;
+            show_instruction_spec(-1, write_spec_bit, &prop);
 
             if (engine_exit_base != 0)
             {
@@ -1225,7 +1225,7 @@ int main(int argc, char **argv)
             {
                 if (user_trace)
                     fprintf(stderr, "cmdline arglist also locks out sysflags.\n");
-                for ( ; ++i < argc;)
+                for (; ++i < argc;)
                 {
                     if (argv[i][0] != '-')
                     {
@@ -1319,20 +1319,20 @@ int main(int argc, char **argv)
             {
                 // support '0' as stdin handle:
                 if (strcmp(argv[i], "0") == 0
-                    || strcmp(argv[i], "-") == 0
-                    || strcmp(argv[i], "stdin") == 0
-                    || strcmp(argv[i], "/dev/stdin") == 0
-                    || strcmp(argv[i], "CON:") == 0
-                    || strcmp(argv[i], "/dev/tty") == 0)
+                   || strcmp(argv[i], "-") == 0
+                   || strcmp(argv[i], "stdin") == 0
+                   || strcmp(argv[i], "/dev/stdin") == 0
+                   || strcmp(argv[i], "CON:") == 0
+                   || strcmp(argv[i], "/dev/tty") == 0)
                 {
                     stdin = os_stdin();
                     stdin_filename = "stdin (default)";
                 }
                 else if (strcmp(argv[i], "1") == 0
-                         || strcmp(argv[i], "2") == 0)
+                        || strcmp(argv[i], "2") == 0)
                 {
                     untrappableerror("'-in' cannot use the stdout/stderr handles 1/2! This argument is therefor illegal: ",
-                            argv[i]);
+                                     argv[i]);
                 }
                 else
                 {
@@ -1344,7 +1344,7 @@ int main(int argc, char **argv)
 
                         stdin = os_stdin();                                                     // reset stdin before the error report is sent out!
                         untrappableerror_ex(SRC_LOC(), "Failed to open stdin input replacement file '%s' (full path: '%s')",
-                                stdin_filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), stdin_filename));
+                                            stdin_filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), stdin_filename));
                     }
                 }
             }
@@ -1366,18 +1366,18 @@ int main(int argc, char **argv)
             {
                 // support '1' as stdout handle:
                 if (strcmp(argv[i], "1") == 0
-                    || strcmp(argv[i], "-") == 0
-                    || strcmp(argv[i], "stdout") == 0
-                    || strcmp(argv[i], "/dev/stdout") == 0
-                    || strcmp(argv[i], "CON:") == 0
-                    || strcmp(argv[i], "/dev/tty") == 0)
+                   || strcmp(argv[i], "-") == 0
+                   || strcmp(argv[i], "stdout") == 0
+                   || strcmp(argv[i], "/dev/stdout") == 0
+                   || strcmp(argv[i], "CON:") == 0
+                   || strcmp(argv[i], "/dev/tty") == 0)
                 {
                     stdout = os_stdout();
                     stdout_filename = "stdout (default)";
                 }
                 else if (strcmp(argv[i], "2") == 0
-                         || strcmp(argv[i], "stderr") == 0
-                         || strcmp(argv[i], "/dev/stderr") == 0)
+                        || strcmp(argv[i], "stderr") == 0
+                        || strcmp(argv[i], "/dev/stderr") == 0)
                 {
                     // support '2' as stderr handle:
                     stdout = os_stderr();
@@ -1411,7 +1411,7 @@ int main(int argc, char **argv)
 
                             stdout = os_stdout();                             // reset stdout before the error report is sent out!
                             untrappableerror_ex(SRC_LOC(), "Failed to open stdout input replacement file '%s' (full path: '%s')",
-                                    stdout_filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), stdout_filename));
+                                                stdout_filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), stdout_filename));
                         }
                     }
                     else
@@ -1442,18 +1442,18 @@ int main(int argc, char **argv)
             {
                 // support '2' as stderr handle:
                 if (strcmp(argv[i], "2") == 0
-                    || strcmp(argv[i], "-") == 0
-                    || strcmp(argv[i], "stderr") == 0
-                    || strcmp(argv[i], "/dev/stderr") == 0
-                    || strcmp(argv[i], "CON:") == 0
-                    || strcmp(argv[i], "/dev/tty") == 0)
+                   || strcmp(argv[i], "-") == 0
+                   || strcmp(argv[i], "stderr") == 0
+                   || strcmp(argv[i], "/dev/stderr") == 0
+                   || strcmp(argv[i], "CON:") == 0
+                   || strcmp(argv[i], "/dev/tty") == 0)
                 {
                     stderr = os_stderr();
                     stderr_filename = "stderr (default)";
                 }
                 else if (strcmp(argv[i], "1") == 0
-                         || strcmp(argv[i], "stdout") == 0
-                         || strcmp(argv[i], "/dev/stdout") == 0)
+                        || strcmp(argv[i], "stdout") == 0
+                        || strcmp(argv[i], "/dev/stdout") == 0)
                 {
                     // support '1' as stdout handle:
                     stderr = os_stdout();
@@ -1487,7 +1487,7 @@ int main(int argc, char **argv)
 
                             stderr = os_stderr();                             // reset stderr before the error report is sent out!
                             untrappableerror_ex(SRC_LOC(), "Failed to open stderr input replacement file '%s' (full path: '%s')",
-                                    stderr_filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), stderr_filename));
+                                                stderr_filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), stderr_filename));
                         }
                     }
                     else
@@ -1520,7 +1520,7 @@ int main(int argc, char **argv)
         }
         if (strcmp(argv[i], "-RT") == 0)
         {
-        	crm_rand_init(666);
+            crm_rand_init(666);
             if (user_trace)
                 fprintf(stderr, "Enabling 'test reproducibility' mode.\n");
             goto end_command_line_parse_loop;
@@ -1535,7 +1535,7 @@ int main(int argc, char **argv)
             goto end_command_line_parse_loop;
         }
 #endif
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)) && defined(_DEBUG)
         if (strcmp(argv[i], "-memdump") == 0)
         {
             trigger_memdump = 1;
@@ -1556,7 +1556,7 @@ int main(int argc, char **argv)
             {
                 untrappableerror_ex(SRC_LOC(), "Couldn't open the file, "
                                                "filename too long: (path length = %d, max = %d) '%s'",
-                        (int)strlen(argv[i]), MAX_FILE_NAME_LEN, argv[i]);
+                                    (int)strlen(argv[i]), MAX_FILE_NAME_LEN, argv[i]);
             }
 
             posv[1] = argv[i];
@@ -1584,7 +1584,7 @@ end_command_line_parse_loop:
         }
     }
 
-    for ( ; ++i < argc;)
+    for (; ++i < argc;)
     {
         if (argv[i][0] != '-')
         {
@@ -1609,7 +1609,7 @@ end_command_line_parse_loop:
                 {
                     untrappableerror_ex(SRC_LOC(), "Couldn't open the file, "
                                                    "filename too long: (path length = %d, max = %d) '%s'",
-                            (int)strlen(argv[i]), MAX_FILE_NAME_LEN, argv[i]);
+                                        (int)strlen(argv[i]), MAX_FILE_NAME_LEN, argv[i]);
                 }
                 posv[1] = argv[i];
                 posc = CRM_MAX(posc, 2);
@@ -1681,7 +1681,7 @@ end_command_line_parse_loop:
         if (strlen(&(argv[openbracket][1])) + 2048 > max_pgmsize)
         {
             untrappableerror("The command line program is too big.\n",
-                    "Try increasing the max program size with -P.\n");
+                             "Try increasing the max program size with -P.\n");
         }
         csl->filename = "(from command line)";
         csl->filename_allocated = 0;
@@ -1690,8 +1690,8 @@ end_command_line_parse_loop:
         if (!csl->filetext)
         {
             untrappableerror(
-                    "Couldn't alloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.",
-                    "");
+                "Couldn't alloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.",
+                "");
         }
         if (user_trace)
             fprintf(stderr, "Using program file %s\n", csl->filename);
@@ -1732,8 +1732,8 @@ end_command_line_parse_loop:
     if (!cdw->filetext)
     {
         untrappableerror(
-                "Couldn't alloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.",
-                "");
+            "Couldn't alloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.",
+            "");
     }
 
     //      also allocate storage for the windowed data input
@@ -1748,10 +1748,10 @@ end_command_line_parse_loop:
     if (!tempbuf || !outbuf || !inbuf || !newinputbuf)
     {
         untrappableerror(
-                "Couldn't alloc one or more of"
-                "newinputbuf,inbuf,outbuf,tempbuf.\n"
-                "These are all necessary for operation."
-                "We can't run.", "");
+            "Couldn't alloc one or more of"
+            "newinputbuf,inbuf,outbuf,tempbuf.\n"
+            "These are all necessary for operation."
+            "We can't run.", "");
     }
 
     //     Initialize the VHT, add in a few predefined variables
@@ -1799,7 +1799,7 @@ end_command_line_parse_loop:
         size_t targetsize = data_window_size - 1;
         size_t offset;
 
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
         readsize = CRM_MIN(16384, readsize);   // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
 #endif
         for (offset = 0; !feof(stdin) && offset < targetsize;)
@@ -1866,16 +1866,16 @@ end_command_line_parse_loop:
         crm_memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
         tdw->nchars++;
         crm_setvar(NULL,
-			NULL,
-                0,
-                tdw->filetext,
-                dwname,
-                dwlen,
-                cdw->filetext,
-                0,
-                cdw->nchars,
-                -1,
-				-1);
+                   NULL,
+                   0,
+                   tdw->filetext,
+                   dwname,
+                   dwlen,
+                   cdw->filetext,
+                   0,
+                   cdw->nchars,
+                   -1,
+                   -1);
     }
     //
     //    We also set up the :_iso: to hold the isolated variables.
@@ -1899,16 +1899,16 @@ end_command_line_parse_loop:
         crm_memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
         tdw->nchars++;
         crm_setvar(NULL,
-			NULL,
-                0,
-                tdw->filetext,
-                isoname,
-                isolen,
-                tdw->filetext,
-                0,
-                0,
-                -1,
-				-1);
+                   NULL,
+                   0,
+                   tdw->filetext,
+                   isoname,
+                   isolen,
+                   tdw->filetext,
+                   0,
+                   0,
+                   -1,
+                   -1);
     }
 #endif
     //    Now we're here, we can actually run!

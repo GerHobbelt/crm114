@@ -22,9 +22,9 @@
 #include "crm114.h"
 
 static int crm_zapcss(FEATUREBUCKET_TYPE *h,
-        unsigned int                      hs,
-        unsigned int                      start,
-        unsigned int                      end);
+        unsigned int hs,
+        unsigned int start,
+        unsigned int end);
 
 //     How to microgroom a .css file that's getting full
 //
@@ -136,9 +136,9 @@ int crm_microgroom(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
         if (
             (h[i].key != 0)   // hash keys == 0 are SPECIALS like #learns,
                               // and must never be deleted.
-            &&
+           &&
             (force_rescale
-             || ((h[i].key + randy) & MICROGROOM_STOCHASTIC_MASK)
+            || ((h[i].key + randy) & MICROGROOM_STOCHASTIC_MASK)
              == MICROGROOM_STOCHASTIC_KEY))
         {
             h[i].value *= MICROGROOM_RESCALE_FACTOR;
@@ -255,9 +255,9 @@ int crm_microgroom(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 //      crm_zapcss - the distance-heuristic microgroomer core.
 
 static int crm_zapcss(FEATUREBUCKET_TYPE *h,
-        unsigned int                      hs,
-        unsigned int                      start,
-        unsigned int                      end)
+        unsigned int hs,
+        unsigned int start,
+        unsigned int end)
 {
     //     A question- what's the ratio deprecation ratio between
     //     "distance from original" vs. low point value?  The original
@@ -307,10 +307,10 @@ static int crm_zapcss(FEATUREBUCKET_TYPE *h,
                     double k_minus_hk_hash = k - h[k].hash % hs;
 
                     //  fprintf(stderr, "b");
-                    if ((VWEIGHT * hk_value) +
-                        (VWEIGHT2 * hk_value * hk_value) +
-                        (DWEIGHT * k_minus_hk_hash) +
-                        (DWEIGHT2 * k_minus_hk_hash * k_minus_hk_hash)
+                    if ((VWEIGHT * hk_value)
+                        + (VWEIGHT2 * hk_value * hk_value)
+                        + (DWEIGHT * k_minus_hk_hash)
+                        + (DWEIGHT2 * k_minus_hk_hash * k_minus_hk_hash)
                         <= vcut)
                     {
                         //  fprintf(stderr, "*");
@@ -419,8 +419,8 @@ void crm_packseg(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
             // fprintf(stderr, "a %d", ito);
 
             while (!((h[ito].value == 0)
-                     || (h[ito].hash == thash
-                         && h[ito].key == tkey)))
+                    || (h[ito].hash == thash
+                       && h[ito].key == tkey)))
             {
                 ito++;
                 if (ito >= hs)
@@ -483,7 +483,7 @@ int crm_create_cssfile(char *cssfile, int buckets,
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
             fatalerror("For some reason, I was unable to write the header to the .CSS file named ",
-                    cssfile);
+                       cssfile);
         }
 
         //  Initialize CSS file - zero all buckets

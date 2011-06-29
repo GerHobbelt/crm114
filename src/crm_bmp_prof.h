@@ -62,8 +62,8 @@ typedef struct
     // ANYTHING AFTER THIS LINE YOU DO NOT NEED TO SET BEFORE CALLING THE CREATE METHOD
     double x_max_edge;
     double value_scale;
-    int    counterspace_size;   // number of counters allocated following this struct.
-    int    x_divisor;
+    int counterspace_size;      // number of counters allocated following this struct.
+    int x_divisor;
     double y_single_scale;
     double y_square_scale;
     double y_middle_offset;
@@ -110,14 +110,14 @@ typedef struct
 typedef struct
 {
     uint32_t header_size; // size of this header (should be 40 bytes precisely!)
-    int32_t  image_width;
-    int32_t  image_height;
+    int32_t image_width;
+    int32_t image_height;
     uint16_t color_planes;        // must be 1
     uint16_t bits_per_pixel;      // 1, 4, 8, 16, 24, 32 -- we use 32 only!
     uint32_t compression_method;  // 0: none
     uint32_t size_of_pixel_data;
-    int32_t  horizontal_resolution;      // pixels per meter
-    int32_t  vertical_resolution;        // pixels per meter
+    int32_t horizontal_resolution;       // pixels per meter
+    int32_t vertical_resolution;         // pixels per meter
     uint32_t number_of_colors;           // number of colors in palette; 0: true color
     uint32_t number_of_important_colors; // should be 0
 } BmpInfoHeader;
@@ -130,7 +130,7 @@ typedef struct
 {
     BmpFileHeader header;
     BmpInfoHeader info;
-    BmpPixel      bitmap[4];
+    BmpPixel bitmap[4];
 } BmpFileStructure;
 #include "crm_poppack.h"
 
@@ -145,7 +145,7 @@ typedef struct
 } RGBpixel;
 
 
-#if defined (WORDS_BIGENDIAN)
+#if defined(WORDS_BIGENDIAN)
 
 static inline uint16_t n16_to_le(int v)
 {
@@ -430,7 +430,7 @@ typedef struct
 
 typedef struct
 {
-    int     opcode_counts[CRM_UNIMPLEMENTED + 2];
+    int opcode_counts[CRM_UNIMPLEMENTED + 2];
     int64_t opcode_times[CRM_UNIMPLEMENTED + 2];
 
 #define HASH_DISTRIBUTION_GRANULARITY (2048 * 2048)
@@ -440,7 +440,7 @@ typedef struct
     unsigned int hash_per_char_counts[1 << 8][16][HASH_PER_CHAR_GRANULARITY];
 
     int *chain_length_counts;
-    int  chain_length_count_size;
+    int chain_length_count_size;
 } CRM_ANALYSIS_REPORT_DATA;
 
 
@@ -448,8 +448,8 @@ typedef struct
 typedef struct
 {
     const char *stmt_name;
-    int         stmt_code;
-    unsigned    is_executable : 1;
+    int stmt_code;
+    unsigned is_executable : 1;
 } STMT_DEF_TYPE;
 
 
@@ -475,7 +475,7 @@ static inline void cvt_int64_2_chars(char *dst, int64_t val)
 {
     union
     {
-        char    c[8];
+        char c[8];
         int64_t ll;
     } v = { 0 };
     v.ll = val;
@@ -520,9 +520,9 @@ const STMT_DEF_TYPE *get_stmt_def(int opcode);
         static int msg_written = 0;                                                 \
                                                                                     \
         if (check_validity_of_expression(SRC_LOC(),                                 \
-                    store_elem_id, elem_index_in_file,                              \
-                    comparison, # comparison, description,                          \
-                    msg_written))                                                   \
+                                         store_elem_id, elem_index_in_file,                              \
+                                         comparison, # comparison, description,                          \
+                                         msg_written))                                                   \
         {                                                                           \
             hit_valid_store_elem = 0;                                               \
             if (!msg_written)                                                       \
@@ -574,8 +574,8 @@ public:
     virtual void ResetToStart() = 0;
 
 private:
-    AugmentedDataFeedBase() { };
-    virtual ~AugmentedDataFeedBase() { };
+    AugmentedDataFeedBase() {};
+    virtual ~AugmentedDataFeedBase() {};
 };
 
 
@@ -598,8 +598,8 @@ public:
     virtual int Event() = 0;
 
 private:
-    ReportEventBase() { };
-    virtual ~ReportEventBase() { };
+    ReportEventBase() {};
+    virtual ~ReportEventBase() {};
 };
 
 
@@ -615,11 +615,11 @@ class ReportBase
 public:
     virtual void Report() = 0;
 
-    virtual void RegisterRequiredCollection(StatsCollectorBase&collection, int purpose) = 0;
+    virtual void RegisterRequiredCollection(StatsCollectorBase& collection, int purpose) = 0;
 
 private:
-    ReportBase() { };
-    virtual ~ReportBase() { };
+    ReportBase() {};
+    virtual ~ReportBase() {};
 };
 
 
@@ -633,14 +633,14 @@ private:
 class ReportEventFilterBase
 {
 public:
-    virtual int Report(ReportEventBase&report_event) = 0;
+    virtual int Report(ReportEventBase& report_event) = 0;
 
-    virtual void RegisterReport(ReportBase&report) = 0;
-    virtual void ChainFilter(ReportEventFilterBase&subsequent_filter) = 0;
+    virtual void RegisterReport(ReportBase& report) = 0;
+    virtual void ChainFilter(ReportEventFilterBase& subsequent_filter) = 0;
 
 private:
-    ReportEventFilterBase() { };
-    virtual ~ReportEventFilterBase() { };
+    ReportEventFilterBase() {};
+    virtual ~ReportEventFilterBase() {};
 };
 
 
@@ -658,13 +658,13 @@ private:
 class StatsCollectorBase
 {
 public:
-    virtual void Collect(AugmentedDataFeedBase&feed) = 0;
+    virtual void Collect(AugmentedDataFeedBase& feed) = 0;
 
-    virtual void RegisterReportEventFilter(ReportEventFilterBase&report_filter) = 0;
+    virtual void RegisterReportEventFilter(ReportEventFilterBase& report_filter) = 0;
 
 private:
-    StatsCollectorBase() { };
-    virtual ~StatsCollectorBase() { };
+    StatsCollectorBase() {};
+    virtual ~StatsCollectorBase() {};
 };
 
 /*
@@ -708,16 +708,16 @@ private:
 class DataFilterBase
 {
 public:
-    virtual int Filter(AugmentedDataFeedBase&feed) = 0;
+    virtual int Filter(AugmentedDataFeedBase& feed) = 0;
 
-    virtual void RegisterCollector(StatsCollectorBase&collector) = 0;
-    virtual void ChainFilter(DataFilterBase&subsequent_filter) = 0;
+    virtual void RegisterCollector(StatsCollectorBase& collector) = 0;
+    virtual void ChainFilter(DataFilterBase& subsequent_filter) = 0;
 
-    virtual void RegisterReportEventFilter(ReportEventFilterBase&report_filter) = 0;
+    virtual void RegisterReportEventFilter(ReportEventFilterBase& report_filter) = 0;
 
 private:
-    DataFilterBase() { };
-    virtual ~DataFilterBase() { };
+    DataFilterBase() {};
+    virtual ~DataFilterBase() {};
 };
 
 

@@ -27,7 +27,7 @@
 #include "crm114.h"
 
 
-#if defined (HAVE_TRE_REGEX)
+#if defined(HAVE_TRE_REGEX)
 
 #if 0
 #undef REGEX_CACHE_RANDOM_ACCESS
@@ -44,9 +44,9 @@ typedef struct
 {
     char    *regex;
     regex_t *preg; // ptr to struct of {long, void*}
-    int      regex_len;
-    int      cflags;
-    int      status;
+    int regex_len;
+    int cflags;
+    int status;
 } REGEX_CACHE_BLOCK;
 
 
@@ -67,11 +67,12 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
     //    matches the same thing).
     if (regex_len == 0)
     {
-#if 0 /* [i_a] this will leak memory due to nil-action crm_regfree in a regex cached environment. */
-		return regncomp(preg, "()", 2, cflags);
+#if 0   /* [i_a] this will leak memory due to nil-action crm_regfree in a regex cached environment. */
+        return regncomp(preg, "()", 2, cflags);
+
 #else
-		regex = "()";
-		regex_len = 2;
+        regex = "()";
+        regex_len = 2;
 #endif
     }
 
@@ -123,7 +124,7 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
         i = 0;
         j = 0;
 
-#if defined (REGEX_CACHE_LINEAR_SEARCH)
+#if defined(REGEX_CACHE_LINEAR_SEARCH)
         if (internal_trace)
         {
             fprintf(stderr, " [<- rex cache linear]\n");
@@ -135,8 +136,8 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
         while (i < CRM_REGEX_CACHESIZE)
         {
             if (regex_len == regex_cache[i].regex_len
-                && cflags == regex_cache[i].cflags
-                && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
+               && cflags == regex_cache[i].cflags
+               && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
             {
                 //  We Found It!   Put it into the _temp vars...
                 if (internal_trace)
@@ -151,7 +152,7 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
             }
             i++;
         }
-#elif defined (REGEX_CACHE_RANDOM_ACCESS)
+#elif defined(REGEX_CACHE_RANDOM_ACCESS)
         if (internal_trace)
         {
             fprintf(stderr, " [<- rex cache random]\n");
@@ -162,8 +163,8 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
         //
         i = strnhash(regex, regex_len) % CRM_REGEX_CACHESIZE;
         if (regex_len == regex_cache[i].regex_len
-            && cflags == regex_cache[i].cflags
-            && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
+           && cflags == regex_cache[i].cflags
+           && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
         {
             //  We Found It!   Put it into the _temp vars...
             if (internal_trace)
@@ -214,7 +215,7 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
             if (ppreg_temp == NULL)
             {
                 fatalerror("Unable to allocate a pattern register buffer header.  ",
-                        "This is hopeless.  ");
+                           "This is hopeless.  ");
             }
             status_temp = regncomp(ppreg_temp, regex_temp, rlen_temp, cflags_temp);
 
@@ -223,7 +224,7 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
             //    moves everything else further down the list.
 
 
-#if defined (REGEX_CACHE_LINEAR_SEARCH)
+#if defined(REGEX_CACHE_LINEAR_SEARCH)
             if (internal_trace)
             {
                 fprintf(stderr, " [-> rex cache linear]\n");
@@ -266,7 +267,7 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
 
             //   and always stuff the _temps (which are correct) in at [0]
 
-#elif defined (REGEX_CACHE_RANDOM_ACCESS)
+#elif defined(REGEX_CACHE_RANDOM_ACCESS)
             if (internal_trace)
             {
                 fputs(" [-> rex cache random]\n", stderr);
@@ -323,11 +324,11 @@ int crm_regexec(regex_t *preg, const char *string, int string_len,
     if (!string)
     {
         nonfatalerror("crm_regexec - Regular Expression Execution Problem:\n",
-                "NULL pointer to the string to match .");
+                      "NULL pointer to the string to match .");
         return REG_NOMATCH;
     }
     if (aux_string == NULL
-        || strlen(aux_string) < 1)
+       || strlen(aux_string) < 1)
     {
         return regnexec(preg, string, string_len, nmatch, pmatch, eflags);
     }
@@ -344,13 +345,13 @@ int crm_regexec(regex_t *preg, const char *string, int string_len,
         pblock.max_cost = 0;
         pblock.cost_del = 0;
         if (4 != sscanf(aux_string, "%d %d %d %d",
-                    &pblock.cost_subst,
-                    &pblock.cost_ins,
-                    &pblock.max_cost,
-                    &pblock.cost_del))
+                        &pblock.cost_subst,
+                        &pblock.cost_ins,
+                        &pblock.max_cost,
+                        &pblock.cost_del))
         {
             fatalerror("Failed to decode 4 numeric cost parameters for approximate matching ",
-                    aux_string);
+                       aux_string);
         }
         if (user_trace)
         {
@@ -383,7 +384,8 @@ void crm_regfree(regex_t *preg)
     //  nothing!  yes indeed, if we are using cacheing, we don't free
     //  till and unless we decache, so crm_regfree is a noop.
     memset(preg, 0, sizeof(preg[0]));
-	return;
+    return;
+
 #else
     regfree(preg);
     memset(preg, 0, sizeof(preg[0]));
@@ -420,17 +422,17 @@ char *crm_regversion(void)
 #endif
 
     snprintf(vs, WIDTHOF(vs), "TRE %s (LGPL%s%s%s%s%s%s%s%s%s%s)",
-            cfg_ver,
-            (cfg_approx ? ", " : ""),
-            (cfg_approx ? "APPROX" : ""),
-            (cfg_wchar ? ", " : ""),
-            (cfg_wchar ? "WCHAR" : ""),
-            (cfg_mb ? ", " : ""),
-            (cfg_mb ? "MULTIBYTE" : ""),
-            (cfg_abi ? ", " : ""),
-            (cfg_abi ? "ABI" : ""),
-            (cfg_mb_cur_max != 1 ? ", " : ""),
-            (cfg_mb_cur_max != 1 ? "AUTO_MULTIBYTE" : ""));
+             cfg_ver,
+             (cfg_approx ? ", " : ""),
+             (cfg_approx ? "APPROX" : ""),
+             (cfg_wchar ? ", " : ""),
+             (cfg_wchar ? "WCHAR" : ""),
+             (cfg_mb ? ", " : ""),
+             (cfg_mb ? "MULTIBYTE" : ""),
+             (cfg_abi ? ", " : ""),
+             (cfg_abi ? "ABI" : ""),
+             (cfg_mb_cur_max != 1 ? ", " : ""),
+             (cfg_mb_cur_max != 1 ? "AUTO_MULTIBYTE" : ""));
 
     return vs;
 }

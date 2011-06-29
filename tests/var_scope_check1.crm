@@ -6,15 +6,15 @@ window
 
    isolate (:a:) /Foo!/        # a is of global scope
    call /:capture_func:/
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    call /:bu1:/
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    call /:bu2:/
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    call /:bu3:/
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    call /:bu4:/
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
 
    exit /0/
    
@@ -23,33 +23,34 @@ window
    isolate (:z:) /abcdefghijklmnop/           # make :z: be local
    match [:z:] /...(...).../  ( :: :a: )      # capture :a: into :z:
    match <keep> [:z:] /(......).../  ( :: :b: )      # capture :b: into :z:
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   match [:z:] /...(......)/  ( :: :c: )      # capture :c: into :z:
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    alter (:z:) /If it sprouts legs, I don't want to know about it./
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    return
 
    :bu1:
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    isolate (:z:) /yucky! no.1!/
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    return
    
    :bu2:
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    isolate (:z: :a:) /yucky! no.2!/
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    return
    
    :bu3:
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    isolate (:a:) /toodels/
    alter (:z:) /ook! ook! banana!/
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    return
    
    :bu4:    # make sure <default> doesn't 'pick up' any disappeared/gone-out-of-scope-previously content
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    isolate <default> (:z: :a:) /yucky! no.2!/
-   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:\n/
+   output /:*:_cd:: :a: is :*:a:, :z: is :*:z:, :b: is :*:b:, :c: is :*:c:\n/
    return
    

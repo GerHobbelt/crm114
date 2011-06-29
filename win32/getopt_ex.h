@@ -73,9 +73,9 @@ extern int optopt;
  *
  * The field `has_arg' is:
  *
- \arg no_argument          (or 0) if the option does not take an argument,
- \arg required_argument    (or 1) if the option requires an argument,
- \arg optional_argument    (or 2) if the option takes an optional argument.
+ * \arg no_argument          (or 0) if the option does not take an argument,
+ * \arg required_argument    (or 1) if the option requires an argument,
+ * \arg optional_argument    (or 2) if the option takes an optional argument.
  *
  * If the field `flag' is not NULL, it points to a variable that is set
  * to the value given in the field `val' when the option is found, but
@@ -101,11 +101,11 @@ struct option
 };
 
 /*!
- \defgroup GETOPT_HAS_ARG_FLAGS 'has_arg' values
+ * \defgroup GETOPT_HAS_ARG_FLAGS 'has_arg' values
  *
  *      Names for the values of the `has_arg' field of `struct option'.
  *
- \{
+ * \{
  */
 #define no_argument        0
 #define required_argument  1
@@ -137,11 +137,12 @@ struct option
  * arguments to the option 0.  This behavior is specific to the GNU
  * `getopt'.
  */
-int getopt_ex(int argc, char *const *argv, const char *optstring, void (*print_error)(void *, const char *, ...), void *propagate);
-int getopt_long_ex(int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index,
-                   void (*print_error)(void *, const char *, ...), void *propagate);
-int getopt_long_only_ex(int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index,
-                        void (*print_error)(void *, const char *, ...), void *propagate);
+typedef void getopt_print_error_f(void *, const char *, ...);
+int getopt_ex(int argc, char *const *argv, const char *optstring, getopt_print_error_f *print_error, void *propagate);
+int getopt_long_ex(int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index
+               ,getopt_print_error_f *print_error, void *propagate);
+int getopt_long_only_ex(int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index
+                    ,getopt_print_error_f *print_error, void *propagate);
 
 
 #ifdef __cplusplus

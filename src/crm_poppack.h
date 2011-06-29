@@ -1,17 +1,17 @@
 #ifndef __CRM114_POP_PACK_H__
 #define __CRM114_POP_PACK_H__
 
-#if defined (HAVE_POPPACK_H)
+#if defined(HAVE_POPPACK_H)
 
 #include <poppack.h>
 
 #else
 
-#if defined (HAVE_PRAGMA_PACK_PUSH_POP)
+#if defined(HAVE_PRAGMA_PACK_PUSH_POP)
 
 #pragma pack(pop)
 
-#elif defined (HAVE_PRAGMA_PACK)
+#elif defined(HAVE_PRAGMA_PACK)
 
 #pragma pack()
 

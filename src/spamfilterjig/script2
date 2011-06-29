@@ -1,0 +1,202 @@
+#!/bin/csh
+#
+# Usage:  bin/script resultfile
+#
+#
+
+mkdir tmp
+mkdir results
+mkdir results/graphs
+foreach x($*)
+   echo $x Preparing files ...
+
+   setenv R 0
+   head -1 $x | grep '=' || setenv R 1
+   if ($R == 0) then 
+   echo has equal
+   cut -d' ' -f2-4 $x | \
+       sed -e '/judge=HAM/d' -e '/judge=SPAM/d' \
+       -e 's/judge=H/judge=h/' -e 's/judge=S/judge=s/' \
+       -e 's/[a-z]*=//g' | cat -n | sed -e 's/ *//' \
+       -e 's/spam/2/g' -e 's/ham/1/g' -e 's/	1 2/	3 1/'  \
+       -e 's/	2 1/	1 2/' \
+       -e 's/	3 1/	2 1/' > tmp/$x.all
+   else
+      echo no equal
+      cp $x tmp/$x.all
+   endif
+   grep '	. 1' tmp/$x.all > tmp/$x.ham
+   grep '	. 2' tmp/$x.all > tmp/$x.spam
+   
+   echo Basic stats and input files ...
+   
+   bin/diff1 tmp/$x.all > tmp/$x.all.list
+   bin/diff1 tmp/$x.ham > tmp/$x.ham.list
+   bin/diff1 tmp/$x.spam > tmp/$x.spam.list
+   setenv COUNT `head -1 tmp/$x.all.list | cut -d' ' -f1`
+   mv tmp/$x.all.spss tmp/$x.all.spss0
+   mv tmp/$x.ham.spss tmp/$x.ham.spss0
+   mv tmp/$x.spam.spss tmp/$x.spam.spss0
+   bin/diff1 tmp/$x.all $COUNT > tmp/$x.all.list
+   bin/diff1 tmp/$x.ham $COUNT > tmp/$x.ham.list
+   bin/diff1 tmp/$x.spam $COUNT > tmp/$x.spam.list
+   mv tmp/$x.all.spss tmp/$x.all.spss1
+   mv tmp/$x.ham.spss tmp/$x.ham.spss1
+   mv tmp/$x.spam.spss tmp/$x.spam.spss1
+   
+   echo Binomial confidence intervals
+   
+   echo '<h1>' Results for $x '</h1>' > results/$x.html
+   echo "<pre>">> results/$x.html
+   bin/binom3 <tmp/$x.all.list >> results/$x.html
+   #grep 'roca' tmp/$x.all.list >> results/$x.html
+   
+   
+#   echo R logistic regression ham
+   sed -e 's/x$seq10k/1/' -e "s/NAME/tmp\/$x.ham.spss0/g" templates/R.in | R --no-save > tmp/$x.ham.R
+   
+#   echo R logistic regression spam
+   sed -e 's/x$seq10k/1/' -e "s/NAME/tmp\/$x.spam.spss0/g" templates/R.in | R --no-save > tmp/$x.spam.R
+   
+#   echo R logistic regression 1
+   sed -e "s/NAME/tmp\/$x.ham.spss0/g" templates/R.in | R --no-save > tmp/$x.ham.R0
+   
+#   echo R logistic regression 2
+   sed -e "s/NAME/tmp\/$x.ham.spss1/g" templates/R.in | R --no-save > tmp/$x.ham.R1
+   
+#   echo R logistic regression 3
+   sed -e "s/NAME/tmp\/$x.spam.spss1/g" templates/R.in | R --no-save > tmp/$x.spam.R1
+   
+#   echo R logistic regression 4
+   sed -e "s/NAME/tmp\/$x.spam.spss0/g" templates/R.in | R --no-save > tmp/$x.spam.R0
+
+   tail -1 tmp/$x.all.spss0 | cut -d' ' -f1 > tmp/size
+   
+   grep "(Intercept)" tmp/$x.spam.R0 | sed -e's/  */ /' | cut -d' ' -f2 > tmp/$x.spam.intercept
+   grep "^x.seq10k" tmp/$x.spam.R0 | sed -e's/  */ /' | cut -d' ' -f2 > tmp/$x.spam.slope
+   
+   grep "(Intercept)" tmp/$x.ham.R0 | sed -e's/  */ /' | cut -d' ' -f2 > tmp/$x.ham.intercept
+   grep "^x.seq10k" tmp/$x.ham.R0 | sed -e's/  */ /' | cut -d' ' -f2 > tmp/$x.ham.slope
+
+   bin/lam `cat tmp/$x.ham.slope` `cat tmp/$x.spam.slope` > tmp/$x.lam.slope
+   bin/lam `cat tmp/$x.ham.intercept` `cat tmp/$x.spam.intercept` > tmp/$x.lam.intercept
+
+   
+   grep "(Intercept)" tmp/$x.ham.R > tmp/$x.regression
+   grep "(Intercept)" tmp/$x.spam.R >> tmp/$x.regression
+   grep "(Intercept)" tmp/$x.ham.R0 >> tmp/$x.regression
+   grep "^x.seq10k" tmp/$x.ham.R0 >> tmp/$x.regression
+   grep "(Intercept)" tmp/$x.ham.R1 >> tmp/$x.regression
+   grep "(Intercept)" tmp/$x.spam.R0 >> tmp/$x.regression
+   grep "^x.seq10k" tmp/$x.spam.R0 >> tmp/$x.regression
+   grep "(Intercept)" tmp/$x.spam.R1 >> tmp/$x.regression
+   
+   echo Plotting 
+   sed -e "s/NAME/$x/g" templates/sample.plot \
+       -e "s/HAMSLOPE/`cat tmp\/$x.ham.slope`/" \
+       -e "s/HAMINTERCEPT/`cat tmp\/$x.ham.intercept`/" \
+       -e "s/SPAMSLOPE/`cat tmp\/$x.spam.slope`/" \
+       -e "s/SPAMINTERCEPT/`cat tmp\/$x.spam.intercept`/" \
+       -e "s/LAMSLOPE/`cat tmp\/$x.lam.slope`/" \
+       -e "s/LAMINTERCEPT/`cat tmp\/$x.lam.intercept`/" \
+        | awk -f templates/counted_graphs.awk > tmp/$x.R.plot
+   sed -e 's/postscript eps/postscript color eps/' tmp/$x.R.plot | gnuplot > results/graphs/$x.R.eps
+   sed -e 's/postscript eps/postscript color/' tmp/$x.R.plot | gnuplot > results/graphs/$x.R.ps
+   ps2pdf results/graphs/$x.R.ps results/graphs/$x.R.pdf
+
+   sed -e "s/NAME/$x/g" -e "s/LAMSLOPE/`cat tmp/$x.lam.slope`/" \
+       -e "s/LAMINTERCEPT/`cat tmp/$x.lam.intercept`/" \
+       templates/lam1.plot > tmp/$x.lam.plot
+   
+   echo ROC-R
+   #echo " " >> results/$x.html
+   #sed -e "s/NAME/$x/g" templates/roctom.r | R --no-save | grep '\[1\]' | cut -d' ' -f2 \
+           #| bin/rocac  >> results/$x.html
+   echo ROC-BOOT
+   bin/boot < tmp/$x.all.spss0 >> results/$x.html
+   echo " " >> results/$x.html
+   echo "<a href=graphs/$x.roc.pdf>Graph of ROC Curve</a>" >> results/$x.html
+   echo "<a href=graphs/$x.roc2.pdf>Graph of ROC Curve</a>" >> results/$x.html
+   echo "<a href=graphs/$x.prec.pdf>Graph of PR Curve</a>" >> results/$x.html
+   echo " " >> results/$x.html
+   echo "<a href=graphs/roc.pdf>Combined Graph of ROC Curves</a>" >> results/$x.html
+   echo "<a href=graphs/roc2.pdf>Combined Graph of ROC-II Curves</a>" >> results/$x.html
+   echo "<a href=graphs/prec.pdf>Combined Graph of PR Curves</a>" >> results/$x.html
+   echo ROC
+   cat templates/roc0.plot | awk -f templates/counted_graphs.awk > tmp/$x.roc.plot
+   sed -e "s/NAME/$x/g" templates/roc1.plot | awk -v plot=1 -v linestyle=3 -f templates/counted_graphs.awk  >> tmp/$x.roc.plot
+   echo " " >> tmp/$x.roc.plot
+   sed -e 's/postscript eps/postscript color/' tmp/$x.roc.plot | gnuplot > results/graphs/$x.roc.ps
+   sed -e 's/postscript eps/postscript color eps/' tmp/$x.roc.plot | gnuplot > results/graphs/$x.roc.eps
+   ps2pdf results/graphs/$x.roc.ps results/graphs/$x.roc.pdf
+   cat templates/roc0-2.plot | awk -f templates/counted_graphs.awk > tmp/$x.roc2.plot
+   sed -e "s/NAME/$x/g" templates/roc1-2.plot | awk -v plot=1 -v linestyle=3 -f templates/counted_graphs.awk  >> tmp/$x.roc2.plot
+   echo " " >> tmp/$x.roc2.plot
+   sed -e 's/postscript eps/postscript color/' tmp/$x.roc2.plot | gnuplot > results/graphs/$x.roc2.ps
+   sed -e 's/postscript eps/postscript color eps/' tmp/$x.roc2.plot | gnuplot > results/graphs/$x.roc2.eps
+   ps2pdf results/graphs/$x.roc2.ps results/graphs/$x.roc2.pdf
+   cat templates/pr0.plot | awk -f templates/counted_graphs.awk > tmp/$x.prec.plot
+   sed -e "s/NAME/$x/g" templates/pr1.plot | awk -v plot=1 -v linestyle=3 -f templates/counted_graphs.awk  >> tmp/$x.prec.plot
+   echo " " >> tmp/$x.prec.plot
+   sed -e 's/postscript eps/postscript color/' tmp/$x.prec.plot | gnuplot > results/graphs/$x.prec.ps
+   sed -e 's/postscript eps/postscript color eps/' tmp/$x.prec.plot | gnuplot > results/graphs/$x.prec.eps
+   ps2pdf results/graphs/$x.prec.ps results/graphs/$x.prec.pdf
+   
+   cat templates/roc0.plot | awk -f templates/counted_graphs.awk > tmp/roc.plot
+   cat tmp/*.roc.plot | grep '" with ' | awk -v plot=1 -v linestyle=3 -f templates/counted_graphs.awk >> tmp/roc.plot
+   echo " " >> tmp/roc.plot
+   # ex tmp/roc.plot < templates/fix.ex
+   sed -e 's/postscript eps/postscript color eps/' tmp/roc.plot | gnuplot > results/graphs/roc.eps
+   sed -e 's/postscript eps/postscript color/' tmp/roc.plot | gnuplot > results/graphs/roc.ps
+   ps2pdf results/graphs/roc.ps results/graphs/roc.pdf
+
+   cat templates/roc0-2.plot | awk -f templates/counted_graphs.awk > tmp/roc2.plot
+   cat tmp/*.roc2.plot | grep '" with ' | awk -v plot=1 -v linestyle=3 -f templates/counted_graphs.awk >> tmp/roc2.plot
+   echo " " >> tmp/roc2.plot
+   # ex tmp/roc2.plot < templates/fix.ex
+   sed -e 's/postscript eps/postscript color eps/' tmp/roc2.plot | gnuplot > results/graphs/roc2.eps
+   sed -e 's/postscript eps/postscript color/' tmp/roc2.plot | gnuplot > results/graphs/roc2.ps
+   ps2pdf results/graphs/roc2.ps results/graphs/roc2.pdf
+
+   cat templates/pr0.plot | awk -f templates/counted_graphs.awk > tmp/prec.plot
+   cat tmp/*.prec.plot | grep '" with ' | awk -v plot=1 -v linestyle=3 -f templates/counted_graphs.awk >> tmp/prec.plot
+   echo " " >> tmp/roc.prec
+   # ex tmp/prec.plot < templates/fix.ex
+   sed -e 's/postscript eps/postscript color eps/' tmp/prec.plot | gnuplot > results/graphs/prec.eps
+   sed -e 's/postscript eps/postscript color/' tmp/prec.plot | gnuplot > results/graphs/prec.ps
+   ps2pdf results/graphs/prec.ps results/graphs/prec.pdf
+
+   echo LEARNING CURVE
+   bin/regress < tmp/$x.regression >> results/$x.html
+   echo " " >> results/$x.html
+   echo "<a href=graphs/$x.R.pdf>Graph of Learning Curve</a>" >> results/$x.html
+
+   sed -e "s/SIZE/`cat tmp/size`/"  templates/lam0.plot | awk -f templates/counted_graphs.awk > tmp/lam.plot
+   cat tmp/*.lam.plot  | gawk -v plot=1 -v linestyle=3 -f templates/counted_graphs.awk >> tmp/lam.plot
+   echo " " >> tmp/lam.plot
+   # ex tmp/lam.plot < templates/fix.ex
+   sed -e 's/postscript eps/postscript color/'  tmp/lam.plot | gnuplot > results/graphs/lam.ps
+   sed -e 's/postscript eps/postscript color eps/'  tmp/lam.plot | gnuplot > results/graphs/lam.eps
+   ps2pdf results/graphs/lam.ps results/graphs/lam.pdf
+   echo "<a href=graphs/lam.pdf>Combined Graph of Learning Curves</a>" >> results/$x.html
+   bin/roca < tmp/$x.all.spss0 > tmp/$x.roca
+
+   sed -e "s/NAME/$x/g" templates/roca0.plot | awk -f templates/counted_graphs.awk > tmp/$x.roca.plot
+   sed -e "s/NAME/$x/g" templates/roca1.plot | awk -v plot=1 -v linestyle=3 -f templates/counted_graphs.awk >> tmp/$x.roca.plot
+   echo " " >> tmp/$x.roca.plot
+   sed -e 's/postscript eps/postscript color/' tmp/$x.roca.plot | gnuplot > results/graphs/$x.roca.ps
+   sed -e 's/postscript eps/postscript eps/' tmp/$x.roca.plot | gnuplot > results/graphs/$x.roca.eps
+   ps2pdf results/graphs/$x.roca.ps results/graphs/$x.roca.pdf
+   echo "<a href=graphs/$x.roca.pdf>Graph of ROCA Learning Curve</a>" >> results/$x.html
+
+   sed -e "s/NAME/$x/g" templates/roca0.plot | awk -f templates/counted_graphs.awk > tmp/roca.plot
+   cat tmp/*.roca.plot | grep '" with lines' | grep -v '\.all\.txt' | gawk -v plot=1 -v linestyle=3 -f templates/counted_graphs.awk >> tmp/roca.plot
+   echo " " >> tmp/roca.plot
+   # ex tmp/roca.plot < templates/fix.ex
+   sed -e 's/postscript eps/postscript eps/' tmp/roca.plot | gnuplot | sed -e 's/^\/LT5 { PL \[4 dl 3 dl 1 dl 3 dl\] 1 1 0 DL } def/\/LT5 { PL \[4 dl 3 dl 1 dl 3 dl\] 0.6 0.6 0 DL } def/' > results/graphs/roca.eps
+   sed -e 's/postscript eps/postscript color /' tmp/roca.plot | gnuplot | sed -e 's/^\/LT5 { PL \[4 dl 3 dl 1 dl 3 dl\] 1 1 0 DL } def/\/LT5 { PL \[4 dl 3 dl 1 dl 3 dl\] 0.6 0.6 0 DL } def/' > results/graphs/roca.ps
+   ps2pdf results/graphs/roca.ps results/graphs/roca.pdf
+
+   echo "<a href=graphs/roca.pdf>Combined Graph of ROCA Learning Curves</a>" >> results/$x.html
+
+end

@@ -174,17 +174,17 @@
                                                                                       \
                 QSORT_TYPE *_mid = _lo + ((_hi - _lo) >> 1);                          \
                                                                                       \
-                if (QSORT_LT(_mid, _lo))                                              \
-                    _QSORT_SWAP(_mid, _lo, _hold);                                    \
+                if (QSORT_LT(_mid, _lo)) \
+                    _QSORT_SWAP(_mid, _lo, _hold);\
                 if (QSORT_LT(_hi, _mid))                                              \
                 {                                                                     \
                     _QSORT_SWAP(_mid, _hi, _hold);                                    \
-                    /*    else							*/    \
-                    /*      goto _jump_over;					*/    \
-                    if (QSORT_LT(_mid, _lo))                                          \
-                        _QSORT_SWAP(_mid, _lo, _hold);                                \
+                    /*    else							*/\
+                    /*      goto _jump_over;					*/\
+                    if (QSORT_LT(_mid, _lo)) \
+                        _QSORT_SWAP(_mid, _lo, _hold);\
                 }                                                                     \
-                /*  _jump_over:;						*/    \
+                /*  _jump_over:;						*/\
                                                                                       \
                 _left_ptr  = _lo + 1;                                                 \
                 _right_ptr = _hi - 1;                                                 \
@@ -194,19 +194,19 @@
                 /* that this algorithm runs much faster than others. */               \
                 do                                                                    \
                 {                                                                     \
-                    while (QSORT_LT(_left_ptr, _mid))                                 \
-                        ++_left_ptr;                                                  \
+                    while (QSORT_LT(_left_ptr, _mid)) \
+                        ++_left_ptr;\
                                                                                       \
-                    while (QSORT_LT(_mid, _right_ptr))                                \
-                        --_right_ptr;                                                 \
+                    while (QSORT_LT(_mid, _right_ptr)) \
+                        --_right_ptr;\
                                                                                       \
                     if (_left_ptr < _right_ptr)                                       \
                     {                                                                 \
                         _QSORT_SWAP(_left_ptr, _right_ptr, _hold);                    \
-                        if (_mid == _left_ptr)                                        \
-                            _mid = _right_ptr;                                        \
-                        else if (_mid == _right_ptr)                                  \
-                            _mid = _left_ptr;                                         \
+                        if (_mid == _left_ptr) \
+                            _mid = _right_ptr;\
+                        else if (_mid == _right_ptr) \
+                            _mid = _left_ptr;\
                         ++_left_ptr;                                                  \
                         --_right_ptr;                                                 \
                     }                                                                 \
@@ -225,16 +225,16 @@
                                                                                       \
                 if (_right_ptr - _lo <= _QSORT_MAX_THRESH)                            \
                 {                                                                     \
-                    if (_hi - _left_ptr <= _QSORT_MAX_THRESH)                         \
+                    if (_hi - _left_ptr <= _QSORT_MAX_THRESH) \
                         /* Ignore both small partitions. */                           \
-                        _QSORT_POP(_lo, _hi, _top);                                   \
-                    else                                                              \
+                        _QSORT_POP(_lo, _hi, _top);\
+                    else \
                         /* Ignore small left partition. */                            \
-                        _lo = _left_ptr;                                              \
+                        _lo = _left_ptr;\
                 }                                                                     \
-                else if (_hi - _left_ptr <= _QSORT_MAX_THRESH)                        \
+                else if (_hi - _left_ptr <= _QSORT_MAX_THRESH) \
                     /* Ignore small right partition. */                               \
-                    _hi = _right_ptr;                                                 \
+                    _hi = _right_ptr;\
                 else if (_right_ptr - _lo > _hi - _left_ptr)                          \
                 {                                                                     \
                     /* Push larger left partition indices. */                         \
@@ -263,19 +263,19 @@
             QSORT_TYPE *_thresh;                                                      \
                                                                                       \
             _thresh = _base + _QSORT_MAX_THRESH;                                      \
-            if (_thresh > _end_ptr)                                                   \
-                _thresh = _end_ptr;                                                   \
+            if (_thresh > _end_ptr) \
+                _thresh = _end_ptr;\
                                                                                       \
             /* Find smallest element in first threshold and place it at the */        \
             /* array's beginning.  This is the smallest array element, */             \
             /* and the operation speeds up insertion sort's inner loop. */            \
                                                                                       \
-            for (_run_ptr = _tmp_ptr + 1; _run_ptr <= _thresh; ++_run_ptr)            \
-                if (QSORT_LT(_run_ptr, _tmp_ptr))                                     \
-                    _tmp_ptr = _run_ptr;                                              \
+            for (_run_ptr = _tmp_ptr + 1; _run_ptr <= _thresh; ++_run_ptr) \
+                if (QSORT_LT(_run_ptr, _tmp_ptr)) \
+                    _tmp_ptr = _run_ptr;\
                                                                                       \
-            if (_tmp_ptr != _base)                                                    \
-                _QSORT_SWAP(_tmp_ptr, _base, _hold);                                  \
+            if (_tmp_ptr != _base) \
+                _QSORT_SWAP(_tmp_ptr, _base, _hold);\
                                                                                       \
             /* Insertion sort, running from left-hand-side */                         \
             /* up to right-hand-side.  */                                             \
@@ -284,8 +284,8 @@
             while (++_run_ptr <= _end_ptr)                                            \
             {                                                                         \
                 _tmp_ptr = _run_ptr - 1;                                              \
-                while (QSORT_LT(_run_ptr, _tmp_ptr))                                  \
-                    --_tmp_ptr;                                                       \
+                while (QSORT_LT(_run_ptr, _tmp_ptr)) \
+                    --_tmp_ptr;\
                                                                                       \
                 ++_tmp_ptr;                                                           \
                 if (_tmp_ptr != _run_ptr)                                             \
@@ -345,17 +345,17 @@
                                                                                       \
                 QSORT_TYPE *_mid = _lo + ((_hi - _lo) >> 1);                          \
                                                                                       \
-                if (QSORT_LT(_mid, _lo))                                              \
-                    _QSORT_SWAP(_mid, _lo, _hold);                                    \
+                if (QSORT_LT(_mid, _lo)) \
+                    _QSORT_SWAP(_mid, _lo, _hold);\
                 if (QSORT_LT(_hi, _mid))                                              \
                 {                                                                     \
                     _QSORT_SWAP(_mid, _hi, _hold);                                    \
-                    /*    else							*/    \
-                    /*      goto _jump_over;					*/    \
-                    if (QSORT_LT(_mid, _lo))                                          \
-                        _QSORT_SWAP(_mid, _lo, _hold);                                \
+                    /*    else							*/\
+                    /*      goto _jump_over;					*/\
+                    if (QSORT_LT(_mid, _lo)) \
+                        _QSORT_SWAP(_mid, _lo, _hold);\
                 }                                                                     \
-                /*  _jump_over:;						*/    \
+                /*  _jump_over:;						*/\
                                                                                       \
                 _left_ptr  = _lo + 1;                                                 \
                 _right_ptr = _hi - 1;                                                 \
@@ -365,19 +365,19 @@
                 /* that this algorithm runs much faster than others. */               \
                 do                                                                    \
                 {                                                                     \
-                    while (QSORT_LT(_left_ptr, _mid))                                 \
-                        ++_left_ptr;                                                  \
+                    while (QSORT_LT(_left_ptr, _mid)) \
+                        ++_left_ptr;\
                                                                                       \
-                    while (QSORT_LT(_mid, _right_ptr))                                \
-                        --_right_ptr;                                                 \
+                    while (QSORT_LT(_mid, _right_ptr)) \
+                        --_right_ptr;\
                                                                                       \
                     if (_left_ptr < _right_ptr)                                       \
                     {                                                                 \
                         _QSORT_SWAP(_left_ptr, _right_ptr, _hold);                    \
-                        if (_mid == _left_ptr)                                        \
-                            _mid = _right_ptr;                                        \
-                        else if (_mid == _right_ptr)                                  \
-                            _mid = _left_ptr;                                         \
+                        if (_mid == _left_ptr) \
+                            _mid = _right_ptr;\
+                        else if (_mid == _right_ptr) \
+                            _mid = _left_ptr;\
                         ++_left_ptr;                                                  \
                         --_right_ptr;                                                 \
                     }                                                                 \
@@ -396,16 +396,16 @@
                                                                                       \
                 if (_right_ptr - _lo <= _QSORT_MAX_THRESH)                            \
                 {                                                                     \
-                    if (_hi - _left_ptr <= _QSORT_MAX_THRESH)                         \
+                    if (_hi - _left_ptr <= _QSORT_MAX_THRESH) \
                         /* Ignore both small partitions. */                           \
-                        _QSORT_POP(_lo, _hi, _top);                                   \
-                    else                                                              \
+                        _QSORT_POP(_lo, _hi, _top);\
+                    else \
                         /* Ignore small left partition. */                            \
-                        _lo = _left_ptr;                                              \
+                        _lo = _left_ptr;\
                 }                                                                     \
-                else if (_hi - _left_ptr <= _QSORT_MAX_THRESH)                        \
+                else if (_hi - _left_ptr <= _QSORT_MAX_THRESH) \
                     /* Ignore small right partition. */                               \
-                    _hi = _right_ptr;                                                 \
+                    _hi = _right_ptr;\
                 else if (_right_ptr - _lo > _hi - _left_ptr)                          \
                 {                                                                     \
                     /* Push larger left partition indices. */                         \
@@ -434,19 +434,19 @@
             QSORT_TYPE *_thresh;                                                      \
                                                                                       \
             _thresh = _base + _QSORT_MAX_THRESH;                                      \
-            if (_thresh > _end_ptr)                                                   \
-                _thresh = _end_ptr;                                                   \
+            if (_thresh > _end_ptr) \
+                _thresh = _end_ptr;\
                                                                                       \
             /* Find smallest element in first threshold and place it at the */        \
             /* array's beginning.  This is the smallest array element, */             \
             /* and the operation speeds up insertion sort's inner loop. */            \
                                                                                       \
-            for (_run_ptr = _tmp_ptr + 1; _run_ptr <= _thresh; ++_run_ptr)            \
-                if (QSORT_LT(_run_ptr, _tmp_ptr))                                     \
-                    _tmp_ptr = _run_ptr;                                              \
+            for (_run_ptr = _tmp_ptr + 1; _run_ptr <= _thresh; ++_run_ptr) \
+                if (QSORT_LT(_run_ptr, _tmp_ptr)) \
+                    _tmp_ptr = _run_ptr;\
                                                                                       \
-            if (_tmp_ptr != _base)                                                    \
-                _QSORT_SWAP(_tmp_ptr, _base, _hold);                                  \
+            if (_tmp_ptr != _base) \
+                _QSORT_SWAP(_tmp_ptr, _base, _hold);\
                                                                                       \
             /* Insertion sort, running from left-hand-side */                         \
             /* up to right-hand-side.  */                                             \
@@ -455,8 +455,8 @@
             while (++_run_ptr <= _end_ptr)                                            \
             {                                                                         \
                 _tmp_ptr = _run_ptr - 1;                                              \
-                while (QSORT_LT(_run_ptr, _tmp_ptr))                                  \
-                    --_tmp_ptr;                                                       \
+                while (QSORT_LT(_run_ptr, _tmp_ptr)) \
+                    --_tmp_ptr;\
                                                                                       \
                 ++_tmp_ptr;                                                           \
                 if (_tmp_ptr != _run_ptr)                                             \

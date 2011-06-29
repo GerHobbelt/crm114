@@ -303,10 +303,10 @@
 //
 // http://primes.utm.edu/lists/small/100000.txt
 //
-#define DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH 3396997 /* 6435616333396997 (* 1048573 (* 1048577 */
+#define DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH 3396997           /* 6435616333396997 (* 1048573 (* 1048577 */
 #define DEFAULT_MARKOVIAN_SPARSE_SPECTRUM_FILE_LENGTH 3396997 /* 6435616333396997 (* 1048573 (* 1048577 */
 #define DEFAULT_OSB_BAYES_SPARSE_SPECTRUM_FILE_LENGTH 3396997 /* 6435616333396997 (* 1048573 (* 524287 // Mersenne prime */
-#define DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH 3396997 /* 6435616333396997 (* 1048573 (* 1048577 */
+#define DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH 3396997    /* 6435616333396997 (* 1048573 (* 1048577 */
 //#define DEFAULT_BIT_ENTROPY_FILE_LENGTH 2000000
 #define DEFAULT_BIT_ENTROPY_FILE_LENGTH 1000000
 
@@ -453,7 +453,7 @@
 
 
 // which classifiers are 'experimental' for this release?
-#if defined (CRM_PRODUCTION_CLASSIFIERS_ONLY)
+#if defined(CRM_PRODUCTION_CLASSIFIERS_ONLY)
 #if CRM_PRODUCTION_CLASSIFIERS_ONLY
 
 // HOWEVER, if the user defined any of these to be EXPLICITLY included, alas, let 'em have it!
@@ -482,51 +482,51 @@
 
 // now make sure all the classifiers have their enable/disable flag set for compile time inclusion:
 
-#if !defined (CRM_WITHOUT_BIT_ENTROPY)
+#if !defined(CRM_WITHOUT_BIT_ENTROPY)
 #define CRM_WITHOUT_BIT_ENTROPY       0
 #endif
 
-#if !defined (CRM_WITHOUT_CLUMP)
+#if !defined(CRM_WITHOUT_CLUMP)
 #define CRM_WITHOUT_CLUMP       0
 #endif
 
-#if !defined (CRM_WITHOUT_CORRELATE)
+#if !defined(CRM_WITHOUT_CORRELATE)
 #define CRM_WITHOUT_CORRELATE       0
 #endif
 
-#if !defined (CRM_WITHOUT_FSCM)
+#if !defined(CRM_WITHOUT_FSCM)
 #define CRM_WITHOUT_FSCM       0
 #endif
 
-#if !defined (CRM_WITHOUT_MARKOV)
+#if !defined(CRM_WITHOUT_MARKOV)
 #define CRM_WITHOUT_MARKOV       0
 #endif
 
-#if !defined (CRM_WITHOUT_NEURAL_NET)
+#if !defined(CRM_WITHOUT_NEURAL_NET)
 #define CRM_WITHOUT_NEURAL_NET       0
 #endif
 
-#if !defined (CRM_WITHOUT_OSBF)
+#if !defined(CRM_WITHOUT_OSBF)
 #define CRM_WITHOUT_OSBF       0
 #endif
 
-#if !defined (CRM_WITHOUT_OSB_BAYES)
+#if !defined(CRM_WITHOUT_OSB_BAYES)
 #define CRM_WITHOUT_OSB_BAYES       0
 #endif
 
-#if !defined (CRM_WITHOUT_OSB_HYPERSPACE)
+#if !defined(CRM_WITHOUT_OSB_HYPERSPACE)
 #define CRM_WITHOUT_OSB_HYPERSPACE       0
 #endif
 
-#if !defined (CRM_WITHOUT_OSB_WINNOW)
+#if !defined(CRM_WITHOUT_OSB_WINNOW)
 #define CRM_WITHOUT_OSB_WINNOW       0
 #endif
 
-#if !defined (CRM_WITHOUT_SKS)
+#if !defined(CRM_WITHOUT_SKS)
 #define CRM_WITHOUT_SKS       0
 #endif
 
-#if !defined (CRM_WITHOUT_SVM)
+#if !defined(CRM_WITHOUT_SVM)
 #define CRM_WITHOUT_SVM       0
 #endif
 

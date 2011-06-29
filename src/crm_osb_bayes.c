@@ -28,9 +28,9 @@
 
 static int collect_obj_bayes_statistics(const char *cssfile,
         FEATUREBUCKET_TYPE                         *hashes,
-        int                                         hfsize,                  /* unit: number of features! */
+        int hfsize,                                                          /* unit: number of features! */
         CRM_DECODED_PORTA_HEADER_INFO              *header,
-        int                                         histbins,
+        int histbins,
         FILE                                       *report_out);
 
 
@@ -57,7 +57,7 @@ static const int hctable[] =
 
 
 //          Where does the nominative data start?
-#if defined (REDICULOUS_CODE) /* [i_a] */
+#if defined(REDICULOUS_CODE)  /* [i_a] */
 /*
  * Using and setting this variable is utterly rediculous: first, it's a single global which
  * tries to 'remember' the start offset of multiple files (see the classify code: we remember the
@@ -204,9 +204,9 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
     {
         fev = nonfatalerror_ex(SRC_LOC(),
-                "\nYou didn't specify a valid filename: '%.*s'\n",
-                hlen,
-                htext);
+                               "\nYou didn't specify a valid filename: '%.*s'\n",
+                               hlen,
+                               htext);
         return fev;
     }
     j += i;
@@ -242,11 +242,11 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             char dirbuf[DIRBUFSIZE_MAX];
 
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your new CSS file '%s' for writing; (full path: '%s') errno=%d(%s)\n",
-                    learnfilename,
-                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
-                    errno,
-                    errno_descr(errno));
+                                "\n Couldn't open your new CSS file '%s' for writing; (full path: '%s') errno=%d(%s)\n",
+                                learnfilename,
+                                mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
+                                errno,
+                                errno_descr(errno));
             return fev;
         }
         //       did we get a value for sparse_spectrum_file_length?
@@ -267,19 +267,19 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
             {
                 fev = fatalerror_ex(SRC_LOC(),
-                        "\n Couldn't write header to file %s; errno=%d(%s)\n",
-                        learnfilename, errno, errno_descr(errno));
+                                    "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                                    learnfilename, errno, errno_descr(errno));
                 fclose(f);
                 return fev;
             }
 
             //       put in sparse_spectrum_file_length entries of NULL
             if (file_memset(f, 0,
-                        sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+                            sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
             {
                 fev = fatalerror_ex(SRC_LOC(),
-                        "\n Couldn't write to file %s; errno=%d(%s)\n",
-                        learnfilename, errno, errno_descr(errno));
+                                    "\n Couldn't write to file %s; errno=%d(%s)\n",
+                                    learnfilename, errno, errno_descr(errno));
                 fclose(f);
                 return fev;
             }
@@ -299,16 +299,16 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //      map the .css file into memory
     //
     hashes = crm_mmap_file(learnfilename,
-            0,
-            hfsize,
-            PROT_READ | PROT_WRITE,
-            MAP_SHARED,
-            CRM_MADV_RANDOM,
-            &hfsize);
+                           0,
+                           hfsize,
+                           PROT_READ | PROT_WRITE,
+                           MAP_SHARED,
+                           CRM_MADV_RANDOM,
+                           &hfsize);
     if (hashes == MAP_FAILED)
     {
         fev = fatalerror("Couldn't get access to the statistics file named: ",
-                learnfilename);
+                         learnfilename);
         return fev;
     }
 
@@ -339,7 +339,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //  return (fev);
     //}
 
-#if defined (REDICULOUS_CODE) /* [i_a] */
+#if defined(REDICULOUS_CODE)  /* [i_a] */
     //
     //         In this format, bucket 0.value contains the start of the spectra.
     //
@@ -366,7 +366,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (seen_features == NULL)
         {
             untrappableerror(" Couldn't allocate enough memory to keep track",
-                    "of nonunique features.  This is deadly");
+                             "of nonunique features.  This is deadly");
             return 1;
         }
     }
@@ -398,7 +398,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             else
             {
                 fatalerror(" This file should have learncounts, but doesn't!",
-                        " The slot is busy, too.  It's hosed.  Time to die.");
+                           " The slot is busy, too.  It's hosed.  Time to die.");
                 goto regcomp_failed;
             }
         }
@@ -446,7 +446,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             else
             {
                 fatalerror(" This file should have learncounts, but doesn't!",
-                        " The slot is busy, too.  It's hosed.  Time to die.");
+                           " The slot is busy, too.  It's hosed.  Time to die.");
                 goto regcomp_failed;
             }
         }
@@ -472,7 +472,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     // Of course, with the new GerH versioning header, one should consider putting this kind of
     // info in the binary header section instead, just to make sure we do not clutter the hash table
     // with useless stuff.
-#if defined (CRM_WITHOUT_VERSIONING_HEADER)
+#if defined(CRM_WITHOUT_VERSIONING_HEADER)
 #error \
     "This code is not meant to compile without version header support. Absence of such support in legacy CSS databases is supported as best we can for backwards compatibility reasons ONLY"
 #else
@@ -488,7 +488,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                               "There's no versioning header available or the versioning header is "
                                               "a non-native format. Migrate this database to native versioning-headered format "
                                               "for optimum performance.",
-                    learnfilename);
+                                   learnfilename);
             return fev;
         }
         hdr_check = crm_decode_header(hdr_ptr, CRM_OSB_BAYES, TRUE, &hdr);
@@ -496,10 +496,10 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             fev = nonfatalerror_ex(SRC_LOC(), "The CSS database file '%s' does not have the required "
                                               "versioning header format for classifier %s: error code %d(%s)",
-                    learnfilename,
-                    "OSB Bayes",
-                    hdr_check,
-                    crm_decode_header_err2msg(hdr_check));
+                                   learnfilename,
+                                   "OSB Bayes",
+                                   hdr_check,
+                                   crm_decode_header_err2msg(hdr_check));
             return fev;
         }
 
@@ -514,7 +514,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (h1 == h2)
         {
             fev = fatalerror("You have hit the 1 in an million chance of selecting a database size which will not work due to special requirements.",
-                    "Please use another database size, thank you!");
+                             "Please use another database size, thank you!");
             return fev;
         }
 
@@ -530,7 +530,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             else
             {
                 fev = fatalerror(" This file should have learncounts, but doesn't!",
-                        " The slot is busy, too.  It's hosed.  Time to die.");
+                                 " The slot is busy, too.  It's hosed.  Time to die.");
                 return fev;
             }
         }
@@ -575,7 +575,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             else
             {
                 fev = fatalerror(" This file should have learncounts, but doesn't!",
-                        " The slot is busy, too.  It's hosed.  Time to die.");
+                                 " The slot is busy, too.  It's hosed.  Time to die.");
                 return fev;
             }
         }
@@ -682,7 +682,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (ptext[0] != 0)
         {
             k = crm_regexec(&regcb, &txtptr[textoffset],
-                    slen, WIDTHOF(match), match, 0, NULL);
+                            slen, WIDTHOF(match), match, 0, NULL);
         }
         else
         {
@@ -690,11 +690,11 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //         skip non-graphical characthers
             match[0].rm_so = 0;
             while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                   && textoffset + match[0].rm_so < textmaxoffset)
+                  && textoffset + match[0].rm_so < textmaxoffset)
                 match[0].rm_so++;
             match[0].rm_eo = match[0].rm_so;
             while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                   && textoffset + match[0].rm_eo < textmaxoffset)
+                  && textoffset + match[0].rm_eo < textmaxoffset)
                 match[0].rm_eo++;
             if (match[0].rm_so == match[0].rm_eo)
                 k = 1;
@@ -705,8 +705,8 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         wlen = match[0].rm_eo - match[0].rm_so;
         crm_memmove(tempbuf,
-                &(txtptr[textoffset + match[0].rm_so]),
-                wlen);
+                    &(txtptr[textoffset + match[0].rm_so]),
+                    wlen);
         tempbuf[wlen] = 0;
 
         if (internal_trace)
@@ -723,7 +723,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (match[0].rm_eo == 0)
         {
             nonfatalerror("The LEARN pattern matched zero length! ",
-                    "\n Forcing an increment to avoid an infinite loop.");
+                          "\n Forcing an increment to avoid an infinite loop.");
             match[0].rm_eo = 1;
         }
 
@@ -772,7 +772,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                  j < how_many_terms;
                  j++)
             {
-                h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
+                h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
                 // #define PRINT_HASHES
 #ifdef PRINT_HASHES
                 fprintf(stderr,
@@ -784,7 +784,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         hashpipe[j],
                         h1);
 #endif
-#if defined (REDICULOUS_CODE) /* [i_a] */
+#if defined(REDICULOUS_CODE)  /* [i_a] */
                 if (h1 < spectra_start)
                     h1 = spectra_start;
 #else
@@ -794,16 +794,16 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 // If you need backward compatibility with older
                 //  Markov .css files, define OLD_MARKOV_COMPATIBILITY
 #ifdef OLD_MARKOV_COMPATIBILITY
-                h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) + 1];
+                h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) + 1];
 #else
                 //    Historical accident.  Bill is stupid.   --Bill
-                h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
+                h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
 #endif
                 if (h2 == 0)
                     h2 = 0xdeadbeef;
 
                 hindex = h1 % hfsize;
-#if defined (REDICULOUS_CODE) /* [i_a] */
+#if defined(REDICULOUS_CODE)  /* [i_a] */
                 if (hindex < spectra_start)
                     hindex = spectra_start;
 #else
@@ -830,21 +830,21 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                       //          in positive mode, stop when we hit
                       //          the correct slot, OR when we hit an
                       //          zero-value (reusable) slot
-                      && (hashes[hindex].value == 0
-                          || (hashes[hindex].hash == h1
-                              && hashes[hindex].key  == h2)))
-                    &&
+                     && (hashes[hindex].value == 0
+                        || (hashes[hindex].hash == h1
+                           && hashes[hindex].key  == h2)))
+                      &&
                     !(sense <= 0
                       //          in negative/refute mode, stop when
                       //          we hit the correct slot, or a truly
                       //          unused (not just zero-valued reusable)
                       //          slot.
-                      && ((hashes[hindex].hash == h1
-                           && hashes[hindex].key == h2)
-                          || (hashes[hindex].value == 0
-                              && hashes[hindex].hash == 0
-                              && hashes[hindex].key == 0
-                             ))))
+                     && ((hashes[hindex].hash == h1
+                         && hashes[hindex].key == h2)
+                        || (hashes[hindex].value == 0
+                           && hashes[hindex].hash == 0
+                           && hashes[hindex].key == 0
+                           ))))
                 {
                     //
                     incrs++;
@@ -870,9 +870,9 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //
                         //   and do the groom.
                         zeroedfeatures = crm_microgroom(hashes,
-                                seen_features,
-                                hfsize,
-                                hindex);
+                                                        seen_features,
+                                                        hfsize,
+                                                        hindex);
 #ifdef OLD_STYLE_LEARNCOUNTS
                         hashes[features_index].value -= zeroedfeatures;
 #else
@@ -884,7 +884,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //  since things may have moved after a
                         //  microgroom, restart our search
                         hindex = h1 % hfsize;
-#if defined (REDICULOUS_CODE) /* [i_a] */
+#if defined(REDICULOUS_CODE)  /* [i_a] */
                         if (hindex < spectra_start)
                             hindex = spectra_start;
 #else
@@ -902,13 +902,13 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                       "features into this size .css file.  "
                                       "Adding any more features is "
                                       "impossible in this file.",
-                                "You are advised to build a larger "
-                                ".css file and merge your data into "
-                                "it.");
+                                      "You are advised to build a larger "
+                                      ".css file and merge your data into "
+                                      "it.");
                         goto learn_end_regex_loop;
                     }
                     hindex++;
-#if defined (REDICULOUS_CODE) /* [i_a] */
+#if defined(REDICULOUS_CODE)  /* [i_a] */
                     if (hindex >= hfsize)
                         hindex = spectra_start;
 #else
@@ -1023,11 +1023,11 @@ regcomp_failed:
             histbins = FEATUREBUCKET_HISTOGRAM_MAX;
 
         collect_obj_bayes_statistics(learnfilename,
-                hashes,
-                hfsize,                                                          /* unit: number of features! */
-                &hdr,
-                histbins,
-                stderr);
+                                     hashes,
+                                     hfsize,                                     /* unit: number of features! */
+                                     &hdr,
+                                     histbins,
+                                     stderr);
     }
 
 
@@ -1043,7 +1043,7 @@ regcomp_failed:
     seen_features = NULL;
 
 #if 0  /* now touch-fixed inside the munmap call already! */
-#if defined (HAVE_MMAP) || defined (HAVE_MUNMAP)
+#if defined(HAVE_MMAP) || defined(HAVE_MUNMAP)
     //    Because mmap/munmap doesn't set atime, nor set the "modified"
     //    flag, some network filesystems will fail to mark the file as
     //    modified and so their cacheing will make a mistake.
@@ -1128,7 +1128,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     double cpcorr[MAX_CLASSIFIERS];        // corpus correction factors
 
-#if defined (GER) || 10
+#if defined(GER) || 10
     hitcount_t hits[MAX_CLASSIFIERS];          // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS];     // actual total hits per classifier
     double chi2[MAX_CLASSIFIERS];              // chi-squared values (such as they are)
@@ -1397,7 +1397,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
         if (crm_nextword(htext, hlen, fn_start_here, &fnstart, &fnlen)
-            && fnlen > 0)
+           && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = 0;
@@ -1414,7 +1414,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (vbar_seen)
                 {
                     nonfatalerror("Only one '|' allowed in a CLASSIFY.\n",
-                            "We'll ignore it for now.");
+                                  "We'll ignore it for now.");
                 }
                 else
                 {
@@ -1438,7 +1438,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (maxhash >= MAX_CLASSIFIERS)
                     {
                         nonfatalerror("Too many classifier files.",
-                                "Some may have been disregarded");
+                                      "Some may have been disregarded");
                     }
                     else
                     {
@@ -1448,12 +1448,12 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //  mmap the hash file into memory so we can bitwhack it
 
                         hashes[maxhash] = crm_mmap_file(fname,
-                                0,
-                                hashlens[maxhash],
-                                PROT_READ,
-                                MAP_SHARED,
-                                CRM_MADV_RANDOM,
-                                &hashlens[maxhash]);
+                                                        0,
+                                                        hashlens[maxhash],
+                                                        PROT_READ,
+                                                        MAP_SHARED,
+                                                        CRM_MADV_RANDOM,
+                                                        &hashlens[maxhash]);
 
                         if (hashes[maxhash] == MAP_FAILED)
                         {
@@ -1467,15 +1467,15 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             //
                             int fev;
                             if (hashes[maxhash][0].hash != 0
-                                || hashes[maxhash][0].key  != 0)
+                               || hashes[maxhash][0].key  != 0)
                             {
                                 fev = fatalerror("The .css file is the wrong version!  Filename is: ",
-                                        fname);
+                                                 fname);
                                 return fev;
                             }
 #endif
 
-#if defined (REDICULOUS_CODE) /* [i_a] */
+#if defined(REDICULOUS_CODE)  /* [i_a] */
                               //     grab the start of the actual spectrum data.
                               //
                             spectra_start = hashes[maxhash][0].value;
@@ -1486,13 +1486,13 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             hashlens[maxhash] /= sizeof(FEATUREBUCKET_TYPE);
 
                             crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 2, "Lii", (unsigned long long int)apb->sflags, (int)hashlens[maxhash],
-                                    (int)maxhash);
+                                              (int)maxhash);
 
                             hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
                             if (!hashname[maxhash])
                             {
                                 untrappableerror("Couldn't alloc hashname[maxhash]\n",
-                                        "We need that part later, so we're stuck.  Sorry.");
+                                                 "We need that part later, so we're stuck.  Sorry.");
                             }
                             strncpy(hashname[maxhash], fname, fnlen);
                             hashname[maxhash][fnlen] = 0;
@@ -1583,7 +1583,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         fatalerror(" This file should have learncounts, but doesn't,"
                                    " and the learncount slot is busy.  It's hosed. ",
-                                " Time to die.");
+                                   " Time to die.");
                         goto regcomp_failed;
                     }
                 }
@@ -1617,7 +1617,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         fatalerror("This file should have featurecounts, but doesn't,"
                                    "and the featurecount slot is busy.  It's hosed. ",
-                                " Time to die.");
+                                   " Time to die.");
                         goto regcomp_failed;
                     }
                 }
@@ -1641,7 +1641,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             // Of course, with the new GerH versioning header, one should consider putting this kind of
             // info in the binary header section instead, just to make sure we do not clutter the hash table
             // with useless stuff.
-#if defined (CRM_WITHOUT_VERSIONING_HEADER)
+#if defined(CRM_WITHOUT_VERSIONING_HEADER)
 #error \
             "This code is not meant to compile without version header support. Absence of such support in legacy CSS databases is supported as best we can for backwards compatibility reasons ONLY"
 #else
@@ -1659,7 +1659,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                                 "There's no versioning header available or the versioning header is "
                                                 "a non-native format. Migrate this database to native versioning-headered format "
                                                 "for optimum performance.",
-                            ifile);
+                                     ifile);
                     return 1;
                 }
                 hdr_check = crm_decode_header(hdr_ptr, CRM_OSB_BAYES, TRUE, &hdr);
@@ -1667,10 +1667,10 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     nonfatalerror_ex(SRC_LOC(), "CSS database file #%d does not have the required "
                                                 "versioning header format for classifier %s: error code %d(%s)",
-                            ifile,
-                            "OSB Bayes",
-                            hdr_check,
-                            crm_decode_header_err2msg(hdr_check));
+                                     ifile,
+                                     "OSB Bayes",
+                                     hdr_check,
+                                     crm_decode_header_err2msg(hdr_check));
                     return 1;
                 }
 
@@ -1685,8 +1685,8 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (h1 == h2)
                 {
                     fev = fatalerror(
-                            "You have hit the 1 in an million chance of selecting a database size which will not work due to special requirements.",
-                            "Please use another database size, thank you! If this is an existing database, it is hosed.");
+                        "You have hit the 1 in an million chance of selecting a database size which will not work due to special requirements.",
+                        "Please use another database size, thank you! If this is an existing database, it is hosed.");
                     return fev;
                 }
 
@@ -1705,7 +1705,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         fatalerror(" This file should have learncounts, but doesn't,"
                                    " and the learncount slot is busy.  It's hosed. ",
-                                " Time to die.");
+                                   " Time to die.");
                         goto regcomp_failed;
                     }
                 }
@@ -1739,7 +1739,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         fatalerror("This file should have featurecounts, but doesn't,"
                                    "and the featurecount slot is busy.  It's hosed. ",
-                                " Time to die.");
+                                   " Time to die.");
                         goto regcomp_failed;
                     }
                 }
@@ -1781,7 +1781,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         total_features += info_block[ifile]->v.OSB_Bayes.features_learned;
 
         crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_DB_TOTALS, ifile, "ii", (int)info_block[ifile]->v.OSB_Bayes.learncount,
-                (int)info_block[ifile]->v.OSB_Bayes.features_learned);
+                          (int)info_block[ifile]->v.OSB_Bayes.features_learned);
 #endif
     }
 
@@ -1793,8 +1793,8 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //  new cpcorr - from Fidelis' work on evaluators.  Note that
         //   we renormalize _all_ terms, not just the min term.
 #ifdef OLD_STYLE_LEARNCOUNTS
-        cpcorr[ifile] = (total_learns / (float)maxhash) /
-                        ((float)hashes[ifile][learns_index[ifile]].value);
+        cpcorr[ifile] = (total_learns / (float)maxhash)
+                        / ((float)hashes[ifile][learns_index[ifile]].value);
 #else
         cpcorr[ifile] = total_learns / ((double)maxhash * (double)info_block[ifile]->v.OSB_Bayes.learncount);
 #endif
@@ -1842,7 +1842,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (seen_features[ifile] == NULL)
             {
                 untrappableerror(" Couldn't allocate enough memory to keep track",
-                        "of nonunique features.  This is deadly");
+                                 "of nonunique features.  This is deadly");
             }
         }
         else
@@ -1887,7 +1887,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (ptext[0] != 0)
         {
             k = crm_regexec(&regcb, &txtptr[textoffset],
-                    slen, WIDTHOF(match), match, 0, NULL);
+                            slen, WIDTHOF(match), match, 0, NULL);
         }
         else
         {
@@ -1895,11 +1895,11 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //         skip non-graphical characthers
             match[0].rm_so = 0;
             while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                   && textoffset + match[0].rm_so < textmaxoffset)
+                  && textoffset + match[0].rm_so < textmaxoffset)
                 match[0].rm_so++;
             match[0].rm_eo = match[0].rm_so;
             while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                   && textoffset + match[0].rm_eo < textmaxoffset)
+                  && textoffset + match[0].rm_eo < textmaxoffset)
                 match[0].rm_eo++;
             if (match[0].rm_so == match[0].rm_eo)
                 k = 1;
@@ -1910,8 +1910,8 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         wlen = match[0].rm_eo - match[0].rm_so;
         crm_memmove(tempbuf,
-                &(txtptr[textoffset + match[0].rm_so]),
-                wlen);
+                    &(txtptr[textoffset + match[0].rm_so]),
+                    wlen);
         tempbuf[wlen] = 0;
 
         if (internal_trace)
@@ -1928,7 +1928,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (match[0].rm_eo == 0)
         {
             nonfatalerror("The CLASSIFY pattern matched zero length! ",
-                    "\n Forcing an increment to avoid an infinite loop.");
+                          "\n Forcing an increment to avoid an infinite loop.");
             match[0].rm_eo = 1;
         }
 
@@ -1969,8 +1969,8 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                  j < how_many_terms;
                  j++)
             {
-                h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
-#if defined (REDICULOUS_CODE) /* [i_a] */
+                h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
+#if defined(REDICULOUS_CODE)  /* [i_a] */
                 if (h1 < spectra_start)
                     h1 = spectra_start;
 #else
@@ -1980,9 +1980,9 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 // If you need backward compatibility with older
                 //  Markov .css files, define OLD_MARKOV_COMPATIBILITY
 #ifdef OLD_MARKOV_COMPATIBILITY
-                h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) + 1];
+                h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) + 1];
 #else
-                h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
+                h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
 #endif
                 if (h2 == 0)
                     h2 = 0xdeadbeef;
@@ -2046,7 +2046,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     int lh, lh0;
                     lh = hindex % hashlens[k];
-#if defined (REDICULOUS_CODE) /* [i_a] */
+#if defined(REDICULOUS_CODE)  /* [i_a] */
                     if (lh < spectra_start)
                         lh = spectra_start;
 #else
@@ -2059,11 +2059,11 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                     hits[k] = 0;
                     while (hashes[k][lh].key != 0
-                           && (hashes[k][lh].hash != h1
-                               || hashes[k][lh].key != h2))
+                          && (hashes[k][lh].hash != h1
+                             || hashes[k][lh].key != h2))
                     {
                         lh++;
-#if defined (REDICULOUS_CODE) /* [i_a] */
+#if defined(REDICULOUS_CODE)  /* [i_a] */
                         if (lh >= hashlens[k])
                             lh = spectra_start;
 #else
@@ -2249,21 +2249,21 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #if 0
                         for (k = 0; k < maxhash; k++)
                         {
-                            pltc[k] = 0.5 +
-                                      ((hits[k] - (htf - hits[k]))
-                                       / (LOCAL_PROB_DENOM * (htf + 1.0)));
+                            pltc[k] = 0.5
+                                      + ((hits[k] - (htf - hits[k]))
+                                         / (LOCAL_PROB_DENOM * (htf + 1.0)));
                         }
 
                         //   Calculate the per-ptc renormalization numerators
                         renorm = 0.0;
                         for (k = 0; k < maxhash; k++)
                         {
-                            renorm += (ptc[k] * pltc[k]);
+                            renorm += (ptc[k] *pltc[k]);
                         }
 
                         for (k = 0; k < maxhash; k++)
                         {
-                            ptc[k] = (ptc[k] * pltc[k]) / renorm;
+                            ptc[k] = (ptc[k] *pltc[k]) / renorm;
                         }
 
                         //   if we have underflow (any probability == 0.0 ) then
@@ -2369,7 +2369,7 @@ classify_end_regex_loop:
     {
         double features_here, learns_here;
         double avg_features_per_doc, this_doc_relative_len;
-#if defined (GER) || 10
+#if defined(GER) || 10
         double /* hitcount_t */ actual;  // must be floating point type to ensure proper chi2 calculation
 #else
         double actual;
@@ -2493,7 +2493,7 @@ classify_end_regex_loop:
         tprob += ptc[k];
     }
 
-#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+#if !defined(CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
     for (k = 0; k < maxhash; k++)
     {
         crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 7, "idd", (int)k, tprob, ptc[k]);
@@ -2549,15 +2549,15 @@ classify_end_regex_loop:
             if (oslen > 0)
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY succeeds; (osb) success probability: "
-                        "%6.4f  pR: %6.4f / %6.4f\n",
-                        tprob, overall_pR, pR_offset);
+                         "CLASSIFY succeeds; (osb) success probability: "
+                         "%6.4f  pR: %6.4f / %6.4f\n",
+                         tprob, overall_pR, pR_offset);
             }
             else
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY succeeds; (osb) success probability: "
-                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+                         "CLASSIFY succeeds; (osb) success probability: "
+                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
         else
@@ -2566,15 +2566,15 @@ classify_end_regex_loop:
             if (oslen > 0)
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY fails; (osb) success probability: "
-                        "%6.4f  pR: %6.4f / %6.4f\n",
-                        tprob, overall_pR, pR_offset);
+                         "CLASSIFY fails; (osb) success probability: "
+                         "%6.4f  pR: %6.4f / %6.4f\n",
+                         tprob, overall_pR, pR_offset);
             }
             else
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY fails; (osb) success probability: "
-                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+                         "CLASSIFY fails; (osb) success probability: "
+                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
         stext_ptr[stext_maxlen - 1] = 0;
@@ -2608,10 +2608,10 @@ classify_end_regex_loop:
             remainder = 1000 * DBL_MIN;
         snprintf(stext_ptr, stext_maxlen, "Best match to file #%d (%s) "
                                           "prob: %6.4f  pR: %6.4f\n",
-                bestseen,
-                hashname[bestseen],
-                ptc[bestseen],
-                (log10(ptc[bestseen]) - log10(remainder)));
+                 bestseen,
+                 hashname[bestseen],
+                 ptc[bestseen],
+                 (log10(ptc[bestseen]) - log10(remainder)));
         stext_ptr[stext_maxlen - 1] = 0;
         stext_maxlen -= (int)strlen(stext_ptr);
         stext_ptr += strlen(stext_ptr);
@@ -2641,20 +2641,20 @@ classify_end_regex_loop:
                 if (remainder < 1000 * DBL_MIN)
                     remainder = 1000 * DBL_MIN;
                 snprintf(stext_ptr, stext_maxlen,
-                        "#%d (%s):"
-                        " features: %d, hits: %d,"                 // exp: %d,"
-                        " chi2: %3.2e, pR: %6.2f \n",
-                        k,
-                        hashname[k],
+                         "#%d (%s):"
+                         " features: %d, hits: %d,"                // exp: %d,"
+                         " chi2: %3.2e, pR: %6.2f \n",
+                         k,
+                         hashname[k],
 #ifdef OLD_STYLE_LEARNCOUNTS
-                        hashes[k][features_index[k]].value,
+                         hashes[k][features_index[k]].value,
 #else
-                        (int)info_block[k]->v.OSB_Bayes.features_learned,
+                         (int)info_block[k]->v.OSB_Bayes.features_learned,
 #endif
-                        (int)totalhits[k]
+                         (int)totalhits[k]
                         ,                  //       (int)expected,
-                        chi2[k],
-                        (log10(ptc[k]) - log10(remainder)));
+                         chi2[k],
+                         (log10(ptc[k]) - log10(remainder)));
                 stext_ptr[stext_maxlen - 1] = 0;
                 stext_maxlen -= (int)strlen(stext_ptr);
                 stext_ptr += strlen(stext_ptr);
@@ -2678,18 +2678,18 @@ classify_end_regex_loop:
                     }
                 }
                 snprintf(stext_ptr, stext_maxlen,
-                        "#%d (%s):"
-                        " features: %d, hits: %d, prob: %3.2e, pR: %6.2f\n",
-                        k,
-                        hashname[k],
+                         "#%d (%s):"
+                         " features: %d, hits: %d, prob: %3.2e, pR: %6.2f\n",
+                         k,
+                         hashname[k],
 #ifdef OLD_STYLE_LEARNCOUNTS
-                        hashes[k][features_index[k]].value,
+                         hashes[k][features_index[k]].value,
 #else
-                        (int)info_block[k]->v.OSB_Bayes.features_learned,
+                         (int)info_block[k]->v.OSB_Bayes.features_learned,
 #endif
-                        (int)totalhits[k],
-                        ptc[k],
-                        (log10(ptc[k]) - log10(remainder)));
+                         (int)totalhits[k],
+                         ptc[k],
+                         (log10(ptc[k]) - log10(remainder)));
                 stext_ptr[stext_maxlen - 1] = 0;
                 stext_maxlen -= (int)strlen(stext_ptr);
                 stext_ptr += strlen(stext_ptr);
@@ -2705,7 +2705,7 @@ classify_end_regex_loop:
         nonfatalerror("WARNING: not enough room in the buffer to create "
                       "the statistics text.  Perhaps you could try bigger "
                       "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-                " ");
+                      " ");
     }
     if (svlen > 0)
     {
@@ -2755,7 +2755,7 @@ classify_end_regex_loop:
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         }
         //    and do what we do for a FAIL here
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -2785,9 +2785,9 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 
@@ -2795,9 +2795,9 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 #endif /* CRM_WITHOUT_OSB_BAYES */
@@ -2809,9 +2809,9 @@ int crm_expr_osb_bayes_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 
@@ -2819,9 +2819,9 @@ int crm_expr_osb_bayes_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 
@@ -2829,9 +2829,9 @@ int crm_expr_osb_bayes_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 
@@ -2839,9 +2839,9 @@ int crm_expr_osb_bayes_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 
@@ -2849,9 +2849,9 @@ int crm_expr_osb_bayes_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 
@@ -2859,9 +2859,9 @@ int crm_expr_osb_bayes_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 
@@ -2869,9 +2869,9 @@ int crm_expr_osb_bayes_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 
@@ -2879,18 +2879,18 @@ int crm_expr_osb_bayes_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Bayes");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Bayes");
 }
 
 
 
 static int collect_obj_bayes_statistics(const char *cssfile,
         FEATUREBUCKET_TYPE                         *hashes,
-        int                                         hfsize,                  /* unit: number of features! */
+        int hfsize,                                                          /* unit: number of features! */
         CRM_DECODED_PORTA_HEADER_INFO              *header,
-        int                                         histbins,
+        int histbins,
         FILE                                       *report_out)
 {
     int i;

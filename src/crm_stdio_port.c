@@ -96,7 +96,7 @@ ssize_t fwrite4stdio(const char *str, size_t len, FILE *out)
 {
     ssize_t ret = 0;
 
-#if !defined (BUFSIZ)
+#if !defined(BUFSIZ)
 #define BUFSIZ4FWRITE           256
 #else
 #define BUFSIZ4FWRITE           (BUFSIZ / 2)
@@ -104,7 +104,7 @@ ssize_t fwrite4stdio(const char *str, size_t len, FILE *out)
     ssize_t count_written = 0;
 
     // Windows does NOT like it when you try to write large pieces of text to stdout all at once, so we do it in bits and pieces.
-    for ( ; len > 0;)
+    for (; len > 0;)
     {
         ret = (ssize_t)fwrite(str, 1, CRM_MIN(BUFSIZ4FWRITE, len), out);
         if (ret > 0)

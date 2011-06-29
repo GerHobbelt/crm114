@@ -126,7 +126,7 @@ char *outbuf = NULL;
 char *tempbuf = NULL;
 
 
-#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+#if !defined(CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
 CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = { 0 };
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
@@ -238,8 +238,8 @@ int main(int argc, char **argv)
                     {
                         // try to find the header reading first 2 "buckets"
                         if (fscanf
-                                        (f, "%u;%u;%u\n", (unsigned int *)h.version,
-                                        &(h.flags), &(h.buckets_start)) != 3)
+                                                  (f, "%u;%u;%u\n", (unsigned int *)h.version,
+                                                  &(h.flags), &(h.buckets_start)) != 3)
                         {
                             fprintf(stderr,
                                     "\n %s is not in the right CSV format.\n",
@@ -413,9 +413,9 @@ int main(int argc, char **argv)
                 fprintf(stdout, "\nHad to create .CSS file %s with %u buckets\n",
                         cssfile, sparse_spectrum_file_length);
             if (crm_osbf_create_cssfile(cssfile,
-                        sparse_spectrum_file_length,
-                        OSBF_VERSION, 0
-                        /* [i_a] unused anyway , OSBF_CSS_SPECTRA_START */) != EXIT_SUCCESS)
+                                        sparse_spectrum_file_length,
+                                        OSBF_VERSION, 0
+                                        /* [i_a] unused anyway , OSBF_CSS_SPECTRA_START */) != EXIT_SUCCESS)
             {
                 exit(EXIT_FAILURE);
             }
@@ -427,12 +427,12 @@ int main(int argc, char **argv)
         //
         //   mmap the hash file into memory so we can bitwhack it
         header = crm_mmap_file(cssfile,
-                0,
-                hfsize,
-                PROT_READ | PROT_WRITE,
-                MAP_SHARED,
-                CRM_MADV_RANDOM,
-                &hfsize);
+                               0,
+                               hfsize,
+                               PROT_READ | PROT_WRITE,
+                               MAP_SHARED,
+                               CRM_MADV_RANDOM,
+                               &hfsize);
         if (header == MAP_FAILED)
         {
             fprintf(stderr,
@@ -725,7 +725,7 @@ int main(int argc, char **argv)
 // bogus code to make link phase happy while we are in limbo between obsoleting this tool and
 // getting cssXXXX script commands working in crm114 itself.
 void free_stack_item(CSL_CELL *csl)
-{ }
+{}
 
 
 

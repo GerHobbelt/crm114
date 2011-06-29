@@ -25,7 +25,7 @@ int produce_opcode_coverage_report(CRM_ANALYSIS_REPORT_DATA *report_data, FILE *
         const STMT_DEF_TYPE *stmt_def = get_stmt_def(i);
 
         if ((report_data->opcode_counts[i] > 0 && i != CRM_UNIMPLEMENTED + 1)
-            || (!compressed_report && stmt_def->stmt_code != CRM_BOGUS))
+           || (!compressed_report && stmt_def->stmt_code != CRM_BOGUS))
         {
             total_time += report_data->opcode_times[i];
             if (report_data->opcode_counts[i] > 0)
@@ -43,7 +43,7 @@ int produce_opcode_coverage_report(CRM_ANALYSIS_REPORT_DATA *report_data, FILE *
 
         // in uncompressed report, only show the bogus/unknown lines when there's actually some time spent to report there.
         if ((report_data->opcode_counts[i] > 0 && i != CRM_UNIMPLEMENTED + 1)
-            || (!compressed_report && stmt_def->stmt_code != CRM_BOGUS))
+           || (!compressed_report && stmt_def->stmt_code != CRM_BOGUS))
         {
             fprintf(of, "%11.11s %13d ", stmt_def->stmt_name, report_data->opcode_counts[i]);
             if (report_data->opcode_counts[i] > 0)

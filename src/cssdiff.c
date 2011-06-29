@@ -120,7 +120,7 @@ char *outbuf = NULL;
 char *tempbuf = NULL;
 
 
-#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+#if !defined(CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
 CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = { 0 };
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
@@ -208,12 +208,12 @@ int main(int argc, char **argv)
         hfsize1 = statbuf.st_size;
         //         mmap the hash file into memory so we can bitwhack it
         h1 = crm_mmap_file(argv[optind],
-                0,
-                hfsize1,
-                PROT_READ | PROT_WRITE,
-                MAP_SHARED,
-                CRM_MADV_RANDOM,
-                &hfsize1);
+                           0,
+                           hfsize1,
+                           PROT_READ | PROT_WRITE,
+                           MAP_SHARED,
+                           CRM_MADV_RANDOM,
+                           &hfsize1);
         if (h1 == MAP_FAILED)
         {
             fprintf(stderr, "\n MMAP failed on file %s\n",
@@ -235,12 +235,12 @@ int main(int argc, char **argv)
         hfsize2 = statbuf.st_size;
         //         mmap the hash file into memory so we can bitwhack it
         h2 = crm_mmap_file(argv[optind + 1],
-                0,
-                hfsize2,
-                PROT_READ | PROT_WRITE,
-                MAP_SHARED,
-                CRM_MADV_RANDOM,
-                &hfsize2);
+                           0,
+                           hfsize2,
+                           PROT_READ | PROT_WRITE,
+                           MAP_SHARED,
+                           CRM_MADV_RANDOM,
+                           &hfsize2);
         if (h2 == MAP_FAILED)
         {
             fprintf(stderr, "\n MMAP failed on file %s\n",
@@ -296,8 +296,8 @@ int main(int argc, char **argv)
                 if (k == 0)
                     k = 1;
                 while (h2[k].value != 0
-                       && (h2[k].hash != h1[i].hash
-                           || h2[k].key != h1[i].key))
+                      && (h2[k].hash != h1[i].hash
+                         || h2[k].key != h1[i].key))
                 {
                     k++;
                     if (k >= hfsize2)
@@ -333,8 +333,8 @@ int main(int argc, char **argv)
                 if (k == 0)
                     k = 1;
                 while (h1[k].value != 0
-                       && (h1[k].hash != h2[i].hash
-                           || h1[k].key != h2[i].key))
+                      && (h1[k].hash != h2[i].hash
+                         || h1[k].key != h2[i].key))
                 {
                     k++;
                     if (k >= hfsize1)
@@ -377,7 +377,7 @@ int main(int argc, char **argv)
 // bogus code to make link phase happy while we are in limbo between obsoleting this tool and
 // getting cssXXXX script commands working in crm114 itself.
 void free_stack_item(CSL_CELL *csl)
-{ }
+{}
 
 
 

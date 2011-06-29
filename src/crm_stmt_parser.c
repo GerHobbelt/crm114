@@ -88,22 +88,24 @@ static const FLAG_DEF crm_flags[] =
 
 int show_instruction_flags(uint64_t flags, show_instruction_spec_writer_cb *cb, void *propagator)
 {
-	int i;
-	int n = 0;
+    int i;
+    int n = 0;
 
-	for (i = 0; i < WIDTHOF(crm_flags); i++)
-	{
-		if (flags & crm_flags[i].value)
-		{
-			if (n > 0 && (*cb)(" ", -1, propagator) < 0)
-				return -1;
-			if ((*cb)(crm_flags[i].string, -1, propagator) < 0)
-				return -1;
-			n++;
-		}
-	}
+    for (i = 0; i < WIDTHOF(crm_flags); i++)
+    {
+        if (flags & crm_flags[i].value)
+        {
+            if (n > 0 && (*cb)(" ", -1, propagator) < 0)
+                return -1;
 
-	return 0;
+            if ((*cb)(crm_flags[i].string, -1, propagator) < 0)
+                return -1;
+
+            n++;
+        }
+    }
+
+    return 0;
 }
 
 
@@ -114,11 +116,11 @@ int skip_blanks(const char *buf, int start, int bufsize)
     CRM_ASSERT(start >= 0);
     CRM_ASSERT(bufsize >= 0);
 
-    for ( ; start < bufsize && buf[start]; start++)
+    for (; start < bufsize && buf[start]; start++)
     {
         if (!crm_iscntrl(buf[start])
-            && !crm_isblank(buf[start])
-            && !crm_isspace(buf[start]))
+           && !crm_isblank(buf[start])
+           && !crm_isspace(buf[start]))
         {
             break;
         }
@@ -132,11 +134,11 @@ int skip_nonblanks(const char *buf, int start, int bufsize)
     CRM_ASSERT(start >= 0);
     CRM_ASSERT(bufsize >= 0);
 
-    for ( ; start < bufsize && buf[start]; start++)
+    for (; start < bufsize && buf[start]; start++)
     {
         if (crm_iscntrl(buf[start])
-            || crm_isblank(buf[start])
-            || crm_isspace(buf[start]))
+           || crm_isblank(buf[start])
+           || crm_isspace(buf[start]))
         {
             break;
         }
@@ -156,10 +158,10 @@ int skip_command_token(const char *buf, int start, int bufsize)
         if (crm_isalpha(buf[start]) || buf[start] == '_')
         {
             start++;
-            for ( ; start < bufsize && buf[start]; start++)
+            for (; start < bufsize && buf[start]; start++)
             {
                 if (!crm_isalnum(buf[start])
-                    && buf[start] != '_')
+                   && buf[start] != '_')
                 {
                     break;
                 }
@@ -192,8 +194,8 @@ int skip_command_token(const char *buf, int start, int bufsize)
                 for (start++; start < bufsize && buf[start]; start++)
                 {
                     if (crm_iscntrl(buf[start])
-                        || crm_isblank(buf[start])
-                        || crm_isspace(buf[start]))
+                       || crm_isblank(buf[start])
+                       || crm_isspace(buf[start]))
                     {
                         return start;
                     }
@@ -213,18 +215,18 @@ int skip_comments_and_blanks(const char *buf, int start, int bufsize)
     CRM_ASSERT(bufsize >= 0);
 
     // comments start with # and end with a \r, \n (or a combination thereof), or the sequence '\\'+'#'
-    for ( ; start < bufsize && buf[start]; start++)
+    for (; start < bufsize && buf[start]; start++)
     {
         // skip blanks
         if (!crm_iscntrl(buf[start])
-            && !crm_isblank(buf[start])
-            && !crm_isspace(buf[start]))
+           && !crm_isblank(buf[start])
+           && !crm_isspace(buf[start]))
         {
             // or might it be a comment?
             if (buf[start] == '#')
             {
                 start++;
-                for ( ; start < bufsize && buf[start]; start++)
+                for (; start < bufsize && buf[start]; start++)
                 {
                     if (buf[start] == '\\' && start + 1 < bufsize && buf[start + 1] == '#')
                     {
@@ -305,7 +307,7 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
     while (!done)
     {
         if (crm_nextword(remtext, inlen, flagsearch_start_here, &wstart, &wlen)
-            && wlen > 0)
+           && wlen > 0)
         {
             flagsearch_start_here = wstart + wlen + 1;
 
@@ -327,12 +329,12 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
                 CRM_ASSERT(crm_flags[j].value > 0);
                 CRM_ASSERT(j > 0 ? crm_flags[j].value >= crm_flags[j - 1].value : 1);
                 CRM_ASSERT(j > 0 ? crm_flags[j].value == crm_flags[j - 1].value ? 1 : crm_flags[j].value ==
-                        (crm_flags[j - 1].value << 1LL) : 1);
+                           (crm_flags[j - 1].value << 1LL) : 1);
                 CRM_ASSERT(j == 0 ? crm_flags[j].value == 1 : 1);
 
                 k = (int)strlen(crm_flags[j].string);
                 if (k == wlen
-                    && 0 == strncasecmp(wtext, crm_flags[j].string, k))
+                   && 0 == strncasecmp(wtext, crm_flags[j].string, k))
                 {
                     //    mark this flag as valid so we don't squalk an error
                     recog_flag = 1;
@@ -384,20 +386,20 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
     if (*unsup_text && *unrecog_text)
     {
         nonfatalerror_ex(SRC_LOC(), "Darn... unrecognized flag(s): '%s' and unsupported flag(s): '%s'",
-                unrecog_text + 2,          // skip the initial ", "
-                unsup_text + 2             // skip the initial ", "
+                         unrecog_text + 2, // skip the initial ", "
+                         unsup_text + 2    // skip the initial ", "
                         );
     }
     else if (*unsup_text)
     {
         nonfatalerror_ex(SRC_LOC(), "Darn... unsupported flag(s): '%s'",
-                unsup_text + 2            // skip the initial ", "
+                         unsup_text + 2   // skip the initial ", "
                         );
     }
     else if (*unrecog_text)
     {
         nonfatalerror_ex(SRC_LOC(), "Darn... unrecognized flag(s): '%s'",
-                unrecog_text + 2           // skip the initial ", "
+                         unrecog_text + 2  // skip the initial ", "
                         );
     }
 
@@ -419,8 +421,8 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
 //     a valid word, and *start and *length, which give it's position.
 //
 int crm_nextword(const char *input,
-        int                  inlen,
-        int                  starthere,
+        int inlen,
+        int starthere,
         int                 *start,
         int                 *len)
 {
@@ -443,7 +445,7 @@ int crm_nextword(const char *input,
     *len = skip_nonblanks(input, *start, inlen) - *start;
 #else
     while ((*start + *len) < inlen
-           && input[*start + *len] >= 0x21)
+          && input[*start + *len] >= 0x21)
         *len += 1;
 #endif
 
@@ -461,37 +463,37 @@ static void check_arg_counts(int actual_value, int absolute_maximum_allowed,
     if (actual_value < minimum)
     {
         fatalerror_ex(lineno, srcfile, funcname,
-                "Too %s %s arguments were specified for this command: "
-                "we see you specified %d args while the %s is %d.",
-                "few",
-                typedescription,
-                actual_value,
-                "minimum required",
-                minimum);
+                      "Too %s %s arguments were specified for this command: "
+                      "we see you specified %d args while the %s is %d.",
+                      "few",
+                      typedescription,
+                      actual_value,
+                      "minimum required",
+                      minimum);
     }
     if (actual_value > maximum)
     {
         fatalerror_ex(lineno, srcfile, funcname,
-                "Too %s %s arguments were specified for this command: "
-                "we see you specified %d args while the %s is %d.",
-                "many",
-                typedescription,
-                actual_value,
-                "maximum allowed",
-                maximum);
+                      "Too %s %s arguments were specified for this command: "
+                      "we see you specified %d args while the %s is %d.",
+                      "many",
+                      typedescription,
+                      actual_value,
+                      "maximum allowed",
+                      maximum);
     }
     // extra check for CRM114 'C' programmer errors - they existed so better make sure
     // it don't happen ever again.
     if (absolute_maximum_allowed < maximum)
     {
         fatalerror_ex(lineno, srcfile, funcname,
-                "The compiler definition for the maximum number of "
-                "%s arguments is screwed (not your fault!): "
-                "the absolute maximum supported by the compiler is %d, while the definition "
-                "number from the table is %d.",
-                typedescription,
-                absolute_maximum_allowed,
-                maximum);
+                      "The compiler definition for the maximum number of "
+                      "%s arguments is screwed (not your fault!): "
+                      "the absolute maximum supported by the compiler is %d, while the definition "
+                      "number from the table is %d.",
+                      typedescription,
+                      absolute_maximum_allowed,
+                      maximum);
     }
 }
 #endif
@@ -502,7 +504,7 @@ static void check_arg_counts(int actual_value, int absolute_maximum_allowed,
 //     the generic parser.
 //
 int crm_statement_parse(char *in,
-        int                   slen,
+        int slen,
         MCT_CELL             *mct,
         ARGPARSE_BLOCK       *apb)
 {
@@ -521,11 +523,11 @@ int crm_statement_parse(char *in,
     //     we call the generic parser with the right args to slice and
     //     dice the incoming statement into declension-delimited parts
     k = crm_generic_parse_line(in,
-            slen,
-            CRM_STATEMENT_PARSE_MAXARG,
-            ftype,
-            fstart,
-            flen);
+                               slen,
+                               CRM_STATEMENT_PARSE_MAXARG,
+                               ftype,
+                               fstart,
+                               flen);
 
     //   now we have all these nice chunks... we split them up into the
     //   various allowed categories.
@@ -575,8 +577,8 @@ int crm_statement_parse(char *in,
                 else
                 {
                     nonfatalerror(
-                            "There are multiple flag sets on this line.",
-                            "Ignoring all but the first.");
+                        "There are multiple flag sets on this line.",
+                        "Ignoring all but the first.");
                 }
             }
             break;
@@ -605,8 +607,8 @@ int crm_statement_parse(char *in,
                 else
                 {
                     nonfatalerror(
-                            "Too many parenthesized varlists.",
-                            "Ignoring the excess varlists.");
+                        "Too many parenthesized varlists.",
+                        "Ignoring the excess varlists.");
                 }
             }
             break;
@@ -623,8 +625,8 @@ int crm_statement_parse(char *in,
                 else
                 {
                     nonfatalerror(
-                            "There are multiple domain limits on this line.",
-                            "Ignoring all but the first.");
+                        "There are multiple domain limits on this line.",
+                        "Ignoring all but the first.");
                 }
             }
             break;
@@ -647,49 +649,49 @@ int crm_statement_parse(char *in,
                 else
                 {
                     nonfatalerror(
-                            "There are too many regex sets in this statement,",
-                            "Ignoring all but the first and second.");
+                        "There are too many regex sets in this statement,",
+                        "Ignoring all but the first and second.");
                 }
             }
             break;
 
         default:
             fatalerror_ex(SRC_LOC(),
-                    "Declensional parser returned an undefined typecode %d@%d/%d! "
-                    "What the HECK did you do to cause this?",
-                    ftype[i], i, k);
+                          "Declensional parser returned an undefined typecode %d@%d/%d! "
+                          "What the HECK did you do to cause this?",
+                          ftype[i], i, k);
             break;
         }
     }
 
     // now we got some checkin' to do... hold on.
     check_arg_counts(actual_arg_counts.minangles,
-            actual_arg_counts.maxangles,
-            stmt_def->minangles,
-            stmt_def->maxangles,
-            "angled '<>'",
-            SRC_LOC());
+                     actual_arg_counts.maxangles,
+                     stmt_def->minangles,
+                     stmt_def->maxangles,
+                     "angled '<>'",
+                     SRC_LOC());
 
     check_arg_counts(actual_arg_counts.minboxes,
-            actual_arg_counts.maxboxes,
-            stmt_def->minboxes,
-            stmt_def->maxboxes,
-            "boxed '[]'",
-            SRC_LOC());
+                     actual_arg_counts.maxboxes,
+                     stmt_def->minboxes,
+                     stmt_def->maxboxes,
+                     "boxed '[]'",
+                     SRC_LOC());
 
     check_arg_counts(actual_arg_counts.minparens,
-            actual_arg_counts.maxparens,
-            stmt_def->minparens,
-            stmt_def->maxparens,
-            "parens '()'",
-            SRC_LOC());
+                     actual_arg_counts.maxparens,
+                     stmt_def->minparens,
+                     stmt_def->maxparens,
+                     "parens '()'",
+                     SRC_LOC());
 
     check_arg_counts(actual_arg_counts.minslashes,
-            actual_arg_counts.maxslashes,
-            stmt_def->minslashes,
-            stmt_def->maxslashes,
-            "slashes '//'",
-            SRC_LOC());
+                     actual_arg_counts.maxslashes,
+                     stmt_def->minslashes,
+                     stmt_def->maxslashes,
+                     "slashes '//'",
+                     SRC_LOC());
 
     return k;    // return value is how many declensional arguments we found.
 }
@@ -713,8 +715,8 @@ int crm_statement_parse(char *in,
 //
 int crm_generic_parse_line(
         char *txt,                       //   the start of the program line
-        int   len,                       //   how long is the line
-        int   maxargs,                   //   howm many things to search for (max)
+        int len,                         //   how long is the line
+        int maxargs,                     //   howm many things to search for (max)
         int  *ftype,                     //   type of thing found (index by schars)
         int  *fstart,                    //   starting location of found arg
         int  *flen)                      //   length of found arg
@@ -802,10 +804,10 @@ int crm_generic_parse_line(
                 if (chidx < len && !crm_isspace(txt[chidx]))
                 {
                     nonfatalerror_ex(SRC_LOC(),
-                            " Curly braces delineate code sections. Is a action/command missing here?\n Bug in statement?\n --> %.*s%s",
-                            (len > 1024 ? 1024 : len),
-                            txt,
-                            (len > 1024 ? "(...truncated)" : ""));
+                                     " Curly braces delineate code sections. Is a action/command missing here?\n Bug in statement?\n --> %.*s%s",
+                                     (len > 1024 ? 1024 : len),
+                                     txt,
+                                     (len > 1024 ? "(...truncated)" : ""));
                     return 0;
                 }
                 return 0;
@@ -825,12 +827,12 @@ int crm_generic_parse_line(
                 else
                 {
                     nonfatalerror_ex(SRC_LOC(),
-                            " Unidentified action/command '%c'(HEX:%02X) in statement.\n Bug in statement?\n --> %.*s%s",
-                            (crm_isprint(curchar) ? curchar : '.'),
-                            (int)curchar,
-                            (len > 1024 ? 1024 : len),
-                            txt,
-                            (len > 1024 ? "(...truncated)" : ""));
+                                     " Unidentified action/command '%c'(HEX:%02X) in statement.\n Bug in statement?\n --> %.*s%s",
+                                     (crm_isprint(curchar) ? curchar : '.'),
+                                     (int)curchar,
+                                     (len > 1024 ? 1024 : len),
+                                     txt,
+                                     (len > 1024 ? "(...truncated)" : ""));
                     return 0;
                 }
                 break;
@@ -877,12 +879,12 @@ int crm_generic_parse_line(
                 else if (!crm_isalpha(curchar))
                 {
                     nonfatalerror_ex(SRC_LOC(),
-                            " Unidentified action/command '%.*s' in statement.\n Bug in statement?\n --> %.*s%s",
-                            (chidx + 1),
-                            txt,
-                            (len > 1024 ? 1024 : len),
-                            txt,
-                            (len > 1024 ? "(...truncated)" : ""));
+                                     " Unidentified action/command '%.*s' in statement.\n Bug in statement?\n --> %.*s%s",
+                                     (chidx + 1),
+                                     txt,
+                                     (len > 1024 ? 1024 : len),
+                                     txt,
+                                     (len > 1024 ? "(...truncated)" : ""));
                     return 0;
                 }
                 continue;
@@ -928,13 +930,13 @@ int crm_generic_parse_line(
                 if (!crm_isspace(txt[chidx]))
                 {
                     nonfatalerror_ex(SRC_LOC(),
-                            " The statement contains an unidentified operand delimiter '%c'(HEX:%02X). "
-                            "Only these are currently supported: <>()[]//\n Bug in statement?\n --> %.*s%s",
-                            (crm_isprint(txt[chidx]) ? txt[chidx] : '.'),
-                            (int)txt[chidx],
-                            (len > 1024 ? 1024 : len),
-                            txt,
-                            (len > 1024 ? "(...truncated)" : ""));
+                                     " The statement contains an unidentified operand delimiter '%c'(HEX:%02X). "
+                                     "Only these are currently supported: <>()[]//\n Bug in statement?\n --> %.*s%s",
+                                     (crm_isprint(txt[chidx]) ? txt[chidx] : '.'),
+                                     (int)txt[chidx],
+                                     (len > 1024 ? 1024 : len),
+                                     txt,
+                                     (len > 1024 ? "(...truncated)" : ""));
                     return argc;
                 }
                 continue;
@@ -992,7 +994,7 @@ int crm_generic_parse_line(
                     // This, however, prevents the main flow from getting cluttered with
                     // our 'special case' handling here.
                     txt[dstpos++] = txt[chidx++];
-                    for ( ; chidx < len; chidx++)
+                    for (; chidx < len; chidx++)
                     {
                         curchar = txt[chidx];
                         if (curchar == '\\')
@@ -1064,7 +1066,7 @@ int crm_generic_parse_line(
                     // pad txt[] with spaces (following the terminator) to fixup after the unescaping:
                     // make it look all right again ... ;-)
                     txt[dstpos++] = curchar;
-                    for ( ; dstpos <= chidx;)
+                    for (; dstpos <= chidx;)
                     {
                         txt[dstpos++] = ' ';
                     }
@@ -1103,12 +1105,12 @@ int crm_generic_parse_line(
         CRM_ASSERT(dstpos >= 0);
         statement_len = dstpos;
         nonfatalerror_ex(SRC_LOC(),
-                " The operand '%.*s'%s doesn't seem to end.  Bug in statement?\n --> %.*s",
-                (operand_len > 1024 ? 1024 : operand_len),
-                &txt[fstart[argc]],
-                (operand_len > 1024 ? "(...truncated)" : ""),
-                statement_len,
-                txt);
+                         " The operand '%.*s'%s doesn't seem to end.  Bug in statement?\n --> %.*s",
+                         (operand_len > 1024 ? 1024 : operand_len),
+                         &txt[fstart[argc]],
+                         (operand_len > 1024 ? "(...truncated)" : ""),
+                         statement_len,
+                         txt);
         argc++;
     }
     return argc;

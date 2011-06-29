@@ -239,7 +239,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     wvname[wvnamelen] = 0;
     //    if no svname, then we're defaulted to :_dw:
     if (!crm_nextword(wvname, wvnamelen, 0, &wvnamestart, &wvnamelen)
-        || wvnamelen < 3)
+       || wvnamelen < 3)
     {
         strcat(wvname, ":_dw:");
         wvnamelen = (int)strlen(":_dw:");
@@ -256,7 +256,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (vht[vmidx] == NULL)
     {
         nonfatalerror("We seem to be windowing a nonexistent variable.",
-                "How very bizarre.");
+                      "How very bizarre.");
         goto invoke_bailout;
     }
 
@@ -268,7 +268,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (mdw == NULL)
     {
         nonfatalerror("We seem to have lost the windowed var buffer",
-                "This is just plain sick.");
+                      "This is just plain sick.");
         goto invoke_bailout;
     }
 
@@ -279,9 +279,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //       execute the regex.
     i = crm_regexec(&preg,
-            &vht[vmidx]->valtxt[vht[vmidx]->vstart],
-            vht[vmidx]->vlen,
-            WIDTHOF(matches), matches, 0, NULL);
+                    &vht[vmidx]->valtxt[vht[vmidx]->vstart],
+                    vht[vmidx]->vlen,
+                    WIDTHOF(matches), matches, 0, NULL);
     crm_regfree(&preg);
 
     //       starting offset of the "keep section" is at matches[0].rm.eo
@@ -291,8 +291,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         //     delete everything up to and including the delimiter
         crm_slice_and_splice_window(mdw,
-                vht[vmidx]->vstart,
-                -matches[0].rm_eo);
+                                    vht[vmidx]->vstart,
+                                    -matches[0].rm_eo);
     }
     else
     {
@@ -300,8 +300,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //  flush the input window completely.
 
         crm_slice_and_splice_window(mdw,
-                vht[vmidx]->vstart,
-                -vht[vmidx]->vlen);
+                                    vht[vmidx]->vstart,
+                                    -vht[vmidx]->vlen);
     }
 
     if (user_trace)
@@ -422,7 +422,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 if (inputtxt == NULL)
                 {
                     fatalerror("Malloc in WINDOW failed.  Aw, crud.",
-                            "Can't WINDOW this way");
+                               "Can't WINDOW this way");
                     goto invoke_bailout;
                 }
 
@@ -455,7 +455,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     if (feof(stdin))
                         saweof = 1;
                     if (inputretryEOF == EOFRETRY
-                        && (feof(stdin) || ferror(stdin)))
+                       && (feof(stdin) || ferror(stdin)))
                     {
                         if (user_trace)
                             fprintf(stderr, "  resetting the stdin stream\n");
@@ -468,8 +468,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     case BYLINE:
                         {
                             fatalerror(" Sorry, but BYLINE input is not supported;",
-                                    " we recommend using '\\n' in your match "
-                                    "pattern");
+                                       " we recommend using '\\n' in your match "
+                                       "pattern");
                             goto invoke_bailout;
                         }
                         break;
@@ -484,8 +484,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //
                             //        fread (stdin) doesn't return on pipe empty
                             icount = (int)fread(&inputtxt[inputtxtlen], 1,
-                                    data_window_size - inputtxtlen - 256,
-                                    stdin);
+                                                data_window_size - inputtxtlen - 256,
+                                                stdin);
                             if (feof(stdin))
                                 saweof = 1;
                         }
@@ -504,8 +504,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //        empty, while read on STDIN_FILENO does.
                             //        So, for reading by chunks, we use read(STDIN)
                             icount = read(fileno(stdin),
-                                    &inputtxt[inputtxtlen],
-                                    (data_window_size - inputtxtlen - 256) / 4);
+                                          &inputtxt[inputtxtlen],
+                                          (data_window_size - inputtxtlen - 256) / 4);
                             saweof = 1;
                         }
                         break;
@@ -536,7 +536,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 {
                     nonfatalerror(" Something went wrong in WINDOW "
                                   "while trying to read",
-                            "I will keep trying. ");
+                                  "I will keep trying. ");
                 }
                 if (feof(stdin))
                     saweof = 1;
@@ -554,9 +554,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     set "done" or not.
 
         i = crm_regexec(&preg,
-                inputtxt,
-                inputtxtlen,
-                WIDTHOF(matches), matches, 0, NULL);
+                        inputtxt,
+                        inputtxtlen,
+                        WIDTHOF(matches), matches, 0, NULL);
 
         //
         //        Now we deal with the result of the regex matching (or not
@@ -633,23 +633,23 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     start by making some space at the end of the input buffer
 
     crm_slice_and_splice_window(mdw,
-            vht[vmidx]->vstart + vht[vmidx]->vlen,
-            matches[0].rm_eo);
+                                vht[vmidx]->vstart + vht[vmidx]->vlen,
+                                matches[0].rm_eo);
 
     //     copy the pertinent part of inputtxt into the space
     //     we just made.
     crm_memmove(&vht[vmidx]->valtxt[vht[vmidx]->vstart
-                                + vht[vmidx]->vlen
-                                - matches[0].rm_eo],
-            inputtxt,
-            matches[0].rm_eo);
+                                    + vht[vmidx]->vlen
+                                    - matches[0].rm_eo],
+                inputtxt,
+                matches[0].rm_eo);
 
     //     and get rid of the same characters out of inputtxt
     if (inputtxtlen > 0)
     {
         crm_memmove(inputtxt,
-                &inputtxt[matches[0].rm_eo],
-                inputtxtlen - matches[0].rm_eo + 1);
+                    &inputtxt[matches[0].rm_eo],
+                    inputtxtlen - matches[0].rm_eo + 1);
     }
     inputtxtlen -= matches[0].rm_eo;
     inputtxt[inputtxtlen] = 0;
@@ -663,7 +663,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         if (user_trace)
             fprintf(stderr, "  CUT match failed so we're going to fail.\n");
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;

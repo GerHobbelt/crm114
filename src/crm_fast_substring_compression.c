@@ -685,9 +685,9 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
     {
         fev = nonfatalerror_ex(SRC_LOC(),
-                "\nYou didn't specify a valid filename: '%.*s'\n",
-                hlen,
-                htext);
+                               "\nYou didn't specify a valid filename: '%.*s'\n",
+                               hlen,
+                               htext);
         return fev;
     }
     //             filename starts at i,  ends at j. null terminate it.
@@ -715,7 +715,7 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             STATISTICS_FILE_HEADER_STRUCT my_header;
 
             strcpy((char *)my_header.file_ident_string,
-                    "CRM114 Classdata FSCM V2 (hashed) ");
+                   "CRM114 Classdata FSCM V2 (hashed) ");
 
             if (user_trace)
                 fprintf(stderr, "No such statistics file %s; must create it.\n",
@@ -769,23 +769,23 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 char dirbuf[DIRBUFSIZE_MAX];
 
                 fev = fatalerror_ex(SRC_LOC(),
-                        "\n Couldn't open your new CSS file %s for writing; (full path: '%s') errno=%d(%s)\n",
-                        hashfilename,
-                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
-                        errno,
-                        errno_descr(errno));
+                                    "\n Couldn't open your new CSS file %s for writing; (full path: '%s') errno=%d(%s)\n",
+                                    hashfilename,
+                                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
+                                    errno,
+                                    errno_descr(errno));
                 return fev;
             }
             else
             {
                 if (1 != fwrite(&my_header,
-                            sizeof(STATISTICS_FILE_HEADER_STRUCT),
-                            1,
-                            hashf))
+                                sizeof(STATISTICS_FILE_HEADER_STRUCT),
+                                1,
+                                hashf))
                 {
                     fev = nonfatalerror_ex(SRC_LOC(),
-                            "\n Couldn't write header to file %s; errno=%d(%s)\n",
-                            hashfilename, errno, errno_descr(errno));
+                                           "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                                           hashfilename, errno, errno_descr(errno));
                     fclose(hashf);
                     return fev;
                 }
@@ -828,11 +828,11 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 char dirbuf[DIRBUFSIZE_MAX];
 
                 fev = fatalerror_ex(SRC_LOC(),
-                        "\n Couldn't open your CSS file %s for appending; (full path: '%s') errno=%d(%s)\n",
-                        hashfilename,
-                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
-                        errno,
-                        errno_descr(errno));
+                                    "\n Couldn't open your CSS file %s for appending; (full path: '%s') errno=%d(%s)\n",
+                                    hashfilename,
+                                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
+                                    errno,
+                                    errno_descr(errno));
                 return fev;
             }
             else
@@ -840,13 +840,13 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 for (i = 0; i < sparse_spectrum_file_length; i++)
                 {
                     if (1 != fwrite(&my_zero_table,
-                                sizeof(FSCM_PREFIX_TABLE_CELL),
-                                1,
-                                hashf))
+                                    sizeof(FSCM_PREFIX_TABLE_CELL),
+                                    1,
+                                    hashf))
                     {
                         fev = nonfatalerror_ex(SRC_LOC(),
-                                "\n Couldn't write space fill for hashes to file %s; errno=%d(%s)\n",
-                                hashfilename, errno, errno_descr(errno));
+                                               "\n Couldn't write space fill for hashes to file %s; errno=%d(%s)\n",
+                                               hashfilename, errno, errno_descr(errno));
                         fclose(hashf);
                         return fev;
                     }
@@ -856,8 +856,8 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (1 != fwrite(&my_zero_table, sizeof(FSCM_PREFIX_TABLE_CELL), 1, hashf))
                 {
                     fev = nonfatalerror_ex(SRC_LOC(),
-                            "\n Couldn't write index 0 init data to file %s; errno=%d(%s)\n",
-                            hashfilename, errno, errno_descr(errno));
+                                           "\n Couldn't write index 0 init data to file %s; errno=%d(%s)\n",
+                                           hashfilename, errno, errno_descr(errno));
                     fclose(hashf);
                     return fev;
                 }
@@ -879,19 +879,19 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //
             //   Generate the hashes.
             crm_vector_tokenize_selector
-                        (apb,                                 // the APB
-                        vht,
-                        tdw,
-                        txtptr + txtstart,                               // intput string
-                        txtlen,                                          // how many bytes
-                        0,                                               // starting offset
-                        NULL,                                            // custom tokenizer
-                        NULL,                                            // custom matrix
-                        unk_hashes,                                      // where to put the hashed results
-                        data_window_size / sizeof(unk_hashes[0]),        //  max number of hashes
-                        NULL,
-                        NULL,
-                        &unk_hashcount);                                 // how many hashes we actually got
+                                  (apb,                       // the APB
+                                  vht,
+                                  tdw,
+                                  txtptr + txtstart,                        // intput string
+                                  txtlen,                                   // how many bytes
+                                  0,                                        // starting offset
+                                  NULL,                                     // custom tokenizer
+                                  NULL,                                     // custom matrix
+                                  unk_hashes,                               // where to put the hashed results
+                                  data_window_size / sizeof(unk_hashes[0]), //  max number of hashes
+                                  NULL,
+                                  NULL,
+                                  &unk_hashcount);                       // how many hashes we actually got
 
             if (internal_trace)
             {
@@ -916,8 +916,8 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         "mmapping file %s for known state\n", hashfilename);
 #if 0       // not needed for force_unmap to work as expected.
             crm_mmap_file
-                        (hashfilename, 0, 1, PROT_READ | PROT_WRITE,
-                        MAP_SHARED, CRM_MADV_RANDOM, NULL);
+                                  (hashfilename, 0, 1, PROT_READ | PROT_WRITE,
+                                  MAP_SHARED, CRM_MADV_RANDOM, NULL);
 #endif
             crm_force_munmap_filename(hashfilename);
             if (internal_trace)
@@ -932,11 +932,11 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 char dirbuf[DIRBUFSIZE_MAX];
 
                 fev = fatalerror_ex(SRC_LOC(),
-                        "\n Couldn't open your CSS file %s for appending; (full path: '%s') errno=%d(%s)\n",
-                        hashfilename,
-                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
-                        errno,
-                        errno_descr(errno));
+                                    "\n Couldn't open your CSS file %s for appending; (full path: '%s') errno=%d(%s)\n",
+                                    hashfilename,
+                                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
+                                    errno,
+                                    errno_descr(errno));
                 return fev;
             }
             else
@@ -950,13 +950,13 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 for (i = 0; i < unk_hashcount + 3; i++)
                 {
                     if (1 != fwrite(&my_zero_chain,
-                                sizeof(FSCM_HASH_CHAIN_CELL),
-                                1,
-                                hashf))
+                                    sizeof(FSCM_HASH_CHAIN_CELL),
+                                    1,
+                                    hashf))
                     {
                         fev = nonfatalerror_ex(SRC_LOC(),
-                                "\n Couldn't write hash sequence to file %s; errno=%d(%s)\n",
-                                hashfilename, errno, errno_descr(errno));
+                                               "\n Couldn't write hash sequence to file %s; errno=%d(%s)\n",
+                                               hashfilename, errno, errno_descr(errno));
                         fclose(hashf);
                         return fev;
                     }
@@ -973,17 +973,17 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, "mmapping_2 file %s\n", hashfilename);
         file_pointer =
             crm_mmap_file(hashfilename,
-                    0, statbuf.st_size,
-                    PROT_READ | PROT_WRITE,
-                    MAP_SHARED, CRM_MADV_RANDOM, NULL);
+                          0, statbuf.st_size,
+                          PROT_READ | PROT_WRITE,
+                          MAP_SHARED, CRM_MADV_RANDOM, NULL);
         if (internal_trace)
             fprintf(stderr, "mmapped2 file %s\n", hashfilename);
 
         //  set up our pointers for the prefix table and the chains
         file_header = (STATISTICS_FILE_HEADER_STRUCT *)file_pointer;
         //prefix_table_size = file_header->data[0];
-        prefix_table_size = file_header->chunks[3].length /
-                            sizeof(FSCM_PREFIX_TABLE_CELL);
+        prefix_table_size = file_header->chunks[3].length
+                            / sizeof(FSCM_PREFIX_TABLE_CELL);
 
         prefix_table = (FSCM_PREFIX_TABLE_CELL *)
                        &file_pointer[file_header->chunks[3].start];
@@ -993,9 +993,9 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //    Note the little two-step dance to recover the starting location
         //    of the new chain space.
         //
-        newchainstart = 1 +
-                        (file_header->chunks[4].start
-                         + file_header->chunks[4].length)
+        newchainstart = 1
+                        + (file_header->chunks[4].start
+                           + file_header->chunks[4].length)
                         / sizeof(FSCM_HASH_CHAIN_CELL);
         if (internal_trace)
             fprintf(stderr,
@@ -1185,9 +1185,9 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 static unsigned int chain_search_one_chain_link
 (
         FSCM_HASH_CHAIN_CELL *chains,
-        unsigned int          chain_start,
-        unsigned int          must_match,
-        int                   init_cache
+        unsigned int chain_start,
+        unsigned int must_match,
+        int init_cache
 )
 {
     unsigned int retval;
@@ -1285,9 +1285,9 @@ static unsigned int this_chain_run_length
 (
         FSCM_HASH_CHAIN_CELL *chains,              //  the known-text chains
         unsigned int         *unk_indexes,         //  index vector to head of each chain
-        unsigned int          unk_len,             //  length of index vctor
-        unsigned int          starting_symbol,     //  symbol where we start
-        unsigned int          starting_chain_index //  where it has to match (in chainspace)
+        unsigned int unk_len,                      //  length of index vctor
+        unsigned int starting_symbol,              //  symbol where we start
+        unsigned int starting_chain_index          //  where it has to match (in chainspace)
 )
 {
     unsigned int offset;
@@ -1310,7 +1310,7 @@ static unsigned int this_chain_run_length
                     "..searching at [symbol %u offset %u] chainindex %u\n",
                     starting_symbol, offset, chain_start);
         in_a_chain = chain_search_one_chain_link
-                    (chains, chain_start, starting_chain_index + offset, 0);
+                              (chains, chain_start, starting_chain_index + offset, 0);
         if (in_a_chain)
             offset++;
     }
@@ -1343,8 +1343,8 @@ static unsigned int longest_run_starting_here
 (
         FSCM_HASH_CHAIN_CELL *chains,         // array of interlaced chain cells
         unsigned int         *unk_indexes,    //  index vector to head of each chain
-        unsigned int          unk_len,        //  length of index vector
-        unsigned int          starting_symbol //  index of starting symbol
+        unsigned int unk_len,                 //  length of index vector
+        unsigned int starting_symbol          //  index of starting symbol
 )
 {
     unsigned int chain_index_start;    //  Where in the primary chain we are.
@@ -1376,8 +1376,8 @@ static unsigned int longest_run_starting_here
             fprintf(stderr, "Scanning chain starting at %u\n",
                     chain_index_start);
         this_run = this_chain_run_length
-                    (chains, unk_indexes, unk_len,
-                    starting_symbol + 1, chain_index_start + 1);
+                              (chains, unk_indexes, unk_len,
+                              starting_symbol + 1, chain_index_start + 1);
         //
         if (internal_trace)
             fprintf(stderr,
@@ -1399,7 +1399,7 @@ static unsigned int longest_run_starting_here
         //    skip forward till end of currently found best (Boyer-Moore opt)
         chain_index_old = chain_index_start;
         while (chain_index_start > 0
-               && chain_index_start < chain_index_old + this_run)
+              && chain_index_start < chain_index_old + this_run)
             chain_index_start = chains[chain_index_start].next;
     }
     if (internal_trace)
@@ -1417,9 +1417,9 @@ static unsigned int longest_run_starting_here
 static double compress_me
 (
         unsigned int         *unk_indexes, //  prefix chain-entry table
-        unsigned int          unk_len,     // length of the entry table
+        unsigned int unk_len,              // length of the entry table
         FSCM_HASH_CHAIN_CELL *chains,      // array of interlaced chain cells
-        double                q_exponent   // exponent of match
+        double q_exponent                  // exponent of match
 )
 {
     unsigned int current_symbol, this_run_length;
@@ -1436,7 +1436,7 @@ static double compress_me
     while (current_symbol < unk_len)
     {
         this_run_length = longest_run_starting_here
-                    (chains, unk_indexes, unk_len, current_symbol);
+                              (chains, unk_indexes, unk_len, current_symbol);
         incr_score = 0;
         if (this_run_length > 0)
         {
@@ -1634,19 +1634,19 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     next_offset = 0;
 #endif
     crm_vector_tokenize_selector
-                (apb,                                 // the APB
-                vht,
-                tdw,
-                txtptr + txtstart,                               // intput string
-                txtlen,                                          // how many bytes
-                0,                                               // starting offset
-                NULL,                                            // custom tokenizer
-                NULL,                                            // custom coeff matrix
-                unk_hashes,                                      // where to put the hashed results
-                data_window_size / sizeof(unk_hashes[0]),        //  max number of hashes
-                NULL,
-                NULL,
-                &unk_hashcount);                                 // how many hashes we actually got
+                          (apb,                       // the APB
+                          vht,
+                          tdw,
+                          txtptr + txtstart,                        // intput string
+                          txtlen,                                   // how many bytes
+                          0,                                        // starting offset
+                          NULL,                                     // custom tokenizer
+                          NULL,                                     // custom coeff matrix
+                          unk_hashes,                               // where to put the hashed results
+                          data_window_size / sizeof(unk_hashes[0]), //  max number of hashes
+                          NULL,
+                          NULL,
+                          &unk_hashcount);                       // how many hashes we actually got
 
     if (internal_trace)
     {
@@ -1691,7 +1691,7 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
         if (crm_nextword(htext, htextlen, fn_start_here, &fnstart, &fnlen)
-            && fnlen > 0)
+           && fnlen > 0)
         {
             strncpy(hfname, &htext[fnstart], fnlen);
             fn_start_here = fnstart + fnlen + 1;
@@ -1708,8 +1708,8 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (vbar_seen)
                 {
                     nonfatalerror
-                                ("Only one ' | ' allowed in a CLASSIFY. \n",
-                                "We'll ignore it for now.");
+                                          ("Only one ' | ' allowed in a CLASSIFY. \n",
+                                          "We'll ignore it for now.");
                 }
                 else
                 {
@@ -1726,8 +1726,8 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (k != 0)
                 {
                     nonfatalerror
-                                ("Nonexistent Classify table named: ",
-                                hfname);
+                                          ("Nonexistent Classify table named: ",
+                                          hfname);
                 }
                 else
                 {
@@ -1738,16 +1738,16 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     //  mmap the hash file into memory so we can bitwhack it
                     file_pointer =
                         crm_mmap_file(hfname,
-                                0, hashfilebytelens[maxhash],
-                                PROT_READ,
-                                MAP_SHARED, CRM_MADV_RANDOM,
-                                NULL);
+                                      0, hashfilebytelens[maxhash],
+                                      PROT_READ,
+                                      MAP_SHARED, CRM_MADV_RANDOM,
+                                      NULL);
 
                     if (file_pointer == MAP_FAILED)
                     {
                         nonfatalerror
-                                    ("Couldn't memory-map the table file :",
-                                    hfname);
+                                              ("Couldn't memory-map the table file :",
+                                              hfname);
                     }
                     else
                     {
@@ -1769,8 +1769,8 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         prefix_table = (FSCM_PREFIX_TABLE_CELL *)
                                        &file_pointer[file_header->chunks[3].start];
                         // prefix_table_size = file_header->data[0];
-                        prefix_table_size = file_header->chunks[3].length /
-                                            sizeof(FSCM_PREFIX_TABLE_CELL);
+                        prefix_table_size = file_header->chunks[3].length
+                                            / sizeof(FSCM_PREFIX_TABLE_CELL);
                         chains = (FSCM_HASH_CHAIN_CELL *)
                                  &file_pointer[file_header->chunks[4].start];
 
@@ -1806,17 +1806,17 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //   thk 0.1 exp 1.35 --> 34 in 12min. and exp 1.1 -> 43
                         //   thk 0.05 exp 1.1--> 50.
                         scores[maxhash] = compress_me
-                                    (unk_indexes,
-                                    unk_hashcount,
-                                    chains,
-                                    1.35);
+                                              (unk_indexes,
+                                              unk_hashcount,
+                                              chains,
+                                              1.35);
                     }
                     maxhash++;
                 }
             }
             if (maxhash > MAX_CLASSIFIERS - 1)
                 nonfatalerror("Too many classifier files.",
-                        "Some may have been disregarded");
+                              "Some may have been disregarded");
         }
     }
 
@@ -2002,7 +2002,7 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             nonfatalerror("WARNING: not enough room in the buffer to create "
                           "the statistics text.  Perhaps you could try bigger "
                           "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-                    " ");
+                          " ");
         }
         crm_destructive_alter_nvariable(svrbl, svlen,                stext, (int)strlen(stext), csl->calldepth);
     }
@@ -2026,7 +2026,7 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (user_trace)
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         //    and do what we do for a FAIL here
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -2046,9 +2046,9 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 
@@ -2056,9 +2056,9 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 #endif
@@ -2070,9 +2070,9 @@ int crm_expr_fscm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 
@@ -2080,9 +2080,9 @@ int crm_expr_fscm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 
@@ -2090,9 +2090,9 @@ int crm_expr_fscm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 
@@ -2100,9 +2100,9 @@ int crm_expr_fscm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 
@@ -2110,9 +2110,9 @@ int crm_expr_fscm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 
@@ -2120,9 +2120,9 @@ int crm_expr_fscm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 
@@ -2130,9 +2130,9 @@ int crm_expr_fscm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 
@@ -2140,9 +2140,9 @@ int crm_expr_fscm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "FSCM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "FSCM");
 }
 
 

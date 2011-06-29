@@ -1,0 +1,133 @@
+<html><head><style type="text/css">
+a.:link { color: blue; text-decoration: none }
+a.:active { color: 0x00FF00; text-decoration: none }
+a.:visited { color: blue; text-decoration: none }
+a.:hover { color: red; text-decoration: underline }
+</style>
+<title>TREC Spam Filter Evaluation Tool Kit Howto</title></head>
+
+<body bgcolor="WHITE">
+<h1 hspace="center">
+    <a href="http://www.uwaterloo.ca/">
+    <img src="http://plg.uwaterloo.ca/~trlynam/images/uwlogo.gif" align="right" hspace="0" border="0" width="64" height="76"></a>
+    TREC Spam Filter Evaluation Tool Kit<br>
+</h1>
+<a href="http://www.uwaterloo.ca/">[UW]</a>
+<a href="http://www.cs.uwaterloo.ca/">[CS]</a>
+<a href="http://plg.uwaterloo.ca/">[PLG]</a>
+<a href="http://trec.nist.gov/">[TREC]</a>
+
+
+<hr>
+
+<h3> Filter must implement exactly 3 commands </h3>
+<li> initialize <br>
+<ul>All steps necessary to install the software on a clean system and to prepare to classify a user's email.
+</ul></li>
+<li>classify filename
+<ul>Read filename which contains exactly 1 email message
+write one line of output:<br>
+class=classification score=score tfile=auxiliary_file 
+</ul></li>
+<li>train judgement filename classification auxiliary_file <br>
+<ul> note of gold-standard judgement filename, classification, auxiliary_file from prior classify
+</ul></li>
+
+<h3> Filter Test Jig </h3>
+<li>Input <br>
+<ul>User email stream, 1 message per file
+Index file, 1 line per message, chronological order:<br>
+judgement  filename user genre<br><br>
+Filter, as 3 commands:  initialize, classify, train
+</ul></li>
+<li>Output<br>
+<ul>Raw Result File, 1 line per message:<br>
+file=filename judge=judgement class=classification score=score user=user genre=genre
+</ul></li>
+
+<h3> Test Jig Implementation </h3>
+<ul>
+initialize<br>
+for each judgement, filename, user, genre in index<br>
+<ul>classify filename > classification, score, auxiliary_file<br>
+train judgement filename classification auxiliary_file<br>
+output judgement, filename, classification, score, user, genre<br>
+</ul></ul>
+
+<h3> Running </h3>
+<li>run.sh &#60corpus_path&#62 &#60output_file&#62<br>
+<ul>
+corpus_path - Path containing the index. The corpus path will be added to the filename in the index. If none is give the current directory will be used<br<br>
+
+output_file - output will be written to this file. If none is give the default is "results"
+
+</ul>
+
+<h3> Building the Kit and Running Example Filter </h3>
+
+<li>extract the archive<br>
+<ul>tar -xzf spamfilterjig-full-1.2.tar.gz <br></ul></li>
+<li>change directory to spamfilterjig<br>
+<ul>cd spamfilterjig-full-1.2 <br></ul></li>
+<li>make it for your setup (Linux, Unix, Cygwin/Windows)
+<ul>make</ul>
+<li>change directory to spamfilterjig/example_filter<br>
+<ul>cd example-filter <br></ul></li>
+<li>run the jig (it might take a while to compile and process 6000+ emails)<br>
+<ul>../run.sh ../spamassassin_corpus/ foo results.bogo<br></ul></li>
+<li>Evaluate the output (system R no longer needed) for full results<br>
+<ul>cp results.bogo ../eval<br>
+cd ../eval<br>
+bin/script results.bogo<br>
+This will create a file called "results/results.bogo.html"<br>
+
+</ul></li>
+
+</li>
+<h3>*New* Delayed training example</h3>
+The corpus now contains an example of delayed training.  To do the
+delayed training run:
+<ul>
+<li>Use a different corpus path on the run.sh command:
+<ul>../run.sh ../spamassassin_corpus/delay/ foodelay results.bogo.delay</ul>
+<ul>cp results.bogo.delay ../eval
+<ul> <i>and so on</i>
+</ul>
+
+
+
+
+
+<h3> Installing System R and ROC package</h3>
+<li><a href="http://www.r-project.org/"> Information on System R</a> </li><br>
+<li>Once R is installed run following commands as root to install the ROC package(will take a while)<br><ul>
+R<br>
+source("http://www.bioconductor.org/getBioC.R")<br>
+getBioC("exprs")<br>
+q()<br>
+<br>
+<a href="http://www.bioconductor.org/faq.html#getBioC">  Click here for more information on installing ROC package </a>
+<br><br></ul>
+
+
+
+
+
+<!------------------------->
+<hr>
+<a href="http://www.uwaterloo.ca/">[UW]</a>
+<a href="http://www.cs.uwaterloo.ca/">[CS]</a>
+<a href="http://plg.uwaterloo.ca/">[PLG]</a>
+<a href="http://trec.nist.gov/">[TREC]</a>
+<a href="mailto:trlynam@plg.uwaterloo.ca">
+<hr>
+
+<img src="http://plg.uwaterloo.ca/~trlynam/images/mail2.gif" hspace="8" align="middle" border="0" width="32" height="22"></a>
+Please direct all inquiries to
+<a href="mailto:trlynam@plg.uwaterloo.ca">Thomas Lynam</a>.
+
+<br>
+<br>
+
+
+</body></html>

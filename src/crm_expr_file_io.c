@@ -87,7 +87,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (tvlen < 2)
     {
         nonfatalerror("The variable you're asking me to load the INPUT into has an utterly bogus name. ",
-                "So I'll ignore the whole statement.");
+                      "So I'll ignore the whole statement.");
         return 0;
     }
 
@@ -112,8 +112,8 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         {
             nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a filename which is too long (len = %d) "
                                         "while the maximum allowed size is %d.",
-                    fnlen,
-                    MAX_FILE_NAME_LEN - 1);
+                             fnlen,
+                             MAX_FILE_NAME_LEN - 1);
             return -1;
         }
         if (user_trace)
@@ -139,7 +139,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (1 != sscanf(fileoffset, "%d", &offset))
         {
             nonfatalerror_ex(SRC_LOC(), "Failed to decode the input expression pre-IO file offset number '%s'.",
-                    fileoffset);
+                             fileoffset);
         }
         if (offset < 0)
             offset = 0;
@@ -191,11 +191,11 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (fnlen > 0)
     {
         if (strcmp(ifn, "0") == 0
-            || strcmp(ifn, "-") == 0
-            || strcmp(ifn, "stdin") == 0
-            || strcmp(ifn, "/dev/stdin") == 0
-            || strcmp(ifn, "CON:") == 0
-            || strcmp(ifn, "/dev/tty") == 0)
+           || strcmp(ifn, "-") == 0
+           || strcmp(ifn, "stdin") == 0
+           || strcmp(ifn, "/dev/stdin") == 0
+           || strcmp(ifn, "CON:") == 0
+           || strcmp(ifn, "/dev/tty") == 0)
         {
             fp = os_stdin();
             file_was_fopened = 0;
@@ -209,12 +209,12 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (fp == NULL)
             {
                 fatalerror_ex(SRC_LOC(),
-                        "For some reason, I was unable to read-open the file named '%s' (full path: '%s') (expanded from '%s'): error = %d(%s)",
-                        ifn,
-                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), ifn),
-                        filename_plus_args,
-                        errno,
-                        errno_descr(errno));
+                              "For some reason, I was unable to read-open the file named '%s' (full path: '%s') (expanded from '%s'): error = %d(%s)",
+                              ifn,
+                              mk_absolute_path(dirbuf, WIDTHOF(dirbuf), ifn),
+                              filename_plus_args,
+                              errno,
+                              errno_descr(errno));
                 goto input_no_open_bailout;
             }
         }
@@ -281,10 +281,10 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //        (Annoying But True: fseek on stdin does NOT error, it's
         //        silently _ignored_.  Who knew?
         if ((!file_was_fopened /* fp == stdin  -- hm, what to do here... */
-             || isatty(fileno(fp))) && offset != 0)
+            || isatty(fileno(fp))) && offset != 0)
         {
             nonfatalerror("Hmmm, a file offset on stdin or tty won't do much. ",
-                    "I'll ignore it for now.");
+                          "I'll ignore it for now.");
         }
         else if (offset != 0)
         {
@@ -293,17 +293,17 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 if (errno == EBADF)
                 {
                     nonfatalerror_ex(SRC_LOC(), "Dang, seems that this file '%s' (expanded from '%s') isn't fseek()able!",
-                            ifn,
-                            filename_plus_args);
+                                     ifn,
+                                     filename_plus_args);
                 }
                 else
                 {
                     nonfatalerror_ex(SRC_LOC(),
-                            "Dang, seems that this file '%s' (expanded from '%s') isn't fseek()able: error = %d(%s)",
-                            ifn,
-                            filename_plus_args,
-                            errno,
-                            errno_descr(errno));
+                                     "Dang, seems that this file '%s' (expanded from '%s') isn't fseek()able: error = %d(%s)",
+                                     ifn,
+                                     filename_plus_args,
+                                     errno,
+                                     errno_descr(errno));
                 }
             }
         }
@@ -321,7 +321,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (strlen(chartemp) > iolen)
             {
                 nonfatalerror("Dang, this line of text is way too long: ",
-                        chartemp);
+                              chartemp);
             }
             strncpy(inbuf, chartemp, iolen);
             CRM_ASSERT(iolen <= data_window_size - 1);
@@ -347,10 +347,10 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     clearerr(fp);
                 CRM_ASSERT(iolen <= data_window_size - 1);
                 while (!feof(fp)
-                       && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
+                      && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
                        // [i_a] how about MAC and PC (CR and CRLF instead of LF as line terminators)? Quick fix here: */
-                       && (ichar == 0 || (inbuf[ichar - 1] != '\r' && inbuf[ichar - 1] != '\n'))
-                       && ichar <= iolen)
+                      && (ichar == 0 || (inbuf[ichar - 1] != '\r' && inbuf[ichar - 1] != '\n'))
+                      && ichar <= iolen)
                 {
                     int c = fgetc(fp);
                     if (c != EOF)
@@ -379,7 +379,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     clearerr(fp); // reset any EOF
 
                 // ichar = (int)fread(inbuf, 1, iolen, fp); // do a block I/O
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
                 readsize = CRM_MIN(16384, readsize); // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
 #endif
                 for (offset = 0; !feof(fp) && offset < iolen;)
@@ -396,8 +396,8 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (errno == ENOMEM && readsize > 1) //  insufficient memory?
                         {
                             nonfatalerror("Insufficient Memory Error while trying to get startup input.",
-                                    "This is usually pretty much hopeless, but "
-                                    "I'll try to keep running anyway.");
+                                          "This is usually pretty much hopeless, but "
+                                          "I'll try to keep running anyway.");
 
                             readsize = readsize / 2; //  try a smaller block
                             clearerr(fp);
@@ -425,11 +425,11 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     }
 
                     fatalerror_ex(SRC_LOC(),
-                            "For some reason, I got an error while trying to read data from the file named '%s' (expanded from '%s'): error = %d(%s)",
-                            ifn,
-                            filename_plus_args,
-                            errno,
-                            errno_descr(errno));
+                                  "For some reason, I got an error while trying to read data from the file named '%s' (expanded from '%s'): error = %d(%s)",
+                                  ifn,
+                                  filename_plus_args,
+                                  errno,
+                                  errno_descr(errno));
                     goto input_no_open_bailout;
                 }
                 inbuf[ichar] = 0;                   // null at the end
@@ -506,8 +506,8 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         {
             nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a filename which is too long (len = %d) "
                                         "while the maximum allowed size is %d.",
-                    j,
-                    MAX_FILE_NAME_LEN - 1);
+                             j,
+                             MAX_FILE_NAME_LEN - 1);
             return -1;
         }
         crm_memmove(fnam, &filename[i], j);
@@ -526,8 +526,8 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             {
                 nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a offset expression which is too long (len = %d) "
                                             "while the maximum allowed size is %d.",
-                        j,
-                        MAX_FILE_NAME_LEN - 1);
+                                 j,
+                                 MAX_FILE_NAME_LEN - 1);
                 return -1;
             }
             crm_memmove(fileoffset, &filename[i], j);
@@ -537,7 +537,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (*fileoffset && 1 != sscanf(fileoffset, "%d", &offset))
             {
                 return nonfatalerror("Failed to decode the output expression pre-IO file offset number: ",
-                        fileoffset);
+                                     fileoffset);
             }
             if (user_trace)
             {
@@ -553,8 +553,8 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 {
                     nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a length expression which is too long (len = %d) "
                                                 "while the maximum allowed size is %d.",
-                            j,
-                            MAX_FILE_NAME_LEN - 1);
+                                     j,
+                                     MAX_FILE_NAME_LEN - 1);
                     return -1;
                 }
                 crm_memmove(fileiolen, &filename[i], j);
@@ -588,15 +588,15 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (user_trace)
             fprintf(stderr, "Opening file %s for I/O (writing)\n", fnam);
         if (strcmp(fnam, "stderr") == 0
-            || strcmp(fnam, "/dev/stderr") == 0)
+           || strcmp(fnam, "/dev/stderr") == 0)
         {
             outf = stderr; // [i_a] intentional: append to our possibly redirected stderr FILE handle, don't close it as we go on using it!
             file_was_fopened = 0;
         }
         else if (strcmp(fnam, "stdout") == 0
-                 || strcmp(fnam, "con:") == 0
-                 || strcmp(fnam, "/dev/tty") == 0
-                 || strcmp(fnam, "/dev/stdout") == 0)
+                || strcmp(fnam, "con:") == 0
+                || strcmp(fnam, "/dev/tty") == 0
+                || strcmp(fnam, "/dev/stdout") == 0)
         {
             outf = stdout; // [i_a] intentional: append to our possibly redirected stdout FILE handle, don't close it as we go on using it!
             file_was_fopened = 0;
@@ -605,7 +605,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         {
             file_was_fopened = 1;
             if (apb->sflags & CRM_APPEND
-                || fileoffsetlen > 0)
+               || fileoffsetlen > 0)
             {
                 outf = fopen(fnam, "rb+");
                 //
@@ -635,9 +635,9 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         char dirbuf[DIRBUFSIZE_MAX];
 
         fatalerror_ex(SRC_LOC(), "For some reason, I was unable to write-open the file named '%s'; (full path: '%s') errno=%d(%s)",
-                fnam, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), fnam),
-                errno,
-                errno_descr(errno));
+                      fnam, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), fnam),
+                      errno,
+                      errno_descr(errno));
     }
     else
     {
@@ -657,7 +657,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if ((!file_was_fopened || isatty(fileno(outf))) && offset != 0)
             {
                 nonfatalerror("Hmmm, a file offset on stdout/stderr or tty won't do much. ",
-                        "I'll ignore it for now. ");
+                              "I'll ignore it for now. ");
             }
             else
             {
@@ -683,12 +683,12 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (ret != outtextlen)
             {
                 fatalerror_ex(SRC_LOC(),
-                        "Could not write %d bytes to file '%s': "
-                        "errno = %d(%s)\n",
-                        outtextlen,
-                        fnam,
-                        errno,
-                        errno_descr(errno));
+                              "Could not write %d bytes to file '%s': "
+                              "errno = %d(%s)\n",
+                              outtextlen,
+                              fnam,
+                              errno,
+                              errno_descr(errno));
             }
         }
         // [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster

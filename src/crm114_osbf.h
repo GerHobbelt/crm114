@@ -24,16 +24,16 @@ typedef struct
 {
     crmhash_t hash;
     crmhash_t key;
-    uint32_t  value;
+    uint32_t value;
 } OSBF_FEATUREBUCKET_STRUCT;
 
 typedef struct
 {
     unsigned char version[4];
-    uint32_t      flags;
-    uint32_t      buckets_start; /* offset to first bucket, in bucket size units */
-    uint32_t      buckets;       /* number of buckets in the file */
-    uint64_t      learnings;     /* number of trainings executed */
+    uint32_t flags;
+    uint32_t buckets_start;      /* offset to first bucket, in bucket size units */
+    uint32_t buckets;            /* number of buckets in the file */
+    uint64_t learnings;          /* number of trainings executed */
 } OSBF_FEATURE_HEADER_STRUCT;
 
 /* define header size to be a multiple of bucket size with aprox. 4 Kbytes */
@@ -57,18 +57,18 @@ typedef union
 #define GET_BUCKET_VALUE(bucket) ((bucket.value) & BUCKET_VALUE_MASK)
 #define BUCKET_IS_LOCKED(bucket) ((bucket.value) & BUCKET_LOCK_MASK)
 #define SETL_BUCKET_VALUE(bucket, val) \
-    (bucket.value) = (val) |           \
-                     BUCKET_LOCK_MASK
+    (bucket.value) = (val)             \
+                     | BUCKET_LOCK_MASK
 #define SET_BUCKET_VALUE(bucket, val) (bucket.value) = val
 #define LOCK_BUCKET(bucket) (bucket.value) = (bucket.value) | BUCKET_LOCK_MASK
 #define UNLOCK_BUCKET(bucket)         \
-    (bucket.value) = (bucket.value) & \
-                     BUCKET_VALUE_MASK
+    (bucket.value) = (bucket.value)   \
+                     & BUCKET_VALUE_MASK
 #define BUCKET_IN_CHAIN(bucket) (GET_BUCKET_VALUE(bucket) != 0)
 #define EMPTY_BUCKET(bucket) (GET_BUCKET_VALUE(bucket) == 0)
 #define BUCKET_HASH_COMPARE(bucket, h, k) \
     ((bucket.hash) == (h)                 \
-     && (bucket.key) == (k))
+    && (bucket.key) == (k))
 
 /* CSS file version */
 #define SBPH_VERSION            0

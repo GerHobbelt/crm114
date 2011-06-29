@@ -183,12 +183,12 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(box_text, boxtxtlen,
-            &vmidx,
-            &mdwptr,
-            &source_start,
-            &source_len,
-            errstr,
-            WIDTHOF(errstr));
+                        &vmidx,
+                        &mdwptr,
+                        &source_start,
+                        &source_len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (internal_trace)
     {
@@ -214,7 +214,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -255,7 +255,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -279,11 +279,11 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         mdw = tdw;
     //  sanity check - must be tdw or cdw for searching!
     if (vht[vmidx]->valtxt != tdw->filetext
-        && vht[vmidx]->valtxt != cdw->filetext)
+       && vht[vmidx]->valtxt != cdw->filetext)
     {
         int fev;
         fev = fatalerror("Bogus text block (neither cdw nor tdw) on var ",
-                box_text);
+                         box_text);
         return fev;
     }
 
@@ -376,7 +376,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 }
 
                 i = crm_regexec(&preg, mtext, mtextlen,
-                        WIDTHOF(matches), matches, eflags, NULL);
+                                WIDTHOF(matches), matches, eflags, NULL);
                 j = matches[0].rm_eo;
                 if (internal_trace && i == 0)
                 {
@@ -416,11 +416,11 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //        loop until we either get a match or until we have hit
             //        the start of this (possibly captured-variable) region.
             while (textoffset > vtextstartlimit
-                   && (i != 0 || textoffset + j > oldstart))
+                  && (i != 0 || textoffset + j > oldstart))
             {
                 mtext = &mdw->filetext[textoffset];
                 i = crm_regexec(&preg, mtext, mtextlen,
-                        WIDTHOF(matches), matches, eflags, NULL);
+                                WIDTHOF(matches), matches, eflags, NULL);
                 j = matches[0].rm_so;
                 if ((textoffset + j <= oldstart) && (i == 0))
                 {
@@ -440,7 +440,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         {
             mtext = &mdw->filetext[textoffset];
             i = crm_regexec(&preg, mtext, mtextlen,
-                    WIDTHOF(matches), matches, eflags, NULL);
+                            WIDTHOF(matches), matches, eflags, NULL);
         }
     }
 
@@ -455,7 +455,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             fprintf(stderr, "Regex did not match, no absent flag, failing.\n");
         if (user_trace && absentp)
             fprintf(stderr, "Regex matched but with absent flag, failing.\n");
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -502,7 +502,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             nonfatalerror("This program specifies an 'absent' match, and also "
                           "tries to bind variables that, by the above, aren't "
                           "matched!  ",
-                    "We'll ignore these variable bindings for now.");
+                          "We'll ignore these variable bindings for now.");
         }
 
         if (bindable_vars_len > 0 && !absentp)
@@ -528,104 +528,104 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 // bind each variable
                 //    find the start of the variable
 
-                    CRM_ASSERT(vlen > 0);
+                CRM_ASSERT(vlen > 0);
 
-                    //    have the next variable name, put out debug info.
-                    if (internal_trace)
-                    {
-                        fprintf(stderr, "variable -");
-                        fwrite_ASCII_Cfied(stderr, bindable_vars + vstart, vlen);
-                        fprintf(stderr, "- will be assigned from var offsets %d to %d "
-                                        "(origin offsets %d to %d), value ",
-                                (int)matches[mc].rm_so,
-                                (int)matches[mc].rm_eo,
-                                (int)(matches[mc].rm_so + textoffset),
-                                (int)(matches[mc].rm_eo + textoffset));
-                        fwrite_ASCII_Cfied(stderr,
-                                mdw->filetext + matches[mc].rm_so + textoffset,
-                                (matches[mc].rm_eo + textoffset) - (matches[mc].rm_so + textoffset));
-                        fprintf(stderr, "\n");
-                    }
-                    vnext = vstart + vlen;
-                    //  HERE'S THE DANGEROUS PART..  because varible
-                    //  names have been expanded, we can't assume
-                    //  that the variablename in the program text
-                    //  will be usable.  So, we create the varname as a temp
-                    //  var, and then can reassign it with impunity.
-                    {
-                        char *vn;
+                //    have the next variable name, put out debug info.
+                if (internal_trace)
+                {
+                    fprintf(stderr, "variable -");
+                    fwrite_ASCII_Cfied(stderr, bindable_vars + vstart, vlen);
+                    fprintf(stderr, "- will be assigned from var offsets %d to %d "
+                                    "(origin offsets %d to %d), value ",
+                            (int)matches[mc].rm_so,
+                            (int)matches[mc].rm_eo,
+                            (int)(matches[mc].rm_so + textoffset),
+                            (int)(matches[mc].rm_eo + textoffset));
+                    fwrite_ASCII_Cfied(stderr,
+                                       mdw->filetext + matches[mc].rm_so + textoffset,
+                                       (matches[mc].rm_eo + textoffset) - (matches[mc].rm_so + textoffset));
+                    fprintf(stderr, "\n");
+                }
+                vnext = vstart + vlen;
+                //  HERE'S THE DANGEROUS PART..  because varible
+                //  names have been expanded, we can't assume
+                //  that the variablename in the program text
+                //  will be usable.  So, we create the varname as a temp
+                //  var, and then can reassign it with impunity.
+                {
+                    char *vn;
 
-                        //   DANGER here - we calloc the var, use it
-                        //   in crm_set_windowed_nvar, and then free it.
-                        //   Otherwise, we'd have a memory leak.
-                        //
-                        vn = (char *)calloc((MAX_VARNAME + 16), sizeof(vn[0]));
-                        if (!vn)
-                            untrappableerror("Couldn't alloc vn.\n Can't fix that.", "");
-                        strncpy(vn, &bindable_vars[vstart], vlen);
-                        vn[vlen] = 0;
-                        if (strcmp(vn, ":_dw:") != 0)
+                    //   DANGER here - we calloc the var, use it
+                    //   in crm_set_windowed_nvar, and then free it.
+                    //   Otherwise, we'd have a memory leak.
+                    //
+                    vn = (char *)calloc((MAX_VARNAME + 16), sizeof(vn[0]));
+                    if (!vn)
+                        untrappableerror("Couldn't alloc vn.\n Can't fix that.", "");
+                    strncpy(vn, &bindable_vars[vstart], vlen);
+                    vn[vlen] = 0;
+                    if (strcmp(vn, ":_dw:") != 0)
+                    {
+                        int vi;
+
+                        if (!crm_is_legal_variable(vn, vlen))
                         {
-                                int vi;
-
-                                if (!crm_is_legal_variable(vn, vlen))
-                                {
-                                    int fev = fatalerror_ex(SRC_LOC(),
-                                            "Attempt to store MATCH subexpression results into "
-											"an illegal variable '%.*s'. How very bizarre.", 
-											vlen, vn);
-                                    return fev;
-                                }
-                                vi = crm_vht_lookup(vht, vn, vlen, csl->calldepth);
-                                if (vht[vi] == NULL)
-                                {
-                                    index_texts[mc] = 0;
-                                    index_starts[mc] = 0;
-                                    index_lengths[mc] = 0;
-                                }
-                                else
-                                {
-                                    index_texts[mc] = vht[vi]->valtxt;
-                                    index_starts[mc] = vht[vi]->vstart;
-                                    index_lengths[mc] = vht[vi]->vlen;
-                                }
-
-                            //    watch out for nonparticipating () submatches...
-                            //    (that is, submatches that weren't used because
-                            //     of a|(b(c)) regexes.  These have .rm_so offsets
-                            //      of < 0 .
-                            if (matches[mc].rm_so >= 0)
-							{
-                                crm_set_windowed_nvar(&vi,
-									vn,
-                                        vlen,
-                                        mdw->filetext,
-                                        matches[mc].rm_so                                        + textoffset,
-                                        matches[mc].rm_eo                                        - matches[mc].rm_so,
-                                        csl->cstmt,
-										csl->calldepth,
- !!(apb->sflags & CRM_KEEP));
-							}
+                            int fev = fatalerror_ex(SRC_LOC(),
+                                                    "Attempt to store MATCH subexpression results into "
+                                                    "an illegal variable '%.*s'. How very bizarre.",
+                                                    vlen, vn);
+                            return fev;
+                        }
+                        vi = crm_vht_lookup(vht, vn, vlen, csl->calldepth);
+                        if (vht[vi] == NULL)
+                        {
+                            index_texts[mc] = 0;
+                            index_starts[mc] = 0;
+                            index_lengths[mc] = 0;
                         }
                         else
                         {
-                            nonfatalerror("This program tried to re-define the "
-                                          "data window!  That's very deep and "
-                                          "profound, but not acceptable.  ",
-                                    "Therefore, I'm ignoring this "
-                                    "re-definition.");
+                            index_texts[mc] = vht[vi]->valtxt;
+                            index_starts[mc] = vht[vi]->vstart;
+                            index_lengths[mc] = vht[vi]->vlen;
                         }
-                        free(vn);
+
+                        //    watch out for nonparticipating () submatches...
+                        //    (that is, submatches that weren't used because
+                        //     of a|(b(c)) regexes.  These have .rm_so offsets
+                        //      of < 0 .
+                        if (matches[mc].rm_so >= 0)
+                        {
+                            crm_set_windowed_nvar(&vi,
+                                                  vn,
+                                                  vlen,
+                                                  mdw->filetext,
+                                                  matches[mc].rm_so                                        + textoffset,
+                                                  matches[mc].rm_eo                                        - matches[mc].rm_so,
+                                                  csl->cstmt,
+                                                  csl->calldepth,
+                                                  !!(apb->sflags & CRM_KEEP));
+                        }
                     }
-                    //    and move on to the next binding (if any)
-                    vstart = vnext;
-                    mc++;
-                    if (mc >= MAX_SUBREGEX)
+                    else
                     {
-                        nonfatalerror(
-                                "Exceeded MAX_SUBREGEX limit-too many parens in match",
-                                " Looks like you blew the gaskets on 'er.\n");
+                        nonfatalerror("This program tried to re-define the "
+                                      "data window!  That's very deep and "
+                                      "profound, but not acceptable.  ",
+                                      "Therefore, I'm ignoring this "
+                                      "re-definition.");
                     }
+                    free(vn);
+                }
+                //    and move on to the next binding (if any)
+                vstart = vnext;
+                mc++;
+                if (mc >= MAX_SUBREGEX)
+                {
+                    nonfatalerror(
+                        "Exceeded MAX_SUBREGEX limit-too many parens in match",
+                        " Looks like you blew the gaskets on 'er.\n");
+                }
             }
             //
             //      Now do cleanup/reclamation of old memory space, if needed.
@@ -677,9 +677,9 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (j > tdw->nchars - 1)
                             j = tdw->nchars;
                         reclaimed = crm_compress_tdw_section
-                                    (index_texts[maxi],
-                                    index_starts[maxi],
-                                    j);
+                                              (index_texts[maxi],
+                                              index_starts[maxi],
+                                              j);
                         // WAS index_starts[maxi] + index_lengths[maxi] );
                         if (internal_trace)
                             fprintf(stderr,

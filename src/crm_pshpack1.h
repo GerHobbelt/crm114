@@ -1,17 +1,17 @@
 #ifndef __CRM114_PUSH_PACK_1_H__
 #define __CRM114_PUSH_PACK_1_H__
 
-#if defined (HAVE_PSHPACK1_H)
+#if defined(HAVE_PSHPACK1_H)
 
 #include <pshpack1.h>
 
 #else
 
-#if defined (HAVE_PRAGMA_PACK_PUSH_POP)
+#if defined(HAVE_PRAGMA_PACK_PUSH_POP)
 
 #pragma pack(push, 1)
 
-#elif defined (HAVE_PRAGMA_PACK)
+#elif defined(HAVE_PRAGMA_PACK)
 
 #pragma pack(1)
 

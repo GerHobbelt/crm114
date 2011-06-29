@@ -107,9 +107,7 @@ ANALYSIS_CONFIG cfg = { 0 };
 // bogus code to make link phase happy while we are in limbo between obsoleting this tool and
 // getting cssXXXX script commands working in crm114 itself.
 void free_stack_item(CSL_CELL *csl)
-{ }
-
-
+{}
 
 
 
@@ -160,7 +158,7 @@ int main(int argc, char **argv)
     setvbuf(stderr, stderr_buf, _IOFBF, sizeof(stderr_buf));
 #endif
 
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)) && defined(_DEBUG)
     /*
      * Hook in our client-defined reporting function.
      * Every time a _CrtDbgReport is called to generate
@@ -219,12 +217,12 @@ int main(int argc, char **argv)
 
     atexit(ana_final_cleanup);
 
-#if defined (HAVE__SET_OUTPUT_FORMAT)
+#if defined(HAVE__SET_OUTPUT_FORMAT)
     _set_output_format(_TWO_DIGIT_EXPONENT);     // force MSVC (& others?) to produce floating point %f with 2 digits for power component instead of 3 for easier comparison with 'knowngood'.
 #endif
 
     // force MSwin/Win32 console I/O into binary mode: treat \r\n and\n as completely different - like it is on *NIX boxes!
-#if defined (HAVE__SETMODE) && defined (HAVE__FILENO) && defined (O_BINARY)
+#if defined(HAVE__SETMODE) && defined(HAVE__FILENO) && defined(O_BINARY)
     (void)_setmode(_fileno(crm_stdin), O_BINARY);
     (void)_setmode(_fileno(crm_stdout), O_BINARY);
     (void)_setmode(_fileno(crm_stderr), O_BINARY);
@@ -233,7 +231,7 @@ int main(int argc, char **argv)
     //   copy program path/name into global static...
     prog_argv0 = argv[0];
 
-    for ( ; ;)
+    for (;;)
     {
         // int this_option_optind = optind ? optind : 1;
         int option_index = 0;
@@ -251,9 +249,9 @@ int main(int argc, char **argv)
 
 
         c =
-#if defined (HAVE_GETOPT_LONG_EX)
+#if defined(HAVE_GETOPT_LONG_EX)
             getopt_long_only_ex
-#elif defined (HAVE_GETOPT_LONG_ONLY)
+#elif defined(HAVE_GETOPT_LONG_ONLY)
             getopt_long_only
 #else
             getopt_long
@@ -261,9 +259,9 @@ int main(int argc, char **argv)
             (argc, argv,
              "i:o:v::h::?::m:c",
              long_options, &option_index
-#if defined (HAVE_GETOPT_LONG_EX)
+#if defined(HAVE_GETOPT_LONG_EX)
             , (void(*) (void *, const char *, ...))fprintf, stderr
-#elif defined (HAVE_GETOPT_LONG_ONLY)
+#elif defined(HAVE_GETOPT_LONG_ONLY)
 #else
 #endif
             );

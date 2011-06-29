@@ -61,10 +61,10 @@
  * on 1 byte), but shoehorning those bytes into integers efficiently is messy.
  * -------------------------------------------------------------------------------
  */
-#if defined (MACHINE_IS_LITTLE_ENDIAN)
+#if defined(MACHINE_IS_LITTLE_ENDIAN)
 #define HASH_LITTLE_ENDIAN 1
 #define HASH_BIG_ENDIAN 0
-#elif defined (MACHINE_IS_BIG_ENDIAN)
+#elif defined(MACHINE_IS_BIG_ENDIAN)
 #define HASH_LITTLE_ENDIAN 0
 #define HASH_BIG_ENDIAN 1
 #else
@@ -184,8 +184,8 @@
  */
 uint32_t hashword(
         const uint32_t *k,            /* the key, an array of uint32_t values */
-        size_t          length,       /* the length of the key, in uint32_ts */
-        uint32_t        initval)      /* the previous hash, or an arbitrary value */
+        size_t length,                /* the length of the key, in uint32_ts */
+        uint32_t initval)             /* the previous hash, or an arbitrary value */
 {
     uint32_t a, b, c;
 
@@ -234,7 +234,7 @@ uint32_t hashword(
  */
 void hashword2(
         const uint32_t *k,               /* the key, an array of uint32_t values */
-        size_t          length,          /* the length of the key, in uint32_ts */
+        size_t length,                   /* the length of the key, in uint32_ts */
         uint32_t       *pc,              /* IN: seed OUT: primary hash value */
         uint32_t       *pb)              /* IN: more seed OUT: secondary hash value */
 {
@@ -311,7 +311,7 @@ uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
     union
     {
         const void *ptr;
-        size_t      i;
+        size_t i;
     } u;                                      /* needed for Mac Powerbook G4 */
 
     /* Set up the internal state */
@@ -628,7 +628,7 @@ uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
  */
 void hashlittle2(
         const void *key,          /* the key to hash */
-        size_t      length,       /* length of the key */
+        size_t length,            /* length of the key */
         uint32_t   *pc,           /* IN: primary initval, OUT: primary hash */
         uint32_t   *pb)           /* IN: secondary initval, OUT: secondary hash */
 {
@@ -637,7 +637,7 @@ void hashlittle2(
     union
     {
         const void *ptr;
-        size_t      i;
+        size_t i;
     } u;                                      /* needed for Mac Powerbook G4 */
 
     /* Set up the internal state */
@@ -966,7 +966,7 @@ uint32_t hashbig(const void *key, size_t length, uint32_t initval)
     union
     {
         const void *ptr;
-        size_t      i;
+        size_t i;
     } u;                                  /* to cast key to (size_t) happily */
 
     /* Set up the internal state */
@@ -1429,26 +1429,26 @@ int hash_selftest(void)
 
 
 /*
-Derived from hashword() but targetted for use in the 
-VT engine, where input integer values are multiplied
-with a position-dependent multiplier, before being 
-mixed into the final hash.
-
-WARNING WARNING WARNING WARNING
-
-This code is VERY VT specific: k[] is addressed
-in DESCENDING order, i.e. k is walking BACKWARDS.
-
-This is VERY SPECIFIC as it depends entirely on the
-layout of the token hashes (input k[]) in the VT
-buffers! 
-
-Do NOT use for other pruposes!
+ * Derived from hashword() but targetted for use in the
+ * VT engine, where input integer values are multiplied
+ * with a position-dependent multiplier, before being
+ * mixed into the final hash.
+ *
+ * WARNING WARNING WARNING WARNING
+ *
+ * This code is VERY VT specific: k[] is addressed
+ * in DESCENDING order, i.e. k is walking BACKWARDS.
+ *
+ * This is VERY SPECIFIC as it depends entirely on the
+ * layout of the token hashes (input k[]) in the VT
+ * buffers!
+ *
+ * Do NOT use for other pruposes!
  */
 crmhash_t hashword4VT(const crmhash_t *k,            /* the key, an array of uint32_t values */
-					  const crmhash_t *mults,
-        size_t          length,       /* the length of the key, in uint32_ts */
-        uint32_t        initval)      /* the previous hash, or an arbitrary value */
+        const crmhash_t *mults,
+        size_t length,                /* the length of the key, in uint32_ts */
+        uint32_t initval)             /* the previous hash, or an arbitrary value */
 {
     uint32_t a, b, c;
 
@@ -1458,22 +1458,22 @@ crmhash_t hashword4VT(const crmhash_t *k,            /* the key, an array of uin
     /*------------------------------------------------- handle most of the key */
     while (length > 0)
     {
-        c += *k-- * mults[2];
-        b += *k-- * mults[1];
-        a += *k-- * mults[0];
+        c += *k-- *mults[2];
+        b += *k-- *mults[1];
+        a += *k-- *mults[0];
         mix(a, b, c);
         length -= 3;
-		mults += 3;
+        mults += 3;
     }
 
     /*------------------------------------------- handle the last 3 uint32_t's */
     switch (length)                  /* all the case statements fall through */
     {
     case 3:
-        c += *k-- * mults[2];
+        c += *k-- *mults[2];
 
     case 2:
-        b += *k-- * mults[1];
+        b += *k-- *mults[1];
 
     case 1:
         a += *k * mults[0];
@@ -1679,14 +1679,14 @@ static crmhash64_t ger_1_strnhash64(const char *str, size_t len)
 //
 #undef get16bits
 
-#if defined (MACHINE_IS_LITTLE_ENDIAN)
-#if (defined (__GNUC__) && defined (__i386__)) || defined (__WATCOMC__) \
-    || defined (_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
+#if defined(MACHINE_IS_LITTLE_ENDIAN)
+#if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__) \
+    || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__TURBOC__)
 #define get16bits(d) (*((const uint16_t *)(d)))
 #endif
 #endif
 
-#if !defined (get16bits)
+#if !defined(get16bits)
 #define get16bits(d)                                \
     ((((uint32_t)(((const uint8_t *)(d))[1])) << 8) \
      + (uint32_t)(((const uint8_t *)(d))[0]))
@@ -1704,7 +1704,7 @@ uint32_t SuperFastHash(const char *data, int len, uint32_t hash)
     len >>= 2;
 
     /* Main loop */
-    for ( ; len > 0; len--)
+    for (; len > 0; len--)
     {
         hash  += get16bits(data);
         tmp    = (get16bits(data + 2) << 11) ^ hash;
@@ -1790,53 +1790,55 @@ static crmhash_t shtpap_strnhash(const char *str, size_t len)
  * well, not as good as MD5, but still good.
  */
 static crmhash_t OpenSSL_strnhash(const char *str, size_t len)
-	{
-	crmhash_t ret=0;
-	crmhash_t n;
-	crmhash_t v;
-	int r;
+{
+    crmhash_t ret = 0;
+    crmhash_t n;
+    crmhash_t v;
+    int r;
 
-	if ((str == NULL) || (len == 0))
-		return ret;
-/*
-	unsigned char b[16];
-	MD5(c,strlen(c),b);
-	return(b[0]|(b[1]<<8)|(b[2]<<16)|(b[3]<<24)); 
-*/
-
-	n = 0x100;
-	while (len--)
-		{
-		v=n|(*str++);
-		n+=0x100;
-		r= (int)((v>>2)^v)&0x0f;
-		ret=rot(ret,r);
-		// ret&=0xFFFFFFFFUL;
-		ret^=v*v;
-		}
-	return (ret>>16)^ret;
-	}
-
-
-
+    if ((str == NULL) || (len == 0))
+        return ret;
 
 /*
-Burtle: On machines with a rotate (such as the Intel x86 line) this is 6n+2 instructions. I have seen the (hash % prime) replaced with
+ *      unsigned char b[16];
+ *      MD5(c,strlen(c),b);
+ *      return(b[0]|(b[1]<<8)|(b[2]<<16)|(b[3]<<24));
+ */
 
-  hash = (hash ^ (hash>>10) ^ (hash>>20)) & mask;
+    n = 0x100;
+    while (len--)
+    {
+        v = n | (*str++);
+        n += 0x100;
+        r = (int)((v >> 2) ^ v) & 0x0f;
+        ret = rot(ret, r);
+        // ret&=0xFFFFFFFFUL;
+        ret ^= v * v;
+    }
+    return (ret >> 16) ^ ret;
+}
 
-eliminating the % and allowing the table size to be a power of 2, making this 6n+6 instructions. % can be very slow, for example it is 230 times slower than addition on a Sparc 20.
-*/
+
+
+
+/*
+ * Burtle: On machines with a rotate (such as the Intel x86 line) this is 6n+2 instructions. I have seen the (hash % prime) replaced with
+ *
+ * hash = (hash ^ (hash>>10) ^ (hash>>20)) & mask;
+ *
+ * eliminating the % and allowing the table size to be a power of 2, making this 6n+6 instructions. % can be very slow, for example it is 230 times slower than addition on a Sparc 20.
+ */
 crmhash_t Rotating_strnhash(const char *key, size_t len /*, crmhash_t prime */)
 {
-  crmhash_t hash;
-  size_t i;
-  for (hash=(crmhash_t)len, i=0; i<len; ++i)
-  {
-    hash = rot(hash,4)^key[i];
-  }
-  /* return (hash % prime); */
-  return hash;
+    crmhash_t hash;
+    size_t i;
+
+    for (hash = (crmhash_t)len, i = 0; i < len; ++i)
+    {
+        hash = rot(hash, 4) ^ key[i];
+    }
+    /* return (hash % prime); */
+    return hash;
 }
 
 
@@ -1871,26 +1873,26 @@ crmhash_t strnhash(const char *str, size_t len)
         h = SuperFast_strnhash(str, len);
         break;
 
-	case 6:
-		h = OpenSSL_strnhash(str, len);
-		break;
+    case 6:
+        h = OpenSSL_strnhash(str, len);
+        break;
 
-	case 7:
-		h = Rotating_strnhash(str, len);
-		break;
+    case 7:
+        h = Rotating_strnhash(str, len);
+        break;
     }
 
     /* save the complete 'raw' hashed text by using as many 'continuation' records as necessary */
     crm_analysis_mark(&analysis_cfg, MARK_HASH_VALUE, len, "iLL", (unsigned int)h, (long long int)cvt_chars2int64(str,
-                    len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
+                                                                                                                  len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
     if (len > 16)
     {
-        for (len -= 16, str += 16; ; len -= 3 * 8, str += 3 * 8)
+        for (len -= 16, str += 16;; len -= 3 * 8, str += 3 * 8)
         {
             crm_analysis_mark(&analysis_cfg, MARK_HASH_CONTINUATION, len, "LLL", (long long int)cvt_chars2int64(str,
-                            len),
-                    (long long int)cvt_chars2int64(str + 8,
-                            (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
+                                                                                                                len),
+                              (long long int)cvt_chars2int64(str + 8,
+                                                             (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
             if (len <= 3 * 8)
                 break;
         }
@@ -1921,15 +1923,15 @@ crmhash64_t strnhash64(const char *str, size_t len)
     }
 
     crm_analysis_mark(&analysis_cfg, MARK_HASH64_VALUE, len, "LLL", (unsigned long long int)h,
-            (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
+                      (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
     if (len > 16)
     {
-        for (len -= 16, str += 16; ; len -= 3 * 8, str += 3 * 8)
+        for (len -= 16, str += 16;; len -= 3 * 8, str += 3 * 8)
         {
             crm_analysis_mark(&analysis_cfg, MARK_HASH_CONTINUATION, len, "LLL", (long long int)cvt_chars2int64(str,
-                            len),
-                    (long long int)cvt_chars2int64(str + 8,
-                            (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
+                                                                                                                len),
+                              (long long int)cvt_chars2int64(str + 8,
+                                                             (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
             if (len <= 3 * 8)
                 break;
         }
@@ -1973,24 +1975,24 @@ crmhash64_t strnhash64(const char *str, size_t len)
 typedef struct prototype_crm_mmap_cell
 {
     char       *name;
-    int         start;
-    int         requested_len;
-    int         actual_len;
+    int start;
+    int requested_len;
+    int actual_len;
     crmhash64_t modification_time_hash; // st_mtime - time last modified
     void       *addr;
-    int         prot;  //    prot flags to be used, in the mmap() form
+    int prot;          //    prot flags to be used, in the mmap() form
                        //    that is, PROT_*, rather than O_*
     int mode;          //   Mode is things like MAP_SHARED or MAP_LOCKED
 
     int unmap_count;       //  counter - unmap this after UNMAP_COUNT_MAX
     struct prototype_crm_mmap_cell *next, *prev;
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
     HANDLE fd, mapping;
 #else
     int fd;
 #endif
-    int   has_header;     // !0 to indicate that this mmap()ed file comes with a CRM VERSIONING header.
-    int   user_actual_len;
+    int has_header;       // !0 to indicate that this mmap()ed file comes with a CRM VERSIONING header.
+    int user_actual_len;
     void *user_addr;
 } CRM_MMAP_CELL;
 
@@ -2025,16 +2027,16 @@ static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
 
     buf[0] = fs->st_ctime;
     buf[1] = fs->st_mtime;
-#if defined (HAVE_NSEC_STAT_TIME_NSEC)
+#if defined(HAVE_NSEC_STAT_TIME_NSEC)
     buf[2] = (time_t)fs->st_ctime_nsec;
     buf[3] = (time_t)fs->st_mtime_nsec;
-#elif defined (HAVE_NSEC_STAT_TIM_TV_NSEC)
+#elif defined(HAVE_NSEC_STAT_TIM_TV_NSEC)
     buf[2] = (time_t)fs->st_ctim.tv_nsec;
     buf[3] = (time_t)fs->st_mtim.tv_nsec;
-#elif defined (HAVE_NSEC_STAT_TIMENSEC)
+#elif defined(HAVE_NSEC_STAT_TIMENSEC)
     buf[2] = (time_t)fs->st_ctimensec;
     buf[3] = (time_t)fs->st_mtimensec;
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
     /*
      * From the MSVC docs:
      *
@@ -2109,24 +2111,24 @@ static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
 //
 static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
 {
-#if defined (HAVE_MSYNC) || defined (HAVE_MUNMAP)
+#if defined(HAVE_MSYNC) || defined(HAVE_MUNMAP)
     int munmap_status;
 
-#if defined (HAVE_MSYNC)
+#if defined(HAVE_MSYNC)
     if (map->prot & PROT_WRITE)
     {
-#if 01 /* BlameBarack vanilla, but I have my doubts... */
+#if 01                                                                               /* BlameBarack vanilla, but I have my doubts... */
         munmap_status = msync(map->addr, map->actual_len, MS_ASYNC | MS_INVALIDATE); /* [i_a]: was: MS_SYNC (* | MS_INVALIDATE *) */
 #else
-        munmap_status = msync(map->addr, map->actual_len, MS_SYNC /* | MS_INVALIDATE */ );
+        munmap_status = msync(map->addr, map->actual_len, MS_SYNC /* | MS_INVALIDATE */);
 #endif
         if (munmap_status != 0)
         {
             nonfatalerror_ex(SRC_LOC(),
-                    "mmapped file sync failed for file '%s': error %d(%s)",
-                    map->name,
-                    errno,
-                    errno_descr(errno)
+                             "mmapped file sync failed for file '%s': error %d(%s)",
+                             map->name,
+                             errno,
+                             errno_descr(errno)
                             );
         }
     }
@@ -2135,10 +2137,10 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
     if (munmap_status != 0)
     {
         fatalerror_ex(SRC_LOC(),
-                "Failed to release (unmap) the mmapped file '%s': error %d(%s)",
-                map->name,
-                errno,
-                errno_descr(errno)
+                      "Failed to release (unmap) the mmapped file '%s': error %d(%s)",
+                      map->name,
+                      errno,
+                      errno_descr(errno)
                      );
     }
     //  fprintf(stderr, "Munmap_status is %d\n", munmap_status);
@@ -2176,7 +2178,7 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
     CRM_ASSERT(map->name != NULL);
     crm_touch(map->name);
 
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
     FlushViewOfFile(map->addr, 0);
     UnmapViewOfFile(map->addr);
     CloseHandle(map->mapping);
@@ -2253,7 +2255,7 @@ void crm_force_munmap_addr(void *addr)
     {
         nonfatalerror("Internal fault - this code has tried to force unmap memory "
                       "that it never mapped in the first place.  ",
-                "Please file a bug report. ");
+                      "Please file a bug report. ");
         return;
     }
 
@@ -2288,7 +2290,7 @@ void crm_munmap_file(void *addr)
         nonfatalerror("Internal fault - this code has tried to unmap memory "
                       "that either was never mapped in the first place, or "
                       "has already been unmapped.  ",
-                "Please file a bug report. ");
+                      "Please file a bug report. ");
         return;
     }
 
@@ -2327,35 +2329,35 @@ void crm_munmap_file(void *addr)
     {
         if (p->prot & PROT_WRITE)
         {
-#if defined (HAVE_MSYNC)
-#if 01 /* BlameBarack vanilla, but I have my doubts... */
+#if defined(HAVE_MSYNC)
+#if 01                                                                         /* BlameBarack vanilla, but I have my doubts... */
             int ret = msync(p->addr, p->actual_len, MS_ASYNC | MS_INVALIDATE); /* [i_a] was: MS_SYNC (* | MS_INVALIDATE *) */
 #else
-            int ret = msync(p->addr, p->actual_len, MS_SYNC /* | MS_INVALIDATE */ );
+            int ret = msync(p->addr, p->actual_len, MS_SYNC /* | MS_INVALIDATE */);
 #endif
             if (ret != 0)
             {
                 nonfatalerror_ex(SRC_LOC(),
-                        "mmapped file sync failed for file '%s': error %d(%s)",
-                        p->name,
-                        errno,
-                        errno_descr(errno)
+                                 "mmapped file sync failed for file '%s': error %d(%s)",
+                                 p->name,
+                                 errno,
+                                 errno_descr(errno)
                                 );
             }
 
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
             //unmap our view of the file, which will immediately write any
             //changes back to the file
             FlushViewOfFile(p->addr, 0);
             UnmapViewOfFile(p->addr);
             //and remap so we still have it open
             p->addr = MapViewOfFile(p->mapping,
-                    ((p->mode & MAP_PRIVATE)
-                     ? FILE_MAP_COPY
-                     : ((p->prot & PROT_WRITE)
-                        ? FILE_MAP_WRITE
-                        : FILE_MAP_READ)),
-                    0, 0, 0);
+                                    ((p->mode & MAP_PRIVATE)
+                                     ? FILE_MAP_COPY
+                                     : ((p->prot & PROT_WRITE)
+                                        ? FILE_MAP_WRITE
+                                        : FILE_MAP_READ)),
+                                    0, 0, 0);
             //if the remap failed for some reason, just free everything
             //  and get rid of this cached mmap entry.
             if (p->addr == NULL)
@@ -2419,9 +2421,9 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
     int pagesize = 0;
     struct stat statbuf = { 0 };
 
-#if defined (HAVE_MMAP)
+#if defined(HAVE_MMAP)
     mode_t open_flags;
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
     DWORD open_flags = 0;
     DWORD createmap_flags = 0;
     DWORD openmap_flags = 0;
@@ -2432,28 +2434,28 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
     if ((start % pagesize) != 0 || start < 0)
     {
         untrappableerror_ex(SRC_LOC(),
-                "The system cannot memory map (mmap) any file when "
-                "the requested offset %d is not on a system page "
-                "boundary.   Tough luck for file '%s'.",
-                start,
-                filename);
+                            "The system cannot memory map (mmap) any file when "
+                            "the requested offset %d is not on a system page "
+                            "boundary.   Tough luck for file '%s'.",
+                            start,
+                            filename);
     }
     if (requested_len <= 0)
     {
         untrappableerror_ex(SRC_LOC(),
-                "The system cannot memory map (mmap) an empty "
-                "file.   Tough luck for file '%s'.",
-                filename);
+                            "The system cannot memory map (mmap) an empty "
+                            "file.   Tough luck for file '%s'.",
+                            filename);
     }
 
     //    Search for the file - if it's already mmaped, just return it.
     for (p = cache; p != NULL; p = p->next)
     {
         if (strcmp(p->name, filename) == 0
-            && p->prot == prot
-            && p->mode == mode
-            && p->start == start
-            && p->requested_len == requested_len)
+           && p->prot == prot
+           && p->mode == mode
+           && p->start == start
+           && p->requested_len == requested_len)
         {
             // check the mtime; if this differs between cache and stat
             // val, then someone outside our process has played with the
@@ -2481,7 +2483,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
     if (p == NULL)
     {
         untrappableerror(" Unable to alloc enough memory for mmap cache.  ",
-                " This is unrecoverable.  Sorry.");
+                         " This is unrecoverable.  Sorry.");
         return MAP_FAILED; /* [i_a] unreachable code */
     }
     p->name = strdup(filename);
@@ -2494,7 +2496,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
     p->prot = prot;
     p->mode = mode;
 
-#if defined (HAVE_MMAP) && defined (HAVE_MODE_T)
+#if defined(HAVE_MMAP) && defined(HAVE_MODE_T)
     open_flags = O_RDWR;
     if (!(p->prot & PROT_WRITE) && (p->prot & PROT_READ))
         open_flags = O_RDONLY;
@@ -2549,11 +2551,11 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
 
     //  fprintf(stderr, "m");
     p->addr = mmap(NULL,
-            p->actual_len,
-            p->prot,
-            p->mode,
-            p->fd,
-            p->start);
+                   p->actual_len,
+                   p->prot,
+                   p->mode,
+                   p->fd,
+                   p->start);
     //fprintf(stderr, "M");
 
     //     we can't close the fd now (the docs say yes, testing says no,
@@ -2570,7 +2572,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
         return MAP_FAILED;
     }
 
-#if defined (HAVE_MADVISE)
+#if defined(HAVE_MADVISE)
     if (advise != 0 && 0 != madvise(p->addr, p->actual_len, advise))
     {
         munmap(p->addr, p->actual_len);
@@ -2581,7 +2583,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
             *actual_len = 0;
         return MAP_FAILED;
     }
-#elif defined (HAVE_POSIX_MADVISE)
+#elif defined(HAVE_POSIX_MADVISE)
     if (advise != 0 && 0 != posix_madvise(p->addr, p->actual_len, advise))
     {
         munmap(p->addr, p->actual_len);
@@ -2607,7 +2609,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
         return MAP_FAILED;
     }
 
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
 
     if (p->mode & MAP_PRIVATE)
     {
@@ -2660,7 +2662,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
         fprintf(stderr, "MMAPping file %s for direct memory access.\n", filename);
 
     p->fd = CreateFile(filename, open_flags, 0,
-            NULL, OPEN_EXISTING, 0, NULL);
+                       NULL, OPEN_EXISTING, 0, NULL);
     if (p->fd == INVALID_HANDLE_VALUE)
     {
         free(p->name);
@@ -2673,9 +2675,9 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
         p->actual_len = statbuf.st_size - p->start;
 
     p->mapping = CreateFileMapping(p->fd,
-            NULL,
-            createmap_flags, 0, requested_len,
-            NULL);
+                                   NULL,
+                                   createmap_flags, 0, requested_len,
+                                   NULL);
     if (p->mapping == NULL)
     {
         CloseHandle(p->fd);
@@ -2805,7 +2807,7 @@ void *crm_get_header_for_mmap_file(void *addr)
 
 
 unsigned char *crm_strntrn_invert_string(unsigned char *str,
-        int                                             len,
+        int len,
         int                                            *rlen)
 {
     unsigned char *outstr;
@@ -2819,7 +2821,7 @@ unsigned char *crm_strntrn_invert_string(unsigned char *str,
     if (!outstr)
     {
         untrappableerror(
-                "Can't allocate memory to invert strings for strstrn", "");
+            "Can't allocate memory to invert strings for strstrn", "");
     }
 
     //  The string of all characters is the inverse of "" (the empty
@@ -2875,7 +2877,7 @@ unsigned char *crm_strntrn_invert_string(unsigned char *str,
 //    We return the new string, and the new length in rlen.
 //
 unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
-        int                                              len,
+        int len,
         int                                             *rlen)
 {
     int j, k, adj;
@@ -2907,7 +2909,7 @@ unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
     if (!r)
     {
         untrappableerror(
-                "Can't allocate memory to expand hyphens for strstrn", "");
+            "Can't allocate memory to expand hyphens for strstrn", "");
     }
 
     //   Now expand the string, from "str" into "r"
@@ -2970,12 +2972,12 @@ unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
 int strntrn(
         unsigned char *datastr,
         int           *datastrlen,
-        int            maxdatastrlen,
+        int maxdatastrlen,
         unsigned char *fromstr,
-        int            fromstrlen,
+        int fromstrlen,
         unsigned char *tostr,
-        int            tostrlen,
-        uint64_t       flags)
+        int tostrlen,
+        uint64_t flags)
 {
     int len = *datastrlen;
     int flen = 0;
@@ -3211,7 +3213,7 @@ int strntrn(
 
 
 char *crm114_strdup(const char *str
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
                    , int blocktype, const char *filename, int lineno
 #endif
                    )
@@ -3220,7 +3222,7 @@ char *crm114_strdup(const char *str
 
     if (str)
     {
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
         p = _strdup_dbg(str, blocktype, filename, lineno);
 #else
         p = strdup(str);
@@ -3230,7 +3232,7 @@ char *crm114_strdup(const char *str
 }
 
 void *crm114_malloc(size_t count
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
                    , int blocktype, const char *filename, int lineno
 #endif
                    )
@@ -3239,7 +3241,7 @@ void *crm114_malloc(size_t count
 
     if (count > 0)
     {
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
         p = _calloc_dbg(count, 1, blocktype, filename, lineno);
 #else
         p = calloc(count, 1);
@@ -3249,7 +3251,7 @@ void *crm114_malloc(size_t count
 }
 
 void *crm114_realloc(void *ptr, size_t count
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
                     , int blocktype, const char *filename, int lineno
 #endif
                     )
@@ -3258,7 +3260,7 @@ void *crm114_realloc(void *ptr, size_t count
 
     if (count > 0)
     {
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
         p = _realloc_dbg(ptr, count, blocktype, filename, lineno);
 #else
         p = realloc(ptr, count);
@@ -3266,7 +3268,7 @@ void *crm114_realloc(void *ptr, size_t count
     }
     else if (p)
     {
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
         _free_dbg(p, blocktype);
 #else
         free(p);
@@ -3276,7 +3278,7 @@ void *crm114_realloc(void *ptr, size_t count
 }
 
 void *crm114_calloc(size_t count, size_t elem_size
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
                    , int blocktype, const char *filename, int lineno
 #endif
                    )
@@ -3285,7 +3287,7 @@ void *crm114_calloc(size_t count, size_t elem_size
 
     if (count > 0 && elem_size > 0)
     {
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
         p = _calloc_dbg(count, elem_size, blocktype, filename, lineno);
 #else
         p = calloc(count, elem_size);
@@ -3295,7 +3297,7 @@ void *crm114_calloc(size_t count, size_t elem_size
 }
 
 void crm114_free(void **ptrref
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
                 , int blocktype, const char *filename, int lineno
 #endif
                 )
@@ -3303,7 +3305,7 @@ void crm114_free(void **ptrref
     CRM_ASSERT(ptrref != NULL);
     if (*ptrref)
     {
-#if defined (MSVC_DEBUG_MALLOC_SERIES)
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
         _free_dbg(*ptrref, blocktype);
 #else
         free(*ptrref);

@@ -166,9 +166,9 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
     {
         fev = nonfatalerror_ex(SRC_LOC(),
-                "\nYou didn't specify a valid filename: '%.*s'\n",
-                hlen,
-                htext);
+                               "\nYou didn't specify a valid filename: '%.*s'\n",
+                               hlen,
+                               htext);
         return fev;
     }
     j += i;
@@ -205,11 +205,11 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             char dirbuf[DIRBUFSIZE_MAX];
 
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your new COW file %s for writing; (full path: '%s') errno=%d(%s)\n",
-                    learnfilename,
-                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
-                    errno,
-                    errno_descr(errno));
+                                "\n Couldn't open your new COW file %s for writing; (full path: '%s') errno=%d(%s)\n",
+                                learnfilename,
+                                mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
+                                errno,
+                                errno_descr(errno));
             goto fail_dramatically;
         }
         //       do we have a user-specified file size?
@@ -225,19 +225,19 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't write header to file %s; errno=%d(%s)\n",
-                    learnfilename, errno, errno_descr(errno));
+                                "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                                learnfilename, errno, errno_descr(errno));
             fclose(f);
             goto fail_dramatically;
         }
 
         //       put in sparse_spectrum_file_length entries of NULL
         if (file_memset(f, 0,
-                    sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
+                        sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
         {
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't write to file %s; errno=%d(%s)\n",
-                    learnfilename, errno, errno_descr(errno));
+                                "\n Couldn't write to file %s; errno=%d(%s)\n",
+                                learnfilename, errno, errno_descr(errno));
             fclose(f);
             goto fail_dramatically;
         }
@@ -256,16 +256,16 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //         open the .cow hash file into memory so we can bitwhack it
     //
     hashes = crm_mmap_file(learnfilename,
-            0,
-            hfsize,
-            PROT_READ | PROT_WRITE,
-            MAP_SHARED,
-            CRM_MADV_RANDOM,
-            &hfsize);
+                           0,
+                           hfsize,
+                           PROT_READ | PROT_WRITE,
+                           MAP_SHARED,
+                           CRM_MADV_RANDOM,
+                           &hfsize);
     if (hashes == MAP_FAILED)
     {
         fev = fatalerror("Couldn't memory-map the .cow file named: ",
-                learnfilename);
+                         learnfilename);
         goto fail_dramatically;
     }
 
@@ -287,13 +287,13 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
 #ifdef CSS_VERSION_CHECK
     if (hashes[0].hash != 1
-        || hashes[0].key != 0)
+       || hashes[0].key != 0)
     {
         if (internal_trace)
             fprintf(stderr, "Hash was: %d, key was %d\n", hashes[0].hash, hashes[0].key);
         fev = fatalerror("The .cow file is the wrong type!  We're expecting "
                          "a Osb_Winnow-spectrum file.  The filename is: ",
-                learnfilename);
+                         learnfilename);
         goto fail_dramatically;
     }
 #endif
@@ -317,7 +317,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (!xhashes)
     {
         untrappableerror("Couldn't alloc xhashes\n",
-                "We need that part.  Sorry.\n");
+                         "We need that part.  Sorry.\n");
     }
 
     //   compile the word regex
@@ -357,7 +357,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (vht[vhtindex] == NULL)
     {
         fev = fatalerror(" Attempt to LEARN from a nonexistent variable ",
-                ltext);
+                         ltext);
         goto fail_dramatically;
     }
     mdw = NULL;
@@ -404,7 +404,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (ptext[0] != 0)
         {
             k = crm_regexec(&regcb, &txtptr[textoffset],
-                    slen, WIDTHOF(match), match, 0, NULL);
+                            slen, WIDTHOF(match), match, 0, NULL);
         }
         else
         {
@@ -412,11 +412,11 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //         skip non-graphical characthers
             match[0].rm_so = 0;
             while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                   && textoffset + match[0].rm_so < textmaxoffset)
+                  && textoffset + match[0].rm_so < textmaxoffset)
                 match[0].rm_so++;
             match[0].rm_eo = match[0].rm_so;
             while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                   && textoffset + match[0].rm_eo < textmaxoffset)
+                  && textoffset + match[0].rm_eo < textmaxoffset)
                 match[0].rm_eo++;
             if (match[0].rm_so == match[0].rm_eo)
                 k = 1;
@@ -428,8 +428,8 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         wlen = match[0].rm_eo - match[0].rm_so;
         crm_memmove(tempbuf,
-                &(txtptr[textoffset + match[0].rm_so]),
-                wlen);
+                    &(txtptr[textoffset + match[0].rm_so]),
+                    wlen);
         tempbuf[wlen] = 0;
 
         if (internal_trace)
@@ -446,7 +446,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (match[0].rm_eo == 0)
         {
             nonfatalerror("The LEARN pattern matched zero length! ",
-                    "\n Forcing an increment to avoid an infinite loop.");
+                          "\n Forcing an increment to avoid an infinite loop.");
             match[0].rm_eo = 1;
         }
 
@@ -497,20 +497,20 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (use_unigrams)
                 {
-                    h1 = hashpipe[0] * hctable[0];
+                    h1 = hashpipe[0] *hctable[0];
                     if (h1 < spectra_start)
                         h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1];
+                    h2 = hashpipe[0] *hctable[1];
                     if (h2 == 0)
                         h2 = 0xdeadbeef;
                     j = OSB_WINNOW_WINDOW_LEN;
                 }
                 else
                 {
-                    h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
+                    h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
                     if (h1 < spectra_start)
                         h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
+                    h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
                     if (h2 == 0)
                         h2 = 0xdeadbeef;
                 }
@@ -536,7 +536,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 while ((!((hashes[hindex].hash == h1) && (hashes[hindex].key == h2)))
                        //   Unnecessary - if it doesn't match, and value != 0...
                        //  && (hashes[hindex].key != 0)
-                       && (hashes[hindex].value != 0))
+                      && (hashes[hindex].value != 0))
                 {
                     //
                     //
@@ -579,9 +579,9 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                       "features into this size .cow file.  "
                                       "Adding any more features is "
                                       "impossible in this file.",
-                                "You are advised to build a larger "
-                                ".cow file and merge your data into "
-                                "it.");
+                                      "You are advised to build a larger "
+                                      ".cow file and merge your data into "
+                                      "it.");
                         goto learn_end_regex_loop;
                     }
                     //
@@ -644,7 +644,7 @@ fail_dramatically:
     free(xhashes);
 
 #if 0  /* now touch-fixed inside the munmap call already! */
-#if defined (HAVE_MMAP) || defined (HAVE_MUNMAP)
+#if defined(HAVE_MMAP) || defined(HAVE_MUNMAP)
     //    Because mmap/munmap doesn't set atime, nor set the "modified"
     //    flag, some network filesystems will fail to mark the file as
     //    modified and so their cacheing will make a mistake.
@@ -710,15 +710,15 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     double cpcorr[MAX_CLASSIFIERS];        // corpus correction factors
 
-#if defined (GER) || 01
+#if defined(GER) || 01
     double totalcount = 0;
-    hitcount_t hits[MAX_CLASSIFIERS];      // actual hits per feature per classifier
-    hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
-    double totalweights[MAX_CLASSIFIERS];  //  total of hits * weights
+    hitcount_t hits[MAX_CLASSIFIERS];          // actual hits per feature per classifier
+    hitcount_t totalhits[MAX_CLASSIFIERS];     // actual total hits per classifier
+    double totalweights[MAX_CLASSIFIERS];      //  total of hits * weights
     hitcount_t unseens[MAX_CLASSIFIERS];       //  total unseen features.
-    double classifierprs[MAX_CLASSIFIERS]; //  pR's of each class
-    int totalfeatures;                     //  total features
-    hitcount_t htf;                        // hits this feature got.
+    double classifierprs[MAX_CLASSIFIERS];     //  pR's of each class
+    int totalfeatures;                         //  total features
+    hitcount_t htf;                            // hits this feature got.
 #else
     unsigned int totalcount = 0;
     double hits[MAX_CLASSIFIERS];          // actual hits per feature per classifier
@@ -876,7 +876,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         hits[i] = 0;             // absolute hit counts
         totalhits[i] = 0;        // absolute hit counts
         totalweights[i] = 0.0;   // hit_i * weight*i count
-        unseens[i] = 0;        // text features not seen in statistics files
+        unseens[i] = 0;          // text features not seen in statistics files
     }
 
     for (i = 0; i < 10; i++)
@@ -916,7 +916,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
         if (crm_nextword(htext, hlen, fn_start_here, &fnstart, &fnlen)
-            && fnlen > 0)
+           && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = 0;
@@ -933,7 +933,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (vbar_seen)
                 {
                     nonfatalerror("Only one '|' allowed in a CLASSIFY.\n",
-                            "We'll ignore it for now.");
+                                  "We'll ignore it for now.");
                 }
                 else
                 {
@@ -952,7 +952,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (k != 0)
                 {
                     return nonfatalerror("Nonexistent Classify table named: ",
-                            fname);
+                                         fname);
                 }
                 else
                 {
@@ -960,7 +960,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (maxhash >= MAX_CLASSIFIERS)
                     {
                         nonfatalerror("Too many classifier files.",
-                                "Some may have been disregarded");
+                                      "Some may have been disregarded");
                     }
                     else
                     {
@@ -969,17 +969,17 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         hashlens[maxhash] = statbuf.st_size;
                         //  mmap the hash file into memory so we can bitwhack it
                         hashes[maxhash] = crm_mmap_file(fname,
-                                0,
-                                hashlens[maxhash],
-                                PROT_READ,
-                                MAP_SHARED,
-                                CRM_MADV_RANDOM,
-                                &hashlens[maxhash]);
+                                                        0,
+                                                        hashlens[maxhash],
+                                                        PROT_READ,
+                                                        MAP_SHARED,
+                                                        CRM_MADV_RANDOM,
+                                                        &hashlens[maxhash]);
 
                         if (hashes[maxhash] == MAP_FAILED)
                         {
                             nonfatalerror("Couldn't memory-map the table file",
-                                    fname);
+                                          fname);
                         }
                         else
                         {
@@ -989,11 +989,11 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             //
                             int fev;
                             if (hashes[maxhash][0].hash != 1
-                                || hashes[maxhash][0].key  != 0)
+                               || hashes[maxhash][0].key  != 0)
                             {
                                 fev = fatalerror("The .css file is the wrong type!  We're expecting "
                                                  "a Osb_Winnow-spectrum file.  The filename is: ",
-                                        &htext[i]);
+                                                 &htext[i]);
                                 return fev;
                             }
 #endif
@@ -1012,7 +1012,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             if (!hashname[maxhash])
                             {
                                 untrappableerror(
-                                        "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
+                                    "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
                             }
                             else
                             {
@@ -1024,12 +1024,12 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             //    so we only use each feature at most once
                             //
                             xhashes[maxhash] = calloc(hashlens[maxhash],
-                                    sizeof(xhashes[maxhash][0]));
+                                                      sizeof(xhashes[maxhash][0]));
                             if (!xhashes[maxhash])
                             {
                                 untrappableerror(
-                                        "Couldn't alloc xhashes[maxhash]\n",
-                                        "We need that part.  Sorry.\n");
+                                    "Couldn't alloc xhashes[maxhash]\n",
+                                    "We need that part.  Sorry.\n");
                             }
 
                             maxhash++;
@@ -1084,15 +1084,15 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 int k;
 
                 for (k = 1; k < hashlens[ifile]; k++)
-				{
+                {
                     CRM_ASSERT(hashes[ifile][k].value >= 0.0);
                     fcounts[ifile] += hashes[ifile][k].value;
-				}
+                }
 #if 01
                 if (fcounts[ifile] <= 0.0)
-				{
+                {
                     fcounts[ifile] = 1.0;
-				}
+                }
 #endif
                 totalcount += fcounts[ifile];
             }
@@ -1130,7 +1130,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (vht[vhtindex] == NULL)
     {
         return fatalerror(" Attempt to CLASSIFY from a nonexistent variable ",
-                ltext);
+                          ltext);
     }
     mdw = NULL;
     if (tdw->filetext == vht[vhtindex]->valtxt)
@@ -1178,7 +1178,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (ptext[0] != 0)
         {
             k = crm_regexec(&regcb, &txtptr[textoffset],
-                    slen, WIDTHOF(match), match, 0, NULL);
+                            slen, WIDTHOF(match), match, 0, NULL);
         }
         else
         {
@@ -1186,11 +1186,11 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //         skip non-graphical characthers
             match[0].rm_so = 0;
             while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                   && textoffset + match[0].rm_so < textmaxoffset)
+                  && textoffset + match[0].rm_so < textmaxoffset)
                 match[0].rm_so++;
             match[0].rm_eo = match[0].rm_so;
             while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                   && textoffset + match[0].rm_eo < textmaxoffset)
+                  && textoffset + match[0].rm_eo < textmaxoffset)
                 match[0].rm_eo++;
             if (match[0].rm_so == match[0].rm_eo)
                 k = 1;
@@ -1201,8 +1201,8 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         wlen = match[0].rm_eo - match[0].rm_so;
         crm_memmove(tempbuf,
-                &(txtptr[textoffset + match[0].rm_so]),
-                wlen);
+                    &(txtptr[textoffset + match[0].rm_so]),
+                    wlen);
         tempbuf[wlen] = 0;
 
         if (internal_trace)
@@ -1219,7 +1219,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (match[0].rm_eo == 0)
         {
             nonfatalerror("The CLASSIFY pattern matched zero length! ",
-                    "\n Forcing an increment to avoid an infinite loop.");
+                          "\n Forcing an increment to avoid an infinite loop.");
             match[0].rm_eo = 1;
         }
 
@@ -1267,20 +1267,20 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (use_unigrams)
                 {
-                    h1 = hashpipe[0] * hctable[0];
+                    h1 = hashpipe[0] *hctable[0];
                     if (h1 < spectra_start)
                         h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1];
+                    h2 = hashpipe[0] *hctable[1];
                     if (h2 == 0)
                         h2 = 0xdeadbeef;
                     j = OSB_WINNOW_WINDOW_LEN;
                 }
                 else
                 {
-                    h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
+                    h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
                     if (h1 < spectra_start)
                         h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
+                    h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
                     if (h2 == 0)
                         h2 = 0xdeadbeef;
                 }
@@ -1299,14 +1299,14 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     int lh, lh0;
 
-                lh = hindex % hashlens[k];
+                    lh = hindex % hashlens[k];
                     if (lh < spectra_start)
                         lh = spectra_start;
                     lh0 = lh;
                     hits[k] = 0;
                     while (hashes[k][lh].key != 0
-                           && (hashes[k][lh].hash != h1
-                               || hashes[k][lh].key  != h2))
+                          && (hashes[k][lh].hash != h1
+                             || hashes[k][lh].key  != h2))
                     {
                         lh++;
                         if (lh >= hashlens[k])
@@ -1324,7 +1324,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //    Have we seen it before?
                         if (xhashes[k][lh] == 0)
                         {
-#if defined (GER)
+#if defined(GER)
                             double z;
 #else
                             float z;
@@ -1348,7 +1348,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         // unseens score 1.0, which is totally ambivalent; seen
                         //  and accepted score more, seen and refuted score less
                         //
-                    unseens[k]++;
+                        unseens[k]++;
                         totalweights[k] += 1.0;
                     }
                 }
@@ -1436,15 +1436,15 @@ classify_end_regex_loop:
             if (oslen > 0)
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY succeeds; (winnow) success probability: "
-                        "%6.4f  pR: %6.4f / %6.4f\n",
-                        tprob, overall_pR, pR_offset);
+                         "CLASSIFY succeeds; (winnow) success probability: "
+                         "%6.4f  pR: %6.4f / %6.4f\n",
+                         tprob, overall_pR, pR_offset);
             }
             else
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY succeeds; (winnow) success probability: "
-                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+                         "CLASSIFY succeeds; (winnow) success probability: "
+                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
         else
@@ -1453,15 +1453,15 @@ classify_end_regex_loop:
             if (oslen > 0)
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY fails; (winnow) success probability: "
-                        "%6.4f  pR: %6.4f / %6.4f\n",
-                        tprob, overall_pR, pR_offset);
+                         "CLASSIFY fails; (winnow) success probability: "
+                         "%6.4f  pR: %6.4f / %6.4f\n",
+                         tprob, overall_pR, pR_offset);
             }
             else
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY fails; (winnow) success probability: "
-                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+                         "CLASSIFY fails; (winnow) success probability: "
+                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
         stext_ptr[stext_maxlen - 1] = 0;
@@ -1492,10 +1492,10 @@ classify_end_regex_loop:
         //
         snprintf(stext_ptr, stext_maxlen, "Best match to file #%d (%s) "
                                           "weight: %6.4f  pR: %6.4f\n",
-                bestseen,
-                hashname[bestseen],
-                totalweights[bestseen],
-                classifierprs[bestseen]);
+                 bestseen,
+                 hashname[bestseen],
+                 totalweights[bestseen],
+                 classifierprs[bestseen]);
         stext_ptr[stext_maxlen - 1] = 0;
         stext_maxlen -= (int)strlen(stext_ptr);
         stext_ptr += strlen(stext_ptr);
@@ -1519,14 +1519,14 @@ classify_end_regex_loop:
                 }
             }
             snprintf(stext_ptr, stext_maxlen,
-                    "#%d (%s):"
-                    " features: %.2f, unseen: %6ld, weight: %6.2f, pR: %6.2f\n",
-                    k,
-                    hashname[k],
-                    fcounts[k],
-                    (long int)unseens[k],
-                    totalweights[k],
-                    classifierprs[k]);
+                     "#%d (%s):"
+                     " features: %.2f, unseen: %6ld, weight: %6.2f, pR: %6.2f\n",
+                     k,
+                     hashname[k],
+                     fcounts[k],
+                     (long int)unseens[k],
+                     totalweights[k],
+                     classifierprs[k]);
             stext_ptr[stext_maxlen - 1] = 0;
             stext_maxlen -= (int)strlen(stext_ptr);
             stext_ptr += strlen(stext_ptr);
@@ -1540,7 +1540,7 @@ classify_end_regex_loop:
         nonfatalerror("WARNING: not enough room in the buffer to create "
                       "the statistics text.  Perhaps you could try bigger "
                       "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-                " ");
+                      " ");
     }
     if (svlen > 0)
     {
@@ -1598,7 +1598,7 @@ classify_end_regex_loop:
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         }
         //    and do what we do for a FAIL here
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -1628,9 +1628,9 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 
@@ -1638,9 +1638,9 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 #endif /* CRM_WITHOUT_OSB_WINNOW */
@@ -1652,9 +1652,9 @@ int crm_expr_osb_winnow_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 
@@ -1662,9 +1662,9 @@ int crm_expr_osb_winnow_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 
@@ -1672,9 +1672,9 @@ int crm_expr_osb_winnow_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 
@@ -1682,9 +1682,9 @@ int crm_expr_osb_winnow_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 
@@ -1692,9 +1692,9 @@ int crm_expr_osb_winnow_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 
@@ -1702,9 +1702,9 @@ int crm_expr_osb_winnow_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 
@@ -1712,9 +1712,9 @@ int crm_expr_osb_winnow_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 
@@ -1722,9 +1722,9 @@ int crm_expr_osb_winnow_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "OSB-Winnow");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "OSB-Winnow");
 }
 
 

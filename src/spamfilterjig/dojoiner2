@@ -1,0 +1,5 @@
+#!/bin/csh
+
+./boo2a < ../tmp/${1}.all.spss0 > xxx
+./boo2a < ../tmp/${2}.all.spss0 > yyy
+./joiner xxx yyy

@@ -46,11 +46,11 @@ char *strmov(char *dst, const char *src)
 #endif
 
 
-#if defined (PREFER_PORTABLE_MEMMOVE) || !defined (HAVE_MEMMOVE)
+#if defined(PREFER_PORTABLE_MEMMOVE) || !defined(HAVE_MEMMOVE)
 
 void *crm_memmove(void *dst, const void *src, size_t len)
 {
-#if defined (HAVE_BCOPY)
+#if defined(HAVE_BCOPY)
 
     bcopy(src, dst, len);
     return dst;
@@ -117,7 +117,7 @@ void *crm_memmove(void *dst, const void *src, size_t len)
                 len >>= 4;                         // len DIV 16
                 break;
             }
-            for ( ; len-- > 0;)
+            for (; len-- > 0;)
             {
                 *d-- = *s--;
                 *d-- = *s--;
@@ -193,7 +193,7 @@ void *crm_memmove(void *dst, const void *src, size_t len)
                 len >>= 4;                         // len DIV 16
                 break;
             }
-            for ( ; len-- > 0;)
+            for (; len-- > 0;)
             {
                 *d++ = *s++;
                 *d++ = *s++;
@@ -239,13 +239,13 @@ void *crm_memmove(void *dst, const void *src, size_t len)
  */
 void crm_touch(const char *filename)
 {
-#if defined (HAVE_UTIME) || defined (HAVE__UTIME)
+#if defined(HAVE_UTIME) || defined(HAVE__UTIME)
     /* Pass NULL to utime so it will not fail if we just have
      * write access to the file, but don't own it.  */
     if (utime(filename, NULL))
     {
         fatalerror_ex(SRC_LOC(), "Unable to touch file '%s'; it might be that this file is used by another application - system error: %d(%s)\n",
-                filename, errno, errno_descr(errno));
+                      filename, errno, errno_descr(errno));
     }
 #else
     /*
@@ -259,7 +259,7 @@ void crm_touch(const char *filename)
     if (hfd < 0)
     {
         fatalerror_ex(SRC_LOC(), "Couldn't touch file '%s'; it might be that this file is used by another application - system error: %d(%s)\n",
-                filename, errno, errno_descr(errno));
+                      filename, errno, errno_descr(errno));
     }
     else
     {
@@ -411,7 +411,7 @@ ssize_t fwrite_ASCII_Cfied(FILE *dst, const char *src, size_t len)
 }
 
 
-#if !defined (HAVE_MEMMEM) || defined (PREFER_PORTABLE_MEMMEM)
+#if !defined(HAVE_MEMMEM) || defined(PREFER_PORTABLE_MEMMEM)
 
 void *my_memmem(const void *haystack, size_t haystack_len, const void *needle, size_t needle_len)
 {
@@ -479,7 +479,7 @@ void *my_memmem(const void *haystack, size_t haystack_len, const void *needle, s
 #endif
 
 
-#if !defined (HAVE_STRNCHR)
+#if !defined(HAVE_STRNCHR)
 
 //    a helper function that should be in the C runtime lib but isn't.
 //

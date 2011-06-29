@@ -40,7 +40,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
     if (!vht)
     {
         untrappableerror("Couldn't alloc VHT cell.\n",
-                "No VHT cells, no variables, so no can run.  Sorry.");
+                         "No VHT cells, no variables, so no can run.  Sorry.");
     }
 #ifndef CRM_DONT_ASSERT
     {
@@ -102,9 +102,9 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
     {
         char verstr[1025];
         snprintf(verstr, WIDTHOF(verstr), "%s, rev %s (%s)",
-                VERSION,
-                REVISION,
-                crm_regversion());
+                 VERSION,
+                 REVISION,
+                 crm_regversion());
         verstr[WIDTHOF(verstr) - 1] = 0;
         crm_set_temp_var(":_crm_version:", verstr, -1, 0);
     }
@@ -207,14 +207,14 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
         {
             char pidstr[32];
             int pid;
-#if defined (HAVE_GETPID)
+#if defined(HAVE_GETPID)
             pid = (int)getpid();
             sprintf(pidstr, "%d", pid);
             crm_set_temp_var(":_pid:", pidstr, -1, 0);
 #else
             crm_set_temp_var(":_pid:", "123456789", -1, 0);
 #endif
-#if defined (HAVE_GETPPID)
+#if defined(HAVE_GETPPID)
             pid = (int)getppid();
             sprintf(pidstr, "%d", pid);
             crm_set_temp_var(":_ppid:", pidstr, -1, 0);
@@ -327,19 +327,19 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
         }
         else if (got_to_fake_em & FAKE_USER)
         {
-#if defined (HAVE_GETPWUID_R) && defined (HAVE_GETUID)
+#if defined(HAVE_GETPWUID_R) && defined(HAVE_GETUID)
             struct passwd pwbuf;
             struct passwd *pwbufret = NULL;
             char buf[1024 * 5];
 
             if (getpwuid_r(getuid(), &pwbuf, buf, WIDTHOF(buf), &pwbufret)
-                || !pwbufret
-                || !pwbufret->pw_name)
+               || !pwbufret
+               || !pwbufret->pw_name)
             {
                 fatalerror_ex(SRC_LOC(), "Cannot fetch the USER name for UID %ld: error = %d(%s)",
-                        (long int)getuid(),
-                        errno,
-                        errno_descr(errno));
+                              (long int)getuid(),
+                              errno,
+                              errno_descr(errno));
             }
             else
             {
@@ -359,17 +359,17 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
                                      "the (with flag -e)", "");
                 }
             }
-#elif defined (HAVE_GETPWUID) && defined (HAVE_GETUID)
+#elif defined(HAVE_GETPWUID) && defined(HAVE_GETUID)
             struct passwd *pwbufret;
 
             pwbufret = getpwuid(getuid());
             if (!pwbufret
-                || !pwbufret->pw_name)
+               || !pwbufret->pw_name)
             {
                 fatalerror_ex(SRC_LOC(), "Cannot fetch the USER name for UID %ld: error = %d(%s)",
-                        (long int)getuid(),
-                        errno,
-                        errno_descr(errno));
+                              (long int)getuid(),
+                              errno,
+                              errno_descr(errno));
             }
             else
             {
@@ -389,7 +389,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
                                      "the (with flag -e)", "");
                 }
             }
-#elif defined (HAVE_GETUSERNAMEA) // do not check for WIN32; it does not have to be defined for 64-bit WIN64 or WinCE or other, so do the 'proper autoconf thing' here.
+#elif defined(HAVE_GETUSERNAMEA)  // do not check for WIN32; it does not have to be defined for 64-bit WIN64 or WinCE or other, so do the 'proper autoconf thing' here.
             char userbuf[UNLEN + 1];
             DWORD userbufsize = UNLEN + 1;
 
@@ -515,28 +515,28 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
                     anamebuf[k] = 0;
                     // make sure we don't barf on incorrect arguments such as --:=1 : such
                     // colons will screw us up when initializing such an illegal 'variable'.
-		   if (!crm_is_legal_variable(anamebuf, k))
-			{
-			isok = 0;
-}
-else
-    		{
-                    if (argv[i][j] == '=')
+                    if (!crm_is_legal_variable(anamebuf, k))
                     {
-                        j++;  //  skip over the = sign
-                        k = 0;
-                        while (argv[i][j] != 0)
-                        {
-                            avalbuf[k] = argv[i][j];
-                            j++;
-                            k++;
-                        }
-                        avalbuf[k] = 0;
+                        isok = 0;
                     }
-		}
+                    else
+                    {
+                        if (argv[i][j] == '=')
+                        {
+                            j++; //  skip over the = sign
+                            k = 0;
+                            while (argv[i][j] != 0)
+                            {
+                                avalbuf[k] = argv[i][j];
+                                j++;
+                                k++;
+                            }
+                            avalbuf[k] = 0;
+                        }
+                    }
                 }
 
-		if (isok)
+                if (isok)
                 {
                     if (user_trace)
                     {
@@ -550,8 +550,8 @@ else
                     fprintf(stderr,
                             "\n ***Warning*** "
                             "This program does not accept the "
-                            "flag '%s' (derived from commandline argument '%s'),\n", 
-				anamebuf, argv[i]);
+                            "flag '%s' (derived from commandline argument '%s'),\n",
+                            anamebuf, argv[i]);
                     fprintf(stderr,
                             " so we'll just ignore it for now.\n");
                 }
@@ -586,12 +586,12 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int c
                       "your program is probably broken.", "");
     }
 
-	if ((strlen(varname) + vallen + tdw->nchars + 64) > data_window_size)
+    if ((strlen(varname) + vallen + tdw->nchars + 64) > data_window_size)
     {
         fatalerror("This program has overflowed the ISOLATEd data "
                    "area with a variable that's just too big.  "
                    "The bad variable was named: ",
-                varname);
+                   varname);
         return;
     }
 
@@ -638,9 +638,9 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int c
         //
         //      now, we whack the actual VHT.
         crm_setvar(&i, NULL, 0,
-                tdw->filetext, namestart, namelen,
-                tdw->filetext, valstart, vallen,
-                0, (keep_in_outer_scope ? 0 : calldepth));
+                   tdw->filetext, namestart, namelen,
+                   tdw->filetext, valstart, vallen,
+                   0, (keep_in_outer_scope ? 0 : calldepth));
         //     that's it.
     }
     else
@@ -676,15 +676,15 @@ void crm_set_temp_var(const char *varname, const char *value, int calldepth, int
 //           (reclamation uses "crm_compress_tdw_section", see comments
 //           further down in the code here)
 
-void crm_set_windowed_nvar(int *vhtidx, 
-						   char *varname,
-        int                      varlen,
+void crm_set_windowed_nvar(int *vhtidx,
+        char *varname,
+        int varlen,
         char                    *valtext,
-        int                      start,
-        int                      len,
-        int                      stmtnum,
-		int calldepth,
-int keep_in_outer_scope)
+        int start,
+        int len,
+        int stmtnum,
+        int calldepth,
+        int keep_in_outer_scope)
 {
     int i;
     int namestart, namelen;
@@ -728,9 +728,9 @@ int keep_in_outer_scope)
         //
         //      now, we whack the actual VHT.
         crm_setvar(&i, NULL, 0,
-                tdw->filetext, namestart, namelen,
-                valtext, start, len,
-                stmtnum, (keep_in_outer_scope ? 0 : calldepth));
+                   tdw->filetext, namestart, namelen,
+                   valtext, start, len,
+                   stmtnum, (keep_in_outer_scope ? 0 : calldepth));
         //     that's it.
     }
     else
@@ -748,9 +748,9 @@ int keep_in_outer_scope)
             if (internal_trace)
                 fprintf(stderr, "... old var\n");
             crm_setvar(&i, NULL, 0,
-                    vht[i]->nametxt, vht[i]->nstart, vht[i]->nlen,
-                    valtext, start, len,
-                    stmtnum, (keep_in_outer_scope ? 0 : calldepth));
+                       vht[i]->nametxt, vht[i]->nstart, vht[i]->nlen,
+                       valtext, start, len,
+                       stmtnum, (keep_in_outer_scope ? 0 : calldepth));
 
             //       Do we need to repair the leaked memory?  Only necessary if the
             //       old text was in the tdw area; this is harmless if the area
@@ -783,7 +783,7 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
 {
     //   let's court death, and do a FULL compress.
     return crm_recursive_compress_tdw_section
-                (tdw->filetext, 0, tdw->nchars + 1);
+                          (tdw->filetext, 0, tdw->nchars + 1);
 }
 
 int crm_recursive_compress_tdw_section
@@ -851,7 +851,7 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
     if (oldtext != tdw->filetext)
     {
         fatalerror(" Request to compress non-TDW data.  This is bogus. ",
-                " Please file a bug report");
+                   " Please file a bug report");
         return 0;
     }
 
@@ -862,9 +862,9 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
     for (j = 0; j < vht_size; j++)
     {
         if (vht[j]  // is this slot in use?
-            && vht[j]->valtxt == tdw->filetext
+           && vht[j]->valtxt == tdw->filetext
             //   Note that being part of :_iso: does NOT exclude from reclamation
-            &&  0 != strncmp(&vht[j]->nametxt[vht[j]->nstart], ":_iso:", 6))
+           &&  0 != strncmp(&vht[j]->nametxt[vht[j]->nstart], ":_iso:", 6))
         {
             //    for convenience, we get nice short names:
             newstart = vht[j]->vstart - 1;
@@ -1000,7 +1000,7 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
 end_of_vstring_tests:
         //    Now, repeat with the name string - all name strings are protected
         if (vht[j]
-            && vht[j]->nametxt == tdw->filetext)
+           && vht[j]->nametxt == tdw->filetext)
         {
             newstart = vht[j]->nstart - 1;
             newend = newstart + vht[j]->nlen + 2;
@@ -1148,7 +1148,7 @@ end_of_nstring_tests:
         cutlen = oldstart - oldend - 1;
         if (cutlen > 0)
             fatalerror("Internal cut-length error in isolated var reclamation.",
-                    "  Please file a bug report");
+                       "  Please file a bug report");
 
         //    Future Enhancement - dead zones of some small size should be
         //    allowed to stay.  This would speed up WINDOW a lot. (but we
@@ -1207,14 +1207,14 @@ void crm_destructive_alter_nvariable(const char *varname, int varlen,
                                         "variable, so I'm creating an ISOLATED variable.  "
                                         "I hope that's OK.  The nonexistent variable is: "
                                         "%d/%d: '%.*s'/'%.*s'",
-                    vlen, varlen, vlen, &varname[i], varlen, varname);
+                             vlen, varlen, vlen, &varname[i], varlen, varname);
             return;
         }
     }
     else
     {
         fatalerror("Attempt to alter the value of a nonexistent variable.",
-                "");
+                   "");
         return;
     }
 
@@ -1283,8 +1283,8 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
     if (delta + mdw->nchars > data_window_size - 10)
     {
         fatalerror(" Data window trying to get too long.",
-                " Try increasing the data window maximum size.");
-      return;
+                   " Try increasing the data window maximum size.");
+        return;
     }
 
     if (delta == 0)
@@ -1307,15 +1307,15 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
     if (delta > 0)
     {
         // lengthening alteration...
-        taildest = &(mdw->filetext[where + delta]);
-        tailsrc = &(mdw->filetext[where]);
+        taildest = &mdw->filetext[where + delta];
+        tailsrc = &mdw->filetext[where];
         taillen = mdw->nchars - where;
     }
 
     if (delta < 0) //   shortening alteration
     {
-        taildest = &(mdw->filetext[where]);
-        tailsrc = &(mdw->filetext[where - delta]); //  delta is minus already!!
+        taildest = &mdw->filetext[where];
+        tailsrc = &mdw->filetext[where - delta]; //  delta is minus already!!
         taillen = mdw->nchars - where + delta;
         //      taillen = mdw->nchars + 1 - where;
     }
@@ -1333,8 +1333,8 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
 
     //      and update all of our captured variables to have the right ptrs.
     crm_updatecaptures(mdw->filetext,
-            where,
-            delta);
+                       where,
+                       delta);
 }
 
 //        allow_data_window_to_grow
@@ -1348,7 +1348,7 @@ while (delta + mdw->nchars > data_window_size - 1)
     odws = data_window_size;
     data_window_size = 4 * data_window_size;
     nonfatalerror(" Data window trying to get too long.",
-            " increasing data window... ");
+                  " increasing data window... ");
     ndw = (char *)calloc(data_window_size, sizeof(ndw[0]));
     if (!ndw)
     {
@@ -1388,8 +1388,8 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen, int scope_dep
 {
     crmhash_t hc;
     int i;
-	int found = -1;
-	int found_scope = -2;
+    int found = -1;
+    int found_scope = -2;
     int vsidx;
     int vslen;
 
@@ -1440,100 +1440,100 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen, int scope_dep
         }
 
         hc = strnhash(&vname[vsidx], vslen) % vht_size;
-	}
-	else
-	{
-		// empty var-name = erroneous situtation 
-		//
-		// Anyway, since we always want to return a valid index, then at least 
-		// set it up so we return an index to a NULL entry:
-		hc = 0;
-	}
+    }
+    else
+    {
+        // empty var-name = erroneous situtation
+        //
+        // Anyway, since we always want to return a valid index, then at least
+        // set it up so we return an index to a NULL entry:
+        hc = 0;
+    }
 
-        //  go exploring - find either an empty cell (meaning that this
-        //  is the first time this variable name has been entered into the
-        //  vht) or find the variable already entered.  Or find that we've
-        //  gone the whole way 'round the vht, in which case the vht is full
-        //  and we should print ut a message and fatal error away (or maybe
-        //  even build a bigger vht?)
+    //  go exploring - find either an empty cell (meaning that this
+    //  is the first time this variable name has been entered into the
+    //  vht) or find the variable already entered.  Or find that we've
+    //  gone the whole way 'round the vht, in which case the vht is full
+    //  and we should print ut a message and fatal error away (or maybe
+    //  even build a bigger vht?)
 
-        i = hc;
+    i = hc;
 
-        //   consider a "wrap" to have occurred if we even think about
-        //   the slot just before the hashcoded slot
+    //   consider a "wrap" to have occurred if we even think about
+    //   the slot just before the hashcoded slot
 
-        for(;;)
+    for (;;)
+    {
+        //  is there anything here yet?
+        if (vht[i] == NULL)
         {
-            //  is there anything here yet?
-            if (vht[i] == NULL)
+            // either we only found the var in an outer scope or we didn't find it at all:
+            if (found < 0)
             {
-				// either we only found the var in an outer scope or we didn't find it at all:
-				if (found < 0)
-				{
-					if (internal_trace)
-					{
-						fprintf(stderr, "  var ");
-						fwrite_ASCII_Cfied(stderr, vname, vlen);
-						fprintf(stderr, "(len %d) not at %d (empty), scope depth = %d\n", (int)vlen, i, scope_depth);
-						fprintf(stderr, "Returning the index where it belonged.\n");
-					}
-					return i;
-				}
-				else
-				{
-					return found;
-				}
+                if (internal_trace)
+                {
+                    fprintf(stderr, "  var ");
+                    fwrite_ASCII_Cfied(stderr, vname, vlen);
+                    fprintf(stderr, "(len %d) not at %d (empty), scope depth = %d\n", (int)vlen, i, scope_depth);
+                    fprintf(stderr, "Returning the index where it belonged.\n");
+                }
+                return i;
             }
-			
-			if (!vht[i]->out_of_scope)
-			{
-            //  there's something here - is it what we have been seeking
-            if (vlen == vht[i]->nlen
-                && memcmp(&vht[i]->nametxt[vht[i]->nstart],
-                        vname, vlen) == 0)
+            else
             {
-				if (act_like_Bill || vht[i]->scope_depth == scope_depth)
-				{
-					//  Yes, we found it.
-					if (internal_trace)
-					{
-						fprintf(stderr, "  var '");
-						fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
-						fprintf(stderr, " (len %d) found at %d (", (int)vlen, i);
-						if (vht[i]->valtxt == cdw->filetext)
-						{
-							fprintf(stderr, "(main)");
-						}
-						else
-						{
-							fprintf(stderr, "(isol)");
-						}
-						fprintf(stderr, " s: %d, l:%d)\n",
-								vht[i]->vstart, vht[i]->vlen);
-					}
-					return i;
-				}
-				else 
-{
-        if (internal_trace)
-        {
-            fprintf(stderr, " variable len %d, name is -", vslen);
-            fwrite_ASCII_Cfied(stderr, vname + vsidx, vslen);
-            fprintf(stderr, "- spotted at scope_depth %d, while looking for scope depth %d "
-"(previous match @ index %d, scope %d).\n", 
-vht[i]->scope_depth, scope_depth,
-found, found_scope);
+                return found;
+            }
         }
 
-if (vht[i]->scope_depth < scope_depth
-					&& vht[i]->scope_depth > found_scope)
-				{
-					// found in outer scope. But we should narrow down our search to the
-					// closest scope still.
-					found = i;
-					found_scope = vht[i]->scope_depth;
-				}
-}
+        if (!vht[i]->out_of_scope)
+        {
+            //  there's something here - is it what we have been seeking
+            if (vlen == vht[i]->nlen
+               && memcmp(&vht[i]->nametxt[vht[i]->nstart],
+                         vname, vlen) == 0)
+            {
+                if (act_like_Bill || vht[i]->scope_depth == scope_depth)
+                {
+                    //  Yes, we found it.
+                    if (internal_trace)
+                    {
+                        fprintf(stderr, "  var '");
+                        fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+                        fprintf(stderr, " (len %d) found at %d (", (int)vlen, i);
+                        if (vht[i]->valtxt == cdw->filetext)
+                        {
+                            fprintf(stderr, "(main)");
+                        }
+                        else
+                        {
+                            fprintf(stderr, "(isol)");
+                        }
+                        fprintf(stderr, " s: %d, l:%d)\n",
+                                vht[i]->vstart, vht[i]->vlen);
+                    }
+                    return i;
+                }
+                else
+                {
+                    if (internal_trace)
+                    {
+                        fprintf(stderr, " variable len %d, name is -", vslen);
+                        fwrite_ASCII_Cfied(stderr, vname + vsidx, vslen);
+                        fprintf(stderr, "- spotted at scope_depth %d, while looking for scope depth %d "
+                                        "(previous match @ index %d, scope %d).\n",
+                                vht[i]->scope_depth, scope_depth,
+                                found, found_scope);
+                    }
+
+                    if (vht[i]->scope_depth<scope_depth
+                                            && vht[i]->scope_depth> found_scope)
+                    {
+                        // found in outer scope. But we should narrow down our search to the
+                        // closest scope still.
+                        found = i;
+                        found_scope = vht[i]->scope_depth;
+                    }
+                }
             }
             else
             {
@@ -1547,88 +1547,88 @@ if (vht[i]->scope_depth < scope_depth
                     fprintf(stderr, "' instead.");
                 }
             }
-			}
+        }
 
-            i++;
-            //  check wraparound
-            if (i >= vht_size)
-                i = 0;
+        i++;
+        //  check wraparound
+        if (i >= vht_size)
+            i = 0;
 
-            //   check for hash table full - if it is, right now we
-            //   do a fatal error.  Eventually we should just resize the
-            //   hash table.  Even better- we should keep track of the number
-            //   of variables, and thereby resize automatically whenever we
-            //   get close to overflow.
-            if (i == (hc - 1))
+        //   check for hash table full - if it is, right now we
+        //   do a fatal error.  Eventually we should just resize the
+        //   hash table.  Even better- we should keep track of the number
+        //   of variables, and thereby resize automatically whenever we
+        //   get close to overflow.
+        if (i == (hc - 1))
+        {
+            // either we only found the var in an outer scope or we didn't find it at all:
+            // in both cases we've got a full hash table, but still...
+            if (found >= 0)
             {
-				// either we only found the var in an outer scope or we didn't find it at all:
-				// in both cases we've got a full hash table, but still...
-				if (found >= 0)
-				{
-					return found;
-				}
-				else
-				{
-					char badvarname[MAX_VARNAME];
-					strncpy(badvarname, &vname[vsidx], (vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1));
-					badvarname[(vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1)] = 0;
-					if (internal_trace)
-					{
-						int index;
-				int b;
+                return found;
+            }
+            else
+            {
+                char badvarname[MAX_VARNAME];
+                strncpy(badvarname, &vname[vsidx], (vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1));
+                badvarname[(vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1)] = 0;
+                if (internal_trace)
+                {
+                    int index;
+                    int b;
 
-						fprintf(stderr, "Variable Hash Table Dump @ scope depth %d\n", csl->calldepth);
-						for (b = INT_MAX, index = 0; index < vht_size; index++)
-						{
-if (vht[index] == NULL)
-{
-	if (b > index)
-	{
-		b = index;
-}
-continue;
-}
-if (index >0 && vht[index - 1] == NULL)
-{
-							fprintf(stderr, "empty slots in range %d .. %d\n", b, index);
-b = INT_MAX;
-}
-							fprintf(stderr, "  var '");
-							fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
-							fprintf(stderr, "'[%d] found at %d (",
-									vht[index]->nlen,  index);
-							if (vht[index]->valtxt == cdw->filetext)
-							{
-								fprintf(stderr, "(main)");
-							}
-							else
-							{
-								fprintf(stderr, "(isol)");
-							}
-							fprintf(stderr, " s: %d, l:%d,%s scope: %d)\n",
-									vht[index]->vstart, vht[index]->vlen,
-	(vht[index]->out_of_scope ? " (out-of-scope)" : ""),
-vht[index]->scope_depth);
-						}
-					}
-					fatalerror_ex(SRC_LOC(),
-" Variable hash table overflow while looking "
-							   "for variable '%s' at scope level %d",
-							badvarname, scope_depth);
-					return 0;
-				}
+                    fprintf(stderr, "Variable Hash Table Dump @ scope depth %d\n", csl->calldepth);
+                    for (b = INT_MAX, index = 0; index < vht_size; index++)
+                    {
+                        if (vht[index] == NULL)
+                        {
+                            if (b > index)
+                            {
+                                b = index;
+                            }
+                            continue;
+                        }
+                        if (index > 0 && vht[index - 1] == NULL)
+                        {
+                            fprintf(stderr, "empty slots in range %d .. %d\n", b, index);
+                            b = INT_MAX;
+                        }
+                        fprintf(stderr, "  var '");
+                        fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
+                        fprintf(stderr, "'[%d] found at %d (",
+                                vht[index]->nlen,  index);
+                        if (vht[index]->valtxt == cdw->filetext)
+                        {
+                            fprintf(stderr, "(main)");
+                        }
+                        else
+                        {
+                            fprintf(stderr, "(isol)");
+                        }
+                        fprintf(stderr, " s: %d, l:%d,%s scope: %d)\n",
+                                vht[index]->vstart, vht[index]->vlen,
+                                (vht[index]->out_of_scope ? " (out-of-scope)" : ""),
+                                vht[index]->scope_depth);
+                    }
+                }
+                fatalerror_ex(SRC_LOC(),
+                              " Variable hash table overflow while looking "
+                              "for variable '%s' at scope level %d",
+                              badvarname, scope_depth);
+                return 0;
             }
         }
+    }
 }
 
 
 /*
-   Find the first empty slot in the symbol table following the given VHT index.
-
-   This routine is used by the subscope variable declaration code, i.e.
-   isolate et al, who can override outer scope variables by local scope
-   entity.
-*/
+ * Find the first empty slot in the symbol table following the given VHT index.
+ *
+ * This routine is used by the subscope variable declaration code, i.e.
+ * isolate et al, who can override outer scope variables by local scope
+ * entity.
+ */
 int crm_vht_find_next_empty_slot(VHT_CELL **vht, int vht_index, const char *vname, size_t vlen)
 {
     int i;
@@ -1638,166 +1638,166 @@ int crm_vht_find_next_empty_slot(VHT_CELL **vht, int vht_index, const char *vnam
     if (crm_nextword(vname, vlen, 0, &vsidx, &vslen))
     {
         i = (int)(strnhash(&vname[vsidx], vslen) % vht_size);
-	}
-	else
-	{
-		// empty var-name = erroneous situtation 
-		//
-		// Anyway, since we always want to return a valid index, then at least 
-		// set it up so we return an index to a NULL entry:
-		i = vht_index;
-	}
-vht_index = i;
+    }
+    else
+    {
+        // empty var-name = erroneous situtation
+        //
+        // Anyway, since we always want to return a valid index, then at least
+        // set it up so we return an index to a NULL entry:
+        i = vht_index;
+    }
+    vht_index = i;
 
-        for(;;)
+    for (;;)
+    {
+        // find an unused or discarded slot:
+        if (vht[i] == NULL)
         {
-            // find an unused or discarded slot:
-			if (vht[i] == NULL)
-            {
-				return i;
-            }
-			if (vht[i]->out_of_scope
-				&& vlen == vht[i]->nlen
-                && memcmp(&vht[i]->nametxt[vht[i]->nstart], vname, vlen) == 0)
-            {
-				// same variable, yet discarded: re-use!
-				//
-				// NOTE: we only re-use the same variable names, as those are
-				//       the only ones which are 'properly prepped' already in
-				//       storage space. ;-)
-				return i;
-			}
-
-            i++;
-            //  check wraparound
-            if (i >= vht_size)
-                i = 0;
-
-            //   check for hash table full - if it is, right now we
-            //   do a fatal error.  Eventually we should just resize the
-            //   hash table.  Even better- we should keep track of the number
-            //   of variables, and thereby resize automatically whenever we
-            //   get close to overflow.
-            if (i == (vht_index - 1))
-            {
-					char badvarname[MAX_VARNAME];
-					strncpy(badvarname, vht[vht_index]->nametxt + vht[vht_index]->nstart, vht[vht_index]->nlen);
-					badvarname[vht[vht_index]->nlen] = 0;
-					if (internal_trace)
-					{
-						int index;
-				int b;
-
-						fprintf(stderr, "Variable Hash Table Dump @ scope depth %d\n", csl->calldepth);
-						for (b = INT_MAX, index = 0; index < vht_size; index++)
-						{
-if (vht[index] == NULL)
-{
-	if (b > index)
-	{
-		b = index;
-}
-continue;
-}
-if (index >0 && vht[index - 1] == NULL)
-{
-							fprintf(stderr, "empty slots in range %d .. %d\n", b, index);
-b = INT_MAX;
-}
-							fprintf(stderr, "  var '");
-							fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
-							fprintf(stderr, "'[%d] found at %d (",
-									vht[index]->nlen,  index);
-							if (vht[index]->valtxt == cdw->filetext)
-							{
-								fprintf(stderr, "(main)");
-							}
-							else
-							{
-								fprintf(stderr, "(isol)");
-							}
-							fprintf(stderr, " s: %d, l:%d,%s scope: %d)\n",
-									vht[index]->vstart, vht[index]->vlen,
-	(vht[index]->out_of_scope ? " (out-of-scope)" : ""),
-vht[index]->scope_depth);
-						}
-					}
-					fatalerror_ex(SRC_LOC(),
-					" Variable hash table overflow while looking "
-							   "for an empty slot for variable '%s'",
-							badvarname);
-					return 0;
-            }
+            return i;
         }
+        if (vht[i]->out_of_scope
+           && vlen == vht[i]->nlen
+           && memcmp(&vht[i]->nametxt[vht[i]->nstart], vname, vlen) == 0)
+        {
+            // same variable, yet discarded: re-use!
+            //
+            // NOTE: we only re-use the same variable names, as those are
+            //       the only ones which are 'properly prepped' already in
+            //       storage space. ;-)
+            return i;
+        }
+
+        i++;
+        //  check wraparound
+        if (i >= vht_size)
+            i = 0;
+
+        //   check for hash table full - if it is, right now we
+        //   do a fatal error.  Eventually we should just resize the
+        //   hash table.  Even better- we should keep track of the number
+        //   of variables, and thereby resize automatically whenever we
+        //   get close to overflow.
+        if (i == (vht_index - 1))
+        {
+            char badvarname[MAX_VARNAME];
+            strncpy(badvarname, vht[vht_index]->nametxt + vht[vht_index]->nstart, vht[vht_index]->nlen);
+            badvarname[vht[vht_index]->nlen] = 0;
+            if (internal_trace)
+            {
+                int index;
+                int b;
+
+                fprintf(stderr, "Variable Hash Table Dump @ scope depth %d\n", csl->calldepth);
+                for (b = INT_MAX, index = 0; index < vht_size; index++)
+                {
+                    if (vht[index] == NULL)
+                    {
+                        if (b > index)
+                        {
+                            b = index;
+                        }
+                        continue;
+                    }
+                    if (index > 0 && vht[index - 1] == NULL)
+                    {
+                        fprintf(stderr, "empty slots in range %d .. %d\n", b, index);
+                        b = INT_MAX;
+                    }
+                    fprintf(stderr, "  var '");
+                    fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
+                    fprintf(stderr, "'[%d] found at %d (",
+                            vht[index]->nlen,  index);
+                    if (vht[index]->valtxt == cdw->filetext)
+                    {
+                        fprintf(stderr, "(main)");
+                    }
+                    else
+                    {
+                        fprintf(stderr, "(isol)");
+                    }
+                    fprintf(stderr, " s: %d, l:%d,%s scope: %d)\n",
+                            vht[index]->vstart, vht[index]->vlen,
+                            (vht[index]->out_of_scope ? " (out-of-scope)" : ""),
+                            vht[index]->scope_depth);
+                }
+            }
+            fatalerror_ex(SRC_LOC(),
+                          " Variable hash table overflow while looking "
+                          "for an empty slot for variable '%s'",
+                          badvarname);
+            return 0;
+        }
+    }
 }
 
 /*
-   Register the given VHT variable with its scope's CSL, so that, when
-   that CSL goes out of scope, the VHT can be updated accordingly.
-
-   NOTE: as we already know, when we get here, that this is a new variable,
-   we also 'know' it has NOT been added to this list before, so we don't
-   have to check and can simply append the VHT index at the end of the list.
-   */
+ * Register the given VHT variable with its scope's CSL, so that, when
+ * that CSL goes out of scope, the VHT can be updated accordingly.
+ *
+ * NOTE: as we already know, when we get here, that this is a new variable,
+ * we also 'know' it has NOT been added to this list before, so we don't
+ * have to check and can simply append the VHT index at the end of the list.
+ */
 void register_var_with_csl(CSL_CELL *csl, int vht_index)
 {
-					if (internal_trace)
-					{
-fprintf(stderr, "register var '");
-							fwrite_ASCII_Cfied(stderr, vht[vht_index]->nametxt + vht[vht_index]->nstart, vht[vht_index]->nlen);
-							fprintf(stderr, "' @ index = %d with CSL @ call depth = %d --> %d\n", 
-	  vht_index, csl->calldepth, vht[vht_index]->scope_depth);
-}
-if (act_like_Bill)
-return;
+    if (internal_trace)
+    {
+        fprintf(stderr, "register var '");
+        fwrite_ASCII_Cfied(stderr, vht[vht_index]->nametxt + vht[vht_index]->nstart, vht[vht_index]->nlen);
+        fprintf(stderr, "' @ index = %d with CSL @ call depth = %d --> %d\n",
+                vht_index, csl->calldepth, vht[vht_index]->scope_depth);
+    }
+    if (act_like_Bill)
+        return;
 
-	if (!csl->vht_var_collection)
-	{
-		csl->vht_var_collection_fill = 0;
-		csl->vht_var_collection_size = 256;
-		csl->vht_var_collection = (int *)calloc(csl->vht_var_collection_size, sizeof(csl->vht_var_collection[0]));
-	}
-	CRM_ASSERT(csl->vht_var_collection_fill < csl->vht_var_collection_size);
-	if (csl->vht_var_collection_fill == csl->vht_var_collection_size)
-	{
-		csl->vht_var_collection_size += 256;
-		csl->vht_var_collection = (int *)realloc(csl->vht_var_collection, (csl->vht_var_collection_size * sizeof(csl->vht_var_collection[0])));
-		memset(csl->vht_var_collection + csl->vht_var_collection_fill, 0, 
-			(csl->vht_var_collection_size - csl->vht_var_collection_fill) * sizeof(csl->vht_var_collection[0]));
-	}
-	csl->vht_var_collection[csl->vht_var_collection_fill++] = vht_index;
+    if (!csl->vht_var_collection)
+    {
+        csl->vht_var_collection_fill = 0;
+        csl->vht_var_collection_size = 256;
+        csl->vht_var_collection = (int *)calloc(csl->vht_var_collection_size, sizeof(csl->vht_var_collection[0]));
+    }
+    CRM_ASSERT(csl->vht_var_collection_fill < csl->vht_var_collection_size);
+    if (csl->vht_var_collection_fill == csl->vht_var_collection_size)
+    {
+        csl->vht_var_collection_size += 256;
+        csl->vht_var_collection = (int *)realloc(csl->vht_var_collection, (csl->vht_var_collection_size * sizeof(csl->vht_var_collection[0])));
+        memset(csl->vht_var_collection + csl->vht_var_collection_fill, 0,
+               (csl->vht_var_collection_size - csl->vht_var_collection_fill) * sizeof(csl->vht_var_collection[0]));
+    }
+    csl->vht_var_collection[csl->vht_var_collection_fill++] = vht_index;
 }
 
 void mark_vars_as_out_of_scope(CSL_CELL *csl)
 {
-					if (internal_trace)
-					{
-fprintf(stderr, "marking vars as out of scope with CSL @ call depth = %d\n", 
-	csl->calldepth);
-}
-if (act_like_Bill)
-return;
+    if (internal_trace)
+    {
+        fprintf(stderr, "marking vars as out of scope with CSL @ call depth = %d\n",
+                csl->calldepth);
+    }
+    if (act_like_Bill)
+        return;
 
-	if (csl->vht_var_collection)
-	{
-		int i;
+    if (csl->vht_var_collection)
+    {
+        int i;
 
-		for (i = 0; i < csl->vht_var_collection_fill; i++)
-		{
-			CRM_ASSERT(csl->vht_var_collection[i] >= 0);
-			CRM_ASSERT(vht[csl->vht_var_collection[i]]);
-			CRM_ASSERT(act_like_Bill ? TRUE : vht[csl->vht_var_collection[i]]->scope_depth == csl->calldepth);
+        for (i = 0; i < csl->vht_var_collection_fill; i++)
+        {
+            CRM_ASSERT(csl->vht_var_collection[i] >= 0);
+            CRM_ASSERT(vht[csl->vht_var_collection[i]]);
+            CRM_ASSERT(act_like_Bill ? TRUE : vht[csl->vht_var_collection[i]]->scope_depth == csl->calldepth);
 
-					if (internal_trace)
-					{
-fprintf(stderr, "marking var '");
-							fwrite_ASCII_Cfied(stderr, vht[csl->vht_var_collection[i]]->nametxt + vht[csl->vht_var_collection[i]]->nstart, vht[csl->vht_var_collection[i]]->nlen);
-							fprintf(stderr, "' @ index = %d as out of scope with CSL @ call depth = %d --> %d\n", 
-	  csl->vht_var_collection[i], csl->calldepth, vht[csl->vht_var_collection[i]]->scope_depth);
-}
-			vht[csl->vht_var_collection[i]]->out_of_scope = 1;
-		}
-	}
+            if (internal_trace)
+            {
+                fprintf(stderr, "marking var '");
+                fwrite_ASCII_Cfied(stderr, vht[csl->vht_var_collection[i]]->nametxt + vht[csl->vht_var_collection[i]]->nstart, vht[csl->vht_var_collection[i]]->nlen);
+                fprintf(stderr, "' @ index = %d as out of scope with CSL @ call depth = %d --> %d\n",
+                        csl->vht_var_collection[i], csl->calldepth, vht[csl->vht_var_collection[i]]->scope_depth);
+            }
+            vht[csl->vht_var_collection[i]]->out_of_scope = 1;
+        }
+    }
 }
 
 
@@ -1809,18 +1809,18 @@ fprintf(stderr, "marking var '");
 //    of the cdw and tdw usage, etc.
 //
 void crm_setvar(
-				int *vhtidx,
+        int *vhtidx,
         char *filename,
-        int   filedesc,
+        int filedesc,
         char *nametxt,
-        int   nstart,
-        int   nlen,
+        int nstart,
+        int nlen,
         char *valtxt,
-        int   vstart,
-        int   vlen,
-        int   linenumber,
-     // int   lazy_redirects,
-		int calldepth
+        int vstart,
+        int vlen,
+        int linenumber,
+        // int   lazy_redirects,
+        int calldepth
                )
 {
     int i, j;   // some indices to bang on
@@ -1832,20 +1832,20 @@ void crm_setvar(
         fatalerror_ex(SRC_LOC(), "Attempting to set the value of an illegal variable '%.*s'.", nlen, &nametxt[nstart]);
         return;
     }
-	
-	if (vhtidx)
-	{
-		i = *vhtidx;
-	}
-	else
-	{
-	    i = crm_vht_lookup(vht, &nametxt[nstart], nlen, calldepth);
-	}
+
+    if (vhtidx)
+    {
+        i = *vhtidx;
+    }
+    else
+    {
+        i = crm_vht_lookup(vht, &nametxt[nstart], nlen, calldepth);
+    }
 
     if (vht[i] == NULL)
     {
         //    Nope, this is an empty VHT slot
-		CSL_CELL *our_csl;
+        CSL_CELL *our_csl;
 
         //  allocate a fresh, empty VHT cell
         vht[i] = (VHT_CELL *)calloc(1, sizeof(vht[i][0]));
@@ -1861,25 +1861,25 @@ void crm_setvar(
         vht[i]->nstart = nstart;
         vht[i]->nlen = nlen;
         // vht[i]->lazy_redirects = lazy_redirects;
-		vht[i]->scope_depth = calldepth;
-		vht[i]->out_of_scope = 0;
+        vht[i]->scope_depth = calldepth;
+        vht[i]->out_of_scope = 0;
 
-if (!act_like_Bill)
-{
-		for (our_csl = csl; our_csl->calldepth > calldepth; our_csl = our_csl->caller)
-		{
-			if (!our_csl->caller)
-				break;
-		}
-		if (our_csl->calldepth == calldepth)
-		{
-		register_var_with_csl(our_csl, i);
-		}
-		else
-		{
-			CRM_ASSERT(calldepth == -1);
-		}
-}
+        if (!act_like_Bill)
+        {
+            for (our_csl = csl; our_csl->calldepth > calldepth; our_csl = our_csl->caller)
+            {
+                if (!our_csl->caller)
+                    break;
+            }
+            if (our_csl->calldepth == calldepth)
+            {
+                register_var_with_csl(our_csl, i);
+            }
+            else
+            {
+                CRM_ASSERT(calldepth == -1);
+            }
+        }
 
         //  and now that the slot has proper initial information,
         //  we can use the same code as is used in an update to do
@@ -1901,7 +1901,7 @@ if (!act_like_Bill)
     vht[i]->linenumber = linenumber;
     // vht[i]->lazy_redirects = lazy_redirects;
 
-	// do NOT change scope_depth! Once created, a variable's scope remains as it is!
+    // do NOT change scope_depth! Once created, a variable's scope remains as it is!
 
     if (internal_trace)
     {
@@ -1972,7 +1972,7 @@ int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len, int callde
         deathfu[len] = 0;
         q = fatalerror("Control Referencinge a non-existent variable- this"
                        "is almost always a very _bad_ thing",
-                deathfu);
+                       deathfu);
         //  If fatalerror found a TRAP for this error, cstmt now points to
         //  the TRAP - 1.  We want to go to the trap itself, no auto-incr...
         if (q == 0)

@@ -1,0 +1,4 @@
+bin/stats results/*$1.html | cut -d' ' -f1,$3 | sort -k3 -n | cat -n > a
+bin/stats results/*$2.html | cut -d' ' -f1,$3 | sort -k3 -n | cat -n >> a
+sort -k2 a | sed -e "s/[.]*$1.html//" -e "s/[.]*$2.html//" > b
+bin/kendall < b

@@ -11,9 +11,9 @@
         static int msg_written = 0;                                                 \
                                                                                     \
         if (check_validity_of_expression(SRC_LOC(),                                 \
-                    store_elem_id, elem_index_in_file,                              \
-                    comparison, # comparison, description,                          \
-                    msg_written))                                                   \
+                                         store_elem_id, elem_index_in_file,                              \
+                                         comparison, # comparison, description,                          \
+                                         msg_written))                                                   \
         {                                                                           \
             hit_valid_store_elem = 0;                                               \
             if (!msg_written)                                                       \
@@ -54,24 +54,24 @@ int check_validity_of_expression(int lineno, const char *srcfile, const char *fu
         char reason[4096];
 
         generate_err_reason_msg_va(
-                reason,
-                WIDTHOF(reason),
-                lineno,
-                srcfile,
-                funcname,
-                "*ERROR*",
-                NULL,
-                NULL,
-                0,
-                "internal validation failed for capture element (type: %d, index: %d) in input file '%s': failing comparison: '%s'%s%s\n"
-                "Are you sure you fed us a real crm114 ANALYSIS profile capture file, generated using 'CRM114 -A'?\n"
-                "If so, please contact Ger Hobbelt at ger@hobbelt.com ro report this anomaly, thank you.\n",
-                store_elem_id,
-                elem_index_in_file,
-                cfg.input_file,
-                comparison_msg,
-                (comparison_description ? " -- description: " : ""),
-                (comparison_description ? comparison_description : ""));
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            "*ERROR*",
+            NULL,
+            NULL,
+            0,
+            "internal validation failed for capture element (type: %d, index: %d) in input file '%s': failing comparison: '%s'%s%s\n"
+            "Are you sure you fed us a real crm114 ANALYSIS profile capture file, generated using 'CRM114 -A'?\n"
+            "If so, please contact Ger Hobbelt at ger@hobbelt.com ro report this anomaly, thank you.\n",
+            store_elem_id,
+            elem_index_in_file,
+            cfg.input_file,
+            comparison_msg,
+            (comparison_description ? " -- description: " : ""),
+            (comparison_description ? comparison_description : ""));
         fputs(reason, stderr);
     }
     return !comparison;
@@ -106,15 +106,15 @@ int scan_to_determine_input_ranges(FILE *inf, int read_size, CRM_ANALYSIS_PROFIL
     int hit_valid_store_elem = 1;              // once this is set to 0, scan until hitting another header!
 
 #define UPDATE_MINMAX(dst_base_identifier_name, src_val) \
-    if (dst_base_identifier_name ## _min > src_val)      \
-        dst_base_identifier_name ## _min = src_val;      \
-    if (dst_base_identifier_name ## _max > src_val)      \
+    if (dst_base_identifier_name ## _min > src_val) \
+        dst_base_identifier_name ## _min = src_val;\
+    if (dst_base_identifier_name ## _max > src_val) \
         dst_base_identifier_name ## _max = src_val;
 
 #define UPDATE_MINMAX_PER_CLASSIFIER(dst_base_identifier_name, src_val) \
-    if (dst_base_identifier_name ## _min[active_classifier] > src_val)  \
-        dst_base_identifier_name ## _min[active_classifier] = src_val;  \
-    if (dst_base_identifier_name ## _max[active_classifier] > src_val)  \
+    if (dst_base_identifier_name ## _min[active_classifier] > src_val) \
+        dst_base_identifier_name ## _min[active_classifier] = src_val;\
+    if (dst_base_identifier_name ## _max[active_classifier] > src_val) \
         dst_base_identifier_name ## _max[active_classifier] = src_val;
 
 
@@ -174,10 +174,10 @@ int scan_to_determine_input_ranges(FILE *inf, int read_size, CRM_ANALYSIS_PROFIL
                 default:
                     // see if this element is a native; that would make things rather easy...
                     if (elem->marker == 0x123456789ABCDEF0ULL
-                        && elem->value[0].as_int == 0x8081828384858687ULL
-                        && elem->value[1].as_float == 1.0
-                        && elem->value[2].as_int == 0x9091929394959697ULL
-                        && elem->time_mark == 0xA0A1A2A3A4A5A6A7ULL)
+                       && elem->value[0].as_int == 0x8081828384858687ULL
+                       && elem->value[1].as_float == 1.0
+                       && elem->value[2].as_int == 0x9091929394959697ULL
+                       && elem->time_mark == 0xA0A1A2A3A4A5A6A7ULL)
                     {
                         // A-OK!
                         hit_valid_store_elem = 1;
@@ -330,14 +330,14 @@ int scan_to_determine_input_ranges(FILE *inf, int read_size, CRM_ANALYSIS_PROFIL
                         {
                             msg_written++;
                             fprintf(
-                                    stderr,
-                                    "Aparently, a CRM114 profiling session has been rudely aborted!\n"
-                                    "Expected TERMINATION marker ID %d, but instead got previous marker ID %d at offset %ld in capture file '%s'.\n",
-                                    MARK_TERMINATION,
-                                    previous_store_elem_id,
-                                    (long int)(ftell(inf) - (rcnt - idx + 1) * sizeof(store[0])),
-                                    // previous store elem!!!
-                                    cfg.input_file);
+                                stderr,
+                                "Aparently, a CRM114 profiling session has been rudely aborted!\n"
+                                "Expected TERMINATION marker ID %d, but instead got previous marker ID %d at offset %ld in capture file '%s'.\n",
+                                MARK_TERMINATION,
+                                previous_store_elem_id,
+                                (long int)(ftell(inf) - (rcnt - idx + 1) * sizeof(store[0])),
+                                // previous store elem!!!
+                                cfg.input_file);
                             if (!cfg.skip_errors)
                             {
                                 return -1;
@@ -875,10 +875,10 @@ int decipher_input_header(FILE *inf, int *read_size)
 
     // see if this element is a native; that would make things rather easy...
     if (store.marker == 0x123456789ABCDEF0ULL
-        && store.value[0].as_int == 0x8081828384858687ULL
-        && store.value[1].as_float == 1.0
-        && store.value[2].as_int == 0x9091929394959697ULL
-        && store.time_mark == 0xA0A1A2A3A4A5A6A7ULL)
+       && store.value[0].as_int == 0x8081828384858687ULL
+       && store.value[1].as_float == 1.0
+       && store.value[2].as_int == 0x9091929394959697ULL
+       && store.time_mark == 0xA0A1A2A3A4A5A6A7ULL)
     {
         // A-OK!
         return 0;

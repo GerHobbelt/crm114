@@ -155,9 +155,9 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
     {
         fev = nonfatalerror_ex(SRC_LOC(),
-                "\nYou didn't specify a valid filename: '%.*s'\n",
-                hlen,
-                htext);
+                               "\nYou didn't specify a valid filename: '%.*s'\n",
+                               hlen,
+                               htext);
         return fev;
     }
     j += i;
@@ -192,11 +192,11 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             char dirbuf[DIRBUFSIZE_MAX];
 
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your new CSS file '%s' for writing; (full path: '%s') errno=%d(%s)\n",
-                    learnfilename,
-                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
-                    errno,
-                    errno_descr(errno));
+                                "\n Couldn't open your new CSS file '%s' for writing; (full path: '%s') errno=%d(%s)\n",
+                                learnfilename,
+                                mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
+                                errno,
+                                errno_descr(errno));
             return fev;
         }
         //       do we have a user-specified file size?
@@ -212,19 +212,19 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't write header to file %s; errno=%d(%s)\n",
-                    learnfilename, errno, errno_descr(errno));
+                                "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                                learnfilename, errno, errno_descr(errno));
             fclose(f);
             return fev;
         }
 
         //       put in sparse_spectrum_file_length entries of NULL
         if (file_memset(f, 0,
-                    sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+                        sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
         {
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't write to file %s; errno=%d(%s)\n",
-                    learnfilename, errno, errno_descr(errno));
+                                "\n Couldn't write to file %s; errno=%d(%s)\n",
+                                learnfilename, errno, errno_descr(errno));
             fclose(f);
             return fev;
         }
@@ -242,16 +242,16 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //         mmap the hash file into memory so we can bitwhack it
     //
     hashes = crm_mmap_file(learnfilename,
-            0,
-            hfsize,
-            PROT_READ | PROT_WRITE,
-            MAP_SHARED,
-            CRM_MADV_RANDOM,
-            &hfsize);
+                           0,
+                           hfsize,
+                           PROT_READ | PROT_WRITE,
+                           MAP_SHARED,
+                           CRM_MADV_RANDOM,
+                           &hfsize);
     if (hashes == MAP_FAILED)
     {
         fev = fatalerror("Couldn't get access to the statistics file named: ",
-                learnfilename);
+                         learnfilename);
         return fev;
     }
 
@@ -394,7 +394,7 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (seen_features == NULL)
         {
             untrappableerror(" Couldn't allocate enough memory to keep track",
-                    "of nonunique features.  This is deadly");
+                             "of nonunique features.  This is deadly");
         }
     }
 
@@ -415,18 +415,18 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector(apb, // the APB
-            vht,
-            tdw,
-            txtptr + txtstart,        // intput string
-            txtlen,                   // how many bytes
-            0,                        // starting offset
-            NULL,                     // tokenizer
-            NULL,                     // coeff array
-            hashpipe,                 // where to put the hashed results
-            BAYES_MAX_FEATURE_COUNT,  //  max number of hashes
-            NULL,
-            NULL,
-            &hashcounts               // how many hashes we actually got
+                                 vht,
+                                 tdw,
+                                 txtptr + txtstart,       // intput string
+                                 txtlen,                  // how many bytes
+                                 0,                       // starting offset
+                                 NULL,                    // tokenizer
+                                 NULL,                    // coeff array
+                                 hashpipe,                // where to put the hashed results
+                                 BAYES_MAX_FEATURE_COUNT, //  max number of hashes
+                                 NULL,
+                                 NULL,
+                                 &hashcounts // how many hashes we actually got
                                 );
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < BAYES_MAX_FEATURE_COUNT);
@@ -482,8 +482,8 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //
             incrs = 0;
             while (hashes[hindex].key != 0
-                   &&  (hashes[hindex].hash != h1
-                        || hashes[hindex].key  != h2))
+                  &&  (hashes[hindex].hash != h1
+                      || hashes[hindex].key  != h2))
             {
                 //
                 incrs++;
@@ -521,9 +521,9 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                   "features into this size .css file.  "
                                   "Adding any more features is "
                                   "impossible in this file.",
-                            "You are advised to build a larger "
-                            ".css file and merge your data into "
-                            "it.");
+                                  "You are advised to build a larger "
+                                  ".css file and merge your data into "
+                                  "it.");
                     goto learn_end_regex_loop;
                 }
                 hindex++;
@@ -558,7 +558,7 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     seen_features[hindex]++;
                 }
                 if (sense > 0
-                    && hashes[hindex].value + sense >= FEATUREBUCKET_VALUE_MAX - 1)
+                   && hashes[hindex].value + sense >= FEATUREBUCKET_VALUE_MAX - 1)
                 {
                     hashes[hindex].value = FEATUREBUCKET_VALUE_MAX - 1;
                 }
@@ -588,7 +588,7 @@ learn_end_regex_loop:
         free(hashpipe);
 
 #if 0  /* now touch-fixed inside the munmap call already! */
-#if defined (HAVE_MMAP) || defined (HAVE_MUNMAP)
+#if defined(HAVE_MMAP) || defined(HAVE_MUNMAP)
     //    Because mmap/munmap doesn't set atime, nor set the "modified"
     //    flag, some network filesystems will fail to mark the file as
     //    modified and so their cacheing will make a mistake.
@@ -651,7 +651,7 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     double cpcorr[MAX_CLASSIFIERS];        // corpus correction factors
 
-#if defined (GER)
+#if defined(GER)
     hitcount_t hits[MAX_CLASSIFIERS];      // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
     int totalfeatures;                     //  total features
@@ -896,7 +896,7 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
         if (crm_nextword(htext, hlen, fn_start_here, &fnstart, &fnlen)
-            && fnlen > 0)
+           && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = 0;
@@ -913,7 +913,7 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (vbar_seen)
                 {
                     nonfatalerror("Only one '|' allowed in a CLASSIFY.\n",
-                            "We'll ignore it for now.");
+                                  "We'll ignore it for now.");
                 }
                 else
                 {
@@ -932,7 +932,7 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (k != 0)
                 {
                     return nonfatalerror("Nonexistent Classify table named: ",
-                            fname);
+                                         fname);
                 }
                 else
                 {
@@ -940,7 +940,7 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (maxhash >= MAX_CLASSIFIERS)
                     {
                         nonfatalerror("Too many classifier files.",
-                                "Some may have been disregarded");
+                                      "Some may have been disregarded");
                     }
                     else
                     {
@@ -949,18 +949,18 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         hashlens[maxhash] = statbuf.st_size;
                         //  mmap the hash file into memory so we can bitwhack it
                         hashes[maxhash] = crm_mmap_file(fname,
-                                0,
-                                hashlens[maxhash],
-                                PROT_READ,
-                                MAP_SHARED,
-                                CRM_MADV_RANDOM,
-                                &hashlens[maxhash]);
+                                                        0,
+                                                        hashlens[maxhash],
+                                                        PROT_READ,
+                                                        MAP_SHARED,
+                                                        CRM_MADV_RANDOM,
+                                                        &hashlens[maxhash]);
 
                         if (hashes[maxhash] == MAP_FAILED)
                         {
                             nonfatalerror("Couldn't get access to the "
                                           "statistics file named: ",
-                                    fname);
+                                          fname);
                         }
                         else
                         {
@@ -993,7 +993,7 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             if (!hashname[maxhash])
                             {
                                 untrappableerror(
-                                        "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
+                                    "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
                             }
                             else
                             {
@@ -1053,7 +1053,7 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     untrappableerror(" Couldn't allocate enough memory to keep "
                                      " track of nonunique features.  ",
-                            "This is deadly. ");
+                                     "This is deadly. ");
                 }
             }
             else
@@ -1126,18 +1126,18 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector(apb, // the APB
-            vht,
-            tdw,
-            txtptr + txtstart,        // intput string
-            txtlen,                   // how many bytes
-            0,                        // starting offset
-            NULL,                     // tokenizer
-            NULL,                     // coeff array
-            hashpipe,                 // where to put the hashed results
-            BAYES_MAX_FEATURE_COUNT,  //  max number of hashes
-            feature_weight,
-            order_no,
-            &hashcounts               // how many hashes we actually got
+                                 vht,
+                                 tdw,
+                                 txtptr + txtstart,       // intput string
+                                 txtlen,                  // how many bytes
+                                 0,                       // starting offset
+                                 NULL,                    // tokenizer
+                                 NULL,                    // coeff array
+                                 hashpipe,                // where to put the hashed results
+                                 BAYES_MAX_FEATURE_COUNT, //  max number of hashes
+                                 feature_weight,
+                                 order_no,
+                                 &hashcounts // how many hashes we actually got
                                 );
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < BAYES_MAX_FEATURE_COUNT);
@@ -1214,8 +1214,8 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     lh0 = lh;
                     hits[k] = 0;
                     while (hashes[k][lh].key != 0
-                           && (hashes[k][lh].hash != h1
-                               || hashes[k][lh].key != h2))
+                          && (hashes[k][lh].hash != h1
+                             || hashes[k][lh].key != h2))
                     {
                         lh++;
                         if (lh >= hashlens[k])
@@ -1291,9 +1291,9 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                 for (k = 0; k < maxhash; k++)
                 {
-                    pltc[k] = 0.5 +
-                              ((hits[k] - (htf - hits[k]))
-                               / (LOCAL_PROB_DENOM * (htf + 1.0)));
+                    pltc[k] = 0.5
+                              + ((hits[k] - (htf - hits[k]))
+                                 / (LOCAL_PROB_DENOM * (htf + 1.0)));
                 }
 #endif
 #ifdef LENGTHBASED_LOCAL_PROBABILIIES
@@ -1305,9 +1305,9 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                 for (k = 0; k < maxhash; k++)
                 {
-                    pltc[k] = 0.5 +
-                              ((hits[k] - (htf - hits[k])) /
-                               ((htf + 1) * textlen));
+                    pltc[k] = 0.5
+                              + ((hits[k] - (htf - hits[k]))
+                                 / ((htf + 1) * textlen));
                 }
 #endif
 
@@ -1383,7 +1383,7 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                     // i now points at the second stride for the current stride, so we ++i
                     // to jump to the first stride of the next feature/hash:
-                    for ( ; ++i < hashcounts;)
+                    for (; ++i < hashcounts;)
                     {
                         if (order_no[i])
                         {
@@ -1516,15 +1516,15 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (oslen > 0)
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY succeeds; (alt.markovian) success probability: "
-                        "%6.4f  pR: %6.4f / %6.4f\n",
-                        tprob, overall_pR, pR_offset);
+                         "CLASSIFY succeeds; (alt.markovian) success probability: "
+                         "%6.4f  pR: %6.4f / %6.4f\n",
+                         tprob, overall_pR, pR_offset);
             }
             else
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY succeeds; (alt.markovian) success probability: "
-                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+                         "CLASSIFY succeeds; (alt.markovian) success probability: "
+                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
         else
@@ -1533,15 +1533,15 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (oslen > 0)
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY fails; (alt.markovian) success probability: "
-                        "%6.4f  pR: %6.4f / %6.4f\n",
-                        tprob, overall_pR, pR_offset);
+                         "CLASSIFY fails; (alt.markovian) success probability: "
+                         "%6.4f  pR: %6.4f / %6.4f\n",
+                         tprob, overall_pR, pR_offset);
             }
             else
             {
                 snprintf(stext_ptr, stext_maxlen,
-                        "CLASSIFY fails; (alt.markovian) success probability: "
-                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+                         "CLASSIFY fails; (alt.markovian) success probability: "
+                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
         stext_ptr[stext_maxlen - 1] = 0;
@@ -1573,10 +1573,10 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         // if (bestseen < maxhash)
         snprintf(stext_ptr, stext_maxlen, "Best match to file #%d (%s) "
                                           "prob: %6.4f  pR: %6.4f\n",
-                bestseen,
-                hashname[bestseen],
-                ptc[bestseen],
-                (log10(ptc[bestseen]) - log10(remainder)));
+                 bestseen,
+                 hashname[bestseen],
+                 ptc[bestseen],
+                 (log10(ptc[bestseen]) - log10(remainder)));
         stext_ptr[stext_maxlen - 1] = 0;
         stext_maxlen -= (int)strlen(stext_ptr);
         stext_ptr += strlen(stext_ptr);
@@ -1602,14 +1602,14 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             CRM_ASSERT(m >= 0);
             CRM_ASSERT(m < maxhash);
             snprintf(stext_ptr, stext_maxlen,
-                    "#%d (%s):"
-                    " features: %d, hits: %d, prob: %3.2e, pR: %6.2f\n",
-                    m,
-                    hashname[m],
-                    fcounts[m],
-                    (int)totalhits[m],
-                    ptc[m],
-                    (log10(ptc[m]) - log10(remainder)));
+                     "#%d (%s):"
+                     " features: %d, hits: %d, prob: %3.2e, pR: %6.2f\n",
+                     m,
+                     hashname[m],
+                     fcounts[m],
+                     (int)totalhits[m],
+                     ptc[m],
+                     (log10(ptc[m]) - log10(remainder)));
             stext_ptr[stext_maxlen - 1] = 0;
             stext_maxlen -= (int)strlen(stext_ptr);
             stext_ptr += strlen(stext_ptr);
@@ -1623,7 +1623,7 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         nonfatalerror("WARNING: not enough room in the buffer to create "
                       "the statistics text.  Perhaps you could try bigger "
                       "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-                " ");
+                      " ");
     }
     if (svlen > 0)
     {
@@ -1664,13 +1664,13 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         free(hashpipe);
     }
     if (feature_weight)
-{
-    free(feature_weight);
+    {
+        free(feature_weight);
     }
     if (order_no)
-{
-free(order_no);
-}
+    {
+        free(order_no);
+    }
 
 
     if (tprob <= min_success)
@@ -1680,7 +1680,7 @@ free(order_no);
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         }
         //    and do what we do for a FAIL here
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -1709,9 +1709,9 @@ int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     fatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                  "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                  "You may want to run 'crm -v' to see which classifiers are available.\n",
+                  "Markov");
 }
 
 
@@ -1719,9 +1719,9 @@ int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Markov");
 }
 
 #endif /* CRM_WITHOUT_MARKOV */
@@ -1732,9 +1732,9 @@ int crm_expr_alt_markov_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Markov");
 }
 
 
@@ -1742,9 +1742,9 @@ int crm_expr_alt_markov_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Markov");
 }
 
 
@@ -1752,9 +1752,9 @@ int crm_expr_alt_markov_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Markov");
 }
 
 
@@ -1762,9 +1762,9 @@ int crm_expr_alt_markov_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Markov");
 }
 
 
@@ -1772,9 +1772,9 @@ int crm_expr_alt_markov_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Markov");
 }
 
 
@@ -1782,9 +1782,9 @@ int crm_expr_alt_markov_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Markov");
 }
 
 
@@ -1792,9 +1792,9 @@ int crm_expr_alt_markov_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Markov");
 }
 
 
@@ -1802,9 +1802,9 @@ int crm_expr_alt_markov_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "Markov");
 }
 
 

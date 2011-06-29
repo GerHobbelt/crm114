@@ -86,9 +86,9 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
         "\n[[:blank:]]*(insert)[[:blank:]]+([[:graph:]]+)[[:blank:]]*[\n;]";
 
     if (internal_trace)
-{
+    {
         fprintf(stderr, " preprocessor - #insert processing...\n");
-}
+    }
 
     lflag = 0;
     i = 0;
@@ -98,14 +98,14 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     //     Compile the insert regex
     //
     i = crm_regcomp(&preg,
-            insert_regex, (int)strlen(insert_regex),
-            REG_EXTENDED | REG_ICASE | REG_NEWLINE);
+                    insert_regex, (int)strlen(insert_regex),
+                    REG_EXTENDED | REG_ICASE | REG_NEWLINE);
     if (i != 0)
     {
         crm_regerror(i, &preg, tempbuf, data_window_size);
         untrappableerror(
-                "Regular Expression Compilation Problem during INSERT processing:",
-                tempbuf);
+            "Regular Expression Compilation Problem during INSERT processing:",
+            tempbuf);
     }
 
     //
@@ -128,7 +128,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
         int filenamelen;
 
         j  = crm_regexec(&preg, csl->filetext, csl->nchars,
-                WIDTHOF(matches), matches, lflag, NULL);
+                         WIDTHOF(matches), matches, lflag, NULL);
         if (j != 0)
         {
             if (internal_trace)
@@ -146,9 +146,9 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
             {
                 untrappableerror_ex(SRC_LOC(), "PREPROCESSOR: specified script filename '%.*s' (len: %d) "
                                                "is too long; only filenames/paths up to %d characters are allowed!",
-                        filenamelen, &csl->filetext[matches[2].rm_so],
-                        filenamelen,
-                        MAX_FILE_NAME_LEN - 1);
+                                    filenamelen, &csl->filetext[matches[2].rm_so],
+                                    filenamelen,
+                                    MAX_FILE_NAME_LEN - 1);
             }
             CRM_ASSERT(filenamelen < MAX_FILE_NAME_LEN);
             crm_memmove(insertfilename, &csl->filetext[matches[2].rm_so], filenamelen);
@@ -158,7 +158,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
             //   that is, wrapped in [filename] rather than plaintext -
             //   if it is, then do a variable expansion on it.
             if (insertfilename[0] == '['
-                && insertfilename[filenamelen - 1] == ']')
+               && insertfilename[filenamelen - 1] == ']')
             {
                 if (user_trace)
                 {
@@ -170,14 +170,14 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 crm_memmove(insertfilename, insertfilename + 1, filenamelen);
                 insertfilename[filenamelen] = 0;
                 filenamelen = crm_nexpandvar(insertfilename,
-                        filenamelen,
-                        MAX_FILE_NAME_LEN, vht, tdw);
+                                             filenamelen,
+                                             MAX_FILE_NAME_LEN, vht, tdw);
                 insertfilename[filenamelen] = 0;
                 if (user_trace)
-				{
+                {
                     fprintf(stderr, " to '%s'\n", insertfilename);
+                }
             }
-			}
 
             //   We have a filename; check to see if it will blow the
             //   gaskets on the filesystem or not:
@@ -202,65 +202,65 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
             csl->filetext[matches[2].rm_eo - 2] = '\\';           // smash in a "\"
 #endif
 
-                   if (!mk_absolute_path(dirbuf, WIDTHOF(dirbuf), insertfilename))
-{
-return -1;
-}
+            if (!mk_absolute_path(dirbuf, WIDTHOF(dirbuf), insertfilename))
+            {
+                return -1;
+            }
             //   stat the file - if 0, file exists
             status = stat(dirbuf, &statbuf);
-				if (status)
-			{
+            if (status)
+            {
                 if (user_trace)
                 {
                     fprintf(stderr, "INSERT file '%s' does not exist. Checking if it's a relative path ('%s') to parent '%s'.\n", dirbuf, insertfilename, csl->filename);
                 }
 
-				// if file does NOT exist as-is, see if it's a relative path an retry using the path
-				// to the current active file, i.e. the one containing this insert statement...
-				if ( /* UNIX */ insertfilename[0] != '/'
-					&& /* Windows */ !((insertfilename[1] == ':' && insertfilename[2] == '\\')
-										|| insertfilename[0] == '\\')
-					&& csl->filename)	
-				{
-		            char nf[CRM_MAX(MAX_FILE_NAME_LEN, DIRBUFSIZE_MAX) + 1];
-					const char *sp;
+                // if file does NOT exist as-is, see if it's a relative path an retry using the path
+                // to the current active file, i.e. the one containing this insert statement...
+                if (/* UNIX */ insertfilename[0] != '/'
+                   && /* Windows */ !((insertfilename[1] == ':' && insertfilename[2] == '\\')
+                                     || insertfilename[0] == '\\')
+                   && csl->filename)
+                {
+                    char nf[CRM_MAX(MAX_FILE_NAME_LEN, DIRBUFSIZE_MAX) + 1];
+                    const char *sp;
 
                     if (!mk_absolute_path(nf, WIDTHOF(nf), csl->filename))
-{
-return -1;
-}
-                if (internal_trace)
-                {
-                    fprintf(stderr, "Retry: expand parent dir '%s' to abs path '%s'\n", csl->filename, nf);
-                }
-					sp = skip_path(nf);
-					if (sp && sp != nf)
-					{
-						size_t len = CRM_MIN(WIDTHOF(nf), (sp - nf));
+                    {
+                        return -1;
+                    }
+                    if (internal_trace)
+                    {
+                        fprintf(stderr, "Retry: expand parent dir '%s' to abs path '%s'\n", csl->filename, nf);
+                    }
+                    sp = skip_path(nf);
+                    if (sp && sp != nf)
+                    {
+                        size_t len = CRM_MIN(WIDTHOF(nf), (sp - nf));
 
-						strncpy(nf + len, insertfilename, WIDTHOF(nf) - len);
-						nf[WIDTHOF(nf) - 1] = 0;
-						strncpy(insertfilename, nf, WIDTHOF(insertfilename));
-						insertfilename[WIDTHOF(insertfilename) - 1] = 0;
+                        strncpy(nf + len, insertfilename, WIDTHOF(nf) - len);
+                        nf[WIDTHOF(nf) - 1] = 0;
+                        strncpy(insertfilename, nf, WIDTHOF(insertfilename));
+                        insertfilename[WIDTHOF(insertfilename) - 1] = 0;
 
-				   // retry:
-	                   if (!mk_absolute_path(dirbuf, WIDTHOF(dirbuf), insertfilename))
-{
-return -1;
-}
-                if (user_trace)
-                {
-                    fprintf(stderr, "Retry: check for existing INSERT file: '%s' (derived from '%s')\n", dirbuf, insertfilename);
+                        // retry:
+                        if (!mk_absolute_path(dirbuf, WIDTHOF(dirbuf), insertfilename))
+                        {
+                            return -1;
+                        }
+                        if (user_trace)
+                        {
+                            fprintf(stderr, "Retry: check for existing INSERT file: '%s' (derived from '%s')\n", dirbuf, insertfilename);
+                        }
+                        status = stat(dirbuf, &statbuf);
+                    }
                 }
-						status = stat(dirbuf, &statbuf);
-					}
-				}
-			}
+            }
             if (!status)
             {
                 int fd;
                 int rlen;
-                    
+
                 //
                 //    OK, now we have to "insert" the file, but we have to
                 //    do it gracefully.  In particular, the file itself
@@ -305,7 +305,7 @@ return -1;
                 fd = open(dirbuf, O_RDONLY | O_BINARY);
                 if (fd < 0)
                 {
-					rlen = 0;
+                    rlen = 0;
                     untrappableerror("Couldn't open the insert file named: ", dirbuf);
                 }
                 else
@@ -317,8 +317,8 @@ return -1;
                     }
 
                     rlen = read(fd,
-                            ecsl->filetext,
-                            statbuf.st_size);
+                                ecsl->filetext,
+                                statbuf.st_size);
 
                     close(fd);
                     if (rlen < 0)
@@ -391,14 +391,14 @@ return -1;
                 //    trailing stuff on the line.
                 //
                 crm_memmove(&(csl->filetext[matches[0].rm_eo + ecsl->nchars]),
-                        &(csl->filetext[matches[0].rm_eo]),
-                        csl->nchars - matches[0].rm_eo + 1);                 // +1 for 0!
+                            &(csl->filetext[matches[0].rm_eo]),
+                            csl->nchars - matches[0].rm_eo + 1);             // +1 for 0!
                 //
                 //   and put the new text into that hole
                 //
                 crm_memmove(&(csl->filetext[matches[0].rm_eo]),
-                        ecsl->filetext,
-                        ecsl->nchars);
+                            ecsl->filetext,
+                            ecsl->nchars);
 
                 //   Mark the new length of the csl text.
                 if (internal_trace)
@@ -434,8 +434,8 @@ return -1;
                 if (!act_like_Bill)
                 {
                     untrappableerror_ex(SRC_LOC(),
-                            "Couldn't insert the file named '%s' that you asked for.  "
-                            "This is probably a bad thing.", dirbuf);
+                                        "Couldn't insert the file named '%s' that you asked for.  "
+                                        "This is probably a bad thing.", dirbuf);
                 }
 
                 if (user_trace)
@@ -448,10 +448,10 @@ return -1;
                 //
                 //    Build the fault string.
                 snprintf(faulttext, MAX_PATTERN,
-                        "\n######  THE NEXT LINE WAS AUTO_INSERTED BECAUSE THE FILE COULDN'T BE FOUND\n"
-                        "fault / Couldn't insert the file named '%s' that you asked for.  "
-                        "This is probably a bad thing./\n",
-                        dirbuf);
+                         "\n######  THE NEXT LINE WAS AUTO_INSERTED BECAUSE THE FILE COULDN'T BE FOUND\n"
+                         "fault / Couldn't insert the file named '%s' that you asked for.  "
+                         "This is probably a bad thing./\n",
+                         dirbuf);
                 faulttext[MAX_PATTERN - 1] = 0;
                 textlen = (int)strlen(faulttext);
 
@@ -465,14 +465,14 @@ return -1;
                 //       make a hole to put the fault string into.
                 //
                 crm_memmove(&csl->filetext[matches[0].rm_eo + textlen],
-                        &csl->filetext[matches[0].rm_eo],
-                        csl->nchars - matches[0].rm_eo);
+                            &csl->filetext[matches[0].rm_eo],
+                            csl->nchars - matches[0].rm_eo);
                 //
                 //   and put the new text into that hole
                 //
                 crm_memmove(&csl->filetext[matches[0].rm_eo],
-                        faulttext,
-                        textlen);
+                            faulttext,
+                            textlen);
                 //   Mark the new length of the csl text.
                 if (internal_trace)
                     fprintf(stderr, "Added %d chars to crmprogram\n",
@@ -570,7 +570,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
             }
 
             if (csl->filetext[i] == '\n'
-                || csl->filetext[i] == '\r')
+               || csl->filetext[i] == '\r')
             {
                 //    get rid of extraneous newlines (MAC, MSDOS and UNIX style supported).
                 //if (internal_trace)
@@ -593,8 +593,8 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 //    unless it's an escaped hash; in that case
                 //     it's end-of-comment
                 if (csl->filetext[i] == '\\'
-                    && i + 1 < ini + nchars
-                    && csl->filetext[i + 1] == '#')
+                   && i + 1 < ini + nchars
+                   && csl->filetext[i + 1] == '#')
                 {
                     i++;
 #if 0               // [i_a] 20080325 - fix for alius_w_comment.crm processing...
@@ -614,12 +614,12 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     if ((csl->nchars + 1) > max_pgmsize)
                         untrappableerror("Program file buffer overflow - "
                                          "post-inserting newline to: ",
-                                &(csl->filetext[i]));
+                                         &(csl->filetext[i]));
                     //    we need a newline and are looking at a printingchar
                     //    so we need to insert a newline.
                     crm_memmove(&(csl->filetext[i + 1]),
-                            &(csl->filetext[i]),
-                            strlen(&csl->filetext[i]) + 1);
+                                &(csl->filetext[i]),
+                                strlen(&csl->filetext[i]) + 1);
                     csl->filetext[i] = '\n';
                     i++;
                     csl->nchars++;
@@ -656,8 +656,8 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                                    );
                         // (2 | crlf_mode) --> 2 for UNIX/MAC, 3 for MSDOS   :-)
                         crm_memmove(&(csl->filetext[i]),
-                                &(csl->filetext[i + (2 | crlf_mode)]),
-                                strlen(&csl->filetext[i + (2 | crlf_mode)]) + 1);
+                                    &(csl->filetext[i + (2 | crlf_mode)]),
+                                    strlen(&csl->filetext[i + (2 | crlf_mode)]) + 1);
                         csl->nchars -= (2 | crlf_mode);
                         nchars -= (2 | crlf_mode);
                         i--;
@@ -690,21 +690,21 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     //
                     //   Are we inside a nesting?
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 0
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 0
+                       && slash_nest == 0)
                     {
                         if (!seennewline)
                         {
                             if ((csl->nchars + 1) > max_pgmsize)
                                 untrappableerror("Program buffer overflow when"
                                                  "post-inserting newline on:",
-                                        &csl->filetext[i]);
+                                                 &csl->filetext[i]);
                             if (internal_trace)
                                 fprintf(stderr, " preinserting a newline.\n");
                             crm_memmove(&(csl->filetext[i + 1]),
-                                    &(csl->filetext[i]),
-                                    strlen(&csl->filetext[i]) + 1);
+                                        &(csl->filetext[i]),
+                                        strlen(&csl->filetext[i]) + 1);
                             csl->filetext[i] = '\n';
                             csl->nchars++;
                             nchars++;
@@ -722,9 +722,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     //       we can replace non-escaped semicolons with
                     //       newlines.
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 0
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 0
+                       && slash_nest == 0)
                     {
                         if (seennewline)                         //  we just saw a newline
                         {
@@ -734,8 +734,8 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                                 fprintf(stderr,
                                         "superfluous semicolon, *poof*.\n");
                             crm_memmove(&(csl->filetext[i]),
-                                    &(csl->filetext[i + 1]),
-                                    strlen(&csl->filetext[i]) + 1);
+                                        &(csl->filetext[i + 1]),
+                                        strlen(&csl->filetext[i]) + 1);
                             csl->nchars--;
                             nchars--;
                             i--;
@@ -763,9 +763,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     //      now, we're in a comment - everything should be
                     //      done only with the comment thing enabled.
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 0
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 0
+                       && slash_nest == 0)
                     {
                         in_comment = 1;
                     }
@@ -774,9 +774,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 case '(':
                     //      Update nesting if necessary
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 0
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 0
+                       && slash_nest == 0)
                     {
                         paren_nest = 1;
                         statement_state = PP_ARGUMENT_SECTION_START;
@@ -786,9 +786,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 case ')':
                     //      Update nesting if necessary
                     if (paren_nest == 1
-                        && angle_nest == 0
-                        && box_nest == 0
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 0
+                       && slash_nest == 0)
                     {
                         paren_nest = 0;
                     }
@@ -797,9 +797,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 case '<':
                     //      Update nesting if necessary
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 0
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 0
+                       && slash_nest == 0)
                     {
                         angle_nest = 1;
                         statement_state = PP_ARGUMENT_SECTION_START;
@@ -809,9 +809,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 case '>':
                     //      Update nesting if necessary
                     if (paren_nest == 0
-                        && angle_nest == 1
-                        && box_nest == 0
-                        && slash_nest == 0)
+                       && angle_nest == 1
+                       && box_nest == 0
+                       && slash_nest == 0)
                     {
                         angle_nest = 0;
                     }
@@ -820,9 +820,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 case '[':
                     //      Update nesting if necessary
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 0
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 0
+                       && slash_nest == 0)
                     {
                         box_nest = 1;
                         var_delim = 0;
@@ -833,9 +833,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 case ']':
                     //      Update nesting if necessary
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 1
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 1
+                       && slash_nest == 0)
                     {
                         box_nest = 0;
                     }
@@ -844,16 +844,16 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 case ':':
                     //      see also crm_generic_parse_line(): handle the special case [:var: /regex/]
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 1
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 1
+                       && slash_nest == 0)
                     {
                         var_delim++;
                     }
                     else if (paren_nest == 0
-                             && angle_nest == 0
-                             && box_nest == 0
-                             && slash_nest == 0)
+                            && angle_nest == 0
+                            && box_nest == 0
+                            && slash_nest == 0)
                     {
                         if (statement_state == PP_UNKNOWN)
                         {
@@ -869,16 +869,16 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 case '/':
                     //      Update nesting if necessary
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 0)
                     {
                         slash_nest = !slash_nest;
                         statement_state = PP_ARGUMENT_SECTION_START;
                     }
                     else if (paren_nest == 0
-                             && angle_nest == 0
-                             && box_nest == 1
-                             && var_delim >= 2)
+                            && angle_nest == 0
+                            && box_nest == 1
+                            && var_delim >= 2)
                     {
                         //      see also crm_generic_parse_line(): handle the special case [:var: /regex/]
                         slash_nest = !slash_nest;
@@ -894,9 +894,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     neednewline = 0;
 
                     if (paren_nest == 0
-                        && angle_nest == 0
-                        && box_nest == 0
-                        && slash_nest == 0)
+                       && angle_nest == 0
+                       && box_nest == 0
+                       && slash_nest == 0)
                     {
                         if (statement_state >= PP_ARGUMENT_SECTION_START /* PP_ACTION_END */)
                         {
@@ -923,12 +923,12 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                                 if ((csl->nchars + 1) > max_pgmsize)
                                     untrappableerror("Program buffer overflow when"
                                                      "pre-inserting newline on:",
-                                            &csl->filetext[i]);
+                                                     &csl->filetext[i]);
                                 if (internal_trace)
                                     fprintf(stderr, " preinserting a newline.\n");
                                 crm_memmove(&(csl->filetext[i + 1]),
-                                        &(csl->filetext[i]),
-                                        strlen(&csl->filetext[i]) + 1);
+                                            &(csl->filetext[i]),
+                                            strlen(&csl->filetext[i]) + 1);
                                 csl->filetext[i] = '\n';
                                 csl->nchars++;
                                 nchars++;

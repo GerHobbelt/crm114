@@ -24,9 +24,9 @@
 
 
 static int crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
-        unsigned int                                       hs,
-        unsigned int                                       start,
-        unsigned int                                       end);
+        unsigned int hs,
+        unsigned int start,
+        unsigned int end);
 
 //     How to microgroom a .css file that's getting full
 //
@@ -46,8 +46,8 @@ static int crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
 //
 int crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
         unsigned char                                 *seen_features,
-        unsigned int                                   hs,
-        unsigned int                                   hindex)
+        unsigned int hs,
+        unsigned int hindex)
 {
     int i, j, k;
     static int microgroom_count = 0;
@@ -134,9 +134,9 @@ int crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
         if (
             (h[i].key != 0)   // hash keys == 0 are SPECIALS like #learns,
                               // and must never be deleted.
-            &&
+           &&
             (force_rescale
-             || ((h[i].key + randy) & MICROGROOM_STOCHASTIC_MASK)
+            || ((h[i].key + randy) & MICROGROOM_STOCHASTIC_MASK)
              == MICROGROOM_STOCHASTIC_KEY))
         {
             h[i].value = h[i].value * MICROGROOM_RESCALE_FACTOR;
@@ -260,9 +260,9 @@ int crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
 //      crm_zap_winnow_css - the distance-heuristic microgroomer core.
 
 static int crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
-        unsigned int                                       hs,
-        unsigned int                                       start,
-        unsigned int                                       end)
+        unsigned int hs,
+        unsigned int start,
+        unsigned int end)
 {
     //     A question- what's the ratio deprecation ratio between
     //     "distance from original" vs. low point value?  The original
@@ -316,10 +316,10 @@ static int crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
                     if (valmag < 1.0)
                         valmag = 1.0 / valmag;
                     //  fprintf(stderr, "b");
-                    if ((VWEIGHT * valmag) +
-                        (VWEIGHT2 * valmag * valmag) +
-                        (DWEIGHT * (k - h[k].hash % hs)) +
-                        (DWEIGHT2 * (k - h[k].hash % hs) * (k - h[k].hash % hs))
+                    if ((VWEIGHT * valmag)
+                        + (VWEIGHT2 * valmag * valmag)
+                        + (DWEIGHT * (k - h[k].hash % hs))
+                        + (DWEIGHT2 * (k - h[k].hash % hs) * (k - h[k].hash % hs))
                         <= vcut)
                     {
                         //  fprintf(stderr, "*");
@@ -444,8 +444,8 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
             // fprintf(stderr, "a %d", ito);
 
             while (!((h[ito].value == 0.0)
-                     || (h[ito].hash == thash
-                         && h[ito].key == tkey)))
+                    || (h[ito].hash == thash
+                       && h[ito].key == tkey)))
             {
                 ito++;
                 if (ito >= hs)

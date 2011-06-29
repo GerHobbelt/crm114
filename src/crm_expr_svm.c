@@ -113,8 +113,8 @@ typedef struct mythical_hyperspace_cell
 //
 typedef struct mythical_svm_param
 {
-    int    svm_type;
-    int    kernel_type;
+    int svm_type;
+    int kernel_type;
     double cache_size;        // in MB
     double eps;               // convergence stop criterion
     double C;                 // parameter in C_SVC
@@ -131,7 +131,7 @@ typedef struct mythical_svm_param
 //
 typedef struct mythical_svm_problem
 {
-    int                               l; //number of documents
+    int l;                               //number of documents
     int                              *y; //label of documents -1/+1
     HYPERSPACE_FEATUREBUCKET_STRUCT **x; //  x[i] is the ith document's
                                          //  feature vector
@@ -144,17 +144,17 @@ typedef struct mythical_cache_node
 {
     struct mythical_cache_node *prev, *next;
     Qitem_t *data;
-    int      len;
+    int len;
 } CACHE_NODE;
 
 //    This is the cache representaton of the whole matrix; this is the
 //    "first column" and points to the start of each row.
 typedef struct mythical_cache
 {
-    int         l;         // The number of documents in the corpus
-    int         size;      // The cache size (bytes)
+    int l;                 // The number of documents in the corpus
+    int size;              // The cache size (bytes)
     CACHE_NODE *head;
-    CACHE_NODE  lru_headnode;  //least-recent-use node
+    CACHE_NODE lru_headnode;   //least-recent-use node
 } CACHE;
 
 //   This stores the result - alpha is the weighting vector (what we are
@@ -195,7 +195,7 @@ static const int hctable[] =
     797, 3277
 };
 
-#if defined (CRM_WITHOUT_MJT_INLINED_QSORT)
+#if defined(CRM_WITHOUT_MJT_INLINED_QSORT)
 
 static int hash_compare(void const *a, void const *b)
 {
@@ -331,9 +331,9 @@ static void lru_insert(CACHE_NODE *h, CACHE *svmcache)
 //  then we need to fill in the uncached data.
 
 static int get_data(CACHE *svmcache,
-        const int          doc_index,
+        const int doc_index,
         Qitem_t          **data,
-        int                length)
+        int length)
 {
     int result = length;
     CACHE_NODE *doc = svmcache->head + doc_index;
@@ -504,8 +504,8 @@ static Qitem_t *get_rowQ(int i, int length)
                 //   multiply by the +1/-1 labels (in the .y structures) to
                 //   face the kernel result in the right direction.
                 rowQ[temp] = (Qitem_t)svm_prob.y[i]
-                             * svm_prob.y[temp]
-                             * kernel(svm_prob.x[i], svm_prob.x[temp]);
+                             *svm_prob.y[temp]
+                             *kernel(svm_prob.x[i], svm_prob.x[temp]);
             }
             else if (param.svm_type == ONE_CLASS)
             {
@@ -589,13 +589,13 @@ static void selectB(int workset[], int *select_times)
     for (t = 0; t < svm_prob.l; t++)
     {
         if ((((svm_prob.y[t] == 1) && (solver.alpha[t] < param.C))
-             || ((svm_prob.y[t] == -1) && (solver.alpha[t] > 0)))
-            && select_times[t] < 10)
+            || ((svm_prob.y[t] == -1) && (solver.alpha[t] > 0)))
+           && select_times[t] < 10)
         {
-            if (-svm_prob.y[t] * solver.G[t] >= G_max)
+            if (-svm_prob.y[t] *solver.G[t] >= G_max)
             {
                 i = t;
-                G_max = -svm_prob.y[t] * solver.G[t];
+                G_max = -svm_prob.y[t] *solver.G[t];
             }
         }
     }
@@ -607,19 +607,19 @@ static void selectB(int workset[], int *select_times)
     for (t = 0; t < svm_prob.l; t++)
     {
         if ((((svm_prob.y[t] == -1) && (solver.alpha[t] < param.C))
-             || ((svm_prob.y[t] == 1) && (solver.alpha[t] > 0)))
-            && select_times[t] < 10)
+            || ((svm_prob.y[t] == 1) && (solver.alpha[t] > 0)))
+           && select_times[t] < 10)
         {
-            b = G_max + svm_prob.y[t] * solver.G[t];
-            if (-svm_prob.y[t] * solver.G[t] <= G_min)
-                G_min = -svm_prob.y[t] * solver.G[t];
+            b = G_max + svm_prob.y[t] *solver.G[t];
+            if (-svm_prob.y[t] *solver.G[t] <= G_min)
+                G_min = -svm_prob.y[t] *solver.G[t];
             if (b > 0)
             {
                 if (i != -1)
                 {
                     Qi = get_rowQ(i, svm_prob.l);
                     a = Qi[i] + DiagQ[t]
-                        - 2 * svm_prob.y[i] * svm_prob.y[t] * Qi[t];
+                        - 2 * svm_prob.y[i] *svm_prob.y[t] *Qi[t];
                     if (a <= 0)
                         a = TAU;
                     if (-(b * b) / a <= obj_min)
@@ -658,7 +658,7 @@ static void solve(void)
     if (select_times == NULL)
     {
         untrappableerror("Couldn't allocate space for the solver.",
-                "[select_items]");
+                         "[select_items]");
     }
 
     for (i = 0; i < svm_prob.l; i++)
@@ -671,14 +671,14 @@ static void solve(void)
     if (solver.alpha == NULL)
     {
         untrappableerror("Couldn't allocate space for the solver.",
-                "[solver.alpha]");
+                         "[solver.alpha]");
     }
     CRM_ASSERT(solver.G == NULL);
     solver.G = calloc(svm_prob.l, sizeof(solver.G[0]));
     if (solver.G == NULL)
     {
         untrappableerror("Couldn't allocate space for the solver.",
-                "[solver.G]");
+                         "[solver.G]");
     }
     if (param.svm_type == C_SVC)
     {
@@ -731,38 +731,38 @@ static void solve(void)
         Qj = get_rowQ(j, svm_prob.l);
 
         //  Calculate the incremental step forward.
-        a = Qi[i] + DiagQ[j] - 2 * svm_prob.y[i] * svm_prob.y[j] * Qi[j];
+        a = Qi[i] + DiagQ[j] - 2 * svm_prob.y[i] *svm_prob.y[j] *Qi[j];
         if (a <= 0)
             a = TAU;
-        b = -svm_prob.y[i] * solver.G[i] + svm_prob.y[j] * solver.G[j];
+        b = -svm_prob.y[i] *solver.G[i] + svm_prob.y[j] *solver.G[j];
 
         //  update alpha (weight vector)
         oldi = solver.alpha[i];
         oldj = solver.alpha[j];
-        solver.alpha[i] += svm_prob.y[i] * b / a;
-        solver.alpha[j] -= svm_prob.y[j] * b / a;
+        solver.alpha[i] += svm_prob.y[i] *b / a;
+        solver.alpha[j] -= svm_prob.y[j] *b / a;
 
         //  Project alpha back to the feasible region(that is, where
         //  where 0 <= alpha <= C )
-        sum = svm_prob.y[i] * oldi + svm_prob.y[j] * oldj;
+        sum = svm_prob.y[i] *oldi + svm_prob.y[j] *oldj;
         if (solver.alpha[i] > param.C)
             solver.alpha[i] = param.C;
         if (solver.alpha[i] < 0)
             solver.alpha[i] = 0;
         solver.alpha[j] = svm_prob.y[j]
-                          * (sum - svm_prob.y[i] * (solver.alpha[i]));
+                          *(sum - svm_prob.y[i] *(solver.alpha[i]));
         if (solver.alpha[j] > param.C)
             solver.alpha[j] = param.C;
         if (solver.alpha[j] < 0)
             solver.alpha[j] = 0;
         solver.alpha[i] = svm_prob.y[i]
-                          * (sum - svm_prob.y[j] * (solver.alpha[j]));
+                          *(sum - svm_prob.y[j] *(solver.alpha[j]));
 
         //  update gradient array
         for (t = 0; t < svm_prob.l; t++)
         {
-            solver.G[t] += Qi[t] * (solver.alpha[i] - oldi)
-                           + Qj[t] * (solver.alpha[j] - oldj);
+            solver.G[t] += Qi[t] *(solver.alpha[i] - oldi)
+                           + Qj[t] *(solver.alpha[j] - oldj);
         }
     }
 
@@ -838,7 +838,7 @@ static double calc_b()
 //   Calculate the decision function
 static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
         double                                              *alpha,
-        double                                               b)
+        double b)
 {
     int i;
     double sum = 0;
@@ -850,7 +850,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
         {
             if (alpha[i] != 0)
             {
-                sum += svm_prob.y[i] * alpha[i] * kernel(x, svm_prob.x[i]);
+                sum += svm_prob.y[i] *alpha[i] *kernel(x, svm_prob.x[i]);
             }
         }
         sum += b;
@@ -861,7 +861,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
         {
             if (alpha[i] != 0)
             {
-                sum += alpha[i] * kernel(x, svm_prob.x[i]);
+                sum += alpha[i] *kernel(x, svm_prob.x[i]);
             }
         }
         sum -= b;
@@ -905,9 +905,9 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
     AB[1] = log((negn + 1.0) / (posn + 1.0));
     for (i = 0; i < svm_prob.l; i++)
     {
-        fApB = deci_array[i] * AB[0] + AB[1];
+        fApB = deci_array[i] *AB[0] + AB[1];
         if (fApB >= 0)
-            fval += t[i] * fApB + log(1 + exp(-fApB));
+            fval += t[i] *fApB + log(1 + exp(-fApB));
         else
             fval += (t[i] - 1) * fApB + log(1 + exp(fApB));
     }
@@ -918,7 +918,7 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
         h21 = g1 = g2 = 0.0;
         for (i = 0; i < svm_prob.l; i++)
         {
-            fApB = deci_array[i] * AB[0] + AB[1];
+            fApB = deci_array[i] *AB[0] + AB[1];
             if (fApB >= 0)
             {
                 p = exp(-fApB) / (1.0 + exp(-fApB));
@@ -930,11 +930,11 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
                 q = exp(fApB) / (1.0 + exp(fApB));
             }
             d2 = p * q;
-            h11 += deci_array[i] * deci_array[i] * d2;
+            h11 += deci_array[i] *deci_array[i] *d2;
             h22 += d2;
-            h21 += deci_array[i] * d2;
+            h21 += deci_array[i] *d2;
             d1 = t[i] - p;
-            g1 += deci_array[i] * d1;
+            g1 += deci_array[i] *d1;
             g2 += d1;
         }
         // Stopping Criterion
@@ -955,9 +955,9 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
             newf = 0.0;
             for (i = 0; i < svm_prob.l; i++)
             {
-                fApB = deci_array[i] * newA + newB;
+                fApB = deci_array[i] *newA + newB;
                 if (fApB >= 0)
-                    newf += t[i] * fApB + log(1 + exp(-fApB));
+                    newf += t[i] *fApB + log(1 + exp(-fApB));
                 else
                     newf += (t[i] - 1) * fApB + log(1 + exp(fApB));
             }
@@ -1022,7 +1022,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int use_unigram_features;
     char ptext[MAX_PATTERN]; //the regrex pattern
     int plen;
-	regex_t regcb = {0};
+    regex_t regcb = { 0 };
     regmatch_t match[5];
     struct stat statbuf1;    //  for statting the hash file1
     struct stat statbuf2;    //  for statting the hash file2
@@ -1084,7 +1084,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    pre-existing memory.  We just write to the end of the file instead.
     //    malloc up the unsorted hashbucket space
     hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
-            sizeof(hashes[0]));
+                    sizeof(hashes[0]));
     if (!hashes)
     {
         untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -1097,8 +1097,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     flen = crm_nexpandvar(ftext, flen, MAX_PATTERN, vht, tdw);
 
     strcpy(
-            ptext,
-            "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
+        ptext,
+        "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
     plen = (int)strlen(ptext);
     //plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
@@ -1109,7 +1109,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         goto regcomp_failed;
     }
     k = crm_regexec(&regcb, ftext,
-            flen, WIDTHOF(match), match, 0, NULL);
+                    flen, WIDTHOF(match), match, 0, NULL);
     if (k == 0)
     {
         // get three input files.
@@ -1128,9 +1128,9 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (!crm_nextword(ftext, flen, 0, &i, &j) || j == 0)
         {
             int fev = nonfatalerror_ex(SRC_LOC(),
-                    "\nYou didn't specify a valid filename: '%.*s'\n",
-                    (int)flen,
-                    ftext);
+                                       "\nYou didn't specify a valid filename: '%.*s'\n",
+                                       (int)flen,
+                                       ftext);
             crm_regfree(&regcb);
             return fev;
         }
@@ -1181,7 +1181,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (txtlen > 0)
     {
         while (k == 0 && textoffset <= textmaxoffset
-               && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT)
+              && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT)
         {
             int wlen;
             int slen = textmaxoffset - textoffset;
@@ -1190,7 +1190,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (ptext[0] != 0)
             {
                 k = crm_regexec(&regcb, &txtptr[textoffset],
-                        slen, WIDTHOF(match), match, 0, NULL);
+                                slen, WIDTHOF(match), match, 0, NULL);
             }
             else
             {
@@ -1198,11 +1198,11 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //         skip non-graphical characters
                 match[0].rm_so = 0;
                 while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                       && textoffset + match[0].rm_so < textmaxoffset)
+                      && textoffset + match[0].rm_so < textmaxoffset)
                     match[0].rm_so++;
                 match[0].rm_eo = match[0].rm_so;
                 while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                       && textoffset + match[0].rm_eo < textmaxoffset)
+                      && textoffset + match[0].rm_eo < textmaxoffset)
                     match[0].rm_eo++;
                 if (match[0].rm_so == match[0].rm_eo)
                     k = 1;
@@ -1211,8 +1211,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 wlen = match[0].rm_eo - match[0].rm_so;
                 crm_memmove(tempbuf,
-                        &(txtptr[textoffset + match[0].rm_so]),
-                        wlen);
+                            &(txtptr[textoffset + match[0].rm_so]),
+                            wlen);
                 tempbuf[wlen] = 0;
                 if (internal_trace)
                 {
@@ -1228,7 +1228,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (match[0].rm_eo == 0)
                 {
                     nonfatalerror("The LEARN pattern matched zero length! ",
-                            "\n Forcing an increment to avoid an infinite loop.");
+                                  "\n Forcing an increment to avoid an infinite loop.");
                     match[0].rm_eo = 1;
                 }
 
@@ -1287,8 +1287,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                              j < OSB_BAYES_WINDOW_LEN; // OSB_BAYES_WINDOW_LEN;
                              j++)
                         {
-                            h1 = hashpipe[0] * hctable[0] +
-                                 hashpipe[j] * hctable[j << 1];
+                            h1 = hashpipe[0] *hctable[0]
+                                 + hashpipe[j] *hctable[j << 1];
                             if (h1 == 0)
                                 h1 = 0xdeadbeef;
                             h2 = 0xdeadbeef;
@@ -1319,7 +1319,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //   Now sort the hashes array.
         //
         QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
-                hash_compare);
+              hash_compare);
 
         if (user_trace)
         {
@@ -1384,11 +1384,11 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 char dirbuf[DIRBUFSIZE_MAX];
 
                 fatalerror_ex(SRC_LOC(),
-                        "\n Couldn't open your SVM file %s for appending; (full path: '%s') errno=%d(%s)\n",
-                        file1,
-                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file1),
-                        errno,
-                        errno_descr(errno));
+                              "\n Couldn't open your SVM file %s for appending; (full path: '%s') errno=%d(%s)\n",
+                              file1,
+                              mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file1),
+                              errno,
+                              errno_descr(errno));
                 return 0;
             }
             else
@@ -1414,18 +1414,18 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                     {
                         fatalerror("For some reason, I was unable to write the header to the svm file named ",
-                                file1);
+                                   file1);
                     }
                 }
 
                 //    and write the sorted hashes out.
                 ret = (int)fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-                        hashcounts + 1,
-                        hashf);
+                                  hashcounts + 1,
+                                  hashf);
                 if (ret != hashcounts + 1)
                 {
                     fatalerror("For some reason, I was unable to append the feature to the svm file named ",
-                            file1);
+                               file1);
                 }
                 fclose(hashf);
             }
@@ -1465,19 +1465,19 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 nonfatalerror("Refuting from nonexistent data cannot be done!"
                               " More specifically, this data file doesn't exist: ",
-                        file1);
+                              file1);
                 return 0;
             }
             else
             {
                 file_hashlens = statbuf.st_size;
                 file_hashes = crm_mmap_file(file1,
-                        0,
-                        file_hashlens,
-                        PROT_READ | PROT_WRITE,
-                        MAP_SHARED,
-                        CRM_MADV_RANDOM,
-                        &file_hashlens);
+                                            0,
+                                            file_hashlens,
+                                            PROT_READ | PROT_WRITE,
+                                            MAP_SHARED,
+                                            CRM_MADV_RANDOM,
+                                            &file_hashlens);
                 file_hashlens = file_hashlens
                                 / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
             }
@@ -1531,7 +1531,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (u >= hashcounts)
                     {
                         while (k < file_hashlens
-                               && file_hashes[k].hash != 0)
+                              && file_hashes[k].hash != 0)
                         {
                             k++;
                             knotu++;
@@ -1539,15 +1539,15 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     }
                     //   End of the K's?  If so, skip U to the end marker
                     if (k >= file_hashlens - 1
-                        || file_hashes[k].hash == 0)   //  end of doc features
+                       || file_hashes[k].hash == 0)    //  end of doc features
                     {
                         unotk += hashcounts - u;
                     }
 
                     //  end of the U's or end of the K's?  If so, end document.
                     if (u >= hashcounts
-                        || k >= file_hashlens - 1
-                        || file_hashes[k].hash == 0) // this sets end-of-document
+                       || k >= file_hashlens - 1
+                       || file_hashes[k].hash == 0)  // this sets end-of-document
                     {
                         wrapup = 1;
                         k++;
@@ -1594,7 +1594,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
             if (user_trace)
             {
-                        char dirbuf[DIRBUFSIZE_MAX];
+                char dirbuf[DIRBUFSIZE_MAX];
 
                 fprintf(stderr,
                         "Deleting feature from %d to %d (rad %f) of file %s\n",
@@ -1610,9 +1610,9 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 newhashlenbytes = newhashlen
                                   * sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
                 crm_memmove(&file_hashes[beststart],
-                        &file_hashes[bestend + 1],
-                        sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT)
-                        * (file_hashlens - bestend));
+                            &file_hashes[bestend + 1],
+                            sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT)
+                            * (file_hashlens - bestend));
                 crm_force_munmap_filename(file1);
 
                 if (internal_trace)
@@ -1621,7 +1621,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             newhashlen,
                             newhashlenbytes);
                 k = truncate(file1,
-                        newhashlenbytes);
+                             newhashlenbytes);
             }
         }
     }
@@ -1653,15 +1653,15 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         param.shrinking = 1; //not available right now
 
         if (8 != sscanf(ptext,
-                    "%d %d %lf %lf %lf %lf %lf %d",
-                    &(param.svm_type),
-                    &(param.kernel_type),
-                    &(param.cache_size),
-                    &(param.eps),
-                    &(param.C),
-                    &(param.nu),
-                    &(param.max_run_time),
-                    &(param.shrinking)))
+                        "%d %d %lf %lf %lf %lf %lf %d",
+                        &(param.svm_type),
+                        &(param.kernel_type),
+                        &(param.cache_size),
+                        &(param.eps),
+                        &(param.C),
+                        &(param.nu),
+                        &(param.max_run_time),
+                        &(param.shrinking)))
         {
             nonfatalerror("Failed to decode the 8 SVM setup parameters [learn]: ", ptext);
         }
@@ -1690,7 +1690,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             nonfatalerror("Refuting from nonexistent data cannot be done!"
                           "More specifically, it should initialize a new .svm file: ",
-                    file1);
+                          file1);
             return 0;
         }
         else
@@ -1700,12 +1700,12 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
             file1_hashlens = statbuf1.st_size;
             file1_hashes = crm_mmap_file(file1,
-                    0,
-                    file1_hashlens,
-                    PROT_READ | PROT_WRITE,
-                    MAP_SHARED,
-                    CRM_MADV_RANDOM,
-                    &file1_hashlens);
+                                         0,
+                                         file1_hashlens,
+                                         PROT_READ | PROT_WRITE,
+                                         MAP_SHARED,
+                                         CRM_MADV_RANDOM,
+                                         &file1_hashlens);
             file1_hashlens = file1_hashlens
                              / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
             //find out how many documents in file1
@@ -1783,13 +1783,13 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (k1 != 0)
         {
             nonfatalerror("Sorry, there is not enough data to calculate the hyperplane ",
-                    file1);
+                          file1);
             return 0;
         }
         else if (k2 != 0)
         {
             nonfatalerror("Sorry, there is not enough data to calculate the hyperplane ",
-                    file2);
+                          file2);
             return 0;
         }
         else
@@ -1798,22 +1798,22 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             k2 = 0;
             file1_hashlens = statbuf1.st_size;
             file1_hashes = crm_mmap_file(file1,
-                    0,
-                    file1_hashlens,
-                    PROT_READ | PROT_WRITE,
-                    MAP_SHARED,
-                    CRM_MADV_RANDOM,
-                    &file1_hashlens);
+                                         0,
+                                         file1_hashlens,
+                                         PROT_READ | PROT_WRITE,
+                                         MAP_SHARED,
+                                         CRM_MADV_RANDOM,
+                                         &file1_hashlens);
             file1_hashlens = file1_hashlens
                              / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
             file2_hashlens = statbuf2.st_size;
             file2_hashes = crm_mmap_file(file2,
-                    0,
-                    file2_hashlens,
-                    PROT_READ | PROT_WRITE,
-                    MAP_SHARED,
-                    CRM_MADV_RANDOM,
-                    &file2_hashlens);
+                                         0,
+                                         file2_hashlens,
+                                         PROT_READ | PROT_WRITE,
+                                         MAP_SHARED,
+                                         CRM_MADV_RANDOM,
+                                         &file2_hashlens);
             file2_hashlens = file2_hashlens
                              / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
 
@@ -1899,7 +1899,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 for (i = 1; i < file2_hashlens - 1; i++)
                 {
                     if ((file2_hashes[i].hash == 0)
-                        && (file2_hashes[i + 1].hash != 0))   /* [i_a] shouldn't this be here too? */
+                       && (file2_hashes[i + 1].hash != 0))    /* [i_a] shouldn't this be here too? */
                     {
                         CRM_ASSERT(k < svm_prob.l);
                         x[k++] = &(file2_hashes[i + 1]);
@@ -1966,7 +1966,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                     // set an upper bound of delete fraction
                     delete_fraction = pow(param.max_run_time / run_time,
-                            1.0 / 3.0);
+                                          1.0 / 3.0);
                     for (i = 0; i < svm_prob.l; i++)
                     {
                         id_desc[i] = i;
@@ -1980,7 +1980,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     average1 /= k1;
                     average2 /= k2;
                     QSORT(int, id_desc, svm_prob.l,
-                            descend_int_decision_compare);
+                          descend_int_decision_compare);
                     if (user_trace)
                         fprintf(stderr,
                                 "average1=%f\taverage2=%f\n", average1, average2);
@@ -1991,7 +1991,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     j = svm_prob.l - 1;
                     while (((delete_num1 + delete_num2)
                             < floor(delete_fraction * svm_prob.l))
-                           && (i < svm_prob.l) && (j >= 0))
+                          && (i < svm_prob.l) && (j >= 0))
                     {
                         if ((k1 - delete_num1) > (k2 - delete_num2))
                         {
@@ -1999,7 +1999,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             CRM_ASSERT(id_desc[i] < svm_prob.l);
                             CRM_ASSERT(id_desc[i] >= 0);
                             if (svm_prob.y[id_desc[i]] == 1
-                                && fabs(solver.deci_array[id_desc[i]])
+                               && fabs(solver.deci_array[id_desc[i]])
                                 > distance_fraction * fabs(average1))
                             {
                                 if (user_trace)
@@ -2017,7 +2017,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             CRM_ASSERT(id_desc[j] < svm_prob.l);
                             CRM_ASSERT(id_desc[j] >= 0);
                             if (svm_prob.y[id_desc[j]] == -1
-                                && fabs(solver.deci_array[id_desc[j]]) > distance_fraction * fabs(average2))
+                               && fabs(solver.deci_array[id_desc[j]]) > distance_fraction * fabs(average2))
                             {
                                 if (user_trace)
                                     fprintf(stderr,
@@ -2034,7 +2034,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             CRM_ASSERT(id_desc[i] < svm_prob.l);
                             CRM_ASSERT(id_desc[i] >= 0);
                             if (svm_prob.y[id_desc[i]] == 1
-                                && fabs(solver.deci_array[id_desc[i]]) > distance_fraction * fabs(average1))
+                               && fabs(solver.deci_array[id_desc[i]]) > distance_fraction * fabs(average1))
                             {
                                 if (user_trace)
                                     fprintf(stderr,
@@ -2047,7 +2047,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             CRM_ASSERT(id_desc[j] < svm_prob.l);
                             CRM_ASSERT(id_desc[j] >= 0);
                             if (svm_prob.y[id_desc[j]] == -1
-                                && fabs(solver.deci_array[id_desc[j]]) > distance_fraction * fabs(average2))
+                               && fabs(solver.deci_array[id_desc[j]]) > distance_fraction * fabs(average2))
                             {
                                 if (user_trace)
                                     fprintf(stderr,
@@ -2090,7 +2090,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     temp_count++;
                                 CRM_ASSERT(j < (k1 + k2 - delete_num1 - delete_num2));
                                 new_x[j] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)calloc((temp_count + 1),
-                                        sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
+                                                                                     sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
                                 if (!new_x[j])
                                 {
                                     untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -2112,7 +2112,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     temp_count++;
                                 CRM_ASSERT(j < (k1 + k2 - delete_num1 - delete_num2));
                                 new_x[j] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)calloc((temp_count + 1),
-                                        sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
+                                                                                     sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
                                 if (!new_x[j])
                                 {
                                     untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -2138,11 +2138,11 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                 char dirbuf[DIRBUFSIZE_MAX];
 
                                 fatalerror_ex(SRC_LOC(),
-                                        "\n Couldn't open your SVM file %s for writing; (full path: '%s') errno=%d(%s)\n",
-                                        file1,
-                                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file1),
-                                        errno,
-                                        errno_descr(errno));
+                                              "\n Couldn't open your SVM file %s for writing; (full path: '%s') errno=%d(%s)\n",
+                                              file1,
+                                              mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file1),
+                                              errno,
+                                              errno_descr(errno));
                             }
                             else
                             {
@@ -2166,7 +2166,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                                     {
                                         fatalerror("For some reason, I was unable to write the header to the svm file named ",
-                                                file1);
+                                                   file1);
                                     }
                                 }
 
@@ -2180,12 +2180,12 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                         temp_count++;
                                     }
                                     ret = (int)fwrite(svm_prob.x[i], sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-                                            (temp_count + 1),
-                                            hashf);
+                                                      (temp_count + 1),
+                                                      hashf);
                                     if (ret != temp_count + 1)
                                     {
                                         fatalerror("For some reason, I was unable to write a feature bucket to the svm file named ",
-                                                file1);
+                                                   file1);
                                     }
                                 }
                                 fclose(hashf);
@@ -2204,11 +2204,11 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                 char dirbuf[DIRBUFSIZE_MAX];
 
                                 fatalerror_ex(SRC_LOC(),
-                                        "\n Couldn't open your SVM file %s for appending; (full path: '%s') errno=%d(%s)\n",
-                                        file2,
-                                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file2),
-                                        errno,
-                                        errno_descr(errno));
+                                              "\n Couldn't open your SVM file %s for appending; (full path: '%s') errno=%d(%s)\n",
+                                              file2,
+                                              mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file2),
+                                              errno,
+                                              errno_descr(errno));
                             }
                             else
                             {
@@ -2232,7 +2232,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                                     {
                                         fatalerror("For some reason, I was unable to write the header to the svm file named ",
-                                                file2);
+                                                   file2);
                                     }
                                 }
 
@@ -2244,12 +2244,12 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     while (svm_prob.x[i][temp_count].hash != 0)
                                         temp_count++;
                                     ret = (int)fwrite(svm_prob.x[i], sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-                                            (temp_count + 1),
-                                            hashf);
+                                                      (temp_count + 1),
+                                                      hashf);
                                     if (ret != temp_count + 1)
                                     {
                                         fatalerror("For some reason, I was unable to append a feature bucket to the svm file named ",
-                                                file2);
+                                                   file2);
                                     }
                                 }
                                 fclose(hashf);
@@ -2277,7 +2277,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                         //compute A,B for sigmoid prediction
                         deci_array = (double *)realloc(deci_array, svm_prob.l
-                                * sizeof(double));
+                                                       * sizeof(double));
                         if (!deci_array)
                         {
                             untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -2285,7 +2285,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         for (i = 0; i < svm_prob.l; i++)
                         {
                             deci_array[i] = calc_decision(svm_prob.x[i],
-                                    solver.alpha, b);
+                                                          solver.alpha, b);
                         }
                         calc_AB(AB, deci_array, k1, k2);
                         if (internal_trace)
@@ -2320,11 +2320,11 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     char dirbuf[DIRBUFSIZE_MAX];
 
                     int fev = fatalerror_ex(SRC_LOC(),
-                            "\n Couldn't open your SVM.HYPSVM file %s for writing; (full path: '%s') errno=%d(%s)\n",
-                            file3,
-                            mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file3),
-                            errno,
-                            errno_descr(errno));
+                                            "\n Couldn't open your SVM.HYPSVM file %s for writing; (full path: '%s') errno=%d(%s)\n",
+                                            file3,
+                                            mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file3),
+                                            errno,
+                                            errno_descr(errno));
                     return fev;
                 }
                 else
@@ -2348,7 +2348,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                         {
                             nonfatalerror("Couldn't write the header to the .hypsvm file named ",
-                                    file3);
+                                          file3);
                         }
                     }
 
@@ -2362,7 +2362,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (ret != 2 + 3 + svm_prob.l)
                     {
                         fatalerror("Couldn't write the solution to the .hypsvm file named ",
-                                file3);
+                                   file3);
                     }
 
                     fclose(hashf);
@@ -2521,7 +2521,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    pre-existing memory.  We just write to the end of the file instead.
     //    malloc up the unsorted hashbucket space
     hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
-            sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
+                    sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
     if (!hashes)
     {
         untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -2547,15 +2547,15 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         param.shrinking = 1;        //not available right now
 
         if (8 != sscanf(ptext,
-                    "%d %d %lf %lf %lf %lf %lf %d",
-                    &(param.svm_type),
-                    &(param.kernel_type),
-                    &(param.cache_size),
-                    &(param.eps),
-                    &(param.C),
-                    &(param.nu),
-                    &(param.max_run_time),
-                    &(param.shrinking)))
+                        "%d %d %lf %lf %lf %lf %lf %d",
+                        &(param.svm_type),
+                        &(param.kernel_type),
+                        &(param.cache_size),
+                        &(param.eps),
+                        &(param.C),
+                        &(param.nu),
+                        &(param.max_run_time),
+                        &(param.shrinking)))
         {
             nonfatalerror("Failed to decode the 8 SVM setup parameters [classify]: ", ptext);
         }
@@ -2612,7 +2612,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         CRM_ASSERT(hashcounts == 0);
         while (k == 0 && textoffset <= textmaxoffset
-               && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT)
+              && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT)
         {
             int wlen;
             int slen = textmaxoffset - textoffset;
@@ -2621,7 +2621,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (ptext[0] != 0)
             {
                 k = crm_regexec(&regcb, &txtptr[textoffset],
-                        slen, WIDTHOF(match), match, 0, NULL);
+                                slen, WIDTHOF(match), match, 0, NULL);
             }
             else
             {
@@ -2629,11 +2629,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //         skip non-graphical characters
                 match[0].rm_so = 0;
                 while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                       && textoffset + match[0].rm_so < textmaxoffset)
+                      && textoffset + match[0].rm_so < textmaxoffset)
                     match[0].rm_so++;
                 match[0].rm_eo = match[0].rm_so;
                 while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                       && textoffset + match[0].rm_eo < textmaxoffset)
+                      && textoffset + match[0].rm_eo < textmaxoffset)
                     match[0].rm_eo++;
                 if (match[0].rm_so == match[0].rm_eo)
                     k = 1;
@@ -2643,8 +2643,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 wlen = match[0].rm_eo - match[0].rm_so;
 
                 crm_memmove(tempbuf,
-                        &(txtptr[textoffset + match[0].rm_so]),
-                        wlen);
+                            &(txtptr[textoffset + match[0].rm_so]),
+                            wlen);
                 tempbuf[wlen] = 0;
                 if (internal_trace)
                 {
@@ -2660,7 +2660,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (match[0].rm_eo == 0)
                 {
                     nonfatalerror("The LEARN pattern matched zero length! ",
-                            "\n Forcing an increment to avoid an infinite loop.");
+                                  "\n Forcing an increment to avoid an infinite loop.");
                     match[0].rm_eo = 1;
                 }
                 //  slide previous hashes up 1
@@ -2702,8 +2702,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                              j < OSB_BAYES_WINDOW_LEN; //OSB_BAYES_WINDOW_LEN;
                              j++)
                         {
-                            h1 = hashpipe[0] * hctable[0]
-                                 + hashpipe[j] * hctable[j << 1];
+                            h1 = hashpipe[0] *hctable[0]
+                                 + hashpipe[j] *hctable[j << 1];
                             if (h1 == 0)
                                 h1 = 0xdeadbeef;
                             hindex = h1;
@@ -2731,7 +2731,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         hashes[hashcounts].hash = 0;
 
         QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
-                hash_compare);
+              hash_compare);
         if (user_trace)
         {
             fprintf(stderr, "sorted hashes:\n");
@@ -2796,8 +2796,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     flen = crm_nexpandvar(ftext, flen, MAX_PATTERN, vht, tdw);
 
     strcpy(
-            ptext,
-            "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
+        ptext,
+        "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
     plen = (int)strlen(ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i != 0)
@@ -2807,7 +2807,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         goto regcomp_failed;
     }
     k = crm_regexec(&regcb, ftext,
-            flen, WIDTHOF(match), match, 0, NULL);
+                    flen, WIDTHOF(match), match, 0, NULL);
     if (k == 0)
     {
         int file1_hashlens;
@@ -2839,14 +2839,14 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             nonfatalerror("Refuting from nonexistent data cannot be done!"
                           " More specifically, this data file doesn't exist: ",
-                    file1);
+                          file1);
             return 0;
         }
         else if (k2 != 0)
         {
             nonfatalerror("Refuting from nonexistent data cannot be done!"
                           " More specifically, this data file doesn't exist: ",
-                    file2);
+                          file2);
             return 0;
         }
         else
@@ -2861,12 +2861,12 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             crm_force_munmap_filename(file2);
 
             file1_hashes = crm_mmap_file(file1,
-                    0,
-                    file1_hashlens,
-                    PROT_READ | PROT_WRITE,
-                    MAP_SHARED,
-                    CRM_MADV_RANDOM,
-                    &file1_hashlens);
+                                         0,
+                                         file1_hashlens,
+                                         PROT_READ | PROT_WRITE,
+                                         MAP_SHARED,
+                                         CRM_MADV_RANDOM,
+                                         &file1_hashlens);
             file1_hashlens = file1_hashlens
                              / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
 
@@ -2875,19 +2875,19 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (!hashname[0])
             {
                 untrappableerror("Couldn't alloc hashname[0]\n",
-                        "We need that part later, so we're stuck.  Sorry.");
+                                 "We need that part later, so we're stuck.  Sorry.");
             }
             strcpy(hashname[0], file1);
 
 
             file2_hashlens = statbuf2.st_size;
             file2_hashes = crm_mmap_file(file2,
-                    0,
-                    file2_hashlens,
-                    PROT_READ | PROT_WRITE,
-                    MAP_SHARED,
-                    CRM_MADV_RANDOM,
-                    &file2_hashlens);
+                                         0,
+                                         file2_hashlens,
+                                         PROT_READ | PROT_WRITE,
+                                         MAP_SHARED,
+                                         CRM_MADV_RANDOM,
+                                         &file2_hashlens);
             file2_hashlens = file2_hashlens
                              / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
             hashlens[1] = file2_hashlens;
@@ -2895,7 +2895,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (!hashname[1])
             {
                 untrappableerror("Couldn't alloc hashname[1]\n",
-                        "We need that part later, so we're stuck.  Sorry.");
+                                 "We need that part later, so we're stuck.  Sorry.");
             }
             strcpy(hashname[1], file2);
 
@@ -2937,11 +2937,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 char dirbuf[DIRBUFSIZE_MAX];
 
                 nonfatalerror_ex(SRC_LOC(),
-                        "\n Couldn't open your SVM 1vs2 solution file %s for reading; (full path: '%s') errno=%d(%s)\n",
-                        file3,
-                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file3),
-                        errno,
-                        errno_descr(errno));
+                                 "\n Couldn't open your SVM 1vs2 solution file %s for reading; (full path: '%s') errno=%d(%s)\n",
+                                 file3,
+                                 mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file3),
+                                 errno,
+                                 errno_descr(errno));
             }
             // else
             {
@@ -2960,7 +2960,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             if (fseek(hashf, CRM114_HEADERBLOCK_SIZE, SEEK_SET))
                             {
                                 fatalerror("For some reason, I was unable to skip the CRM header for the file named ",
-                                        file3);
+                                           file3);
                             }
                         }
 
@@ -3051,15 +3051,15 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             param.shrinking = 1;    //not available right now
 
                             if (8 != sscanf(ptext,
-                                        "%d %d %lf %lf %lf %lf %lf %d",
-                                        &(param.svm_type),
-                                        &(param.kernel_type),
-                                        &(param.cache_size),
-                                        &(param.eps),
-                                        &(param.C),
-                                        &(param.nu),
-                                        &(param.max_run_time),
-                                        &(param.shrinking)))
+                                            "%d %d %lf %lf %lf %lf %lf %d",
+                                            &(param.svm_type),
+                                            &(param.kernel_type),
+                                            &(param.cache_size),
+                                            &(param.eps),
+                                            &(param.C),
+                                            &(param.nu),
+                                            &(param.max_run_time),
+                                            &(param.shrinking)))
                             {
                                 nonfatalerror("Failed to decode the 8 SVM setup parameters [classify]: ", ptext);
                             }
@@ -3200,7 +3200,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         crm_regfree(&regcb);
         nonfatalerror(
-                "You need to input (file1.svm | file2.svm | f1vsf2.svmhyp)\n", "");
+            "You need to input (file1.svm | file2.svm | f1vsf2.svmhyp)\n", "");
         return 0;
     }
     free(hashes);
@@ -3245,10 +3245,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         fname[MAX_FILE_NAME_LEN - 1] = 0;
         snprintf(buf, WIDTHOF(buf), "Best match to file #%d (%s) "
                                     "prob: %6.4f  pR: %6.4f\n",
-                bestseen,
-                fname,
-                ptc[bestseen],
-                10 * (log10(ptc[bestseen] + 1e-300) - log10(1.0 - ptc[bestseen] + 1e-300)));
+                 bestseen,
+                 fname,
+                 ptc[bestseen],
+                 10 * (log10(ptc[bestseen] + 1e-300) - log10(1.0 - ptc[bestseen] + 1e-300)));
         buf[WIDTHOF(buf) - 1] = 0;
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
@@ -3259,14 +3259,14 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         for (k = 0; k < 2; k++)
         {
             snprintf(buf, WIDTHOF(buf),
-                    "#%d (%s):"
-                    " documents: %d, features: %d,  prob: %3.2e, pR: %6.2f\n",
-                    k,
-                    hashname[k],
-                    doc_num[k],
-                    hashlens[k],
-                    ptc[k],
-                    10 * (log10(ptc[k] + 1e-300) - log10(1.0 - ptc[k] + 1e-300)));
+                     "#%d (%s):"
+                     " documents: %d, features: %d,  prob: %3.2e, pR: %6.2f\n",
+                     k,
+                     hashname[k],
+                     doc_num[k],
+                     hashlens[k],
+                     ptc[k],
+                     10 * (log10(ptc[k] + 1e-300) - log10(1.0 - ptc[k] + 1e-300)));
             buf[WIDTHOF(buf) - 1] = 0;
 
             if (strlen(stext) + strlen(buf) <= stext_maxlen)
@@ -3296,7 +3296,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (user_trace)
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         //    and do what we do for a FAIL here
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -3319,9 +3319,9 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 
@@ -3329,9 +3329,9 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 #endif /* CRM_WITHOUT_SVM */
@@ -3343,9 +3343,9 @@ int crm_expr_svm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 
@@ -3353,9 +3353,9 @@ int crm_expr_svm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 
@@ -3363,9 +3363,9 @@ int crm_expr_svm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 
@@ -3373,9 +3373,9 @@ int crm_expr_svm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 
@@ -3383,9 +3383,9 @@ int crm_expr_svm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 
@@ -3393,9 +3393,9 @@ int crm_expr_svm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 
@@ -3403,9 +3403,9 @@ int crm_expr_svm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 
@@ -3413,9 +3413,9 @@ int crm_expr_svm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, int txtstart, int txtlen)
 {
     return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "SVM");
+                            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+                            "You may want to run 'crm -v' to see which classifiers are available.\n",
+                            "SVM");
 }
 
 

@@ -297,11 +297,11 @@ static uint32_t crm_rand32(void)
 {
     uint64_t sum;
 
-    sum = (uint64_t)2111111111UL * (uint64_t)rand_store[3] +
-          (uint64_t)1492 * (uint64_t)(rand_store[2]) +
-          (uint64_t)1776 * (uint64_t)(rand_store[1]) +
-          (uint64_t)5115 * (uint64_t)(rand_store[0]) +
-          (uint64_t)rand_store[4];
+    sum = (uint64_t)2111111111UL * (uint64_t)rand_store[3]
+          + (uint64_t)1492 * (uint64_t)(rand_store[2])
+          + (uint64_t)1776 * (uint64_t)(rand_store[1])
+          + (uint64_t)5115 * (uint64_t)(rand_store[0])
+          + (uint64_t)rand_store[4];
     rand_store[3] = rand_store[2];
     rand_store[2] = rand_store[1];
     rand_store[1] = rand_store[0];

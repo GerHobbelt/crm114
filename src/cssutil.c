@@ -122,7 +122,7 @@ char *outbuf = NULL;
 char *tempbuf = NULL;
 
 
-#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+#if !defined(CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
 CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = { 0 };
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
@@ -381,12 +381,12 @@ int main(int argc, char **argv)
         //
         //   mmap the hash file into memory so we can bitwhack it
         hashes = crm_mmap_file(cssfile,
-                0,
-                hfsize,
-                PROT_READ | PROT_WRITE,
-                MAP_SHARED,
-                CRM_MADV_RANDOM,
-                &hfsize);
+                               0,
+                               hfsize,
+                               PROT_READ | PROT_WRITE,
+                               MAP_SHARED,
+                               CRM_MADV_RANDOM,
+                               &hfsize);
         if (hashes == MAP_FAILED)
         {
             fprintf(stderr,
@@ -426,9 +426,9 @@ int main(int argc, char **argv)
                     //  " The slot is busy, too.  It's hosed.  Time to die.");
                     //goto regcomp_failed;
                     fprintf(
-                            stderr
+                        stderr
                            ,
-                            "\n Minor Caution - this file has the learncount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");
+                        "\n Minor Caution - this file has the learncount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");
                 }
             }
             //      fprintf(stderr, "This file has had %d documents learned!\n",
@@ -737,7 +737,7 @@ int main(int argc, char **argv)
 // bogus code to make link phase happy while we are in limbo between obsoleting this tool and
 // getting cssXXXX script commands working in crm114 itself.
 void free_stack_item(CSL_CELL *csl)
-{ }
+{}
 
 
 

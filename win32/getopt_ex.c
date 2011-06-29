@@ -56,7 +56,7 @@ static char SW = '-';           /* The switch character, either '-' or '/' */
  *
  * Standard option syntax is:
  *
- *  option ::= SW [optLetter]* [argLetter space* argument]
+ *   option ::= SW [optLetter]* [argLetter space* argument]
  *
  * where
  *  - SW is either '/' or '-', according to the current setting
@@ -98,12 +98,12 @@ static char SW = '-';           /* The switch character, either '-' or '/' */
  *
  * For example, if the MSDOS switch char is '/' (the MSDOS norm) and
  *
- *optionS == "A:F:PuU:wXZ:"
+ *   optionS == "A:F:PuU:wXZ:"
  *
  * then 'P', 'u', 'w', and 'X' are option letters and 'F', 'U', 'Z'
  * are followed by arguments.  A valid command line may be:
  *
- *  aCommand  /uPFPi /X /A L someFile
+ *   aCommand  /uPFPi /X /A L someFile
  *
  * where:
  *  - 'u' and 'P' will be returned as isolated option letters.
@@ -192,7 +192,7 @@ gopError:
  *         getopt - Parse command line options
  *
  *  SYNOPSIS
- #include <unistd.h>
+ *         #include <unistd.h>
  *
  *         int getopt(int argc, char * const argv[],
  *                    const char *optstring);
@@ -200,7 +200,7 @@ gopError:
  *         extern char *optarg;
  *         extern int optind, opterr, optopt;
  *
- #include <getopt.h>
+ *         #include <getopt.h>
  *
  *         int getopt_long(int argc, char * const argv[],
  *                    const char *optstring,
@@ -345,7 +345,7 @@ gopError:
  *         illustrates the use of getopt_long() with most of its fea-
  *         tures.
  *
- #include <stdio.h>
+ *         #include <stdio.h>
  *
  *         int
  *         main (argc, argv)
@@ -879,7 +879,7 @@ static const char *_getopt_initialize(int argc, char *const *argv, const char *o
  */
 
 int _getopt_internal(int argc, char *const *argv, const char *optstring, const struct option *longopts, int *longind, int long_only,
-                     void (*print_error)(void *, const char *, ...), void *propagate)
+                    getopt_print_error_f *print_error, void *propagate)
 {
     optarg = NULL;
 
@@ -900,7 +900,7 @@ int _getopt_internal(int argc, char *const *argv, const char *optstring, const s
 #if defined (BASH2_SUPPORT)
 
 #define NONOPTION_P                                             \
-    (argv[optind][0] != '-' || argv[optind][1] == 0          \
+    (argv[optind][0] != '-' || argv[optind][1] == 0             \
      || (optind < nonoption_flags_len                           \
          && __getopt_nonoption_flags[optind] == '1'))
 
@@ -1375,7 +1375,7 @@ int _getopt_internal(int argc, char *const *argv, const char *optstring, const s
     }
 }
 
-int getopt_ex(int argc, char *const *argv, const char *optstring, void (*print_error)(void *, const char *, ...), void *propagate)
+int getopt_ex(int argc, char *const *argv, const char *optstring, getopt_print_error_f *print_error, void *propagate)
 {
     return _getopt_internal(argc, argv, optstring,
                             (const struct option *)0,
@@ -1478,7 +1478,7 @@ int main(int argc, char **argv)
  * Boston, MA 02111-1307, USA.  */
 
 int getopt_long_ex(int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index,
-                   void (*print_error)(void *, const char *, ...), void *propagate)
+               getopt_print_error_f *print_error, void *propagate)
 {
     return _getopt_internal(argc, argv, options, long_options, opt_index, 0, print_error, propagate);
 }
@@ -1488,7 +1488,7 @@ int getopt_long_ex(int argc, char *const *argv, const char *options, const struc
  * but does match a short option, it is parsed as a short option
  * instead.  */
 int getopt_long_only_ex(int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index,
-                        void (*print_error)(void *, const char *, ...), void *propagate)
+                    getopt_print_error_f *print_error, void *propagate)
 {
     return _getopt_internal(argc, argv, options, long_options, opt_index, 1, print_error, propagate);
 }
@@ -1513,7 +1513,7 @@ int main(int argc, char **argv)
             { "create", 0, 0, 0 },
             { "file", 1, 0, 0 },
             { 0, 0, 0, 0 }
-        }
+        };
 
         c = getopt_long_ex(argc, argv, "abc:d:0123456789",
                            long_options, &option_index, fprintf, stdout);

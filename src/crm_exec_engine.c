@@ -37,30 +37,30 @@ int crm_invoke(CSL_CELL **csl_ref)
     //    a pointer to the current statement argparse block.  This gets whacked
     //    on every new statement.
     ARGPARSE_BLOCK *apb = NULL;
-	CSL_CELL *csl;
+    CSL_CELL *csl;
 
     //     timer1 and timer2 are for time profiling.
     //
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
     int64_t timer1 = 0;
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
     int64_t timer1 = 0;
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
     int64_t timer1 = 0;
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
     int64_t timer1 = 0;
 #else
     // nada
 #endif
-#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+#if defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
     struct tms timer1a = { 0 };
 #endif
 
     int tstmt;
 
-	CRM_ASSERT(csl_ref);
-	CRM_ASSERT(*csl_ref);
-	csl = *csl_ref;
+    CRM_ASSERT(csl_ref);
+    CRM_ASSERT(*csl_ref);
+    csl = *csl_ref;
 
     tstmt = 0;
     i = j = k = 0;
@@ -71,7 +71,7 @@ int crm_invoke(CSL_CELL **csl_ref)
     if (csl->mct == NULL)
     {
         untrappableerror("Can't execute a file without compiling first.\n",
-                "This means that CRM114 is somehow broken.");
+                         "This means that CRM114 is somehow broken.");
     }
 
     //    empty out the alius stack (nothing FAILed yet.)
@@ -109,29 +109,29 @@ int crm_invoke(CSL_CELL **csl_ref)
     //       statement' will average out.
     if (profile_execution)
     {
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
         LARGE_INTEGER t1;
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
         struct timespec t1;
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
         struct timeval t1;
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
         clock_t t1;
 #else
         // nada
 #endif
-#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+#if defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
         struct tms t1a;
         clock_t t2a;
 #endif
 
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
         if (!QueryPerformanceCounter(&t1))
         {
             t1.QuadPart = 0;
         }
         timer1 = t1.QuadPart;
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
         if (!clock_gettime(CLOCK_REALTIME, &t1))
         {
             timer1 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
@@ -140,7 +140,7 @@ int crm_invoke(CSL_CELL **csl_ref)
         {
             timer1 = 0; // unknown; due to error
         }
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
         if (!gettimeofday(&t1))
         {
             timer1 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
@@ -149,7 +149,7 @@ int crm_invoke(CSL_CELL **csl_ref)
         {
             timer1 = 0; // unknown; due to error
         }
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
         t1 = clock();
         if (t1 == (clock) - 1)
         {
@@ -162,7 +162,7 @@ int crm_invoke(CSL_CELL **csl_ref)
 #else
 #endif
 
-#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+#if defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
         t2a = times(&t1a);
         if (t2a == (clock_t)(-1))
         {
@@ -181,7 +181,7 @@ int crm_invoke(CSL_CELL **csl_ref)
 invoke_top:
 
     tstmt = csl->cstmt;   // [i_a] also used by the marker analysis profiling calls
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     csl->cstmt_recall = tstmt;
     csl->next_stmt_due_to_fail = -1;
     csl->next_stmt_due_to_trap = -1;
@@ -212,8 +212,8 @@ invoke_top:
                     csl->filetext[csl->mct[csl->cstmt]->fchar + i]);
 #else
         fwrite_ASCII_Cfied(stderr,
-                csl->filetext + csl->mct[csl->cstmt]->fchar,
-                slen);
+                           csl->filetext + csl->mct[csl->cstmt]->fchar,
+                           slen);
 #endif
         fprintf(stderr, "\n");
     }
@@ -229,7 +229,7 @@ invoke_top:
     //   Invoke the common declensional parser on the statement only if it's
     //   an executable statement.
     //
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     CRM_ASSERT(tstmt == csl->cstmt);
 #endif
     switch (csl->mct[csl->cstmt]->stmt_type)
@@ -253,16 +253,16 @@ invoke_top:
             {
                 untrappableerror("Couldn't alloc the space to incrementally "
                                  "compile a statement.  ",
-                        "Stick a fork in us; we're _done_.\n");
+                                 "Stick a fork in us; we're _done_.\n");
             }
             //  we now have the statement's apb allocated; we point the generic
             //  apb at the same place and run with it.
             apb = csl->mct[csl->cstmt]->apb;
             (void)crm_statement_parse(
-                    &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
-                    slen,
-                    csl->mct[csl->cstmt],
-                    apb);
+                &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
+                slen,
+                csl->mct[csl->cstmt],
+                apb);
         }
         else
         {
@@ -291,14 +291,14 @@ invoke_top:
     }
     //    and maybe drop into the debugger?
     //
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     CRM_ASSERT(tstmt == csl->cstmt);
 #endif
     cycle_counter++;
     if (debug_countdown > 0)
         debug_countdown--;
     if (debug_countdown == 0
-        || csl->mct[csl->cstmt]->stmt_break)
+       || csl->mct[csl->cstmt]->stmt_break)
     {
         i = crm_debugger(csl, (csl->mct[csl->cstmt]->stmt_break ? CRM_DBG_REASON_BREAKPOINT : CRM_DBG_REASON_UNDEFINED), NULL);
         if (i == -1)
@@ -312,7 +312,7 @@ invoke_top:
                 exit(EXIT_SUCCESS);
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         if (csl->next_stmt_due_to_debugger >= 0)
         {
             if (internal_trace)
@@ -329,7 +329,7 @@ invoke_top:
             goto invoke_top;
     }
 
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     CRM_ASSERT(tstmt == csl->cstmt);
 #endif
     if (user_trace)
@@ -356,13 +356,13 @@ invoke_top:
     CRM_ASSERT(csl->mct[csl->cstmt + 1] != NULL);
 
     crm_analysis_mark(&analysis_cfg,
-            MARK_OPERATION,
-            csl->cstmt,
-            "iL",
-            csl->mct[csl->cstmt]->stmt_type,
-            (unsigned long long int)csl->mct[csl->cstmt]->apb.sflags);
+                      MARK_OPERATION,
+                      csl->cstmt,
+                      "iL",
+                      csl->mct[csl->cstmt]->stmt_type,
+                      (unsigned long long int)csl->mct[csl->cstmt]->apb.sflags);
 
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     CRM_ASSERT(tstmt == csl->cstmt);
 #endif
     switch (csl->mct[csl->cstmt]->stmt_type)
@@ -376,7 +376,7 @@ invoke_top:
                         csl->cstmt);
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -391,7 +391,7 @@ invoke_top:
                         csl->cstmt, 1 + csl->mct[csl->cstmt]->nest_level);
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -404,7 +404,7 @@ invoke_top:
                         csl->cstmt, csl->mct[csl->cstmt]->nest_level);
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -414,16 +414,16 @@ invoke_top:
             int width = CRM_MIN(1024, csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start);
 
             fatalerror_ex(SRC_LOC(),
-                    "Statement %d is bogus!!!  Here's the text:\n%.*s%s",
-                    csl->cstmt,
-                    width,
-                    &csl->filetext[csl->mct[csl->cstmt]->start],
-                    (csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start > width
-                     ? "(...truncated)"
-                     : "")
+                          "Statement %d is bogus!!!  Here's the text:\n%.*s%s",
+                          csl->cstmt,
+                          width,
+                          &csl->filetext[csl->mct[csl->cstmt]->start],
+                          (csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start > width
+                           ? "(...truncated)"
+                           : "")
                          );
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -456,7 +456,7 @@ invoke_top:
             //      exit (retval);
             status = retval;
             // done = 1;
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
             goto invoke_done;
@@ -470,23 +470,23 @@ invoke_top:
             char *namestart;
             unsigned int namelen;
             if (user_trace)
-			{
+            {
                 fprintf(stderr, "Returning to caller at statement %d\n",
                         csl->cstmt);
-			}
+            }
 
             //    We can now pop back up to the previous context
             //    just by popping the most recent csl off.
             if (internal_trace)
             {
                 fprintf(stderr, "Return - popping CSL back to %p (we're at call depth %d)\n",
-					csl->caller, csl->calldepth);
+                        csl->caller, csl->calldepth);
             }
 
             //     Do the argument transfer here.
             //     Evaluate the "subject", and return that.
             CRM_ASSERT(apb != NULL);
-			retlen = 0;
+            retlen = 0;
             if (apb->s1len > 0)
             {
                 int idx;
@@ -503,9 +503,9 @@ invoke_top:
                     if (user_trace)
                         fprintf(stderr, "Returning, no return argument given\n");
                 }
-				else if (csl->calldepth == 0)
+                else if (csl->calldepth == 0)
                 {
-					CRM_ASSERT(idx == 0);
+                    CRM_ASSERT(idx == 0);
 
                     if (user_trace)
                         fprintf(stderr, "Returning equals EXITing when doing that at main level\n");
@@ -558,9 +558,9 @@ invoke_top:
             //     release the current csl cell back to the free memory pool.
             old_csl = csl;
             csl = csl->caller;
-			// ensure the caller / global ref gets updated as well!
-			*csl_ref = csl;
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            // ensure the caller / global ref gets updated as well!
+            *csl_ref = csl;
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             tstmt = csl->cstmt;
             //csl->next_stmt_due_to_fail = -1;
             //csl->next_stmt_due_to_trap = -1;
@@ -582,7 +582,7 @@ invoke_top:
                 crm_set_temp_var(":_cd:", depthstr, -1, 0);
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -599,8 +599,8 @@ invoke_top:
             if (tarlen < 2)
             {
                 nonfatalerror
-                            ("This program has a GOTO without a place to 'go' to.",
-                            " By any chance, did you leave off the '/' delimiters? ");
+                                      ("This program has a GOTO without a place to 'go' to.",
+                                      " By any chance, did you leave off the '/' delimiters? ");
             }
             else
             {
@@ -626,7 +626,7 @@ invoke_top:
                         fprintf(stderr, "GOTO from line %d to line %d\n",
                                 csl->cstmt,  k);
                     }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                     csl->next_stmt_due_to_jump = k;
 #else
                     csl->cstmt = k; // this gets autoincremented
@@ -651,7 +651,7 @@ invoke_top:
                             fprintf(stderr, "GOTO from line %d to line %d\n",
                                     csl->cstmt, k);
                         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                         csl->next_stmt_due_to_jump = k;
 #else
                         csl->cstmt = k - 1; // this gets autoincremented, so we must --
@@ -670,12 +670,12 @@ invoke_top:
                         //  this is recoverable if we have a trap... so we continue
                         //   execution right to the BREAK.
                         fatalerror(" Can't GOTO the nonexistent label/line: ",
-                                target);
+                                   target);
                     }
                 }
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -691,7 +691,7 @@ invoke_top:
                 fprintf(stderr, "Executing hard-FAIL at line %d\n", csl->cstmt);
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -707,7 +707,7 @@ invoke_top:
             //   failing statement block
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -723,7 +723,7 @@ invoke_top:
                 fprintf(stderr, "Executing hard-LIAF at line %d\n", csl->cstmt);
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_jump = csl->mct[csl->cstmt]->liaf_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->liaf_index - 1;
@@ -735,7 +735,7 @@ invoke_top:
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -753,7 +753,7 @@ invoke_top:
             {
                 if (user_trace)
                     fprintf(stderr, "prior group exit OK, ALIUS fails forward to statement #%d.\n", csl->mct[csl->cstmt]->fail_index - 1);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                 csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
                 csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -766,7 +766,7 @@ invoke_top:
                 CRM_ASSERT(csl->cstmt <= csl->nstmts);
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -786,7 +786,7 @@ invoke_top:
                 fprintf(stderr, "Executing a TRAP statement...");
                 fprintf(stderr, " this is a NOOP unless you have a live FAULT\n");
             }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -798,7 +798,7 @@ invoke_top:
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -826,9 +826,9 @@ invoke_top:
             if (!reason)
             {
                 untrappableerror(
-                        "Couldn't alloc 'reason' in CRM_FAULT - out of memory.\n",
-                        "Don't you just HATE it when the error fixup routine gets"
-                        "an error?!?!");
+                    "Couldn't alloc 'reason' in CRM_FAULT - out of memory.\n",
+                    "Don't you just HATE it when the error fixup routine gets"
+                    "an error?!?!");
             }
             memcpy(reason, rbuf, rlen);
             reason[rlen] = 0;
@@ -844,11 +844,11 @@ invoke_top:
             if (fresult != 0)
             {
                 fatalerror("Your program has no TRAP for the user defined fault:",
-                        reason);
+                           reason);
             }
             free(reason);
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -869,23 +869,23 @@ invoke_top:
             //strcpy(varname, ":_dw:");
             varidx = crm_vht_lookup(vht, ":_dw:", 5, csl->calldepth);
             if (varidx == 0
-                || vht[varidx] == NULL)
+               || vht[varidx] == NULL)
             {
                 fatalerror("This is very strange... there is no data window!",
-                        "As such, death is our only option.");
+                           "As such, death is our only option.");
             }
             else
             {
                 int len_written = fwrite4stdio(&(vht[varidx]->valtxt[vht[varidx]->vstart]),
-                        vht[varidx]->vlen,
-                        stdout);
+                                               vht[varidx]->vlen,
+                                               stdout);
                 if (len_written != vht[varidx]->vlen)
                 {
                     nonfatalerror_ex(SRC_LOC(), "ACCEPT: all data (len = %d) could not be written to the output: "
                                                 "errno = %d(%s)\n",
-                            vht[varidx]->vlen,
-                            errno,
-                            errno_descr(errno));
+                                     vht[varidx]->vlen,
+                                     errno,
+                                     errno_descr(errno));
                 }
                 // [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster
                 if (isatty(fileno(stdout)))
@@ -897,42 +897,42 @@ invoke_top:
             //      for (i = 0; i < cdw->nchars ; i++)
             //        fprintf (stdout, "%c", cdw->filetext[i]);
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_MATCH:
         crm_expr_match(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_OUTPUT:
         crm_expr_output(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_WINDOW:
         crm_expr_window(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_ALTER:
         crm_expr_alter(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_EVAL:
         crm_expr_eval(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -961,7 +961,7 @@ invoke_top:
             varlen = crm_nexpandvar(varname, varlen, MAX_VARNAME, vht, tdw);
             //   If we didn't get a variable name, we replace the data window!
             if (!crm_nextword(varname, varlen, 0, &vns, &vnl)
-                || vnl == 0)
+               || vnl == 0)
             {
                 strcpy(varname, ":_dw:");
                 vnl = (int)strlen(varname);
@@ -994,14 +994,14 @@ invoke_top:
             //    and stuff the new value in.
             crm_destructive_alter_nvariable(&varname[vns], vnl,                    newstr, (int)strlen(newstr), csl->calldepth);
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_TRANSLATE:
         crm_expr_translate(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1012,7 +1012,7 @@ invoke_top:
 #else
         fatalerror("Shucks, this version, like, does not (yet) support the MUTATE command, like, you know? ", "This is _so_ unfair!");
 #endif
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1023,14 +1023,14 @@ invoke_top:
 #else
         fatalerror("Shucks, this version, like, does not (yet) support the SORT command, like, you know? ", "This is _so_ unfair!");
 #endif
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_LEARN:
         crm_expr_learn(csl, apb, vht, tdw);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1038,63 +1038,63 @@ invoke_top:
     //   we had to split out classify- it was just too big.
     case CRM_CLASSIFY:
         crm_expr_classify(csl, apb, vht, tdw);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_CSS_MERGE:
         crm_expr_css_merge(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_CSS_DIFF:
         crm_expr_css_diff(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_CSS_BACKUP:
         crm_expr_css_backup(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_CSS_RESTORE:
         crm_expr_css_restore(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_CSS_INFO:
         crm_expr_css_info(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_CSS_CREATE:
         crm_expr_css_create(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_CSS_ANALYZE:
         crm_expr_css_analyze(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_CSS_MIGRATE:
         crm_expr_css_migrate(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1102,21 +1102,21 @@ invoke_top:
     case CRM_ISOLATE:
         //    nonzero return means "bad things happened"...
         crm_expr_isolate(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_INPUT:
         crm_expr_input(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_SYSCALL:
         crm_expr_syscall(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1149,7 +1149,7 @@ invoke_top:
             {
                 fprintf(stderr, " translates to '%s'.\n", target);
             }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
 
@@ -1184,14 +1184,14 @@ invoke_top:
             newcsl->preload_window = csl->preload_window;
             newcsl->caller = csl;
             newcsl->calldepth = csl->calldepth + 1;
-           newcsl->running = csl->running;
+            newcsl->running = csl->running;
             //     put in the target statement number - this is a label!
             CRM_ASSERT(k >= 0);
             CRM_ASSERT(k <= csl->nstmts);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             CRM_ASSERT(tstmt == csl->cstmt);
             newcsl->cstmt = k;
             newcsl->next_stmt_due_to_fail = -1;
@@ -1205,7 +1205,7 @@ invoke_top:
             {
                 fprintf(stderr, "CALL is jumping to statement line: %d/%d\n", k, csl->nstmts);
             }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
             CRM_ASSERT(k >= 0);
@@ -1241,7 +1241,7 @@ invoke_top:
                 CRM_ASSERT(apb != NULL);
                 argvallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->b1start, apb->b1len);
                 argvallen = crm_nexpandvar(tempbuf, argvallen, data_window_size, vht, tdw);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                 CRM_ASSERT(tstmt == csl->cstmt);
 #endif
 
@@ -1261,7 +1261,7 @@ invoke_top:
                     retnamelen = crm_get_pgm_arg(outbuf, data_window_size, apb->p1start, apb->p1len);
                     retnamelen = crm_nexpandvar(outbuf, retnamelen, data_window_size, vht, tdw);
                     CRM_ASSERT(retnamelen < data_window_size);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                     CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                     if (crm_nextword(outbuf, retnamelen, 0, &retname_start, &retnamelen))
@@ -1269,14 +1269,14 @@ invoke_top:
                         if (!crm_is_legal_variable(&outbuf[retname_start], retnamelen))
                         {
                             fatalerror_ex(
-                                    SRC_LOC(), "Attempt to store a CALL return value into an illegal variable '%.*s'. How very bizarre.", retnamelen,
-                                    &outbuf[retname_start]);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                                SRC_LOC(), "Attempt to store a CALL return value into an illegal variable '%.*s'. How very bizarre.", retnamelen,
+                                &outbuf[retname_start]);
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                             break;
                         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                         ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen, csl->calldepth); /* scope = PARENT level! */
@@ -1287,8 +1287,8 @@ invoke_top:
                             nonfatalerror_ex(SRC_LOC(), "Your call statement wants to return a value "
                                                         "to a nonexistent variable; I'll create an "
                                                         "isolated one.  Hope that's OK. Varname was '%.*s'",
-                                    retnamelen, &outbuf[retname_start]);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                                             retnamelen, &outbuf[retname_start]);
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                             if (user_trace)
@@ -1297,13 +1297,13 @@ invoke_top:
                                         "No such return value var, creating var %s\n",
                                         &outbuf[retname_start]);
                             }
-			crm_set_temp_var(&outbuf[retname_start], "", csl->calldepth, !!(apb->sflags & CRM_KEEP)); /* scope = PARENT level! or... global! */
+                            crm_set_temp_var(&outbuf[retname_start], "", csl->calldepth, !!(apb->sflags & CRM_KEEP)); /* scope = PARENT level! or... global! */
                             ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen, csl->calldepth);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                         if (user_trace)
@@ -1312,7 +1312,7 @@ invoke_top:
                                     ret_idx);
                         }
                         newcsl->return_vht_cell = ret_idx;
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                     }
@@ -1324,7 +1324,7 @@ invoke_top:
                         }
                     }
                 }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                 CRM_ASSERT(tstmt == csl->cstmt);
 #endif
 
@@ -1336,8 +1336,8 @@ invoke_top:
                 //
                 oldcsl = csl;
                 csl = newcsl;
-			// ensure the caller / global ref gets updated as well!
-			*csl_ref = csl;
+                // ensure the caller / global ref gets updated as well!
+                *csl_ref = csl;
                 tstmt = csl->cstmt;
                 slen = csl->mct[csl->cstmt + 1]->fchar - csl->mct[csl->cstmt]->fchar;
 
@@ -1361,17 +1361,17 @@ invoke_top:
                     {
                         untrappableerror("Couldn't alloc the space to incrementally "
                                          "compile a statement.  ",
-                                "Stick a fork in us; we're _done_.\n");
+                                         "Stick a fork in us; we're _done_.\n");
                     }
                     else
                     {
                         //  we now have the statement's apb allocated; we point
                         //  the generic apb at the same place and run with it.
                         (void)crm_statement_parse(
-                                &csl->filetext[csl->mct[csl->cstmt]->fchar],
-                                slen,
-                                csl->mct[csl->cstmt],
-                                csl->mct[csl->cstmt]->apb);
+                            &csl->filetext[csl->mct[csl->cstmt]->fchar],
+                            slen,
+                            csl->mct[csl->cstmt],
+                            csl->mct[csl->cstmt]->apb);
                     }
                 }
                 //    and start using the JITted apb
@@ -1395,8 +1395,8 @@ invoke_top:
                     {
                         nonfatalerror_ex(SRC_LOC(), "CALL statement comes with a label reference which is too long (len = %d) "
                                                     "while the maximum allowed size is %d.",
-                                vnl,
-                                data_window_size - 1);
+                                         vnl,
+                                         data_window_size - 1);
                         vnl = data_window_size - 1;
                     }
                     crm_memmove(outbuf, &outbuf[vns], vnl);
@@ -1415,7 +1415,7 @@ invoke_top:
                         if (!crm_is_legal_variable(outbuf, vnl))
                         {
                             fatalerror_ex(SRC_LOC(), "Attempt to CALL with an illegal variable '%.*s' argument. How very bizarre.", vnl, outbuf);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                             break;
@@ -1428,17 +1428,17 @@ invoke_top:
                             vht[vmidx]->vstart = tdw->nchars++;
                             vht[vmidx]->vlen   = 0;
                             crm_compress_tdw_section(vht[vmidx]->valtxt,
-                                    oldvstart,
-                                    oldvstart + oldvlen);
+                                                     oldvstart,
+                                                     oldvstart + oldvlen);
                         }
                         //
                         //      finally, we can put the variable in.  (this is
                         //      an ALTER to a zero-length variable, which is why
                         //      we moved it to the end of the TDW.
-			//
-			// NEVER allow this var to be allocated in outer scope if it doesn't reside
-			// there yet:
-			//
+                        //
+                        // NEVER allow this var to be allocated in outer scope if it doesn't reside
+                        // there yet:
+                        //
                         crm_set_temp_nvar(outbuf, tempbuf, argvallen, csl->calldepth, 0);
                     }
                     //
@@ -1447,7 +1447,7 @@ invoke_top:
                 // else: ignore.
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1501,7 +1501,7 @@ invoke_top:
             while (!done)
             {
                 if (!crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen)
-                    || vlen == 0)
+                   || vlen == 0)
                 {
                     done = 1;
                 }
@@ -1513,7 +1513,7 @@ invoke_top:
                     if (!crm_is_legal_variable(&temp_vars[vstart], vlen))
                     {
                         fatalerror_ex(SRC_LOC(), "Attempt to INTERSECT with an illegal variable '%.*s'. How very bizarre.", vlen, &temp_vars[vstart]);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                         goto invoke_bailout;
@@ -1526,15 +1526,15 @@ invoke_top:
                         {
                             nonfatalerror_ex(SRC_LOC(), "INTERSECT statement comes with a variable name which is too long (len = %d) "
                                                         "while the maximum allowed size is %d.",
-                                    vlen,
-                                    (int)(WIDTHOF(varname) - 1));
+                                             vlen,
+                                             (int)(WIDTHOF(varname) - 1));
                             vlen = WIDTHOF(varname) - 1;
                         }
                         strncpy(varname, &temp_vars[vstart], vlen);
                         varname[vlen] = 0;
                         nonfatalerror("can't intersection a nonexistent variable.",
-                                varname);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                                      varname);
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                         goto invoke_bailout;
@@ -1550,15 +1550,15 @@ invoke_top:
                             {
                                 nonfatalerror_ex(SRC_LOC(), "INTERSECT statement comes with a variable name which is too long (len = %d) "
                                                             "while the maximum allowed size is %d.",
-                                        vlen,
-                                        (int)(WIDTHOF(varname) - 1));
+                                                 vlen,
+                                                 (int)(WIDTHOF(varname) - 1));
                                 vlen = WIDTHOF(varname) - 1;
                             }
                             strncpy(varname, &temp_vars[vstart], vlen);
                             varname[vlen] = 0;
                             nonfatalerror("can't intersect isolated variable.",
-                                    varname);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                                          varname);
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                             goto invoke_bailout;
@@ -1587,16 +1587,16 @@ invoke_top:
             if (crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen))
             {
                 crm_set_windowed_nvar(NULL, &out_var[ovstart], ovlen, cdw->filetext,
-                        istart, vlen,
-						csl->cstmt, csl->calldepth, !!(apb->sflags & CRM_KEEP));
+                                      istart, vlen,
+                                      csl->cstmt, csl->calldepth, !!(apb->sflags & CRM_KEEP));
             }
             else
             {
                 nonfatalerror("INTERSECT didn't come with a target variable to store the results.",
-                        "'We focus on results around here,' the businessman said, and he wept silently.");
+                              "'We focus on results around here,' the businessman said, and he wept silently.");
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1648,7 +1648,7 @@ invoke_top:
             while (!done)
             {
                 if (!crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen)
-                    || vlen == 0)
+                   || vlen == 0)
                 {
                     done = 1;
                 }
@@ -1660,7 +1660,7 @@ invoke_top:
                     if (!crm_is_legal_variable(&temp_vars[vstart], vlen))
                     {
                         fatalerror_ex(SRC_LOC(), "Attempt to UNION with an illegal variable '%.*s'. How very bizarre.", vlen, &temp_vars[vstart]);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                         goto invoke_bailout;
@@ -1672,8 +1672,8 @@ invoke_top:
                         strncpy(varname, &temp_vars[vstart], vlen);
                         varname[vlen] = 0;
                         nonfatalerror("can't union a nonexistent variable.",
-                                varname);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                                      varname);
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                         goto invoke_bailout;
@@ -1688,8 +1688,8 @@ invoke_top:
                             strncpy(varname, &temp_vars[vstart], vlen);
                             varname[vlen] = 0;
                             nonfatalerror("can't union an isolated variable.",
-                                    varname);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                                          varname);
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
                             CRM_ASSERT(tstmt == csl->cstmt);
 #endif
                             goto invoke_bailout;
@@ -1718,16 +1718,16 @@ invoke_top:
             if (crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen))
             {
                 crm_set_windowed_nvar(NULL, &out_var[ovstart], ovlen, cdw->filetext,
-                        istart, vlen,
-                        csl->cstmt, csl->calldepth, !!(apb->sflags & CRM_KEEP));
+                                      istart, vlen,
+                                      csl->cstmt, csl->calldepth, !!(apb->sflags & CRM_KEEP));
             }
             else
             {
                 nonfatalerror("UNION didn't come with a target variable to store the results.",
-                        "'We focus on results around here,' the businessman said, and he wept silently.");
+                              "'We focus on results around here,' the businessman said, and he wept silently.");
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1765,14 +1765,14 @@ invoke_top:
 
     case CRM_CLUMP:
         crm_expr_clump(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
 
     case CRM_PMULC:
         crm_expr_pmulc(csl, apb);
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1782,17 +1782,17 @@ invoke_top:
             int width = CRM_MIN(1024, csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start);
 
             fatalerror_ex(SRC_LOC(),
-                    "Statement %d NOT YET IMPLEMENTED !!!"
-                    "Here's the text:\n%.*s%s",
-                    csl->cstmt,
-                    width,
-                    &csl->filetext[csl->mct[csl->cstmt]->start],
-                    (csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start > width
-                     ? "(...truncated)"
-                     : "")
+                          "Statement %d NOT YET IMPLEMENTED !!!"
+                          "Here's the text:\n%.*s%s",
+                          csl->cstmt,
+                          width,
+                          &csl->filetext[csl->mct[csl->cstmt]->start],
+                          (csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start > width
+                           ? "(...truncated)"
+                           : "")
                          );
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
@@ -1802,21 +1802,21 @@ invoke_top:
             int width = CRM_MIN(1024, csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start);
 
             fatalerror_ex(SRC_LOC(),
-                    "Statement %d way, way bizarre!!!  Here's the text:\n%.*s%s",
-                    csl->cstmt,
-                    width,
-                    &csl->filetext[csl->mct[csl->cstmt]->start],
-                    ((csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start) > width
-                     ? "(...truncated)"
-                     : "")
+                          "Statement %d way, way bizarre!!!  Here's the text:\n%.*s%s",
+                          csl->cstmt,
+                          width,
+                          &csl->filetext[csl->mct[csl->cstmt]->start],
+                          ((csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start) > width
+                           ? "(...truncated)"
+                           : "")
                          );
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         CRM_ASSERT(tstmt == csl->cstmt);
 #endif
         break;
     }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     CRM_ASSERT(tstmt == csl->cstmt);
 #endif
 
@@ -1824,7 +1824,7 @@ invoke_top:
     //    on to the next statement, we branch here.
 invoke_bailout:
 
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     CRM_ASSERT(tstmt == csl->cstmt);
 #endif
     crm_analysis_mark(&analysis_cfg, MARK_OPERATION, tstmt, "");
@@ -1832,21 +1832,21 @@ invoke_bailout:
     //  grab end-of-statement timers ?
     if (profile_execution)
     {
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
         LARGE_INTEGER t1;
         int64_t timer2;
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
         struct timespec t1;
         int64_t timer2;
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
         struct timeval t1;
         int64_t timer2;
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
         clock_t t1;
 #else
         // nada
 #endif
-#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+#if defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
         struct tms t1a;
         clock_t t2a;
 #endif
@@ -1854,7 +1854,7 @@ invoke_bailout:
 
         csl->mct[tstmt]->stmt_exec_count++;
 
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
         if (!QueryPerformanceCounter(&t1))
         {
             // unknown; due to error
@@ -1868,7 +1868,7 @@ invoke_bailout:
             // csl->mct[tstmt]->stmt_stime += 0;
             timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
         }
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
         if (!clock_gettime(CLOCK_REALTIME, &t1))
         {
             timer2 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
@@ -1882,7 +1882,7 @@ invoke_bailout:
         {
             // unknown; due to error
         }
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
         if (!gettimeofday(&t1))
         {
             timer2 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
@@ -1896,7 +1896,7 @@ invoke_bailout:
         {
             // unknown; due to error
         }
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
         t1 = clock();
         if (t1 == (clock) - 1)
         {
@@ -1912,7 +1912,7 @@ invoke_bailout:
 #else
 #endif
 
-#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+#if defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
         t2a = times(&t1a);
         if (t2a == (clock_t)(-1))
         {
@@ -1938,12 +1938,12 @@ invoke_bailout:
 
     //    go on to next statement (unless we're failing, laifing, etc,
     //    in which case we have no business getting to here.
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     CRM_ASSERT(tstmt == csl->cstmt);
     if (csl->next_stmt_due_to_fail >= 0
-        || csl->next_stmt_due_to_trap >= 0
-        || csl->next_stmt_due_to_debugger >= 0
-        || csl->next_stmt_due_to_jump >= 0)
+       || csl->next_stmt_due_to_trap >= 0
+       || csl->next_stmt_due_to_debugger >= 0
+       || csl->next_stmt_due_to_jump >= 0)
     {
         if (csl->next_stmt_due_to_jump >= 0)
         {
@@ -2003,7 +2003,7 @@ invoke_bailout:
     goto invoke_top;
 
 invoke_done:
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     CRM_ASSERT(tstmt == csl->cstmt);
 #endif
 
@@ -2012,21 +2012,21 @@ invoke_done:
     //  grab end-of-statement timers ?
     if (profile_execution)
     {
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
         LARGE_INTEGER t1;
         int64_t timer2;
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
         struct timespec t1;
         int64_t timer2;
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
         struct timeval t1;
         int64_t timer2;
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
         clock_t t1;
 #else
         // nada
 #endif
-#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+#if defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
         struct tms t1a;
         clock_t t2a;
 #endif
@@ -2034,7 +2034,7 @@ invoke_done:
 
         csl->mct[tstmt]->stmt_exec_count++;
 
-#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+#if defined(HAVE_QUERYPERFORMANCECOUNTER) && defined(HAVE_QUERYPERFORMANCEFREQUENCY)
         if (!QueryPerformanceCounter(&t1))
         {
             // unknown; due to error
@@ -2048,7 +2048,7 @@ invoke_done:
             // csl->mct[tstmt]->stmt_stime += 0;
             timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
         }
-#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(HAVE_STRUCT_TIMESPEC)
         if (!clock_gettime(CLOCK_REALTIME, &t1))
         {
             timer2 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
@@ -2062,7 +2062,7 @@ invoke_done:
         {
             // unknown; due to error
         }
-#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
         if (!gettimeofday(&t1))
         {
             timer2 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
@@ -2076,7 +2076,7 @@ invoke_done:
         {
             // unknown; due to error
         }
-#elif defined (HAVE_CLOCK)
+#elif defined(HAVE_CLOCK)
         t1 = clock();
         if (t1 == (clock) - 1)
         {
@@ -2092,7 +2092,7 @@ invoke_done:
 #else
 #endif
 
-#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+#if defined(HAVE_TIMES) && defined(HAVE_STRUCT_TMS)
         t2a = times(&t1a);
         if (t2a == (clock_t)(-1))
         {
@@ -2116,7 +2116,7 @@ invoke_done:
 #endif
     }
 
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
     CRM_ASSERT(tstmt == csl->cstmt);
 #endif
     //     give the debugger one last chance to do things.
@@ -2136,7 +2136,7 @@ invoke_done:
                 exit(EXIT_SUCCESS);
             }
         }
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         if (csl->next_stmt_due_to_debugger >= 0)
         {
             if (internal_trace)

@@ -46,7 +46,7 @@ static const STMT_TABLE_TYPE stmt_table[] =
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     //  text         internal       nlen exec special  min max   min max   min max  min max  flags
     //   rep           code               ?    flags   angles   slashargs  parens    boxes
@@ -54,44 +54,44 @@ static const STMT_TABLE_TYPE stmt_table[] =
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssbackup", CRM_CSS_BACKUP,    9,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssrestore", CRM_CSS_RESTORE, 10,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssinfo",   CRM_CSS_INFO,      7,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssanalyze", CRM_CSS_ANALYZE, 10,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
-    { "csscreate", CRM_CSS_CREATE,    9,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE |
-      CRM_LITERAL | CRM_BYCHUNK
+    { "csscreate", CRM_CSS_CREATE,    9,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE
+      | CRM_LITERAL | CRM_BYCHUNK
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_MARKOVIAN 
+      | CRM_NEURAL_NET | CRM_MARKOVIAN
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssmigrate", CRM_CSS_MIGRATE, 10,  1,     0,    0,  0,     0,  1,    1,  1,   1,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "debug",     CRM_DEBUG,         5,  0,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "eval",      CRM_EVAL,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  0,  CRM_KEEP },
@@ -106,28 +106,28 @@ static const STMT_TABLE_TYPE stmt_table[] =
     { "intersect", CRM_INTERSECT,     9,  1,     0,    0,  0,     0,  0,    1,  1,   1,  1,  CRM_KEEP },
     { "isolate",   CRM_ISOLATE,       7,  1,     0,    0,  1,     0,  1,    1,  1,   0,  0,  CRM_DEFAULT | CRM_KEEP },
     { "lazy",      CRM_LAZY,          4,  1,     0,    0,  1,     0,  1,    1,  1,   0,  0,  CRM_DEFAULT },
-    { "learn",     CRM_LEARN,         5,  1,     0,    0,  1,     0,  2,    1,  1,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL |
-      CRM_BYCHUNK
+    { "learn",     CRM_LEARN,         5,  1,     0,    0,  1,     0,  2,    1,  1,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL
+      | CRM_BYCHUNK
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
       | CRM_REFUTE | CRM_APPEND | CRM_ABSENT
-      | CRM_NEURAL_NET | CRM_MARKOVIAN | CRM_FROMSTART 
+      | CRM_NEURAL_NET | CRM_MARKOVIAN | CRM_FROMSTART
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
-    { "classify",  CRM_CLASSIFY,      8,  1,     0,    0,  1,     0,  2,    1,  2,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL |
-      CRM_BYCHUNK
+    { "classify",  CRM_CLASSIFY,      8,  1,     0,    0,  1,     0,  2,    1,  2,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL
+      | CRM_BYCHUNK
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_MARKOVIAN 
+      | CRM_NEURAL_NET | CRM_MARKOVIAN
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "liaf",      CRM_LIAF,          4,  1,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "match",     CRM_MATCH,         5,  1,     0,    0,  1,     1,  1,    0,  1,   0,  1,
       CRM_ABSENT | CRM_NOCASE | CRM_LITERAL | CRM_FROMSTART
       | CRM_FROMCURRENT | CRM_FROMNEXT | CRM_FROMEND | CRM_NEWEND
       | CRM_BACKWARDS | CRM_NOMULTILINE | CRM_BASIC | CRM_KEEP },
-    { "mutate",    CRM_MUTATE,        7,  1,     1,    0,  1,     1,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_BYCHAR | CRM_NOMULTILINE | CRM_BYLINE |
-      CRM_BYCHUNK | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT | CRM_STRING | CRM_ABSENT },
+    { "mutate",    CRM_MUTATE,        7,  1,     1,    0,  1,     1,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_BYCHAR | CRM_NOMULTILINE | CRM_BYLINE
+      | CRM_BYCHUNK | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT | CRM_STRING | CRM_ABSENT },
     { "output",    CRM_OUTPUT,        6,  1,     0,    0,  1,     0,  1,    0,  0,   0,  1,  CRM_APPEND },
     { "clump",     CRM_CLUMP,         5,  1,     0,    0,  1,     0,  2,    1,  2,   1,  1,  CRM_UNIQUE | CRM_UNIGRAM | CRM_BYCHUNK | CRM_REFUTE },
     { "pmulc",     CRM_PMULC,         5,  1,     0,    0,  1,     0,  1,    1,  2,   1,  1,  CRM_UNIQUE | CRM_UNIGRAM | CRM_BYCHUNK | CRM_REFUTE },
@@ -135,134 +135,134 @@ static const STMT_TABLE_TYPE stmt_table[] =
     //   rep           code               ?    flags   angles   slashargs  parens    boxes
     { "return",    CRM_RETURN,        6,  1,     0,    0,  0,     0,  1,    0,  0,   0,  0,    0 },
     { "routine",   CRM_ROUTINE,       7,  1,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
-    { "sort",      CRM_SORT,          4,  1,     0,    0,  1,     0,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_BYCHAR | CRM_NOMULTILINE | CRM_BYLINE |
-      CRM_BYCHUNK | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT | CRM_STRING | CRM_BACKWARDS },
+    { "sort",      CRM_SORT,          4,  1,     0,    0,  1,     0,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_BYCHAR | CRM_NOMULTILINE | CRM_BYLINE
+      | CRM_BYCHUNK | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT | CRM_STRING | CRM_BACKWARDS },
     { "syscall",   CRM_SYSCALL,       7,  1,     0,    0,  1,     0,  1,    0,  3,   0,  1,  CRM_KEEP | CRM_ASYNC },
     { "translate", CRM_TRANSLATE,     9,  1,     0,    0,  1,     0,  2,    0,  1,   0,  1,  CRM_UNIQUE | CRM_LITERAL },
     { "trap",      CRM_TRAP,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  0,    0 },
     { "union",     CRM_UNION,         5,  1,     0,    0,  0,     0,  0,    1,  1,   1,  1,  CRM_KEEP },
-    { "window",    CRM_WINDOW,        6,  1,     0,    0,  1,     0,  2,    0,  2,   0,  0,  CRM_NOCASE | CRM_BYCHAR | CRM_BYCHUNK | CRM_BYEOF |
-      CRM_EOFACCEPTS | CRM_EOFRETRY | CRM_LITERAL },
+    { "window",    CRM_WINDOW,        6,  1,     0,    0,  1,     0,  2,    0,  2,   0,  0,  CRM_NOCASE | CRM_BYCHAR | CRM_BYCHUNK | CRM_BYEOF
+      | CRM_EOFACCEPTS | CRM_EOFRETRY | CRM_LITERAL },
 };
 
 
 
 /*
-   code to print the script language specification, whole or part.
-
-   When opcode_id < 0, show all instructions. Otherwise, show only the one.
+ * code to print the script language specification, whole or part.
+ *
+ * When opcode_id < 0, show all instructions. Otherwise, show only the one.
  */
 int show_instruction_spec(int opcode_id, show_instruction_spec_writer_cb *cb, void *propagator)
 {
-	int i;
-	int j;
-	int max_nl = 0;
-	int n;
+    int i;
+    int j;
+    int max_nl = 0;
+    int n;
 
-	for (i = 0; i < WIDTHOF(stmt_table); i++)
-	{
-		if (stmt_table[i].namelen > max_nl)
-		{
-			max_nl = stmt_table[i].namelen;
-		}
-	}
+    for (i = 0; i < WIDTHOF(stmt_table); i++)
+    {
+        if (stmt_table[i].namelen > max_nl)
+        {
+            max_nl = stmt_table[i].namelen;
+        }
+    }
 
-	n= 0;
-	for (i = 0; i < WIDTHOF(stmt_table); i++)
-	{
-		const STMT_TABLE_TYPE *s = &stmt_table[i];
+    n = 0;
+    for (i = 0; i < WIDTHOF(stmt_table); i++)
+    {
+        const STMT_TABLE_TYPE *s = &stmt_table[i];
 
-		if (opcode_id < 0 || opcode_id == s->stmt_code)
-		{
-			if (s->is_executable)
-			{
-				// print one statement:
-				char buf[64 * 60];
-				char *d = buf;
-				size_t dlen = sizeof(buf);
-			
-				if (n > 0 && (*cb)("\n", -1, propagator) < 0)
-					return -1;
+        if (opcode_id < 0 || opcode_id == s->stmt_code)
+        {
+            if (s->is_executable)
+            {
+                // print one statement:
+                char buf[64 * 60];
+                char *d = buf;
+                size_t dlen = sizeof(buf);
 
-				snprintf(d, dlen, "%*s ", -max_nl, s->stmt_name);
-				if ((*cb)(d, -1, propagator) < 0)
-					return -1;
+                if (n > 0 && (*cb)("\n", -1, propagator) < 0)
+                    return -1;
 
-				j = 0;
+                snprintf(d, dlen, "%*s ", -max_nl, s->stmt_name);
+                if ((*cb)(d, -1, propagator) < 0)
+                    return -1;
 
-				if (s->flags_allowed_mask)
-				{
-					if ((*cb)("<", -1, propagator) < 0)
-						return -1;
+                j = 0;
 
-					if (show_instruction_flags(s->flags_allowed_mask, cb, propagator) < 0)
-						return -1;
+                if (s->flags_allowed_mask)
+                {
+                    if ((*cb)("<", -1, propagator) < 0)
+                        return -1;
 
-					if (s->has_non_standard_flags)
-					{
-					if ((*cb)(" ...", -1, propagator) < 0)
-						return -1;
-					}
+                    if (show_instruction_flags(s->flags_allowed_mask, cb, propagator) < 0)
+                        return -1;
 
-					if ((*cb)("> ", -1, propagator) < 0)
-						return -1;
+                    if (s->has_non_standard_flags)
+                    {
+                        if ((*cb)(" ...", -1, propagator) < 0)
+                            return -1;
+                    }
 
-					j = 1;
-				}
+                    if ((*cb)("> ", -1, propagator) < 0)
+                        return -1;
 
-					// <>
-				for (/* j = 0 */; j < s->minangles; j++)
-				{
-					if ((*cb)("<...> ", -1, propagator) < 0)
-						return -1;
-				}
-				for (; j < s->maxangles; j++)
-				{
-					if ((*cb)("<optional> ", -1, propagator) < 0)
-						return -1;
-				}
+                    j = 1;
+                }
 
-    // ()
-				for (j = 0; j < s->minparens; j++)
-				{
-					if ((*cb)("(...) ", -1, propagator) < 0)
-						return -1;
-				}
-				for (; j < s->maxparens; j++)
-				{
-					if ((*cb)("(optional) ", -1, propagator) < 0)
-						return -1;
-				}
+                // <>
+                for (/* j = 0 */; j < s->minangles; j++)
+                {
+                    if ((*cb)("<...> ", -1, propagator) < 0)
+                        return -1;
+                }
+                for (; j < s->maxangles; j++)
+                {
+                    if ((*cb)("<optional> ", -1, propagator) < 0)
+                        return -1;
+                }
 
-    // []
-				for (j = 0; j < s->minboxes; j++)
-				{
-					if ((*cb)("[...] ", -1, propagator) < 0)
-						return -1;
-				}
-				for (; j < s->maxboxes; j++)
-				{
-					if ((*cb)("[optional] ", -1, propagator) < 0)
-						return -1;
-				}
+                // ()
+                for (j = 0; j < s->minparens; j++)
+                {
+                    if ((*cb)("(...) ", -1, propagator) < 0)
+                        return -1;
+                }
+                for (; j < s->maxparens; j++)
+                {
+                    if ((*cb)("(optional) ", -1, propagator) < 0)
+                        return -1;
+                }
 
-				// /.../
-				for (j = 0; j < s->minslashes; j++)
-				{
-					if ((*cb)("/.../ ", -1, propagator) < 0)
-						return -1;
-				}
-				for (; j < s->maxslashes; j++)
-				{
-					if ((*cb)("/optional/ ", -1, propagator) < 0)
-						return -1;
-				}
+                // []
+                for (j = 0; j < s->minboxes; j++)
+                {
+                    if ((*cb)("[...] ", -1, propagator) < 0)
+                        return -1;
+                }
+                for (; j < s->maxboxes; j++)
+                {
+                    if ((*cb)("[optional] ", -1, propagator) < 0)
+                        return -1;
+                }
 
-				n++;
-			}
-		}
-	}
-	return 0;
+                // /.../
+                for (j = 0; j < s->minslashes; j++)
+                {
+                    if ((*cb)("/.../ ", -1, propagator) < 0)
+                        return -1;
+                }
+                for (; j < s->maxslashes; j++)
+                {
+                    if ((*cb)("/optional/ ", -1, propagator) < 0)
+                        return -1;
+                }
+
+                n++;
+            }
+        }
+    }
+    return 0;
 }
 
 
@@ -292,14 +292,14 @@ int crm_load_csl(CSL_CELL *csl)
         if (errno == ENAMETOOLONG)
         {
             untrappableerror("Couldn't open the file (filename too long): ",
-                    csl->filename);
+                             csl->filename);
         }
         else
         {
             char dirbuf[DIRBUFSIZE_MAX];
 
             untrappableerror_ex(SRC_LOC(), "Couldn't open the file '%s' (full path: '%s')",
-                    csl->filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), csl->filename));
+                                csl->filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), csl->filename));
         }
     }
     else
@@ -323,7 +323,7 @@ int crm_load_csl(CSL_CELL *csl)
                 CRM_ASSERT(csl->filedes >= 0);
                 close(csl->filedes);
                 untrappableerror("Your program is too big.  ",
-                        " You need to use smaller programs or the -P flag, ");
+                                 " You need to use smaller programs or the -P flag, ");
             }
         }
 
@@ -601,7 +601,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         csl->mct[stmtnum]->trap_index = 0; // -1;
         csl->mct[stmtnum]->stmt_break = 0;
         csl->cstmt = stmtnum;
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->cstmt_recall = stmtnum;
         csl->next_stmt_due_to_fail = -1;
         csl->next_stmt_due_to_trap = -1;
@@ -677,7 +677,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             stab_stmtcode = CRM_NOOP;
         }
         else if (pgmtext[nbindex] == ':'
-                 && pgmtext[nbindex + nblength - 1] == ':')
+                && pgmtext[nbindex + nblength - 1] == ':')
         {
             //                             :LABEL: lines get special treatment
 
@@ -707,9 +707,9 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             for (i = 0; i < WIDTHOF(stmt_table); i++)
             {
                 if (nblength == stmt_table[i].namelen
-                    &&  strncasecmp(&pgmtext[nbindex],
-                            stmt_table[i].stmt_name,
-                            nblength) == 0)
+                   &&  strncasecmp(&pgmtext[nbindex],
+                                   stmt_table[i].stmt_name,
+                                   nblength) == 0)
                 {
                     /* stab_done = 1; */
                     stab_stmtcode = stmt_table[i].stmt_code;
@@ -742,9 +742,9 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                 if (bracketlevel <= 0)
                 {
                     fatalerror_ex(SRC_LOC(),
-                            "Your program doesn't have a { } bracket-group surrounding the '%s' command. "
-                            "Check your source code.",
-                            stmt_table[stab_index].stmt_name);
+                                  "Your program doesn't have a { } bracket-group surrounding the '%s' command. "
+                                  "Check your source code.",
+                                  stmt_table[stab_index].stmt_name);
                 }
                 break;
             }
@@ -786,9 +786,9 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                     if (!hit_closing_brace)
                     {
                         fatalerror_ex(SRC_LOC(),
-                                "Your program doesn't have a { } bracket-group preceding the '%s' command. "
-                                "Check your source code.",
-                                stmt_table[stab_index].stmt_name);
+                                      "Your program doesn't have a { } bracket-group preceding the '%s' command. "
+                                      "Check your source code.",
+                                      stmt_table[stab_index].stmt_name);
                     }
                 }
                 break;
@@ -801,15 +801,15 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             int width = CRM_MIN(1024, nblength);
 
             fatalerror_ex(SRC_LOC(),
-                    "Statement %d(%s) NOT YET IMPLEMENTED !!! Check your source code. "
-                    "Here's the text:\n%.*s%s",
-                    csl->cstmt,
-                    (csl->filename ? csl->filename : "\?\?\?"),
-                    width,
-                    &pgmtext[nbindex],
-                    (nblength > width
-                     ? "(...truncated)"
-                     : "")
+                          "Statement %d(%s) NOT YET IMPLEMENTED !!! Check your source code. "
+                          "Here's the text:\n%.*s%s",
+                          csl->cstmt,
+                          (csl->filename ? csl->filename : "\?\?\?"),
+                          width,
+                          &pgmtext[nbindex],
+                          (nblength > width
+                           ? "(...truncated)"
+                           : "")
                          );
         }
 
@@ -874,9 +874,9 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             // this will be changed lateron when we overhaul the preproc+compiler as this means
             // we are scanning extra bytes uselessly here.
             argc = crm_statement_parse(pgmtext + nbindex /* aindex */,
-                    slength + sindex - nbindex /* aindex */,
-                    csl->mct[stmtnum],
-                    &csl->mct[stmtnum]->apb);
+                                       slength + sindex - nbindex /* aindex */,
+                                       csl->mct[stmtnum],
+                                       &csl->mct[stmtnum]->apb);
             break;
         }
 #endif
@@ -886,8 +886,8 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             fprintf(stderr, "\nStmt %3d type %2d ",
                     stmtnum, csl->mct[stmtnum]->stmt_type);
             fwrite_ASCII_Cfied(stderr,
-                    pgmtext + csl->mct[stmtnum]->start,
-                    (csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->start);
+                               pgmtext + csl->mct[stmtnum]->start,
+                               (csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->start);
         }
 
 #ifdef STAB_TEST
@@ -911,7 +911,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         if (bracketlevel < 0)
         {
             fatalerror(" Your program seems to achieve a negative nesting",
-                    "level, which is quite likely bogus.");
+                       "level, which is quite likely bogus.");
         }
 
         // move on to the next statement
@@ -963,8 +963,8 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                     csl->mct[stmtnum]->trap_index);
             fprintf(stderr, "    code: ");
             fwrite_ASCII_Cfied(stderr,
-                    csl->mct[stmtnum]->hosttxt + csl->mct[stmtnum]->start,
-                    (csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->start);
+                               csl->mct[stmtnum]->hosttxt + csl->mct[stmtnum]->start,
+                               (csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->start);
             apb = &csl->mct[stmtnum]->apb;
 
             fprintf(stderr, "\n      args:\n");
@@ -990,7 +990,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     if (bracketlevel != 0)
     {
         fatalerror("\nDang!  The curly braces don't match up!\n",
-                "Check your source code. ");
+                   "Check your source code. ");
     }
 
 
@@ -1196,8 +1196,8 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                 k = csl->mct[stmtnum]->fchar;
                 k = skip_command_token(pgmtext, k, csl->mct[stmtnum]->achar);
                 fwrite_ASCII_Cfied(stderr,
-                        pgmtext + csl->mct[stmtnum]->fchar,
-                        k - csl->mct[stmtnum]->fchar);
+                                   pgmtext + csl->mct[stmtnum]->fchar,
+                                   k - csl->mct[stmtnum]->fchar);
 
                 if (prettyprint_listing > 4)
                     fprintf(stderr, "-");
@@ -1209,8 +1209,8 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                     if (prettyprint_listing > 4)
                         fprintf(stderr, "=");
                     fwrite_ASCII_Cfied(stderr,
-                            pgmtext + csl->mct[stmtnum]->achar,
-                            (csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->achar);
+                                       pgmtext + csl->mct[stmtnum]->achar,
+                                       (csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->achar);
                     if (prettyprint_listing > 4)
                         fprintf(stderr, "=");
                 }
@@ -1254,8 +1254,8 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                     csl->mct[stmtnum]->trap_index);
             fprintf(stderr, "    code: ");
             fwrite_ASCII_Cfied(stderr,
-                    csl->mct[stmtnum]->hosttxt + csl->mct[stmtnum]->start,
-                    (csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->start);
+                               csl->mct[stmtnum]->hosttxt + csl->mct[stmtnum]->start,
+                               (csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->start);
             apb = &csl->mct[stmtnum]->apb;
 
             fprintf(stderr, "\n      args:\n");

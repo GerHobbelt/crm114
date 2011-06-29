@@ -5,18 +5,18 @@
 #define __CRM114_SYSINCLUDES_H__
 
 
-#if defined (HAVE_CONFIG_H)
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
 #include "config_win32.h"
-#elif defined (ORIGINAL_VANILLA_UNIX_MAKEFILE)
+#elif defined(ORIGINAL_VANILLA_UNIX_MAKEFILE)
 #include "config_vanilla_UNIX_sys_defaults.h"
 #else
 #error \
     "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."
 #endif
 
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
 #ifndef _CRTDBG_MAP_ALLOC
 #define _CRTDBG_MAP_ALLOC 1
 #endif
@@ -46,7 +46,7 @@
 
 #ifdef HAVE_STDARG_H
 #include <stdarg.h>
-#elif defined (HAVE_VARARGS_H)
+#elif defined(HAVE_VARARGS_H)
 #include <varargs.h>
 #endif
 #ifdef HAVE_FLOAT_H
@@ -131,18 +131,18 @@
 #include <sys/types.h>
 #endif
 
-#if defined (TIME_WITH_SYS_TIME)
+#if defined(TIME_WITH_SYS_TIME)
 #include <sys/time.h>
 #include <time.h>
 #else
-#if defined (HAVE_SYS_TIME_H)
+#if defined(HAVE_SYS_TIME_H)
 #include <sys/time.h>
-#elif defined (HAVE_TIME_H)
+#elif defined(HAVE_TIME_H)
 #include <time.h>
 #endif
 #endif
 
-#if defined (HAVE_SYS_WAIT_H)
+#if defined(HAVE_SYS_WAIT_H)
 #include <sys/wait.h>
 #endif
 #ifndef WEXITSTATUS
@@ -246,7 +246,7 @@
 
 #ifdef HAVE_GETOPT_EX_H
 #include <getopt_ex.h>
-#elif !defined (HAVE_GETOPT_H)
+#elif !defined(HAVE_GETOPT_H)
 #include "getopt_ex.h"
 #define HAVE_GETOPT_LONG_ONLY_EX 1
 #define HAVE_GETOPT_LONG_EX 1
@@ -260,9 +260,9 @@
     "crm114 MUST be compiled with regex support. It's a regex mutilator, remember? Try to run './configure --disable-extended-compile-checks --with-regex=tre' and run 'make clean && make' again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net; make sure you mention you're working with a 'GerH build'"
 #endif
 
-#if defined (HAVE_TRE_REGEX)
+#if defined(HAVE_TRE_REGEX)
 
-#if defined (HAVE_TRE_REGEX_H)
+#if defined(HAVE_TRE_REGEX_H)
 #include "tre/regex.h"
 //#elif defined (HAVE_REGEX_H)  -- [i_a] discarded this as it led to errors on other systems, where multiple RE packages may be installed.
 //#include <regex.h>            --       This also means this code now requires the libtre source distro as available on hebbut.net to compile out of the box on MSVC2005.
@@ -295,20 +295,20 @@ typedef struct
 
 
 /*
-#if defined (HAVE_REGEX_H)
-#include <regex.h>
-#else
-#error \
-    "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net; make sure you mention you're working with a 'GerH build'"
-#endif
-*/
+ #if defined (HAVE_REGEX_H)
+ #include <regex.h>
+ #else
+ #error \
+ *  "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net; make sure you mention you're working with a 'GerH build'"
+ #endif
+ */
 
 
 
 
 /* This feature is available in gcc versions 2.5 and later.  */
 #undef __attribute__
-#if defined (__GNUC__)
+#if defined(__GNUC__)
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 5) || __STRICT_ANSI__
 #define __attribute__(spec) /* empty */
 #endif
@@ -354,23 +354,23 @@ typedef struct
 
 
 
-#if defined (HAVE__SNPRINTF) && !defined (HAVE_SNPRINTF)
+#if defined(HAVE__SNPRINTF) && !defined(HAVE_SNPRINTF)
 #undef snprintf
 #define snprintf _snprintf
 #endif
-#if defined (HAVE__STAT) && !defined (HAVE_STAT)
+#if defined(HAVE__STAT) && !defined(HAVE_STAT)
 #undef stat
 #define stat(path, buf) _stat(path, buf)
 #endif
-#if defined (HAVE_STRNICMP) && !defined (HAVE_STRNCASECMP)
+#if defined(HAVE_STRNICMP) && !defined(HAVE_STRNCASECMP)
 #undef strncasecmp
 #define strncasecmp(a, b, n) strnicmp((a), (b), (n))
 #endif
-#if defined (HAVE_STRICMP) && !defined (HAVE_STRCASECMP)
+#if defined(HAVE_STRICMP) && !defined(HAVE_STRCASECMP)
 #undef strcasecmp
 #define strcasecmp(a, b) stricmp((a), (b))
 #endif
-#if !defined (HAVE_STRNCHR)
+#if !defined(HAVE_STRNCHR)
 
 #ifdef __cplusplus
 extern "C"
@@ -386,11 +386,11 @@ char *my_strnchr(const char *str, int c, size_t len);
 #endif
 
 #endif
-#if !defined (HAVE_UTIME) && defined (HAVE__UTIME)
+#if !defined(HAVE_UTIME) && defined(HAVE__UTIME)
 #undef utime
 #define utime(filename, timestruct)      _utime(filename, timestruct)
 #endif
-#if !defined (HAVE_MEMMEM) || defined (PREFER_PORTABLE_MEMMEM)
+#if !defined(HAVE_MEMMEM) || defined(PREFER_PORTABLE_MEMMEM)
 
 #ifdef __cplusplus
 extern "C"
@@ -408,8 +408,8 @@ void *my_memmem(const void *haystack, size_t haystack_len, const void *needle, s
 #endif
 
 
-#if !defined (HAVE_ISNAN)
-#if defined (HAVE__ISNAN)
+#if !defined(HAVE_ISNAN)
+#if defined(HAVE__ISNAN)
 #define isnan(v)                _isnan(v)
 #else
 #error "point isnan() to your platform's equivalent function"
@@ -443,7 +443,7 @@ void *my_memmem(const void *haystack, size_t haystack_len, const void *needle, s
  *
  *      Specifies that the application expects that it will not access the specified range in the near future.
  */
-#if defined (HAVE_MADVISE)
+#if defined(HAVE_MADVISE)
 
 #define CRM_MADV_NORMAL          MADV_NORMAL
 #define CRM_MADV_SEQUENTIAL      MADV_SEQUENTIAL
@@ -451,7 +451,7 @@ void *my_memmem(const void *haystack, size_t haystack_len, const void *needle, s
 #define CRM_MADV_WILLNEED        MADV_WILLNEED
 #define CRM_MADV_DONTNEED        MADV_DONTNEED
 
-#elif defined (HAVE_POSIX_MADVISE)
+#elif defined(HAVE_POSIX_MADVISE)
 
 #define CRM_MADV_NORMAL          POSIX_MADV_NORMAL
 #define CRM_MADV_SEQUENTIAL      POSIX_MADV_SEQUENTIAL
@@ -474,8 +474,8 @@ void *my_memmem(const void *haystack, size_t haystack_len, const void *needle, s
  *
  * This mess was adapted from the GNU getpagesize.h.
  */
-#if !defined (HAVE_GETPAGESIZE)
-#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#if !defined(HAVE_GETPAGESIZE)
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
 
 #ifdef __cplusplus
 extern "C"
@@ -489,10 +489,10 @@ int getpagesize(void); /* see crm_port_win32.c */
 #endif
 
 #else
-#if defined (_SC_PAGESIZE) && defined (HAVE_SYSCONF)
+#if defined(_SC_PAGESIZE) && defined(HAVE_SYSCONF)
 #define getpagesize() sysconf(_SC_PAGESIZE)
 #else /* no _SC_PAGESIZE */
-#if defined (HAVE_SYS_PARAM_H)
+#if defined(HAVE_SYS_PARAM_H)
 /* #   include <sys/param.h> -- already done before in this file */
 #ifdef EXEC_PAGESIZE
 #define getpagesize() EXEC_PAGESIZE
@@ -528,7 +528,7 @@ extern "C"
 {
 #endif
 
-#if defined (PREFER_PORTABLE_MEMMOVE) || !defined (HAVE_MEMMOVE)
+#if defined(PREFER_PORTABLE_MEMMOVE) || !defined(HAVE_MEMMOVE)
 void *crm_memmove(void *dst, const void *src, size_t len);
 #undef memmove
 #define memmove(dst, src, len)  crm_memmove(dst, src, len)
@@ -537,12 +537,12 @@ void *crm_memmove(void *dst, const void *src, size_t len);
 #endif
 
 
-#if defined (PREFER_PORTABLE_SNPRINTF)
+#if defined(PREFER_PORTABLE_SNPRINTF)
 #error "provide a proper snprintf() implementation, please"
 #endif
 
 
-#if defined (HAVE_STAT_EMPTY_STRING_BUG)
+#if defined(HAVE_STAT_EMPTY_STRING_BUG)
 static inline int crm_stat(const char *path, struct stat *buf)
 {
     if (!path || !*path || !buf)
@@ -578,21 +578,21 @@ clock_t times(struct tms *buf);
 
 
 
-#if !defined (MAP_FAILED)
+#if !defined(MAP_FAILED)
 #define MAP_FAILED NULL
 #endif
-#if !defined (PROT_READ)
+#if !defined(PROT_READ)
 #define PROT_READ 1
 #define PROT_WRITE 2
 #endif
-#if !defined (MAP_SHARED)
+#if !defined(MAP_SHARED)
 #define MAP_SHARED 1
 #define MAP_PRIVATE 2
 #endif
 
 
 
-#if !defined (MS_SYNC)
+#if !defined(MS_SYNC)
 #define MS_SYNC 0
 #endif
 
@@ -612,9 +612,9 @@ int truncate(const char *filepath, size_t filesize); /* [i_a] Win32 doesn't come
  *   http://autoconf-archive.cryp.to/vl_lib_readline.html
  */
 #ifdef HAVE_LIBREADLINE
-#if defined (HAVE_READLINE_READLINE_H)
+#if defined(HAVE_READLINE_READLINE_H)
 #include <readline/readline.h>
-#elif defined (HAVE_READLINE_H)
+#elif defined(HAVE_READLINE_H)
 #include <readline.h>
 #else /* !defined(HAVE_READLINE_H) */
 //extern char *readline ();
@@ -625,9 +625,9 @@ int truncate(const char *filepath, size_t filesize); /* [i_a] Win32 doesn't come
 #endif /* HAVE_LIBREADLINE */
 
 #ifdef HAVE_READLINE_HISTORY
-#if defined (HAVE_READLINE_HISTORY_H)
+#if defined(HAVE_READLINE_HISTORY_H)
 #include <readline/history.h>
-#elif defined (HAVE_HISTORY_H)
+#elif defined(HAVE_HISTORY_H)
 #include <history.h>
 #else /* !defined(HAVE_HISTORY_H) */
 //extern void add_history ();
@@ -673,7 +673,7 @@ int truncate(const char *filepath, size_t filesize); /* [i_a] Win32 doesn't come
 
 
 
-#if !defined (TRUE) || !defined (FALSE)
+#if !defined(TRUE) || !defined(FALSE)
 #undef FALSE
 #undef TRUE
 #define FALSE 0
@@ -682,9 +682,9 @@ int truncate(const char *filepath, size_t filesize); /* [i_a] Win32 doesn't come
 
 
 // Minimum buffer to store absolute paths; used in conjuction with mk_absolute_path() for instance.
-#if defined (MAX_PATH)
+#if defined(MAX_PATH)
 #define DIRBUFSIZE_MAX                  (CRM_MAX(MAX_VARNAME, MAX_PATH * 2) + 1)
-#elif defined (PATH_MAX)
+#elif defined(PATH_MAX)
 #define DIRBUFSIZE_MAX                  (CRM_MAX(MAX_VARNAME, PATH_MAX * 2) + 1)
 #else
 #define DIRBUFSIZE_MAX                  (CRM_MAX(MAX_VARNAME, 2048) + 1)
@@ -845,21 +845,21 @@ static inline int crm_isxdigit(unsigned char c)
 
 
 
-#if !defined (HAVE_LOGL) && defined (HAVE_LOG)
+#if !defined(HAVE_LOGL) && defined(HAVE_LOG)
 #define crm_logl(val)       log(val)
 #else
-#if defined (HAVE_LOGL)
+#if defined(HAVE_LOGL)
 #define crm_logl(val)       logl(val)
 #else
 #error "define/find a suitable high precision log10 function for your system"
 #endif
 #endif
 
-#if !defined (HAVE_LOG2) && defined (HAVE_LOG)
+#if !defined(HAVE_LOG2) && defined(HAVE_LOG)
 #define log2(val)       (log(val) / CRM_LN_2)
 #endif
 
-#if !defined (HAVE_LOG10) && defined (HAVE_LOG)
+#if !defined(HAVE_LOG10) && defined(HAVE_LOG)
 #define log10(val)      (log(val) / CRM_LN_10)
 #endif
 
@@ -871,16 +871,16 @@ static inline int crm_isxdigit(unsigned char c)
 
 
 
-#if defined (HAVE_ENVIRON)
+#if defined(HAVE_ENVIRON)
 extern char **environ;
-#elif defined (HAVE___ENVIRON)
+#elif defined(HAVE___ENVIRON)
 extern char **__environ;
 
 #define environ         __environ
-#elif defined (HAVE_CRT_EXTERNS_H)
+#elif defined(HAVE_CRT_EXTERNS_H)
 /* derived from http://www.gnu-pascal.de/crystal/gpc/en/mail11031.html */
 #define environ (*_NSGetEnviron())
-#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#elif (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
 #define environ         _environ
 #endif
 
@@ -941,7 +941,7 @@ extern FILE *crm_stderr;
 
 
 // include qsort implementation by Michael Tokarev (http://www.corpit.ru/mjt/qsort.html)
-#if !defined (CRM_WITHOUT_MJT_INLINED_QSORT)
+#if !defined(CRM_WITHOUT_MJT_INLINED_QSORT)
 #include "crm_mjt_qsort.h"
 #else
 #define QSORT(type, base, count, func)          qsort(base, count, sizeof(type), func)
@@ -956,7 +956,7 @@ extern "C"
 {
 #endif
 
-#if defined (_NORMAL_BLOCK) && defined (_CRT_BLOCK)
+#if defined(_NORMAL_BLOCK) && defined(_CRT_BLOCK)
 
 #define MSVC_DEBUG_MALLOC_SERIES                1
 
@@ -997,7 +997,7 @@ void crm114_free(void **ptrref);
 #define malloc(c)       crm114_malloc(c)
 #define realloc(p, c)   crm114_realloc(p, c)
 #define calloc(c, s)    crm114_calloc(c, s)
-#if defined (__GNUC__) && defined (__GNUC_MINOR__) // ensure it's the GCC compiler for sure.
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)   // ensure it's the GCC compiler for sure.
 // Sigh.
 // All the trouble I go through for getting rid of a single warning:
 //

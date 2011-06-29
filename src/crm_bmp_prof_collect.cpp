@@ -80,10 +80,10 @@ int collect_and_display_requested_data(FILE *inf, int read_size, CRM_ANALYSIS_PR
                 default:
                     // see if this element is a native; that would make things rather easy...
                     if (elem->marker == 0x123456789ABCDEF0ULL
-                        && elem->value[0].as_int == 0x8081828384858687ULL
-                        && elem->value[1].as_float == 1.0
-                        && elem->value[2].as_int == 0x9091929394959697ULL
-                        && elem->time_mark == 0xA0A1A2A3A4A5A6A7ULL)
+                       && elem->value[0].as_int == 0x8081828384858687ULL
+                       && elem->value[1].as_float == 1.0
+                       && elem->value[2].as_int == 0x9091929394959697ULL
+                       && elem->time_mark == 0xA0A1A2A3A4A5A6A7ULL)
                     {
                         // A-OK!
                         hit_valid_store_elem = 1;
@@ -176,14 +176,14 @@ int collect_and_display_requested_data(FILE *inf, int read_size, CRM_ANALYSIS_PR
                         {
                             msg_written++;
                             fprintf(
-                                    stderr,
-                                    "Aparently, a CRM114 profiling session has been rudely aborted!\n"
-                                    "Expected TERMINATION marker ID %d, but instead got previous marker ID %d at offset %ld in capture file '%s'.\n",
-                                    MARK_TERMINATION,
-                                    previous_store_elem_id,
-                                    (long int)(ftell(inf) - (rcnt - idx + 1) * sizeof(store[0])),
-                                    // previous store elem!!!
-                                    cfg.input_file);
+                                stderr,
+                                "Aparently, a CRM114 profiling session has been rudely aborted!\n"
+                                "Expected TERMINATION marker ID %d, but instead got previous marker ID %d at offset %ld in capture file '%s'.\n",
+                                MARK_TERMINATION,
+                                previous_store_elem_id,
+                                (long int)(ftell(inf) - (rcnt - idx + 1) * sizeof(store[0])),
+                                // previous store elem!!!
+                                cfg.input_file);
                             if (!cfg.skip_errors)
                             {
                                 return -1;

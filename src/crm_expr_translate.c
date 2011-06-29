@@ -85,7 +85,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fprintf(stderr, " destination: (len: %d) ***%s***\n",
                 destination_len, destination);
     if (!crm_nextword(destination, destination_len, 0, &dst_nstart, &destination_len)
-        || destination_len < 3)
+       || destination_len < 3)
     {
         strcpy(destination, ":_dw:");
         destination_len = 5;
@@ -101,12 +101,12 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(tempbuf, tmpbuflen,
-            &vmidx,
-            &mdwptr,
-            &offset,
-            &len,
-            errstr,
-            WIDTHOF(errstr));
+                        &vmidx,
+                        &mdwptr,
+                        &offset,
+                        &len,
+                        errstr,
+                        WIDTHOF(errstr));
 
     if (internal_trace)
     {
@@ -128,7 +128,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+#if defined(TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
@@ -187,14 +187,14 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //      make the big call to strntrn and get the new (in-place) string.
 
     retlen = strntrn((unsigned char *)tempbuf, &len, data_window_size,
-            (unsigned char *)fromset, fromset_len,
-            (unsigned char *)toset, toset_len,
-            strntrn_flags);
+                     (unsigned char *)fromset, fromset_len,
+                     (unsigned char *)toset, toset_len,
+                     strntrn_flags);
 
     if (retlen < 0)
     {
         fev = nonfatalerror("Messy problem in TRANSLATE.",
-                "Try again with -t tracing maybe?");
+                            "Try again with -t tracing maybe?");
         goto nonfatal_route_outwards;
     }
 

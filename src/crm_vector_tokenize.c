@@ -30,7 +30,7 @@
 
 
 
-#if defined (ORIGINAL_VT_CODE)
+#if defined(ORIGINAL_VT_CODE)
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -104,13 +104,13 @@
 int crm_vector_tokenize
 (
         const char                    *text,            // input string (null-safe!)
-        int                            textlen,         //   how many bytes of input.
-        int                            start_offset,    //     start tokenizing at this byte.
+        int textlen,                                    //   how many bytes of input.
+        int start_offset,                               //     start tokenizing at this byte.
         VT_USERDEF_TOKENIZER          *tokenizer,       // the regex tokenizer (elements in struct MAY be changed)
         const VT_USERDEF_COEFF_MATRIX *our_coeff,       // the pipeline coefficient control array, etc.
         crmhash_t                     *features,        // where the output features go
-        int                            featureslen,     //   how many output features (max)
-        int                            features_stride, //   Spacing (in hashes) between features
+        int featureslen,                                //   how many output features (max)
+        int features_stride,                            //   Spacing (in hashes) between features
         int                           *features_out     // how many longs did we actually use up
 )
 {
@@ -137,7 +137,7 @@ int crm_vector_tokenize
         {
             crm_regerror(regcomp_status, &tokenizer->regcb, errortext, 4096);
             nonfatalerror("Regular Expression Compilation Problem: ",
-                    errortext);
+                          errortext);
             return -1;
         }
     }
@@ -159,11 +159,11 @@ int crm_vector_tokenize
             //         skip non-graphical characthers
             tokenizer->match[0].rm_so = 0;
             while (!crm_isgraph(text[text_offset + tokenizer->match[0].rm_so])
-                   && text_offset + tokenizer->match[0].rm_so < textlen)
+                  && text_offset + tokenizer->match[0].rm_so < textlen)
                 tokenizer->match[0].rm_so++;
             tokenizer->match[0].rm_eo = tokenizer->match[0].rm_so;
             while (crm_isgraph(text[text_offset + tokenizer->match[0].rm_eo])
-                   && text_offset + tokenizer->match[0].rm_eo < textlen)
+                  && text_offset + tokenizer->match[0].rm_eo < textlen)
                 tokenizer->match[0].rm_eo++;
             if (tokenizer->match[0].rm_so == tokenizer->match[0].rm_eo)
                 k = 1;
@@ -171,10 +171,10 @@ int crm_vector_tokenize
         else
         {
             k = crm_regexec(&tokenizer->regcb,
-                    &text[text_offset],
-                    textlen - text_offset,
-                    WIDTHOF(tokenizer->match), tokenizer->match,
-                    REG_EXTENDED, NULL);
+                            &text[text_offset],
+                            textlen - text_offset,
+                            WIDTHOF(tokenizer->match), tokenizer->match,
+                            REG_EXTENDED, NULL);
         }
 
 
@@ -206,10 +206,10 @@ int crm_vector_tokenize
             // for (i = UNIFIED_WINDOW_LEN; i > 0; i--)  // GerH points out that
             //  hashpipe [i] = hashpipe[i-1];            //  this smashes stack
             crm_memmove(&hashpipe[1], hashpipe,
-                    sizeof(hashpipe) - sizeof(hashpipe[0]));
+                        sizeof(hashpipe) - sizeof(hashpipe[0]));
 
             hashpipe[0] = strnhash(&text[tokenizer->match[0].rm_so + text_offset],
-                    tokenizer->match[0].rm_eo - tokenizer->match[0].rm_so);
+                                   tokenizer->match[0].rm_eo - tokenizer->match[0].rm_so);
 
             //    Now, for each row in the coefficient array, we create a
             //   feature.
@@ -218,8 +218,8 @@ int crm_vector_tokenize
             {
                 ihash = 0;
                 for (icol = 0; icol < our_coeff->pipe_len; icol++)
-                    ihash = ihash +
-                            hashpipe[icol] * our_coeff->coeff_array[(our_coeff->pipe_len * irow) + icol];
+                    ihash = ihash
+                            + hashpipe[icol] *our_coeff->coeff_array[(our_coeff->pipe_len * irow) + icol];
 
                 //    Stuff the final ihash value into reatures array
                 features[*features_out] = ihash;
@@ -454,23 +454,22 @@ int crm_vector_tokenize
 // http://www.azillionmonkeys.com/qed/hash.html
 //
 #define SuperFastMix(a, b)                              \
-{														\
-        a += (b & 0xFFFF);								\
-        a ^= (a << 16) ^ ((b & 0xFFFF0000U) >> 5);		\
-        a += a >> 11;									\
-}
+    {                                                                                                               \
+        a += (b & 0xFFFF);                                                              \
+        a ^= (a << 16) ^ ((b & 0xFFFF0000U) >> 5);              \
+        a += a >> 11;                                                                   \
+    }
 
-#define SuperFastMixFinal(hash)							\
-{														\
-    /* Force "avalanching" of final 127 bits */			\
-    hash ^= hash << 3;									\
-    hash += hash >> 5;									\
-    hash ^= hash << 4;									\
-    hash += hash >> 17;									\
-    hash ^= hash << 25;									\
-    hash += hash >> 6;									\
-}														
-
+#define SuperFastMixFinal(hash)                                                 \
+    {                                                                                                               \
+        /* Force "avalanching" of final 127 bits */                 \
+        hash ^= hash << 3;                                                                  \
+        hash += hash >> 5;                                                                  \
+        hash ^= hash << 4;                                                                  \
+        hash += hash >> 17;                                                                 \
+        hash ^= hash << 25;                                                                 \
+        hash += hash >> 6;                                                                  \
+    }
 
 
 
@@ -484,21 +483,21 @@ typedef struct
     crmhash_t h2;
 } DUAL_CRMHASH_T;
 
-typedef struct 
+typedef struct
 {
-	crmhash_t feature;
-	int weight;
-	int order_no;
+    crmhash_t feature;
+    int weight;
+    int order_no;
 } CRM_SORT_ELEM;
 
-typedef struct 
+typedef struct
 {
-	crmhash_t feature[2];
-	int weight[2];
-	int order_no[2];
+    crmhash_t feature[2];
+    int weight[2];
+    int order_no[2];
 } CRM_SORT_ELEM2;
 
-#if defined (CRM_WITHOUT_MJT_INLINED_QSORT)
+#if defined(CRM_WITHOUT_MJT_INLINED_QSORT)
 
 static int hash_compare_1(void const *a, void const *b)
 {
@@ -518,7 +517,7 @@ static int hash_compare_1(void const *a, void const *b)
 static int indirect_hash_compare_1(void const *a, void const *b)
 {
     CRM_SORT_ELEM *pa, *pb;
-	int rv;
+    int rv;
 
     pa = (CRM_SORT_ELEM *)a;
     pb = (CRM_SORT_ELEM *)b;
@@ -529,7 +528,7 @@ static int indirect_hash_compare_1(void const *a, void const *b)
         return 1;
 
     rv = (pb->order_no - pa->order_no);
-	if (rv)
+    if (rv)
         return rv;
 
     rv = (pb->weight - pa->weight);
@@ -560,7 +559,7 @@ static int hash_compare_2(void const *a, void const *b)
 static int indirect_hash_compare_2(void const *a, void const *b)
 {
     CRM_SORT_ELEM2 *pa, *pb;
-	int rv;
+    int rv;
 
     pa = (CRM_SORT_ELEM2 *)a;
     pb = (CRM_SORT_ELEM2 *)b;
@@ -577,15 +576,15 @@ static int indirect_hash_compare_2(void const *a, void const *b)
         return 1;
 
     rv = (pb->order_no[0] - pa->order_no[0]);
-	if (rv)
+    if (rv)
         return rv;
 
     rv = (pb->order_no[1] - pa->order_no[1]);
-	if (rv)
+    if (rv)
         return rv;
 
     rv = (pb->weight[0] - pa->weight[0]);
-	if (rv)
+    if (rv)
         return rv;
 
     rv = (pb->weight[1] - pa->weight[1]);
@@ -599,8 +598,8 @@ static int indirect_hash_compare_2(void const *a, void const *b)
 
 #define indirect_hash_compare_1(a, b) \
     ((a)->feature < (b)->feature \
-	|| ((a)->feature == (b)->feature && ((a)->order_no < (b)->order_no \
-		|| ((a)->order_no == (b)->order_no && (a)->weight < (b)->weight))))
+    || ((a)->feature == (b)->feature && ((a)->order_no < (b)->order_no \
+                                        || ((a)->order_no == (b)->order_no && (a)->weight < (b)->weight))))
 
 #define hash_compare_2(a, b) \
     ((a)->h1 < (b)->h1 || ((a)->h1 == (b)->h1 && (a)->h2 < (b)->h2))
@@ -608,12 +607,14 @@ static int indirect_hash_compare_2(void const *a, void const *b)
 
 #define indirect_hash_compare_2(a, b) \
     ((a)->feature[0] < (b)->feature[0] \
-	|| ((a)->feature[0] == (b)->feature[0] && ((a)->feature[1] < (b)->feature[1] \
-		|| ((a)->feature[1] == (b)->feature[1] && ((a)->order_no[0] < (b)->order_no[0] \
-			|| ((a)->order_no[0] == (b)->order_no[0] && ((a)->order_no[1] < (b)->order_no[1] \
-				|| ((a)->order_no[1] == (b)->order_no[1] && ((a)->weight[0] < (b)->weight[0] \
-					|| ((a)->weight[0] == (b)->weight[0] && (a)->weight[1] < (b)->weight[1] \
-					))))))))))
+    || ((a)->feature[0] == (b)->feature[0] && ((a)->feature[1] < (b)->feature[1] \
+                                              || ((a)->feature[1] == (b)->feature[1] && ((a)->order_no[0] < (b)->order_no[0] \
+                                                                                        || ((a)->order_no[0] == (b)->order_no[0] && ((a)->order_no[1] < (b)->order_no[1] \
+                                                                                                                                    || ((a)->order_no[1] == (b)->order_no[1]\
+                                                                                                                                       && ((a)->weight[0] < (b)->weight[0] \
+                                                                                                                                          || ((a)->weight[0] == \
+                                                                                                                                              (b)->weight[0] && (a)->weight[1] < (b)->weight[1] \
+                                                                                                                                             ))))))))))
 
 #endif
 
@@ -643,20 +644,20 @@ static int indirect_hash_compare_2(void const *a, void const *b)
 //
 int crm_vector_tokenize
 (
-        const char *text,               // input string (null-safe!)
-        int textlen,            //   how many bytes of input.
-        int start_offset,       //     start tokenizing at this byte.
-        VT_USERDEF_TOKENIZER *tokenizer,          // the regex tokenizer (elements in struct MAY be changed)
+        const char *text,                                  // input string (null-safe!)
+        int textlen,                                       //   how many bytes of input.
+        int start_offset,                                  //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER *tokenizer,                   // the regex tokenizer (elements in struct MAY be changed)
         const VT_USERDEF_COEFF_MATRIX *our_coeff,          // the pipeline coefficient control array, etc.
-        crmhash_t *features_buffer,    // where the output features go
-        int features_bufferlen, //   how many output features (max)
-        uint32_t *feature_weights,    // feature weight per feature
-        uint32_t *order_no,           // order_no (starting at 0) per feature
-        int *features_out        // how many longs did we actually use up
+        crmhash_t *features_buffer,                        // where the output features go
+        int features_bufferlen,                            //   how many output features (max)
+        uint32_t *feature_weights,                         // feature weight per feature
+        uint32_t *order_no,                                // order_no (starting at 0) per feature
+        int *features_out                                  // how many longs did we actually use up
 )
 {
     crmhash_t hashpipe[CRM_VT_BURST_SIZE + UNIFIED_WINDOW_LEN - 1];  // the pipeline for hashes
-	int hashpipe_offset = 0;
+    int hashpipe_offset = 0;
     int i;
     int feature_pos;
     crmhash_t *hp;
@@ -696,7 +697,7 @@ int crm_vector_tokenize
         // index out of configurable range
         nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
                                     "the VT iteration count (%d) is out of bounds [%d .. %d].",
-                pipe_iters, 1, UNIFIED_VECTOR_LIMIT);
+                         pipe_iters, 1, UNIFIED_VECTOR_LIMIT);
         return -1;
     }
     if (pipe_len <= 0 || pipe_len > UNIFIED_WINDOW_LEN)
@@ -704,7 +705,7 @@ int crm_vector_tokenize
         // index out of configurable range
         nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
                                     "the VT pipeline depth (%d) is out of bounds [%d .. %d].",
-                pipe_len, 1, UNIFIED_WINDOW_LEN);
+                         pipe_len, 1, UNIFIED_WINDOW_LEN);
         return -1;
     }
     if (pipe_matrices <= 0 || pipe_matrices > UNIFIED_VECTOR_STRIDE)
@@ -712,7 +713,7 @@ int crm_vector_tokenize
         // index out of configurable range
         nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
                                     "the number of VT matrixes (%d) is out of bounds [%d .. %d].",
-                pipe_matrices, 1, UNIFIED_VECTOR_STRIDE);
+                         pipe_matrices, 1, UNIFIED_VECTOR_STRIDE);
         return -1;
     }
 
@@ -721,7 +722,7 @@ int crm_vector_tokenize
         // index out of configurable range
         nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
                                     "the Feature Weight column (~ iteration) count (%d) is out of bounds [%d .. %d].",
-                our_coeff->fw.column_count, 1, UNIFIED_VECTOR_LIMIT);
+                         our_coeff->fw.column_count, 1, UNIFIED_VECTOR_LIMIT);
         return -1;
     }
     if (our_coeff->fw.row_count <= 0 || our_coeff->fw.row_count > UNIFIED_VECTOR_STRIDE)
@@ -729,7 +730,7 @@ int crm_vector_tokenize
         // index out of configurable range
         nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
                                     "the number of Feature Weight rows (~ VT matrixes) (%d) is out of bounds [%d .. %d].",
-                our_coeff->fw.row_count, 1, UNIFIED_VECTOR_STRIDE);
+                         our_coeff->fw.row_count, 1, UNIFIED_VECTOR_STRIDE);
         return -1;
     }
 
@@ -745,7 +746,7 @@ int crm_vector_tokenize
         nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
                                     "the feature bucket is too small (%d) to contain the minimum "
                                     "required number of features (%d) at least.",
-                features_bufferlen, single_featureblock_size);
+                         features_bufferlen, single_featureblock_size);
         return -1;         // can't even store the features from one token, so why bother?
     }
 
@@ -758,13 +759,13 @@ int crm_vector_tokenize
     if (!tokenizer->tokenizer)
     {
         nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-                "The VT tokenizer has not been set up!");
+                      "The VT tokenizer has not been set up!");
         return -1;
     }
     if (!tokenizer->cleanup)
     {
         nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-                "Nobody's apparently cleaning up after the VT tokenizer!");
+                      "Nobody's apparently cleaning up after the VT tokenizer!");
         return -1;
     }
 
@@ -783,7 +784,7 @@ int crm_vector_tokenize
 
 
 #if 0
-	// fill the start of the hashpipe with initialization
+    // fill the start of the hashpipe with initialization
     for (i = 0; i < UNIFIED_WINDOW_LEN - 1; i++)
     {
         hashpipe[i] = 0xDEADBEEF;
@@ -795,7 +796,7 @@ int crm_vector_tokenize
     //
     // loop: check to see if we have space left to add more
     //       features assuming there are any left to add.
-    for (feature_pos = 0; ;)
+    for (feature_pos = 0;;)
     {
         int burst_len;
 
@@ -809,15 +810,15 @@ int crm_vector_tokenize
         if (internal_trace || user_trace)
         {
             fprintf(stderr, "VT: tokenizer delivered %d tokens\n", i);
-        if (internal_trace && i > 0)
-        {
-			int h;
-			for (h = 0; h < i; h++)
-			{
-				fprintf(stderr, "VT: burst: token hash[%3d] = 0x%08lX\n", h, (unsigned long int)hashpipe[h]);
-			}
-		}
-		}
+            if (internal_trace && i > 0)
+            {
+                int h;
+                for (h = 0; h < i; h++)
+                {
+                    fprintf(stderr, "VT: burst: token hash[%3d] = 0x%08lX\n", h, (unsigned long int)hashpipe[h]);
+                }
+            }
+        }
         if (i < 0)
         {
             return -1;
@@ -829,21 +830,21 @@ int crm_vector_tokenize
         // Fringe case which needs fixing? -- what if the tokenizer produced less tokens than the
         // maximum possible 'burst'? We now use a reversed pipeline: higher indexes are newer
         // instead of older; the 'hp' positional pointer can do it's regular job in this case.
-		// BUT before we go ahead, we'd better make sure the VT matrix can be applied to the 
-		// input data, i.e. make SURE there's ENOUGH input hashes now to apply each row of the
-		// VT matrix without underrunning the hashpipe array.
+        // BUT before we go ahead, we'd better make sure the VT matrix can be applied to the
+        // input data, i.e. make SURE there's ENOUGH input hashes now to apply each row of the
+        // VT matrix without underrunning the hashpipe array.
         //
-		i += hashpipe_offset;
-		hashpipe_offset = i;
+        i += hashpipe_offset;
+        hashpipe_offset = i;
 
-		i -= pipe_len;
+        i -= pipe_len;
         if (i < 0)
             break;
 
-        // position the 'real' hashpipe at the proper spot in the 'burst': 
-		// the oldest token is the first one in the burst, yet we must make sure the VT matrix
-		// can be applied without underrunning the hashpipe array.
-		hp = &hashpipe[pipe_len - 1];
+        // position the 'real' hashpipe at the proper spot in the 'burst':
+        // the oldest token is the first one in the burst, yet we must make sure the VT matrix
+        // can be applied without underrunning the hashpipe array.
+        hp = &hashpipe[pipe_len - 1];
 
         //
         // Since we loaded the tokens in burst, we can now speed up the second part of the process due to
@@ -852,7 +853,7 @@ int crm_vector_tokenize
         // 'hp' pipeline reference to point at the NEXT token produced during the burst tokenization before,
         // while keeping track how many tokens were produced by reducing the burst length 'i' --> i--, hp++
         //
-        for ( ; i >= 0; i--, hp++)
+        for (; i >= 0; i--, hp++)
         {
             int matrix;
             const int *coeff_array;
@@ -927,7 +928,7 @@ int crm_vector_tokenize
                         // assert: make sure the multiplier values are odd for proper spread.
                         CRM_ASSERT(universal_multiplier == 0 ? TRUE : (universal_multiplier & 1));
                         // the - minus 'icol' is intentional: reversed pipeline: older is lower index.
-                        ihash += hp[-icol] * universal_multiplier;
+                        ihash += hp[-icol] *universal_multiplier;
                     }
 
                     //    Stuff the final ihash value into features array -- iff we still got room for it
@@ -946,18 +947,18 @@ int crm_vector_tokenize
                     }
 
                     crm_analysis_mark(&analysis_cfg,
-                            MARK_VT_HASH_VALUE,
-                            irow,
-                            "LLi",
-                            (unsigned long long int)ihash,
-                            (long long int)feature_pos,
-                            (int)matrix);
+                                      MARK_VT_HASH_VALUE,
+                                      irow,
+                                      "LLi",
+                                      (unsigned long long int)ihash,
+                                      (long long int)feature_pos,
+                                      (int)matrix);
 
                     if (internal_trace || user_trace)
                     {
-						fprintf(stderr, "New Feature: %08lX (weight: %d) at %d / row: %d / matrix: %d\n",
-                                (unsigned long int)ihash, 
-			(feature_weights ? feature_weights[feature_pos] : feature_weight_table[irow]),
+                        fprintf(stderr, "New Feature: %08lX (weight: %d) at %d / row: %d / matrix: %d\n",
+                                (unsigned long int)ihash,
+                                (feature_weights ? feature_weights[feature_pos] : feature_weight_table[irow]),
                                 feature_pos, irow, matrix);
                     }
                     feature_pos += pipe_matrices;
@@ -968,17 +969,17 @@ int crm_vector_tokenize
 
             // also check if we should get another series of tokens ... or maybe not.
             // only allow another burst when we can at least write a single feature strip.
-			CRM_ASSERT(feature_pos + single_featureblock_size <= features_bufferlen);
+            CRM_ASSERT(feature_pos + single_featureblock_size <= features_bufferlen);
         }
 
         // check if we should get another series of tokens ... or maybe not.
-		CRM_ASSERT(feature_pos + single_featureblock_size <= features_bufferlen);
+        CRM_ASSERT(feature_pos + single_featureblock_size <= features_bufferlen);
 
-		// move the last pipe_len-1 hashes to the front of the pipe: those will 'prefix' the
-		// next burst, thus insuring the next round will continue where it left off and have
-		// no trouble accessing 'historic' hashes while applying the VT matrix.
-		crm_memmove(hashpipe, &hp[-pipe_len], (pipe_len - 1)* sizeof(hashpipe[0]));
-		hashpipe_offset = pipe_len - 1;
+        // move the last pipe_len-1 hashes to the front of the pipe: those will 'prefix' the
+        // next burst, thus insuring the next round will continue where it left off and have
+        // no trouble accessing 'historic' hashes while applying the VT matrix.
+        crm_memmove(hashpipe, &hp[-pipe_len], (pipe_len - 1) * sizeof(hashpipe[0]));
+        hashpipe_offset = pipe_len - 1;
     }
 
     // update the caller on what's left in the input after this:
@@ -1009,11 +1010,11 @@ int crm_vector_tokenize
                     fprintf(stderr, "hash[%6d] = %08lx", i, (unsigned long int)features_buffer[i]);
                     if (feature_weights)
                     {
-                    fprintf(stderr, ", weight %d", feature_weights[i]);
+                        fprintf(stderr, ", weight %d", feature_weights[i]);
                     }
                     if (order_no)
                     {
-                    fprintf(stderr, ", order %d", order_no[i]);
+                        fprintf(stderr, ", order %d", order_no[i]);
                     }
                     fprintf(stderr, "\n");
                 }
@@ -1029,14 +1030,14 @@ int crm_vector_tokenize
                     for (j = 0; j < our_coeff->cm.output_stride; j++)
                     {
                         fprintf(stderr, "%08lx ", (unsigned long int)features_buffer[i++]);
-						if (feature_weights)
-						{
-						fprintf(stderr, "[weight %6d] ", feature_weights[i-1]);
-						}
-						if (order_no)
-						{
-						fprintf(stderr, "[order %3d] ", order_no[i-1]);
-						}
+                        if (feature_weights)
+                        {
+                            fprintf(stderr, "[weight %6d] ", feature_weights[i - 1]);
+                        }
+                        if (order_no)
+                        {
+                            fprintf(stderr, "[order %3d] ", order_no[i - 1]);
+                        }
                     }
                     fprintf(stderr, ")\n");
                 }
@@ -1045,208 +1046,208 @@ int crm_vector_tokenize
         }
 
         //   Now sort the hashes array.
-		if (feature_pos > 0)
-		{
-        switch (our_coeff->cm.output_stride)
+        if (feature_pos > 0)
         {
-        default:
-            // failure case:
-            nonfatalerror_ex(SRC_LOC(),
-                    "VT can't perform feature hash ordering nor "
-                    "<unique>-ifying for stride type %d "
-                    "(supported types are: {1, 2})\n",
-                    our_coeff->cm.output_stride);
-            return -1;
-
-        case 1:
-			if (!feature_weights && !order_no)
-			{
-            QSORT(crmhash_t, features_buffer, feature_pos, hash_compare_1);
-
-            if (our_coeff->flags.unique)
+            switch (our_coeff->cm.output_stride)
             {
-                int j;
+            default:
+                // failure case:
+                nonfatalerror_ex(SRC_LOC(),
+                                 "VT can't perform feature hash ordering nor "
+                                 "<unique>-ifying for stride type %d "
+                                 "(supported types are: {1, 2})\n",
+                                 our_coeff->cm.output_stride);
+                return -1;
 
-                for (i = 1, j = 0; i < feature_pos; i++)
+            case 1:
+                if (!feature_weights && !order_no)
                 {
-                    if (features_buffer[i] != features_buffer[j])
+                    QSORT(crmhash_t, features_buffer, feature_pos, hash_compare_1);
+
+                    if (our_coeff->flags.unique)
                     {
-						if (++j != i)
-						{
-                        features_buffer[j] = features_buffer[i];
-						}
+                        int j;
+
+                        for (i = 1, j = 0; i < feature_pos; i++)
+                        {
+                            if (features_buffer[i] != features_buffer[j])
+                            {
+                                if (++j != i)
+                                {
+                                    features_buffer[j] = features_buffer[i];
+                                }
+                            }
+                        }
+                        feature_pos = j + 1;
                     }
                 }
-                feature_pos = j + 1;
-            }
-			}
-			else
-			{
-				int j;
-				CRM_SORT_ELEM *indirect = calloc(feature_pos, sizeof(indirect[0]));
+                else
+                {
+                    int j;
+                    CRM_SORT_ELEM *indirect = calloc(feature_pos, sizeof(indirect[0]));
 
-				        if (!indirect)
-        {
-            untrappableerror("Cannot allocate VT tokenizer indirection array for sorting / unique-ing", "Stick a fork in us; we're _done_.");
+                    if (!indirect)
+                    {
+                        untrappableerror("Cannot allocate VT tokenizer indirection array for sorting / unique-ing", "Stick a fork in us; we're _done_.");
+                    }
+                    for (j = 0; j < feature_pos; j++)
+                    {
+                        indirect[j].feature = features_buffer[j];
+                    }
+                    if (feature_weights)
+                    {
+                        for (j = 0; j < feature_pos; j++)
+                        {
+                            indirect[j].weight = feature_weights[j];
+                        }
+                    }
+                    if (order_no)
+                    {
+                        for (j = 0; j < feature_pos; j++)
+                        {
+                            indirect[j].order_no = order_no[j];
+                        }
+                    }
+                    QSORT(CRM_SORT_ELEM, indirect, feature_pos, indirect_hash_compare_1);
+
+                    if (our_coeff->flags.unique)
+                    {
+                        for (i = 1, j = 0; i < feature_pos; i++)
+                        {
+                            if (indirect[i].feature != indirect[j].feature)
+                            {
+                                if (++j != i)
+                                {
+                                    indirect[j] = indirect[i];
+                                }
+                            }
+                        }
+                        feature_pos = j + 1;
+                    }
+                    // now copy back the data to the target arrays
+                    for (j = 0; j < feature_pos; j++)
+                    {
+                        features_buffer[j] = indirect[j].feature;
+                    }
+                    if (feature_weights)
+                    {
+                        for (j = 0; j < feature_pos; j++)
+                        {
+                            feature_weights[j] = indirect[j].weight;
+                        }
+                    }
+                    if (order_no)
+                    {
+                        for (j = 0; j < feature_pos; j++)
+                        {
+                            order_no[j] = indirect[j].order_no;
+                        }
+                    }
+                }
+                break;
+
+            case 2:
+                if (!feature_weights && !order_no)
+                {
+                    int len = feature_pos / 2;
+                    DUAL_CRMHASH_T *buf = (DUAL_CRMHASH_T *)features_buffer;
+
+                    QSORT(DUAL_CRMHASH_T, buf, len, hash_compare_2);
+
+                    if (our_coeff->flags.unique)
+                    {
+                        int j;
+
+                        for (i = 1, j = 0; i < len; i++)
+                        {
+                            if (buf[i].h1 != buf[j].h1 || buf[i].h2 != buf[j].h2)
+                            {
+                                if (++j != i)
+                                {
+                                    buf[j] = buf[i];
+                                }
+                            }
+                        }
+                        len = j + 1;
+                    }
+                    feature_pos = len * 2;
+                }
+                else
+                {
+                    int j;
+                    int len = feature_pos / 2;
+                    CRM_SORT_ELEM2 *indirect = calloc(len, sizeof(indirect[0]));
+
+                    if (!indirect)
+                    {
+                        untrappableerror("Cannot allocate VT tokenizer indirection array for sorting / unique-ing", "Stick a fork in us; we're _done_.");
+                    }
+                    for (j = 0; j < len; j++)
+                    {
+                        indirect[j].feature[0] = features_buffer[j * 2];
+                        indirect[j].feature[1] = features_buffer[j * 2 + 1];
+                    }
+                    if (feature_weights)
+                    {
+                        for (j = 0; j < len; j++)
+                        {
+                            indirect[j].weight[0] = feature_weights[j * 2];
+                            indirect[j].weight[1] = feature_weights[j * 2 + 1];
+                        }
+                    }
+                    if (order_no)
+                    {
+                        for (j = 0; j < len; j++)
+                        {
+                            indirect[j].order_no[0] = order_no[j * 2];
+                            indirect[j].order_no[1] = order_no[j * 2 + 1];
+                        }
+                    }
+                    QSORT(CRM_SORT_ELEM2, indirect, len, indirect_hash_compare_2);
+
+                    if (our_coeff->flags.unique)
+                    {
+                        for (i = 1, j = 0; i < len; i++)
+                        {
+                            if (indirect[i].feature[0] != indirect[j].feature[0]
+                               || indirect[i].feature[1] != indirect[j].feature[1])
+                            {
+                                if (++j != i)
+                                {
+                                    indirect[j] = indirect[i];
+                                }
+                            }
+                        }
+                        len = j + 1;
+                    }
+                    feature_pos = len * 2;
+
+                    // now copy back the data to the target arrays
+                    for (j = 0; j < len; j++)
+                    {
+                        features_buffer[j * 2] = indirect[j].feature[0];
+                        features_buffer[j * 2 + 1] = indirect[j].feature[1];
+                    }
+                    if (feature_weights)
+                    {
+                        for (j = 0; j < len; j++)
+                        {
+                            feature_weights[j * 2] = indirect[j].weight[0];
+                            feature_weights[j * 2 + 1] = indirect[j].weight[1];
+                        }
+                    }
+                    if (order_no)
+                    {
+                        for (j = 0; j < len; j++)
+                        {
+                            order_no[j * 2] = indirect[j].order_no[0];
+                            order_no[j * 2 + 1] = indirect[j].order_no[1];
+                        }
+                    }
+                }
+                break;
+            }
         }
-						for (j = 0; j < feature_pos; j++)
-						{
-							indirect[j].feature = features_buffer[j];
-						}
-						if (feature_weights)
-						{
-						for (j = 0; j < feature_pos; j++)
-						{
-							indirect[j].weight = feature_weights[j];
-						}
-						}
-						if (order_no)
-						{
-						for (j = 0; j < feature_pos; j++)
-						{
-							indirect[j].order_no = order_no[j];
-						}
-						}
-            QSORT(CRM_SORT_ELEM, indirect, feature_pos, indirect_hash_compare_1);
-
-            if (our_coeff->flags.unique)
-            {
-                for (i = 1, j = 0; i < feature_pos; i++)
-                {
-					if (indirect[i].feature != indirect[j].feature)
-                    {
-						if (++j != i)
-						{
-                        indirect[j] = indirect[i];
-						}
-                    }
-                }
-                feature_pos = j + 1;
-            }
-			// now copy back the data to the target arrays
-						for (j = 0; j < feature_pos; j++)
-						{
-							features_buffer[j] = indirect[j].feature;
-						}
-						if (feature_weights)
-						{
-						for (j = 0; j < feature_pos; j++)
-						{
-							feature_weights[j] = indirect[j].weight;
-						}
-						}
-						if (order_no)
-						{
-						for (j = 0; j < feature_pos; j++)
-						{
-							order_no[j] = indirect[j].order_no;
-						}
-						}
-			}
-            break;
-
-        case 2:
-			if (!feature_weights && !order_no)
-			{
-				int len = feature_pos / 2;
-				DUAL_CRMHASH_T *buf = (DUAL_CRMHASH_T *)features_buffer;
-
-            QSORT(DUAL_CRMHASH_T, buf, len, hash_compare_2);
-
-            if (our_coeff->flags.unique)
-            {
-                int j;
-
-                for (i = 1, j = 0; i < len; i++)
-                {
-					if (buf[i].h1 != buf[j].h1 || buf[i].h2 != buf[j].h2)
-                    {
-						if (++j != i)
-						{
-                        buf[j] = buf[i];
-						}
-                    }
-                }
-                len = j + 1;
-            }
-			feature_pos = len * 2;
-			}
-			else
-			{
-				int j;
-				int len = feature_pos / 2;
-				CRM_SORT_ELEM2 *indirect = calloc(len, sizeof(indirect[0]));
-
-				        if (!indirect)
-        {
-            untrappableerror("Cannot allocate VT tokenizer indirection array for sorting / unique-ing", "Stick a fork in us; we're _done_.");
-        }
-						for (j = 0; j < len; j++)
-						{
-							indirect[j].feature[0] = features_buffer[j * 2];
-							indirect[j].feature[1] = features_buffer[j * 2 + 1];
-						}
-						if (feature_weights)
-						{
-						for (j = 0; j < len; j++)
-						{
-							indirect[j].weight[0] = feature_weights[j * 2];
-							indirect[j].weight[1] = feature_weights[j * 2 + 1];
-						}
-						}
-						if (order_no)
-						{
-						for (j = 0; j < len; j++)
-						{
-							indirect[j].order_no[0] = order_no[j * 2];
-							indirect[j].order_no[1] = order_no[j * 2 + 1];
-						}
-						}
-            QSORT(CRM_SORT_ELEM2, indirect, len, indirect_hash_compare_2);
-
-            if (our_coeff->flags.unique)
-            {
-                for (i = 1, j = 0; i < len; i++)
-                {
-					if (indirect[i].feature[0] != indirect[j].feature[0]
-					|| indirect[i].feature[1] != indirect[j].feature[1])
-                    {
-						if (++j != i)
-						{
-                        indirect[j] = indirect[i];
-						}
-                    }
-                }
-                len = j + 1;
-            }
-			feature_pos = len * 2;
-
-			// now copy back the data to the target arrays
-						for (j = 0; j < len; j++)
-						{
-							features_buffer[j * 2] = indirect[j].feature[0];
-							features_buffer[j * 2 + 1] = indirect[j].feature[1];
-						}
-						if (feature_weights)
-						{
-						for (j = 0; j < len; j++)
-						{
-							feature_weights[j * 2] = indirect[j].weight[0];
-							feature_weights[j * 2 + 1] = indirect[j].weight[1];
-						}
-						}
-						if (order_no)
-						{
-						for (j = 0; j < len; j++)
-						{
-							order_no[j * 2] = indirect[j].order_no[0];
-							order_no[j * 2 + 1] = indirect[j].order_no[1];
-						}
-						}
-			}
-            break;
-        }
-		}
 
         if (internal_trace)
         {
@@ -1260,11 +1261,11 @@ int crm_vector_tokenize
                     fprintf(stderr, "hash[%6d] = %08lx", i, (unsigned long int)features_buffer[i]);
                     if (feature_weights)
                     {
-                    fprintf(stderr, ", weight %d", feature_weights[i]);
+                        fprintf(stderr, ", weight %d", feature_weights[i]);
                     }
                     if (order_no)
                     {
-                    fprintf(stderr, ", order %d", order_no[i]);
+                        fprintf(stderr, ", order %d", order_no[i]);
                     }
                     fprintf(stderr, "\n");
                 }
@@ -1280,14 +1281,14 @@ int crm_vector_tokenize
                     for (j = 0; j < our_coeff->cm.output_stride; j++)
                     {
                         fprintf(stderr, "%08lx ", (unsigned long int)features_buffer[i++]);
-						if (feature_weights)
-						{
-						fprintf(stderr, "[weight %6d] ", feature_weights[i-1]);
-						}
-						if (order_no)
-						{
-						fprintf(stderr, "[order %3d] ", order_no[i-1]);
-						}
+                        if (feature_weights)
+                        {
+                            fprintf(stderr, "[weight %6d] ", feature_weights[i - 1]);
+                        }
+                        if (order_no)
+                        {
+                            fprintf(stderr, "[order %3d] ", order_no[i - 1]);
+                        }
                     }
                     fprintf(stderr, ")\n");
                 }
@@ -1483,11 +1484,11 @@ static void discover_matrices_max_dimensions(const VT_USERDEF_COEFF_MATRIX *matr
     *weight_rows = y_max + 1;
     *weight_cols = x_max + 1;
 
-	if (user_trace)
-{
-fprintf(stderr, "discover_matrices_max_dimensions() --> x: %d, y: %d, z: %d / weight: x: %d, y: %d\n",
-        *pipe_len, *pipe_iter, *stride,        *weight_cols, *weight_rows);
-}
+    if (user_trace)
+    {
+        fprintf(stderr, "discover_matrices_max_dimensions() --> x: %d, y: %d, z: %d / weight: x: %d, y: %d\n",
+                *pipe_len, *pipe_iter, *stride,        *weight_cols, *weight_rows);
+    }
 }
 
 
@@ -1544,7 +1545,7 @@ static const int markov2_coeff_height = WIDTHOF(markov2_coeff) / OSB_BAYES_WINDO
 //#ifdef JUST_FOR_REFERENCE
 
 //    hctable is where the OSB coeffs came from - this is now just a
-//    historical artifact - DO NOT USE THIS!!! 
+//    historical artifact - DO NOT USE THIS!!!
 // --> [i_a] yes, we DO use this! Because those old VT tables can be readily generated from this in a very flexible manner!
 
 /*
@@ -1562,12 +1563,12 @@ static const int hctable[] =
     197, 821 /*817*/,
     397, 1637,
     797, 3299 /*3277*/,
-	1597, 6607,
-2999,13259,
-6007,26597,
-12049,53077,
-24083,106163,
-48221,213467,
+    1597, 6607,
+    2999, 13259,
+    6007, 26597,
+    12049, 53077,
+    24083, 106163,
+    48221, 213467,
 };
 
 // #endif
@@ -1661,12 +1662,12 @@ static const int flat_model_weight[] =
 
 static const int osb_bayes_feature_weight[] =
 {
-	24, 14, 7, 4, 2, 1
+    24, 14, 7, 4, 2, 1
 };
 // cubic weights seems to work well for chi^2...- Fidelis
 static const int chi2_feature_weight[] =
 {
-	125, 64, 27, 8, 1
+    125, 64, 27, 8, 1
 };
 
 
@@ -1932,7 +1933,7 @@ static const int osbf_feature_weight[] =
 /*
  * return matrix cell value for the given element.
  */
-typedef int contributing_token_func(int x, int y, int z, const int *table, size_t table_size);
+typedef int contributing_token_func (int x, int y, int z, const int *table, size_t table_size);
 
 
 
@@ -1945,9 +1946,9 @@ static int markovian_contributing_token(int x, int y, int z, const int *table, s
     {
         return 0;
     }
-if (table_size < 32 && y > 1 << (table_size - 1) /* ~ power(2, table_size/2)) */ )
+    if (table_size < 32 && y > 1 << (table_size - 1) /* ~ power(2, table_size/2)) */)
     {
-   // '>' means we can include the single token monogram as a vector in the matrix!
+        // '>' means we can include the single token monogram as a vector in the matrix!
         return 0;
     }
 
@@ -1956,17 +1957,17 @@ if (table_size < 32 && y > 1 << (table_size - 1) /* ~ power(2, table_size/2)) */
     // 2 => 0, 2
     if (x > 0)
     {
-   // markov chain creation
+        // markov chain creation
         int bit = 1 << (x - 1);
 
         if (!(y & bit))
         {
-            return 0;				 
+            return 0;
         }
     }
 
-	x <<= 1;     // 2 * x
-	x += z;
+    x <<= 1;         // 2 * x
+    x += z;
     if (x >= table_size)
     {
         return 0;
@@ -1983,13 +1984,13 @@ static int markov_alt_contributing_token(int x, int y, int z, const int *table, 
     {
         return 0;
     }
-if (table_size < 32 && y > 1 << (table_size - 1) /* ~ power(2, table_size/2)) */ )
+    if (table_size < 32 && y > 1 << (table_size - 1) /* ~ power(2, table_size/2)) */)
     {
-   // '>' means we can include the single token monogram as a vector in the matrix!
+        // '>' means we can include the single token monogram as a vector in the matrix!
         return 0;
     }
 
-	if (x > 0)
+    if (x > 0)
     {
         int bit = 1 << (x - 1);
 
@@ -1999,8 +2000,8 @@ if (table_size < 32 && y > 1 << (table_size - 1) /* ~ power(2, table_size/2)) */
         }
     }
 
-	x <<= 1;     // 2 * x
-	x += z;
+    x <<= 1;         // 2 * x
+    x += z;
     if (x >= table_size)
     {
         return 0;
@@ -2017,20 +2018,20 @@ static int osb_contributing_token(int x, int y, int z, const int *table, size_t 
     {
         return 0;
     }
-if (y >= table_size / 2)
+    if (y >= table_size / 2)
     {
-   // '>=' means we can include the single token monogram as a last vector in the matrix!
+        // '>=' means we can include the single token monogram as a last vector in the matrix!
         return 0;
     }
 
-        if (y + 1 != x && x != 0)
-        {
-  // sparse bigram creation:
-            return 0;
-        }
+    if (y + 1 != x && x != 0)
+    {
+        // sparse bigram creation:
+        return 0;
+    }
 
-	x <<= 1;     // 2 * x
-	x += z;
+    x <<= 1;         // 2 * x
+    x += z;
     if (x >= table_size)
     {
         return 0;
@@ -2039,70 +2040,70 @@ if (y >= table_size / 2)
 }
 
 
-#define VECTOR_MODEL_REC_DEF(cb, x, y, z, id)		{ cb, x, y, z, hctable, WIDTHOF(hctable), id }
-#define WEIGHT_MODEL_REC_DEF(table, id)		{ table, WIDTHOF(table), id }
+#define VECTOR_MODEL_REC_DEF(cb, x, y, z, id)           { cb, x, y, z, hctable, WIDTHOF(hctable), id }
+#define WEIGHT_MODEL_REC_DEF(table, id)         { table, WIDTHOF(table), id }
 
 static const struct vector_id_def
 {
-	contributing_token_func *cb;
-	int x;
-	int y;
-	int z;
-	const int *table;
-	size_t table_size;
-	char *identifier;
+    contributing_token_func *cb;
+    int x;
+    int y;
+    int z;
+    const int *table;
+    size_t table_size;
+    char *identifier;
 } vector_model_ids[] =
 {
-	VECTOR_MODEL_REC_DEF(osb_contributing_token, OSB_BAYES_WINDOW_LEN, 4, 2, "osb"),
-	VECTOR_MODEL_REC_DEF(markovian_contributing_token, MARKOVIAN_WINDOW_LEN, 16, 2, "sbph"),
+    VECTOR_MODEL_REC_DEF(osb_contributing_token, OSB_BAYES_WINDOW_LEN, 4, 2, "osb"),
+    VECTOR_MODEL_REC_DEF(markovian_contributing_token, MARKOVIAN_WINDOW_LEN, 16, 2, "sbph"),
 };
 
 static const struct weight_id_def
 {
-	const int *weight_table;
-	int weight_table_size;
-	char *identifier;
+    const int *weight_table;
+    int weight_table_size;
+    char *identifier;
 } weight_model_ids[] =
 {
-	WEIGHT_MODEL_REC_DEF(flat_model_weight, "flat"),
-	WEIGHT_MODEL_REC_DEF(osb_bayes_feature_weight, "osb"),
-	WEIGHT_MODEL_REC_DEF(chi2_feature_weight, "chi2"),
-	WEIGHT_MODEL_REC_DEF(entropic_weight, "entropic"),
-	WEIGHT_MODEL_REC_DEF(hidden_markov_weight, "markov"),
-	WEIGHT_MODEL_REC_DEF(super_markov_weight, "super_markov"),
-	WEIGHT_MODEL_REC_DEF(breyer_chhabra_siefkes_weight, "bcs"),
-	WEIGHT_MODEL_REC_DEF(breyer_chhabra_siefkes_mws_weight, "bcs_mws"),
-	WEIGHT_MODEL_REC_DEF(breyer_chhabra_siefkes_exp_weight, "bcs_exp"),
-	WEIGHT_MODEL_REC_DEF(breyer_chhabra_siekfes_base7_weight, "bcs_b7"),
-	WEIGHT_MODEL_REC_DEF(osbf_feature_weight, "osbf"),
+    WEIGHT_MODEL_REC_DEF(flat_model_weight, "flat"),
+    WEIGHT_MODEL_REC_DEF(osb_bayes_feature_weight, "osb"),
+    WEIGHT_MODEL_REC_DEF(chi2_feature_weight, "chi2"),
+    WEIGHT_MODEL_REC_DEF(entropic_weight, "entropic"),
+    WEIGHT_MODEL_REC_DEF(hidden_markov_weight, "markov"),
+    WEIGHT_MODEL_REC_DEF(super_markov_weight, "super_markov"),
+    WEIGHT_MODEL_REC_DEF(breyer_chhabra_siefkes_weight, "bcs"),
+    WEIGHT_MODEL_REC_DEF(breyer_chhabra_siefkes_mws_weight, "bcs_mws"),
+    WEIGHT_MODEL_REC_DEF(breyer_chhabra_siefkes_exp_weight, "bcs_exp"),
+    WEIGHT_MODEL_REC_DEF(breyer_chhabra_siekfes_base7_weight, "bcs_b7"),
+    WEIGHT_MODEL_REC_DEF(osbf_feature_weight, "osbf"),
 };
 
 
 /*
- Return the number of tokens produced; return a negative number on error.
-
-
- Note regarding implementation:
-
- Be reminded that this callback CANNOT assume large tokenhash_dest
- buffers. As such, the code must mind those situations where the
- tokenhash_dest buffer is either so small to start with, or already
- filled to the brim while working in here, that some additional
- activity (more particularly: start and end padding) HAS to be
- spread across multiple invocations of this callback.
-
- In other words: the padding code CANNOT and MUST NOT assume that
- there's sufficient space left in tokenhash_dest[] to write the
- generated padding chunk all at at once.
-*/
+ * Return the number of tokens produced; return a negative number on error.
+ *
+ *
+ * Note regarding implementation:
+ *
+ * Be reminded that this callback CANNOT assume large tokenhash_dest
+ * buffers. As such, the code must mind those situations where the
+ * tokenhash_dest buffer is either so small to start with, or already
+ * filled to the brim while working in here, that some additional
+ * activity (more particularly: start and end padding) HAS to be
+ * spread across multiple invocations of this callback.
+ *
+ * In other words: the padding code CANNOT and MUST NOT assume that
+ * there's sufficient space left in tokenhash_dest[] to write the
+ * generated padding chunk all at at once.
+ */
 static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
         crmhash_t                                               *tokenhash_dest,
-        int                                                      tokenhash_dest_size)
+        int tokenhash_dest_size)
 {
     const char *txt;
     int txt_len;
     int k = 0;
-	int k4pad_store = 0;
+    int k4pad_store = 0;
 
     //   Run the hashpipe, either with regex, or without.
     //
@@ -2111,398 +2112,398 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
     CRM_ASSERT(tokenhash_dest_size > 0);
     CRM_ASSERT(obj->input_text != NULL);
 
-	// take care of start (leading) padding first!
-	if (obj->pad_start && obj->padding_length > obj->padding_written_at_start)
-	{
-		int len = CRM_MIN(tokenhash_dest_size, obj->padding_length - obj->padding_written_at_start);
-
-		for (k = 0; k < len; k++)
-		{
-			tokenhash_dest[k] = 0xDEADBEEF;
-		}
-
-		obj->padding_written_at_start += len;
-
-		if (obj->padding_written_at_start == obj->padding_length)
-		{
-			// padding done: signal other code that we have padded so start store for end padding 
-			// gets the 'right' stuff:
-			k4pad_store = k;
-		}
-	}
-
-	if (k < tokenhash_dest_size)
-	{
-		CRM_ASSERT(obj->pad_start ? obj->padding_written_at_start == obj->padding_length : TRUE);
-
-    if (obj->input_next_offset >= obj->input_textlen)
+    // take care of start (leading) padding first!
+    if (obj->pad_start && obj->padding_length > obj->padding_written_at_start)
     {
-        if (internal_trace)
+        int len = CRM_MIN(tokenhash_dest_size, obj->padding_length - obj->padding_written_at_start);
+
+        for (k = 0; k < len; k++)
         {
-            fprintf(stderr,
-                    "WARNING: VT: exiting tokenizer @ %d -- obj->input_next_offset = %d,  obj->input_textlen = %d!\n",
-                    __LINE__,
-                    obj->input_next_offset,
-                    obj->input_textlen);
+            tokenhash_dest[k] = 0xDEADBEEF;
         }
-        /* return 0; */
-    }
-	else
-	{
-    txt = obj->input_text + obj->input_next_offset;
-    txt_len = obj->input_textlen - obj->input_next_offset;
-    if (txt_len <= 0)
-    {
-        obj->eos_reached = 1;
-    }
-    if (obj->eos_reached)
-    {
-        // you'll have no more tokens until you reset 'eos_reached'...
-        if (internal_trace)
+
+        obj->padding_written_at_start += len;
+
+        if (obj->padding_written_at_start == obj->padding_length)
         {
-            fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
+            // padding done: signal other code that we have padded so start store for end padding
+            // gets the 'right' stuff:
+            k4pad_store = k;
         }
-        /* return 0; */
     }
-	else
-	{
-    //  If the pattern is empty, assume non-graph-delimited tokens
-    //  (supposedly an 8% speed gain over regexec)
-    if (obj->regexlen == 0)
+
+    if (k < tokenhash_dest_size)
     {
-        int big_token_count = 0;
+        CRM_ASSERT(obj->pad_start ? obj->padding_written_at_start == obj->padding_length : TRUE);
 
-        obj->initial_setup_done = 1;
-
-        for (/* k = 0 */; k < tokenhash_dest_size && txt_len > 0; k++)
+        if (obj->input_next_offset >= obj->input_textlen)
         {
-            int b;
-            int e;
-            int token_len;
-            const char *token;
-
-            //         skip non-graphical characters
-            for (b = 0; b < txt_len && !crm_isgraph(txt[b]); b++)
-                ;
-            // [i_a] WARNING: fringe case where an input stream is terminated by whitespace:
-            //       if we don't take care of that special occasion it will produce one extra
-            //       'token' for a ZERO-length word. What's one token on several thousand, you
-            //       may ask?
-            //       It's the difference between an exact match for two documents, one terminated
-            //       with extra whitespace, while the other isn't, or, if we don't fix this fringe
-            //       case, only a _probable_ match - hopefully, but that depends on the number of
-            //       matches so far (token count) and classifier.
-            //       Since we look at documents as 'streams of tokens', non-token data should be
-            //       discarded, not only at the start and middle of the documents, but also at the
-            //       end!
-            if (b == txt_len)
+            if (internal_trace)
             {
-                // Fringe case inside a fringe case: what if a document is ONLY whitespace, i.e.
-                // ZERO tokens? DECISION: we DO NOT produce a 'faked' token for that one; zero stays
-                // zero.
+                fprintf(stderr,
+                        "WARNING: VT: exiting tokenizer @ %d -- obj->input_next_offset = %d,  obj->input_textlen = %d!\n",
+                        __LINE__,
+                        obj->input_next_offset,
+                        obj->input_textlen);
+            }
+            /* return 0; */
+        }
+        else
+        {
+            txt = obj->input_text + obj->input_next_offset;
+            txt_len = obj->input_textlen - obj->input_next_offset;
+            if (txt_len <= 0)
+            {
                 obj->eos_reached = 1;
-                break;
             }
-
-            for (e = b; e < txt_len && crm_isgraph(txt[e]); e++)
-                ;
-
-            if (user_trace)
+            if (obj->eos_reached)
             {
-                fprintf(stderr, "Token; k: %d re: --- T.O: %d len %d ( %d %d on >",
-                        k,
-                        (int)(txt - obj->input_text),
-                        e - b,
-                        b,
-                        e);
-                fwrite_ASCII_Cfied(stderr, txt + b, e - b);
-                fprintf(stderr, "< )\n");
-            }
-
-            //
-            //   Now stuff this new token into the front of the pipeline
-            //   Since 'front' means 'higher index' we just drop it into slot [k].
-            //
-
-            token_len = e - b;
-            token = &txt[b];
-
-            if (obj->max_token_length <= 0)
-            {
-                // no 'big token globbing' enabled...
-                tokenhash_dest[k] = strnhash(token, token_len);
+                // you'll have no more tokens until you reset 'eos_reached'...
+                if (internal_trace)
+                {
+                    fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
+                }
+                /* return 0; */
             }
             else
             {
-                // OSBF style big token clustering into a single feature for, for example, base64 encoded mail blocks.
-                if (big_token_count == 0)
+                //  If the pattern is empty, assume non-graph-delimited tokens
+                //  (supposedly an 8% speed gain over regexec)
+                if (obj->regexlen == 0)
                 {
-                    tokenhash_dest[k] = strnhash(token, token_len);
+                    int big_token_count = 0;
 
-                    if (token_len > obj->max_token_length)
+                    obj->initial_setup_done = 1;
+
+                    for (/* k = 0 */; k < tokenhash_dest_size && txt_len > 0; k++)
                     {
-                        big_token_count++;
+                        int b;
+                        int e;
+                        int token_len;
+                        const char *token;
+
+                        //         skip non-graphical characters
+                        for (b = 0; b < txt_len && !crm_isgraph(txt[b]); b++)
+                            ;
+                        // [i_a] WARNING: fringe case where an input stream is terminated by whitespace:
+                        //       if we don't take care of that special occasion it will produce one extra
+                        //       'token' for a ZERO-length word. What's one token on several thousand, you
+                        //       may ask?
+                        //       It's the difference between an exact match for two documents, one terminated
+                        //       with extra whitespace, while the other isn't, or, if we don't fix this fringe
+                        //       case, only a _probable_ match - hopefully, but that depends on the number of
+                        //       matches so far (token count) and classifier.
+                        //       Since we look at documents as 'streams of tokens', non-token data should be
+                        //       discarded, not only at the start and middle of the documents, but also at the
+                        //       end!
+                        if (b == txt_len)
+                        {
+                            // Fringe case inside a fringe case: what if a document is ONLY whitespace, i.e.
+                            // ZERO tokens? DECISION: we DO NOT produce a 'faked' token for that one; zero stays
+                            // zero.
+                            obj->eos_reached = 1;
+                            break;
+                        }
+
+                        for (e = b; e < txt_len && crm_isgraph(txt[e]); e++)
+                            ;
+
+                        if (user_trace)
+                        {
+                            fprintf(stderr, "Token; k: %d re: --- T.O: %d len %d ( %d %d on >",
+                                    k,
+                                    (int)(txt - obj->input_text),
+                                    e - b,
+                                    b,
+                                    e);
+                            fwrite_ASCII_Cfied(stderr, txt + b, e - b);
+                            fprintf(stderr, "< )\n");
+                        }
+
+                        //
+                        //   Now stuff this new token into the front of the pipeline
+                        //   Since 'front' means 'higher index' we just drop it into slot [k].
+                        //
+
+                        token_len = e - b;
+                        token = &txt[b];
+
+                        if (obj->max_token_length <= 0)
+                        {
+                            // no 'big token globbing' enabled...
+                            tokenhash_dest[k] = strnhash(token, token_len);
+                        }
+                        else
+                        {
+                            // OSBF style big token clustering into a single feature for, for example, base64 encoded mail blocks.
+                            if (big_token_count == 0)
+                            {
+                                tokenhash_dest[k] = strnhash(token, token_len);
+
+                                if (token_len > obj->max_token_length)
+                                {
+                                    big_token_count++;
+                                }
+                            }
+                            else
+                            {
+                                k--;             // fix loop k++: stay at the previous feature!
+                                CRM_ASSERT(k >= 0);
+
+                                // [i_a] GROT GROT GROT
+                                // original OSBF code (see crm_osbf_bayes.c) made tokens position INDEPENDENT inside the single feature; this should not be!
+                                //tokenhash_dest[k] ^= strnhash(&txt[b], token_len);
+                                //
+                                // so instead we make the tokens position dependent by using a simple unified hash multiplier: 33
+                                tokenhash_dest[k] *= 33;
+                                tokenhash_dest[k] ^= strnhash(token, token_len);
+
+                                if (token_len > obj->max_token_length && big_token_count < obj->max_big_token_count)
+                                {
+                                    big_token_count++;
+
+                                    if (user_trace)
+                                    {
+                                        fprintf(stderr, "WARNING: continuation of 'big token' -- globbed %d tokens!\n", big_token_count);
+                                    }
+                                }
+                                else
+                                {
+                                    if (user_trace)
+                                    {
+                                        fprintf(stderr, "WARNING: end of 'big token' detected @ %d globbed tokens!\n", big_token_count);
+                                    }
+
+                                    big_token_count = 0;
+                                    // okay, end of 'long token into single feature' run: allow loop to increment 'k' index now
+                                }
+                            }
+                        }
+
+                        // and update our 'txt' pointer + length to scan to point at the next token in the input stream:
+                        txt += e;
+                        txt_len -= e;
                     }
                 }
                 else
                 {
-                    k--;                         // fix loop k++: stay at the previous feature!
-                    CRM_ASSERT(k >= 0);
+                    int big_token_count = 0;
 
-                    // [i_a] GROT GROT GROT
-                    // original OSBF code (see crm_osbf_bayes.c) made tokens position INDEPENDENT inside the single feature; this should not be!
-                    //tokenhash_dest[k] ^= strnhash(&txt[b], token_len);
-                    //
-                    // so instead we make the tokens position dependent by using a simple unified hash multiplier: 33
-                    tokenhash_dest[k] *= 33;
-                    tokenhash_dest[k] ^= strnhash(token, token_len);
-
-                    if (token_len > obj->max_token_length && big_token_count < obj->max_big_token_count)
+                    if (!obj->initial_setup_done)
                     {
-                        big_token_count++;
+                        int regcomp_status;
 
-                        if (user_trace)
+                        if (!obj->regex_compiler_flags_are_set)
                         {
-                            fprintf(stderr, "WARNING: continuation of 'big token' -- globbed %d tokens!\n", big_token_count);
-                        }
-                    }
-                    else
-                    {
-                        if (user_trace)
-                        {
-                            fprintf(stderr, "WARNING: end of 'big token' detected @ %d globbed tokens!\n", big_token_count);
+                            nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
+                                          "Why have the VT tokenizer regex flags not been set up? Developer asleep at the keyboard again?");
+                            if (internal_trace)
+                            {
+                                fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
+                            }
+                            return -1;
                         }
 
-                        big_token_count = 0;
-                        // okay, end of 'long token into single feature' run: allow loop to increment 'k' index now
+                        regcomp_status = crm_regcomp(&obj->regcb, obj->regex, obj->regexlen, obj->regex_compiler_flags);
+                        if (regcomp_status != 0)
+                        {
+                            char errortext[4096];
+
+                            crm_regerror(regcomp_status, &obj->regcb, errortext, WIDTHOF(errortext));
+                            nonfatalerror("Regular Expression Compilation Problem for VT (Vector Tokenizer): ",
+                                          errortext);
+                            if (internal_trace)
+                            {
+                                fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
+                            }
+                            return -1;
+                        }
+                        obj->initial_setup_done = 1;
                     }
-                }
-            }
 
-            // and update our 'txt' pointer + length to scan to point at the next token in the input stream:
-            txt += e;
-            txt_len -= e;
-        }
-    }
-    else
-    {
-        int big_token_count = 0;
+                    for (/* k = 0 */; k < tokenhash_dest_size && txt_len > 0; k++)
+                    {
+                        int status;
+                        int token_len;
+                        const char *token;
 
-        if (!obj->initial_setup_done)
-        {
-            int regcomp_status;
-
-            if (!obj->regex_compiler_flags_are_set)
-            {
-                nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-                        "Why have the VT tokenizer regex flags not been set up? Developer asleep at the keyboard again?");
-                if (internal_trace)
-                {
-                    fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
-                }
-                return -1;
-            }
-
-            regcomp_status = crm_regcomp(&obj->regcb, obj->regex, obj->regexlen, obj->regex_compiler_flags);
-            if (regcomp_status != 0)
-            {
-                char errortext[4096];
-
-                crm_regerror(regcomp_status, &obj->regcb, errortext, WIDTHOF(errortext));
-                nonfatalerror("Regular Expression Compilation Problem for VT (Vector Tokenizer): ",
-                        errortext);
-                if (internal_trace)
-                {
-                    fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
-                }
-                return -1;
-            }
-            obj->initial_setup_done = 1;
-        }
-
-        for (/* k = 0 */; k < tokenhash_dest_size && txt_len > 0; k++)
-        {
-            int status;
-            int token_len;
-            const char *token;
-
-            status = crm_regexec(&obj->regcb, txt, txt_len, WIDTHOF(obj->match), obj->match, obj->regex_compiler_flags, NULL);
-            if (status != REG_OK)
-            {
-                if (status == REG_NOMATCH)
-                {
-                    // [i_a] WARNING: fringe case where an input stream is terminated by whitespace:
-                    //       if we don't take care of that special occasion it will produce one extra
-                    //       'token' for a ZERO-length word. What's one token on several thousand, you
-                    //       may ask?
-                    //       It's the difference between an exact match for two documents, one terminated
-                    //       with extra whitespace, while the other isn't, or, if we don't fix this fringe
-                    //       case, only a _probable_ match - hopefully, but that depends on the number of
-                    //       matches so far (token count) and classifier.
-                    //       Since we look at documents as 'streams of tokens', non-token data should be
-                    //       discarded, not only at the start and middle of the documents, but also at the
-                    //       end!
+                        status = crm_regexec(&obj->regcb, txt, txt_len, WIDTHOF(obj->match), obj->match, obj->regex_compiler_flags, NULL);
+                        if (status != REG_OK)
+                        {
+                            if (status == REG_NOMATCH)
+                            {
+                                // [i_a] WARNING: fringe case where an input stream is terminated by whitespace:
+                                //       if we don't take care of that special occasion it will produce one extra
+                                //       'token' for a ZERO-length word. What's one token on several thousand, you
+                                //       may ask?
+                                //       It's the difference between an exact match for two documents, one terminated
+                                //       with extra whitespace, while the other isn't, or, if we don't fix this fringe
+                                //       case, only a _probable_ match - hopefully, but that depends on the number of
+                                //       matches so far (token count) and classifier.
+                                //       Since we look at documents as 'streams of tokens', non-token data should be
+                                //       discarded, not only at the start and middle of the documents, but also at the
+                                //       end!
 #if 0
-                    if (k == 0)
-                    {
-                        // Fringe case inside a fringe case: what if a document is ONLY whitespace, i.e.
-                        // ZERO tokens? DECISION: we DO NOT produce a 'faked' token for that one; zero stays
-                        // zero.
-                    }
+                                if (k == 0)
+                                {
+                                    // Fringe case inside a fringe case: what if a document is ONLY whitespace, i.e.
+                                    // ZERO tokens? DECISION: we DO NOT produce a 'faked' token for that one; zero stays
+                                    // zero.
+                                }
 #endif
+                                obj->eos_reached = 1;
+                            }
+                            break;
+                        }
+
+                        //   Not done,we have another token (the text in text[match[0].rm_so,
+                        //    of length match[0].rm_eo - match[0].rm_so size)
+                        //
+                        if (user_trace)
+                        {
+                            fprintf(stderr, "Token; k: %d re: %d T.O: %d len %d ( %d %d on >",
+                                    k,
+                                    status,
+                                    (int)(txt - obj->input_text),
+                                    (int)(obj->match[0].rm_eo - obj->match[0].rm_so),
+                                    (int)obj->match[0].rm_so,
+                                    (int)obj->match[0].rm_eo);
+                            fwrite_ASCII_Cfied(stderr, &txt[obj->match[0].rm_so],
+                                               (obj->match[0].rm_eo - obj->match[0].rm_so));
+                            fprintf(stderr, "< )\n");
+                        }
+
+                        //
+                        //   Now stuff this new token into the front of the pipeline
+                        //   Since 'front' means 'higher index' we just drop it into slot [k].
+                        //
+
+                        token_len = obj->match[0].rm_eo - obj->match[0].rm_so;
+                        token = &txt[obj->match[0].rm_so];
+
+                        if (obj->max_token_length <= 0)
+                        {
+                            // no 'big token globbing' enabled...
+                            tokenhash_dest[k] = strnhash(token, token_len);
+                        }
+                        else
+                        {
+                            // OSBF style big token clustering into a single feature for, for example, base64 encoded mail blocks.
+                            if (big_token_count == 0)
+                            {
+                                tokenhash_dest[k] = strnhash(token, token_len);
+
+                                if (token_len > obj->max_token_length)
+                                {
+                                    if (user_trace)
+                                    {
+                                        fprintf(stderr, "WARNING: start of 'big token' detected (min. length = %d) @ token len = %d -- globbing tokens!\n",
+                                                obj->max_token_length,
+                                                token_len);
+                                    }
+
+                                    big_token_count++;
+                                }
+                            }
+                            else
+                            {
+                                k--;             // fix loop k++: stay at the previous feature!
+                                CRM_ASSERT(k >= 0);
+
+                                // [i_a] GROT GROT GROT
+                                // original OSBF code (see crm_osbf_bayes.c) made tokens position INDEPENDENT inside the single feature; this should not be!
+                                //tokenhash_dest[k] ^= strnhash(&txt[b], token_len);
+                                //
+                                // so instead we make the tokens position dependent by using a simple unified hash multiplier: 33
+                                tokenhash_dest[k] *= 33;
+                                tokenhash_dest[k] ^= strnhash(token, token_len);
+
+                                if (token_len > obj->max_token_length && big_token_count < obj->max_big_token_count)
+                                {
+                                    big_token_count++;
+                                }
+                                else
+                                {
+                                    big_token_count = 0;
+                                    // okay, end of 'long token into single feature' run: allow loop to increment 'k' index now
+                                }
+                            }
+                        }
+
+                        // and update our 'txt' pointer + length to scan to point at the next token in the input stream:
+                        txt += obj->match[0].rm_eo;
+                        txt_len -= obj->match[0].rm_eo;
+                    }
+                }
+
+                obj->input_next_offset = (int)(txt - obj->input_text);
+
+#if 0
+                // extra check if we tokenized the completed input yet:
+                if (txt_len <= 0)
+                {
                     obj->eos_reached = 1;
                 }
-                break;
+#endif
             }
-
-            //   Not done,we have another token (the text in text[match[0].rm_so,
-            //    of length match[0].rm_eo - match[0].rm_so size)
-            //
-            if (user_trace)
-            {
-                fprintf(stderr, "Token; k: %d re: %d T.O: %d len %d ( %d %d on >",
-                        k,
-                        status,
-                        (int)(txt - obj->input_text),
-                        (int)(obj->match[0].rm_eo - obj->match[0].rm_so),
-                        (int)obj->match[0].rm_so,
-                        (int)obj->match[0].rm_eo);
-                fwrite_ASCII_Cfied(stderr, &txt[obj->match[0].rm_so],
-                        (obj->match[0].rm_eo - obj->match[0].rm_so));
-                fprintf(stderr, "< )\n");
-            }
-
-            //
-            //   Now stuff this new token into the front of the pipeline
-            //   Since 'front' means 'higher index' we just drop it into slot [k].
-            //
-
-            token_len = obj->match[0].rm_eo - obj->match[0].rm_so;
-            token = &txt[obj->match[0].rm_so];
-
-            if (obj->max_token_length <= 0)
-            {
-                // no 'big token globbing' enabled...
-                tokenhash_dest[k] = strnhash(token, token_len);
-            }
-            else
-            {
-                // OSBF style big token clustering into a single feature for, for example, base64 encoded mail blocks.
-                if (big_token_count == 0)
-                {
-                    tokenhash_dest[k] = strnhash(token, token_len);
-
-                    if (token_len > obj->max_token_length)
-                    {
-                        if (user_trace)
-                        {
-                            fprintf(stderr, "WARNING: start of 'big token' detected (min. length = %d) @ token len = %d -- globbing tokens!\n",
-                                    obj->max_token_length,
-                                    token_len);
-                        }
-
-                        big_token_count++;
-                    }
-                }
-                else
-                {
-                    k--;                         // fix loop k++: stay at the previous feature!
-                    CRM_ASSERT(k >= 0);
-
-                    // [i_a] GROT GROT GROT
-                    // original OSBF code (see crm_osbf_bayes.c) made tokens position INDEPENDENT inside the single feature; this should not be!
-                    //tokenhash_dest[k] ^= strnhash(&txt[b], token_len);
-                    //
-                    // so instead we make the tokens position dependent by using a simple unified hash multiplier: 33
-                    tokenhash_dest[k] *= 33;
-                    tokenhash_dest[k] ^= strnhash(token, token_len);
-
-                    if (token_len > obj->max_token_length && big_token_count < obj->max_big_token_count)
-                    {
-                        big_token_count++;
-                    }
-                    else
-                    {
-                        big_token_count = 0;
-                        // okay, end of 'long token into single feature' run: allow loop to increment 'k' index now
-                    }
-                }
-            }
-
-            // and update our 'txt' pointer + length to scan to point at the next token in the input stream:
-            txt += obj->match[0].rm_eo;
-            txt_len -= obj->match[0].rm_eo;
         }
     }
 
-    obj->input_next_offset = (int)(txt - obj->input_text);
 
-#if 0
-    // extra check if we tokenized the completed input yet:
-    if (txt_len <= 0)
+    if (obj->pad_end_with_first_chunk)
     {
-        obj->eos_reached = 1;
+        // collect start tokens for end padding?
+        if (obj->padding_in_store < obj->padding_length && k4pad_store < k)
+        {
+            int pos;
+
+            for (pos = obj->padding_in_store; pos < obj->padding_length && k4pad_store < k;)
+            {
+                obj->padding_store[pos++] = tokenhash_dest[k4pad_store++];
+            }
+
+            obj->padding_in_store = pos;
+        }
+
+        // take care of end padding now:
+        if (k < tokenhash_dest_size && obj->eos_reached && obj->padding_written_at_end < obj->padding_length)
+        {
+            int pos;
+
+            /*
+             * Fringe case: you may encounter input which produces ZERO(0) hashes by itself:
+             * such input should ALSO be end-padded but there's no input hashes to repeat!
+             * So we pad such a bugger with deadbeef: after all, empty inputs should be
+             * recognizable as well, and the only way to recognize an input message is through
+             * the hashes it produces...
+             */
+            if (obj->padding_in_store == 0)
+            {
+                for (pos = obj->padding_written_at_end; pos < obj->padding_length && k < tokenhash_dest_size; pos++)
+                {
+                    tokenhash_dest[k++] = 0xDEADBEEF;
+                }
+            }
+            else
+            {
+                CRM_ASSERT(obj->padding_store);
+                CRM_ASSERT(obj->padding_in_store > 0);
+
+                for (pos = obj->padding_written_at_end; pos < obj->padding_length && k < tokenhash_dest_size; pos++)
+                {
+                    /*
+                     * Recycle the padding store multiple times for very tiny input token series:
+                     * when the input produced less than padding_length tokens itself, the store
+                     * will contain those few only, so, in order to pad to length = padding_length,
+                     * we must re-use the input tokens again and again:
+                     */
+                    tokenhash_dest[k++] = obj->padding_store[pos % obj->padding_in_store];
+                }
+            }
+
+            obj->padding_written_at_end = pos;
+        }
     }
-#endif
-	}
-	}
-	}
-
-
-	if (obj->pad_end_with_first_chunk)
-	{
-	// collect start tokens for end padding?
-		if (obj->padding_in_store < obj->padding_length && k4pad_store < k)
-	{
-		int pos;
-
-		for (pos = obj->padding_in_store; pos < obj->padding_length && k4pad_store < k; )
-		{
-			obj->padding_store[pos++] = tokenhash_dest[k4pad_store++];
-		}
-
-		obj->padding_in_store = pos;
-	}
-
-	// take care of end padding now:
-	if (k < tokenhash_dest_size && obj->eos_reached && obj->padding_written_at_end < obj->padding_length)
-	{
-		int pos;
-
-	/*
-	Fringe case: you may encounter input which produces ZERO(0) hashes by itself: 
-	such input should ALSO be end-padded but there's no input hashes to repeat!
-	So we pad such a bugger with deadbeef: after all, empty inputs should be 
-	recognizable as well, and the only way to recognize an input message is through
-	the hashes it produces...
-	*/
-		if (obj->padding_in_store == 0)
-		{
-		for (pos = obj->padding_written_at_end; pos < obj->padding_length && k < tokenhash_dest_size; pos++)
-		{
-			tokenhash_dest[k++] = 0xDEADBEEF;
-		}
-		}
-		else
-		{
-		CRM_ASSERT(obj->padding_store);
-		CRM_ASSERT(obj->padding_in_store > 0);
-
-		for (pos = obj->padding_written_at_end; pos < obj->padding_length && k < tokenhash_dest_size; pos++)
-		{
-			/*
-			Recycle the padding store multiple times for very tiny input token series:
-			when the input produced less than padding_length tokens itself, the store
-			will contain those few only, so, in order to pad to length = padding_length,
-			we must re-use the input tokens again and again:
-			*/
-			tokenhash_dest[k++] = obj->padding_store[pos % obj->padding_in_store];
-		}
-		}
-
-		obj->padding_written_at_end = pos;
-	}
-	}
 
     if (internal_trace)
     {
@@ -2523,11 +2524,11 @@ static int default_regex_VT_tokenizer_cleanup_func(VT_USERDEF_TOKENIZER *obj)
     crm_regfree(&obj->regcb);
     memset(&obj->regcb, 0, sizeof(obj->regcb));
 
-	if (obj->padding_store_malloced)
-	{
-		free(obj->padding_store);
-		obj->padding_store = NULL;
-	}
+    if (obj->padding_store_malloced)
+    {
+        free(obj->padding_store);
+        obj->padding_store = NULL;
+    }
 
     obj->regex_malloced = 0;
     obj->eos_reached = 0;
@@ -2542,12 +2543,12 @@ static int default_regex_VT_tokenizer_cleanup_func(VT_USERDEF_TOKENIZER *obj)
     obj->regex_compiler_flags_are_set = 0;
     obj->regexlen = 0;
     obj->tokenizer = 0;
-	obj->not_at_sos = 0;
-	obj->padding_in_store = 0;
-	obj->padding_settings_are_set = 0;
-	obj->padding_store_malloced = 0;
-	obj->padding_written_at_end = 0;
-	obj->padding_written_at_start = 0;
+    obj->not_at_sos = 0;
+    obj->padding_in_store = 0;
+    obj->padding_settings_are_set = 0;
+    obj->padding_store_malloced = 0;
+    obj->padding_written_at_end = 0;
+    obj->padding_written_at_start = 0;
 
     obj->cleanup = 0;
 
@@ -2598,14 +2599,14 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
     if (!tokenizer)
     {
         nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-                "Where's the VT tokenizer gone? There's work to do here!");
+                      "Where's the VT tokenizer gone? There's work to do here!");
         return -1;
     }
 #if 10
     if (!apb)
     {
         nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-                "Where's the APB (Application Program Block) gone? Developer asleep at the keyboard again?");
+                      "Where's the APB (Application Program Block) gone? Developer asleep at the keyboard again?");
         return -1;
     }
 #endif
@@ -2774,7 +2775,7 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
 
                 crm_regerror(regcomp_status, &regcb, errortext, WIDTHOF(errortext));
                 nonfatalerror("Regular Expression Compilation Problem for VT (Vector Tokenizer): ",
-                        errortext);
+                              errortext);
                 return -1;
             }
         }
@@ -2794,176 +2795,176 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
 
 
 int transfer_matrix_to_VT(VT_USERDEF_COEFF_MATRIX *dst,
-						const int *src, 
-						size_t src_x, size_t src_y, size_t src_z)
+        const int *src,
+        size_t src_x, size_t src_y, size_t src_z)
 {
-	if (!dst || !src || !src_x || src_y || !src_z)
-	{
-		return -1;
-	}
-	if (src_x > UNIFIED_WINDOW_LEN
-		|| src_y > UNIFIED_VECTOR_LIMIT
-		|| src_z > UNIFIED_VECTOR_STRIDE)
-	{
-		// out of range: source matrix dimension too large!
-		return -2;
-	}
+    if (!dst || !src || !src_x || src_y || !src_z)
+    {
+        return -1;
+    }
+    if (src_x > UNIFIED_WINDOW_LEN
+       || src_y > UNIFIED_VECTOR_LIMIT
+       || src_z > UNIFIED_VECTOR_STRIDE)
+    {
+        // out of range: source matrix dimension too large!
+        return -2;
+    }
 
-	dst->cm.output_stride = src_z;
-	dst->cm.pipe_iters = src_y;
-	dst->cm.pipe_len = src_x;
+    dst->cm.output_stride = src_z;
+    dst->cm.pipe_iters = src_y;
+    dst->cm.pipe_len = src_x;
 
-	while (src_z-- > 0)
-	{
-		int y;
+    while (src_z-- > 0)
+    {
+        int y;
 
-		for (y = 0; y < src_y; y++)
-		{
-			int x;
+        for (y = 0; y < src_y; y++)
+        {
+            int x;
 
-			for (x = 0; x < src_x; x++)
-			{
-				int src_idx = src_z * src_y * src_x + y * src_x + x;
-				int dst_idx = src_z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN + y * UNIFIED_WINDOW_LEN + x;
+            for (x = 0; x < src_x; x++)
+            {
+                int src_idx = src_z * src_y * src_x + y * src_x + x;
+                int dst_idx = src_z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN + y * UNIFIED_WINDOW_LEN + x;
 
-				dst->cm.coeff_array[dst_idx] = src[src_idx];
-			}
-		}
-	}
+                dst->cm.coeff_array[dst_idx] = src[src_idx];
+            }
+        }
+    }
 
-	 return 0;
+    return 0;
 }
 
 
 
 int generate_matrix_for_model(VT_USERDEF_COEFF_MATRIX *matrix, contributing_token_func *cb, const int *table, size_t table_size)
 {
-        int *ca = matrix->cm.coeff_array;
-        int x;
-        int y;
-        int z;
+    int *ca = matrix->cm.coeff_array;
+    int x;
+    int y;
+    int z;
 
-	// construct the 3D VT matrix:
-        for (z = 0; z < UNIFIED_VECTOR_STRIDE; z++)
+    // construct the 3D VT matrix:
+    for (z = 0; z < UNIFIED_VECTOR_STRIDE; z++)
+    {
+        for (y = 0; y < UNIFIED_VECTOR_LIMIT; y++)
         {
-            for (y = 0; y < UNIFIED_VECTOR_LIMIT; y++)
+            int m = (*cb)(0, y, z, table, table_size);
+            int *row = &ca[UNIFIED_WINDOW_LEN * (y + UNIFIED_VECTOR_LIMIT * z)];
+
+            /* no useful row of the 2D matrix? == nothing more to generate for this section */
+            if (m == 0)
             {
-                int m = (*cb)(0, y, z, table, table_size);
-                int *row = &ca[UNIFIED_WINDOW_LEN * (y + UNIFIED_VECTOR_LIMIT * z)];
-
-                /* no useful row of the 2D matrix? == nothing more to generate for this section */
-                if (m == 0)
-                {
-                    // make sure 'pipe_iters' isn't too large:
+                // make sure 'pipe_iters' isn't too large:
 #if 0
-					CRM_ASSERT(z == 0 ? pipe_iters <= y : TRUE);
+                CRM_ASSERT(z == 0 ? pipe_iters <= y : TRUE);
 #endif
-					break;
-                }
+                break;
+            }
 
-				row[0] = m;
+            row[0] = m;
 
-                for (x = 1; x < UNIFIED_WINDOW_LEN; x++)
-                {
-                    m = (*cb)(x, y, z, table, table_size);
-                    row[x] = m;
-                }
+            for (x = 1; x < UNIFIED_WINDOW_LEN; x++)
+            {
+                m = (*cb)(x, y, z, table, table_size);
+                row[x] = m;
             }
         }
+    }
 
-	return 0;
+    return 0;
 }
 
 
 /*
-   Note: Arne's optimization is based on the assumption that, when no hit is found for the
-   feature hash proeduced through the first row of the VT matrix, the feature hashes of the
-   subsequent rows of the same matrix won't produce a hit either.
-
-   This means that all subsequent rows must AT LEAST include ALL tokens selected
-   by the first row.
-
-
-   Note #2: here we check for each 2D matrix (each 'stride') individually. Arne is only
-   assumed possible when ALL 2D matrices (each stride's matrix) permits Arne's optimization.
-*/
+ * Note: Arne's optimization is based on the assumption that, when no hit is found for the
+ * feature hash proeduced through the first row of the VT matrix, the feature hashes of the
+ * subsequent rows of the same matrix won't produce a hit either.
+ *
+ * This means that all subsequent rows must AT LEAST include ALL tokens selected
+ * by the first row.
+ *
+ *
+ * Note #2: here we check for each 2D matrix (each 'stride') individually. Arne is only
+ * assumed possible when ALL 2D matrices (each stride's matrix) permits Arne's optimization.
+ */
 
 static void check_and_set_flags(VT_USERDEF_COEFF_MATRIX *matrix)
 {
     int x;
     int y;
     int z;
-	int m = 0;
+    int m = 0;
 
     CRM_ASSERT(matrix);
 
-	matrix->flags.arne_optimization_allowed = 1;
-			  matrix->flags.cm_is_position_dependent = 1;
+    matrix->flags.arne_optimization_allowed = 1;
+    matrix->flags.cm_is_position_dependent = 1;
 
-	// Arne's optimization: only need to check the non-zero columns of the first row: 
-	// all other rows must have these as well.
-	//
-	// CM position-independent: need to check all rows: all non-zero multipliers must
-	// be the same.
-	for (z = matrix->cm.output_stride; z-- > 0; )
-     {
-		  const int *mtx = &matrix->cm.coeff_array[z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN];
+    // Arne's optimization: only need to check the non-zero columns of the first row:
+    // all other rows must have these as well.
+    //
+    // CM position-independent: need to check all rows: all non-zero multipliers must
+    // be the same.
+    for (z = matrix->cm.output_stride; z-- > 0;)
+    {
+        const int *mtx = &matrix->cm.coeff_array[z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN];
 
-		  // Arne: check to make sure row[0] doesn't have this column SET
-					  if (mtx[0] != 0)
-					  {
-							matrix->flags.arne_optimization_allowed = 0;
-					  }
+        // Arne: check to make sure row[0] doesn't have this column SET
+        if (mtx[0] != 0)
+        {
+            matrix->flags.arne_optimization_allowed = 0;
+        }
 
-					  // check first row for position independence...
-			  for (x = matrix->cm.pipe_len; x-- > 1; )
-			  {
-				const int *col = mtx + x;
+        // check first row for position independence...
+        for (x = matrix->cm.pipe_len; x-- > 1;)
+        {
+            const int *col = mtx + x;
 
-				  if (*col != 0)
-				  {
-						  if (*col != m)
-						  {
-							  matrix->flags.cm_is_position_dependent = 0;
-						  }
-				  }
-			  }
+            if (*col != 0)
+            {
+                if (*col != m)
+                {
+                    matrix->flags.cm_is_position_dependent = 0;
+                }
+            }
+        }
 
-			  // check the rest of the 2D matrix for Arne and position independence at the same time...
-			  for (y = matrix->cm.pipe_iters; y-- > 1; )
-		  {
-			  const int *row = mtx + y * UNIFIED_WINDOW_LEN;
+        // check the rest of the 2D matrix for Arne and position independence at the same time...
+        for (y = matrix->cm.pipe_iters; y-- > 1;)
+        {
+            const int *row = mtx + y * UNIFIED_WINDOW_LEN;
 
-			  m = mtx[0]; // whole row must all have the same multiplier to be considered position independent
+            m = mtx[0];               // whole row must all have the same multiplier to be considered position independent
 
-			  for (x = matrix->cm.pipe_len; x-- > 1; )
-			  {
-				const int *col = row + x;
+            for (x = matrix->cm.pipe_len; x-- > 1;)
+            {
+                const int *col = row + x;
 
-				  if (*col == 0)
-				  {
-					  // Arne: check to make sure row[0] doesn't have this column SET
-					  if (mtx[x] != 0)
-					  {
-							matrix->flags.arne_optimization_allowed = 0;
-					  }
-				  }
-				  else
-				  {
-						  if (*col != m)
-						  {
-							  matrix->flags.cm_is_position_dependent = 0;
-						  }
-				  }
-			  }
-		  }
+                if (*col == 0)
+                {
+                    // Arne: check to make sure row[0] doesn't have this column SET
+                    if (mtx[x] != 0)
+                    {
+                        matrix->flags.arne_optimization_allowed = 0;
+                    }
+                }
+                else
+                {
+                    if (*col != m)
+                    {
+                        matrix->flags.cm_is_position_dependent = 0;
+                    }
+                }
+            }
+        }
 
-if (!matrix->flags.arne_optimization_allowed 
-	&& !matrix->flags.cm_is_position_dependent)
-{
-	break;
-}
-	}
+        if (!matrix->flags.arne_optimization_allowed
+           && !matrix->flags.cm_is_position_dependent)
+        {
+            break;
+        }
+    }
 }
 
 
@@ -3007,7 +3008,7 @@ static void print_matrices(const VT_USERDEF_COEFF_MATRIX *our_coeff,
                 x++;
                 if (our_coeff->cm.pipe_len == x)
                 {
-					(*cb)(propagate, (our_coeff->cm.pipe_iters > y ? " :" : "  "));
+                    (*cb)(propagate, (our_coeff->cm.pipe_iters > y ? " :" : "  "));
                 }
             }
 
@@ -3016,7 +3017,7 @@ static void print_matrices(const VT_USERDEF_COEFF_MATRIX *our_coeff,
             {
                 (*cb)(propagate, "\n         ");
                 /* edge detect: */
-                for (x = 0; ; x++)
+                for (x = 0;; x++)
                 {
                     if (our_coeff->cm.pipe_len > x)
                     {
@@ -3047,7 +3048,7 @@ static void print_matrices(const VT_USERDEF_COEFF_MATRIX *our_coeff,
             x++;
             if (our_coeff->fw.column_count == x)
             {
-				(*cb)(propagate, (our_coeff->fw.row_count > y ? " :" : "  "));
+                (*cb)(propagate, (our_coeff->fw.row_count > y ? " :" : "  "));
             }
         }
 
@@ -3056,7 +3057,7 @@ static void print_matrices(const VT_USERDEF_COEFF_MATRIX *our_coeff,
         {
             (*cb)(propagate, "\n         ");
             /* edge detect: */
-            for (x = 0; ; x++)
+            for (x = 0;; x++)
             {
                 if (our_coeff->fw.column_count > x)
                 {
@@ -3113,18 +3114,18 @@ static int fetch_value(int *value_ref, const char **src_ref, int *srclen_ref, in
             nonfatalerror_ex(SRC_LOC(), "You've specified a %s "
                                         "that cannot be completely decoded [break at offset %d]: "
                                         "'%s' is not within the limited range %d..%d.",
-                    description,
-                    (int)(conv_ptr - valbuf), valbuf,
-                    lower_limit, upper_limit);
+                             description,
+                             (int)(conv_ptr - valbuf), valbuf,
+                             lower_limit, upper_limit);
             return -1;
         }
         if (value < lower_limit || value > upper_limit)
         {
             nonfatalerror_ex(SRC_LOC(), "You've specified a %s "
                                         "that is out of range: '%s' --> %ld, for limited range %d..%d.",
-                    description,
-                    valbuf, value,
-                    lower_limit, upper_limit);
+                             description,
+                             valbuf, value,
+                             lower_limit, upper_limit);
             return -1;
         }
         if (internal_trace)
@@ -3148,7 +3149,7 @@ static int fetch_value(int *value_ref, const char **src_ref, int *srclen_ref, in
         nonfatalerror_ex(SRC_LOC(), "We'd expected to see another value specified for the %s "
                                     "but alas, the script apparently didn't deliver enough for that. "
                                     "Next time, make sure you've got a full custom vector!",
-                description);
+                         description);
         return -1;
     }
 }
@@ -3204,8 +3205,8 @@ int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // t
             {
                 nonfatalerror_ex(SRC_LOC(), "You've specified inconsistent feature weight and VT coefficient matrix %s "
                                             "values: %d <> %d (where they should be identical!).",
-                        "pipeline length",
-                        pipe_len, coeff_matrix->cm.pipe_len);
+                                 "pipeline length",
+                                 pipe_len, coeff_matrix->cm.pipe_len);
             }
             coeff_matrix->cm.pipe_len = pipe_len;
 
@@ -3218,8 +3219,8 @@ int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // t
             {
                 nonfatalerror_ex(SRC_LOC(), "You've specified inconsistent feature weight and VT coefficient matrix %s "
                                             "values: %d <> %d (where they should be identical!).",
-                        "iteration counts",
-                        pipe_iters, coeff_matrix->cm.pipe_iters);
+                                 "iteration counts",
+                                 pipe_iters, coeff_matrix->cm.pipe_iters);
             }
             coeff_matrix->cm.pipe_iters = pipe_iters;
 
@@ -3232,8 +3233,8 @@ int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // t
             {
                 nonfatalerror_ex(SRC_LOC(), "You've specified inconsistent feature weight and VT coefficient matrix %s "
                                             "values: %d <> %d (where they should be identical!).",
-                        "stride counts",
-                        output_stride, coeff_matrix->cm.output_stride);
+                                 "stride counts",
+                                 output_stride, coeff_matrix->cm.output_stride);
             }
             coeff_matrix->cm.output_stride = output_stride;
 
@@ -3295,10 +3296,10 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
         // static const char *vt_weight_regex = "vector: ([ 0-9]*)";
         static const char *vt_weight_regex = "vector:([^,;]+)";
         static const char *vt_feature_weight_regex = "weight:([^,;]+)";
-		static const char *vt_matrix_clip_regex = "vector-clip:([^,;]+)"; 
-		static const char *vt_weight_clip_regex = "weight-clip:([^,;]+)"; 
-		static const char *vt_weight_model_regex = "weight-model:([^,;]+)"; 
-		static const char *vt_vector_model_regex = "vector-model:([^,;]+)"; 
+        static const char *vt_matrix_clip_regex = "vector-clip:([^,;]+)";
+        static const char *vt_weight_clip_regex = "weight-clip:([^,;]+)";
+        static const char *vt_weight_model_regex = "weight-model:([^,;]+)";
+        static const char *vt_vector_model_regex = "vector-model:([^,;]+)";
 
         //   Compile up the regex to find the desired VT model
         regex_status = crm_regcomp(&regcb, vt_vector_model_regex, (int)strlen(vt_vector_model_regex), REG_ICASE | REG_EXTENDED);
@@ -3309,8 +3310,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
             nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Matrix: "
                                         "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
-                    vt_vector_model_regex,
-                    errmsg);
+                             vt_vector_model_regex,
+                             errmsg);
             return -1;
         }
 
@@ -3321,68 +3322,68 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
         if (regex_status == 0 && match[1].rm_so >= 0)
         {
             // Yes, it matched. Take the string, remove leading and trailing whitespace and match
-			// case-INsensitively to our list of known weight models:
-			char *id = &s2text[match[1].rm_so];
-			int len = match[1].rm_eo - match[1].rm_so;
-			int start = 0;
-			
-			if (!crm_nextword(id, len, start, &start, &len))
-			{
-            nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Model: "
-				"You have specified an empty VT matrix model identifier with your 'vector-model:' attribute for the VT (Vector Tokenizer). Assuming the default model...");
+            // case-INsensitively to our list of known weight models:
+            char *id = &s2text[match[1].rm_so];
+            int len = match[1].rm_eo - match[1].rm_so;
+            int start = 0;
 
-			// don't change anything weight matrix related!
-			}
-			else
-			{
-				int i;
-				int model = -1;
-			
-				id += start;
+            if (!crm_nextword(id, len, start, &start, &len))
+            {
+                nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Model: "
+                                            "You have specified an empty VT matrix model identifier with your 'vector-model:' attribute for the VT (Vector Tokenizer). Assuming the default model...");
 
-				for (i = 0; i < WIDTHOF(vector_model_ids); i++)
-				{
-					if (!strncasecmp(id, vector_model_ids[i].identifier, CRM_MAX(strlen(vector_model_ids[i].identifier), len)))
-					{
-						// match!
-						model = i;
-						break;
-					}
-				}
+                // don't change anything weight matrix related!
+            }
+            else
+            {
+                int i;
+                int model = -1;
 
-				if (model < 0)
-				{
-            fatalerror_ex(SRC_LOC(), "Custom VT Coefficient Model: "
-				"You have specified an unidentified VT matrix model "
-				"identifier '%*.*s' with your 'vector-model:' "
-				"attribute for the VT (Vector Tokenizer). "
-				"Assuming the default model...",
-				len, len, id);
-			return -1;
-				}
-				else
-				{
-					// copy model:
-					if (generate_matrix_for_model(coeff_matrix, vector_model_ids[model].cb, vector_model_ids[model].table, vector_model_ids[model].table_size))
-    {
-        fatalerror("Failed to generate the VT matrix from the specified model.",
-                "This kind of disaster shouldn't befall you.");
-        return -1;
-    }
-	if (coeff_matrix->cm.pipe_len == 0)
-	{
-		coeff_matrix->cm.pipe_len = vector_model_ids[model].x;
-	}
-	if (coeff_matrix->cm.pipe_iters == 0)
-	{
-		coeff_matrix->cm.pipe_iters = vector_model_ids[model].y;
-	}
-	if (coeff_matrix->cm.output_stride == 0)
-	{
-		coeff_matrix->cm.output_stride = vector_model_ids[model].z;
-	}
-				}
-			}
+                id += start;
+
+                for (i = 0; i < WIDTHOF(vector_model_ids); i++)
+                {
+                    if (!strncasecmp(id, vector_model_ids[i].identifier, CRM_MAX(strlen(vector_model_ids[i].identifier), len)))
+                    {
+                        // match!
+                        model = i;
+                        break;
+                    }
+                }
+
+                if (model < 0)
+                {
+                    fatalerror_ex(SRC_LOC(), "Custom VT Coefficient Model: "
+                                             "You have specified an unidentified VT matrix model "
+                                             "identifier '%*.*s' with your 'vector-model:' "
+                                             "attribute for the VT (Vector Tokenizer). "
+                                             "Assuming the default model...",
+                                  len, len, id);
+                    return -1;
+                }
+                else
+                {
+                    // copy model:
+                    if (generate_matrix_for_model(coeff_matrix, vector_model_ids[model].cb, vector_model_ids[model].table, vector_model_ids[model].table_size))
+                    {
+                        fatalerror("Failed to generate the VT matrix from the specified model.",
+                                   "This kind of disaster shouldn't befall you.");
+                        return -1;
+                    }
+                    if (coeff_matrix->cm.pipe_len == 0)
+                    {
+                        coeff_matrix->cm.pipe_len = vector_model_ids[model].x;
+                    }
+                    if (coeff_matrix->cm.pipe_iters == 0)
+                    {
+                        coeff_matrix->cm.pipe_iters = vector_model_ids[model].y;
+                    }
+                    if (coeff_matrix->cm.output_stride == 0)
+                    {
+                        coeff_matrix->cm.output_stride = vector_model_ids[model].z;
+                    }
+                }
+            }
         }
 
         crm_regfree(&regcb);
@@ -3399,8 +3400,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
             nonfatalerror_ex(SRC_LOC(), "Custom VT Weight Model: "
                                         "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
-                    vt_weight_model_regex,
-                    errmsg);
+                             vt_weight_model_regex,
+                             errmsg);
             return -1;
         }
 
@@ -3411,60 +3412,61 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
         if (regex_status == 0 && match[1].rm_so >= 0)
         {
             // Yes, it matched. Take the string, remove leading and trailing whitespace and match
-			// case-INsensitively to our list of known weight models:
-			char *id = &s2text[match[1].rm_so];
-			int len = match[1].rm_eo - match[1].rm_so;
-			int start = 0;
-			
-			if (!crm_nextword(id, len, start, &start, &len))
-			{
-            nonfatalerror_ex(SRC_LOC(), "Custom VT Weight Model: "
-				"You have specified an empty weight model identifier with your 'weight-model:' attribute for the VT (Vector Tokenizer). Assuming the default model...");
+            // case-INsensitively to our list of known weight models:
+            char *id = &s2text[match[1].rm_so];
+            int len = match[1].rm_eo - match[1].rm_so;
+            int start = 0;
 
-			// don't change anything weight matrix related!
-			}
-			else
-			{
-				int i;
-				int model = -1;
-			
-				id += start;
+            if (!crm_nextword(id, len, start, &start, &len))
+            {
+                nonfatalerror_ex(SRC_LOC(), "Custom VT Weight Model: "
+                                            "You have specified an empty weight model identifier with your 'weight-model:' attribute for the VT (Vector Tokenizer). Assuming the default model...");
 
-				for (i = 0; i < WIDTHOF(weight_model_ids); i++)
-				{
-					if (!strncasecmp(id, weight_model_ids[i].identifier, CRM_MAX(strlen(weight_model_ids[i].identifier), len)))
-					{
-						// match!
-						model = i;
-						break;
-					}
-				}
+                // don't change anything weight matrix related!
+            }
+            else
+            {
+                int i;
+                int model = -1;
 
-				if (model < 0)
-				{
-            fatalerror_ex(SRC_LOC(), "Custom VT Weight Model: "
-				"You have specified an unidentified weight model identifier '%*.*s' with your 'weight-model:' attribute for the VT (Vector Tokenizer). Assuming the default model...",
-				len, len, id);
-			return -1;
-				}
-				else
-				{
-					// copy weight model:
-					int x;
-					int y;
+                id += start;
 
-					CRM_ASSERT(weight_model_ids[model].weight_table_size <= UNIFIED_VECTOR_LIMIT);
+                for (i = 0; i < WIDTHOF(weight_model_ids); i++)
+                {
+                    if (!strncasecmp(id, weight_model_ids[i].identifier, CRM_MAX(strlen(weight_model_ids[i].identifier), len)))
+                    {
+                        // match!
+                        model = i;
+                        break;
+                    }
+                }
 
-					for (x = coeff_matrix->fw.column_count = CRM_MAX(16, weight_model_ids[model].weight_table_size); x-- > 0; )
-					{
-						for (y = 0; y < UNIFIED_VECTOR_STRIDE; y++)
-						{
-							coeff_matrix->fw.feature_weight[x + UNIFIED_VECTOR_LIMIT * y] = weight_model_ids[model].weight_table[x];
-						}
-					}
-					coeff_matrix->fw.row_count = UNIFIED_VECTOR_STRIDE;
-				}
-			}
+                if (model < 0)
+                {
+                    fatalerror_ex(
+                        SRC_LOC(), "Custom VT Weight Model: "
+                                   "You have specified an unidentified weight model identifier '%*.*s' with your 'weight-model:' attribute for the VT (Vector Tokenizer). Assuming the default model...",
+                        len, len, id);
+                    return -1;
+                }
+                else
+                {
+                    // copy weight model:
+                    int x;
+                    int y;
+
+                    CRM_ASSERT(weight_model_ids[model].weight_table_size <= UNIFIED_VECTOR_LIMIT);
+
+                    for (x = coeff_matrix->fw.column_count = CRM_MAX(16, weight_model_ids[model].weight_table_size); x-- > 0;)
+                    {
+                        for (y = 0; y < UNIFIED_VECTOR_STRIDE; y++)
+                        {
+                            coeff_matrix->fw.feature_weight[x + UNIFIED_VECTOR_LIMIT * y] = weight_model_ids[model].weight_table[x];
+                        }
+                    }
+                    coeff_matrix->fw.row_count = UNIFIED_VECTOR_STRIDE;
+                }
+            }
         }
 
         crm_regfree(&regcb);
@@ -3481,8 +3483,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
             nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Matrix: "
                                         "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
-                    vt_weight_regex,
-                    errmsg);
+                             vt_weight_regex,
+                             errmsg);
             return -1;
         }
 
@@ -3495,7 +3497,7 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             //  Yes, it matched.  Set up the pipeline coeffs specially.
             //   The first parameter is the pipe length
             if (decode_userdefd_vt_coeff_matrix(coeff_matrix, &s2text[match[1].rm_so], match[1].rm_eo - match[1].rm_so,
-                        USERDEF_COEFF_DECODE_COEFF_MODE))
+                                                USERDEF_COEFF_DECODE_COEFF_MODE))
             {
                 return -1;
             }
@@ -3515,8 +3517,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
             nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Matrix: "
                                         "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
-                    vt_feature_weight_regex,
-                    errmsg);
+                             vt_feature_weight_regex,
+                             errmsg);
             return -1;
         }
 
@@ -3529,7 +3531,7 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             //  Yes, it matched.  Set up the pipeline coeffs specially.
             //   The first parameter is the pipe length
             if (decode_userdefd_vt_coeff_matrix(coeff_matrix, &s2text[match[1].rm_so], match[1].rm_eo - match[1].rm_so,
-                        USERDEF_COEFF_DECODE_WEIGHT_MODE))
+                                                USERDEF_COEFF_DECODE_WEIGHT_MODE))
             {
                 return -1;
             }
@@ -3540,8 +3542,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
 
 
 
-        
-		//   Compile up the regex to find the vector tokenizer mix matrix redim sizes
+
+        //   Compile up the regex to find the vector tokenizer mix matrix redim sizes
         regex_status = crm_regcomp(&regcb, vt_matrix_clip_regex, (int)strlen(vt_matrix_clip_regex), REG_ICASE | REG_EXTENDED);
         if (regex_status != 0)
         {
@@ -3550,8 +3552,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
             nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Matrix: "
                                         "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
-                    vt_matrix_clip_regex,
-                    errmsg);
+                             vt_matrix_clip_regex,
+                             errmsg);
             return -1;
         }
 
@@ -3562,30 +3564,30 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
         if (regex_status == 0 && match[1].rm_so >= 0)
         {
             //  Yes, it matched. Fetch the 3D sizes and adjust the matrix accordingly.
-			int x, y, z;
-    int x_max = 0;
-    int y_max = 0;
-    int z_max = 0;
-    int fw_x_max = 0;
-    int fw_y_max = 0;
-			char *src = &s2text[match[1].rm_so];
-			int srclen = match[1].rm_eo - match[1].rm_so;
+            int x, y, z;
+            int x_max = 0;
+            int y_max = 0;
+            int z_max = 0;
+            int fw_x_max = 0;
+            int fw_y_max = 0;
+            char *src = &s2text[match[1].rm_so];
+            int srclen = match[1].rm_eo - match[1].rm_so;
 
-    discover_matrices_max_dimensions(coeff_matrix, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
+            discover_matrices_max_dimensions(coeff_matrix, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
 
-                //   The first parameter is the pipe length
-                if (fetch_value(&x, &src, &srclen, 0, UNIFIED_WINDOW_LEN, "tokenizer pipe length"))
-                {
-                    return -1;
-                }
-#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+            //   The first parameter is the pipe length
+            if (fetch_value(&x, &src, &srclen, 0, UNIFIED_WINDOW_LEN, "tokenizer pipe length"))
+            {
+                return -1;
+            }
+#if 0       /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
             if (x > x_max)
             {
                 nonfatalerror_ex(SRC_LOC(), "You've specified a VT coefficient matrix %s "
                                             "value which is too large: %d > %d",
-                        "pipeline length",
-                        x, x_max);
-				return -1;
+                                 "pipeline length",
+                                 x, x_max);
+                return -1;
             }
 #endif
             coeff_matrix->cm.pipe_len = x;
@@ -3595,14 +3597,14 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             {
                 return -1;
             }
-#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+#if 0       /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
             if (y > y_max)
             {
                 nonfatalerror_ex(SRC_LOC(), "You've specified a VT coefficient matrix %s "
                                             "value which is too large: %d > %d",
-                        "iteration count",
-                        y, y_max);
-				return -1;
+                                 "iteration count",
+                                 y, y_max);
+                return -1;
             }
 #endif
             coeff_matrix->cm.pipe_iters = y;
@@ -3612,14 +3614,14 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             {
                 return -1;
             }
-#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+#if 0       /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
             if (z > z_max)
             {
                 nonfatalerror_ex(SRC_LOC(), "You've specified a VT coefficient matrix %s "
                                             "value which is too large: %d > %d",
-                        "matrix count",
-                        z, z_max);
-				return -1;
+                                 "matrix count",
+                                 z, z_max);
+                return -1;
             }
 #endif
             coeff_matrix->cm.output_stride = z;
@@ -3630,8 +3632,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
 
 
 
-        
-		//   Compile up the regex to find the vector tokenizer feature weight table redim sizes
+
+        //   Compile up the regex to find the vector tokenizer feature weight table redim sizes
         regex_status = crm_regcomp(&regcb, vt_weight_clip_regex, (int)strlen(vt_weight_clip_regex), REG_ICASE | REG_EXTENDED);
         if (regex_status != 0)
         {
@@ -3640,8 +3642,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
             nonfatalerror_ex(SRC_LOC(), "Custom VT Weight Matrix: "
                                         "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
-                    vt_weight_clip_regex,
-                    errmsg);
+                             vt_weight_clip_regex,
+                             errmsg);
             return -1;
         }
 
@@ -3652,51 +3654,51 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
         if (regex_status == 0 && match[1].rm_so >= 0)
         {
             //  Yes, it matched. Fetch the 3D sizes and adjust the matrix accordingly.
-        int x;
-        int y;
-    int x_max = 0;
-    int y_max = 0;
-    int z_max = 0;
-    int fw_x_max = 0;
-    int fw_y_max = 0;
-			char *src = &s2text[match[1].rm_so];
-			int srclen = match[1].rm_eo - match[1].rm_so;
+            int x;
+            int y;
+            int x_max = 0;
+            int y_max = 0;
+            int z_max = 0;
+            int fw_x_max = 0;
+            int fw_y_max = 0;
+            char *src = &s2text[match[1].rm_so];
+            int srclen = match[1].rm_eo - match[1].rm_so;
 
-    discover_matrices_max_dimensions(coeff_matrix, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
+            discover_matrices_max_dimensions(coeff_matrix, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
 
             //   The first parameter is the number of repeats
             if (fetch_value(&x, &src, &srclen, 0, UNIFIED_VECTOR_LIMIT, "feature order (iteration count)"))
             {
                 return -1;
             }
-#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+#if 0       /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
             if (x > CRM_MAX(fw_x_max, y_max))
             {
                 nonfatalerror_ex(SRC_LOC(), "You've specified a VT weight table %s "
                                             "value which is too large: %d > %d",
-                        "iteration count",
-                        x, CRM_MAX(fw_x_max, y_max));
-				return -1;
+                                 "iteration count",
+                                 x, CRM_MAX(fw_x_max, y_max));
+                return -1;
             }
 #endif
-			coeff_matrix->fw.column_count = x;
+            coeff_matrix->fw.column_count = x;
 
             //   The second parameter is the number of coefficient matrices, i.e. one for each step of a full 'stride':
             if (fetch_value(&y, &src, &srclen, 0, UNIFIED_VECTOR_STRIDE, "tokenizer matrix count (stride)"))
             {
                 return -1;
             }
-#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+#if 0       /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
             if (y > UNIFIED_VECTOR_STRIDE)
             {
                 nonfatalerror_ex(SRC_LOC(), "You've specified a VT weight table %s "
                                             "value which is too large: %d > %d",
-                        "matrix count (stride)",
-                        y, UNIFIED_VECTOR_STRIDE);
-				return -1;
+                                 "matrix count (stride)",
+                                 y, UNIFIED_VECTOR_STRIDE);
+                return -1;
             }
 #endif
-			coeff_matrix->fw.row_count = y;
+            coeff_matrix->fw.row_count = y;
         }
 
         crm_regfree(&regcb);
@@ -3767,7 +3769,7 @@ int config_vt_coeff_matrix_and_tokenizer
     if (!apb || !tokenizer || !our_coeff)
     {
         nonfatalerror("Sanity check failed while configuring VT (Vector Tokenizer) default coefficient matrix and tokenizer setup.",
-                "That developer overthere should've passed some nice, clean, zeroed structures in there, you know. Or was it you?");
+                      "That developer overthere should've passed some nice, clean, zeroed structures in there, you know. Or was it you?");
         return -1;
     }
 
@@ -3778,9 +3780,9 @@ int config_vt_coeff_matrix_and_tokenizer
     default_tokenizer.regex_compiler_flags = REG_EXTENDED;
     default_tokenizer.regex_compiler_flags_are_set = 1;
 
-	//default_tokenizer.padding_length = OSB_BAYES_WINDOW_LEN - 1;
-	default_tokenizer.pad_start = TRUE;
-	default_tokenizer.pad_end_with_first_chunk = FALSE;
+    //default_tokenizer.padding_length = OSB_BAYES_WINDOW_LEN - 1;
+    default_tokenizer.pad_start = TRUE;
+    default_tokenizer.pad_end_with_first_chunk = FALSE;
 
     ew = flat_model_weight;
     ew_len = WIDTHOF(flat_model_weight);
@@ -3790,27 +3792,27 @@ int config_vt_coeff_matrix_and_tokenizer
     //     If it's one of the dual-hash (= 64-bit-key) classifiers, then the featurebits
     //     need to be 64 --> stride = 2 (x 32 bits).
     if (classifier_flags & CRM_MARKOVIAN
-        || classifier_flags & CRM_OSB
-        || classifier_flags & CRM_WINNOW
-        || classifier_flags & CRM_OSBF
+       || classifier_flags & CRM_OSB
+       || classifier_flags & CRM_WINNOW
+       || classifier_flags & CRM_OSBF
        )
     {
         //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
         default_coeff.cm.output_stride = 2;
     }
     else if (classifier_flags & CRM_ALT_MARKOVIAN
-             || classifier_flags & CRM_ALT_OSB_BAYES
-             || classifier_flags & CRM_ALT_OSB_WINNOW
-             || classifier_flags & CRM_ALT_OSBF
+            || classifier_flags & CRM_ALT_OSB_BAYES
+            || classifier_flags & CRM_ALT_OSB_WINNOW
+            || classifier_flags & CRM_ALT_OSBF
             )
     {
         //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
         default_coeff.cm.output_stride = 2;
 
-		//default_tokenizer.padding_length = OSB_BAYES_WINDOW_LEN - 1;
-	default_tokenizer.pad_start = FALSE;
-	default_tokenizer.pad_end_with_first_chunk = TRUE;
-	}
+        //default_tokenizer.padding_length = OSB_BAYES_WINDOW_LEN - 1;
+        default_tokenizer.pad_start = FALSE;
+        default_tokenizer.pad_end_with_first_chunk = TRUE;
+    }
 
     //    Set up some clean initial values for the important parameters.
     //    Default is always the OSB featureset, 32-bit features.
@@ -3833,8 +3835,8 @@ int config_vt_coeff_matrix_and_tokenizer
             ew = super_markov_weight;
             ew_len = WIDTHOF(super_markov_weight);
 
-		//default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
-		}
+            //default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
+        }
         else if (classifier_flags & CRM_ALT_MARKOVIAN)
         {
             cb = markov_alt_contributing_token;
@@ -3845,7 +3847,7 @@ int config_vt_coeff_matrix_and_tokenizer
             ew = super_markov_weight;
             ew_len = WIDTHOF(super_markov_weight);
 
-		//default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
+            //default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
         }
         else if (classifier_flags & CRM_OSB_WINNOW)
         {
@@ -3857,7 +3859,7 @@ int config_vt_coeff_matrix_and_tokenizer
             //ew = hidden_markov_weight;
             //ew_len = WIDTHOF(hidden_markov_weight);
 
-		//default_tokenizer.padding_length = OSB_WINNOW_WINDOW_LEN - 1;
+            //default_tokenizer.padding_length = OSB_WINNOW_WINDOW_LEN - 1;
         }
         else if (classifier_flags & CRM_ALT_OSB_WINNOW)
         {
@@ -3869,7 +3871,7 @@ int config_vt_coeff_matrix_and_tokenizer
             //ew = hidden_markov_weight;
             //ew_len = WIDTHOF(hidden_markov_weight);
 
-		//default_tokenizer.padding_length = OSB_WINNOW_WINDOW_LEN - 1;
+            //default_tokenizer.padding_length = OSB_WINNOW_WINDOW_LEN - 1;
         }
         else if (classifier_flags & CRM_OSBF)
         {
@@ -3897,26 +3899,26 @@ int config_vt_coeff_matrix_and_tokenizer
             our_coeff->flags.sorted_output = TRUE;
         }
 
-    if (classifier_flags & CRM_CHI2)
-    {
-        if (user_trace)
-{
-            fprintf(stderr, " using chi^2 feature weights\n");
-}
+        if (classifier_flags & CRM_CHI2)
+        {
+            if (user_trace)
+            {
+                fprintf(stderr, " using chi^2 feature weights\n");
+            }
             ew = chi2_feature_weight;
             ew_len = WIDTHOF(chi2_feature_weight);
-    }
+        }
 
-	
-	if (generate_matrix_for_model(&default_coeff, cb, hctable, WIDTHOF(hctable)))
-    {
-        fatalerror("Failed to generate the VT matrix from the specified model.",
-                "This kind of disaster shouldn't befall you.");
-        return -1;
-    }
 
-            default_coeff.cm.pipe_len = pipe_len;
-            default_coeff.cm.pipe_iters = pipe_iters;
+        if (generate_matrix_for_model(&default_coeff, cb, hctable, WIDTHOF(hctable)))
+        {
+            fatalerror("Failed to generate the VT matrix from the specified model.",
+                       "This kind of disaster shouldn't befall you.");
+            return -1;
+        }
+
+        default_coeff.cm.pipe_len = pipe_len;
+        default_coeff.cm.pipe_iters = pipe_iters;
 
         //
         //     Do we want a string kernel a.k.a. <by_char> flag?  If so, then we have to override
@@ -3991,10 +3993,10 @@ int config_vt_coeff_matrix_and_tokenizer
 
 
         /* generate the default feature weights matrix... */
-                        default_coeff.fw.column_count = CRM_MAX(16, CRM_MAX(ew_len, pipe_iters));
-                        default_coeff.fw.row_count = UNIFIED_VECTOR_STRIDE;
+        default_coeff.fw.column_count = CRM_MAX(16, CRM_MAX(ew_len, pipe_iters));
+        default_coeff.fw.row_count = UNIFIED_VECTOR_STRIDE;
 
-						for (y = UNIFIED_VECTOR_STRIDE; y-- > 0;)
+        for (y = UNIFIED_VECTOR_STRIDE; y-- > 0;)
         {
             int *fw = &default_coeff.fw.feature_weight[y * UNIFIED_VECTOR_LIMIT];
 
@@ -4002,8 +4004,8 @@ int config_vt_coeff_matrix_and_tokenizer
             {
                 // zero weights are simply not acceptable ;-)
 
-				fw[x] = ew[(x < ew_len ? x : ew_len - 1)];                                         
-				// expand fw array beyond own range: this is so we can tolerate larger iteration counts.
+                fw[x] = ew[(x < ew_len ? x : ew_len - 1)];
+                // expand fw array beyond own range: this is so we can tolerate larger iteration counts.
             }
         }
     }
@@ -4011,9 +4013,9 @@ int config_vt_coeff_matrix_and_tokenizer
 
     if (internal_trace || user_trace)
     {
-	fprintf(stderr, "default matrices -->\n");
+        fprintf(stderr, "default matrices -->\n");
         print_matrices(&default_coeff, (fprintf_equivalent_func *)fprintf, stderr);
-	fprintf(stderr, "\n-------------------------------------------------\n");
+        fprintf(stderr, "\n-------------------------------------------------\n");
     }
 
     {
@@ -4022,25 +4024,25 @@ int config_vt_coeff_matrix_and_tokenizer
         if (get_vt_vector_from_2nd_slasharg(&coeff_matrix, apb, vht, tdw))
         {
             nonfatalerror(
-                    "There's a boo-boo in the 2nd slash argument where we try to look for the 'vector:...' "
-                    "coefficient matrix collection while configuring VT (Vector Tokenizer) default coefficient "
-                    "matrix and tokenizer setup.",
-                    "");
+                "There's a boo-boo in the 2nd slash argument where we try to look for the 'vector:...' "
+                "coefficient matrix collection while configuring VT (Vector Tokenizer) default coefficient "
+                "matrix and tokenizer setup.",
+                "");
             return -1;
         }
         else
         {
-    if (internal_trace || user_trace)
-    {
-	fprintf(stderr, "2nd slash arg: matrices -->\n");
-        print_matrices(&coeff_matrix, (fprintf_equivalent_func *)fprintf, stderr);
-	fprintf(stderr, "\n-------------------------------------------------\n");
-    }
+            if (internal_trace || user_trace)
+            {
+                fprintf(stderr, "2nd slash arg: matrices -->\n");
+                print_matrices(&coeff_matrix, (fprintf_equivalent_func *)fprintf, stderr);
+                fprintf(stderr, "\n-------------------------------------------------\n");
+            }
 
             if (our_coeff->cm.pipe_len == 0 || our_coeff->cm.pipe_iters == 0 || our_coeff->cm.output_stride == 0)
             {
                 if (coeff_matrix.cm.pipe_len != 0 && coeff_matrix.cm.pipe_iters != 0 && coeff_matrix.cm.output_stride != 0
-                    && coeff_matrix.cm.coeff_array[0] != 0 /* do we have a valid matrix fill? */)
+                   && coeff_matrix.cm.coeff_array[0] != 0 /* do we have a valid matrix fill? */)
                 {
                     crm_memmove(&our_coeff->cm, &coeff_matrix.cm, sizeof(coeff_matrix.cm));
                 }
@@ -4050,7 +4052,7 @@ int config_vt_coeff_matrix_and_tokenizer
                     crm_memmove(&our_coeff->cm, &default_coeff.cm, sizeof(default_coeff.cm));
 
                     if (coeff_matrix.cm.pipe_len != 0 && coeff_matrix.cm.pipe_iters != 0 && coeff_matrix.cm.output_stride != 0
-                        && coeff_matrix.cm.coeff_array[0] == 0 /* is this 'clipping info only' in there? */)
+                       && coeff_matrix.cm.coeff_array[0] == 0 /* is this 'clipping info only' in there? */)
                     {
                         our_coeff->cm.output_stride = coeff_matrix.cm.output_stride;
                         our_coeff->cm.pipe_iters = coeff_matrix.cm.pipe_iters;
@@ -4062,7 +4064,7 @@ int config_vt_coeff_matrix_and_tokenizer
             if (our_coeff->fw.column_count == 0 || our_coeff->fw.row_count == 0)
             {
                 if (coeff_matrix.fw.column_count != 0 && coeff_matrix.fw.row_count != 0
-                    && coeff_matrix.fw.feature_weight[0] != 0 /* do we have a valid matrix fill? */)
+                   && coeff_matrix.fw.feature_weight[0] != 0 /* do we have a valid matrix fill? */)
                 {
                     crm_memmove(&our_coeff->fw, &coeff_matrix.fw, sizeof(coeff_matrix.fw));
                 }
@@ -4072,7 +4074,7 @@ int config_vt_coeff_matrix_and_tokenizer
                     crm_memmove(&our_coeff->fw, &default_coeff.fw, sizeof(default_coeff.fw));
 
                     if (coeff_matrix.fw.column_count != 0 && coeff_matrix.fw.row_count != 0
-                        && coeff_matrix.fw.feature_weight[0] == 0 /* is this 'clipping info only' in there? */)
+                       && coeff_matrix.fw.feature_weight[0] == 0 /* is this 'clipping info only' in there? */)
                     {
                         our_coeff->fw.column_count = coeff_matrix.fw.column_count;
                         our_coeff->fw.row_count = coeff_matrix.fw.row_count;
@@ -4084,12 +4086,12 @@ int config_vt_coeff_matrix_and_tokenizer
 
     if (internal_trace || user_trace)
     {
-	fprintf(stderr, "VT: constructed matrices -->\n");
+        fprintf(stderr, "VT: constructed matrices -->\n");
         print_matrices(our_coeff, (fprintf_equivalent_func *)fprintf, stderr);
-	fprintf(stderr, "\n-------------------------------------------------\n");
+        fprintf(stderr, "\n-------------------------------------------------\n");
     }
 
-	{
+    {
         int x_max = 0;
         int y_max = 0;
         int z_max = 0;
@@ -4098,81 +4100,81 @@ int config_vt_coeff_matrix_and_tokenizer
 
         discover_matrices_max_dimensions(our_coeff, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
 
-						/* now validate those dimensions: */
+        /* now validate those dimensions: */
         if (our_coeff->cm.output_stride > z_max
-            || our_coeff->cm.pipe_iters > y_max
-            || our_coeff->cm.pipe_len > x_max)
+           || our_coeff->cm.pipe_iters > y_max
+           || our_coeff->cm.pipe_len > x_max)
         {
             nonfatalerror_ex(SRC_LOC(),
-                    "ERROR: we're faced with a 3D VT matrix with "
-                    "out-of-bounds dimensions: actual = %d x %d x %d, "
-                    "maximum fill = %d x %d x %d -- and "
-                    "those actual dimensions should all be less or "
-                    "equal to the maximum fill!",
-                    our_coeff->cm.pipe_len,
-                    our_coeff->cm.pipe_iters,
-                    our_coeff->cm.output_stride,
-                    x_max,
-                    y_max,
-                    z_max);
+                             "ERROR: we're faced with a 3D VT matrix with "
+                             "out-of-bounds dimensions: actual = %d x %d x %d, "
+                             "maximum fill = %d x %d x %d -- and "
+                             "those actual dimensions should all be less or "
+                             "equal to the maximum fill!",
+                             our_coeff->cm.pipe_len,
+                             our_coeff->cm.pipe_iters,
+                             our_coeff->cm.output_stride,
+                             x_max,
+                             y_max,
+                             z_max);
             return -1;
         }
         if (our_coeff->cm.output_stride <= 0
-            || our_coeff->cm.pipe_iters <= 0
-            || our_coeff->cm.pipe_len <= 0)
+           || our_coeff->cm.pipe_iters <= 0
+           || our_coeff->cm.pipe_len <= 0)
         {
             nonfatalerror_ex(SRC_LOC(),
-                    "ERROR: we're faced with a 3D VT matrix with "
-                    "out-of-bounds dimensions: actual = %d x %d x %d, "
-                    "maximum fill = %d x %d x %d -- and "
-                    "those actual dimensions should all be larger "
-                    "than zero!",
-                    our_coeff->cm.pipe_len,
-                    our_coeff->cm.pipe_iters,
-                    our_coeff->cm.output_stride,
-                    x_max,
-                    y_max,
-                    z_max);
+                             "ERROR: we're faced with a 3D VT matrix with "
+                             "out-of-bounds dimensions: actual = %d x %d x %d, "
+                             "maximum fill = %d x %d x %d -- and "
+                             "those actual dimensions should all be larger "
+                             "than zero!",
+                             our_coeff->cm.pipe_len,
+                             our_coeff->cm.pipe_iters,
+                             our_coeff->cm.output_stride,
+                             x_max,
+                             y_max,
+                             z_max);
             return -1;
         }
 
         if (our_coeff->fw.column_count > fw_x_max
-            || our_coeff->fw.row_count > fw_y_max)
+           || our_coeff->fw.row_count > fw_y_max)
         {
             nonfatalerror_ex(SRC_LOC(),
-                    "ERROR: we're faced with a 2D feature weight matrix with "
-                    "out-of-bounds dimensions: actual = %d x %d, "
-                    "maximum fill = %d x %d -- and "
-                    "those actual dimensions should all be less or "
-                    "equal to the maximum fill!",
-                    our_coeff->fw.column_count,
-                    our_coeff->fw.row_count,
-                    fw_x_max,
-                    fw_y_max);
+                             "ERROR: we're faced with a 2D feature weight matrix with "
+                             "out-of-bounds dimensions: actual = %d x %d, "
+                             "maximum fill = %d x %d -- and "
+                             "those actual dimensions should all be less or "
+                             "equal to the maximum fill!",
+                             our_coeff->fw.column_count,
+                             our_coeff->fw.row_count,
+                             fw_x_max,
+                             fw_y_max);
             return -1;
         }
         if (our_coeff->fw.column_count <= 0
-            || our_coeff->fw.row_count <= 0)
+           || our_coeff->fw.row_count <= 0)
         {
             nonfatalerror_ex(SRC_LOC(),
-                    "ERROR: we're faced with a 2D feature weight matrix with "
-                    "out-of-bounds dimensions: actual = %d x %d, "
-                    "maximum fill = %d x %d -- and "
-                    "those actual dimensions should all be larger "
-                    "than zero!",
-                    our_coeff->fw.column_count,
-                    our_coeff->fw.row_count,
-                    fw_x_max,
-                    fw_y_max);
+                             "ERROR: we're faced with a 2D feature weight matrix with "
+                             "out-of-bounds dimensions: actual = %d x %d, "
+                             "maximum fill = %d x %d -- and "
+                             "those actual dimensions should all be larger "
+                             "than zero!",
+                             our_coeff->fw.column_count,
+                             our_coeff->fw.row_count,
+                             fw_x_max,
+                             fw_y_max);
             return -1;
         }
 
-		check_and_set_flags(our_coeff);
+        check_and_set_flags(our_coeff);
     }
 
-	CRM_ASSERT(default_tokenizer.padding_length == 0);
-		default_tokenizer.padding_length = our_coeff->cm.pipe_len - 1;
-	default_tokenizer.padding_settings_are_set = TRUE;
+    CRM_ASSERT(default_tokenizer.padding_length == 0);
+    default_tokenizer.padding_length = our_coeff->cm.pipe_len - 1;
+    default_tokenizer.padding_settings_are_set = TRUE;
 
     //     Now all of the classifier defaults have been filled in; we now see if the
     //     caller has overridden any (or all!) of them.   We assume that the
@@ -4183,7 +4185,7 @@ int config_vt_coeff_matrix_and_tokenizer
         if (config_vt_tokenizer(tokenizer, apb, vht, tdw, &default_tokenizer))
         {
             nonfatalerror("Error while configuring VT (Vector Tokenizer) default tokenizer setup",
-                    "");
+                          "");
             return -1;
         }
     }
@@ -4230,12 +4232,12 @@ int crm_vector_tokenize_selector
         VHT_CELL               **vht,
         CSL_CELL                *tdw,
         const char              *text,               // input string (null-safe!)
-        int                      textlen,            // how many bytes of input.
-        int                      start_offset,       // start tokenizing at this byte.
+        int textlen,                                 // how many bytes of input.
+        int start_offset,                            // start tokenizing at this byte.
         VT_USERDEF_TOKENIZER    *user_tokenizer,     // the parsing regex (might be ignored)
         VT_USERDEF_COEFF_MATRIX *user_coeff,         // the pipeline coefficient control array, etc.
         crmhash_t               *features,           // where the output features go
-        int                      featureslen,        // how many output features (max)
+        int featureslen,                             // how many output features (max)
         uint32_t                *feature_weights,    // feature weight per feature
         uint32_t                *order_no,           // order_no (starting at 0) per feature
         int                     *features_out        // how many feature-slots did we actually use up
@@ -4253,14 +4255,14 @@ int crm_vector_tokenize_selector
     if (!text || !features || !features_out)
     {
         nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer) selector.",
-                "Either we were'nt passed a text or no feature bucket to put the data in.");
+                      "Either we were'nt passed a text or no feature bucket to put the data in.");
         return -1;
     }
     *features_out = 0;
     if (featureslen < 1)
     {
         nonfatalerror("Sanity check coughed up a hairball while starting up the VT (Vector Tokenizer) selector.",
-                "That was one rediculously small feature bucket size right there.");
+                      "That was one rediculously small feature bucket size right there.");
         return -1;
     }
     tokenizer = user_tokenizer;
@@ -4292,15 +4294,15 @@ int crm_vector_tokenize_selector
 
     //    We now have our parameters all set, and we can run the vector hashing.
     status = crm_vector_tokenize(text,
-            textlen,
-            start_offset,
-            tokenizer,
-            coeff,
-            features,
-            featureslen,
-            feature_weights,
-            order_no,
-            features_out);
+                                 textlen,
+                                 start_offset,
+                                 tokenizer,
+                                 coeff,
+                                 features,
+                                 featureslen,
+                                 feature_weights,
+                                 order_no,
+                                 features_out);
 
 
 
@@ -4355,12 +4357,12 @@ int crm_vector_tokenize_selector
         VHT_CELL               **vht,
         CSL_CELL                *tdw,
         const char              *text,            // input string (null-safe!)
-        int                      textlen,         //   how many bytes of input.
-        int                      start_offset,    //     start tokenizing at this byte.
+        int textlen,                              //   how many bytes of input.
+        int start_offset,                         //     start tokenizing at this byte.
         VT_USERDEF_TOKENIZER    *tokenizer,       // the parsing regex (might be ignored)
         VT_USERDEF_COEFF_MATRIX *userdef_coeff,   // the pipeline coefficient control array, etc.
         crmhash_t               *features,        // where the output features go
-        int                      featureslen,     //   how many output features (max)
+        int featureslen,                          //   how many output features (max)
         int                     *features_out,    // how many feature-slots did we actually use up
         int                     *next_offset      // next invocation should start at this offset
 )
@@ -4442,9 +4444,9 @@ int crm_vector_tokenize_selector
     //     If it's one of the 64-bit-key classifiers, then the featurebits
     //     need to be 64.
     if (classifier_flags & CRM_MARKOVIAN
-        || classifier_flags & CRM_OSB
-        || classifier_flags & CRM_WINNOW
-        || classifier_flags & CRM_OSBF
+       || classifier_flags & CRM_OSB
+       || classifier_flags & CRM_WINNOW
+       || classifier_flags & CRM_OSBF
        )
     {
         //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
@@ -4547,17 +4549,17 @@ int crm_vector_tokenize_selector
         {
             //   Compile up the regex to find the vector tokenizer weights
             crm_regcomp
-                        (&regcb, vt_weight_regex, strlen(vt_weight_regex),
-                        REG_ICASE | REG_EXTENDED);
+                                       (&regcb, vt_weight_regex, strlen(vt_weight_regex),
+                                       REG_ICASE | REG_EXTENDED);
 
             //   Use the regex to find the vector tokenizer weights
             regex_status =  crm_regexec(&regcb,
-                    s2text,
-                    s2len,
-                    5,
-                    match,
-                    REG_EXTENDED,
-                    NULL);
+                                        s2text,
+                                        s2len,
+                                        5,
+                                        match,
+                                        REG_EXTENDED,
+                                        NULL);
 
             //   Did we actually get a match for the extended parameters?
             if (regex_status == 0)
@@ -4638,51 +4640,51 @@ int crm_vector_tokenize_selector
     if (output_stride == 1)
     {
         crm_vector_tokenize(
-                text,
-                textlen,
-                start_offset,
-                my_regex,
-                my_regex_len,
-                hash_vec0,
-                hash_len0,
-                hash_iters0,
-                features,
-                featureslen,
-                1,                      //  stride 1 for 32-bit
-                features_out,
-                next_offset);
+            text,
+            textlen,
+            start_offset,
+            my_regex,
+            my_regex_len,
+            hash_vec0,
+            hash_len0,
+            hash_iters0,
+            features,
+            featureslen,
+            1,                          //  stride 1 for 32-bit
+            features_out,
+            next_offset);
     }
     else
     {
         //        We're doing the 64-bit-long features for Markov/OSB
         crm_vector_tokenize(
-                text,
-                textlen,
-                start_offset,
-                my_regex,
-                my_regex_len,
-                hash_vec0,
-                hash_len0,
-                hash_iters0,
-                features,
-                featureslen,
-                2,                      //  stride 1 for 32-bit
-                features_out,
-                next_offset);
+            text,
+            textlen,
+            start_offset,
+            my_regex,
+            my_regex_len,
+            hash_vec0,
+            hash_len0,
+            hash_iters0,
+            features,
+            featureslen,
+            2,                          //  stride 1 for 32-bit
+            features_out,
+            next_offset);
         crm_vector_tokenize(
-                text,
-                textlen,
-                start_offset,
-                regex,
-                regexlen,
-                hash_vec1,
-                hash_len1,
-                hash_iters1,
-                &(features[1]),
-                featureslen,
-                2,                      //  stride 1 for 32-bit
-                features_out,
-                next_offset);
+            text,
+            textlen,
+            start_offset,
+            regex,
+            regexlen,
+            hash_vec1,
+            hash_len1,
+            hash_iters1,
+            &(features[1]),
+            featureslen,
+            2,                          //  stride 1 for 32-bit
+            features_out,
+            next_offset);
     }
     return *features_out;
 }
@@ -4693,30 +4695,30 @@ int crm_vector_tokenize_selector
 long crm_vector_markov_1
 (
         char          *txtptr,       // input string (null-safe!)
-        long           txtstart,     //     start tokenizing at this byte.
-        long           txtlen,       //   how many bytes of input.
+        long txtstart,               //     start tokenizing at this byte.
+        long txtlen,                 //   how many bytes of input.
         char          *regex,        // the parsing regex (might be ignored)
-        long           regexlen,     //   length of the parsing regex
+        long regexlen,               //   length of the parsing regex
         unsigned long *features,     // where the output features go
-        long           featureslen,  //   how many output features (max)
+        long featureslen,            //   how many output features (max)
         long          *features_out, // how many longs did we actually use up
         long          *next_offset   // next invocation should start at this offset
 )
 {
     return crm_vector_tokenize
-                (txtptr,
-                txtstart,
-                txtlen,
-                regex,
-                regexlen,
-                markov1_coeff,
-                5,
-                16,
-                features,
-                featureslen,
-                2,       //  stride 2 for 64-bit features
-                features_out,
-                next_offset);
+                               (txtptr,
+                               txtstart,
+                               txtlen,
+                               regex,
+                               regexlen,
+                               markov1_coeff,
+                               5,
+                               16,
+                               features,
+                               featureslen,
+                               2, //  stride 2 for 64-bit features
+                               features_out,
+                               next_offset);
 }
 
 
@@ -4725,30 +4727,30 @@ long crm_vector_markov_1
 long crm_vector_markov_2
 (
         char          *txtptr,       // input string (null-safe!)
-        long           txtstart,     //     start tokenizing at this byte.
-        long           txtlen,       //   how many bytes of input.
+        long txtstart,               //     start tokenizing at this byte.
+        long txtlen,                 //   how many bytes of input.
         char          *regex,        // the parsing regex (might be ignored)
-        long           regexlen,     //   length of the parsing regex
+        long regexlen,               //   length of the parsing regex
         unsigned long *features,     // where the output features go
-        long           featureslen,  //   how many output features (max)
+        long featureslen,            //   how many output features (max)
         long          *features_out, // how many longs did we actually use up
         long          *next_offset   // next invocation should start at this offset
 )
 {
     return crm_vector_tokenize
-                (txtptr,
-                txtstart,
-                txtlen,
-                regex,
-                regexlen,
-                markov2_coeff,
-                5,
-                16,
-                features,
-                featureslen,
-                2,          // Stride 2 for 64-bit features
-                features_out,
-                next_offset);
+                               (txtptr,
+                               txtstart,
+                               txtlen,
+                               regex,
+                               regexlen,
+                               markov2_coeff,
+                               5,
+                               16,
+                               features,
+                               featureslen,
+                               2, // Stride 2 for 64-bit features
+                               features_out,
+                               next_offset);
 }
 
 //            vectorized OSB featureset generator.
@@ -4756,59 +4758,59 @@ long crm_vector_markov_2
 long crm_vector_osb1
 (
         char          *txtptr,       // input string (null-safe!)
-        long           txtstart,     //     start tokenizing at this byte.
-        long           txtlen,       //   how many bytes of input.
+        long txtstart,               //     start tokenizing at this byte.
+        long txtlen,                 //   how many bytes of input.
         char          *regex,        // the parsing regex (might be ignored)
-        long           regexlen,     //   length of the parsing regex
+        long regexlen,               //   length of the parsing regex
         unsigned long *features,     // where the output features go
-        long           featureslen,  //   how many output features (max)
+        long featureslen,            //   how many output features (max)
         long          *features_out, // how many longs did we actually use up
         long          *next_offset   // next invocation should start at this offset
 )
 {
     return crm_vector_tokenize
-                (txtptr,
-                txtstart,
-                txtlen,
-                regex,
-                regexlen,
-                osb1_coeff,
-                OSB_BAYES_WINDOW_LEN,
-                4, // should be 4
-                features,
-                featureslen,
-                2,
-                features_out,
-                next_offset);
+                               (txtptr,
+                               txtstart,
+                               txtlen,
+                               regex,
+                               regexlen,
+                               osb1_coeff,
+                               OSB_BAYES_WINDOW_LEN,
+                               4, // should be 4
+                               features,
+                               featureslen,
+                               2,
+                               features_out,
+                               next_offset);
 }
 
 long crm_vector_osb2
 (
         char          *txtptr,       // input string (null-safe!)
-        long           txtstart,     //     start tokenizing at this byte.
-        long           txtlen,       //   how many bytes of input.
+        long txtstart,               //     start tokenizing at this byte.
+        long txtlen,                 //   how many bytes of input.
         char          *regex,        // the parsing regex (might be ignored)
-        long           regexlen,     //   length of the parsing regex
+        long regexlen,               //   length of the parsing regex
         unsigned long *features,     // where the output features go
-        long           featureslen,  //   how many output features (max)
+        long featureslen,            //   how many output features (max)
         long          *features_out, // how many longs did we actually use up
         long          *next_offset   // next invocation should start at this offset
 )
 {
     return crm_vector_tokenize
-                (txtptr,
-                txtstart,
-                txtlen,
-                regex,
-                regexlen,
-                osb2_coeff,
-                OSB_BAYES_WINDOW_LEN,
-                4, // should be 4
-                features,
-                featureslen,
-                2,
-                features_out,
-                next_offset);
+                               (txtptr,
+                               txtstart,
+                               txtlen,
+                               regex,
+                               regexlen,
+                               osb2_coeff,
+                               OSB_BAYES_WINDOW_LEN,
+                               4, // should be 4
+                               features,
+                               featureslen,
+                               2,
+                               features_out,
+                               next_offset);
 }
 
 
@@ -4817,11 +4819,11 @@ long crm_vector_osb2
 long crm_vector_string_kernel1
 (
         char          *txtptr,          // input string (null-safe!)
-        long           txtstart,        //     start tokenizing at this byte.
-        long           txtlen,          //   how many bytes of input.
-        long           string_kern_len, //   length of the kernel (must be < 16)
+        long txtstart,                  //     start tokenizing at this byte.
+        long txtlen,                    //   how many bytes of input.
+        long string_kern_len,           //   length of the kernel (must be < 16)
         unsigned long *features,        // where the output features go
-        long           featureslen,     //   how many output features (max)
+        long featureslen,               //   how many output features (max)
         long          *features_out,    // how many longs did we actually use up
         long          *next_offset      // next invocation should start at this offset
 )
@@ -4832,29 +4834,29 @@ long crm_vector_string_kernel1
         string_kern_len = 15;
 
     return crm_vector_tokenize
-                (txtptr,
-                txtstart,
-                txtlen,
-                ".", // regex
-                1,   // regexlen
-                string1_coeff,
-                string_kern_len, //  how many coeffs to use
-                1,               //  how many variations (just one)
-                features,
-                featureslen,
-                1,
-                features_out,
-                next_offset);
+                               (txtptr,
+                               txtstart,
+                               txtlen,
+                               ".", // regex
+                               1,   // regexlen
+                               string1_coeff,
+                               string_kern_len, //  how many coeffs to use
+                               1,               //  how many variations (just one)
+                               features,
+                               featureslen,
+                               1,
+                               features_out,
+                               next_offset);
 }
 
 long crm_vector_string_kernel2
 (
         char          *txtptr,          // input string (null-safe!)
-        long           txtstart,        //     start tokenizing at this byte.
-        long           txtlen,          //   how many bytes of input.
-        long           string_kern_len, //   length of the kernel (must be < 16)
+        long txtstart,                  //     start tokenizing at this byte.
+        long txtlen,                    //   how many bytes of input.
+        long string_kern_len,           //   length of the kernel (must be < 16)
         unsigned long *features,        // where the output features go
-        long           featureslen,     //   how many output features (max)
+        long featureslen,               //   how many output features (max)
         long          *features_out,    // how many longs did we actually use up
         long          *next_offset      // next invocation should start at this offset
 )
@@ -4865,19 +4867,19 @@ long crm_vector_string_kernel2
         string_kern_len = 15;
 
     return crm_vector_tokenize
-                (txtptr,
-                txtstart,
-                txtlen,
-                ".", // regex
-                1,   // regexlen
-                string2_coeff,
-                string_kern_len, //  how many coeffs to use
-                1,               //  how many variations (just one)
-                features,
-                featureslen,
-                1,
-                features_out,
-                next_offset);
+                               (txtptr,
+                               txtstart,
+                               txtlen,
+                               ".", // regex
+                               1,   // regexlen
+                               string2_coeff,
+                               string_kern_len, //  how many coeffs to use
+                               1,               //  how many variations (just one)
+                               features,
+                               featureslen,
+                               1,
+                               features_out,
+                               next_offset);
 }
 
 

@@ -50,7 +50,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     CRM_ASSERT(temp_vars[tvlen] == 0);
     tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME, vht, tdw);
     if (!crm_nextword(temp_vars, tvlen, 0, &vstart, &vlen)
-        || vlen < 3)
+       || vlen < 3)
     {
         nonfatalerror("This statement is missing the variable to isolate"
                       " so I'll just ignore the whole statement.", "");
@@ -67,10 +67,10 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     vstart = 0;
     vlen = 0;
     vn_start_here = 0;
-    for ( ; ;)
+    for (;;)
     {
         if (!crm_nextword(temp_vars, tvlen, vn_start_here, &vstart, &vlen)
-            || vlen == 0)
+           || vlen == 0)
         {
             break;
         }
@@ -86,8 +86,8 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             {
                 nonfatalerror_ex(SRC_LOC(), "ISOLATE statement comes with a variable name which is too long (len = %d) "
                                             "while the maximum allowed size is %d.",
-                        vlen,
-                        MAX_VARNAME - 1);
+                                 vlen,
+                                 MAX_VARNAME - 1);
                 vlen = MAX_VARNAME - 1;
             }
             crm_memmove(vname, &temp_vars[vstart], vlen);
@@ -102,12 +102,12 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (strcmp(vname, ":_dw:") == 0)
             {
                 nonfatalerror("You can't ISOLATE the :_dw: data window! ",
-                        "We'll just ignore that for now");
+                              "We'll just ignore that for now");
                 continue;
             }
             else  //  OK- isolate this variable
             {
-		int has_arg;
+                int has_arg;
 
                 if (!crm_is_legal_variable(vname, vlen))
                 {
@@ -126,9 +126,9 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //       [boxed strings] as well as /slashes/.
                 //
 
-		// slash arg can be empty: make sure we know about it anyway as 'isolate (:a:)' is quite
-		// different from 'isolate (:a:) //'!
-		has_arg = (apb->s1start || apb->b1start);
+                // slash arg can be empty: make sure we know about it anyway as 'isolate (:a:)' is quite
+                // different from 'isolate (:a:) //'!
+                has_arg = (apb->s1start || apb->b1start);
 
                 vallen = 0;
                 if (apb->s1len > 0)
@@ -203,15 +203,15 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         //    get the /value/
                         if (internal_trace)
                             fprintf(stderr, "Using the provided value.\n");
-			if (vallen > 0)
-			{
-	                        CRM_ASSERT(tempbuf[vallen] == 0);
-                        	vallen = crm_nexpandvar(tempbuf, vallen, data_window_size - tdw->nchars, vht, tdw);
-			}
-			else
-			{
-	                        tempbuf[0] = 0;
-			}
+                        if (vallen > 0)
+                        {
+                            CRM_ASSERT(tempbuf[vallen] == 0);
+                            vallen = crm_nexpandvar(tempbuf, vallen, data_window_size - tdw->nchars, vht, tdw);
+                        }
+                        else
+                        {
+                            tempbuf[0] = 0;
+                        }
                     }
                     else
                     {
@@ -241,12 +241,12 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //    the right thing (pretty much).  :-)
                 //
                 iso_status = crm_isolate_this(&vmidx,
-                        vname, 0, vlen,
-                        tempbuf, 0, vallen, !!(apb->sflags & CRM_KEEP));
+                                              vname, 0, vlen,
+                                              tempbuf, 0, vallen, !!(apb->sflags & CRM_KEEP));
                 if (iso_status != 0)
-		{
+                {
                     return iso_status;
-		}
+                }
             }
         }
     }
@@ -269,7 +269,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 int crm_isolate_this(int *vptr,
         char *nametext, int namestart, int namelen,
         char *valuetext, int valuestart, int valuelen,
-		int keep_in_outer_scope)
+        int keep_in_outer_scope)
 
 {
     int is_old;
@@ -277,10 +277,10 @@ int crm_isolate_this(int *vptr,
     int vmidx;
     int oldvstart = 0;
     int oldvlen = 0;
-	int calldepth;
+    int calldepth;
     int neededlen;
-	const char *varname;
-	int varnamelen;
+    const char *varname;
+    int varnamelen;
 
     if (internal_trace)
     {
@@ -299,21 +299,21 @@ int crm_isolate_this(int *vptr,
     if (vptr)
     {
         vmidx = *vptr;
-if (vht[vmidx])
-{
-		varname = &vht[vmidx]->nametxt[vht[vmidx]->nstart];
-		varnamelen = vht[vmidx]->nlen;
- }
-else
-{
-		varname = &nametext[namestart];
-		varnamelen = namelen;
-}
-   }
+        if (vht[vmidx])
+        {
+            varname = &vht[vmidx]->nametxt[vht[vmidx]->nstart];
+            varnamelen = vht[vmidx]->nlen;
+        }
+        else
+        {
+            varname = &nametext[namestart];
+            varnamelen = namelen;
+        }
+    }
     else
     {
-		varname = &nametext[namestart];
-		varnamelen = namelen;
+        varname = &nametext[namestart];
+        varnamelen = namelen;
         if (!crm_is_legal_variable(varname, varnamelen))
         {
             fatalerror_ex(SRC_LOC(), "Attempt to ISOLATE an illegal variable '%.*s'.", varnamelen, varname);
@@ -322,33 +322,33 @@ else
         vmidx = crm_vht_lookup(vht, varname, varnamelen, csl->calldepth);
     }
 
-	calldepth = csl->calldepth;
-	
-	if (!keep_in_outer_scope && vht[vmidx] && vht[vmidx]->scope_depth < csl->calldepth)
-	{
-		// when we isolate, we do so at the CURRENT scope level,
-		// hence we create a fresh variable at current scope depth
-		// now... We CAN re-use discarded older instances of this 
-		// variable here!
-		vmidx = crm_vht_find_next_empty_slot(vht, vmidx, varname, varnamelen);
-		if (vmidx == 0)
-		{
-			return -1;
-		}
-		if (vht[vmidx])
-		{
-			CRM_ASSERT(vht[vmidx]->out_of_scope);
-			vht[vmidx]->out_of_scope = 0;
-			vht[vmidx]->scope_depth = calldepth;
+    calldepth = csl->calldepth;
 
-			register_var_with_csl(csl, vmidx);
-		}
-	}
-	else if (keep_in_outer_scope && vht[vmidx] == NULL)
-	{
-		// var doesn't exist yet, but <keep> means we'd like to have it as a global var (at level 0)
-		calldepth = 0;
-	}
+    if (!keep_in_outer_scope && vht[vmidx] && vht[vmidx]->scope_depth < csl->calldepth)
+    {
+        // when we isolate, we do so at the CURRENT scope level,
+        // hence we create a fresh variable at current scope depth
+        // now... We CAN re-use discarded older instances of this
+        // variable here!
+        vmidx = crm_vht_find_next_empty_slot(vht, vmidx, varname, varnamelen);
+        if (vmidx == 0)
+        {
+            return -1;
+        }
+        if (vht[vmidx])
+        {
+            CRM_ASSERT(vht[vmidx]->out_of_scope);
+            vht[vmidx]->out_of_scope = 0;
+            vht[vmidx]->scope_depth = calldepth;
+
+            register_var_with_csl(csl, vmidx);
+        }
+    }
+    else if (keep_in_outer_scope && vht[vmidx] == NULL)
+    {
+        // var doesn't exist yet, but <keep> means we'd like to have it as a global var (at level 0)
+        calldepth = 0;
+    }
 
     //     check the vht - if it's not here, we need to add it.
     //
@@ -393,9 +393,9 @@ else
                 ((128 < namelen) ? 128 : namelen));
         vname[128] = 0; /* [i_a] boundary bug */
         fatalerror_ex(SRC_LOC(), "You have blown the memory-storage gaskets while trying "
-                   "to store the ISOLATEd variable '%s': memory storage window size "
-			"is set at %u, call 'crm114 -w' to spacify a larger store instead.\n", 
-vname, data_window_size);
+                                 "to store the ISOLATEd variable '%s': memory storage window size "
+                                 "is set at %u, call 'crm114 -w' to spacify a larger store instead.\n",
+                      vname, data_window_size);
         return 1;
     }
     //   If we get to here, there's more than enough space; so we're good to
@@ -432,14 +432,14 @@ vname, data_window_size);
 
         //      now, we whack the actual VHT.
         crm_setvar(&vmidx, NULL, 0,
-                tdw->filetext, nstart, namelen,
-                tdw->filetext, vstart, valuelen,
-                csl->cstmt, calldepth);
+                   tdw->filetext, nstart, namelen,
+                   tdw->filetext, vstart, valuelen,
+                   csl->cstmt, calldepth);
         //     that's it.    It's now in the TDW and in the VHT
         return 0;
     }
 
-	CRM_ASSERT(vht[vmidx]);
+    CRM_ASSERT(vht[vmidx]);
 
     //  No, it's a preexisting variable.  We need to do the shuffle.
     //
@@ -476,8 +476,8 @@ vname, data_window_size);
     if (internal_trace)
         fprintf(stderr, "Memmoving the value in.\n");
     crm_memmove(&(tdw->filetext[tdw->nchars]),
-            tempbuf,
-            valuelen);
+                tempbuf,
+                valuelen);
     tdw->nchars = tdw->nchars + valuelen;
     //
     // trailing separator
@@ -502,8 +502,8 @@ vname, data_window_size);
         //  vstart==0 means "ignore this value" to reclamation
         //
         crm_compress_tdw_section(vht[vmidx]->valtxt,
-                oldvstart,
-                oldvstart + oldvlen);
+                                 oldvstart,
+                                 oldvstart + oldvlen);
     }
 
     return 0;
