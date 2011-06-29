@@ -38,10 +38,6 @@ char **prog_argv = NULL;
 
 
 
-FILE *crm_stdin = NULL;
-FILE *crm_stderr = NULL;
-FILE *crm_stdout = NULL;
-
 
 
 
@@ -50,11 +46,11 @@ static char version[] = "1.2";
 
 static void helptext(void)
 {
-    fprintf(crm_stderr, " This is csdiff, version %s\n", version);
-    fprintf(crm_stderr, " Copyright 2001-2007 W.S.Yerazunis.\n");
-    fprintf(crm_stderr,
+    fprintf(stderr, " This is csdiff, version %s\n", version);
+    fprintf(stderr, " Copyright 2001-2007 W.S.Yerazunis.\n");
+    fprintf(stderr,
             " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
-    fprintf(crm_stderr, "Usage: cssdiff <cssfile1> <cssfile2>\n");
+    fprintf(stderr, "Usage: cssdiff <cssfile1> <cssfile2>\n");
 }
 
 
@@ -72,9 +68,7 @@ int main(int argc, char **argv)
 
     int opt;
 
-	    crm_stdin = stdin;
-	    crm_stdout = stdout;
-	    crm_stderr = stderr;
+        init_stdin_out_err_as_os_handles();
 
     //   copy argc and argv into global statics...
     prog_argc = argc;
@@ -103,13 +97,13 @@ int main(int argc, char **argv)
 
         if (optind >= argc)
         {
-            fprintf(crm_stderr, "Error: missing both css file arguments.\n\n");
+            fprintf(stderr, "Error: missing both css file arguments.\n\n");
             helptext();
             exit(EXIT_FAILURE);
         }
         if (optind + 1 >= argc)
         {
-            fprintf(crm_stderr, "Error: missing second css file argument.\n\n");
+            fprintf(stderr, "Error: missing second css file argument.\n\n");
             helptext();
             exit(EXIT_FAILURE);
         }
@@ -119,7 +113,7 @@ int main(int argc, char **argv)
         k = stat(argv[optind], &statbuf);
         if (k != 0)
         {
-            fprintf(crm_stderr, "\n CSS file '%s' not found.\n", argv[optind]);
+            fprintf(stderr, "\n CSS file '%s' not found.\n", argv[optind]);
             exit(EXIT_FAILURE);
         }
         //
@@ -133,7 +127,7 @@ int main(int argc, char **argv)
 
         if (h1 == MAP_FAILED)
         {
-            fprintf(crm_stderr, "\n MMAP failed on file %s\n",
+            fprintf(stderr, "\n MMAP failed on file %s\n",
                     argv[optind]);
             exit(EXIT_FAILURE);
         }
@@ -145,7 +139,7 @@ int main(int argc, char **argv)
         //             quick check- does the file even exist?
         if (k != 0)
         {
-            fprintf(crm_stderr, "\n.CSS file '%s' not found.\n", argv[optind + 1]);
+            fprintf(stderr, "\n.CSS file '%s' not found.\n", argv[optind + 1]);
             exit(EXIT_FAILURE);
         }
 
@@ -158,28 +152,28 @@ int main(int argc, char **argv)
                                                  NULL);
         if (h2 == MAP_FAILED)
         {
-            fprintf(crm_stderr, "\n MMAP failed on file %s\n",
+            fprintf(stderr, "\n MMAP failed on file %s\n",
                     argv[optind + 1]);
             exit(EXIT_FAILURE);
         }
 
         hfsize2 = hfsize2 / sizeof(FEATUREBUCKET_TYPE);
 
-        fprintf(crm_stderr, "Sparse spectra file %s has %ld bins total\n",
+        fprintf(stderr, "Sparse spectra file %s has %ld bins total\n",
                 argv[optind], hfsize1);
 
 
-        fprintf(crm_stdout, "Sparse spectra file %s has %ld bins total\n",
+        fprintf(stdout, "Sparse spectra file %s has %ld bins total\n",
                 argv[optind + 1], hfsize2);
 
         //
         //
         if (hfsize1 != hfsize2)
         {
-            fprintf(crm_stderr,
+            fprintf(stderr,
                     "\n.CSS files %s, %s :\n lengths differ: %ld vs %ld.\n",
                     argv[optind], argv[optind + 1], hfsize1, hfsize2);
-            fprintf(crm_stderr, "\n This is not a fatal error, but be warned.\n");
+            fprintf(stderr, "\n This is not a fatal error, but be warned.\n");
         }
 
         f1 = 0;
@@ -267,14 +261,14 @@ int main(int argc, char **argv)
             }
         }
 
-        fprintf(crm_stdout, "\n File 1 total features            : %12ld", f1);
-        fprintf(crm_stdout, "\n File 2 total features            : %12ld\n", f2);
+        fprintf(stdout, "\n File 1 total features            : %12ld", f1);
+        fprintf(stdout, "\n File 2 total features            : %12ld\n", f2);
 
-        fprintf(crm_stdout, "\n Similarities between files       : %12ld", sim / 2);
-        fprintf(crm_stdout, "\n Differences between files        : %12ld\n", diff / 2);
+        fprintf(stdout, "\n Similarities between files       : %12ld", sim / 2);
+        fprintf(stdout, "\n Differences between files        : %12ld\n", diff / 2);
 
-        fprintf(crm_stdout, "\n File 1 dominates file 2          : %12ld", dom1);
-        fprintf(crm_stdout, "\n File 2 dominates file 1          : %12ld\n", dom2);
+        fprintf(stdout, "\n File 1 dominates file 2          : %12ld", dom1);
+        fprintf(stdout, "\n File 2 dominates file 1          : %12ld\n", dom2);
     }
     return EXIT_SUCCESS;
 }

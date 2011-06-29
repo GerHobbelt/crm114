@@ -48,7 +48,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     // should use tempbuf for this instead.
     //   char newstr [MAX_PATTERN];
     if (user_trace)
-        fprintf(crm_stderr, "Executing an EVALuation\n");
+        fprintf(stderr, "Executing an EVALuation\n");
 
     qex_stat = 0;
     has_output_var = 1;
@@ -60,7 +60,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         has_output_var = 0;
         if (user_trace)
-            fprintf(crm_stderr, "There's no output var for this EVAL, so we won't "
+            fprintf(stderr, "There's no output var for this EVAL, so we won't "
                             "be assigning the result anywhere.\n  It better have a "
                             "relational test, or you're just wasting CPU.\n");
     }
@@ -106,7 +106,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         crmhash64_t ihash = strnhash64(tempbuf, newvallen);
         ahash[itercount] = ihash;
         if (internal_trace)
-            fprintf(crm_stderr, "Eval ihash = %016llX\n", (unsigned long long)ihash);
+            fprintf(stderr, "Eval ihash = %016llX\n", (unsigned long long)ihash);
 
         // scan down to see if we see any change: faster than up.
         //
@@ -154,13 +154,13 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                         tempbuf, newvallen);
 
     if (internal_trace)
-        fprintf(crm_stderr, "Final qex_stat was %ld\n", qex_stat);
+        fprintf(stderr, "Final qex_stat was %ld\n", qex_stat);
 
     //    for now, use the qex_stat that came back from qexpandvar.
     if (qex_stat > 0)
     {
         if (user_trace)
-            fprintf(crm_stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %ld\n", csl->cstmt);
+            fprintf(stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %ld\n", csl->cstmt);
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
@@ -184,7 +184,7 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     // should use tempbuf for this instead.
     //   char newstr [MAX_PATTERN];
     if (user_trace)
-        fprintf(crm_stderr, "Executing an ALTERation\n");
+        fprintf(stderr, "Executing an ALTERation\n");
 
     //     get the variable name
     CRM_ASSERT(apb != NULL);

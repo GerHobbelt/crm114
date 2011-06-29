@@ -341,7 +341,7 @@
 #define HAVE_STRUCT_STAT 1
 
 /* Define to 1 if you have the `sysconf' function. */
-#undef HAVE_SYSCONF 
+#undef HAVE_SYSCONF
 
 /* Define to 1 if you have the `system' function. */
 #define HAVE_SYSTEM 1

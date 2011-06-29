@@ -88,7 +88,7 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-						 | CRM_SCM);
+                                                 | CRM_SCM);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -194,7 +194,7 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-						 | CRM_SCM);
+                                                 | CRM_SCM);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -237,7 +237,7 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         retval = crm_expr_scm_classify(csl, apb, txt, start, len);
     }
     else
-	{
+        {
         retval = crm_expr_markov_classify(csl, apb, txt, start, len);
     }
     return 0;

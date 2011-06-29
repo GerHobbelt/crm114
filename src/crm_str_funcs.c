@@ -1106,7 +1106,7 @@ void driver1()
         h = hashlittle(&buf[0], 1, h);
     }
     time(&z);
-    if (z - a > 0) fprintf(crm_stdout, "time %d %.8x\n", z - a, h);
+    if (z - a > 0) fprintf(stdout, "time %d %.8x\n", z - a, h);
 }
 
 /* check that every input bit changes every output bit half the time */
@@ -1122,7 +1122,7 @@ void driver2()
     uint32_t x[HASHSTATE], y[HASHSTATE];
     uint32_t hlen;
 
-    fprintf(crm_stdout, "No more than %d trials should ever be needed \n", MAXPAIR / 2);
+    fprintf(stdout, "No more than %d trials should ever be needed \n", MAXPAIR / 2);
     for (hlen = 0; hlen < MAXLEN; ++hlen)
     {
         z = 0;
@@ -1166,10 +1166,10 @@ void driver2()
                     if (k > z) z = k;
                     if (k == MAXPAIR)
                     {
-                        fprintf(crm_stdout, "Some bit didn't change: ");
-                        fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x  ",
+                        fprintf(stdout, "Some bit didn't change: ");
+                        fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x  ",
                                e[0], f[0], g[0], h[0], x[0], y[0]);
-                        fprintf(crm_stdout, "i %d j %d m %d len %d\n", i, j, m, hlen);
+                        fprintf(stdout, "i %d j %d m %d len %d\n", i, j, m, hlen);
                     }
                     if (z == MAXPAIR) goto done;
                 }
@@ -1178,11 +1178,11 @@ void driver2()
 done:
         if (z < MAXPAIR)
         {
-            fprintf(crm_stdout, "Mix success  %2d bytes  %2d initvals  ", i, m);
-            fprintf(crm_stdout, "required  %d  trials\n", z / 2);
+            fprintf(stdout, "Mix success  %2d bytes  %2d initvals  ", i, m);
+            fprintf(stdout, "required  %d  trials\n", z / 2);
         }
     }
-    fprintf(crm_stdout, "\n");
+    fprintf(stdout, "\n");
 }
 
 /* Check for reading beyond the end of the buffer and alignment problems */
@@ -1200,13 +1200,13 @@ void driver3()
     uint32_t ref, x, y;
     uint8_t *p;
 
-    fprintf(crm_stdout, "Endianness.  These lines should all be the same (for values filled in):\n");
-    fprintf(crm_stdout, "%.8x                            %.8x                            %.8x\n",
+    fprintf(stdout, "Endianness.  These lines should all be the same (for values filled in):\n");
+    fprintf(stdout, "%.8x                            %.8x                            %.8x\n",
            hashword((const uint32_t *)q, (sizeof(q) - 1) / 4, 13),
            hashword((const uint32_t *)q, (sizeof(q) - 5) / 4, 13),
            hashword((const uint32_t *)q, (sizeof(q) - 9) / 4, 13));
     p = q;
-    fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
@@ -1214,7 +1214,7 @@ void driver3()
            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     p = &qq[1];
-    fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
@@ -1222,7 +1222,7 @@ void driver3()
            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     p = &qqq[2];
-    fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
@@ -1230,27 +1230,27 @@ void driver3()
            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     p = &qqqq[3];
-    fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
            hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13),
            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
-    fprintf(crm_stdout, "\n");
+    fprintf(stdout, "\n");
 
     /* check that hashlittle2 and hashlittle produce the same results */
     i = 47; j = 0;
     hashlittle2(q, sizeof(q), &i, &j);
     if (hashlittle(q, sizeof(q), 47) != i)
-        fprintf(crm_stdout, "hashlittle2 and hashlittle mismatch\n");
+        fprintf(stdout, "hashlittle2 and hashlittle mismatch\n");
 
     /* check that hashword2 and hashword produce the same results */
     len = 0xdeadbeef;
     i = 47, j = 0;
     hashword2(&len, 1, &i, &j);
     if (hashword(&len, 1, 47) != i)
-        fprintf(crm_stdout, "hashword2 and hashword mismatch %x %x\n",
+        fprintf(stdout, "hashword2 and hashword mismatch %x %x\n",
                i, hashword(&len, 1, 47));
 
     /* check hashlittle doesn't read before or after the ends of the string */
@@ -1269,7 +1269,7 @@ void driver3()
             y = hashlittle(b, len, (uint32_t)1);
             if ((ref != x) || (ref != y))
             {
-                fprintf(crm_stdout, "alignment error: %.8x %.8x %.8x %d %d\n", ref, x, y,
+                fprintf(stdout, "alignment error: %.8x %.8x %.8x %d %d\n", ref, x, y,
                        h, i);
             }
         }
@@ -1285,11 +1285,11 @@ void driver4()
 
     buf[0] = ~0;
     for (i = 0; i < HASHSTATE; ++i) state[i] = 1;
-    fprintf(crm_stdout, "These should all be different\n");
+    fprintf(stdout, "These should all be different\n");
     for (i = 0, h = 0; i < 8; ++i)
     {
         h = hashlittle(buf, 0, h);
-        fprintf(crm_stdout, "%2ld  0-byte strings, hash is  %.8x\n", i, h);
+        fprintf(stdout, "%2ld  0-byte strings, hash is  %.8x\n", i, h);
     }
 }
 
@@ -1401,7 +1401,7 @@ crmhash_t strnhash (const char *str, long len)
       //    add some bits out of the middle as low order bits.
       hval = hval + (( hval >> 12) & 0x0000ffff) ;
 
-      //     swap most and min significative bytes 
+      //     swap most and min significative bytes
       tmp = (hval << 24) | ((hval >> 24) & 0xff);
       hval &= 0x00ffff00;           // zero most and min significative bytes of hval
       hval |= tmp;                  // OR with swapped bytes
@@ -1572,77 +1572,77 @@ static CRM_MMAP_CELL *cache = NULL;
 //
 static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
 {
-	time_t buf[6] = {0};
+        time_t buf[6] = {0};
 
-	buf[0] = fs->st_ctime;
-	buf[1] = fs->st_mtime;
+        buf[0] = fs->st_ctime;
+        buf[1] = fs->st_mtime;
 #if defined(HAVE_NSEC_STAT_TIME_NSEC)
-	buf[2] = (time_t)fs->st_ctime_nsec;
-	buf[3] = (time_t)fs->st_mtime_nsec;
+        buf[2] = (time_t)fs->st_ctime_nsec;
+        buf[3] = (time_t)fs->st_mtime_nsec;
 #elif defined(HAVE_NSEC_STAT_TIM_TV_NSEC)
-	buf[2] = (time_t)fs->st_ctim.tv_nsec;
-	buf[3] = (time_t)fs->st_mtim.tv_nsec;
+        buf[2] = (time_t)fs->st_ctim.tv_nsec;
+        buf[3] = (time_t)fs->st_mtim.tv_nsec;
 #elif defined(HAVE_NSEC_STAT_TIMENSEC)
-	buf[2] = (time_t)fs->st_ctimensec;
-	buf[3] = (time_t)fs->st_mtimensec;
+        buf[2] = (time_t)fs->st_ctimensec;
+        buf[3] = (time_t)fs->st_mtimensec;
 #elif defined(WIN32)
-	/*
-	   From the MSVC docs:
+        /*
+           From the MSVC docs:
 
-	   File Times and Daylight Saving Time
+           File Times and Daylight Saving Time
 
-	You must take care when using file times if the user has 
-	set the system to automatically adjust for daylight saving 
-	time.
+        You must take care when using file times if the user has 
+        set the system to automatically adjust for daylight saving 
+        time.
 
-	To convert a file time to local time, use the 
-	FileTimeToLocalFileTime function. However, 
-	FileTimeToLocalFileTime uses the current settings for the 
-	time zone and daylight saving time. Therefore, if it is 
-	daylight saving time, it takes daylight saving time into 
-	account, even if the file time you are converting is 
-	in standard time.
+        To convert a file time to local time, use the 
+        FileTimeToLocalFileTime function. However, 
+        FileTimeToLocalFileTime uses the current settings for the 
+        time zone and daylight saving time. Therefore, if it is 
+        daylight saving time, it takes daylight saving time into 
+        account, even if the file time you are converting is 
+        in standard time.
 
-	The FAT file system records times on disk in local time. 
-	GetFileTime retrieves cached UTC times from the FAT file 
-	system. When it becomes daylight saving time, the time 
-	retrieved by GetFileTime is off an hour, because the cache 
-	is not updated. When you restart the computer, the cached 
-	time that GetFileTime retrieves is correct. FindFirstFile 
-	retrieves the local time from the FAT file system and 
-	converts it to UTC by using the current settings for the 
-	time zone and daylight saving time. Therefore, if it is 
-	daylight saving time, FindFirstFile takes daylight saving 
-	time into account, even if the file time you are converting 
-	is in standard time.
+        The FAT file system records times on disk in local time. 
+        GetFileTime retrieves cached UTC times from the FAT file 
+        system. When it becomes daylight saving time, the time 
+        retrieved by GetFileTime is off an hour, because the cache 
+        is not updated. When you restart the computer, the cached 
+        time that GetFileTime retrieves is correct. FindFirstFile 
+        retrieves the local time from the FAT file system and 
+        converts it to UTC by using the current settings for the 
+        time zone and daylight saving time. Therefore, if it is 
+        daylight saving time, FindFirstFile takes daylight saving 
+        time into account, even if the file time you are converting 
+        is in standard time.
 
-	The NTFS file system records times on disk in UTC. 
+        The NTFS file system records times on disk in UTC. 
 */
-	if (filename != NULL)
-	{
+        if (filename != NULL)
+        {
   HANDLE handle;
   WIN32_FIND_DATA fdata;
 
   handle = FindFirstFile(filename, &fdata);
   if (handle != INVALID_HANDLE_VALUE) 
   {
-	  if (internal_trace)
-	  {
-		fprintf(crm_stderr, 
-			"The file found by calc_file_mtime_hash() is '%s'\n", 
+          if (internal_trace)
+          {
+                fprintf(stderr, 
+                        "The file found by calc_file_mtime_hash() is '%s'\n", 
             fdata.cFileName);
-	  }
-	  buf[2] = (time_t)fdata.ftCreationTime.dwHighDateTime;
-	  buf[3] = (time_t)fdata.ftCreationTime.dwLowDateTime;
-	  buf[4] = (time_t)fdata.ftLastWriteTime.dwHighDateTime;
-	  buf[5] = (time_t)fdata.ftLastWriteTime.dwLowDateTime;
+          }
+          buf[2] = (time_t)fdata.ftCreationTime.dwHighDateTime;
+          buf[3] = (time_t)fdata.ftCreationTime.dwLowDateTime;
+          buf[4] = (time_t)fdata.ftLastWriteTime.dwHighDateTime;
+          buf[5] = (time_t)fdata.ftLastWriteTime.dwLowDateTime;
 
-		FindClose(handle);
+                FindClose(handle);
   }
   }
 #endif
 
-	return strnhash64((const char *)buf, sizeof(buf));
+        return strnhash64((const char *)buf, sizeof(buf));
 }
 
 //////////////////////////////////////
@@ -1656,32 +1656,32 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
 #if defined(HAVE_MSYNC) || defined(HAVE_MUNMAP)
     int munmap_status;
 
-#if defined(HAVE_MSYNC) 
+#if defined(HAVE_MSYNC)
     if (map->prot & PROT_WRITE)
-	{
+        {
         munmap_status = msync(map->addr, map->actual_len, MS_SYNC | MS_INVALIDATE);
-	if (munmap_status != 0)
-	{
-		nonfatalerror_ex(SRC_LOC(),
-			"mmapped file sync failed for file '%s': error %d(%s)",
-			map->name,
-			errno,
-			errno_descr(errno)
-		);
-	}
-	}
+        if (munmap_status != 0)
+        {
+                nonfatalerror_ex(SRC_LOC(),
+                        "mmapped file sync failed for file '%s': error %d(%s)",
+                        map->name,
+                        errno,
+                        errno_descr(errno)
+                );
+        }
+        }
 #endif
     munmap_status = munmap(map->addr, map->actual_len);
-	if (munmap_status != 0)
-	{
-		fatalerror_ex(SRC_LOC(),
-			"Failed to release (unmap) the mmapped file '%s': error %d(%s)",
-			map->name,
-			errno,
-			errno_descr(errno)
-		);
-	}
-    //  fprintf(crm_stderr, "Munmap_status is %ld\n", munmap_status);
+        if (munmap_status != 0)
+        {
+                fatalerror_ex(SRC_LOC(),
+                        "Failed to release (unmap) the mmapped file '%s': error %d(%s)",
+                        map->name,
+                        errno,
+                        errno_descr(errno)
+                );
+        }
+    //  fprintf(stderr, "Munmap_status is %ld\n", munmap_status);
 
 #if 0
     //    Because mmap/munmap doesn't set atime, nor set the "modified"
@@ -1708,7 +1708,7 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
     //     broken behavior.  So, we close here instead.
     //
     close(map->fd);
-    //  fprintf(crm_stderr, "U");
+    //  fprintf(stderr, "U");
 
     //    Because mmap/munmap doesn't set atime, nor set the "modified"
     //    flag, some network filesystems will fail to mark the file as
@@ -1868,15 +1868,15 @@ void crm_munmap_file(void *addr)
         {
 #if defined (HAVE_MSYNC)
             int ret = msync(p->addr, p->actual_len, MS_SYNC | MS_INVALIDATE);
-	if (ret != 0)
-	{
-		nonfatalerror_ex(SRC_LOC(),
-			"mmapped file sync failed for file '%s': error %d(%s)",
-			p->name,
-			errno,
-			errno_descr(errno)
-		);
-	}
+        if (ret != 0)
+        {
+                nonfatalerror_ex(SRC_LOC(),
+                        "mmapped file sync failed for file '%s': error %d(%s)",
+                        p->name,
+                        errno,
+                        errno_descr(errno)
+                );
+        }
 
 #elif defined (WIN32)
             //unmap our view of the file, which will immediately write any
@@ -1884,13 +1884,13 @@ void crm_munmap_file(void *addr)
     FlushViewOfFile(p->addr, 0);
             UnmapViewOfFile(p->addr);
             //and remap so we still have it open
-            p->addr = MapViewOfFile(p->mapping, 
-				((p->mode & MAP_PRIVATE) 
-		? FILE_MAP_COPY 
-		: ((p->prot & PROT_WRITE) 
-		? FILE_MAP_WRITE 
-		: FILE_MAP_READ)),
-			 0, 0, 0);
+            p->addr = MapViewOfFile(p->mapping,
+                                ((p->mode & MAP_PRIVATE)
+                ? FILE_MAP_COPY
+                : ((p->prot & PROT_WRITE)
+                ? FILE_MAP_WRITE
+                : FILE_MAP_READ)),
+                         0, 0, 0);
             //if the remap failed for some reason, just free everything
             //  and get rid of this cached mmap entry.
             if (p->addr == NULL)
@@ -1965,14 +1965,14 @@ void *crm_mmap_file(char *filename,
 
     pagesize = getpagesize();  // see sysincludes for the actual 'mess' ;-)
 
-	if ((start % pagesize) != 0 || start < 0)
+        if ((start % pagesize) != 0 || start < 0)
 {
-	untrappableerror_ex(SRC_LOC(),
-		"The system cannot memory map (mmap) any file when "
-	        "the requested offset %ld is not on a system page "
-		"boundary.   Tough luck for file '%s'.",
-		start,
-		filename		);
+        untrappableerror_ex(SRC_LOC(),
+                "The system cannot memory map (mmap) any file when "
+                "the requested offset %ld is not on a system page "
+                "boundary.   Tough luck for file '%s'.",
+                start,
+                filename                );
 }
 
     //    Search for the file - if it's already mmaped, just return it.
@@ -1984,19 +1984,19 @@ void *crm_mmap_file(char *filename,
             && p->start == start
             && p->requested_len == requested_len)
         {
-	  // check the mtime; if this differs between cache and stat
-	  // val, then someone outside our process has played with the
-	  // file and we need to unmap it and remap it again.
-	  struct stat statbuf;
-	  int k = stat(filename, &statbuf);
-	  if (k != 0 || p->modification_time_hash != calc_file_mtime_hash(&statbuf, filename))
-	    {
-	      // yep, someone played with it. unmap and remap
-	      crm_force_munmap_filename (filename);
-	    }
-	  else
-	    {
-	      //  nope, it looks clean.  We'll reuse it.
+          // check the mtime; if this differs between cache and stat
+          // val, then someone outside our process has played with the
+          // file and we need to unmap it and remap it again.
+          struct stat statbuf;
+          int k = stat(filename, &statbuf);
+          if (k != 0 || p->modification_time_hash != calc_file_mtime_hash(&statbuf, filename))
+            {
+              // yep, someone played with it. unmap and remap
+              crm_force_munmap_filename (filename);
+            }
+          else
+            {
+              //  nope, it looks clean.  We'll reuse it.
                 if (actual_len)
                     *actual_len = p->actual_len;
                 return p->addr;
@@ -2027,11 +2027,11 @@ void *crm_mmap_file(char *filename,
         open_flags = O_WRONLY;
     open_flags |= O_BINARY;
     if (internal_trace)
-        fprintf(crm_stderr, "MMAP file open mode: %ld\n", (long)open_flags);
+        fprintf(stderr, "MMAP file open mode: %ld\n", (long)open_flags);
 
-	CRM_ASSERT(strcmp(p->name, filename) == 0);
+        CRM_ASSERT(strcmp(p->name, filename) == 0);
 
-	//   if we need to, we stat the file
+        //   if we need to, we stat the file
     //if (p->requested_len < 0) -- [i_a] we ALWAYS need this stat() call: for the modified time below!
     {
         int k;
@@ -2050,7 +2050,7 @@ void *crm_mmap_file(char *filename,
   p->modification_time_hash = calc_file_mtime_hash(&statbuf, filename);
 
     if (user_trace)
-        fprintf(crm_stderr, "MMAPping file %s for direct memory access.\n", filename);
+        fprintf(stderr, "MMAPping file %s for direct memory access.\n", filename);
     p->fd = open(filename, open_flags);
     if (p->fd < 0)
     {
@@ -2066,14 +2066,14 @@ void *crm_mmap_file(char *filename,
     if (p->actual_len < 0)
         p->actual_len = statbuf.st_size - p->start;
 
-    //  fprintf(crm_stderr, "m");
+    //  fprintf(stderr, "m");
     p->addr = mmap(NULL,
                    p->actual_len,
                    p->prot,
                    p->mode,
                    p->fd,
                    p->start);
-    //fprintf(crm_stderr, "M");
+    //fprintf(stderr, "M");
 
     //     we can't close the fd now (the docs say yes, testing says no,
     //     we need to wait till we're really done with the mmap.)
@@ -2115,11 +2115,11 @@ void *crm_mmap_file(char *filename,
         }
     }
     if (internal_trace)
-        fprintf(crm_stderr, "MMAP file open mode: %ld\n", (long)open_flags);
+        fprintf(stderr, "MMAP file open mode: %ld\n", (long)open_flags);
 
-	CRM_ASSERT(strcmp(p->name, filename) == 0);
+        CRM_ASSERT(strcmp(p->name, filename) == 0);
 
-	//  If we need to, we stat the file.
+        //  If we need to, we stat the file.
     //if (p->requested_len < 0) -- [i_a] we ALWAYS need this stat() call: for the modified time below!
     {
         int k;
@@ -2138,7 +2138,7 @@ void *crm_mmap_file(char *filename,
   p->modification_time_hash = calc_file_mtime_hash(&statbuf, filename);
 
     if (user_trace)
-        fprintf(crm_stderr, "MMAPping file %s for direct memory access.\n", filename);
+        fprintf(stderr, "MMAPping file %s for direct memory access.\n", filename);
 
     p->fd = CreateFile(filename, open_flags, 0,
                        NULL, OPEN_EXISTING, 0, NULL);
@@ -2314,7 +2314,7 @@ unsigned char *crm_strntrn_invert_string(unsigned char *str,
     //    The final string length is j characters long, in outstr.
     //    Don't forget to free() it later.  :-)
 
-    //  fprintf(crm_stdout, "Inversion: '%s' RLEN: %d\n", outstr, *rlen);
+    //  fprintf(stdout, "Inversion: '%s' RLEN: %d\n", outstr, *rlen);
     *rlen = j;
     return outstr;
 }
@@ -2397,7 +2397,7 @@ unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
         }
     }
 
-    //  fprintf(crm_stderr, "Resulting range string: %s \n", r);
+    //  fprintf(stderr, "Resulting range string: %s \n", r);
     //  return the char *string.
     return r;
 }
@@ -2445,7 +2445,7 @@ long strntrn(
     //
     if (tostrlen == 0 && fromstrlen == 0)
     {
-        // fprintf(crm_stderr, "Fast exit from strntrn  \n");
+        // fprintf(stderr, "Fast exit from strntrn  \n");
         *datastrlen = len;
         return len;
     }

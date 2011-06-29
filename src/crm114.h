@@ -49,9 +49,6 @@ extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
 
-extern FILE *crm_stdin;
-extern FILE *crm_stdout;
-extern FILE *crm_stderr;
 
 
 
@@ -531,7 +528,7 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, con
     __attribute__((__format__(__printf__, 4, 0)));
 
 
-/* 
+/*
    Reset the nonfatalerror counters/handlers. This is useful when you run multiple scripts
    one after the other from within a single crm app, such as crm_test.
  */
@@ -679,6 +676,8 @@ void cleanup_expandvar_allocations(void);
 
 void free_regex_cache(void);
 
+void free_debugger_data(void);
+
 
 
 /*
@@ -689,6 +688,16 @@ void free_regex_cache(void);
 int file_memset(FILE *dst, unsigned char val, size_t count);
 
 const char *skip_path(const char *srcfile);
+
+
+void init_stdin_out_err_as_os_handles(void);
+void cleanup_stdin_out_err_as_os_handles(void);
+FILE *os_stdin(void);
+FILE *os_stdout(void);
+FILE *os_stderr(void);
+int is_stdin_or_null(FILE *f);
+int is_stdout_err_or_null(FILE *f);
+
 
 
 

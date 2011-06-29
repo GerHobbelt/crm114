@@ -335,6 +335,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\crm_stdio_port.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\crm_stmt_parser.c"
 				>
 			</File>
@@ -742,6 +746,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\crm_delimescapebug.bat"
+					>
+				</File>
+				<File
+					RelativePath="..\src\crm_delimescapebug.sh"
+					>
+				</File>
+				<File
 					RelativePath="..\src\hyperspace_bug.bat"
 					>
 				</File>
@@ -821,6 +833,7 @@
 		</Filter>
 		<Filter
 			Name="Test Cases"
+			Filter="*.crm"
 			>
 			<File
 				RelativePath="..\src\aliustest.crm"

@@ -142,7 +142,7 @@ long crm_zexpandvar(char *buf,
     is = 0; id = 0;
 
     if (internal_trace)
-        fprintf(crm_stderr, "qexpandvar on =%s= len: %ld bitmask: %ld\n",
+        fprintf(stderr, "qexpandvar on =%s= len: %ld bitmask: %ld\n",
                 buf, inlen, exec_bitmask);
 
     //  GROT GROT GROT must fix this for 8-bit safe error messages
@@ -167,7 +167,7 @@ long crm_zexpandvar(char *buf,
         is = 0;
         id = 0;
         if (internal_trace)
-            fprintf(crm_stderr, " Doing backslash expansion\n");
+            fprintf(stderr, " Doing backslash expansion\n");
         for (is = 0; is <= inlen; is++)
         {
             if (buf[is] != '\\')
@@ -298,11 +298,11 @@ long crm_zexpandvar(char *buf,
                     }
                     break;
 
-                case '>':
+                                case '>':
                 case ')':
                 case ']':
                 case '/':
-                case ';':
+                                case ';':
                 case '{':
                 case '}':
                 case '#':
@@ -336,7 +336,7 @@ long crm_zexpandvar(char *buf,
         inlen = id - 1;
 
         if (internal_trace)
-            fprintf(crm_stderr, "backslash expansion yields: =%s= len %ld \n", buf, inlen);
+            fprintf(stderr, "backslash expansion yields: =%s= len %ld \n", buf, inlen);
     }
     //    END OF ANSI \-EXPANSIONS
 
@@ -350,7 +350,7 @@ long crm_zexpandvar(char *buf,
     if (cp == NULL)
     {
         if (internal_trace)
-            fprintf(crm_stderr, "No further expansions possible");
+            fprintf(stderr, "No further expansions possible");
         return inlen;
     }
 
@@ -408,7 +408,7 @@ long crm_zexpandvar(char *buf,
         is = 0;  //   is is the input position index
         id = 0;  //   id is the destination position index
         if (internal_trace)
-            fprintf(crm_stderr, "Doing singlevar eval expansion\n");
+            fprintf(stderr, "Doing singlevar eval expansion\n");
 
         //
         //   First time through the loop, for :*: (variable expansion)
@@ -449,7 +449,7 @@ long crm_zexpandvar(char *buf,
                 //      Now we've got the variable name in vname, we can
                 //      go get it's value and copy _that_ into tbuf as well.
                 if (internal_trace)
-                    fprintf(crm_stderr, "looking up variable >%s<\n", vname);
+                    fprintf(stderr, "looking up variable >%s<\n", vname);
                 vht_index = crm_vht_lookup(vht, vname, vlen);
 
                 if (vht[vht_index] == NULL)
@@ -533,7 +533,7 @@ long crm_zexpandvar(char *buf,
         inlen = id - 1;
 
         if (internal_trace)
-            fprintf(crm_stderr, " :*: var-expansion yields: =%s= len %ld \n", buf, inlen);
+            fprintf(stderr, " :*: var-expansion yields: =%s= len %ld \n", buf, inlen);
     }
 
     //     END OF :*: EXPANSIONS
@@ -547,7 +547,7 @@ long crm_zexpandvar(char *buf,
         is = 0;  //   is is the input position index
         id = 0;  //   id is the destination position index
         if (internal_trace)
-            fprintf(crm_stderr, "Doing singlevar redirect expansion\n");
+            fprintf(stderr, "Doing singlevar redirect expansion\n");
 
         //
         //   First time through the loop, for :+: (variable expansion)
@@ -587,7 +587,7 @@ long crm_zexpandvar(char *buf,
                 //      Now we've got the variable name in vname, we can
                 //      go get it's value and copy _that_ into the vname buffer
                 if (internal_trace)
-                    fprintf(crm_stderr, "looking up variable >%s<\n", vname);
+                    fprintf(stderr, "looking up variable >%s<\n", vname);
                 vht_index = crm_vht_lookup(vht, vname, vlen);
 
                 if (vht[vht_index] == NULL)
@@ -621,7 +621,7 @@ long crm_zexpandvar(char *buf,
                 //      varname, or the original varname), we can
                 //      go get it's value and copy _that_ into tbuf as well.
                 if (internal_trace)
-                    fprintf(crm_stderr, "Second lookup variable >%s<\n", vname);
+                    fprintf(stderr, "Second lookup variable >%s<\n", vname);
                 vht_index = crm_vht_lookup(vht, vname, vlen);
 
                 if (vht[vht_index] == NULL)
@@ -670,7 +670,7 @@ long crm_zexpandvar(char *buf,
         buf[id] = '\000';
         inlen = id - 1;
         if (internal_trace)
-            fprintf(crm_stderr, "indirection :+: expansion yields: =%s= len %ld \n", buf, inlen);
+            fprintf(stderr, "indirection :+: expansion yields: =%s= len %ld \n", buf, inlen);
     }
 
     //     END OF :+: EXPANSIONS
@@ -683,11 +683,11 @@ long crm_zexpandvar(char *buf,
         //   Expand :#: (string lengths)
         //
         if (internal_trace)
-            fprintf(crm_stderr, "Doing stringglength expansion\n");
+            fprintf(stderr, "Doing stringlength expansion\n");
 
         buf[id] = '\000';
         if (internal_trace)
-            fprintf(crm_stderr, " var-expand yields: =%s= len %ld\n", buf, inlen);
+            fprintf(stderr, " var-expand yields: =%s= len %ld\n", buf, inlen);
         id = 0;
         for (is = 0; is <= inlen && id < maxlen; is++)
         {
@@ -725,7 +725,7 @@ long crm_zexpandvar(char *buf,
                 //      Now we've got the variable name in vname, we can
                 //      go get it's value and copy _that_ into tbuf as well.
                 if (internal_trace)
-                    fprintf(crm_stderr, "looking up variable >%s<\n", vname);
+                    fprintf(stderr, "looking up variable >%s<\n", vname);
                 vht_index = crm_vht_lookup(vht, vname, vlen);
 
                 if (vht[vht_index] == NULL)
@@ -799,7 +799,7 @@ long crm_zexpandvar(char *buf,
         //    and because id always gets an extra increment...
         inlen = id - 1;
         if (internal_trace)
-            fprintf(crm_stderr, " strlen :#: expansion yields: =%s= len %ld \n", buf, inlen);
+            fprintf(stderr, " strlen :#: expansion yields: =%s= len %ld \n", buf, inlen);
     }
     //       END OF :#: STRING LENGTH EXPANSIONS
 
@@ -812,11 +812,11 @@ long crm_zexpandvar(char *buf,
         //
         //
         if (internal_trace)
-            fprintf(crm_stderr, "Doing math expansion\n");
+            fprintf(stderr, "Doing math expansion\n");
 
         buf[id] = '\000';
         if (internal_trace)
-            fprintf(crm_stderr, " length-expand yields: =%s= len %ld\n", buf, inlen);
+            fprintf(stderr, " length-expand yields: =%s= len %ld\n", buf, inlen);
         id = 0;
         for (is = 0; is <= inlen && id < maxlen; is++)
         {
@@ -859,7 +859,7 @@ long crm_zexpandvar(char *buf,
                 //      Now we've got the variable name in vname, we can
                 //      go get it's value and copy _that_ into tbuf as well.
                 if (internal_trace)
-                    fprintf(crm_stderr, "looking up variable >%s<\n", vname);
+                    fprintf(stderr, "looking up variable >%s<\n", vname);
                 vht_index = crm_vht_lookup(vht, vname, vlen);
 
                 if (vht[vht_index] == NULL)
@@ -874,10 +874,10 @@ long crm_zexpandvar(char *buf,
                             memcpy(mathtext, &vname[1], vlen - 2);
                             mathtext[vlen - 2] = '\000';
                             if (internal_trace)
-                                fprintf(crm_stderr, "In-Mathtext is -'%s'-\n", mathtext);
+                                fprintf(stderr, "In-Mathtext is -'%s'-\n", mathtext);
                             m = strmath(mathtext, vlen - 2, MAX_VARNAME, retstat);
                             if (internal_trace)
-                                fprintf(crm_stderr, "Out-Mathtext is -'%s'-\n", mathtext);
+                                fprintf(stderr, "Out-Mathtext is -'%s'-\n", mathtext);
                             if (retstat && *retstat < 0)
                             {
                                 q = fatalerror("Problem during math evaluation of ",
@@ -959,7 +959,7 @@ long crm_zexpandvar(char *buf,
         inlen = id - 1;
 
         if (internal_trace)
-            fprintf(crm_stderr, " math-expand yields: =%s= len %ld\n", buf, inlen);
+            fprintf(stderr, " math-expand yields: =%s= len %ld\n", buf, inlen);
     }
 
     //    END OF :@: MATH EXPANSIONS
@@ -973,9 +973,9 @@ long crm_zexpandvar(char *buf,
     //free (vname);
     if (internal_trace)
     {
-        fprintf(crm_stderr, " Returned length from qexpandvar is %ld\n", inlen);
+        fprintf(stderr, " Returned length from qexpandvar is %ld\n", inlen);
         if (retstat)
-            fprintf(crm_stderr, "retstat was: %ld\n", *retstat);
+            fprintf(stderr, "retstat was: %ld\n", *retstat);
     }
     return inlen;
 
@@ -1033,7 +1033,7 @@ long crm_restrictvar(char *boxstring,
     nw_len = 0;
 
     if (user_trace)
-        fprintf(crm_stderr, "Performing variable restriction.\n");
+        fprintf(stderr, "Performing variable restriction.\n");
 
     //     Expand the string we were handed.
     CRM_ASSERT(boxstrlen < MAX_PATTERN);
@@ -1041,17 +1041,17 @@ long crm_restrictvar(char *boxstring,
     datastring[boxstrlen] = '\0';
 
     if (user_trace)
-        fprintf(crm_stderr, "Variable before expansion '%s' len %ld\n",
+        fprintf(stderr, "Variable before expansion '%s' len %ld\n",
                 datastring, boxstrlen);
     datastringlen = crm_qexpandvar(datastring, boxstrlen, MAX_PATTERN, NULL);
     if (user_trace)
-        fprintf(crm_stderr, "Variable after expansion: '%s' len %ld\n",
+        fprintf(stderr, "Variable after expansion: '%s' len %ld\n",
                 datastring, datastringlen);
 
     //     Get the variable name.
     crm_nextword(datastring, datastringlen, nw_start, &nw_start, &nw_len);
     if (internal_trace)
-        fprintf(crm_stderr, "box-parsing varname got start: %ld, len: %ld .\n",
+        fprintf(stderr, "box-parsing varname got start: %ld, len: %ld .\n",
                 nw_start, nw_len);
 
     if (nw_len > 0)
@@ -1067,11 +1067,11 @@ long crm_restrictvar(char *boxstring,
         varnamelen = 5;
     }
     if (user_trace)
-        fprintf(crm_stderr, "Using variable '%s' for source.\n", varname);
+        fprintf(stderr, "Using variable '%s' for source.\n", varname);
 
     //      Got the varname.  Do a lookup.
     vmidx = crm_vht_lookup(vht, varname, varnamelen);
-    //  fprintf(crm_stderr, "vmidx = %ld, vht[vmidx] = %lx\n", vmidx, vht[vmidx]);
+    //  fprintf(stderr, "vmidx = %ld, vht[vmidx] = %lx\n", vmidx, vht[vmidx]);
 
     //       Is it a real variable?
     if (((void *)vht[vmidx]) == NULL)
@@ -1099,7 +1099,7 @@ long crm_restrictvar(char *boxstring,
     }
 
     if (user_trace)
-        fprintf(crm_stderr, "Found that variable\n");
+        fprintf(stderr, "Found that variable\n");
     actual_offset = vht[vmidx]->vstart;
     actual_len = vht[vmidx]->vlen;
 
@@ -1110,25 +1110,29 @@ long crm_restrictvar(char *boxstring,
     while (nw_start <= datastringlen)
     {
         if (user_trace)
-            fprintf(crm_stderr,
+                {
+            fprintf(stderr,
                     "Checking restriction at start %ld len %ld (subscr=%ld)\n",
                     nw_start + nw_len,
                     (datastringlen - (nw_start + nw_len)),
                     in_subscript);
+                }
 
         //      get the next word
         crm_nextword(datastring, datastringlen, nw_start + nw_len,
                      &nw_start, &nw_len);
 
         if (internal_trace)
-            fprintf(crm_stderr, "box-parsing left returned start: %ld, len: %ld .\n",
+                {
+            fprintf(stderr, "box-parsing left returned start: %ld, len: %ld .\n",
                     nw_start, nw_len);
+                }
 
         //     Are we done?
         if (nw_len <= 0)
         {
             if (user_trace)
-                fprintf(crm_stderr, "Nothing more to do in the var-restrict.\n");
+                fprintf(stderr, "Nothing more to do in the var-restrict.\n");
             break;
         }
 
@@ -1139,8 +1143,10 @@ long crm_restrictvar(char *boxstring,
         scanbuf[scanbuflen] = '\0';
 
         if (internal_trace)
-            fprintf(crm_stderr, "  var restrict clause was '%s' len %ld \n",
+                {
+                        fprintf(stderr, "  var restrict clause was '%s' len %ld \n",
                     scanbuf, scanbuflen);
+                }
 
         //      Is it int-able?
         i = sscanf(scanbuf, "%ld", &j);
@@ -1151,7 +1157,7 @@ long crm_restrictvar(char *boxstring,
             if (j < 0)
             {
                 j = 0;
-                fprintf(crm_stderr, "Var-restriction has negative start or length."
+                fprintf(stderr, "Var-restriction has negative start or length."
                                 "  Sorry, but negative start/lengths are not "
                                 "allowed, as it's a possible security exploit.");
             }
@@ -1160,12 +1166,12 @@ long crm_restrictvar(char *boxstring,
             {
                 if (actual_len <= j)
                 {
-                    if (user_trace) fprintf(crm_stderr, "Clipping start to %ld",
+                    if (user_trace) fprintf(stderr, "Clipping start to %ld",
                                             actual_len);
                     j = actual_len;
                 }
                 if (user_trace)
-                    fprintf(crm_stderr, "Variable starting offset: %ld\n", j);
+                    fprintf(stderr, "Variable starting offset: %ld\n", j);
                 actual_offset = actual_offset + j;
                 actual_len = actual_len - j;
                 in_subscript = 1;
@@ -1175,27 +1181,31 @@ long crm_restrictvar(char *boxstring,
                 if (actual_len < j)
                 {
                     if (user_trace)
-                        fprintf(crm_stderr, "Clipping length to %ld\n",
+                                        {
+                                                fprintf(stderr, "Clipping length to %ld\n",
                                 actual_len);
-                    j = actual_len;
+                                        }
+                                        j = actual_len;
                 }
                 if (user_trace)
-                    fprintf(crm_stderr, "Variable starting offset: %ld\n", j);
+                    fprintf(stderr, "Variable starting offset: %ld\n", j);
                 actual_len = j;
                 in_subscript = 0;
             }
         }
         else
-        //      it's not an int; see if it's a /regex/
         {
-            long regex_start;
+        //      it's not an int; see if it's a /regex/
+
+                        long regex_start;
             in_subscript = 0; //  no longer in subscript-length mode.
             if (datastring[nw_start] == '/')
+            {
             //      yes, it's a start of regex.  copy it into the scan buf,
             //      while looking for the closing '/', and keeping
             //      any \/ as / (everything eles is verbatim).
-            {
-                regex_start = nw_start + 1;   // regex starts +1 past start of str
+
+                                regex_start = nw_start + 1;   // regex starts +1 past start of str
                 nw_len = 0;                   // nw_len is next open char idx.
                 while ((regex_start < datastringlen
                         && datastring[regex_start] != '/')
@@ -1212,8 +1222,10 @@ long crm_restrictvar(char *boxstring,
                 }
                 scanbuf[nw_len] = '\0';
                 if (user_trace)
-                    fprintf(crm_stderr, "Var restriction with regex '%s' len %ld\n",
+                                {
+                                        fprintf(stderr, "Var restriction with regex '%s' len %ld\n",
                             scanbuf, nw_len);
+                                }
 
                 //
                 //    Compile up that regex
@@ -1230,9 +1242,11 @@ long crm_restrictvar(char *boxstring,
                 }
 
                 if (internal_trace)
-                    fprintf(crm_stderr, " Running regexec, start at %ld\n",
+                                {
+                                        fprintf(stderr, " Running regexec, start at %ld\n",
                             actual_offset);
-                //    Time to run the match
+                                }
+                                //    Time to run the match
                 start_ptr = &(mdw[actual_offset]);
                 j = crm_regexec(&preg, start_ptr, actual_len,
                                 MAX_SUBREGEX, matches, 0, NULL);
@@ -1241,7 +1255,8 @@ long crm_restrictvar(char *boxstring,
                 {
                     //    Yes, the regex matched.  Find the innermost
                     //    participating submatch, and use that.
-                    long i;
+                    int i;
+
                     i = 0;
                     while (matches[i].rm_so >= 0)
                         i++;
@@ -1251,24 +1266,27 @@ long crm_restrictvar(char *boxstring,
                     actual_offset = actual_offset + matches[i].rm_so;
                     actual_len = matches[i].rm_eo - matches[i].rm_so;
                     if (user_trace)
-                        fprintf(crm_stderr, " Var restrict regex matched, "
+                                        {
+                                                fprintf(stderr, " Var restrict regex matched, "
                                         "new start offset %ld, new length %ld\n",
                                 (long)matches[i].rm_so, (long)matches[i].rm_eo);
-                }
+                                        }
+                                }
                 else
                 {
                     //    The regex didn't match.  We're done.  Length
                     //    is now zero.
                     actual_len = 0;
                     if (user_trace)
-                        fprintf(crm_stderr, "Var restrict regex didn't match, "
+                        fprintf(stderr, "Var restrict regex didn't match, "
                                         "string is now zero length.\n");
-                    goto all_done;
+                    break; // goto all_done;
                 }
             }
         }
     }
-all_done:
+// all_done:
+
     /////////////////////////////
     //     All calculations done.  Push actual start and actual length
     //     back onto the output vars
@@ -1284,16 +1302,16 @@ all_done:
     //
     if (internal_trace)
     {
-        fprintf(crm_stderr, "Final non-nulls: ");
+        fprintf(stderr, "Final non-nulls: ");
         if (vht_idx)
-            fprintf(crm_stderr, " VHTidx %ld", (unsigned long)*vht_idx);
+            fprintf(stderr, " VHTidx %ld", (unsigned long)*vht_idx);
         if (outblock)
-            fprintf(crm_stderr, " blockaddr %p", *outblock);
+            fprintf(stderr, " blockaddr %p", *outblock);
         if (outoffset)
-            fprintf(crm_stderr, " startoffset %ld", (unsigned long)*outoffset);
+            fprintf(stderr, " startoffset %ld", (unsigned long)*outoffset);
         if (outlen)
-            fprintf(crm_stderr, " length %ld", (unsigned long)*outlen);
-        fprintf(crm_stderr, "\n");
+            fprintf(stderr, " length %ld", (unsigned long)*outlen);
+        fprintf(stderr, "\n");
     }
     return 0;
 }
@@ -1302,8 +1320,8 @@ all_done:
 
 void cleanup_expandvar_allocations(void)
 {
-	free(tbuf);
-	free(vname);
+        free(tbuf);
+        free(vname);
 }
 
 

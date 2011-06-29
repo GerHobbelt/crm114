@@ -58,7 +58,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
     if (internal_trace)
-        fprintf(crm_stderr, "executing a LEARN (correlation format)\n");
+        fprintf(stderr, "executing a LEARN (correlation format)\n");
 
     //   Keep the gcc compiler from complaining about unused variables
     //  i = hctable[0];
@@ -89,20 +89,20 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         cflags = cflags | REG_ICASE;
         eflags = 1;
         if (user_trace)
-            fprintf(crm_stderr, "turning oncase-insensitive match\n");
+            fprintf(stderr, "turning oncase-insensitive match\n");
     }
     if (apb->sflags & CRM_REFUTE)
     {
         sense = -sense;
         if (user_trace)
-            fprintf(crm_stderr, " refuting learning\n");
+            fprintf(stderr, " refuting learning\n");
     }
     microgroom = 0;
     if (apb->sflags & CRM_MICROGROOM)
     {
         microgroom = 1;
         if (user_trace)
-            fprintf(crm_stderr, " enabling microgrooming.\n");
+            fprintf(stderr, " enabling microgrooming.\n");
     }
 
     //
@@ -133,8 +133,8 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         FILE *f;
         if (user_trace)
         {
-            fprintf(crm_stderr, "\nCreating new correlate file %s\n", learnfilename);
-            fprintf(crm_stderr, "Opening file %s for write\n", learnfilename);
+            fprintf(stderr, "\nCreating new correlate file %s\n", learnfilename);
+            fprintf(stderr, "Opening file %s for write\n", learnfilename);
         }
         f = fopen(learnfilename, "wb");
         if (!f)
@@ -171,7 +171,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     hfsize = statbuf.st_size;
     if (user_trace)
     {
-        fprintf(crm_stderr, "Correlation text file %s has length %ld characters\n",
+        fprintf(stderr, "Correlation text file %s has length %ld characters\n",
                 learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
     }
 
@@ -235,10 +235,10 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (user_trace)
         {
-            fprintf(crm_stderr, "learning the text (len %ld) :", textlen);
+            fprintf(stderr, "learning the text (len %ld) :", textlen);
             fwrite(&(mdw->filetext[textoffset]), 1,
-                   ((textlen < 128) ? textlen : 128), crm_stderr);
-            fprintf(crm_stderr, "\n");
+                   ((textlen < 128) ? textlen : 128), stderr);
+            fprintf(stderr, "\n");
         }
 
         //      append the "learn" text to the end of the file.
@@ -333,7 +333,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long thistotal;
 
     if (internal_trace)
-        fprintf(crm_stderr, "executing a CLASSIFY\n");
+        fprintf(stderr, "executing a CLASSIFY\n");
 
     //          we use the main line txtptr, txtstart, and txtlen now,
     //          so we don't need to extract anything from the b1start stuff.
@@ -381,7 +381,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   compile the word regex
 #if 0 /* unused code */
     if (internal_trace)
-        fprintf(crm_stderr, "\nWordmatch pattern is %s", ptext);
+        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i > 0)
     {
@@ -425,7 +425,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   GROT GROT GROT  this isn't NULL-clean on filenames.  But then
     //    again, stdio.h itself isn't NULL-clean on filenames.
     if (user_trace)
-        fprintf(crm_stderr, "Classify list: -%s-\n", htext);
+        fprintf(stderr, "Classify list: -%s-\n", htext);
     fn_start_here = 0;
     fnlen = 1;
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
@@ -439,7 +439,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fn_start_here = fnstart + fnlen + 1;
             fname[fnlen] = '\000';
             if (user_trace)
-                fprintf(crm_stderr, "Classifying with file -%s- "
+                fprintf(stderr, "Classifying with file -%s- "
                                 "succhash=%ld, maxhash=%ld\n",
                         fname, succhash, maxhash);
             if (fname[0] == '|' && fname[1] == '\000')
@@ -531,7 +531,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //    now, set up the normalization factor fcount[]
     if (user_trace)
-        fprintf(crm_stderr, "Running with %ld files for success out of %ld files\n",
+        fprintf(stderr, "Running with %ld files for success out of %ld files\n",
                 succhash, maxhash);
     // sanity checks...  Uncomment for super-strict CLASSIFY.
     //
@@ -612,7 +612,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     ilm = 0;
                 }
                 if (0)
-                    fprintf(crm_stderr, "ik: %ld  it: %ld  chars %c %c lin: %lld  sqr: %lld cube: %lld quad: %lld\n",
+                    fprintf(stderr, "ik: %ld  it: %ld  chars %c %c lin: %lld  sqr: %lld cube: %lld quad: %lld\n",
                             ik, it,
                             hashes[k][ik + it],
                             txtptr[textoffset + it],
@@ -719,7 +719,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         for (k = 0; k < maxhash; k++)
         {
-            fprintf(crm_stderr,
+            fprintf(stderr,
                     " file: %ld  linear: %lld  square: %lld  RMS: %6.4e  ptc[%ld] = %6.4e\n",
                     k, linear_hits[k], square_hits[k],
                     sqrt(0.0 + square_hits[k]), k, ptc[k]);
@@ -740,7 +740,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (user_trace)
     {
         for (k = 0; k < maxhash; k++)
-            fprintf(crm_stderr, "Probability of match for file %ld: %f\n", k, ptc[k]);
+            fprintf(stderr, "Probability of match for file %ld: %f\n", k, ptc[k]);
     }
     //
     tprob = 0.0;
@@ -830,7 +830,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
         // check here if we got enough room in stext to stuff everything
         // perhaps we'd better rise a nonfatalerror, instead of just
-        // whining on crm_stderr
+        // whining on stderr
         if (strcmp(&(stext[strlen(stext) - strlen(buf)]), buf) != 0)
         {
             nonfatalerror("WARNING: not enough room in the buffer to create "
@@ -850,7 +850,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (tprob <= 0.5000)
     {
         if (user_trace)
-            fprintf(crm_stderr, "CLASSIFY was a FAIL, skipping forward.\n");
+            fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         //    and do what we do for a FAIL here
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -861,7 +861,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     //   all done... if we got here, we should just continue execution
     if (user_trace)
-        fprintf(crm_stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
+        fprintf(stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
 // regcomp_failed:
     return 0;
 }

@@ -218,6 +218,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\crm_stdio_port.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\crm_str_funcs.c"
 				>
 			</File>

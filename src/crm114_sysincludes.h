@@ -306,8 +306,8 @@
 
 /*
    mmap/munmap related getpagesize(): used to check our file header offset.
-   
-   This mess was adapted from the GNU getpagesize.h.  
+
+   This mess was adapted from the GNU getpagesize.h.
 */
 #if !defined(HAVE_GETPAGESIZE)
 #if defined(WIN32)
@@ -337,7 +337,7 @@ int getpagesize(void); /* see crm_port_win32.c */
 #    endif /* no NBPG */
 #   endif /* no EXEC_PAGESIZE */
 #  else /* no HAVE_SYS_PARAM_H */
-#   define getpagesize() 8192	/* punt totally */
+#   define getpagesize() 8192   /* punt totally */
 /* #error "please provide an implementation of getpagesize() for your platform" */
 #  endif /* no HAVE_SYS_PARAM_H */
 # endif /* no _SC_PAGESIZE / HAVE_SYSCONF */
@@ -671,6 +671,42 @@ extern char **__environ;
  * modified and so their cacheing will make a mistake.
  */
 void crm_touch(const char *filename);
+
+
+/*
+   Special trick to keep software diff at a minimum while supporting
+   stdin/out/err redirection using the -in/-out/-err crm114 commandline
+   options:
+
+   This section redirects stdin/stdout/stderr to our crm-defined FILE*
+   handles, which may be pointing at the usual stdin/out/err respectively,
+   OR point at fopen()ed files instead.
+
+   In order to make the trick work, we'll need ONE spot where this redef
+   is NOT applied to allow the os_stdin/out/err() functions to produce
+   the RTL defined stdin/out/err handles as is.
+   This is done this way to allow for OS/compiler combo's which #define
+   stdin/out/err themselves. Simply doing this wouldn't work for those:
+
+   #undef stdin
+   FILE *os_Stdin(void)
+   {
+     return stdin;
+   }
+*/
+extern FILE *crm_stdin;
+extern FILE *crm_stdout;
+extern FILE *crm_stderr;
+
+#ifndef DONT_REDEF_STDIN_OUT_ERR
+#undef stdin  /* just in case the OS/compiler combo already #define'd these */
+#undef stdout
+#undef stderr
+#define stdin   crm_stdin
+#define stdout  crm_stdout
+#define stderr  crm_stderr
+#endif
+
 
 
 

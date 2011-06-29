@@ -38,11 +38,6 @@ int prog_argc = 0;
 char **prog_argv = NULL;
 
 
-FILE *crm_stdin = NULL;
-FILE *crm_stderr = NULL;
-FILE *crm_stdout = NULL;
-
-
 
 
 
@@ -52,15 +47,15 @@ static char version[] = "1.2";
 
 static void helptext(void)
 {
-    fprintf(crm_stderr, " This is cssmerge, version %s\n", version);
-    fprintf(crm_stderr, " Copyright 2001-2007 W.S.Yerazunis.\n");
-    fprintf(crm_stderr,
+    fprintf(stderr, " This is cssmerge, version %s\n", version);
+    fprintf(stderr, " Copyright 2001-2007 W.S.Yerazunis.\n");
+    fprintf(stderr,
             " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
-    fprintf(crm_stdout, "Usage: cssmerge <out-cssfile> <in-cssfile> [-v] [-s]\n");
-    fprintf(crm_stdout, " <out-cssfile> will be created if it doesn't exist.\n");
-    fprintf(crm_stdout, " <in-cssfile> must already exist.\n");
-    fprintf(crm_stdout, "  -v           -verbose reporting\n");
-    fprintf(crm_stdout, "  -s NNNN      -new file length, if needed\n");
+    fprintf(stdout, "Usage: cssmerge <out-cssfile> <in-cssfile> [-v] [-s]\n");
+    fprintf(stdout, " <out-cssfile> will be created if it doesn't exist.\n");
+    fprintf(stdout, " <in-cssfile> must already exist.\n");
+    fprintf(stdout, "  -v           -verbose reporting\n");
+    fprintf(stdout, "  -s NNNN      -new file length, if needed\n");
 }
 
 
@@ -79,9 +74,7 @@ int main(int argc, char **argv)
 
     int opt;
 
-	    crm_stdin = stdin;
-	    crm_stdout = stdout;
-	    crm_stderr = stderr;
+        init_stdin_out_err_as_os_handles();
 
     //   copy argc and argv into global statics...
     prog_argc = argc;
@@ -106,13 +99,13 @@ int main(int argc, char **argv)
             //  override css file length?
             if (!optarg || 1 != sscanf(optarg, "%ld", &sparse_spectrum_file_length))
             {
-                fprintf(crm_stderr, "You must specify a numeric argument for the "
+                fprintf(stderr, "You must specify a numeric argument for the "
                                 "'-s' commandline option (overriding new-create length).\n");
                 exit(EXIT_FAILURE);
             }
             else
             {
-                fprintf(crm_stderr, "\nOverriding new-create length to %ld\n",
+                fprintf(stderr, "\nOverriding new-create length to %ld\n",
                         sparse_spectrum_file_length);
             }
             break;
@@ -126,13 +119,13 @@ int main(int argc, char **argv)
 
     if (optind >= argc)
     {
-        fprintf(crm_stderr, "Error: missing css input & output file arguments.\n\n");
+        fprintf(stderr, "Error: missing css input & output file arguments.\n\n");
         helptext();
         exit(EXIT_FAILURE);
     }
     if (optind + 1 >= argc)
     {
-        fprintf(crm_stderr, "Error: missing css input file argument.\n\n");
+        fprintf(stderr, "Error: missing css input file argument.\n\n");
         helptext();
         exit(EXIT_FAILURE);
     }
@@ -142,8 +135,8 @@ int main(int argc, char **argv)
     k = stat(argv[optind + 1], &statbuf);
     if (k != 0)
     {
-        fprintf(crm_stderr, "\nCouldn't find the input .CSS file %s", argv[optind + 1]);
-        fprintf(crm_stderr, "\nCan't continue\n");
+        fprintf(stderr, "\nCouldn't find the input .CSS file %s", argv[optind + 1]);
+        fprintf(stderr, "\nCan't continue\n");
         exit(EXIT_FAILURE);
     }
     //
@@ -156,7 +149,7 @@ int main(int argc, char **argv)
                        NULL);
     if (h2 == MAP_FAILED)
     {
-        fprintf(crm_stderr, "\n Couldn't open file %s for reading; errno=%d(%s).\n",
+        fprintf(stderr, "\n Couldn't open file %s for reading; errno=%d(%s).\n",
                 argv[optind + 1], errno, errno_descr(errno));
         exit(EXIT_FAILURE);
     }
@@ -169,7 +162,7 @@ int main(int argc, char **argv)
     {
         //      file didn't exist... create it
         new_outfile = 1;
-        fprintf(crm_stderr, "\nCreating new output .CSS file %s\n", argv[optind]);
+        fprintf(stderr, "\nCreating new output .CSS file %s\n", argv[optind]);
         f = fopen(argv[optind], "wb");
         if (!f)
         {
@@ -181,9 +174,9 @@ int main(int argc, char **argv)
         {
             //       put in  bytes of NULL
 
-			// fputc(0, f);/* [i_a] fprintf(f, "%c", '\0'); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
-                if (file_memset(f, 0, 
-	sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+                        // fputc(0, f);/* [i_a] fprintf(f, "%c", '\0'); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
+                if (file_memset(f, 0,
+        sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
         {
             untrappableerror_ex(SRC_LOC(),
                     "\n Couldn't write to file %s; errno=%d(%s)\n",
@@ -205,18 +198,18 @@ int main(int argc, char **argv)
                        NULL);
     if (h1 == MAP_FAILED)
     {
-        fprintf(crm_stderr, "\n Couldn't map file %s; errno=%d(%s).\n",
+        fprintf(stderr, "\n Couldn't map file %s; errno=%d(%s).\n",
                 argv[optind], errno, errno_descr(errno));
         exit(EXIT_FAILURE);
     }
 
     //
     hfsize1 = hfsize1 / sizeof(FEATUREBUCKET_TYPE);
-    fprintf(crm_stderr, "\nOutput sparse spectra file %s has %ld bins total\n",
+    fprintf(stderr, "\nOutput sparse spectra file %s has %ld bins total\n",
             argv[optind], hfsize1);
 
     hfsize2 = hfsize2 / sizeof(FEATUREBUCKET_TYPE);
-    fprintf(crm_stderr, "\nInput sparse spectra file %s has %ld bins total\n",
+    fprintf(stderr, "\nInput sparse spectra file %s has %ld bins total\n",
             argv[optind + 1], hfsize2);
 
 
@@ -270,7 +263,7 @@ int main(int argc, char **argv)
         {
             long hindex;
 
-            if (verbose) fprintf(crm_stderr, "0x%08lX:%lud ", (unsigned long)hash, value);
+            if (verbose) fprintf(stderr, "0x%08lX:%lud ", (unsigned long)hash, value);
             //
             //  this bucket has real data!  :)
             hindex = hash % hfsize1;
@@ -289,10 +282,10 @@ int main(int argc, char **argv)
                 incrs++;
                 if (incrs > hfsize1 - 3)
                 {
-                    fprintf(crm_stdout, "\n\n ****** FATAL ERROR ******\n");
-                    fprintf(crm_stdout,
+                    fprintf(stdout, "\n\n ****** FATAL ERROR ******\n");
+                    fprintf(stdout,
                             "There are too many features to fit into a css file of this size.\n");
-                    fprintf(crm_stdout,
+                    fprintf(stdout,
                             "Operation aborted at input bucket offset %lud .\n",
                             i);
                     exit(EXIT_FAILURE);
@@ -307,7 +300,7 @@ int main(int argc, char **argv)
             h1[hindex].value += value;
         }
     }
-    if (verbose) fprintf(crm_stderr, "\n");
+    if (verbose) fprintf(stderr, "\n");
     exit(EXIT_SUCCESS);
 }
 

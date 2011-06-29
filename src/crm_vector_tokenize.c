@@ -1,13 +1,13 @@
 //  crm_str_funcs.c  - Controllable Regex Mutilator,  version v1.0
 //  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
-//  
+//
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
 //  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
+//  www.fsf.org, and a copy is included in this distribution.
 //
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
+//  Other licenses may be negotiated; contact the
+//  author for details.
 //
 //  include some standard files
 #include "crm114_sysincludes.h"
@@ -40,7 +40,7 @@
 //    all boats equally, or something like that.
 //
 //    If you need two sets of hashes, call this routine twice, with
-//    different pipeline coefficient arrays (the OSB and Markov 
+//    different pipeline coefficient arrays (the OSB and Markov
 //    classifiers need this)
 //
 //    If the features_out area becomes close to overflowing, then
@@ -61,7 +61,7 @@
 //      { 1 0 0 0 23 0}
 //      { 1 0 0 0 0 47}}
 //
-//    yields "Classic CRM114" OSB features, and the 2x3 array 
+//    yields "Classic CRM114" OSB features, and the 2x3 array
 //
 //     {{1 1 0}
 //      {1 0 1}}
@@ -72,7 +72,7 @@
 //      {1 0 2}}
 //
 //    yields bigrams that are order sensitive, but not position sensitive.
-// 
+//
 //    Because the array elements are used as dot-product multipliers
 //    on the hashed token value pipeline, there is a small advantage to
 //    having the elements of the array being odd (low bit set) and
@@ -80,7 +80,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
-long crm_vector_stringhash 
+long crm_vector_stringhash
 (
    char *text,             // input string (null-safe!)
    long textlen,           //   how many bytes of input.
@@ -109,27 +109,27 @@ long crm_vector_stringhash
 
   *features_out = 0;
   keepgoing = 1;
-  
+
 
   regcomp_status = crm_regcomp (&regcb, regex, regexlen, REG_EXTENDED);
- 
+
   // fill the hashpipe with initialization
   for (i = 0; i < UNIFIED_WINDOW_LEN; i++)
     hashpipe[i] = 0xDEADBEEF ;
 
 
 
-  //   Run the hashpipe.  
+  //   Run the hashpipe.
   text_offset = start_offset;
   while (keepgoing)
     {
       //  If the pattern is empty, assume non-graph-delimited tokens
       //  (supposedly an 8% speed gain over regexec)
       if (regexlen == 0)
-	{
-	  k = 0;
-          //         skip non-graphical characthers 
-	  match[0].rm_so = 0;
+        {
+          k = 0;
+          //         skip non-graphical characthers
+          match[0].rm_so = 0;
           while (!crm_isgraph(text [text_offset + match[0].rm_so])
                  && text_offset + match[0].rm_so < textlen)
             match[0].rm_so ++;
@@ -141,67 +141,67 @@ long crm_vector_stringhash
             k = 1;
         }
       else
-	{
-	  k = crm_regexec (&regcb, 
-			   &text[text_offset], 
-			   textlen - text_offset,
-			   5, match,
-			   REG_EXTENDED, NULL);
-	};
+        {
+          k = crm_regexec (&regcb,
+                           &text[text_offset],
+                           textlen - text_offset,
+                           5, match,
+                           REG_EXTENDED, NULL);
+        };
 
 
       //   Are we done?
-      if ( k != 0 
-	   || text_offset >= textlen 
-	   || *features_out + pipe_iters + 1 > featureslen)
-	{
-	  keepgoing = 0;
-	  if (next_offset)
-	    *next_offset = match[0].rm_eo;
-	}
-      
+      if ( k != 0
+           || text_offset >= textlen
+           || *features_out + pipe_iters + 1 > featureslen)
+        {
+          keepgoing = 0;
+          if (next_offset)
+            *next_offset = match[0].rm_eo;
+        }
+
       //   OK, now we have another token (the text in text[match[0].rm_so,
       //    of length match[0].rm_eo - match[0].rm_so size)
 
       //
       //if (user_trace)
-	{
-	  fprintf(crm_stderr, "Match T.O: %d len %d (%d %d on >",
-		   (int)text_offset,
-		   match[0].rm_eo - match[0].rm_so,
-		   match[0].rm_so,
-		   match[0].rm_eo);
-	  for (k = match[0].rm_so+text_offset; 
-	       k < match[0].rm_eo+text_offset; 
-	       k++)
-	    fprintf(crm_stderr, "%c", text[k]);
-	  fprintf(crm_stderr, "<\n");
-	};
+        {
+          fprintf(stderr, "Match T.O: %d len %d (%d %d on >",
+                   (int)text_offset,
+                   match[0].rm_eo - match[0].rm_so,
+                   match[0].rm_so,
+                   match[0].rm_eo);
+          for (k = match[0].rm_so+text_offset;
+               k < match[0].rm_eo+text_offset;
+               k++)
+            fprintf(stderr, "%c", text[k]);
+          fprintf(stderr, "<\n");
+        };
 
       //   Now slide the hashpipe up one slit, and stuff this new token
       //   into the front of the pipeline
       for (i = UNIFIED_WINDOW_LEN; i > 0; i--)
-	hashpipe [i] = hashpipe[i-1];
-      hashpipe[0] = strnhash( &text[match[0].rm_so+text_offset], 
-				     match[0].rm_eo - match[0].rm_so);
-      
+        hashpipe [i] = hashpipe[i-1];
+      hashpipe[0] = strnhash( &text[match[0].rm_so+text_offset],
+                                     match[0].rm_eo - match[0].rm_so);
+
       //    Now, for each row in the coefficient array, we create a feature.
-      //    
+      //
       for (irow = 0; irow < pipe_iters; irow++)
-	{
-	  ihash = 0;
-	  for (icol = 0; icol < pipe_len; icol++)
-	    ihash = ihash + 
-	      hashpipe[icol] * coeff_array[ (pipe_len * irow) + icol];
-	  
-	  //    Stuff the final ihash value into reatures array
-	  features[*features_out] = ihash;
-	  fprintf(crm_stderr, "New Feature: %lx at %ld\n",ihash, *features_out);
-	  *features_out = *features_out + 1 ;
-	};
-      
+        {
+          ihash = 0;
+          for (icol = 0; icol < pipe_len; icol++)
+            ihash = ihash +
+              hashpipe[icol] * coeff_array[ (pipe_len * irow) + icol];
+
+          //    Stuff the final ihash value into reatures array
+          features[*features_out] = ihash;
+          fprintf(stderr, "New Feature: %lx at %ld\n",ihash, *features_out);
+          *features_out = *features_out + 1 ;
+        };
+
       //   And finally move on to the next place in the input.
-      //   
+      //
       //  Move to end of current token.
       text_offset = text_offset + match[0].rm_eo;
     }
@@ -216,7 +216,7 @@ long crm_vector_stringhash
 
 #define DUMMY_MAIN_TEST
 #ifdef DUMMY_MAIN_TEST
-//    
+//
 int main2()
 {
   char input [1024];
@@ -231,28 +231,28 @@ int main2()
                    1, 0, 0, 0, 23 } ;
 
   strcpy (my_regex, "[[:alpha:]]+");
-  fprintf(crm_stdout, "Enter a test string: ");
+  fprintf(stdout, "Enter a test string: ");
   scanf ("%128c", &input[0]);
   crm_vector_stringhash (
-			 input,
-			 strlen(input),
-			 0,
-			 my_regex,
-			 strlen (my_regex),
-			 coeff,
-			 5,
-			 4,
-			 feavec,
-			 2048,
-			 & j,
-			 & i);
+                         input,
+                         strlen(input),
+                         0,
+                         my_regex,
+                         strlen (my_regex),
+                         coeff,
+                         5,
+                         4,
+                         feavec,
+                         2048,
+                         & j,
+                         & i);
 
-  fprintf(crm_stdout, "... and i is %ld\n", i);
+  fprintf(stdout, "... and i is %ld\n", i);
   exit(0);
 }
 
-			 
+
 #endif
-    
+
 
 

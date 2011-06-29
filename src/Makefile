@@ -40,7 +40,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = x86_64-suse-linux-gnu
 host_triplet = x86_64-suse-linux-gnu
-bin_PROGRAMS = crm114$(EXEEXT) cssutil$(EXEEXT) osbfutil$(EXEEXT) \
+bin_PROGRAMS = crm114$(EXEEXT) cssutil$(EXEEXT) osbf-util$(EXEEXT) \
 	cssdiff$(EXEEXT) cssmerge$(EXEEXT)
 subdir = src
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
@@ -85,7 +85,7 @@ am__objects_1 = crm_compiler.$(OBJEXT) crm_errorhandlers.$(OBJEXT) \
 	crm_stats.$(OBJEXT) crm_expr_sks.$(OBJEXT) \
 	crm_expr_svm.$(OBJEXT) crm_expr_fscm.$(OBJEXT) \
 	crm_strcompress.$(OBJEXT) crm_expr_clump_nn.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT)
+	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT)
 am__objects_2 =
 am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	crm_main.$(OBJEXT)
@@ -93,25 +93,29 @@ crm114_OBJECTS = $(am_crm114_OBJECTS)
 crm114_LDADD = $(LDADD)
 am_cssdiff_OBJECTS = cssdiff.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) $(am__objects_2)
+	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
+	$(am__objects_2)
 cssdiff_OBJECTS = $(am_cssdiff_OBJECTS)
 cssdiff_LDADD = $(LDADD)
 am_cssmerge_OBJECTS = cssmerge.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) $(am__objects_2)
+	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
+	$(am__objects_2)
 cssmerge_OBJECTS = $(am_cssmerge_OBJECTS)
 cssmerge_LDADD = $(LDADD)
 am_cssutil_OBJECTS = cssutil.$(OBJEXT) crm_css_maintenance.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) $(am__objects_2)
+	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
+	$(am__objects_2)
 cssutil_OBJECTS = $(am_cssutil_OBJECTS)
 cssutil_LDADD = $(LDADD)
-am_osbfutil_OBJECTS = osbf-util.$(OBJEXT) \
+am_osbf_util_OBJECTS = osbf-util.$(OBJEXT) \
 	crm_osbf_maintenance.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) $(am__objects_2)
-osbfutil_OBJECTS = $(am_osbfutil_OBJECTS)
-osbfutil_LDADD = $(LDADD)
+	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
+	$(am__objects_2)
+osbf_util_OBJECTS = $(am_osbf_util_OBJECTS)
+osbf_util_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/m4/depcomp
 am__depfiles_maybe = depfiles
@@ -120,9 +124,9 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(crm114_SOURCES) $(cssdiff_SOURCES) $(cssmerge_SOURCES) \
-	$(cssutil_SOURCES) $(osbfutil_SOURCES)
+	$(cssutil_SOURCES) $(osbf_util_SOURCES)
 DIST_SOURCES = $(crm114_SOURCES) $(cssdiff_SOURCES) \
-	$(cssmerge_SOURCES) $(cssutil_SOURCES) $(osbfutil_SOURCES)
+	$(cssmerge_SOURCES) $(cssutil_SOURCES) $(osbf_util_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -216,7 +220,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2007-08-19
+ISODATE = 2007-08-26
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -259,7 +263,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-194
+TAR_FILENAME_POSTFIX = Ger-248
 TRE_CONFIG = no
 
 #
@@ -362,7 +366,7 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
 	crm_expr_svm.c crm_expr_fscm.c \
 	crm_strcompress.c crm_expr_clump_nn.c \
-	crm_generic_port.c
+	crm_generic_port.c crm_stdio_port.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h crm_expr_clump_nn.h config.h 
@@ -380,7 +384,7 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_preprocessor.o \
 	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
 	crm_strcompress.o crm_expr_clump_nn.o \
-	crm_generic_port.o
+	crm_generic_port.o crm_stdio_port.o
 
 UTILFILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c 
 CRMFILES = mailfilter.crm mailfilter.cf \
@@ -430,19 +434,19 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 
 crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
 cssutil_SOURCES = cssutil.c \
-	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	$(HFILES)
 
-osbfutil_SOURCES = osbf-util.c \
-	crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+osbf_util_SOURCES = osbf-util.c \
+	crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	$(HFILES)
 
 cssdiff_SOURCES = cssdiff.c \
-	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	$(HFILES)
 
 cssmerge_SOURCES = cssmerge.c \
-	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	$(HFILES)
 
 .SUFFIXES = .c .o
@@ -562,6 +566,7 @@ include ./$(DEPDIR)/crm_osbf_bayes.Po
 include ./$(DEPDIR)/crm_osbf_maintenance.Po
 include ./$(DEPDIR)/crm_preprocessor.Po
 include ./$(DEPDIR)/crm_stats.Po
+include ./$(DEPDIR)/crm_stdio_port.Po
 include ./$(DEPDIR)/crm_stmt_parser.Po
 include ./$(DEPDIR)/crm_str_funcs.Po
 include ./$(DEPDIR)/crm_strcompress.Po
@@ -966,43 +971,50 @@ cssmerge.o: cssmerge.c  \
 crm_generic_port.o: crm_generic_port.c  \
 	$(HFILES)
 
-cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o 
+crm_stdio_port.o: crm_stdio_port.c \
+	$(HFILES)
+
+cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
 		crm_css_maintenance.o \
 		crm_util_errorhandlers.o \
 		crm_str_funcs.o \
 		crm_generic_port.o \
+		crm_stdio_port.o \
 		-o cssutil
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-osbfutil: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
+osbf-util: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
 		crm_osbf_maintenance.o \
 		crm_generic_port.o \
-		-o osbfutil
+		crm_stdio_port.o \
+		-o osbf-util
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
+cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
 		crm_util_errorhandlers.o \
 		crm_str_funcs.o \
 		crm_generic_port.o \
+		crm_stdio_port.o \
 		-o cssdiff
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
+cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
 		crm_generic_port.o \
+		crm_stdio_port.o \
 		-o cssmerge
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
@@ -1032,14 +1044,14 @@ install:
 #
 #    Installing Utilities
 #	
-install_utils: cssmerge cssutil cssdiff osbfutil
+install_utils: cssmerge cssutil cssdiff osbf-util
 	$(E) ""
 	$(E) "    Installing Utilities"
 	$(E) ""
 	install $(INSTALLFLAGS) cssdiff $(bindir)/cssdiff$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssmerge $(bindir)/cssmerge$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssutil $(bindir)/cssutil$(VER_SUFFIX)
-	install $(INSTALLFLAGS) osbfutil $(bindir)/osbfutil$(VER_SUFFIX)
+	install $(INSTALLFLAGS) osbf-util $(bindir)/osbf-util$(VER_SUFFIX)
 	$(E) "   if you don't have EMACS installed in the default place, you"
 	$(E) "   won't get the crm114-mode.el automatically."
 	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
@@ -1053,12 +1065,12 @@ install_engine: crm114
 	$(E) ""
 	install $(INSTALLFLAGS) crm114 $(bindir)/crm$(VER_SUFFIX)
 
-install_binary_only: crm114 cssdiff cssmerge cssutil osbfutil
+install_binary_only: crm114 cssdiff cssmerge cssutil osbf-util
 	install $(INSTALLFLAGS) crm114 $(bindir)/crm$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssdiff $(bindir)/cssdiff$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssmerge $(bindir)/cssmerge$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssutil $(bindir)/cssutil$(VER_SUFFIX)	
-	install $(INSTALLFLAGS) osbfutil $(bindir)/osbfutil$(VER_SUFFIX)
+	install $(INSTALLFLAGS) osbf-util $(bindir)/osbf-util$(VER_SUFFIX)
 	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 install-exec-hook: crm114
@@ -1181,7 +1193,7 @@ src_gzip: tarfile
 i386_tarfile: all
 	rm -rf crm114-$(VERSION).i386
 	mkdir crm114-$(VERSION).i386
-	cp crm114 cssutil cssdiff cssmerge osbfutil \
+	cp crm114 cssutil cssdiff cssmerge osbf-util \
 	Makefile \
 	CRM114_Mailfilter_HOWTO.txt \
 	COLOPHON.txt \

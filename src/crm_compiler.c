@@ -197,7 +197,7 @@ int crm_load_csl(CSL_CELL *csl)
     else
     {
         if (internal_trace)
-            fprintf(crm_stderr, "file open on file descriptor %ld\n", csl->filedes);
+            fprintf(stderr, "file open on file descriptor %ld\n", csl->filedes);
 
         csl->nchars = 0;
         // and stat the file descriptor
@@ -209,7 +209,7 @@ int crm_load_csl(CSL_CELL *csl)
         {
             csl->nchars = statbuf.st_size;
             if (internal_trace)
-                fprintf(crm_stderr, "file is %ld bytes\n", csl->nchars);
+                fprintf(stderr, "file is %ld bytes\n", csl->nchars);
             if (csl->nchars + 2048 > max_pgmsize)
             {
                 CRM_ASSERT(csl->filedes >= 0);
@@ -229,7 +229,7 @@ int crm_load_csl(CSL_CELL *csl)
             untrappableerror("malloc of the file text failed", csl->filename);
         }
         if (internal_trace)
-            fprintf(crm_stderr, "File text malloc'd at %p\n", csl->filetext);
+            fprintf(stderr, "File text malloc'd at %p\n", csl->filetext);
 
         //    put in a newline at the beginning
         csl->filetext[0] = '\n';
@@ -274,7 +274,7 @@ int crm_load_csl(CSL_CELL *csl)
 
         csl->hash = strnhash(csl->filetext, csl->nchars);
         if (user_trace)
-            fprintf(crm_stderr, "Hash of program: 0x%08lX, length %ld bytes: (%s)\n-->\n%s",
+            fprintf(stderr, "Hash of program: 0x%08lX, length %ld bytes: (%s)\n-->\n%s",
                     (unsigned long)csl->hash, csl->nchars, csl->filename, csl->filetext);
     }
 
@@ -361,7 +361,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     /* long stab_max; */
 
     if (internal_trace)
-        fprintf(crm_stderr, "Starting phase 1 of microcompile.\n");
+        fprintf(stderr, "Starting phase 1 of microcompile.\n");
 
     seenaction = 0;
     pgmlength = csl->nchars;
@@ -385,10 +385,10 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
 
     //  now, allocate the microcompile table
     if (user_trace)
-        fprintf(crm_stderr, "Program statements: %ld, program length %ld\n",
+        fprintf(stderr, "Program statements: %ld, program length %ld\n",
                 j, pgmlength);
 
-	csl->mct_size = csl->nstmts + 10;
+        csl->mct_size = csl->nstmts + 10;
     csl->mct = (MCT_CELL **)calloc(csl->mct_size, sizeof(csl->mct[0]));
     csl->mct_allocated = 1;
     if (!csl->mct)
@@ -397,17 +397,17 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                          "so if we can't compile, we can't run.  Sorry.", "");
 
     if (internal_trace)
-        fprintf(crm_stderr, "microcompile table at %p\n", (void *)csl->mct);
+        fprintf(stderr, "microcompile table at %p\n", (void *)csl->mct);
 
     //  malloc all of the statement cells.
     for (i = 0; i < csl->nstmts + 10; i++)
     {
         csl->mct[i] = (MCT_CELL *)calloc(1, sizeof(csl->mct[i][0]));
         if (!csl->mct[i])
-		{
+                {
             untrappableerror(
                 "Couldn't malloc MCT cell. This is very bad.\n", "");
-		}
+                }
     }
 
     // ***  Microcompile phase 2 - set statement types
@@ -423,7 +423,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     //    HACK ALERT HACK ALERT HACK ALERT
 
     if (internal_trace)
-        fprintf(crm_stderr, "Starting phase 2 of microcompile.\n");
+        fprintf(stderr, "Starting phase 2 of microcompile.\n");
 
     stmtnum = 0;
     sindex = 0;
@@ -659,31 +659,31 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
 
         if (0) // (internal_trace)
         {
-            fprintf(crm_stderr, "\nStmt %3ld type %2d ",
+            fprintf(stderr, "\nStmt %3ld type %2d ",
                     stmtnum, csl->mct[stmtnum]->stmt_type);
             {
                 long ic;
                 for (ic = csl->mct[stmtnum]->start;
                      ic < csl->mct[stmtnum + 1]->start - 1;
                      ic++)
-                    fprintf(crm_stderr, "%c", pgmtext[ic]);
+                    fprintf(stderr, "%c", pgmtext[ic]);
             }
         }
 
 #ifdef STAB_TEST
         if (stab_stmtcode != csl->mct[stmtnum]->stmt_type)
         {
-            fprintf(crm_stderr, "Darn!  Microcompiler stab error (not your fault!)\n"
+            fprintf(stderr, "Darn!  Microcompiler stab error (not your fault!)\n"
                             "Please file a bug report if you can.  The data is:\n");
-            fprintf(crm_stderr,
+            fprintf(stderr,
                     "Stab got %ld, Ifstats got %d, on line %ld with len %ld\n",
                     stab_stmtcode,
                     csl->mct[stmtnum]->stmt_type,
                     stmtnum,
                     nblength);
-            fprintf(crm_stderr, "String was >>>");
-            fwrite(&pgmtext[nbindex], 1, nblength, crm_stderr);
-            fprintf(crm_stderr, "<<<\n\n");
+            fprintf(stderr, "String was >>>");
+            fwrite(&pgmtext[nbindex], 1, nblength, stderr);
+            fprintf(stderr, "<<<\n\n");
         }
 #endif
 
@@ -700,7 +700,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     }
 
     numstmts = stmtnum - 1;
-	CRM_ASSERT(numstmts <= csl->mct_size);
+        CRM_ASSERT(numstmts <= csl->mct_size);
 
     //  check to be sure that the brackets close!
 
@@ -717,7 +717,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         long sdx;
 
         if (internal_trace)
-            fprintf(crm_stderr, "Starting phase 3 of microcompile.\n");
+            fprintf(stderr, "Starting phase 3 of microcompile.\n");
 
         //  set initial stack values
         sdx = 0;
@@ -760,7 +760,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //   Work upwards next, assigning the fail targets
         sdx = 0;
         stack[sdx] = numstmts + 1;
-		CRM_ASSERT(numstmts <= csl->mct_size);
+                CRM_ASSERT(numstmts <= csl->mct_size);
         for (stmtnum = numstmts; stmtnum >= 0; stmtnum--)
         {
             switch (csl->mct[stmtnum]->stmt_type)
@@ -798,7 +798,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //   Work upwards again, assigning the TRAP targets
         sdx = 0;
         stack[sdx] = numstmts + 1;
-		CRM_ASSERT(numstmts <= csl->mct_size);
+                CRM_ASSERT(numstmts <= csl->mct_size);
         for (stmtnum = numstmts; stmtnum >= 0; stmtnum--)
         {
             switch (csl->mct[stmtnum]->stmt_type)
@@ -846,65 +846,65 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         {
             for (stmtnum = 0; stmtnum <= numstmts; stmtnum++)
             {
-                fprintf(crm_stderr, "\n");
+                fprintf(stderr, "\n");
                 if (prettyprint_listing > 1)
-                    fprintf(crm_stderr, "%4.4ld ", stmtnum);
+                    fprintf(stderr, "%4.4ld ", stmtnum);
                 if (prettyprint_listing > 2)
-                    fprintf(crm_stderr, "{%2.2d}", csl->mct[stmtnum]->nest_level);
+                    fprintf(stderr, "{%2.2d}", csl->mct[stmtnum]->nest_level);
 
                 if (prettyprint_listing > 3)
                 {
-                    fprintf(crm_stderr, " <<%2.2d>>",
+                    fprintf(stderr, " <<%2.2d>>",
                             csl->mct[stmtnum]->stmt_type);
 
-                    fprintf(crm_stderr, " L%4.4d F%4.4d T%4.4d",
+                    fprintf(stderr, " L%4.4d F%4.4d T%4.4d",
                             csl->mct[stmtnum]->liaf_index,
                             csl->mct[stmtnum]->fail_index,
                             csl->mct[stmtnum]->trap_index);
                 }
                 if (prettyprint_listing > 1)
-                    fprintf(crm_stderr, " :  ");
+                    fprintf(stderr, " :  ");
 
                 //  space over two spaces per indent
                 for (k = 0; k < csl->mct[stmtnum]->nest_level; k++)
-                    fprintf(crm_stderr, "  ");
+                    fprintf(stderr, "  ");
 
                 //   print out text of the first statement:
                 if (prettyprint_listing > 4)
-                    fprintf(crm_stderr, "-");
+                    fprintf(stderr, "-");
                 k = csl->mct[stmtnum]->fchar;
                 while (pgmtext[k] > 0x021 && k < csl->mct[stmtnum]->achar)
                 {
-                    fprintf(crm_stderr, "%c", pgmtext[k]);
+                    fprintf(stderr, "%c", pgmtext[k]);
                     k++;
                 }
                 if (prettyprint_listing > 4)
-                    fprintf(crm_stderr, "-");
+                    fprintf(stderr, "-");
 
-                fprintf(crm_stderr, " ");
+                fprintf(stderr, " ");
                 //  and if there are args, print them out as well.
                 if (csl->mct[stmtnum]->achar < csl->mct[stmtnum + 1]->start - 1)
                 {
                     if (prettyprint_listing > 4)
-                        fprintf(crm_stderr, "=");
+                        fprintf(stderr, "=");
                     for (k = csl->mct[stmtnum]->achar;
                          k < csl->mct[stmtnum + 1]->start - 1; k++)
-                        fprintf(crm_stderr, "%c", pgmtext[k]);
+                        fprintf(stderr, "%c", pgmtext[k]);
                     if (prettyprint_listing > 4)
-                        fprintf(crm_stderr, "=");
+                        fprintf(stderr, "=");
                 }
             }
-            fprintf(crm_stderr, "\n");
+            fprintf(stderr, "\n");
         }
 
         //    Finally got to the end.  Fill in the last bits of the CSL
         //  with the new information, and return.
 
-		CRM_ASSERT(numstmts <= csl->mct_size);
+                CRM_ASSERT(numstmts <= csl->mct_size);
         csl->nstmts = numstmts;
 
         if (internal_trace)
-            fprintf(crm_stderr, "microcompile completed\n");
+            fprintf(stderr, "microcompile completed\n");
     }
 
     return 0;

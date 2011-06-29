@@ -54,12 +54,12 @@ unsigned int WINAPI pusher_proc(void *lpParameter)
 
     if (!WriteFile(p->to_minion, p->inbuf, p->inlen, &bytesWritten, NULL))
     {
-        fprintf(crm_stderr, "The pusher failed to send %ld input bytes to the minion.\n", (long)p->inlen);
+        fprintf(stderr, "The pusher failed to send %ld input bytes to the minion.\n", (long)p->inlen);
     }
     free(p->inbuf);
     p->inbuf = NULL;
     if (p->internal_trace)
-        fprintf(crm_stderr, "pusher: input sent to minion.\n");
+        fprintf(stderr, "pusher: input sent to minion.\n");
 
     //    if we don't want to keep this proc, we close it's input, and
     //    wait for it to exit.
@@ -67,14 +67,14 @@ unsigned int WINAPI pusher_proc(void *lpParameter)
     {
         if (!CloseHandle(p->to_minion))
         {
-            fprintf(crm_stderr, "The pusher failed to close the minion input pipe.\n");
+            fprintf(stderr, "The pusher failed to close the minion input pipe.\n");
         }
 
         if (internal_trace)
-            fprintf(crm_stderr, "minion input pipe closed\n");
+            fprintf(stderr, "minion input pipe closed\n");
     }
     if (p->internal_trace)
-        fprintf(crm_stderr, "pusher: exiting pusher\n");
+        fprintf(stderr, "pusher: exiting pusher\n");
     _endthreadex(0);
     return 0;
 }
@@ -98,12 +98,12 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
         if (!ReadFile(p->from_minion, obuf,
                       OUTBUF_SIZE, &bytesRead, NULL))
         {
-            fprintf(crm_stderr, "The sucker failed to read any data from the minion.\n");
+            fprintf(stderr, "The sucker failed to read any data from the minion.\n");
         }
         if (bytesRead == 0) break;
     }
     if (p->internal_trace)
-        fprintf(crm_stderr, "sucker: output fetched from minion.\n");
+        fprintf(stderr, "sucker: output fetched from minion.\n");
 
     //    if we don't want to keep this proc, we close it's output, and
     //    wait for it to exit.
@@ -111,14 +111,14 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
     {
         if (!CloseHandle(p->from_minion))
         {
-            fprintf(crm_stderr, "The sucker failed to close the minion output pipe.\n");
+            fprintf(stderr, "The sucker failed to close the minion output pipe.\n");
         }
 
         if (internal_trace)
-            fprintf(crm_stderr, "minion output pipe closed\n");
+            fprintf(stderr, "minion output pipe closed\n");
     }
     if (p->internal_trace)
-        fprintf(crm_stderr, "sucker: exiting sucker\n");
+        fprintf(stderr, "sucker: exiting sucker\n");
     _endthreadex(0);
     return 0;
 
@@ -170,7 +170,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 #if defined (HAVE_WAITPID)
     if (user_trace)
-        fprintf(crm_stderr, "executing a SYSCALL statement");
+        fprintf(stderr, "executing a SYSCALL statement");
 
     timeout = MINION_SLEEP_USEC;
 
@@ -195,14 +195,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (apb->sflags & CRM_KEEP)
     {
         if (user_trace)
-            fprintf(crm_stderr, "Keeping the process around if possible\n");
+            fprintf(stderr, "Keeping the process around if possible\n");
         keep_proc = 1;
     }
     async_mode = 0;
     if (apb->sflags & CRM_ASYNC)
     {
         if (user_trace)
-            fprintf(crm_stderr, "Letting the process go off on it's own");
+            fprintf(stderr, "Letting the process go off on it's own");
         async_mode = 1;
     }
 
@@ -222,7 +222,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(inbuf, data_window_size, apb->p1start, apb->p1len);
     inlen = crm_nexpandvar(inbuf, apb->p1len, data_window_size);
     if (user_trace)
-        fprintf(crm_stderr, "  command's input wil be: ***%s***\n", inbuf);
+        fprintf(stderr, "  command's input wil be: ***%s***\n", inbuf);
 
     //    now get the name of the variable where the return will be
     //    placed... this is a crock and should be fixed someday.
@@ -241,7 +241,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     memmove(from_var, &from_var[vstart], vlen);
     from_var[vlen] = '\000';
     if (user_trace)
-        fprintf(crm_stderr, "   command output will overwrite var ***%s***\n",
+        fprintf(stderr, "   command output will overwrite var ***%s***\n",
                 from_var);
 
 
@@ -250,7 +250,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(keep_buf, MAX_PATTERN, apb->p3start, apb->p3len);
     keep_len = crm_nexpandvar(keep_buf, apb->p3len, MAX_PATTERN);
     if (user_trace)
-        fprintf(crm_stderr, "   command status kept in var ***%s***\n",
+        fprintf(stderr, "   command status kept in var ***%s***\n",
                 keep_buf);
 
     //      get the command to execute
@@ -258,7 +258,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(sys_cmd, MAX_PATTERN, apb->s1start, apb->s1len);
     cmd_len = crm_nexpandvar(sys_cmd, apb->s1len, MAX_PATTERN);
     if (user_trace)
-        fprintf(crm_stderr, "   command will be ***%s***\n", sys_cmd);
+        fprintf(stderr, "   command will be ***%s***\n", sys_cmd);
 
     //     Do we reuse an already-existing process?  Check to see if the
     //     keeper variable has it... note that we have to :* prefix it
@@ -291,7 +291,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         long status1, status2;
         if (user_trace)
-            fprintf(crm_stderr, "  Must start a new minion.\n");
+            fprintf(stderr, "  Must start a new minion.\n");
         status1 = pipe(to_minion);
         status2 = pipe(from_minion);
         if (status1 > 0 || status2 > 0)
@@ -330,8 +330,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //
             close(to_minion[1]);
             close(from_minion[0]);
-            dup2(to_minion[0], fileno(crm_stdin));
-            dup2(from_minion[1], fileno(crm_stdout));
+            dup2(to_minion[0], fileno(stdin));
+            dup2(from_minion[1], fileno(stdout));
 
             //     Are we a syscall to a :label:, or should we invoke the
             //     shell on an external command?
@@ -342,7 +342,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             {
                 //              sys_cmd[vstart+vlen] = '\0';
                 if (user_trace)
-                    fprintf(crm_stderr, "FORK transferring control to line %s\n",
+                    fprintf(stderr, "FORK transferring control to line %s\n",
                             &sys_cmd[vstart]);
 
                 //    set the current pid and parent pid.
@@ -354,7 +354,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     sprintf(pidstr, "%ld", pid);
                     crm_set_temp_var(":_pid:", pidstr);
                     if (user_trace)
-                        fprintf(crm_stderr, "My new PID is %s\n", pidstr);
+                        fprintf(stderr, "My new PID is %s\n", pidstr);
 #endif
 #if defined (HAVE_GETPPID)
                     pid = (long)getppid();
@@ -362,7 +362,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     crm_set_temp_var(":_ppid:", pidstr);
 #endif
                 }
-                //   See if we have redirection of crm_stdin and crm_stdout
+                //   See if we have redirection of stdin and stdout
                 while (crm_nextword(sys_cmd, strlen(sys_cmd), vstart + vlen,
                                     &vstart, &vlen))
                 {
@@ -376,9 +376,9 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         CRM_ASSERT(vlen - 1 < MAX_PATTERN);
                         filename[vlen - 1] = '\0';
                         if (user_trace)
-                            fprintf(crm_stderr, "Redirecting minion crm_stdin to %s\n",
+                            fprintf(stderr, "Redirecting minion stdin to %s\n",
                                     filename);
-                        freopen(filename, "rb", crm_stdin);
+                        freopen(filename, "rb", stdin);
                     }
                     if (sys_cmd[vstart] == '>')
                     {
@@ -391,10 +391,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             CRM_ASSERT(vlen - 1 < MAX_PATTERN);
                             filename[vlen - 1] = '\0';
                             if (user_trace)
-                                fprintf(crm_stderr,
-                                        "Redirecting minion crm_stdout to %s\n",
+                                fprintf(stderr,
+                                        "Redirecting minion stdout to %s\n",
                                         filename);
-                            freopen(filename, "wb", crm_stdout);
+                            freopen(filename, "wb", stdout);
                         }
                         else
                         {
@@ -405,10 +405,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             CRM_ASSERT(vlen - 2 < MAX_PATTERN);
                             filename[vlen - 2] = '\0';
                             if (user_trace)
-                                fprintf(crm_stderr,
-                                        "Appending minion crm_stdout to %s\n",
+                                fprintf(stderr,
+                                        "Appending minion stdout to %s\n",
                                         filename);
-                            freopen(filename, "ab+", crm_stdout);
+                            freopen(filename, "ab+", stdout);
                         }
                     }
                 }
@@ -422,7 +422,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             else
             {
                 if (user_trace)
-                    fprintf(crm_stderr, "Systemcalling on shell command %s\n",
+                    fprintf(stderr, "Systemcalling on shell command %s\n",
                             sys_cmd);
                 retcode = system(sys_cmd);
                 //
@@ -455,7 +455,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else
     {
         if (user_trace)
-            fprintf(crm_stderr, "  reusing old minion PID: %d\n", minion);
+            fprintf(stderr, "  reusing old minion PID: %d\n", minion);
     }
     //      Now, we're out of the minion for sure.
     //    so we close the pipe ends we know we won't be using.
@@ -481,12 +481,12 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         {
             write(to_minion[1], inbuf, inlen);
             if (internal_trace)
-                fprintf(crm_stderr, "pusher: input sent to minion.\n");
+                fprintf(stderr, "pusher: input sent to minion.\n");
             close(to_minion[1]);
             if (internal_trace)
-                fprintf(crm_stderr, "pusher: minion input pipe closed\n");
+                fprintf(stderr, "pusher: minion input pipe closed\n");
             if (internal_trace)
-                fprintf(crm_stderr, "pusher: exiting pusher\n");
+                fprintf(stderr, "pusher: exiting pusher\n");
             //  The pusher always exits with success, so do NOT
             //  do not use the engine_exit_base value
             exit(EXIT_SUCCESS);
@@ -499,7 +499,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         close(to_minion[1]);
         if (internal_trace)
-            fprintf(crm_stderr, "minion input pipe closed\n");
+            fprintf(stderr, "minion input pipe closed\n");
     }
 
     //   and see what is in the pipe for us.
@@ -515,7 +515,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //   synchronous read- read till we hit EOF, which is read
             //   returning a char count of zero.
 readloop:
-            if (internal_trace) fprintf(crm_stderr, "SYNCH READ ");
+            if (internal_trace) fprintf(stderr, "SYNCH READ ");
             usleep(timeout);
             charsread =
                 read(from_minion[0],
@@ -575,10 +575,10 @@ readloop:
 
         //  and set the returned value into from_var.
         if (user_trace)
-            fprintf(crm_stderr, "SYSCALL output: %ld chars ---%s---.\n ",
+            fprintf(stderr, "SYSCALL output: %ld chars ---%s---.\n ",
                     outlen, outbuf);
         if (internal_trace)
-            fprintf(crm_stderr, "  storing return str in var %s\n", from_var);
+            fprintf(stderr, "  storing return str in var %s\n", from_var);
 
         crm_destructive_alter_nvariable(from_var, vlen, outbuf, outlen);
     }
@@ -592,7 +592,7 @@ readloop:
                 from_minion[0],
                 to_minion[1]);
         if (internal_trace)
-            fprintf(crm_stderr, "   saving minion state: %s \n",
+            fprintf(stderr, "   saving minion state: %s \n",
                     exp_keep_buf);
         crm_destructive_alter_nvariable(keep_buf, keep_len,
                                         exp_keep_buf,
@@ -605,7 +605,7 @@ readloop:
     else
     {
         if (internal_trace)
-            fprintf(crm_stderr, "No keep, no async, so not keeping minion, closing everything.\n");
+            fprintf(stderr, "No keep, no async, so not keeping minion, closing everything.\n");
 
         //    de-zombify any dead minions;
         waitpid(minion, &minion_exit_status, 0);
@@ -618,7 +618,7 @@ readloop:
         {
             char exit_value_string[MAX_VARNAME];
             if (internal_trace)
-                fprintf(crm_stderr, "minion waitpid result :%d; whacking %s\n",
+                fprintf(stderr, "minion waitpid result :%d; whacking %s\n",
                         minion_exit_status,
                         keep_buf);
             sprintf(exit_value_string, "DEAD MINION, EXIT CODE: %d",
@@ -663,7 +663,7 @@ readloop:
             long varline;
 
             if (user_trace)
-                fprintf(crm_stderr, "  Must start a new minion.\n");
+                fprintf(stderr, "  Must start a new minion.\n");
 
             crm_nextword(sys_cmd, strlen(sys_cmd), 0, &vstart2, &vlen2);
             varline = crm_lookupvarline(vht, sys_cmd, vstart2, vlen2);
@@ -716,7 +716,7 @@ readloop:
                 }
 
                 if (user_trace)
-                    fprintf(crm_stderr, "systemcalling on shell command %s\n",
+                    fprintf(stderr, "systemcalling on shell command %s\n",
                             sys_cmd);
 
                 ZeroMemory(&si, sizeof(si));
@@ -805,11 +805,11 @@ readloop:
 #if 0
                         if (!SetStdHandle(STD_OUTPUT_HANDLE, stdout_save))
                         {
-                            fatalerror_Win32("Failed to reset crm_stdout for crm114");
+                            fatalerror_Win32("Failed to reset stdout for crm114");
                         }
                         if (!SetStdHandle(STD_INPUT_HANDLE, stdin_save))
                         {
-                            fatalerror_Win32("Failed to reset crm_stdin for crm114");
+                            fatalerror_Win32("Failed to reset stdin for crm114");
                         }
 #endif
 #if 0
@@ -825,7 +825,7 @@ readloop:
         else
         {
             if (user_trace)
-                fprintf(crm_stderr, "  reusing old minion PID: %d\n", minion);
+                fprintf(stderr, "  reusing old minion PID: %d\n", minion);
             hminion = OpenProcess(PROCESS_ALL_ACCESS, 0, minion);
             if (hminion == NULL)
             {
@@ -934,7 +934,7 @@ readloop:
                     //   synchronous read- read till we hit EOF, which is read
                     //   returning a char count of zero.
     readloop:
-                    if (internal_trace) fprintf(crm_stderr, "SYNCH READ ");
+                    if (internal_trace) fprintf(stderr, "SYNCH READ ");
                     Sleep(timeout);
                     charsread = 0;
 
@@ -1011,10 +1011,10 @@ readloop:
 
                 //  and set the returned value into from_var.
                 if (user_trace)
-                    fprintf(crm_stderr, "SYSCALL output: %ld chars ---%s---.\n ",
+                    fprintf(stderr, "SYSCALL output: %ld chars ---%s---.\n ",
                             outlen, outbuf);
                 if (internal_trace)
-                    fprintf(crm_stderr, "  storing return str in var %s\n", from_var);
+                    fprintf(stderr, "  storing return str in var %s\n", from_var);
 
                 crm_destructive_alter_nvariable(from_var, vlen, outbuf, outlen);
             }
@@ -1028,7 +1028,7 @@ readloop:
                         from_minion[0],
                         to_minion[1]);
                 if (internal_trace)
-                    fprintf(crm_stderr, "   saving minion state: %s\n", exp_keep_buf);
+                    fprintf(stderr, "   saving minion state: %s\n", exp_keep_buf);
                 crm_destructive_alter_nvariable(keep_buf, keep_len,
                                                 exp_keep_buf,
                                                 strlen(exp_keep_buf));
@@ -1040,7 +1040,7 @@ readloop:
             {
                 DWORD exit_code;
                 if (internal_trace)
-                    fprintf(crm_stderr, "No keep, no async, so not keeping minion, closing everything.\n");
+                    fprintf(stderr, "No keep, no async, so not keeping minion, closing everything.\n");
 
                 if (WAIT_FAILED == WaitForSingleObject(hminion, INFINITE))
                 {
@@ -1055,7 +1055,7 @@ readloop:
                 {
                     char exit_value_string[MAX_VARNAME];
                     if (internal_trace)
-                        fprintf(crm_stderr, "minion exit code :%d; whacking %s\n",
+                        fprintf(stderr, "minion exit code :%d; whacking %s\n",
                                 exit_code,
                                 keep_buf);
                     sprintf(exit_value_string, "DEAD MINION, EXIT CODE: %d",

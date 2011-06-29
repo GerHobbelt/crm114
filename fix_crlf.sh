@@ -16,7 +16,7 @@ done;
 # find and remove CR (CRLF line termination) from these files:
 # (make sure we do NOT touch binary files!)
 #
-for f in `find . -type f \( -not \( -name '*.gif' -o -name '*.jpg' -o -name '*.bmp' -o -name '*.png' -o -name '*.dll' -o -name '*.exe' -o -name '*.mo' -o -name '*.ico' -o -name '*.sln' -o -name '*.pdn' \) -a \( -name '*.?' -o -name 'Makefile*' -o -name '[A-Z][A-Z][A-Z]*' -o -name '*.???' -o -name 'config*' -o -name '*.??' -o -name '*.htm?' \) \) -print`
+for f in `find . -type f \( -not \( -name '*.gif' -o -name '*.jpg' -o -name '*.bmp' -o -name '*.png' -o -name '*.dll' -o -name '*.exe' -o -name '*.mo' -o -name '*.ico' -o -name '*.sln' -o -name '*.vcproj' -o -name '*.pdn' \) -a \( -name '*.?' -o -name 'Makefile*' -o -name '[A-Z][A-Z][A-Z]*' -o -name '*.???' -o -name 'config*' -o -name '*.??' -o -name '*.htm?' \) \) -print`
 do
 	echo -------- $f ---------
 	# a bit redundant when we've got that sed s/\r$// up there, but alas, the find -print was to be

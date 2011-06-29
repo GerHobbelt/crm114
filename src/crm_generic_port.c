@@ -111,22 +111,24 @@ void crm_touch(const char *filename)
 /*
    write the specified number of byte c to file f.
 
-   Return 0 on success, otherwise the error will be available in 
+   Return 0 on success, otherwise the error will be available in
    errno.
  */
 int file_memset(FILE *dst, unsigned char val, size_t count)
 {
 unsigned char buf[1024];
 
-	memset(buf, val, 1024);
+        memset(buf, val, 1024);
 
-	while (count > 0)
+        while (count > 0)
 {
-	int len = fwrite(buf, 1, CRM_MIN(count, 1024), dst);
-	if (len <= 0)
-		return -1;
-	count -= len;
+        int len = fwrite(buf, 1, CRM_MIN(count, 1024), dst);
+        if (len <= 0)
+                return -1;
+        count -= len;
 }
 return 0;
 }
+
+
 

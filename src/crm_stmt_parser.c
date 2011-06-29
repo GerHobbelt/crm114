@@ -106,11 +106,12 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
 
     outcode = 0;
 
+        if (inlen >= MAX_PATTERN) inlen = MAX_PATTERN - 1;
     memmove(flagtext, input, inlen);
     flagtext[inlen] = '\000';
 
     if (internal_trace)
-        fprintf(crm_stderr, "Flag string: %s\n", flagtext);
+        fprintf(stderr, "Flag string: %s\n", flagtext);
 
     //  now loop on thru the nextwords,
     remtext = flagtext;
@@ -129,16 +130,15 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
             wtext = &(remtext[wstart]);
             if (internal_trace)
             {
-                fprintf(crm_stderr, "found flag, len %ld: ", wlen);
-                for (j = 0; j < wlen; j++) fprintf(crm_stderr, "%c", wtext[j]);
-                fprintf(crm_stderr, "\n");
+                fprintf(stderr, "found flag, len %ld: %.*s\n",
+                                        wlen, (int)wlen, wtext);
             }
 
             //    find sch in our table, squalk a nonfatal/fatal if necessary.
             recog_flag = 0;
             for (j = 0; crm_flags[j].string != NULL; j++)/* [i_a] loop until we've hit the sentinel at the end of the table */
             {
-                // fprintf(crm_stderr, " Trying %s (%ld) at pos = %d\n", crm_flags[j].string, crm_flags[j].value, j );
+                // fprintf(stderr, " Trying %s (%ld) at pos = %d\n", crm_flags[j].string, crm_flags[j].value, j );
 
                 // make sure the flags are ordered properly; must match with crm114_structs.h defs, but that's kinda hard to check
                 CRM_ASSERT(crm_flags[j].value > 0);
@@ -156,7 +156,7 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
                     outcode |= crm_flags[j].value;
                     if (user_trace)
                     {
-                        fprintf(crm_stderr, "Mode #%d, '%s' turned on. \n",
+                        fprintf(stderr, "Mode #%d, '%s' turned on. \n",
                                 j,
                                 crm_flags[j].string);
                     }
@@ -173,16 +173,17 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
                 q = nonfatalerror("Darn...  unrecognized flag :", foo);
             }
 
-
             //  and finally,  move sch up to point at the remaining string
             if (remlen <= 0) done = 1;
         }
         else
+                {
             done = 1;
+                }
     }
 
     if (internal_trace)
-        fprintf(crm_stderr, "Flag code is : %llx\n", (unsigned long long)outcode);
+        fprintf(stderr, "Flag code is : %llx\n", (unsigned long long)outcode);
 
     return outcode;
 }
@@ -290,9 +291,12 @@ int crm_statement_parse(char           *in,
                     apb->a1start = &in[fstart[i]];
                     apb->a1len = flen[i];
                 }
-                else nonfatalerror
-                    ("There are multiple flag sets on this line.",
+                else
+                                {
+                                        nonfatalerror(
+                                                "There are multiple flag sets on this line.",
                      " ignoring all but the first");
+                                }
             }
             break;
 
@@ -304,22 +308,22 @@ int crm_statement_parse(char           *in,
                     apb->p1start = &in[fstart[i]];
                     apb->p1len = flen[i];
                 }
-                else
-                if (apb->p2start == NULL)
+                else if (apb->p2start == NULL)
                 {
                     apb->p2start = &in[fstart[i]];
                     apb->p2len = flen[i];
                 }
-                else
-                if (apb->p3start == NULL)
+                else if (apb->p3start == NULL)
                 {
                     apb->p3start = &in[fstart[i]];
                     apb->p3len = flen[i];
                 }
                 else
-                    nonfatalerror
-                    ("Too many parenthesized varlists.",
+                                {
+                                        nonfatalerror(
+                                                "Too many parenthesized varlists.",
                      "ignoring the excess varlists.");
+                                }
             }
             break;
 
@@ -331,9 +335,12 @@ int crm_statement_parse(char           *in,
                     apb->b1start = &in[fstart[i]];
                     apb->b1len = flen[i];
                 }
-                else nonfatalerror
-                    ("There are multiple domain limits on this line.",
+                else
+                                {
+                                        nonfatalerror(
+                                                "There are multiple domain limits on this line.",
                      " ignoring all but the first");
+                                }
             }
             break;
 
@@ -345,23 +352,24 @@ int crm_statement_parse(char           *in,
                     apb->s1start = &in[fstart[i]];
                     apb->s1len = flen[i];
                 }
-                else
-                if (apb->s2start == NULL)
+                else if (apb->s2start == NULL)
                 {
                     apb->s2start = &in[fstart[i]];
                     apb->s2len = flen[i];
                 }
                 else
+                                {
                     nonfatalerror(
                         "There are too many regex sets in this statement,",
                         " ignoring all but the first.");
+                                }
             }
             break;
 
         default:
             fatalerror("Declensional parser returned an undefined typecode!",
                        "What the HECK did you do to cause this?");
-			break;
+                        break;
         }
     }
     return k;    // return value is how many declensional arguments we found.
@@ -380,7 +388,10 @@ int crm_statement_parse(char           *in,
 //     what role this variable is to play in the statement.  Kinda like
 //     Latin - to a major extent, you can mix the parts around and it
 //     won't make any difference.
-
+//
+// WARNING: any of the returned items my have any length (even larger
+//          than MAX_PATTERN), so make sure you (the caller) can cope with this.
+//
 int crm_generic_parse_line(
     char *txt,                       //   the start of the program line
     long len,                        //   how long is the line
@@ -409,12 +420,11 @@ int crm_generic_parse_line(
     //
     //     We return the number of args found
 
-    long chidx;
-    char curchar;
-    long argc;
-    long i;
-    long itype;
-    long depth;
+    int chidx;
+    int argc;
+    int i;
+    int itype;
+        int dstpos;
 
     //    zeroize the outputs to start...
     for (i = 0; i < maxargs; i++)
@@ -426,107 +436,120 @@ int crm_generic_parse_line(
 
 
     //    scan forward, looking for any member of schars
-
-    depth = 0;
-    chidx = -1;
     argc = 0;
     itype = -1;
 
     if (internal_trace)
     {
-        fprintf(crm_stderr, " declensional parsing for %ld chars on: ", len);
-        for (i = 0; i < len; i++)
-            fprintf(crm_stderr, "%c", txt[i]);
-        fprintf(crm_stderr, "\n");
+        fprintf(stderr, " declensional parsing for %ld chars on: %.*s\n",
+                        len, (int)len, txt);
     }
 
-    while (chidx < len && argc <= maxargs)
+    for (dstpos = chidx = 0; chidx < len && argc < maxargs; chidx++)
     {
-        chidx++;
-        curchar = txt[chidx];
+        char curchar = txt[chidx];
+
         if (itype == -1)   // are we looking for an argstart char?
         {
             //    is curchar one of the start chars?  (this is 8-bit-safe,
             //     because schars is always normal ASCII)
-            for (i = 0; i < strlen(schars); i++)
+            for (i = strlen(schars); --i >= 0; )
+                        {
                 if (curchar == schars[i])
                 {
                     if (internal_trace)
-                        fprintf(crm_stderr, "   found opener %c at %ld,", curchar, chidx);
+                        fprintf(stderr, "   found opener %c at %d,", curchar, chidx);
                     itype = i;
-                    fstart[argc] = chidx + 1;
+                    dstpos = fstart[argc] = chidx + 1;
                     ftype[argc] = itype;
-                    depth = 1;
+                                        break;
                 }
+                        }
             //  if it wasn't a start-character for an arg, we are done.
         }
-        else  // nope, we're in an arg, so we check for unescaped schar
-              // and fchar characers
-        {
-            //  if (curchar == fchars [itype] && txt[chidx-1] != echars[itype])
-            if (curchar == fchars[itype]
-                && (txt[chidx - 1] != echars[itype]
-                    || txt[chidx - 1] == txt[chidx - 2]))
-            {
-                depth--;
-                if (depth == 0)
+        else
                 {
-                    //   we've found the end of the text arg.  Close it off and
+          // nope, we're in an arg, so we check for unescaped schar
+          // and fchar characters
+
+                        if (curchar == echars[itype])
+                        {
+                                // escape: is it escaping our terminating fchar, or is it escaping another?
+                                // if another, copy all as-is:
+                                if (txt[chidx + 1] != fchars[itype])
+                                {
+                                        // copy both as-is and skip
+                                        txt[dstpos++] = txt[chidx++];
+                                        txt[dstpos++] = txt[chidx];
+                                }
+                                else
+                                {
+                                        // hit the terminator is ESCAPED form: only copy the UNescaped terminator character
+                                        // and continue.
+                                        txt[dstpos++] = txt[++chidx];
+                                }
+                        }
+                        else
+                        {
+                                // no escape character here. Did we hit the fchar terminator yet?
+                    if (curchar == fchars[itype])
+                                {
+                                        // yes, we did!
+                                        //
+                                        //   we've found the end of the text arg.  Close it off and
                     //   note it into the output vectors
-                    flen[argc] = chidx - fstart[argc];
+                    flen[argc] = dstpos - fstart[argc];
                     if (internal_trace)
                     {
-                        int q;
-                        fprintf(crm_stderr, " close %c at %ld --", curchar, chidx);
-                        for (q = fstart[argc]; q < fstart[argc] + flen[argc]; q++)
-                            fprintf(crm_stderr, "%c", txt[q]);
-                        fprintf(crm_stderr, "-- len %ld\n", flen[argc]);
+                                                fprintf(stderr, " close %c at %d/(unescaped:%d) -- %.*s -- len %d\n",
+                                                        curchar, dstpos, chidx,
+                                                        (int)flen[argc], &txt[fstart[argc]],
+                                                        (int)flen[argc]);
                     }
+
+                                        // pad txt[] with spaces (following the terminator) to fixup after the unescaping:
+                                        // make it look all right again ... ;-)
+                                        txt[dstpos++] = txt[chidx];
+                                        for ( ; dstpos < chidx; )
+                                        {
+                                                txt[dstpos++] = ' ';
+                                        }
+
                     itype = -1;
                     argc++;
                 }
-            }
-            else
-            //if (curchar == schars [itype] && txt[chidx-1] != echars[itype])
-            if (curchar == schars[itype]
-                && (txt[chidx - 1] != echars[itype]
-                    || txt[chidx - 1] == txt[chidx - 2]))
-            {
-                depth++;
+                                        else
+                                        {
+                                                // a regular char: move as-is
+                                                txt[dstpos++] = txt[chidx];
+                                }
             }
         }
-        //    if we weren't a schar or an unexcaped echar, we're done!
     }
-    if (depth != 0)
-    {
-		int operand_len;
-		int statement_len;
 
-        flen[argc] = chidx - fstart[argc];
-        //
-        //   GROT GROT GROT Somehow, sometimes we get flen[argc] < 0.   It's
-        //   always with buggy userprograms, but we shouldn't need this anyway.
-        //   So, until we find out what _we_ are doing wrong, leave the check
-        //   for flen[argc] < 0 in here.
-        //
-        if (flen[argc] < 0) flen[argc] = 0;
-        /* [i_a] make sure we don't run out of buffer here either! Twas a nasty bug to find. */
-        if (flen[argc] >= MAX_PATTERN)
-            flen[argc] = MAX_PATTERN - 1;
-		operand_len = CRM_MIN(MAX_PATTERN, flen[argc]);
-		CRM_ASSERT(chidx >= 0);
-		statement_len = chidx;
-        nonfatalerror_ex(SRC_LOC(), 
-			" The operand '%.*s'%s doesn't seem to end.  Bug in statement?\n -->  %.*s",
-			(operand_len > 1024 ? 1024 : operand_len),
+        if (itype != -1)
+    {
+                int operand_len;
+                int statement_len;
+
+        flen[argc] = dstpos - fstart[argc];
+                operand_len = flen[argc];
+                // CRM_ASSERT(chidx >= 0);
+                CRM_ASSERT(dstpos >= 0);
+                statement_len = dstpos;
+        nonfatalerror_ex(SRC_LOC(),
+                        " The operand '%.*s'%s doesn't seem to end.  Bug in statement?\n --> %.*s",
+                        (operand_len > 1024 ? 1024 : operand_len),
                       &txt[fstart[argc]],
-					  (operand_len > 1024 ? "(...truncated)" : ""),
-					  statement_len,
-					  txt);
+                                          (operand_len > 1024 ? "(...truncated)" : ""),
+                                          statement_len,
+                                          txt);
         argc++;
     }
     return argc;
 }
+
+
 
 //    and to avoid all the mumbo-jumbo, an easy way to get a copy of
 //    an arg found by the declensional parser.

@@ -41,7 +41,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int iso_status;
 
     if (user_trace)
-        fprintf(crm_stderr, "executing an ISOLATE statement\n");
+        fprintf(stderr, "executing an ISOLATE statement\n");
 
 
     //    get the list of variable names
@@ -56,7 +56,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     if (internal_trace)
-        fprintf(crm_stderr, "  creating isolated vars: ***%s***\n", temp_vars);
+        fprintf(stderr, "  creating isolated vars: ***%s***\n", temp_vars);
 
     done = 0;
     mc = 0;
@@ -117,13 +117,13 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 {
                     //   not preexisting, no slash value
                     if (internal_trace)
-                        fprintf(crm_stderr, "Not a preexisting var.\n");
+                        fprintf(stderr, "Not a preexisting var.\n");
 
                     if (!apb->s1start)
                     {
                         // no slash value- set to ""
                         if (internal_trace)
-                            fprintf(crm_stderr, "No initialization value given, using"
+                            fprintf(stderr, "No initialization value given, using"
                                             " a zero-length string.\n");
                         tempbuf[0] = '\0';
                         vallen = 0;
@@ -132,7 +132,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     {
                         //  not preexisting, has a /value/, use it.
                         if (internal_trace)
-                            fprintf(crm_stderr, "using the slash-value given.\n");
+                            fprintf(stderr, "using the slash-value given.\n");
                         crm_get_pgm_arg(tempbuf, data_window_size,
                                         apb->s1start, apb->s1len);
                         vallen = crm_nexpandvar(tempbuf, apb->s1len,
@@ -147,11 +147,11 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     //   copy again.
                     //
                     if (internal_trace)
-                        fprintf(crm_stderr, "Preexisting var.\n");
+                        fprintf(stderr, "Preexisting var.\n");
                     if (apb->sflags & CRM_DEFAULT)
                     {
                         if (user_trace)
-                            fprintf(crm_stderr, " var exists, default flag on, "
+                            fprintf(stderr, " var exists, default flag on, "
                                             "so no action taken.\n");
                         goto no_isolate_action;
                         // return (0);
@@ -162,7 +162,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         //  yes, statement has a /value/
                         //    get the /value/
                         if (internal_trace)
-                            fprintf(crm_stderr, "Using the provided slash-val.\n");
+                            fprintf(stderr, "Using the provided slash-val.\n");
                         crm_get_pgm_arg(tempbuf, data_window_size,
                                         apb->s1start, apb->s1len);
                         vallen =
@@ -174,7 +174,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         //     no /value/, so we need to use the old value.
                         //
                         if (internal_trace)
-                            fprintf(crm_stderr, "No slash-value, using old value.\n");
+                            fprintf(stderr, "No slash-value, using old value.\n");
                         strcpy(tempbuf, ":*");
                         strncat(tempbuf, vname, vlen);
                         vallen =
@@ -234,7 +234,7 @@ int crm_isolate_this(long *vptr,
 
     if (internal_trace)
     {
-        fprintf(crm_stderr, "using crm_isolate_this, vptr = %p\n", (void *)vptr);
+        fprintf(stderr, "using crm_isolate_this, vptr = %p\n", (void *)vptr);
     }
 
 
@@ -313,7 +313,7 @@ int crm_isolate_this(long *vptr,
         //       namestart is where we are now.
         long nstart, vstart;
         if (internal_trace)
-            fprintf(crm_stderr, "... this is a new isolated var\n");
+            fprintf(stderr, "... this is a new isolated var\n");
         //
         //      Put the name into the tdw memory area, add a & after it.
         //
@@ -349,10 +349,10 @@ int crm_isolate_this(long *vptr,
     //
     //
     if (internal_trace)
-        fprintf(crm_stderr, "Resetting valtxt to point at tdw.\n");
+        fprintf(stderr, "Resetting valtxt to point at tdw.\n");
     vht[vmidx]->valtxt = tdw->filetext;
     if (internal_trace)
-        fprintf(crm_stderr, "Fresh start: offset %ld length %ld.\n",
+        fprintf(stderr, "Fresh start: offset %ld length %ld.\n",
                 tdw->nchars, valuelen);
     //
     //
@@ -375,7 +375,7 @@ int crm_isolate_this(long *vptr,
     vht[vmidx]->vstart = tdw->nchars;
     vht[vmidx]->vlen   = valuelen;
     if (internal_trace)
-        fprintf(crm_stderr, "Memmoving the value in.\n");
+        fprintf(stderr, "Memmoving the value in.\n");
     memmove(&(tdw->filetext[tdw->nchars]),
             tempbuf,
             valuelen);
@@ -387,7 +387,7 @@ int crm_isolate_this(long *vptr,
     //
     //      and reset 'previous match' start and length
     if (internal_trace)
-        fprintf(crm_stderr, "reset the previous-match to start.\n");
+        fprintf(stderr, "reset the previous-match to start.\n");
     vht[vmidx]->mstart = vht[vmidx]->vstart;
     vht[vmidx]->mlen   = 0;
 
@@ -398,7 +398,7 @@ int crm_isolate_this(long *vptr,
     if (is_old_isolated)
     {
         if (internal_trace)
-            fprintf(crm_stderr, "This was already an isolated var, so "
+            fprintf(stderr, "This was already an isolated var, so "
                             "do a reclamation on the old space.\n");
         //  vstart==0 means "ignore this value" to reclamation
         //

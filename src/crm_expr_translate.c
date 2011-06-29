@@ -57,7 +57,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (apb->sflags & CRM_UNIQUE)
     {
         if (user_trace)
-            fprintf(crm_stderr, "  uniquing flag turned on...\n");
+            fprintf(stderr, "  uniquing flag turned on...\n");
         strntrn_flags = strntrn_flags | CRM_UNIQUE;
     }
     //
@@ -65,7 +65,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (apb->sflags & CRM_LITERAL)
     {
         if (user_trace)
-            fprintf(crm_stderr, "  literal (no invert or ranges) turned on...\n");
+            fprintf(stderr, "  literal (no invert or ranges) turned on...\n");
         strntrn_flags = strntrn_flags | CRM_LITERAL;
     }
 
@@ -80,7 +80,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //  }
 
     if (internal_trace)
-        fprintf(crm_stderr, " destination: ***%s*** len=%ld\n",
+        fprintf(stderr, " destination: ***%s*** len=%ld\n",
                 destination, destination_len);
     crm_nextword(destination, destination_len, 0, &dst_nstart,
                  &destination_len);
@@ -106,7 +106,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         errstr);
 
     if (internal_trace)
-        fprintf(crm_stderr,
+        fprintf(stderr,
                 "restriction out: vmidx: %ld  mdw: %p   start: %ld  len: %ld\n",
                 vmidx, mdwptr, offset, len);
     if (i < 0)
@@ -134,7 +134,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //    get the FROM charset out of the first // slashes
     crm_get_pgm_arg(fromset, MAX_PATTERN, apb->s1start, apb->s1len);
     if (internal_trace)
-        fprintf(crm_stderr, " FROM-charset: =%s=\n", fromset);
+        fprintf(stderr, " FROM-charset: =%s=\n", fromset);
 
     //     if not LITERAL, then expand them as well
     fromset_len = apb->s1len;
@@ -142,14 +142,14 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fromset_len = crm_nexpandvar(fromset, apb->s1len, MAX_PATTERN);
 
     if (user_trace)
-        fprintf(crm_stderr, " from-charset expands to =%s= len %ld \n",
+        fprintf(stderr, " from-charset expands to =%s= len %ld \n",
                 fromset, fromset_len);
 
 
     //    get the TO charset out of the second // slashes
     crm_get_pgm_arg(toset, MAX_PATTERN, apb->s2start, apb->s2len);
     if (internal_trace)
-        fprintf(crm_stderr, " TO-charset: =%s=\n", toset);
+        fprintf(stderr, " TO-charset: =%s=\n", toset);
 
     //     if not LITERAL, then expand them as well
     toset_len = apb->s2len;
@@ -157,7 +157,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         toset_len = crm_nexpandvar(toset, apb->s2len, MAX_PATTERN);
 
     if (user_trace)
-        fprintf(crm_stderr, " to-charset expands to =%s= len %ld\n",
+        fprintf(stderr, " to-charset expands to =%s= len %ld\n",
                 toset, toset_len);
 
     //    We have it all now - the [expanded] input in tempbuf, the
@@ -181,15 +181,15 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //    back into the destination.
     //tempbuf[retlen] = '\0';
     //if (user_trace)
-    //  fprintf(crm_stderr, "Result of TRANSLATE: %s len %ld\n",
+    //  fprintf(stderr, "Result of TRANSLATE: %s len %ld\n",
     //         tempbuf, retlen);
 
     if (user_trace)
     {
         long i2;
-        fprintf(crm_stderr, "Result of TRANSLATE: -");
-        for (i2 = 0; i2 < retlen; i2++) fputc(tempbuf[i2], crm_stderr);
-        fprintf(crm_stderr, "- len %ld\n", retlen);
+        fprintf(stderr, "Result of TRANSLATE: -");
+        for (i2 = 0; i2 < retlen; i2++) fputc(tempbuf[i2], stderr);
+        fprintf(stderr, "- len %ld\n", retlen);
     }
     crm_destructive_alter_nvariable(destination, destination_len,
                                     tempbuf, retlen);
@@ -200,7 +200,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
 nonfatal_route_outwards:
         if (user_trace)
-            fprintf(crm_stderr, "The TRANSLATE FAULTed and we're taking the TRAP out");
+            fprintf(stderr, "The TRANSLATE FAULTed and we're taking the TRAP out");
     }
     return 0;
 }

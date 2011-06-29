@@ -122,36 +122,36 @@ static void generate_err_reason_msg(
          *
          \n<program>:<sourcefile>:<sourceline>: <error type>\n
          */
-	char *fname_pos;
-	char *d;
+        char *fname_pos;
+        char *d;
 
         dst = strmov(dst, "\n");
         dst = strmov(dst, (progname && *progname) ? progname : "CRM114");
         dst = strmov(dst, ":");
         dst = strmov(dst, (srcfile && *srcfile) ? srcfile : "");
         dst = strmov(dst, ":");
-	fname_pos = dst;
+        fname_pos = dst;
         dst = strmov(dst, (funcname && *funcname) ? funcname : "");
-	// replace ':' and '::' with '.' in fully qualified function name (if it was passed along 
-	// like that, e.g. by using GCC's __PRETTY_FUNCTION__ predefined variable.
-	for (d = fname_pos; ; fname_pos++)
-	{
-		switch(*fname_pos)
+        // replace ':' and '::' with '.' in fully qualified function name (if it was passed along
+        // like that, e.g. by using GCC's __PRETTY_FUNCTION__ predefined variable.
+        for (d = fname_pos; ; fname_pos++)
+        {
+                switch(*fname_pos)
 {
 case 0:
-	*d = 0;
-	dst = d;
-	break;
+        *d = 0;
+        dst = d;
+        break;
 
 case ':':
-	if (fname_pos[1] == ':')
-		fname_pos++;
-	*d++ = '.';
-	continue;
+        if (fname_pos[1] == ':')
+                fname_pos++;
+        *d++ = '.';
+        continue;
 
 default:
-	*d++ = *fname_pos;
-	continue;
+        *d++ = *fname_pos;
+        continue;
 }
 break;
 }
@@ -390,12 +390,12 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
         WIDTHOF(reason),
         lineno,
         srcfile,
-	funcname,
+        funcname,
         " *UNTRAPPABLE ERROR*",
         NULL,
         fmt,
         args);
-    fputs(reason, crm_stderr);
+    fputs(reason, stderr);
 
     if (engine_exit_base != 0)
     {
@@ -408,7 +408,7 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
 }
 
 
-//     fatalerror - print a fatal error on crm_stdout, trap if we can, else exit
+//     fatalerror - print a fatal error on stdout, trap if we can, else exit
 long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     //
@@ -443,14 +443,14 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
         WIDTHOF(reason),
         lineno,
         srcfile,
-	funcname,
+        funcname,
         " *ERROR*",
         NULL,
         fmt,
         args    );
 
 
-    fputs(reason, crm_stderr);
+    fputs(reason, stderr);
 
     if (engine_exit_base != 0)
     {
@@ -500,7 +500,7 @@ funcname,
         fmt,
         args    );
 
-    fputs(reason, crm_stderr);
+    fputs(reason, stderr);
 
     nonfatalerrorcount++;
 
@@ -520,8 +520,8 @@ funcname,
 
 void reset_nonfatalerrorreporting(void)
 {
-	nonfatalerrorcount = 0;
-	nonfatalerrorcount_max_reported = 0;
+        nonfatalerrorcount = 0;
+        nonfatalerrorcount_max_reported = 0;
 }
 
 
