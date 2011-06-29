@@ -200,7 +200,11 @@ void crm_force_munmap_filename (char *filename)
         {
 	  //   found it... force an munmap.
 	  crm_force_munmap_addr (p->addr);
-	  // break;     //  because p may be clobbered during unmap.
+	  //This was commented out and I uncommented it.
+	  //I'm not sure why it was commented out,
+	  //but it was definitely creating a seg fault
+	  //during some testing.  I hope that's ok. -JB
+	  break;     //  because p may be clobbered during unmap.
         }
     }
 }
@@ -250,6 +254,7 @@ void crm_force_munmap_addr (void *addr)
 void crm_munmap_file (void *addr)
 {
   CRM_MMAP_CELL *p;
+  struct stat statbuf;
 
   //     step 1- search the mmap cache to see if we actually have this
   //     mmapped
@@ -291,7 +296,11 @@ void crm_munmap_file (void *addr)
       if (p->prot & PROT_WRITE)
 	{
 #ifndef CRM_WINDOWS
-         msync (p->addr, p->actual_len, MS_ASYNC | MS_INVALIDATE);
+	  msync (p->addr, p->actual_len, MS_ASYNC | MS_INVALIDATE);
+	  stat(p->name, &statbuf);
+	  //Since WE did this update, update the modification time
+	  //What we have in memory is still correct! -JB
+	  p->modification_time = statbuf.st_mtime;
 #else // CRM_WINDOWS
 	 //unmap our view of the file, which will lazily write any
 	 //changes back to the file
@@ -348,7 +357,7 @@ void *crm_mmap_file (char *filename,
 		     long *actual_len)
 {
   CRM_MMAP_CELL *p;
-  long pagesize = 0;
+  long pagesize = 0, k;
   struct stat statbuf;
 #ifndef CRM_WINDOWS
   mode_t open_flags;
@@ -375,7 +384,7 @@ void *crm_mmap_file (char *filename,
 	  struct stat statbuf;
 	  k = stat (filename, &statbuf);
 	  if (k != 0
-	      || p->modification_time != statbuf.st_mtime)
+	      || p->modification_time < statbuf.st_mtime)
 	    {
 	      // yep, someone played with it. unmap and remap
 	      crm_force_munmap_filename (filename);
@@ -416,21 +425,18 @@ void *crm_mmap_file (char *filename,
   if (internal_trace)
     fprintf (stderr, "MMAP file open mode: %ld\n", (long) open_flags);
 
-  //   if we need to, we stat the file
-  if (p->requested_len < 0)
+  //I changed all this so that the modification time would be 
+  //correct. -JB
+  k = stat (p->name, &statbuf);
+  if ( k != 0 )
     {
-      long k;
-      k = stat (p->name, &statbuf);
-      if ( k != 0 )
-	{
-	  free (p->name);
-	  free (p);
-	  if (actual_len)
-	    *actual_len = 0;
-	  return (MAP_FAILED);
-	}
+      free (p->name);
+      free (p);
+      if (actual_len)
+	*actual_len = 0;
+      return (MAP_FAILED);
     }
-
+  
   if (user_trace)
     fprintf (stderr, "MMAPping file %s for direct memory access.\n", filename);
   p->fd = open (filename, open_flags);
@@ -443,22 +449,27 @@ void *crm_mmap_file (char *filename,
 	*actual_len = 0;
       return MAP_FAILED;
     }
+  
+
+  p->actual_len = p->requested_len;
 
   //   If we didn't get a length, fill in the max possible length via statbuf
-  p->actual_len = p->requested_len;
   if (p->actual_len < 0)
     p->actual_len = statbuf.st_size - p->start;
 
-  //  and put in the mtime as well
-  p->modification_time = statbuf.st_mtime;
-
-  //  fprintf (stderr, "m");
   p->addr = mmap (NULL,
 		  p->actual_len,
 		  p->prot,
 		  p->mode,
 		  p->fd,
 		  p->start);
+
+  //We want the modification time to be AFTER the mmap since that
+  //could change it (I assume) if we have a PROT_WRITE.  So we need
+  //to stat the file again
+  k = stat (p->name, &statbuf);
+  p->modification_time = statbuf.st_mtime;
+
   //fprintf (stderr, "M");
 
   //     we can't close the fd now (the docs say yes, testing says no,
@@ -503,6 +514,13 @@ void *crm_mmap_file (char *filename,
     }
   if (internal_trace)
     fprintf (stderr, "MMAP file open mode: %ld\n", (long) open_flags);
+
+  //GROT GROT GROT
+  // this section was wrong under non-windows and the result was that
+  // the modification time was messed up.  I don't change code I can't
+  // test, but someone with windows should fix this. Specifically, I
+  // see no place the modification time is update, which seems like a
+  // bug. -JB
 
   //  If we need to, we stat the file.
   if (p->requested_len < 0)

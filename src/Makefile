@@ -21,14 +21,15 @@ VER_SUFFIX ?=
 #
 #      The following forces the compiler to be GCC.  If you have trouble
 #      with your default compiler, and you want to force GCC, uncomment it.
-# CC=gcc
+CC=gcc
 #
 #     What version is this software (PLEASE don't change this just
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20090423-BlameSteveJobs
-PREV_VERSION=20090120-BlameSteveJobs
+VERSION=20090807-BlameThorstenAndJenny
+PREV_VERSION=20090806-LastOldSVM
+#PREV_VERSION=20090120-BlameSteveJobs
 #PREV_VERSION=20081111-BlameBarack
 #PREV_VERSION=20081023-BlameMaxwell
 #PREV_VERSION=20080923-BlameVT
@@ -97,12 +98,12 @@ CFLAGS += -DVERSION='"$(VERSION)"'
 #  really picayune stuff.
 #
 #  Our default is with debugging, full optimization, and lots of warnings:
-CFLAGS += -g -O3 -Wall
+CFLAGS += -O3 -Wall
 #     turn this one on for no optimization, but debugging
 #CFLAGS += -g -O0 -Wall
 #
 #     Turn this one on for time profiling.
-#CFLAGS += -pg
+#CFLAGS += -pg -O0
 #     turn this one on for really picayune debugging:
 # CFLAGS += -Wextra
 #
@@ -194,10 +195,12 @@ CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
 	crm_preprocessor.c crmregex_tre.c \
 	crm_stats.c crm_expr_sks.c\
-	crm_expr_svm.c crm_fast_substring_compression.c
+	crm_svm_matrix_util.c crm_svm_quad_prog.c crm_svm_matrix.c\
+	crm_svm_lib_fncts.c crm_svm.c crm_fast_substring_compression.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
-	crm114.h crm114_osbf.h
+	crm114.h crm114_osbf.h crm_svm_matrix_util.h crm_svm_quad_prog.h\
+	crm_svm_matrix.h crm_svm_lib_fncts.h crm_svm.h
 
 OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
@@ -211,7 +214,9 @@ OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
 	crm_preprocessor.o crmregex_tre.c \
-	crm_expr_sks.o crm_stats.o crm_expr_svm.o \
+	crm_expr_sks.o crm_stats.o \
+	crm_svm_matrix_util.o crm_svm_quad_prog.o crm_svm_matrix.o\
+	crm_svm_lib_fncts.o crm_svm.o \
 	crm_fast_substring_compression.o
 
 UTILFILES = osbf-util.c cssutil.c  cssdiff.c cssmerge.c crm_util_errorhandlers.c
@@ -233,7 +238,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	randomiotest.crm isolate_reclaim_test.crm \
 	match_isolate_test.crm match_isolate_reclaim.crm \
 	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
-	shroud.crm quine.crm \
+	shroud.crm quine.crm alternating_example_svm.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	paolo_ov2.crm paolo_ov3.crm paolo_ov4.crm paolo_ov5.crm \
@@ -291,7 +296,7 @@ help: FORCE
 
 crm114: $(OFILES)
 	$(CC) $(LDFLAGS) $(LIBS) $(OFILES) \
-	  -ltre -lm\
+	  -ltre -lm \
 	  -o crm114
 	#
 	#    Done.  Type "make help" to see what else you can make.
@@ -300,7 +305,6 @@ crm114: $(OFILES)
 *.o: $(HFILES)
 .c.o:
 	$(CC)  $(CFLAGS) -c $*.c
-
 
 cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o $(HFILES)
 	$(CC)  $(CFLAGS) $(LDFLAGS) cssutil.o \
@@ -401,9 +405,7 @@ megatest: FORCE
 	./megatest.sh >>megatest_test.log 2>>megatest_test.log
 	# ./megatest.sh >megatest_test.log 2>&1
 	#./megatest.sh 2>&1 | tee megatest_test.log
-	#diff -U 5 megatest_knowngood.log megatest_test.log & sleep 1
 	diff megatest_knowngood.log megatest_test.log & sleep 1
-
 
 neurotest: FORCE
 	./nn_segfault_test.sh

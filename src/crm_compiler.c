@@ -50,7 +50,8 @@ STMT_TABLE_TYPE stmt_table[] =
       | CRM_EOFRETRY                                             },
     { "alter",     CRM_ALTER,   0,  1,       1,  1,  1,  1,  0,  0,  0},
     { "learn",     CRM_LEARN,   0,  1,       1,  1,  1,  1,  0,  1,
-      CRM_NOCASE | CRM_REFUTE | CRM_MICROGROOM                   },
+      CRM_NOCASE | CRM_REFUTE | CRM_MICROGROOM | CRM_ERASE 
+      | CRM_APPEND                                                    },
     { "classify",CRM_CLASSIFY,  0,  1,       1,  1,  1,  2,  0,  1,
       CRM_NOCASE                                                 },
     { "isolate", CRM_ISOLATE,   0,  1,       0,  1,  1,  1,  0,  0,  0},

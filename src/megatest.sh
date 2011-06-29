@@ -520,11 +520,11 @@ rm -f a_test.css
 
 ./crm114 '-{window; output /\n**** Support Vector Machine (SVM) unigram classifier \n/}'
 ./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (m_test.css) /[[:graph:]]+/; liaf}' < Macbeth_Act_IV.txt
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (a_test.css) /[[:graph:]]+/; liaf }' < Alice_In_Wonderland_Chap_1_And_2.txt
-#    build the actual hyperplanes
-./crm114 '-{window; learn ( m_test.css | a_test.css | m_vs_a_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ }'
 
-./crm114 '-{ isolate (:s:); {classify < svm unigram unique > ( m_test.css | a_test.css | m_vs_a_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:]   ; output / type M \n:*:s:\n/} alius { output / type A \n:*:s:\n/ } }' <<-EOF
+
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram refute unique > (m_test.css) /[[:graph:]]+/; liaf }' < Alice_In_Wonderland_Chap_1_And_2.txt
+
+./crm114 '-{ isolate (:s:); {classify < svm unigram unique > ( m_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:]   ; output / type M \n:*:s:\n/} alius { output / type A \n:*:s:\n/ } }' <<-EOF
 when suddenly a White Rabbit with pink eyes ran close to her.
 EOF
 
@@ -533,16 +533,11 @@ EOF
     Fire burn, and cauldron bubble.
 EOF
 
-rm -f m_vs_a_test.css
 rm -f m_test.css
-rm -f a_test.css
-
 
 ./crm114 '-{window; output /\n**** Support Vector Machine (SVM) classifier \n/}'
 ./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (m_test.css) /[[:graph:]]+/; liaf}' < Macbeth_Act_IV.txt
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (a_test.css) /[[:graph:]]+/; liaf }' < Alice_In_Wonderland_Chap_1_And_2.txt
-#    build the actual hyperplanes
-./crm114 '-{window; learn ( m_test.css | a_test.css | m_vs_a_test.css ) < svm unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ }'
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique refute > (m_test.css) /[[:graph:]]+/; liaf }' < Alice_In_Wonderland_Chap_1_And_2.txt
 
 ./crm114 '-{ isolate (:s:); {classify < svm unique > ( m_test.css | a_test.css | m_vs_a_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:]   ; output / type M \n:*:s:\n/} alius { output / type A \n:*:s:\n/ } }' <<-EOF
 when suddenly a White Rabbit with pink eyes ran close to her.
@@ -553,7 +548,12 @@ EOF
     Fire burn, and cauldron bubble.
 EOF
 
+rm -f m_test.css
+rm -f a_test.css
 rm -f m_vs_a_test.css
+
+./crm114 alternating_example_svm.crm
+
 rm -f m_test.css
 rm -f a_test.css
 

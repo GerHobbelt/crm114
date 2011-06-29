@@ -74,7 +74,8 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #ifndef PRODUCTION_CLASSIFIERS_ONLY
   if (classifier_flags & CRM_SVM)
     {
-      retval = crm_expr_svm_learn(csl, apb, txt, start, len);
+      //retval = crm_expr_svm_learn(csl, apb, txt, start, len);
+      retval = crm_svm_learn(csl, apb, txt, start, len);
     }
   else
   if (classifier_flags & CRM_SKS)
@@ -157,7 +158,8 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #ifndef PRODUCTION_CLASSIFIERS_ONLY
   if (classifier_flags & CRM_SVM)
     {
-      retval = crm_expr_svm_classify (csl, apb, txt, start, len);
+      //retval = crm_expr_svm_classify (csl, apb, txt, start, len);
+      retval = crm_svm_classify (csl, apb, txt, start, len);
     }
   else
   if (classifier_flags & CRM_SKS)

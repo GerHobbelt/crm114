@@ -19,7 +19,7 @@
 //       the actual textual representations of the flags, with their values
 //     DON'T FORGET TO ALSO MODIFY THIS IN crm114_structs.h !!
 
-FLAG_DEF crm_flags[45] =
+FLAG_DEF crm_flags[46] =
   {
     {"fromstart", CRM_FROMSTART},
     {"fromnext", CRM_FROMNEXT},
@@ -63,11 +63,12 @@ FLAG_DEF crm_flags[45] =
     {"svm", CRM_SVM},
     {"fscm", CRM_FSCM},
     {"neural", CRM_NEURAL_NET},
+    {"erase", CRM_ERASE},
     {"", 0},
     {"", 0}
   };
 
-#define CRM_MAXFLAGS 42
+#define CRM_MAXFLAGS 43
 
 
 

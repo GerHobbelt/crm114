@@ -224,6 +224,8 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				   char *txt, long start, long len);
 int crm_expr_svm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				    char *txt, long start, long len);
+int crm_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
+		  long txtstart, long txtlen);
 int crm_expr_sks_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				    char *txt, long start, long len);
 int crm_neural_net_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
@@ -249,6 +251,8 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				      char *txt, long start, long len);
 int crm_expr_svm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				       char *txt, long start, long len);
+int crm_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
+		     long txtstart, long txtlen);
 int crm_expr_sks_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				       char *txt, long start, long len);
 int crm_neural_net_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,

@@ -343,6 +343,7 @@ typedef struct mythical_tms_struct {
 //           Neural Net classifier
 #define CRM_NEURAL_NET    (1LLU << 37)
 //
+#define CRM_ERASE         (1LLU << 38)
 //     and a struct to put them in.
 typedef struct
 {
@@ -375,7 +376,7 @@ typedef struct
   int maxparens;
   int minboxes;
   int maxboxes;
-  int flags_allowed_mask;
+  long flags_allowed_mask;
 } STMT_TABLE_TYPE;
 
 

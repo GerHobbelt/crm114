@@ -1,4 +1,4 @@
- This is CRM114, version 20090423-BlameSteveJobs (TRE 0.7.5 (LGPL))
+ This is CRM114, version 20090807-BlameThorstenAndJenny (TRE 0.7.5 (LGPL))
  Copyright 2001-2006 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -204,8 +204,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 4676 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 4676 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 2342 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 2342 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -542,37 +542,37 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 933507
+OK_IF_SIZE_CHANGES: Size of isolation at start: 933514
 Bytes used per pass: 931467
 Passes done: 100 
 Total flux through isolation:  186293400
-OK_IF_SIZE_CHANGES: Final isolation size: 933523 
+OK_IF_SIZE_CHANGES: Final isolation size: 933530 
 OK_IF_LESS_THAN_100: Total growth: 16
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 935932
+OK_IF_SIZE_CHANGES: Size of isolation at start: 935939
 Bytes used per pass: 931467
 Passes done: 10 
 Total flux through isolation:  18629340
-OK_IF_SIZE_CHANGES: Final isolation size: 935946 
+OK_IF_SIZE_CHANGES: Final isolation size: 935953 
 OK_IF_LESS_THAN_10: Total growth: 14
 Bytes used per pass: 931467
 Passes done: 20 
 Total flux through isolation:  37258680
-OK_IF_SIZE_CHANGES: Final isolation size: 935951 
+OK_IF_SIZE_CHANGES: Final isolation size: 935958 
 OK_IF_LESS_THAN_20: Total growth: 19
 Bytes used per pass: 931467
 Passes done: 30 
 Total flux through isolation:  55888020
-OK_IF_SIZE_CHANGES: Final isolation size: 935951 
+OK_IF_SIZE_CHANGES: Final isolation size: 935958 
 OK_IF_LESS_THAN_30: Total growth: 19
 Bytes used per pass: 931467
 Passes done: 40 
 Total flux through isolation:  74517360
-OK_IF_SIZE_CHANGES: Final isolation size: 935951 
+OK_IF_SIZE_CHANGES: Final isolation size: 935958 
 OK_IF_LESS_THAN_40: Total growth: 19
 Starting 
 
@@ -660,7 +660,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20090423-BlameSteveJobs ( TRE 0.7.5 (LGPL) )
+version: 20090807-BlameThorstenAndJenny ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?
@@ -1018,34 +1018,51 @@ Total features in input file: 175
 
 **** Support Vector Machine (SVM) unigram classifier 
  type M 
-CLASSIFY succeeds; success probability: 0.9675  pR: 14.7424
-Best match to file #0 (m_test.css) prob: 0.9675  pR: 14.7424  
+CLASSIFY succeeds success probability: 0.688203 pR: 1.5838
+Best match to class #0 prob: 0.6882 pR: 1.5838   
 Total features in input file: 12
-#0 (m_test.css): documents: 193, features: 3760,  prob: 9.68e-01, pR:  14.74 
-#1 (a_test.css): documents: 57, features: 3231,  prob: 3.25e-02, pR: -14.74 
+#0 (label +1): documents: 193, features: 3567, prob: 6.88e-01, pR:   1.58
+#1 (label -1): documents: 57, features: 3174, prob: 3.12e-01, pR:  -1.58
 
  type M 
-CLASSIFY succeeds; success probability: 0.9895  pR: 19.7435
-Best match to file #0 (m_test.css) prob: 0.9895  pR: 19.7435  
+CLASSIFY succeeds success probability: 0.855189 pR: 7.4081
+Best match to class #0 prob: 0.8552 pR: 7.4081   
 Total features in input file: 9
-#0 (m_test.css): documents: 193, features: 3760,  prob: 9.90e-01, pR:  19.74 
-#1 (a_test.css): documents: 57, features: 3231,  prob: 1.05e-02, pR: -19.74 
+#0 (label +1): documents: 193, features: 3567, prob: 8.55e-01, pR:   7.41
+#1 (label -1): documents: 57, features: 3174, prob: 1.45e-01, pR:  -7.41
 
 
 **** Support Vector Machine (SVM) classifier 
  type M 
-CLASSIFY succeeds; success probability: 0.9621  pR: 14.0480
-Best match to file #0 (m_test.css) prob: 0.9621  pR: 14.0480  
+CLASSIFY succeeds success probability: 0.676671 pR: 1.4240
+Best match to class #0 prob: 0.6767 pR: 1.4240   
 Total features in input file: 48
-#0 (m_test.css): documents: 193, features: 16002,  prob: 9.62e-01, pR:  14.05 
-#1 (a_test.css): documents: 57, features: 16661,  prob: 3.79e-02, pR: -14.05 
+#0 (label +1): documents: 193, features: 15809, prob: 6.77e-01, pR:   1.42
+#1 (label -1): documents: 57, features: 16604, prob: 3.23e-01, pR:  -1.42
 
  type M 
-CLASSIFY succeeds; success probability: 0.9884  pR: 19.2993
-Best match to file #0 (m_test.css) prob: 0.9884  pR: 19.2993  
+CLASSIFY succeeds success probability: 0.800969 pR: 4.3088
+Best match to class #0 prob: 0.8010 pR: 4.3088   
 Total features in input file: 40
-#0 (m_test.css): documents: 193, features: 16002,  prob: 9.88e-01, pR:  19.30 
-#1 (a_test.css): documents: 57, features: 16661,  prob: 1.16e-02, pR: -19.30 
+#0 (label +1): documents: 193, features: 15809, prob: 8.01e-01, pR:   4.31
+#1 (label -1): documents: 57, features: 16604, prob: 1.99e-01, pR:  -4.31
+
+**** Alternating Example SVM Network Classifier TRAINING
+
+**** Alternating Example SVM Network Classifier RUNNING TEST
+ type A 
+CLASSIFY fails success probability: 0.075773 pR: -19.0619
+Best match to class #1 prob: 0.9242 pR: 19.0619   
+Total features in input file: 150
+#0 (label +1): documents: 16, features: 2025, prob: 7.58e-02, pR: -19.06
+#1 (label -1): documents: 15, features: 2026, prob: 9.24e-01, pR:  19.06
+
+ type M 
+CLASSIFY succeeds success probability: 0.784357 pR: 3.7026
+Best match to class #0 prob: 0.7844 pR: 3.7026   
+Total features in input file: 143
+#0 (label +1): documents: 16, features: 2025, prob: 7.84e-01, pR:   3.70
+#1 (label -1): documents: 15, features: 2026, prob: 2.16e-01, pR:  -3.70
 
 
 **** String Kernel SVM (SKS) classifier 

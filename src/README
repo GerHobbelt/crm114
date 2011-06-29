@@ -26,6 +26,31 @@ Now that we're clear on that, let's begin.
 
                     ----- News This Release: -----
 
+August 07, 2009 - BlameThorstenAndJenny
+
+We now have a new SVM algorithm in place.  This algorithm uses
+Thorsten Joachims' structural SVM to achieve O(n) runtimes in
+the solver, and can solve 10,000 examples in about 5 minutes
+(assuming you APPEND them all and then do one FROMSTART).  It
+also does incremental training if you do _not_ specify FROMSTART
+(as before, APPEND doesn't run the solver, it assumes you will
+be adding more examples before needing to classify).
+
+As we're shifting to the new libcrm114 style of one-file-many-classes,
+the calling sequence for SVM (and _only_ SVM) has changed; instead of
+the previous many-file situation, you specify ONE file for both
+positive and negative examples (you learn negative examples with
+the REFUTE flag - there is now an ERASE flag to forget things).
+
+For a (screamingly fast) demo of the SVM, run (and read) the
+alternating_example_svm.crm demo file, which shows using APPEND
+and the new single-file-many-classes format.
+
+Naturally, old SVM files (both the data files and the "versus" file)
+are utterly incompatible and you will get nothing but ridicule
+if you try to use them here.  
+
+
 
 March 27, 2009 - BlameSteveJobs
 

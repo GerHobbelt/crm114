@@ -46,9 +46,10 @@
 //    mmap cacheing length - only actually write out this often.
 //     set to 0 to disable mmap cacheing and release files faster.
 //      However, this has a negative speed impact.
-#define UNMAP_COUNT_MAX 0
+// I unset this from 0 -JB
+//#define UNMAP_COUNT_MAX 0
 //#define UNMAP_COUNT_MAX 2
-//#define UNMAP_COUNT_MAX 1000
+#define UNMAP_COUNT_MAX 1000
 
 //    What's the smallest chunk we actually want to bother reclaiming
 //    on the fly out of the isolated data area "tdw".  Set this to 1
@@ -291,6 +292,49 @@
 #define BIT_ENTROPIC_SHUFFLE_HEIGHT 1024  //   was 256
 #define BIT_ENTROPIC_SHUFFLE_WIDTH 1024   //   was 256
 #define BIT_ENTROPIC_PROBABILITY_NERF 0.0000000000000000001
+
+// Defines for the svm classifier
+// All defines you should want to use without getting into
+// the nitty details of the SVM are here.  For nitty detail
+// defines, see crm_svm_matrix_util.h, crm_svm_quad_prog.h,
+// crm_svm_matrix.h, and crm_svm_lib_fncts.h
+#define MAX_SVM_FEATURES 100000    //per example
+#define SVM_INTERNAL_TRACE_LEVEL 3 //the debug level when internal_trace is on
+#define SVM_ACCURACY 1e-3          //The accuracy to which to run the solver
+                                   //This is the average margin violation NOT
+                                   //accounted for by the slack variable.
+#define SV_TOLERANCE 0.01          //An example is a support vector if 
+                                   //theta*y*x <= 1 + SV_TOLERANCE.
+                                   //The smaller SV_TOLERANCE, the fewer 
+                                   //examples will be tagged as support 
+                                   //vectors.  This will make it faster to 
+                                   //learn new examples, but possibly less 
+                                   //accurate.
+#define SVM_ADD_CONSTANT 1         //Define this to be 1 if you want a
+                                   //constant offset in the classification
+                                   //ie h(x) = theta*x + b where b is
+                                   //the offset.  If you don't want
+                                   //a constant offset (just h(x) = theta*x),
+                                   //define this to be 0.
+#define SVM_HOLE_FRAC 0.25         //Size of the "hole" left at the end of
+                                   //the file to allow for quick appends
+                                   //without having to forcibly unmap the file.
+                                   //This is as a fraction of the size of the
+                                   //file without the hole.  So setting it to
+                                   //1 doubles the file size.  If you don't
+                                   //want a hole left, set this to 0.
+//defines for SVM microgrooming
+#define SVM_GROOM_OLD 10000        //we groom only if there are this many
+                                   //examples (or more) not being used in
+                                   //solving
+#define SVM_GROOM_FRAC 0.9         //we keep this fraction of examples after 
+                                   //grooming
+//defines for svm_smart_mode
+#define SVM_BASE_EXAMPLES 1000     //the number of examples we need to see
+                                   //before we train
+#define SVM_INCR_FRAC 0.1          //if more than this fraction of examples
+                                   //are appended, we do a fromstart rather
+                                   //than use the incremental method.
 
 //    define the maximum length of a filename
 // #define MAX_FILE_NAME_LEN 255
