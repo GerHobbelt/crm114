@@ -281,7 +281,7 @@ void crm_vht_init(int argc, char **argv)
 
             if (!GetCurrentDirectoryA(dirbufsize, dirbuf))
             {
-                fatalerror_Win32("Cannot fetch the current directory (PWD)");
+                fatalerror_Win32("Cannot fetch the current directory (PWD)", NULL);
             }
             else
             {
@@ -331,7 +331,7 @@ void crm_vht_init(int argc, char **argv)
 
             if (!GetUserNameA(userbuf, &userbufsize))
             {
-                nonfatalerror_Win32("Cannot fetch the USER name.");
+                nonfatalerror_Win32("Cannot fetch the USER name.", NULL);
             }
             else
             {

@@ -1435,7 +1435,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     long out_var_len;
 
     float A[MAX_CLUSTERS];
-    float T;
+    double T;
     long N[MAX_CLUSTERS];
     double p[MAX_CLUSTERS];
     double pR[MAX_CLUSTERS];
@@ -1581,7 +1581,6 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (out_var_len)
             crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_len);
         unmap_file(&s);
-        return 0;
     }
     else
     {
@@ -1615,6 +1614,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 }
                 N[j]++;
             }
+	        T = 0.0; /* [i_a] */
             for (i = 1; i <= s.header->n_clusters; i++)
                 T += A[i] /= N[i];
         }
@@ -1706,8 +1706,8 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (out_var_len)
             crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_len);
         unmap_file(&s);
-        return 0;
     }
+    return 0;
 }
 
 

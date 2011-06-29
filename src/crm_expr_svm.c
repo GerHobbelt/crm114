@@ -1248,7 +1248,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     crmhash_t h1;
                     crmhash_t h2;
                     long th = 0;       // a counter used for TSS tokenizing
-                    long j;
+                    int j;
                     //
                     //     old Hash polynomial: h0 + 3h1 + 5h2 +11h3 +23h4
                     //     (coefficients chosen by requiring superincreasing,
@@ -1282,7 +1282,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             h2 = 0xdeadbeef;
                             if (internal_trace)
                                 fprintf(stderr,
-                                        "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
+                                        "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n",
                                         j, (unsigned long)h1, (unsigned long)h2);
 
                             CRM_ASSERT(hashcounts >= 0);
@@ -1325,6 +1325,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //
         if (unique)
         {
+			int j;
+
             i = 0;
             j = 0;
 

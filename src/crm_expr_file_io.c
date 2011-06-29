@@ -119,12 +119,14 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     memmove(fileiolen, &filename[i], j);
     fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
     fileiolen[fileiolenlen] = 0;
-    if (1 != sscanf(fileiolen, "%ld", &iolen))
+    if (*fileiolen && 1 != sscanf(fileiolen, "%ld", &iolen))
     {
         if (user_trace)
             nonfatalerror("Failed to decode the input expression number of bytes to read: ", fileiolen);
     }
-    if (fileiolenlen == 0 || iolen > data_window_size)
+    if (iolen < 0)
+        iolen = 0;
+    else if (!*fileiolen || iolen > data_window_size)
         iolen = data_window_size;
     if (user_trace)
         fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %ld\n",
@@ -151,9 +153,12 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             fp = fopen(ifn, "rb");
             if (fp == NULL)
             {
-                fatalerror(
-                        "For some reason, I was unable to read-open the file named ",
-                        filename);
+                fatalerror_ex(SRC_LOC(),
+                        "For some reason, I was unable to read-open the file named '%s' (expanded from '%s'): error = %d(%s)",
+                            ifn,
+							filename,
+                            errno,
+                            errno_descr(errno));
                 goto input_no_open_bailout;
             }
         }
@@ -348,7 +353,9 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (user_trace)
             nonfatalerror("Failed to decode the output expression number of bytes to read: ", fileiolen);
     }
-    if (fileiolenlen == 0 || iolen > data_window_size)
+    if (iolen < 0)
+        iolen = 0;
+    else if (!*fileiolen || iolen > data_window_size)
         iolen = data_window_size;
     if (user_trace)
     {

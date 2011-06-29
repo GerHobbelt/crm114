@@ -1201,7 +1201,7 @@ uint32_t hashbig(const void *key, size_t length, uint32_t initval)
 #ifdef SELF_TEST
 
 /* used for timings */
-void driver1()
+void driver1(void)
 {
     uint8_t buf[256];
     uint32_t i;
@@ -1225,7 +1225,7 @@ void driver1()
 #define HASHLEN   1
 #define MAXPAIR 60
 #define MAXLEN  70
-void driver2()
+void driver2(void)
 {
     uint8_t qa[MAXLEN + 1], qb[MAXLEN + 2], *a = &qa[0], *b = &qb[1];
     uint32_t c[HASHSTATE], d[HASHSTATE], i = 0, j = 0, k, l, m = 0, z;
@@ -1302,7 +1302,7 @@ done:
 }
 
 /* Check for reading beyond the end of the buffer and alignment problems */
-void driver3()
+void driver3(void)
 {
     uint8_t buf[MAXLEN + 20], *b;
     uint32_t len;
@@ -1395,7 +1395,7 @@ void driver3()
 }
 
 /* check for problems with nulls */
-void driver4()
+void driver4(void)
 {
     uint8_t buf[1];
     uint32_t h, i, state[HASHSTATE];
@@ -1494,11 +1494,11 @@ long strnhash(const char *str, long len)
 // parts of the code updated accordingly.
 // -- Fidelis
 
-#if !defined (GER)
 
-#if defined (CRM_WITH_OLD_HASH_FUNCTION)
-
+#if 0
 crmhash_t strnhash(const char *str, long len)
+#endif
+static crmhash_t old_crm114_strnhash(const char *str, long len)
 {
     long i;
     // unsigned long hval;
@@ -1534,9 +1534,9 @@ crmhash_t strnhash(const char *str, long len)
     return hval;
 }
 
-#else
 
-crmhash_t strnhash(const char *str, size_t len)
+
+static crmhash_t old_crm114_fixed_strnhash(const char *str, long len)
 {
     size_t i;
     crmhash_t hval;
@@ -1553,28 +1553,27 @@ crmhash_t strnhash(const char *str, size_t len)
         //    an effect on the output)
 
         tmp = ((unsigned char *)str)[i];
-        tmp = tmp | (tmp << 8);
-        tmp = tmp | (tmp << 16);
+        tmp = tmp ^ (tmp << 8);
+        tmp = tmp ^ (tmp << 16);
         hval ^= tmp;
 
         //    add some bits out of the middle as low order bits.
         hval = hval + ((hval >> 12) & 0x0000ffff);
 
         //     swap most and min significant bytes
-        tmp = (hval << 24) | ((hval >> 24) & 0xff);
+        tmp = (hval << 24) ^ ((hval >> 24) & 0xff);
         hval &= 0x00ffff00;         // zero most and min significant bytes of hval
-        hval |= tmp;                // OR with swapped bytes
+        hval ^= tmp;                // [X]OR with swapped bytes
 
         //    rotate hval 3 bits to the left (thereby making the
         //    3rd msb of the above mess the hsb of the output hash)
-        hval = (hval << 3) | ((hval >> 29) & 0x7);
+        hval = (hval << 3) ^ ((hval >> 29) & 0x7);
     }
     return hval;
 }
 
-#endif
 
-crmhash64_t strnhash64(const char *str, size_t len)
+static crmhash64_t old_crm114_strnhash64(const char *str, size_t len)
 {
     crmhash64_t ihash = strnhash(str, len);
 
@@ -1589,9 +1588,8 @@ crmhash64_t strnhash64(const char *str, size_t len)
     return ihash;
 }
 
-#else
 
-crmhash_t strnhash(const char *str, size_t len)
+static crmhash_t ger_1_strnhash(const char *str, size_t len)
 {
     uint32_t a = 0;
     uint32_t b = 0;
@@ -1600,7 +1598,7 @@ crmhash_t strnhash(const char *str, size_t len)
     return a;
 }
 
-crmhash64_t strnhash64(const char *str, size_t len)
+static crmhash64_t ger_1_strnhash64(const char *str, size_t len)
 {
     uint32_t a = 0;
     uint32_t b = 0;
@@ -1612,7 +1610,54 @@ crmhash64_t strnhash64(const char *str, size_t len)
     return h;
 }
 
+
+crmhash_t strnhash(const char *str, long len)
+{
+	switch (selected_hashfunction)
+	{
+	case 0:
+	default:
+#if defined (CRM_WITH_OLD_HASH_FUNCTION)
+	return old_crm114_strnhash(str, len);
+#else
+	return old_crm114_fixed_strnhash(str, len);
 #endif
+		
+	case 1:
+	return old_crm114_strnhash(str, len);
+
+	case 2:
+	return old_crm114_fixed_strnhash(str, len);
+
+	case 3:
+	return ger_1_strnhash(str, len);
+	}
+}
+
+
+
+
+crmhash64_t strnhash64(const char *str, size_t len)
+{
+	switch (selected_hashfunction)
+	{
+	case 0:
+	default:
+#if defined (CRM_WITH_OLD_HASH_FUNCTION)
+	return old_crm114_strnhash64(str, len);
+#else
+	return old_crm114_fixed_strnhash(str, len);
+#endif
+		
+	case 1:
+	case 2:
+	return old_crm114_strnhash64(str, len);
+
+	case 3:
+	return ger_1_strnhash64(str, len);
+	}
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2187,6 +2232,7 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
     p->fd = open(filename, open_flags);
     if (p->fd < 0)
     {
+      // close (p->fd);
         free(p->name);
         free(p);
         if (actual_len)

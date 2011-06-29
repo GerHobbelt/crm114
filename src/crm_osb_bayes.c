@@ -811,7 +811,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     double cpcorr[MAX_CLASSIFIERS];        // corpus correction factors
 
-#if defined (GER)
+#if defined (GER) || 10
     hitcount_t hits[MAX_CLASSIFIERS];      // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
     double chi2[MAX_CLASSIFIERS];          // chi-squared values (such as they are)
@@ -1087,6 +1087,14 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
                 else
                 {
+					// [i_a] check hashes[] range BEFORE adding another one!
+            if (maxhash >= MAX_CLASSIFIERS)
+            {
+                nonfatalerror("Too many classifier files.",
+                        "Some may have been disregarded");
+            }
+			else
+			{
                     //  file exists - do the open/process/close
                     //
                     hashlens[maxhash] = statbuf.st_size;
@@ -1128,20 +1136,17 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         hashlens[maxhash] = hashlens[maxhash] / sizeof(FEATUREBUCKET_TYPE);
                         hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
                         if (!hashname[maxhash])
+						{
                             untrappableerror(
                                     "Couldn't malloc hashname[maxhash]\n",
                                     "We need that part later, so we're stuck.  Sorry.");
+						}
                         strncpy(hashname[maxhash], fname, fnlen);
                         hashname[maxhash][fnlen] = 0;
                         maxhash++;
                     }
                 }
-            }
-            if (maxhash > MAX_CLASSIFIERS - 1)
-
-            {
-                nonfatalerror("Too many classifier files.",
-                        "Some may have been disregarded");
+				}
             }
         }
     }
@@ -1203,6 +1208,8 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 hcode = strnhash(litf, strlen(litf));
                 h1 = hcode % hashlens[ifile];
                 h2 = 0;
+
+				CRM_ASSERT(hashes[ifile] != NULL);
                 if (hashes[ifile][h1].hash != hcode || hashes[ifile][h1].key != 0)
                 {
                     if (hashes[ifile][h1].hash == 0 && hashes[ifile][h1].key == 0)
@@ -1297,8 +1304,8 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         fprintf(stderr, " files  %ld  learns #0 %lu  #1 %lu  total %lu cp0 %f cp1 %f\n",
                 maxhash,
-                hashes[0][learns_index[0]].value,
-                hashes[1][learns_index[1]].value,
+				(maxhash > 0 ? hashes[0][learns_index[0]].value : 0),
+				(maxhash > 1 ? hashes[1][learns_index[1]].value : 0),
                 total_learns,
                 cpcorr[0],
                 cpcorr[1]);
@@ -1317,8 +1324,10 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         "of nonunique features.  This is deadly");
         }
         else
+		{
             seen_features[ifile] = NULL;
-    }
+		}
+	}
     //
     //   now all of the files are mmapped into memory,
     //   and we can do the polynomials and add up points.

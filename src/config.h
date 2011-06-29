@@ -163,6 +163,9 @@
 /* Define to 1 if you have the `islower' function. */
 #define HAVE_ISLOWER 1
 
+/* Define to 1 if you have the `isnan' function. */
+#define HAVE_ISNAN 1
+
 /* Define to 1 if you have the `isprint' function. */
 #define HAVE_ISPRINT 1
 
@@ -379,6 +382,9 @@
 /* Define to 1 if you have the `strncasecmp' function. */
 #define HAVE_STRNCASECMP 1
 
+/* Define to 1 if you have the `strnchr' function. */
+/* #undef HAVE_STRNCHR */
+
 /* Define to 1 if you have the `strncpy' function. */
 #define HAVE_STRNCPY 1
 
@@ -486,6 +492,9 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
 
+/* Define to 1 if you have the `_isnan' function. */
+/* #undef HAVE__ISNAN */
+
 /* Define to 1 if you have the `_set_output_format' function. */
 /* #undef HAVE__SET_OUTPUT_FORMAT */
 
@@ -538,13 +547,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20071201-BlameLittleStevie_VT"
+#define PACKAGE_STRING "CRM114 20080317-BlameJoeLangeway_VT"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20071201-BlameLittleStevie_VT"
+#define PACKAGE_VERSION "20080317-BlameJoeLangeway_VT"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -576,13 +585,13 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1515"
+#define TAR_FILENAME_POSTFIX "Ger-1935"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "20071201-BlameLittleStevie_VT"
+#define VERSION "20080317-BlameJoeLangeway_VT"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

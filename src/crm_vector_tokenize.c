@@ -191,8 +191,10 @@ int crm_vector_tokenize
                 for (k = match[0].rm_so + text_offset;
                      k < match[0].rm_eo + text_offset;
                      k++)
+				{
                     fprintf(stderr, "%c", text[k]);
-                fprintf(stderr, "< )\n");
+				}
+				fprintf(stderr, "< )\n");
             }
 
             //   Now slide the hashpipe up one slot, and stuff this new token
@@ -423,11 +425,11 @@ int crm_vector_tokenize_selector
     classifier_flags = apb->sflags;
     featurebits = 32;
     hash_vec0 = osb1_coeff;
-    hash_len0 = 5;
-    hash_iters0 = 5;
+    hash_len0 = OSB_BAYES_WINDOW_LEN /* 5 */;
+    hash_iters0 = WIDTHOF(osb1_coeff) / OSB_BAYES_WINDOW_LEN /* 4 */;
     hash_vec1 = osb2_coeff;
-    hash_len1 = 5;
-    hash_iters1 = 5;
+    hash_len1 = OSB_BAYES_WINDOW_LEN /* 5 */;
+    hash_iters1 = WIDTHOF(osb2_coeff) / OSB_BAYES_WINDOW_LEN /* 4 */;
     output_stride = 1;
 
     //    put in the passed-in regex values, if any.
@@ -442,7 +444,8 @@ int crm_vector_tokenize_selector
     {
         hash_vec0 = markov1_coeff;
         hash_vec1 = markov2_coeff;
-        hash_iters0 = hash_iters1 = 16;
+        hash_iters0 = WIDTHOF(markov1_coeff) / OSB_BAYES_WINDOW_LEN /* 16 */;
+        hash_iters1 = WIDTHOF(markov2_coeff) / OSB_BAYES_WINDOW_LEN /* 16 */;
     }
 
     //     If it's one of the 64-bit-key classifiers, then the featurebits
@@ -453,7 +456,7 @@ int crm_vector_tokenize_selector
         || classifier_flags & CRM_OSBF
        )
     {
-        //     Build a 64-bit interleaved feature set.
+        //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
         featurebits = 64;
         output_stride = 2;
     }
@@ -494,8 +497,27 @@ int crm_vector_tokenize_selector
     //     Now all of the defaults have been filled in; we now see if the
     //     caller has overridden any (or all!) of them.   We assume that the
     //     user who overrides them has pre-sanity-checked them as well.
-    //
+  
+  //     First check- did the user override the regex?
+
+  //    Did the user program specify a first slash paramter?  (only
+  //    override this if a regex was passed in)
+  if (! regex)
     {
+		int s1len;
+    char s1text[MAX_PATTERN]; 
+
+      crm_get_pgm_arg (s1text, MAX_PATTERN, apb->s1start, apb->s1len);
+      s1len = apb->s1len;
+      s1len = crm_nexpandvar (s1text, s1len, MAX_PATTERN);
+      my_regex = s1text;
+      my_regex_len = s1len;
+    };
+
+
+  //      Did the user specify a pipeline vector set ?   If so, it's
+  //      in the second set of slashes.
+  {
         char s2text[MAX_PATTERN];
         int s2len;
         int local_pipe_len;
@@ -647,7 +669,7 @@ int crm_vector_tokenize_selector
                 hash_iters1,
                 &features[1],
                 featureslen,
-                output_stride,                      //  stride 2 for 64-bit, offset 0
+                output_stride,                      //  stride 2 for 64-bit, offset 1 thanks to &features[1]
                 features_out,
                 next_offset);
     }
@@ -741,7 +763,7 @@ int crm_vector_osb1
             regexlen,
             osb1_coeff,
             OSB_BAYES_WINDOW_LEN,
-            5,
+            WIDTHOF(osb1_coeff) / OSB_BAYES_WINDOW_LEN /* 4 */,
             features,
             featureslen,
             2,
@@ -770,7 +792,7 @@ int crm_vector_osb2
             regexlen,
             osb2_coeff,
             OSB_BAYES_WINDOW_LEN,
-            5,
+            WIDTHOF(osb2_coeff) / OSB_BAYES_WINDOW_LEN /* 4 */,
             features,
             featureslen,
             2,
@@ -795,8 +817,8 @@ int crm_vector_string_kernel1
 {
     //    The coeffs should be relatively prime.  Relatively...
 
-    if (string_kern_len > 15)
-        string_kern_len = 15;
+    if (string_kern_len > WIDTHOF(string1_coeff))
+        string_kern_len = WIDTHOF(string1_coeff);
 
     return crm_vector_tokenize
            (text,
@@ -828,8 +850,8 @@ int crm_vector_string_kernel2
 {
     //    The coeffs should be relatively prime.  Relatively...
 
-    if (string_kern_len > 15)
-        string_kern_len = 15;
+    if (string_kern_len > WIDTHOF(string2_coeff))
+        string_kern_len = WIDTHOF(string2_coeff);
 
     return crm_vector_tokenize
            (text,

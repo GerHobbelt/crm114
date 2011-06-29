@@ -30,8 +30,6 @@
 //
 //    Global variables
 
-/* [i_a] no variable instantiation in a common header file */
-
 
 /* [i_a] no variable instantiation in a common header file */
 long vht_size = 0;
@@ -78,6 +76,8 @@ long engine_exit_base = 0;  //  All internal errors will use this number or high
 //        = 2 extended (everywhere) math, use algebraic notation
 //        = 3 extended (everywhere) math, use RPN
 long q_expansion_mode = 0;
+
+int selected_hashfunction = 0;  //  0 = default
 
 
 

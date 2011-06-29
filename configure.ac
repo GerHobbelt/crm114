@@ -11,7 +11,7 @@
 
 
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT(CRM114, 20071201-BlameLittleStevie_VT, crm114-general@lists.sourceforge.net)
+AC_INIT(CRM114, 20080317-BlameJoeLangeway_VT, crm114-general@lists.sourceforge.net)
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR(m4)
@@ -852,7 +852,7 @@ VL_LIB_READLINE
 AC_CHECK_FUNCS(dup2 bcopy)
 AC_CHECK_FUNCS(memchr memset)
 AC_CHECK_FUNCS(munmap msync)
-AC_CHECK_FUNCS(strcasecmp strncasecmp strcspn strdup strstr strchr)
+AC_CHECK_FUNCS(strcasecmp strncasecmp strcspn strdup strstr strchr strnchr)
 AC_CHECK_FUNCS(strnicmp stricmp)
 AC_CHECK_FUNCS(strncpy _snprintf _vsnprintf)
 AC_CHECK_FUNCS(strmov)
@@ -862,7 +862,7 @@ AC_CHECK_FUNCS(strerror)
 AC_CHECK_FUNCS(getpid getppid waitpid system)
 AC_CHECK_FUNCS(truncate)
 AC_CHECK_FUNCS(pipe)
-AC_CHECK_FUNCS(floor fabs pow log logl log10 sqrt log2)
+AC_CHECK_FUNCS(floor fabs pow log logl log10 sqrt log2 isnan _isnan)
 AC_CHECK_FUNCS(isalnum isalpha isascii isblank iscntrl isdigit isgraph islower isprint ispunct isspace isupper isxdigit)
 AC_CHECK_FUNCS(setlocale)
 AC_CHECK_FUNCS(getopt getopt_long)

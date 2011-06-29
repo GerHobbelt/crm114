@@ -25,15 +25,15 @@
 
 //    a helper function that should be in the C runtime lib but isn't.
 //
-char *my_strnchr(const char *str, long len, int c)
+char *my_strnchr(const char *str, int c, size_t len)
 {
-    long i;
+    size_t i;
 
     i = 0;
     for (i = 0; i < len; i++)
     {
         if (str[i] == (char)c)
-            return (char *)&(str[i]);
+            return (char *)&str[i];
     }
     return NULL;
 }

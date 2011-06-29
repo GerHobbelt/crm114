@@ -669,7 +669,7 @@ static const char *hrmsg =
  */
 int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, const char *human_readable_message)
 {
-    const char *class_id = "???";
+    const char *class_id = "\?\?\?";
     int ret;
     int cnt = 0;
     crm_porta_bin_header_block binhdr;
@@ -1101,7 +1101,7 @@ int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_n
             len = e - p;
             if (len > 0)
             {
-                dst->human_readable_message = malloc(len + 1);
+                dst->human_readable_message = calloc(len + 1, sizeof(dst->human_readable_message[0]));
                 if (!dst->human_readable_message)
                     return -1;
 

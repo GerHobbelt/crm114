@@ -162,6 +162,9 @@
 /* Define to 1 if you have the `islower' function. */
 #undef HAVE_ISLOWER
 
+/* Define to 1 if you have the `isnan' function. */
+#undef HAVE_ISNAN
+
 /* Define to 1 if you have the `isprint' function. */
 #undef HAVE_ISPRINT
 
@@ -378,6 +381,9 @@
 /* Define to 1 if you have the `strncasecmp' function. */
 #undef HAVE_STRNCASECMP
 
+/* Define to 1 if you have the `strnchr' function. */
+#undef HAVE_STRNCHR
+
 /* Define to 1 if you have the `strncpy' function. */
 #undef HAVE_STRNCPY
 
@@ -484,6 +490,9 @@
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
+
+/* Define to 1 if you have the `_isnan' function. */
+#undef HAVE__ISNAN
 
 /* Define to 1 if you have the `_set_output_format' function. */
 #undef HAVE__SET_OUTPUT_FORMAT

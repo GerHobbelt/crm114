@@ -1203,6 +1203,14 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
                 else
                 {
+					// [i_a] check hashes[] range BEFORE adding another one!
+            if (maxhash >= MAX_CLASSIFIERS)
+            {
+                nonfatalerror("Too many classifier files.",
+                        "Some may have been disregarded");
+            }
+			else
+			{
                     //  file exists - do the mmap
                     //
                     hashlens[maxhash] = statbuf.st_size;
@@ -1262,11 +1270,8 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         maxhash++;
                     }
                 }
+			}
             }
-
-            if (maxhash > MAX_CLASSIFIERS - 1)
-                nonfatalerror("Too many classifier files.",
-                        "Some may have been disregarded");
         }
     }
 

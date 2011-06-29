@@ -131,7 +131,7 @@
 /* #undef HAVE_GNU_REGEX */
 
 /* Define to 1 if you have the <history.h> header file. */
-#undef HAVE_HISTORY_H
+/* #undef HAVE_HISTORY_H */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -162,6 +162,9 @@
 
 /* Define to 1 if you have the `islower' function. */
 #define HAVE_ISLOWER 1
+
+/* Define to 1 if you have the `isnan' function. */
+#undef HAVE_ISNAN 
 
 /* Define to 1 if you have the `isprint' function. */
 #define HAVE_ISPRINT 1
@@ -246,18 +249,18 @@
 #undef HAVE_MUNMAP
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
-#undef HAVE_NDIR_H
+/* #undef HAVE_NDIR_H */
 
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #undef HAVE_NETINET_IN_H
 
 /* Define if run-time library offers nanosecond time interval in struct
    stat:c/m/atimensec. */
-#undef HAVE_NSEC_STAT_TIMENSEC
+/* #undef HAVE_NSEC_STAT_TIMENSEC */
 
 /* Define if run-time library offers nanosecond time interval in struct
    stat:c/m/atime_nsec. */
-#undef HAVE_NSEC_STAT_TIME_NSEC
+/* #undef HAVE_NSEC_STAT_TIME_NSEC */
 
 /* Define if run-time library offers nanosecond time interval in struct
    stat:c/m/atim.tv_nsec. */
@@ -379,6 +382,9 @@
 /* Define to 1 if you have the `strncasecmp' function. */
 #undef HAVE_STRNCASECMP
 
+/* Define to 1 if you have the `strnchr' function. */
+/* #undef HAVE_STRNCHR */
+
 /* Define to 1 if you have the `strncpy' function. */
 #define HAVE_STRNCPY 1
 
@@ -466,7 +472,7 @@
 #undef HAVE_VFORK
 
 /* Define to 1 if you have the <vfork.h> header file. */
-#undef HAVE_VFORK_H
+/* #undef HAVE_VFORK_H */
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #define HAVE_VSNPRINTF 1
@@ -485,6 +491,9 @@
 
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
+
+/* Define to 1 if you have the `_isnan' function. */
+#define HAVE__ISNAN 1
 
 /* Define to 1 if you have the `_set_output_format' function. */
 #define HAVE__SET_OUTPUT_FORMAT 1
@@ -538,13 +547,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20071201-BlameLittleStevie_VT"
+#define PACKAGE_STRING "CRM114 20080317-BlameJoeLangeway_VT"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20071201-BlameLittleStevie_VT"
+#define PACKAGE_VERSION "20080317-BlameJoeLangeway_VT"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -576,13 +585,13 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1493"
+#define TAR_FILENAME_POSTFIX "Ger-1935"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
-#define VERSION "20071201-BlameLittleStevie_VT"
+#define VERSION "20080317-BlameJoeLangeway_VT"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

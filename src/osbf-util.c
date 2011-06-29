@@ -40,6 +40,8 @@ long microgroom_stop_after = 0;
 long engine_exit_base = 0;  //  All internal errors will use this number or higher;
 //  the user programs can use lower numbers freely.
 
+int selected_hashfunction = 0;  //  0 = default
+
 
 //    the command line argc, argv
 int prog_argc = 0;

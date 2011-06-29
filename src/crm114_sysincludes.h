@@ -356,9 +356,23 @@ typedef struct
 #undef strcasecmp
 #define strcasecmp(a, b) stricmp((a), (b))
 #endif
+#if !defined(HAVE_STRNCHR)
+#undef strnchr
+#define strnchr(s, c, n) my_strnchr(s, c, n)
+char *my_strnchr(const char *str, int c, size_t len);
+#endif
 #if !defined (HAVE_UTIME) && defined (HAVE__UTIME)
 #undef utime
 #define utime(filename, timestruct)      _utime(filename, timestruct)
+#endif
+
+
+#if !defined(HAVE_ISNAN)
+#if defined(HAVE__ISNAN)
+#define isnan(v)		_isnan(v)
+#else
+#error point isnan() to your platform's equivalent function
+#endif
 #endif
 
 

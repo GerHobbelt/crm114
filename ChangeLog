@@ -1,3 +1,45 @@
+2008-03-24 Ger Hobbelt
+
+    * Latest gcc versions recognize and handle trigraphs like you'd expect ;-) so all 
+      "???" sequences have been converted to "\?\?\?" to keep GCC and other compilers
+      from unintentionally recognizing a trigraph there.
+    
+    * added second // slash arg to the CRM 'syscall' cvommand to specify alternative
+      commands for other OS-es. This is intended to allow CRM114 and CRM script writers
+      to cope with the absolutely NON-portable syscall operation: this is only portable
+      across UNIX boxes - and then only to a degree.
+      
+      So the second slash arg has format: 
+      
+        /[hoststring]commandline/
+        
+      where 'hoststring' is the compile-time HOSTTYPE string, which, for example, for
+      the Win32 builds is 'Windows-MS'. BTW: hoststring-comparison is caseINSENSITIVE.
+      
+      The square brackets are used to delimit the hoststring, so when the 'hoststring'
+      matches the compile-time constant in your CRM114 binary, the 'commandline' will
+      be used to replace the commandline as specified in the first // slash arg.
+      
+      See randomiotest.crm for an example.
+      
+    * Fixed OSBF/OSB/Markovian classify code when too many CSS databases to use for 
+      classification have been specified - this prevents an array-overrun & out-of-bounds
+      memory access.
+      
+    * Got fed up with the minor differences between Win32 and UNIX megatest: created
+      a copy in megatest_ng.sh, which should produce indentical results to megatest.sh, but
+      uses input files instead of the UNIX shell <<-EOF...EOF code.
+      
+      This is mirrored in the new megatest.bat, which can thus use the same input files;
+      I've found that the difference between a LF or CRLF line termination byte sequence
+      does lead to some significant differences in the test results.
+      
+    
+      
+      
+    
+      
+    
 2008-01-28 Ger Hobbelt
 
 	* (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The others

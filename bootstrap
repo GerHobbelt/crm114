@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: bootstrap,v 1.8 2004/08/18 09:21:22 vanbaal Exp $
+# $Id: bootstrap,v 1.1 2008/02/04 02:06:45 i_a Exp $
 #
 # bootstrap - script to bootstrap the distribution rolling engine
 #

@@ -25,6 +25,9 @@
 /* do not include the Markov classifier in the build */
 /* #undef CRM_WITHOUT_MARKOV */
 
+/* do not use the custom inline qsort by Michael Tokarev */
+/* #undef CRM_WITHOUT_MJT_INLINED_QSORT */
+
 /* do not include the Neural-Net classifier in the build */
 /* #undef CRM_WITHOUT_NEURAL_NET */
 
@@ -128,7 +131,7 @@
 /* #undef HAVE_GNU_REGEX */
 
 /* Define to 1 if you have the <history.h> header file. */
-#undef HAVE_HISTORY_H
+/* #undef HAVE_HISTORY_H */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
@@ -159,6 +162,9 @@
 
 /* Define to 1 if you have the `islower' function. */
 #define HAVE_ISLOWER 1
+
+/* Define to 1 if you have the `isnan' function. */
+#define HAVE_ISNAN 1
 
 /* Define to 1 if you have the `isprint' function. */
 #define HAVE_ISPRINT 1
@@ -208,6 +214,9 @@
 /* compiler understands long long */
 #define HAVE_LONG_LONG 1
 
+/* Define to 1 if you have the `madvise' function. */
+#undef HAVE_MADVISE
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
  * to 0 otherwise. */
 #define HAVE_MALLOC 1
@@ -240,18 +249,18 @@
 #define HAVE_MUNMAP 1
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
-#undef HAVE_NDIR_H
+/* #undef HAVE_NDIR_H */
 
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #undef HAVE_NETINET_IN_H
 
 /* Define if run-time library offers nanosecond time interval in struct
  * stat:c/m/atimensec. */
-#undef HAVE_NSEC_STAT_TIMENSEC
+/* #undef HAVE_NSEC_STAT_TIMENSEC */
 
 /* Define if run-time library offers nanosecond time interval in struct
  * stat:c/m/atime_nsec. */
-#undef HAVE_NSEC_STAT_TIME_NSEC
+/* #undef HAVE_NSEC_STAT_TIME_NSEC */
 
 /* Define if run-time library offers nanosecond time interval in struct
  * stat:c/m/atim.tv_nsec. */
@@ -265,6 +274,9 @@
 
 /* Define to 1 if you have the `pipe' function. */
 #define HAVE_PIPE 1
+
+/* Define to 1 if you have the `posix_madvise' function. */
+#undef HAVE_POSIX_MADVISE 
 
 /* POSIX REs */
 /* #undef HAVE_POSIX_REGEX */
@@ -370,6 +382,9 @@
 /* Define to 1 if you have the `strncasecmp' function. */
 #define HAVE_STRNCASECMP 1
 
+/* Define to 1 if you have the `strnchr' function. */
+/* #undef HAVE_STRNCHR */
+
 /* Define to 1 if you have the `strncpy' function. */
 #define HAVE_STRNCPY 1
 
@@ -390,14 +405,14 @@
 
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
  */
-#undef HAVE_SYS_DIR_H
+/* #undef HAVE_SYS_DIR_H */
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #define HAVE_SYS_MMAN_H 1
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
  */
-#undef HAVE_SYS_NDIR_H
+/* #undef HAVE_SYS_NDIR_H */
 
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
@@ -477,6 +492,9 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
 
+/* Define to 1 if you have the `_isnan' function. */
+/* #undef HAVE__ISNAN */
+
 /* Define to 1 if you have the `_set_output_format' function. */
 /* #undef HAVE__SET_OUTPUT_FORMAT */
 
@@ -529,13 +547,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20071201-BlameLittleStevie_VT"
+#define PACKAGE_STRING "CRM114 20080317-BlameJoeLangeway_VT"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20071201-BlameLittleStevie_VT"
+#define PACKAGE_VERSION "20080317-BlameJoeLangeway_VT"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -547,8 +565,8 @@
 #define PROTOTYPES 1
 
 /* Define to 1 if the `setvbuf' function takes the buffering type as its
- * second argument and the buffer pointer as the third, as on System V before
- * release 3. */
+   second argument and the buffer pointer as the third, as on System V before
+   release 3. */
 /* #undef SETVBUF_REVERSED */
 
 /* The size of `int', as computed by sizeof. */
@@ -567,13 +585,13 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1493"
+#define TAR_FILENAME_POSTFIX "Ger-1935"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
-#define VERSION "20071201-BlameLittleStevie_VT"
+#define VERSION "20080317-BlameJoeLangeway_VT"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

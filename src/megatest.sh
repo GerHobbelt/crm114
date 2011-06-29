@@ -234,8 +234,8 @@ rm -f i_test.css
 rm -f q_test.css
 
 for i in 1 $1 ; do ./crm114 '-{window; output /\n ****  Default (SBPH Markovian) classifier \n/}' ; done
-./crm114 '-{learn (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:) {classify ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -246,8 +246,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** OSB Markovian classifier \n/}' ; done
-./crm114 '-{learn <osb> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn <osb> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn <osb> (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn <osb> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify <osb> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -259,8 +259,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** OSB Markov Unique classifier \n/}' ; done
-./crm114 '-{learn <osb unique > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn <osb unique > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn <osb unique > (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn <osb unique > (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify <osb unique> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -271,8 +271,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** OSB Markov Chisquared Unique classifier \n/}' ; done
-./crm114 '-{learn <osb unique chi2> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn <osb unique chi2> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn <osb unique chi2> (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn <osb unique chi2> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify <osb unique chi2 > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -283,8 +283,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** OSBF Local Confidence (Fidelis) classifier \n/}' ; done
-./crm114 '-{learn < osbf > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn < osbf > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn < osbf > (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn < osbf > (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify <osbf> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -295,10 +295,10 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output / \n**** OSB Winnow classifier \n/}' ; done
-./crm114 '-{learn <winnow> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt 
-./crm114 '-{learn <winnow refute> (q_test.css) /[[:graph:]]+/}' < INTRO.txt
-./crm114 '-{learn <winnow> (i_test.css) /[[:graph:]]+/}' < INTRO.txt 
-./crm114 '-{learn <winnow refute> (i_test.css) /[[:graph:]]+/}' < QUICKREF.txt 
+./crm114 '-{learn <winnow> (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input 
+./crm114 '-{learn <winnow refute> (q_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{learn <winnow> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input 
+./crm114 '-{learn <winnow refute> (i_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input 
 ./crm114 '-{ isolate (:s:); {classify <winnow> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }       '  <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -319,8 +319,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Unigram Bayesian classifier \n/}' ; done
-./crm114 '-{learn <unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn <unigram> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn <unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn <unigram> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify <unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -331,10 +331,10 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output / \n**** unigram Winnow classifier \n/}' ; done
-./crm114 '-{learn <winnow unigram > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt 
-./crm114 '-{learn <winnow unigram refute> (q_test.css) /[[:graph:]]+/}' < INTRO.txt
-./crm114 '-{learn <winnow unigram> (i_test.css) /[[:graph:]]+/}' < INTRO.txt 
-./crm114 '-{learn <winnow unigram refute> (i_test.css) /[[:graph:]]+/}' < QUICKREF.txt 
+./crm114 '-{learn <winnow unigram > (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input 
+./crm114 '-{learn <winnow unigram refute> (q_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{learn <winnow unigram> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input 
+./crm114 '-{learn <winnow unigram refute> (i_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input 
 ./crm114 '-{ isolate (:s:); {classify <winnow unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }       '  <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -345,8 +345,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** OSB Hyperspace classifier \n/}' ; done
-./crm114 '-{learn <hyperspace unique> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn <hyperspace unique> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn <hyperspace unique> (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn <hyperspace unique> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -357,8 +357,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** OSB three-letter Hyperspace classifier \n/}' ; done
-./crm114 '-{learn <hyperspace unique> (q_test.css) /.../}' < QUICKREF.txt
-./crm114 '-{learn <hyperspace unique> (i_test.css) /.../}' < INTRO.txt
+./crm114 '-{learn <hyperspace unique> (q_test.css) /.../}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn <hyperspace unique> (i_test.css) /.../}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:) /.../ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -370,8 +370,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Unigram Hyperspace classifier \n/}' ; done
-./crm114 '-{learn < hyperspace unique unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn < hyperspace unique unigram> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn < hyperspace unique unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn < hyperspace unique unigram> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify < hyperspace unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -382,8 +382,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** String Hyperspace classifier \n/}' ; done
-./crm114 '-{learn < hyperspace string> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn < hyperspace string> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn < hyperspace string> (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn < hyperspace string> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify < hyperspace string> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -394,8 +394,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** String Unigram Hyperspace classifier \n/}' ; done
-./crm114 '-{learn < hyperspace string unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn < hyperspace string unigram> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn < hyperspace string unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn < hyperspace string unigram> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify < hyperspace string unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -410,8 +410,8 @@ for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Vector 3-word-bag Hyperspa
 #    then the number of iterations of the pipe, then pipelen * iters 
 #    integer coefficients.  Missing coefficients are taken as zero, 
 #    extra coefficients are disregarded.
-./crm114 '-{learn < hyperspace > (q_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 / }' < QUICKREF.txt
-./crm114 '-{learn < hyperspace > (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1/}' < INTRO.txt
+./crm114 '-{learn < hyperspace > (q_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 / }' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn < hyperspace > (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify < hyperspace > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ /vector: 3 1 1 1 1  /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -423,8 +423,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Bit-Entropy classifier \n/}' ; done
-./crm114 '-{learn < entropy unique crosslink> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn < entropy unique crosslink> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn < entropy unique crosslink> (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn < entropy unique crosslink> (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify < entropy unique crosslink> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -435,8 +435,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Bit-Entropy Toroid classifier \n/}' ; done
-./crm114 '-{learn < entropy > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn < entropy > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn < entropy > (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn < entropy > (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -447,8 +447,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Fast Substring Compression Match Classifier \n/}' ; done
-./crm114 -s 200000 '-{learn < fscm > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 -s 200000 '-{learn < fscm > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 -s 200000 '-{learn < fscm > (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 -s 200000 '-{learn < fscm > (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -459,42 +459,11 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Neural Network Classifier \n/}' ; done
-./crm114 -s 32768 '-{learn < neural append > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 -s 32768 '-{learn < neural append > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
-./crm114 '-{learn < neural refute fromstart > (q_test.css) /[[:graph:]]+/}' < INTRO.txt
-./crm114 '-{learn < neural refute fromstart > (i_test.css) /[[:graph:]]+/}' < QUICKREF.txt
+./crm114 -s 32768 '-{learn < neural append > (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+./crm114 -s 32768 '-{learn < neural append > (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{learn < neural refute fromstart > (q_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{learn < neural refute fromstart > (i_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
 
-./crm114 '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
-You can use CRM114 flags on the shell-standard invocation line, and
-hide them with '--' from the program itself; '--' incidentally prevents
-the invoking user from changing any CRM114 invocation flags.
-
-Flags should be located after any positional variables on the command
-line.  Flags _are_ visible as :_argN: variables, so you can create
-your own flags for your own programs (separate CRM114 and user flags
-with '--').
-EOF
-./crm114 '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
-CRM114 also sports a very powerful subprocess control facility, and
-a unique syntax and program structure that puts the fun back in
-programming (OK, you can run away screaming now).  The syntax is
-declensional rather than positional; the type of quote marks around
-an argument determine what that argument will be used for.
-
-The typical CRM114 program uses regex operations more often
-than addition (in fact, math was only added to TRE in the waning
-days of 2003, well after CRM114 had been in daily use for over
-a year and a half).
-EOF
-
-rm -f i_test.css 
-rm -f q_test.css
-for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Neural Net by Paragraphs Classifier*****\n/}' ; done
-./crm114 -s 32768 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < neural append > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO.txt
-./crm114 -s 32768 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < neural append > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF.txt
-./crm114  '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < neural refute append> (i_test.css) /[[:graph:]]+/; liaf}' < QUICKREF.txt
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < neural refute append> (q_test.css) /[[:graph:]]+/; liaf }' < INTRO.txt
-./crm114 '-{ window; learn <neural fromstart> (i_test.css); learn <neural fromstart> (q_test.css) }'
 ./crm114 '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 You can use CRM114 flags on the shell-standard invocation line, and
 hide them with '--' from the program itself; '--' incidentally prevents
@@ -524,8 +493,8 @@ rm -f i_vs_q_test.css
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Support Vector Machine (SVM) unigram classifier \n/}' ; done
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO.txt
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF_mt_ng_reference_1.input
 #    build the actual hyperplanes
 ./crm114 '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }'
 
@@ -543,8 +512,8 @@ rm -f q_test.css
 
 
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Support Vector Machine (SVM) classifier \n/}' ; done
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO.txt
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF_mt_ng_reference_1.input
 #    build the actual hyperplanes
 ./crm114 '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < svm unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }'
 
@@ -561,8 +530,8 @@ rm -f i_test.css
 rm -f q_test.css
 
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** String Kernel SVM (SKS) classifier \n/}' ; done
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO.txt
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF_mt_ng_reference_1.input
 #    build the actual hyperplanes
 ./crm114 '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks > /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ }'
 
@@ -578,8 +547,8 @@ rm -f i_test.css
 rm -f q_test.css
 
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** String Kernel SVM (SKS) Unique classifier \n/}' ; done
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (i_test.css) /[[:graph:]]+/ / 0 0 100 0.001 1 1 4/; liaf}' < INTRO.txt
-./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/;  translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (q_test.css) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ ; liaf }' < QUICKREF.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (i_test.css) /[[:graph:]]+/ / 0 0 100 0.001 1 1 4/; liaf}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/;  translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (q_test.css) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ ; liaf }' < QUICKREF_mt_ng_reference_1.input
 #    build the actual hyperplanes
 ./crm114 '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks unique > /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ }'
 
@@ -597,10 +566,10 @@ rm -f q_test.css
 
 
 for i in 1 $1 ; do ./crm114 '-{window ; output /\n**** Bytewise Correlation classifier \n/}' ; done
-./crm114 '-{ isolate (:s:) {classify <correlate> ( INTRO.txt | QUICKREF.txt ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+./crm114 '-{ isolate (:s:) {classify <correlate> ( INTRO_mt_ng_reference_2.input | QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
-./crm114 '-{ isolate (:s:) {classify <correlate> ( INTRO.txt | QUICKREF.txt ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+./crm114 '-{ isolate (:s:) {classify <correlate> ( INTRO_mt_ng_reference_2.input | QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
 CRM114 is a language designed to write filters in.  It caters to
 filtering email, system log streams, html, and other marginally
 human-readable ASCII that may occasion to grace your computer.
@@ -610,8 +579,8 @@ rm -f i_test.css
 rm -f q_test.css
 
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Clump \/ Pmulc Test \n/}' ; done
-./crm114 '-{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump <bychunk> [:one_paragraph:] (i_test.css) /[[:graph:]]+/; output /./ ; liaf}' < INTRO.txt
-./crm114 '-{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump [:one_paragraph:] <bychunk> (i_test.css) /[[:graph:]]+/; output /./; liaf }' < QUICKREF.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump <bychunk> [:one_paragraph:] (i_test.css) /[[:graph:]]+/; output /./ ; liaf}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump [:one_paragraph:] <bychunk> (i_test.css) /[[:graph:]]+/; output /./; liaf }' < QUICKREF_mt_ng_reference_1.input
 
 #    Now see where our paragraphs go to
 ./crm114 '-{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: \n:*:s:\n/} alius { output / Unsure result \n:*:s:\n/ } }' <<-EOF

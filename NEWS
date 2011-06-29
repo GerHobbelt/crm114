@@ -3,6 +3,23 @@ Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
 
+version 20080317-BlameJoeLangeway_VT
+
+ * (BillY) Improved / Fixed VT code
+
+ * (BillY) rewrite of Neural Net.
+
+ * Synced to latest BillY code again (20080323)
+ 
+ * Win32 port has been improved: syscall now supports a second // slash arg for
+   alternative OS-es, e.g. MS Windows (HOSTTYPE = 'Windows-MS') - see ChangeLog for
+   more info
+   
+ * Added megatest-ng.sh (ng = NextGen): this is a major step towards EXACT
+   reproducability of CRM114 megatest classifier numbers on Win32 versus UNIX.
+
+
+
 Version 20071201-BlameLittleStevie_VT  
 
 * (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The others

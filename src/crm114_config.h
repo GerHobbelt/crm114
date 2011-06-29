@@ -340,30 +340,40 @@
 
 //     Neural Net parameters
 //
-#define NN_RETINA_SIZE 65536
-#define NN_FIRST_LAYER_SIZE 64
-#define NN_HIDDEN_LAYER_SIZE 64
+#define NN_RETINA_SIZE 8192
+#define NN_FIRST_LAYER_SIZE 8
+#define NN_HIDDEN_LAYER_SIZE 16
+#define NN_MAX_FEATURES 65536
 
 //     Neural Net training setups
+#define NN_DEFAULT_ALPHA 0.5
+//   Initialization noise magnitude
+#define NN_INITIALIZATION_NOISE_MAGNITUDE 0.1
+//   Stochastic noise magnitude
+#define NN_DEFAULT_STOCH_NOISE 0.05
+//   Gain noise magnitude
+#define NN_DEFAULT_GAIN_NOISE 0.0
 //   Threshold for back propagation
-#define NN_INTERNAL_TRAINING_THRESHOLD 0.3
-//  Just use 1 neuron excitation per token coming in.
+#define NN_INTERNAL_TRAINING_THRESHOLD 0.25
+//  Just use 1 neuron excitation per token coming in. 
 #define NN_N_PUMPS 1
-//  How many training cycles before we punt out
+//  How many training cycles before we punt out 
 #define NN_MAX_TRAINING_CYCLES 100
 //  When doing a "nuke and retry", allow this many training cycles.
-#define NN_MAX_TRAINING_CYCLES_FROMSTART 2000
+#define NN_MAX_TRAINING_CYCLES_FROMSTART 1000
+//  How many times to allow a punt?
+#define NN_FROMSTART_PUNTING 5
 //  After how many "not needed" cycles do we microgroom this doc away?
-#define NN_MICROGROOM_THRESHOLD 10
+#define NN_MICROGROOM_THRESHOLD 10      
 //  use the sparse retina design?  No, it's not good.
-#define NN_SPARSE_RETINA 0
+#define NN_SPARSE_RETINA 0 
 
 //    End of configurable parameters.
 
 
 
 
-#define CRM_WITH_OLD_HASH_FUNCTION 1
+#define CRM_WITH_OLD_HASH_FUNCTION         1
 
 #define CRM114_TEXT_HEADERBLOCK_SIZE       (4 * 1024)
 #define CRM114_MACHINE_HEADERBLOCK_SIZE    (4 * 1024)

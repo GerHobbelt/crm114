@@ -68,7 +68,7 @@ void *crm_memmove(void *dst, const void *src, size_t len)
  * flag, some network filesystems will fail to mark the file as
  * modified and so their cacheing will make a mistake.
  *
- * The fix is to call this function on the .css ile, to force
+ * The fix is to call this function on the .css file, to force
  * the filesystem to repropagate it's caches.
  *
  * The utime code has been gleaned off the touch tool itself.
@@ -80,7 +80,8 @@ void crm_touch(const char *filename)
      * write access to the file, but don't own it.  */
     if (utime(filename, NULL))
     {
-        fatalerror_ex(SRC_LOC(), "Unable to touch file %s\n", filename);
+		fatalerror_ex(SRC_LOC(), "Unable to touch file '%s'; it might be that this file is used by another application - system error: %d(%s)\n",
+			filename, errno, errno_descr(errno));
     }
 #else
     /*
@@ -93,7 +94,8 @@ void crm_touch(const char *filename)
     hfd = open(filename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
     if (hfd < 0)
     {
-        fatalerror_ex(SRC_LOC(), "Couldn't touch file %s\n", filename);
+        fatalerror_ex(SRC_LOC(), "Couldn't touch file '%s'; it might be that this file is used by another application - system error: %d(%s)\n",
+			filename, errno, errno_descr(errno));
     }
     else
     {

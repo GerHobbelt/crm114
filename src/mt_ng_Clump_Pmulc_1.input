@@ -1,0 +1,8 @@
+You can use CRM114 flags on the shell-standard invocation line, and
+hide them with '--' from the program itself; '--' incidentally prevents
+the invoking user from changing any CRM114 invocation flags.
+
+Flags should be located after any positional variables on the command
+line.  Flags _are_ visible as :_argN: variables, so you can create
+your own flags for your own programs (separate CRM114 and user flags
+with '--').

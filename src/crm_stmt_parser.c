@@ -808,7 +808,7 @@ void crm_get_pgm_arg(char *to, long tolen, char *from, long fromlen)
 {
     long len;
 
-    if (to == NULL)
+    if (to == NULL || tolen == 0)
         return;
 
     if (from == NULL)

@@ -2630,6 +2630,14 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
                 else
                 {
+					// [i_a] check hashes[] range BEFORE adding another one!
+            if (maxhash >= MAX_CLASSIFIERS)
+            {
+                nonfatalerror("Too many classifier files.",
+                        "Some may have been disregarded");
+            }
+			else
+			{
                     //  file exists - do the open/process/close
                     //
                     //  mmap the hash file into memory so we can bitwhack it
@@ -2701,12 +2709,8 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         hashname[maxhash][fnlen] = 0;
                         maxhash++;
                     }
+			}
                 }
-            }
-            if (maxhash > MAX_CLASSIFIERS - 1)
-            {
-                nonfatalerror("Too many classifier files.",
-                        "Some may have been disregarded");
             }
         }
     }

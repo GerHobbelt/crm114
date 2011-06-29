@@ -2197,6 +2197,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     else
     {
         nonfatalerror("Sorry, but I can't classify the null string.", "");
+	    free(file_string);
         return 0;
     }
 
@@ -2250,12 +2251,14 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             nonfatalerror("Sorry, We can't classify with empty .svm file"
                           " ", file1);
+    free(file_string);
             return 0;
         }
         else if (k2 != 0)
         {
             nonfatalerror("Sorry, We can't classify with empty .svm file"
                           " ", file2);
+    free(file_string);
             return 0;
         }
         else
@@ -2491,6 +2494,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         if (user_trace)
                             fprintf(stderr, "There hasn't enough documents to recalculate a svm hyperplane!\n");
+    free(file_string);
                         return 0;
                     }
                 }
@@ -2548,6 +2552,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     else
     {
         nonfatalerror("You need to input (file1.svm | file2.svm | f1vsf2.svmhyp)\n", "");
+    free(file_string);
         return 0;
     }
     free(hashes);
@@ -2632,6 +2637,9 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 stext, strlen(stext));
     }
 
+	free(file_string);
+	file_string = NULL;
+
     //    Return with the correct status, so an actual FAIL or not can occur.
     if (decision >= 0.5)
     {
@@ -2647,9 +2655,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //    and do what we do for a FAIL here
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
-        return 0;
     }
-    free(file_string);
 
 regcomp_failed:
     return 0;

@@ -222,15 +222,15 @@ isolate (:reject_address:) /:*:general_fails_to:/
 		#         and it's subdirectories. 
 		#
 		isolate (:tmp:) //
-		syscall () (:tmp:) /ls :*:text_cache: 2>&1 /
+		syscall () (:tmp:) /ls :*:text_cache: 2>&1 / /[Windows-MS]dir /b :*:text_cache:/
 		match [:tmp:] <absent> /texts/
-		syscall () () /mkdir -p :*:text_cache: /
-		syscall () () /mkdir -p :*:text_cache:\/texts /		
-		syscall () () /mkdir :*:text_cache:\/prob_good /
-		syscall () () /mkdir :*:text_cache:\/prob_spam /
-		syscall () () /mkdir :*:text_cache:\/known_good /
-		syscall () () /mkdir :*:text_cache:\/known_spam /
-		syscall () () /mkdir :*:text_cache:\/empty /
+		syscall () () /mkdir -p :*:text_cache: / /[Windows-MS]mkdir :*:text_cache: /
+		syscall () () /mkdir -p :*:text_cache:\/texts /	/[Windows-MS]mkdir :*:text_cache:\\texts /
+		syscall () () /mkdir :*:text_cache:\/prob_good / /[Windows-MS]mkdir :*:text_cache:\\prob_good /
+		syscall () () /mkdir :*:text_cache:\/prob_spam / /[Windows-MS]mkdir :*:text_cache:\\prob_spam /
+		syscall () () /mkdir :*:text_cache:\/known_good / /[Windows-MS]mkdir :*:text_cache:\\known_good /
+		syscall () () /mkdir :*:text_cache:\/known_spam / /[Windows-MS]mkdir :*:text_cache:\\known_spam /
+		syscall () () /mkdir :*:text_cache:\/empty / /[Windows-MS]mkdir :*:text_cache:\\empty /
 	}
 	#
 	#    Yes, text cacheing is on.  Save the input as is in the cache.
@@ -588,7 +588,7 @@ isolate ( :spamcss: :nonspamcss: )
 		{
 		    match (:: :fileid:) /X-CRM114-CacheID: ([[:graph:]]+)/
 		    #      check- does the cached file exist?
-                    syscall () (:tmp:) /ls :*:text_cache:\/texts\/:*:fileid:/
+                    syscall () (:tmp:) /ls :*:text_cache:\/texts\/:*:fileid:/ /[Windows-MS]dir /b :*:text_cache:\\texts\\:*:fileid:/
 		    match [:tmp:] /:*:fileid:/
 		    #   yes, it exists - go on with the learning method
 		    #      and remember this file on a permanent basis

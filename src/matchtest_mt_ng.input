@@ -1,0 +1,34 @@
+	exact: you should see this foo ZZZ
+	exact: you should NOT see this FoO ZZZ
+	absent: There is no "f-word" here ZZZ
+	absent: but there's a foo here ZZZ
+	nocase: you should see this fOo ZZZ
+	nocase: and there is no "f-word" here ZZZ
+	nocase absent: and there is no "f-word" here ZZZ
+	nocase absent: and there is a foo here ZZZ
+	multiline:  this is a multiline test of foo
+	multiline-- should see both lines ZZZ
+	multiline:  this is a multiline test of "f-word"
+	multiline-- should see both lines ZZZ
+	nomultiline:  this is a nomultiline test of foo
+	nomultiline-- should NOT see both lines ZZZ
+	nomultiline:  this is a nomultiline test of "f-word"
+	nomultiline-- should NOT see both lines ZZZ
+	fromendchar:  should see this line foo followed by bar ZZZ
+	fromendchar:  should NOT see this line bar followed by foo ZZZ
+	fromnext: should not see foo but should see ffoooo ZZZ
+	fromnext: should not see foo but should see f-oooo ZZZ
+	newend: should not see foo but should see ffooo ZZZ
+	newend: should not see foo and should not see f-ooo ZZZ
+	indirect go to :twist:  ZZZ
+	indirect go to :shout2:  ZZZ
+	self-supplied: foo123bar 
+	wugga
+	smith 123 anderson ZZZ
+	self-supplied: foo123bar 
+	wugga
+	smith 456 anderson ZZZ
+	independent-start-end: foo bar 1 2 foo bar ZZZ
+	independent-start-end: foo bar foo 1 2 bar ZZZ 
+	independent-start-end: foo 1 foo bar 2 bar ZZZ
+	independent-start-end: foo 2 bar 1 bar foo ZZZ

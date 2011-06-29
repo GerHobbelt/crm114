@@ -26,6 +26,8 @@
 
 #if !defined (CRM_WITHOUT_OSB_HYPERSPACE)
 
+#define USE_FIXED_UNIQUE_MODE 1
+
 //////////////////////////////////////////////////////////////////
 //
 //     Hyperspatial Classifiers
@@ -224,7 +226,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char hashfilename[MAX_PATTERN]; // the hashfile name
     FILE *hashf;                    // stream of the hashfile
     long hlen;
-    long cflags, eflags;
+    int cflags;
+	int eflags;
     struct stat statbuf;                     //  for statting the hash file
     HYPERSPACE_FEATUREBUCKET_STRUCT *hashes; //  the hashes we'll sort
     int hashcounts;
@@ -240,8 +243,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long textmaxoffset;
     long sense;
     long microgroom;
-    long unique;
-    long use_unigram_features;
+    int unique;
+    int use_unigram_features;
     long fev;
 
     int next_offset;      //  UNUSED in the current code
@@ -349,6 +352,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     hashcounts = 0;
     //  put in a zero as the start marker.
     hashes[hashcounts].hash = 0;
+  //  hashes[hashcounts].key = 0;
     hashcounts++;
 
     //   No need to do any parsing of a box restriction.
@@ -541,7 +545,7 @@ regcomp_failed:
 
 #ifdef NotInAMillionYears
 
-    First, get any optional
+    //   First, get any optional
     //   tokenizer pipeline setups (defined by the keyword "pipeline",
     //   followed by the number of pipeline vectors, followed by the length
     //   of the pipeline vectors, followed by the pipeline weight (must
@@ -641,11 +645,20 @@ regcomp_failed:
 #endif
 
 
-#if defined (GER)
+#if USE_FIXED_UNIQUE_MODE
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
     //mark the end of a feature vector
     hashes[hashcounts].hash = 0;
+
+    if (user_trace)
+	{
+        fprintf(stderr, "Total unsorted hashes generated: %d\n", hashcounts);
+		for (i = 0; i < hashcounts; i++)
+		{
+			fprintf(stderr, "hash[%6d] = %08lx\n", (int)i, (long)hashes[i].hash);
+		}
+	}
 
     //   Now sort the hashes array.
     //
@@ -653,30 +666,32 @@ regcomp_failed:
             hash_compare);
 
     if (user_trace)
+	{
         fprintf(stderr, "Total hashes generated: %d\n", hashcounts);
+		for (i = 0; i < hashcounts; i++)
+		{
+			fprintf(stderr, "hash[%6d] = %08lx\n", (int)i, (long)hashes[i].hash);
+		}
+	}
 
     //   And uniqueify the hashes array
     //
 
     if (unique)
     {
-        i = 0;
-        j = 0;
-
         CRM_ASSERT(hashcounts >= 0);
         CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
         CRM_ASSERT(hashes[hashcounts].hash == 0);
 
-        while (i < hashcounts)
-        {
-            if (hashes[i].hash != hashes[i + 1].hash)
-            {
-                hashes[j] = hashes[i];
-                j++;
-            }
-            i++;
-        }
-        hashcounts = j;
+         for (i = j = 1; i < hashcounts; i++)
+         {
+             if (hashes[i].hash != hashes[j - 1].hash)
+             {
+                 hashes[j] = hashes[i];
+                 j++;
+             }
+         }
+         hashcounts = j;
 
         //mark the end of a feature vector
         hashes[hashcounts].hash = 0;
@@ -720,7 +735,13 @@ regcomp_failed:
 #endif
 
     if (user_trace)
+	{
         fprintf(stderr, "Unique hashes generated: %d\n", hashcounts);
+		for (i = 0; i < hashcounts; i++)
+		{
+			fprintf(stderr, "hash[%6d] = %08lx\n", (int)i, (long)hashes[i].hash);
+		}
+	}
     //    store hash count of this document in the first bucket's .key slot
     //  hashes[hashcounts].key = hashcounts;
 
@@ -770,10 +791,19 @@ regcomp_failed:
             }
 
             //    and write the sorted hashes out.
+			CRM_ASSERT(hashes[hashcounts].hash == 0);
+			CRM_ASSERT(hashcounts > 0 ? hashes[hashcounts - 1].hash != 0 : TRUE);
             ret = fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-                    hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
+#if USE_FIXED_UNIQUE_MODE
+				1 +
+#endif
+hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
                     hashf);
-            if (ret != hashcounts)
+            if (ret != hashcounts
+#if USE_FIXED_UNIQUE_MODE
+				+ 1
+#endif
+				)
             {
                 fatalerror("For some reason, I was unable to append a hash series to the file named ",
                         hashfilename);
@@ -860,11 +890,13 @@ regcomp_failed:
             u = 0;
             thisstart = k;
             if (internal_trace)
+			{
                 fprintf(stderr,
                         "At featstart, looking at %ld (next bucket value is %ld)\n",
                         (long)file_hashes[thisstart].hash,
-                        (long)file_hashes[thisstart + 1].hash);
-            while (wrapup == 0)
+						(thisstart + 1 < file_hashlens ? (long)file_hashes[thisstart + 1].hash : 0));
+			}
+			while (wrapup == 0)
             {
                 //    it's an in-class feature.
                 // int cmp = hash_compare(&hashes[u], &file_hashes[k]);
@@ -927,10 +959,12 @@ regcomp_failed:
             thisend = k - 2;
             thislen = thisend - thisstart;
             if (internal_trace)
+			{
                 fprintf(stderr,
                         "At featend, looking at %ld (next bucket value is %ld)\n",
                         (long)file_hashes[thisend].hash,
-                        (long)file_hashes[thisend + 1].hash);
+						(thisend + 1 < file_hashlens ? (long)file_hashes[thisend + 1].hash : 0));
+			}
 
             //  end of a document- process accumulations
 
@@ -999,7 +1033,7 @@ regcomp_failed:
 }
 
 
-//      How to do a Osb_Bayes CLASSIFY some text.
+//      How to do a Osb_Hyperspace CLASSIFY some text.
 //
 int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, long txtstart, long txtlen)
@@ -1029,11 +1063,11 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long svlen;
     long fnameoffset;
     char fname[MAX_FILE_NAME_LEN];
-    long eflags;
-    long cflags;
-    long use_unique;
-    long not_microgroom = 1;
-    long use_unigram_features;
+    int eflags;
+    int cflags;
+    int use_unique;
+    int not_microgroom = 1;
+    int use_unigram_features;
 
     //  The hashes we'll generate from the unknown text - where and how many.
     HYPERSPACE_FEATUREBUCKET_STRUCT *unk_hashes;
@@ -1219,8 +1253,10 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         svrbl[vlen] = 0;
     }
     if (user_trace)
+	{
         fprintf(stderr, "Status out var %s (len %ld)\n",
                 svrbl, svlen);
+	}
 
     //     status variable's text (used for output stats)
     //
@@ -1337,6 +1373,14 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
                 else
                 {
+					// [i_a] check hashes[] range BEFORE adding another one!
+            if (maxhash >= MAX_CLASSIFIERS)
+            {
+                nonfatalerror("Too many classifier files.",
+                        "Some may have been disregarded");
+            }
+			else
+			{
                     //  file exists - do the mmap
                     //
                     hashlens[maxhash] = statbuf.st_size;
@@ -1377,7 +1421,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             hashf = fopen(fname, "rb");
                             if (hashf == 0)
                             {
-                                fatalerror("For some reason, I was unable to read-open the file named ",
+                                fatalerror("For some reason, I was unable to read-open the Hyperspace file named ",
                                         fname);
                             }
                             else
@@ -1416,11 +1460,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         maxhash++;
                     }
                 }
+				}
             }
-
-            if (maxhash > MAX_CLASSIFIERS - 1)
-                nonfatalerror("Too many classifier files.",
-                        "Some may have been disregarded");
         }
     }
 
@@ -1641,7 +1682,7 @@ classify_end_regex_loop:
     //     we can do fast comparisons against each document's hashes in
     //     the hyperspace vector files.
 
-#if 10 || defined (GER)
+#if USE_FIXED_UNIQUE_MODE
     CRM_ASSERT(unk_hashcount >= 0);
     CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
     //mark the end of a feature vector
@@ -1658,22 +1699,19 @@ classify_end_regex_loop:
     //       uniqueify the hashes array.
     if (use_unique)
     {
-        i = 1;
-        j = 1;
-
         CRM_ASSERT(unk_hashcount >= 0);
         CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
         CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
-        while (i < unk_hashcount)
-        {
-            if (unk_hashes[i].hash != unk_hashes[i + 1].hash)
-            {
-                unk_hashes[j] = unk_hashes[i];
-                j++;
-            }
-            i++;
-        }
-        unk_hashcount = j;
+
+         for (i = j = 1; i < unk_hashcount; i++)
+         {
+             if (unk_hashes[i].hash != unk_hashes[j - 1].hash)
+             {
+                 unk_hashes[j] = unk_hashes[i];
+                 j++;
+             }
+         }
+         unk_hashcount = j;
 
         //mark the end of a feature vector
         unk_hashes[unk_hashcount].hash = 0;
@@ -1710,7 +1748,7 @@ classify_end_regex_loop:
         unk_hashcount = j;
     }
 
-    // [i_a] GROT GROT GROT: if 'unique' wasn't specified, totalfeatures will end up being the total number of features MINUS ONE!
+    // [i_a] GROT GROT GROT: if 'unique' was specified, totalfeatures will end up being the total number of features MINUS ONE!
 #endif
 
     if (user_trace)

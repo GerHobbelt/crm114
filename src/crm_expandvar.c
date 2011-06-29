@@ -86,13 +86,18 @@ long crm_qexpandvar(char *buf, long inlen, long maxlen, long *qex_stat)
 }
 
 
+/*
+   [i_a] These static global vars belong here, so we can free the memory when 
+         exiting CRM114 using the cleanup_expandvar_allocations() function.
+*/
+
 //  the maximum length allocated so far for these random buffers...
 static long current_maxlen = 0;
 //  a temporary work buffer...
 static char *tbuf = NULL;
 //  and another for variable names...
-static char *vname = NULL;
-
+static char *vname = NULL; 
+  
 
 //     crm_zexpandvar - "expanded" expandvar.  Does all the expansions,
 //     but does not repeat the evaluations.  If you want repeats, you
@@ -169,7 +174,7 @@ long crm_zexpandvar(char *buf,
         id = 0;
         if (internal_trace)
             fprintf(stderr, " Doing backslash expansion\n");
-        for (is = 0; is <= inlen; is++)
+        for (is = 0; is < inlen; is++) /* [i_a] */
         {
             if (buf[is] != '\\')
             {
@@ -183,7 +188,7 @@ long crm_zexpandvar(char *buf,
                 //   Check for a few common things: \n, \a, \xNN, \oNNN
                 is++;
                 //
-                switch (buf[is])
+				switch (is >= inlen ? 0 : buf[is])
                 {
                 case '0':
                     {
@@ -302,7 +307,7 @@ long crm_zexpandvar(char *buf,
                     }
                     break;
 
-#if 0
+#if 01 /* [i_a] don't know why this was #if 0 anymore @ march 2008 :-( */
                 case '>':
                 case ')':
                 case ']':
@@ -328,8 +333,11 @@ long crm_zexpandvar(char *buf,
                         //       the '\' character _stays_ as a literal
                         buf[id] = '\\';
                         id++;
-                        buf[id] = buf[is];
-                        id++;
+                        if (is < inlen)  // watch out for end-of-string
+						{
+							buf[id] = buf[is];
+							id++;
+						}
                     }
                     break;
                 }
@@ -337,9 +345,7 @@ long crm_zexpandvar(char *buf,
         }
         //     and update the new inlen
         buf[id] = 0; // needed because slimy old GNU REGEX needs it.
-        //   and take one off for inlen, because it always gets incremented one
-        //   extra time
-        inlen = id - 1;
+        inlen = id;
 
         if (internal_trace)
             fprintf(stderr, "backslash expansion yields: =%s= len %ld\n", buf, inlen);
@@ -653,14 +659,12 @@ long crm_zexpandvar(char *buf,
                     {
                         vht[vht_index]->vlen = tdw->nchars;
                     }
-                    {
                         for (q = 0; q < vht[vht_index]->vlen && id < maxlen; q++)
                         {
                             tbuf[id] = vht[vht_index]->valtxt
                                        [(vht[vht_index]->vstart) + q];
                             id++;
                         }
-                    }
                 }
             }
             //         Now, handle the case where we were NOT looking at
@@ -691,7 +695,7 @@ long crm_zexpandvar(char *buf,
         if (internal_trace)
             fprintf(stderr, "Doing stringlength expansion\n");
 
-        buf[id] = 0;
+        // buf[id] = 0; [i_a]
         if (internal_trace)
             fprintf(stderr, " var-expand yields: =%s= len %ld\n", buf, inlen);
         id = 0;
@@ -1078,7 +1082,11 @@ long crm_restrictvar(char  *boxstring,
     //      Got the varname.  Do a lookup.
     vmidx = crm_vht_lookup(vht, varname, varnamelen);
     //  fprintf(stderr, "vmidx = %ld, vht[vmidx] = %lx\n", vmidx, vht[vmidx]);
-
+  if (internal_trace)
+    {
+    fprintf (stderr, "vmidx = %ld, vht[vmidx] = %p\n", 
+	     (long) vmidx, vht[vmidx]);
+    }
     //       Is it a real variable?
     if (((void *)vht[vmidx]) == NULL)
     {
@@ -1236,8 +1244,8 @@ long crm_restrictvar(char  *boxstring,
 
                 //
                 //    Compile up that regex
-                i = crm_regcomp(&preg, scanbuf, nw_len, REG_EXTENDED);
-                if (i > 0)
+	      j = crm_regcomp (&preg, scanbuf, nw_len, REG_EXTENDED);
+	      if (j > 0) 
                 {
                     long curstmt;
                     curstmt = csl->cstmt;

@@ -851,37 +851,25 @@ void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *funcnam
 
 
 const char *errno_descr(int errno_number);
-const char *syserr_descr(int errno_number);
+/* const char *syserr_descr(int errno_number); */
 
 #if defined (WIN32)
 /*
- * return a static string containing the errorcode description.
- *
- * GROT GROT GROT:
- *
- * This means this routine is NOT re-entrant and NOT threadsafe.
- * One could make it at least threadsafe by moving the static storage
- * to thread localstore, but that is rather system specific.
- *
- * I thought about the alternative, i.e. using and returning a
- * malloc/strdup-ed string, but then you'd suffer mem leakage when
- * using it like this:
- *
- *   printf("bla %s", Win32_syserr_descr(latest_Errcode));
- *
- * so that option of making this routine threadsafe, etc. was ruled
- * out. For now.
+ * return a string containing the errorcode description.
  */
-const char *Win32_syserr_descr(DWORD errorcode);
+void Win32_syserr_descr(char **dst, size_t max_dst_len, DWORD errorcode, const char *arg);
 
 
-#define fatalerror_Win32(msg) \
-    fatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
+#define fatalerror_Win32(msg, arg) \
+    fatalerror_Win32_(SRC_LOC(), msg ": system error %ld(0x%08lx:%s)", arg)
 
-static inline void fatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg)
+static inline void fatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg, const char *arg)
 {
     DWORD error = GetLastError();
-    const char *errmsg = Win32_syserr_descr(error);
+    char errbuf[MAX_PATTERN];
+    char *errmsg = errbuf;
+
+	Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
 
     fatalerror_ex(lineno, file, funcname, msg,
             (long)error,
@@ -890,13 +878,16 @@ static inline void fatalerror_Win32_(int lineno, const char *file, const char *f
 }
 
 
-#define nonfatalerror_Win32(msg) \
-    nonfatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
+#define nonfatalerror_Win32(msg, arg) \
+    nonfatalerror_Win32_(SRC_LOC(), msg ": system error %ld(0x%08lx:%s)", arg)
 
-static inline void nonfatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg)
+static inline void nonfatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg, const char *arg)
 {
     DWORD error = GetLastError();
-    const char *errmsg = Win32_syserr_descr(error);
+    char errbuf[MAX_PATTERN];
+    char *errmsg = errbuf;
+	
+	Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
 
     nonfatalerror_ex(lineno, file, funcname, msg,
             (long)error,
@@ -948,6 +939,7 @@ void free_debugger_data(void);
 int file_memset(FILE *dst, unsigned char val, int count);
 
 const char *skip_path(const char *srcfile);
+
 
 
 void init_stdin_out_err_as_os_handles(void);

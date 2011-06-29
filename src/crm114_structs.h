@@ -79,6 +79,8 @@ extern long engine_exit_base;  //  All internal errors will use this number or h
 //        = 3 extended (everywhere) math, use RPN
 extern long q_expansion_mode;
 
+extern int selected_hashfunction;  //  0 = default
+
 
 //   structure of a vht cell
 //  note - each file gets an entry, with the name of the file
@@ -119,19 +121,19 @@ typedef struct mythical_vht_cell
 
 typedef struct mythical_argparse_block
 {
-    char      *a1start;
+    char      *a1start;  // '<>' angle delimited field: options
     long       a1len;
-    char      *p1start;
+    char      *p1start;  // '()' parentheses delimited field: varlist #1
     long       p1len;
-    char      *p2start;
+    char      *p2start;  // '()' parentheses delimited field: varlist #2
     long       p2len;
-    char      *p3start;
+    char      *p3start;  // '()' parentheses delimited field: varlist #3
     long       p3len;
-    char      *b1start;
+    char      *b1start;  // '[]' boxes delimited field: domain limits
     long       b1len;
-    char      *s1start;
+    char      *s1start;  // '//' slash delimited field: regex set #1
     long       s1len;
-    char      *s2start;
+    char      *s2start;  // '//' slash delimited field: regex set #2
     long       s2len;
     uint64_t   sflags;
 } ARGPARSE_BLOCK;
@@ -411,10 +413,10 @@ typedef struct
 //   these defines are for arg type... note that they must remain synched
 //   IN THIS ORDER with the start chars and end chars in crm_statement_parse
 //
-#define CRM_ANGLES 0
-#define CRM_PARENS 1
-#define CRM_BOXES  2
-#define CRM_SLASHES 3
+#define CRM_ANGLES  0   // '<>'
+#define CRM_PARENS  1   // '()'
+#define CRM_BOXES   2   // '[]'
+#define CRM_SLASHES 3   // '//'
 // additional #define's in this range which are used internally by crm_generic_parse_line()
 // NOTE: these _must_ be negative numbers!
 #define CRM_FIND_ACTION      (-1)

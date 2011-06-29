@@ -12,7 +12,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssmerge", "cssmerge.vcproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssutil", "cssutil.vcproj", "{4A077629-8590-434C-9486-0D069DF341A3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "obsfutil", "osbf-util.vcproj", "{4A077629-8590-434C-9486-0D069DF341A2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "obsf-util", "osbf-util.vcproj", "{4A077629-8590-434C-9486-0D069DF341A2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtre_dll", "..\..\libtre\tre\win32\libtre_dll.vcproj", "{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}"
 EndProject
@@ -21,6 +21,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "retest", "..\..\libtre\tre\win32\retest.vcproj", "{7437BF7D-E5EF-4580-9222-1EE3727A6E62}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm_test_hashes", "test_hashes.vcproj", "{3098866E-9DEA-4420-8A32-C9902FD62EE0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm_test_vector_tokenizer", "crm_test_VT.vcproj", "{B7D2D4D5-9F5D-4E39-9020-7C09963888A5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
 	EndProjectSection
 EndProject
 Global
@@ -61,6 +68,14 @@ Global
 		{7437BF7D-E5EF-4580-9222-1EE3727A6E62}.Debug|Win32.Build.0 = Debug|Win32
 		{7437BF7D-E5EF-4580-9222-1EE3727A6E62}.Release|Win32.ActiveCfg = Release|Win32
 		{7437BF7D-E5EF-4580-9222-1EE3727A6E62}.Release|Win32.Build.0 = Release|Win32
+		{3098866E-9DEA-4420-8A32-C9902FD62EE0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3098866E-9DEA-4420-8A32-C9902FD62EE0}.Debug|Win32.Build.0 = Debug|Win32
+		{3098866E-9DEA-4420-8A32-C9902FD62EE0}.Release|Win32.ActiveCfg = Release|Win32
+		{3098866E-9DEA-4420-8A32-C9902FD62EE0}.Release|Win32.Build.0 = Release|Win32
+		{B7D2D4D5-9F5D-4E39-9020-7C09963888A5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B7D2D4D5-9F5D-4E39-9020-7C09963888A5}.Debug|Win32.Build.0 = Debug|Win32
+		{B7D2D4D5-9F5D-4E39-9020-7C09963888A5}.Release|Win32.ActiveCfg = Release|Win32
+		{B7D2D4D5-9F5D-4E39-9020-7C09963888A5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

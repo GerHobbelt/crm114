@@ -74,21 +74,22 @@ const char *skip_path(const char *srcfile)
  *      (TODO: may even support multiple formats for easy debugging/code jumping)
  */
 static void generate_err_reason_msg(
-        char       *reason,
-        int         reason_bufsize,
-        int         lineno,
-        const char *srcfile_full,
-        const char *funcname,
-        const char *errortype_str,
-        const char *encouraging_msg,
-        const char *fmt,
-        va_list     args
-                                   )
+    char       *reason,
+    int         reason_bufsize,
+    int         lineno,
+    const char *srcfile_full,
+    const char *funcname,
+    const char *errortype_str,
+    const char *encouraging_msg,
+    const char *fmt,
+    va_list     args
+    )
 {
     int widthleft = reason_bufsize;
     int has_newline;
     char *dst = reason;
     int encouragment_length;
+    const int bill_style_errormessage = TRUE;
 
     /*
      *         some OS's include the complete path with the programname; we're not interested in that part here...
@@ -118,12 +119,16 @@ static void generate_err_reason_msg(
                      + (srcfile ? strlen(srcfile) : 0)
                      + (funcname ? strlen(funcname) : 0)
                      + (errortype_str ? strlen(errortype_str) : strlen(" *UNIDENTIFIED ERROR*"))
-                    ))
+                     ))
     {
         /*
          * only include what's specified. Format:
          *
-         \n<program>:<sourcefile>:<sourceline>: <error type>\n
+         * \n<program>:<sourcefile>:<functionname>:<sourceline>: <error type>\n
+         *
+         * OR:
+         *
+         * \n<program>: <error type>\n(runtime system location: <sourcefile>(<sourceline>) in routine: <functionname>)\n
          */
         char *fname_pos;
         char *d;
@@ -131,42 +136,46 @@ static void generate_err_reason_msg(
         dst = strmov(dst, "\n");
         dst = strmov(dst, (progname && *progname) ? progname : "CRM114");
         dst = strmov(dst, ":");
-        dst = strmov(dst, (srcfile && *srcfile) ? srcfile : "");
-        dst = strmov(dst, ":");
-        fname_pos = dst;
-        dst = strmov(dst, (funcname && *funcname) ? funcname : "");
-        // replace ':' and '::' with '.' in fully qualified function name (if it was passed along
-        // like that, e.g. by using GCC's __PRETTY_FUNCTION__ predefined variable.
-        for (d = fname_pos; ; fname_pos++)
-        {
-            switch (*fname_pos)
-            {
-            case 0:
-                *d = 0;
-                dst = d;
-                break;
 
-            case ':':
-                if (fname_pos[1] == ':')
-                    fname_pos++;
-                *d++ = '.';
-                continue;
-
-            default:
-                *d++ = *fname_pos;
-                continue;
-            }
-            break;
-        }
-        dst = strmov(dst, ":");
-        if (lineno > 0)
+        if (!bill_style_errormessage)
         {
-            sprintf(dst, "%d:", lineno);
-            dst += strlen(dst);
-        }
-        else
-        {
+            dst = strmov(dst, (srcfile && *srcfile) ? srcfile : "");
             dst = strmov(dst, ":");
+            fname_pos = dst;
+            dst = strmov(dst, (funcname && *funcname) ? funcname : "");
+            // replace ':' and '::' with '.' in fully qualified function name (if it was passed along
+            // like that, e.g. by using GCC's __PRETTY_FUNCTION__ predefined variable.
+            for (d = fname_pos; ; fname_pos++)
+            {
+                switch (*fname_pos)
+                {
+                case 0:
+                    *d = 0;
+                    dst = d;
+                    break;
+
+                case ':':
+                    if (fname_pos[1] == ':')
+                        fname_pos++;
+                    *d++ = '.';
+                    continue;
+
+                default:
+                    *d++ = *fname_pos;
+                    continue;
+                }
+                break;
+            }
+            dst = strmov(dst, ":");
+            if (lineno > 0)
+            {
+                sprintf(dst, "%d:", lineno);
+                dst += strlen(dst);
+            }
+            else
+            {
+                dst = strmov(dst, ":");
+            }
         }
         dst = strmov(dst, (errortype_str && *errortype_str) ? errortype_str : " *UNIDENTIFIED ERROR*");
         dst = strmov(dst, "\n");
@@ -239,6 +248,62 @@ static void generate_err_reason_msg(
     }
     widthleft = reason_bufsize - (dst - reason);
 
+    /*
+     * If we want/have to, add the BillY style of source location error reporting here.
+     *
+     * Format:
+     *  (runtime system location: <file>(<line>) in routine: <function>)
+     */
+    if (bill_style_errormessage)
+    {
+        if (widthleft > ((lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 1)  /* guestimate the worst case length upper limit for printf(%ld) */
+                         + (srcfile ? strlen(srcfile) : 3)
+                         + (funcname ? strlen(funcname) : 3)
+                         + WIDTHOF("(runtime system location: X(X) in routine: X)\n")
+                         ))
+        {
+            /*
+             * (runtime system location: <sourcefile>(<sourceline>) in routine: <functionname>)\n
+             */
+            char *fname_pos;
+            char *d;
+            int len;
+
+            snprintf(dst, widthleft, "(runtime system location: %s(%d) in routine: ",
+                ((srcfile && *srcfile) ? srcfile : "---"),
+                lineno);
+            dst[widthleft - 1] = 0;
+            len = strlen(dst);
+            dst += len;
+
+            fname_pos = dst;
+            dst = strmov(dst, (funcname && *funcname) ? funcname : "\?\?\?");
+            // replace ':' and '::' with '.' in fully qualified function name (if it was passed along
+            // like that, e.g. by using GCC's __PRETTY_FUNCTION__ predefined variable.
+            for (d = fname_pos; ; fname_pos++)
+            {
+                switch (*fname_pos)
+                {
+                case 0:
+                    *d = 0;
+                    dst = d;
+                    break;
+
+                case ':':
+                    if (fname_pos[1] == ':')
+                        fname_pos++;
+                    *d++ = '.';
+                    continue;
+
+                default:
+                    *d++ = *fname_pos;
+                    continue;
+                }
+                break;
+            }
+            dst = strmov(dst, ")\n");
+        }
+    }
 
     /* make sure the string ends with a newline! */
     if (dst[-1] != '\n')
@@ -281,9 +346,9 @@ void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *funcnam
         }
     }
     CRM_ASSERT_MESSENGER(lineno, srcfile, funcname,
-            "\nBetter start screaming, guv', since the software's just gone critical:\n"
-            "assertion '%s' failed!%s%s\n",
-            msg, (extra_msg ? "\n" : ""), (extra_msg ? extra_msg : ""));
+        "\nBetter start screaming, guv', since the software's just gone critical:\n"
+        "assertion '%s' failed!%s%s\n",
+        msg, (extra_msg ? "\n" : ""), (extra_msg ? extra_msg : ""));
 }
 
 #endif
@@ -298,65 +363,122 @@ const char *errno_descr(int errno_number)
 
     if (!ret || ! * ret)
     {
-        return "???";
+        return "\?\?\?";
     }
     return ret;
 }
 
 
+#if 0
 const char *syserr_descr(int errno_number)
 {
     char *ret = strerror(errno_number);
 
     if (!ret || ! * ret)
     {
-        return "???";
+        return "\?\?\?";
     }
     return ret;
 }
+#endif
 
 #if defined (WIN32)
 
 /*
  * return a static string containing the errorcode description.
- *
- * GROT GROT GROT:
- *
- * This means this routine is NOT re-entrant and NOT threadsafe.
- * One could make it at least threadsafe by moving the static storage
- * to thread localstore, but that is rather system specific.
- *
- * I thought about the alternative, i.e. using and returning a
- * malloc/strdup-ed string, but then you'd suffer mem leakage when
- * using it like this:
- *
- *   printf("bla %s", Win32_syserr_descr(latest_Errcode));
- *
- * so that option of making this routine threadsafe, etc. was ruled
- * out. For now.
  */
-const char *Win32_syserr_descr(DWORD errorcode)
+void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, const char *arg)
 {
-    static char errstr[1024];
     DWORD fmtret;
     LPSTR dstbuf = NULL;
+    char *dst;
+
+    if (dstptr == NULL || max_dst_len <= WIDTHOF("(...truncated)"))
+        return;
+
+    if (*dstptr == NULL)
+    {
+        if (max_dst_len < MAX_PATTERN)
+        {
+            max_dst_len = MAX_PATTERN;
+        }
+        *dstptr = calloc(max_dst_len, sizeof(*dst));
+        if (*dstptr == NULL)
+        {
+            return;
+        }
+    }
+    CRM_ASSERT(max_dst_len > WIDTHOF("(...truncated)"));
+    dst = *dstptr;
+    dst[0] = 0;
 
     fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
-            NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
+        NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
     if (dstbuf != NULL && fmtret > 0 && *dstbuf)
     {
-        strncpy(errstr, dstbuf, WIDTHOF(errstr));
-        errstr[WIDTHOF(errstr) - 1] = 0;
+        const char *s = dstbuf;
+        const char *p = strchr(s, '%');
+        size_t len;
+
+        while (p && max_dst_len > 0)
+        {
+            strncpy(dst, s, CRM_MIN(p - s, max_dst_len));
+            dst[max_dst_len] = 0;
+            len = strlen(dst);
+            max_dst_len -= len;
+            dst += len;
+            if (max_dst_len <= 3)
+                break;
+
+            if (p[1] == '1')
+            {
+                // replace '%1' with ''arg''
+                strncpy(dst, "'", max_dst_len);
+                strncpy(dst + 1, (arg ? arg : "\?\?\?"), max_dst_len - 1);
+                dst[max_dst_len] = 0;
+                len = strlen(dst);
+                max_dst_len -= len;
+                dst += len;
+                if (max_dst_len <= 2)
+                    break;
+                strncpy(dst, "'", max_dst_len);
+                dst++;
+                max_dst_len--;
+
+                p += 2;
+            }
+            else
+            {
+                strncpy(dst, "%", max_dst_len);
+                dst++;
+                max_dst_len--;
+
+                p++;
+            }
+            s = p;
+            p = strchr(s, '%');
+        }
+        strncpy(dst, s, max_dst_len);
+        dst[max_dst_len] = 0;
+        len = strlen(dst);
+        max_dst_len -= len;
+        dst += len;
+        s += len;
+        if (*s)
+        {
+            dst -= WIDTHOF("(...truncated)");
+            strcpy(dst, "(...truncated)");
+        }
     }
-    if (!errstr[0])
+    if (!dst[0])
     {
-        sprintf(errstr, "\?\?\?($%lx)", errorcode);
+        snprintf(dst, max_dst_len, "\?\?\?");
+        dst[max_dst_len] = 0;
     }
     if (dstbuf)
     {
         LocalFree(dstbuf);
     }
-    return errstr;
 }
 
 #endif
@@ -369,10 +491,10 @@ const char *Win32_syserr_descr(DWORD errorcode)
 void untrappableerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     untrappableerror_ex(lineno, srcfile, funcname,
-            (text2 && strlen(text2) <= 1024
-             ? " %.1024s %.1024s\n"
-             : " %.1024s %.1024s(...truncated)\n"),
-            text1, text2);
+        (text2 && strlen(text2) <= 1024
+         ? " %.1024s %.1024s\n"
+         : " %.1024s %.1024s(...truncated)\n"),
+        text1, text2);
 }
 
 void untrappableerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -389,15 +511,15 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
     char reason[MAX_PATTERN];
 
     generate_err_reason_msg(
-            reason,
-            WIDTHOF(reason),
-            lineno,
-            srcfile,
-            funcname,
-            " *UNTRAPPABLE ERROR*",
-            NULL,
-            fmt,
-            args);
+        reason,
+        WIDTHOF(reason),
+        lineno,
+        srcfile,
+        funcname,
+        " *UNTRAPPABLE ERROR*",
+        NULL,
+        fmt,
+        args);
     fputs(reason, stderr);
 
     if (engine_exit_base != 0)
@@ -420,10 +542,10 @@ long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const
     //
 
     return fatalerror_ex(lineno, srcfile, funcname,
-            (text2 && strlen(text2) <= 1024 ?
-             " %.1024s %.1024s\n" :
-             " %.1024s %.1024s(...truncated)\n"),
-            text1, text2);
+        (text2 && strlen(text2) <= 1024 ?
+         " %.1024s %.1024s\n" :
+         " %.1024s %.1024s(...truncated)\n"),
+        text1, text2);
 }
 
 long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -442,15 +564,15 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
     char reason[MAX_PATTERN];
 
     generate_err_reason_msg(
-            reason,
-            WIDTHOF(reason),
-            lineno,
-            srcfile,
-            funcname,
-            " *ERROR*",
-            NULL,
-            fmt,
-            args);
+        reason,
+        WIDTHOF(reason),
+        lineno,
+        srcfile,
+        funcname,
+        " *ERROR*",
+        NULL,
+        fmt,
+        args);
 
 
     fputs(reason, stderr);
@@ -468,10 +590,10 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
 long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     return nonfatalerror_ex(lineno, srcfile, funcname,
-            (text2 && strlen(text2) <= 1024 ?
-             " %.1024s %.1024s\n" :
-             " %.1024s %.1024s(...truncated)\n"),
-            text1, text2);
+        (text2 && strlen(text2) <= 1024 ?
+         " %.1024s %.1024s\n" :
+         " %.1024s %.1024s(...truncated)\n"),
+        text1, text2);
 }
 
 long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -493,15 +615,15 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, con
     char reason[MAX_PATTERN];
 
     generate_err_reason_msg(
-            reason,
-            WIDTHOF(reason),
-            lineno,
-            srcfile,
-            funcname,
-            " *WARNING*",
-            "I'll try to keep working.\n",
-            fmt,
-            args);
+        reason,
+        WIDTHOF(reason),
+        lineno,
+        srcfile,
+        funcname,
+        " *WARNING*",
+        "I'll try to keep working.\n",
+        fmt,
+        args);
 
     fputs(reason, stderr);
 
@@ -512,8 +634,8 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, con
         if (!nonfatalerrorcount_max_reported)
         {
             fatalerror_ex(lineno, srcfile, funcname,
-                    "Too many untrapped warnings; your program is very likely unrecoverably broken.\n"
-                    "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
+                "Too many untrapped warnings; your program is very likely unrecoverably broken.\n"
+                "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
             nonfatalerrorcount_max_reported = 1; /* don't keep on yakking about too many whatever... */
         }
     }

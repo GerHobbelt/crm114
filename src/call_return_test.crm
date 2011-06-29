@@ -7,7 +7,7 @@ window
 alter (:_dw:) /This is the original data window.  It shouldn't change/
 #
 output /Starting \n/
-output /\n\nTesting local and forking call and returns. (level :*:_cd:) \n/\
+output /\n\nTesting local and forking call and returns. (level :*:_cd:) \n/
 call /:foo:/
 #
 output /Middle (level :*:_cd:)\n/

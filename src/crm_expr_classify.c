@@ -259,7 +259,7 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
 
-//      Dispatch a CLASSIFY statement
+//      Dispatch a MERGE statement
 //
 int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
@@ -374,7 +374,7 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
 
-//      Dispatch a CLASSIFY statement
+//      Dispatch a DIFF statement
 //
 int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
@@ -487,7 +487,7 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
 
-//      Dispatch a CLASSIFY statement
+//      Dispatch a BACKUP statement
 //
 int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
@@ -599,7 +599,7 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
 
-//      Dispatch a CLASSIFY statement
+//      Dispatch a RESTORE statement
 //
 int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
@@ -712,7 +712,7 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
 
-//      Dispatch a CLASSIFY statement
+//      Dispatch a INFO statement
 //
 int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
@@ -825,7 +825,7 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
 
-//      Dispatch a CLASSIFY statement
+//      Dispatch a ANALYZE statement
 //
 int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
@@ -938,7 +938,7 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
 
-//      Dispatch a CLASSIFY statement
+//      Dispatch a CREATE statement
 //
 int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {

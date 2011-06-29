@@ -292,9 +292,11 @@ int crm_load_csl(CSL_CELL *csl)
 
         csl->hash = strnhash(csl->filetext, csl->nchars);
         if (user_trace)
+		{
             fprintf(stderr, "Hash of program: 0x%08lX, length %ld bytes: (%s)\n-->\n%s",
                     (unsigned long)csl->hash, csl->nchars, csl->filename, csl->filetext);
-    }
+		}
+	}
 
     return 0;
 }

@@ -7,7 +7,7 @@ window
 #
 #       first test simple input and output test
 #
-syscall /rm -f randtst.txt/
+syscall /rm -f randtst.txt/  /[windows-MS]del randtst.txt/
 isolate (:z:) 
 output [randtst.txt] /The quick brown fox jumped over the lazy dog's back/
 input [randtst.txt] (:z:)
@@ -15,7 +15,7 @@ output /Original:    :*:z:\n/
 #
 #     Redo it with append, to be sure append works with no prior file.
 #
-syscall /rm -f randtst.txt/
+syscall /rm -f randtst.txt/  /[windows-MS]del randtst.txt/
 isolate (:z:) 
 output <append>[randtst.txt] / alpha bravo charlie /
 input [randtst.txt] (:z:)
@@ -62,6 +62,6 @@ output /Now, change the fox to cat: :*:x:\n/
 #
 input [ randtst.txt ] (:z:)
 output /Final check- did it really get written? :*:z:\n/
-syscall /rm -f randtst.txt/
+syscall /rm -f randtst.txt/  /[windows-MS]del randtst.txt/
 #
 #

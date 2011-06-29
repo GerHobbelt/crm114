@@ -76,6 +76,8 @@ long engine_exit_base = 0;  //  All internal errors will use this number or high
 //        = 3 extended (everywhere) math, use RPN
 long q_expansion_mode = 0;
 
+int selected_hashfunction = 0;  //  0 = default
+
 
 
 
@@ -331,6 +333,7 @@ int main(int argc, char **argv)
     prettyprint_listing = 0;
     engine_exit_base = 0;
     q_expansion_mode = 0;
+	selected_hashfunction = 0;
 
     //    allocate and initialize the initial root csl (control stack
     //    level) cell.  We do this first, before command-line parsing,
@@ -389,6 +392,7 @@ int main(int argc, char **argv)
             fprintf(stderr, " -e      ignore environment variables\n");
             fprintf(stderr, " -E      set base for engine exit values\n");
             fprintf(stderr, " -h      this help\n");
+            fprintf(stderr, " -H n    select hash function N - handle this with the utmost care! (default=0)\n");
             fprintf(stderr, " -l n    listing (detail level 1 through 5)\n");
             fprintf(stderr, " -m nn   max number of microgroomed buckets in a chain\n");
             fprintf(stderr, " -M nn   max chain length - triggers microgrooming if enabled\n");
@@ -416,7 +420,7 @@ int main(int argc, char **argv)
             fprintf(stderr, " -err file\n"
                             "         use file instead of stderr for output. Note that '-out' may use the same\n"
                             "         file as '-err'. Note also that '-out' and '-err' may specify the standard\n"
-                            "         handle values '1' for stdout and '2' for stderr. This implies that '-out 1'\n"
+                            "         handle values '1' for stdout and '2' for stderr. This implies that '-err 1'\n"
                             "         is essentially identical to the UNIX shell '2>&1' redirection.\n");
 #ifndef CRM_DONT_ASSERT
             fprintf(stderr, " -Cdbg   direct developer support: trigger the C/IDE debugger when an internal\n"
@@ -472,6 +476,25 @@ int main(int argc, char **argv)
             {
                 user_trace = 0;
                 fprintf(stderr, "User tracing off\n");
+            }
+            goto end_command_line_parse_loop;
+        }
+
+        // did user specify a hash function to use instead of the default one?
+        if (strncmp(argv[i], "-H", 2) == 0 && strlen(argv[i]) == 2)
+        {
+            i++;  // move to the next arg
+            if (i < argc)
+            {
+                if (1 != sscanf(argv[i], "%d", &selected_hashfunction))
+                {
+					untrappableerror("Failed to decode the numeric -H argument [hashfunction ID]: ", argv[i]);
+                }
+            }
+            if (user_trace)
+            {
+                fprintf(stderr, "Configuring CRM114 to use hash function %d\n"
+                       , selected_hashfunction);
             }
             goto end_command_line_parse_loop;
         }
@@ -727,7 +750,8 @@ int main(int argc, char **argv)
             }
             if (chdir(argv[i]))
             {
-                fprintf(stderr, "Sorry, couldn't chdir to %s\n", argv[i]);
+                fprintf(stderr, "Sorry, couldn't chdir to '%s'; errno=%d(%s)\n",
+						argv[i], errno, errno_descr(errno));
             }
             goto end_command_line_parse_loop;
         }

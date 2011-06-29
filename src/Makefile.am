@@ -150,6 +150,68 @@ DIFF_FLAGS = @DIFF_FLAGS@
 ECHO = echo
 E = $(SILENT) $(ECHO)
 
+MEGATESTFILES = \
+	mt_ng_Bit_Entropy_2.input \
+	mt_ng_OSB_Markov_Chisquared_Unique_2.input \
+	mt_ng_OSB_Markovian_1.input \
+	mt_ng_OSB_Markov_Chisquared_Unique_1.input \
+	mt_ng_String_Unigram_Hyperspace_2.input \
+	mt_ng_String_Kernel_SVM_SKS_Unique_1.input \
+	mt_ng_Support_Vector_Machine_SVM_1.input \
+	mt_ng_Bit_Entropy_1.input \
+	mt_ng_unigram_Winnow_1.input \
+	mt_ng_Bytewise_Correlation_2.input \
+	mt_ng_OSB_Winnow_1.input \
+	mt_ng_Bit_Entropy_Toroid_1.input \
+	mt_ng_Neural_Network_1.input \
+	mt_ng_String_Kernel_SVM_SKS_1.input \
+	mt_ng_OSB_3_letter_Hyperspace_1.input \
+	mt_ng_Support_Vector_Machine_SVM_2.input \
+	windowtest_fromvar_mt_ng_1.input \
+	mt_ng_Neural_Network_2.input \
+	mt_ng_Fast_Substring_Compression_Match_1.input \
+	backwardstest_mt_ng_1.input \
+	mt_ng_Unigram_Bayesian_2.input \
+	mt_ng_Support_Vector_Machine_SVM_unigram_2.input \
+	mt_ng_String_Hyperspace_2.input \
+	mt_ng_SBPH_Markovian_1.input \
+	mt_ng_OSB_Markov_Unique_2.input \
+	mt_ng_Unigram_Hyperspace_1.input \
+	mt_ng_Unigram_Bayesian_1.input \
+	mt_ng_OSBF_Local_Confidence_Fidelis_2.input \
+	mt_ng_String_Kernel_SVM_SKS_2.input \
+	matchtest_mt_ng_1.input \
+	mt_ng_OSB_Markovian_2.input \
+	mt_ng_String_Unigram_Hyperspace_1.input \
+	mt_ng_Unigram_Hyperspace_2.input \
+	matchtest_mt_ng.input \
+	mt_ng_Vector_3_word_bag_Hyperspace_1.input \
+	mt_ng_String_Hyperspace_1.input \
+	approxtest_mt_ng_1.input \
+	mt_ng_Clump_Pmulc_3.input \
+	approxtest_mt_ng_2.input \
+	backwardstest_mt_ng.input \
+	mt_ng_OSB_Hyperspace_1.input \
+	mt_ng_OSB_3_letter_Hyperspace_2.input \
+	mt_ng_OSB_Hyperspace_2.input \
+	mt_ng_Vector_3_word_bag_Hyperspace_2.input \
+	mt_ng_Bit_Entropy_Toroid_2.input \
+	windowtest_mt_ng_1.input \
+	mt_ng_OSB_Markov_Unique_1.input \
+	mt_ng_OSBF_Local_Confidence_Fidelis_1.input \
+	mt_ng_unigram_Winnow_2.input \
+	mt_ng_Fast_Substring_Compression_Match_2.input \
+	backwardstest_mt_ng_2.input \
+	mt_ng_Bytewise_Correlation_1.input \
+	mt_ng_String_Kernel_SVM_SKS_Unique_2.input \
+	mt_ng_Clump_Pmulc_1.input \
+	mt_ng_OSB_Winnow_2.input \
+	mt_ng_Clump_Pmulc_2.input \
+	mt_ng_SBPH_Markovian_2.input \
+	mt_ng_Support_Vector_Machine_SVM_unigram_1.input \
+	COLOPHON_mt_ng_reference_3.input \
+	FAQ_mt_ng_reference_4.input
+
 
 #
 #
@@ -200,7 +262,9 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 
 
 UTILFILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c \
-	testvectok.c
+	testvectok.c crm_test_hashes.c \
+	crm_test_hashes.h
+
 
 CRMFILES = mailfilter.crm mailfilter.cf \
 	mailreaver.crm mailtrainer.crm \
@@ -242,7 +306,8 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	GPL-License.txt \
 	rename-gz \
 	megatest.sh megatest_knowngood.log megatest_knowngood.orginal.log \
-	make_BillY.sh Makefile.BillY
+	make_BillY.sh Makefile.BillY \
+	$(MEGATESTFILES) megatest_ng.sh 
 
 
 
@@ -254,7 +319,7 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 
 
 
-bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge testvectok
+bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge testvectok crm_test_hashes
 
 
 crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt \
@@ -281,6 +346,8 @@ cssmerge_SOURCES = cssmerge.c \
 	$(HFILES) $(EXTRA_DEPS)
 
 testvectok_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) testvectok.c
+
+crm_test_hashes_SOURCES = $(HFILES) $(EXTRA_DEPS) crm_test_hashes.c
 
 
 
@@ -506,6 +573,9 @@ cssmerge.o: cssmerge.c  \
 testvectok.o: testvectok.c  \
 	$(HFILES) $(EXTRA_DEPS)
 
+crm_test_hashes.o: crm_test_hashes.c crm_test_hashes.h \
+	$(HFILES) $(EXTRA_DEPS)
+
 crm_generic_port.o: crm_generic_port.c \
 	$(HFILES) $(EXTRA_DEPS)
 
@@ -577,6 +647,14 @@ testvectok: testvectok.o $(OFILES) crmregex_tre.o
 	$(E) ""
 
 
+crm_test_hashes: crm_test_hashes.o 
+	$(CC) $(LDFLAGS) $(LIBS) crm_test_hashes.o \
+		-o crm_test_hashes
+	$(E) ""
+	$(E) "   Done.  Type \"make help\" to see what else you can make."
+	$(E) ""
+
+
 clean:
 	-rm -f crm114
 	-rm -f cssutil
@@ -585,6 +663,7 @@ clean:
 	-rm -f cssdiff
 	-rm -f cssmerge
 	-rm -f testvectok
+	-rm -f crm_test_hashes
 	-rm -f crm114
 	-rm -f crm114_gnu
 	-rm -f crm114_tre
@@ -672,7 +751,7 @@ uninstall:
 #       do change, either your kit isn't quite right or your
 #       install is broken (or you've found a bug).
 #
-megatest: crm114
+megatest: crm114 megatest.sh megatest_knowngood.log
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
 	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
@@ -704,6 +783,42 @@ megatest: crm114
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
 	$(diff) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+
+
+
+test: crm114 megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.log
+	$(E) ""
+	$(E) "   This runs a moderately interesting set of base tests"
+	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
+	$(E) "   1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
+	$(E) "   be patient; you (hopefully) won't see anything till the"
+	$(E) "   full set of tests complete.  If you didn't use TRE, all"
+	$(E) "   bets are off."
+	$(E) ""
+	$(E) "   Lines of output that start with OK_IF_mumble are allowed"
+	$(E) "   to change values.  No other lines should.  If other lines"
+	$(E) "   do change, either your kit isn't quite right or your"
+	$(E) "   install is broken (or you've found a bug)."
+	$(E) ""
+	-( if [ ! -e ./inserttest_a.crm      ] ; then cp $(srcdir)/*.crm ./           ; fi )
+	-( if [ ! -e ./rewrites.mfp          ] ; then cp $(srcdir)/*.mfp ./           ; fi )
+	-( if [ ! -e ./blacklist.mfp.example ] ; then cp $(srcdir)/*.example ./       ; fi )
+	-( if [ ! -e ./QUICKREF.txt          ] ; then cp $(srcdir)/QUICKREF.txt ./    ; fi )
+	-( if [ ! -e ./INTRO.txt             ] ; then cp $(srcdir)/INTRO.txt ./       ; fi )
+	-( if [ ! -e ./COLOPHON.txt          ] ; then cp $(srcdir)/COLOPHON.txt ./    ; fi )
+	-( if [ ! -e ./FAQ.txt               ] ; then cp $(srcdir)/FAQ.txt ./         ; fi )
+	$(srcdir)/megatest_ng.sh 2 > megatest_ng_test.log 2>&1
+	$(E) "=============================================================="
+	$(E) "=================== MEGATEST DIFF REPORT ====================="
+	$(E) "===================      (unified)       ====================="
+	$(E) "=============================================================="
+	$(diff) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(E) "=============================================================="
+	$(E) "=================== MEGATEST DIFF REPORT ====================="
+	$(E) "===================      (regular)       ===================="
+	$(E) "=============================================================="
+	$(diff) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
+
 
 
 cssfiles: spam.dir good.dir
