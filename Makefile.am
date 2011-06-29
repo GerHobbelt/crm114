@@ -5,7 +5,7 @@
 ## under the terms of the GNU GPL.  See the file COPYING.
 
 ## Copyright (C) 2003, 2004 Joost van Baal
-## Copyright (C) 2007 Ger Hobbelt
+## Copyright (C) 2007-2008 Ger Hobbelt
 
 GZIP_BIN       = @GZIP@
 COMPRESS_BIN   = @COMPRESS@
@@ -83,7 +83,7 @@ CLEANFILES = *~ *.bak
 MAINTAINERCLEANFILES = configure.in aclocal.m4 Makefile.in
 
 
-MSVC_PRJ_FILES = win32/config_win32.h \
+MSVC_PRJ_FILES = win32/config_win32.h win32/config_win32.h.in \
 	win32/crm114.sln win32/crm114.vcproj win32/cssdiff.vcproj win32/osbf-util.vcproj \
 	win32/resource.h win32/crm114.ico win32/cssmerge.vcproj win32/cssutil.vcproj \
 	win32/getopt.h win32/getopt_ex.h win32/getopt.c win32/getopt_ex.c \
@@ -105,18 +105,22 @@ EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
 	README.maintainer MAILINGLIST \
 	$(MSVC_PRJ_FILES)
 
-WIN32_BIN_EXTRA = CREDITS README.win32 BUGS \
-	MAILINGLIST \
-	HACKING README.1st \
-	docs/classify_details.txt \
-	docs/COLOPHON.txt \
-	docs/CRM114_Mailfilter_HOWTO.txt \
-	docs/FAQ.txt \
-	docs/INTRO.txt \
-	docs/knownbugs.txt \
-	docs/QUICKREF.txt \
-	docs/README \
-	docs/VT_generic_Vector_Tokenization.txt \
+WIN32_BIN_EXTRA = \
+	$(top_srcdir)/CREDITS \
+	$(top_srcdir)/README.win32 \
+	$(top_srcdir)/BUGS \
+	$(top_srcdir)/MAILINGLIST \
+	$(top_srcdir)/HACKING \
+	$(top_srcdir)/README.1st \
+	$(top_srcdir)/docs/classify_details.txt \
+	$(top_srcdir)/docs/COLOPHON.txt \
+	$(top_srcdir)/docs/CRM114_Mailfilter_HOWTO.txt \
+	$(top_srcdir)/docs/FAQ.txt \
+	$(top_srcdir)/docs/INTRO.txt \
+	$(top_srcdir)/docs/knownbugs.txt \
+	$(top_srcdir)/docs/QUICKREF.txt \
+	$(top_srcdir)/docs/README \
+	$(top_srcdir)/docs/VT_generic_Vector_Tokenization.txt \
 	mailfilter/classifymail.crm \
 	mailfilter/mailfilter.cf \
 	mailfilter/mailfilter.crm \
@@ -128,8 +132,8 @@ WIN32_BIN_EXTRA = CREDITS README.win32 BUGS \
 
 if MAINTAINER_MODE
 
-ChangeLog: NEWS
-	-( test "X$(cvs2cl)" != "X" && $(cvs2cl) --prune --accum -U ../CVSROOT/users )
+# ChangeLog: NEWS
+# 	-( test "X$(cvs2cl)" != "X" && $(cvs2cl) --prune --accum -U ../CVSROOT/users )
 	
 BillY-sync:
 	$(SILENT) distribute_files_from_src_dir.sh 
@@ -220,7 +224,9 @@ diff:
 #       archivers have something to archive; if not, they'll fail in 'make distcheck' at least.
 #       And not everyone has the same setup as me, so @ORIGINAL_BILLY_DISTRO_DIR@
 #       may point at a bogus directory for them!
-dist-diff: diff	COPYING ChangeLog
+EXTRA_4_DIFF_DIST = $(top_srcdir)/COPYING $(top_srcdir)/ChangeLog
+
+dist-diff: diff $(EXTRA_4_DIFF_DIST)
 	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.7z
 	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.gz
 	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
@@ -235,30 +241,30 @@ dist-diff: diff	COPYING ChangeLog
 	-rm -f $(ARCHIVE_BASE_NAME).context.diff.zip
 if OS_HAS_TAR
 if OS_HAS_GZIP
-	$(TAR_BIN) -c src/diff/*.unified.* COPYING ChangeLog | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.gz
-	$(TAR_BIN) -c src/diff/*.normal.* COPYING ChangeLog | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.gz
-	$(TAR_BIN) -c src/diff/*.context.* COPYING ChangeLog | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.gz
+	$(TAR_BIN) -c src/diff/*.unified.* $(EXTRA_4_DIFF_DIST) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.gz
+	$(TAR_BIN) -c src/diff/*.normal.* $(EXTRA_4_DIFF_DIST) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.gz
+	$(TAR_BIN) -c src/diff/*.context.* $(EXTRA_4_DIFF_DIST) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.gz
 endif
 if OS_HAS_BZIP2
-	$(TAR_BIN) -c src/diff/*.unified.* COPYING ChangeLog | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
-	$(TAR_BIN) -c src/diff/*.normal.* COPYING ChangeLog | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.bz2
-	$(TAR_BIN) -c src/diff/*.context.* COPYING ChangeLog | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).context.diff.tar.bz2
+	$(TAR_BIN) -c src/diff/*.unified.* $(EXTRA_4_DIFF_DIST) | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
+	$(TAR_BIN) -c src/diff/*.normal.* $(EXTRA_4_DIFF_DIST) | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.bz2
+	$(TAR_BIN) -c src/diff/*.context.* $(EXTRA_4_DIFF_DIST) | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).context.diff.tar.bz2
 endif
 if OS_HAS_COMPRESS
-	$(TAR_BIN) -c src/diff/*.unified.* COPYING ChangeLog | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.Z
-	$(TAR_BIN) -c src/diff/*.normal.* COPYING ChangeLog | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.Z
-	$(TAR_BIN) -c src/diff/*.context.* COPYING ChangeLog | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.Z
+	$(TAR_BIN) -c src/diff/*.unified.* $(EXTRA_4_DIFF_DIST) | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.Z
+	$(TAR_BIN) -c src/diff/*.normal.* $(EXTRA_4_DIFF_DIST) | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.Z
+	$(TAR_BIN) -c src/diff/*.context.* $(EXTRA_4_DIFF_DIST) | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.Z
 endif
 endif
 if OS_HAS_SEVENZIP
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).unified.diff.7z src/diff/*.unified.* COPYING ChangeLog
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).normal.diff.7z src/diff/*.normal.* COPYING ChangeLog
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).context.diff.7z src/diff/*.context.* COPYING ChangeLog
+	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).unified.diff.7z src/diff/*.unified.* $(EXTRA_4_DIFF_DIST)
+	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).normal.diff.7z src/diff/*.normal.* $(EXTRA_4_DIFF_DIST)
+	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).context.diff.7z src/diff/*.context.* $(EXTRA_4_DIFF_DIST)
 endif
 if OS_HAS_ZIP
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).unified.diff.zip src/diff/*.unified.* COPYING ChangeLog
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).normal.diff.zip src/diff/*.normal.* COPYING ChangeLog
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).context.diff.zip src/diff/*.context.* COPYING ChangeLog
+	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).unified.diff.zip src/diff/*.unified.* $(EXTRA_4_DIFF_DIST)
+	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).normal.diff.zip src/diff/*.normal.* $(EXTRA_4_DIFF_DIST)
+	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).context.diff.zip src/diff/*.context.* $(EXTRA_4_DIFF_DIST)
 endif
 
 	
@@ -269,6 +275,7 @@ dist-win32-bin: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.zip
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.tar.gz
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.tar.bz2
+	-mkdir win32/bin
 if OS_HAS_TAR
 if OS_HAS_GZIP
 	$(TAR_BIN) -c $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' ` | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).Win32.bin.tar.gz
@@ -336,11 +343,18 @@ dist dist-all: distribution
 #
 # when hook is called, configure has not yet run in the dist dir...
 #
-dist-hook:
+#
+# EXTRA: if the 'bin' subdir does not exist for some reason, do not fail due to that omission; just create
+# it. This is done to ensure the dist-win32 target builds within a 'make distcheck' run.
+#
+#dist-hook: dist-gzip dist-bzip2 dist-tarZ
+# ^^^ you'll get an infinite loop when you add these dependencies!
+dist-hook: 
 	cd $(top_distdir) 
 	$(E) "   ************************************"
 	$(E) "   dist-hook"
 	$(E) "   ************************************"
+	-mkdir win32/bin
 	$(SILENT) echo "Copying the archive(s) to standard $(distdir).tar.xxx' names suitable for distcheck"; 
 	-rm -f $(distdir).tar.gz
 	-rm -f $(distdir).tar.bz2

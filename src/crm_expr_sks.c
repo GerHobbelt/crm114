@@ -1331,7 +1331,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     }
 
                     //    and write the sorted hashes out.
-                    ret = fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
+                    ret = (int)fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
                             hashcounts + 1,
                             stringf);
                     if (ret != hashcounts + 1)
@@ -1869,13 +1869,13 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         }
                     }
 
-                    ret += fwrite(&k1, sizeof(k1), 1, stringf);
-                    ret += fwrite(&k2, sizeof(k2), 1, stringf);
+                    ret += (int)fwrite(&k1, sizeof(k1), 1, stringf);
+                    ret += (int)fwrite(&k2, sizeof(k2), 1, stringf);
                     for (i = 0; i < svm_prob.l; i++)
-                        ret += fwrite(&(solver.alpha[i]), sizeof(solver.alpha[i]), 1, stringf);
-                    ret += fwrite(&b, sizeof(b), 1, stringf);
-                    ret += fwrite(&AB[0], sizeof(AB[0]), 1, stringf);
-                    ret += fwrite(&AB[1], sizeof(AB[1]), 1, stringf);
+                        ret += (int)fwrite(&(solver.alpha[i]), sizeof(solver.alpha[i]), 1, stringf);
+                    ret += (int)fwrite(&b, sizeof(b), 1, stringf);
+                    ret += (int)fwrite(&AB[0], sizeof(AB[0]), 1, stringf);
+                    ret += (int)fwrite(&AB[1], sizeof(AB[1]), 1, stringf);
                     if (ret != 2 + 3 + svm_prob.l)
                     {
                         fatalerror("Couldn't write the solution to the .hypsvm file named ",
@@ -2405,8 +2405,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         int ret;
 
-                        ret = fread(&temp_k1, sizeof(temp_k1), 1, stringf);
-                        ret += fread(&temp_k2, sizeof(temp_k2), 1, stringf);
+                        ret = (int)fread(&temp_k1, sizeof(temp_k1), 1, stringf);
+                        ret += (int)fread(&temp_k2, sizeof(temp_k2), 1, stringf);
                         if (ret != 2)
                         {
                             fatalerror("Cannot read k1/k2 from SVM solution file: ", file3);
@@ -2565,11 +2565,11 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         for (i = 0; i < svm_prob.l; i++)
                         {
                             alpha[i] = 0.0;
-                            ret += fread(&alpha[i], sizeof(alpha[i]), 1, stringf);
+                            ret += (int)fread(&alpha[i], sizeof(alpha[i]), 1, stringf);
                         }
-                        ret += fread(&b, sizeof(b), 1, stringf);
-                        ret += fread(&AB[0], sizeof(AB[0]), 1, stringf);
-                        ret += fread(&AB[1], sizeof(AB[1]), 1, stringf);
+                        ret += (int)fread(&b, sizeof(b), 1, stringf);
+                        ret += (int)fread(&AB[0], sizeof(AB[0]), 1, stringf);
+                        ret += (int)fread(&AB[1], sizeof(AB[1]), 1, stringf);
 
                         if (ret != 3 + svm_prob.l)
                         {
@@ -2660,7 +2660,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         buf[WIDTHOF(buf) - 1] = 0;
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
-        totalfeatures = strlen(file_string);
+        totalfeatures = (int)strlen(file_string);
         sprintf(buf, "Total features in input file: %d\n", totalfeatures);
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
@@ -2689,7 +2689,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //   finally, save the status output
         //
         crm_destructive_alter_nvariable(svrbl, svlen,
-                stext, strlen(stext));
+                stext, (int)strlen(stext));
     }
 
 	free(file_string);
@@ -2812,4 +2812,16 @@ int crm_expr_sks_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "SKS");
 }
+
+
+int crm_expr_sks_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, int txtstart, int txtlen)
+{
+    return nonfatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "SKS");
+}
+
+
 

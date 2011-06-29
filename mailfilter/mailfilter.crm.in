@@ -4,7 +4,7 @@
 #
 #        A statistical mail sorter with mail-to-yourself commanding
 #
-#    Copyright (C) 2002-2007 William S. Yerazunis; licensed under the
+#    Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
 #    GNU Public License (GPL) version 2.  A copy of this license is included
 #    in the distribution media, or obtain one from www.fsf.org .
 #
@@ -59,6 +59,8 @@
 #
 #    --- These vars must have a value, or else we'll get errors ----
 #
+isolate (:program_fault_exit_code:) /66/   # [i_a] in case mailfilter.cf cannot be loaded: make sure we don't get an error report cascade.
+
 isolate (:classifier_reason:) /no reason yet/
 #
 isolate (:classify_status:) //
@@ -216,7 +218,7 @@ isolate (:reject_address:) /:*:general_fails_to:/
 #
 #      Is text cacheing turned on?
 {
-	call /:reavercache_init:/
+    call /:reavercache_init:/
     #
     #    Yes, text cacheing is on.  Save the input as is in the cache.
     #
@@ -274,36 +276,36 @@ isolate (:i_text:) /:*:m_text:/
 
     #   expansion 1: - do we perform base64 expansions?
     {
-		{
-			match [:do_base64:] /yes/
-			{
-				#  yes, expand base64's if there are any
-				#
-				#    Note: some spams don't even bother to use
-				#    a 'Content-Transfer-Encoding' marker,
-				#    and even fewer use Content-Type: text/whatever
-				#    so we have to sort of wing it, when to expand
-				#    what _might_ be base64 and when to ignore it.
-				#    For now, if it says it's a base64, it gets
-				#    expanded, no matter what the type.  Maybe
-				#    someday someone will put in a lockout for
-				#    things like .jpg files, .doc files, etc.
-				#
-				isolate (:exp_text:)
-				match [:b_text:] <nocase> (:a: :h: :b:) \
-					/(Content-Transfer-Encoding): base64(.*)/
-				match (:c:) [:b:]  \
-					/([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
-				#
-				syscall (:*:c:) (:exp_text:) /:*:mime_decoder: /
-				#   and stuff the result back into b_text for
-				#   classification right in context.
-				alter (:c:) /:*:exp_text:/
-				#   and mark this piece of mime as "prior".
-				alter (:h:) /Content-Transfer-Prior-Encoding/
-				#   repeat till no more Mime base64 encodings
-				liaf
-			}
+        {
+            match [:do_base64:] /yes/
+            {
+                #  yes, expand base64's if there are any
+                #
+                #    Note: some spams don't even bother to use
+                #    a 'Content-Transfer-Encoding' marker,
+                #    and even fewer use Content-Type: text/whatever
+                #    so we have to sort of wing it, when to expand
+                #    what _might_ be base64 and when to ignore it.
+                #    For now, if it says it's a base64, it gets
+                #    expanded, no matter what the type.  Maybe
+                #    someday someone will put in a lockout for
+                #    things like .jpg files, .doc files, etc.
+                #
+                isolate (:exp_text:)
+                match [:b_text:] <nocase> (:a: :h: :b:) \
+                    /(Content-Transfer-Encoding): base64(.*)/
+                match (:c:) [:b:]  \
+                    /([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
+                #
+                syscall (:*:c:) (:exp_text:) /:*:mime_decoder: /
+                #   and stuff the result back into b_text for
+                #   classification right in context.
+                alter (:c:) /:*:exp_text:/
+                #   and mark this piece of mime as "prior".
+                alter (:h:) /Content-Transfer-Prior-Encoding/
+                #   repeat till no more Mime base64 encodings
+                liaf
+            }
         }
         alius
         {
@@ -521,9 +523,9 @@ isolate ( :spamcss: :nonspamcss: )
         accept
         exit /:*:accepted_mail_exit_code:/
     }
-	#
-	#    Did the user specify command "force"?
-	#
+    #
+    #    Did the user specify command "force"?
+    #
     {
         match <nomultiline> [:c:] /force/
         #
@@ -531,30 +533,30 @@ isolate ( :spamcss: :nonspamcss: )
         alter (:force:) /SET/
     }
 
-	#
-	#    Did the user specify command "unlearn"?
-	#
+    #
+    #    Did the user specify command "unlearn"?
+    #
     {
         match <nomultiline> [:c:] /unlearn/
         #
         #    yep, so we set the "force" on.
         alter (:unlearn:) /SET/
     }
-	#
-	#     Now, if :unlearn: is set, by either bashline or command, we
-	#     set the :clf: flag to be "refute".   Otherwise, we set it to
-	#     be what it was before.
-	#
+    #
+    #     Now, if :unlearn: is set, by either bashline or command, we
+    #     set the :clf: flag to be "refute".   Otherwise, we set it to
+    #     be what it was before.
+    #
     {
         match [:unlearn:] /SET/
         alter (:clf:) /:*:clf: refute/
     }
 
-	#
-	#     Now, the big mahonka.  Learn as nonspam, or as spam
-	#      (note the three subpaths - one each for non-forced, forced, and
-	#      non-forced error messages)
-	#
+    #
+    #     Now, the big mahonka.  Learn as nonspam, or as spam
+    #      (note the three subpaths - one each for non-forced, forced, and
+    #      non-forced error messages)
+    #
 
     {
         #     was it a command to learn something as nonspam?
@@ -573,7 +575,7 @@ isolate ( :spamcss: :nonspamcss: )
             {
                 match (:: :fileid:) /X-CRM114-CacheID: ([[:graph:]]+)/
                 #      check- does the cached file exist?
-                syscall () (:tmp:) /ls :*:text_cache:\/texts\/:*:fileid:/ /[Windows-MS]dir /b :*:text_cache:\\texts\\:*:fileid:/
+                syscall () (:tmp:) /ls :*:text_cache:\/texts\/:*:fileid:/
                 match [:tmp:] /:*:fileid:/
                 #   yes, it exists - go on with the learning method
                 #      and remember this file on a permanent basis
@@ -823,8 +825,8 @@ match [:priolist:] //
             alter (:classifier_reason:) /** REJECT: CRM114 Priority Blacklisted by: :*:reason: **:*:_nl:/
             alter (:reject_address:) /:*:fail_priority_mail_to:/
             {
-				match [:log_rejections:] /yes/
-				output [:*:fileprefix:rejected_by_blacklist.txt] <append> /:*:_dw:/
+                match [:log_rejections:] /yes/
+                output [:*:fileprefix:rejected_by_blacklist.txt] <append> /:*:_dw:/
             }
             alter (:stats:) / pR: -999.99 /
             goto /:looks_bad:/
@@ -910,7 +912,7 @@ match [:priolist:] //
     #   then reject it as SPAM.
     #
     {
-	    classify <:*:clf:> ( :*:fileprefix::*:nonspamcss: | :*:fileprefix::*:spamcss: ) ( :stats: ) [:m_text:] /:*:lcr:/
+        classify <:*:clf:> ( :*:fileprefix::*:nonspamcss: | :*:fileprefix::*:spamcss: ) ( :stats: ) [:m_text:] /:*:lcr:/
     }
     #       Now we grab the pR and if it's greater than the minus
     #       threshold, we send it to "good".  Otherwise, it goes to bad.
@@ -953,92 +955,93 @@ match [:priolist:] //
 
     #     and write out the long-form message too.
     {
-		{
-			match [:add_headers:] /yes/
-			{
-				match <nomultiline> [:stats:] (:pr:) /pR: .*$/
-			}
-			call /:mungmail_add:/ [X-CRM114-Version: :*:_crm_version: MF-:*:_pgm_hash: ]
-			call /:mungmail_unique:/ [X-CRM114-CacheID: :*:cacheid: ]
-			call /:mungmail_unique:/ [X-CRM114-Status: SPAM  ( :*:pr: )]
-		}
-		#
-		#            Now, get the Subject: line.  If none, make one.
-		{
-			{
-				match (:subject_line: :subj_text:) <nocase nomultiline> \
-					 /^Subject: (.*)/
-			}
-			alius
-			{
-				match (:end_of_headers:) /\n\n/
-				alter (:end_of_headers:) /\nSubject: (none)\n\n/
-				match (:subject_line: :subj_text:) <nomultiline> /^Subject: (.*)/       }
-		}
-		{
-			#
-			#   If we are re-sending this, we want to de-fang the
-			#   subject, otherwise we don't.
-			match [:reject_address:]  /[a-zA-Z0-9]/
-			#   Paolo P. suggests this alteration to avoid subversion
-			#   by enclosing an alternate target in "marks".  We always
-			#   have to do this.
-			{
-				match (:dq:) [:subj_text:] /\$/
-				alter (:dq:) /USD/
-				liaf
-			}
-			{
-				match (:dq:) [:subj_text:] /[^-a-zA-Z0-9!., ]/
-				alter (:dq:) //
-				liaf
-			}
-			#
-			#     We isolate subj_text here, so if later syscalls move
-			#     things, the subject text used in "mail" is still OK.
-			isolate (:subj_text:)
-		}
-		#
-		#     If the user asked for a spam-flagging string, put the flagging
-		#     string into the subject.
-		#
-		{
-			match [:spam_flag_subject_string:] /./
-			alter (:subj_text:) \
-			/:*:spam_flag_subject_string: :*:subj_text:/
-		}
-		{
-			match [:add_extra_stuff:] /text/
-			#   get rid of any first-column 'From's as they are message breaks!
-			#   this isn't necessary if we're mailing to someplace else...
-			{
-				match (:f:) <nomultiline> [:m_text:] /^From/
-				alter (:f:) />:*:f:/
-				liaf
-			}
-			alter (:_dw:) /:*:_dw:-=-Extra Stuff-=-\n\n:*:m_text: -0-0-0- :*:_nl:/
-		}
-		{
-			match [:add_extra_stuff:] /attachment/
-			#   get rid of any first-column 'From's as they are message breaks!
-			#   this isn't necessary if we're mailing to someplace else...
-			{
-				match (:f:) <nomultiline> [:m_text:] /^From/
-				alter (:f:) / :*:f:/
-				liaf
-			}
+        {
+            match [:add_headers:] /yes/
+            {
+                match <nomultiline> [:stats:] (:pr:) /pR: .*$/
+            }
+            call /:mungmail_add:/ [X-CRM114-Version: :*:_crm_version: MF-:*:_pgm_hash: ]
+            call /:mungmail_unique:/ [X-CRM114-CacheID: :*:cacheid: ]
+            call /:mungmail_unique:/ [X-CRM114-Status: SPAM  ( :*:pr: )]
+        }
+        #
+        #            Now, get the Subject: line.  If none, make one.
+        {
+            {
+                match (:subject_line: :subj_text:) <nocase nomultiline> \
+                     /^Subject: (.*)/
+            }
+            alius
+            {
+                match (:end_of_headers:) /\n\n/
+                alter (:end_of_headers:) /\nSubject: (none)\n\n/
+                match (:subject_line: :subj_text:) <nomultiline> /^Subject: (.*)/
+            }
+        }
+        {
+            #
+            #   If we are re-sending this, we want to de-fang the
+            #   subject, otherwise we don't.
+            match [:reject_address:]  /[a-zA-Z0-9]/
+            #   Paolo P. suggests this alteration to avoid subversion
+            #   by enclosing an alternate target in "marks".  We always
+            #   have to do this.
+            {
+                match (:dq:) [:subj_text:] /\$/
+                alter (:dq:) /USD/
+                liaf
+            }
+            {
+                match (:dq:) [:subj_text:] /[^-a-zA-Z0-9!., ]/
+                alter (:dq:) //
+                liaf
+            }
+            #
+            #     We isolate subj_text here, so if later syscalls move
+            #     things, the subject text used in "mail" is still OK.
+            isolate (:subj_text:)
+        }
+        #
+        #     If the user asked for a spam-flagging string, put the flagging
+        #     string into the subject.
+        #
+        {
+            match [:spam_flag_subject_string:] /./
+            alter (:subj_text:) \
+            /:*:spam_flag_subject_string: :*:subj_text:/
+        }
+        {
+            match [:add_extra_stuff:] /text/
+            #   get rid of any first-column 'From's as they are message breaks!
+            #   this isn't necessary if we're mailing to someplace else...
+            {
+                match (:f:) <nomultiline> [:m_text:] /^From/
+                alter (:f:) />:*:f:/
+                liaf
+            }
+            alter (:_dw:) /:*:_dw:-=-Extra Stuff-=-\n\n:*:m_text: -0-0-0- :*:_nl:/
+        }
+        {
+            match [:add_extra_stuff:] /attachment/
+            #   get rid of any first-column 'From's as they are message breaks!
+            #   this isn't necessary if we're mailing to someplace else...
+            {
+                match (:f:) <nomultiline> [:m_text:] /^From/
+                alter (:f:) / :*:f:/
+                liaf
+            }
 
 
-			isolate (:content_type:) //
-			# syscall (:*:_dw:) (:content_type:) /formail -X "Content-Type"/
-			call /:mungmail_extract:/ [Content-type] (:content_type:)
-			isolate (:content_transfer_encoding:) //
-			# syscall (:*:_dw:) (:content_transfer_encoding:) /formail -X "Content-Transfer-Encoding"/
-			call /:mungmail_extract:/ [Content-Transfer-Encoding] (:content_transfer_encoding:)
-			# syscall (:*:_dw:) (:_dw:) /formail -A "MIME-Version: 1.0"/
-			# syscall (:*:_dw:) (:_dw:) /formail -A "Content-Type: multipart\/mixed\; boundary=Attachment_Quote_Boundary_1234567890\n--Attachment_Quote_Boundary_1234567890\n:*:content_type::*:content_transfer_encoding:"/
-			call /:mungmail_add:/ ["Content-Type: multipart\/mixed\; boundary=Attachment_Quote_Boundary_1234567890\n--Attachment_Quote_Boundary_1234567890\n:*:content_type::*:content_transfer_encoding:]
-			alter (:_dw:) /:*:_dw::*:_nl:\
+            isolate (:content_type:) //
+            # syscall (:*:_dw:) (:content_type:) /formail -X "Content-Type"/
+            call /:mungmail_extract:/ [Content-type] (:content_type:)
+            isolate (:content_transfer_encoding:) //
+            # syscall (:*:_dw:) (:content_transfer_encoding:) /formail -X "Content-Transfer-Encoding"/
+            call /:mungmail_extract:/ [Content-Transfer-Encoding] (:content_transfer_encoding:)
+            # syscall (:*:_dw:) (:_dw:) /formail -A "MIME-Version: 1.0"/
+            # syscall (:*:_dw:) (:_dw:) /formail -A "Content-Type: multipart\/mixed\; boundary=Attachment_Quote_Boundary_1234567890\n--Attachment_Quote_Boundary_1234567890\n:*:content_type::*:content_transfer_encoding:"/
+            call /:mungmail_add:/ ["Content-Type: multipart\/mixed\; boundary=Attachment_Quote_Boundary_1234567890\n--Attachment_Quote_Boundary_1234567890\n:*:content_type::*:content_transfer_encoding:]
+            alter (:_dw:) /:*:_dw::*:_nl:\
 --Attachment_Quote_Boundary_1234567890 :*:_nl:\
 Content-Type: text\/plain :*:_nl:\
 Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
@@ -1048,29 +1051,29 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 #
 #
 #     Decide if we forward or if we just output it.
-		{
-			{
-				#   if this match succeeds, we should forward-to-an-address?
-				# Yes, but only if we _have_ a forward-to address.
-				match [:reject_address:]  /[a-zA-Z0-9]/
-				{
-					#  -- put the classifier reason in as the first thing!
-					match [:add_verbose_stats:] /yes/
-					alter (:_dw:) /:*:_nl: :*:classifier_reason::*:_nl: :*:_dw: /
-				}
-				syscall (:*:_dw:) /mail :*:reject_address: -s ':*:subj_text:'/
-			}
-			alius
-			{
-				{
-					# -- put the classifier reason in at the end of the headers
-					match [:add_verbose_stats:] /yes/
-					match (:start_of_data:) /\n\n/
-					alter (:start_of_data:) /\n\n :*:classifier_reason: \n /
-				}
-				accept
-			}
-		}
+        {
+            {
+                #   if this match succeeds, we should forward-to-an-address?
+                # Yes, but only if we _have_ a forward-to address.
+                match [:reject_address:]  /[a-zA-Z0-9]/
+                {
+                    #  -- put the classifier reason in as the first thing!
+                    match [:add_verbose_stats:] /yes/
+                    alter (:_dw:) /:*:_nl: :*:classifier_reason::*:_nl: :*:_dw: /
+                }
+                syscall (:*:_dw:) /mail :*:reject_address: -s ':*:subj_text:'/
+            }
+            alius
+            {
+                {
+                    # -- put the classifier reason in at the end of the headers
+                    match [:add_verbose_stats:] /yes/
+                    match (:start_of_data:) /\n\n/
+                    alter (:start_of_data:) /\n\n :*:classifier_reason: \n /
+                }
+                accept
+            }
+        }
     }
     alter (:our_exit_code:) /:*:rejected_mail_exit_code:/
     goto /:finish_up:/
@@ -1112,9 +1115,9 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
         call /:mungmail_unique:/ [X-CRM114-CacheID: :*:cacheid: ]
         call /:mungmail_unique:/ [X-CRM114-Status: Good  ( :*:pr: )]
         {
-			#    Maybe we need to tag it as unsure?  Note that since mail
-			#  that scores > -thresh (but still < 0)goes out the "good" pipe,
-			#  some "spammy" email might come through here.
+            #    Maybe we need to tag it as unsure?  Note that since mail
+            #  that scores > -thresh (but still < 0)goes out the "good" pipe,
+            #  some "spammy" email might come through here.
             match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
             eval /:@: :*:pval: < :*:thick_threshold: :/
             call /:mungmail_unique:/ [X-CRM114-Status: UNSURE (:*:pval:) This message is 'unsure'; please train it! ]
@@ -1130,10 +1133,11 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
             liaf
         }
         alter (:_dw:) /:*:_dw:-=-Extra Stuff-=-\n\n :*:m_text: -0-0-0- \n/
-	}
-	{
+    }
+    {
         match [:add_extra_stuff:] /attachment/
-        #   get rid of any first-column 'From's as they are message breaks!     #   this isn't necessary if we're mailing to someplace else...
+        #   get rid of any first-column 'From's as they are message breaks!
+        #   this isn't necessary if we're mailing to someplace else...
         {
             match (:f:) <nomultiline> [:m_text:] /^From/
             alter (:f:) / :*:f:/
@@ -1155,7 +1159,7 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 Content-Type: text\/plain :*:_nl:\
 Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 \n--Attachment_Quote_Boundary_1234567890--\n/
-	}
+    }
 
     accept
     alter (:our_exit_code:) /:*:accepted_mail_exit_code:/
@@ -1166,7 +1170,7 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 #
 :finish_up:
 {
-	#    ---- should we consider automatic training?
+    #    ---- should we consider automatic training?
     match [:automatic_training:] /yes/
     # bounce out if we've already auto-trained this email
     match <absent> /AUTO-TRAINED/
@@ -1196,17 +1200,17 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
     }
     :autotrain_finish:
     {
-		{
-			match [:autotrain_address:] /../
-			# syscall (:*:classifier_reason: :*:_nl: :*:_dw:) /mail -s "AUTO-TRAINED email - please check" :*:autotrain_address:/
-		}
-		alius
-		{
-			# there was no autotrain address, so we just accept it.
-			match (:subj:) /Subject:/
-			alter (:subj:) /Subject:  AUTO_TRAINED- please check! .../
-			accept
-		}
+        {
+            match [:autotrain_address:] /../
+            # syscall (:*:classifier_reason: :*:_nl: :*:_dw:) /mail -s "AUTO-TRAINED email - please check" :*:autotrain_address:/
+        }
+        alius
+        {
+            # there was no autotrain address, so we just accept it.
+            match (:subj:) /Subject:/
+            alter (:subj:) /Subject:  AUTO_TRAINED- please check! .../
+            accept
+        }
     }
 }
 :exit_here:

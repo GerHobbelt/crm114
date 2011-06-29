@@ -1,0 +1,15 @@
+TEST SCRIPT + COMMANDLINE:
+print_binary2decimal_int32.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+hexdumping the stdin input as BIG ENDIAN 32-bit integer values. If you know ASCII tables, that's a pre now. ;-)
+hexval = 30313233 
+hexval = 34353637 
+hexval = 40414243 
+hexval = 44454647 
+

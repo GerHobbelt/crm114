@@ -48,7 +48,8 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     CRM_ASSERT(apb != NULL);
     tvlen = crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->p1start, apb->p1len);
     tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME);
-    if (tvlen == 0)
+    if (!crm_nextword(temp_vars, tvlen, 0, &vstart, &vlen)
+    || vlen < 3)
     {
         nonfatalerror("This statement is missing the variable to isolate"
                       " so I'll just ignore the whole statement.", "");

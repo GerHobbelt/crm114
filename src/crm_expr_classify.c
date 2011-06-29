@@ -1051,3 +1051,114 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
 
+
+//      Dispatch a MIGRATE statement
+//
+int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
+{
+    char box_text[MAX_PATTERN];
+    char errstr[MAX_PATTERN];
+    int i;
+    char *txt;
+    int start;
+    int len;
+    int retval;
+    int64_t classifier_flags = 0;
+	int boxtxtlen;
+
+    //            get start/length of the text we're going to classify:
+    //
+    CRM_ASSERT(apb != NULL);
+    boxtxtlen = crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
+
+    //  Use crm_restrictvar to get start & length to look at.
+    i = crm_restrictvar(box_text, boxtxtlen,
+            NULL,
+            &txt,
+            &start,
+            &len,
+            errstr,
+			WIDTHOF(errstr));
+
+    if (i > 0)
+    {
+        int curstmt;
+        int fev;
+        fev = 0;
+        curstmt = csl->cstmt;
+        if (i == 1)
+            fev = nonfatalerror(errstr, "");
+        if (i == 2)
+            fev = fatalerror(errstr, "");
+        //
+        //     did the FAULT handler change the next statement to execute?
+        //     If so, continue from there, otherwise, we FAIL.
+        if (curstmt == csl->cstmt)
+        {
+            csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+            csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
+        }
+        return fev;
+    }
+
+    //            get our flags... the only ones we're interested in here
+    //            are the ones that specify _which_ algorithm to use.
+    classifier_flags = apb->sflags;
+
+    classifier_flags = classifier_flags &
+                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+                        | CRM_NEURAL_NET);
+
+    if (classifier_flags & CRM_OSB_BAYES)
+    {
+        retval = crm_expr_osb_bayes_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_CORRELATE)
+    {
+        retval = crm_expr_correlate_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_OSB_WINNOW)
+    {
+        retval = crm_expr_osb_winnow_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_OSBF)
+    {
+        retval = crm_expr_osbf_bayes_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_HYPERSPACE)
+    {
+        retval = crm_expr_osb_hyperspace_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ENTROPY)
+    {
+        retval = crm_expr_bit_entropy_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_SVM)
+    {
+        retval = crm_expr_svm_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_SKS)
+    {
+        retval = crm_expr_sks_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_FSCM)
+    {
+        retval = crm_expr_fscm_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_NEURAL_NET)
+    {
+        retval = crm_neural_net_css_migrate(csl, apb, txt, start, len);
+    }
+    else
+    {
+        //    Default with no classifier specified
+        apb->sflags |= CRM_AUTODETECT;
+        retval = crm_expr_markov_css_migrate(csl, apb, txt, start, len);
+    }
+    return retval;
+}
+
+

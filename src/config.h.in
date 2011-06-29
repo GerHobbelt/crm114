@@ -102,6 +102,12 @@
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
+/* Define to 1 if you have the `getcwd' function. */
+#undef HAVE_GETCWD
+
+/* Define to 1 if you have the `GetFullPathNameA' function. */
+#undef HAVE_GETFULLPATHNAMEA
+
 /* Define to 1 if you have the `getopt' function. */
 #undef HAVE_GETOPT
 
@@ -122,6 +128,18 @@
 
 /* Define to 1 if you have the `getppid' function. */
 #undef HAVE_GETPPID
+
+/* Define to 1 if you have the `getpwuid' function. */
+#undef HAVE_GETPWUID
+
+/* Define to 1 if you have the `getpwuid_r' function. */
+#undef HAVE_GETPWUID_R
+
+/* Define to 1 if you have the `getuid' function. */
+#undef HAVE_GETUID
+
+/* Define to 1 if you have the `GetUserNameA' function. */
+#undef HAVE_GETUSERNAMEA
 
 /* GNU REs */
 #undef HAVE_GNU_REGEX
@@ -279,6 +297,9 @@
 
 /* Define to 1 if you have the <process.h> header file. */
 #undef HAVE_PROCESS_H
+
+/* Define to 1 if you have the <pwd.h> header file. */
+#undef HAVE_PWD_H
 
 /* Define to 1 if you have the <readline.h> header file. */
 #undef HAVE_READLINE_H

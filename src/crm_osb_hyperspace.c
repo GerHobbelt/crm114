@@ -26,7 +26,11 @@
 
 #if !defined (CRM_WITHOUT_OSB_HYPERSPACE)
 
+#if 0
 #define USE_FIXED_UNIQUE_MODE 1
+#endif
+
+
 
 //////////////////////////////////////////////////////////////////
 //
@@ -284,16 +288,6 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
-#if 0
-    i = 0;
-    while (htext[i] < 0x021)
-        i++;
-    CRM_ASSERT(i < hlen);
-    j = i;
-    while (htext[j] >= 0x021)
-        j++;
-    CRM_ASSERT(j <= hlen);
-#else
  if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
  {
             fev = nonfatalerror_ex(SRC_LOC(), 
@@ -305,7 +299,6 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
  j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
-#endif
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
@@ -353,15 +346,13 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             HYPERSPACE_MAX_FEATURE_COUNT,  //  max number of hashes
             &hashcounts                   // how many hashes we actually got
             );
+        CRM_ASSERT(hashcounts >= 0);
+        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+        hashes[hashcounts].hash = 0; // write sentinel
 
 
 
 #if USE_FIXED_UNIQUE_MODE
-        CRM_ASSERT(hashcounts >= 0);
-        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-        CRM_ASSERT(hashes[hashcounts].hash == 0);
-
-
     if (internal_trace)
 	{
         fprintf(stderr, "Total unsorted hashes generated: %d\n", hashcounts);
@@ -404,10 +395,9 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
          }
          hashcounts = j;
 
-    }
-
-  //    Put in a sentinel zero.
+	// Put in a sentinel zero.
         hashes[hashcounts].hash = 0;
+    }
 
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
@@ -429,16 +419,16 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   j = 0;
 
   if (internal_trace)
-    fprintf (stderr, "Pre-Unique: %ld as %lx %lx %lx %lx %lx %lx %lx %lx\n",
+    fprintf (stderr, "Pre-Unique: %d as %lx %lx %lx %lx %lx %lx %lx %lx\n",
 	     hashcounts,
-	     hashes[0].hash,
-	     hashes[1].hash,
-	     hashes[2].hash,
-	     hashes[3].hash,
-	     hashes[4].hash,
-	     hashes[5].hash,
-	     hashes[6].hash,
-	     hashes[7].hash);
+	     (unsigned long int)hashes[0].hash,
+	     (unsigned long int)hashes[1].hash,
+	     (unsigned long int)hashes[2].hash,
+	     (unsigned long int)hashes[3].hash,
+	     (unsigned long int)hashes[4].hash,
+	     (unsigned long int)hashes[5].hash,
+	     (unsigned long int)hashes[6].hash,
+	     (unsigned long int)hashes[7].hash);
   
   if (unique)
     {
@@ -461,16 +451,16 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //Debug print
   if (internal_trace)
-    fprintf (stderr, "Post-Unique: %ld as %lx %lx %lx %lx %lx %lx %lx %lx\n",
+    fprintf (stderr, "Post-Unique: %d as %lx %lx %lx %lx %lx %lx %lx %lx\n",
 	     hashcounts,
-	     hashes[0].hash,
-	     hashes[1].hash,
-	     hashes[2].hash,
-	     hashes[3].hash,
-	     hashes[4].hash,
-	     hashes[5].hash,
-	     hashes[6].hash,
-	     hashes[7].hash);
+	     (unsigned long int)hashes[0].hash,
+	     (unsigned long int)hashes[1].hash,
+	     (unsigned long int)hashes[2].hash,
+	     (unsigned long int)hashes[3].hash,
+	     (unsigned long int)hashes[4].hash,
+	     (unsigned long int)hashes[5].hash,
+	     (unsigned long int)hashes[6].hash,
+	     (unsigned long int)hashes[7].hash);
 
 
 #endif
@@ -1221,7 +1211,10 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             HYPERSPACE_MAX_FEATURE_COUNT,                         //  max number of hashes
             &unk_hashcount                                       // how many hashes we actually got
             );                                        
-
+    CRM_ASSERT(unk_hashcount >= 0);
+    CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
+    //mark the end of a feature vector
+    unk_hashes[unk_hashcount].hash = 0;
 
 
     ////////////////////////////////////////////////////////////
@@ -1231,12 +1224,6 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //     the hyperspace vector files.
 
 #if USE_FIXED_UNIQUE_MODE
-    CRM_ASSERT(unk_hashcount >= 0);
-    CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
-    //mark the end of a feature vector
-    unk_hashes[unk_hashcount].hash = 0;
-
-
     QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, unk_hashes, unk_hashcount,
             hash_compare);
 
@@ -2056,4 +2043,16 @@ int crm_expr_osb_hyperspace_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");
 }
+
+
+int crm_expr_osb_hyperspace_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, int txtstart, int txtlen)
+{
+    return nonfatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
+}
+
+
 

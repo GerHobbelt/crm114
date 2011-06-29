@@ -633,6 +633,7 @@ AC_CHECK_HEADERS(libintl.h sys/utime.h utime.h wchar.h)
 AC_CHECK_HEADERS(crtdbg.h signal.h io.h direct.h process.h lmcons.h)
 AC_CHECK_HEADERS(getopt.h getopt_ex.h)
 AC_CHECK_HEADERS(endian.h sys/param.h)
+AC_CHECK_HEADERS(pwd.h)
 
 
 # see: http://www.gnu-pascal.de/crystal/gpc/en/mail11031.html
@@ -942,6 +943,8 @@ AC_CHECK_FUNCS(getopt getopt_long)
 AC_CHECK_FUNCS(__debugbreak _set_output_format _setmode _fileno _set_errno)
 AC_CHECK_FUNCS(sysconf)
 AC_CHECK_FUNCS(madvise posix_madvise)
+AC_CHECK_FUNCS(getcwd GetFullPathNameA)
+AC_CHECK_FUNCS(getuid getpwuid getpwuid_r GetUserNameA)
 
 
 
@@ -974,6 +977,13 @@ AC_SUBST(AM_LDFLAGS)
 AC_SUBST(INSTALLFLAGS)
 AC_SUBST(DIFF_FLAGS)
 
+# see 
+#   http://www.gnu.org/software/libtool/manual/automake/Rebuilding.html
+# for the why: I want any change in those .in files to cause an automatic
+# update, e.g. when running
+#   make dist
+#
+AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/src/config_vanilla_UNIX_sys_defaults.h.in $(top_srcdir)/win32/config_win32.h.in'])
 
 
 
@@ -987,6 +997,7 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  src/diff_em.sh
                  src/indent.sh
+                 src/config_vanilla_UNIX_sys_defaults.h
                  tests/Makefile
                  tests/megatest.sh
                  tests/megatest_ng.sh
@@ -1044,6 +1055,7 @@ AC_CONFIG_FILES([Makefile
                  tests/quine.crm
                  tests/defaulttest.crm
                  tests/print_binary2decimal_int32.crm
+                 tests/match_re_fringe1.crm
                  tests/testscript.sh
                  tests/crm114_statustest.filter.sh
                  tests/crm114_error_report.filter.sh
@@ -1054,10 +1066,12 @@ AC_CONFIG_FILES([Makefile
                  examples/shroud.crm
                  mailfilter/classifymail.crm
                  mailfilter/mailfilter.crm
+                 mailfilter/mailfilter.cf
                  mailfilter/maillib.crm
                  mailfilter/mailreaver.crm
                  mailfilter/mailtrainer.crm
                  examples/rewriteutil.crm
+                 win32/config_win32.h
 ],
 [
 	#

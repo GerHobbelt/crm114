@@ -29,6 +29,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     FILE *fp = NULL;
     char temp_vars[MAX_PATTERN];
     int tvlen;
+    int tvstart;
     char filename[MAX_FILE_NAME_LEN];
     int fnlen;
     char ifn[MAX_FILE_NAME_LEN];
@@ -37,8 +38,8 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     char fileiolen[MAX_FILE_NAME_LEN];
     int fileiolenlen;
     int offset, iolen;
-    int vstart;
-    int vlen;
+    //int vstart;
+    //int vlen;
     int done;
     int till_eof;
     int use_readline;
@@ -76,16 +77,25 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_PATTERN);
 	CRM_ASSERT(tvlen < MAX_PATTERN);
 
-    //     If you think INPUT should read to the data window, uncomment this.
-    //
-    if (tvlen == 0)
+	if (!crm_nextword(temp_vars, tvlen, 0, &tvstart, &tvlen))
     {
+		// not a valid variable found in the arg.
         strcpy(temp_vars, ":_dw:");
         tvlen = (int)strlen(":_dw:");
+		tvstart = 0;
+    }
+	else if (tvlen < 2)
+	{
+        nonfatalerror("The variable you're asking me to load the INPUT into has an utterly bogus name. ",
+                "So I'll ignore the whole statement.");
+        return 0;
     }
 
+
     if (internal_trace)
-        fprintf(stderr, "  inputting to var (len=%d): >>>%s<<<\n", tvlen, temp_vars);
+	{
+        fprintf(stderr, "  inputting to var (len=%d): >>>%.*s<<<\n", tvlen, tvlen, temp_vars + tvstart);
+	}
 
     //   and what file to get it from...
     //
@@ -256,21 +266,21 @@ MAX_FILE_NAME_LEN-1);
 
     done = 0;
 
-    //   get the variable name
-    if (!crm_nextword(temp_vars, tvlen, 0,  &vstart, &vlen)
- || vlen == 0)
+#if 0
+	if (!crm_nextword(temp_vars, tvlen, 0,  &vstart, &vlen) || vlen == 0)
     {
         done = 1;
     }
     else
-    {
+#endif
+	{
         //        must make a copy of the varname.
         //
         char vname[MAX_VARNAME];
         int ichar = 0;
-        CRM_ASSERT(vlen < MAX_VARNAME);
-        memmove(vname, &(temp_vars[vstart]), vlen);
-        vname[vlen] = 0;
+        CRM_ASSERT(tvlen < MAX_VARNAME);
+        memmove(vname, &(temp_vars[tvstart]), tvlen);
+        vname[tvlen] = 0;
 
         //        If we have a seek requested, do an fseek.
         //        (Annoying But True: fseek on stdin does NOT error, it's
@@ -279,7 +289,7 @@ MAX_FILE_NAME_LEN-1);
              || isatty(fileno(fp))) && offset != 0)
         {
             nonfatalerror("Hmmm, a file offset on stdin or tty won't do much. ",
-                "I'll ignore it for now. ");
+                "I'll ignore it for now.");
         }
         else if (offset != 0)
         {
@@ -307,7 +317,11 @@ MAX_FILE_NAME_LEN-1);
         {
             char *chartemp;
             chartemp = readline("");
-            if (strlen(chartemp) > data_window_size - 1)
+		if (!chartemp)
+{
+			chartemp = strdup(""); // see the UNIX man page: readline() MAY return NULL!
+ }
+           if (strlen(chartemp) > data_window_size - 1)
             {
                 nonfatalerror("Dang, this line of text is way too long: ",
                     chartemp);

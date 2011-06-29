@@ -64,6 +64,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int savedinputtxtlen;
     char wvname[MAX_VARNAME];
     int wvnamelen;
+    int wvnamestart;
     CSL_CELL *mdw;
     int flen;
     int regexflags;
@@ -243,13 +244,15 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	CRM_ASSERT(wvnamelen < MAX_PATTERN);
 	wvname[wvnamelen] = 0;
     //    if no svname, then we're defaulted to :_dw:
-    if (wvnamelen < 3)
+    if (!crm_nextword(wvname, wvnamelen, 0, &wvnamestart, &wvnamelen)
+     || wvnamelen < 3)
     {
         strcat(wvname, ":_dw:");
         wvnamelen = (int)strlen(":_dw:");
+		wvnamestart = 0;
     }
 
-    vmidx = crm_vht_lookup(vht, wvname, wvnamelen);
+    vmidx = crm_vht_lookup(vht, &wvname[wvnamestart], wvnamelen);
     if (vht[vmidx] == NULL)
     {
         nonfatalerror("We seem to be windowing a nonexistent variable.",

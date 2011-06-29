@@ -4,7 +4,7 @@
 ## under the terms of the GNU GPL.  See the file COPYING.
 
 ## Copyright (C) 2003, 2004 Joost van Baal
-## Copyright (C) 2007 Ger Hobbelt
+## Copyright (C) 2007-2008 Ger Hobbelt
 
 
 #
@@ -335,8 +335,10 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
 	alius_w_comment.crm \
 	userdirtest.crm \
-	print_binary2decimal_int32.crm
-	
+	print_binary2decimal_int32.crm \
+	match_re_fringe1.crm
+
+
 
 TEXTFILES = COLOPHON.txt pad.dat \
 	QUICKREF.txt INTRO.txt knownbugs.txt FAQ.txt things_to_do.txt \
@@ -358,7 +360,8 @@ TEXTFILES = COLOPHON.txt pad.dat \
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(UTILFILES) \
 	$(CRMFILES) \
-	$(TEXTFILES) 
+	$(TEXTFILES) \
+	config_vanilla_UNIX_sys_defaults.h.in
 
 
 TESTS =
@@ -369,28 +372,16 @@ bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge
 noinst_PROGRAMS = testvectok crm_test_hashes
 
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
+crm114_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) crm_main.c
 
 
-cssutil_SOURCES = cssutil.c \
-	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c \
-	$(HFILES) $(EXTRA_DEPS)
+cssutil_SOURCES = cssutil.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 
-osbf_util_SOURCES = osbf-util.c \
-	crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c \
-	$(HFILES) $(EXTRA_DEPS)
+osbf_util_SOURCES = osbf-util.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 
-cssdiff_SOURCES = cssdiff.c \
-	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c \
-	$(HFILES) $(EXTRA_DEPS)
+cssdiff_SOURCES = cssdiff.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 
-cssmerge_SOURCES = cssmerge.c \
-	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c \
-	$(HFILES) $(EXTRA_DEPS)
+cssmerge_SOURCES = cssmerge.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 
 testvectok_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) testvectok.c
 
@@ -580,9 +571,6 @@ crmregex_tre.o: crmregex_tre.c \
 crmregex_gnu.o: crmregex_gnu.c \
 	$(HFILES) $(EXTRA_DEPS)
 
-crm_util_errorhandlers.o: crm_util_errorhandlers.c \
-	$(HFILES) $(EXTRA_DEPS)
-
 cssutil.o: cssutil.c  \
 	$(HFILES) $(EXTRA_DEPS)
 
@@ -611,10 +599,10 @@ crm_versioning.o: crm_versioning.c \
 	$(HFILES) $(EXTRA_DEPS)
 
 
-# cssutil$(EXEEXT): cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# cssutil$(EXEEXT): cssutil.o crm_css_maintenance.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 # 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
 # 		crm_css_maintenance.o \
-# 		crm_util_errorhandlers.o \
+# 		crm_errorhandlers.o \
 # 		crm_str_funcs.o \
 # 		crm_generic_port.o \
 # 		crm_stdio_port.o \
@@ -624,10 +612,10 @@ crm_versioning.o: crm_versioning.c \
 # 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 # 	$(E) ""
 # 
-# osbf-util$(EXEEXT): osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# osbf-util$(EXEEXT): osbf-util.o crm_osbf_maintenance.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 # 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
 # 		crm_str_funcs.o \
-# 		crm_util_errorhandlers.o \
+# 		crm_errorhandlers.o \
 # 		crm_osbf_maintenance.o \
 # 		crm_generic_port.o \
 # 		crm_stdio_port.o \
@@ -637,9 +625,9 @@ crm_versioning.o: crm_versioning.c \
 # 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 # 	$(E) ""
 # 
-# cssdiff$(EXEEXT): cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# cssdiff$(EXEEXT): cssdiff.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 # 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
-# 		crm_util_errorhandlers.o \
+# 		crm_errorhandlers.o \
 # 		crm_str_funcs.o \
 # 		crm_generic_port.o \
 # 		crm_stdio_port.o \
@@ -649,10 +637,10 @@ crm_versioning.o: crm_versioning.c \
 # 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 # 	$(E) ""
 # 
-# cssmerge$(EXEEXT): cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# cssmerge$(EXEEXT): cssmerge.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 # 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
 # 		crm_str_funcs.o \
-# 		crm_util_errorhandlers.o \
+# 		crm_errorhandlers.o \
 # 		crm_generic_port.o \
 # 		crm_stdio_port.o \
 # 		crm_versioning.o \

@@ -123,6 +123,9 @@ extern int crm_expr_osbf_bayes_css_analyze(CSL_CELL *csl,
 extern int crm_expr_osbf_bayes_css_create(CSL_CELL *csl,
         ARGPARSE_BLOCK *apb,
         char *txtptr, int txtoffset, int txtlen);
+extern int crm_expr_osbf_bayes_css_migrate(CSL_CELL *csl,
+        ARGPARSE_BLOCK *apb,
+        char *txtptr, int txtoffset, int txtlen);
 
 extern void crm_osbf_set_microgroom(int value);
 extern void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *h,
@@ -143,8 +146,8 @@ extern void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
         unsigned int bindex, unsigned int hash,
         unsigned int key, int value);
 extern int crm_osbf_create_cssfile(char *cssfile, unsigned int buckets,
-        unsigned int major, unsigned int minor,
-        unsigned int spectrum_start);
+        unsigned int major, unsigned int minor /* [i_a] unused anyway ,
+        unsigned int spectrum_start */ );
 
 
 

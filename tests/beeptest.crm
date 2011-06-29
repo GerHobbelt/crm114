@@ -1,4 +1,4 @@
-#! /windows/G/prj/3actual/crm114/src/crm114
+#! /home/ger/prj/3actual/crm114-2/src/crm114
 { 
 	window
 	output /:*:_nl: CRM114: test syscall 'echo beep' :*:_nl:/

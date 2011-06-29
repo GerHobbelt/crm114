@@ -50,10 +50,10 @@ BEGIN {
 /Best match to file.* prob: .* pR:/	{
 	# make sure old and new filenames match by stripping off a lot:
 	s = $6;
-	sub(/(/, "", s);
 	gsub(/.*\//, "", s);
 	sub(/\..*/, "", s);
 	sub(/_mt_ng_.*/, "", s);
+	sub(/\(/, "", s);
 	printf("CVT: Best match to file %s %s prob: %e  pR: %f\n", $5, s, tol($8, prob, o_prob), tol($10, pR, o_pR)); 
 	next;
 }
@@ -96,14 +96,21 @@ BEGIN {
 /: features: .* L1: .* L2: .* L3: .* [lL]4: .* prob: .* pR:/	{
 	# make sure old and new filenames match by stripping off a lot:
 	s = $2;
-	sub(/(/, "", s);
 	gsub(/.*\//, "", s);
 	sub(/\..*/, "", s);
 	sub(/_mt_ng_.*/, "", s);
+	sub(/\(/, "", s);
 	printf("%s features: %d, L1: %d, L2: %d, L3: %d, L4: %d, prob: %e, pR: %e\n", s, tol($4, features, o_features), $6, $8, $10, $12, tol($14, prob, o_prob), tol($16, pR, o_pR));
 	next;
 }
 
+/-{.*\( *\.\//	{
+	s = $0;
+	gsub(/ \.\//, " ", s);
+	printf("%s\n", s);
+	next;
+}
+	
 	{
 	printf("%s\n", $0);
 }

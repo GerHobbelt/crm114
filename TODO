@@ -150,3 +150,11 @@ Stefan Seyfried
   (basic routines have been set up in crm_str_funcs.c) and make sure no intern
   can ever use malloc/realloc/etc. ever again -- this to ensure each allocation
   is checked and duely reported.
+
+- make the AX_* M4 macros work again - currently optimizations are disabled on UNIX
+  do to one of these.
+
+- See if we can find a better solution for the crm_free() void** casting and the
+  GCC 3.x resulting warning in -O3 mode about type-punning. :-(
+
+

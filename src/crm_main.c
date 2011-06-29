@@ -1364,7 +1364,11 @@ int main(int argc, char **argv)
 
         /* [i_a] make sure we never overflow the buffer: */
 
-        //     the [1] below gets rid of the leading - sign
+	// [i_a] WARNING: ALWAYS make sure the program ends with TWO newlines so that we have a program
+        //       which comes with an 'empty' statement at the very end. This is mandatory to ensure
+	//       a valid 'alius' fail forward target is available at the end of the program at all times.
+
+        //     the [1] below gets rid of the leading '-' char
         snprintf(csl->filetext, max_pgmsize, "\n%s\n\n", &(argv[openbracket][1]));
         csl->filetext[max_pgmsize - 1] = 0;   /* make sure the string is terminated; some environments don't do this when the boundary was hit */
         csl->nchars = (int)strlen(csl->filetext);

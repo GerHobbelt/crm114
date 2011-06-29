@@ -314,8 +314,8 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 ((sparse_spectrum_file_length != 0) ?
                  sparse_spectrum_file_length :
                  OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH),
-                OSBF_VERSION, 0,
-                OSBF_CSS_SPECTRA_START) != EXIT_SUCCESS)
+                OSBF_VERSION, 0 /* [i_a] unused anyway ,
+                OSBF_CSS_SPECTRA_START */ ) != EXIT_SUCCESS)
         {
             fev = fatalerror_ex(SRC_LOC(),
                 "\n Couldn't create file %s; errno=%d(%s)\n",
@@ -1039,9 +1039,11 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         return 0;
 
     if (user_trace)
+	{
         fprintf(stderr,
             "Running with %d files for success out of %d files\n",
             succhash, maxhash);
+	}
     // sanity checks...  Uncomment for super-strict CLASSIFY.
     //
     //    do we have at least 1 valid .cfc files?
@@ -1526,7 +1528,9 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //  and let go of the regex buffery
     if (ptext[0] != 0)
+	{
         crm_regfree(&regcb);
+	}
 
     //   and one last chance to force probabilities into the non-stuck zone
     //
@@ -1796,4 +1800,16 @@ int crm_expr_osbf_bayes_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         "You may want to run 'crm -v' to see which classifiers are available.\n",
         "OSBF");
 }
+
+
+int crm_expr_osbf_bayes_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+                                    char *txtptr, int txtstart, int txtlen)
+{
+    return nonfatalerror_ex(SRC_LOC(),
+        "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+        "You may want to run 'crm -v' to see which classifiers are available.\n",
+        "OSBF");
+}
+
+
 

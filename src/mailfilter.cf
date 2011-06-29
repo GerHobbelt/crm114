@@ -40,8 +40,8 @@
 #     --- decoder is, or don't want mime decoding, set :do_base64: to /no/
 #     --- but expect a significant accuracy decrease if you do this.
 #
-#:do_base64: /no/
-:do_base64: /yes/
+:do_base64: /no/
+#:do_base64: /yes/
 #
 #:mime_decoder: /mewdecode/
 #:mime_decoder: /mimencode -d/
@@ -439,3 +439,4 @@
 
 
 :verbose_logfile: /mail_crm_verbose.log/
+

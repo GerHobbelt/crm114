@@ -509,6 +509,34 @@ int crm_neural_net_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 
+//   Additional tooling - css_migrating...
+int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+int crm_expr_markov_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_osb_bayes_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_osb_neural_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_correlate_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_osb_winnow_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_osb_hyperspace_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_bit_entropy_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_svm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_sks_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_fscm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_neural_net_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+
+
+
+
 //  surgically alter a variable
 int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
@@ -698,10 +726,10 @@ typedef int VT_coeff_matrix_cleanup_func(struct magical_VT_userdef_coeff_matrix 
 
 typedef struct magical_VT_userdef_coeff_matrix
 {
-    crmhash_t coeff_array[UNIFIED_VECTOR_STRIDE * UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];    // the pipeline coefficient control array
-    int             pipe_len;       // how long a pipeline (== coeff_array col count)
-    int             pipe_iters;     // how many rows are there in coeff_array
-    int             output_stride;  // how many matrices (rows x cols) are there in coeff_array
+    int coeff_array[UNIFIED_VECTOR_STRIDE * UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];    // the pipeline coefficient control array
+    int pipe_len;       // how long a pipeline (== coeff_array col count)
+    int pipe_iters;     // how many rows are there in coeff_array
+    int output_stride;  // how many matrices (rows x cols) are there in coeff_array
 
 	VT_coeff_matrix_cleanup_func *cleanup; // call this when done; may be used to free() coeff_matrix when applicable.
 }
@@ -874,6 +902,7 @@ double crm_log(double x);
 double norm_pdf(double x);
 double normalized_gauss(double x, double s);
 double crm_frand(void);
+void crm_rand_init(uint32_t seed);
 
 
 
@@ -1074,6 +1103,8 @@ void free_debugger_data(void);
 int file_memset(FILE *dst, unsigned char val, int count);
 
 const char *skip_path(const char *srcfile);
+
+char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath);
 
 // dump var/string/... in src to dst
 int fwrite_ASCII_Cfied(FILE *dst, const char *src, int len);

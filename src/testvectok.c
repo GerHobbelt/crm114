@@ -82,7 +82,6 @@ int selected_hashfunction = 0;  //  0 = default
 
 
 
-
 //   The VHT (Variable Hash Table)
 VHT_CELL **vht = NULL;
 
@@ -170,10 +169,10 @@ int main(void)
     fprintf(stdout, "Args = '%s'\n", arg);
 	
 	apb.s1start = my_regex;
-	apb.s1len = strlen(my_regex);
+	apb.s1len = (int)strlen(my_regex);
 
 	apb.s2start = arg;
-	apb.s2len = strlen(arg);
+	apb.s2len = (int)strlen(arg);
 
 	fprintf(stdout, "Optional OSBF style token globbing: type integer values for max_token_size and count (must specify both!): ");
     k = fscanf(stdin, "%d %d", &i, &j);
@@ -186,7 +185,7 @@ int main(void)
 	}
 
     tokenizer.regex = my_regex;
-    tokenizer.regexlen = strlen(my_regex);
+    tokenizer.regexlen = (int)strlen(my_regex);
 
 	if (strlen(arg) < 3)
 	{
@@ -198,7 +197,7 @@ int main(void)
 
     ret = crm_vector_tokenize_selector(&apb,
         input,
-        strlen(input),
+        (int)strlen(input),
         0,
         &tokenizer,
         &our_coeff,

@@ -103,6 +103,12 @@
 /* Define to 1 if you have the `fork' function. */
 #define HAVE_FORK 1
 
+/* Define to 1 if you have the `getcwd' function. */
+#define HAVE_GETCWD 1
+
+/* Define to 1 if you have the `GetFullPathNameA' function. */
+/* #undef HAVE_GETFULLPATHNAMEA */
+
 /* Define to 1 if you have the `getopt' function. */
 #define HAVE_GETOPT 1
 
@@ -123,6 +129,18 @@
 
 /* Define to 1 if you have the `getppid' function. */
 #define HAVE_GETPPID 1
+
+/* Define to 1 if you have the `getpwuid' function. */
+#define HAVE_GETPWUID 1
+
+/* Define to 1 if you have the `getpwuid_r' function. */
+#define HAVE_GETPWUID_R 1
+
+/* Define to 1 if you have the `getuid' function. */
+#define HAVE_GETUID 1
+
+/* Define to 1 if you have the `GetUserNameA' function. */
+/* #undef HAVE_GETUSERNAMEA */
 
 /* GNU REs */
 /* #undef HAVE_GNU_REGEX */
@@ -280,6 +298,9 @@
 
 /* Define to 1 if you have the <process.h> header file. */
 /* #undef HAVE_PROCESS_H */
+
+/* Define to 1 if you have the <pwd.h> header file. */
+#define HAVE_PWD_H 1
 
 /* Define to 1 if you have the <readline.h> header file. */
 /* #undef HAVE_READLINE_H */
@@ -568,7 +589,7 @@
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
 /* revision number of software */
-#define REVISION "2296"
+#define REVISION "2423"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4
@@ -586,7 +607,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-2296"
+#define TAR_FILENAME_POSTFIX "Ger-2423"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

@@ -72,17 +72,17 @@
 
 typedef struct mythical_scm_header
 {
-    uint32_t n_bytes;           //this is the length of remembered text, the number
-                               //of hashbuckets, and the size of the hash root
-    uint32_t n_trains;          //how many times have we had to train this guy
-    uint32_t n_features;        //number of bytes we've eaten up to n_bytes
-    uint32_t free_hash_nodes;   //index of first in free chain
-    uint32_t free_prefix_nodes; //index of first in free chain
+    uint32_t n_bytes;           // this is the length of remembered text, the number
+                                // of hashbuckets, and the size of the hash root
+    uint32_t n_trains;          // how many times have we had to train this guy
+    uint32_t n_features;        // number of bytes we've eaten up to n_bytes
+    uint32_t free_hash_nodes;   // index of first in free chain
+    int32_t free_prefix_nodes;  // index of first in free chain
     uint32_t hash_root_offset;
     uint32_t hash_offset;
     uint32_t prefix_offset;
     uint32_t text_offset;
-    uint32_t text_pos;          //we wrap around when we fill the buffer
+    uint32_t text_pos;          // we wrap around when we fill the buffer
     uint32_t indeces_offset;
 } SCM_HEADER_STRUCT;
 
@@ -480,7 +480,7 @@ static uint32_t add_prefix(SCM_STATE_STRUCT *s, int t)
         //grab fresh prefix node and make it start of chain from this hash
         j = s->hashee[i].first = *s->free_prefix_nodes;
         *s->free_prefix_nodes = s->prefix[j].next;
-        s->prefix[j].prev = -i - 1;
+        s->prefix[j].prev = -(int32_t)i - 1;
         s->prefix[j].next = NULL_INDEX;
         s->prefix[j].offset = t;
         //increment feature count for this classifier
@@ -493,7 +493,7 @@ static uint32_t add_prefix(SCM_STATE_STRUCT *s, int t)
         *s->free_prefix_nodes = s->prefix[j].next;
         //insert it at beginning of chain
         s->prefix[j].next = s->hashee[i].first;
-        s->prefix[j].prev = -i - 1;
+        s->prefix[j].prev = -(int32_t)i - 1;
         if (s->prefix[j].next != NULL_INDEX)
             s->prefix[s->prefix[j].next].prev = j;
         s->hashee[i].first = j;
@@ -968,11 +968,14 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     // and figure out what side of the "|" they're on
     for (i = 0, j = 0, k = 0; i < filenames_field_len && j < MAX_CLASSIFIERS; i++)
     {
-        if (filenames_field[i] == '\\') //allow escaped in case filename is wierd
+#if 0 // [i_a] the only classifier which supports this, and then only here in 'classify' and not in 'learn': discarded.
+		if (filenames_field[i] == '\\') //allow escaped in case filename is wierd
         {
             filenames[j][k++] = filenames_field[++i];
         }
-        else if (crm_isspace(filenames_field[i]) && k > 0)
+        else 
+#endif
+			if (crm_isspace(filenames_field[i]) && k > 0)
         {
             //white space terminates filenames
             filenames[j][k] = 0;
@@ -1240,4 +1243,15 @@ int crm_expr_fscm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");
 }
+
+
+int crm_expr_fscm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, int txtstart, int txtlen)
+{
+    return nonfatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
+}
+
 

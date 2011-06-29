@@ -1,0 +1,14 @@
+TEST SCRIPT + COMMANDLINE:
+match_re_fringe1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+spam source: /dir1/dir2/dir3/ --  -- /dir1/dir2/dir3/
+OK 1
+spam source: /dir1/dir2/dir3/* -- * -- /dir1/dir2/dir3/*
+OK 2
+

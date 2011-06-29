@@ -240,7 +240,7 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
 {
     char flagtext[MAX_PATTERN];
     char *remtext;
-    int remlen;
+    // int remlen;
     char *wtext;
     int flagsearch_start_here;
     int wstart;
@@ -251,6 +251,13 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
     int j;
     int k;
     int recog_flag;
+
+    char unsup_text[MAX_PATTERN] = "";
+    char unrecog_text[MAX_PATTERN] = "";
+    char *unsup_str = unsup_text;
+    size_t unsup_strsize = MAX_PATTERN - 1; // allow for easy NUL sentinel at end
+    char *unrecog_str = unsup_text;
+    size_t unrecog_strsize = MAX_PATTERN - 1; // allow for easy NUL sentinel at end
 
     outcode = 0;
 
@@ -265,13 +272,12 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
     //  now loop on thru the nextwords,
     remtext = flagtext;
     done = 0;
-    remlen = inlen;
     wstart = 0;
     wlen = 0;
     flagsearch_start_here = 0;
-    while (!done && remlen > 0)
+    while (!done)
     {
-        if (crm_nextword(remtext, remlen, flagsearch_start_here, &wstart, &wlen)
+        if (crm_nextword(remtext, inlen, flagsearch_start_here, &wstart, &wlen)
          && wlen > 0)
         {
 			flagsearch_start_here = wstart + wlen + 1;
@@ -320,10 +326,11 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
             {
 				if (stmt_definition && !stmt_definition->has_non_standard_flags)
 				{
-                char foo[129];
-                strncpy(foo, wtext, CRM_MIN(wlen, 128));
-                foo[CRM_MIN(wlen, 128)] = 0;
-                nonfatalerror("Darn...  unrecognized flag: ", foo);
+	CRM_ASSERT(strlen(unrecog_text) + unrecog_strsize < MAX_PATTERN);
+	snprintf(unrecog_str, unrecog_strsize, ", %.*s", wlen, wtext);
+	unrecog_str[unrecog_strsize] = 0;
+	unrecog_strsize -= strlen(unrecog_str);
+	unrecog_str += strlen(unrecog_str);
 				}
 					// else: ignore non-standard flag: the method handler itself must cope with this.
 			}
@@ -331,21 +338,41 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
 			//   check to see if we need to squalk an error condition for unsupported options:
 			if (outcode & (stmt_definition ? ~stmt_definition->flags_allowed_mask : 0))
 			{
-				char foo[129];
-                strncpy(foo, wtext, CRM_MIN(wlen, 128));
-                foo[CRM_MIN(wlen, 128)] = 0;
-				nonfatalerror("Darn...  unsupported flag: ", foo);
+	CRM_ASSERT(strlen(unsup_text) + unsup_strsize < MAX_PATTERN);
+	snprintf(unsup_str, unsup_strsize, ", %.*s", wlen, wtext);
+	unsup_str[unsup_strsize] = 0;
+	unsup_strsize -= strlen(unsup_str);
+	unsup_str += strlen(unsup_str);
 			}
-
-			//  and finally,  move sch up to point at the remaining string
-            if (remlen <= 0)
-                done = 1;
         }
         else
         {
             done = 1;
         }
     }
+
+	// nonfatalerror() has the side effect of moving the Current Statement forward to the next trap line.
+	// To ensure we don't jump one or more traps due to multiple nonfatalerror()s happening inside that loop
+	// up there, we delay reporting the failures until now:
+	if (*unsup_text && *unrecog_text)
+	{
+        	nonfatalerror_ex(SRC_LOC(), "Darn... unrecognized flag(s): '%s' and unsupported flag(s): '%s'"
+			, unrecog_text + 2 // skip the initial ", "
+			, unsup_text + 2  // skip the initial ", "
+			);
+	}
+	else if (*unsup_text)
+	{
+        	nonfatalerror_ex(SRC_LOC(), "Darn... unsupported flag(s): '%s'"
+			, unsup_text + 2  // skip the initial ", "
+			);
+	}
+	else if (*unrecog_text)
+	{
+        	nonfatalerror_ex(SRC_LOC(), "Darn... unrecognized flag(s): '%s'"
+			, unrecog_text + 2 // skip the initial ", "
+			);
+	}
 
     if (internal_trace)
         fprintf(stderr, "Flag code is : %llx\n", (unsigned long long int)outcode);
@@ -400,22 +427,22 @@ static void check_arg_counts(int actual_value, int absolute_maximum_allowed,
 	{
 		fatalerror_ex(lineno, srcfile, funcname, 
 			"Too %s %s arguments were specified for this command: "
-			"we see you specified %d args while the %s required is %d.",
+			"we see you specified %d args while the %s is %d.",
 			"few",
 			typedescription,
 		actual_value, 
-		"minimum",
+		"minimum required",
 		minimum);
 	}
 	if (actual_value > maximum)
 	{
 		fatalerror_ex(lineno, srcfile, funcname, 
 			"Too %s %s arguments were specified for this command: "
-			"we see you specified %d args while the %s required is %d.",
+			"we see you specified %d args while the %s is %d.",
 			"many",
 			typedescription,
 		actual_value, 
-		"maximum",
+		"maximum allowed",
 		maximum);
 	}
 	// extra check for CRM114 'C' programmer errors - they existed so better make sure

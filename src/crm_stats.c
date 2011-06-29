@@ -13,6 +13,32 @@
 //  Other licenses may be negotiated; contact the
 //  author for details.
 //
+
+// The new cross-platform portable and reproducable random generator is
+// derived from the randomc package by Agner Fog
+//
+//   http://www.agner.org/random/
+//
+/**************Derived from MOTHER.CPP ****************** AgF 2007-08-01 *
+*  'Mother-of-All' random number generator                               *
+*                                                                        *
+*  This is a multiply-with-carry type of random number generator         *
+*  invented by George Marsaglia.  The algorithm is:                      *
+*  S = 2111111111*X[n-4] + 1492*X[n-3] + 1776*X[n-2] + 5115*X[n-1] + C   *
+*  X[n] = S modulo 2^32                                                  *
+*  C = floor(S / 2^32)                                                   *
+*                                                                        *
+*  Note:                                                                 *
+*  This implementation uses 64-bit integers for intermediate             *
+*  calculations. Works only on compilers that support 64-bit integers.   *
+*                                                                        *
+* © 1999 - 2007 A. Fog.                                                  *
+* GNU General Public License www.gnu.org/copyleft/gpl.html               *
+*************************************************************************/
+
+
+
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 //  include any local crm114 configuration file
@@ -246,10 +272,56 @@ double normalized_gauss(double x, double s)
     return exp(-0.5 * x * x / (s * s));
 }
 
+
+static uint32_t rand_store[5] = {0};
+static uint32_t rand_init_done = 0;
+
+// Output random bits
+static uint32_t crm_rand32(void)
+{
+  uint64_t sum;
+  sum = (uint64_t)2111111111UL * (uint64_t)rand_store[3] +
+     (uint64_t)1492 * (uint64_t)(rand_store[2]) +
+     (uint64_t)1776 * (uint64_t)(rand_store[1]) +
+     (uint64_t)5115 * (uint64_t)(rand_store[0]) +
+     (uint64_t)rand_store[4];
+  rand_store[3] = rand_store[2];  rand_store[2] = rand_store[1];  rand_store[1] = rand_store[0];
+  rand_store[4] = (uint32_t)(sum >> 32);            // Carry
+  rand_store[0] = (uint32_t)(sum);                  // Low 32 bits of sum
+  return rand_store[0];
+} 
+
+// this function initializes the random number generator:
+void crm_rand_init(uint32_t seed) 
+{
+  int i;
+  uint32_t s = seed;
+  // make random numbers and put them into the buffer
+  for (i = 0; i < 5; i++) 
+  {
+    s = s * 29943829 - 1;
+    rand_store[i] = s;
+  }
+  // randomize some more
+  for (i=0; i<19; i++) 
+  {
+	  crm_rand32();
+  }
+  rand_init_done = 1;
+}
+
+
+// returns a random number between 0 and 1:
 double crm_frand(void)
 {
-    return (double)rand() / (double)RAND_MAX;
+	if (!rand_init_done)
+	{
+		crm_rand_init(42);
+	}
+   return (double)crm_rand32() * (1. / (65536. * 65536.));
 }
+
+
 
 void print_histogram_float(float *f, int n, int n_buckets)
 {

@@ -225,12 +225,10 @@ void crm_vht_init(int argc, char **argv)
     tempbuf[0] = 0;
     if (!ignore_environment_vars)
     {
-#if defined (WIN32)
 #define FAKE_PWD 0x0001
 #define FAKE_USER 0x0002
 
         int got_to_fake_em = FAKE_PWD | FAKE_USER;
-#endif
 
         int i, j;
 
@@ -257,7 +255,6 @@ void crm_vht_init(int argc, char **argv)
             j = (int)strcspn(environ[i], "="); /* this also takes care of any line _without_ an '=': treat it as a var with a null value */
 
             /* [i_a] GROT GROT GROT: patch Win32 specific 'faked' env. vars in here: USER, PWD, ... */
-#if defined (WIN32)
             if (strncmp(environ[i], "PWD=", 4) == 0)
             {
                 got_to_fake_em &= ~FAKE_PWD;
@@ -266,7 +263,6 @@ void crm_vht_init(int argc, char **argv)
             {
                 got_to_fake_em &= ~FAKE_USER;
             }
-#endif
 
             name = (char *)calloc((j + 200), sizeof(name[0]));
             if (!name)
@@ -287,11 +283,13 @@ void crm_vht_init(int argc, char **argv)
             i++; //   and do the next environment variable
         }
 
-        /* [i_a] GROT GROT GROT: patch Win32 specific 'faked' env. vars in here: USER, PWD, ... */
-#if defined (WIN32)
+        // [i_a] patch Win32 specific 'faked' env. vars in here: USER, PWD, ...
+		// ALSO patch those buggers in here if the UNIX env. did not provide them 
+		// for some reason (stripped bare 'secure sandbox' environment or some?)
         if (got_to_fake_em & FAKE_PWD)
         {
-            char dirbuf[CRM_MAX(MAX_VARNAME, MAX_PATH) + 1];
+#if 0
+			char dirbuf[CRM_MAX(MAX_VARNAME, MAX_PATH) + 1];
             char fulldirbuf[CRM_MAX(MAX_VARNAME, MAX_PATH) + 1];
             DWORD dirbufsize = CRM_MAX(MAX_VARNAME, MAX_PATH) + 1;
 
@@ -339,12 +337,101 @@ void crm_vht_init(int argc, char **argv)
                     }
                 }
             }
-        }
+#else
+			char dirbuf[DIRBUFSIZE_MAX];
+
+			if (!mk_absolute_path(dirbuf, WIDTHOF(dirbuf), "."))
+            {
+                fatalerror("Cannot fetch the current directory (PWD)", "Stick a fork in us. We're _done_.");
+            }
+            else
+            {
+                    crm_set_temp_var(":_env_PWD:", dirbuf);
+                    if (strlen(dirbuf) + WIDTHOF("PWD=") < (data_window_size - 1000))
+                    {
+                        strcat(tempbuf, "PWD=");
+                        strcat(tempbuf, dirbuf);
+                        strcat(tempbuf, "\n");
+                    }
+                    else
+                    {
+                        untrappableerror("The ENVIRONMENT variables don't fit into the "
+                                         "available space. \nThis is very broken.  Try "
+                                         "a larger data window (with flag -w NNNNN), \nor "
+                                         "drop the environment vars with "
+                                         "the (with flag -e)", "");
+                    }
+            }
+#endif
+		}
         else if (got_to_fake_em & FAKE_USER)
         {
+#if defined(HAVE_GETPWUID_R) && defined(HAVE_GETUID)
+			struct passwd pwbuf;
+			struct passwd *pwbufret = NULL;
+			char buf[1024*5];
+			
+            if (getpwuid_r(getuid(), &pwbuf, buf, WIDTHOF(buf), &pwbufret)
+				|| !pwbufret
+				|| !pwbufret->pw_name)
+            {
+				fatalerror_ex(SRC_LOC(), "Cannot fetch the USER name for UID %ld: error = %d(%s)",
+					(long int)getuid(),
+					errno,
+					errno_descr(errno));
+            }
+            else
+            {
+                crm_set_temp_var(":_env_USER:", pwbufret->pw_name);
+                if (strlen(pwbufret->pw_name) + WIDTHOF("USER=") < (data_window_size - 1000))
+                {
+                    strcat(tempbuf, "USER=");
+                    strcat(tempbuf, pwbufret->pw_name);
+                    strcat(tempbuf, "\n");
+                }
+                else
+                {
+                    untrappableerror("The ENVIRONMENT variables don't fit into the "
+                                     "available space. \nThis is very broken.  Try "
+                                     "a larger data window (with flag -w NNNNN), \nor "
+                                     "drop the environment vars with "
+                                     "the (with flag -e)", "");
+                }
+            }
+#elif defined(HAVE_GETPWUID) && defined(HAVE_GETUID)
+			struct passwd *pwbufret;
+			
+            pwbufret = getpwuid(getuid());
+            if (!pwbufret
+				|| !pwbufret->pw_name)
+            {
+				fatalerror_ex(SRC_LOC(), "Cannot fetch the USER name for UID %ld: error = %d(%s)",
+					(long int)getuid(),
+					errno,
+					errno_descr(errno));
+            }
+            else
+            {
+                crm_set_temp_var(":_env_USER:", pwbufret->pw_name);
+                if (strlen(pwbufret->pw_name) + WIDTHOF("USER=") < (data_window_size - 1000))
+                {
+                    strcat(tempbuf, "USER=");
+                    strcat(tempbuf, pwbufret->pw_name);
+                    strcat(tempbuf, "\n");
+                }
+                else
+                {
+                    untrappableerror("The ENVIRONMENT variables don't fit into the "
+                                     "available space. \nThis is very broken.  Try "
+                                     "a larger data window (with flag -w NNNNN), \nor "
+                                     "drop the environment vars with "
+                                     "the (with flag -e)", "");
+                }
+            }
+#elif defined(HAVE_GETUSERNAMEA) // do not check for WIN32; it does not have to be defined for 64-bit WIN64, so do the 'proper autoconf thing' here.
             char userbuf[UNLEN + 1];
-            DWORD userbufsize = UNLEN + 1;
-
+			DWORD userbufsize = UNLEN + 1;
+			
             if (!GetUserNameA(userbuf, &userbufsize))
             {
                 nonfatalerror_Win32("Cannot fetch the USER name.", NULL);
@@ -367,8 +454,10 @@ void crm_vht_init(int argc, char **argv)
                                      "the (with flag -e)", "");
                 }
             }
-        }
+#else
+#error "Please provide suitable code for username detection for your platform."
 #endif
+		}
     }
     crm_set_temp_var(":_env_string:", tempbuf);
 

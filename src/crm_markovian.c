@@ -2481,3 +2481,15 @@ int crm_expr_markov_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             "Markov");
 }
 
+
+int crm_expr_markov_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, int txtstart, int txtlen)
+{
+    return nonfatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
+}
+
+
+

@@ -4,6 +4,8 @@
 ## under the terms of the GNU GPL.  See the file COPYING.
 
 ## Copyright (C) 2003, 2004 Joost van Baal
+## Copyright (C) 2007-2008 Ger Hobbelt
+
 
 PACKAGE = @PACKAGE_TARNAME@
 docdir = $(datadir)/doc/$(PACKAGE)

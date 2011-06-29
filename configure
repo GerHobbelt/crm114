@@ -797,6 +797,7 @@ AM_CPPFLAGS
 AM_LDFLAGS
 INSTALLFLAGS
 DIFF_FLAGS
+CONFIG_STATUS_DEPENDENCIES
 LTLIBOBJS'
 ac_subst_files=''
 ac_user_opts='
@@ -9326,6 +9327,156 @@ done
 
 
 for ac_header in endian.h sys/param.h
+do
+as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  { $as_echo "$as_me:$LINENO: checking for $ac_header" >&5
+$as_echo_n "checking for $ac_header... " >&6; }
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  $as_echo_n "(cached) " >&6
+fi
+ac_res=`eval 'as_val=${'$as_ac_Header'}
+		 $as_echo "$as_val"'`
+	       { $as_echo "$as_me:$LINENO: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+else
+  # Is the header compilable?
+{ $as_echo "$as_me:$LINENO: checking $ac_header usability" >&5
+$as_echo_n "checking $ac_header usability... " >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  ac_header_compiler=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_header_compiler=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+$as_echo "$ac_header_compiler" >&6; }
+
+# Is the header present?
+{ $as_echo "$as_me:$LINENO: checking $ac_header presence" >&5
+$as_echo_n "checking $ac_header presence... " >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (ac_try="$ac_cpp conftest.$ac_ext"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null && {
+	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       }; then
+  ac_header_preproc=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+
+rm -f conftest.err conftest.$ac_ext
+{ $as_echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+$as_echo "$ac_header_preproc" >&6; }
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+$as_echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+$as_echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+$as_echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+$as_echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+$as_echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+$as_echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+$as_echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+$as_echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+    ( cat <<\_ASBOX
+## --------------------------------------------------- ##
+## Report this to crm114-general@lists.sourceforge.net ##
+## --------------------------------------------------- ##
+_ASBOX
+     ) | sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+{ $as_echo "$as_me:$LINENO: checking for $ac_header" >&5
+$as_echo_n "checking for $ac_header... " >&6; }
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  $as_echo_n "(cached) " >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+ac_res=`eval 'as_val=${'$as_ac_Header'}
+		 $as_echo "$as_val"'`
+	       { $as_echo "$as_me:$LINENO: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+
+fi
+if test `eval 'as_val=${'$as_ac_Header'}
+		 $as_echo "$as_val"'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+for ac_header in pwd.h
 do
 as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
@@ -21241,6 +21392,210 @@ done
 
 
 
+for ac_func in getcwd GetFullPathNameA
+do
+as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+{ $as_echo "$as_me:$LINENO: checking for $ac_func" >&5
+$as_echo_n "checking for $ac_func... " >&6; }
+if { as_var=$as_ac_var; eval "test \"\${$as_var+set}\" = set"; }; then
+  $as_echo_n "(cached) " >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+/* Define $ac_func to an innocuous variant, in case <limits.h> declares $ac_func.
+   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
+#define $ac_func innocuous_$ac_func
+
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func (); below.
+    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
+    <limits.h> exists even on freestanding compilers.  */
+
+#ifdef __STDC__
+# include <limits.h>
+#else
+# include <assert.h>
+#endif
+
+#undef $ac_func
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char $ac_func ();
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined __stub_$ac_func || defined __stub___$ac_func
+choke me
+#endif
+
+int
+main ()
+{
+return $ac_func ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  eval "$as_ac_var=yes"
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	eval "$as_ac_var=no"
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+fi
+ac_res=`eval 'as_val=${'$as_ac_var'}
+		 $as_echo "$as_val"'`
+	       { $as_echo "$as_me:$LINENO: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if test `eval 'as_val=${'$as_ac_var'}
+		 $as_echo "$as_val"'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+
+
+
+
+for ac_func in getuid getpwuid getpwuid_r GetUserNameA
+do
+as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+{ $as_echo "$as_me:$LINENO: checking for $ac_func" >&5
+$as_echo_n "checking for $ac_func... " >&6; }
+if { as_var=$as_ac_var; eval "test \"\${$as_var+set}\" = set"; }; then
+  $as_echo_n "(cached) " >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+/* Define $ac_func to an innocuous variant, in case <limits.h> declares $ac_func.
+   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
+#define $ac_func innocuous_$ac_func
+
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func (); below.
+    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
+    <limits.h> exists even on freestanding compilers.  */
+
+#ifdef __STDC__
+# include <limits.h>
+#else
+# include <assert.h>
+#endif
+
+#undef $ac_func
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char $ac_func ();
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined __stub_$ac_func || defined __stub___$ac_func
+choke me
+#endif
+
+int
+main ()
+{
+return $ac_func ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  eval "$as_ac_var=yes"
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	eval "$as_ac_var=no"
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+fi
+ac_res=`eval 'as_val=${'$as_ac_var'}
+		 $as_echo "$as_val"'`
+	       { $as_echo "$as_me:$LINENO: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if test `eval 'as_val=${'$as_ac_var'}
+		 $as_echo "$as_val"'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+
+
 
 # Enable expanding of shebang in .crm scripts: get a usable BIN_PATH
 # should include auto-archive snippet here, instead of quoting it.
@@ -21271,10 +21626,18 @@ INSTALLFLAGS="-m 755"
 
 
 
+# see
+#   http://www.gnu.org/software/libtool/manual/automake/Rebuilding.html
+# for the why: I want any change in those .in files to cause an automatic
+# update, e.g. when running
+#   make dist
+#
+CONFIG_STATUS_DEPENDENCIES='$(top_srcdir)/src/config_vanilla_UNIX_sys_defaults.h.in $(top_srcdir)/win32/config_win32.h.in'
 
 
 
-ac_config_files="$ac_config_files Makefile crm114.lsm docs/Makefile examples/Makefile mailfilter/Makefile man/Makefile man/include.zmm src/Makefile src/diff_em.sh src/indent.sh tests/Makefile tests/megatest.sh tests/megatest_ng.sh tests/aliustest.crm tests/approxtest.crm tests/argtest.crm tests/backwardstest.crm tests/beeptest.crm tests/bracktest.crm tests/classifytest.crm tests/escapetest.crm tests/eval_infiniteloop.crm tests/exectest.crm tests/fataltraptest.crm tests/fataltrapprogramerr.crm tests/inserttest_a.crm tests/inserttest_b.crm tests/inserttest_c.crm tests/learntest.crm tests/match_isolate_test.crm tests/matchtest.crm tests/mathalgtest.crm tests/mathrpntest.crm tests/nestaliustest.crm tests/overalterisolatedtest.crm tests/paolo_overvars.crm tests/paolo_ov2.crm tests/paolo_ov3.crm tests/paolo_ov4.crm tests/paolo_ov5.crm tests/randomiotest.crm tests/rewritetest.crm tests/skudtest.crm tests/statustest.crm tests/traptest.crm tests/uncaughttraptest.crm tests/unionintersecttest.crm tests/userdirtest.crm tests/windowtest.crm tests/windowtest_fromvar.crm tests/tenfold_validate.crm tests/tokendelimiterbugtest.crm tests/bracesbugtest.crm tests/blowuptrapbugtest.crm tests/indirecttest.crm tests/isolate_reclaim_test.crm tests/match_isolate_reclaim.crm tests/slashbugtest.crm tests/trapseqbugtest.crm tests/translate_tr.crm tests/call_return_test.crm tests/alternating_example_neural.crm tests/alius_w_comment.crm tests/zz_translate_test.crm tests/quine.crm tests/defaulttest.crm tests/print_binary2decimal_int32.crm tests/testscript.sh tests/crm114_statustest.filter.sh tests/crm114_error_report.filter.sh tests/crm114_versiontest.filter.sh tests/crm114_classify.filter.sh tests/crm114_isolate_test.filter.sh examples/pad.crm examples/shroud.crm mailfilter/classifymail.crm mailfilter/mailfilter.crm mailfilter/maillib.crm mailfilter/mailreaver.crm mailfilter/mailtrainer.crm examples/rewriteutil.crm"
+
+ac_config_files="$ac_config_files Makefile crm114.lsm docs/Makefile examples/Makefile mailfilter/Makefile man/Makefile man/include.zmm src/Makefile src/diff_em.sh src/indent.sh src/config_vanilla_UNIX_sys_defaults.h tests/Makefile tests/megatest.sh tests/megatest_ng.sh tests/aliustest.crm tests/approxtest.crm tests/argtest.crm tests/backwardstest.crm tests/beeptest.crm tests/bracktest.crm tests/classifytest.crm tests/escapetest.crm tests/eval_infiniteloop.crm tests/exectest.crm tests/fataltraptest.crm tests/fataltrapprogramerr.crm tests/inserttest_a.crm tests/inserttest_b.crm tests/inserttest_c.crm tests/learntest.crm tests/match_isolate_test.crm tests/matchtest.crm tests/mathalgtest.crm tests/mathrpntest.crm tests/nestaliustest.crm tests/overalterisolatedtest.crm tests/paolo_overvars.crm tests/paolo_ov2.crm tests/paolo_ov3.crm tests/paolo_ov4.crm tests/paolo_ov5.crm tests/randomiotest.crm tests/rewritetest.crm tests/skudtest.crm tests/statustest.crm tests/traptest.crm tests/uncaughttraptest.crm tests/unionintersecttest.crm tests/userdirtest.crm tests/windowtest.crm tests/windowtest_fromvar.crm tests/tenfold_validate.crm tests/tokendelimiterbugtest.crm tests/bracesbugtest.crm tests/blowuptrapbugtest.crm tests/indirecttest.crm tests/isolate_reclaim_test.crm tests/match_isolate_reclaim.crm tests/slashbugtest.crm tests/trapseqbugtest.crm tests/translate_tr.crm tests/call_return_test.crm tests/alternating_example_neural.crm tests/alius_w_comment.crm tests/zz_translate_test.crm tests/quine.crm tests/defaulttest.crm tests/print_binary2decimal_int32.crm tests/match_re_fringe1.crm tests/testscript.sh tests/crm114_statustest.filter.sh tests/crm114_error_report.filter.sh tests/crm114_versiontest.filter.sh tests/crm114_classify.filter.sh tests/crm114_isolate_test.filter.sh examples/pad.crm examples/shroud.crm mailfilter/classifymail.crm mailfilter/mailfilter.crm mailfilter/mailfilter.cf mailfilter/maillib.crm mailfilter/mailreaver.crm mailfilter/mailtrainer.crm examples/rewriteutil.crm win32/config_win32.h"
 
 
 cat >confcache <<\_ACEOF
@@ -22003,6 +22366,7 @@ do
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/diff_em.sh") CONFIG_FILES="$CONFIG_FILES src/diff_em.sh" ;;
     "src/indent.sh") CONFIG_FILES="$CONFIG_FILES src/indent.sh" ;;
+    "src/config_vanilla_UNIX_sys_defaults.h") CONFIG_FILES="$CONFIG_FILES src/config_vanilla_UNIX_sys_defaults.h" ;;
     "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
     "tests/megatest.sh") CONFIG_FILES="$CONFIG_FILES tests/megatest.sh" ;;
     "tests/megatest_ng.sh") CONFIG_FILES="$CONFIG_FILES tests/megatest_ng.sh" ;;
@@ -22060,6 +22424,7 @@ do
     "tests/quine.crm") CONFIG_FILES="$CONFIG_FILES tests/quine.crm" ;;
     "tests/defaulttest.crm") CONFIG_FILES="$CONFIG_FILES tests/defaulttest.crm" ;;
     "tests/print_binary2decimal_int32.crm") CONFIG_FILES="$CONFIG_FILES tests/print_binary2decimal_int32.crm" ;;
+    "tests/match_re_fringe1.crm") CONFIG_FILES="$CONFIG_FILES tests/match_re_fringe1.crm" ;;
     "tests/testscript.sh") CONFIG_FILES="$CONFIG_FILES tests/testscript.sh" ;;
     "tests/crm114_statustest.filter.sh") CONFIG_FILES="$CONFIG_FILES tests/crm114_statustest.filter.sh" ;;
     "tests/crm114_error_report.filter.sh") CONFIG_FILES="$CONFIG_FILES tests/crm114_error_report.filter.sh" ;;
@@ -22070,10 +22435,12 @@ do
     "examples/shroud.crm") CONFIG_FILES="$CONFIG_FILES examples/shroud.crm" ;;
     "mailfilter/classifymail.crm") CONFIG_FILES="$CONFIG_FILES mailfilter/classifymail.crm" ;;
     "mailfilter/mailfilter.crm") CONFIG_FILES="$CONFIG_FILES mailfilter/mailfilter.crm" ;;
+    "mailfilter/mailfilter.cf") CONFIG_FILES="$CONFIG_FILES mailfilter/mailfilter.cf" ;;
     "mailfilter/maillib.crm") CONFIG_FILES="$CONFIG_FILES mailfilter/maillib.crm" ;;
     "mailfilter/mailreaver.crm") CONFIG_FILES="$CONFIG_FILES mailfilter/mailreaver.crm" ;;
     "mailfilter/mailtrainer.crm") CONFIG_FILES="$CONFIG_FILES mailfilter/mailtrainer.crm" ;;
     "examples/rewriteutil.crm") CONFIG_FILES="$CONFIG_FILES examples/rewriteutil.crm" ;;
+    "win32/config_win32.h") CONFIG_FILES="$CONFIG_FILES win32/config_win32.h" ;;
 
   *) { { $as_echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 $as_echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -22951,6 +23318,16 @@ done
 	chmod a+x examples/*.crm    2> /dev/null
 	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
+    "src/config_vanilla_UNIX_sys_defaults.h":F)
+	#
+	# and when we finally have produced the files, make sure the generated shell scripts are executable:
+	#
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
+ ;;
     "tests/Makefile":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
@@ -23521,6 +23898,16 @@ done
 	chmod a+x examples/*.crm    2> /dev/null
 	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
+    "tests/match_re_fringe1.crm":F)
+	#
+	# and when we finally have produced the files, make sure the generated shell scripts are executable:
+	#
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
+ ;;
     "tests/testscript.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
@@ -23621,6 +24008,16 @@ done
 	chmod a+x examples/*.crm    2> /dev/null
 	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
+    "mailfilter/mailfilter.cf":F)
+	#
+	# and when we finally have produced the files, make sure the generated shell scripts are executable:
+	#
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
+ ;;
     "mailfilter/maillib.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
@@ -23652,6 +24049,16 @@ done
 	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "examples/rewriteutil.crm":F)
+	#
+	# and when we finally have produced the files, make sure the generated shell scripts are executable:
+	#
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
+ ;;
+    "win32/config_win32.h":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#

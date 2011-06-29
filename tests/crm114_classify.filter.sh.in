@@ -32,7 +32,7 @@ if [ ! -f "${SRCDIR}/crm114_classify.filter.awk" ]; then
   echo "The mandatory AWK classify result filter script is missing: '${SRCDIR}/crm114_classify.filter.awk'"
   exit 67
 fi
-2echo "AWK filter args: ${awkargs}"
+echo "AWK filter tolerances / args: ${awkargs}"
 
 
 @AWK@ -f "${SRCDIR}/crm114_classify.filter.awk" ${awkargs} < "${reffile}" > "${targetname}.refout"

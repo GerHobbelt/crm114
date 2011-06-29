@@ -212,6 +212,10 @@
 #include <lmcons.h>
 #endif
 
+#ifdef HAVE_PWD_H
+#include <pwd.h>
+#endif
+
 /* getopt() support? */
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -618,6 +622,16 @@ int truncate(const char *filepath, long int filesize); /* [i_a] Win32 doesn't co
 #endif
 
 
+// Minimum buffer to store absolute paths; used in conjuction with mk_absolute_path() for instance.
+#if defined(MAX_PATH)
+#define DIRBUFSIZE_MAX			(CRM_MAX(MAX_VARNAME, MAX_PATH * 2) + 1)
+#elif defined(PATH_MAX)
+#define DIRBUFSIZE_MAX			(CRM_MAX(MAX_VARNAME, PATH_MAX * 2) + 1)
+#else
+#define DIRBUFSIZE_MAX			(CRM_MAX(MAX_VARNAME, 2048) + 1)
+#endif
+
+
 
 #ifndef HAVE_STRMOV
 char *strmov(char *dst, const char *src);
@@ -784,6 +798,12 @@ static inline int crm_isxdigit(unsigned char c)
 #if !defined (HAVE_LOG10) && defined (HAVE_LOG)
 #define log10(val)      (log(val) / CRM_LN_10)
 #endif
+
+
+
+// make sure no-one uses the non-portable rand() system functions but crm_frand()/crm_rand32() instead:
+#undef rand
+#define rand()              error_you_must_use_the_crm_frand_call_for_randomness !
 
 
 

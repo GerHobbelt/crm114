@@ -2220,7 +2220,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                                     while (svm_prob.x[i][temp_count].hash != 0)
                                         temp_count++;
-                                    ret = fwrite(svm_prob.x[i], sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
+                                    ret = (int)fwrite(svm_prob.x[i], sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
                                             (temp_count + 1),
                                             hashf);
                                     if (ret != temp_count + 1)
@@ -3357,4 +3357,16 @@ int crm_expr_svm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "SVM");
 }
+
+
+int crm_expr_svm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, int txtstart, int txtlen)
+{
+    return nonfatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "SVM");
+}
+
+
 

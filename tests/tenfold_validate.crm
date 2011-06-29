@@ -1,4 +1,4 @@
-#! /windows/G/prj/3actual/crm114/src/crm114
+#! /home/ger/prj/3actual/crm114-2/src/crm114
 #     
 #    Program to do 10-fold validation on N classes using various classifiers.
 #

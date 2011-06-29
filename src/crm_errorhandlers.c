@@ -173,7 +173,7 @@ static void dump_error_script_line(char *dst, int maxdstlen, CSL_CELL *csl, int 
                 {
                     int c = sourcedata[ichar];
                     sprintf(dst, " %02x", c);
-                    c = strlen(dst);
+                    c = (int)strlen(dst);
                     dst += c;
                     maxdstlen -= c;
                 }
@@ -218,6 +218,165 @@ const char *skip_path(const char *srcfile)
     }
     return srcfile;
 }
+
+
+
+char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
+{
+#if defined(HAVE_GETFULLPATHNAMEA) // do not check for WIN32; it does not have to be defined for 64-bit WIN64, so do the 'proper autoconf thing' here.
+	/*
+	 *      From the MS docs (GetCurrentPath()):
+	 *
+	 *      In certain rare cases, if the specified directory is on the
+	 *      current drive, the function might omit the drive letter and
+	 *      colon from the path. Therefore, the size that is returned
+	 *      by the function might be two characters less than the size
+	 *      of the specified string, not including the terminating null
+	 *      character. This behavior might occur in edge situations
+	 *      such as in a services application. If you need the drive
+	 *      letter, make a subsequent call to GetFullPathName to
+	 *      retrieve the drive letter.
+	*
+	* Which makes you think: why use GetCurrentPath() at all?
+	 */
+	if (!GetFullPathNameA(src_filepath, dst_size, dst, NULL))
+	{
+		fatalerror_Win32("Cannot fetch the expanded the path for directory '%s'",
+			src_filepath);
+		return NULL;
+	}
+#elif defined(HAVE_GETCWD)
+		char *d;
+		int len = dst_size - strlen(src_filepath) - 2;
+		char *s;
+		int skip_parent;
+
+	   if (len <= 0)
+	   {
+                    fatalerror_ex(SRC_LOC(),
+						"Cannot process/expand the given path '%s' to an absolute path: buffer space too small (%d characters).",
+                        src_filepath,
+                    dst_size);
+					return NULL;
+                }
+
+	if (*src_filepath != '/')
+	{
+		if (!getcwd(dst, len))
+	   {
+                    fatalerror_ex(SRC_LOC(),
+						"Cannot fetch the current dir (PWD) when calculating absolute path for '%s': system error = %d(%s)",
+                        src_filepath,
+                    errno,
+                    errno_descr(errno));
+					return NULL;
+                }
+	   dst[len] = 0;
+	   len = strlen(dst);
+		   CRM_ASSERT(len + 1 < dst_size);
+	   if (len > 0 && dst[len - 1] != '/')
+	   {
+		   dst[len++] = '/';
+		   dst[len] = 0;
+	   }
+	   d = dst + len;
+	   len = dst_size - len;
+	   if (len < strlen(src_filepath) + 1)
+	   {
+                    fatalerror_ex(SRC_LOC(),
+						"Cannot append the given relative path '%s' to the current dir (PWD) '%s': not enough space in buffer.",
+                        src_filepath,
+						dst);
+					return NULL;
+                }
+	   strcpy(d, src_filepath);
+	}
+	else
+	{
+		CRM_ASSERT(strlen(src_filepath) < dst_size);
+	   strcpy(dst, src_filepath);
+	}
+
+	// when we get here, the 'absolute' but uncompressed path is stored in 'dst'.
+	//
+	// All we need to do now is 'compress' it, i.e. take out those './' and '../' directories still in there.
+	// Note that it is an error condition when '../' goes beyond the '/' root directory: this is for
+	// security reasons.
+	//
+	// 'compress' is only a reduction, so we now already know the final, compressed, result will fit in 'dst'.
+
+	len = strlen(dst);
+	s = d = dst + len - 1;
+	skip_parent = 0;
+
+		if (d[0] == '.')
+		{
+			// special case at start: full path ends in '.', '..' or something ending in a '.' period. See which it is.
+			CRM_ASSERT(d > dst); 
+				if (d[-1] == '/')
+				{
+					// ends in '/.' which is just 'this dir', so discard the period: make sure a directory spec ends with a '/' this time
+					d--;
+				}
+				else if (d[-1] == '.' && d - 2 >= dst && d[-2] == '/')
+				{
+					// discard the '..' end and make sure we skip parent dir in there too!
+					skip_parent++;
+					d -= 2;
+				}
+		}
+
+	while (d >= dst)
+	{
+		if (d[0] == '/')
+		{
+			if (d - 1 >= dst && d[-1] == '/')
+			{
+				// double '/' specified in there; not allowed, discard second one.
+				d--;
+				continue;
+			}
+			// good dir coming up left: when not a 'this dir' '.' or 'parent dir' '..', make sure we check skip_parent:
+			if (d - 2 >= dst && d[-1] == '.')
+			{
+				if (d[-2] == '/')
+				{
+					// skip a 'this dir': './'
+					d -= 2;
+					continue;
+				}
+				if (d[-2] == '.' && d - 3 >= dst && d[-3] == '/')
+				{
+					// skip a 'parent dir': '../'
+					d -= 3;
+					skip_parent++;
+					continue;
+				}
+			}
+			// a real dir follows left: skip it?
+			if (skip_parent--)
+			{
+				d--;
+				while (d >= dst && d[0] != '/')
+					d--;
+				continue;
+			}
+		}
+		// real dir or filename: copy to src
+		do
+		{
+			*s-- = *d--;
+		} while (d >= dst && d[0] != '/');
+	}
+
+	// now 's' points as start of compressed path; it also is a pointer >= dst, so move content down to 'dst':
+	memmove(dst, s, strlen(s) + 1);
+#else
+#error "Please provide a suitable mk_absolute_path() implementation for your platform"
+#endif
+	return dst;
+}
+
 
 /*
  *      Returns the line + sourcefile + error message in a nicely formatted string.
@@ -338,7 +497,7 @@ static void generate_err_reason_msg(
         /* can't handle this error message in such a small buffer, so quit now you still can. */
         return;
     }
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     /*
      * Now print the custom message section. Keep a guestimated room for the next section too: 256.
@@ -350,11 +509,11 @@ static void generate_err_reason_msg(
 
         vsnprintf(dst, widthleft, fmt, args);
         dst[widthleft - 1] = 0;
-        len = strlen(dst);
+        len = (int)strlen(dst);
         dst += len;
     }
     has_newline = (dst[-1] == '\n');
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     /*
      * make sure there's still enough room for the last part of this message...
@@ -373,19 +532,19 @@ static void generate_err_reason_msg(
         }
     }
 #undef MIN_BUFLEN_REQD
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     if (!has_newline && widthleft > 1)
     {
         dst = strmov(dst, "\n");
     }
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     if (!encouraging_msg || ! * encouraging_msg)
     {
         encouraging_msg = "Sorry, but this program is very sick and probably should be killed off.";
     }
-    encouragment_length = strlen(encouraging_msg) + 1;
+    encouragment_length = (int)strlen(encouraging_msg) + 1;
 
     if (widthleft > encouragment_length
         + WIDTHOF("This happened at line %d of file %s\n") + 40)
@@ -393,13 +552,13 @@ static void generate_err_reason_msg(
         dst = strmov(dst, encouraging_msg);
         has_newline = (dst[-1] == '\n');
     }
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     if (!has_newline && widthleft > 1)
     {
         dst = strmov(dst, "\n");
     }
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     if (widthleft > (WIDTHOF("This happened at line %d of file %s:\n")
                      + (SIZEOF_LONG_INT * 12) / 4          /* guestimate the worst case length upper limit for printf(%d) */
@@ -411,12 +570,12 @@ static void generate_err_reason_msg(
         snprintf(dst, widthleft, "This happened at line %d of file %s:\n    ",
             csl->cstmt, csl->filename);
         dst[widthleft - 1] = 0;
-        len = strlen(dst);
+        len = (int)strlen(dst);
         dst += len;
         widthleft -= len;
 
         dump_error_script_line(dst, widthleft, csl, script_codeline);
-        len = strlen(dst);
+        len = (int)strlen(dst);
         dst += len;
         widthleft -= len;
     }
@@ -447,7 +606,7 @@ static void generate_err_reason_msg(
                 ((srcfile && *srcfile) ? srcfile : "---"),
                 srclineno);
             dst[widthleft - 1] = 0;
-            len = strlen(dst);
+            len = (int)strlen(dst);
             dst += len;
 
             fname_pos = dst;
@@ -644,30 +803,29 @@ void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, cons
             len = strlen(dst);
             max_dst_len -= len;
             dst += len;
-            if (max_dst_len <= 3)
+            if (max_dst_len <= 5)
                 break;
 
             if (p[1] == '1')
             {
                 // replace '%1' with ''arg''
-                strncpy(dst, "'", max_dst_len);
-                strncpy(dst + 1, (arg ? arg : "\?\?\?"), max_dst_len - 1);
+                *dst++ = '\'';
+				max_dst_len--;
+                strncpy(dst, (arg ? arg : "\?\?\?"), max_dst_len);
                 dst[max_dst_len] = 0;
                 len = strlen(dst);
                 max_dst_len -= len;
                 dst += len;
                 if (max_dst_len <= 2)
                     break;
-                strncpy(dst, "'", max_dst_len);
-                dst++;
+                *dst++ = '\'';
                 max_dst_len--;
 
                 p += 2;
             }
             else
             {
-                strncpy(dst, "%", max_dst_len);
-                dst++;
+                *dst++ = '%';
                 max_dst_len--;
 
                 p++;
@@ -1077,6 +1235,8 @@ int crm_trigger_fault(const char *reason)
         //
         //      Do variable substitution on the pattern
         pat_len = crm_nexpandvar(trap_pat, pat_len, MAX_PATTERN);
+		CRM_ASSERT(pat_len < MAX_PATTERN);
+		trap_pat[pat_len] = 0;
 
         //
         if (user_trace)
@@ -1090,7 +1250,7 @@ int crm_trigger_fault(const char *reason)
         {
             i = crm_regexec(&preg,
                 reason,
-                strlen(reason),
+                (int)strlen(reason),
                 0, NULL, 0, NULL);
             crm_regfree(&preg);
         }
@@ -1138,8 +1298,6 @@ int crm_trigger_fault(const char *reason)
                 char reasonname[MAX_VARNAME];
                 int rnlen;
                 rnlen = crm_get_pgm_arg(reasonname, MAX_VARNAME, apb.p1start, apb.p1len);
-                if (rnlen > 2)
-                {
                     rnlen = crm_nexpandvar(reasonname, rnlen, MAX_VARNAME);
 					CRM_ASSERT(rnlen < MAX_VARNAME);
 					reasonname[rnlen] = 0;
@@ -1147,8 +1305,10 @@ int crm_trigger_fault(const char *reason)
                     // 8-bit-unclean here -- [i_a] update: but it does NOT do so 
 					// under ALL circumstances, so better throw in a NUL sentinel,
 					// after we've fixed the MAX_VARNAME up there with a -1 too.
+					if (strlen(reasonname) > 0)
+					{
                     crm_set_temp_var(reasonname, reason);
-                }
+					}
                 done = 1;
             }
         }

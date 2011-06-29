@@ -1,0 +1,41 @@
+#! /home/ger/prj/3actual/crm114-2/src/crm114
+#
+window
+#
+isolate <default> (:spam:)  /\/dir1\/dir2\/dir3\//
+isolate (:spamwildcard:)  //
+isolate (:spamdir:) //
+
+match [:spam:] (:: :spamdir: :spamwildcard:) /^(.*[\\\/])([^\\\/]*)/
+
+output /spam source: :*:spamdir: -- :*:spamwildcard: -- :*:spam:\n/
+{
+	{
+		match [:spamdir:] /\/dir1\/dir2\/dir3\//
+		output /OK 1\n/
+	}
+	alius
+	{
+		output /FAILURE 1\n/
+	}
+}
+# and test for fringe case: wildcard match was empty, will be edited, and will affect spamdir too :-(
+{
+	match <absent> [:spamwildcard:] /./
+        alter (:spamwildcard:) /*/
+}
+output /spam source: :*:spamdir: -- :*:spamwildcard: -- :*:spam:\n/
+{
+	{
+		# ! Yes, the spamdir variable has been changed too as the previously empty wildcard
+		# variable was pointing at the empty bit at the very end of the spam variable, which
+		# is also 'part' of the spamdir var. Surprise!
+		match [:spamdir:] /\/dir1\/dir2\/dir3\/\*/
+		output /OK 2\n/
+	}
+	alius
+	{
+		output /FAILURE 2\n/
+	}
+}
+

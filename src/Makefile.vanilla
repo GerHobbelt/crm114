@@ -85,7 +85,7 @@ SYSTEMTYPE = POSIX
 #  really picayune stuff.
 #  
 #  Our default is with debugging, full optimization, and lots of warnings:
-CFLAGS += -g -O3 -Wall
+CFLAGS += -g -O3 -Wall -fno-strict-aliasing
 #     turn this one on for no optimization, but debugging and time profiling:
 #CFLAGS += -g -O0 -Wall -pg
 #     turn this one on for really picayune debugging:
@@ -221,7 +221,7 @@ MEGATESTFILES = \
 #   These are the files needed to build the CRM114 engine; they don't 
 #   include the side utilities
 #
-CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
+CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_math_exec.c crm_var_hash_table.c crm_expandvar.c \
 	crm_stmt_parser.c crm_vector_tokenize.c \
 	crm_expr_alter.c crm_expr_match.c crm_css_maintenance.c \
@@ -233,7 +233,7 @@ CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
 	crm_expr_syscall.c crm_expr_classify.c crm_expr_translate.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
-	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
+	crm_stats.c crm_expr_sks.c \
 	crm_expr_svm.c crm_expr_fscm.c \
 	crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c
@@ -246,7 +246,7 @@ HFILES = $(MAKEFILE) crm114_sysincludes.h crm114_structs.h crm114_config.h \
 # and 'old' BillY makefile (this one):
 HFILES += config_vanilla_UNIX_sys_defaults.h
 
-OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
+OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
 	crm_stmt_parser.o crm_vector_tokenize.o \
 	crm_expr_alter.o crm_expr_match.o crm_css_maintenance.o \
@@ -261,7 +261,7 @@ OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
 	crm_generic_port.o crm_stdio_port.o \
 	crm_versioning.o
-#  NOTE - no crm_util_errorhandlers, crmregex_gnu or crmregex_tre here!
+#  NOTE - no crmregex_gnu or crmregex_tre here!
 
 
 UTILFILES = osbf-util.c cssutil.c  cssdiff.c cssmerge.c 
@@ -344,19 +344,19 @@ help: FORCE
 	#    make distribtion         - builds the .gzballs for distribution
         #                               of with your mods built in.
 
-crm114_gnu: $(OFILES) crmregex_gnu.o 
+crm114_gnu: crm_main.o $(OFILES) crmregex_gnu.o 
 	#
 	#   Note:  You've chosen to make a GNU regex library CRM114.  
 	#       Although CRM114 will work mostly correctly when
 	#	linked against the GNU regex library, a lot of functionality
 	#       won't be available, and "make megatest" will fail.
 	#
-	$(CC) $(LDFLAGS) $(LIBS) $(OFILES) \
+	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
 	  crmregex_gnu.o \
 	  -lm -o crm114
 
 
-crm114: $(OFILES) crmregex_tre.o
+crm114: crm_main.o $(OFILES) crmregex_tre.o
 	#   
 	#   Now building the TRE regex version of CRM114.  If you don't have
 	#   TRE already, you will need to fetch it from the website and
@@ -364,7 +364,7 @@ crm114: $(OFILES) crmregex_tre.o
 	#   then build TRE, add /usr/local/lib to /etc/ld.so.conf, then 
 	#   to set the library up.  Then you can build CRM114 itself.
 	#
-	$(CC) $(LDFLAGS) $(LIBS) $(OFILES) \
+	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
 	  crmregex_tre.o \
 	  -lm -ltre -o crm114
 	#
@@ -530,9 +530,9 @@ crmregex_tre.o: crmregex_tre.c \
 crmregex_gnu.o: crmregex_gnu.c $(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -c crmregex_gnu.c -o crmregex_gnu.o
 
-crm_util_errorhandlers.o: crm_util_errorhandlers.c $(HFILES)
-	$(CC) $(CFLAGS) -D$(SYSTEMTYPE) -c crm_util_errorhandlers.c \
-	-o crm_util_errorhandlers.o
+#crm_util_errorhandlers.o: crm_util_errorhandlers.c $(HFILES)
+#	$(CC) $(CFLAGS) -D$(SYSTEMTYPE) -c crm_util_errorhandlers.c \
+#	-o crm_util_errorhandlers.o
 
 crm_generic_port.o: crm_generic_port.c \
 	$(HFILES)
@@ -547,47 +547,29 @@ crm_versioning.o: crm_versioning.c \
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_versioning.c -o crm_versioning.o
 
 
-cssutil: cssutil.c crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o $(HFILES)
+cssutil: cssutil.c $(OFILES) $(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c cssutil.c -o cssutil.o  
-	$(CC)  $(CFLAGS) $(LDFLAGS) cssutil.o \
-		crm_css_maintenance.o \
-		crm_util_errorhandlers.o \
-		crm_str_funcs.o \
-		crm_generic_port.o \
-		crm_stdio_port.o \
-		crm_versioning.o \
+	$(CC)  $(CFLAGS) $(LDFLAGS) cssutil.o $(OFILES) \
+	  crmregex_tre.o \
 		-lm -ltre -o cssutil
 
-osbf-util: osbf-util.c crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o $(HFILES)
+osbf-util: osbf-util.c $(OFILES) $(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c osbf-util.c -o osbf-util.o  
-	$(CC)  $(CFLAGS) $(LDFLAGS) osbf-util.o \
-		crm_str_funcs.o \
-		crm_util_errorhandlers.o \
-		crm_osbf_maintenance.o \
-		crm_generic_port.o \
-		crm_stdio_port.o \
-		crm_versioning.o \
+	$(CC)  $(CFLAGS) $(LDFLAGS) osbf-util.o $(OFILES) \
+	  crmregex_tre.o \
 		-lm -ltre -o osbf-util
 
-cssdiff: cssdiff.c crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o $(HFILES)
+cssdiff: cssdiff.c $(OFILES) $(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c cssdiff.c -o cssdiff.o
-	$(CC)  $(CFLAGS) $(LDFLAGS) \
-		crm_util_errorhandlers.o \
-		crm_str_funcs.o \
-		crm_generic_port.o \
-		crm_stdio_port.o \
-		crm_versioning.o \
-		-ltre cssdiff.o -o cssdiff
+	$(CC)  $(CFLAGS) $(LDFLAGS) cssdiff.o $(OFILES) \
+	  crmregex_tre.o \
+		-lm -ltre -o cssdiff
 
-cssmerge: cssmerge.c crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o $(HFILES)
+cssmerge: cssmerge.c $(OFILES) $(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c cssmerge.c -o cssmerge.o
-	$(CC)  $(CFLAGS) $(LDFLAGS) \
-		crm_str_funcs.o \
-		crm_util_errorhandlers.o \
-		crm_generic_port.o \
-		crm_stdio_port.o \
-		crm_versioning.o \
-		-ltre cssmerge.o -o cssmerge
+	$(CC)  $(CFLAGS) $(LDFLAGS) cssmerge.o $(OFILES) \
+	  crmregex_tre.o \
+		-lm -ltre -o cssmerge
 
 clean:
 	-rm -f crm114

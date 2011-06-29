@@ -27,22 +27,100 @@
 
 
 
-
 //
 //    Global variables
+
+
+
+/* [i_a] no variable instantiation in a common header file */
+int vht_size = 0;
+
+int cstk_limit = 0;
+
+int max_pgmlines = 0;
+
+int max_pgmsize = 0;
 
 int user_trace = 0;
 
 int internal_trace = 0;
 
+int debug_countdown = 0;
+
+int cmdline_break = 0;
+
+int cycle_counter = 0;
+
+int ignore_environment_vars = 0;
+
+int data_window_size = 0;
+
+int sparse_spectrum_file_length = 0;
+
+int microgroom_chain_length = 0;
+
+int microgroom_stop_after = 0;
+
+double min_pmax_pmin_ratio = 0.0;
+
+int profile_execution = 0;
+
+int prettyprint_listing = 0;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
+
 int engine_exit_base = 0;  //  All internal errors will use this number or higher;
 //  the user programs can use lower numbers freely.
+
+
+//        how should math be handled?
+//        = 0 no extended (non-EVAL) math, use algebraic notation
+//        = 1 no extended (non-EVAL) math, use RPN
+//        = 2 extended (everywhere) math, use algebraic notation
+//        = 3 extended (everywhere) math, use RPN
+int q_expansion_mode = 0;
 
 int selected_hashfunction = 0;  //  0 = default
 
 
+
+
+
+//   The VHT (Variable Hash Table)
+VHT_CELL **vht = NULL;
+
+//   The pointer to the global Current Stack Level (CSL) frame
+CSL_CELL *csl = NULL;
+
+//    the data window
+CSL_CELL *cdw = NULL;
+
+//    the temporarys data window (where argv, environ, newline etc. live)
+CSL_CELL *tdw = NULL;
+
+//    the pointer to a CSL that we use during matching.  This is flipped
+//    to point to the right data window during matching.  It doesn't have
+//    it's own data, unlike cdw and tdw.
+CSL_CELL *mdw = NULL;
+
+////    a pointer to the current statement argparse block.  This gets whacked
+////    on every new statement.
+//ARGPARSE_BLOCK *apb = NULL;
+
+
+
+
 //    the app path/name
 char *prog_argv0 = NULL;
+
+//    the auxilliary input buffer (for WINDOW input)
+char *newinputbuf = NULL;
+
+//    the globals used when we need a big buffer  - allocated once, used
+//    wherever needed.  These are sized to the same size as the data window.
+char *inbuf = NULL;
+char *outbuf = NULL;
+char *tempbuf = NULL;
+
+
 
 
 
@@ -53,9 +131,10 @@ char *prog_argv0 = NULL;
 
 static char version[] = "1.2";
 
+
 void helptext(void)
 {
-    /* GCC warning: cssutil.c:53: warning: string length <516> is greater than the length <509> ISO C89 compilers are required to support */
+    /* GCC warning: warning: string length <xxx> is greater than the length <509> ISO C89 compilers are required to support */
     fprintf(stdout
            , "cssutil version %s - generic css file utility.\n"
              "Usage: cssutil [options]... css-file\n"
@@ -653,4 +732,15 @@ int main(int argc, char **argv)
     }
     return 0;
 }
+
+
+
+
+// bogus code to make link phase happy while we are in limbo between obsoleting this tool and 
+// getting cssXXXX script commands working in crm114 itself.
+void free_stack_item(CSL_CELL *csl)
+{
+}
+
+
 

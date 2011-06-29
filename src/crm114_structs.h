@@ -352,8 +352,9 @@ typedef struct mythical_entropy_cell
 #define CRM_CSS_ANALYZE 41
 #define CRM_CSS_CREATE 42
 #define CRM_INSERT 43
+#define CRM_CSS_MIGRATE 44
 
-#define CRM_UNIMPLEMENTED 44
+#define CRM_UNIMPLEMENTED 45
 
 
 

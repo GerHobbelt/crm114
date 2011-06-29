@@ -349,10 +349,14 @@ accept                            - writes the current data window to standard
 
 
 alius                             - if the last bracket-group succeeded, ALIUS
-                                    skips to end of {} block (a skip, not a
-                                    FAIL); if the prior group FAILed,
-                                    ALIUS does nothing.  Thus, ALIUS is both
-                                    an ELSE clause and a CASE statement.
+                                    skips to end of the outer {} block (a skip, 
+                                    not a FAIL); if the prior group FAILed, 
+                                    ALIUS does nothing.  Thus, ALIUS is both an 
+                                    ELSE clause and a CASE statement.
+
+                                    Note Bene: ALIUS skips to the "}" end of
+                                               THE SMALLEST {} block ENCLOSING 
+                                               THE ALIUS statement.
 
 
 alter (:var:) /new-val/           - surgically change value of var to new-val
@@ -622,6 +626,22 @@ cssmerge <flags> (:destfile: :c1:...:cN:) (:report:) /params/
                                     WARNING: THIS IS A PLANNED COMMAND, which
                                     will obsolete the external cssmerge tool
                                     in due time.
+
+
+cssmigrate [:src:] (:dst:) (:report:) /params/           
+                                  - migrate the CRM database :src: to the new 
+                                    :dst: database and report into :report:. 
+                                    This command is built in to provide a 
+                                    relatively easy upgrade path for those who 
+                                    wish to keep their old CSS databases 
+                                    whenever possible.
+
+      /params/                    - control parameters.
+
+
+                                    WARNING: THIS IS A PLANNED COMMAND, which 
+                                    will obsolete the external cssutil tool in 
+                                    due time.
 
 
 cssrestore <flags> (:c1: :src:) (:report:) /params/

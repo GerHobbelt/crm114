@@ -278,14 +278,14 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
 void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *header,
         unsigned int packstart, unsigned int packlen)
 {
-//    How we pack...
-//
-//    We look at each bucket, and attempt to reinsert it at the "best"
-//    place.  We know at worst it will end up where it already is, and
-//    at best it will end up lower (at a lower index) in the file, except
-//    if it's in wraparound mode, in which case we know it will not get
-//    back up past us (since the file must contain at least one empty)
-//    and so it's still below us in the file.
+	//    How we pack...
+	//
+	//    We look at each bucket, and attempt to reinsert it at the "best"
+	//    place.  We know at worst it will end up where it already is, and
+	//    at best it will end up lower (at a lower index) in the file, except
+	//    if it's in wraparound mode, in which case we know it will not get
+	//    back up past us (since the file must contain at least one empty)
+	//    and so it's still below us in the file.
 
 
     OSBF_FEATUREBUCKET_STRUCT *h;
@@ -575,8 +575,8 @@ void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
 static OSBF_HEADER_UNION hu = { { { 0 } } };
 
 int crm_osbf_create_cssfile(char *cssfile, unsigned int buckets,
-        unsigned int major, unsigned int minor,
-        unsigned int spectrum_start)
+        unsigned int major, unsigned int minor /* [i_a] unused anyway ,
+        unsigned int spectrum_start */ )
 {
     FILE *f;
     int i;

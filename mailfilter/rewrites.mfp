@@ -1,0 +1,4 @@
+yourname@yourdomain.yourplace>->MyEmailAddress 
+[[:space:]]yourname>-> MyEmailName
+yourlocal_mailrouter_name.yourdomain.yourplace>->MyLocalMailRouter
+yourlocal_mailrouter_IP_address>->MyLocalMailRouterIP

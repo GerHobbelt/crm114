@@ -2592,7 +2592,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   GROT GROT GROT  this isn't NULL-clean on filenames.  But then
     //    again, stdio.h itself isn't NULL-clean on filenames.
     if (user_trace)
-        fprintf(stderr, "Classify list: -%s-\n", htext);
+        fprintf(stderr, "Classify list: -%.*s-\n", hlen, htext);
     fn_start_here = 0;
     fnlen = 1;
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
@@ -3399,4 +3399,15 @@ int crm_expr_bit_entropy_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "Bit Entropy");
 }
+
+
+int crm_expr_bit_entropy_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, int txtstart, int txtlen)
+{
+    return nonfatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Bit Entropy");
+}
+
 

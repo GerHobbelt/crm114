@@ -522,7 +522,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             if (csl->aliusstk[csl->mct[csl->cstmt]->nest_level + 1] == 1)
             {
                 if (user_trace)
-                    fprintf(stderr, "prior group exit OK, ALIUS fails forward.\n");
+                    fprintf(stderr, "prior group exit OK, ALIUS fails forward to statement #%d.\n", csl->mct[csl->cstmt]->fail_index - 1);
                 csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
@@ -782,6 +782,14 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
         crm_expr_css_create(csl, apb);
         break;
 
+    case CRM_CSS_ANALYZE:
+        crm_expr_css_analyze(csl, apb);
+        break;
+
+    case CRM_CSS_MIGRATE:
+        crm_expr_css_migrate(csl, apb);
+        break;
+
     case CRM_ISOLATE:
         //    nonzero return means "bad things happened"...
         if (crm_expr_isolate(csl, apb))
@@ -931,8 +939,8 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                                     &outbuf[retname_start]);
 						}
                         crm_set_temp_var(&outbuf[retname_start], "");
+	                    ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen);
                     }
-                    ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen);
                     if (user_trace)
 					{
                         fprintf(stderr, " Setting return value to VHT cell %d",
@@ -1016,7 +1024,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 				"while the maximum allowed size is %d.",
 					vnl,
 data_window_size-1);
-			vnl = WIDTHOF(outbuf) - 1;
+			vnl = data_window_size - 1;
 		}
                 memmove(outbuf, &outbuf[vns], vnl);
                 outbuf[vnl] = 0;

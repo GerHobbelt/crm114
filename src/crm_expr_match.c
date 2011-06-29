@@ -480,10 +480,12 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         vht[vmidx]->mlen = matches[0].rm_eo - matches[0].rm_so;
 
         if (bindable_vars_len > 0 && absentp)
+		{
             nonfatalerror("This program specifies an 'absent' match, and also "
                           "tries to bind variables that, by the above, aren't "
                           "matched!  ",
                     "We'll ignore these variable bindings for now.");
+		}
 
         if (bindable_vars_len > 0 && !absentp)
         {
@@ -602,10 +604,12 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     vstart = vnext;
                     mc++;
                     if (mc >= MAX_SUBREGEX)
+					{
                         nonfatalerror(
                                 "Exceeded MAX_SUBREGEX limit-too many parens in match",
                                 " Looks like you blew the gaskets on 'er.\n");
                 }
+				}
             }
             //
             //      Now do cleanup/reclamation of old memory space, if needed.
@@ -682,8 +686,10 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
 nonfatal_route_outwards:
         if (user_trace)
+		{
             fprintf(stderr, "The MATCH FAULTed and we're taking the TRAP out");
     }
+	}
 
     return fev;
 }

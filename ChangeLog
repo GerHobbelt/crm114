@@ -1,16 +1,194 @@
+2008-05-21 Ger Hobbelt
+
+    * Added the match_re_fringe1.crm test case after some new discoveries
+      regarding crm114 matching and variable rewriting which caught me
+      unaware.
+
+    * mailtrainer.crm had a bad return statement, which nevertheless worked
+      out in the old days as all CRM114 variables have global scope are the
+      called function used the same variable as the caller. Harumph.
+
+    * QUICKREF.txt now includes preliminary documentation for the new CRM
+      statement:
+
+        cssmigrate (:report:) [:src:] (:dst:) /params/
+
+      This is not yet implemented, but intended to load and convert vanilla
+      CSS files for production classifiers and convert those files to
+      something 'native' for the GerH builds on all platforms, both 32- and
+      64-bit.
+
+    * Added extra syntax checks for liaf/fail/alius script commands in the
+      script compiler to warn script programmers of misuse of these: these
+      commands expect to live in a {} block.
+
+    * Fixed the compiler to properly handle MSDOS formatted script code: the
+      number of generated opcodes would sometimes overflow the pre-allocated
+      space without warning, resulting in silently(!) truncated scripts when
+      CRM114 was fed CRLF-line terminated code. (This is very probably a bug
+      introduced by yours truly when starting work on the script
+      compiler. :-( )
+
+    * '-T' mode now dumps the compiled opcodes of the script with all
+      attributes for further analysis.
+
+    * Tweaked the FAIL targets to NOT point past the last valid line of script
+      anymore as the debugger would not like such a thing.
+
+      As we have the extra empty line added to every loaded script anyhow, the
+      outer-most FAIL target will be that empty line.
+
+      This does not make a difference to the script execution; it is merely to
+      keep the debugger a bit simpler (it is already complex enough) and still
+      allowing the debugger to catch possible crm-internal compiler errors.
+
+    * Fixed the debugger to allow it to have command line history recall on
+      UNIX when 'readline()' is available. This now makes the debugger as
+      capable on readline-enabled UNIX systems as it already was on Win32.
+
+    * Added the mk_absolute_path() function to the code for cross-platform
+      filepath expansion. Can be used to report the precise filepaths for
+      files which report access failures, etc. - sometimes files can be found
+      in several places on your discs and then it is handy to know _exactly_
+      which file crm114 has been looking for.
+
+    * Few minor fixes in the error reporting functions, following a partial
+      code review, and added (int) typecasts to strlen() and other functions
+      which produce 'size_t' results, which are fed into 'int' targets. This
+      has been done to reduce the number of warnings when compiling this code
+      in pedantic mode on UNIX and Win32/64 platforms.
+
+    * fixed code for eval to ensure we have at least a chance at retrieving a
+      valid variable name (where the empty var '::' is also accepted) using
+      the generally applied coding pattern:
+
+        len = crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
+        len = crm_nexpandvar(varname, len, MAX_VARNAME);
+        if (!crm_nextword(varname, len, 0, &varnamestart, &varnamelen) || varnamelen < 2)
+        {
+            // we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
+            nonfatalerror("bla bla bla");
+        }
+
+      As it is, this should rather be packaged into a 'get_variable_name()'
+      wrapper call or something, because we still don't check for proper ':'
+      delimiting, so code like this is okayed by the compiler but produces
+      inaccessible results (or other errors):
+
+        alter (x) /foo/   #note the lacking : : around the 'x'
+
+    * Code has been reviewed for the variable fetch pattern descried above;
+      several other spots have seen minor edits too. (e.g. 'isolate',
+      'window')
+
+    * FSCM contained code to accept \-escaped whitespace in filenames, but
+      only in 'classify'. This recurred in the apparent copy&paste Neural Net
+      code which had the same 'feature'.
+
+      REMOVED.
+
+      (Until we re-introduce such a feature in a later release, but then for
+      all filenames in script parameters everywhere.)
+
+    * Cleaned up OSB a little bit (RIDICULOUS_CODE): there was some old stuff
+      in there that would not do what it was expected to in non-standard
+      situations anyway, so it could be easily discarded.
+
+    * Removed the last few remaining vestiges of this abomination to fetch a
+      word from string space:
+
+        while (htext[i] < 0x021)
+            i++;
+        j = i;
+        while (htext[j] >= 0x021)
+            j++;
+
+    * '-T' mode now dumps the (pre-)processed script code with line numbers
+      for easier analysis of medium and large scripts.
+
+    * Added Marsaglias CMWC RNG code to have a cross-platform reproducible
+      good quality random generator: rand() is non-portable. This showed in
+      the Neural Net tests; that classifier requires a little 'noise' to
+      settle; the new CMWC was chosen because it is fast, has good random
+      characteristics and is very portable so that test results can be
+      compared properly across platforms (32/64 UNIX/WIN).
+
+      As I am a lazy bum, I took the implementation from here:
+
+        http://www.agner.org/random/
+
+      which is GPL'd code so should be okay license-wise inside CRM114.
+
+    * Fixed script command flags decoder routine crm_flagparse() so it would
+      not cause the code to jump multiple traps when several flags would
+      report an error.
+
+      Come to think of it, I should rather make sure the nonfatal() code (and
+      other bits) NEVER get a chance to jump several trap targets as multiple
+      errors are reported by a single script command being executed.
+
+      HMMMMM....
+
+      Ah well, a single message for several flags being not allowed or
+      otherwise faulty is an improvement anyhow.
+
+    * DITCHED the special code for the tools from the Win32 and UNIX builds in
+      a pre-emptive move towards including those features inside CRM114
+      itself. Too much trouble to keep these up-to-date when I know their
+      lifetime is severely limited.
+
+      crm_util_errorhandlers.c is now officialy obsoleted and discarded from
+      the distribution.
+
+    * Fixed CRM114 to ALWAYS check if the :_env_PWD: and :_env_USER: global
+      vars can be set from the environment variables. If not, set these using
+      system calls so as to guarantee that both are set and at least filled
+      with _something_ that's probably valid when the actual script is
+      executed.
+
+    * Added part of the vanilla VT code into the VT source so I can better
+      validate the test results against megatest_knowngood.log - the new VT
+      code includes some (I think) bug fixes which make it produce a slightly
+      different number of features, which results in different test results.
+      And that annoys 'make check' too much.
+
+    * Had been a bit too enthousiastic with applying the crmhash_t type
+      throughout the VT code: now the coefficients have the regular 'int' type
+      they should have had from the start.
+
+    * Fixed dumb bug in VT code when custom vectors are supplied. 'make check'
+      is happy again.
+
+    * MAILREAVER/MAILTRAINER/MAILFILER: preliminary port to Win32 included.
+
+    * MAILFILTER.CF: BASE64 decoding is now DISabled by default; this is just
+      for testing (though I found OSBF has a provision for big token
+      clustering into a single feature, so only emails with human readable
+      content encoded as BASE64 are adversily affected by this move when you
+      don't revert it in production - note that the new VT tokenizer also
+      includes this 'big token clustering' feature).
+
+    * There a better way to keep the vanilla and Win32 build header files in
+      sync regarding build numbers, etc.: now these have been added to the
+      configure script so I don't have to update them by hand every time
+      (which I often forgot).
+
+    * Fixed bug in crm114_classify.filter.awk test result postprocessing
+      script, which made the Correlate classifier tests barf.
+
+
 2008-05-05 Ger Hobbelt
 
-    * Of course I had to screw up again. Apparently I did never hit any
-      error reports larger than ~ 256 characters going, as when I was
-      taking the next step towards a single-scan compiler, a bug in
-      fwrite4stdio() caught me behind the ear: error messages and other
-      displays would repeat after 256 chars instead of printing the
-      _complete_ message. FIXED.
+    * Of course I had to screw up again. Apparently I did never hit any error
+      reports larger than ~ 256 characters going, as when I was taking the
+      next step towards a single-scan compiler, a bug in fwrite4stdio() caught
+      me behind the ear: error messages and other displays would repeat after
+      256 chars instead of printing the _complete_ message. FIXED.
 
     * Compiler now comes with full argument parsing and argument count
-      validation using the table in crm_compiler.c. Of course, one may
-      expect trouble then and several troubles have already been
-      addressed in the table and the validation code.
+      validation using the table in crm_compiler.c. Of course, one may expect
+      trouble then and several troubles have already been addressed in the
+      table and the validation code.
 
       Basically, JIT is dead and gone now.
 
@@ -18,33 +196,31 @@
 
       - get rid of the preprocessor
 
-      - make the mct[] array a single allocated array instead of a
-        series of blocks - no use having that
+      - make the mct[] array a single allocated array instead of a series of
+        blocks - no use having that
 
-      - refactor the code, such that calls like crm_statement_parse() do
-        not needlessly rescan the command too, or rather have it's state
-        machine parse the complete command for us as it does that
-        already basically: this functionality is duplicated in several
-        ways in both the preprocessor and the compiler core.
+      - refactor the code, such that calls like crm_statement_parse() do not
+        needlessly rescan the command too, or rather have it's state machine
+        parse the complete command for us as it does that already basically:
+        this functionality is duplicated in several ways in both the
+        preprocessor and the compiler core.
 
-    * Fixed a few bugs in the latest boundary checking and error
-      reporting code. This was not catched by 'make check' and I just
-      found out when trying to run mailreaver.crm - oops. :-((
-      Definitely in need of a more sophisticated test set to prevent
-      this sort of boogers.
+    * Fixed a few bugs in the latest boundary checking and error reporting
+      code. This was not catched by 'make check' and I just found out when
+      trying to run mailreaver.crm - oops. :-(( Definitely in need of a more
+      sophisticated test set to prevent this sort of boogers.
 
-    * Further preparation for the css* commands in the CRM114 compiler:
-      the compiler should now be able to cope with 'non standard flags',
-      i.e. ignore them when the statement definition table
-      (crm_compiler.c) says we should expect them for this particular
-      command.
+    * Further preparation for the css* commands in the CRM114 compiler: the
+      compiler should now be able to cope with 'non standard flags', i.e.
+      ignore them when the statement definition table (crm_compiler.c) says we
+      should expect them for this particular command.
 
-    * Programming bugs in the vianlla test scripts:
+    * Programming bugs in the vanilla test scripts:
 
-        fataltraptest.crm --> an extra fataltrapprogramerr.crm test case
-                              has been created to test this situation,
-                              while fataltraptest.crm has been fixed to
-                              perform the intended tests.
+        fataltraptest.crm --> an extra fataltrapprogramerr.crm test case has
+                              been created to test this situation, while
+                              fataltraptest.crm has been fixed to perform the
+                              intended tests.
 
         +Too many angled '<>' arguments were specified for this command: we see you specified 1 args while the maximum required is 0.
         +Sorry, but this program is very sick and probably should be killed off.
@@ -61,12 +237,12 @@
         +    syscall ( ) (:lsout:) /ls *.c/ /[Windows-MS]dir *.c /
         +(runtime system location: crm_stmt_parser.c(651) in routine: crm_statement_parse)
 
-        --> exectest.crm has been fixed too: this was my own mistake as
-            I hadn't removed the old Win32 syscall hack in there. :-(
+        --> exectest.crm has been fixed too: this was my own mistake as I
+            hadn't removed the old Win32 syscall hack in there. :-(
 
-            This code does not run (anymore when ever it did) on Win32
-            as it is; I should code an extra bit code in there to check
-            that hosttype and make it Win32 compatible the /proper/ way.
+            This code does not run (anymore when ever it did) on Win32 as it
+            is; I should code an extra bit code in there to check that
+            hosttype and make it Win32 compatible the /proper/ way.
 
         +crm114: *ERROR*
         +Too many slashes '//' arguments were specified for this command: we see you specified 2 args while the maximum required is 1.
@@ -85,15 +261,15 @@
         +    learn (q_test.css) /[[:graph:]]+/
         +(runtime system location: crm_stmt_parser.c(630) in routine: crm_statement_parse)
 
-        --> heck, this was legal in the old days, right? The new CRM114
-            has a dummy 'autodetect' call in there, which does not do
-            any autodetecting at all but just point to the old default.
-            Which is another way of saying it's a work in progress,
-            that. Nevertheless, this should stay, so the compiler
-            definitions will be fixed for this. Fixed in the compiler table.
+        --> heck, this was legal in the old days, right? The new CRM114 has a
+            dummy 'autodetect' call in there, which does not do any
+            autodetecting at all but just point to the old default. Which is
+            another way of saying it's a work in progress, that. Nevertheless,
+            this should stay, so the compiler definitions will be fixed for
+            this. Fixed in the compiler table.
 
-    * Fixed configure.ac as 7zip was suddenly unrecognized since a 
-      few releases. :-(
+    * Fixed configure.ac as 7zip was suddenly unrecognized since a few
+      releases. :-(
 
 
 2008-05-01 Ger Hobbelt
@@ -103,36 +279,33 @@
          Makefile.vanilla
 
       to better signify the raison-d-etre for this file: a 'vanilla UNIX
-      setup' for those who won't or can't compile the ./configure-based
-      set.
+      setup' for those who won't or can't compile the ./configure-based set.
 
-      With that comes an appropriately preconfigured config headerfile
-      and #define to turn this on - set by default in
-      src/Makefile.vanilla, of course:
+      With that comes an appropriately preconfigured config headerfile and
+      #define to turn this on - set by default in src/Makefile.vanilla, of
+      course:
 
           #define            : ORIGINAL_VANILLA_UNIX_MAKEFILE
           #include headefile : "config_vanilla_UNIX_sys_defaults.h"
 
-    * CHANGE: now all :@:: and :+:: accepting script elements also
-      accept :#:: - it was very handy to be able to print
-      string/variable content length in output /.../ statements, that's
-      why.
+    * CHANGE: now all :@:: and :+:: accepting script elements also accept :#::
+      - it was very handy to be able to print string/variable content length
+      in output /.../ statements, that's why.
 
-    * CHANGE: Vector Tokenizer now accepts 3D vector matrices (i.e.
-              multiple matrices for stride != 1 processes), comes with
-              its own structures to define cutom tokenizer functions for
-              use by the tokenizer and the code has been completely
-              refactored to facilitate these new features in the best
-              possible way.
+    * CHANGE: Vector Tokenizer now accepts 3D vector matrices (i.e. multiple
+              matrices for stride != 1 processes), comes with its own
+              structures to define cutom tokenizer functions for use by the
+              tokenizer and the code has been completely refactored to
+              facilitate these new features in the best possible way.
 
-      Currently the VT code accepts up to 4 2D vector matrices in
-      parallel; currenty published classifiers only use 2. This is a
-      compile-time constant:
+      Currently the VT code accepts up to 4 2D vector matrices in parallel;
+      currenty published classifiers only use 2. This is a compile-time
+      constant:
 
          #define UNIFIED_VECTOR_STRIDE 4
 
-    * Fixed input line handling for MSDOS & older MAC which do not use
-      the UNIX LF ('\n') line termination, but CRLF and CR respectively.
+    * Fixed input line handling for MSDOS & older MAC which do not use the
+      UNIX LF ('\n') line termination, but CRLF and CR respectively.
       (crm_expr_file_io.c)
 
     * CHANGE: speed improvement for Win32 stdio by removing the fflush()
@@ -142,50 +315,47 @@
                syscall command would keep repeating previously generated
                output when stdout is redirected to file.
 
-               See also the crm114 dev mailing list; suffice to say that
-               after a long time looking for the cause of this isse, the
-               _proper_ fflush() calls were added to the syscall() code
-               itself - where they _should_ be.
+               See also the crm114 dev mailing list; suffice to say that after
+               a long time looking for the cause of this isse, the _proper_
+               fflush() calls were added to the syscall() code itself - where
+               they _should_ be.
 
-               (Though I hate think of a fork()ing system which requires
-               these stricks to keep things going smoothly; that's one
-               of the reasons why I personally avoid fork() like the
-               Plague; it's only useful in very particular circumstances
-               and besides, Win32 doesn't have fork() at all, so
-               fork()ing code is rather unportable to boot. Use threads
-               or other modern multitasking/async I/O means instead.)
+               (Though I hate think of a fork()ing system which requires these
+               stricks to keep things going smoothly; that's one of the
+               reasons why I personally avoid fork() like the Plague; it's
+               only useful in very particular circumstances and besides, Win32
+               doesn't have fork() at all, so fork()ing code is rather
+               unportable to boot. Use threads or other modern
+               multitasking/async I/O means instead.)
 
-    * Win32 does NOT like writing (fwrite(), ...) large amounts of data
-      to stdout/err at once (errors happen beyond 64K at least,
-      sometimes earlier, depending on your setup and Win32 platform).
-      This has been fixed by repelacing relevant calls by the new
-      function:
+    * Win32 does NOT like writing (fwrite(), ...) large amounts of data to
+      stdout/err at once (errors happen beyond 64K at least, sometimes
+      earlier, depending on your setup and Win32 platform). This has been
+      fixed by repelacing relevant calls by the new function:
 
           fwrite4stdio()
 
-      which writes the data in 'reasonable' chunks. 'reasonable' is
-      calculated as about half of a regular FILE buffer. This provides no
-      noticable performance losses on either Win32 or Linux (SuSe64).
+      which writes the data in 'reasonable' chunks. 'reasonable' is calculated
+      as about half of a regular FILE buffer. This provides no noticable
+      performance losses on either Win32 or Linux (SuSe64).
 
-    * SKS/SVM: removed useless expandvar() calls for the filename
-      regexes.
+    * SKS/SVM: removed useless expandvar() calls for the filename regexes.
 
-    * SCM: removed fro the source tree and make files: this code was
-      already long time antiquated and does not show up in the BillY
-      releases anyway.
+    * SCM: removed fro the source tree and make files: this code was already
+      long time antiquated and does not show up in the BillY releases anyway.
 
-    * FSCM: file I/O data structures have been made cross-platform
-      portable using [u]int32_t and other fixed-width data types; other
-      classifiers already had this treatment but this one had apparently
-      slipped the dance.
+    * FSCM: file I/O data structures have been made cross-platform portable
+      using [u]int32_t and other fixed-width data types; other classifiers
+      already had this treatment but this one had apparently slipped the
+      dance.
 
-    * The error handling routines now 'know' when we're inside the
-      debugger, so failures in watched expressions (which can easily
-      happen ;-) ) won't have side-effects such as execution of trap
-      handlers in the script itself (ouch!).
+    * The error handling routines now 'know' when we're inside the debugger,
+      so failures in watched expressions (which can easily happen ;-) ) won't
+      have side-effects such as execution of trap handlers in the script
+      itself (ouch!).
 
-    * compiler checks (table in crm_compiler.c) have been corrected for
-      some of the more modern (experimental) classifiers.
+    * compiler checks (table in crm_compiler.c) have been corrected for some
+      of the more modern (experimental) classifiers.
 
     * Improved the debugger and updated QUICKREF.txt accordingly.
 
@@ -197,28 +367,25 @@
 
     * Debugger now also pops up when the complete script has run so the
       debuggeee/user can view the last results before the application
-      terminates. Sometimes code jump commands may still work, though
-      the complete context cannot be reset of course (feed from stdin,
-      etc.).
+      terminates. Sometimes code jump commands may still work, though the
+      complete context cannot be reset of course (feed from stdin, etc.).
 
     * Debugger 'v' command: line range handling split off to a separate
-      routine; now handles a more flexible format too (every number can
-      be 'defaulted').
+      routine; now handles a more flexible format too (every number can be
+      'defaulted').
 
-    * CRM114 error reports now also show the offending source code in
-      print.
+    * CRM114 error reports now also show the offending source code in print.
 
-    * Did we now finally stamp out all the boundary bugs in expandvar()?
-      -- This following a bug report by Jason Lewis, which showed a
-      boundary bug in vanilla CRM114, but upon renewed inspection I
-      found the GerH copy still could also suffer from boundary issues
-      (though is fewer, rather obscure conditions, yet a boundary bug is
-      one too many anyhow).
+    * Did we now finally stamp out all the boundary bugs in expandvar()? --
+      This following a bug report by Jason Lewis, which showed a boundary bug
+      in vanilla CRM114, but upon renewed inspection I found the GerH copy
+      still could also suffer from boundary issues (though is fewer, rather
+      obscure conditions, yet a boundary bug is one too many anyhow).
 
-      This build includes fixes for all known/detected boundary issues
-      in there (see for a list of similar material in the calling code
-      further below), including fixes for coping with extremely large
-      variable names which need :@: or other processing.
+      This build includes fixes for all known/detected boundary issues in
+      there (see for a list of similar material in the calling code further
+      below), including fixes for coping with extremely large variable names
+      which need :@: or other processing.
 
       KNOWN BUG: nested :@: statements are not parsed properly, e.g.
 

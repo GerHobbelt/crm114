@@ -15,43 +15,43 @@
 //#define CRM_PRODUCTION_CLASSIFIERS_ONLY 1
 
 /* do not include the Bit-Entropy classifier in the build */
-/* #undef CRM_WITHOUT_BIT_ENTROPY */
+#undef CRM_WITHOUT_BIT_ENTROPY
 
 /* do not include the CLUMP classifier in the build */
-/* #undef CRM_WITHOUT_CLUMP */
+#undef CRM_WITHOUT_CLUMP
 
 /* do not include the Correlate classifier in the build */
-/* #undef CRM_WITHOUT_CORRELATE */
+#undef CRM_WITHOUT_CORRELATE
 
 /* do not include the FSCM classifier in the build */
-/* #undef CRM_WITHOUT_FSCM */
+#undef CRM_WITHOUT_FSCM
 
 /* do not include the Markov classifier in the build */
-/* #undef CRM_WITHOUT_MARKOV */
+#undef CRM_WITHOUT_MARKOV
 
 /* do not use the custom inline qsort by Michael Tokarev */
-/* #undef CRM_WITHOUT_MJT_INLINED_QSORT */
+#undef CRM_WITHOUT_MJT_INLINED_QSORT
 
 /* do not include the Neural-Net classifier in the build */
-/* #undef CRM_WITHOUT_NEURAL_NET */
+#undef CRM_WITHOUT_NEURAL_NET
 
 /* do not include the OSBF classifier in the build */
-/* #undef CRM_WITHOUT_OSBF */
+#undef CRM_WITHOUT_OSBF
 
 /* do not include the OSB-Bayes classifier in the build */
-/* #undef CRM_WITHOUT_OSB_BAYES */
+#undef CRM_WITHOUT_OSB_BAYES
 
 /* do not include the OSB-Hyperspace classifier in the build */
-/* #undef CRM_WITHOUT_OSB_HYPERSPACE */
+#undef CRM_WITHOUT_OSB_HYPERSPACE
 
 /* do not include the OSB-Winnow classifier in the build */
-/* #undef CRM_WITHOUT_OSB_WINNOW */
+#undef CRM_WITHOUT_OSB_WINNOW
 
 /* do not include the SKS classifier in the build */
-/* #undef CRM_WITHOUT_SKS */
+#undef CRM_WITHOUT_SKS
 
 /* do not include the SVM classifier in the build */
-/* #undef CRM_WITHOUT_SVM */
+#undef CRM_WITHOUT_SVM
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
@@ -60,7 +60,7 @@
 #undef HAVE_BCOPY
 
 /* BSD REs */
-/* #undef HAVE_BSD_REGEX */
+#undef HAVE_BSD_REGEX
 
 /* Define to 1 if the system has the type `clock_t'. */
 #define HAVE_CLOCK_T 1
@@ -69,7 +69,7 @@
 #define HAVE_CRTDBG_H 1
 
 /* Define to 1 if you have the <crt_externs.h> header file. */
-/* #undef HAVE_CRT_EXTERNS_H */
+#undef HAVE_CRT_EXTERNS_H
 
 /* Define to 1 if you have the <ctype.h> header file. */
 #define HAVE_CTYPE_H 1
@@ -87,7 +87,7 @@
 #undef HAVE_ENDIAN_H
 
 /* Define if you have the 'environ' global environment variable */
-/* #undef HAVE_ENVIRON */
+#undef HAVE_ENVIRON
 
 /* Define to 1 if you have the <errno.h> header file. */
 #define HAVE_ERRNO_H 1
@@ -107,11 +107,17 @@
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
+/* Define to 1 if you have the `getcwd' function. */
+#undef HAVE_GETCWD
+
+/* Define to 1 if you have the `GetFullPathNameA' function. */
+#define HAVE_GETFULLPATHNAMEA 1
+
 /* Define to 1 if you have the `getopt' function. */
 #undef HAVE_GETOPT
 
 /* Define to 1 if you have the <getopt_ex.h> header file. */
-/* #undef HAVE_GETOPT_EX_H */
+#undef HAVE_GETOPT_EX_H
 
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
@@ -128,11 +134,23 @@
 /* Define to 1 if you have the `getppid' function. */
 #undef HAVE_GETPPID
 
+/* Define to 1 if you have the `getpwuid' function. */
+#undef HAVE_GETPWUID
+
+/* Define to 1 if you have the `getpwuid_r' function. */
+#undef HAVE_GETPWUID_R
+
+/* Define to 1 if you have the `getuid' function. */
+#undef HAVE_GETUID
+
+/* Define to 1 if you have the `GetUserNameA' function. */
+#define HAVE_GETUSERNAMEA 1
+
 /* GNU REs */
-/* #undef HAVE_GNU_REGEX */
+#undef HAVE_GNU_REGEX
 
 /* Define to 1 if you have the <history.h> header file. */
-/* #undef HAVE_HISTORY_H */
+#undef HAVE_HISTORY_H
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -165,7 +183,7 @@
 #define HAVE_ISLOWER 1
 
 /* Define to 1 if you have the `isnan' function. */
-#undef HAVE_ISNAN 
+#undef HAVE_ISNAN
 
 /* Define to 1 if you have the `isprint' function. */
 #define HAVE_ISPRINT 1
@@ -213,7 +231,7 @@
 #define HAVE_LONG_LONG 1
 
 /* Define to 1 if you have the `madvise' function. */
-#undef HAVE_MADVISE 
+#undef HAVE_MADVISE
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
  * to 0 otherwise. */
@@ -274,7 +292,7 @@
 #undef HAVE_PIPE
 
 /* Define to 1 if you have the `posix_madvise' function. */
-#undef HAVE_POSIX_MADVISE 
+#undef HAVE_POSIX_MADVISE
 
 /* POSIX REs */
 /* #undef HAVE_POSIX_REGEX */
@@ -284,6 +302,9 @@
 
 /* Define to 1 if you have the <process.h> header file. */
 #define HAVE_PROCESS_H 1
+
+/* Define to 1 if you have the <pwd.h> header file. */
+#undef HAVE_PWD_H
 
 /* Define to 1 if you have the <readline.h> header file. */
 /* #undef HAVE_READLINE_H */
@@ -375,13 +396,13 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strmov' function. */
-/* #undef HAVE_STRMOV */
+#undef HAVE_STRMOV
 
 /* Define to 1 if you have the `strncasecmp' function. */
 #undef HAVE_STRNCASECMP
 
 /* Define to 1 if you have the `strnchr' function. */
-/* #undef HAVE_STRNCHR */
+#undef HAVE_STRNCHR
 
 /* Define to 1 if you have the `strncpy' function. */
 #define HAVE_STRNCPY 1
@@ -458,19 +479,19 @@
 #undef HAVE_UTIME_H
 
 /* SYSV 8 REs */
-/* #undef HAVE_V8_REGEX */
+#undef HAVE_V8_REGEX
 
 /* SYSV 8 RE exports regsub */
-/* #undef HAVE_V8_REGSUB */
+#undef HAVE_V8_REGSUB
 
 /* Define to 1 if you have the <varargs.h> header file. */
-/* #undef HAVE_VARARGS_H */
+#undef HAVE_VARARGS_H
 
 /* Define to 1 if you have the `vfork' function. */
 #undef HAVE_VFORK
 
 /* Define to 1 if you have the <vfork.h> header file. */
-/* #undef HAVE_VFORK_H */
+#undef HAVE_VFORK_H
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #define HAVE_VSNPRINTF 1
@@ -524,7 +545,7 @@
 #undef HAVE___ENVIRON
 
 /* Define if compiler implements __FUNCTION__. */
-#undef HAVE___FUNCTION__ 
+#undef HAVE___FUNCTION__
 
 /* Define if compiler implements __func__. */
 #undef HAVE___FUNC__
@@ -538,14 +559,14 @@
 
 /* Define to 1 if your processor stores words with the most significant byte
  * first (like Motorola and SPARC, unlike Intel and VAX). */
-/* #undef MACHINE_IS_BIG_ENDIAN */
+#undef MACHINE_IS_BIG_ENDIAN
 
 /* Define to 1 if your processor stores words with the least significant byte
  * first (like Intel and VAX). */
 #define MACHINE_IS_LITTLE_ENDIAN 1
 
 /* directory where BillY's original crm114 distro resides */
-#define ORIGINAL_BILLY_DISTRO_DIR ../../../1original/crm114/src/crm114.sourceforge.net/src
+#define ORIGINAL_BILLY_DISTRO_DIR "/home/ger/prj/1original/crm114/src/crm114.sourceforge.net/src"
 
 /* Name of package */
 #define PACKAGE "crm114"
@@ -557,22 +578,22 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20080326-BlameSentansoken"
+#define PACKAGE_STRING "CRM114 20080502-BlameJason"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20080326-BlameSentansoken"
+#define PACKAGE_VERSION "20080502-BlameJason"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
-/* #undef PREFER_PORTABLE_MEMMOVE */
+#undef PREFER_PORTABLE_MEMMOVE
 
 /* "enable replacement (v)snprintf if system (v)snprintf is broken" */
-/* #undef PREFER_PORTABLE_SNPRINTF */
+#undef PREFER_PORTABLE_SNPRINTF
 
 /* revision number of software */
-#define REVISION "2249"
+#define REVISION "2423"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT sizeof(int)  /* 4 */
@@ -584,19 +605,19 @@
 #define SIZEOF_LONG_LONG_INT sizeof(long long int) /* 8 */
 
 /* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
-/* #undef STAT_MACROS_BROKEN */
+#undef STAT_MACROS_BROKEN
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-2249"
+#define TAR_FILENAME_POSTFIX "Ger-2423"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
-#define VERSION "20080326-BlameSentansoken"
+#define VERSION "20080502-BlameJason"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""
@@ -610,7 +631,7 @@
 #endif
 
 /* Define to 1 if on MINIX. */
-/* #undef _MINIX */
+#undef _MINIX
 
 /* Define to 2 if the system does not provide POSIX.1 features except with
  * this defined. */
@@ -620,18 +641,18 @@
 /* #undef _POSIX_SOURCE */
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
- * <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
- #define below would cause a syntax error. */
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
 /* #undef _UINT32_T */
 
 /* Define for Solaris 2.5.1 so the uint64_t typedef from <sys/synch.h>,
- * <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
- #define below would cause a syntax error. */
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
 /* #undef _UINT64_T */
 
 /* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
- * <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
- #define below would cause a syntax error. */
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
 /* #undef _UINT8_T */
 
 /* Define to 1 if type `char' is unsigned and you are not using gcc.  */
@@ -739,4 +760,3 @@ typedef long ssize_t;
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
  * code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
-

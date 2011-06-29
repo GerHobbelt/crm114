@@ -161,12 +161,17 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
-    i = 0;
-    while (htext[i] < 0x021)
-        i++;
-    j = i;
-    while (htext[j] >= 0x021)
-        j++;
+ if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+ {
+            fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)hlen,
+					htext);
+            return fev;
+ }
+ j += i;
+    CRM_ASSERT(i < hlen);
+    CRM_ASSERT(j <= hlen);
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
@@ -693,7 +698,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     double cpcorr[MAX_CLASSIFIERS];        // corpus correction factors
 
-#if defined (GER)
+#if defined (GER) || 01
     hitcount_t totalcount = 0;
     hitcount_t hits[MAX_CLASSIFIERS];      // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
@@ -1596,4 +1601,16 @@ int crm_expr_osb_winnow_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Winnow");
 }
+
+
+int crm_expr_osb_winnow_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, int txtstart, int txtlen)
+{
+    return nonfatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Winnow");
+}
+
+
 

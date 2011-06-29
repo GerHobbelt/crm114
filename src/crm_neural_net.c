@@ -157,9 +157,6 @@
 
 
 
-// define this only when you're porting this code to another platform (Win32) and need to
-// be DAMN sure the results are reproducable across the various platforms!
-#define DISABLE_RANDOM_NOISE_FOR_REPRO_CHECK 1
 
 
 
@@ -306,11 +303,7 @@ inline static float sign(float x)
 
 inline static double rand0to1()
 {
-#if defined(DISABLE_RANDOM_NOISE_FOR_REPRO_CHECK)
-	return 0.5;
-#else
-	return (double)rand() / (double)RAND_MAX;
-#endif
+	return crm_frand();
 }
 
 inline static double stochastic_factor(double stoch_noise,
@@ -1092,7 +1085,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         int fev = nonfatalerror_ex(SRC_LOC(),
             "\nYou didn't specify a valid filename: '%.*s'\n",
-            (int)htext_len,
+            htext_len,
             htext);
         return fev;
     }
@@ -2277,11 +2270,14 @@ int crm_neural_net_classify(
     // this in the stringy stuff?
     for (i = 0, j = 0, k = 0; i < filenames_field_len && j < MAX_CLASSIFIERS; i++)
     {
+#if 0 // [i_a] the only classifier which supports this, and then only here in 'classify' and not in 'learn': discarded.
         if (filenames_field[i] == '\\') // allow escapes in case filename is weird
         {
             filenames[j][k++] = filenames_field[++i];
         }
-        else if (crm_isspace(filenames_field[i]) && k > 0)
+        else 
+#endif
+			if (crm_isspace(filenames_field[i]) && k > 0)
         {
             //white space terminates filenames
             filenames[j][k] = 0;
@@ -2539,4 +2535,16 @@ int crm_neural_net_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         "You may want to run 'crm -v' to see which classifiers are available.\n",
         "Neural Net");
 }
+
+
+int crm_neural_net_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+                               char *txtptr, int txtstart, int txtlen)
+{
+    return nonfatalerror_ex(SRC_LOC(),
+        "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+        "You may want to run 'crm -v' to see which classifiers are available.\n",
+        "Neural Net");
+}
+
+
 

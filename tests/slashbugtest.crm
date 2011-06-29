@@ -1,4 +1,4 @@
-#! /windows/G/prj/3actual/crm114/src/crm114
+#! /home/ger/prj/3actual/crm114-2/src/crm114
 #   test the error reporting concerning matching delimiters.
 #
 # this code has several errors: the second 'output' comes with 

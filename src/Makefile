@@ -44,6 +44,7 @@ noinst_PROGRAMS = testvectok$(EXEEXT) crm_test_hashes$(EXEEXT)
 subdir = src
 DIST_COMMON = README $(dist_lisp_LISP) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+	$(srcdir)/config_vanilla_UNIX_sys_defaults.h.in \
 	$(srcdir)/diff_em.sh.in $(srcdir)/indent.sh.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps =  \
@@ -60,7 +61,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = diff_em.sh indent.sh
+CONFIG_CLEAN_FILES = diff_em.sh indent.sh \
+	config_vanilla_UNIX_sys_defaults.h
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lispdir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
@@ -85,7 +87,7 @@ am__objects_1 = crm_compiler.$(OBJEXT) crm_errorhandlers.$(OBJEXT) \
 	crm_expr_fscm.$(OBJEXT) crm_generic_port.$(OBJEXT) \
 	crm_stdio_port.$(OBJEXT) crm_versioning.$(OBJEXT)
 am__objects_2 =
-am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) \
+am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) $(am__objects_2) \
 	crm_main.$(OBJEXT)
 crm114_OBJECTS = $(am_crm114_OBJECTS)
 crm114_LDADD = $(LDADD)
@@ -93,29 +95,20 @@ am_crm_test_hashes_OBJECTS = $(am__objects_2) $(am__objects_2) \
 	crm_test_hashes.$(OBJEXT)
 crm_test_hashes_OBJECTS = $(am_crm_test_hashes_OBJECTS)
 crm_test_hashes_LDADD = $(LDADD)
-am_cssdiff_OBJECTS = cssdiff.$(OBJEXT) \
-	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	crm_versioning.$(OBJEXT) $(am__objects_2) $(am__objects_2)
+am_cssdiff_OBJECTS = cssdiff.$(OBJEXT) $(am__objects_1) \
+	$(am__objects_2) $(am__objects_2)
 cssdiff_OBJECTS = $(am_cssdiff_OBJECTS)
 cssdiff_LDADD = $(LDADD)
-am_cssmerge_OBJECTS = cssmerge.$(OBJEXT) \
-	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	crm_versioning.$(OBJEXT) $(am__objects_2) $(am__objects_2)
+am_cssmerge_OBJECTS = cssmerge.$(OBJEXT) $(am__objects_1) \
+	$(am__objects_2) $(am__objects_2)
 cssmerge_OBJECTS = $(am_cssmerge_OBJECTS)
 cssmerge_LDADD = $(LDADD)
-am_cssutil_OBJECTS = cssutil.$(OBJEXT) crm_css_maintenance.$(OBJEXT) \
-	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	crm_versioning.$(OBJEXT) $(am__objects_2) $(am__objects_2)
+am_cssutil_OBJECTS = cssutil.$(OBJEXT) $(am__objects_1) \
+	$(am__objects_2) $(am__objects_2)
 cssutil_OBJECTS = $(am_cssutil_OBJECTS)
 cssutil_LDADD = $(LDADD)
-am_osbf_util_OBJECTS = osbf-util.$(OBJEXT) \
-	crm_osbf_maintenance.$(OBJEXT) \
-	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	crm_versioning.$(OBJEXT) $(am__objects_2) $(am__objects_2)
+am_osbf_util_OBJECTS = osbf-util.$(OBJEXT) $(am__objects_1) \
+	$(am__objects_2) $(am__objects_2)
 osbf_util_OBJECTS = $(am_osbf_util_OBJECTS)
 osbf_util_LDADD = $(LDADD)
 am_testvectok_OBJECTS = $(am__objects_1) $(am__objects_2) \
@@ -149,8 +142,8 @@ elisp_comp = $(top_srcdir)/m4/elisp-comp
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run aclocal-1.10
-AMTAR = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run tar
+ACLOCAL = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run aclocal-1.10
+AMTAR = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run tar
 #PREV_VERSION=20080217-BlameJoeLangeway_VT
 #PREV_VERSION=20071201-BlameLittleStevie_VT
 #PREV_VERSION=20071126-BlameGerHobbelt
@@ -214,9 +207,9 @@ AM_CPPFLAGS =
 #
 #    BSD users - do NOT use -static-libgcc!!!
 AM_LDFLAGS = 
-AUTOCONF = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run autoconf
-AUTOHEADER = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run autoheader
-AUTOMAKE = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run automake-1.10
+AUTOCONF = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run automake-1.10
 AWK = gawk
 BIN_PATH = /usr/local/bin
 BZIP2 = /usr/bin/bzip2
@@ -224,6 +217,7 @@ CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g
 COMPRESS = 
+CONFIG_STATUS_DEPENDENCIES = $(top_srcdir)/src/config_vanilla_UNIX_sys_defaults.h.in $(top_srcdir)/win32/config_win32.h.in
 CPP = gcc -E
 CPPFLAGS = 
 CVS2CL = 
@@ -255,7 +249,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-ISODATE = 2008-05-08
+ISODATE = 2008-05-24
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -ltre -lm  -lreadline
@@ -263,7 +257,7 @@ LN_S = ln -s
 LTLIBOBJS = 
 LZMA = 
 MAINT = 
-MAKEINFO = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 ORIGINAL_BILLY_DISTRO_DIR = /home/ger/prj/1original/crm114/src/crm114.sourceforge.net/src
@@ -277,7 +271,7 @@ PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 2296
+REVISION = 2423
 SED = /usr/bin/sed
 SET_MAKE = 
 SEVEN_ZIP = /usr/bin/7z
@@ -286,7 +280,7 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-2296
+TAR_FILENAME_POSTFIX = Ger-2423
 TRE_CONFIG = no
 UNCRUSTIFY = /usr/local/bin/uncrustify
 VERSION = 20080502-BlameJason
@@ -297,10 +291,10 @@ VERSION = 20080502-BlameJason
 # 
 VER_SUFFIX =  
 ZIP = /usr/bin/zip
-abs_builddir = /windows/G/prj/3actual/crm114/src
-abs_srcdir = /windows/G/prj/3actual/crm114/src
-abs_top_builddir = /windows/G/prj/3actual/crm114
-abs_top_srcdir = /windows/G/prj/3actual/crm114
+abs_builddir = /home/ger/prj/3actual/crm114-2/src
+abs_srcdir = /home/ger/prj/3actual/crm114-2/src
+abs_top_builddir = /home/ger/prj/3actual/crm114-2
+abs_top_srcdir = /home/ger/prj/3actual/crm114-2
 ac_ct_CC = gcc
 am__include = include
 am__leading_dot = .
@@ -327,7 +321,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = $(SHELL) /windows/G/prj/3actual/crm114/m4/install-sh
+install_sh = $(SHELL) /home/ger/prj/3actual/crm114-2/m4/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 lispdir = ${datarootdir}/emacs/site-lisp
@@ -363,7 +357,7 @@ UNCRUSTIFY_BIN = /usr/local/bin/uncrustify
 DIFF_BIN = /usr/bin/diff
 HTMLTIDY_BIN = /usr/bin/tidy
 TAR_CMDLINE = ${TAR_BIN} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20080502-BlameJason-Ger-2296
+ARCHIVE_BASE_NAME = crm114-20080502-BlameJason-Ger-2423
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #
@@ -568,7 +562,8 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
 	alius_w_comment.crm \
 	userdirtest.crm \
-	print_binary2decimal_int32.crm
+	print_binary2decimal_int32.crm \
+	match_re_fringe1.crm
 
 TEXTFILES = COLOPHON.txt pad.dat \
 	QUICKREF.txt INTRO.txt knownbugs.txt FAQ.txt things_to_do.txt \
@@ -588,29 +583,14 @@ TEXTFILES = COLOPHON.txt pad.dat \
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(UTILFILES) \
 	$(CRMFILES) \
-	$(TEXTFILES) 
+	$(TEXTFILES) \
+	config_vanilla_UNIX_sys_defaults.h.in
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
-cssutil_SOURCES = cssutil.c \
-	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c \
-	$(HFILES) $(EXTRA_DEPS)
-
-osbf_util_SOURCES = osbf-util.c \
-	crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c \
-	$(HFILES) $(EXTRA_DEPS)
-
-cssdiff_SOURCES = cssdiff.c \
-	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c \
-	$(HFILES) $(EXTRA_DEPS)
-
-cssmerge_SOURCES = cssmerge.c \
-	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c \
-	$(HFILES) $(EXTRA_DEPS)
-
+crm114_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) crm_main.c
+cssutil_SOURCES = cssutil.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
+osbf_util_SOURCES = osbf-util.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
+cssdiff_SOURCES = cssdiff.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
+cssmerge_SOURCES = cssmerge.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 testvectok_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) testvectok.c
 crm_test_hashes_SOURCES = $(HFILES) $(EXTRA_DEPS) crm_test_hashes.c
 
@@ -672,6 +652,8 @@ distclean-hdr:
 diff_em.sh: $(top_builddir)/config.status $(srcdir)/diff_em.sh.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 indent.sh: $(top_builddir)/config.status $(srcdir)/indent.sh.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+config_vanilla_UNIX_sys_defaults.h: $(top_builddir)/config.status $(srcdir)/config_vanilla_UNIX_sys_defaults.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
@@ -763,7 +745,6 @@ include ./$(DEPDIR)/crm_stdio_port.Po
 include ./$(DEPDIR)/crm_stmt_parser.Po
 include ./$(DEPDIR)/crm_str_funcs.Po
 include ./$(DEPDIR)/crm_test_hashes.Po
-include ./$(DEPDIR)/crm_util_errorhandlers.Po
 include ./$(DEPDIR)/crm_var_hash_table.Po
 include ./$(DEPDIR)/crm_vector_tokenize.Po
 include ./$(DEPDIR)/crm_versioning.Po
@@ -1278,9 +1259,6 @@ crmregex_tre.o: crmregex_tre.c \
 crmregex_gnu.o: crmregex_gnu.c \
 	$(HFILES) $(EXTRA_DEPS)
 
-crm_util_errorhandlers.o: crm_util_errorhandlers.c \
-	$(HFILES) $(EXTRA_DEPS)
-
 cssutil.o: cssutil.c  \
 	$(HFILES) $(EXTRA_DEPS)
 
@@ -1308,10 +1286,10 @@ crm_stdio_port.o: crm_stdio_port.c \
 crm_versioning.o: crm_versioning.c \
 	$(HFILES) $(EXTRA_DEPS)
 
-# cssutil$(EXEEXT): cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# cssutil$(EXEEXT): cssutil.o crm_css_maintenance.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 # 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
 # 		crm_css_maintenance.o \
-# 		crm_util_errorhandlers.o \
+# 		crm_errorhandlers.o \
 # 		crm_str_funcs.o \
 # 		crm_generic_port.o \
 # 		crm_stdio_port.o \
@@ -1321,10 +1299,10 @@ crm_versioning.o: crm_versioning.c \
 # 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 # 	$(E) ""
 # 
-# osbf-util$(EXEEXT): osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# osbf-util$(EXEEXT): osbf-util.o crm_osbf_maintenance.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 # 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
 # 		crm_str_funcs.o \
-# 		crm_util_errorhandlers.o \
+# 		crm_errorhandlers.o \
 # 		crm_osbf_maintenance.o \
 # 		crm_generic_port.o \
 # 		crm_stdio_port.o \
@@ -1334,9 +1312,9 @@ crm_versioning.o: crm_versioning.c \
 # 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 # 	$(E) ""
 # 
-# cssdiff$(EXEEXT): cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# cssdiff$(EXEEXT): cssdiff.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 # 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
-# 		crm_util_errorhandlers.o \
+# 		crm_errorhandlers.o \
 # 		crm_str_funcs.o \
 # 		crm_generic_port.o \
 # 		crm_stdio_port.o \
@@ -1346,10 +1324,10 @@ crm_versioning.o: crm_versioning.c \
 # 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 # 	$(E) ""
 # 
-# cssmerge$(EXEEXT): cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# cssmerge$(EXEEXT): cssmerge.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 # 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
 # 		crm_str_funcs.o \
-# 		crm_util_errorhandlers.o \
+# 		crm_errorhandlers.o \
 # 		crm_generic_port.o \
 # 		crm_stdio_port.o \
 # 		crm_versioning.o \

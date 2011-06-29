@@ -21,7 +21,7 @@ process_crm()
     echo "copying[processed]  : src/$2 -- $1/$2$3"
     if [ -f src/$2 ]
     then
-        cat src/$2 | sed -e 's,#! *\/usr\/bin\/crm,#! @abs_top_builddir@/src/crm114,g' > $1/$2$3
+        cat src/$2 | sed -e 's,#!.*\/crm,#! @abs_top_builddir@/src/crm114,g' > $1/$2$3
     fi
 }
 
@@ -32,6 +32,17 @@ process_shfile()
     then
         cat src/$2 | sed -e 's,\./crm114,@abs_top_builddir@/src/crm114,g' > $1/$2$3
         chmod a+x $1/$2$3
+    fi
+}
+
+process_cf()
+{
+    echo "copying[processed]  : src/$2 -- $1/$2$3"
+    if [ -f src/$2 ]
+    then
+	# TODO: replace mime, etc. commands with something dug up by the configure script
+	#       That is: if anyone woulkd like that.
+        cp src/$2 $1/$2$3
     fi
 }
 
@@ -91,6 +102,8 @@ process_crm         tests                paolo_ov2.crm                     .in
 process_crm         tests                paolo_ov3.crm                     .in
 process_crm         tests                paolo_ov4.crm                     .in
 process_crm         tests                paolo_ov5.crm                     .in
+process_crm         tests                match_re_fringe1.crm              .in
+
 
 
 check_file          tests                megatest_knowngood.log
@@ -173,46 +186,52 @@ process_crm         mailfilter           maillib.crm             .in
 process_crm         mailfilter           mailreaver.crm          .in
 process_crm         mailfilter           mailtrainer.crm         .in
 
-check_file          mailfilter           mailfilter.cf
+process_cf          mailfilter           mailfilter.cf           .in
+
+check_file          mailfilter           blacklist.mfp
+check_file          mailfilter           priolist.mfp
+check_file          mailfilter           rewrites.mfp
+check_file          mailfilter           whitelist.mfp
+check_file          mailfilter           whitelist.mfp.example
 
 
 
-check_file          docs                classify_details.txt
-check_file          docs                COLOPHON.txt
-check_file          docs                QUICKREF.txt
-check_file          docs                INTRO.txt
-check_file          docs                knownbugs.txt
-check_file          docs                FAQ.txt
-check_file          docs                things_to_do.txt
-check_file          docs                README 
-check_file          docs                CRM114_Mailfilter_HOWTO.txt 
-check_file          docs                inoc_passwd.txt 
-check_file          docs                procmailrc.recipe 
-check_file          docs                reto_procmail_recipe.recipe 
-check_file          docs                VT_generic_Vector_Tokenization.txt
+check_file          docs                 classify_details.txt
+check_file          docs                 COLOPHON.txt
+check_file          docs                 QUICKREF.txt
+check_file          docs                 INTRO.txt
+check_file          docs                 knownbugs.txt
+check_file          docs                 FAQ.txt
+check_file          docs                 things_to_do.txt
+check_file          docs                 README 
+check_file          docs                 CRM114_Mailfilter_HOWTO.txt 
+check_file          docs                 inoc_passwd.txt 
+check_file          docs                 procmailrc.recipe 
+check_file          docs                 reto_procmail_recipe.recipe 
+check_file          docs                 VT_generic_Vector_Tokenization.txt
 
 
 
-process_crm         examples            pad.crm                           .in
-process_crm         examples            shroud.crm                        .in
+process_crm         examples             pad.crm                           .in
+process_crm         examples             shroud.crm                        .in
 
-check_file          examples            blacklist.mfp
-check_file          examples            priolist.mfp
-check_file          examples            rewrites.mfp
-check_file          examples            whitelist.mfp
-check_file          examples            whitelist.mfp.example
-process_crm         examples            rewriteutil.crm                 .in
+check_file          examples             blacklist.mfp
+check_file          examples             priolist.mfp
+check_file          examples             rewrites.mfp
+check_file          examples             whitelist.mfp
+check_file          examples             whitelist.mfp.example
+process_crm         examples             rewriteutil.crm                 .in
 
-check_file          examples            pad.dat
+check_file          examples             pad.dat
 
 
 
-check_file          docs                COLOPHON.txt
-check_file          docs                INTRO.txt
-check_file          docs                QUICKREF.txt
-check_file          docs                CRM114_Mailfilter_HOWTO.txt
-check_file          docs                knownbugs.txt
-check_file          docs                classify_details.txt
+check_file          docs                 COLOPHON.txt
+check_file          docs                 INTRO.txt
+check_file          docs                 QUICKREF.txt
+check_file          docs                 CRM114_Mailfilter_HOWTO.txt
+check_file          docs                 knownbugs.txt
+check_file          docs                 classify_details.txt
 
 
 
