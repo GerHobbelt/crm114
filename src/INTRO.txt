@@ -1,0 +1,1464 @@
+
+ 		    INTRO to the CRM114 DISCRIMINATOR
+		    
+		 Copyright (c) W.S.Yerazunis, 2000-2003
+
+		    Last update - 15 December 2003
+
+---------------------------------------------------------------------------
+
+	DANGER, WILL ROBINSON!!  TAKE COVER, DR. SMITH!!!!!!!!!!
+
+	CRM114 IS STILL UNDER DEVELOPMENT AND EXPANSION.  YOU MAY
+	FIND THAT THE LANGUAGE CHANGES OUT FROM UNDER YOU .  BUGS,
+	MISFEATURES, OR EVEN EXPLOITS MAY LURK WITHIN THIS CODE.
+		
+		IT IS SUPPLIED "AS-IS", WITH NO WARRANTY!
+ 		   SEE THE GPL LICENSE FOR DETAILS.
+		----------------------------------------
+
+This document is the programmer's introduction to CRM114 Discriminator.
+
+If you are reading this to get information on how to install
+CRM114 as a mailfilter, you have the _wrong_ document.  
+
+But fear not, we _do_ have the document you want.  The document you want
+if you want to know how to install CRM114 as a mailfilter is:
+
+    CRM114_Mailfilter_HOWTO.txt
+
+which will tell you everything you need to know about how to install,
+activate, and train the CRM114 mailfilter.
+
+
+
+-------------------------------------------------------------------------
+
+	      Before We Begin In Earnest, A Few Choice Quotes:
+
+
+     "It's not ugly like PERL.  It's a whole different _kind_ of ugly."
+		-John Bowker, on hearing the design details.
+
+                        ------------------
+
+  "The CRM-114 Discriminator is designed not to receive at _all_.  That
+  is, not unless the message is preceded by the proper 3-letter code
+  group."  
+      - George C. Scott, as General Buck Turgidson, _Dr. Strangelove_
+
+                        ------------------
+
+    C views the entire world as if your only tool is a hammer.  CRM
+	views the world as if your only good tools are a set of
+	scissors and a roll of sticky splicing tape.
+
+                        ------------------
+
+      "What is this?  Some kind of grep bitten by a radioactive spider?"
+			-me
+
+
+
+CRM114 is a language designed to write filters in.  It caters to
+filtering email, system log streams, html, and other marginally
+human-readable ASCII that may occasion to grace your computer.
+
+CRM114's unique strengths are the data structure (everything is
+a string and a string can overlap another string), it's ability
+to work on truly infinitely long input streams, it's ability to
+use extremely advanced classifiers to sort text, and the ability
+to do approximate regular expressions (that is, regexes that
+don't quite match) via the TRE regex library.
+
+CRM114 also sports a very powerful subprocess control facility, and
+a unique syntax and program structure that puts the fun back in
+programming (OK, you can run away screaming now).  The syntax is 
+declensional rather than positional; the type of quote marks around
+an argument determine what that argument will be used for.
+
+The typical CRM114 program uses regex operations more often
+than addition (in fact, math was only added to TRE in the waning
+days of 2003, well after CRM114 had been in daily use for over 
+a year and a half).
+
+In other words, crm114 is a very VERY powerful mutagenic filter that
+happens to be a programming language as well.
+
+The filtering style of the CRM-114 discriminator is based on the fact
+that most spam, normal log file messages, or other uninteresting data
+is easily categorized by a few characteristic patterns ( such as
+"Mortgage leads", "advertise on the internet", and "mail-order toner
+cartridges".)  CRM114 may also be useful to folks who are on multiple
+interlocking mailing lists.
+
+In a bow to Unix-style flexibility, by default CRM114 reads it's
+input from standard input, and by default sends it's output to
+standard output.  Note that the default action has a zero-length
+output.  Redirection and use of other input or output files is
+possible, as well as the use of windowing, either delimiter-based or
+time-based, for real-time continuous applications.
+
+CRM114 can be used for other than mail filtering; consider it to be
+a version of GREP with super powers.  If perl is a seventy-bladed swiss
+army knife, CRM114 is a razor-sharp katana that can talk.
+
+
+----- How CRM114 Is Different From ...  -----
+
+CRM114 is different than procmail in that:
+
+* CRM114 code is readable by the uninitiated, while procmail code
+   looks like modem noise.
+
+* CRM114 allows looping
+
+* CRM114 allows gotos
+ 
+* CRM114 allows nested statements in a useful way
+
+* CRM114 can learn, if you want.
+
+* CRM114 uses per-match control flags, rather than procmail's
+   per-recipe control flags, and the control flags are words, not
+   cryptocharacters.
+
+* CRM114 separates mail processing from mail delivery, rather than
+  conflating the two.
+
+
+-----
+
+CRM114 is different from awk / gawk / perl / grep in that:
+
+* CRM114 is entity-oriented, and views the entire input as a
+  single structured entity (structure is imposed during processing,
+  rather than from within, as in XML); there is no concept of "lines",
+  "words", "stanzas" or "records" unless you choose to put them there.
+
+* CRM114 tries to avoid the bizarre syntax, mind-reading, and
+  action-at-a-distance of perl;
+
+* CRM114 can learn, if you want.
+
+
+CRM114 is unique in that:
+
+* CRM114 can use a swept window to manage the amount of data
+  retained in each analysis pass; highly useful on log files and
+  packet traces.
+
+* CRM114 can learn.
+
+
+Oh, just for completeness- yes, CRM114 is Turing-complete, as it can
+emulate (to within the limits of available memory) a single-tape
+Turing machine.  To do this requires an interesting initialization
+of the input tape, which is left as an exercise to the reader (backwards
+hint: each symbol on the tape has two parts - the logic state, and
+a unique identifier; the identifier is used as a marker so that 
+tape motion "to the left" and "to the right" can be performed.
+
+
+
+-----  Anything Else ? -----
+
+Lastly, this guide is just an _introduction_ to CRM114.  It doesn't
+explain all of the statements, nor does it fully explain all of the
+statements that it does cover.  The QUICKREF quick reference card
+makes a much better attempt at covering every capability, at the
+expense of a terse format.
+
+If you want the big manual, we have that too- it's on the web page
+(but not part of this download; it's big).
+
+And again, CRM114 is GPLed software and a community effort - if you 
+have an improvement, a bugfix, or even just a bug, please do report
+it back on the crm114 mailing list.  You can get on the mailing list
+(a closed list, so it won't spam you) via a link on:
+
+   crm114.sourceforge.net
+
+
+
+-----  Getting and Installing CRM114  ---------
+
+You should already have the source code.  If you don't, you can fetch
+the full kit from Sourceforge.  CRM114 is GPLed, you can use it freely
+without asking anyone for permission or paying any licensing
+fees. 
+
+Open any browser, and go to:
+
+     http://crm114.sourceforge.net
+
+Read the webpage- it will usually have direct clickable links to pull
+down both the most recent cutting-edge version of CRM114 (usually for
+developers and testers), and the "Recommended for Users" version.
+
+Click on the version you want, and downloading will commence.
+
+Once you have the .gz file(s), you will need to unpack them.  
+If you have .gz files, type:
+
+	tar -zxvf crm114-whateverversion.tar.gz
+
+and the full source directory will be built in your current directory
+
+Now, cd down into that source directory, become root, and type:
+
+    make install
+
+to build and install the executables and utilities.  If the make
+complains of not being able to find the TRE approximate-regex library,
+you can either:
+
+    Plan A) install TRE.  This is recommended.  Since the TRE library
+       is included in the CRM114 distribution, this is easy.  To do
+       this, become root, then type as follows.  You will have to check what
+       version of TRE came with your copy of CRM114 and substitute the
+       version number appropriately :
+
+	     tar -xvf tre-<version>.tar
+	     cd tre-<version>       
+	     ./configure
+	     make
+	     make install
+	     cd ..
+
+       in which case you will be able to build the executable.  Type
+       
+	     make install
+  
+       again and CRM114 should build and install. 
+	        
+or you can:
+
+    Plan B) use the GNU library - in this case, approximate regexes
+       will not be available, and there will be new and interesting
+       bugs and hangs to explore.  To do this, type
+
+	    make crm114_gnu
+	    install -m 755 crm114_gnu /usr/bin/crm
+
+You can then execute the executable with crm [<arg> [<arg> [<arg> [....]]]] .
+
+To install crm114 as a systemwide utility, type "make install" to
+install it as /usr/bin/crm so anyone can use it.
+
+Now would be a _good_ time to read the CRM114 QUICK REFERENCE CARD,
+which is one of the files you already have.  A lot of it won't make
+sense... yet.  But it will, soon enough.
+
+
+
+-----  Getting Started -----
+
+Crm114 is a filter, like "grep" or "wc".  It reads from standard
+input, and outputs to standard output (mostly- these can be overridden).
+
+By default, crm114 runs your program in the following steps:
+
+   1) it reads your program in
+   2) it runs a preprocessor over your program
+   3) it runs an incremental microcompiler over your program
+   4) it reads standard input until either it hits EOF (^D
+      on the keyboard), or until it exhausts the data window size 
+      (which you can change with the -w parameter; the default at 
+      version 2003-02-19 is sixteen megabytes).  
+   5) Then the crm114 runtime system actually runs your program.
+
+Program execution is on a line-by-line, JIT-compiled style.  To speed
+things up and detect some errors, CRM114 does a microcompile to
+convert your program into a VHL representation which is then
+interpreted.  This is not a full compile; since many arguments can
+only be evaluated in the dynamic context of a partially-executed
+program, a full compilation is not possible in any case.
+
+Put only one statement on a line, if possible (this is the recommended
+style).  If you can't, separate the statements with semicolons.
+
+Here's a VERY simple program.
+
+        output /Hello, world! \n/
+
+which accepts an arbitrary input (just hit ^D for now), then outputs 
+
+	Hello, world!
+
+
+Some mechanics- assuming you you want to run these programs as
+standalones, make sure the first line of your program is a line that
+looks like this:
+
+	#! /usr/bin/crm
+
+If you put this at the start of each file, the shell will know your
+program is a crm114 program and will automagically load crm114 to run
+your program.  You will also need to do a "chmod o+x yourfilename" to
+enable the file as an executable.
+
+If you don't want to do both of these things, you can still run 
+a bare crm114 program as a command-line argument:
+
+	crm filename
+
+If you just want to dash off a one-liner, you can put the whole
+program onto the command line between curly braces (the quotes are so
+the shell will pass on your program text without doing any
+substitutions.)
+
+   crm '-{ output /Hello, world! \n/ ; }'
+
+Here's another version of the same "Hello World" program:
+
+   crm '-{ output /Hello, world! :*:_nl:/ ; }'
+
+
+Note the ':*:_nl:' at the end of the output line.  It contains two
+parts: the value name :_nl:, which is initialized by crm114 to a
+newline (to C programmers, it's a '\n' ).  Putting a ":*" on the front
+of a value name means "put my value in here instead of my name".  So,
+:*:_nl: turns into a newline character when the output statement is
+executed.  (nota bene: the ':*:' does this name-to-value translation
+only once.  So, if you had a value named :foo: with the value ":*:bar:",
+and :bar: had the value "FOOLED YOU", :*:foo would evaluate to
+":*:bar:", not to "FOOLED YOU".  If you want to do this multiple
+value resubstitution, you have to explicitly ask for this by using
+the :+: indirection operator instead of :*: evaluation operator.
+
+Why does CRM114 evaluate variables only once?  It's so that
+you can embed any string you want and know what it will evaluate
+to.  Notice in the README that there are : vars for several "tricky"
+characters.
+
+Note that I said "value name", not variable.  In truth, crm114 _has_
+_no_ _variables_; all data storage can be viewed as start/length pairs
+indicating ranges of character strings existing on a few huge strings.
+
+The default string (called the default input window buffer) is filled with
+stdin (until EOF) during program startup, another string is
+initialized with a few standard values, and is available for scratch
+use as needed.  (well, _by default_ the input window buffer is filled
+from standard input; this can be overridden easily)
+
+All variables are really captured values - these are just start/length
+indices into these big strings.  The power of this is that these
+captured values can overlap and so the view of the input data as a
+contiguous whole is not disrupted. 
+
+These overlapping values retain any heirarchial structure you choose
+to impose.  For instance, a multipart message can be easily
+manipulated, split, some XML file hierarchy can be manipulated, etc.
+
+If you need to, you _can_ create temporary, isolated variables - they
+are just other sections of a big string buffer that don't happen to be
+part of the input buffer (see ISOLATE, below).
+
+Instead of addition and subtraction, the basic operations in crm114 
+is the matching of one string against another, the capturing of a 
+value, and the destructive replacement of one value with another.
+
+
+----- Matching -----
+
+
+Here's a simple example of a CRM114 program that does string matching.
+
+	#! /usr/bin/crm
+	{
+		match /foo/
+		output /Hey, there's a foo in the input \n/
+	}
+
+Try this program.  Give it any input you want (remember to hit ^D to
+signal end-of-file if you are typing input from a keyboard).  The
+result will be that the program will either do nothing at all, or it
+may print out "Hey, there's a foo in the input".
+
+Note that there's no "if" statement here (or, for that matter, in
+_any_ crm program).  The MATCH statement is itself an IF statement.
+If the match succeeds, execution continues with the next statement. 
+If the match fails, then execution skips to the end of the { } block.
+This "skip to end of block" is called a FAIL in CRM114 slang.
+
+By the way, if you should ever want to force a fail, there is a "fail"
+statement just for that.
+
+Crm114 statements have a general structure that looks like this:
+
+	commands <flags> (vars) [restrictions] /regexes/
+
+You'll find crm114 uses a standardized pattern of commands, then flags
+in <>, then vars in (), then substr restrictions in [], then regexes
+in // and block structures in {}.  The only required order is that
+the command action must come first in a statement (and even that may be
+relaxed in the future.)
+
+But, back to programming.  We can change the program just a little, to
+look for input files that contain any arbitrary regex-able string.  We
+can also change the program to either reject the entire input (and
+output nothing - this is the default), or to ACCEPT the entire input
+as it currently exists.
+
+As an example, this little program looks for zebras.  If the input
+file contains at least one "zebra", it outputs the entire input file.
+If it doesn't contain at least one zebra, it outputs nothing.
+
+This program also uses the "accept" statement.  ACCEPT means "take
+whatever the current data window is, and write it to standard output."
+Many "go/nogo" filters will use ACCEPT as an easy way to ... well,
+accept their input as good.
+
+	#! /usr/bin/crm
+	{
+		match /zebra/
+		accept
+	}
+
+
+You don't have to be limited to fixed strings in the match.  You can
+use the full Posix Extended match syntax.  (type 'man 7 regex' to see
+more, or look in the QUICKREF.txt file).  You can use backreferences,
+such as accepting only files that contain a four-letter palindromic
+sequence:
+
+	#! /usr/bin/crm
+	{
+		match /(.)(.)\2\1/
+		accept
+	}	  
+
+You can even use approximate matching, such as accept any file that
+contains a string that can be converted to "Niagara Falls" in no more
+than three inserts, deletes, or substitutions:
+
+	#! /usr/bin/crm
+	{
+		match /(Niagara Falls){~3}/
+		accept
+	}	  
+
+
+CRM114 is (by default) built with the TRE REGEX library as you no
+doubt read above, and uses the REG_EXTENDED mode of operation
+exclusively.  One (current) limitation of TRE is that if you use
+approximate regex matches, you can't use backreferences and vice
+versa.  Instead of REG_BASIC, TRE offers the <literal> mode, where
+no character has special meaning.
+
+If you build CRM114 with the alternate GNU regex library, you can't
+use approximate regexes at all (GNU regex doesn't support approximate
+regexes), nor <literal> mode, and back-references like \1 never
+seem to work right for me, so I just avoid the whole problem.
+
+As in most POSIX libraries, the first match possible in a string is
+the one found, and given that starting point, the longest match
+possible with that starting point is used.  Sub-matches (enclosed in
+parenthesis) are similarly located and extended (first found, then
+longest with that starting point).  By default, matches can span
+lines; the regex /.*/ with no flags will match the full input window.
+
+Some handy POSIX-extended regexes are:
+
+  ^          as first char of a match, matches only at the start
+	     of the matchable block (that is, the first character of
+	     the string for most matches, and the first character of 
+	     a line for <nomultiline> matches).
+
+  $          as last char of a match, matches at the end of the matchable
+	     block (that is, the last character of the string, and the
+	     last character of the line for <nomultiline> matches).
+ 
+  .   (a period) matches any _single_ character (except start-of-line or
+	    end of line "virtual characters", but it does match a newline).
+
+The following are other POSIX expressions, which mostly do what you'd
+guess they'd do from their names.
+
+  [[:alnum:]]
+  [[:alpha:]]
+  [[:blank:]] 
+  [[:cntrl:]]
+  [[:digit:]] 
+  [[:lower:]]
+  [[:upper:]] 
+  [[:graph:]]  <-- any character that puts ink on paper or lights a pixel
+  [[:print:]]  <-- any character that moves the "print head" or cursor.
+  [[:punct:]] 
+  [[:space:]] 
+  [[:xdigit:]]
+
+Additionally, a '*' means "repeat preceding zero or more times, a 
+"+" means "repeat one or more times", and a '?' means repeat zero or one
+time.  *?, +?, and ?? are the same, but match the _shortest_ match that
+fits, rather than the longest.
+
+You can specify repeat-counts as well.  {N} means match N copies,
+{N,M} means any number of copies between N and M inclusive, and {N,}
+means match at least N copies.  (N and M are sadly limited to 255 or
+less by POSIX.)
+
+TRE extends POSIX with approximate matching - {~N} means with no more
+than N insertions, deletions, and substitutions, and {~} means "closest
+match, no matter how many errors".  Note that a string of length 
+Z can be subjected to Z deletions and therefore "match" the empty 
+string, watch out for this quaint (but mathematically correct) 
+behavior if you use {~} matches.  You can also specify some relative
+costing between insertions, deletions, and substitutions;  QUICKREF.txt
+contains some further examples.
+
+
+-----  Comments -----
+
+Comments in a CRM114 program start with a '#' sign and continue until
+either a newline or a "\#".  Note that a ';' (a semicolon) does NOT end
+a comment (the reason it doesn't is because the semicolon is too often
+found _in_ a comment, whereas \# is pretty rare.
+
+It's a good idea to use "block comments" throughout your CRM114 programs;
+even though comments can be decieving, it's usually better to have them
+than not to.
+
+
+----- Capturing a value from a match -----
+
+We can capture the values matched by the extended regex or even
+subparts of the extended regex; any variable name(s) enclosed in
+parenthesis in the match statment will be attached to successive
+parenthesized subexpressions (note- the first variable name, if it
+exists, is always bound to the _entire_ matched stream).
+
+One additional bit before our next example program: crm114 lets you
+see the command line inputs.  These are some of the special temporary
+values; they appear as :_arg0: through :_argN:, and "positional"
+arguments (those _not_ of the form "--name=value") also appear as :_pos0:
+through :_posN: .  By looking at these arguments, we can change our
+program's behavior from the command line.
+
+Let's re-write a basic grep then:
+
+	#! /usr/bin/crm
+	{
+		match (:result:) /(:*:_arg2:)/
+		output /:*:result:/
+	}
+
+which indeed does function pretty much like grep, except it outputs
+only the matching string.  This tells us the string was indeed
+present in the input stream, but doesn't give us any context.
+
+We can modify the program to work just like grep, by requiring the entire
+match to be satisfied on a single line, and by outputting the
+entire line found.  
+
+To do this, we use a "modifier flag" on the match statement.  Here,
+we want the match statement to be restricted to a single line, so
+we use the <nomultiline> modifier flag on the match statement.
+
+Since the match is now limited to just the line that contained the 
+input pattern, we can put a .* both in front and in back of the
+actual :*:_arg2: pattern.  ( the pattern ".*" matches the longest string
+possible without caring what it's matching.  It's a wildcard string)
+
+Here's the modified program:
+
+	#! /usr/bin/crm
+	{
+		match < nomultiline > (:result:) /(.*:*:_arg2:.*)/
+		output /:*:result:/
+	}
+
+This works reasonably well, except it only shows us the first match.
+We can fix that with two more pieces: 
+
+  -- the "fromend" flag, which tells the match to start looking for a
+     match at the end of the previous match, 
+
+and
+   
+  --the LIAF statement, which tells program execution to go back to
+    the start of the most recent program { } block and run again.
+
+(by the way, you can redirect any particular OUTPUT command to a file,
+by supplying the file name (or a variable with the right value) in
+[square_brackets] before the /output values/.  To append to a file,
+put the <append> flag in the OUTPUT statement; otherwise you will
+overwrite the contents of the file.
+
+The 'liaf' statement is the reverse of "fail".  LIAF tells the
+execution to skip UPWARDS in the program, back to the _start_ of the
+enclosing { } block.  You can remember that "liaf" is "fail" spelled
+backwards, or you can pretend it stands for Loop Iterate Awaiting
+Failure; either works as a mnemonic.
+
+Here's the program with the flags and liaf in place; we also put
+in a newline in the output so each separate line appears on a new line:
+
+	#! /usr/bin/crm
+	{
+		match < nomultiline fromend> (:result:) /(.*:*:_arg2:.*)/
+		output /:*:result:\n/
+		liaf
+	}
+
+and sure enough, it acts like grep (without some of the flags that grep
+has), but this version of grep can now do approximate matching.  
+
+As long as the MATCH succeeds, execution continues through the OUTPUT
+statement and hits the LIAF.  The LIAF statement bounces execution up
+to the open '{' statement and execution continues from there, down
+onto the MATCH statement again. 
+
+
+[ note: You'll find that if you use this program very much that the 
+pattern in arg2 is used as a regex.  It's not a literal match, but a
+match that allows wildcards.  If you wanted to not allow wildcards,
+you'd need to specify <literal> as well as <nomultiline> and < fromend>,
+or you can use the \Q directive to specify verbatim quoting; \Q.*\E 
+specifies the string of a dot followed by a star exactly. ]
+
+
+-----  ALTERing values  ------
+
+In the "like a grep" program above, it was perfectly fine to keep the
+result of the match in the captured value :result: (which remained
+part of the input buffer).  Let's see what happens if we surgically 
+alter that value.  
+
+The ALTER statement alters the contents of a captured value by
+inserting or deleting characters at the start of the variable till the
+variable is the same length as the new value, then overwriting the old
+characters with new characters.  The length of the captured value
+changes; so do the starts and lengths of any variable that overlaps
+the captured variable or that would have been affected by the
+insertions or deletions.
+
+Here's an example. This program surgically alters the input, by replacing
+the first 'foo' with 'IT'S A BAR NOW'
+
+	#! /usr/bin/crm
+	{
+		match (:whole_input:) /.*/
+		output / The whole input file before ALTERing: \n/
+		output /:*:whole_input:/
+		output /\n/
+		
+		match (:a_foo:) /foo/
+		alter (:a_foo:) /IT'S A BAR NOW/
+
+		match (:whole_input:) /.*/
+		output / The whole input file after ALTERing: \n/
+		output /:*:whole_input:/
+	}
+	
+Give this program the input:
+
+ apple
+ foo
+ banana
+
+and you'll get back
+
+ apple
+ IT'S A BAR NOW
+ banana
+
+As you can see, we've destructively altered the value of :a_foo: to
+"IT'S A BAR NOW", and this change is reflected in the entire 
+input buffer.  (note to students- we really didn't need to rematch
+the :whole_input: twice, but we wanted to drive home the fact that
+this really was a surgical operation on the main text body, not on
+some copy somewhere)
+
+Aside: this program changes only the first foo.  To make it change
+_every_ foo, use the LIAF-loop technique above on the match/alter
+in the middle.  We also need to initialize our search at the beginning of
+the input but not use up any characters; the "match //" statement
+does that.  The program crux would now look like:
+
+	...
+	   match //
+	   {
+		match <fromend> (:a_foo:) /foo/
+		alter (:a_foo:) /IT'S A BAR NOW/
+		liaf
+	   }
+	...
+
+
+----- ISOLATE and Isolated Variables -----
+
+The power to surgically alter the input is fine and dandy if we know
+precisely what alterations we want to make, but what if we don't want
+to mutilate the input, just want to do some specialized searching or
+produce a tenative value?  We can do this by ISOLATEing any variable
+we want to preserve as separate from the input buffer, and then
+putting the desired values into that variable with the ALTER command.
+
+Note that the special ISOLATEd behavior of a variable only lasts as
+long as it's not re-assigned by a MATCH.  This is intentional but can
+be the source of some misunderstandings because you can ALTER an
+ISOLATEd value and you can use it's value with :*: and it stays
+ISOLATEd, but if you should bind it in a match, it's ISOLATEed
+property is lost.
+
+An ISOLATEd variable is initialized with the value of a zero-length
+string, in case you wondered.  Try this:
+
+  crm '-{ isolate (:foo:) ; output /a:*:foo:z/; }'
+
+(remember to hit ^D so your program doesn't wait for an input that
+will never arrive).  You'll get back the result "az", showing that
+the value of a freshly isolated variable is a string of length zero.
+
+If you want to set an initial value on an isolated variable, put the
+value in /slashes/.  Example:
+
+  crm '-{ isolate (:foo:) / Hi there! / ; output /a:*:foo:z/; }'
+
+which results in:
+
+   a Hi there! z
+
+Lastly, if you ISOLATE a variable that already has a value, the result
+is that you make a new copy of the variable.  This is not destructive
+of the old copy... it's still there and intact, in case any other variables
+happen to be using the same strings.
+
+It is important to remember that setting a captured value
+with a MATCH statement really just changes the start and length of
+that variable's pointers, it doesn't change any actual strings in
+memory.  Setting a captured value with an ALTER statement actually
+_does_ change the string in memory.  More precisely, an ALTER leaves
+the start location at the same place, but the old string is deleted,
+and the new string is inserted.  Other captured variables may well
+change as well during an ALTER, it depends on how they overlapped
+the ALTERed variable.
+
+Here's an example - this demo file expects you to give it the input string
+of "abcdefghijklmnop", so type that in as soon as the program starts
+(there is no prompt, just type it in, and then EOF (usually control-D):
+
+   #! /usr/bin/crm
+   {
+	match <> (:big:) /.*/
+	output /----- Whole file -----\n/
+	output /:*:big:/
+	output /----------------------/
+	match <> (:1:) /abcde/
+	match <> (:2:) /cde+fg/
+	match <> (:3:) /fghij/
+	output /\n 1: :*:1:, 2: :*:2:, 3: :*:3: \n/
+	output / ---altering--- \n/
+	alter (:2:) /CDEEEFG/
+	output / 1: :*:1:, 2: :*:2:, 3: :*:3: \n/
+	output /----- Whole file -----\n/
+	output /:*:big:/
+	output /----------------------\n/
+	match <> (:big:) /.*/
+	output /----- Rematched Whole file -----\n/
+	output /:*:big:/
+	output /----------------------\n/
+   }
+
+Notice how any captured variable that overlapped the ALTERed variable
+also changed?  That's both very powerful and rather dangerous- be
+careful how you ALTER anything that isn't ISOLATEd.
+
+Input is possible other than via the input window; the 'input'
+statement reads a line of input from stdin and puts it into a captured
+variable.  This is equivalent to the ALTER statement.  If you don't
+want to modify something important, you should ISOLATE this variable
+till you have checked the input to be something you want (if the variable
+hasn't been captured or ISOLATEd before use, the value is ISOLATEd).
+
+Example:
+
+	#! /usr/bin/crm
+	window
+	{
+	        output /\n ------INPUT TEST ---/
+	        input (:x:)	
+	        output /\n Got: \n:*:x: \n/
+	        match [:x:] /foo/
+	        output /\n it had a foo/
+	}
+
+This little program reads one line of input, outputs the line, and then
+searches it for a foo.  If the foo is found, the program confirms this, and
+then exits.
+
+Note that match uses [:x:] to specify the input being matched against,
+while it uses (:x:) to specify the output of the resulting match.
+
+
+----- WINDOWing through an infinitely long Input -----
+
+You can control the rate and style of input into the input
+window with the WINDOW statement.  By default, crm114 reads input
+till the first EOF, and then never reads again.  With WINDOW, you
+can read as many times as you want, controlling the input buffer
+size as well. (this is _very_ handy when you're writing a filter
+to monitor an ever-growing syslog file, or sitting on a logging 
+port that never EOFs).
+
+The WINDOW statement takes one of three flags (see next paragraph),
+and two regex patterns.  It deletes characters in the input window
+buffer up to and including the first regex, then reads standard input
+until it finds the second regex, appending that to the end of the
+input buffer.  Using WINDOW in a loop lets your program inch it's
+way through an infinitely long file (and yes, we do mean
+"infinitely".  The program will process the infinitely long input
+file one window's worth at a time. ).
+
+Since regex-matching is slightly expensive in terms of CPU, WINDOW
+has three flags that tell it how often to check for the 'got new
+input completed' regex.  Those flags are bychar, bychunk, and byeof.
+With bychar, the regex is checked on every incoming character (assuming
+your input tty is already set to unbuffered operation), bychunk
+checks on every input "block" where a "block" is a conveniently large
+chunk of I/O, and byeof checks only when an EOF is read.
+(don't worry if your input stream is buffered, characters after the
+regex are NOT thrown away but saved for the next execution of a 
+'window' statement.)
+
+One last bit on WINDOWing - if a WINDOW statement is the first
+statement in your program that can affect the input window buffer, the
+normal crm114 behavior of reading the entire standard input till EOF
+is suppressed and your window statement takes over.  If your window
+statement doesn't have any arguments, then no input is done, and your
+program starts running without waiting for any input at all. Yes, this
+is slighty hackish, live with it or come tell me a better way.
+
+Here's an example of a WINDOW - keep reading input, even past EOF,
+and look for occurrences of either 'apple' or 'banana'; if either is
+found, print a message.  Note that you can't do this with grep because
+grep can't re-read past the first EOF, nor can grep mutilate the
+output.
+
+	#! /usr/bin/crm
+	{
+		window <bychar> /\n/ /\n/
+		{ 
+			match (:my_fruit:) /apple|banana/
+			output /Found fruit: :*:my_fruit: ... good! \n/
+		}
+		liaf
+	}
+
+Now, why would you ever use this?  How about for parsing a syslog file
+for security alerts like failed root logins, or attempts to open port
+421 ?  :-) Note the liaf-loop above- this is the "recommended" style
+to write an infinite loop, or a program that's supposed to run nearly
+forever.
+
+
+----- Matching inside variables -----
+
+We can restrict matching to be inside a particular value
+(the value can be isolated).  For example, here's a simple program
+that accepts only input files that contain 'apple' in the first
+string found that begins with 'START' and ends with 'END'.
+
+	#! /usr/bin/crm
+	{
+		match (:my_string:) /START.*END/
+		match [:my_string:] /apple/
+		accept
+	}
+
+The bracketed parameters '[:your_variable:]' tell the match statement
+to restrict matching to inside the variable mentioned.
+
+One issue- the above example does two things strangely- one, it's
+case-sensitive ( "START apple END" works, but "start apple end" doesn't).
+Secondly, after it finds the first 'START whatever END', it commits
+to using that one, even if a second one exists.
+
+We can fix the first problem by using the "nocase" flag on both
+matches, and fix the second problem with a liaf loop.  But, remember
+that a liaf-loop runs until one of the toplevel matches fails,
+so we need an escape out of the inner match/accept on 'apple'.
+Here's the code:
+
+	#! /usr/bin/crm
+	{
+		match <nocase fromend> (:my_string:) /START.*END/
+		{
+			match [:my_string:] /apple/
+			accept
+			exit
+		}
+		liaf
+	}
+
+----- Getting INPUT from other places -----
+
+You can do explicit INPUT of information with the INPUT statement;
+the INPUT statement works as follows:
+
+  1) if you don't specify an input filename in square brackets like
+  this 
+ 
+      [ myfile.txt ]
+
+  then input will read from stdin (a clearerr() is done first, so if
+  you've already hit EOF on stdin, you will be able to read past 
+  that EOF should more input be available.)
+
+  2) if you specify <byline>, only one line of input is read.
+
+
+----- Getting a quick hashcode -----
+
+At some point, you may want to take a captured value and make some
+hashcode or digest.  The HASH statement does this conveniently; HASH
+is like ALTER but instead of surgically altering the variable to the
+expanded /slashed value/, it expands the slashed value and then takes
+a hash of that.  The hash is a 32-bit hash, expressed as an
+eight-character hexadecimal string.  You should use HASH in cases
+where you need a short index to a long string (for efficiency or
+database access), or where you need to provide a hard-to-invert
+password check.  (note- because this is only a 32-bit hash, it's
+not particularly secure and should be viewed as a "picket fence",
+rather than as a "bank vault door".  Adding a "salt value" to the
+/slash pattern/ will greatly increase resistance to dictionary 
+attacks.  Putting a randomly chosen dictionary word and number
+in front of the hashed value and another randomly chosen dictionary
+number after the hashed value will greatly increase your security;
+using a pair of HASHes, with different salt values will also greatly
+increase security.
+
+For example:
+
+	#!/usr/bin/crm
+	hash (:_dw:) /:*:_dw:/
+	accept
+
+will generate a quick-and-dirty hashcode of the input file.
+
+Note that this hash is NOT cryptographically secure; it can be
+broken in a few minutes of CPU time on any modern computer desktop.
+If you need security, use MD5.
+
+
+-----  LEARNing and CLASSIFYing -----
+
+The next two statements in crm114 are the hardest to understand,
+because they are the 'learn' and 'classify' statements.  These
+statements attempt to identify types of inputs based on word and
+phrase similarity.  As of build 20020501, all phrases of up to four
+words are weighted equally in the classifier, and as of build
+20031215, a better weighting (Bayesian/Markov Modeling) is used to get
+improved accuracy).  Builds past 20040101 use chains of five words
+for yet more accuracy.  
+
+The details of all this are explained in the file
+"classify_details.txt", but you don't need to understand them to
+use the classifiers.  
+
+The LEARN statement updates a file of hashed phrase structures with
+the contents of the specified [ ] variable.  If you don't specify an
+input variable, the default data window :_dw: is used as the input
+buffer.  You will have to specify the classname you want to learn, and a
+regex that defines what a "word" is.  For english text, a good regex
+is [[:graph:]]+ , which is a string of characters that all have some
+nonblank, noncontrol characters.  The LEARN statement creates a file
+with the same name as the classname to be learned, so watch out and
+don't clobber a file you want to keep.
+
+The CLASSIFY statement uses two or more of these classname files from
+LEARN to classify an input buffer into types.  As with LEARN, the
+CLASSIFY statement accepts a [ ] input variable containing the text to
+classify.  If you don't specify an input variable, the default data
+window :_dw: is used.  You specify any number of classes (each one
+must have a preexisting hashed phrase file) and a regex to define a
+word (again, [[:graph:]]+ is a good place to start).
+
+CLASSIFY then compares the input window against each of the classes in
+turn.  If the class that best matches the input window occurs _before_
+the '|' marker in the list of hashed phrase filenames, 'classify'
+succeeds and execution of your program continues with the next line.
+If the class that best matches the input window occurs after the '|',
+then the classify statement fails to match, and execution skips to the
+end of the { } block (just like a match statement).
+
+CLASSIFY can take a second variable (in parens (:here:) like that)
+which will be ALTERed to contain a text-formatted set of matching
+statistics.  This can be useful if you want to do some sort of
+mathematical comparison or checking.
+
+----- IF-THEN-ELSE without IF, THEN, or ELSE -----
+
+MATCH and CLASSIFY can act as IF-statements, but what about
+IF-THEN-ELSE situations?  for that matter, how can we implement CASE
+statements, where we want one (and only one) of N different
+alternatives to execute?
+
+The ALIUS statement provides this functionality.  "Alius" is latin for
+"other" or "another" (or, more literally "the other man").  
+
+An ALIUS statement looks at the most recently completed bracket-block
+of code - if _that_ bracket block failed (exited because a MATCH or
+CLASSIFY failed, or because of a FAIL statement), then ALIUS is a
+no-op and execution continues with the next statement.  If the most
+recently completed bracket block completed successfully (didn't 
+exit due to a MATCH fail, CLASSIFY fail, or FAIL statement) then
+ALIUS itself is a FAIL statement, and causes a skip to the end of
+the current (outer) bracket block.  This is a skip, not a FAIL, and
+so a surrounding ALIUS on the outer bracket block won't itself FAIL.
+ 
+
+Here's an example of ALIUS used for a 3-way case statement:
+
+ #! /usr/bin/crm
+ #   test the alius statement 
+ {
+	{
+		output /checking for a foo.../
+		match /foo/
+		output /Found a foo \n/
+	}
+	alius
+	{
+		output /no foo... checking for bar,,,/
+		match /bar/
+		output /Found a bar.  \n/
+	}
+	alius
+	{
+		output /neither foo nor bar \n/
+	}
+ }
+ output / That's all, folks! /
+
+
+When you run this, you'll see that each MATCH test is applied in
+sequence, and as soon as a MATCH succeeds (and so has a bracket-block
+complete successfully) that's the end of the program's execution.
+You _can_ program this with a lot of goto's, but it's much easier
+to use ALIUS.
+
+If ALIUS still confuses you, pretend that ALIUS really means
+
+  "IF THAT WORKED, SKIP THE REST OF THIS BLOCK, 
+
+      OTHERWISE
+   
+   TRY THIS NEXT BIT OF CODE AND SEE IF IT WORKS OR NOT"
+
+which is pretty much what it does.
+
+----- Minion Processes and Syscalls -----
+
+CRM114 has a fairly powerful mechanism for creating and communicating
+with subprocesses, called "minion processes".  
+
+You can have an unbounded number of minion processes, and minion
+processes can run in parallel with CRM114, repeatedly receiving
+input from CRM114 and outputting to CRM114.  The minion processes
+can also do other things besides talking to CRM114.
+
+Here's an example program that runs some minion processes; the first
+one runs "ls" (and gets a file listing), the second runs 'bc', and
+uses bc to calculate 1 + 2 + 3.  We then play some games, running "ls
+-la", cat-ting into a file, and using asynchronous input to accomodate
+slow programs (or those with HUGE outputs).  This program also uses
+the 'window' statement by itself to inhibit any reading of standard
+input, so this program just goes off and runs without waiting for any
+input.
+
+#! /usr/bin/crm
+window
+{
+	isolate (:lsout:)
+	output /\n ----- executing an ls -----\n/
+	syscall ( ) (:lsout:) /ls/
+	output /:*:lsout:/
+
+	isolate (:calcout:)
+	output /\n ----- calculating sum of 1 + 2 + 3 using bc -----\n/
+	syscall ( 1 + 2 + 3 \n ) (:calcout:) /bc/
+	output /:*:calcout:/
+
+	isolate (:lslaout:)
+	output /\n ----- executing an ls -la -----\n/
+	syscall ( ) (:lslaout:) /ls -la/
+	output /:*:lslaout:/
+
+	isolate (:catout:)
+	output /\n ----- outputting to a file using cat -----\n/
+	syscall ( This is a cat out \n) (:catout:) /cat > e1.out/
+	output /:*:catout:/  
+	#  note that we expect :catout: to be null
+
+	isolate (:c1: :proc:)
+	output /\n ----- keeping a process around ----  \n/
+	output /\n preparing... :*:proc:/
+	syscall <keep> ( a one \n ) ( ) (:proc:) /cat > e2.out/
+	output /\n did one... :*:proc:/
+	syscall <keep > ( and a two \n ) () (:proc:) //
+	output /\n did it again...:*:proc:/
+	syscall ( and a three \n) () (:proc:) //
+	output /\n and done ...:*:proc: \n/
+
+	output /\n ----- doing asynchronous reads from a minion-----\n/
+	isolate (:lslaout:)
+	syscall <keep async> () (:lslaout:) (:proc:) /ls -la /dev /
+	output /--- got this immediate : \n :*:lslaout: \n ---end-----/
+	:async_test_sleeploop:
+	output /--- sleeping 1 seconds ---/
+	syscall <> () () /sleep 1/
+	syscall <keep async> () (:lslaout:) (:proc:) //	
+	output /--- and got this async : \n :*:lslaout: \n ---end-----/
+	{
+		###  if we got at least three chars, we should look for more.
+		match [:lslaout:] /.../
+		goto :async_test_sleeploop:
+	}
+	syscall <> () (:lslaout:) (:proc:) //
+	output /--- and synch : \n :*:lslaout: \n ---end-----/
+}
+
+
+----- INSERTing a file verbatim ------
+
+At some point, you may desire to call a second crm114 program from 
+the current program.  There are two ways you can do this: either SYSCALL
+it (as above), or you can INSERT the program text verbatim into your 
+current program.  Either works; syscalling keeps the variables and
+data windows of the two programs separate, while INSERT actually makes
+one big program file.
+
+One issue on INSERT - all INSERTs happen at the very start of program
+setup, during preprocessing, and way before micro-compilation and
+execution, even before the data window gets loaded from standard
+input.  This means you can't INSERT :*:filename: in your program (the
+compiler would get very sick if you tried!).  But you _can_ SYSCALL if
+you really need this functionality.
+
+
+----- Doing Math and EVAL -----
+
+At some point, you may need to do math, or evaluate a mathematical
+expression.  The EVAL statement does this.
+
+EVAL is like ALTER, but instead of evaluating it's arguments left to
+right once, it repeatedly evaluates the arguments until they stop
+changing (EVAL does do a little bit of smart cacheing so that it can
+catch arguments that loop).  EVAL actually keeps a log of the hashes
+of each intermediate state and checks this log on each pass of
+expansion.  The default as of version 20040210 is 4096 states in the
+statelog, and if your program tries to EVAL a string that keeps
+changing for more than that number of passes, it's a nonfatal error.
+
+EVAL also defaults to allowing extended var-expansion; in
+extended var-expansion the string expansion operator :*: is
+retained, but two new ones are added:
+
+	  :#:var:        - returns the number of characters in var
+
+	  :@:math_expr:  - evaluates math_expr and returns the numeric
+			   result as a string.
+
+The mathematical expression evaluator can work either in 
+algebraic notation (with left-to-right precedence, overridden only
+by parenthesis), or in RPN notation (like an HP calculator).  
+
+If you use a relational mathematics operator like >, =, or <, 
+then EVAL itself will evaluate the truth status of that operator,
+putting a 1 or 0 in for true or false, respectively.  
+After completing the mathematical evaluation and ALTERing the
+result variable (if there is one), EVAL will then do one of
+the following:
+
+    - if no relational mathematical operator was used, execution
+      continues with the next statement.
+
+    - if a relational mathematical operator was used, and the 
+      relation result was TRUE, execution continues with the
+      next statement.
+
+    - if a relational mathematical operator was used, and the
+       relation result was FALSE, then EVAL does a FAIL to
+       the end of the bracket-block (and an ALIUS statement
+       will see this as a FAIL).
+
+Here's an example:
+
+       #!/usr/bin/crm
+       {
+		window
+		isolate (:z:)
+		eval (:z:) / The length of 'foo' is :#:foo: letters /
+		output /:*:z: \n/
+		eval (:z:) / and (2 * 3) + (4 * 5) is :@: (2 * 3) + (4 * 5):/
+		output /:*:z: \n/
+	}
+
+which gives you:
+
+  The length of 'foo' is 3 letters  
+  and (2 * 3) + (4 * 5) is 26 
+
+which is as you would expect.
+
+----- FAULT and TRAP -----
+
+CRM114 programs can encounter errors during execution; an error can
+often be "fixed up" and execution continued, or at least the program can
+clean up and exit gracefully.
+
+Whenever an error occurs, it creates a string that describes the 
+problem.  This string is normally printed out as the error message.
+However, it can be used by the program itself to attempt to fix the
+problem before the program itself fails.
+
+The TRAP statement is how a program can catch an error before the
+program fails.  The TRAP will "catch" almost any program error that
+occurs (and all of these conditions are true):
+
+     - inside the bracket-block that holds the TRAP statement, 
+     - occurs above the trap statement
+     - and the error message describing the error is matched by the
+       TRAP statement's regex.
+
+If the TRAP statement's regex doesn't match the error message, 
+then the next TRAP outward will be activated, and the process repeats.
+
+If no TRAP can handle the error, then your program will exit if the
+error was fatal, or print out the error and continue if the error 
+was just a warning.
+
+If you need to create your own "errors" during a program run, such
+as if you find a file is missing or important data is not properly
+formatted, you can force an error with the error message of your 
+choice with the FAULT statement.  The FAULT statement creates the
+fault string you describe, which is still matched against the REGEX 
+in each enclosing TRAP.
+
+If you have two TRAPs in series, the first TRAP gets first try at
+matching the FAULT regex, then the second one.
+
+Note that there is no "return from TRAP" - once a trap occurs,
+the trap code must GOTO or otherwise properly resume execution 
+in an appropriate place.  The reason for this is that many TRAPs
+really aren't "fixable" in the complete sense; the most that can 
+be done is to issue an error message and exit gracefully.
+
+Additionally, there are some errors that simply aren't recoverable
+in a TRAP.  For example, a fault that occurs during preprocessing
+or inside the microcompiler can't be caught by a TRAP, because the 
+TRAP hasn't been compiled yet.  It's also possible to create a 
+FAULT situation where attempting to read the fault string itself 
+causes an error.  In this case, TRAP itself can't function and
+the error just forces a sad error message and CRM114 will terminate
+without grace or honor.
+
+
+----- In Conclusion -----
+
+This is the end of the Introduction to CRM114.  There are quite a
+few statements and options in the QUICKREF that aren't discussed here
+in this document.
+
+Feel free to explore.  If you come up with a good introduction to the
+use of a statement or technique, send it to me and I'll put
+it here!
+
+
+That's it.... a basic introduction to CRM114.  Have fun and don't
+break anything.
+
+
+-----  Appendix 1 - Useful Idioms -----
+
+       A Few Useful Idioms:
+
+* - LIAF-looping - Use the liaf (Loop Iterate Awaiting Failure to
+iterate your way through the entire input window.  For example:
+	...
+	{
+		match <fromnext> (:what_you_seek:) /a_regex/
+		... # your code goes here
+		liaf
+	}
+	...
+
+will execute your code ONCE for each occurrence of the regex
+in the input window.
+
+
+* - null-WINDOWing: The WINDOW statement causes the data window to be
+updated... _except_ the "nonsense" WINDOW statement that contains no
+cut-to-here regex nor any fill-to-here regex, only when it's the first
+executable statement of your program, tells the compiler to _skip_ all
+data window input until you specify it later in the program with a
+second WINDOW statement (or skip it entirely, if there is no second
+WINDOW statement).  Example:
+
+	#!/usr/bin/crm
+	{
+		window
+		output /Hello, world! \n/
+	}
+
+doesn't read any input at all.  It just prints out "Hello, world!"
+
+
+* - file-CATting: to get input from a file rather than from stdin.  The
+easiest way to read in an entire file (of reasonable length) is to 
+"cat" the file into an isolated variable.  E.g.:
+
+	...
+	isolate (:my_data:)
+	syscall () (:my_data) /cat < whatever_file_I_want.txt /
+
+If the file is truly huge (larger than fits in an I/O buffer), you
+can use the <keep> flag to get only as much as will conveniently fit,
+e.g.:
+
+	...
+	isolate (:some_data: :my_proc:)
+     :loop_here:	
+	syscall <keep> () (:some_data:) (:my_proc:) /cat /var/log/messages/
+	#
+	# do something useful here.
+	#
+	goto :loop_here:
+
+	
+If the result can take a long time to produce (say, because it's going
+out over the network to a slow server), then the <async> flag reads only 
+what is available and returns with that, without waiting for an EOF.
+
+	...
+	isolate (:some_data: :my_proc:)
+     :loop_here:	
+	syscall <async> () (:some_data:) (:my_proc:) / cat /var/log/messages /
+	#
+	# do something useful here.
+	#
+	goto :loop_here:
+
+
+
+* - Processes that return more than 256K of text, possibly infinite 
+amounts...
+
+Here's a way to cope with processes that return more than 256K of text (the 
+limit for dynamically allocated heap in some kernels is 256K, so that's why
+this artificial limit exists).
+
+This example does an ls -la on /dev, which is usually more than 256K long
+(typically around 350K as of Linux kernel 2.4.18).  Note that "do the
+work" here is to ACCEPT the contents of the data window; we could do
+anything else we wanted instead.  
+
+	window
+	isolate (:p:) 
+	{
+		syscall <keep> () (:_dw:) (:p:)  /ls -la  \/dev /
+		#
+		# do the work here...
+		{
+			accept
+		}	
+		match /.+/
+		liaf
+	} 
+
+
+The important bits of code here are the syscall to launch the process
+(notice it's with the KEEP flag), and the subsequent MATCH /.+/ to check
+for more output.  If there is more output, the MATCH passes and the LIAF
+kicks us back to the start of the { } block.  If the match fails, the LIAF
+is skipped and the program exits.  Cute, eh?
+
+Note that this program will fail if the SYSCALLed program simply is
+waiting for a slow network, etc.  Since there's no way to determine
+whether a program that is just doing a long computation versus one
+that is truly wedged (it's a nasty version of the halting problem,
+proven by Alan Turing himself to be unsolvable), you'll have to use
+some artifice to determine that on a case-specific basis.
+
+Two good things you can try are:
+
+    1) do a SYSCALL to ps(1) with the PID and examine the returned
+       string;
+
+    2) do a SYSCALL to sleep(1). for a few seconds and thereby do
+       whatever timeout you desire.
+
+
+
+* - ALIUS-nesting.  ALIUS checks to see if the most recently finished
+bracket-block completed successfully or FAILed out- but ALIUS itself isn't
+a FAIL.   So, you can nest ALIUSed conditionals, like this:
+
+  A?
+	A1 
+	or A2?
+  B?
+	B1 
+	or B2?
+
+
+which would look like this:
+
+  { 
+     {
+	match /A/
+	{
+	   {  
+ 	      match /A1/    	
+	      ...
+	   }
+           alius
+	   {
+	      match /A2/
+	      ...
+	   }
+        }
+     }
+     alius
+     {
+	match /B/
+	{
+	   {  
+ 	      match /B1/    	
+	      ...
+	   }
+           alius
+	   {
+	      match /B2/
+	      ...
+	   }
+        }
+     }
+  }
+
+Note how each ALIUS looks at the most recently exited bracket-block,
+so nested IF statements don't get confusing (think about how you
+would write this in C to see the contrast)
+
+
+-----
+
+Anyone else have any handy idioms they want to publish?
+
+
+-----  Things I'd like help on ----
+
+1) if anyone has strong bison-fu, and could give me a hand coming up with
+a real parser (not the handcarved crock that's in the current microcompiler)
+that would be great.
+
+2) a few programs (like a spamkiller) would be nice... I have one but
+it's tailored to *me* .  Suggestions, anyone?  (yes, there's one in
+the distro now, read the README on it!  It's about 99.95 per cent
+accurate as it stands, on my personal spam mix (for comparison,
+SpamAssassin is only around 90% accurate).
+
+	-Bill Yerazunis

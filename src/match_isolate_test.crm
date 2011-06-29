@@ -1,0 +1,48 @@
+#!/usr/bin/crm
+#
+#        Program to test match/isolate memory reclamation
+#
+{
+	window
+	output /\nMatch-Isolate reclamation test.  If this program doesn't \n/
+	output /error out, the test is passed. (we allocate about 80 megs, \n/
+	output /well past the window size, but in small (400K) chunks that\n/
+	output /alternately are allocated and become reclaimable) \n/
+
+	alter (:_dw:) /foo/
+	isolate (:bytes: :s:) 
+	syscall () (:bytes:) /cat \/usr\/share\/dict\/words/
+	eval (:s:) /:#:bytes:/
+	isolate (:startbytes:) //
+	isolate (:endbytes:) //
+	isolate (:passes:) /0/
+	isolate (:flux:) /0/
+	isolate (:b2: :b3:)
+
+	eval (:startbytes:)  /:#:_iso:/
+	output /OK_IF_SIZE_CHANGES: Size of isolation at start: :*:startbytes:\n/ 
+
+	{
+		isolate (:b2:) /:*:bytes:/
+		match (:b3:) /.*/ [:b2:]
+		eval (:flux:) /:@: :*:flux: + :#:b2::/
+		match (:bytes:) /./
+		isolate (:bytes:) /:*:b2:/
+		eval (:flux:) /:@: :*:flux: + :#:bytes::/
+		match (:b2:) /./
+		eval (:passes:) /:@: :*:passes: + 1 :/
+		#          how many passes should we run?
+		eval /:@: :*:passes: < 100 :/
+		liaf
+	}
+
+	match (:b3:) /./
+	eval (:endbytes:) /:#:_iso:/
+
+	output /Bytes used per pass: :*:s:\n/
+	output /Passes done: :*:passes: \n/
+	output /Total flux through isolation:  :*:flux:\n/
+	output /OK_IF_SIZE_CHANGES: Final isolation size: :*:endbytes: \n/
+	eval  (:flux:) /:@: :*:endbytes: - :*:startbytes::/
+	output /OK_IF_LESS_THAN_100: Total growth: :*:flux:\n/
+}

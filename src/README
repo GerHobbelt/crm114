@@ -1,0 +1,1849 @@
+
+Congratulations!!!  You got this far.  First things first.
+
+     THIS SOFTWARE IS LICENSED UNDER THE GNU PUBLIC LICENSE
+
+	  	     IT MAY BE POORLY TESTED.
+
+  	  IT MAY CONTAIN VERY NASTY BUGS OR MISFEATURES.
+
+ 		      THERE IS NO WARRANTY.  
+
+		THERE IS NO WARRANTY WHATSOEVER!
+
+  	  A TOTAL, ALMOST KAFKA-ESQUE LACK OF WARRANTY.
+	    
+  	        Y O U   A R E   W A R N E D   ! ! !
+
+Now that we're clear on that, let's begin.
+
+
+                    ----- News This Release: -----
+
+Feb 16, 2007 - BlameBaltar
+
+This is a bugfix version.  The much-maligned :datadir: is now gone;
+everything is expected to be in either the :fileprefix: or the
+:mailreaver: directories (don't combine them, otherwise if you reave
+old files out of the reaver cache by age, your configuration files
+will be the first to die!).  You can now use start/len on INPUT on
+stdin.  Arithmetic now respects >=, <=, and != .  Hyperspace has been
+de-normalized, entropic classification is now somewhat smarter.
+Mailreaver now really does put links in for prob_good and prob_spam.
+Megatest is now more detailed and captures runtime errors better.  The
+"--" args have been removed from mailfilter, mailreaver, and
+mailtrainer, because of problems they caused for non-X86 Linux users.
+A PPC GCC compiler bug was found; PPC users need to use at least a
+3.4+ GCC and preferably a 4.0++ GCC (sorry!).  A cute little bug in
+SYSCALL got stepped on (mostly).  A bad initialization in the
+bit-entropy classifier was fixed, and entropy disk space required has now been
+cut by another factor of almost 2.  An incorrect result variable
+parsing in TRANSLATE was fixed.  Megatest now runs the local version
+of crm114 (as built) rather than whatever's in /usr/bin, and the
+variable :_pgm_text: contains a matchable copy of the program source,
+post-preprocessing.  Matthias's bugfixes are in.  The highly experimental
+Gatling sorter is included, but exercises several bugs in 
+the entropy classifier (be warned!)
+
+November 3, 2006 - BlameDalkey
+
+This version is yet further bugfixes.  It has Paolo's "BSD doesn't
+have logl() so do this instead" bugfix, as well as the entropy sixfold
+segfault bugfix, the missing mailfilter.cf backslash bugfix, the
+DEFAULT doesn't default bugfix, and the bit-entropy FIR-prior
+threshold is now automagically scaled to work decently for different
+sized .ben files.  The .BEN structure has been cleaned up (uses less
+disk space at no accuracy cost!), and both Hyperspace and bit-entropy
+pR values have been "rescaled" so that a pR within +10 to -10 gives
+good results for thick threshold training (so now you don't have to
+change thresholds when you change classifiers).  The only remaining hitch
+is that multi-class OSB sometimes gives wierdish results.
+
+September 20, 2006 - BlameNico
+
+This version is mostly a bugfix version - Hyperspace is now "fixed",
+and some typos are cleaned up.  This also introduces the _very_
+experimental bit-entropic classifier.  This classifier uses bits as
+features, forms the Markov model of the features that minimizes
+entropy of the system, and then uses the compression of that model as
+the relative gauge of match quality.  It's very VERY experimental, but
+seems to work very well.  It's not as fast as Hyperspace or OSB
+(1/10th as fast), and uses significantly more memory (default is 64 megs
+per class) but in long runs like TREC06-P at 90+Kmsgs it is about
+two or three times as accurate.  Currently it works best as
+
+  <entropy unique crosslink>
+
+and trained with SSTTR (single-sided thick threshold training) with a
+threshold of just 0.03 to 0.04 (because pR for bit-entropic is not yet
+calibrated to the nominal scale.)
+
+Read the long comments at the top of crm_bit_entropy.c to see how the
+classifier works inside and how it's different from Andrej Bratko's
+and Gordon Cormack's designs (in short, it uses < 1/50th the memory
+and never overflows the node list thereby never needing to be dumped
+and restarted; it also runs much faster because of this).
+
+It's still HIGHLY experimental, so use bit-entropy only if you want to
+be a lab rat.  :-)  The .ben (Bit-ENtropic) files are NOT compatible
+with .css files or with any other classifier.
+
+
+July 4, 2006 - BlameRobert
+
+Mailreaver is working very well; this is a final cleanup release 
+for Mailreaver to go public as "supported and recommended".  Robert wins
+the award for this one as he whacked the sole remaining known bug in
+the runtime system (and found another nearby!).  The only thing I'm
+contemplating further at this point is putting "autotrain anything in
+the following region" back in.  So, speak now if you find a bug, else
+this one goes onto the webpage.
+
+
+
+June 16, 2006 - ButterBeast
+
+Release status: Mailreaver is now mostly debugged.  No other changes
+from BlameTheBeast except I don't know of anything that doesn't work
+now, hence this is the Version of the Beast, with yummy butter added.
+Lots of little twiddles and documentation fixes, too.  (thanks,
+Regis!)
+
+
+
+June 6, 2006 - BlameTheBeast
+
+Release Status: First testable "mailreaver-by-default" release
+
+This is the first test release with a usable (we think) version of
+mailreaver.  As far as the user is concerned, mailreaver is pretty
+much interchangeable with mailfilter, except that mailreaver by
+default caches all email, tags all email with an sfid (Spam Filter ID)
+which is all that's needed to recover the original, un-mangled text,
+and thus doesn't need intact headers or mail editing in order to
+train.  This will make it much easier to write plugins and use
+CRM114-based filters with MTAs and MUAs that insist on screwing with
+the headers.
+
+That said, this is *still* an experimental release; be aware
+of that if you install it.  There will be bugs and rough spots;
+be prepared to endure, discuss, and help solve.
+
+[[ the one-character memory leak is still here in crm_var_hash_table.c,
+if you find it, please let me know!!!  The bug is completely benign in
+any but an intentional "tickler" program, and at worst simply forces
+an error after a few million reclamations, so it is highly unlikely to
+affect real apps, but it's an ugly wart. -- WSY ]]
+
+
+------------ HOW TO USE MAILREAVER ( instead of mailfilter ) -----
+
+Mailreaver.crm is the "next generation" mailfilter; use it instead of
+mailfilter.crm.  (and, please note, right now mailreaver.crm is "field
+test" but the plan is that it will eventually become the recommended
+production system, and mailfilter.crm will become nothing more than
+a good-looking corpse.)
+
+Mailreaver.crm takes all of the same flags and command lines (or at
+least it should), and the default is to use cache.  It also has the
+new option --dontstore which means "do NOT put this text into the
+reavercache".  Mailreaver.crm also has the possibility of becoming
+faster than mailfilter.crm, because it doesn't need to JIT any of the
+learning code unless learning is actually needed.  (future plan: mailreaver
+will become a "wrapper" program for a set of mail service programs)
+
+Mailreaver.crm uses the same old mailfilter.cf configuration file;
+those things that don't make sense don't get used, and a few new
+options (like :thickness:) do get used.  IT IS RECOMMENDED that
+you save your old mailfilter.cf file as mailfilter.cf.old, and use the
+NEW one which has the new options already set up.  (defaults are
+OSB Unique Microgroom for the classifier cnfiguration, a thick
+threshold of 10 pR units, simple word tokenization, a decision
+length of 16000 bytes, 0/0/1 exit codes for good/spam/program 
+fault, cacheing enabled, rewrites enabled, a spam-flag subject string of
+ADV:, and an unsure flag subject string of UNS:.
+
+The big advantage of mailreaver.crm is that now all mailtraining 
+goes through mailtrainer.crm, which opens the door to some very 
+powerful training techniques.
+
+Note - if you use the -u option, you must make sure that
+mailtrainer.crm, maillib.crm and shuffle.crm are in the directory you
+are -u'ing into.  ( --fileprefix is not used for this location).
+
+Note 2 - this version does not include a "cache flusher" option; the
+full text of emails stored in the cache will remain there until you
+manually delete them; one month is probably OK for emails not in the
+knownspam or knowngood directory but keep anything in those directories
+(don't worry, we hardlink to the files on *nix systems, and make copies
+on Windozen).  You can do this cache flushing with a cron job easily 
+enough, if you really need the disk space that badly..
+
+
+
+
+
+April 22, 2006 - ReaverReturn
+
+Release Status: for testing and bug chasing.
+
+This release is primarily to verify we've whacked a few bugs in the
+"css version" and reserved-bucket code, as well as improved the
+mailtrainer code and documentation.  This new version also has the
+DEBUG statement (drops you immediately to the debugger from program
+code).
+
+It is suggested you install this release ONLY if you have an outstanding
+issue or bug.  If you are currently happy and are not out "looking for
+a fight", this is not the release for you.
+
+
+Feb 6, 2006 - ReaversSecondBreakfast
+
+Release status: Looks good, but has major new (mal)features!
+
+This is the transition release to the new "Reaver" format for storing
+and caching the learned texts.  The "Reaver" format keeps all incoming
+mail in a maildir-like cache (but _not_ your maildir; we don't touch
+that, and if you don't use maildir, that's just fine).  The advantage
+is that the incoming mail is saved exactly as it needs to be trained,
+and a CacheID is added to the mail that you finally see.  
+
+As long as the CacheID header is intact, you can just reference this
+stored copy (assuming it hasn't been purged away) You say "use the
+cached text" with --cache for command line users as in:
+
+    bash:   crm mailfilter.crm --cache --learnspam < text_with_cacheid_header
+
+or (for mail-to-myself users - forward to yourself with the CacheID 
+header intact):
+
+    command my_secret_password learnspam cache
+
+and you will train *exactly* the text should be trained, with no worry
+as to whether something in the system added headers, deleted
+suspicious text, or whatever.  The "Reaver" cache hardlinks your
+trained data into "known spam" and "known nonspam" subdirectories, so
+even when the cache gets purged, you don't lose training data.
+
+Note that the :thickness: parameter now is meaningful!  Anything
+scoring less than this amount (plus or minus) is tagged as UNSURE
+and will be delivered along the "good" mail path with the extra
+header of "Please train me!"  Default thickness is 10 pR units, which
+gives really good results for me.
+
+Another advantage of the Reaver cache is that you can use
+mailtrainer.crm to run advanced training (like DSTTTR) on the full
+contents of your "known" and "probably" directories, to get really
+fast accurate .css files.  After testing, we've changed the defaults
+on mailtrainer to only do one pass of DSTTTR.
+
+Notes to MeetTheReavers users who have already used mailtrainer.crm -
+we've added the --reload option and the default repeat count is now
+1 pass (rather than 5).
+
+
+
+------ How To Use mailtrainer.crm  -----------
+
+Mailtrainer.crm is a bulk mail statistics file trainer.  It allows you to
+feed in bulk training of your own example email and get an optimized 
+filter in a very few minutes - or to test variations if you want to
+play around with the different classifiers, thickness settings, etc.
+
+Mailtrainer by default uses whatever settings are in your current
+mailfilter.cf file, so you'll get .css files that are optimized for 
+your standard setup including mime decoding, normalization, classifier
+flags, etc. 
+
+Mailtrainer.crm uses DSTTTTR (Double Sided Thick Threshold Training with
+Testing Refutation) which is something I didn't come up with (Fidelis
+is the top of the list of suspects for this).  The good news is that this can
+more than double accuracy of OSB and similar classifiers.  I'm seeing
+better than 99.7% accuracy with mailtrainer's DSTTTTR on the 2005 TREC
+SA test corpus, with 10-fold validation and the default thick threshold
+of 5.0 pR units and the classifier set to OSB Unique Microgroom.  
+This is substantially better than any other result I've gotten.  Six of
+the ten runs completed with only ONE error out of the 600 test cases.
+
+It is safe to run mailtrainer.crm repeatedly on a .css fileset and
+training data; if the data doesn't need to be trained in, it won't be.
+All you will waste is CPU time.  The examples need to be one example
+per file.  The closer these files are to what mailfilter.crm wil see
+in real life the better your training will be.  Preferably the headers
+and text will be complete, intact, and unmutilated.
+
+
+The mailtrainer.crm options are as follows.  You *must* provide --spamdir
+and --gooddir; the other flags are optional.
+
+Required:
+	--spamdir=/directory/full/of/spam/files/one/per/file
+	--gooddir=/directory/full/of/good/files/one/per/file
+
+Optional:
+        --thick=N   - thickness for thick-threshold training- this
+                       overrides the thickness in your mailfilter.cf file.
+
+	--streak=N  - how many successive correct classifications
+                       before we conclude we're done.  Default is 10000.
+
+	--repeat=N  - how many times to pass the training set through
+                       the DSTTTR training algorithm.
+
+        --reload    - if marked, then whenever either the spam or good
+                       mail training set is exhausted, reload it 
+                       immediately from the full training set.  The default is
+                       no reload- to run alternate texts and when
+                       either good or spam texts are exhausted, run
+                       only the other type until all of those have been
+                       run as well.  --reload works a little better
+                       for accuracy but takes up to twice as long.
+
+	--worst=N   - run the entire training set, then train 
+                       only the N worst offenders, and repeat.  This is 
+                       excruciatingly slow but produces very compact 
+                       .css files.  Use this only if your host machine
+                       is dreadfully short of memory.  Default is not 
+                       to use worst-offender training.  N=5% of your total
+                       corpus works pretty well.
+
+        --validate=regex_no_slashes  - Any file with a name that matches
+                       the regex supplied is not used for training; instead
+                       it's held back and used for validation of the 
+                       new .css files.  The result will give you an 
+                       idea of how well your .css files will work.
+
+Example:
+
+Here's an example.  We want to run mailtrainer.crm against a bunch of
+examples in the directory ../SA2/spam/ and ../SA2/good/.  Quit when
+you get 4000 tests in a row correct, or if you go through the entire
+corpus 5 times.  Use DSTTTR, with a training thickness of just .05 pR
+units.  Don't train on any filename that contains a "*3.*"  in the
+filename; instead, save those up and use them as a "test corpus" for
+N-fold validation, and print out the expected accuracy. For this
+particular corpus, that's about 10% of the messages.
+
+Here's the command:
+   crm mailtrainer.crm --spamdir=../SA2/spam/ --gooddir=../SA2/good/ \
+	--repeat=5 --streak=4000 --validate=[3][.] --thick=0.05
+
+This will take about eight minutes to run on the SA2 (== TREC SA) corpus
+of about 6000 messages; 1000 messages a minute is a good estimate
+for 5 passes of DSTTTTR training.
+
+
+Notes:
+
+* If the .css statistics files don't exist, they will be created for you.
+
+* If the first test file comes back with a pR of 0.0000 exactly, it is
+assumed that these are empty .css statistics files, and that ONE file
+will be trained in, simply to get the system "off center" enough that
+normal training can occur.  If there is anything already in the files,
+this won't happen.
+
+* When running N-fold validation, if the filenames are named as in 
+the SA2 corpus, there's an easy trick: use a regex like [0][.] for
+the first run, [1][.] for the second run, [2][.] for the third, and
+so on.  Notice that this a CRM114-style regex, and _not_ a BASH-style
+file globbing as *3.* would be.
+
+* If you want to run N-fold validation, you must remember to delete the
+.css files after each run, otherwise you will not get valid results.
+
+* N-fold validation does NOT run training at all on the validation set,
+so if you decide you like the results, you can do still better by 
+running mailtrainer.crm once again, but not specifying --validate.
+That will train in the validation test set as well, and hopefully
+improve your accuracy still more.
+
+
+
+
+December 31, 2005 - BlameBarryAndPaolo
+
+This is a bugfix/bugchase release; it should remedy or at least
+yield information on the strange var-name bug that a few people with
+very-long-running demons have encountered.  It also has some bugfixes
+(especially in the W32 code, from both Barry and JesusFreke) and in the
+microgroomer, bugfixes, and accuracy improvements.
+
+Upgrade is advised if you are having bug problems, otherwise, it's 
+not that big an issue.
+
+
+October 2, 2005 - BlameRaulMiller
+
+This is a new-features release.  The new feature is the TRANSLATE
+statement- it is like tr() but allows up- and down- ranges, repeated
+ranges, inversion, deletion, and uniquing.  The Big Book has been
+updated with TRANSLATE and Asian Language stuff (it shows as 
+"highlighted in yellow" in the PDF but it hasn't been indexed yet..)
+
+Next version of the code will have JesusFreke's Windows latest 
+bugfixes, and the fixes to microgrooming (they didn't make this 
+release; sorry)
+
+
+September 10, 2005 - BlameToyotomi
+
+This is mostly a docmentation/bugfix release.  New features are that
+the Big Book is now very close to "final quality", some improvements
+in speed and orthogonality of the code, bugfixes in the execution
+engine and in mailfilter.crm, and allowing hex input and output in
+EVAL math computations ( the x and X formats are now allowed, but are
+limited to 32-bit integers; this is for future integration of libSVM
+to allow SVM-based classifiers).
+
+Upgrade is recommended only if you're coding your own filters (to
+get the new documentation) or if you are experiencing buggy behavior
+with prior releases.
+
+
+
+July 21, 2005 - BlameNeilArmstrong
+
+This release is an upgrade for two new classification options -
+UNIGRAM and HYPERSPACE.  It also contains some bugfixes (including
+hopefully a bugfix for the mmap error-catching problem), and the 
+new flag DEFAULT for conditionally setting an ISOLATED var only if it
+hasn't had any value yet.
+
+The <default> flag for ISOLATE is designed to be an executable
+statement, rather than a compile-time default value.  If a variable
+has never been set in the program, ISOLATE <default> will set it;
+otherwise that ISOLATE statement does nothing.  This is inspired by
+JesusFreke's <once> patch).
+
+Using <unigram> classification effectively turns CRM114 into a normal
+Bayesian classifier, as <unigram> tells the classifers to use only
+unigrams (single words) as features.  This is so people can do an
+apples-to-apples comparison of CRM114's Markovian, OSB Winnow, and OSB
+Hyperspace classifiers versus Typical Bayesian classification and not
+have to write tons of glue code; just change your classify/learn flag.
+(note - <unigram> does not cause a top-N decision list as used in A
+Plan For Spam - CRM114 still does not throw anything away)
+
+The other (and maybe bigger) news is the new hyperspatial classifier.
+The hyperspatial classifier is most easily explained by analogy to
+astronomy.  Each known-type example document represents a single star
+in a hyperspace of about four billion dimensions.  Similar documents
+form clusters of light sources, like galaxies of stars.  Each class of
+document is therefore represented by several galaxies of stars (each
+galaxy being documents that are hyperspatially very similar).  The
+unknown document is an observer dropped somewhere into this
+four-billion-dimensional hyperspace; whichever set of galaxies appears
+to be brighter (hence closer) on this observer is the class of the
+unknown document.  
+
+What's amazing is that this hyperspace approach is not only faster
+than Bayesian OSB, it's also more accurate (26 errors total in the
+final 5000 texts in the SA ten-way shuffle, better even than Winnow)
+and uses only about 1/40th the disk space of Markovian (300 Kbytes
+v. 12 Mbytes for the SA test corpus) and about 6 times faster ( 26
+seconds seconds versus 3min 11 sec on the same Pentium-M 1.G GHz for
+one pass, in "full demonized" mode). 
+
+It should be pointed out that the fully demonized hyperspace code
+takes just 26 seconds for the 4147-text SA corpus is 6.2 milliseconds
+per text classified, including time to do all learning.
+
+The only downside of Hyperspace math is that it needs single-sided
+thick threshold training (SSTTT), with a thickness of 0.5 pR units.
+With straight TOE, it's still barely faster than Markovian but not as
+accurate.  It still only uses 400K per .css file though,
+
+Best accuracy and speed on the SA corpus is achieved with only two
+terms of the OSB feature set- digram and trigram; that's the default
+for hyperspace, and in the code.  The only downside is that this is
+still an experimental design; use it for fun, not for production, as
+the file format will undoubtedly change in the future and if you don't
+keep your training set as individual disjoint documents you'll have to
+start again.  Activate it by using <hyperspace> as the classify/learn
+control flag; you can also use <unique> and <unigram> if you want.
+
+As usual, "prime" each of the Hyperspace statistics files by LEARNing
+a very short example text into each one.  This creates the files with
+the proper headings, etc.  Alternatively, create a null hyperspace file
+with the commands:
+
+           head \/dev\/zero --bytes=4 > spam.css
+           head \/dev\/zero --bytes=4 > nonspam.css
+
+
+              ----  What YOU Should Do Now  -----
+
+Contents:
+
+	1) "What Do You Want?"
+
+	2) If you want to write programs...
+
+	3) How to "make" CRM114
+
+
+
+1) "What Do You Want?"
+
+ ****  If you just want to use CRM114 Mailfiltering, print out the 
+   CRM114_Mailfilter HOWTO and read _THAT_.  Really; we will help a LOT.
+   The instructions in the HOWTO are much more in-depth and up to
+   date than whatever you can glean from here.
+
+
+2) If you want to write programs, read the introduction file INTRO.txt
+   That file will get you started.
+
+   Remember, this is a wierd-ass language, you _don't_ understand it
+   yet.  (okay, wiseguy, what does a "LIAF" statement do?  :-) )
+
+   Then, print out and read the QUICKREF.txt (quick reference card).
+   You'll want this by your side as you write code until you get
+   used to the language.
+
+
+3) CRM114 (as of this writing) does not have a fully functional
+   .config file.  There is a beta version, but it doesn't work
+   on all systems.
+
+   Until that work is finished, you have a couple of recommended options:
+  
+	1) run the pre-built binary release, 
+
+    or
+
+        2) use the pre-built Makefile to build from sources.
+
+Caution: if you are building from sources, you should install
+the TRE regex library ***first***.  TRE is the recommended regex
+library for CRM114 (fewer bugs and more features than Gnu Regex).
+You will need to give the TRE .configure the --enable-static
+argument, i.e. "  ./configure --enable-static  " .
+
+The reason for the "static" linking recommendation is that many people
+don't have root on their site's mail server and so cannot install the
+TRE regex library there.  By making the default standard CRM114 binary
+standalone (static linked), it's possible for a non-root user to run
+CRM114 on the host without deep magic.
+
+
+   Here are some useful Makefile targets:
+
+	"make clean"  -- cleans up all of the binaries that you have 
+			that may or may not be out of date.  DO NOT
+			do a "make clean" if you're using a binary-only
+			distribution, as you'll delete your binaries!
+
+	"make all" -- makes all the utilities (both flavors of crm114,
+ 	                cssutil, cssdiff, cssmerge), leaving them in 
+			the local directory.
+
+	"make install" --  as root will build and install CRM114 with
+			the TRE REGEX libraries as /usr/bin/crm .  If you
+			want a "stripped install" (cuts the binary sizes
+			down by almost a factor of two) you will need
+			to edit the Makefile- look at the options for
+			"INSTALLFLAGS"
+
+	"make uninstall" -- undoes the installation from "make install"
+
+        "make megatest" -- this runs the complete confidence test of
+			your installed CRM114.  Not every code path can
+			be tested this way (consider- how do you test multiple
+			untrappable fatal errors?  :) ), but it's a good
+			confidence test anyway.   
+
+	"make install_gnu -- as root will build and install CRM114 with
+			the older GNU REGEX libraries.  This is
+			obsolete but still provided for those of us
+			with a good sense of paranoid self-preservation.
+                        Not all valid CRM114 programs will run under GNU;
+			the GNU regex library has... painful issues.
+
+	"make install_binary_only -- as root, if you have the binary-only
+			tarball, will install the pre-built, statically
+			linked CRM114 and utilities.  This is very handy if
+			you are installing on a security-through-minimalism
+			server that doesn't have a compiler installed.
+
+	"make install_utils" -- will build the css utilities "cssutil", 
+			"cssdiff", and "cssmerge". 
+
+			cssutil gives you some insight into
+			the state of a .css file, cssdiff lets you
+			check the differences between two .css files,
+			and cssmerge lets you merge two css files.
+
+	"make cssfiles" - given the files "spamtext.txt" and
+			"nonspamtext.txt", builds BRAND NEW spam.css
+                        and nonspam.css files.
+
+
+
+                Be patient- this can take about 30seconds per 100Kbytes 
+                of input text!  It's also destructive in a sense - repeating
+		this command with the same .txt files will make the
+		classifier a little "overconfident".  If your .txt
+		files are bigger than a megabyte, use the -w option to
+		increase the window size to hold the entire input.
+
+
+*******************************************************
+
+*** Utilities for looking into .css files.
+
+This release also contains the cssutil utility to take a look at 
+and manage .css spectral files used in the mailfilter.
+
+Section 8 of the CRM114_Mailfilter_HOWTO tells how to use these
+utilities; you _should_ read that if you are going to use the 
+CLASSIFY funtion in your own programs.
+
+If you are using the OSB classifier, you can use the cssutil program
+because the file formats of default SBPH Markov and OSB Markov
+are compatible.  However, the OSBF classifier, the Winnow 
+classifier, and the Corellative classifier all have their own
+(incompatible) file formats.  For the OSBF classifier, you can
+use the osbf-util program to look inside; for Winnow you can use
+the cssutil program but only the bucket use counts and the chain
+length counts will be correct.
+
+
+
+*** How to configure the mailfilter.crm mail filter:
+
+   The instructions given here are just a synopsys- refer to the CRM114
+   Mailfilter HOWTO, included in your distribution kit.
+
+   You will need to edit mailfilter.cf , and perhaps a few other
+   files.  The edits are quite simple, usually just inserting a username,
+   a password, or choosing one of several given options.
+	
+
+
+***  The actual filtering pipeline:
+
+ - If you have requested a safety copy file of all incoming mail, the
+   safety copy is made.
+
+ - An in-memory copy of the incoming mail is made; all mutilations
+   below are performed on this copy (so you don't get a ravaged
+   tattered sham of email, you get the real thing)
+
+ - If you have specified BASE64 expansion (default ON), any base64 attachments
+   are decoded.
+
+ - If you have specified undo-interruptus, then HTML comments are
+   removed.
+
+ - The rewrites specified in "rewrites.mfp" get applied.  These
+   are strictly "from>->to" rewrites, so that your mail headers 
+   will look exactly like the "canonical" mail headers that were
+   used when the distribution .css files were built.  If you build
+   your own .css files from scratch, you can ignore this.  
+
+ - Filtration itself starts with the file "priolist.mfp' .  Column 1
+   is a '+' or '-' and indicates if the regex (which starts in column 2)
+   should force 'accept' or 'reject' the email.
+
+ - Whitelisting happens next, with "whitelist.mfp" .  No need for a + or
+   a - here; every regex is on it's own line and all are whitelisting.
+
+ - Blacklisting happens next, with "blacklist.mfp" .  No need for + or -
+   here either- if the regex matches, the mail is blacklisted.
+
+ - Failing _that_, the sparse binary polynomial hash with Markovian weights
+   (SBPH/Markov) matching system kicks in, and tries to figure out
+   whether the mail is good or not.  SBPH/Markov matching can occasionally
+   make mistakes, since it's statistical in nature.  You actually have four
+   matchers available- the default is SBPH/Markov, but there's also
+   an OSB/Markov, an OSB/Winnow, and a full correlator.
+	
+ - The mailfilter can be remotely commanded.  Commands start in 
+   column 1 and go like this (yes, command is just that- the letters
+   c o m m a n d, right at the start of the line.  You mail a message
+   with the word command, the command password, and then a command word
+   with arguments, and the mailfilter does what you told it.
+
+   command yourmailfilterpassword whitelist string
+	- auto-accepts mail containing the whitelist string.
+
+   command yourmailfilterpassword blacklist string
+	- auto-rejects mail containing the blacklisted string
+
+   command yourmailfilterpassword spam
+	- "learns" all the text following this command line as spam, and will
+	   reject anything it gets that is "like" it.  It doesn't
+	   "learn" from anything above this command, so your headers
+	   (and any incoming headers) above the command are not considered
+	   part of the text learned.  It's up to your judgement what part
+	   of that text you want to use or not.
+
+   command yourmailfilterpassword nonspam
+	- "learns" all the text following this line as NOT spam, and will
+           accept any mail that it gets that is "like" it.  Like
+	   learning spam, it excludes anything above it in the file
+	   from learning.
+
+  The included five files (priolist.mfp, whitelist.mfp, blacklist.mfp,
+  spam.css and nonspam.css) are meant for example, mostly.
+
+	- rewrites.mfp is a set of rewrites to be applied to the
+		incoming mail to put it in "canonical" form.  
+		You don't _need_ to edit this file to match your
+		local system names, but your out-of-the-box
+		accuracy will be improved greatly if you do.
+
+	- priolist.mfp is a set of very specific regexes, prefixed by +
+		or -.  These are done first, as highest priority.
+
+	- whitelist.mfp is mailfilterpatterns that are "good".  No line-spans
+		allowed- the pattern must match on one line.
+
+	- blacklist.mfp is mailfilterpatterns that are "bad".  Likewise,
+		linespanning is not allowed (by default).  Entries in
+		this file are all people who spam me so much I started to
+		recognize their addresses... so I've black-holed them.
+		If you like them, you might want to unblackhole them.
+
+	- spam.css and nonspam.css:  These are large files and as of
+		2003-09-20, are included only in the .css kits.  CRM
+	        .css files are "Sparse Spectra" files and they
+		contain "fingerprints" of phrases commonly seen in
+		spam and nonspam mail.  The "fingerprint pipeline" is 
+		currently configured at five words, so a little spam
+		matches a whole lot of other spam.  It is difficult but
+		not impossible to reverse-engineer the spam and nonspam
+		phrases in these two files if you really want to know.
+
+		To understand the sparse spectrum algorithm, read the
+		source code (or the file "classify_details.txt"); 
+		the basic principle is that each word is
+		hashed, words are conglomerated into phrases, and 
+		the hash values of these phrases are stored in the 
+		css file.  Matching a hash means a word or phrase under
+		consideration is "similar to" a message that has been
+		previously hashed.  It's usually quite accurate, though
+		not infallable.
+
+The filter also keeps three logs: one is "alltext.txt", containing a
+complete transcript of all incoming mail, the others are spamtext.txt
+and nonspamtext.txt; these contain all of the text learned as spam
+and as nonspam, respectively (quite handy if you ever migrate between
+versions, let me assure you).
+
+Some users have asked why I don't distribute my learning text, just
+the derivative .css files: it's because I don't own the copyright on
+them!  They're all real mail messages, and the sender (whoever that
+is) owns the copyright, not me (the recipient).  So, I can't publish
+them.  But never fear, if you don't trust my .css files to be clean,
+you can build your own with just a few day's spam and nonspam traffic.
+Your .css files will be slightly different than mine, but they will
+_precisely_ match your incoming message profile, and probably be 
+more accurate for you too.
+
+A few words on accuracy: there is no warranty- but I'm seeing typical
+accuracies > 99% with only 12 hours worth of incoming mail as example
+text.  With the old (weak, buggy, only 4 terms) polynomials, I got a 
+best case of 99.87% accuracy over a one-week timespan.  I now see 
+quality averaging > 99.9% accuracy (that is, in a week of ~ 3000 messages,
+I will have 1 or 2 errors, usually none of them significant.
+
+Of course, this is tuned to MY spam and non-spam email mixes; your
+mileage will almost certainly be lower until you teach the system what
+your mail stream looks like.
+
+
+============== stop here stop here stop here ========== 
+
+  -----  Old News -----
+Jan 17, 2006 - BlameTheReavers
+
+This is a big new functionality release- we include mailtrainer.crm as
+well as changing the default mailfilter.crm from Markovian to OSB.
+This new mailtrainer program is fed directories of example texts (one
+example per file), and produces optimized satistics files matched to
+your particular mailfilter.cf setup (each 1meg of example takes about
+a minute of CPU).  It even does N-fold validation.  Default training
+is 5-pass DSTTTTR (a Fidelis-inspired improvement of TUNE) with a
+thick threshold of 5.0 pR units. Worst-offender DSTTTTR training as a
+(very slow) option.  There are also speedups and bugfixes throughout
+the code.  Unless you really like Markovian, now is a good time to
+think about saving your old .css files and switching over to the new
+default mailfilter.crm config that uses OSB unique microgroom.  Then
+run mailtrainer.crm on your saved spam and good mail files, and see
+how your accuracy jumps.  I'm seeing a four-fold increase in accuracy
+on the TREC SA corpus; this is hot stuff indeed.
+
+
+Version CRM114-20050511.BlameMercury 
+
+This version is a documentation primary release - CRM114 Revealed
+(.pdf.gz, 240 pages) is now available for download.  BlameMercury has lots of
+bugfixes and only three extensions - you can now demonize minions onto
+pipes, you can re-execute failing commands from a TRAP finish, and you
+can now use a regex directly as a var-restriction subscripting action,
+so [ :my_var: /abc.*xyz/ ] gets you the matching substring in the :my_var:
+variable.  Var-restriction matches do NOT change the "previous MATCH" data on
+a variable.
+
+
+
+Version 20050415.BlameTheIRS (TRE 0.7.2)
+
+Math expressions can now set whether they are algebraic or RPN by a
+leading A or N as the first character of the string.  Listings are now
+controllable with -l N, from simple prettyprinting to full JIT parse.
+A bug in the microgroomer that causes problems when both microgrooming
+and unique were used in the same learning scenario was squashed in
+Markovian, OSB, and Winnow learners (it remains in OSBF).  Dependency
+on formail (part of procmail) in the default mailfilter.crm has been
+removed.  A cleaner method of call-by-name, the :+: indirection-fetch
+operator, has been activated. The var :_cd: give the call depth for
+non tail recursive routines.  Minor bugs have been fixed and minor
+speedups added.  "make uninstall" works.  Documentation of regexes has
+been improved.  Cached .css mapping activated.  Win32 mmap adapters
+inserted.
+
+
+
+Version 20041231.BlameSanAndreas (TRE 0.7.2)
+
+Major topics: New highest-accuracy voodoo OSBF classifier (from
+Fidelis Assis), CALL/RETURN now work less unintuitively, SYSCALL can
+now fork the local process with very low overhead (excellent for
+demons that spawn a new instance for each connection), and of course
+bug fixes around the block.  Floating point now accepts exponential
+notation (i.e. 6.02E23 is now valid) and you can specify output
+formatting.  MICROGROOM is now much smarter (thanks again to Fidelis)
+and you can now do windowing BYCHUNK.
+
+This new revision has Fidelis Assis' new OSBF local confidence factor
+generator; with the OSB front end and single-sided threshold training
+with pR of roughly 10, it is more than 3 times more accurate and 6
+times faster than straight SBPH Markovian and uses 1/10th the file
+space.
+
+The only downsides are that the OSBF file format is incompatible and
+not interconvertable between .css files and OSBF .cfc files, and that
+you _must_ use single-sided threshold training to achieve this
+accuracy.  Single-sided threshold training means that if a particular 
+text didn't score above a certain pR value, it gets trained even if it 
+was classified correctly.  For the current formulation of OSBF, 
+training all nonspams with pR's less than 10, and all spams with pR's
+greater than -10 yields a very impressive 17 errors on the SA torture
+test, versus 42 errors with Winnow (doublesided threshold with a 
+threshold of 0.5) and straight Markovian (54 errors with Train Only
+Errors training, equivalent to singlesided training with a threshold
+of zero) 
+
+We also have several improvement in OSB, which gets down to 22 errors on
+the same torture test, again with the same training regimen (train if 
+you aren't at least 10 pR units "sure", and _is_ upward compatible
+with prior OSB and Markovian .css files, and with the same speed
+as OSBF.  It also doesn't use the "voodoo exponential confidence factor",
+so it may be a more general solution (on parsimony grounds); it has
+similar properties to OSB.  (though there is a known bug that feature
+counts are all == 1 for now, but this doesn't hurt anything) 
+
+CLASSIFY and LEARN both default to the obvious tokenize regex of
+/[[:graph:]]+/.
+
+CALL now takes three parameters:
+
+	CALL /:routine_to_call:/ [:downcall_concat:] (:return_var:)
+
+The routine itself gets one parameter, which is the concatenation of
+all downcall_concat args (use a MATCH to shred it any way you want).
+
+RETURN now has one parameter:
+
+	RETURN /:return_concat:/
+
+The values in the :return_concat: are concatenated, and returned to the
+CALL statement as the new value of :return_var: ; they replace whatever was
+in :return_var:
+
+SYSCALL can now fork the local process and just keep running; this saves
+new process invocation time, setup time, and time to run the first pass
+of the microcompiler.
+
+See the examples in call_return_test.crm for these new hoop-jumping tricks.
+
+WINDOW now has a new capability flag - BYCHUNK mode, specifically for
+users WINDOWing through large blocks of data.  BYCHUNK reads 
+as large a block of incoming data in as is available (modulo limits of
+the available buffer space), then applies the regex.  BYCHUNK assumes
+it's read all that will be available (and therefore sets EOF), so repeated
+reads will need to use EOFRETRY as well.  
+
+
+
+
+Version 20041110.BlameFidelisMore (TRE 0.7.0)
+
+This new revision has Fidelis Assis' new OSBF local confidence factor
+generator; with the OSB front end and single-sided threshold training
+with pR of roughly 10, it is more than 3 times more accurate and 6
+times faster than straight SBPH Markovian and uses 1/10th the file
+space.
+
+The only downsides are that the OSBF file format is incompatible and
+not interconvertable between .css files and OSBF .cfc files, and that
+you _must_ use single-sided threshold training to achieve this
+accuracy.  Single-sided threshold training means that if a particular 
+text didn't score above a certain pR value, it gets trained even if it 
+was classified correctly.  For the current formulation of OSBF, 
+training all nonspams with pR's less than 10, and all spams with pR's
+greater than -10 yields a very impressive 17 errors on the SA torture
+test, versus 42 errors with Winnow (doublesided threshold with a 
+threshold of 0.5) and straight Markovian (54 errors with Train Only
+Errors training, equivalent to singlesided training with a threshold
+of zero) 
+
+We also have several improvement in OSB, which gets down to 22 errors on
+the same torture test, again with the same training regimen (train if 
+you aren't at least 10 pR units "sure", and _is_ upward compatible
+with prior OSB and Markovian .css files, and with the same speed
+as OSBF.  It also doesn't use the "voodoo exponential confidence factor",
+so it may be a more general solution (on parsimony grounds); it has
+similar properties to OSB.  (though there is a known bug that feature
+counts are all == 1 for now, but this doesn't hurt anything) 
+
+CLASSIFY and LEARN both default to the obvious tokenize regex of
+/[[:graph:]]+/.
+
+
+
+Version 20040921.BlameResidentWeasel
+
+Bugs stomped: several in the exit routine code, as well as fixes for
+detecting minion creation failures.  SYSCALL can now do forking of the
+currently executing code; CALL is now implemented and provides
+CORBA-like argument transfer.  A missing INSERT file in a .crm program
+is now a trappable error
+
+
+
+
+Version 20040815.BlameClockworkOrange
+
+Start/Length operators in match qualification are now working (same
+syntax as seek/length operators in file I/O), -v (and :_crm_version:)
+now also ID the regex engine type and version, and several bugs
+(including two different reclaimer bugs) have now been stomped.  Other
+code cleanups and documentation corrections have been done.
+
+
+
+
+Version 20040808.BlamePekingAcrobats
+
+
+This is a bugfix/performance improvement release.  The bugs are minor edge
+cases, but better _is_ better.  SYSCALL now has better code for
+<async> and <keep> (async is now truly "fire and forget"; keep
+keeps the process around without losing state, and default processes
+will now not hang forever if they overrun the buffer.)
+Documentation has been improved.  Both OSB and Winnow are now both
+faster and more accurate (as bugs were removed).  A particularly nasty
+bug that mashed isolated vars of zero length was quashed.  -D and -R
+(Dump and Restore) are available in cssutil for moving .css files between
+different-endian architectures.
+
+
+Version 20040723.BlameNashville
+
+This is a major bugfix release with significant impact on accuracy,
+especially for OSB users.  There's now a working incremental
+reclaimer, so there's no more ISOLATE-MATCH-repeat bug (feel free to 
+isolate and match without fear of memory leakage).  The "exit 9"
+bug has been fixed (at least I can no longer coerce it to appear)-
+users of versions after 20040606-BlameTamar should upgrade to this
+version. 
+
+
+
+
+Version CRM114-20040625-BlameSeifkes
+
+Besides the usual minor bugfixes (thanks!) there are two big new features
+in this revision:
+
+1) We now test against ( and ship with ) TRE version 0.6.8 .  Better, 
+faster, all that.  :)
+
+2) A fourth new classifier with very impressive statistics is now
+available.  This is the OSB-Winnow classifier, originally designed by
+Christian Siefkes.  It combines the OSB frontend with a balanced
+Winnow backend.  But it may well be twice as accurate as SBPH Markovian
+and four times more accurate than Bayesian.   Like correlative matching,
+it does NOT produce a direct probability, but it does produce a pR,
+and it's integrated into the CLASSIFY statement.  You invoke it 
+with the <winnow> flag:
+
+	classify <winnow> (file1.cow | file2.cow) /token_regex/
+and
+	learn <winnow> (file1.cow) /token_regex/
+	learn <winnow refute> (file2.cow) /token_regex/
+
+Note that you MUST do two learns on a Winnow .cow files- one 
+"positive" one on the correct class, and a "refute" learn on
+the incorrect class (actually, it's more complicated than that
+and I'm still working out the details.)
+
+Being experimental, the OSB-Winnow file format is NOT compatible with
+Markovian, OSB, nor correlator matching, and there's no functional
+checking mechanism to verify you haven't mixed up a .cow file with a
+.css file.  Cssutil, cssdiff, and cssmerge think they can handle the
+new format- but they can't.
+
+Further, you currently have to train it in a two-step
+process, learning it into one file, and refuting it in all other
+files:
+
+	LEARN <winnow>         (file1.cow) /regex/ 
+then
+	LEARN <winnow refute>  (file2.cow) /regex/ 
+
+which will do the right thing.  If the OSB-winnow system works as well
+as we hope, we may put the work into adding CLASSIFY-like multifile 
+syntax into the LEARN statement so you don't have to do this two-step
+dance.
+
+
+Version 20040601-BlameKyoto
+
+1) the whitelist.mfp, blacklist.mfp, and priolist.mfp files shipped
+are now "empty", the prior lists are now shipped as *list.mfp.example
+files.  Since people should be very careful setting up their black and
+white lists, this is (hopefully!) an improvement and people won't get
+stale .mfp's .
+
+2) The CLASSIFY statement, running in Markovian mode, now uses Arne's
+speedup, and thus runs about 2x faster.  Note that this speedup is
+currently incompatible with <microgroom>, and so you should use either
+one or the other.  Once a file has been <microgroom>ed, you should
+continue to use <microgroom>.  This is _not_ enforced yet in the
+software; if you get it wrong you will get a slightly higher error
+rate, but nothing apocalyptic will happen.
+
+3) the CLASSIFY statement now supports Orthogonal Sparse Bigram <osb>
+features.  These are mostly up- and down-compatible with the standard
+Markovian filter, but about 2x faster than Markovian even with Arne's
+speedup.  Even though there is up- and down-compatibility, you really
+should pick one or the other and stick with it, to gain the real
+speed improvement and best accuracy.
+
+4) The CLASSIFY <correlate> (that is, full correlative) matcher has
+been improved.  It now gives less counterintuitive pR results and
+doesn't barf if the test string is longer than the archetype texts (it
+still isn't _right_, but at least it's not totally _wrong_.  :) Using
+<correlate> will approach maximal accuracy, but it's _slow_ (call it
+1/100th the speed of Markovian).  We're still working on the
+information theoretic aspects of correlative matching, but it may be
+that correlative matching may be even more powerful than Markovian or
+OSB matching.  However, it's so slow (and completely incompatible with
+Markovian and OSB) that a statistically significant test has yet to 
+be done.
+
+Note: this version (and prior versions) are NOT compatible with TRE
+version 0.6.7.  The top TRE person has been notified; so use TRE
+version 0.6.8 (which is included in the source kit) or drop back to 
+TRE-0.6.6 as a fallback.
+
+Documentation is (as usual) cleaned up yet further.
+
+Work continues on the full neural recognizer.  It's unlikely that
+the neural recognizer will ue a compatible file format, so keep
+around your training sets!
+
+
+
+Version 20040418-BlameEasterBunny
+
+   This is the new bleeding edge release.  It has several submitted
+   bugfixes (attachments, windowing), major speedups in data I/O,
+   and now allows random-access file I/O (detailed syntax can be found
+   on the QUICKREF text).  For example, if you wanted
+   to read 16 bytes starting at byte 32 of an MP3 file (to grab one of
+   the ID3 tags), you could say
+
+	input [myfile.mp3 32 16] (:some_tag:)
+
+   Likewise, you can specify an fseek and count on output as well; to 
+   overwrite the above ID3 tag, use:
+
+        output [myfile.mp3 32 16] /My New Tag Text/
+
+   As usual for a bleeding-edge release, this code -is- poorly tested
+   yet.  Caution is advised.
+
+   There's still a known memory leak if you reassign (via MATCH) a 
+   variable that was isolated; the short-term fix is to MATCH with 
+   another var and then ALTER the isolated copy.
+
+
+
+March 27, 2004 - BlameStPatrick
+
+   This is the new bleeding edge release.  A complete rewrite of
+   the WINDOW code has been done (byline and eofends are gone, eofretry 
+   and eofaccepts are in), we're integrating with TRE 0.6.6 now,
+   and a bunch of bugs have been stomped.  
+
+   For those poor victims who have mailreader pipelines that alter headers,
+   you can now put "--force" on the BASH line or "force" on the
+   mailer command line, e.g. you can now say
+
+      command mysecretpassword spam force
+
+   to force learning when CRM114 thinks it doesn't need to learn.
+
+   However, this code -is- poorly tested yet.  Caution is advised.  
+   There's still a known memory leak if you reassign (via MATCH) a 
+   variable that was isolated; the short-term fix is to MATCH with 
+   another var and then ALTER the isolated copy.
+
+
+
+February 2, 2004 - V1.000
+
+   This is the V1.0 release of CRM114 and Mailfilter.  The last few known
+   bugs have been stomped (including a moderately good infinite loop detector
+   for string rewrites, and a "you-didn't-set-your-password" safety check), 
+   the classifier algorithms have been tuned (default is full Markovian), 
+   and it's been moderately well tested.  
+   Accuracies over 99.95% are documented on real-time mail streams, 
+   and the overall speed is 3 to 4x faster than SpamAssassin.
+
+   My thanks to all of you whose contributions of brain-cycles made this
+   code as good as it is.
+
+
+20040118 (final tweaks?)
+
+   It turns out that CAMRAM needs (as in is a virtual showstopper) the
+   ability to specify which user directory all of the files are to be 
+   found in.  Since #insert _cannot_ do this (it's compile time, not
+   run time), mailfilter.crm (and classifymail.crm) now have a new
+   --fileprefix=/somewhere/  option.  
+ 
+   To use it, put all of the files (the .css's, the .mfp's etc) that are
+   on a per-user basis in one directory, then specify 
+
+     mailfilter.crm --fileprefix=/where/the/files/are/
+ 
+   Note that this is a true prefix- you must put a trailing slash
+   on to specify a directory by that name.  On the other hand, you can
+   specify a particular prefix on a per-user basis, e.g.:
+
+     mailfilter.crm --fileprefix=/var/spool/mail/crm.conf/joe-
+
+   so that user "joe" will use mailfilter.crm with these files:
+   
+	/var/spool/mail/crm.conf/joe-mailfilter.cf
+	/var/spool/mail/crm.conf/joe-rewrites.mfp
+	/var/spool/mail/crm.conf/joe-spam.css
+	/var/spool/mail/crm.conf/joe-nonspam.css
+
+   and so on.  Note that this does NOT override --spamcss and --nonspamcss 
+   options; rather, the actual .css filenames are the concatenation of 
+   the fileprefix and spamcss (or nonspamcss) names.
+
+Version 20040105 (recheck)
+
+   Version 1.00, at last!  The only fixes here are to make the Makefile
+   a little more bulletproof and lets you know how to fix a messed-up 
+   /etc/ld.so.conf, and of course this document has been updated.
+
+   Otherwise this version should be the same as
+   the December 27 2003 (SanityCheck) version, which has no reported
+   reproducible bugs higher than a P4 (documentation and feature request).
+
+   For the last two weeks, I had _one_ outright error and two that I
+   myself found borderline out of about 5000 messages.  That's 2x 
+   better than a human at the same task.
+    
+   My thanks to all of you whose contributions of brain-cycles made this
+   code as good as it is.
+
+	-Bill Yerazunis
+
+
+Version 20031227 (SanityCheck)
+
+   This  is (hopefully) the last test version before V1.0, and bug
+   fixes are minimal.  This is really a sanity check release for V1.0 .
+ 
+   It is now time to triage what needs to be fixed
+   versus what doesn't, and very few things NEED to be fixed.
+   Things that changed (or not) are:
+
+      1) BUGS ACTUALLY FIXED:
+
+	 removed the arglist feature from mailfilter.crm; there's a
+         poorly understood bug in NetBSD versus Linux that breaks things.
+	
+         allmail.txt flag control wasn't being done correctly.  That's
+	 fixed.
+
+         a couple of misleading comments in the code are fixed.  
+
+
+     2) THINGS THAT ARE NOT CHANGED IN THIS VERSION BUT ARE V1.1 CANDIDATES:
+
+         the install location fix is NOT in V1.0.  This will move
+	 the location of the actual binary (/usr/bin/crm versus
+	 /usr/local/bin/crm-<version> and then add a symlink 
+         /usr/bin/crm --> /usr/local/bin/crm-<favored version> )
+
+         the --mydir feature of mailfilter.crm is not yet implemented
+	 and won't be in V1.0 .  Expect it in V1.1
+
+   Other than that and a few documentation fixes, this version is identical
+   to 20031217.  It's just the final sanity check before we do V1.0 
+
+
+
+Version 20031215-RC11
+
+Minor bugs smashed.  Math evaluation now works decently (but be nice
+to it).  Mailfilter accuracy is up past 99.9% (less than 1 error per
+thousand, usually when a spammer joins a well-credentialed list and
+spams the list, or a seldom-heard-from friend sends a one-line message
+with a URL wrapped in HTML).  Command line features for CAMRAM added
+("--spamcss" and "--nonspamcss"; these will probably become unified to
+a --mydir).  Lots of documentation updates; if it says something in 
+the documentation, there's actually a good chance it works as described.
+
+
+
+
+Version 20031111-RC7
+
+More bugs smashed- there are still a few outstanding bugs here and
+there, but you aren't likely to find them unless you're really pushing
+the limits.  Improvements are everywhere; You can now embed the
+classical C escape chars in a var-expanded string (e.g. \n for a
+newline) as well as hex and octal characters like \xFF and \o132.)
+EVAL now can do string length and some RPN arithmetic/comparisons;
+approximate regexing is now available by default, and the command line
+input is improved.
+
+
+
+
+Version 20031101-RC4  (November 1, 2003)
+
+The only changes this release are some edge-condition bugfixes (thanks
+to Paolo and JSkud, among others) and the inclusion of Ville
+Laurikari's new TRE 0.6.0-PRE3 regex module.  This regex module is
+tres-cool because it actually has a useful approximate matcher built
+right in, dovetailed into the REGEX syntax for #-of-matches.
+
+Consider the regex /aaa(foo){1,3}zzz/ .  This matches "foo", "foofoo", or 
+"foofoofoo".  Cognitively anything in a regex's {} doesn't say what
+to match, just how to match it.
+
+The cognitive jump you hve to take here is /foo{bar}/ can have a {bar}
+that says _how accurately_ to match foo.  For instance:
+
+	foo{~} 
+
+finds the _closest_ match to "foo" (and it always succeeds).
+
+The full details of approximate matching are in the quickref.  
+
+Read and Enjoy.
+
+(for your convenience, we also include the well-proven 0.5.3 TRE library,
+so you should install ONE and ONLY one of these.  Realize that
+0.6.0-PRE3 is still a fairly moderately tested library; install
+whichever one meets your need to bleed.  :-)  )
+
+
+
+Oct 23, 2003  ( version 20031023-RC3 )
+
+  Yes, we're now at RC3.  Changes are that EVAL now works right, lots
+  of bugfixes, and the latent code for RFC-compliant inoculation is 
+  now in the shipped mailfilter.crm (but turned off in mailfilter.cf)
+  All big changes are being deferred to V1.1 now; this is bugfix city.  
+	
+  Make it bleed, folks, make it _bleed_.
+
+     -Bill Yerazunis
+
+
+
+October 15, 2003
+
+It's been a long road, but here it is - RC1, as in Release Candidate 1.
+WINDOW and HASH have been made symmetrical, the polynomials have been
+optimized, and it's ready.  Accuracy is steady at around 3 nines.
+Because of all the bugfixes, upgrading to this version (compatible with the
+BETA series) is recommended.
+
+	-Bill Yerazunis
+
+
+
+This is the September 25th 2003 BETA-2
+
+What's new: a few dozen bugs stomped, and new functionality
+everywhere.  Command line args can now be restricted to acceptable
+sets; <microgroom> will keep your .css files nicely trimmed; ISOLATE
+will copy preexisting captures, --learnspam and --learnnonspam in
+mailfilter.crm will perform exactly the same configured mucking as
+filtering would, and then learn; --stats_only will generate ONLY the
+'pR' value (this is mostly for CAMRAM users), positional args will be
+assigned :_posN: variables, the kit has been split so you don't have
+to download 8 megs of .css if you are building your .css locally, and
+it's working well enough that this is a full BETA release.
+
+
+'August 07, 2003 bugfix release.
+
+Changes: lots and lots of bugfixes.  Really.  The only new code is
+experimental code in mailfilter (to add 'append verbosity as
+attachment') and getting WINDOW to work on any variable, everything
+else is bugstomping or enhanced testing (megatest.sh runs a lot of tests
+automatically now).
+
+There's still a bug or dozen out there, so keep sending me bug reports!
+
+(and has anyone else done the cssutil --> cssmerge to build small .css files
+for fast running?)
+
+
+This is the July 23, 2003 alpha release.
+
+This release is a bugfix release for the July 20 secret release.
+
+Fixes include: configuration toggles for allmail.txt and rejected_mail.txt,
+execution time profiling works, (-p generates an execution time profile, 
+-P now limits number of statements in program), 
+
+Good news: the new .css file format seems to be working very well;
+although we spend a little more time in .css evaluation, the accuracy
+increase is well worth it (I've had _one_ error since 07-20, a false
+accept to a mailing list that came back as "marginally nonspam" because
+the mailing list is usually squeaky clean).   
+
+Merging works well; you can now make your .css files as big (or small)
+as you dare (within reason; you'll need to throw away features if 
+you want to compress the heck out of it and you'll use lots of memory or
+page like crazy if you make them too big).  If experiment shows that
+this memory usage is excessive, let me know and I'll see if I can do
+a less-space-for-more-time tradeoff.
+
+Profiling indicates that we spend more time in blacklist processing
+than in the whole SBPH/BCR evaluator, (which isn't that surprising,
+when you get down to it), so maybe trimming the blacklist to people
+who spam _you_ would be a good performance improvement.
+
+Anyway, here you go; this is a _recommended_ release.  Grab it and
+have fun. :)
+
+As usual, prior news and updates are at the end of this file.
+
+---------
+
+This is the July 19, 2003 SECRET alpha release.  It won't be linked on
+the webpage- the only people who will know about it are the ones who
+get this email.  Y'all are special, you know that?  :-)  
+
+Since this is a SECRET release, you all have a "need to know".  That
+need is simple: I'd like to get a little more intense testing on this
+new setup before I put it out for general release.
+
+Enough has changed that you _need_ to read ALL the news before
+you go off and install this version.  Be AFRAID.  :)
+
+LOTS of changes have occurred - the biggest being that the new,
+totally incompatible but far better .css format has been implemented.
+The new version has everything you all wanted- both for people who
+want huge .css files, and for people who want _smaller_ .css files.
+
+This new stuff has necessitated scouring cssutil and cssdiff 
+so don't use the old versions for the new format files.  
+
+Lastly, because the old bucket max was 255 and the new is 4 gigs, the
+renormalization math changed a little.  Expect pRs to be closer to 0
+until you train some more.  Accuracy should be better, even _before_
+training, so overall it's a net win.
+
+There's also string rewriting in the pre-classification stage (who
+wanted that?  Somebody did....) and since term rewriting is so darn
+useful, I'm releasing an expurgated version of the string rewriter I
+use to scrub my spam and nonspam text of words that should not be
+learned.  This scrubber automatically gets used if you "make cssfiles".
+
+
+Here's the details:
+
+  1) The format of the .css files has changed drastically.  What used to
+  be a collisionful (and error-accepting) hash is now a 64-bit hash
+  that is (probably) nearly error free, as it's also tagged with the
+  full 64-bit feature value; if two values clash as to what bucket
+  they would like to use, proper overflow techniques keep them from
+  both using the same bucket.  Bucket values were maxxed at 255 (they
+  were bytes) now they're 32-bit longs, so you are _highly_ _unlikely_ to max
+  out a bucket.  These two changes make things significantly more
+  robust.  
+
+  These changes also make it possible (in fact, trivial) to
+  resize (both upward and downward!), compress, optimize, and
+  do other very useful things to .css files.  Right now, the only
+  supported operation is to _merge_ one .css file onto another... but
+  the good news is that now these files can be of different sizes!
+  So, the VERY good news is that you can look at your .css files with
+  cssutil, decide if (or where) you want to zero out less significant
+  data, and then use dd to create a blank, new outfile.css file that will
+  be about half to 2/3 full, then use cssmerge outfile.css infile.css to 
+  merge your infile.css into the outfile.css.  
+
+  This will be a real help for people who have (or need) very large OR very 
+  small .css files.  :)
+
+  You can create the blank .css file with the command 'dd' as in:
+
+ dd bs=12 count=<number of feature buckets desired> if=/dev/zero of=mynew.css
+
+  (the bs=12 is because the new feature buckets are 12 bytes long)
+
+  Because chain overflowing is done "in table, in sequence" you can't 
+  have more features than your table has feature buckets.  You'll get a
+  trappable error if you try to exceed it. 
+
+  Minor nit- right now, feature bucket 0 is reserved for version 
+  info- but it's never used (left as all 0's).  That's no major 
+  hassle, but just-so-you-know... :)
+
+
+  2) A major error in error trapping has been corrected.  TRAPs can now
+  nest at least vaguely correctly; a nonfatal trap that is bounced does
+  not turn into a fatal.  Also, the :_fault: variable is gone, each
+  TRAP now specifies it's own fault code.
+
+  This isn't to say that error trapping is now perfect, but it's a 
+  darn sight better than it was before.
+
+  3) term rewriting on the matched or learned text is now supported; this
+  will mean significant gains in out-of-the-box accuracy as well as keeping
+  your mail gateway name from becoming a spam word.  :)  Far more fancy
+  rewritings can be implemented, if you should choose.
+
+
+  The rewriting rules are in rewrites.mfp - YOU must edit this to match
+  your local and network mailer service configuration, so that your
+  email address, email name, local email router, and local mail router
+  IP all get mapped to the same strings as the ones I built the
+  distribution .css files with.
+
+
+  4) Minor bugs - a minor bug (inaccurate edge on matching) for 
+  the polynomial; annoying segfault on insert files that ended with
+  '#' that were immeidately followed by a { in the main program was fixed;
+
+  5) a new utility is provided - rewriteutil.crm.  This utility can do
+  string rewriting for whatever purpose you need.  I personally use it 
+  to "scrub" the spam and nonspam text files; the file
+  rewrites.mfp contains an (expurgated) set of rewrite
+  rules that I use.  You will need to edit rewrites.mfp
+  to put your account name and server nodes in, otherwise you'll be using
+  mine (and losing accuracy)
+
+  For examples on the term rewriting, both in the mailfilter and in 
+  the standalone utility rewriteutil.crm, just look at the example/test
+  code in rewritetest.crm (which uses the rewrite rules in test_rewrites.mfp)
+
+
+
+This is the July 1, 2003 alpha release.
+
+This is a further major bugstomping release.  The .css files are
+expanded to 8 megabytes to decrease the massive hash-clashing that has
+occurred.  UNION and INTERSECTION now work as described in the
+(updated) quickref.txt, with the (:out:) var in parens and the [:in1:
+:in2: ...] vars in boxes.  A major bug in LEARN and CLASSIFY has been
+stomped; however this is a "sorta incompatible" change and you are
+encouraged to rebuild your .css files with a hundred Kbytees or so of
+prime-grade spam and nonspam (which has been stored for you in
+spamtext.txt and nonspamtext.txt).  The included spam.css and
+nonspam.css files are already rebuilt for the corrected bug in LEARN
+and CLASSIFY.  These .css files are also completely fresh and new;
+I restarted learning about a week ago and they're well into the 99.5% 
+accuracy range.  
+
+
+This is the June 23, 2003 alpha release.
+
+This is a major bugstomping release.  <fromstart> <fromcurrent> and
+<backwards> now seem to work more like they are described to work.
+The backslash escapes now are cleaner; you may find yuor programs work
+"differnently" but it _should_ be backward_compatible.  The
+preprocessor no longer inserts random carriage returns.  A '\' at the
+end of a line is a continuation onto the next line.  Mailfilter now
+can be configured for separate exit codes on "nonspam", "spam" and
+"problem with the program".  Exit codes on CRM114 itself have been
+made more appropriate; compiler errors and untrapped fatal faults now
+give an error exit code.  Additionally, FAULT and TRAP are scrubbed,
+and the documentation made more accurate.
+
+
+June 10 news:
+
+	This new version implements the new FAULT / TRAP semantics, 
+	so user programs can now do their own error catching and
+	hopefully error fixups.  Incomplete statements are now flagged
+	a (little bit) better.
+
+	Texts are now Base64-expanded and decommented before being learned
+
+	There's a bunch of other bugfixes as well.
+
+	Default window size is dropped to 8 megs, for compatiblity
+	with HPUX (change this in crm114_config.h).
+
+
+
+June 01, 2003 news:
+
+	the ALIUS statement - provides if/then/else and switch/case
+	capabilities to CRM114 programmers.  See the example code in
+	aliustest.crm to get some understaning of the ALIUS statement.
+
+	the ISOLATE statement - now takes a /:*:initial: value / for the
+	freshly isolated variable.  
+
+	Mailfilter.crm is now MUCH more configurable, including inserting
+	X-CRM114-Status: headers and passthru modes for Procmail, configurable
+	verbosity on statistics and expansions, inserting trigger 'ADV:' tags
+	into the subject line, and other good integration stuff.
+
+	Overall speed has improved significantly - mailfilter is now about
+	four times FASTER than SpamAssassin with no loss of accuracy.
+
+	bugfix - we now include Ville Laurikari's TRE regexlib version 0.5.3
+        with CRM114; using it is still optional ("make experimental") 
+        but it's the recommended system if your inputs include NULL bytes.
+
+	bugfix - OUTPUT to non-local files now goes where it claims, 
+	it should no longer be necessary to pad with a bunch of spaces.
+
+	yet more additions to the .css files
+
+
+
+
+April 7th version:
+
+
+0) We're now up to "beta test quality"... no more "alpha"
+quality level.   This is good.  :-)
+
+
+1) As always, lots of bugfixes.  And LOTS of thanks from all of you
+poor victims out there.  We've reached critical mass to the point now
+where I'm even getting bug _fix_ suggestions; this is great!  
+
+If you do make a bug report or a bugfix suggestion, please include not
+only the version of CRM114 you're running, but also the OS and version
+of that OS you're running.  I've seen people porting CRM114 to Debian,
+to BSD, to Solaris, and even to VMS... sp please let me know what
+you're running when you make a bug report.  PLEASE PUT AT LEAST THE
+CRM114 VERSION IN THE SUBJECT LINE.
+ 
+
+2) We now have an even better 'mailfilter.crm' .  Even with the highly
+evolved spam in the last couple of, we're still solidly above 99%
+(averaging around 99.5%).  (it's clear that the evolution is due
+to the pressures brought by Bayesian filters like CRM114)... some
+of these new spams are very, VERY good.  But we chomp 'em anyway.  :-)
+
+
+3) The new metaflag "--" in a CRM1114 command line flags the
+demarcation between "flags for CRM114" and "flags for the user program
+to see as :_argN:". Command line arguments before the "--" are seen
+only by CRM114; arguments after the "--" are seen only by the user
+program.
+
+
+4) EXPERIMENTAL DEPARTMENT: We now have better support for the
+8-bit-clean, approximate-capable TRE regex engine.  It's still
+experimental, but we now include TRE 0.5.1 directory in this kit; you
+can just go into that subdirectory, do a .configure, a make, and a
+make install there, and you'll have the TRE regex engine installed
+onto your machine (you need to be root to do this).  Then go back up
+to the main install directory, and do a "make experimental" to compile
+and install the experimental version as /usr/bin/crma (the 'a' is for
+'approximate regex support'.
+
+Using the experimental version 'crma' WILL NOT AFFECT the 
+main-line version 'crm'; both can coexist without any problems.
+
+To use the approximate regex support (only in version 'crma') just add a
+second slashed string to the MATCH command.  This string should contain 
+four numbers, in the order SIMD (which every computer hacker should
+remember easily enough).  The four integers are the:
+
+	Substitution cost,
+	Insertion cost
+	Maximum cost
+	Deletion cost
+
+in an approximate regex match.  If you don't add the second slash-delimited
+string, you get ordinary matching.
+
+Example:
+	
+	match  /foobar/    /1 1 1 1/
+
+means match for the string "foobar" with at most one substitution,
+insertion, or deletion.
+
+This syntax will eventually improve- like the makefile says, this
+is an experimental option.  DO NOT ASSUME that this syntax will not
+change TOTALLY in the near future.  
+
+DO NOT USE THIS for production code.
+
+
+4) Yet futher improvements to the debugger.
+
+
+5) Further improvements to the classifier and the shipped .css files.
+
+
+6) The "stats" variable in a CLASSIFY statement now gives you an extra
+value- the pR number.  It's pR for the same reason pH is pH - it gives an
+easy way to express very large numeric ratios conveniently.
+
+The pR number is the log base 10 of the .css matchfile signal strength
+ratios; it typically ranges from +350 or so to -350 or so.  If you're
+writing a system that uses CRM114 as a classifier, you should use pR
+as your decision criterion ( as used by mailfilter.crm and
+classifymail.crm, pR values > 0 indicate nonspam, <0 indicates spam )
+
+If you want to add a third classification, say "SPAM/UNSURE/NONSPAM",
+use something like pR > 100 for nonspam, between +100 and -100 for
+unsure, and < -100 for spam.  CAMRAM users, take note.  :)
+
+
+6) The functionality of 'procmailfilter.crm' has been merged back into
+mailfilter.crm, classifymail.crm, learnspam.crm and learnnonspam.crm.
+Do NOT use the old "procmailfilter.crm" any more - it's buggy,
+booger-filled, and unsupported from now on.  PLEASE PLEASE
+PLEASE don't use it, and if you have been using it, please stop now!
+
+
+
+Jan 28th release news
+
+Many thanks to all of you who sent in fixes, and taught me some nice
+programming tricks on the side.
+
+0) INCOMPATIBLE CHANGES: 
+
+   a) INCOMPATIBLE (but regularizing) change: Input took from the file
+      [this-file.txt] but output went to (that-file.txt); this was a
+      wart and is now fixed; INPUT and OUTPUT both now use the form of
+
+	INPUT  [the-file-in-boxes.txt]
+
+      and
+
+	OUTPUT [the-file-in-boxes.txt]
+
+   b) INCOMPATIBLE (but often-requested) change: You don't need to say
+      "#insert" any more.  Now it's just ' insert ', with no '#' .  Too many
+      people were saying that #insert was bogus, and it was too easy to
+      get it wrong.  Now, insert looks like all other statements;
+    
+            insert yourfilenamehere.crm
+
+   c) The gzip file no longer unpacks into "installdir", but into
+      a directory named crm114-<versionnumber> .   
+
+1) BUGFIXES: bugs stomped all over the place - debugger bugs (now the
+debugger doesn't go into lalaland if an error occurs in a batch file),
+infinite loop on bogus statements fixed, debugger "n" not doing the
+right thing), window statement cleaned and now works better, '\' now
+works correctly even in /match patterns/, default buffer length is now 16 
+megabytes (!), the program source file is now opened readonly.
+
+2) 8-BIT-CLEAN: code cleanups and reorganizations to make CRM114
+8-bit-cleaner; There may be bugs in this (may?  MAY?) but it's a
+start.  (note- you won't get much use of this unless you also turn on
+the TRE engine, see next item.)
+
+3) REGEX ENGINES: the default regex engine is still GNU REGEX (which
+is not 8-bit-clean) but we include the TRE regex engine as well (which
+is not only 8-bit-clean, but also does approximate regexes.  TRE is
+still experimental, you will need to edit crm114_config.h to turn it
+on and then rebuild from sources.  Do searches of www.freshmeat.net to
+see when the next rev of TRE comes out. 
+
+4) SUBPROCESSES: Spawned minion buffers now set as a fraction of the
+data window size, so programs don't die on overlength buffers if they
+copy a full minion output buffer into a non-empty main data window.
+The current default size is scaled to the size of the main data buffers,
+currently 1/8th of a data buffer, with the new default of a 16-meg
+allocate-on-the-fly data buffer that means your subprocesses can 
+spout up to 2 megs of data before you need to think about using
+asynchronous processes.
+
+5) The debugger now talks to your tty even if you've redirected stdin
+to come from a data file.  EOF on the controlling tty exits the
+program, so -d nnnn sets an upper limit on the number of cycles an
+unattended batch process will run before it exits.  (this added because
+I totally hosed my mailserver with an infinite loop.  Quite the
+"learning experience", but I advise against it. )
+
+6) An improved tokenizer for mail filtering.  You can pick any of 
+
+7) Option for exit codes for easy ProcMail integration, so the old 
+"procmailfilter.crm" file goes away, it's no longer necessary to 
+have that code fork.,
+
+8) For those of you who want eaiser integration with your local mail
+delivery software, without all the hassle of configuring
+mailfilter.crm, there's three new very bare-bones programs, meant to
+be called from Procmail.  These do NOT use the blacklist or whitelist
+files, nor can they be remotely commanded like the full
+mailfilter.crm:
+
+	learnspam.crm
+	learnnonspam.crm
+	classifymail.crm
+
+  * learnspam.crm < some-spam.txt 
+
+       will learn that spam into your current spam.css database.  Old
+	spam stays there, so this is an "incremental" learn.
+
+  * learnnonspam.crm < some-non-spam.txt 
+
+       will learn that nonspam into your current nonspam.css database.  Old
+	nonspam stays there, so this is an "incremental" learn.
+
+  * classifymail.crm < mail-message.txt 
+
+       will do basic classification of text.  This code doesn't
+	do all the advanced things like base-64 armor-piercing nor
+	html comment removal that mailfilter.crm does, and so it
+	isn't as accurate, but it's easier to understand how to set
+	it up and use it.  Classifymail.crm returns a 0 exit code on
+	nonspam, and a 1 exit code on spam.  Simple, eh?  Classifymail
+	does NOT return the full text of the message, you need to 
+	get that another way (or modify classifymail.crm to
+	output it- just put an "accept" statement right before 
+	the two "output ..." statements and you'll get the full 
+	incoming text, unaltered.
+ 
+
+November 26, 2002:
+
+NEW Built-in Debugger - the "-d" flag at the end of the command line
+puts you into a line-oriented high-level debugger for CRM114 programs.
+
+Improved Classifier - the new classifier math is giving me > 99.92%
+accuracy (N+1 scaling).  In other words, once the classifier is
+trained to your errors, you should see less than one spam per
+thousand sneak through.
+
+Bug fixes - the code base now should compile more cleanly on newer
+systems that have IEEE float.h defined.
+
+Security fix- a non-exploitable buffer overflow fixed
+
+Documentation fixes - Serious doc errors were fixed
+
+
+
+
+Nov 8th, 2002 version
+
+	*) Procmail users: a version of mailfilter.crm specifically
+	   set up for calling from inside procmail is included-
+	   see the file "procmailfilter.crm" for the filter, and
+	   "procmailrc.recipe" for an example recipe of how to call it.
+	   (courtesy Craig Hagan) 
+
+	*) Bayesian Chain Rule implemented - scoring is now done
+	   in a much more mathematically well-founded way.  
+	   Because of this, you may see some retraining required,
+	   but it shouldn't be a lot.  Users that couldn't 
+	   use my pre-supplied .css files should delete the supplied
+	   .css files and retrain from their own spamtext.txt and 
+	   nonspamtext.txt files.
+
+	*) classifier polynomial calculation has been improved but is
+	   compatible with previous .css files. 
+
+	*) -s will let you change the default size for creating new 
+	   .css files (needed only if you have HUGE training sets.)
+	   Rule of thumb: the .css files should be at least 4x the
+	   size of the training set.
+
+	*) Multiple .css files will now combine correctly - that is,
+	   if you have categorized your mail into more than "spam" and
+	   "nonspam", it now works correctly.  Ex: You might create categories
+	   "beer", "flames", "rants", "kernel", "parties",
+	   and "spam", and all of these categories will plug-and-play 
+	   together in a reasonable way, 
+
+	*) speed and correctness improvements - some previously fatal
+	   errors can now be corrected automagically.
+
+
+Oct 31, 2002:
+
+Bayesian Chain Rule implemented - scoring is now done in a much more
+mathematically well-founded way.  Because of this, you may see some
+retraining required, but it shouldn't be a lot.  Users that couldn't
+use my pre-supplied .css files should delete the supplied .css files
+and retrain from their own spamtext.txt and . nonspamtext.txt files.
+Classifier polynomial calculation has been improved but is compatible
+with previous .css files.  -s will let you change the default size for
+creating new .css files (needed only if you have HUGE training sets.)
+Rule of thumb: the .css files should be at least 4x the size of the
+training set.  Multiple .css files will now combine correctly - that
+is, if you have categorized your mail into more than "spam" and
+"nonspam", it now works correctly.  Ex: You might create categories
+"beer", "flames", "rants", "kernel", "parties", and "spam", and all of
+these categories will plug-and-play together in a reasonable way, e.g.
+	
+  classify (flames.css rants.css spam.css | beer.css parties.css kernel.css)
+
+will split out flames, rants, and spam from beer, parties, and
+linux-kernel email.  (I don't supply .css files for anything but spam
+and nonspam, though.)  Lastly, there are some new speed and correctness
+improvements - some previously fatal errors can now be corrected
+automagically.
+
+
+
+
+    Oct 21:  Improvements everywhere - a new symmetric declensional parser,
+    a much more powerful and accurate sparse binary polynomial hash 
+    system ( sadly, incompatible; - if you LEARNed new data into the
+    .css files, you must use learntest.crm to LEARN the new data into
+    the new .css files as the old file used a less effective polynomial.)
+    Also, many bugfixes including buffer overflows fixed, -u to change
+    user, -e to ignore environment variables, optional [:domain:]
+    restrictions allowed on LEARN and CLASSIFY, status output on
+    CLASSIFY, and exit return codes.  Grotty code has
+    been removed, the Remote LEARN invocation now cleaned up, and CSSUTIL 
+    has been scrubbed up.
+
+    Oct 5:  Craig Rowland points out a possible buffer exploit- it's
+    been fixed.  In the process, the -w flag now boosts all intermediate
+    calculation text buffers as well, so you can do some big big things
+    without blowiing the gaskets.  :)
+
+

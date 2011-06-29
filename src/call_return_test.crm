@@ -1,0 +1,206 @@
+#!/usr/bin/crm
+#
+#        test the call-return statements.
+#
+window
+#
+alter (:_dw:) /This is the original data window.  It shouldn't change/
+#
+output /Starting \n/
+output /\n\nTesting local and forking call and returns. (level :*:_cd:) \n/\
+call /:foo:/
+#
+output /Middle (level :*:_cd:)\n/
+isolate (:retval:)
+call /:bar:/ [ a b c d e ] (:retval:)
+output /Got back >:*:retval:<\n/
+output /End (level :*:_cd:)\n/
+#
+output / Doing factorial with a mutating argument \n/
+isolate (:z:) /5/
+call /:factorial:/ [ :*:z: 1 ]
+output / :*:z: factorial is :*:out: (level :*:_cd:)\n\n/
+#
+output / Doing factorial with inplace args. \n/
+isolate (:z:) /5/
+call /:factorial_inplace:/ [ :*:z: 1 ]
+output / :*:z: factorial_inplace is :*:out: (level :*:_cd:) \n\n/
+#
+output / Doing factorial with return args \n/
+isolate (:z:) /5/
+isolate (:out:) //
+call /:factorial_returnarg:/ [ :*:z: ] (:out:)
+output / :*:z: factorial_returnarg is :*:out: (level :*:_cd:)\n\n/
+#
+output / \nand now do some fully isolated forking calls \n/
+isolate (:out: :status:)
+syscall /:my_fork:/ ( this string is your input ) (:out:) (:status:)
+output /Returned output = :*:out: (level :*:_cd:)\n/
+output /Returned status:  \n:*:status:\n/  
+output /And the data window is now: :*:_dw:\n/
+
+#######################
+# Must... Control... Fist... Of.... Runaway Line Count!!!
+####################
+exit /0/
+
+
+
+########################################
+#
+#      Start of the callable routines
+########################################
+
+
+######################################
+#
+#     Just Print out something.
+#
+:foo:
+output /The foo (level :*:_cd:)\n/
+return
+
+######################################
+#
+#     Print out our incoming argument
+#
+:bar: (:zeta:)
+output /The bar was >:*:zeta:< (level :*:_cd:)\n/
+return /z y x w v/
+
+#########################################
+#
+#     Calculate the factorial.  Note that
+#     this routine uses a global :out: to capture the
+#     accumulated result
+#
+#     Yes, I know it's dirtylooking, but most routines don't need 
+#     to be recursive, and of those that do, most really are changing
+#     a data structure in-place, and hence don't really need to
+#     do this twitchy magic.
+#
+:factorial: (:arg:)
+{
+	output / arglist return factorial call entry, args = :*:arg: (level :*:_cd:)\n/
+	isolate (:nm1: :out:)
+	match [:arg:] (:: :n: :out:) /([0-9]+) ([0-9]+)/		
+	{
+		eval /:@: :*:n: > 1 :/
+		eval (:nm1:) /:@: :*:n: - 1 :/
+		eval (:out:) /:@: :*:out: * :*:n: :/
+		call /:factorial:/ [ :*:nm1: :*:out: ]
+		output / Call return, :out: = :*:out: ( level :*:_cd:) \n/
+		return
+	}
+	alius
+	{
+		output / Recursion bottomed out, returning :out: = :*:out: \n/
+		return
+	}
+}
+
+##############################################
+#
+#     Here's factorial again, but we're treating :arg: as a known data
+#     structure (that we MATCH into) and then we just ALTER fields within it.
+#
+#     Other than the fact that we mutilate :arg: , this is not a bad way 
+#     to write code.
+
+:factorial_inplace: (:arg:)
+{
+	output / downward recurse call entry, args = :*:arg: (level :*:_cd:)\n/
+	match [:arg:] (:: :n: :out:) /([0-9]+) ([0-9]+)/		
+	{
+		eval /:@: :*:n: > 1 :/
+		eval (:out:) /:@::*:out: * :*:n::/
+		eval (:n:) /:@: :*:n: - 1:/
+		call /:factorial_inplace:/ [:*:arg:]
+		output / Call return, :out: = :*:out: (level :*:_cd:)\n/
+		return
+	}
+	alius
+	{
+		output / Recursion bottomed out, returning :out: = :*:out: \n/
+		return
+	}
+}
+
+
+##################################################
+#
+#      Here's factorial yet again, with an incoming transfer arg AND
+#      an output transfer arg.  This is also a good way to write code.
+#
+#      Because we don't have local variables (yet- I haven't figured out 
+#      a way to reconcile the overlapped-strings principle with local 
+#      variables) note that:
+#
+#       FOR A RECURSIVE ROUTINE, _ALL_ OF THE STATE MUST MOVE DOWN AND UP
+#       IN THE ARGS.  NO EXCEPTIONS - OTHERWISE LOWER CALLS WILL OVERWRITE
+#       THE STATE AND YOUR CODE WON'T WORK AS EXPECTED.
+#
+#     The call arg looks like this going down:
+#
+#      5
+#      4 5
+#      3 4 5
+#      2 3 4 5 
+#      1 2 3 4 5
+#
+#               then like this coming back up.
+#      2 3 4 5
+#      6 4 5
+#      24 5
+#      120
+
+:factorial_returnarg: (:arg:)
+{
+	output / Call factorial_returnarg entry, arg = :*:arg: (level :*:_cd:)\n/
+	isolate (:nm1: :out: )
+	match [:arg:] (:: :n: ) /([0-9]+)/		
+	{
+		eval /:@: :*:n: > 1 :/
+		eval (:nm1:) /:@: :*:n: - 1 :/
+		output / N is :*:n: NM1 is :*:nm1: \n/
+		call /:factorial_returnarg:/ [ :*:nm1: :*:arg:] (:out:)
+		output / Call returned, return value was :*:out: (level :*:_cd:)\n /
+		{ 
+			#   Do we have at least two things to multiply?
+			match [:out:] (:: :p1: :p2: :rest:) \
+				/([0123456789]+)  ([0123456789]+) (.*)/
+			output / p1: :*:p1:, p2: :*:p2:, rest: :*:rest: \n/
+			eval (:out:) /:@: :*:p1: * :*:p2:: :*:rest:/
+			output /  multiply p1 and p2, put that on the front, and return :out: = :*:out: (level :*:_cd:)\n/
+			return /:*:out:/
+		}
+		#    If we got to here, then it was just one thing to return
+		return /:*:out:/
+	}
+	alius
+	{
+		output /  Calling bottomed out with N-1 <= 0.00 (level :*:_cd:)\n/
+		return /:*:arg:/
+	}
+}
+
+
+###################################################
+#
+#       Here's the fork code.  Note that this code executes
+#       in an entirely separate process, and so _never_ returns.
+#
+#       All data transfer must happen in pipes, except that the
+#       original data is still there (it's a fork, after all)
+#
+:my_fork:
+output /In the fork... data window is :*:_dw: (level :*:_cd:)\n/
+input
+output /Inputted; now the data window is: :*:_dw:\n/
+output /Changing the data window in this fork. \n/
+alter (:_dw:) /This is a _changed_ data window, local to this SYSCALLed fork./
+output /Now the data window is: :*:_dw:\n/
+exit /123/
+
+
+

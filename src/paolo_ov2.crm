@@ -1,0 +1,35 @@
+
+#On Fri, Aug 26, 2005 at 03:14:54PM +0200, Hilko Bengen wrote:
+#> I am running Debian/unstable on an x86 box with version
+#> 20050721-BlameNeilArmstrong and have encountered a segmentation fault
+#> while working on some code that digests MIME messages. I have also
+#> reproduced the problem with 20050415.BlameTheIRS installed on a
+#> Debian/sarge box.
+#> 
+#> The script (with part of a spam mail included into the code) is
+#> attached at the end of the message.
+#> 
+#> crm114 apparently only crashes if :headers: is ISOLATEd between the
+#> first and the second MATCH and if :headers: is then re-used as a
+#> target in the last MATCH.
+#> 
+#> Cheers,
+#> -Hilko
+#> 
+#
+#!/usr/bin/crm
+ 
+window
+alter (:_dw:) /Return-path: <tteqq@yahoo.com>\nEnvelope-to: bengen@hilluzination.de\nDelivery-date: Mon, 08 Aug 2005 12:09:51 +0200\nReceived: from quechua.inka.de\n	([193.197.184.2] helo=mail.inka.de ident=mail)\n	by paranoia with esmtp (Exim 4.50)\n	id 1E24Zm-0008Pl-Bq\n	for bengen+bengen.vdst-ka.inka.de@hilluzination.de; Mon, 08 Aug 2005 12:09:51 +0200\nReceived: from adsl-67-118-169-226.dsl.lsan03.pacbell.net (adsl-67-118-169-226.dsl.lsan03.pacbell.net [67.118.169.226])\n	by mail.inka.de with smtp \n	id 1E24Ze-0001qC-00; Mon, 08 Aug 2005 12:09:39 +0200\nFCC: mailbox:\/\/tteqq@yahoo.com\/Sent\nX-Identity-Key: id1\nDate: Mon, 08 Aug 2005 04:11:18 -0700\nFrom: International Medical Corporation <tteqq@yahoo.com>\nX-Accept-Language: en-us, en\nMIME-Version: 1.0\nTo: bengen@vdst-ka.inka.de\nSubject: You have some free time? - Use it to make yourself wealthier!\nContent-Type: multipart\/related; boundary="------------000708090009050006030006"\nMessage-Id: <E1E24Ze-0001qC-00@mail.inka.de>\nX-CRM114-Version: 20050415.BlameTheIRS ( TRE 0.7.2 (GPL) ) MF-A10FFB4C\nX-CRM114-Status: SPAM  ( pR: -149.1499 )\nContent-Length: 21549\n\nThis is a multi-part message in MIME format.\n--------------000708090009050006030006\nContent-Type: text\/html; charset=us-ascii\nContent-Transfer-Encoding: 7bit\n\n<html><head><DEFANGED_meta http-equiv="Content-Type" content="text\/html; charset=iso-8859-1"><\/head><body bgcolor="#FFFFF4" text="#F2C2E6"><p><a href="mailto:info@intermed-corp.net"><IMG SRC="cid:part1.07010905.07040200@mpbnmpsjffb@hotmail.com" border="0" ALT=""><\/a><\/p><p><font color="#FFFFFD">The Sims in 1960 Martha Stewart in 1948<\/font><\/p><p><font color="#FFFFF4">What number? Music<\/font><\/p><\/body><\/html>\n\n--------------000708090009050006030006\nContent-Type: image\/gif;\n name="clonic.GIF"\nContent-Transfer-Encoding: base64\nContent-ID: <part1.07010905.07040200@mpbnmpsjffb@hotmail.com>\nContent-Disposition: inline;\n filename="clonic.GIF"\n\nR0lGODlh1wIhAvH7AAYGAAAA\/\/\/\/\/wAAACH5BAQAAAAALAAAAADIAhYCAAL\/lI+py+0Po5y02ouz3rz7D4biSJbmiabqyrbuC8fyTNf2jef6zvf+DwwKh8Si8YhMKpfMpvMJjUqn1Kr1WgUktC8AV8H9PrxIMVgS\nxpgj3rWgDX833Q26zC7fHunxKB778\/VXgpcGMehTiHaByCBYh9AYSCFpUKl2ZunkJnYJ+Nl14OmhmDem\n...more garbage follows...\n\n--------------000708090009050006030006--\n\n\n/
+{
+    match (:: :headers: :body:) /(.*?)\n\n(.*)/
+}
+isolate (:headers:)
+{
+    match <nomultiline> [:headers:] /^Content-Type: .* boundary="(.+)"/ (:: :boundary:)
+}
+{
+    match <fromend> [:body:] (:: :headers:) /\n--:*:boundary:\n(.+?)\n\n/
+    output /:*:headers:\n\n/
+    liaf
+}

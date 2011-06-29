@@ -1,0 +1,783 @@
+	
+	How CRM114's LEARN and CLASSIFY really work.
+
+This document describes the internal workings of the CRM114 LEARN
+and CLASSIFY functions.  You do _not_ need to know this to use CRM114
+effectively; this is to satisfy the curiosity of those who really
+want deep knowledge of the tools they use.
+
+(NOTE: since CRM114 now has multiple classifiers available, please read
+this whole document.  Some of the classifiers are interoperable, 
+and some are not.)
+
+The current distribution builds in this set of classifiers.  The
+classifiers are:
+
+1) SBPH Markovian (the default) This is an extension of Bayesian
+   classification, mapping features in the input text into a Markov
+   Random Field.  This turns each token in the input into 2^(N-1) 
+   features, which gives high accuracy but at high computation 
+   and memory cost.  (note- you can get plain old Bayesian by 
+   specifying the flag  < unigram > )
+
+2) OSB Markovian - This is a version of the Markovian that uses 
+   an orthogonal sparse bigram (OSB) feature set, instead of 
+   the SBPH features.  OSB seems to be neck-and-neck in accuracy
+   versus SBPH but it's considerably faster and uses less memory
+   for the same amount of detail.  Because OSB Markovian is a subset
+   of SBPH Markovian, you can "sort of" intermix .css files generated
+   by SBPH Markovian and OSB Markovian, although there will be some
+   loss of accuracy.  Fidelis Assis contributed the idea of using OSB
+   instead of full SBPH feature sets and showed that OSB actually
+   had advantages.
+
+3) OSB Winnow - This classifier uses the same feature set as OSB-Markovian
+   but doesn't use a probabalistic estimation at all.  Instead, it uses
+   the Winnow algorithm.  The data files aren't compatible, although a good
+   hacker could probably come up with a way to get an approximate 
+   conversion back and forth from the Markovian models.   Like Markovian,
+   you can specify < unigram > to get single-word features instead of
+   the OSB feature set; this decreases both disk space used and accuracy.
+
+4) Correlator classification - This classifier doesn't do tokenization
+   at all.  Instead, it slides the example and unknown texts across
+   each other and measures the cross-correllation.  The final scores
+   go with the square of the run-lengths of matching strings.  This
+   matcher is -very- slow... easily 40 to 100x slower than any of the
+   other classifiers.  It _will_ work against binary files, though,
+   which none of the other classifiers will.
+
+5) Hyperspatial classification - this experimental classifier
+   tokenizes, but does not use Bayes law at all, nor statistical
+   "clumping".  During learning, each example document generates a
+   single point in a 4 billion dimensional hyperspace.  The
+   classification algorithm places a light source at each of these
+   points, and measures the sum of the radiant power from all of the
+   light sources of each class.  The class yielding the highest
+   radiant power for the unknown document is considered to be the
+   correct class.  By default, this uses the OSB feature set, but you
+   can use < unigram > to switch to single-word features (decreases disk
+   usage but costs accuracy).
+
+5) Format of the .css and .cow files and microgrooming - some design
+   notes and how microgrooming works.
+
+
+Here's the details for each classifier:
+
+	     Classifier 1: Markovian
+
+The general concept is this: break the incoming text into short
+phrases of from one to five words each.  A phrase can have words in
+the middle of the phrase skipped (e.g. "BUY <skip_word> ONLINE NOW!!!"
+is always a bad sign.), and more than one phrase can use the same
+word.  You can't change the order of the words, but you _can_ bridge
+across newlines, punctuation, etc. Make all the phrases you can make.
+
+For each phrase you can make, keep track of how many times you 
+see that phrase in both the spam and nonspam categories.  When you 
+need to classify some text, make the phrases, and count up how many times
+all of the phrases appear in the two different categories.  The 
+category with the most phrase matches wins.
+
+Note that you never have to cross-reference between the two category
+phrase sets.  If a phrase appears in both categories an equal number
+of times, then both categories get an equal score boost.  Since 
+an equal score boost doesn't change which category will win, there's
+no need to cross-reference category phrase counts.  
+
+NB: This process is called "sparse binary polynomial hashing" because
+it uses a set of polynomials to generate a hash-of-hashes; sparse because not
+all words are represented by nonzero terms, binary because the
+changing coefficient terms are always either 0 or 1, and a hash
+because, well, it's a hash.  :)
+
+Instead of simply comparing raw count scores, we do a Bayesian
+chain-rule to calculate the probability of "good" versus "evil".  
+(CRM114 actually has no knowledge of spam and nonspam, just two
+sets of user-defined classes that can be whatever you want to be.  
+This explanation will use 'spam' and 'nonspam', but internally, it's
+just "these statistics files here" and "those statistics files there")
+
+The Bayesian chainrule formula is
+
+	                      P(A|S) P(S)
+	    P (S|A) =   -------------------------
+	               P(A|S) P(S) + P(A|NS) P(NS)
+
+which (in words) says: "The NEW chance of spam, given some feature A,
+is equal to the chance of A given spam times the OLD chance that it's
+spam, divided by the sum of the chance of A given spam times the old
+chance it's spam plus the chance of A given nonspam, times the old
+chance it's nonspam".)
+
+We start assuming that the chance of spam is 50/50.
+
+We count up the total number of features in the "good" versus "evil"
+feature .css files.  We use these counts to normalize the chances of
+good versus evil features, so if your training sets are mostly "good",
+it doesn't predispose the filter to think that everything is good.
+
+We repeatedy form a feature with the polynomials, check the .css files
+to see what the counts of that feature are for spam and nonspam, and
+use the counts to calculate P(A|S) and P(A|NS) [remember, we correct
+for the fact that we may have different total counts in the spam and
+nonspam categories]. 
+
+We also bound P(A|S) and P(A|NS) to prevent any 0.0 or 1.0
+probabilities from saturating the system.  If you allow even _one_ 0.0
+or 1.0 into the chain rule, there's no way for the system to recover
+even in the face of overwhelming evidence to the contrary.  The
+actual bound in use depends on the total number of counts of the
+feature A ever encountered, irrespective of their good/evil nature.
+
+[additional note: versions from 20030630 to 20031200 used a 
+fairly gentle method to generate the local probabilities from
+the relative hit counts.  From 20031200 onward, this local probability
+was modified by the number and sequence of the terms of the
+polynomial.  The best model found so far is a set of coefficients that
+model a Markov chain; polynomials that have a longer chain length
+(and therefore a closer match) get a significantly higher boost.]
+
+Once we have P(A|S) and P(A|NS), we can calculate the new P(S) and
+P(NS).  Then we get the next feature out of the polynomial hash 
+pipeline (each extra word makes 15 features) and repeat until we hit
+the end of the text.  Whichever set has the greater probability wins.
+
+We also take multiple files AS A GROUP, so it's as though we added
+the corresponding hash buckets together for everything on the left
+of the | and everything on the right.
+
+-----
+
+
+Now, on to the brutish details for the Markovian classifier:
+
+In terms of the actual implementation, LEARN and CLASSIFY are
+pipelined operations.  The pipeline has these stages (as of the
+2002-10-21 version) :
+	
+1) Tokenization.  The input text is tokenized with the supplied regex
+   (usually [[:graph:]]+ ) into a series of disjointed word tokens.
+
+2) Each word token is hashed separately.  The hash used is a "fast hash", 
+   not particularly secure, but with reasonably good statistics.
+
+3) Each hash is pushed into the end of a five-stage pipeline.  Each
+   value previously pushed moves down one level in the pipeline.
+
+4) The pipeline stages are tapped to supply values H0 through H4 that
+   will be multiplied by the particular polynomial's coefficients. (H4
+   being the newest value).
+
+5) After each value is pushed into the hash pipeline, the full set of
+   polynomials are evaluated.  These polynomials have changed over
+   various releases, but as of 2002-10-23 the coefficients are:
+
+   poly# \ for:  H4     H3   H2   H1    H0
+   1	          0      0    0	   0     1
+   2	          0      0    0	   3	 1
+   3	          0      0    5	   0	 1
+   4	          0      0    5	   3	 1
+   5	          0      9    0	   0	 1
+   6	          0      9    0	   3	 1
+   7	          0      9    5	   0	 1
+   8	          0      9    5	   3	 1
+   9	          17     0    0	   0	 1
+  10	          17     0    0	   3	 1
+  11	          17     0    5	   0	 1
+  12	          17     0    5	   3	 1
+  13	          17     9    0	   0	 1
+  14	          17     9    0	   3	 1
+  15	          17     9    5	   0	 1
+  16	          17     9    5	   3	 1
+
+  (yes, it's like counting in binary, but the low-order bit is always
+  turned on so that the low order bits in the polynomial result is always
+  affected by all nonzero elements of the hash pipeline.  "skipped"
+  words have a coefficient of zero, that zeroes their effect on the 
+  output of that polynomial, "skipping" the word)  
+
+6) These 16 results (call them "superhashes") reflect all phrases up to
+   length 5 found in the input text.  Each is 32 bits long.
+
+7) Each of the .css files is mmapped into virtual memory.  The default
+   size of a .css file is one megabyte plus one byte, and each byte of
+   a .css file is used as a single 8-bit unsigned integer.  Using the
+   length of the .css file as a modulus, each superhash value maps
+   into a particular byte of the .css file.  Each .css file also has a
+   "score", initialized to zero.
+
+8) if we're LEARNing, we increment the byte at that superhash index in
+   the .css file (being careful to not overflow the bucket limit, so
+   the maximum value is actually something quite smaller than 32 bits)
+
+9) (pre-Nov-2002 versions): if we're CLASSIFYing, we increment the
+   per-.css-file score of that .css file by the number found in that
+   superhash-indexed byte.
+
+   (post-Oct-2002 versions): if we're CLASSIFYing, instead of just
+   incrementing the per-.CSS file scores, we (a) normalize the
+   relative proportions of the .css files with respect to the total
+   number of features in each .css file, (b) convert the bin values
+   indexed by the superhash to a probability, (c) "clip" the
+   probability values to reasonable values (there is no such thing as
+   "certainty" with a finite sample of an infinite and nonstationary
+   source such as human language), and (d) update the running
+   probability using the Bayesian chain rule formula above.
+
+10) repeat the above pipeline steps for each "word" in the text.
+
+11) The .css file with the larger score (or probability) at the end
+    "wins".
+
+
+There you have it.  Previous plynomial sets (using only H0 thorugh H3 of
+the hash pipeline, with prime-number coefficients) have reached over
+99.87% accuracy.   The best that the 5-stage pipeline
+has reached for me is 99.984%, and it averages around 99.95% 
+accuracy over months and months of use.
+
+n.b. slight error in edge effects - right now, we don't execute the
+pipeline polynomial set until the pipeline is full; conversely we stop 
+executing the polynomial set when we run out of tokens.  This means 
+that we don't give the first and last few tokens of the email the full 
+treatment; that's a bug that should be rectified.  The other side of the
+problem is that filling and flushing the pipe gives worse results
+by putting too much emphasis on "zero hash" and too much emphasis
+on the first and last few words.
+
+n.b.: Arne's Optimization:  If the singleton word (H0 alone) doesn't 
+appear or has a count of 0, then it's useless to check for any further
+combinations, as you know they can't appear unless H0 also appeared.
+This speedup gives you about 2x speed improvement.
+
+
+---More details on the post-Nov-2002 release:---
+
+In releaes after Nov 1 2002, instead of just comparing counts, we do
+the true Bayesian chain rule to calculate the probabilities of pass
+versus fail.  The bounding limits are first to bound within
+
+   [ 1/featurecount+2 , 1 - 1/featurecount+2].  
+   
+and then to add further uncertainty to that bound additionally by a
+factor of 1/(featurecount+1).  
+
+We do the chain rule calculation and then we clip the minimum
+probability to MINDOUBLE, which is host specific but is a VERY small
+number (on the order of 10^-300 for Intel boxes).  This further
+prevents getting the chain rule stuck in a 0.0 / 1.0 state, from which
+there is no recovery.
+
+Lastly, because of underflow issues, we quickly lose significance in
+the greater of the two probabilities.  For example, 1.0 - (10^-30) is
+exactly equal to 1.00000; yet 10^-30 is easily achieveable in the
+first ten lines of text.  Therefore, we calculate the chainrule
+probabilities twice, using P(S) and P(NS) separately, and then use the
+smaller one to recompute the larger one.  Thus, even if there's 
+arithmetic underflow in computing the larger probability, we still 
+retain the full information in the smaller probability.
+
+
+
+
+
+---  Yet More Details - for Post-200310xx Versions ----
+
+During the summer and fall of 2003, I continued experimenting with 
+improvements to SBPH/BCR as described above.  It became clear that
+SBPH/BCR was _very_ good, but that it was still operating within the
+limits of a linear classifier without hidden levels- e.g. it was 
+a perceptron (with all of the limitations that perceptron-based
+classifiers have).
+
+Luckily, the databases in CRM114 are more than adequate to support
+a higher-level model than a simple linear perceptron classifier.
+I tested a 5th order Markovian classifier, and found that it was
+superior to any other classifier I had tried.
+
+A Markovian classifier operates on the concept that _patterns_ of
+words are far more important than individual words.  
+
+For example, a Bayesian encountering the phrase "the quick brown fox
+jumped" would have five features: "the", "quick", "brown", "fox", and
+"jumped".  
+
+A Sparse Binary Polynomial Hasher would have sixteen features:
+
+ the
+ the quick
+ the <skip> brown
+ the quick brown
+ the <skip> <skip> fox
+ the quick <skip> fox
+ the <skip> brown fox
+ the quick brown fox
+
+... and so on.  But each of these features would recieve the same
+weighting in the Bayesian chain rule above.
+
+The change to become a Markovian is simple- instead of giving each
+Sparse Binary Polynomial Hash (SBPH) feature a weight of 1, give each 
+feature a weight corresponding to how long a Markov Chain it matches
+in either of the archetype texts.  
+
+A simple way to do this would be to make the weight equal to the number
+of words matched - in this case the weights would be:
+
+ the				1
+ the quick			2
+ the <skip> brown		2
+ the quick brown		3
+ the <skip> <skip> fox		2
+ the quick <skip> fox		3
+ the <skip> brown fox		3
+ the quick brown fox		4
+
+and indeed, this gives some improvement over standard SBPH.
+
+But there is room for further improvement.  The filter as stated above
+is still a linear filter; it cannot learn (or even express!) anything
+of the form:
+
+	"A" or "B" but not both
+
+This is a basic limit discovered by Minsky and Papert in 1969 and
+published in _Perceptrons_.
+
+In this particular case there is a convenient way to work around this
+problem.  The solution is to make the weights of the terms
+"superincreasing", such that long Markov chain features have so high a
+weight that shorter chains are completely overruled.
+
+For example, if we wanted to do "A or B but not both" in such a
+superincreasing filter, the weights:
+
+	"A" at 1
+	"B" at 1
+	"A B" at -4
+
+will give the desired results.
+
+For convenience in calculation, CRM114 uses the superincreasing
+weights defined by the series 2^(2n)- that is, 
+
+ the				1
+ the quick			4
+ the <skip> brown		4
+ the quick brown		16
+ the <skip> <skip> fox		4
+ the quick <skip> fox		16
+ the <skip> brown fox		16
+ the quick brown fox		64
+
+Note that with these weights, a chain of length N can override
+all chains of length N-1, N-2, N-3... and so on.
+
+This is particularly satisfying, because the standard .css files
+already contain all of the information needed to do this more advanced
+calculation.  The file format is not only compatible, it is _identical_
+and so users don't have to re-start their training.
+
+This Markovian matching gives a considerable increase in accuracy
+over SBPH matching, and almost a factor of 2 improvement over Bayesian
+matching.  It is now the default matching system in CRM114 as of 
+version 200310xx.
+
+--------------------------------------------------------
+
+	The OSB Markovian classifer
+
+OSB (Orthogonal Sparse Bigram) is a simplification of SBPH inspired by
+Fidelis Assis.  The change is to _omit_ all of the word combinations
+that don't have exactly two word tokens in it.  This method has fewer
+features, but is often as good as or even better than Markovian in
+accuracy.
+
+Because it has fewer features, it needs less space in the .css files
+for equal accuracy; because it generates fewer features, it also runs
+considerably faster than Markovian.  Other than that, it's pretty
+similar.
+
+It's sufficiently similar that OSB and Markovian can even use each
+other's .css files (with some decrease in accuracy).  It's not
+recommended, but it works.
+
+---------------------------------------------------------------
+
+      The Winnow classifier
+
+Winnow is a different way of classifying; it doesn't generate
+probabilities but rather weights.  The version in CRM114 at this
+particular time uses the OSB feature set.  Christian Siefkes, Shalendra
+Chhabra, and Laird Breyer did the first hacking on this, then with
+Fidelis Assis' OSB feature generator it really took off. 
+
+Here's a quick synopsys of the algorithm:
+
+1) Every possible feature, from AAAA to ZZZZZZZ, starts with 
+a weight of 1.000000 (note, we only record weights that _aren't_
+1.000000; so if we don't find a feature in our feature list, we
+can assume it has a value of 1.0000).
+
+2) To learn, we do these steps in order:
+   - generate all of the OSB features in the example text
+   - delete all duplicate features
+   - if the example is an example "in the class", multiply every 
+     found feature's weight by the "Promotion Constant", which
+     is empirically set at 1.23
+   - if the example is a text that is NOT supposed to be "in the class",
+     we multiply each found feature's weight by the "Demotion
+     Constant", which is empirically set at .83 
+    (note that no matter how many times a feature appears in
+    a particular example, it only gets promoted or demoted ONCE).
+
+3) To classify, we do these steps in order:
+   - generate all of the OSB features in the unknown text
+   - delete all duplicate features
+   - add up all of the weights of these features in each
+     of the statistics files.  (don't forget that any 
+     feature that doesn't exist in the stats file gets a 
+     default value of 1.00000 !)
+   - The score of each file is the total weight accumulated 
+     by the per-features, divided by the total number of features.
+     (note that since not-seen-before features score 1.0000, a 
+     totally inconclusive score is Nfeatures/Nfeatures = 1.0000)
+   - The file with the highest score wins.
+
+Winnow works best when you add a "Thickness factor" correction, where
+you train not just on error, but rather in this less subtle way:
+
+    If the _correct_ class didn't score at least "Thickness" above
+    the decision threshold (in pR, the decision threshold is 0.0)
+    then train the _correct_ class with the example text in 
+    correct (promotion) mode.
+
+    If the _incorrect_ class didn't score at least "Thickness"
+    below the decision threshold ( again, in pR units), then 
+    train the incorrect class in error (demotion) mode.  This
+    is done with the < refute > flag.
+
+Winnow is a well-known classification algorithm in pattern
+recognition, the current implementation will probably be upgraded and
+debugged in newer releases.
+
+
+----------------------------------------------------------------
+
+      The Correlator classifier
+
+The correlator classifier is different!  The correlator classifier
+slides the window of the unknown text across the known texts, and
+counts places where the same character appears in both... well,
+actually, it counts the sum of the squares of the runlengths of the
+matching strings, reiterated at each point in the string.  If the
+letters don't match, nothing is counted.
+
+So, "The quick brown fox jumped over the lazy dog's back 0123456789",
+matched against "cat", will get just three points- one for the C in
+back matching the c in cat, and two for the a in cat matching the a's
+in lazy and back.  (note that the T in The doesn't match the t in cat,
+because they're different cases).  However, "lawn fog" will match
+the five-character sequence "wn fo" giving 1 + 4 + 9 + 16 + 25 = 55
+points.
+
+Note that EVERY POSSIBLE substring in the unknown text is compared
+against the known texts.  This is Markovian with a major vengeance
+streak (or death wish, if you don't have lots of CPU and CPU cooling
+to spare.  > 100x slowdown is entirely possible with this correlation
+classifier; consider yourself warned.).
+
+The databases of correlator classifiers is NOT compatible with the
+.css files of SBPH, OSB, Markovian, and Winnow classification.  Don't
+even think of intermixing them.
+
+--------------------------------------------------------------
+
+
+ Update to versions Post June 27, 2005 - the Hyperspace Classifier
+
+The hypespatial classifier is a new classifier built into CRM114; at
+this writing it's more experimental than not.  However, it shows
+_extremely_ good statistics and uses very little CPU and disk space,
+so we're putting it out there for people to play with.
+
+Like the other CRM114 classifiers, the hyperspace classifier is
+"activated" by an option flag (obviously, it's <hyperspace>); this
+makes it easy to compare hyperspatial results with more conventional
+methods without changing your testing framework (you can freely swap
+around <unigram> <osb>, <winnow> <hyperspace>, etc.  Just don't intermix
+the storage file types, most are not interchangeable).
+
+Most statistical classifiers combine statistics of a large number of
+example documents into a single class.  The hyperspatial classifier
+doesn't - it considers each document to be a single data point in a
+very-high-dimensional hyperspace.  Thus, each document retains it's
+individual identity; there is no mixing of features between documents.
+This is both a strength (hyperspatial classification is basically
+immune to word-salad spam) and a weakness (hyperspatial classification
+generalizes between document types more weakly than other
+classifiers).
+
+The current implementation of hyperspatial classification uses an
+intercepted-power decision algorithm- a light source is placed at each
+learned data point in the N-dimensional hyperspace.  These light
+sources illuminate the hyperspace location of the unknown document,
+with some total power, called the total radiance.  The class with the
+greatest total radiance at the unknown document's location in
+hyperspace is considered to be the "correct" class.
+
+By analogy - consider each known document to be a galaxy of stars;
+when viewed from the hyperspace position of an unknown document, the
+class with the brighter galaxies wins.
+
+Note that because radiance drops off with the inverse square of
+distance, proximity of two documents in hyperspace (that is,
+similarity of the two documents) is a very strong indicator of class
+membership.
+
+This is quite different from the linear separators such as Bayesian or
+Markovian classification.  The hyperspace classifier does not create a
+linear border like a Bayesian classifier based on weights, nor like an
+SVM where the data is projected into a higer-dimensional space and
+then a linear separation plane is calculated to maximize the error
+margins.  Instead, hyperspace classification uses 1/r^2 as the
+weighting function and the dividing surface between classes can become
+highly convoluted.  The result is similar to a Voronoi diagram except
+that points that are distant from the surface still exert a small
+amount of control.
+
+The hyperspatial classification method can "learn" complex
+classification spaces that simply cannot be learned by linear
+classifiers or statistical classifiers, and perhaps not by SVMs.  For
+example, no linear classifier can "learn" a checkerboard situation (an
+XOR is a 2x2 checkerboard).  An SVM classifier can only learn such a
+situation if the original feature space can be mapped to some higher
+dimensional feature space where all of the squares of one color map to
+one side of a hyperplane and squares of the other color map to the
+other side of the hyperplane.
+
+In contrast, the hyperspatial classifier algorithm will learn such a
+highly nonlinear problem like a checkerboard in O(n) examples, where n
+is the number of squares on the checkerboard. Convergence is believed
+to be assured by the 1/r^2 falloff.
+
+--- Implementation Details ---
+
+The actual location in hyperspace of each document is determined
+by the features it contains.  More precisely, each of the 2^32
+dimensions of a document is determined by the following rule:
+ 
+   "The coordinate of a document in a particular dimension of the
+    hyperspace is equal to the number of times a feature appears in
+    that document such that the feature hashes to the index of that
+    hyperspace dimension."
+
+Because most documents contain far fewer than 2^32 features (the
+'features' being obtained via the OSB algorithm), the most compact
+representation for a document's hyperspace coordinate is just the list
+of nonzero dimensions.  Because most nonzero dimensions are of value
+1, we dont even include the distance along that dimension.  In the
+rare circumstance that more than one feature hashes to the same 32-bit
+hyperspace dimension index, the distance of 2 along that dimension is
+represented by having two copies of that dimension index in the
+dimension list; a distance of three being represented by three copies,
+and so on.  
+
+The hashed feature values of the unknown document are sorted after 
+generation; the known document feature hash values are stored in pre-sorted
+form.  This means a single two-index pass, similar to a merge-sort,
+can quickly find all features that existed only in one document, that
+existed only in the other document, or existed in both documents.
+
+The distances between known and unknown documents are then calculated
+based on the counts of mutually present and mutually disjoint features
+found.  The actual formula for distance used is:
+
+                                   found_in_both ^ 2
+    distance = SQRT ( -------------------------------------------)
+                      found_only_in_known * found_only_in_unknown
+
+The radiance recieved by the unknown document is then calculated by
+the standard inverse-square law for radiant energy versus distance
+on a per-document basis (in the current version, each document has the
+same source energy emitted, but this is probably suboptimal and is
+a topic under active research):
+
+ total radiance of class = SUM ( source_energy[i] / distance_to_source ^ 2 [i])
+		       [ i = over all sources]
+
+This gives a total radiance for each of the N classes being considered
+for classification.  The "winning" class is the class with the highest
+total radiance.
+
+Because every document that has ever been learned must be queried,
+this sounds like an expensive computation.  The actual reality is that
+it's very fast to compute.
+
+The current implementation ( nasty, brutish, and straight C code) does
+no optimizations beyond sorting the features in each document
+mentioned above.  With this minimal optimization, training with a
+thick threshold of pR of 0.5 the hyperspatial classifier runs more
+than four times as fast as OSBF or OSB, and more than ten times faster
+than Markovian.  (the SpamAssassin test set of 4147 messages is fully
+processed in as little as 2 minutes 15 seconds- that's 32 milliseconds
+per message, versus Markovian at 25+ minutes per test set, both on a
+Transmeta 990 MHz laptop)
+
+The disk space required for hyperspace's data storage is on the order
+of 300 Kbytes per class (compared to 12 MEGAbytes for Markovian and
+Winnow, and 4 megabytes for OSB or OSBF), and the accuracy is about
+twice as good as Markovian or OSB.  It seems to be superior in
+accuracy to everything except possibly OSBF (with which it's
+comparable) but unlike OSBF, the hyperspatial classifier seems to
+always converge.
+
+As a further improvement, we can greatly increase the speed of the
+current system by changing the storage of known documents from the
+simple array currently used (with NULL-bucket markers to indicate the
+end of each document) to a hash-based lookup.  Each hashbucket
+contains the 32-bit hash of the feature and the 32-bit identifier of
+the known-class document that contained it; multiple documents
+containing the same feature consume multiple buckets.  Embedded in the
+table are also hashed buckets containing the total feature count of
+eack known document (we can steal hash codes x00000000 through
+x0000ffff for these document-generic data buckets).  In this way, we
+will make only references into the hash table corresponding to the
+actual features found; features not in the unknown document require
+zero memory cycles and zero computation.  This improvement is not yet
+in the current code, and it may in fact not optimize for speed because
+the current sequential pass is highly coherent in the CPU cache and
+hash-based fetching is highly non-coherent.
+
+Another alternative to be tested is a tree-based lookup to try to keep
+greater cache locality.
+
+As a third improvement (which is portable to other classifiers doing
+feature lookup of any type) is to generate the document's features in
+one phase, then sort those features in the next phase in such a way as
+to maximize cache coherence (ideally, this means knowing the actual
+layout of the backing storage system) and then performing the actual 
+feature database lookups in a third phase.  This may have a significant
+impact on the overall system speed.
+
+
+---- Update - August 2007 - the Bit-Entropy classifier -----
+
+Last year at TREC Andrej Bratko showed off a new classifier technology
+based on optimal compression algorithms.  The basic concept is that
+you train text compressors on each class of the known texts, and then
+use those compressors to compress the unknown text.  A closer match
+between the unknown text and the compressor's pretraining and yields a
+higher compression rate (and a shorter output); the unknown text is
+judged to belong to the class with the shortest output stream.
+
+Bratko's original system is closed source and based on
+character-at-a-time compression, and used large amounts of memory -
+typically multiple 0.5 gigabyte chunks.  The CRM114 implementation is
+totally new code and instead works on the "bit at a time" principle;
+each bit in the incoming message is treated as a separate symbol for
+the purpose of classification.   Thus, there is no need for a 
+tokenization or feature generation step; the features are the
+incoming stream of zeroes and ones.
+
+The result is a classifier that is comparable in speed to OSB but 
+needs no tokenization; the downside is that it has a fairly large 
+memory footprint. (36 megabytes for a million-node statistics
+file, versus 6 megabytes for an OSB system.).  
+
+Additionally, the creation of an optimal incrementally-taught
+compression algorithm is nontrivial.  Typical optimal compression is
+done with a Markov model, however the reader has to be aware that this
+is not the same as the "Markov" classifier described above (which is
+better described as a Markov Random Field representing a hidden Markov
+model of the text, rather than a bit-serial Markov chain as used for
+bit-entropy classification).  
+
+There are two methods used to construct the bit-entropy Markov chain:
+one where an initial assumption of the chain is made, and one where it
+isn't made.  The default configuration is to assume that the bit-entropy
+Markov chain is representable by a toroid, of some reasonable shape,
+with the interconnections done in a reasonable way.  The default
+in CRM114 as of 20070101 is to form an array of 256 rows and 256 columns
+of nodes (total 64,000 nodes), and connect them into a toroid by a 
+"perfect shuffle"- that is, the next state for a zero bit is the next
+column, row index 
+
+
+
+
+--------------------------------------------------------------------
+
+Data File Formats
+
+
+
+The format of a SBPH or OSB Markovian .css file (and, for winnow a
+.cow file) is a 64-bit hash of a feature (whether the feature is a
+single word, a bigram, or a full SBPH does not matter) and a 32-bit
+representation of the value.  In .css files, the 32 bits is an
+unsigned integer showing the number of occurrences of this particular
+feature in the training set; in .cow files it's a 32-bit floating
+point weight; greater than 1.000 means "preponderance of evidence in
+favor", less than 1.000 means "preponderance of evidence against",
+thus a value of 1.000 exactly means "no information" (and in the case
+of a .cow file, like a .css file, 0.000 exactly, with all 64 words of
+hash == 0, means "unused slot").
+
+For fast access, the first 32 bits of the hash ( called h1 in the
+code) is used as an index (modulo the length of the .css/.cow file)
+and that's the preferred slot location to put this data.  If that slot
+is already in use, the next slot is used.  If that is already in use,
+the _next next_ slot is used... and so on.
+
+This "next slot not yet used" is an overflow chain.  For best
+performance, you want to keep the chains short.  But that wastes a lot
+of space.  90-95 per cent utilization is a good compromise.
+
+Note that the time-to-find a slot (or find it's not there) goes with
+the length of the overflow chains- so long chains are _very_ bad for
+performance.  I usually set a limit of 256 or even 128 on chains.
+
+Once you go past that limit, you need to start expiring old data out
+of the chain.  You can do that by zapping out low-valued (not very
+significant) slots, but that means old, stale, but originally high-valued
+slots never expire.  Another method would be to use an LRS (Least
+Recently Seen) tracking system, but that would use up a lot more
+disk space for the .css/.cow files- almost doubling it is the 
+best estimate I have.
+
+"Microgrooming" adds a random factor.  A feature is microgroomed
+if it's hash is equal to a pseudorandom number - and the microgrooming
+is merely a _lessening_ of the significance.  If the significance of a
+slot drops below "saw it once", the slot is reclaimed for reuse.
+
+Note also we don't groom the whole .css/.cow file.  We groom _only_
+the chain that we noticed was too long.  This minimizes how much
+data we lose in a microgroom (face it, database grooming/expiring is
+brain surgery with a butter knife... microgrooming is just using
+the serrations on the edge to minimize how much we scrape away).
+
+Note that this works pretty well- most of the slots ever used in a
+.css/.cow file contain only a single occurrence, so reclaiming a small
+fraction of them (currently 1 in 16, scattered randomly) is a good
+compromise.  It also will eventually expire out even the largest
+feature if that feature is not ever retrained.
+
+(and the killer bug?  Well, consider how we know we've reached
+end-of-chain.  We see a zeroed slot.  Microgrooming puts in a number
+of zeroed slots - each of which is seen as a chain terminator. BUT-
+when we microgroom, we need to re-check the locations of each slot's
+worth of data, to make sure it's findable - that is, it isn't separated
+from it's optimal location by a freshly zeroed slot (which would indicate
+end-of-chain).
+
+This is "repacking" the chain.  And the code that did it had a bug
+that repacked only the first part of the chain and then stopped.
+This meant that the tail of the chain (avg 50% or so) could NOT
+be found- the data there was lost!
+
+This bug has now been (hopefully) stomped.
+
+    -Bill Yerazunis

@@ -1,0 +1,909 @@
+ This is CRM114, version 20070320-BlameBaltar (TRE 0.7.5 (LGPL))
+ Copyright 2001-2006 William S. Yerazunis
+ This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
+
+ CRM114 testing brackets, escapes and #'s 
+
+ If you don't see any compiler error messages, that means the test passed. 
+
+ 
+  CRM114 testing backslash 
+ 
+/-;-{-abcd-}-;-/    =/==\= 
+ This text started out on three lines but it should appear on just one.
+ testing part-line comments
+ 
+ CRM114  testing FAULT/TRAP... 
+  --- you should not see an error yet --- 
+ you should see this --><--and this, with nothing in between. 
+ 
+ --- the next thing you see SHOULD be an error "unable to read-open"--- 
+ Caught the error  - fault text was 
+./crm114: *ERROR* 
+ For some reason, I was unable to read-open the file named  zoob.zipulrlfjf
+ Sorry, but this program is very sick and probably should be killed off.
+This happened at line 19 of file fataltraptest.crm
+  --- and again, the next thing you see SHOULD be an error "unable to write-open"--- 
+ Caught the error  - fault text was 
+./crm114: *ERROR* 
+ For some reason, I was unable to write-open the file named /No/Such/Directory/frotz.mumble
+ Sorry, but this program is very sick and probably should be killed off.
+This happened at line 29 of file fataltraptest.crm
+ 
+
+Start of insert processor testing 
+ start here ... the first middle bit...  the really middle-middle bit ... the last middle bit...  and the last bit of normal text 
+now we test nonexistent file overrides 
+this should not cause a FATAL ERROR, because we trap it.
+We caught the nonexistent file fault here.  Message was:
+ <<start of msg>>
+Couldn't insert the file named 'there_is_no_such_file_as_this.txt' that you asked for.  This is probably a bad thing.
+ <<end of msg>> 
+via the TRAP
+End of insert testing. 
+
+
+  CRM114 testing match functionality 
+
+Testing exact match on foo... found exact match on 'foo'
+Testing exact match on foo...
+Testing absent match on foo... match says "no foo found".
+Testing absent match on foo...
+Testing nocase match on foo... found a nocase match on 'fOo' 
+Testing nocase match on foo...
+Testing nocase absent match on foo... match says "no foo found".
+Testing nocase absent match on foo...
+Testing multiline match on foo... found an allowed multiline match on '
+multiline:  this is a multiline test of foo
+multiline-- should see both lines ZZZ'
+Testing multiline match on foo...
+Testing nomultiline match on foo... found a nomultiline match on 'nomultiline:  this is a nomultiline test of foo'
+Testing nomultiline match on foo...
+Testing fromendchar match for foo then bar...... found the foo...then bar 
+Testing fromendchar match for foo then bar...... found the foo...
+Testing fromnext match for f+oo+.. first 'foo'.. found one on 'ffoooo'
+Testing fromnext match for f+oo+.. first 'foo'..
+Testing newend match for f+oo+.. first 'foo'.. found one on 'ffooo'
+Testing newend match for f+oo+.. first 'foo'..
+Testing indirect goto ":twist:" and ":shout:".... got :twist:... got to TWIST.
+Testing indirect goto ":twist:" and ":shout:".... got :shout2:... got to SHOUT. 
+Testing self-supplied-match ... found '123' ... found 'smith 123 anderson ZZZ' 
+Testing self-supplied-match ... found '123' ...
+Testing indep start/end ... found 'foo bar 1 2 foo' ... found '1' ... found 'bar 1 2 foo bar'... found '2'
+Testing indep start/end ... found 'foo bar foo' ...
+Testing indep start/end ... found 'foo 1 foo' ... found '1' ... found 'bar 2 bar'... found '2'
+Testing indep start/end ... found 'foo 2 bar 1 bar foo' ... found '1' ... found 'bar 1 bar'...
+Testing box region control
+got 10-17 as this: correct  (should be 'correct', no angles)
+
+Testing box region control, part 2
+got 10-17 as this: rrec  (should be 'rrec')
+
+Testing box region control, isolated variable
+got 10-17 as this: rrec  (should be 'rrec')
+Fromend match: esult (should be 'esult')
+
+Testing box region indexed control
+got this: 'correct' (should be 'correct', no angles)
+
+Testing box region regex control
+got this: '>correct<' (should be '>correct<', with angles)
+
+Testing box region failing regex control
+got this: '' (should be '', the empty string)
+
+Testing box region regex/index control
+got this: 'correct' (should be 'correct', no angles)
+
+Testing box region index/regex control
+got this: '>correct<' (should be '>correct<', with angles)
+
+Testing box region index/index control
+got this: 'correct' (should be 'correct', no angles)
+
+Testing box region regex with spaces control
+got this: '> correct <' (should be '> correct <', with angles)
+
+Testing box region regex with spaces control
+got this: 'correct' (should be 'correct', no angles)
+testing <absent> versus binding  (the '67' bug)
+  The next stmt --- SHOULD--- get an error message! 
+ Caught the error, fault text was: 
+
+./crm114: *WARNING* 
+ This program specifies an 'absent' match, and also tries to bind variables that, by the above, aren't matched!   We'll ignore these variable bindings for now.
+I'll try to keep working.
+This happened at line 292 of file matchtest.crm
+
+
+------------------END OF TESTING----------------------
+ searching for a foo...found a foo, searching for bar.ooo... no bar.ooo in front of the foo. 
+ searching for a foo...found a foo, searching for bar.ooo... no bar.ooo in front of the foo. 
+
+   CRM114 testing ALTERation and copying 
+
+----- Whole file -----
+01abcdefghijkl89----------------------
+ 1: abcde, 2: cdefg, 3: fghij z: cdefg 
+ ---altering the z copy ----- 
+
+ 1: abcde, 2: cdefg, 3: fghij z: CDEEEFG 
+----- Whole file -----
+01abcdefghijkl89 ---altering the original ----- 
+
+ 1: abCDEEE, 2: CDEEEFG, 3: FGhij z: CDEEEFG 
+----- Whole file -----
+01abCDEEEFGhijkl89 ---altering the original again----- 
+
+ 1: abCD, 2: CDFG, 3: FGhij z: CDEEEFG 
+----- Whole file -----
+01abCDFGhijkl89----------------------
+----- Rematched Whole file -----
+01abCDFGhijkl89
+----------------------
+------putting things back-----
+----- Whole file -----
+01abcdefghijkl89
+----------------------
+
+----------------------
+ :q: = cdefg 
+  ISOLATEing :q: - this should copy 
+ :q: = cdefg 
+  ALTERing :q: to ZZZZZ
+ :q: = ZZZZZ 
+----- Whole file -----
+01abcdefghijkl89
+----------------------
+
+ Checking initialization of isolation 
+     AAAAA 
+
+ --- CRM114 testing string rewrites 
+ 
+------------------------
+abc
+frobnitz_singleline this should trigger 
+def
+frobnitz_multiline zebra
+giraffe
+and so should this.
+testpattern
+mno
+------------------------
+abc
+single-line rewrite ran OK.
+def
+multi-line rewrite ran OK.
+mno
+
+ CRM114 testing that start / length works in matches 
+ 
+DEBUG: whitelist==<<CRM114
+crm114
+harvard.edu
+tufts.edu
+dartmouth.edu
+mit.edu
+rpi.edu
+
+>>
+DEBUG: matched==<<CRM114>>
+DEBUG: matched==<<crm114>>
+DEBUG: matched==<<harvard.edu>>
+DEBUG: matched==<<tufts.edu>>
+DEBUG: matched==<<dartmouth.edu>>
+DEBUG: matched==<<mit.edu>>
+DEBUG: matched==<<rpi.edu>>
+DEBUG: [TheEnd]
+
+ CRM114 testing outcall and status codes 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 7470 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 7470 from-pipe: 6 to-pipe: 5
+ and done ...DEAD MINION, EXIT CODE: 0 
+exit value test got DEAD MINION, EXIT CODE: 123
+ CRM114: Testing union and intersection 
+ 
+We start with this: ' a b c d e f g h i j k l m n o p q r s t u v w x y z ' 
+intersection of abc and cde is t1: 'c' 
+union of l thru s is t2: 'l m n o p q r s' 
+intersection of abc and t2 is t3: '' 
+union of zulu and t1 is t4: 'c d e f g h i j k l m n o p q r s t u v w x y z' 
+
+ CRM114: test syscall 'echo beep' 
+ 
+
+CRM114: testing default command line args 
+blah 1 = :blah:
+blah 2 = new value
+ 
+
+CRM114: testing default command line args 
+blah 1 = command override
+blah 2 = command override
+
+ CRM114: testing windowing on windows and variables 
+ 
+
+ test one- input by chars, delimited by 'A' 
+ Got: 
+ This is the test one result A
+ test two- input by EOFs, delimited by 'A' 
+ Got: 
+  this is the test two result A
+ test three- window an isolated var by chars, delimited by 'A' 
+ Got: 
+  this is the test three result A
+ test four- isolated var, input by EOFs, delimited by 'A' 
+ Got: 
+  this is the test four result A
+ and lastly- did the data window stay constant? 
+ this is the test two result A
+
+ CRM114: testing windowing on windows from a variable 
+ 
+ Input stuff is : This is the test one result A this is the test two result A this is the test three result A this is the test four result A this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+
+ testing delimited by 'A'
+  Data Window: data window test text  
+ Windowed value = This is the test one result A 
+ Remaining stuff =  this is the test two result A this is the test three result A this is the test four result A this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test two result A 
+ Remaining stuff =  this is the test three result A this is the test four result A this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test three result A 
+ Remaining stuff =  this is the test four result A this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test four result A 
+ Remaining stuff =  this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test 5 result A 
+ Remaining stuff =  this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test six result A 
+ Remaining stuff =  this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+  Bounced out of the WINDOW loop -- no further stuff
+ End of window-from-variable testing 
+ Start of approximate match testing. 
+
+Input string to match against: "molasses anaconda foo bar baz agentsmith mranderson "
+
+(foo) {1} ---> foo 
+(fou){~} ---> foo
+(foo) {1} ---> foo 
+(fou){~0} <no match> 
+(foo) {1} ---> foo 
+(fou){~1} ---> foo
+(foo) {1} ---> foo 
+(fou){~2} ---> foo
+(fou){~3} ---> foo
+(fuu){~} ---> foo
+(fuu){~0} <no match> 
+(fuu){~1} <no match> 
+(fuu){~2} ---> foo
+(fuu){~3} ---> foo
+(fou){#} ---> foo
+(fou){#0} <no match> 
+(fou){#1} ---> foo
+(fou){#2} ---> foo
+(fou){#3} ---> foo
+(fou){# ~1} ---> foo
+(fou){#0 ~1} <no match> 
+(fou){#1 ~1} ---> foo
+(fou){#2 ~1} ---> foo
+(fou){#3 ~1} ---> foo
+(fuu){#} ---> foo
+(fuu){#0} <no match> 
+(fuu){#1} <no match> 
+(fuu){#2} ---> foo
+(fuu){#3} ---> foo
+(fuu){# ~1} <no match> 
+(fuu){#0 ~1} <no match> 
+(fuu){#1 ~1} <no match> 
+(fuu){#2 ~1} <no match> 
+(fuu){#3 ~1} <no match> 
+(fuu){# ~2} ---> foo
+(fuu){#0 ~2} <no match> 
+(fuu){#1 ~2} <no match> 
+(fuu){#2 ~2} ---> foo
+(fuu){#3 ~2} ---> foo
+(fuu){# ~3} ---> foo
+(fuu){#0 ~3} <no match> 
+(fuu){#1 ~3} <no match> 
+(fuu){#2 ~3} ---> foo
+(fuu){#3 ~3} ---> foo
+(fuu){# ~} ---> foo
+(fuu){#0 ~} <no match> 
+(fuu){#1 ~} <no match> 
+(fuu){#2 ~} ---> foo
+(fuu){#3 ~} ---> foo
+(fou){#} ---> foo
+(fou){#0} <no match> 
+(fou){+1 -1} ---> fo
+(fou){+2 -2} ---> fo
+(fou){+3 -3} ---> fo
+(fou){# ~1} ---> foo
+(fou){#0 ~1} <no match> 
+(fou){+1 -1 ~1} ---> fo
+(fou){+2 -2 ~1} ---> fo
+(fou){+3 -3 ~1} ---> fo
+(fou){# ~2} ---> foo
+(fou){#0 ~2} <no match> 
+(fou){+1 -1 ~2} ---> fo
+(fou){+2 -2 ~2} ---> fo
+(fou){+3 -3 ~2} ---> fo
+(fou){# ~3} ---> foo
+(fou){#0 ~3} <no match> 
+(fou){+1 -1 ~3} ---> fo
+(fou){+2 -2 ~3} ---> fo
+(fou){+3 -3 ~3} ---> fo
+(fou){# ~} ---> foo
+(fou){#0 ~} <no match> 
+(fou){+1 -1 ~} ---> fo
+(fou){+2 -2 ~} ---> fo
+(fou){+3 -3 ~} ---> fo
+(fuu){#} ---> foo
+(fuu){#0} <no match> 
+(fuu){+1 -1} <no match> 
+(fuu){+2 -2} ---> f
+(fuu){+3 -3} ---> f
+(fuu){# ~1} <no match> 
+(fuu){#0 ~1} <no match> 
+(fuu){+1 -1 ~1} <no match> 
+(fuu){+2 -2 ~1} <no match> 
+(fuu){+3 -3 ~1} <no match> 
+(fuu){# ~2} ---> foo
+(fuu){#0 ~2} <no match> 
+(fuu){+1 -1 ~2} <no match> 
+(fuu){+2 -2 ~2} ---> f
+(fuu){+3 -3 ~2} ---> f
+(fuu){# ~3} ---> foo
+(fuu){#0 ~3} <no match> 
+(fuu){+1 -1 ~3} <no match> 
+(fuu){+2 -2 ~3} ---> f
+(fuu){+3 -3 ~3} ---> f
+(fuu){# ~} ---> foo
+(fuu){#0 ~} <no match> 
+(fuu){+1 -1 ~} <no match> 
+(fuu){+2 -2 ~} ---> f
+(fuu){+3 -3 ~} ---> f
+(anaconda){~} ---> anaconda
+(anaonda){ 1i + 1d < 1 } <no match> 
+(anaonda){ 1i + 1d < 2 } ---> anaconda
+(ananda){ 1i + 1d < 1 } <no match> 
+(ananda){ 1i + 1d < 2 } <no match> 
+(ananda){ 1i + 1d < 3 } ---> anaconda
+(ana123conda){ 1i + 1d < 2 } <no match> 
+(ana123conda){ 1i + 1d < 3 } <no match> 
+(ana123conda){ 1i + 1d < 4 } ---> anaconda
+(ana123cona){ 1i + 1d < 4 } <no match> 
+(ana123cona){ 1i + 1d < 5 } ---> anaconda
+(ana123coa){ 1i + 1d < 4 } <no match> 
+(ana123coa){ 1i + 1d < 5 } ---> anaco
+(ana123coa){ 1i + 1d < 6 } ---> anaco
+(ana123ca){ 1i + 1d < 4 } <no match> 
+(ana123a){ 1i + 1d < 4 } <no match> 
+(ana123a){ 1i + 1d < 3 } <no match> 
+(anukeonda){~} ---> anaconda
+(anaconda){ 1i + 1d < 1} ---> anaconda
+(anaconda){ 1i + 1d < 1, #1} ---> anaconda
+(anaconda){ 1i + 1d < 1 #1 ~10 } ---> anaconda
+(anaconda){ #1, ~1, 1i + 1d < 1 } ---> anaconda
+(anaconda){ #1 ~1 1i + 1d < 1 } ---> anaconda
+(anacnda){ #1 ~1 1i + 1d < 1 } <no match> 
+(agentsmith){~} ---> agentsmith
+(annndersen){~} ---> anderson
+(anentemstn){~} ---> agentsmith
+(anacda){~} ---> anaconda
+(anacda){ #1 ~1 1i + 1d < 1 } <no match> 
+(znacnda){ #1 ~1 1i + 1d < 1 } <no match> 
+(znacnda){ #1 ~2 1i + 1d < 1 } <no match> 
+(znacnda){ #1 ~3 1i + 1d < 1 } <no match> 
+(znacnda){ #1 ~3 1i + 1d < 2 } ---> anaconda
+(anac){~1}(onda){~1} ---> anaconda
+(aac){~1}(onda){~1} ---> naconda
+(ac){~1}(onda){~1} ---> aconda
+(anac){~1}(oda){~1} ---> anaconda
+(aac){~1}(oa){~1} ---> nacon
+(ac){~1}(oa){~1} ---> acon
+(anac){~1}(onda){~1} ---> anaconda
+(anZac){~1}(onZda){~1} ---> anaconda
+(anZZac){~1}(onZda){~1} <no match> 
+(anZac){~1}(onZZda){~1} <no match> 
+([a-n]){3,100} ---> anac
+([a-n]){3,100}? ---> ana
+ end of approximate match testing. 
+ 
+  Algebraic math test 
+ string value of x is 12345, string value of pi is 3.14159
+ length of x is 5 , length of pi is 7
+ string rep of X is shorter than pi
+ matheval of x + pi is 12348.14159
+ Algebraic matheval of (2*3)+(4*5) is 26 
+  and adding 3.14159 to that is 29.14159
+
+     Testing RPN mode math 
+ string value of x is 12345, string value of pi is 3.14159
+ length of x is 5 , length of pi is 7
+ string rep of X is shorter than pi
+ matheval of x + pi is 12348.14159
+ RPN matheval of (2*3)+(4*5) is 26 
+  and adding 3.14159 to that is 29.14159
+ 
+
+  This test checks to see that EVAL properly detects blowups
+  You should see an error message as the next thing,
+   with a large string of Z's. 
+We should get an error here, due to the (intentional!) loop
+
+./crm114: *WARNING* 
+ The variable you're attempting to EVAL seems to eval infinitely, and hence I cannot compute it.  I did try a lot, though.  I got this far before I gave up:  :*:a:ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ(...truncated)
+I'll try to keep working.
+This happened at line 15 of file eval_infiniteloop.crm
+Original:    The quick brown fox jumped over the lazy dog's back
+delete file then append:     alpha bravo charlie 
+prior file, no append:    The quick brown fox jumped over the lazy dog's back
+prior file, and append:    The quick brown fox jumped over the lazy dog's back alpha bravo charlie 
+Grab chars 10 thru 25: brown fox jumpe
+Grab chars 17 and length 12:  ox jumped ov
+Now, change the fox to cat: uick brown cat jumped over the
+Final check- did it really get written? The quick brown cat jumped over the lazy dog's back alpha bravo charlie 
+isolate :a: as 'hdgdgb aaa hdgdb', match b as /aaa/
+a=hdgdgb aaa hdgdb - b=aaa
+alter :a: as 'x'
+a=x - b=
+
+re-isolate :a: as 'hdgdgb bbb hdgdb'
+a=hdgdgb bbb hdgdb - b=
+
+now match :b: to :a:'s 'bbb' section
+a=hdgdgb bbb hdgdb - b=bbb
+
+now alter :a: to 'x' again
+a=x - b=
+
+re-re-isolate :a: as 'hdgdgb ccc hdgdb'
+a=hdgdgb ccc hdgdb - b=
+
+now match :b: to :a:'s 'ccc' section
+a=hdgdgb ccc hdgdb - b=ccc
+
+now alter :a: to 'x' again
+a=x - b=
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Content-Type: image/gif;
+ name="clonic.GIF"
+Content-Transfer-Encoding: base64
+Content-ID: <part1.07010905.07040200@mpbnmpsjffb@hotmail.com>
+Content-Disposition: inline;
+ filename="clonic.GIF"
+
+:boundary:=------------000708090009050006030006
+:c:=1
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+:c:=2
+Content-Type: image/gif;
+ name="clonic.GIF"
+Content-Transfer-Encoding: base64
+Content-ID: <iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii>
+Content-Disposition: inline;
+ filename="clonic.GIF"
+
+:boundary:=--0123456789
+:c:=1
+Content-Type: text
+Content-Transfer-Encoding: 7bit
+
+:c:=2
+Content-Type: image
+ name="clonic.GIF"
+Content-Transfer-Encoding: base64
+iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+
+:boundary:=--0123
+:c:=1
+C-T: txt
+C-T-E: 7
+
+:c:=2
+C-T: img
+ name="clonic.GIF"
+C-T-E: b64
+iiii
+
+
+Match-Isolate reclamation test.  If this program doesn't 
+error out, the test is passed. (we allocate about 80 megs, 
+well past the window size, but in small (400K) chunks that
+alternately are allocated and become reclaimable) 
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2099074
+Bytes used per pass: 2097150
+Passes done: 100 
+Total flux through isolation:  419430000
+OK_IF_SIZE_CHANGES: Final isolation size: 2099091 
+OK_IF_LESS_THAN_100: Total growth: 17
+
+Match-Isolate reclamation test.  If this program doesn't 
+error out, the test is passed. (we allocate about 80 megs, 
+well past the window size, but in small (400K) chunks that
+alternately are allocated and become reclaimable) 
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2101589
+Bytes used per pass: 2097150
+Passes done: 10 
+Total flux through isolation:  41943000
+OK_IF_SIZE_CHANGES: Final isolation size: 2101604 
+OK_IF_LESS_THAN_10: Total growth: 15
+Bytes used per pass: 2097150
+Passes done: 20 
+Total flux through isolation:  83886000
+OK_IF_SIZE_CHANGES: Final isolation size: 2101610 
+OK_IF_LESS_THAN_20: Total growth: 21
+Bytes used per pass: 2097150
+Passes done: 30 
+Total flux through isolation:  125829000
+OK_IF_SIZE_CHANGES: Final isolation size: 2101611 
+OK_IF_LESS_THAN_30: Total growth: 22
+Bytes used per pass: 2097150
+Passes done: 40 
+Total flux through isolation:  167772000
+OK_IF_SIZE_CHANGES: Final isolation size: 2101611 
+OK_IF_LESS_THAN_40: Total growth: 22
+Starting 
+
+
+Testing local and forking call and returns. (level 0) 
+Middle (level 0)
+The bar was > a b c d e < (level 1)
+Got back >z y x w v<
+End (level 0)
+ Doing factorial with a mutating argument 
+ arglist return factorial call entry, args =  5 1  (level 1)
+ arglist return factorial call entry, args =  4 5  (level 2)
+ arglist return factorial call entry, args =  3 20  (level 3)
+ arglist return factorial call entry, args =  2 60  (level 4)
+ arglist return factorial call entry, args =  1 120  (level 5)
+ Recursion bottomed out, returning :out: = 120 
+ Call return, :out: = 120 ( level 4) 
+ Call return, :out: = 120 ( level 3) 
+ Call return, :out: = 120 ( level 2) 
+ Call return, :out: = 120 ( level 1) 
+ 5 factorial is 120 (level 0)
+
+ Doing factorial with inplace args. 
+ downward recurse call entry, args =  5 1  (level 1)
+ downward recurse call entry, args =  4 5  (level 2)
+ downward recurse call entry, args =  3 20  (level 3)
+ downward recurse call entry, args =  2 60  (level 4)
+ downward recurse call entry, args =  1 120  (level 5)
+ Recursion bottomed out, returning :out: = 120 
+ Call return, :out: = 120 (level 4)
+ Call return, :out: = 120 (level 3)
+ Call return, :out: = 120 (level 2)
+ Call return, :out: = 120 (level 1)
+ 5 factorial_inplace is 120 (level 0) 
+
+ Doing factorial with return args 
+ Call factorial_returnarg entry, arg =  5  (level 1)
+ N is 5 NM1 is 4 
+ Call factorial_returnarg entry, arg =  4  5  (level 2)
+ N is 4 NM1 is 3 
+ Call factorial_returnarg entry, arg =  3  4  5  (level 3)
+ N is 3 NM1 is 2 
+ Call factorial_returnarg entry, arg =  2  3  4  5  (level 4)
+ N is 2 NM1 is 1 
+ Call factorial_returnarg entry, arg =  1  2  3  4  5  (level 5)
+  Calling bottomed out with N-1 <= 0.00 (level 5)
+ Call returned, return value was  1  2  3  4  5  (level 4)
+  p1: 1, p2: 2, rest:  3  4  5  
+  multiply p1 and p2, put that on the front, and return :out: = 2  3  4  5  (level 4)
+ Call returned, return value was 2  3  4  5  (level 3)
+  p1: 2, p2: 3, rest:  4  5  
+  multiply p1 and p2, put that on the front, and return :out: = 6  4  5  (level 3)
+ Call returned, return value was 6  4  5  (level 2)
+  p1: 6, p2: 4, rest:  5  
+  multiply p1 and p2, put that on the front, and return :out: = 24  5  (level 2)
+ Call returned, return value was 24  5  (level 1)
+  p1: 24, p2: 5, rest:  
+  multiply p1 and p2, put that on the front, and return :out: = 120  (level 1)
+ 5 factorial_returnarg is 120  (level 0)
+
+ 
+and now do some fully isolated forking calls 
+Returned output = In the fork... data window is This is the original data window.  It shouldn't change (level 0)
+Inputted; now the data window is:  this string is your input 
+Changing the data window in this fork. 
+Now the data window is: This is a _changed_ data window, local to this SYSCALLed fork.
+ (level 0)
+Returned status:  
+DEAD MINION, EXIT CODE: 123
+And the data window is now: This is the original data window.  It shouldn't change
+
+TRANSLATE basic functionality test 
+
+original: foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e
+rot13:    sbb one mnccn 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX n-r
+again:    foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e
+invrange: ull yzi azkkz 9876543210.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX z-v
+unique:   fo bar zapa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e
+invrange: ull yzi azkkz 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX z-v
+literal:  foo bzr azppz 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX z-e
+lit+uniq: foo bzr azppz 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX z-e
+deletion:    02468.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX -
+del-inv:  foobarzappa13579ae
+del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
+srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
+src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
+version: 20070320-BlameBaltar ( TRE 0.7.5 (LGPL) )
+
+noSpaces before: Are The Russian Involved ?
+noSpaces after : AreTheRussianInvolved?
+
+withSpaces before: Nuclear Combat Toe To Toe With The Rooskies !
+withSpaces after : NuclearCombatToeToToeWithTheRooskies!
+
+
+{
+ window
+ output /:*:_pgm_text:/
+}
+
+
+one two three
+ 
+***** checking return and exit codes 
+ Status: DEAD MINION, EXIT CODE: 123 
+
+***** check that failed syscalls will code right
+ Status: DEAD MINION, EXIT CODE: 127 
+result -->you hit the jackpot<--->and that's good<--->:frobotz:<--- 
+
+ ****  Default (SBPH Markovian) classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.0000  pR: -10.6479
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 10.6479  
+Total features in input file: 176
+#0 (i_test.css): features: 140514, hits: 691, prob: 2.25e-11, pR: -10.65 
+#1 (q_test.css): features: 126642, hits: 5000, prob: 1.00e-00, pR:  10.65 
+
+ type I 
+CLASSIFY succeeds; success probability: 1.0000  pR: 10.4050
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 10.4050  
+Total features in input file: 160
+#0 (i_test.css): features: 140514, hits: 4567, prob: 1.00e-00, pR:  10.41 
+#1 (q_test.css): features: 126642, hits: 520, prob: 3.94e-11, pR: -10.41 
+
+
+**** OSB Markovian classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.0023  pR: -2.6334
+Best match to file #1 (q_test.css) prob: 0.9977  pR: 2.6334  
+Total features in input file: 44
+#0 (i_test.css): features: 35129, hits: 211, prob: 2.32e-03, pR:  -2.63 
+#1 (q_test.css): features: 31661, hits: 608, prob: 9.98e-01, pR:   2.63 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.9984  pR: 2.7999
+Best match to file #0 (i_test.css) prob: 0.9984  pR: 2.7999  
+Total features in input file: 40
+#0 (i_test.css): features: 35129, hits: 601, prob: 9.98e-01, pR:   2.80 
+#1 (q_test.css): features: 31661, hits: 86, prob: 1.58e-03, pR:  -2.80 
+
+
+**** OSB Markov Unique classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.0021  pR: -2.6697
+Best match to file #1 (q_test.css) prob: 0.9979  pR: 2.6697  
+Total features in input file: 44
+#0 (i_test.css): features: 29564, hits: 67, prob: 2.13e-03, pR:  -2.67 
+#1 (q_test.css): features: 26060, hits: 450, prob: 9.98e-01, pR:   2.67 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.9977  pR: 2.6363
+Best match to file #0 (i_test.css) prob: 0.9977  pR: 2.6363  
+Total features in input file: 40
+#0 (i_test.css): features: 29564, hits: 401, prob: 9.98e-01, pR:   2.64 
+#1 (q_test.css): features: 26060, hits: 62, prob: 2.31e-03, pR:  -2.64 
+
+
+**** OSB Markov Chisquared Unique classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.0000  pR: -5.7886
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 5.7886  
+Total features in input file: 44
+#0 (i_test.css): features: 29564, hits: 7, chi2: 2.24e+01, pR:  -5.79 
+#1 (q_test.css): features: 26060, hits: 34, chi2: 2.86e-02, pR:   5.79 
+
+ type I 
+CLASSIFY succeeds; success probability: 1.0000  pR: 5.7886
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 5.7886  
+Total features in input file: 40
+#0 (i_test.css): features: 29564, hits: 30, chi2: 3.23e-02, pR:   5.79 
+#1 (q_test.css): features: 26060, hits: 3, chi2: 2.53e+01, pR:  -5.79 
+
+
+**** OSBF Local Confidence (Fidelis) classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.0752  pR: -1.0897
+Best match to file #1 (q_test.css) prob: 0.9248  pR: 1.0897  
+Total features in input file: 44
+#0 (i_test.css): hits: 7, ufeats: 7, prob: 7.52e-02, pR:  -1.09 
+#1 (q_test.css): hits: 34, ufeats: 34, prob: 9.25e-01, pR:   1.09 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.9158  pR: 1.0364
+Best match to file #0 (i_test.css) prob: 0.9158  pR: 1.0364  
+Total features in input file: 40
+#0 (i_test.css): hits: 30, ufeats: 30, prob: 9.16e-01, pR:   1.04 
+#1 (q_test.css): hits: 3, ufeats: 3, prob: 8.42e-02, pR:  -1.04 
+
+ 
+**** OSB Winnow classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.4401  pR: -1.0456
+Best match to file #1 (q_test.css) weight: 50.4736  pR: 1.3486  
+Total features in input file: 44
+#0 (i_test.css): features: 55687.78, unseen: 7.00e+00, weight: 3.97e+01, pR:   0.30 
+#1 (q_test.css): features: 54286.18, unseen: 7.00e+00, weight: 5.05e+01, pR:   1.35 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.5661  pR: 1.1543
+Best match to file #0 (i_test.css) weight: 46.2727  pR: 1.8820  
+Total features in input file: 40
+#0 (i_test.css): features: 55687.78, unseen: 1.00e+01, weight: 4.63e+01, pR:   1.88 
+#1 (q_test.css): features: 54286.18, unseen: 1.00e+01, weight: 3.55e+01, pR:   0.73 
+
+
+
+**** Now verify that winnow learns affect only the named file (i_test.css)
+ type I 
+CLASSIFY succeeds; success probability: 0.5661  pR: 1.1543
+Best match to file #0 (i_test.css) weight: 46.2727  pR: 1.8820  
+Total features in input file: 40
+#0 (i_test.css): features: 57245.13, unseen: 1.00e+01, weight: 4.63e+01, pR:   1.88 
+#1 (q_test.css): features: 54286.18, unseen: 1.00e+01, weight: 3.55e+01, pR:   0.73 
+
+
+
+ and now refute-learn into q_test.css
+ type I 
+CLASSIFY succeeds; success probability: 0.5682  pR: 1.1930
+Best match to file #0 (i_test.css) weight: 46.2727  pR: 1.8820  
+Total features in input file: 40
+#0 (i_test.css): features: 57245.13, unseen: 1.00e+01, weight: 4.63e+01, pR:   1.88 
+#1 (q_test.css): features: 68071.75, unseen: 1.00e+01, weight: 3.52e+01, pR:   0.69 
+
+
+**** Unigram Bayesian classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.4276  pR: -0.1267
+Best match to file #1 (q_test.css) prob: 0.5724  pR: 0.1267  
+Total features in input file: 11
+#0 (i_test.css): features: 8784, hits: 527, prob: 4.28e-01, pR:  -0.13 
+#1 (q_test.css): features: 7917, hits: 452, prob: 5.72e-01, pR:   0.13 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.7344  pR: 0.4417
+Best match to file #0 (i_test.css) prob: 0.7344  pR: 0.4417  
+Total features in input file: 10
+#0 (i_test.css): features: 8784, hits: 631, prob: 7.34e-01, pR:   0.44 
+#1 (q_test.css): features: 7917, hits: 504, prob: 2.66e-01, pR:  -0.44 
+
+ 
+**** unigram Winnow classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.4734  pR: -0.4634
+Best match to file #1 (q_test.css) weight: 11.8572  pR: 0.3259  
+Total features in input file: 11
+#0 (i_test.css): features: 4398.17, unseen: 0.00e+00, weight: 1.07e+01, pR:  -0.14 
+#1 (q_test.css): features: 4343.77, unseen: 0.00e+00, weight: 1.19e+01, pR:   0.33 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.5293  pR: 0.5097
+Best match to file #0 (i_test.css) weight: 10.8363  pR: 0.3488  
+Total features in input file: 10
+#0 (i_test.css): features: 4398.17, unseen: 0.00e+00, weight: 1.08e+01, pR:   0.35 
+#1 (q_test.css): features: 4343.77, unseen: 0.00e+00, weight: 9.64e+00, pR:  -0.16 
+
+
+**** OSB Hyperspace classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.0123  pR: -19.0476
+Best match to file #1 (q_test.css) prob: 0.9877  pR: 19.0476  
+Total features in input file: 22
+#0 (i_test.css): features: 17564, hits: 2, radiance: 2.28e-04, prob: 1.23e-02, pR: -19.05 
+#1 (q_test.css): features: 15830, hits: 17, radiance: 1.83e-02, prob: 9.88e-01, pR:  19.05 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.9807  pR: 17.0566
+Best match to file #0 (i_test.css) prob: 0.9807  pR: 17.0566  
+Total features in input file: 20
+#0 (i_test.css): features: 17564, hits: 15, radiance: 1.28e-02, prob: 9.81e-01, pR:  17.06 
+#1 (q_test.css): features: 15830, hits: 2, radiance: 2.52e-04, prob: 1.93e-02, pR: -17.06 
+
+
+**** Unigram Hyperspace classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.3527  pR: -2.6367
+Best match to file #1 (q_test.css) prob: 0.6473  pR: 2.6367  
+Total features in input file: 11
+#0 (i_test.css): features: 8782, hits: 7, radiance: 5.58e-03, prob: 3.53e-01, pR:  -2.64 
+#1 (q_test.css): features: 7915, hits: 9, radiance: 1.02e-02, prob: 6.47e-01, pR:   2.64 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.6978  pR: 3.6339
+Best match to file #0 (i_test.css) prob: 0.6978  pR: 3.6339  
+Total features in input file: 10
+#0 (i_test.css): features: 8782, hits: 8, radiance: 7.29e-03, prob: 6.98e-01, pR:   3.63 
+#1 (q_test.css): features: 7915, hits: 5, radiance: 3.16e-03, prob: 3.02e-01, pR:  -3.63 
+
+
+**** Bit-Entropy classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.0518  pR: -1.2627
+Best match to file #1 (q_test.css) prob: 0.9482  pR: 1.2627  
+Total features in input file: 552
+#0 (i_test.css): features: 424104 (4%), entropy: 229.188465, jumps: 15, prob: 5.18e-02, pR:  -1.26 
+#1 (q_test.css): features: 514992 (4%), entropy: 198.684196, jumps: 7, prob: 9.48e-01, pR:   1.26 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.9793  pR: 1.6755
+Best match to file #0 (i_test.css) prob: 0.9793  pR: 1.6755  
+Total features in input file: 408
+#0 (i_test.css): features: 424104 (4%), entropy: 125.436543, jumps: 4, prob: 9.79e-01, pR:   1.68 
+#1 (q_test.css): features: 514992 (4%), entropy: 165.914401, jumps: 13, prob: 2.07e-02, pR:  -1.68 
+
+
+**** Bit-Entropy Toroid classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.0000  pR: -26.0848
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 26.0848  
+Total features in input file: 552
+#0 (i_test.css): features: 424104 (100%), entropy: 941.868338, jumps: 92, prob: 8.23e-27, pR: -26.08 
+#1 (q_test.css): features: 514992 (100%), entropy: 311.690284, jumps: 9, prob: 1.00e+00, pR:  26.08 
+
+ type I 
+CLASSIFY succeeds; success probability: 1.0000  pR: 16.5767
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 16.5767  
+Total features in input file: 408
+#0 (i_test.css): features: 424104 (100%), entropy: 518.039706, jumps: 56, prob: 1.00e+00, pR:  16.58 
+#1 (q_test.css): features: 514992 (100%), entropy: 918.514803, jumps: 57, prob: 2.65e-17, pR: -16.58 
+
+
+**** Bytewise Correlation classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.0086  pR: -2.0602
+Best match to file #1 (QUICKREF.txt) prob: 0.9914  pR: 2.0602  
+Total features in input file: 64374
+#0 (INTRO.txt): features: 53013, L1: 218298 L2: 324456 L3: 583208, l4: 1741560 prob: 8.63e-03, pR:  -2.06 
+#1 (QUICKREF.txt): features: 64374, L1: 356013 L2: 565850 L3: 6537488, l4: 326254814 prob: 9.91e-01, pR:   2.06 
+
+ type I 
+CLASSIFY succeeds; success probability: 1.0000  pR: 4.3346
+Best match to file #0 (INTRO.txt) prob: 1.0000  pR: 4.3346  
+Total features in input file: 53013
+#0 (INTRO.txt): features: 53013, L1: 591057 L2: 3234431 L3: 344776245, l4: 52869757811 prob: 1.00e-00, pR:   4.33 
+#1 (QUICKREF.txt): features: 64374, L1: 977745 L2: 1258390 L3: 1857342, l4: 4047202 prob: 4.63e-05, pR:  -4.33 
+

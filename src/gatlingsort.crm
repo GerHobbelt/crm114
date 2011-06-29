@@ -1,0 +1,308 @@
+#!/usr/bin/crm
+#
+#          gatlingsort.crm - Copyright W. S. Yerazunis, 2006
+#
+#   Usage:  
+#        gatlingsort.crm < text                     = classifies
+#        gatlingsort.crm --class=classname < text   = learn
+#
+#     Gatlingsort is a composite text classifier.  It combines a user-chosen 
+#     set of filters to form a composite filter which is (hopefully) more
+#     accurate than any of the individual filters, and also a user-chosen
+#     set of output possibilities rather than just the two of "good" and 
+#     "spam".  
+#
+#     The controlling data is two strings: one is the list of different
+#     categories (without file extensions) and their usage parameters, 
+#     the other is the list of classifier parameter sets to use 
+#     (classifier flags, regexes, and output weights).
+#
+#     The algorithm is simple: each of the filters in filterset is 
+#     invoked with each of the N class possibilities.  The resulting
+#     pRs are then weighted by the output weights of each classifier, 
+#     and the weighted votes tallied.  There are separate votes for
+#     "best match" and "positive pR" - the difference being
+#     that there is always one class that has the best pR, but may not
+#     be any class with positive pR.  
+#
+#     In any case, the class with the highest total votes wins.
+#
+#     In order to speed this up, Gatlingsort runs the classifiers in the
+#     order specified, and as soon as any class gets enough votes to go
+#     over the :gatling_limit: value, the rest of the classifiers don't
+#     get run.  This is strictly a speed-over-accuracy tradeoff.
+#
+#     Note that the class weights can be used not just to express
+#     confidence in one classifier over another, but also to
+#     renormalize classifiers that don't have outputs on a similar
+#     scale (for example, Markovian typically has outputs on the order
+#     of +/- 100, while bit entropy might be only +/- 1.0 pR units.
+#     To level the playing field we would either weight Markovian by
+#     0.01 or entropy by 100.0; either would work (or we could split
+#     the difference) - that is, assuming we had equal levels of
+#     confidence in the Markovian and entropy classifiers.
+#
+
+isolate <default> (:class:) //
+{
+	{
+		match [:class:] /./
+		#    run gatlingsort for :classifier_outputs: with no bailout
+		isolate <default> (:gatling_limit:) /100000000.0/
+		call /:gatlingsort:/ (:h_results:)
+		#output /:*:classifier_outputs:/
+		#output /\n\nFirst Pass Done, now Learning \n\n/
+
+		#    Now use :classifier_outputs: to control learning.
+		call /:gatlinglearn:/ 
+	}
+	{
+		call /:gatlingsort:/  (:h_results:)
+		output /:*:classifier_outputs:/
+		output /:*:h_results:\n/
+	}
+}
+exit
+
+
+:gatlingsort: (:gatling_args:)
+#
+#    Did the caller pass in the gatlingsort info?  If not, get it out
+#    of gatlingsort.cf
+{
+    match <absent> [:gatling_args:] /./
+    insert gatlingsort.cf
+    trap /*/
+    #  output /No per-user gatlingsort.cf file - using built-in defaults \n/
+}
+
+#
+#  What classifiers to use.  This is a struct - each parenthesized grouping
+#   must contain the <flags> in angle brackets, then the weighting, then
+#    the training thickness, and then finally the files including the 
+#     vertical bar, one per line.
+
+#   Classifier Flags          Weight     Thresh   File Ext. 
+isolate <default> (:classifiers:) / \
+   < hyperspace  >               0.7       0.5      .hyp    \
+   < hyperspace unique >         0.7       0.25     .hypu   \
+   < osb microgroom >            1.0      10.0      .osb    \
+   < osb unique microgroom >     1.0      10.0      .osbu   \
+   < osb unigram microgroom >    1.0       1.0      .bay    \
+   < osbf microgroom >           1.0      10.0      .cfc    \
+   < osbf unique microgroom >    1.0      10.0      .cfcu   \
+   < entropy crosslink >         1.2       0.25     .ben    \
+   < entropy unique crosslink >  1.3       0.25     .benu   \
+   /
+isolate <default> (:unused_classifiers:) /\
+   /
+
+#    Winnow needs DSTTTR and that's harder to code just now.
+#  ( < winnow unique microgroom > .win 0.3 ) 
+
+
+#   What classes to sort into.  This is also a parenthesized list.
+#   Each group contains four elements - the class name WITHOUT
+#   any file extension (we add the file extensions from the classifiers
+#   list to form statistics filenames), then the subject title tag to 
+#   add, the decimal exit code to exit with (usually zero), the initial
+#   bias for this class (again, usually zero, and finally
+#   the (optional) address to forward the email to.
+
+isolate <default> (:classes:) / \
+   ( good      OK:     0  0.1 ) \n \
+   ( spam      ADV:    0  0.0 ) \n \
+   ( rants     RANT:   0  0.0 ) \n \
+   ( parties   PLAY:   0  0.0 ) \n \
+   /
+isolate <default> (:unused_classes:) / \
+   ( talk      TALK:   0  0.0 ) \n \
+   ( business  WORK:   0  0.0 ) \n \
+   ( emergency MAYDAY: 0  0.0 ) /
+   
+#    What's our limit beyond which we don't run any other classifiers?
+#    
+isolate <default> (:gatling_limit:) /6.0/
+isolate <default> (:gatling_margin:) /5.0/
+
+
+#    initialize totals and comdstring variables:
+isolate (:co:) /:/
+# output /starting\n/
+
+#    Now do the cross product of classifiers and classes, with 
+#    "classify" as an operator.
+isolate (:classifier_outputs:) //
+isolate (:clout:)
+match [:classifiers:] /.*/ (:classifiers_doppelganger:)
+match [:classifiers:] //  # reset to start of classifiers
+{
+    match [:classifiers:] <fromend> \
+	    (:: :lclf: :lwt: :lthk: :lext: ) \
+	    /<([^>]+)>[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)/
+	# output /Classifier :*:lclf: with ext ":*:lext:" weight :*:lwt:\n /
+	# output / across classes: :*:classes: \n/
+    match [ :classes: ] // 
+    isolate (:statfiles:) //
+    {
+	#    Iterate over the classnames
+	#   create the actual statistics file names
+	match [ :classes: ] <fromend> \
+		(:: :classname: :tagname: :exitcode:) \
+		/\([[:space:]]*([[:graph:]]+)[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)/
+	# output /Checking class :*:classname: tag :*:tagname:\n/
+	alter (:statfiles:) /:*:statfiles: :*:classname::*:lext: /
+	#   make sure the file exists - if not, LEARN the .txt of it,
+	#   and if *that* fails, stick in CRM114's version number.
+	{
+	    input [:*:classname::*:lext: 0 100] (:filetoucher:)
+	    trap /read-open/
+	    input [:*:classname:.txt] (:filetoucher:)
+	    output /Initialize: creating :*:classname::*:lext: from .txtfile\n/
+	    learn < :*:lclf: > ( :*:classname::*:lext: ) [:filetoucher:]
+	    trap /read-open/
+	    output /Initializer: creating :*:classname::*:lext: empty\n/
+	    learn < :*:lclf: > ( :*:classname::*:lext: ) [:_crm_version:]
+	}
+	liaf
+    }
+    #  output /Classifying with ":*:lclf:" on files (:*:statfiles:)\n/
+    {
+	classify < :*:lclf: > ( :*:statfiles: ) ( :clout: )
+    }
+    alter (:classifier_outputs:) /:*:classifier_outputs:\n:*:clout:/
+    #
+    #      We now sweep across the :clout: output for this classifier
+    #
+    {
+	match [:clout:] < nomultiline> \
+		/Best.*\((.*)\.(.*)\).*pR: ([[:graph:]]+)/ \
+		(:: :classname: :ext: :pr:)
+	output /Classifier :*:ext: best on :*:classname: with pR :*:pr:\n/
+	#    Get the current votes for this class
+	match [ :classes: ] (:: :tag: :code: :curvotes: ) \
+	/\([[:space:]]+:*:classname:[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)/
+	output / Classname :*:classname: has :*:curvotes: so far.\n /
+	#    Get the vote-weight of this classifier
+	match [:classifiers_doppelganger:] (:: :voteweight: )  \
+	 /([[:graph:]]+)[[:space:]]+[[:graph:]]+[[:space:]]+\.:*:ext:/
+	output / classifier :*:ext: has weight :*:voteweight: \n/       
+	eval (:curvotes:) /:@: :*:curvotes: + :*:voteweight: :/
+	output /  class :*:classname: now has :*:curvotes: votes.\n/
+	{
+	    eval /:@: :*:pr: > 0.01 :/
+	    eval (:curvotes:) /:@: :*:curvotes: + :*:voteweight: :/
+	    output /   class :*:classname: boost to :*:curvotes: votes.\n/
+	}
+    }
+    #
+    #      And now check to see if the leading class is over :gatling_limit:
+    #      worth of votes and above :gatling_margin: over the nearest 
+    #      competitor:
+    {
+	match [:classes:] //
+	isolate (:best:) /0.0/
+	isolate (:second:) /0.0/
+	{
+	    match [:classes:] <fromend> (:: :curvotes:) \
+		/([[:graph:]]+)[[:space:]]+\)/
+	    {
+		eval /:@: :*:curvotes: > :*:best: :/
+		isolate (:second:) /:*:best:/
+		isolate (:best:) /:*:curvotes:/
+ 	    }
+	    alius
+	    {
+		eval /:@: :*:curvotes: > :*:best: :/
+ 		isolate (:second:) /:*:curvotes:/
+	    }
+	    liaf
+	}
+	{
+	    isolate (:gm:) //
+            eval (:gm:) /:@: (( :*:best: > :*:gatling_limit: ) + (:*:best: > (:*:second: + :*:gatling_margin:))) > 1 : /
+	    output / Quick exit! :*:gm: Best is :*:best: second is :*:second: \n/
+	    goto /:done_classifying:/
+     	}
+    }
+    liaf
+}
+
+:done_classifying:
+# output /Classifier Outputs:\n:*:classifier_outputs:\n/
+
+
+
+# output /Classifier outputs are: \n:*:classifier_outputs:\n/
+# output /... and the results are \n:*:classes:\n/
+
+#
+#     One last sweep, to pick the final "best" match:
+match [:classes:] //
+isolate (:bestscore:) /-1000000.0/
+isolate (:bestclass:) /none/
+isolate (:bestretcode:) /0/
+isolate (:besttag:)  //
+{
+    match [:classes:] <fromend nomultiline> \
+	(:: :classname: :tag: :retcode: :score:)\
+        /\([[:space:]]*([[:graph:]]+)[[:space:]]+([[:graph:]]+)[[:space:]]*([[:graph:]]+)[[:space:]]+([[:graph:]]+)/
+    # output /On class :*:classname: :*:tag: :*:retcode: :*:score: \n/
+    {
+	eval /:@: :*:score: > :*:bestscore: :/
+        # output /best class :*:classname: :*:tag: :*:retcode: :*:score: \n/
+	alter (:bestscore:) /:*:score:/
+	alter (:bestclass:) /:*:classname:/
+	alter (:bestretcode:) /:*:code:/
+	alter (:besttag:) /:*:tag:/
+    }
+    liaf
+}	
+
+alter (:classes:) /Best match is to class :*:bestclass: with score: :*:bestscore: headertag: :*:besttag: retcode: :*:retcode: \n:*:classes:/
+return /:*:classes:/
+
+
+#######################################################################
+#######################################################################
+#
+#                Gatling Learner
+#
+:gatlinglearn: (:gatlinglearn_args:)
+{		
+    # go through each set of classifier results and if the
+    # winner of a class wasn't the trained class, we train it
+    # in.  		
+    match // [:classifier_outputs:]   #  restart matching
+    output /:*:classifier_outputs:\n/
+    output /Learn mode.\n/
+    {
+	match <fromend nomultiline> [:classifier_outputs:] \
+		( :: :bestfile: :pr: ) \
+		/^Best match to file \#[0-9]+ \(([[:print:]]+)\) prob: [-+.0-9e]+  pR: ([-+.0-9]+)/ 
+
+	output /Best match was to: :*:bestfile: at pR :*:pr:\n/		
+	{
+	    #    Was the best match in our "class" regex?
+	    {
+                match [:bestfile:] /^:*:class:\.(.*)/ (:: :c_ext:)
+		output / Correct class in classifier using :*:c_ext:\n/
+	    }
+	    #   No, it wasn't.  Train it in.  
+	    #   first, find the classifier params for this file ext.
+            alius
+	    {
+		match [:bestfile:] /.*\.(.*)/ (:: :wrong_ext:)
+		output /Incorrect class from ":*:wrong_ext:" . \n/
+		match [:classifiers:] \
+		/<([^>]+)>[[:space:]]+[[:graph:]]+[[:space:]]+[[:graph:]]+[[:space:]]+\.:*:wrong_ext: / \
+		(:: :training_flags:) 
+		output \
+		   /Learning ":*:class:.:*:wrong_ext:" with <:*:training_flags:>\n\n/
+ 		learn <:*:training_flags:> (:*:class:.:*:wrong_ext:)
+	    }
+	}		
+	liaf
+    }
+}
+return //

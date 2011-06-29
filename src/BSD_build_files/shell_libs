@@ -1,0 +1,111 @@
+#!/bin/sh
+
+# $Header: /cvsroot/camram/build_tools/shell_libs,v 1.3 2003/07/01 11:00:23 seg
+mentation Exp $
+
+shdie()
+{
+echo $@
+exit 1
+}
+
+check_and_extract()
+{
+pattern=$1
+wanted=$2
+codetree=$3;
+
+[ "$pattern" = "" ]  && shdie check_and_extract lacked pattern
+[ "$wanted" = "" ]  && shdie check_and_extract lacked wanted
+[ "$codetree" = "" ]  && shdie check_and_extract lacked codetree
+
+list=`echo $pattern`
+if [ "$list" = "$wanted" ]
+then
+    echo Just the one tgz file found.
+    ls -l $pattern  2>/dev/null
+else
+    if [ "$pattern" != "$list" ]
+    then
+        echo Multiple files in `pwd`
+        ls -l $pattern 2>/dev/null
+    fi
+    return 1
+fi
+
+echo
+echo In `pwd`
+echo "Is this the right place to process $pattern? [y/N]"
+sh_yesno 0
+if [ 0 -eq $? ]
+then
+    echo  I got stuck - you will need to help find the place.
+    echo  '$HOME/src is what I like to use (for non-root users).'
+    shdie quitting.
+fi
+#
+# remove directory tree and extract from tarfile
+#
+[ -r $codetree ] && rm -rf $codetree
+gunzip < $wanted | tar xf - || shdie tar extraction failed
+cd $codetree || shdie cd failed to $wanted
+return 0
+}
+
+query_configure()
+{
+# normal configuration 
+echo
+echo Looks OK so far.
+echo "Do normal './configure && make' now ? [yes/QUIT]"
+read ans
+case "$ans" in
+[y]);;
+[Yy][Es][Ss]);;
+*)  echo quitting; exit 0;;
+esac
+cd $mainwd && ./configure && make
+}
+
+# Better ask before downloading; some people are on dial-up and
+# some may have these components from their package manager.
+#
+# Hardcoded URLs are contrary to the intent of a mirror system,
+# as well as becoming outdated.  But it does make life easy.
+#
+sh_download()
+{
+echo Attempting download of $1
+wget $1  2>/dev/null  ||  \
+lynx --source $1 > `basename $1` 2>/dev/null || \
+shdie Cannot download $1
+}
+
+sh_yesno()
+{
+rc=$1
+read ans
+case "$ans" in
+[Yy]|[Yy][Ee][Ss])  rc=1;;
+[Nn]|[Nn][Oo])      rc=0;;
+*);;
+esac
+return $rc
+}
+
+sh_suser()
+{
+am_root=0
+myid=`id | sed 's/^[^=]*=\([0-9][0-9]*\)*(.*/\1/'`
+case "${myid}0" in
+[1-9]*)
+echo "Your UID looks like :$myid: (non-root)."
+;;
+*)
+echo "Your UID looks like :$myid: (root)."
+am_root=1
+;;
+esac
+return $am_root;
+}
+

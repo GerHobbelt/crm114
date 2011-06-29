@@ -1,0 +1,246 @@
+#!/usr/bin/crm  
+#
+#     Copyright 2006 William S. Yerazunis.  Released under the GPL version 2.
+#
+#    Program to shuffle lines in a file.   NOTE- ths program should be updated
+#    to use Barabash's much-faster shuffle, which uses urandom and sort, rather
+#    than the code here.  However, that code would only work on machines
+#    that _have_ urandom and sort, which breaks under W32.
+#                  - Bill Yerazunis
+#
+#    Input reads from standard input
+#    Output writes to standard output,
+#    Shuffle pass count controlled by --pass=N (default is auto)
+#    Seed for the shuffle controlled by --seed=string (default is
+#      "shuffle 109 AQB 18BG.%$&*"
+#    Shufflable unit by the regex --unit=someregex (default is lines [^\n]+\n )
+#    Gambler mode - using /dev/urandom - by --gambler
+#    
+#    Auto shufflecount is based on the observation that the amount of data
+#    needed per unit is >= log2 (# of units).  So, if we execute that many
+#    passes we have effectively put enough "bits" into the shuffle.
+#    On the other hand, since there are more than one way to get to a
+#    particular shuffle location, there is "aliasing", so we want something
+#    with significantly more bits than log2(#units).
+#  
+#    To speed things up, we shuffle into sixteen bins, rather than two;
+#    this means we put in four bits of entropy on each pass rather than 
+#    one (which is what a two-bin shuffle gets you)
+#
+window
+{
+    #   set up defaults
+    isolate <default> (:pass:) /auto/
+    isolate <default> (:seed:) /SHUFuffle 109 AQB 18BG.%$&*/
+    isolate <default> (:unit:) /[^\n]+\n/
+    isolate <default> (:help:) //
+    isolate <default> (:gambler:) //
+    {
+	match [:help:] /SET/
+	output / shuffle - mix sequence of input stream  (GPLed) \n/
+	output /   --help         - this help text.
+	output /   --pass=N       - run N passes of shuffle (default auto) \n/
+	output /   --seed=string  - 'random' shuffle control seed. \n/
+	output /   --unit=regex   - regex of the indivisble unit to shuffle\n/
+	output /             e.g. words: '[[:graph:]]+[[:space:]]' \n/
+	output /             default is shuffle by lines \n/
+	output /   --gambler      - use \/dev\/urandom as seed \n/
+	exit
+    }
+
+    input [ /dev/stdin ]
+
+    #   isolate the a, b, c, ... , now, and passcount temporaries.
+    isolate (:a: :b: :c: :d: :e: :f: :g: :h: :i: :j: :k: :l: :m: :n: :o: :p:)
+    isolate (:now:) 
+    isolate (:passcount:) /:*:pass:/
+    isolate (:hash:) //
+    isolate (:h2:) //
+    hash (:hash:) /:*:hash:/
+
+    #    Did user specify passcount?  If not (or if they specified
+    #    "auto", figure out a good number of passes
+    {
+	match [:pass:] /auto/
+	#   count number of units:
+	match [:_dw:] //
+	alter (:passcount:) /0/
+	{
+	    match [:_dw:] < fromend > /:*:unit:/ (:now:)
+	    eval (:passcount:) /:@: :*:passcount: + 1 :/
+	    liaf
+	}
+	
+	#   Now, for a tricky bit.  Formatting a string, then taking the
+	#   length of the output, is *roughly* the log10.  Multiply by
+	#   3.32 and that's log2.  Sorta.   Because of the lack of precision,
+	#   we actually multiply by len(passcount)+1, and because one "pass"
+	#   here actually uses 4 bits of shuffle we don't worry about 
+	#   multiplying by 3.32
+	eval (:passcount:) /:@: 4 + :#:passcount: :/
+    }
+    # output /Running :*:passcount: passes\n/
+
+    #   loop on pass counter
+    match [:_dw:] //  #  to reset the fromend counters
+    {
+	eval /:@: :*:passcount: > 0.5 :/
+	eval (:passcount:) /:@: :*:passcount: - 1.0 :/
+	# output /Pass is now :*:pass:\n/
+	
+	#    Are we in "gambler" mode?  Truly random shuffles?
+	{   
+	    match [:gambler:]  /SET/
+	    input [/dev/urandom 0 20] (:seed:)
+	}
+
+	{
+	    #   doing one more shuffle... though actually we do this
+	    #   backwards.  We divide into 16 piles, then concatenate
+	    #   the piles.  Same effect as four shuffles.  We also use
+	    #   a truncated binary tree for the decision making; that
+	    #   means it's fewer comparisons
+	    #
+	    match [:_dw:] < fromend > /:*:unit:/ (:now:)
+	    #output /Now is now ":*:now:"/
+	    {
+		{
+		    #   Which of the 16 stacks does this unit go on?
+		    hash (:hash:) /:*:hash::*:seed:/
+		    eval (:h2:) /:@: 0x:*:hash: % 16 :/
+		    # output / H2 is :*:h2: --> /
+		    {
+			eval /:@: :*:h2: < 8 :/
+			{
+			    eval /:@: :*:h2: < 4:/
+			    {
+				eval /:@: :*:h2: = 0:/
+				alter (:a:) /:*:a::*:now:/
+				# output /Appending :*:now: to a\n/
+			    }
+			    alius
+			    {
+				eval /:@: :*:h2: = 1:/
+				alter (:b:) /:*:b::*:now:/
+				# output /Appending :*:now: to b\n/
+			    }
+			    alius
+			    {
+				eval /:@: :*:h2: = 2:/
+				alter (:c:) /:*:c::*:now:/
+				# output /Appending :*:now: to c\n/
+			    }
+			    alius
+			    {
+				alter (:d:) /:*:d::*:now:/
+				# output /Appending :*:now: to d\n/
+			    }
+			}
+			alius
+			{
+			    {
+				eval /:@: :*:h2: = 4:/
+				alter (:e:) /:*:e::*:now:/
+				# output /Appending :*:now: to e\n/
+			    }
+			    alius
+			    {
+				eval /:@: :*:h2: = 5:/
+				alter (:f:) /:*:f::*:now:/
+				# output /Appending :*:now: to g\n/
+			    }
+			    alius
+			    {
+				eval /:@: :*:h2: = 6:/
+				alter (:g:) /:*:g::*:now:/
+				# output /Appending :*:now: to g\n/
+			    }
+			    alius
+			    {
+				alter (:h:) /:*:h::*:now:/
+				# output /Appending :*:now: to h\n/
+			    }
+			}
+		    }
+		    alius
+		    {
+			{
+			    eval /:@: :*:h2: < 12:/
+			    {
+				eval /:@: :*:h2: = 8:/
+				alter (:i:) /:*:i::*:now:/
+				# output /Appending :*:now: to i\n/
+			    }
+			    alius
+			    {
+				eval /:@: :*:h2: = 9:/
+				alter (:j:) /:*:j::*:now:/
+				# output /Appending :*:now: to j\n/
+			    }
+			    alius
+			    {
+				eval /:@: :*:h2: = 10:/
+				alter (:k:) /:*:k::*:now:/
+				# output /Appending :*:now: to k\n/
+			    }
+			    alius
+			    {
+				alter (:l:) /:*:l::*:now:/
+				# output /Appending :*:now: to l\n/
+			    }
+			}
+			alius
+			{
+			    {
+				eval /:@: :*:h2: = 12:/
+				alter (:m:) /:*:m::*:now:/
+				# output /Appending :*:now: to m\n/
+			    }
+			    alius
+			    {
+				eval /:@: :*:h2: = 13:/
+				alter (:n:) /:*:n::*:now:/
+				# output /Appending :*:now: to n\n/
+			    }
+			    alius
+			    {
+				eval /:@: :*:h2: = 14:/
+				alter (:o:) /:*:o::*:now:/
+				# output /Appending :*:now: to o\n/
+			    }
+			    alius
+			    {
+				alter (:p:) /:*:p::*:now:/
+				 # output /Appending :*:now: to p\n/
+			    }
+			}
+		    }
+		}
+	    }    
+	    #     repeat this till the :unit: match fails.
+ 	    liaf
+	}
+	#     Now we reassemble a new :_dw: from the :a: and :b: stacks
+	alter (:_dw:) /:*:a::*:b::*:c::*:d::*:e::*:f::*:g::*:h::*:i::*:j::*:k::*:l::*:m::*:n::*:o::*:p:/
+	# output /Full stack now: :*:_dw:\n/
+	alter (:a:) //
+	alter (:b:) //
+	alter (:c:) //
+	alter (:d:) //
+	alter (:e:) //
+	alter (:f:) //
+	alter (:g:) //
+	alter (:h:) //
+	alter (:i:) //
+	alter (:j:) //
+	alter (:k:) //
+	alter (:l:) //
+	alter (:m:) //
+	alter (:n:) //
+	alter (:o:) //
+	alter (:p:) //
+	liaf
+    }
+    #      All done.  Output and exit
+    accept
+}

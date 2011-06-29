@@ -1,0 +1,499 @@
+#  maillib.crm - handy library for mail whacking - wsy 2006
+#   
+#    Copyright (C) 2002-2006 William S. Yerazunis; licensed under the
+#    GNU Public License (GPL) version 2.  A copy of this license is included
+#    in the distribution media, or obtain one from www.fsf.org .
+#
+
+
+##########################################################
+#
+#        :load_cf_file:
+#
+#    Calling Sequence:
+#        call /:load_cf_file:/ [filename]
+#    Returns:
+#        nothing.  This routine ONLY sets up variables from the .cf file
+#
+###########################################################
+#  
+#       Load in the specified .cf file.  The .cf file needs
+#      to be in the format
+#      :varname: /value/
+#
+#      Blank lines and lines starting with a # are ignored
+#
+#       Note that because this happens during the run, stuff set in
+#       a .cf file will _override_ any comand line arguments that get set.
+#       This could (and should) probably be changed.
+#
+:load_cf_file: (:cf_filename:)
+{
+    isolate (:option_txt:)
+    isolate (:ev:)
+    isolate (:verbose_startup:)
+    #   
+    #    Part 1  - read in the options/configuration file
+    #	
+    {
+        {
+                match <absent> [:cf_filename:] /.+/
+		return
+	}
+	input [:*:cf_filename:] (:option_txt:)
+    }
+#
+#
+#   reset loop for matching to start of :option_txt:
+	match [:option_txt:] //
+
+#   and loop till there are no more options.
+	{
+		#   find a line that looks like a parameter setting...
+		match < fromend nomultiline > (:line: :name: :value:) \
+		  [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
+		{
+			#    don't execute the assign if there's 
+			#    a # at the start of the line.
+			match <absent> [:name:] /^\x23/
+			{
+				#     Verbose startup?
+				match [:verbose_startup:] /SET/
+				output / :*:name:\n    :*:value:\n/
+			}
+			isolate (:*:name:) /:*:value:/
+		}
+		liaf
+	} 
+}
+#    All done, return.
+return
+
+
+
+###########################################################
+#
+#        :mail_preprocess:
+#
+#     Calling Sequence:
+#	 call /:mail_preprocess:/ [text to be preprocessed]
+#
+#     Returns:
+#        the processed text
+#
+###########################################################
+#   Preprocess a piece of mail to whatever we've specified in the
+#   loaded .cf file setup.
+
+:mail_preprocess:  (:mutilation_input:)
+
+#    
+#      We take the input and create a mutilated, annotated copy
+#      of the incoming text.  The mutilations are defined by 
+#      whatever the .cf file has set up.
+#      will become an annotated _copy_  of the incoming text, 
+#      with whatever changes we think will help us classify better.
+#
+#      We clip m_text to be the first :decision_length: characters of
+#      the incoming text
+#
+match (:m_text:) [:mutilation_input: 0 :*:decision_length:] /.*/
+isolate (:m_text:)
+#
+#      :b_text: is the text with base64's expanded.
+isolate (:b_text:) /:*:m_text:/
+#
+#      :i_text: is the text with Hypertextus Interruptus removed. 
+isolate (:i_text:) /:*:m_text:/
+#
+        isolate (:commentbin:) //
+#
+#
+#	do we do any expansions?
+{
+
+    #   expansion 1: - do we perform base64 expansions?
+    {
+	match [:do_base64:] /yes/
+	{
+	    #  yes, expand base64's if there are any
+	    #
+	    #    Note: some spams don't even bother to use
+	    #    a 'Content-Transfer-Encoding marker,
+	    #    and even fewer use Content-Type: text/whatever
+	    #    so we have to sort of wing it, when to expand
+	    #    what _might_ be base64 and when to ignore it.
+	    #    For now, if it says it's a base64, it gets
+	    #    expanded, no matter what the type.  Maybe
+	    #    someday someone will put in a lockout for
+	    #    things like .jpg files, .doc files, etc.
+	    # 
+	    match [:m_text:] <nocase> (:a: :h: :b:) \
+		    /(Content-Transfer-Encoding): base64(.*)/
+	    match (:c:) [:b:]  \
+		    /([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
+	    isolate (:exp_text:) //
+	    syscall (:*:c:) (:exp_text:) /:*:mime_decoder: /
+	    
+	    #   and stuff the result back into m_text for
+	    #   classification right in context.
+	    alter (:c:) /:*:exp_text:/
+	    #   and mark this piece of mime as "prior".
+	    alter (:h:) /Content-Transfer-Prior-Encoding/
+	    #   repeat till no more Mime base64 encodings 
+	    liaf
+	}
+    }
+
+
+    #   Expansion 2 - fetch and insert URLs into the stream for further
+    #   analysis.  BUG NOTE: as originally written, this was fully recursive
+    #   without limit, and might concieveably spider the entire web.  The
+    #   EVAL statement limits total fetched length to not more than 
+    #   one fetch more than :decision_length:
+
+    {
+	match [:expand_urls:] /yes/
+	{
+	    match [:m_text:] (:url:) /http:\/\/[[:graph:]]+/
+	    isolate (:wget_output:) //
+	    syscall /:*:url_fetch_cmd: :*:url: | :*:url_trim_cmd: / \
+		    () (:wget_output:)
+	    alter (:url:) /:*:url:\n  :*:wget_output:  \n/
+	    eval /:@: :#:m_text: < (:*:decision_length: / 4) :/
+	    liaf
+	}
+    }
+
+    #   expansion 3 :  do we bust HTML comments ( a.k.a. 
+    #    hypertextus interruptus) out?
+    {
+	match [:undo_interruptus:] /yes/
+	{
+	    match [:m_text:] (:comment:) /<!--([^-]|-[^-]|--[^>])*-->/
+	    alter (:commentbin:) /:*:commentbin: :*:comment:/
+	    alter ( :comment: ) //
+	    liaf
+	}
+	#     if we had at least 80 characters worth of comments, then
+	#     it's worth using the decommented text, else not.
+	#     (this my personal judgement call)
+	{
+	    {
+		match [:commentbin:] /(.){80,}/
+	    }
+	    alius
+	    {
+		alter (:commentbin:) //
+	    }
+	}
+    }
+}
+
+#    and reassemble the mucked-over text into the :m_text: var, always
+#    with the base64's expanded, then the extacted comments
+#
+{
+    alter (:m_text:) \
+      /:*:m_text: \n :*:commentbin: \n\n/
+}
+
+#########################################################   
+#
+#   Do we want to do any rewrites before running?  
+#    
+{
+   match [:rewrites_enabled:] /yes/
+#
+# NOTE  CHANGE THIS ONE TO ISOLATE AND THE PROGRAM FAILS!
+   isolate (:rewrites:) //
+   isolate (:fileprefix:) <default> //
+   input (:rewrites:) [:*:fileprefix:rewrites.mfp]
+
+#    reset matching on rewrites to start of string - if no string, no more
+#    processing of rewrites !!
+   match [:rewrites:] //
+   #
+   #
+   {
+       #    Grab the next regex; turn the one-per-line patterns into a 
+       #    regex and a replacement string.
+       #    First, do the line-spanning regexes.
+       match <fromend nomultiline> (:ch: :fr1: :to:) [:rewrites:] /(.+)>-->(.*)/
+       #    see if the "fr" regex matches anywhere
+       {
+	   match [:m_text:] (:place:) /:*:fr1:/
+	   #  Yep, it matched... alter it and do it again
+	   #
+	   alter (:place:) /:*:to:/
+	   liaf
+       }
+       #   Nope, didn't match... grab the next regex and try again,
+       liaf
+   }
+   #
+   #     reset back to the start of the rewrites.
+   #
+   match [:rewrites:] //
+   #
+   #      and do it again for non-line-spanners
+   {
+       #    Go through and do it again, except this time do it for
+       #    the non-line-spanning regexes.
+       match <fromend nomultiline> (:ch: :fr2: :to:) [:rewrites:] /(.+)>->(.*)/
+       #    see if the "fr" regex matches anywhere
+       {
+	   match [:m_text:] <nomultiline> (:place:) /:*:fr2:/
+	   #  Yep, it matched... alter it and do it again
+	   #
+	   alter (:place:) /:*:to:/
+	   liaf
+       }
+       #   Nope, didn't match... grab the next regex and try again,
+       liaf
+   }
+}    #  done with rewrites.
+
+
+	#  all done; m_text now has the fully mutilated text.
+return /:*:m_text:/
+
+
+###############################################################
+#
+#     This is Mungmail - these are the replacement routines for
+#     formail(), to remove dependency on formail() being in every
+#     distribution (because formail() isn't _in_ every distribution)
+#
+#
+# Add a new header
+:mungmail_add: (:new_header:)
+{
+    #     Grab the current headers
+    call /:mungmail_grab_current_headers:/
+    alter (:current_headers:) /:*:current_headers::*:new_header:\n/
+    return
+}
+#
+#          extract a header (first of them found)
+#
+:mungmail_extract: (:header_name:)
+{
+    #      Extract the header with the given field type, and
+    #      return that.  Note that we add the colon here; don't
+    #      put it into the desired_header string.
+    #
+    call /:mungmail_grab_current_headers:/
+    {
+        match [:current_headers:] <nocase> (:: :desired_header:)  \
+                /(?:^|\n)(:*:header_name: *: ([^\n]|\n[[:space:]])*)/
+        return /:*:desired_header:/
+    }
+    return //
+}
+#
+#          delete all current headers of this type
+#
+:mungmail_delete: (:new_header:)
+{
+    call /:mungmail_grab_current_headers:/
+    {
+        match (:new_header_type:) [:new_header:] /[[:graph:]]+/
+    }
+    #
+    # a  LIAF-loop to delete any header (including continuations) that
+    #  has a type that matches the new_header_type.
+    {
+        match [:current_headers:] (:kill_this_line:) \
+                /:*:new_header_type: ([^\n]|\n[[:space:]])*\n/
+        alter (:kill_this_line:) //
+        liaf
+    }
+    return
+}
+
+#          delete all current headers of this type, insert ours instead.
+#
+:mungmail_unique: (:new_header:)
+{
+    call /:mungmail_grab_current_headers:/
+    {
+        match (:new_header_type:) [:new_header:] /[[:graph:]]+/
+    }
+    call /:mungmail_delete:/ [:*:new_header:]
+    call /:mungmail_add:/ [:*:new_header:]
+}
+return
+
+#
+#  Helper routine to get the current mail headers of :_dw:
+#
+:mungmail_grab_current_headers:
+{
+    {
+        #     Grab everything before the first \n\n
+        match (:: :current_headers:) /(([^\n]+\n)+)\n/
+        #        output /-A-->:*:current_headers:<---\n/
+        return
+    }
+    #    if we got here, it wasn't a real message (void body, and/or no
+    #   doubled newline) but it might still have useful text anyway.
+    #   Is there a final newline?
+    {
+        match (:current_headers:) /^.*\n$/
+        #          output /-B-->:*:current_headers:<---\n/
+        return
+    }
+    #    if we got to here, then there wasn't even a final newline.
+    #    That's a violation of RFC, we'll add it.
+    {
+        alter (:_dw:) /:*:_dw:\n/
+        match (:current_headers:) /.+/
+        #           output /-C-->:*:current_headers:<---\n/
+        return
+    }
+    fault / Couldn't manage to find the headers, though I tried really hard\n/
+}
+return
+
+#
+#             find header arg1, append comment arg2-n.  If no
+#             such header, create it, and add the comment.  Note that
+#             neither the header name nor the comment can contain spaces.
+#
+
+:mungmail_add_comment: (:ac_args:)
+{
+    #    parse input args to this routine
+    match [:ac_args:] (:: :header: :comment:) /([[:graph:]]+) ([[:graph:]]+)/
+    {
+	#    find the header if it exists
+	match (:found: :hd: :tail:) <nomultiline nocase> /^(:*:header:) (.*)/
+	alter (:tail:) /:*:tail: (:*:comment:)/
+    }
+    alius
+    {
+	#    no such header.  make one.
+	call /:mungmail_add:/ [:*:header: (:*:comment:)]
+    }
+}	
+return
+
+#
+#       change_subject_line
+#
+:mungmail_mung_subject: (:new_tag:)
+#            get the Subject: line.  If none, make one.
+{
+    {
+	match (:subject_line: :subj_text:) <nocase nomultiline> \
+		/^Subject: (.*)/
+    }
+    alius
+    {
+	match (:end_of_headers:) /\n\n/
+	alter (:end_of_headers:) /\nSubject: ( none supplied in original message )\n\n/
+	match (:subject_line: :subj_text:) <nomultiline> /^Subject: (.*)/
+    }
+}
+{
+    #
+    #   If we are re-sending this, we want to de-fang the
+    #   subject, otherwise we don't.
+    match [:reject_address:]  /[a-zA-Z0-9]/
+    #   Paolo P. suggests this alteration to avoid subversion
+    #   by enclosing an alternate target in "marks".  We always
+    #   have to do this.
+    {
+	match (:dq:) [:subj_text:] /\$/
+	alter (:dq:) /USD/
+	liaf
+    }
+    #
+    #   and translate away anything that might be a shell subterfuge
+    translate (:subj_text:) [:subj_text:] /^-a-zA-Z0-9!., /
+}
+#
+#     If the user asked for a spam-flagging string, put the flagging
+#     string into the subject.
+#
+{
+    match [:new_tag:] /./
+    alter (:subj_text:) \
+	    /:*:new_tag: :*:subj_text:/
+}
+return
+
+#
+#        Mark a piece of mail with Reaver IDs.   Hopefully one or the
+#        other of these will survive your local mailer.
+#
+:mungmail_add_cache_info: (:cid:)
+{
+    call /:mungmail_unique:/ [X-CRM114-CacheID: sfid-:*:cid: ]
+    call /:mungmail_add_comment:/ [Message-Id: sfid-:*:cid:]
+}
+
+###############################################################
+#
+#       Reaver Cache routines
+#
+#           Assumptions= the var :text_cache: contains the name of
+#           the cache directory
+#
+#      Assure that the text cache exists
+:reavercache_init:
+{
+        match [:text_cache:] /./
+        {
+                ###       If the text_cache dir isn't there, create it
+                #         and it's subdirectories.
+                #
+                isolate (:tmp:) //
+                syscall () (:tmp:) /ls :*:text_cache: 2>&1 /
+                match [:tmp:] <absent> /texts/
+                syscall () () /mkdir :*:text_cache: /
+                syscall () () /mkdir :*:text_cache:\/texts /
+                syscall () () /mkdir :*:text_cache:\/prob_good /
+                syscall () () /mkdir :*:text_cache:\/prob_spam /
+                syscall () () /mkdir :*:text_cache:\/known_good /
+                syscall () () /mkdir :*:text_cache:\/known_spam /
+                syscall () () /mkdir :*:text_cache:\/empty /
+        }
+}
+return
+
+#
+#      Put some text into the cache; 
+#      side effect:
+#      variable :reaver_cacheid: to the filename (no directory)
+#      variable :long_cacheid: is set to the file alone (no directory) name
+#
+:reavercache_store:  (:text:)
+{
+   match [:text_cache:] /./   # Don't store it if no reavercache desired
+   isolate (:system_time: :msg_hash:) //
+   syscall () (:system_time:) /date +%Y%m%d_%H%M%S_%N /
+   match [:system_time:] ( :: :cacheid: ) /([[:graph:]]+)..../
+   hash (:msg_hash:) /:*:text:/
+   isolate (:cacheid:) /:*:cacheid:/
+#       It's unclear if the following increases security at all.
+   isolate (:cacheid:) /:*:cacheid:_:*:msg_hash:/
+   isolate (:long_cacheid:) /:*:text_cache:\/texts\/:*:cacheid:/
+   output [:*:long_cacheid:] /:*:text:/
+}
+return
+
+trap (:broken_program_message:) /.*/
+{
+        accept
+        output /:*:_nl: Aw, crud.  maillib.crm broke.  Here's the error: :*:\_nl:/
+        output /:*:broken_program_message:/
+        output [stderr] /:*:_nl: ERROR: maillib.crm broke.  Here's the error\: :*:_nl:/
+        output [stderr] /ERROR: :*:broken_program_message:/
+    }
+exit /:*:program_fault_exit_code:/
+
+
+
+

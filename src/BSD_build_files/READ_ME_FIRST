@@ -1,0 +1,13 @@
+
+These files were supplied by ant (Antonomasia Notatla) for 
+building CRM114 on BSD.
+
+You should NOT need these files to build CRM114 on Linux.  
+
+Not being a BSD hack, I have no way of testing them, but
+ant seems pretty sharp... in any case, here's a starting point
+for you BSDers.
+
+Good luck!
+
+	-Bill Yerazunis

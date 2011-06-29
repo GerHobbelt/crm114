@@ -1,0 +1,16 @@
+window
+
+output /version: :*:_crm_version:\n\n/
+
+isolate (:noSpaces:) //
+alter (:noSpaces:) /Are The Russian Involved ?/
+output /noSpaces before: :*:noSpaces:\n/
+translate (:noSpaces:) [:noSpaces:] / / //
+output /noSpaces after : :*:noSpaces:\n\n/
+
+isolate ( :withSpaces: ) //
+alter ( :withSpaces: ) /Nuclear Combat Toe To Toe With The Rooskies !/
+output /withSpaces before: :*:withSpaces:\n/
+translate ( :withSpaces: ) [ :withSpaces: ] / / //
+output /withSpaces after : :*:withSpaces:\n\n/
+

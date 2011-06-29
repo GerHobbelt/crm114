@@ -1,0 +1,36 @@
+#! /usr/bin/crm
+#   test the trap statement
+window
+output / :*:_nl: CRM114  testing FAULT\/TRAP... :*:_nl: /
+output / --- you should not see an error yet --- :*:_nl:/
+{
+	{
+		output / you should see this -->/
+	}
+	{
+		trap /.*/
+		output / BUT YOU SHOULD NOT SEE THIS /
+	}
+	output /<--and this, with nothing in between. :*:_nl: :*:_nl:/ 
+}
+output / --- the next thing you see SHOULD be an error "unable to read-open"--- :*:_nl:/
+{
+	{
+		input [zoob.zipulrlfjf] (:hi:)
+	}
+	trap (:my_fault:) /.*/
+	{
+		output / Caught the error  - fault text was :*:my_fault: / 
+	}
+}
+output / --- and again, the next thing you see SHOULD be an error "unable to write-open"--- :*:_nl:/
+{
+	{
+		output [/No/Such/Directory/frotz.mumble] (:hi:)
+	}
+	trap (:my_fault:) /.*/
+	{
+		output / Caught the error  - fault text was :*:my_fault: / 
+	}
+}
+output /:*:_nl:/

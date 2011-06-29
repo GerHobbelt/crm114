@@ -1,0 +1,13 @@
+#! /usr/bin/crm
+#
+#     Program to test :+: indirection
+#
+window
+{
+    isolate (:c:) /and that's good/
+    isolate (:abe:) /:b:/
+    isolate (:b:) /you hit the jackpot/
+    isolate (:d:) /to see it/
+    output /result -->:+:abe:<--->:+:c:<--->:+:frobotz:<--- \n/
+}
+
