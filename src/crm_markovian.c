@@ -204,7 +204,7 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //       put in sparse_spectrum_file_length entries of NULL
       for (j = 0;
            j < sparse_spectrum_file_length
-             * sizeof ( FEATUREBUCKET_TYPE);
+             * sizeof (FEATUREBUCKET_TYPE);
            j++)
         fputc(0, f);
       //        fprintf (f,"%c", '\000');

@@ -483,15 +483,7 @@ int crm_create_winnow_cssfile(char *cssfile, long buckets,
                    errno);
           return (EXIT_FAILURE);
         }
-      //
-      //   HACK ALERT HACK ALERT HACK ALERT
-      //
-      //  yeah,there's more efficient ways to do this, but this will
-      //  stay in cache; an IF-statement will need at least three ops as
-      //  well.   Probably six of one...
-      feature.hash = 0;
-      feature.key = 0;
-      feature.value = 0;
+	memset(&feature, 0, sizeof(feature));
     }
   fclose (f);
   return (EXIT_SUCCESS);

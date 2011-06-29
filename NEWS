@@ -19,6 +19,7 @@ Version 20070807-BlameTheInterns
 
 * KNOWN BUG: SKS is b0rked in my version of the code (I've been messing around with some
   #define's, that's probably why, but no time to find out how to revert that.)
+  --> update: fixed. #undef GET_RID_OF_PUNCTUATION
 
 
 Version 20070805-BlameTheInterns

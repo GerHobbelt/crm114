@@ -1126,7 +1126,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                            (long) match[0].rm_eo,
                            wlen,
                            tempbuf);
-                };
+                }
               if (match[0].rm_eo == 0)
                 {
                   nonfatalerror ( "The LEARN pattern matched zero length! ",
@@ -1669,6 +1669,7 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
                            NULL);
           file2_hashlens = file2_hashlens
             / sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT );
+
           for(i = 0;i< file1_hashlens;i++)
             {
               if( internal_trace)
@@ -1703,8 +1704,14 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
                      "\nThe total number of documents in file2 is %d\n", k2);
             }
 
-          if((k1 > 0) && (k2 >0))
-            {
+	  if(!(k1 > 0 && k2 > 0))
+	    {
+	      if (user_trace)
+		fprintf(stderr, 
+		       "There hasn't enough documents to calculate a svm hyperplane!\n");
+	    }
+	  else
+	    {
               //initialize the svm_prob.x, svm_prob.y
               int *y = NULL;
               double b;
@@ -1748,9 +1755,9 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
               Q_init();
               solve(); //result is in solver
               b = calc_b();
-              deci_array = (double*) malloc(svm_prob.l*sizeof(double));
 
               //compute decision values for all training documents
+	      deci_array =(double*)malloc(svm_prob.l * sizeof(deci_array[0]));
               for(i = 0; i < svm_prob.l; i++)
                 {
                 deci_array[i] = calc_decision(svm_prob.x[i], solver.alpha, b);
@@ -2088,13 +2095,8 @@ DiagQ = NULL;
                 fprintf(stderr,
               "Finish calculating SVM hyperplane, store the solution to %s!\n",
                         file3);
-            }
-          else
-            {
-              if (user_trace)
-                fprintf(stderr,
-             "There hasn't enough documents to calculate a svm hyperplane!\n");
-            }
+	    }//end if two svm files are not empty
+	  
           crm_force_munmap_filename (file1);
           crm_force_munmap_filename (file2);
           crm_force_munmap_filename (file3);
@@ -2661,7 +2663,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
           svm_prob.x = x;
 
-      alpha = calloc((k1 + k2) , sizeof(alpha[0]));
+	  alpha = (double *)malloc(svm_prob.l * sizeof(alpha[0]));
 
           if((k3 != 0) || (temp_k1 != k1) || (temp_k2 != k2))
             {
@@ -2721,7 +2723,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                       for(i = 0;i< k;i++)
                         {
-                          fprintf(stderr, "\nx[%ld]=%lud\n",i,x[i][1].hash);
+			  fprintf(stderr, 
+			    "\nx[%ld]=%lud\n",i,svm_prob.x[i][1].hash);
                         }
                     }
                   Q_init();
@@ -2792,7 +2795,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
               for(i = 0; i<svm_prob.l; i++)
                 {
-                                        alpha[1] = 0.0;
+                                        alpha[i] = 0.0;
                   ret += fread(&alpha[i], sizeof(alpha[i]), 1, hashf);
                 }
               ret += fread(&b, sizeof(b), 1, hashf);

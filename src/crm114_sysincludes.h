@@ -67,6 +67,9 @@
 #ifdef HAVE_CTYPE_H
 #include <ctype.h>
 #endif
+#ifdef HAVE_ENDIAN_H
+#include <endian.h>
+#endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -110,14 +113,15 @@
 #include <crt_externs.h>
 #endif
 
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-
 #ifdef HAVE_SYS_TIMES_H
 #include <sys/times.h>
 #endif
-
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -374,6 +378,23 @@ int truncate(const char *filepath, long filesize); /* [i_a] Win32 doesn't come w
 #  endif /* defined(HAVE_READLINE_HISTORY_H) */
 /* no history */
 #endif /* HAVE_READLINE_HISTORY */
+
+
+
+
+/*
+   Machine Endianess
+ */
+// #if !defined(WORDS_BIGENDIAN)
+
+// #if (defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && __BYTE_ORDER == __LITTLE_ENDIAN))
+//    (defined(i386) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) 
+
+// #elif (defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && __BYTE_ORDER == __BIG_ENDIAN)
+
+
+
+
 
 
 

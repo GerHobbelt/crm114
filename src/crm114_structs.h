@@ -22,6 +22,10 @@ typedef double hitcount_t;
 #endif
 
 
+/* the 32 bit unsigned hash values as used by CRM114 */
+typedef uint32_t crmhash_t;
+
+
 /* [i_a] no variable instantiation in a common header file */
 extern long vht_size;
 
@@ -193,7 +197,7 @@ typedef struct {
 typedef struct {
   unsigned long hash;
   unsigned long key;
-  float value;
+  double value;
 } WINNOW_FEATUREBUCKET_STRUCT;
 
 #define ENTROPY_RESERVED_HEADER_LEN 1024

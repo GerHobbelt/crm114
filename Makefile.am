@@ -63,6 +63,9 @@ dist-diff:
 
 distribution: distdir dist-diff
 	$(SILENT) echo "Creating src archives"; 
+	-rm -f $(ARCHIVE_BASE_NAME).src.7z
+	-rm -f $(ARCHIVE_BASE_NAME).src.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).src.tar.bz2
 	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).src.7z $(distdir) )
 	( test "X$(tar)" != "X" && $(tar) -c $(distdir) | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).src.tar.gz )
 	( test "X$(tar)" != "X" && $(tar) -c $(distdir) | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).src.tar.bz2 )

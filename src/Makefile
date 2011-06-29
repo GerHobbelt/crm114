@@ -44,7 +44,8 @@ bin_PROGRAMS = crm114$(EXEEXT) cssutil$(EXEEXT) osbfutil$(EXEEXT) \
 	cssdiff$(EXEEXT) cssmerge$(EXEEXT)
 subdir = src
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/config.h.in $(srcdir)/diff_em.sh.in
+	$(srcdir)/config.h.in $(srcdir)/diff_em.sh.in \
+	$(srcdir)/indent.sh.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_c_long_long.m4 \
 	$(top_srcdir)/m4/ac_environ.m4 \
@@ -58,7 +59,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = diff_em.sh
+CONFIG_CLEAN_FILES = diff_em.sh indent.sh
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
@@ -252,7 +253,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-105
+TAR_FILENAME_POSTFIX = Ger-108
 TRE_CONFIG = no
 
 #
@@ -413,7 +414,7 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	rename-gz \
 	megatest.sh megatest_knowngood.log 
 
-EXTRA_DIST = indent.sh diff_em.sh \
+EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	config_win32.h crm114.sln crm114.vcproj cssdiff.vcproj osbf-util.vcproj \
 	resource.h crm114.ico cssmerge.vcproj cssutil.vcproj \
 	getopt.h getopt_ex.h getopt.c getopt_ex.c \
@@ -493,6 +494,8 @@ $(srcdir)/config.h.in: # $(am__configure_deps)
 distclean-hdr:
 	-rm -f config.h stamp-h1
 diff_em.sh: $(top_builddir)/config.status $(srcdir)/diff_em.sh.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+indent.sh: $(top_builddir)/config.status $(srcdir)/indent.sh.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
@@ -1204,9 +1207,12 @@ rsync:
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
 
 diff: diff_em.sh
-	-(sh diff_em.sh );
+	-(sh ./diff_em.sh );
 
 dist-diff: diff
+	-rm -f $(ARCHIVE_BASE_NAME).diff.7z
+	-rm -f $(ARCHIVE_BASE_NAME).diff.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).diff.tar.bz2
 	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).diff.7z diff/ )
 	( test "X$(tar)" != "X" && $(tar) -c diff/ | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.gz )
 	( test "X$(tar)" != "X" && $(tar) -c diff/ | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.bz2 )
@@ -1217,7 +1223,7 @@ dist-diff: diff
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
 # indent -bad -bap -bl -bli0 -bls -cbi4 -cdw -cli0 -di8 -hnl -i4 -l80 -lp -nbc -nce -ncs -npcs -nprs -npsl -nsaf -nsai -nsaw -nsob -nut -pi4 -sc -ss -T index_t -T hitcount_t -T regex_t -T regmatch_t -T regamatch_t -T regaparams_t -T Qitem_t -T regoff_t -T tre_char_t -T COOCCURRENCE_SCORE_TYPE *.c *.h
 reindent:
-	-( test "X$(UNCRUSTIFY)" != "X" && $(UNCRUSTIFY) -c $(top_srcdir)/uncrustify.cfg --replace -F *.c *.h )
+	-( test "X$(uncrustify)" != "X" && sh ./indent.sh )
 
 .c.o:
 	$(COMPILE) -c $< -o $@

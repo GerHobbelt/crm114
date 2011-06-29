@@ -167,6 +167,8 @@ int main(int argc, char **argv)
                    argv[optind], errno);
           exit (EXIT_FAILURE);
         }
+       else
+        {
       //       put in  bytes of NULL
       for (j = 0; j < sparse_spectrum_file_length
              * sizeof (FEATUREBUCKET_TYPE); j++)
@@ -174,6 +176,7 @@ int main(int argc, char **argv)
         fputc(0, f);  /* [i_a] fprintf(f, "%c", '\0'); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
           }
       fclose (f);
+        }
       //    and reset the statbuf to be correct
       k = stat (argv[optind], &statbuf);
           CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");

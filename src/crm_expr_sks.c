@@ -132,12 +132,12 @@ typedef struct mythical_svm_param {
   double eps;                   // convergence stop criterion
   double C;                     // parameter in C_SVC
   double nu;                  // parameter for One-class SVM
-  double max_run_time;        /* time control for microgroom (in seconds).
-                                   If computing time exceeds max_run_time,
-                                   then start microgrooming to delete the
-                                   documents far away from the hyperplane. */
-  int k;                        /* fixed length of substrings
-                                   parameter for simple string kernel */
+  double max_run_time;          // time control for microgroom (in second).
+                                // If computing time exceeds max_run_time, 
+                                // then start microgrooming to delete the 
+                                // documents far away from the hyperplane. 
+  int k;                        // fixed length of substrings 
+                                // parameter for simple string kernel
 } SVM_PARAM;
 
 
@@ -146,8 +146,8 @@ typedef struct mythical_svm_param {
 typedef struct mythical_svm_problem {
   int l;                // number of documents
   int *y;               // label of documents -1/+1
-  HYPERSPACE_FEATUREBUCKET_STRUCT **x;   /* x[i] is the ith document's
-                                            feature vector */
+  HYPERSPACE_FEATUREBUCKET_STRUCT **x;   // x[i] is the ith document's 
+                                         // feature vector
 } SVM_PROBLEM;
 
 //    A structure to hold the cache node - these hold one row worth of
@@ -1054,6 +1054,9 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //    if (|Text|>0) hide the text into the .svm file
 
   #ifdef GET_RID_OF_PUNCTUATION
+  //get rid of all punctuation
+  // strcpy(ptext, "[^[:punct:]]+");
+  //plen = strlen(ptext);
   //     get the "this is a word" regex
   crm_get_pgm_arg (ptext, MAX_PATTERN, apb->s1start, apb->s1len);
   plen = apb->s1len;
@@ -1094,10 +1097,30 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       while (k == 0 && textoffset <= textmaxoffset
              && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT  )
         {
-          long wlen, slen;
-          slen = textmaxoffset - textoffset;
-          k = crm_regexec (&regcb, &(txtptr[textoffset]),
-                           slen, 5, match, 0, NULL);
+          long wlen;
+          long slen = textmaxoffset - textoffset;
+          // if pattern is empty, extract non graph delimited tokens
+          // directly ([[graph]]+) instead of calling regexec  (8% faster)
+          if (ptext[0] != '\0')
+            {
+              k = crm_regexec (&regcb, &(txtptr[textoffset]),
+                               slen, 5, match, 0, NULL);
+            }
+          else
+            {
+              k = 0;
+              //         skip non-graphical characters
+              match[0].rm_so = 0;
+              while (!crm_isgraph (txtptr[textoffset + match[0].rm_so])
+                     && textoffset + match[0].rm_so < textmaxoffset)
+                match[0].rm_so ++;
+              match[0].rm_eo = match[0].rm_so;
+              while (crm_isgraph (txtptr [textoffset + match[0].rm_eo])
+                     && textoffset + match[0].rm_eo < textmaxoffset)
+                match[0].rm_eo ++;
+              if ( match[0].rm_so == match[0].rm_eo)
+                k = 1;
+            }
           if (!(k != 0 || textoffset > textmaxoffset))
             {
               wlen = match[0].rm_eo - match[0].rm_so;
@@ -1107,6 +1130,17 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
               tempbuf[wlen] = '\000';
               if (strlen (file_string) + strlen(tempbuf) <= txtlen)
                 strcat (file_string, tempbuf);
+              if (internal_trace)
+                {
+                  fprintf (stderr,
+                   "  Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
+                           i,
+                           textoffset,
+                           (long) match[0].rm_so,
+                           (long) match[0].rm_eo,
+                           wlen,
+                           tempbuf);
+                }
               if (match[0].rm_eo == 0)
                 {
                   nonfatalerror ( "The LEARN pattern matched zero length! ",
@@ -1118,11 +1152,17 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
               textoffset = textoffset + match[0].rm_eo;
               i++;
             }
-        }
+          else
+            {
+              if (ptext[0] != '\0') crm_regfree (&regcb);
+              k = 1;
+            }
+        }   //   end the while k==0
       #else
       strncpy (file_string, &txtptr[txtstart], txtlen);
       file_string[txtlen] = 0;
       #endif
+
       if(strlen(file_string) > 0)
         {
           simple_string_hide(file_string, hashes, &hashcounts);
@@ -1178,7 +1218,9 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                   CRM_ASSERT(hashes[hashcounts].hash == 0);
 
       if (user_trace)
+      {
         fprintf (stderr, "Total unique hashes generated: %ld\n", hashcounts);
+      }
 
           if(hashcounts > 0 && sense > 0)
             {
@@ -1504,8 +1546,8 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 
       //initialize the svm_prob.x, svm_prob.y
       svm_prob.l = k1;
-           y = calloc(svm_prob.l , sizeof(y[0]));
       x = calloc(svm_prob.l , sizeof(x[0]));
+      y = calloc(svm_prob.l , sizeof(y[0]));
       for(i = 0; i < k1; i++)
         y[i] = 1;
       svm_prob.y = y;
@@ -1544,6 +1586,7 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
       long file2_lens;
       HYPERSPACE_FEATUREBUCKET_STRUCT *file2_hashes;
       int k1, k2;
+
       k1 = stat (file1, &statbuf1);
       k2 = stat (file2, &statbuf2);
       if (k1 != 0)
@@ -1615,8 +1658,14 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
                        "\nThe total number of documents in file2 is %d\n", k2);
             }
 
-          if((k1 > 0) && (k2 >0))
-            {
+	  if(!(k1 > 0 && k2 > 0))
+	    {
+	      if (user_trace)
+		fprintf(stderr, 
+		       "There hasn't enough documents to calculate a string kernel svm hyperplane!\n");
+	    }
+	  else
+	    {
               //initialize the svm_prob.x, svm_prob.y
               int *y = NULL;
               double b;
@@ -1654,9 +1703,9 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
               Q_init();
               solve(); //result is in solver
               b = calc_b();
-              deci_array = (double*) malloc(svm_prob.l*sizeof(double));
 
               //compute decision values for all training documents
+	      deci_array =(double*)malloc(svm_prob.l * sizeof(deci_array[0]));
               for(i = 0; i < svm_prob.l; i++)
                 {
                   deci_array[i] = calc_decision(svm_prob.x[i],solver.alpha, b);
@@ -1717,13 +1766,8 @@ DiagQ = NULL;
                 fprintf(stderr,
               "Finish calculating SVM hyperplane, store the solution to %s!\n",
                         file3);
-            }
-          else
-            {
-              if (user_trace)
-                fprintf(stderr,
-             "There hasn't enough documents to calculate a svm hyperplane!\n");
-            }
+	    }//end if two sks files are not empty
+	  
           crm_force_munmap_filename (file1);
           crm_force_munmap_filename (file2);
           crm_force_munmap_filename (file3);
@@ -1878,6 +1922,9 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #endif
 
   #ifdef GET_RID_OF_PUNCTUATION
+  //get rid of all punctuation
+  //strcpy(ptext, "[^[:punct:]]+");
+  //plen = strlen(ptext);
   //     get the "this is a word" regex
   crm_get_pgm_arg (ptext, MAX_PATTERN, apb->s1start, apb->s1len);
   plen = apb->s1len;
@@ -2213,8 +2260,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
             }
           svm_prob.x = x;
-
-      alpha = calloc((k1 + k2) , sizeof(alpha[0]));
+	  alpha = (double *)malloc(svm_prob.l * sizeof(alpha[0]));
 
           if((k3 != 0) || (temp_k1 != k1) || (temp_k2 != k2))
             {
@@ -2324,7 +2370,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
               for(i = 0; i<svm_prob.l; i++)
                 {
-                                        alpha[1] = 0.0;
+                                        alpha[i] = 0.0;
                   ret += fread(&alpha[i], sizeof(alpha[i]), 1, stringf);
                 }
               ret += fread(&b, sizeof(b), 1, stringf);
@@ -2430,7 +2476,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                    doc_num[k],
                    stringlens[k],
                  ptc[k],
-                 10*(log10 (ptc[k] + 1e-300) - log10 (1.0 - ptc[k] + 1e-300)));
+	    10 * (log10 (ptc[k] + 1e-300) - log10 (1.0 - ptc[k] + 1e-300) )  );
           buf[WIDTHOF(buf) - 1] = 0;
 
           if (strlen(stext)+strlen(buf) <= stext_maxlen)

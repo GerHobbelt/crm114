@@ -1495,7 +1495,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                nodebytes,
                firlatbytes);
 
-      if (!f)
+      if (f)
       {
       //       Write them bytes, all NULs.  (the 1024 is just some padding)
       //

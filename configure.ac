@@ -395,6 +395,8 @@ AC_CHECK_HEADERS(stdarg.h varargs.h float.h limits.h)
 AC_CHECK_HEADERS(libintl.h sys/utime.h utime.h wchar.h)
 AC_CHECK_HEADERS(crtdbg.h signal.h io.h direct.h process.h lmcons.h)
 AC_CHECK_HEADERS(getopt.h getopt_ex.h)
+AC_CHECK_HEADERS(endian.h sys/param.h)
+
 
 # see: http://www.gnu-pascal.de/crystal/gpc/en/mail11031.html
 AC_CHECK_HEADERS(crt_externs.h)
@@ -500,6 +502,7 @@ AC_CONFIG_FILES([Makefile
                  man/include.zmm
                  src/Makefile
                  src/diff_em.sh
+                 src/indent.sh
                  tests/Makefile
                  tests/aliustest.crm
                  tests/approxtest.crm

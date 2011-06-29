@@ -37,6 +37,9 @@
 /* Define to 1 if you have the `dup2' function. */
 #define HAVE_DUP2 1
 
+/* Define to 1 if you have the <endian.h> header file. */
+#define HAVE_ENDIAN_H 1
+
 /* Define if you have the 'environ' global environment variable */
 /* #undef HAVE_ENVIRON */
 
@@ -333,6 +336,9 @@
    */
 /* #undef HAVE_SYS_NDIR_H */
 
+/* Define to 1 if you have the <sys/param.h> header file. */
+#define HAVE_SYS_PARAM_H 1
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
 
@@ -475,7 +481,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-105"
+#define TAR_FILENAME_POSTFIX "Ger-108"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

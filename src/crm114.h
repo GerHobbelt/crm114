@@ -59,7 +59,7 @@ int crm_microcompiler (CSL_CELL *csl,
 
 
 //  hash function for variable tables
-unsigned long strnhash (char *str, long len);
+uint32_t strnhash (char *str, long len);
 
 //  string translate function - for the TRANSLATE function
 long strntrn (
