@@ -84,8 +84,8 @@ clock_t times(void *buf);
 
 typedef int pid_t;
 
-// #define sqrtf sqrt  /* [i_a] */
-#define crm_logl(x) logl(x)  /* [i_a] */
+// #define sqrtf sqrt  
+#define crm_logl(x) logl(x)  
 
 #define msync(a, b, c) FlushViewOfFile(a, b)
 #define MS_SYNC 0
@@ -146,3 +146,45 @@ static union
  	char uint32_t_incorrect[sizeof(uint32_t) == 4];
 };
 #endif
+
+
+
+
+/*
+   regular char is _signed_ char, so it will sign-expand to int when calling isgraph() et al:
+   that may cause Trouble (with capital T) on some less forgiving systems.
+
+   (e.g. isgraph(c) should be generally true for c > 127. Guess what happens to a char?
+   --> sign extended to int --> c = ASCII(130) == char(-126) == int(-126) is NOT >= 128, so
+   will produce FALSE as a result!
+ */
+#if 0
+
+int tre_isalnum_func(tre_cint_t c) { return tre_isalnum(c); }
+int tre_isalpha_func(tre_cint_t c) { return tre_isalpha(c); }
+
+#ifdef tre_isascii
+int tre_isascii_func(tre_cint_t c) { return tre_isascii(c); }
+#else /* !tre_isascii */
+int tre_isascii_func(tre_cint_t c) { return !(c >> 7); }
+#endif /* !tre_isascii */
+
+#ifdef tre_isblank
+int tre_isblank_func(tre_cint_t c) { return tre_isblank(c); }
+#else /* !tre_isblank */
+int tre_isblank_func(tre_cint_t c) { return ((c == ' ') || (c == '\t')); }
+#endif /* !tre_isblank */
+
+int tre_iscntrl_func(tre_cint_t c) { return tre_iscntrl(c); }
+int tre_isdigit_func(tre_cint_t c) { return tre_isdigit(c); }
+int tre_isgraph_func(tre_cint_t c) { return tre_isgraph(c); }
+int tre_islower_func(tre_cint_t c) { return tre_islower(c); }
+int tre_isprint_func(tre_cint_t c) { return tre_isprint(c); }
+int tre_ispunct_func(tre_cint_t c) { return tre_ispunct(c); }
+int tre_isspace_func(tre_cint_t c) { return tre_isspace(c); }
+int tre_isupper_func(tre_cint_t c) { return tre_isupper(c); }
+int tre_isxdigit_func(tre_cint_t c) { return tre_isxdigit(c); }
+
+#endif
+
+

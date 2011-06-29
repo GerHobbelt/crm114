@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 #ifdef WIN32
@@ -72,7 +58,9 @@ static char *GetErrorString(const char *msg, DWORD errorcode)
 	  }
 	  /* guestimate a proper buffer size here: */
 	  size = 80 + strlen(msg) + ((fmtret > 0 && dstbuf != NULL) ? strlen(dstbuf) : 0);
-	  errstr = malloc(sizeof(errstr[0]) * size);
+	  errstr = calloc(size, sizeof(errstr[0]) );
+	  if (errstr != NULL)
+	  {
 	  snprintf(errstr, size, msg, (long)errorcode);
 	  errstr[size - 1] = 0;
 	  len = strlen(errstr);
@@ -81,6 +69,7 @@ static char *GetErrorString(const char *msg, DWORD errorcode)
 		  snprintf(errstr + len, size - len, " (%s)", dstbuf);
 	  }
 	  errstr[size - 1] = 0;
+	  }
 	  if (dstbuf)
 	  {
 		  LocalFree(dstbuf);
@@ -98,7 +87,7 @@ static void fatalerror_Win32(const char *msg)
 }
 
 
-DWORD WINAPI pusher_proc(LPVOID lpParameter)
+unsigned int WINAPI pusher_proc(void *lpParameter)
 {
   DWORD bytesWritten;
   pusherparams *p = (pusherparams *)lpParameter;
@@ -128,14 +117,14 @@ DWORD WINAPI pusher_proc(LPVOID lpParameter)
   return 0;
 }
 
-DWORD WINAPI sucker_proc(LPVOID lpParameter)
+unsigned int WINAPI sucker_proc(void *lpParameter)
 {
   DWORD bytesRead;
   suckerparams *p = (suckerparams *)lpParameter;
 
-#define OUTBUF_SIZE			8192 /* [i_a] */
+#define OUTBUF_SIZE			8192 
 
-  char *obuf = malloc(sizeof(obuf[0]) * OUTBUF_SIZE);  /* [i_a] */
+  char obuf[OUTBUF_SIZE];  
 
   /*  we're in the sucker process here- just throw away
       everything till we get EOF, then exit. */
@@ -177,7 +166,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   long done;
   int keep_proc;
   int async_mode;
-#ifdef WIN32  /* [i_a] */
+#ifdef WIN32  
   DWORD charsread;
   HANDLE to_minion[2];
   HANDLE from_minion[2];
@@ -191,7 +180,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   pid_t sucker;
   pid_t random_child;
 #endif
-  pid_t minion; /* [i_a] */
+  pid_t minion; 
   int status;
   long timeout;	
   
@@ -656,6 +645,13 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 #endif
 #ifdef WIN32
+  if (01)
+  {
+  fatalerror (" Sorry, syscall is completely b0rked in this version", "");
+  return 0;
+  }
+  else
+  {
   if (3 != sscanf (exp_keep_buf, "MINION PROC PID: %ld from-pipe: %p to-pipe: %p",
 	  &minion,
 	  &from_minion[0],
@@ -780,7 +776,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 				  // use the undamaged sys_cmd entry for error reporting...
 				  size = 1 + strlen(errmsg) + strlen(sys_cmd_2nd) + strlen(msgfmt);
-				  errstr = malloc(sizeof(errstr[0]) * size);
+				  errstr = calloc(size, sizeof(errstr[0]) );
 				  snprintf(errstr, size, msgfmt, sys_cmd_2nd, (long)error);
 				  errstr[size - 1] = 0;
 
@@ -851,9 +847,9 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //
   if (strlen (inbuf) > 0)
     {
-      HANDLE hThread;
+      unsigned int hThread;
 	  pusherparams pp = {0};
-      char *inbuf_copy = malloc(sizeof(inbuf_copy[0]) * (inlen+1)); /* [i_a] */
+      char *inbuf_copy = calloc((inlen+1), sizeof(inbuf_copy[0]) ); 
       int i;
       //Since the pusher thread may continue executing after the
       //syscall statement has finished, we need to make a copy of
@@ -867,9 +863,13 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       pp.internal_trace = internal_trace;
       pp.keep_proc = keep_proc;
       pp.to_minion = to_minion[1];
-      if (!CreateThread(NULL, 0, pusher_proc, &pp, 0, (LPDWORD)&hThread))
+	  if (!_beginthreadex(NULL, 0, pusher_proc, &pp, 0, &hThread))
 	  {
-		  fatalerror_Win32("Failed to start the pusher thread");
+		  char errmsgbuf[256];
+
+		  snprintf(errmsgbuf, NUMBEROF(errmsgbuf), "error code %d (%s)", errno, strerror(errno));
+			errmsgbuf[NUMBEROF(errmsgbuf) - 1] = 0;
+		  fatalerror("Failed to start the pusher thread", errmsgbuf);
 	  }
     }
 
@@ -931,13 +931,17 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if ( async_mode || (outlen >= ((data_window_size >> SYSCALL_WINDOW_RATIO) - 2 )
              && keep_proc == 0))
           {
-            HANDLE hThread;
+            unsigned int hThread;
 			suckerparams sp = {0};
             sp.from_minion = from_minion[0];
             sp.timeout = timeout;
-            if (!CreateThread(NULL, 0, sucker_proc, &sp, 0, (LPDWORD)&hThread))
-			  {
-				  fatalerror_Win32("Failed to start the sucker thread");
+            if (!_beginthreadex(NULL, 0, sucker_proc, &sp, 0, &hThread))
+		  {
+			  char errmsgbuf[256];
+
+			  snprintf(errmsgbuf, NUMBEROF(errmsgbuf), "error code %d (%s)", errno, strerror(errno));
+				errmsgbuf[NUMBEROF(errmsgbuf) - 1] = 0;
+				  fatalerror("Failed to start the sucker thread", errmsgbuf);
 			  }
           }
 
@@ -1009,6 +1013,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		  fatalerror_Win32("Failed to close the system call minion handle");
 	  }
     }
+	  }
 #endif
   return (0);
 }

@@ -14,7 +14,7 @@
 //      into whatever calls your preferred regex package uses.   
 //
 
-#include "crm114_sysincludes.h" /* [i_a] */
+#include "crm114_sysincludes.h" 
 
 #include <regex.h>
 
@@ -106,7 +106,7 @@ size_t crm_regerror (int errorcode, regex_t *preg, char *errbuf,
 
 void crm_regfree (regex_t *preg)
 {
-    regfree (preg); /* [i_a] */
+    regfree (preg); 
 }
 
 char * crm_regversion (void)

@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 
@@ -52,7 +38,7 @@ void crm_vht_init (int argc, char **argv)
 
 
  //   create the variable hash table (one big one, shared )
-  vht = (VHT_CELL **) malloc (sizeof (vht[0]) * vht_size); /* [i_a] */
+  vht = (VHT_CELL **) calloc (vht_size, sizeof (vht[0]) ); 
   if (!vht)
     untrappableerror("Couldn't malloc VHT cell.\n",
 		     "No VHT cells, no variables, so no can run.  Sorry.");
@@ -61,7 +47,7 @@ void crm_vht_init (int argc, char **argv)
 
 
   //    initialize the temporary (non-data-window) area...
-  tdw = malloc (sizeof (tdw[0])); /* [i_a] */
+  tdw = calloc (1, sizeof (tdw[0])); 
   if (!tdw)
     untrappableerror("Couldn't malloc tdw.\n"  
 		     "We need the TDW for isolated variables."  
@@ -69,7 +55,7 @@ void crm_vht_init (int argc, char **argv)
   tdw->filename = NULL;
   tdw->rdwr = 1;
   tdw->filedes = -1;
-  tdw->filetext = malloc (sizeof (tdw->filetext[0]) * data_window_size); /* [i_a] */
+  tdw->filetext = calloc (data_window_size, sizeof (tdw->filetext[0]) ); 
   if (!tdw->filetext)
       untrappableerror("Couldn't malloc tdw->filetext.\n"
 		       "Without this space, you can't have any isolated "
@@ -215,7 +201,7 @@ void crm_vht_init (int argc, char **argv)
 			     "the (with flag -e)", "");
 	}
 	while (environ[i][j] != '=') j++;
-	name = (char *) malloc ((sizeof (name[0])) * (j+200)); /* [i_a] */
+	name = (char *) calloc ((j+200), sizeof (name[0])); 
         if (!name)
 		{
           untrappableerror("Couldn't malloc :_env_ space."  
@@ -1133,7 +1119,7 @@ void crm_slice_and_splice_window ( CSL_CELL *mdw, long where, long delta)
       data_window_size = 4 * data_window_size;
       nonfatalerror (" Data window trying to get too long.", 
   		   " increasing data window... ");
-      ndw = (char *) malloc ( data_window_size * sizeof(ndw[0])); /* [i_a] */
+      ndw = (char *) calloc ( data_window_size , sizeof(ndw[0])); 
       if (!ndw)
           untrappableerror("Couldn't malloc ndw.  This is bad too.\n","");
 
@@ -1367,7 +1353,7 @@ void crm_setvar (
       //    Nope, this is an empty VHT slot
       
       //  allocate a fresh, empty VHT cell
-      vht[i] = (VHT_CELL *) malloc (sizeof (vht[i][0])); /* [i_a] */
+      vht[i] = (VHT_CELL *) calloc (1, sizeof (vht[i][0])); 
       if (!vht[i])
 	untrappableerror("Couldn't malloc space for VHT cell.  We need VHT cells for variables.  We can't continue.","");
       
@@ -1446,7 +1432,7 @@ long crm_lookupvarline (VHT_CELL **vht, char *text, long start, long len)
 #if 0
 		long q;
             char *deathfu ;
-	      deathfu = (char *) malloc ( (len+10) * sizeof(deathfu[0])); /* [i_a] */
+	      deathfu = (char *) calloc ( (len+10) , sizeof(deathfu[0])); 
           if (!deathfu)
       	untrappableerror("Couldn't malloc 'deathfu'.\n  Time to die. ","");
             strncpy (deathfu, &(csl->filetext[start]), len);
@@ -1491,7 +1477,7 @@ void crm_updatecaptures (char *text, long loc, long delta)
 	  if (vht[vht_index]->valtxt == text)
 	    {  // start of valtext block check      
 	      // value text area
-	      if (internal_trace > 1)
+	      if (internal_trace)
 		{
 		  fprintf (stderr, "\n  checking var ");
 		  for (i = 0; i < vht[vht_index]->nlen; i++)

@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 
@@ -205,7 +191,7 @@ CRM_MMAP_CELL *cache = NULL;
 void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
 {
 #ifdef POSIX
-  long munmap_status; /* [i_a] */
+  long munmap_status; 
 
   if (map->prot & PROT_WRITE)
     msync (map->addr, map->actual_len, MS_ASYNC | MS_INVALIDATE);
@@ -411,7 +397,7 @@ void *crm_mmap_file (char *filename,
 {
   CRM_MMAP_CELL *p;
   long pagesize = 0;
-  struct stat statbuf = {0}; /* [i_a] */
+  struct stat statbuf = {0}; 
 #ifdef POSIX
   mode_t open_flags;
 #endif
@@ -440,12 +426,12 @@ void *crm_mmap_file (char *filename,
   //    No luck - we couldn't find the matching file/start/len/prot/mode
   //    We need to add an mmap cache cell, and mmap the file.
   //  
-  p = (void *) malloc( sizeof (p[0]) );  /* [i_a] */
+  p = (void *) calloc( 1, sizeof (p[0]) );  
   if (p == NULL)
     {
       untrappableerror(" Unable to malloc enough memory for mmap cache.  ",
 		       " This is unrecoverable.  Sorry.");
-      return MAP_FAILED;
+      return MAP_FAILED; /* [i_a] unreachable code */
     }
   p->name = strdup(filename);
   p->start = start;
@@ -703,7 +689,7 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
 
   //  create our output string space.  It will never be more than 256
   //  characters.  It might be less.  But we don't care.
-  outstr = malloc (256 * sizeof(outstr[0])); /* [i_a] */
+  outstr = calloc (256 , sizeof(outstr[0])); 
 
   //  error out if there's a problem with MALLOC
   if (!outstr)
@@ -751,6 +737,7 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
 	outstr[j] = (unsigned char)i;
 	j++;
       }
+	assert(j <= 256);
 
   //    The final string length is j characters long, in outstr.  
   //    Don't forget to free() it later.  :-)
@@ -792,7 +779,7 @@ unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
   *rlen = adj + len;
 
   //      Get the space for our expanded string.
-  r = malloc ( (1 + *rlen) * sizeof(r[0]));	/* 1 + to avoid empty problems */ /* [i_a] */
+  r = calloc ( (1 + *rlen) , sizeof(r[0]));	/* 1 + to avoid empty problems */ 
   if (!r) 
     {
       untrappableerror(
@@ -897,10 +884,10 @@ long strntrn (
     {
       //       Else - we're in literal mode; just copy the 
       //       strings.
-      from = malloc (fromstrlen * sizeof(from[0])); /* [i_a] */
+      from = calloc (fromstrlen , sizeof(from[0])); 
       strncpy  ( (char *)from,  (char *)fromstr, fromstrlen);
       flen = fromstrlen;
-      to = malloc (tostrlen * sizeof(to[0])); /* [i_a] */
+      to = calloc (tostrlen , sizeof(to[0])); 
       strncpy ((char *) to, (char *)tostr, tostrlen);
       tlen = tostrlen;
       if (from == NULL || to == NULL) return (-1);
@@ -950,7 +937,7 @@ long strntrn (
   //
   if (CRM_UNIQUE & flags) 
     {
-      unsigned char unique_map [256]; /* [i_a] */
+      unsigned char unique_map [256]; 
 
       //                        build the map of the uniqueable characters
       //

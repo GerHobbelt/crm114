@@ -88,7 +88,8 @@ main (int argc, char **argv)
   char csvfile[255];
   unsigned char cmdchr[2];
   char crapchr[2];
-  float cmdval;
+  double cmdval;
+  long val;
   int zloop, cmdloop;
   long learns_index, features_index;
   long docs_learned = -1;
@@ -99,17 +100,20 @@ main (int argc, char **argv)
   char *newinputbuf;
   newinputbuf = (char *) &hfsize;
 
+  user_trace = DEFAULT_USER_TRACE_LEVEL;
+  internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
+
   histbins = FEATUREBUCKET_VALUE_MAX;
   if (histbins > FEATUREBUCKET_HISTOGRAM_MAX) 
     histbins = FEATUREBUCKET_HISTOGRAM_MAX;
-  bcounts = malloc (sizeof (bcounts[0]) * (histbins + 2) ); /* [i_a] */
+  bcounts = calloc ((histbins + 2), sizeof (bcounts[0]) ); 
 
   {
     struct stat statbuf;	//  filestat buffer
     FEATUREBUCKET_TYPE *hashes;	//  the text of the hash file
 
     // parse cmdline options
-    while ((opt = getopt (argc, argv, "bDhR:rqs:S:v")) != -1)
+    while ((opt = getopt (argc, argv, "bDhR:rqs:S:vtT")) != -1)
       {
 	switch (opt)
 	  {
@@ -186,6 +190,30 @@ main (int argc, char **argv)
 		user_set_css_length = 1;
 	      }
 	    break;
+    case 't':
+      if (user_trace == 0 ) 
+	{
+	  user_trace = 1 ;
+	  fprintf (stderr, "User tracing on");
+	}
+      else
+	{
+	  user_trace = 0;
+	  fprintf (stderr, "User tracing off");
+	}
+      break;
+    case 'T':
+      if (internal_trace == 0 ) 
+	{
+	  internal_trace = 1 ;
+	  fprintf (stderr, "Internal tracing on");
+	}
+      else
+	{
+	  internal_trace = 0;
+	  fprintf (stderr, "Internal tracing off");
+	}
+      break;
 	  case 'v':
 	    fprintf (stderr, " This is cssutil, version %s\n", version);
 	    fprintf (stderr, " Copyright 2001-2006 W.S.Yerazunis.\n");
@@ -342,13 +370,16 @@ main (int argc, char **argv)
 		     csvfile, errno);
 	    exit (EXIT_FAILURE);
 	  }
+	else
+	{
 	for (i = 0; i < hfsize; i++)
 	  {
 	    fscanf (f, "%lu;%lu;%lu\n", 
 		    &(hashes[i].key), &(hashes[i].hash), &(hashes[i].value));
 	  }
 	fclose (f);
-      }
+	}
+	}
 
     zloop = 1;
     while (zloop == 1 && !restore && !dump)
@@ -464,7 +495,7 @@ main (int argc, char **argv)
 	    clearerr (stdin);
 	    fscanf (stdin, "%[^\n]", cmdstr);
 	    fscanf (stdin, "%c", crapchr);
-	    fields = sscanf (cmdstr, "%s %f", cmdchr, &cmdval);
+	    fields = sscanf (cmdstr, "%s %lf", cmdchr, &cmdval);
 	    if (strlen ( (char *) cmdchr) != 1)
 	      {
 		fprintf (stdout, "Unknown command: %s\n", cmdchr);
@@ -478,10 +509,15 @@ main (int argc, char **argv)
 			   "Z command requires a numeric argument!\n");
 		else
 		  {
+			  val = (long)cmdval;
 		    fprintf (stdout, "Working...");
 		    for (i = 1; i < hfsize; i++)
-		      if (hashes[i].value <= cmdval)
-			hashes[i].value = 0;
+			{
+		      if (hashes[i].value <= val)
+			  {
+				  hashes[i].value = 0;
+			  }
+			}
 		    fprintf (stdout, "done.\n");
 		  }
 		break;
@@ -491,12 +527,13 @@ main (int argc, char **argv)
 			   "S command requires a numeric argument!\n");
 		else
 		  {
+			  val = (long)cmdval;
 		    fprintf (stdout, "Working...");
 		    for (i = 1; i < hfsize; i++)
 		      {
-			if (hashes[i].value > (long) cmdval)
+			if (hashes[i].value > cmdval)
 			  {
-			    hashes[i].value = hashes[i].value - (long)cmdval;
+			    hashes[i].value = hashes[i].value - cmdval;
 			  }
 			else
 			  {
@@ -507,16 +544,19 @@ main (int argc, char **argv)
 		  }
 		break;
 	      case 'd':
+			  val = (long)cmdval;
 		if (fields != 2)
 		  fprintf (stdout,
 			   "D command requires a numeric argument!\n");
-		else if (cmdval == 0)
+		else if (val == 0)
 		  fprintf (stdout, "You can't divide by zero, nimrod!\n");
 		else
 		  {
 		    fprintf (stdout, "Working...");
 		    for (i = 1; i < hfsize; i++)
-		      hashes[i].value = hashes[i].value / cmdval;
+			{
+		      hashes[i].value = hashes[i].value / val;
+			}
 		    fprintf (stdout, "done.\n");
 		  }
 		break;

@@ -1,4 +1,4 @@
-//crm_scm.c //sequence correlation monster
+//crm_strcompress.c //sequence correlation monster
 //  by Joe Langeway derived from crm_bit_entropy.c and 
 //    produced for the crm114 so:
 //  
@@ -44,20 +44,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 #define NULL_INDEX 2147483647
@@ -168,13 +154,22 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
     
 	filesize = sizeof(SCM_HEADER_STRUCT) + n_bytes * (sizeof(long) + 2 * sizeof(HASH_STRUCT) + 2 * sizeof(PREFIX_STRUCT) + sizeof(char));
     f = fopen(filename, "wb");
+	  if ( f == 0 ) 
+		{ 
+		  fatalerror ("For some reason, I was unable to write-open the file named ",
+			  filename);
+		}
+	  else
+		{
     i = filesize + 1024;
     while(i--)
       fputc('\0', f);
     fclose(f);
+	  }
     space = crm_mmap_file(filename, 0, filesize, PROT_READ | PROT_WRITE, MAP_SHARED,  NULL);
     make_scm_state(s, space);
-  } else
+  } 
+  else
   {
     char *o;
 	SCM_HEADER_STRUCT *h;
@@ -210,10 +205,17 @@ static void unmap_file(SCM_STATE_STRUCT *s)
     int hfd;                  //  hashfile fd
     FEATURE_HEADER_STRUCT foo;
     hfd = open (s->learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
+	if (hfd < 0)
+    {
+      fprintf(stderr, "Couldn't reopen %s to touch\n", s->learnfilename);
+    }
+    else
+	{
     read (hfd, &foo, sizeof(foo));
     lseek (hfd, 0, SEEK_SET);
     write (hfd, &foo, sizeof(foo));
     close (hfd);
+	}
   }
 #endif
 }
@@ -663,14 +665,14 @@ int crm_expr_scm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr, lon
     out_pos += sprintf (outbuf + out_pos, "CLASSIFY succeeds; success probability: %f  pR: %6.4f\n", suc_prob, suc_pR);
   else
     out_pos += sprintf (outbuf + out_pos, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", suc_prob, log10(suc_prob) - log10(1.0 - suc_prob) );  
-  /* [i_a] TODO: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
+  /* [i_a] GROT GROT GROT: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
   out_pos += sprintf (outbuf + out_pos, "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f\n", max_scorer, filenames[max_scorer], probs[max_scorer], pR[max_scorer] );
   
   out_pos += sprintf (outbuf + out_pos, "Total features in input file: %ld\n", txtlen);
   
   for(i = 0; i < n_classifiers; i++)
   {
-    /* [i_a] TODO: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
+    /* [i_a] GROT GROT GROT: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
     out_pos += sprintf (outbuf + out_pos, "#%ld (%s): bytes used: %ld, features: %ld, score: %3.2e, prob: %3.2e, pR: %6.2f\n", i, filenames[i], n_bytes_used[i], n_features[i], scores[i], probs[i], pR[i] ); 
   }
 

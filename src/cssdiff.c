@@ -40,6 +40,9 @@ int main (int argc, char **argv)
   long f1, f2;
   long sim, diff, dom1, dom2, hclash, kclash;
 
+  user_trace = DEFAULT_USER_TRACE_LEVEL;
+  internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
+
   {
     struct stat statbuf;    //  filestat buffer
     FEATUREBUCKET_TYPE *h1, *h2;              //  the text of the hash file

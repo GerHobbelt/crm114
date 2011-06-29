@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 //
@@ -51,7 +37,7 @@ int crm_invoke (void)
 
   //     timer1, timer2, and tstmt are for time profiling.
   //
-  TMS_STRUCT timer1, timer2;
+  TMS_STRUCT timer1 = {0}, timer2 = {0};
   long tstmt;
 
   tstmt = 0;
@@ -81,7 +67,7 @@ int crm_invoke (void)
 	}
     }
 
-  if (user_trace > 0)
+  if (user_trace)
     fprintf (stderr, "Starting to execute %s at line %ld\n",
 	     csl->filename, csl->cstmt);
 
@@ -98,7 +84,7 @@ int crm_invoke (void)
     {
       //  OK, we're at the end of the program.  When this happens,
       //  we know we can exit this invocation of the invoker
-      if (user_trace > 0 )
+      if (user_trace)
 	fprintf (stderr, "Finished the program %s.\n", csl->filename);
       done = 1;
       status = 0;
@@ -107,7 +93,7 @@ int crm_invoke (void)
 
   slen = (csl->mct[csl->cstmt+1]->fchar) - (csl->mct[csl->cstmt ]->fchar);
 
-  if (user_trace > 0)
+  if (user_trace)
     {
       fprintf (stderr, "\nParsing line %ld :\n", csl->cstmt);
       fprintf (stderr, " -->  ");
@@ -142,7 +128,7 @@ int crm_invoke (void)
       //
       if ( ! csl->mct[csl->cstmt]->apb )
 	{
-	  csl->mct[csl->cstmt]->apb = malloc(sizeof(csl->mct[csl->cstmt]->apb[0]));  /* [i_a] */
+	  csl->mct[csl->cstmt]->apb = calloc(1, sizeof(csl->mct[csl->cstmt]->apb[0]));  
 	  if ( ! csl->mct[csl->cstmt]->apb ) 
 	    untrappableerror ( "Couldn't malloc the space to incrementally "
 			       "compile a statement.  ", 
@@ -197,7 +183,7 @@ int crm_invoke (void)
 	goto invoke_top;
     }
 
-  if (user_trace > 0)
+  if (user_trace)
     {
       fprintf (stderr, "\nExecuting line %ld :\n", csl->cstmt);
     }
@@ -299,7 +285,7 @@ int crm_invoke (void)
 	//    just by popping the most recent csl off.
 	if (internal_trace)
 	  fprintf (stderr, "Return - popping CSL back to %p\n", 
-		   csl->caller );  /* [i_a] */
+		   csl->caller );  
 	
 	//     Do the argument transfer here.
 	//     Evaluate the "subject", and return that.  
@@ -499,7 +485,7 @@ int crm_invoke (void)
 	//   We malloc the reason - better free() it when we take the trap.
 	//   in crm_trigger_fault
 	//
-	reason = malloc ((rlen + 5) * sizeof(reason[0])); /* [i_a] */
+	reason = calloc ((rlen + 5) , sizeof(reason[0])); 
         if (!reason)
 	  untrappableerror(
 	    "Couldn't malloc 'reason' in CRM_FAULT - out of memory.\n", 
@@ -725,7 +711,7 @@ int crm_invoke (void)
 	    fatalerror (" Can't CALL the nonexistent label: ", target);
 	    goto invoke_bailout;
 	  }
-	newcsl = (CSL_CELL *) malloc (sizeof (newcsl[0]));  /* [i_a] */
+	newcsl = (CSL_CELL *) calloc (1, sizeof (newcsl[0]));  
 	newcsl->filename = csl->filename;
 	newcsl->filetext = csl->filetext;
 	newcsl->filedes = csl->filedes;
@@ -840,7 +826,7 @@ int crm_invoke (void)
 	  //
 	  if ( ! csl->mct[csl->cstmt]->apb )
 	    {
-	      csl->mct[csl->cstmt]->apb = malloc (sizeof (csl->mct[csl->cstmt]->apb[0]));  /* [i_a] */
+	      csl->mct[csl->cstmt]->apb = calloc (1, sizeof (csl->mct[csl->cstmt]->apb[0]));  
 	      if ( ! csl->mct[csl->cstmt]->apb ) 
 		untrappableerror ( "Couldn't malloc the space to incrementally "
 				   "compile a statement.  ", 

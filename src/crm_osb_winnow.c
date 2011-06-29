@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 ////////////////////////////////////////////////////////////////////
@@ -203,8 +189,10 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      exit (engine_exit_base + 21);
 	    }
 	  else
+	  {
 	    exit (EXIT_FAILURE);
-        }
+	  }
+	  }
       //       do we have a user-specified file size?
       if (sparse_spectrum_file_length == 0 ) {
         sparse_spectrum_file_length = 
@@ -282,7 +270,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //    and allocate the mask-off flags for this file
   //    so we only use each feature at most once
   //
-  xhashes = calloc ( hfsize, sizeof(xhashes[0])); /* [i_a] */
+  xhashes = calloc ( hfsize, sizeof(xhashes[0])); 
   if ( !xhashes )
     untrappableerror(
 		     "Couldn't malloc xhashes\n",
@@ -613,10 +601,17 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int hfd;                  //  hashfile fd
     FEATURE_HEADER_STRUCT foo;
     hfd = open (fname, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
+	if (hfd < 0)
+    {
+      fprintf(stderr, "Couldn't reopen %s to touch\n", fname);
+    }
+    else
+	{
     read (hfd, &foo, sizeof(foo));
     lseek (hfd, 0, SEEK_SET);
     write (hfd, &foo, sizeof(foo));
   close (hfd);
+	}
   }
 #endif
 
@@ -915,7 +910,7 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      //  set this hashlens to the length in features instead
 		      //  of the length in bytes.
 		      hashlens[maxhash] = hashlens[maxhash] / sizeof (WINNOW_FEATUREBUCKET_STRUCT);
-		      hashname[maxhash] = (char *) malloc((fnlen+10) * sizeof(hashname[maxhash][0])); /* [i_a] */
+		      hashname[maxhash] = (char *) calloc((fnlen+10) , sizeof(hashname[maxhash][0])); 
 		      if (!hashname[maxhash])
 			untrappableerror(
 					 "Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.");
@@ -926,7 +921,7 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      //    so we only use each feature at most once
 		      //
 		      xhashes[maxhash] = calloc (hashlens[maxhash], 
-						 sizeof (xhashes[maxhash][0])); /* [i_a] */
+						 sizeof (xhashes[maxhash][0])); 
 		      if (!xhashes[maxhash])
 			untrappableerror(
 					 "Couldn't malloc xhashes[maxhash]\n",

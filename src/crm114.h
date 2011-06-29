@@ -31,7 +31,7 @@ extern CSL_CELL *mdw;
 //    on every new statement.
 extern ARGPARSE_BLOCK *apb;
 
-/* [i_a] */
+
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;

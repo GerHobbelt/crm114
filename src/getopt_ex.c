@@ -685,7 +685,7 @@ static void exchange(char **argv)
     {
         /* We must extend the array.  The user plays games with us and
            presents new arguments.  */
-        char *new_str = malloc((top + 1) * sizeof(new_str[0])); /* [i_a] */
+        char *new_str = calloc((top + 1) , sizeof(new_str[0])); 
 
         if (new_str == NULL)
         {
@@ -799,7 +799,7 @@ static const char *_getopt_initialize(int argc, char *const *argv, const char *o
                 int len = nonoption_flags_max_len = strlen(orig_str);
                 if (nonoption_flags_max_len < argc)
                     nonoption_flags_max_len = argc;
-                __getopt_nonoption_flags = (char *)malloc(nonoption_flags_max_len * sizeof(__getopt_nonoption_flags[0])); /* [i_a] */
+                __getopt_nonoption_flags = (char *)calloc(nonoption_flags_max_len , sizeof(__getopt_nonoption_flags[0])); 
                 if (__getopt_nonoption_flags == NULL)
                     nonoption_flags_max_len = -1;
                 else

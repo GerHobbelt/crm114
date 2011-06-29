@@ -97,26 +97,10 @@ statistics.
 // finally include stuff specific to this beast
 #include "crm_expr_clump_nn.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-
-//end crap that appears in every file
-*/
 
 //GLOBALS parameters passed from crm
 
-/* [i_a] */
+
 static long max_tokens = 0;
 static long max_cor_tokens = 0;
 static double flat_weight = 0.0;
@@ -127,11 +111,7 @@ static double gauss_sigma = 0.0;
 //GLOBALS for debugging only, Joe hates globals
 
 
-//  THESE HAVE ALL BEEN REPLACED BY FLAGS SO SETTINGS HERE MEAN NOTHING,
-//  THOUGH THESE ARE STILL THE GLOBALS WE USE
-static int joe_trace = 0;
 
-/* [i_a] */
 static int go_flat = 0; //select scoring method
 
 
@@ -416,7 +396,7 @@ static void add_cooc(CLUSTEROR_STATE_STRUCT *s,
 	  || score_cooccurance(s,i,j) 
 	  > score_cooccurance(s, j, s->cor_tokens[ s->cor_tokens[cj].nearest_neihbor ].token)	)
 	{
-	  //  if(joe_trace) fprintf(stderr, "%ld is %ld's new nearest neighbor!\n", ci, cj);
+	  //  if(internal_trace) fprintf(stderr, "%ld is %ld's new nearest neighbor!\n", ci, cj);
 	  if(s->old_nearest_neihbors[cj] == NULL_INDEX)
 	    s->old_nearest_neihbors[cj] = s->cor_tokens[cj].nearest_neihbor;
 	  s->cor_tokens[cj].nearest_neihbor = ci;
@@ -428,7 +408,7 @@ static void add_cooc(CLUSTEROR_STATE_STRUCT *s,
       set_bit(s->token_nn_changed, ci, 1);
       set_bit(s->token_nn_changed, cj, 1);
     }
-  if(joe_trace) audit_nns(s);
+  if(internal_trace) audit_nns(s);
 }
 
 static index_t grab_edge(CLUSTEROR_STATE_STRUCT *s)
@@ -477,7 +457,6 @@ static void set_edge(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j, int e)
       if(get_edge(s, i, j))
 	return;
 	  { 
-		  /* [i_a] it is C code, not C++ */
       index_t a = grab_edge(s), b = grab_edge(s);
       s->graph[a].edge_to = j;
       s->graph[a].next = s->cor_tokens[i].edges;
@@ -549,7 +528,7 @@ static void delete_from_hash(CLUSTEROR_STATE_STRUCT *s, index_t token, long key)
 	}
       if(s->hash_table[i].key == key || s->hash_table[i].token == token)
 	{
-	  if(0 && joe_trace && s->hash_table[i].key != key)
+	  if(0 && internal_trace && s->hash_table[i].key != key)
 	    {
 	      //  so for some reason hash slots in the first level
 	      //  will often change their key by some amount divisible
@@ -656,7 +635,7 @@ static index_t grab_fresh_token(CLUSTEROR_STATE_STRUCT *s)
 
 static void wipe_cooccurences(CLUSTEROR_STATE_STRUCT *s, index_t t) //t is the cor_index
 {
-  index_t i, j; /* [i_a] it is C code, not C++ */
+  index_t i, j; 
   if(t >= s->header->n_cor_tokens)
     {
       fprintf(stderr, "Tried to qipe a stupid token number!\n");
@@ -716,7 +695,7 @@ static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t, COOCCURRENCE_S
 {
   long a, b;
   COOCCURRENCE_SCORE_TYPE count = (s->tokens[t].count += c);
-  //  if(joe_trace) fprintf(stderr, "entered add_token_count\n");
+  //  if(internal_trace) fprintf(stderr, "entered add_token_count\n");
   //  one line for loops are fun!
   //  fprintf(stderr,"1\n");
   //  audit_frequency_list(s);
@@ -752,7 +731,7 @@ static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t, COOCCURRENCE_S
 	s->tokens[ s->tokens[t].more_common ].less_common = t;
     }
   
-  if(0 && joe_trace) audit_frequency_list(s);
+  if(0 && internal_trace) audit_frequency_list(s);
   
   //  maintain s->header->least_frequent_cor_token and correlated tokens
 
@@ -772,7 +751,7 @@ static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t, COOCCURRENCE_S
 	      
 	      s->cor_tokens[ s->tokens[t].cor_index ].token = t;
 	      wipe_cooccurences(s, s->tokens[t].cor_index );
-	      //			if(joe_trace) fprintf(stderr, "gave token %ld cor_index %ld\n", t, s->tokens[t].cor_index);
+	      //			if(internal_trace) fprintf(stderr, "gave token %ld cor_index %ld\n", t, s->tokens[t].cor_index);
 	    }
 	} else //we're still filling cor token slots
 	{
@@ -784,7 +763,7 @@ static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t, COOCCURRENCE_S
 	  s->cor_tokens[a].nearest_neihbor = NULL_INDEX;
 	  s->cor_tokens[a].cluster = NULL_INDEX;
 	  s->cor_tokens[a].edges = NULL_INDEX;
-	  //		if(joe_trace) fprintf(stderr, "gave token %ld cor_index %ld\n", t, a);
+	  //		if(internal_trace) fprintf(stderr, "gave token %ld cor_index %ld\n", t, a);
 	}
     }
 }
@@ -900,7 +879,7 @@ static void learning_tokenize (	CLUSTEROR_STATE_STRUCT *s,
       if(crm_regexec ( regee, text, len, 1, &match, 0, NULL))
 	return;
       l = match.rm_eo - match.rm_so;
-      if(0 && joe_trace)
+      if(0 && internal_trace)
 	{
 	  fprintf(stderr, "about to look up:");
 	  for(i = match.rm_so; i < match.rm_eo; i++)
@@ -911,7 +890,7 @@ static void learning_tokenize (	CLUSTEROR_STATE_STRUCT *s,
       
       *t++ = get_token_from_hash(s, strnhash(&text[match.rm_so], l));
       
-      if(0 && joe_trace && *(t - 1) != simple_hash_lookup(s, strnhash(&text[match.rm_so], l)))
+      if(0 && internal_trace && *(t - 1) != simple_hash_lookup(s, strnhash(&text[match.rm_so], l)))
 	{
 	  fprintf(stderr, 
  	   "Failed to relookup token! hash: %lu token: %ld gotback: %ld\n", 
@@ -920,7 +899,7 @@ static void learning_tokenize (	CLUSTEROR_STATE_STRUCT *s,
 		  simple_hash_lookup(s, strnhash(&text[match.rm_so], l)));
 	  break_point();
 	} 
-      if(0 && joe_trace)
+      if(0 && internal_trace)
 	{
 	  fprintf(stderr, "tokenized:");
 	  for(i = match.rm_so; i < match.rm_eo; i++)
@@ -1061,7 +1040,6 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 {
   long i, file_size;
   struct stat statbuf;
-  /* [i_a] it is C code, not C++ */
   FILE *f;
   
   if(stat (filename, &statbuf)) //if the file didn't exist already
@@ -1071,43 +1049,42 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
       file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
 
       //  account for token hash
-      if(joe_trace) fprintf(stderr, "hash offset ought to be %ld bytes\n", file_size);
+      if(internal_trace) fprintf(stderr, "hash offset ought to be %ld bytes\n", file_size);
       file_size += 2 * n_tokens * sizeof(HASH_NODE_STRUCT);
       file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
 
       //  accoutn for tokens
-      if(joe_trace) fprintf(stderr, "token offset ought to be %ld bytes\n", file_size);
+      if(internal_trace) fprintf(stderr, "token offset ought to be %ld bytes\n", file_size);
       file_size += n_tokens * sizeof(TOKEN_STRUCT);
       file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
 
       //  accoutn for cor_tokens
-      if(joe_trace) fprintf(stderr, "corellated token offset ought to be %ld bytes\n", file_size);
+      if(internal_trace) fprintf(stderr, "corellated token offset ought to be %ld bytes\n", file_size);
       file_size += n_cor_tokens * sizeof(COR_TOKEN_STRUCT);
       file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
 
       //  account for cooccurance scores
-      if(joe_trace) fprintf(stderr, "cooccurence offset ought to be %ld bytes\n", file_size);
+      if(internal_trace) fprintf(stderr, "cooccurence offset ought to be %ld bytes\n", file_size);
       file_size += n_cor_tokens * (n_cor_tokens + 3) / 2 * sizeof(COOCCURRENCE_SCORE_TYPE);
       file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
 
       //  account for graph
-      if(joe_trace) fprintf(stderr, "graph offset ought to be %ld bytes\n", file_size);
+      if(internal_trace) fprintf(stderr, "graph offset ought to be %ld bytes\n", file_size);
       file_size += 4 + (3 * n_cor_tokens + 2) * sizeof(EDGE_STRUCT); 
       file_size +=  BYTE_ALIGN - file_size % BYTE_ALIGN;
       //account for clusters
-      if(joe_trace) fprintf(stderr, "cluster offset ought to be %ld bytes\n", file_size);
+      if(internal_trace) fprintf(stderr, "cluster offset ought to be %ld bytes\n", file_size);
       file_size += MAX_CLUSTERS * sizeof(CLUSTER_STRUCT);
       file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
       
-      if(joe_trace) fprintf(stderr, "new file size is %ld bytes\n", file_size);
+      if(internal_trace) fprintf(stderr, "new file size is %ld bytes\n", file_size);
       
-	  /* [i_a] it is C code, not C++ */
-      f = fopen(filename, "wb");
+	  f = fopen(filename, "wb");
 	  if (f != NULL)
 	  {
       i = file_size + 1024;
       while(i--)
-	fputc('\0', f);
+	fputc(0, f);
       fclose(f);
 	  }
 	  else
@@ -1115,10 +1092,10 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 		  fatalerror("Could not create map file: ", filename);
 	  }
       
-      if(joe_trace) fprintf(stderr, "\ndone writing file, about to mmap\n");
+      if(internal_trace) fprintf(stderr, "\ndone writing file, about to mmap\n");
       s->header = crm_mmap_file(filename, 0, file_size, PROT_READ | PROT_WRITE, MAP_SHARED,  NULL /*&actual_file_size*/);
       
-      if(joe_trace)
+      if(internal_trace)
 	{
 	  if(!test_memory_consistancy((unsigned char *)(s->header), file_size))
 	    {
@@ -1136,7 +1113,7 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 	  assert(s->header != NULL);
       s->header->max_tokens = n_tokens;
       s->header->max_cor_tokens = n_cor_tokens;
-      if(joe_trace) fprintf(stderr,"about to make a new cluster state allowing for %ld tokens\n", s->header->max_tokens);
+      if(internal_trace) fprintf(stderr,"about to make a new cluster state allowing for %ld tokens\n", s->header->max_tokens);
       make_new_clusteror_state(s);
     } else
     {
@@ -1169,13 +1146,13 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
   while(--i >= 0)
     s->closed_list[i] = 0;
   
-  if(joe_trace)
+  if(internal_trace)
     print_header(s);
 }
 
 static void unmap_file_for_learn(CLUSTEROR_STATE_STRUCT *s)
 {
-  if(joe_trace)
+  if(internal_trace)
     {
       fprintf(stderr, "unmapping\n");
       //print_header(s);
@@ -1297,7 +1274,7 @@ static void score_document_flat(CLUSTEROR_STATE_STRUCT *s, index_t *doc, long le
 	set_bit(seen, doc[i], 1);
 	seen_set[seen_set_len++] = doc[i];
       }
-  if(joe_trace) fprintf(stderr, "saw %ld unique tokens\n", seen_set_len);
+  if(internal_trace) fprintf(stderr, "saw %ld unique tokens\n", seen_set_len);
   add_N(s, sense);
   for(i = 0; i < seen_set_len; i++)
     add_occ(s, seen_set[i], sense);
@@ -1309,11 +1286,10 @@ static void score_document_flat(CLUSTEROR_STATE_STRUCT *s, index_t *doc, long le
 #ifdef NOT_USED
 static int check_if_connected(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 {
-  /* [i_a] it is C code, not C++ */
   index_t *stack = (index_t *)outbuf, *stack_ptr = stack;
   index_t a, b;
 
-  if(joe_trace) fputc('c',stderr);
+  if(internal_trace) fputc('c',stderr);
   
   *stack_ptr++ = i;
   while(stack_ptr > stack)
@@ -1355,7 +1331,6 @@ int given = 0, goten = 0;
 
 static long cluster_audit(CLUSTEROR_STATE_STRUCT *s)
 {
-  /* [i_a] it is C code, not C++ */
   long *cluster_closed = (long *)inbuf;
   index_t a, b;
 
@@ -1389,8 +1364,8 @@ static long cluster_audit(CLUSTEROR_STATE_STRUCT *s)
 
 static void give_back_cluster(CLUSTEROR_STATE_STRUCT *s, index_t c)
 {
-  if(joe_trace) fputc('b',stderr);
-  //if(joe_trace) fprintf(stderr, "\ngiving back cluster %ld\n", c);
+  if(internal_trace) fputc('b',stderr);
+  //if(internal_trace) fprintf(stderr, "\ngiving back cluster %ld\n", c);
   if(c >= MAX_CLUSTERS)
     {
       fprintf(stderr, "gave back a wonkee cluster! %ld\n", c);
@@ -1398,7 +1373,7 @@ static void give_back_cluster(CLUSTEROR_STATE_STRUCT *s, index_t c)
     }
   if(c != NULL_INDEX) //in case we give back the null cluster for fum
     {
-      if(joe_trace)
+      if(internal_trace)
 	{
 	  long i, j;
 	  for(i = s->header->first_unused_cluster_slot, j = 0; 
@@ -1436,10 +1411,9 @@ static void give_back_cluster(CLUSTEROR_STATE_STRUCT *s, index_t c)
 
 static index_t get_fresh_cluster(CLUSTEROR_STATE_STRUCT *s)
 {
-  /* [i_a] it is C code, not C++ */
   index_t c = s->header->first_unused_cluster_slot;
 
-  if(joe_trace) fputc('g',stderr);
+  if(internal_trace) fputc('g',stderr);
 
   if(c == MAX_CLUSTERS)
     {
@@ -1465,7 +1439,7 @@ static index_t get_fresh_cluster(CLUSTEROR_STATE_STRUCT *s)
 //  an implicate closed list yay!
 static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 {
-  if(joe_trace) fputc('j',stderr);
+  if(internal_trace) fputc('j',stderr);
   
   if(i < 0 || i >= s->header->n_cor_tokens || j < 0 || j > s->header->n_cor_tokens)
     fprintf(stderr, "\nmade to join wonkee token numbers!\n i = %ld, j = %ld\n", i, j); 
@@ -1482,7 +1456,7 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
      ||	(s->cor_tokens[j].cluster != NULL_INDEX 
 	 && s->clusters[ s->cor_tokens[j].cluster ].next_free != NULL_INDEX))
     {
-      index_t q; /* [i_a] */
+      index_t q; 
       fprintf(stderr, "\nmade to join a cluster in the free list!\n cluster(%ld) = %ld, cluster(%ld) = %ld, next(%ld) = %ld, next(%ld) = %ld\n", i, s->cor_tokens[i].cluster, j, s->cor_tokens[j].cluster, s->cor_tokens[i].cluster, s->clusters[ s->cor_tokens[i].cluster ].next_free, s->cor_tokens[j].cluster, s->clusters[ s->cor_tokens[j].cluster ].next_free);
       fprintf(stderr, "adjacent to %ld:\n", i);
       for(q = s->cor_tokens[i].edges; q != NULL_INDEX; q = s->graph[q].next)
@@ -1500,7 +1474,7 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
       break_point();
     }
   
-  if(0 && joe_trace)
+  if(0 && internal_trace)
     {	fprintf(stderr, "\nWe're going to join nodes/tokens %ld and %ld, they have respective cluster numbers %ld and %ld", i, j, s->cor_tokens[i].cluster, s->cor_tokens[j].cluster);
       if(s->cor_tokens[i].cluster < NULL_INDEX)
 	fprintf(stderr, ", cluster %ld's occurence is %f", s->cor_tokens[i].cluster, s->clusters[ s->cor_tokens[i].cluster ].occurrences);
@@ -1512,12 +1486,11 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
   
   if(s->cor_tokens[i].cluster == s->cor_tokens[j].cluster && s->cor_tokens[i].cluster != NULL_INDEX)
     {
-      if( joe_trace ) fputc('I', stderr);
+      if( internal_trace ) fputc('I', stderr);
       return;  //this can happen if i and j were already joined transitively
     }
 
   {
-	    /* [i_a] it is C code, not C++ */
   index_t a, b, c, old_cluster;
   index_t *stack = (index_t *)tempbuf, *stack_ptr = stack;
   
@@ -1540,7 +1513,7 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 	    if(s->cor_tokens[ s->graph[b].edge_to ].cluster == old_cluster)
 	      *stack_ptr++ = s->graph[b].edge_to;
 	}
-      if( joe_trace ) fputc('N', stderr);
+      if( internal_trace ) fputc('N', stderr);
       //  because and i and j are connected that previous traversal
       //  should have painted both groups
       return;
@@ -1566,12 +1539,12 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 	if(s->cor_tokens[ s->graph[b].edge_to ].cluster == old_cluster)
 	  *stack_ptr++ = s->graph[b].edge_to;
     }
-  if(joe_trace && old_cluster == NULL_INDEX)
+  if(internal_trace && old_cluster == NULL_INDEX)
     fputc('Q', stderr);
   
   if(old_cluster != NULL_INDEX)
     give_back_cluster(s, old_cluster);
-  } /* [i_a] */
+  } 
 }
 
 
@@ -1580,7 +1553,6 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 //  this guy tests for connectivity while begining cut
 static void speculative_split_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 {
-  /* [i_a] it is C code, not C++ */
   index_t c;
   index_t a, b;
   index_t *stack = (index_t *)tempbuf, *stack_ptr = stack;
@@ -1588,7 +1560,7 @@ static void speculative_split_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, ind
   index_t *groupJ = (index_t *)outbuf, n_groupJ = 0;
   COOCCURRENCE_SCORE_TYPE occI = 0.0, occJ = 0.0;
 
-  if(joe_trace) fputc('S',stderr);
+  if(internal_trace) fputc('S',stderr);
 
   *stack_ptr++ = i;
   while(stack_ptr > stack)
@@ -1647,7 +1619,7 @@ static void update_graph_and_clusters(CLUSTEROR_STATE_STRUCT *s)
   tempbuf += MAX_TOKENS * sizeof(index_t);
   inbuf += MAX_TOKENS * sizeof(index_t);
   
-  if(joe_trace)
+  if(internal_trace)
     {
       fprintf(stderr, "s->header->n_clusters = %ld\n", s->header->n_clusters);
       if(cluster_audit(s) != s->header->n_clusters)
@@ -1693,7 +1665,7 @@ static void update_graph_and_clusters(CLUSTEROR_STATE_STRUCT *s)
 	  }
       }
   
-  if(joe_trace)
+  if(internal_trace)
     {
       fprintf(stderr, "s->header->n_clusters = %ld\ndid %ld cuts, and %ld joins\n", s->header->n_clusters, n_cuts, n_joins);
       if(cluster_audit(s) != s->header->n_clusters)
@@ -1715,7 +1687,7 @@ int verify_graph(CLUSTEROR_STATE_STRUCT *s)
     for(j = i + 1; j < s->header->n_cor_tokens; j++, d++)
       if(get_edge(s, i, j))
 	c++;
-  if(joe_trace)
+  if(internal_trace)
     fprintf(stderr, "the graph has %ld edges, there are %ld possible. There are %ld correlated tokens\n", c, d, s->header->n_cor_tokens);
   return c <= 2 * s->header->n_tokens;
 }
@@ -1749,7 +1721,7 @@ static long copy_and_escape(char *out, const char *in, const char *escape_these)
 {
   const char *i = in;
   char *o = out;
-  if(joe_trace)
+  if(internal_trace)
     fprintf(stderr, "escaping string: %s\n", in);
   
   while(*i)
@@ -1764,7 +1736,7 @@ static long copy_and_escape(char *out, const char *in, const char *escape_these)
     }
   *o++ = '\0';
   
-  if(joe_trace)
+  if(internal_trace)
     fprintf(stderr, "produced string: %s\n", out);
   
   return o - out;
@@ -1788,18 +1760,18 @@ static void parse_monster(char *text, long len, const char **keys, double *value
   regmatch_t match[2];
   while(*keys)
     {
-      if(joe_trace)
+      if(internal_trace)
 	fprintf(stderr, "parsing for key: %s\n", *keys);
       regee_text_len = copy_and_escape(regee_text, *keys, ".()[]{}^*+-?");
       regee_text_len--; //to eat null charactor
       regee_text_len = strmov(regee_text + regee_text_len, "[[:space:]]*=[[:space:]]*(-?[0-9.]+)") - regee_text;
-      if(joe_trace)
+      if(internal_trace)
 	{
 	  fprintf(stderr, "compiling regex: %.*s\n", (int)regee_text_len, regee_text);
 	}
       if(crm_regcomp (&regee, regee_text, regee_text_len, REG_EXTENDED))
 	{	
-	  if(joe_trace)	fprintf(stderr, "some jerk gave us a wonkey key to parse in parse_monster! : %s\n", *keys);
+	  if(internal_trace)	fprintf(stderr, "some jerk gave us a wonkey key to parse in parse_monster! : %s\n", *keys);
 	} else
 	{
 	  if(!crm_regexec ( &regee, text, len, 2, match, 0, NULL))
@@ -1847,20 +1819,19 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   
   index_t i;
   
-  /* [i_a] it is C code, not C++ */
   const char *keys[] = {"max_tokens", "max_cor_tokens", "flat_weight", "sharp_weight", "gauss_weight", "gauss_sigma", (char *)0};
   /* values[] will be edited by parse_monster(): */
   double values[] = {MAX_TOKENS, MAX_COR_TOKENS, 0.0, 1.0, 0.0, 1.0};
 
-  //joe_trace = internal_trace
+  //internal_trace = internal_trace
   
-  joe_trace = 0;
+  internal_trace = 0;
   if(internal_trace)
-    joe_trace = 1;
+    internal_trace = 1;
   
-  if(joe_trace)
+  if(internal_trace)
     fprintf(stderr, "entered crm_expr_clump (learn)\n");
-  if(joe_trace && !test_bit_vectors())
+  if(internal_trace && !test_bit_vectors())
     fprintf(stderr, "bit vectors don't work!");
   
   
@@ -1876,7 +1847,6 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (apb->sflags & CRM_REFUTE)
     sense = -sense;
   
-  /* [i_a] it is C code, not C++ */
   /*
   char *keys[] = {"max_tokens", "max_cor_tokens", "flat_weight", "sharp_weight", "gauss_weight", "gauss_sigma", (char *)0};
   double values[] = {MAX_TOKENS, MAX_COR_TOKENS, 0.0, 1.0, 0.0, 1.0};
@@ -1894,7 +1864,7 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   gauss_weight = values[4];
   gauss_sigma = values[5];
   
-  if(joe_trace)
+  if(internal_trace)
     {
       const char **ki = keys;
       const double *vi = values;
@@ -1913,7 +1883,7 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   regex_text[regex_text_len] = '\0'; //only nessicary for debug print later
   regex_text_len = crm_nexpandvar (regex_text, regex_text_len, MAX_PATTERN);
   //  THIS IS WHERE REGEX FLAGS GO FOR THINGS LIKE CASE INSENSITIVITY
-  if(joe_trace) fprintf(stderr, "about to compile token regex: \"%s\"\n", regex_text);
+  if(internal_trace) fprintf(stderr, "about to compile token regex: \"%s\"\n", regex_text);
   if( crm_regcomp (&regee, regex_text, regex_text_len, REG_EXTENDED) )
     {
       fprintf(stderr, "Problem compiling this regex %s\n", regex_text);
@@ -1927,11 +1897,11 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       break_point();
     }
   
-  if(joe_trace) fprintf(stderr, "about to call map_file_for_learn on %s\n", filename);
+  if(internal_trace) fprintf(stderr, "about to call map_file_for_learn on %s\n", filename);
   
   map_file_for_learn(&s, filename);
   
-  if(joe_trace)
+  if(internal_trace)
     diagnose_hash_table(&s);
   
   if(0)//apb->sflags & CRM_PEEK) //just peeking
@@ -1941,18 +1911,18 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       tokenized_text = (index_t *)outbuf;
       outbuf += text_len + 2;
       
-      if(joe_trace) fprintf(stderr, "about to tokenize %ld characters with regex %s, there are %ld unique tokens in hash already\n", text_len, regex_text, s.header->n_tokens);
+      if(internal_trace) fprintf(stderr, "about to tokenize %ld characters with regex %s, there are %ld unique tokens in hash already\n", text_len, regex_text, s.header->n_tokens);
       
       learning_tokenize(&s, tokenized_text, &tokenized_text_len, text_len / 2 + 1, text + text_start, text_len, &regee);
       
-      if(joe_trace) fprintf(stderr, "the document was %d tokens long, there are now %ld tokens in hash\n", tokenized_text_len, s.header->n_tokens);
+      if(internal_trace) fprintf(stderr, "the document was %d tokens long, there are now %ld tokens in hash\n", tokenized_text_len, s.header->n_tokens);
       
       s.old_nearest_neihbors = (index_t *)outbuf; 
       outbuf += (s.header->n_tokens * sizeof(index_t));
       for(i = 0; i < s.header->n_tokens; i++)
 	s.old_nearest_neihbors[i] = NULL_INDEX; 
       
-      if(joe_trace) fprintf(stderr, "about to score with %s\n", go_flat ? "score_document_flat" : "score_document_fuzzy");
+      if(internal_trace) fprintf(stderr, "about to score with %s\n", go_flat ? "score_document_flat" : "score_document_fuzzy");
       if(go_flat)
 	score_document_flat(&s, tokenized_text, tokenized_text_len, sense);
       else
@@ -1963,10 +1933,10 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       
       update_seen_tokens(&s);
       
-      if(joe_trace) fprintf(stderr, "activating graph monster!\n");
+      if(internal_trace) fprintf(stderr, "activating graph monster!\n");
       update_graph_and_clusters(&s);
       
-      if(joe_trace && !verify_graph(&s))
+      if(internal_trace && !verify_graph(&s))
 	fprintf(stderr, "wonkee graph!\n");
       
       outbuf -= text_len;
@@ -1987,14 +1957,20 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int hfd;                  //  hashfile fd
     char foo;
 
-    if(joe_trace) fprintf(stderr, "posix blah!\n");
+    if(internal_trace) fprintf(stderr, "posix blah!\n");
 
     hfd = open (filename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
-    if(hfd == -1) fprintf(stderr, "Couldn't reopen %s to touch\n", filename);
+	if (hfd < 0)
+    {
+      fprintf(stderr, "Couldn't reopen %s to touch\n", filename);
+    }
+    else
+	{
     read (hfd, &foo, sizeof(foo));
     lseek (hfd, 0, SEEK_SET);
     write (hfd, &foo, sizeof(foo));
     close (hfd);
+	}
   }
 #endif
   
@@ -2013,7 +1989,7 @@ static void nolearning_tokenize
   for(*n = 0; *n < max; (*n)++)
     {
       //remember to inc/dec text and len
-      if(0 && joe_trace) fprintf(stderr, "calling crm_regexec...");
+      if(0 && internal_trace) fprintf(stderr, "calling crm_regexec...");
       m = crm_regexec ( regee, text, len, 1, &match, 0, NULL);
       if(m == REG_NOMATCH)
 	return;
@@ -2023,7 +1999,7 @@ static void nolearning_tokenize
 	  return;
 	}
       l = match.rm_eo - match.rm_so;
-      if(0 && joe_trace)
+      if(0 && internal_trace)
 	{
 	  fprintf(stderr, "matched token: ");
 	  for(i = match.rm_so; i < match.rm_eo; i++)
@@ -2031,12 +2007,12 @@ static void nolearning_tokenize
 	  fprintf(stderr, ". The hashcode of which is %ld\n", strnhash(&text[match.rm_so], l));
 	}
       
-      if( 0 && joe_trace) fprintf(stderr, "calling no_learning_get_token_from_hash...\n");
+      if( 0 && internal_trace) fprintf(stderr, "calling no_learning_get_token_from_hash...\n");
       
       *t++ = simple_hash_lookup(s, strnhash(&text[match.rm_so], l));
       
-      if(0 && joe_trace)
-	if(joe_trace) fprintf(stderr, "no_learning_get_token_from_hash returned %ld\n", *(t-1));
+      if(0 && internal_trace)
+	if(internal_trace) fprintf(stderr, "no_learning_get_token_from_hash returned %ld\n", *(t-1));
       
       
       text += match.rm_eo;
@@ -2070,14 +2046,10 @@ int crm_expr_pmulc_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   
   struct stat statbuf;
   
-  index_t t;  /* [i_a] it is C code, not C++ */
-
-  /* [i_a] it is C code, not C++ */
+  index_t t;  
+  
   CLUSTEROR_STATE_STRUCT s;
   
-  joe_trace = 0;
-  if(internal_trace)
-    joe_trace = 1;
   
   //  parse out cluster file name and flags and token regex
   crm_get_pgm_arg (filename, MAX_PATTERN, apb->p1start, apb->p1len);
@@ -2110,7 +2082,6 @@ int crm_expr_pmulc_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       break_point();
     }
   
-  /* [i_a] it is C code, not C++ */
   /* CLUSTEROR_STATE_STRUCT s; */
   
   if(stat (filename, &statbuf))
@@ -2124,7 +2095,7 @@ int crm_expr_pmulc_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   s.hash_table = (HASH_NODE_STRUCT *)((char *)(s.header) + s.header->hash_slots_offset);
   s.tokens = (TOKEN_STRUCT *)((char *)(s.header) + s.header->tokens_offset);
   s.cor_tokens = (COR_TOKEN_STRUCT *)((char *)(s.header) + s.header->cor_tokens_offset);
-  if (joe_trace)
+  if (internal_trace)
     {
       fprintf(stderr, "In theory we've mapped %s, and it has %ld tokens and %ld clusters", filename, s.header->n_tokens, s.header->n_clusters);
     
@@ -2139,11 +2110,11 @@ int crm_expr_pmulc_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   
   tokenized_text = (index_t *)inbuf;
   
-  if(joe_trace) fprintf(stderr, "about to tokenize with regex_text: %s\n", regex_text);
+  if(internal_trace) fprintf(stderr, "about to tokenize with regex_text: %s\n", regex_text);
   
   nolearning_tokenize(&s, tokenized_text, &tokenized_text_len, text_len / 2 + 1, text + text_start, text_len, &regee);
   
-  if(joe_trace) fprintf(stderr, "tokenized\n");
+  if(internal_trace) fprintf(stderr, "tokenized\n");
   
   out_pos = 0;
   outbuf[out_pos] = 0;

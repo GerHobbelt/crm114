@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 //     Helper routines 
@@ -63,12 +49,16 @@ void untrappableerror (const char *text1, const char *text2)
       iline = csl->cstmt;
       maxchar = csl->mct[iline+1]->fchar;
       if (maxchar > csl->mct[iline]->fchar + 255) 
-	maxchar = csl->mct[iline]->fchar + 255;
+	  {
+	    maxchar = csl->mct[iline]->fchar + 255;
+	  }
       if (iline > 0)
 	for (ichar = csl->mct[iline]->fchar;
 	     ichar < maxchar;
 	     ichar++)
+	{
 	  fprintf (stderr, "%c", csl->filetext[ichar]);
+	}
       fprintf (stderr, "\n");
     }
   if (engine_exit_base != 0)
@@ -76,8 +66,9 @@ void untrappableerror (const char *text1, const char *text2)
       exit (engine_exit_base + 2);
     }
   else
+  {
     exit (CRM_EXIT_APOCALYPSE);
-
+  }
 }
 
 
@@ -111,7 +102,7 @@ long fatalerror ( const char *text1, const char *text2 )
   if ((csl->nstmts > 0) && (csl->mct[csl->cstmt]->trap_index < csl->nstmts))
     {
       long fresult;
-      rbuf = malloc (MAX_PATTERN * sizeof(rbuf[0])); /* [i_a] */
+      rbuf = calloc (MAX_PATTERN , sizeof(rbuf[0])); 
       if (!rbuf)
 	{
           fprintf(stderr,
@@ -166,12 +157,16 @@ long nonfatalerror ( const char *text1, const char *text2 )
   //   Create our reason string.  Note that some reason text2's can be VERY 
   //   long, so we put out only the first 1024 characters
   //
-  if (strlen (text2) < 1023)
+  if (strlen (text2) <= 1024)
+  {
     snprintf (reason, MAX_PATTERN, "\n%s: *WARNING*\n %.1024s %.1024s\nI'll try to keep working.\nThis happened at line %ld of file %s\n", 
 	   prog_argv[0], text1, text2, csl->cstmt, csl->filename);
+  }
   else
-    snprintf (reason, MAX_PATTERN, "\n%s: *WARNING*\n %.1024s %.1024s(...truncated)\nI'll try to keep working.\nThis happened at line %ld of file %s\n", 
+  {
+	  snprintf (reason, MAX_PATTERN, "\n%s: *WARNING*\n %.1024s %.1024s(...truncated)\nI'll try to keep working.\nThis happened at line %ld of file %s\n", 
 	   prog_argv[0], text1, text2, csl->cstmt, csl->filename);
+  }
   reason[MAX_PATTERN-1] = 0;
 
   //     Check to see - is there a trap available or is this a non-trap 
@@ -182,7 +177,7 @@ long nonfatalerror ( const char *text1, const char *text2 )
   if ((csl->nstmts > 0) && (csl->mct[csl->cstmt]->trap_index<csl->nstmts))
     {
       long fresult;
-      rbuf = malloc (MAX_PATTERN * sizeof(rbuf[0]));  /* [i_a] */
+      rbuf = calloc (MAX_PATTERN , sizeof(rbuf[0]));  
       if (!rbuf)
 	{
           fprintf(stderr,

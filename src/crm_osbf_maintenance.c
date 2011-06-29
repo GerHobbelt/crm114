@@ -39,20 +39,6 @@ char *CSS_version_name[] = {
   "Unknown"
 };
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 //    microgroom flag for osbf
 static int osbf_microgroom = 0;
@@ -389,7 +375,6 @@ crm_osbf_packseg (OSBF_FEATURE_HEADER_STRUCT * header,
 	      if (ito > ifrom)
 		fprintf (stderr, ">");
 	    }
-
 	}
     }
 }
@@ -612,9 +597,13 @@ crm_osbf_create_cssfile (char *cssfile, unsigned long buckets,
   f = fopen (cssfile, "wb");
   if (!f)
     {
-      fatalerror ("Couldn't open the new .cfc file for writing; file = ",
+		long q;
+      q = fatalerror ("Couldn't open the new .cfc file for writing; file = ",
                   cssfile);
+	  return q;
     }
+  else
+  {
   // Set the header.
   *((unsigned long *) hu.header.version) = major;	// quick hack for now...
   hu.header.flags = minor;
@@ -639,5 +628,6 @@ crm_osbf_create_cssfile (char *cssfile, unsigned long buckets,
         }
     }
   fclose (f);
+  }
   return (EXIT_SUCCESS);
 }

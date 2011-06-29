@@ -261,7 +261,7 @@
 #             ------  you can use the "sort --key 1.2" on date-named files to
 #              -----   achieve chronological training
 :trainer_randomizer_command: /.\/shuffle.crm/
-#:trainer_randomizer_command: /.\/crm114_tre shuffle.crm/
+#:trainer_randomizer_command: /.\/crm114 shuffle.crm/
 #:trainer_randomizer_command: /sort --key 1.2/
 
 

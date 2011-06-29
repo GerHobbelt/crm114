@@ -47,6 +47,9 @@ int main (int argc, char **argv)
   struct stat statbuf;    //  filestat buffer
   FEATUREBUCKET_TYPE *h1, *h2;              //  the text of the hash file
 
+  user_trace = DEFAULT_USER_TRACE_LEVEL;
+  internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
+
   verbose = 0;
   f1 = f2 = -1;
 
@@ -132,7 +135,9 @@ int main (int argc, char **argv)
       //       put in  bytes of NULL
       for (j = 0; j < sparse_spectrum_file_length
 	     * sizeof (FEATUREBUCKET_TYPE); j++) 
-	fprintf (f,"%c", '\000');
+	  {
+	fputc(0, f);  /* [i_a] fprintf(f, "%c", '\0'); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
+	  }
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (argv[f1], &statbuf);

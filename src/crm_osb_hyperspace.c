@@ -22,28 +22,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
-
-/* [i_a]
-//    The following sqrtf mumbojumbo because ppc_osx doesn't define sqrtf
-//    like it should.
-#ifndef sqrtf
-#define sqrtf(x) sqrt((x))
-#endif
-*/
 
 
 //////////////////////////////////////////////////////////////////
@@ -320,7 +298,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //    pre-existing memory.  We just write to the end of the file instead.
   //    malloc up the unsorted hashbucket space  
   hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, 
-		   sizeof (hashes[0]));  /* [i_a] */
+		   sizeof (hashes[0]));  
   hashcounts = 0;
   //  put in a zero as the start marker.
   hashes[hashcounts].hash = 0;
@@ -563,6 +541,13 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	fprintf (stderr, "Opening hyperspace file %s for append.\n", 
 		 hashfilename);
       hashf = fopen ( hashfilename , "ab+");
+	  if ( hashf == 0 ) 
+		{ 
+		  fatalerror ("For some reason, I was unable to append-open the file named ",
+			  hashfilename);
+		}
+	  else
+		{
       if (user_trace)
 	fprintf (stderr, "Writing to hash file %s\n", hashfilename);
       //    and write the sorted hashes out.
@@ -570,6 +555,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT) * hashcounts, 
 	      hashf);
       fclose (hashf);
+	  }
       
       //  let go of the hashes.
       free (hashes);
@@ -592,8 +578,8 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       long thisstart, thislen, thisend;
       double bestrad;
       long wrapup;
-      long kandu; /* [i_a] */
-	  long unotk, knotu;    /* [i_a] */
+      long kandu; 
+	  long unotk, knotu;    
 	  double dist, radiance;
       long k, u;
       long file_hashlens;
@@ -848,9 +834,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     Basic match parameters
   //     These are computed intra-document, other stuff is only done
   //     at the end of the document.  
-  long knotu;   // features in known doc, not in unknown    /* [i_a] */
-  long unotk;   // features in unknown doc, not in known    /* [i_a] */
-  long kandu;   // feature in both known and unknown    /* [i_a] */
+  long knotu;   // features in known doc, not in unknown    
+  long unotk;   // features in unknown doc, not in known    
+  long kandu;   // feature in both known and unknown    
   
   //     Distance is the pythagorean distance (sqrt) between the
   //     unknown and a known-class text; we choose closest.  (this
@@ -915,7 +901,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   
   //        make the space for the unknown text's hashes
   unk_hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, 
-		   sizeof (unk_hashes[0]));  /* [i_a] */
+		   sizeof (unk_hashes[0]));  
   unk_hashcount = 0;
   unk_hashcount++;
 
@@ -1099,15 +1085,23 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			  if (user_trace)
 			    fprintf (stderr, "Read-opening file %s\n", fname);
 			  hashf= fopen (fname, "rb");
+			  if ( hashf == 0 ) 
+				{ 
+				  fatalerror ("For some reason, I was unable to read-open the file named ",
+					  fname);
+				}
+			  else
+				{
 			  fread (hashes[maxhash], 1, hashlens[maxhash], hashf);
 			  fclose (hashf);
+			  }
 			}
 			  
 		      //  set this hashlens to the length in features instead
 		      //  of the length in bytes.
 		      hashlens[maxhash] = hashlens[maxhash] 
 			/ sizeof ( HYPERSPACE_FEATUREBUCKET_STRUCT );
-		      hashname[maxhash] = (char *) malloc((fnlen+10) * sizeof(hashname[maxhash][0])); /* [i_a] */
+		      hashname[maxhash] = (char *) calloc((fnlen+10) , sizeof(hashname[maxhash][0])); 
 		      if (!hashname[maxhash])
 			untrappableerror(
 					 "Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.");
@@ -1413,9 +1407,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    nfeats = 0;
 	    ufeats = 0;
 	    kfeats = 0;
-	    unotk = 0; /* [i_a] */
-	    knotu = 0; /* [i_a] */
-	    kandu = 0; /* [i_a] */
+	    unotk = 0; 
+	    knotu = 0; 
+	    kandu = 0; 
 	    wrapup = 0;
 	    {
 	      long j;

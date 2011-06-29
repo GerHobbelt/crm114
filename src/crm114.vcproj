@@ -77,6 +77,7 @@
 				ProgramDatabaseFile="$(OutDir)/crm114.pdb"
 				SubSystem="1"
 				TargetMachine="1"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"

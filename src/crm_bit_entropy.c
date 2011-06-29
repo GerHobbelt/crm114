@@ -21,35 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
-
-/* [i_a]
-//   The following mumbo-jumbo needed for BSD to compile cleanly, because
-//    BSD's logl function is not defined in all builds!  What a crock!
-#ifdef logl
-#define crm_logl(x) logl((x))
-#else
-#define crm_logl(x) log((x))
-#endif
-#ifndef sqrtf
-#define sqrtf(x) sqrt((x))
-#endif
-//     End BSD crapola.
-*/
-
 
 
 //////////////////////////////////////////////////////////////////
@@ -2143,11 +2114,27 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   {
     int hfd;                  //  hashfile fd
     char foo;
-    hfd = open (learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
+    hfd = open(learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
+	if (hfd < 0)
+    {
+      if (errno == ENAMETOOLONG)
+	  {
+		  untrappableerror ("Couldn't open the file (filename too long): ",
+			  learnfilename );
+	  }
+      else
+	  {
+        untrappableerror ("Couldn't open the file: ",
+			  learnfilename );
+	  }
+    }
+    else
+	{
     read (hfd, &foo, sizeof(foo));
     lseek (hfd, 0, SEEK_SET);
     write (hfd, &foo, sizeof(foo));
     close (hfd);
+	}
   }
 #endif
   free (learnfilename);
@@ -2395,18 +2382,18 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      //nodelens[maxhash] = headers[maxhash][3];
 		      nodelens[maxhash] = headers[maxhash]->nodeslen;
 		      // totalbits[maxhash] = (long long *) &headers[4];
-		      totalbits[maxhash] = &(headers[maxhash]->totalbits); /* [i_a] */
+		      totalbits[maxhash] = &(headers[maxhash]->totalbits);
 
 		      if (internal_trace)
 			fprintf (stderr, 
 			   "File #%ld firlat %p len %ld and nodes %p\n",
 			       maxhash, 
-			       (void *)firlats[maxhash],  /* [i_a] */
+			       (void *)firlats[maxhash],  
 			       firlatlens [maxhash],
 			       (void *)nodestarts[maxhash]);
 
 		      //    Keep a copy of the data filename for later.
-		      hashname[maxhash] = (char *) malloc ((fnlen+10) * sizeof(hashname[maxhash][0])); /* [i_a] */
+		      hashname[maxhash] = (char *) calloc ((fnlen+10), sizeof(hashname[maxhash][0])); 
 		      if (!hashname[maxhash])
 			untrappableerror(
 			   "Couldn't malloc hashname[maxhash]\n",
@@ -2504,7 +2491,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	while (textoffset + 1 < textmaxoffset || bitnum > 0)
 	  {
 	    long nodetotcount, itc;
-	    double add_entropy; /* [i_a] */
+	    double add_entropy; 
 	    bitnum = bitnum - ENTROPY_CHAR_SIZE;
 	    if (bitnum < 0)
 	      {
@@ -2782,7 +2769,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	for (k = 0; k < maxhash; k++)
 	  {
 	    long m;
-	    double pctused; /* [i_a] */
+	    double pctused; 
 	    remainder = 1000 * DBL_MIN;
 	    for (m = 0; m < maxhash; m++)
 	      if (k != m)

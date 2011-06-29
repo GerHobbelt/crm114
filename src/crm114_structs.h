@@ -49,7 +49,7 @@ extern long microgroom_chain_length;
 
 extern long microgroom_stop_after;
 
-extern float min_pmax_pmin_ratio;
+extern double min_pmax_pmin_ratio;
 
 extern long profile_execution;
 
@@ -305,7 +305,7 @@ typedef struct {
 #define CRM_OSBF_BAYES    CRM_OSBF
 #define CRM_HYPERSPACE    (1 << 29)
 #define CRM_UNIGRAM       (1 << 30)
-#define CRM_CROSSLINK     (1LL << 31)  /* [i_a] */
+#define CRM_CROSSLINK     (1LL << 31)  
 //
 //        Flags that need to be sorted back in
 //           input

@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 static int math_formatter ( double value, char *format, char *buf, long buflen);
@@ -61,7 +47,6 @@ long strmath (char *buf, long inlen, long maxlen, long *retstat)
   //   Check for first-character control of Algebraic v. RPN
   if (buf[0] == 'A')
     {
-      //      internal_trace = 1;
       memmove (buf, &buf[1], inlen-1);
       buf[inlen-1] = '\0';
       status = stralmath (buf, inlen-1, maxlen, retstat);
@@ -71,7 +56,6 @@ long strmath (char *buf, long inlen, long maxlen, long *retstat)
   if (buf[0] == 'R')
     {
       //      Do we want to do selective tracing?
-      // internal_trace = 1;
       memmove (buf, &buf[1], inlen-1);
       buf[inlen-1] = '\0';
       status = strpnmath (buf, inlen-1, maxlen, retstat);
@@ -123,7 +107,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
   
   if (internal_trace) 
     fprintf (stderr, "Math on '%s' len %ld retstat %p\n", 
-	     buf, inlen, (void *)retstat);  /* [i_a] */
+	     buf, inlen, (void *)retstat);  
 
   for (ip = 0; ip < inlen; ip++)
     {
@@ -198,7 +182,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	    //    Now, move [ip] over to accomodate characters used.
 	    //    (the -1 is because there's an auto-increment in the big 
 	    //    FOR-loop)
-	    ip = (long)(frejected - buf) - 1;  /* [i_a] */
+	    ip = (long)(frejected - buf) - 1;  
 	  }
 	  break;
 	  //
@@ -536,7 +520,7 @@ int math_formatter ( double value, char *format, char *buf, long buflen)
 	  long long equiv;
 	  if (internal_trace)
 	    fprintf (stderr, "Final hex format: %s\n", format ); 
-	  equiv = value;
+	  equiv = (long long)value;
 	  outlen = snprintf (buf, buflen, format, equiv);
 	  /*
 		[i_a] taken from MSVC2005 documentation (and why it's dangerous to simply return outlen)
@@ -727,7 +711,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		leftarg[sp] = strtod (&buf[ip], &frejected);
 		if (user_trace) 
 		  fprintf (stderr, " Got left arg %e\n", leftarg[sp]);
-		ip = (long)(frejected - buf) - 1;  /* [i_a] */
+		ip = (long)(frejected - buf) - 1;  
 		validstack[sp] = LEFTVALID;
 	      }
 	      break;
@@ -863,7 +847,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		rightarg = strtod (&buf[ip], &frejected);
 		if (internal_trace) 
 		  fprintf (stderr, " Got right arg %e\n", rightarg);
-		ip = (long)(frejected - buf) - 1;  /* [i_a] */
+		ip = (long)(frejected - buf) - 1;  
 		validstack[sp] = validstack[sp] | RIGHTVALID;
 	      }
 	    case ' ':
@@ -901,7 +885,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	      leftarg[sp] = leftarg[sp] / rightarg;
 	      break;
 	    case '%':
-	      leftarg[sp] = ((long long) leftarg[sp]) % ((long long) rightarg);  /* [i_a] */
+	      leftarg[sp] = ((long long) leftarg[sp]) % ((long long) rightarg);  
 	      break;
 	    case '^':
 	      //    since we don't do complex numbers (yet) handle as NaN
@@ -979,12 +963,12 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	    case 'x':
 	    case 'X':
 	      {
-		char tempstring[2048];  /* [i_a] */
+		char tempstring[2048];  
 
 		if (internal_trace)
 		  fprintf (stderr, "Formatting operator %c \n", 
 			   (short)opstack[sp]);
-		// char tempstring [2048];  // [i_a]
+		// char tempstring [2048];
 		//     Do we have a float or an int format?
 		if (opstack[sp] == 'x' || opstack[sp] == 'X')
 		  {
@@ -1033,7 +1017,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		    long long equiv;
 		    if (internal_trace)
 		      fprintf (stderr, "Oct/Hex Convert ");
-		    equiv = leftarg[sp];
+		    equiv = (long long)leftarg[sp];
 		    if (internal_trace)
 		      fprintf (stderr, "equiv -->%10lld<-- \n", equiv);
 		    snprintf (tempstring, NUMBEROF(tempstring), outformat, equiv);

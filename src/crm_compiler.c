@@ -23,20 +23,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 //     Here's the real statement description table.
 //
@@ -116,31 +102,45 @@ int crm_load_csl (CSL_CELL *csl)
 
   if (csl->filedes < 0)
     {
-      if (csl->filedes == ENAMETOOLONG)
-        untrappableerror ("Couldn't open the file, ","filename too long.");
+      if (errno == ENAMETOOLONG)
+	  {
+		  untrappableerror ("Couldn't open the file (filename too long): ",
+			  csl->filename);
+	  }
       else
+	  {
         untrappableerror ("Couldn't open the file: ",
-			  csl->filename );
+			  csl->filename);
+	  }
     }
-  
-  if (internal_trace > 0)
+  else
+  {
+  if (internal_trace)
     fprintf (stderr, "file open on file descriptor %ld\n", csl->filedes);
   
   // and stat the file descriptor
   fstat (csl->filedes, &statbuf);
   csl->nchars = statbuf.st_size;
-  if (internal_trace > 0)
+  if (internal_trace)
     fprintf (stderr, "file is %ld bytes\n", csl->nchars);
   if (csl->nchars + 2048 > max_pgmsize)
+  {
+	  assert(csl->filedes >= 0);
+	  close(csl->filedes);
     untrappableerror ("Your program is too big.  ",
 		      " You need to use smaller programs or the -P flag, ");
+  }
 
   //   and read in the source file
-  csl->filetext = (char *) malloc ( max_pgmsize * sizeof (csl->filetext[0]));  /* [i_a] */
+  csl->filetext = (char *) calloc ( max_pgmsize , sizeof (csl->filetext[0]));  
   if (csl->filetext == NULL) 
-    untrappableerror ("malloc of the file text failed","" );
-  if (internal_trace > 0)
-    fprintf (stderr, "File text malloc'd at %p\n", csl->filetext);  /* [i_a] */
+  {
+	  assert(csl->filedes >= 0);
+	  close(csl->filedes);
+	  untrappableerror ("malloc of the file text failed", csl->filename);
+  }
+  if (internal_trace)
+    fprintf (stderr, "File text malloc'd at %p\n", csl->filetext);  
 
   //    put in a newline at the beginning
   csl->filetext[0] = '\n';
@@ -153,6 +153,25 @@ int crm_load_csl (CSL_CELL *csl)
   //     read the file in...
   assert(csl->nchars + 1 + 3 <= max_pgmsize);
   i = read (csl->filedes, &(csl->filetext[1]), csl->nchars);
+  /*
+     From the MS docs: If fd is invalid, the file is not open for reading, 
+	 or the file is locked, the invalid parameter handler is invoked, as 
+	 described in Parameter Validation. If execution is allowed to continue, 
+	 the function returns –1 and sets errno to EBADF.
+  */
+  if (i < 0)
+  {
+	  assert(csl->filedes >= 0);
+	  close(csl->filedes);
+	  untrappableerror("Cannot read from file (it may be locked?): ", csl->filename);
+  }
+
+  /*
+     Close the file handle now we're done. (This is important when we have nested files:
+     there's only so many file handles to go around.)
+   */
+  assert(csl->filedes >= 0);
+  close(csl->filedes);
 
   //     and put a cr and then a null at the end.
   i++;
@@ -168,7 +187,8 @@ int crm_load_csl (CSL_CELL *csl)
   if (user_trace)
     fprintf (stderr, "Hash of program: %lX, length %ld bytes\n", 
 	     csl->hash, csl->nchars );
- 
+  }
+
   return 0;
 }
 
@@ -250,7 +270,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
   long stab_idx;
   long stab_max;
 
-  if (internal_trace > 0)
+  if (internal_trace)
     fprintf (stderr, "Starting phase 1 of microcompile.\n");
 
   seenaction = 0;
@@ -274,23 +294,23 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
   csl->nstmts = j;
 
   //  now, allocate the microcompile table
-  if (user_trace > 0)
+  if (user_trace)
     fprintf (stderr, "Program statements: %ld, program length %ld\n", 
 	     j, pgmlength);
   
-  csl->mct = (MCT_CELL **) malloc (sizeof(csl->mct[0]) * (csl->nstmts + 10)); /* [i_a] */
+  csl->mct = (MCT_CELL **) calloc ((csl->nstmts + 10), sizeof(csl->mct[0]) ); 
   if (!csl->mct)
     untrappableerror("Couldn't malloc MCT table.\n"
 		     "This is where your compilation results go, "
                      "so if we can't compile, we can't run.  Sorry.","");
   
-  if (internal_trace > 0)
-    fprintf (stderr, "microcompile table at %p\n", (void *)csl->mct);  /* [i_a] */
+  if (internal_trace)
+    fprintf (stderr, "microcompile table at %p\n", (void *)csl->mct);  
   
   //  malloc all of the statement cells.
   for (i = 0; i < csl->nstmts + 10; i++)
     {
-      csl->mct[i] = (MCT_CELL *) malloc (sizeof(csl->mct[i][0]));  /* [i_a] */
+      csl->mct[i] = (MCT_CELL *) calloc (1, sizeof(csl->mct[i][0]));  
       if (!csl->mct[i])
 	untrappableerror(
 		"Couldn't malloc MCT cell. This is very bad.\n","");
@@ -308,7 +328,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
   //
   //    HACK ALERT HACK ALERT HACK ALERT
 
-  if (internal_trace > 0)
+  if (internal_trace)
     fprintf (stderr, "Starting phase 2 of microcompile.\n");
 
   stmtnum = 0;
@@ -518,7 +538,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
     long stack[MAX_BRACKETDEPTH];
     long sdx ;
     
-    if (internal_trace > 0) 
+    if (internal_trace) 
       fprintf (stderr, "Starting phase 3 of microcompile.\n");
     
     //  set initial stack values
@@ -697,7 +717,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 
     csl->nstmts = numstmts;
     
-    if (internal_trace > 0)
+    if (internal_trace)
       fprintf (stderr, "microcompile completed\n");
   }
   

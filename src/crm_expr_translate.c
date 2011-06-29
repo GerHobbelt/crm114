@@ -22,20 +22,6 @@
 #include "crm114.h"
 
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 //        And the translate routine.  We use strntrn to do the hard work;
@@ -120,7 +106,7 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (internal_trace)
     fprintf (stderr, 
 	     "restriction out: vmidx: %ld  mdw: %p   start: %ld  len: %ld\n",
-	     vmidx, mdwptr, offset, len);  /* [i_a] */
+	     vmidx, mdwptr, offset, len);  
   if ( i < 0)
     {
       long curstmt;

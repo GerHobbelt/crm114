@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 //      crm preprocessor - pre-process a CRM file to make it 
@@ -189,28 +175,41 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 	      char *insert_buf;
 	      if (user_trace)
 		{
-		  fprintf (stderr, "Inserting file '%s' .\n", insertfilename);
+		  fprintf (stderr, "Inserting file '%s'.\n", insertfilename);
 		}
-
-	      ecsl = (CSL_CELL *) malloc (sizeof (ecsl[0])); /* [i_a] */
-	      insert_buf = malloc (sizeof (insert_buf[0]) * max_pgmsize); /* [i_a] */
-	      if (!insert_buf || !ecsl)
-		untrappableerror ("Couldn't malloc enough memory to do"
-				  " the insert of file ", insertfilename);
 
 	      //   Loop prevention check - too many inserts?
 	      //
 	      numinserts++;
 	      if (numinserts > maxinserts)
+		  {
 		untrappableerror ("Too many inserts!  Limit exceeded with"
 				  "filename : ", insertfilename);
-	      
+		  }
+
+		  // malloc space only when you know you're not out of insert count bounds anyway.
+	      ecsl = (CSL_CELL *) calloc (1, sizeof (ecsl[0])); 
+	      insert_buf = calloc (max_pgmsize, sizeof (insert_buf[0]) ); 
+	      if (!insert_buf || !ecsl)
+		  {
+		untrappableerror ("Couldn't malloc enough memory to do"
+				  " the insert of file ", insertfilename);
+		  }
+
 	      ecsl->filetext = insert_buf;
 	      ecsl->nchars = 0;
 	      //   OK, we now have a buffer.  Read the file in...
 
 		fd = open (insertfilename, O_RDONLY);
+  	    if (fd < 0) 
+		{
+			rlen = 0;
 
+		  untrappableerror("Couldn't open the insert file named: ",
+				insertfilename);
+		}
+		else
+		{
 		/* [i_a] make sure we never overflow the buffer: */
 		if (statbuf.st_size + 2 > max_pgmsize)
 		{
@@ -220,7 +219,15 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 		rlen = read (fd, 
 		      ecsl->filetext,
 		      statbuf.st_size);
-		close (fd);
+
+		close(fd);
+		  if (rlen < 0)
+		  {
+			  rlen = 0;
+
+			  untrappableerror("Cannot read from file (it may be locked?): ", insertfilename);
+		  }
+		}
 
 		ecsl->nchars = rlen; /* [i_a] not: statbuf.st_size; -- as the MSVC documentation says:
 							 read returns the number of bytes read, which might be less than count 

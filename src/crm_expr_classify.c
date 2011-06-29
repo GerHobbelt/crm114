@@ -24,20 +24,6 @@
 //  OSBF declarations
 #include "crm114_osbf.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 //     Dispatch a LEARN statement
@@ -187,38 +173,32 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
       return (crm_expr_osb_bayes_classify (csl, apb, txt, start, len));
     }
-  else
-    if (apb->sflags & CRM_CORRELATE)
+  else if (apb->sflags & CRM_CORRELATE)
       {
 	return (crm_expr_correlate_classify (csl, apb, txt, start, len));
       }
-    else
-      if (apb->sflags & CRM_OSB_WINNOW)
+    else if (apb->sflags & CRM_OSB_WINNOW)
 	{
 	  return (crm_expr_osb_winnow_classify (csl, apb, txt, start, len));
 	}
-      else
-	if (apb->sflags & CRM_OSBF )
+      else if (apb->sflags & CRM_OSBF )
 	  {
 	    return (crm_expr_osbf_bayes_classify (csl, apb, txt, start, len));
 	  }
-	else
-	  if (apb->sflags & CRM_HYPERSPACE)
+	else if (apb->sflags & CRM_HYPERSPACE)
 	    {
 	      return (crm_expr_osb_hyperspace_classify (csl, apb, txt, start, len));
 	    }
-	  else
-	    if (apb->sflags & CRM_ENTROPY)
+	  else if (apb->sflags & CRM_ENTROPY)
 	      {
 		return (crm_expr_bit_entropy_classify (csl, apb, txt, start, len));
 	      }
-	    else
-	      if (apb->sflags & CRM_SVM)
+	    else if (apb->sflags & CRM_SVM)
 		{
 		  return (crm_expr_svm_classify (csl, apb, txt, start, len));
 		}
 	      else
-		{
+		  {
 		  return (crm_expr_markov_classify (csl, apb, txt, start, len));
 		}
   return (0);

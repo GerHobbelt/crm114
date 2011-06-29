@@ -1,7 +1,7 @@
 Begin3
 Title:		crm114
 Version:	20040627-BlameSeifkes-auto.1
-Entered-date:	2007-07-30
+Entered-date:	2007-07-31
 Description:	Controllable Regex Mutilator and Bayesian Spam Filter
  CRM114 is a system to examine incoming e-mail, system log streams, data files
  or other data streams, and to sort, filter, or alter the incoming files or data

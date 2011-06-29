@@ -39,7 +39,7 @@ VER_SUFFIX=@VER_SUFFIX@
 #
 CRM114_ARCHIVE = /homes/crm114/archive
 VERSION = @VERSION@
-PREV_VERSION = 20070723-BlameTheInterns
+PREV_VERSION = 20070730-BlameTheInterns
 #PREV_VERSION = 20070505-BlameIdiocy
 #PREV_VERSION = 20070428-BlameSpamConf
 #PREV_VERSION = 20061103-BlameDalkey
@@ -115,7 +115,6 @@ TRE_TARFILE = tre-0.7.5
 #LIBS += -lintl -liconv
 #
 
-LDADD = @x_libs@
 
 
 #

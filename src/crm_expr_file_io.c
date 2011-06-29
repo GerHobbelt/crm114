@@ -28,20 +28,6 @@
 #include <readline/history.h>
 #endif
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
@@ -124,7 +110,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
   fileoffset [fileoffsetlen] = '\0';
   if (1 != sscanf (fileoffset, "%ld", &offset))
   {
-	  if (user_trace > 0)
+	  if (user_trace)
 	  nonfatalerror("Failed to decode the input expression pre-IO file offset number: ", fileoffset);
   }
   if (user_trace)
@@ -140,7 +126,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
   fileiolen [fileiolenlen] = '\0';
   if (1 != sscanf (fileiolen, "%ld", &iolen))
     {
-	  if (user_trace > 0)
+	  if (user_trace)
 	  nonfatalerror("Failed to decode the input expression number of bytes to read: ", fileiolen);
   }
   if (fileiolenlen == 0 || iolen > data_window_size) iolen = data_window_size;
@@ -297,7 +283,7 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   fileoffset [fileoffsetlen] = '\0';
   if (1 != sscanf (fileoffset, "%ld", &offset))
    {
-	  if (user_trace > 0)
+	  if (user_trace)
 	  nonfatalerror("Failed to decode the output expression pre-IO file offset number: ", fileoffset);
   }
   if (user_trace)
@@ -313,7 +299,7 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   fileiolen [fileiolenlen] = '\0';
   if (1 != sscanf (fileiolen, "%ld", &iolen))
     {
-	  if (user_trace > 0)
+	  if (user_trace)
 	  nonfatalerror("Failed to decode the output expression number of bytes to read: ", fileiolen);
   }
   if (fileiolenlen == 0 || iolen > data_window_size) iolen = data_window_size;

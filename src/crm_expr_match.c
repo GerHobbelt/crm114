@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 //        And the match routine.  What a humungous mess...
@@ -209,7 +195,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (internal_trace)
     fprintf (stderr, 
 	     "restricted: vmidx: %ld  mdw: %p   start: %ld  len: %ld\n",
-	     vmidx, mdwptr, source_start, source_len);  /* [i_a] */
+	     vmidx, mdwptr, source_start, source_len);  
   if ( i < 0)
     {
       long curstmt;
@@ -548,7 +534,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		    //   Otherwise, we'd have a memory leak.
 		    //
 		    if (!vn)
-		      vn = (char *) malloc ((MAX_VARNAME+16) * sizeof(vn[0]));  /* [i_a] */
+		      vn = (char *) calloc ((MAX_VARNAME+16) , sizeof(vn[0]));  
 		    if (!vn)
 		      untrappableerror("Couldn't malloc vn.\n Can't fix that.","");
 		    strncpy (vn, &(bindable_vars[vstart]), vlen);

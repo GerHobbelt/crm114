@@ -21,21 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
-
 
 //    How to learn correlation-style- just append the text to be 
 //    learned to the target file.  We don't care about the /regexes/
@@ -125,11 +110,13 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //      fully 8-bit or wchar clean...
   i = 0;
   while (htext[i] < 0x021) i++;
+  assert(i < hlen);
   j = i;
   while (htext[j] >= 0x021) j++;
+  assert(j <= hlen);
 
   //             filename starts at i,  ends at j. null terminate it.
-  htext[j] = '\000';
+  htext[j] = 0;
 
   //             and stat it to get it's length
   k = stat (&htext[i], &statbuf);
@@ -190,7 +177,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //
   //     This is the text that we'll append to the correlation file.
 
-  /* [i_a] removed i=0: important! */
+  /* removed i=0: re-init here: important! */
 
   if (llen > 0)
     {
@@ -204,6 +191,9 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (vht[vhtindex] == NULL)
     {
       long q;
+
+	  assert(hfd >= 0);
+	  close(hfd);
       q = fatalerror (" Attempt to LEARN from a nonexistent variable ",
 		  ltext);
       return (q);
@@ -216,6 +206,8 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (mdw == NULL)
     {
       long q;
+	  assert(hfd >= 0);
+	  close(hfd);
       q = fatalerror (" Bogus text block containing variable ", ltext);  
       return (q);
     }
@@ -235,9 +227,14 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   lseek (hfd, 0, SEEK_END);
   if (textlen != write(hfd, &(mdw->filetext[textoffset]), textlen))
   {
-	  fatalerror("Failed to append the 'learn' text to the correlation file '%s'\n", &htext[i]);
+	  long q;
+	  assert(hfd >= 0);
+	  close(hfd);
+	  q = fatalerror("Failed to append the 'learn' text to the correlation file '%s'\n", &htext[i]);
+	  return q;
   }
 
+  assert(hfd >= 0);
   close (hfd);
 
   return (0);
@@ -295,7 +292,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   hitcount_t totalhits [MAX_CLASSIFIERS];
   double tprob;         //  total probability in the "success" domain.
 
-  long textlen;    //  text length  - rougly corresponds to   /* [i_a] */
+  long textlen;    //  text length  - rougly corresponds to   
                         //  information content of the text to classify
   
   double ptc[MAX_CLASSIFIERS]; // current running probability of this class
@@ -389,7 +386,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       cube_hits[i] = 0;       // cube of the runlength
       quad_hits[i] = 0;       // quad of the runlength
       incr_hits[i] = 0;      // 1+2+3... hits hits
-      totalhits[i] = 0;     // absolute hit counts   /* [i_a] */
+      totalhits[i] = 0;     // absolute hit counts   
       ptc[i] = 0.5;      // priori probability
     }
 
@@ -478,12 +475,12 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			      fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
 					       &htext[i]);
 			      return (fev);
-			    }   /* [i_a] */
+			    }   
 
 			  //
 			  //     save the name for later...
 			  //
-			  hashname[maxhash] = (char *) malloc((fnlen+10) * sizeof(hashname[maxhash][0])); /* [i_a] */
+			  hashname[maxhash] = (char *) calloc((fnlen+10) , sizeof(hashname[maxhash][0])); 
 			  if (!hashname[maxhash])
 			  {
 			    untrappableerror(
@@ -794,7 +791,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      }
 	  snprintf (buf, NUMBEROF(buf),
 		   "#%ld (%s):"\
-		   " features: %ld, L1: %lld L2: %lld L3: %lld, l4: %lld prob: %3.2e, pR: %6.2f\n", 
+		   " features: %ld, L1: %lld L2: %lld L3: %lld, L4: %lld prob: %3.2e, pR: %6.2f\n", 
 		   k,
 		   hashname[k],
 		   hashlens[k],

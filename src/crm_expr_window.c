@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 //    a helper function that should be in the C runtime lib but isn't.
@@ -424,7 +410,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    //    malloc up some temporary space to keep the static input
 	    //   buffer's stored text
 	    savedinputtxt = (char *) 
-	      malloc (sizeof (savedinputtxt[0]) * (32 + newbuflen ));  /* [i_a] */
+	      calloc ((32 + newbuflen ), sizeof (savedinputtxt[0]) );  
 	    if (savedinputtxt == NULL)
 	      {
 		fatalerror ("Malloc in WINDOW failed.  Aw, crud.", 
@@ -721,8 +707,6 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	       savedinputtxtlen); /* [i_a] we'll add the NUL below, son */
 	  newinputbuf[savedinputtxtlen] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
       newbuflen = savedinputtxtlen;
-      //
-
     }
 
   //      and free the temporary space
@@ -731,5 +715,4 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
  crm_window_no_changes_made:
 
   return (0);
-
 }

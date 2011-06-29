@@ -93,15 +93,19 @@ main (int argc, char **argv)
   char csvfile[255];
   unsigned char cmdchr[2];
   char crapchr[2];
-  float cmdval;
+  double cmdval;
   int zloop, cmdloop, version_index;
 
   //    the following for crm114.h's happiness
 
   char *newinputbuf;
+
+  user_trace = DEFAULT_USER_TRACE_LEVEL;
+  internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
+
   newinputbuf = (char *) &hfsize;
 
-  bcounts = malloc (sizeof (bcounts[0]) * OSBF_FEATUREBUCKET_VALUE_MAX); /* [i_a] */
+  bcounts = calloc (OSBF_FEATUREBUCKET_VALUE_MAX, sizeof (bcounts[0]) ); 
 
   {
     struct stat statbuf;	//  filestat buffer
@@ -109,7 +113,7 @@ main (int argc, char **argv)
     OSBF_FEATUREBUCKET_STRUCT *hashes;	//  the text of the hash file
 
     // parse cmdline options
-    while ((opt = getopt (argc, argv, "bDhR:rqs:S:v")) != -1)
+    while ((opt = getopt (argc, argv, "bDhR:rqs:S:vtT")) != -1)
       {
 	switch (opt)
 	  {
@@ -133,7 +137,6 @@ main (int argc, char **argv)
 		fprintf (stderr, "Opening OSBF file %s for read\n", optarg);
 	      if ((f = fopen (optarg, "rb")) != NULL)
 		{
-
 		  // try to find the header reading first 2 "buckets"
 		  if (fscanf
 		      (f, "%lu;%lu;%lu\n", (unsigned long *) h.version,
@@ -233,6 +236,30 @@ main (int argc, char **argv)
 		user_set_css_length = 1;
 	      }
 	    break;
+    case 't':
+      if (user_trace == 0 ) 
+	{
+	  user_trace = 1 ;
+	  fprintf (stderr, "User tracing on");
+	}
+      else
+	{
+	  user_trace = 0;
+	  fprintf (stderr, "User tracing off");
+	}
+      break;
+    case 'T':
+      if (internal_trace == 0 ) 
+	{
+	  internal_trace = 1 ;
+	  fprintf (stderr, "Internal tracing on");
+	}
+      else
+	{
+	  internal_trace = 0;
+	  fprintf (stderr, "Internal tracing off");
+	}
+      break;
 	  case 'v':
 	    fprintf (stderr, " This is osbf-util, version %s\n", version);
 	    fprintf (stderr, " Copyright 2004-2006 William S. Yerazunis.\n");
@@ -351,7 +378,8 @@ main (int argc, char **argv)
 		     csvfile, errno);
 	    exit (EXIT_FAILURE);
 	  }
-
+	else
+	{
 	bucket = (OSBF_FEATUREBUCKET_STRUCT *) header;
 	for (i = 0; i < hfsize; i++)
 	  {
@@ -359,6 +387,7 @@ main (int argc, char **argv)
 	    fscanf (f, "%lu;%lu;%lu\n", &p[0], &p[1], &p[2]);
 	  }
 	fclose (f);
+	}
       }
 
     zloop = 1;
@@ -460,7 +489,7 @@ main (int argc, char **argv)
 	    clearerr (stdin);
 	    fscanf (stdin, "%[^\n]", cmdstr);
 	    fscanf (stdin, "%c", crapchr);
-	    fields = sscanf (cmdstr, "%s %f", cmdchr, &cmdval);
+	    fields = sscanf (cmdstr, "%s %lf", cmdchr, &cmdval);
 	    if (strlen ( (char *)cmdchr) != 1)
 	      {
 		fprintf (stdout, "Unknown command: %s\n", cmdchr);
@@ -486,14 +515,15 @@ main (int argc, char **argv)
 		  fprintf (stdout,
 			   "S command requires a numeric argument!\n");
 		else
-		  {
+			  {
+				  long val = (long)cmdval;
 		    fprintf (stdout, "Working...");
 		    for (i = 0; i < header->buckets; i++)
 		      {
-			if (GET_BUCKET_VALUE(hashes[i]) > (long) cmdval)
+			if (GET_BUCKET_VALUE(hashes[i]) > val)
 			  {
 			    BUCKET_RAW_VALUE(hashes[i]) =
-			      GET_BUCKET_VALUE(hashes[i]) - (long) cmdval;
+			      GET_BUCKET_VALUE(hashes[i]) - val;
 			  }
 			else
 			  {

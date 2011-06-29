@@ -145,13 +145,13 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 	//  We didn't find it.  Do the compilation instead, putting
 	//   the results into the _temp vars.
 	if (internal_trace) fprintf (stderr, "couldn't find it\n");
-	regex_temp = (char *) malloc ((regex_len + 1) * sizeof(regex_temp[0])); /* [i_a] */
+	regex_temp = (char *) calloc ((regex_len + 1) , sizeof(regex_temp[0])); 
 	memcpy (regex_temp, regex, regex_len);
 	rlen_temp = regex_len;
 	cflags_temp = cflags;
 	if (internal_trace) 
 	  fprintf (stderr, "Compiling %s (len %ld).\n", regex_temp, rlen_temp);
-	ppreg_temp = (regex_t *) malloc (rtsize * sizeof(ppreg_temp[0]));  /* [i_a] */
+	ppreg_temp = (regex_t *) calloc (rtsize , sizeof(ppreg_temp[0]));  
 	if (ppreg_temp == NULL) 
 	  fatalerror ("Unable to allocate a pattern register buffer header.  ",
 		      "This is hopeless.  ");

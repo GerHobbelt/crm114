@@ -26,6 +26,8 @@ BuildLog.htm
 *.bsc
 
 Makefile.in
+config.log
+config.status
 	   
 dist
 tmp-build

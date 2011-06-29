@@ -21,20 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 ////////////////////////////////////////////////////////////////////
@@ -187,8 +173,10 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      exit (engine_exit_base + 20);
 	    }
 	  else
+	  {
 	    exit (EXIT_FAILURE);
-        }
+	  }
+	  }
       //       did we get a value for sparse_spectrum_file_length?
       if (sparse_spectrum_file_length == 0 ) {
 	sparse_spectrum_file_length = 
@@ -269,7 +257,7 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (apb->sflags & CRM_UNIQUE)
     {
       //     Note that we _calloc_, not malloc, to zero the memory first.
-      seen_features = calloc (hfsize, sizeof(seen_features[0]));   /* [i_a] */
+      seen_features = calloc (hfsize, sizeof(seen_features[0]));   
       if ( seen_features == NULL )
 	untrappableerror (" Couldn't allocate enough memory to keep track",
 			  "of nonunique features.  This is deadly");
@@ -717,10 +705,17 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int hfd;                  //  hashfile fd
     FEATURE_HEADER_STRUCT foo;
     hfd = open (learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
+	if (hfd < 0)
+    {
+      fprintf(stderr, "Couldn't reopen %s to touch\n", learnfilename);
+    }
+    else
+	{
     read (hfd, &foo, sizeof(foo));
     lseek (hfd, 0, SEEK_SET);
     write (hfd, &foo, sizeof(foo));
     close (hfd);
+	}
   }
 #endif
 
@@ -1089,7 +1084,7 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      //  set this hashlens to the length in features instead
 		      //  of the length in bytes.
 		      hashlens[maxhash] = hashlens[maxhash] / sizeof (FEATUREBUCKET_TYPE);
-		      hashname[maxhash] = (char *) malloc((fnlen+10) * sizeof(hashname[maxhash][0])); /* [i_a] */
+		      hashname[maxhash] = (char *) calloc((fnlen+10) , sizeof(hashname[maxhash][0])); 
 		      if (!hashname[maxhash])
 			untrappableerror(
 					 "Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.");
@@ -1263,7 +1258,7 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       if (use_unique != 0)
 	{
 	  //     Note that we _calloc_, not malloc, to zero the memory first.
-            seen_features[ifile] = calloc (hashlens[ifile]+1, sizeof(seen_features[ifile][0])); /* [i_a] */ 
+            seen_features[ifile] = calloc (hashlens[ifile]+1, sizeof(seen_features[ifile][0]));  
 	  if ( seen_features[ifile] == NULL )
 	    untrappableerror (" Couldn't allocate enough memory to keep track",
 			      "of nonunique features.  This is deadly");
@@ -1425,7 +1420,7 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      {
 		static const int fw[10] = { 0, 24, 14, 7, 4, 2, 1, 0};
 		// cubic weights seems to work well for chi^2...- Fidelis
-		static const long chi_feature_weight[] = { 0, 125, 64, 27, 8, 1, 0};  /* [i_a] */
+		static const long chi_feature_weight[] = { 0, 125, 64, 27, 8, 1, 0};  
 		feature_weight = fw[j];
 		if ( use_chisquared )
 		  {
@@ -1597,7 +1592,7 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			  //for (k = 0; k < maxhash; k++)
 			  //{
 			  //  ptc[k] = ptc[k] / renorm;
-			  //  fprintf (stderr, "K= %d, rn=%f, ptc[k] = %lf\n", 
+			  //  fprintf (stderr, "K= %d, rn=%f, ptc[k] = %f\n", 
 			  //  //   k, renorm,  ptc[k]);
 			  //}
 

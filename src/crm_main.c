@@ -59,7 +59,7 @@ long microgroom_chain_length = 0;
 
 long microgroom_stop_after = 0;
 
-float min_pmax_pmin_ratio = 0.0;
+double min_pmax_pmin_ratio = 0.0;
 
 long profile_execution = 0;
 
@@ -116,9 +116,11 @@ char *outbuf;
 char *tempbuf;
 
 
+#if defined(_IOFBF)
+static char *stdout_buf = NULL;
+#endif
 
-
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
   int i;    //  some random counters, when we need a loop
   int status;
@@ -154,14 +156,24 @@ int main (int argc, char **argv)
   engine_exit_base = 0;
   q_expansion_mode = 0;
 
+#if defined(_IOFBF)
+  stdout_buf = calloc(MAX_PATTERN * 8 , sizeof(stdout_buf));
+  if (stdout_buf != NULL)
+  setvbuf(stdout, stdout_buf, _IOFBF, MAX_PATTERN * 8);
+  stdout_buf = calloc(MAX_PATTERN * 8 , sizeof(stdout_buf));
+  if (stdout_buf != NULL)
+  setvbuf(stderr, stdout_buf, _IOFBF, MAX_PATTERN * 8);
+#endif
 
-  //    allcate and initialize the initial root csl (control stack
+  //    allocate and initialize the initial root csl (control stack
   //    level) cell.  We do this first, before command-line parsing,
   //    because the command line parse fills in a lot of the first level csl.
   
-  csl = (CSL_CELL *) malloc (sizeof (csl[0]));  /* [i_a] */
+  csl = (CSL_CELL *) calloc (1, sizeof (csl[0]));  
   if (!csl)
+  {
     untrappableerror ("Couldn't malloc the csl.  Big problem!\n","");
+  }
   csl -> filename = NULL;
   csl -> filedes = -1; 
   csl -> rdwr = 0;   //  0 means readonly, 1 means read/write
@@ -178,7 +190,7 @@ int main (int argc, char **argv)
   openparen = -1;
   
   //   and allocate the argparse block
-  apb = (ARGPARSE_BLOCK *) malloc (sizeof (apb[0])); /* [i_a] */
+  apb = (ARGPARSE_BLOCK *) calloc (1, sizeof (apb[0])); 
   if (!apb)
     untrappableerror ("Couldn't malloc apb.  This is very bad.\n","");
 
@@ -246,14 +258,14 @@ int main (int argc, char **argv)
       //  the program alone.
       if (strncmp (argv[i], "--", 2) == 0  && strlen (argv[i]) == 2)
 	{
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "system flag processing ended at arg %d .\n", i);
 	  i = argc;
 	  goto end_command_line_parse_loop;
 	}
       if (strncmp (argv[i], "--", 2) == 0 && strlen (argv[i]) > 2)
 	{
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Commandline set of user variable at %d '%s'.\n",
 		     i, argv[i]);
 	  if (user_cmd_line_vars == 0) user_cmd_line_vars = i;
@@ -262,26 +274,38 @@ int main (int argc, char **argv)
       //   set debug levels
       if (strncmp (argv[i], "-t", 2) == 0 && strlen(argv[i]) == 2)
 	{
-	  user_trace++;
-	  if (user_trace > 0)
-	    {
-	      fprintf (stderr, "Setting usertrace level to %ld\n", user_trace);
-	    }
+      if (user_trace == 0 ) 
+	{
+	  user_trace = 1;
+	  fprintf (stderr, "User tracing on");
+	}
+      else
+	{
+	  user_trace = 0;
+	  fprintf (stderr, "User tracing off");
+	}
 	  goto end_command_line_parse_loop;
 	}
       
       if (strncmp (argv[i], "-T", 2) == 0 && strlen(argv[i]) == 2)
 	{
-	  internal_trace++;
-	  if (user_trace > 0 )
-	  fprintf (stderr, "Setting internaltrace to %ld\n", internal_trace);
+      if (internal_trace == 0 ) 
+	{
+	  internal_trace = 1;
+	  fprintf (stderr, "Internal tracing on");
+	}
+      else
+	{
+	  internal_trace = 0;
+	  fprintf (stderr, "Internal tracing off");
+	}
 	  goto end_command_line_parse_loop;
 	}
       
       if (strncmp (argv[i], "-p", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  profile_execution = 1;
-	  if (user_trace > 0 )
+	  if (user_trace)
 	    fprintf (stderr, "Setting profile_execution to 1" );
 	  goto end_command_line_parse_loop;
 	}
@@ -298,7 +322,7 @@ int main (int argc, char **argv)
 		  }
 	      max_pgmsize = 128 * max_pgmlines;
 	    }
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Setting max prog lines to %ld (%ld bytes)\n", 
 		     max_pgmlines, sizeof(char) * max_pgmsize);
 	  goto end_command_line_parse_loop;
@@ -315,7 +339,7 @@ int main (int argc, char **argv)
 			  fatalerror("Failed to decode the numeric -l argument [listing level]: ", argv[i]);
 		  }
 	    }
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Setting listing level to %ld \n", 
 		     prettyprint_listing);
 	  goto end_command_line_parse_loop;
@@ -324,7 +348,7 @@ int main (int argc, char **argv)
       //   is this a "Use Local Country Code" flag?
       if (strncmp (argv[i], "-C", 2) == 0 && strlen(argv[i]) == 2)
 	{
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Setting locale to local\n");
 	  setlocale (LC_ALL, "");
 	  goto end_command_line_parse_loop;
@@ -342,7 +366,7 @@ int main (int argc, char **argv)
 			  fatalerror("Failed to decode the numeric -q argument [expansion mode]: ", argv[i]);
 		  }
 	  }
-	  if (user_trace > 0)
+	  if (user_trace)
 	    {
 	      fprintf (stderr, "Setting math mode to %ld ", q_expansion_mode);
 	      if (q_expansion_mode == 0) 
@@ -373,7 +397,7 @@ int main (int argc, char **argv)
              fprintf (stderr, "Sorry, but the min data window is 8192 bytes");
              data_window_size = 8192;
            }
-         if (user_trace > 0)
+         if (user_trace)
            fprintf (stderr, "Setting max data window to %ld chars\n",
                     data_window_size);
          goto end_command_line_parse_loop;
@@ -411,7 +435,7 @@ int main (int argc, char **argv)
 		exit (EXIT_FAILURE);
 	    }
 	  
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Setting sparse spectrum length to %ld bins\n", 
 		     sparse_spectrum_file_length );
 	  goto end_command_line_parse_loop;
@@ -428,7 +452,7 @@ int main (int argc, char **argv)
 			  fatalerror("Failed to decode the numeric -b argument [breakpoint line #]: ", argv[i]);
 		  }
 	  }
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Setting the command-line break to line %ld\n", 
 		     cmdline_break);
 	  goto end_command_line_parse_loop;
@@ -445,7 +469,7 @@ int main (int argc, char **argv)
 			  fatalerror("Failed to decode the numeric -E argument [engine exit base value]: ", argv[i]);
 		  }
 	  }
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Setting the engine exit base value to %ld\n", 
 		     engine_exit_base);
 	  goto end_command_line_parse_loop;
@@ -463,7 +487,7 @@ int main (int argc, char **argv)
 			  fatalerror("Failed to decode the numeric -d argument [debug statement countdown]: ", argv[i]);
 		  }
 	  }
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Setting debug countdown to %ld statements\n", 
 		     debug_countdown);
 	  if (debug_countdown == 0)   //  if next arg wasn't numeric, back up
@@ -475,7 +499,7 @@ int main (int argc, char **argv)
       if (strncmp (argv[i], "-e", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  ignore_environment_vars++;
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Ignoring environment variables\n");
 	  goto end_command_line_parse_loop;
 	}
@@ -555,7 +579,7 @@ int main (int argc, char **argv)
 			  fatalerror("Failed to decode the numeric -m argument [microgroom stop after #]: ", argv[i]);
 		  }
 	  }
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Setting microgroom_stop_after to %ld\n", 
 		     microgroom_stop_after);
 	  if (microgroom_stop_after <= 0)   //  if value <= 0 set it to default
@@ -574,7 +598,7 @@ int main (int argc, char **argv)
 			  fatalerror("Failed to decode the numeric -M argument [microgroom chain length]: ", argv[i]);
 		  }
 	  }
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Setting microgroom_chain_length to %ld\n", 
 		     microgroom_chain_length);
 	  if (microgroom_chain_length < 5)   //  if value <= 5 set it to default
@@ -588,12 +612,12 @@ int main (int argc, char **argv)
 	  i++;    // move to the next arg
 	  if (i < argc)
 	  {
-	    if (1 != sscanf (argv[i], "%f", &min_pmax_pmin_ratio))
+	    if (1 != sscanf (argv[i], "%lf", &min_pmax_pmin_ratio))
 		  {
 			  fatalerror("Failed to decode the numeric -r argument [Pmin/Pmax ratio]: ", argv[i]);
 		  }
 	  }
-	    if (user_trace > 0)
+	    if (user_trace)
 	      fprintf (stderr, "Setting min pmax/pmin of a feature to %f\n", 
 		min_pmax_pmin_ratio);
 	  if (min_pmax_pmin_ratio < 0)   //  if value < 0 set it to 0
@@ -611,7 +635,7 @@ int main (int argc, char **argv)
           if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
 	    untrappableerror ("Invalid filename, ", "filename too long.");
 	  csl->filename = argv[i];
-	  if (user_trace > 0)
+	  if (user_trace)
 	    fprintf (stderr, "Using program file %s\n", csl->filename);
 	}
     end_command_line_parse_loop:
@@ -638,7 +662,7 @@ int main (int argc, char **argv)
 	   csl->filename = argv[i];
 	   i = argc;
 	  }
-      if (user_trace > 0)
+      if (user_trace)
 	fprintf (stderr, "Using program file %s\n", csl->filename);
     }
   //      If we still don't have a program, we're done.  Squalk an
@@ -653,13 +677,14 @@ int main (int argc, char **argv)
 	  exit (engine_exit_base + 17);
 	}
       else
+	  {
 	exit (EXIT_SUCCESS);
+	  }
     }
   
   //     open, stat and load the program file
   if (openbracket < 0 )
     {
-      {
 	if (argc <= 1)
 	  {
 	    fprintf (stderr, "CRM114 version %s\n", VERSION);
@@ -669,7 +694,9 @@ int main (int argc, char **argv)
 		exit (engine_exit_base + 18);
 	      }
 	    else
+		{
 	      exit (EXIT_SUCCESS);
+		}
 	  }
 	else
 	  {
@@ -678,7 +705,6 @@ int main (int argc, char **argv)
 		       csl->filename);
 	    crm_load_csl (csl);
 	  }
-      }
     }
   else
     {
@@ -688,7 +714,7 @@ int main (int argc, char **argv)
 	untrappableerror ("The command line program is too big.\n",
 			  "Try increasing the max program size with -P.\n");
       csl->filename = "(from command line)";
-      csl->filetext = (char *) malloc (sizeof (csl->filetext[0]) * max_pgmsize);   /* [i_a] */
+      csl->filetext = (char *) calloc (max_pgmsize, sizeof (csl->filetext[0]) );   
       if (!csl->filetext)
 	untrappableerror ("Couldn't malloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.","");
 
@@ -709,30 +735,32 @@ int main (int argc, char **argv)
   //  simply allocate the data window of "adequate size" and read
   //  stuff in on stdin.
   
-  cdw = malloc (sizeof (cdw[0]));  /* [i_a] */
+  cdw = calloc (1, sizeof (cdw[0]));  
   if (!cdw)
     untrappableerror ("Couldn't malloc cdw.\nThis is very bad.","");
   cdw->filename = NULL;
   cdw->rdwr = 1;
   cdw->filedes = -1;
-  cdw->filetext = malloc (sizeof (cdw->filetext[0]) * data_window_size);   /* [i_a] */
+  cdw->filetext = calloc (data_window_size, sizeof (cdw->filetext[0]) );   
   if (!cdw->filetext)
     untrappableerror ("Couldn't malloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.","");
   //      also allocate storage for the windowed data input
-  newinputbuf = malloc (sizeof (newinputbuf[0]) * data_window_size);  /* [i_a] */
+  newinputbuf = calloc (data_window_size, sizeof (newinputbuf[0]) );  
   
   //      and our three big work buffers - these are used ONLY inside
   //      of a single statement's execution and do NOT ever contain state
   //      that has to exist across statements.
-  inbuf = malloc (sizeof (inbuf[0]) * data_window_size);  /* [i_a] */
-  outbuf = malloc (sizeof (outbuf[0]) * data_window_size); /* [i_a] */
-  tempbuf = malloc (sizeof (tempbuf[0]) * data_window_size); /* [i_a] */
+  inbuf = calloc (data_window_size, sizeof (inbuf[0]) );  
+  outbuf = calloc (data_window_size, sizeof (outbuf[0]) ); 
+  tempbuf = calloc (data_window_size, sizeof (tempbuf[0]) ); 
   if (!tempbuf || !outbuf || !inbuf || !newinputbuf)
+  {
     untrappableerror (
 		      "Couldn't malloc one or more of"
 		      "newinputbuf,inbuf,outbuf,tempbuf.\n"
 		      "These are all necessary for operation."
                       "We can't run.","");
+  }
 
   //     Initialize the VHT, add in a few predefined variables
   //
@@ -888,6 +916,6 @@ int main (int argc, char **argv)
   
   //     This is the *real* exit from the engine, so we do not override
   // the engine's exit status with an engine_exit_base value.
-  return status; /* [i_a] */
+  return status; 
  }
 

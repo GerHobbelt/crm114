@@ -29,20 +29,6 @@
 //  include OSBF structures
 #include "crm114_osbf.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 
 ////////////////////////////////////////////////////////////////////
@@ -598,10 +584,17 @@ regcomp_failed:
     int hfd;			//  hashfile fd
     OSBF_FEATURE_HEADER_STRUCT foo;
     hfd = open (fname, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
+	if (hfd < 0)
+    {
+      fprintf(stderr, "Couldn't reopen %s to touch\n", fname);
+    }
+    else
+	{
     read (hfd, &foo, sizeof (foo));
     lseek (hfd, 0, SEEK_SET);
     write (hfd, &foo, sizeof (foo));
     close (hfd);
+	}
   }
 #endif 
   if (ptext[0] != '\0')
@@ -956,7 +949,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 		      // set this hashlens to the length in features instead
 		      // of the length in bytes.
 		      hashlens[maxhash] = header[maxhash]->buckets;
-		      hashname[maxhash] = (char *) malloc((fnlen + 10) * sizeof(hashname[maxhash][0])); /* [i_a] */
+		      hashname[maxhash] = (char *) calloc((fnlen + 10) , sizeof(hashname[maxhash][0])); 
 		      if (!hashname[maxhash])
 			  {
 			untrappableerror
@@ -977,7 +970,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   
   for (i = 0; i < maxhash; i++)
     {
-      seen_features[i] = malloc(header[i]->buckets * sizeof(seen_features[i][0])); /* [i_a] */
+      seen_features[i] = calloc(header[i]->buckets , sizeof(seen_features[i][0])); 
       if (!seen_features[i])
 	untrappableerror
 	  ("Couldn't malloc seen features array\n",

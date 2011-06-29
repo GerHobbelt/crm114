@@ -21,21 +21,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
-
 static long crm_zapcss ( FEATUREBUCKET_TYPE *h, 
 		    unsigned long hs, 
 		    unsigned long start, 
@@ -290,7 +275,7 @@ static long crm_zapcss ( FEATUREBUCKET_TYPE *h,
   vcut = 1;
   packlen = end - start;
   //  fprintf (stderr, " S: %ld, E: %ld, L: %ld ", start, end, packlen );
-  zcountdown = packlen / 32;  //   get rid of about 3% of the data  /* [i_a] */
+  zcountdown = packlen / 32;  //   get rid of about 3% of the data  
   actually_zeroed = 0;
   while (zcountdown > 0)
     {
@@ -354,7 +339,7 @@ void crm_packseg (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 {
   unsigned long ifrom, ito;
   unsigned long thash, tkey, tvalue;
-  unsigned char tseen; /* [i_a] */
+  unsigned char tseen; 
 
   //  keep the compiler quiet - tseen is used only if seen_features 
   //  is non-null, but the compiler isn't smart enough to know that.

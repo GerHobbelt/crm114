@@ -11,8 +11,9 @@
 //
 
 
-/*
-   [i_a] Note to self: this code is chocckfull of security risks, i.e. buffer overflow issues.
+/* [i_a] GROT GROT GROT
+
+   Note to self: this code is chockfull of security risks, i.e. buffer overflow issues.
    And nonreentrant to boot.
 
    Overhaul when you've found the energy to do so...
@@ -30,20 +31,6 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-/* [i_a]
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-*/
 
 //
 //
@@ -379,19 +366,22 @@ long crm_zexpandvar (char *buf,
   
   if (tbuf == NULL )
     {
-      tbuf = (char *) malloc (current_maxlen * sizeof(tbuf[0]));  /* [i_a] */
+      tbuf = (char *) calloc (current_maxlen , sizeof(tbuf[0]));  
     }
   
   if (vname == NULL)
-    vname = (char *) malloc (current_maxlen * sizeof(vname[0])); /* [i_a] */
- 
+  {
+    vname = (char *) calloc (current_maxlen , sizeof(vname[0])); 
+  }
 
   if (tbuf == NULL || vname == NULL)
     {
       q = fatalerror ("Couldn't allocate memory for Q-variable expansion!",
 		      "Try making the window set smaller with the -w option");
       if (q == 0)
-	return (inlen);
+	  {
+		return (inlen);
+	  }
     }
   
   //    OK, we might have a :*: substitution operator, so we actually have
@@ -1288,7 +1278,7 @@ long crm_restrictvar ( char *boxstring,
       if (vht_idx)
 	fprintf (stderr, " VHTidx %ld", (unsigned long) *vht_idx);
       if (outblock)
-	fprintf (stderr, " blockaddr %p", *outblock);  /* [i_a] */
+	fprintf (stderr, " blockaddr %p", *outblock);  
       if (outoffset)
 	fprintf (stderr, " startoffset %ld", (unsigned long) *outoffset);
       if (outlen)
