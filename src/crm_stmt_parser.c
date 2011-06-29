@@ -248,7 +248,6 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
     uint64_t outcode;
 
     int done;
-    int i;
     int j;
     int k;
     int recog_flag;
@@ -272,10 +271,11 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
     flagsearch_start_here = 0;
     while (!done && remlen > 0)
     {
-        i = crm_nextword(remtext, remlen, flagsearch_start_here, &wstart, &wlen);
-        flagsearch_start_here = wstart + wlen + 1;
-        if (wlen > 0)
+        if (crm_nextword(remtext, remlen, flagsearch_start_here, &wstart, &wlen)
+         && wlen > 0)
         {
+			flagsearch_start_here = wstart + wlen + 1;
+
             //    We got a word, so aim wtext at it
             wtext = &(remtext[wstart]);
             if (internal_trace)
@@ -297,7 +297,7 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
                         (crm_flags[j - 1].value << 1LL) : 1);
                 CRM_ASSERT(j == 0 ? crm_flags[j].value == 1 : 1);
 
-                k = strlen(crm_flags[j].string);
+                k = (int)strlen(crm_flags[j].string);
                 if (k == wlen
                     && 0 == strncasecmp(wtext, crm_flags[j].string, k))
                 {
@@ -377,7 +377,6 @@ int crm_nextword(const char *input,
         return 0;
 
     //    if we get to here, then we have a valid string.
-    *len = 0;
     while ((*start + *len) < inlen
            && input[*start + *len] > 0x20)
         *len += 1;
@@ -387,21 +386,6 @@ int crm_nextword(const char *input,
 
 
 
-//
-//    experimental code for a statement-type-sensitive parser.
-//   Not in use yet... but someday... goal is to provide better error
-//   detection.
-
-int crm_profiled_statement_parse(char *in,
-        int slen,
-        ARGPARSE_BLOCK *apb,
-        int amin, int amax,
-        int pmin, int pmax,
-        int bmin, int bmax,
-        int smin, int smax)
-{
-    return 0;
-}
 
 //      parse a CRM114 statement; this is mostly a setup routine for
 //     the generic parser.
@@ -969,16 +953,17 @@ int crm_generic_parse_line(
 
 //    and to avoid all the mumbo-jumbo, an easy way to get a copy of
 //    an arg found by the declensional parser.
-void crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen)
+int crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen)
 {
     int len;
 
     if (to == NULL || tolen == 0)
-        return;
+        return 0;
 
     if (from == NULL)
     {
         to[0] = 0;
+		return 0;
     }
     else
     {
@@ -987,6 +972,7 @@ void crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen)
             len = fromlen;
         memmove(to, from, len);
         to[len] = 0;
+		return len;
     }
 }
 

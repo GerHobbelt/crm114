@@ -1,0 +1,51 @@
+#! /bin/sh
+
+#
+# filter the produced output and reference file: we don't care about the PID: numbers in there.
+#
+
+# cmdline: filter <expected> <testresult>
+
+reffile="$1"
+testfile="$2"
+difffile="$3"
+targetname="$4"
+
+BUILDDIR=@builddir@
+SRCDIR=@srcdir@
+REFDIR="${SRCDIR}/ref"
+
+rm -f "${difffile}"
+
+rm -f "${targetname}.refout" 
+rm -f "${targetname}.tstout" 
+
+if [ ! -f "${reffile}" ] || [ ! -f "${testfile}" ]; then
+  echo "One of the files to compare is missing: '${reffile}' -- '${testfile}'"
+  exit 66
+fi
+
+
+sed -e "s,PID: [0-9]\+,PID: XXX,g" \
+    -e "s,pipe: [0-9]\+,pipe: XXX,g" \
+    < "${reffile}" \
+    > "${targetname}.refout"
+sed -e "s,PID: [0-9]\+,PID: XXX,g" \
+    -e "s,pipe: [0-9]\+,pipe: XXX,g" \
+    < "${testfile}" \
+    > "${targetname}.tstout"
+
+
+if [ ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ]; then
+  echo "------------------------------------------------------"
+  cat "${targetname}.refout"
+  echo "------------------------------------------------------"
+  cat "${targetname}.tstout"
+  echo "------------------------------------------------------"
+fi
+
+@DIFF@ -u @DIFF_FLAGS@ "${targetname}.refout" "${targetname}.tstout" > "${difffile}"
+retcode=$?
+
+exit ${retcode}
+

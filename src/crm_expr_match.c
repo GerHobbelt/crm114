@@ -50,6 +50,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int vpmstart, vpmend;
     int vmidx;
 	int fev = 0;
+	int boxtxtlen;
 
     //    And it all comes down to this, right here.  Matching a regex.
     //    This is the cruxpoint of the whole system.  We parse the
@@ -174,17 +175,19 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //   string somewhere.  So, we have to stuff the variable name
     //   in as a temp var and then immediately reassign it.
     //
-    crm_get_pgm_arg(bindable_vars, MAX_PATTERN, apb->p1start, apb->p1len);
+    bindable_vars_len = crm_get_pgm_arg(bindable_vars, MAX_PATTERN, apb->p1start, apb->p1len);
     if (internal_trace)
-        fprintf(stderr, " bindable vars: ***%s***\n", bindable_vars);
-    bindable_vars_len = crm_nexpandvar(bindable_vars, apb->p1len, MAX_PATTERN);
+	{
+        fprintf(stderr, " bindable vars: (len = %d) ***%s***\n", bindable_vars_len, bindable_vars);
+	}
+    bindable_vars_len = crm_nexpandvar(bindable_vars, bindable_vars_len, MAX_PATTERN);
 
 
     //     here's where we look for a [] var-restriction
-    crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
+    boxtxtlen = crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
     //  Use crm_restrictvar to get start & length to look at.
-    i = crm_restrictvar(box_text, apb->b1len,
+    i = crm_restrictvar(box_text, boxtxtlen,
             &vmidx,
             &mdwptr,
             &source_start,
@@ -223,10 +226,10 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     //    get the regex pattern out of the // slashes
-    crm_get_pgm_arg(pch, MAX_PATTERN, apb->s1start, apb->s1len);
+    pchlen = crm_get_pgm_arg(pch, MAX_PATTERN, apb->s1start, apb->s1len);
     if (internal_trace)
-        fprintf(stderr, " match pattern: =%s=\n", pch);
-    pchlen = crm_nexpandvar(pch, apb->s1len, MAX_PATTERN);
+        fprintf(stderr, " match pattern: (len = %d) =%s=\n", pchlen, pch);
+    pchlen = crm_nexpandvar(pch, pchlen, MAX_PATTERN);
 
     if (user_trace)
 	{

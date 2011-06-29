@@ -1,4 +1,4 @@
- This is CRM114, version 20080326-BlameSentansoken (TRE 0.7.5 (LGPL))
+ This is CRM114, version 20080502-BlameJason (TRE 0.7.5 (LGPL))
  Copyright 2001-2006 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -205,8 +205,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 9467 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 9467 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 5834 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 5834 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -543,37 +543,37 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2099035
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2099029
 Bytes used per pass: 2097150
 Passes done: 100 
 Total flux through isolation:  419430000
-OK_IF_SIZE_CHANGES: Final isolation size: 2099052 
+OK_IF_SIZE_CHANGES: Final isolation size: 2099046 
 OK_IF_LESS_THAN_100: Total growth: 17
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2101517
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2101511
 Bytes used per pass: 2097150
 Passes done: 10 
 Total flux through isolation:  41943000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101532 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101526 
 OK_IF_LESS_THAN_10: Total growth: 15
 Bytes used per pass: 2097150
 Passes done: 20 
 Total flux through isolation:  83886000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101538 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101532 
 OK_IF_LESS_THAN_20: Total growth: 21
 Bytes used per pass: 2097150
 Passes done: 30 
 Total flux through isolation:  125829000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101539 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101533 
 OK_IF_LESS_THAN_30: Total growth: 22
 Bytes used per pass: 2097150
 Passes done: 40 
 Total flux through isolation:  167772000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101539 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101533 
 OK_IF_LESS_THAN_40: Total growth: 22
 Starting 
 
@@ -661,7 +661,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20080326-BlameSentansoken ( TRE 0.7.5 (LGPL) )
+version: 20080502-BlameJason ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?

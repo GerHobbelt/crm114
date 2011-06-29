@@ -188,6 +188,12 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             fprintf(stderr, "  no case matching turned on\n ");
         regexflags = regexflags | REG_ICASE;
     }
+    if (apb->sflags & CRM_NOCASE)
+    {
+        if (user_trace)
+            fprintf(stderr, "  no case matching turned on\n ");
+        regexflags = regexflags | REG_ICASE;
+    }
     if (apb->sflags & CRM_LITERAL)
     {
         if (user_trace)
@@ -200,13 +206,13 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //     get the disposal pattern
     //
-    crm_get_pgm_arg(pch, MAX_PATTERN, apb->s1start, apb->s1len);
+    flen = crm_get_pgm_arg(pch, MAX_PATTERN, apb->s1start, apb->s1len);
 
     //     null window check - if no cut or paste patterns, then we
     //     just skip to the end of the WINDOW statement code
     //     which is how a WINDOW statement can be used to have a
     //     program "come out running" before reading stdin.
-    if (apb->s1len == 0 && apb->s2len == 0)
+    if (flen == 0 && apb->s2len == 0)
         goto crm_window_no_changes_made;
 
     //     We have the first pattern in pch.  We ought to look for the
@@ -216,10 +222,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (internal_trace)
         fprintf(stderr, " window cut pattern ---%s---\n", pch);
-    flen = apb->s1len;
 
     //       expand the match pattern
-    flen = crm_nexpandvar(pch, apb->s1len, MAX_PATTERN);
+    flen = crm_nexpandvar(pch, flen, MAX_PATTERN);
     //
     //       compile the regex
     i = crm_regcomp(&preg, pch, flen, regexflags);
@@ -233,17 +238,18 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //    Get the variable we're windowing.  If there's no such
     //    variable, we default to :_dw:
 
-    crm_get_pgm_arg(wvname, MAX_PATTERN, apb->p1start, apb->p1len);
-    wvnamelen = crm_nexpandvar(wvname, apb->p1len, MAX_PATTERN);
+    wvnamelen = crm_get_pgm_arg(wvname, MAX_PATTERN, apb->p1start, apb->p1len);
+    wvnamelen = crm_nexpandvar(wvname, wvnamelen, MAX_PATTERN);
+	CRM_ASSERT(wvnamelen < MAX_PATTERN);
+	wvname[wvnamelen] = 0;
     //    if no svname, then we're defaulted to :_dw:
-    if (strlen(wvname) == 0)
+    if (wvnamelen < 3)
     {
         strcat(wvname, ":_dw:");
-        wvnamelen = strlen(":_dw:");
+        wvnamelen = (int)strlen(":_dw:");
     }
 
-    vmidx = crm_vht_lookup(vht, wvname,
-            strlen(wvname));
+    vmidx = crm_vht_lookup(vht, wvname, wvnamelen);
     if (vht[vmidx] == NULL)
     {
         nonfatalerror("We seem to be windowing a nonexistent variable.",
@@ -296,8 +302,10 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     if (user_trace)
+	{
         fprintf(stderr, "  cut completed, variable length after cut is %d\n",
                 vht[vmidx]->vlen);
+	}
 
     //**************************************************************
     //       OK, part one is done- we've windowed off the first
@@ -310,16 +318,15 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (user_trace)
         fprintf(stderr, " now finding new section to add to end.\n");
 
-    crm_get_pgm_arg(pch, MAX_PATTERN, apb->s2start, apb->s2len);
-    flen = apb->s2len;
+    flen = crm_get_pgm_arg(pch, MAX_PATTERN, apb->s2start, apb->s2len);
     if (user_trace)
-        fprintf(stderr, "adding input with terminator of --%s--,", pch);
+		fprintf(stderr, "adding input with terminator of (len: %d) --%s--,", flen, pch);
 
     //       expand the match pattern
     flen = crm_nexpandvar(pch, flen, MAX_PATTERN);
 
     if (user_trace)
-        fprintf(stderr, " which expands to --%s--", pch);
+		fprintf(stderr, " which expands to (len: %d) --%s--", flen, pch);
 
     //
     //       compile the paste match regex
@@ -336,8 +343,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //     Get the input source, if one is supplied (2nd set of parens is
     //     the var to use as input source, if it exists)
-    crm_get_pgm_arg(inputsrcname, MAX_PATTERN, apb->p2start, apb->p2len);
-    inputsrclen = apb->p2len;
+    inputsrclen = crm_get_pgm_arg(inputsrcname, MAX_PATTERN, apb->p2start, apb->p2len);
 
     if (apb->p2start)
     {
@@ -345,7 +351,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     from this input variable.
         inputsrc = FROM_VAR;
         if (user_trace)
-            fprintf(stderr, "  getting input from var %s\n", inputsrcname);
+            fprintf(stderr, "  getting input from var (len = %d) '%s'\n", inputsrclen, inputsrcname);
     }
 
     //
@@ -494,7 +500,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 fprintf(stderr, "  bigchunk BYEOF read starting \n");
                             //
                             //        fread (stdin) doesn't return on pipe empty
-                            icount = fread(&(newinputbuf[newbuflen]), 1,
+                            icount = (int)fread(&(newinputbuf[newbuflen]), 1,
                                     data_window_size - (newbuflen + 256),
                                     stdin);
                             if (feof(stdin))
@@ -529,7 +535,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //
                             if (user_trace)
                                 fprintf(stderr, "   single character BYCHAR read\n");
-                            icount = fread(&(newinputbuf[newbuflen]), 1, 1, stdin);
+                            icount = (int)fread(&(newinputbuf[newbuflen]), 1, 1, stdin);
                         }
                         break;
                     }

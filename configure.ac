@@ -24,7 +24,7 @@
 
 
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT([CRM114], [20080326-BlameSentansoken], [crm114-general@lists.sourceforge.net])
+AC_INIT([CRM114], [20080502-BlameJason], [crm114-general@lists.sourceforge.net])
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR([m4])
@@ -1044,10 +1044,11 @@ AC_CONFIG_FILES([Makefile
                  tests/defaulttest.crm
                  tests/print_binary2decimal_int32.crm
                  tests/testscript.sh
-                 tests/statustest.filter.sh
+                 tests/crm114_statustest.filter.sh
                  tests/crm114_error_report.filter.sh
                  tests/crm114_versiontest.filter.sh
                  tests/crm114_classify.filter.sh
+                 tests/crm114_isolate_test.filter.sh
                  examples/pad.crm
                  examples/shroud.crm
                  mailfilter/classifymail.crm

@@ -228,9 +228,9 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //  i = hctable[0];
 
     //           extract the hash file name
-    crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    hlen = apb->p1len;
+    hlen = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN);
+	CRM_ASSERT(hlen < MAX_PATTERN);
 
 
     //            set our cflags, if needed.  The defaults are
@@ -537,7 +537,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //    and write the sorted hashes out.
 			CRM_ASSERT(hashes[hashcounts].hash == 0);
 			CRM_ASSERT(hashcounts > 0 ? hashes[hashcounts - 1].hash != 0 : TRUE);
-            ret = fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
+            ret = (int)fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
 #if USE_FIXED_UNIQUE_MODE
 				1 +
 #endif
@@ -974,21 +974,28 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    (we now get those fromt he caller)
 
     //           extract the hash file names
-    crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
-    hlen = apb->p1len;
+    hlen = crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
     hlen = crm_nexpandvar(htext, hlen, htext_maxlen);
+	CRM_ASSERT(hlen < MAX_PATTERN);
 
     //            extract the optional "match statistics" variable
     //
-    crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
-    svlen = apb->p2len;
+    svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
+	CRM_ASSERT(svlen < MAX_PATTERN);
     {
         int vstart, vlen;
-        crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
+        if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
+		{
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;
         svrbl[vlen] = 0;
+		}
+		else
+		{
+        svlen = 0;
+        svrbl[0] = 0;
+		}
     }
     if (user_trace)
 	{
@@ -1062,10 +1069,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
-        crm_nextword(htext,
-                hlen, fn_start_here,
-                &fnstart, &fnlen);
-        if (fnlen > 0)
+        if (crm_nextword(htext, hlen, fn_start_here, &fnstart, &fnlen)
+         && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = 0;
@@ -1889,7 +1894,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (svlen > 0)
         {
             crm_destructive_alter_nvariable(svrbl, svlen,
-                    stext, strlen(stext));
+                    stext, (int)strlen(stext));
         }
     }
 

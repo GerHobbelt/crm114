@@ -792,33 +792,22 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         fprintf(stderr, "entered crm_expr_fscm_learn (learn)\n");
 
     //parse out .fscm file name
-    crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    htext_len = apb->p1len;
+    htext_len = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
+	CRM_ASSERT(htext_len < MAX_PATTERN);
 
-#if 0
-    i = 0;
-    while (htext[i] < 0x021)
-        i++;
-    CRM_ASSERT(i < htext_len);
-    j = i;
-    while (htext[j] >= 0x021)
-        j++;
-    CRM_ASSERT(j <= htext_len);
-#else
  if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
  {
             int fev = nonfatalerror_ex(SRC_LOC(), 
 				"\nYou didn't specify a valid filename: '%.*s'\n", 
-					(int)htext_len,
+					htext_len,
 					htext);
             return fev;
  }
  j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);
-#endif
-    htext[j] = 0;
+	htext[j] = 0;
     strcpy(filename, &htext[i]);
 
     //   Check to see if user specified the file length
@@ -945,21 +934,18 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int max_scorer, min_scorer;
 
     //grab filenames field
-    crm_get_pgm_arg(filenames_field, MAX_PATTERN, apb->p1start, apb->p1len);
-    filenames_field_len = apb->p1len;
-    filenames_field_len =
-        crm_nexpandvar(filenames_field, filenames_field_len, MAX_PATTERN);
+    filenames_field_len = crm_get_pgm_arg(filenames_field, MAX_PATTERN, apb->p1start, apb->p1len);
+    filenames_field_len = crm_nexpandvar(filenames_field, filenames_field_len, MAX_PATTERN);
+	CRM_ASSERT(filenames_field_len < MAX_PATTERN);
 
     //grab output variable name
-    crm_get_pgm_arg(out_var, MAX_PATTERN, apb->p2start, apb->p2len);
-    out_var_len = apb->p2len;
+    out_var_len = crm_get_pgm_arg(out_var, MAX_PATTERN, apb->p2start, apb->p2len);
     out_var_len = crm_nexpandvar(out_var, out_var_len, MAX_PATTERN);
 
     //check second slashed group for parameters
-    crm_get_pgm_arg(params, MAX_PATTERN, apb->s2start, apb->s2len);
-    params_len = apb->s2len;
+    params_len = crm_get_pgm_arg(params, MAX_PATTERN, apb->s2start, apb->s2len);
     params_len = crm_nexpandvar(params, params_len, MAX_PATTERN);
-    params[params_len] = 0;
+	CRM_ASSERT(params_len < MAX_PATTERN);
     i = crm_regcomp(&regee, "n_bytes[[:space:]]*=[[:space:]]*([0-9]+)",
                 40, REG_EXTENDED);
 	if (i != 0)

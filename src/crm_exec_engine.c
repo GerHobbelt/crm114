@@ -168,9 +168,8 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             int fl;
 
             CRM_ASSERT(apb != NULL);
-            fl = MAX_PATTERN;
-            crm_get_pgm_arg(flagz, fl, apb->a1start, apb->a1len);
-            fl = crm_nexpandvar(flagz, apb->a1len, MAX_PATTERN);
+            fl = crm_get_pgm_arg(flagz, MAX_PATTERN, apb->a1start, apb->a1len);
+            fl = crm_nexpandvar(flagz, fl, MAX_PATTERN);
             //    fprintf(stderr,
             //           "flagz --%s-- len %d\n", flagz, strlen(flagz));
 			apb->sflags = crm_flagparse(flagz, fl, csl->mct[csl->cstmt]->stmt_def);
@@ -185,7 +184,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
     if (debug_countdown == 0
         || csl->mct[csl->cstmt]->stmt_break)
     {
-		i = crm_debugger(csl, (csl->mct[csl->cstmt]->stmt_break ? CRM_DBG_REASON_BREAKPOINT : CRM_DBG_REASON_UNDEFINED));
+		i = crm_debugger(csl, (csl->mct[csl->cstmt]->stmt_break ? CRM_DBG_REASON_BREAKPOINT : CRM_DBG_REASON_UNDEFINED), NULL);
         if (i == -1)
         {
             if (engine_exit_base != 0)
@@ -277,9 +276,10 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             int retlen;
             char retstr[MAX_PATTERN];
             CRM_ASSERT(apb != NULL);
-            crm_get_pgm_arg(retstr, MAX_PATTERN, apb->s1start, apb->s1len);
-            retlen = apb->s1len;
+            retlen = crm_get_pgm_arg(retstr, MAX_PATTERN, apb->s1start, apb->s1len);
             retlen = crm_nexpandvar(retstr, retlen, MAX_PATTERN);
+			CRM_ASSERT(retlen < MAX_PATTERN);
+			retstr[retlen] = 0;
             retval = 0;
             if (retlen > 0)
             {
@@ -327,8 +327,8 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             {
                 int idx;
                 unsigned int noffset;
-                crm_get_pgm_arg(outbuf, MAX_VARNAME, apb->s1start, apb->s1len);
-                retlen = apb->s1len;
+
+				retlen = crm_get_pgm_arg(outbuf, MAX_VARNAME, apb->s1start, apb->s1len);
                 retlen = crm_nexpandvar(outbuf, retlen, data_window_size);
                 //
                 //      Now we have the return value in outbuf, and the return
@@ -394,28 +394,37 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //  not in our file, call a fatal error.
 
             CRM_ASSERT(apb != NULL);
-            crm_get_pgm_arg(target, MAX_VARNAME, apb->s1start, apb->s1len);
-            if (apb->s1len < 2)
+            tarlen = crm_get_pgm_arg(target, MAX_VARNAME, apb->s1start, apb->s1len);
+            if (tarlen < 2)
+			{
                 nonfatalerror
                 ("This program has a GOTO without a place to 'go' to.",
                         " By any chance, did you leave off the '/' delimiters? ");
-            tarlen = apb->s1len;
+			}
+			else
+			{
             if (internal_trace)
-                fprintf(stderr, "\n    untranslated label %s , ",
-                        target);
+			{
+                fprintf(stderr, "\n    untranslated label (len = %d) '%s',",
+                        tarlen, target);
+			}
 
             //   do indirection if needed.
             tarlen = crm_qexpandvar(target, tarlen, MAX_VARNAME, NULL);
             if (internal_trace)
-                fprintf(stderr, " translates to %s .", target);
+			{
+                fprintf(stderr, " translates to '%s'.\n", target);
+			}
 
             k = crm_lookupvarline(vht, target, 0, tarlen);
 
             if (k > 0)
             {
                 if (user_trace)
+				{
                     fprintf(stderr, "GOTO from line %d to line %d\n",
                             csl->cstmt,  k);
+				}
                 csl->cstmt = k; // this gets autoincremented
                 //  and going here didn't fail...
                 csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
@@ -427,8 +436,10 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 if (conv_count == 1)
                 {
                     if (user_trace)
+					{
                         fprintf(stderr, "GOTO from line %d to line %d\n",
                                 csl->cstmt, k);
+					}
                     csl->cstmt = k - 1; // this gets autoincremented, so we must --
                     //  and going here didn't fail...
                     csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
@@ -442,6 +453,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                     goto invoke_bailout;
                 }
             }
+			}
         }
         break;
 
@@ -523,13 +535,13 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             if (user_trace)
                 fprintf(stderr, "Forcing a FAULT at line %d\n", csl->cstmt);
             CRM_ASSERT(apb != NULL);
-            crm_get_pgm_arg(rbuf, MAX_PATTERN, apb->s1start, apb->s1len);
-            rlen = crm_nexpandvar(rbuf, apb->s1len, MAX_PATTERN);
+            rlen = crm_get_pgm_arg(rbuf, MAX_PATTERN, apb->s1start, apb->s1len);
+            rlen = crm_nexpandvar(rbuf, rlen, MAX_PATTERN);
 
             //   We alloc the reason - better free() it when we take the trap.
             //   in crm_trigger_fault
             //
-            reason = calloc((rlen + 5), sizeof(reason[0]));
+            reason = calloc(rlen + 1, sizeof(reason[0]));
             if (!reason)
             {
                 untrappableerror(
@@ -537,8 +549,8 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                         "Don't you just HATE it when the error fixup routine gets"
                         "an error?!?!");
             }
-            strncpy(reason, rbuf, rlen + 1);
-            reason[rlen + 1] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
+            memcpy(reason, rbuf, rlen);
+            reason[rlen] = 0;
 
 	// [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
 	if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
@@ -641,7 +653,7 @@ vht[varidx]->vlen,
             char varname[MAX_VARNAME];
             int varlen;
             int vns, vnl;
-            char newstr[MAX_VARNAME];
+            char newstr[17]; // place for a hexdumped 64-bit future hash + NUL sentinel
             int newstrlen;
             crmhash_t hval;     //   hash value
 
@@ -650,22 +662,19 @@ vht[varidx]->vlen,
 
             //     get the variable name
             CRM_ASSERT(apb != NULL);
-            crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
-            varlen = apb->p1len;
+            varlen = crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
             varlen = crm_nexpandvar(varname, varlen, MAX_VARNAME);
-            crm_nextword(varname, varlen, 0, &vns, &vnl);
-
             //   If we didn't get a variable name, we replace the data window!
-            if (vnl == 0)
+            if (!crm_nextword(varname, varlen, 0, &vns, &vnl)
+				|| vnl == 0)
             {
                 strcpy(varname, ":_dw:");
-                vnl = strlen(varname);
+                vnl = (int)strlen(varname);
 		vns = 0;
             }
 
             //     get the to-be-hashed pattern, and expand it.
-            crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
-            newstrlen = apb->s1len;
+            newstrlen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
             //
             //                   if no var given, hash the full data window.
             if (newstrlen == 0)
@@ -677,12 +686,13 @@ vht[varidx]->vlen,
 
             //    The pattern is now expanded, we can hash it to obscure meaning.
             hval = strnhash(tempbuf, newstrlen);
-            sprintf(newstr, "%08lX", (unsigned long int)hval);
+            snprintf(newstr, WIDTHOF(newstr), "%08lX", (unsigned long int)hval);
+			newstr[WIDTHOF(newstr) - 1] = 0;
 
             if (internal_trace)
             {
-                fprintf(stderr, "String: '%s'\n hashed to: %08lX\n",
-                        tempbuf,
+				fprintf(stderr, "String: (len: %d) '%s'\n hashed to: %08lX\n",
+                        newstrlen, tempbuf,
                         (unsigned long int)hval);
             }
 
@@ -778,16 +788,19 @@ vht[varidx]->vlen,
             //  not in our file, call a fatal error.
 
             CRM_ASSERT(apb != NULL);
-            crm_get_pgm_arg(target, MAX_VARNAME, apb->s1start, apb->s1len);
-            tarlen = apb->s1len;
+            tarlen = crm_get_pgm_arg(target, MAX_VARNAME, apb->s1start, apb->s1len);
             if (internal_trace)
-                fprintf(stderr, "\n    untranslated label %s , ",
-                        target);
+			{
+                fprintf(stderr, "\n    untranslated label (len = %d) '%s',",
+                        tarlen, target);
+			}
 
             //   do indirection if needed.
             tarlen = crm_nexpandvar(target, tarlen, MAX_VARNAME);
             if (internal_trace)
-                fprintf(stderr, " translates to %s .", target);
+			{
+                fprintf(stderr, " translates to '%s'.\n", target);
+			}
 
             k = crm_lookupvarline(vht, target, 0, tarlen);
 
@@ -851,11 +864,8 @@ vht[varidx]->vlen,
                 //
                 //    First, get the argument string into full expansion
                 CRM_ASSERT(apb != NULL);
-                crm_get_pgm_arg(tempbuf, data_window_size, apb->b1start, apb->b1len);
-                argvallen = apb->b1len;
+                argvallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->b1start, apb->b1len);
                 argvallen = crm_nexpandvar(tempbuf, argvallen, data_window_size);
-
-                tempbuf[argvallen] = 0;
 
                 //   Stuff the new csl with the return-value-locations'
                 //   vht index - if it's -1, then we don't have a return
@@ -870,33 +880,44 @@ vht[varidx]->vlen,
                 {
                     int ret_idx;
                     int  retname_start, retnamelen;
-                    crm_get_pgm_arg(outbuf, data_window_size,
-                            apb->p1start, apb->p1len);
-                    retnamelen = apb->p1len;
-                    retnamelen = crm_nexpandvar(outbuf,
-                            retnamelen, data_window_size);
-                    crm_nextword(outbuf, retnamelen, 0, &retname_start, &retnamelen);
-                    ret_idx = crm_vht_lookup(vht,
-                            &outbuf[retname_start],
-                            retnamelen);
+                    retnamelen = crm_get_pgm_arg(outbuf, data_window_size, apb->p1start, apb->p1len);
+                    retnamelen = crm_nexpandvar(outbuf, retnamelen, data_window_size);
+					CRM_ASSERT(retnamelen < data_window_size);
+                    if (crm_nextword(outbuf, retnamelen, 0, &retname_start, &retnamelen))
+					{
+                    ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen);
                     if (vht[ret_idx] == NULL)
                     {
-                        // nonfatalerror
+						CRM_ASSERT(retname_start + retnamelen <= data_window_size - 1);
+						outbuf[retname_start + retnamelen] = 0;
+						// nonfatalerror
                         // ("Your call statement wants to return a value "
                         // "to a nonexistent variable; I'll created an "
                         //"isolated one.  Hope that's OK. Varname was",
                         //             outbuf);
                         if (user_trace)
+						{
                             fprintf(stderr,
                                     "No such return value var, creating var %s\n",
-                                    outbuf);
-                        crm_set_temp_var(outbuf, "");
+                                    &outbuf[retname_start]);
+						}
+                        crm_set_temp_var(&outbuf[retname_start], "");
                     }
-                    ret_idx = crm_vht_lookup(vht, outbuf, retnamelen);
+                    ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen);
                     if (user_trace)
+					{
                         fprintf(stderr, " Setting return value to VHT cell %d",
                                 ret_idx);
+					}
                     newcsl->return_vht_cell = ret_idx;
+					}
+					else
+					{
+                        if (user_trace)
+						{
+                            fprintf(stderr, "No return value var specified. Ignoring.\n");
+						}
+					}
                 }
 
 
@@ -949,13 +970,20 @@ vht[varidx]->vlen,
                 //
                 //            get the paren arg of this routine
                 CRM_ASSERT(apb != NULL);
-                crm_get_pgm_arg(outbuf, data_window_size,
-                        apb->p1start, apb->p1len);
-                argnamelen = apb->p1len;
+                argnamelen = crm_get_pgm_arg(outbuf, data_window_size, apb->p1start, apb->p1len);
                 argnamelen = crm_nexpandvar(outbuf, argnamelen, data_window_size);
                 //
                 //      get the generalized argument name (first varname)
-                crm_nextword(outbuf, argnamelen, 0, &vns, &vnl);
+                if (crm_nextword(outbuf, argnamelen, 0, &vns, &vnl))
+				{
+		if (vnl >= WIDTHOF(outbuf))
+		{
+			nonfatalerror_ex(SRC_LOC(), "CALL statement comes with a label reference which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					j,
+(int)(WIDTHOF(outbuf)-1));
+			vnl = WIDTHOF(outbuf) - 1;
+		}
                 memmove(outbuf, &outbuf[vns], vnl);
                 outbuf[vnl] = 0;
                 if (vnl > 0)
@@ -988,6 +1016,8 @@ vht[varidx]->vlen,
                 }
                 //
                 //   That's it... we're done.
+				}
+				// else: ignore.
             }
         }
         break;
@@ -1015,21 +1045,20 @@ vht[varidx]->vlen,
             //    get the output variable (the one we're gonna whack)
             //
             CRM_ASSERT(apb != NULL);
-            crm_get_pgm_arg(out_var, MAX_VARNAME, apb->p1start, apb->p1len);
+            ovlen = crm_get_pgm_arg(out_var, MAX_VARNAME, apb->p1start, apb->p1len);
+            ovlen = crm_nexpandvar(out_var, ovlen, MAX_VARNAME);
             ovstart = 0;
-            ovlen = crm_nexpandvar(out_var, apb->p1len, MAX_VARNAME);
-
 
             //    get the list of variable names
             //
             //     note- since vars never contain wchars, we're OK here.
-            crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->b1start, apb->b1len);
-            tvlen = crm_nexpandvar(temp_vars, apb->b1len, MAX_VARNAME);
+            tvlen = crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->b1start, apb->b1len);
+            tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME);
             CRM_ASSERT(tvlen < MAX_VARNAME);
             if (internal_trace)
             {
-                fprintf(stderr, "  Intersecting vars: ***%s***\n", temp_vars);
-                fprintf(stderr, "   with result in ***%s***\n", out_var);
+				fprintf(stderr, "  Intersecting vars: (len: %d) ***%s***\n", tvlen, temp_vars);
+				fprintf(stderr, "   with result in (len: %d) ***%s***\n", ovlen, out_var);
             }
             done = 0;
             mc = 0;
@@ -1041,18 +1070,8 @@ vht[varidx]->vlen,
             i_index = -1;
             while (!done)
             {
-#if 0
-                while (temp_vars[vstart] < 0x021
-                       && vstart < tvlen)  //  was temp_vars[vstart] != 0)
-                    vstart++;
-                vlen = 0;
-                while (temp_vars[vstart + vlen] >= 0x021
-                       && vstart + vlen < tvlen)
-                    vlen++;
-#else
- crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen);
-#endif
-                if (vlen == 0)
+ if (!crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen)
+ || vlen == 0)
                 {
                     done = 1;
                 }
@@ -1065,6 +1084,14 @@ vht[varidx]->vlen,
                     if (vht[vht_index] == NULL)
                     {
                         char varname[MAX_VARNAME];
+								if (vlen >= WIDTHOF(varname))
+		{
+			nonfatalerror_ex(SRC_LOC(), "INTERSECT statement comes with a variable name which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					vlen,
+(int)(WIDTHOF(varname)-1));
+			vlen = WIDTHOF(varname) - 1;
+		}
                         strncpy(varname, &temp_vars[vstart], vlen);
                         varname[vlen] = 0;
                         nonfatalerror("can't intersection a nonexistent variable.",
@@ -1078,6 +1105,14 @@ vht[varidx]->vlen,
                         if (vht[vht_index]->valtxt != cdw->filetext)
                         {
                             char varname[MAX_VARNAME];
+								if (vlen >= WIDTHOF(varname))
+		{
+			nonfatalerror_ex(SRC_LOC(), "INTERSECT statement comes with a variable name which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					vlen,
+(int)(WIDTHOF(varname)-1));
+			vlen = WIDTHOF(varname) - 1;
+		}
                             strncpy(varname, &temp_vars[vstart], vlen);
                             varname[vlen] = 0;
                             nonfatalerror("can't intersect isolated variable.",
@@ -1105,10 +1140,17 @@ vht[varidx]->vlen,
             vlen = iend - istart;
             if (vlen < 0)
                 vlen = 0;
-            crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen);
+            if (crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen))
+			{
             crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
                     istart, vlen,
                     csl->cstmt);
+			}
+			else
+			{
+				nonfatalerror("INTERSECT didn't come with a target variable to store the results.", 
+					"'We focus on results around here,' the businessman said, and he wept silently.");
+			}
         }
         break;
 
@@ -1135,18 +1177,18 @@ vht[varidx]->vlen,
             //    get the output variable (the one we're gonna whack)
             //
             CRM_ASSERT(apb != NULL);
-            crm_get_pgm_arg(out_var, MAX_VARNAME, apb->p1start, apb->p1len);
+            ovlen = crm_get_pgm_arg(out_var, MAX_VARNAME, apb->p1start, apb->p1len);
+            ovlen = crm_nexpandvar(out_var, ovlen, MAX_VARNAME);
             ovstart = 0;
-            ovlen = crm_nexpandvar(out_var, apb->p1len, MAX_VARNAME);
 
 
             //    get the list of variable names
             //
             //    since vars never contain wchars, we don't have to be 8-bit-safe
-            crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->b1start, apb->b1len);
-            tvlen = crm_nexpandvar(temp_vars, apb->b1len, MAX_VARNAME);
+            tvlen = crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->b1start, apb->b1len);
+            tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME);
             if (internal_trace)
-                fprintf(stderr, "  Uniting vars: ***%s***\n", temp_vars);
+				fprintf(stderr, "  Uniting vars: (len: %d) ***%s***\n", tvlen, temp_vars);
 
             done = 0;
             mc = 0;
@@ -1158,18 +1200,8 @@ vht[varidx]->vlen,
             i_index = -1;
             while (!done)
             {
-#if 0
-                while (temp_vars[vstart] < 0x021
-                       && vstart < tvlen)  //  was temp_vars[vstart] != 0)
-                    vstart++;
-                vlen = 0;
-                while (temp_vars[vstart + vlen] >= 0x021
-                       && vstart + vlen < tvlen)
-                    vlen++;
-#else
- crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen);
-#endif
-                if (vlen == 0)
+ if (!crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen)
+                || vlen == 0)
                 {
                     done = 1;
                 }
@@ -1222,10 +1254,17 @@ vht[varidx]->vlen,
             vlen = iend - istart;
             if (vlen < 0)
                 vlen = 0;
-            crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen);
+            if (crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen))
+			{
             crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
                     istart, vlen,
                     csl->cstmt);
+			}
+			else
+			{
+				nonfatalerror("UNION didn't come with a target variable to store the results.", 
+					"'We focus on results around here,' the businessman said, and he wept silently.");
+			}
         }
         break;
 
@@ -1244,7 +1283,7 @@ vht[varidx]->vlen,
 		// Hence we're going to tell the debugger explicitly it was this 'debug' command that
 		// caused it to be called; the debugger then MUST pop up and any run-N-statements or
 		// step-out/until-return/whatever runs will be forcibly aborted.
-		i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_STATEMENT);
+		i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_STATEMENT, NULL);
         if (i == -1)
         {
             if (engine_exit_base != 0)
@@ -1337,7 +1376,7 @@ invoke_done:
 	{
 		int end_stmt_nr = csl->cstmt;
 
-		i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_END_OF_PROGRAM);
+		i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_END_OF_PROGRAM, NULL);
         if (i == -1)
         {
             if (engine_exit_base != 0)

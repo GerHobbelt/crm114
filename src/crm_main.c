@@ -191,6 +191,7 @@ void free_stack(CSL_CELL *csl)
  *    so tread carefully here: do not assume all these pointers are filled.
  */
 static void crm_final_cleanup(void)
+
 {
     // GROT GROT GROT
     //
@@ -1513,7 +1514,7 @@ int main(int argc, char **argv)
         int dwlen;
         tdw->filetext[tdw->nchars] = '\n';
         tdw->nchars++;
-        dwlen = strlen(":_dw:");
+        dwlen = (int)strlen(":_dw:");
         dwname = tdw->nchars;
         //strcat (tdw->filetext, ":_dw:");
         memmove(&tdw->filetext[dwname], ":_dw:", dwlen);

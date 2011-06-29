@@ -7,104 +7,187 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 ls: cannot access *.c: No such file or directory
 sh: exectest_s1.sh: command not found
-sh: ./exectest_s1.sh: No such file or directory
 ls: cannot access *.c: No such file or directory
 ls: cannot access *.c: No such file or directory
 ls: cannot access *.c: No such file or directory
-sh: ./exectest_s1.sh: No such file or directory
 ls: cannot access *.c: No such file or directory
 
 STDOUT TEST OUTPUT:
 
  ----- executing an ls -----
-conft.c
-crmregex_tre.c
-test-matrix.c
 
  ----- executing s1 script -----
-sh: exectest_s1.sh: command not found
 
  ----- executing s1 script from current dir -----
-sh: ./exectest_s1.sh: No such file or directory
+hello #0
+hello #1
+hello #2
+hello #3
+hello #4
+hello #5
+hello #6
+hello #7
+hello #8
+hello #9
+hello #10
+hello #11
+hello #12
+hello #13
+hello #14
+hello #15
+hello #16
+hello #17
+hello #18
+hello #19
 
  ----- calculating 1 + 2 + 3 using bc -----
 6
 
  ----- executing another ls -----
-conft.c
-crmregex_tre.c
-test-matrix.c
 
  ----- executing an ls -la -----
--rw-r--r-- 1 ger users    27 2007-08-26 00:30 conft.c
--rwxr--r-- 1 ger users 12933 2008-03-26 17:57 crmregex_tre.c
--rw-r--r-- 1 ger users  1711 2008-02-06 14:45 test-matrix.c
 
  ----- outputting to a file using cat -----
 file contents:
- This is a cat out
+ This is a cat out 
 
- ----- keeping a process around ----
+ ----- keeping a process around ----  
 
- preparing...
- did one... MINION PROC PID: 31304 from-pipe: 5 to-pipe: 4
- did it again...MINION PROC PID: 31304 from-pipe: 5 to-pipe: 4
- and done ...DEAD MINION, EXIT CODE: 0
+ preparing... 
+ did one... MINION PROC PID: 2723 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 2723 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
 file contents:
- .  a one
- .  and a two
- .  and a three
+ .  a one 
+ .  and a two 
+ .  and a three 
 
  ----- testing keep reads from proc -----
---- got immediate :
--rw-r--r-- 1 ger users    27 2007-08-26 00:30 conft.c
--rwxr--r-- 1 ger users 12933 2008-03-26 17:57 crmregex_tre.c
--rw-r--r-- 1 ger users  1711 2008-02-06 14:45 test-matrix.c
-
- ---end-------- got this later :
+--- got immediate : 
+ 
+ ---end-------- got this later : 
 --
 --- .1 sleep
---- .1 sleep: got :
+--- .1 sleep: got : 
 --
 --- 1 sleep
---- 1.0 sleep: got :
+--- 1.0 sleep: got : 
 --
 --- 3 sleep
---- 3.0 sleep: got :
+--- 3.0 sleep: got : 
 --
 proc = DEAD MINION, EXIT CODE: 0
---- and finally synch/eof :
-
- ---end-----sh: ./exectest_s1.sh: No such file or directory
-proc = MINION PROC PID: 31319 from-pipe: 5 to-pipe: 4
---- s1 script: got immediate :
-
- ---end-----proc = MINION PROC PID: 31319 from-pipe: 5 to-pipe: 4
---- got this later :
---
+--- and finally synch/eof : 
+ 
+ ---end-----proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- s1 script: got immediate : 
+hello #0
+ 
+ ---end-----proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #1
+-
 --- .1 sleep
-proc = MINION PROC PID: 31319 from-pipe: 5 to-pipe: 4
---- .1 sleep: got :
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+-hello #2
+-
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #3
+-
+--- .1 sleep
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+-hello #4
+-
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #5
+-
+--- .1 sleep
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+-hello #6
+-
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #7
+-
+--- .1 sleep
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+-hello #8
+-
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #9
+-
+--- .1 sleep
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+-hello #10
+-
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #11
+-
+--- .1 sleep
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+-hello #12
+-
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #13
+-
+--- .1 sleep
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+-hello #14
+-
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #15
+-
+--- .1 sleep
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+-hello #16
+-
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #17
+-
+--- .1 sleep
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+-hello #18
+-
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- got this later : 
+-hello #19
+-
+--- .1 sleep
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
 --
 --- 1 sleep
-proc = MINION PROC PID: 31319 from-pipe: 5 to-pipe: 4
---- 1.0 sleep: got :
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
 --
 --- 3 sleep
-proc = MINION PROC PID: 31319 from-pipe: 5 to-pipe: 4
---- 3.0 sleep: got :
+proc = MINION PROC PID: 2738 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
 --
---- and finally synch/eof :
-
- ---end-----Testing fire-and-forget asynch
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
 proc = DEAD MINION, EXIT CODE: 0
-fire and forget ls got: -rw-r--r-- 1 ger users    27 2007-08-26 00:30 conft.c
--rwxr--r-- 1 ger users 12933 2008-03-26 17:57 crmregex_tre.c
--rw-r--r-- 1 ger users  1711 2008-02-06 14:45 test-matrix.c
-
-proc = MINION PROC PID: 31328 from-pipe: 5 to-pipe: 4
-fire and forget s1 script for current dir got:
-proc = MINION PROC PID: 31328 from-pipe: 5 to-pipe: 4
-fire and forget s1 script got:
-proc = MINION PROC PID: 31328 from-pipe: 5 to-pipe: 4
+fire and forget ls got:  
+proc = MINION PROC PID: 2788 from-pipe: 5 to-pipe: 4
+fire and forget s1 script for current dir got:  
+proc = MINION PROC PID: 2788 from-pipe: 5 to-pipe: 4
+fire and forget s1 script got:  
+proc = MINION PROC PID: 2788 from-pipe: 5 to-pipe: 4
 

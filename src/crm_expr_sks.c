@@ -1062,14 +1062,13 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //  Extract the file names for storing svm solver.( file1.svm |
     //  file2.svm | 1vs2_solver.svm )
-    crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
-    flen = apb->p1len;
+    flen = crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
     flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
 
     strcpy(ptext,
             "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
-    plen = strlen(ptext);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = (int)strlen(ptext);
+    //plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i != 0)
     {
@@ -1096,16 +1095,6 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //only has one input file
         if (ptext[0] != 0)
             crm_regfree(&regcb);
-#if 0
-        i = 0;
-        while (ftext[i] < 0x021)
-            i++;
-    CRM_ASSERT(i < flen);
-        j = i;
-        while (ftext[j] >= 0x021)
-            j++;
-    CRM_ASSERT(j <= flen);
-#else
  if (!crm_nextword(ftext, flen, 0, &i, &j) || j == 0)
  {
             int fev = nonfatalerror_ex(SRC_LOC(), 
@@ -1117,7 +1106,6 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
  j += i;
     CRM_ASSERT(i < flen);
     CRM_ASSERT(j <= flen);
-#endif
 
         ftext[j] = 0;
         strcpy(file1, &ftext[i]);
@@ -1128,8 +1116,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 #ifdef GET_RID_OF_PUNCTUATION
     //get rid of all punctuation
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = apb->s1len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
     if (plen == 0)
     {
@@ -1555,8 +1542,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
     //           extract parameters for String kernel SVM
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
-    plen = apb->s2len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
     if (plen)
     {
@@ -1975,15 +1961,21 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //            extract the optional "match statistics" variable
     //
-    crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
-    svlen = apb->p2len;
+    svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
     {
         int vstart, vlen;
-        crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
+        if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
+		{
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;
         svrbl[vlen] = 0;
+		}
+		else
+		{
+        svlen = 0;
+        svrbl[0] = 0;
+		}
     }
 
     //     status variable's text (used for output stats)
@@ -2034,8 +2026,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 #if 01
     //           extract parameters for svm
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
-    plen = apb->s2len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
     if (plen)
     {
@@ -2094,8 +2085,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 #ifdef GET_RID_OF_PUNCTUATION
     //get rid of all punctuation
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = apb->s1len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
     if (plen == 0)
     {
@@ -2256,13 +2246,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
     // extract the file names.( file1.svm | file2.svm | 1vs2_solver.svm )
-    crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
-    flen = apb->p1len;
+    flen = crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
     flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
 
     strcpy(ptext,
             "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
-    plen = strlen(ptext);
+    plen = (int)strlen(ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i != 0)
     {
@@ -2477,8 +2466,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         double *deci_array = NULL;
 #if 0
                         //           extract parameters for svm
-                        crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
-                        plen = apb->s2len;
+                        plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
                         plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
                         if (plen)
                         {

@@ -34,8 +34,9 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20080326-BlameSentansoken
-PREV_VERSION=20080325-BlameSentansoken
+VERSION=20080502-BlameJason
+PREV_VERSION=20080326-BlameSentansoken
+#PREV_VERSION=20080325-BlameSentansoken
 #PREV_VERSION=20080317-BlameJoeLangeway_VT
 #PREV_VERSION=20080217-BlameJoeLangeway_VT
 #PREV_VERSION=20071201-BlameLittleStevie_VT

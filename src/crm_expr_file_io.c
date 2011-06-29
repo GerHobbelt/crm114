@@ -43,6 +43,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int till_eof;
     int use_readline;
     int file_was_fopened;
+	int filesectlen;
 
     //         a couple of vars to bash upon
     int i, j;
@@ -71,8 +72,9 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //    get the list of variable names
     //
-    crm_get_pgm_arg(temp_vars, MAX_PATTERN, apb->p1start, apb->p1len);
-    tvlen = crm_nexpandvar(temp_vars, apb->p1len,  MAX_PATTERN);
+    tvlen = crm_get_pgm_arg(temp_vars, MAX_PATTERN, apb->p1start, apb->p1len);
+    tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_PATTERN);
+	CRM_ASSERT(tvlen < MAX_PATTERN);
 
     //     If you think INPUT should read to the data window, uncomment this.
     //
@@ -83,15 +85,24 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     if (internal_trace)
-        fprintf(stderr, "  inputting to var: >>>%s<<<\n", temp_vars);
+        fprintf(stderr, "  inputting to var (len=%d): >>>%s<<<\n", tvlen, temp_vars);
 
     //   and what file to get it from...
     //
-    crm_get_pgm_arg(filename, MAX_FILE_NAME_LEN, apb->b1start, apb->b1len);
-    if (crm_nextword(filename, apb->b1len, 0, &i, &j))
+    filesectlen = crm_get_pgm_arg(filename, MAX_FILE_NAME_LEN, apb->b1start, apb->b1len);
+    if (crm_nextword(filename, filesectlen, 0, &i, &j))
     {
+		if (j >= MAX_FILE_NAME_LEN)
+		{
+			nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a filename which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					j,
+MAX_FILE_NAME_LEN-1);
+			return -1;
+		}
         memmove(ifn, &filename[i], j);
         fnlen = crm_nexpandvar(ifn, j, MAX_FILE_NAME_LEN);
+		CRM_ASSERT(fnlen < MAX_FILE_NAME_LEN);
         ifn[fnlen] = 0;
         if (user_trace)
             fprintf(stderr, "  from filename >>>%s<<<\n", ifn);
@@ -107,8 +118,18 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //   and what offset we need to do before the I/O...
     //
     offset = 0;
-    if (crm_nextword(filename, apb->b1len, i + j, &i, &j))
+    fileoffset[0] = 0;
+    fileoffsetlen = 0;
+    if (crm_nextword(filename, filesectlen, i + j, &i, &j))
     {
+		if (j >= MAX_FILE_NAME_LEN)
+		{
+			nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a fileoffset expression which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					j,
+MAX_FILE_NAME_LEN-1);
+			return -1;
+		}
         memmove(fileoffset, &filename[i], j);
         fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
         fileoffset[fileoffsetlen] = 0;
@@ -118,20 +139,26 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 fileoffset);
         }
         if (user_trace)
+		{
             fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
                 fileoffset, offset);
+		}
     }
-    else
-    {
-        // default: 0
-        offset = 0;
-    }
+    // else default: 0
 
     //   and how many bytes to read
     //
     iolen = 0;
-    if (crm_nextword(filename, apb->b1len, i + j, &i, &j))
+    if (crm_nextword(filename, filesectlen, i + j, &i, &j))
     {
+		if (j >= MAX_FILE_NAME_LEN)
+		{
+			nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a length expression which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					j,
+MAX_FILE_NAME_LEN-1);
+			return -1;
+		}
         memmove(fileiolen, &filename[i], j);
         fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
         fileiolen[fileiolenlen] = 0;
@@ -153,6 +180,8 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         // default:
         iolen = data_window_size;
     }
+
+	// [i_a] GROT GROT GROT: no checks if there's any cruft beyond the third param! :-(
 
     if (user_trace)
         fprintf(stderr, "Opening file %s for file I/O (reading)\n", ifn);
@@ -228,9 +257,8 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     done = 0;
 
     //   get the variable name
-    crm_nextword(temp_vars, tvlen, 0,  &vstart, &vlen);
-
-    if (vlen == 0)
+    if (!crm_nextword(temp_vars, tvlen, 0,  &vstart, &vlen)
+ || vlen == 0)
     {
         done = 1;
     }
@@ -393,6 +421,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int fileiolenlen;
     int offset, iolen;
     int file_was_fopened;
+	int filesectlen;
 
 
 
@@ -403,45 +432,81 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //   What file name?
     //
-    CRM_ASSERT(apb != NULL);
-    crm_get_pgm_arg(filename, MAX_FILE_NAME_LEN, apb->b1start, apb->b1len);
-    crm_nextword(filename, apb->b1len, 0, &i, &j);
+    
+	fnam[0] = 0;
+    fnlen = 0;
+
+    offset = 0;
+    fileoffset[0] = 0;
+    fileoffsetlen = 0;
+
+    iolen = 0;
+    fileiolen[0] = 0;
+    fileiolenlen = 0;
+
+	CRM_ASSERT(apb != NULL);
+    filesectlen = crm_get_pgm_arg(filename, MAX_FILE_NAME_LEN, apb->b1start, apb->b1len);
+    if (crm_nextword(filename, filesectlen, 0, &i, &j))
+	{
+		if (j >= MAX_FILE_NAME_LEN)
+		{
+			nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a filename which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					j,
+MAX_FILE_NAME_LEN-1);
+			return -1;
+		}
     memmove(fnam, &filename[i], j);
     fnlen = crm_nexpandvar(fnam, j, MAX_FILE_NAME_LEN);
+	CRM_ASSERT(fnlen < MAX_FILE_NAME_LEN);
     fnam[fnlen] = 0;
     if (user_trace)
         fprintf(stderr, "  filename >>>%s<<<\n", fnam);
 
     //   and what offset we need to do before the I/O...
     //
-    offset = 0;
-    crm_nextword(filename, apb->b1len, i + j, &i, &j);
+    if (crm_nextword(filename, filesectlen, i + j, &i, &j))
+	{
+		if (j >= MAX_FILE_NAME_LEN)
+		{
+			nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a offset expression which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					j,
+MAX_FILE_NAME_LEN-1);
+			return -1;
+		}
     memmove(fileoffset, &filename[i], j);
     fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
     fileoffset[fileoffsetlen] = 0;
     if (*fileoffset && 1 != sscanf(fileoffset, "%d", &offset))
     {
-        if (user_trace)
-            nonfatalerror("Failed to decode the output expression pre-IO file offset number: ",
+            return nonfatalerror("Failed to decode the output expression pre-IO file offset number: ",
                 fileoffset);
     }
     if (user_trace)
     {
-        fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
+        fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d\n",
             fileoffset, offset);
     }
 
     //   and how many bytes to read
     //
-    iolen = 0;
-    crm_nextword(filename, apb->b1len, i + j, &i, &j);
+    if (crm_nextword(filename, filesectlen, i + j, &i, &j))
+	{
+		if (j >= MAX_FILE_NAME_LEN)
+		{
+			nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a length expression which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					j,
+MAX_FILE_NAME_LEN-1);
+			return -1;
+		}
     memmove(fileiolen, &filename[i], j);
     fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
     fileiolen[fileiolenlen] = 0;
     if (*fileiolen && 1 != sscanf(fileiolen, "%d", &iolen))
     {
-        if (user_trace)
-            nonfatalerror("Failed to decode the output expression number of bytes to read: ", fileiolen);
+            return nonfatalerror("Failed to decode the output expression number of bytes to read: ", fileiolen);
     }
     if (iolen < 0)
         iolen = 0;
@@ -452,9 +517,13 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
             fileiolen, iolen);
     }
+	}
+	}
+	}
 
+	// [i_a] GROT GROT GROT  and of course here too, there's no check what-so-ever to see if there's any cruft in the parameter beyond the third item above.
 
-    outf = stdout;
+	outf = stdout;
     file_was_fopened = 0;
     if (fnlen > 0)
     {
@@ -512,12 +581,9 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         //   Yep, file is open, go for the writing.
         //
-        crm_get_pgm_arg(outbuf, data_window_size,
-            apb->s1start, apb->s1len);
-        outtextlen = apb->s1len;
+        outtextlen = crm_get_pgm_arg(outbuf, data_window_size, apb->s1start, apb->s1len);
         if (internal_trace)
-            fprintf(stderr, "  outputting with pattern %s\n", outbuf);
-
+            fprintf(stderr, "  outputting with pattern (len = %d) %.*s\n", outtextlen, outtextlen, outbuf);
         //      Do variable substitution on outbuf.
         outtextlen = crm_nexpandvar(outbuf, outtextlen, data_window_size);
 

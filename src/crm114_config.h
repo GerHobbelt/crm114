@@ -111,6 +111,14 @@
 //#define REGEX_CACHE_LINEAR_SEARCH
 
 
+//    How big a space in a "standard header" (which is relatively new
+//    and most classifiers don't support yet) do we want to use?  Note
+//    that changing this will break all previously generated statistics
+//    files that use this standard header.
+#define STATISTICS_FILE_NCHUNKS 1024
+#define STATISTICS_FILE_IDENT_STRING_MAX 1024
+#define STATISTICS_FILE_ARB_DATA 1024
+
 //    do we use Sparse Binary Polynomial Hashing (sensitive to both
 //    sequence and spacing of individual words), Token Grab Bag, or
 //    Token Sequence Sensitive?  Testing against the SpamAssassin
@@ -352,8 +360,19 @@
 //#define FEATUREBUCKET_TYPE unsigned short
 
 
+////////////////////////////////////////////
+//
+//      Improved FSCM-specific parameters
+//
+/////////////////////////////////////////////
+#define FSCM_DEFAULT_HASH_TABLE_SIZE 1000001
+
+
+////////////////////////////////////////////
+//
 //     Neural Net parameters
 //
+////////////////////////////////////////////
 #define NN_RETINA_SIZE 8192
 #define NN_FIRST_LAYER_SIZE 8
 #define NN_HIDDEN_LAYER_SIZE 16
@@ -389,7 +408,7 @@
 //  How many times to allow a punt?
 #define NN_FROMSTART_PUNTING 1000000
 //  After how many "not needed" cycles do we microgroom this doc away?
-#define NN_MICROGROOM_THRESHOLD 1000000      
+#define NN_MICROGROOM_THRESHOLD 10      
 //  use the sparse retina design?  No, it's not good.
 #define NN_SPARSE_RETINA 0 
 

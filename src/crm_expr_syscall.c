@@ -111,8 +111,8 @@ typedef struct
 {
     void  *my_ptr;
     HANDLE from_minion;
-    int    timeout;
-    int    abort_timeout;
+    time_t    timeout;
+    time_t   abort_timeout;
     int   internal_trace;
     int   keep_proc;
 } suckerparams;
@@ -273,9 +273,9 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
             break;
 
 		if (bytesRead == 0)
-			Sleep(p->timeout);
+			Sleep((DWORD)p->timeout);
 
-        status = WaitForInputIdle(p->from_minion, p->timeout);
+        status = WaitForInputIdle(p->from_minion, (DWORD)p->timeout);
     }
 
     if (p->internal_trace)
@@ -335,7 +335,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int cmd_len;
     char keep_buf[MAX_PATTERN];
     int keep_len;
-    char exp_keep_buf[MAX_PATTERN];
+    char exp_keep_buf[MAX_PATTERN+2];
     int exp_keep_len;
     int vstart;
     int vlen;
@@ -359,7 +359,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #endif
     pid_t minion;
     int status;
-    int timeout;
+    time_t timeout;
 	time_t abort_timeout;
     int cnt;
 	double pollcycle_setting = 0.0;
@@ -406,10 +406,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     CRM_ASSERT(apb != NULL);
-    crm_get_pgm_arg(keep_buf, WIDTHOF(keep_buf), apb->a1start, apb->a1len);
-    inlen = crm_nexpandvar(keep_buf, apb->a1len, MAX_PATTERN-1);
-	CRM_ASSERT(inlen <= MAX_PATTERN-1); 
-	keep_buf[inlen] = 0;
+    keep_len = crm_get_pgm_arg(keep_buf, WIDTHOF(keep_buf), apb->a1start, apb->a1len);
+    keep_len = crm_nexpandvar(keep_buf, keep_len, MAX_PATTERN);
+	CRM_ASSERT(keep_len < MAX_PATTERN); 
+	keep_buf[keep_len] = 0;
 
 	done = sscanf(keep_buf, "%lf %lf", &pollcycle_setting, &run_timeout_setting);
 	switch (done)
@@ -450,8 +450,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //    get the input variable(s)
     //
-    crm_get_pgm_arg(inbuf, data_window_size, apb->p1start, apb->p1len);
-    inlen = crm_nexpandvar(inbuf, apb->p1len, data_window_size);
+    inlen = crm_get_pgm_arg(inbuf, data_window_size, apb->p1start, apb->p1len);
+    inlen = crm_nexpandvar(inbuf, inlen, data_window_size);
     if (user_trace)
         fprintf(stderr, "  command's input wil be: ***%s***\n", inbuf);
 
@@ -460,47 +460,52 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //    the output goes only into a single var (the first one)
     //    so we extract that
     //
-    crm_get_pgm_arg(from_var, MAX_PATTERN, apb->p2start, apb->p2len);
-    outlen = crm_nexpandvar(from_var, apb->p2len, MAX_PATTERN);
+    outlen = crm_get_pgm_arg(from_var, MAX_PATTERN, apb->p2start, apb->p2len);
+    outlen = crm_nexpandvar(from_var, outlen, MAX_PATTERN);
+	CRM_ASSERT(outlen < MAX_PATTERN);
     done = 0;
-#if 0
-    vstart = 0;
-    while (from_var[vstart] < 0x021 && from_var[vstart] > 0x0)
-        vstart++;
-    vlen = 0;
-    while (from_var[vstart + vlen] >= 0x021)
-        vlen++;
-#else
-    crm_nextword(from_var, outlen, 0, &vstart, &vlen);
-#endif
+    if (crm_nextword(from_var, outlen, 0, &vstart, &vlen))
+	{
     memmove(from_var, &from_var[vstart], vlen);
     from_var[vlen] = 0;
     if (user_trace)
+	{
         fprintf(stderr, "   command output will overwrite var ***%s***\n",
             from_var);
+	}
     // [i_a] make sure we 'zero' the output variable, so it'll be empty when an error occurs.
     // This way, old content doesn't stay around when errors are not checked in a CRM script.
     if (*from_var)
     {
         crm_destructive_alter_nvariable(from_var, vlen, "", 0);
     }
+	}
+	else
+	{
+    from_var[0] = 0;
+	vlen = 0;
+	}
 
 
 
     //    now get the name of the variable (if it exists) where
     //    the kept-around minion process's pipes and pid are stored.
-    crm_get_pgm_arg(keep_buf, MAX_PATTERN, apb->p3start, apb->p3len);
-    keep_len = crm_nexpandvar(keep_buf, apb->p3len, MAX_PATTERN);
+    keep_len = crm_get_pgm_arg(keep_buf, MAX_PATTERN, apb->p3start, apb->p3len);
+    keep_len = crm_nexpandvar(keep_buf, keep_len, MAX_PATTERN);
     if (user_trace)
-        fprintf(stderr, "   command status kept in var ***%s***\n",
-            keep_buf);
+	{
+		fprintf(stderr, "   command status kept in var (len: %d) ***%s***\n",
+            keep_len, keep_buf);
+	}
 
     //      get the command to execute
     //
-    crm_get_pgm_arg(sys_cmd, MAX_PATTERN, apb->s1start, apb->s1len);
-    cmd_len = crm_nexpandvar(sys_cmd, apb->s1len, MAX_PATTERN);
+    cmd_len = crm_get_pgm_arg(sys_cmd, MAX_PATTERN, apb->s1start, apb->s1len);
+    cmd_len = crm_nexpandvar(sys_cmd, cmd_len, MAX_PATTERN);
     if (user_trace)
-        fprintf(stderr, "   command will be ***%s***\n", sys_cmd);
+	{
+		fprintf(stderr, "   command will be (len: %d) ***%s***\n", cmd_len, sys_cmd);
+	}
 
 
     //     Do we reuse an already-existing process?  Check to see if the
@@ -513,11 +518,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     from_minion[1] = 0;
     //exp_keep_buf[0] = 0;
     //  this is 8-bit-safe because vars are never wchars.
-    if (keep_buf[0])
+    if (keep_len > 0)
     {
+		CRM_ASSERT(WIDTHOF(exp_keep_buf) >= MAX_PATTERN + 2 /* space for ":*" */ );
         strcpy(exp_keep_buf, ":*");
-        strncat(exp_keep_buf, keep_buf, keep_len);
+        memmove(exp_keep_buf + 2, keep_buf, keep_len);
         exp_keep_len = crm_nexpandvar(exp_keep_buf, keep_len + 2, MAX_PATTERN);
+		CRM_ASSERT(exp_keep_len < MAX_PATTERN);
+		exp_keep_buf[exp_keep_len] = 0;
     }
     else
     {
@@ -601,8 +609,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //     Are we a syscall to a :label:, or should we invoke the
             //     shell on an external command?
             //
-            crm_nextword(sys_cmd, strlen(sys_cmd), 0, &vstart, &vlen);
+            if (crm_nextword(sys_cmd, strlen(sys_cmd), 0, &vstart, &vlen))
+			{
             varline = crm_lookupvarline(vht, sys_cmd, vstart, vlen);
+			}
+			else
+			{
+				varline = 0;
+			}
             if (varline > 0)
             {
                 //              sys_cmd[vstart+vlen] = 0;
@@ -737,7 +751,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //   their buffers, and are now held up waiting for the other
     //   process to empty some space in the output buffer)
     //
-    if (strlen(inbuf) > 0)
+    if (inlen > 0)
     {
 #if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
     fflush(stdout);
@@ -954,8 +968,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (user_trace)
                 fprintf(stderr, "  Must start a new minion.\n");
 
-            crm_nextword(sys_cmd, strlen(sys_cmd), 0, &vstart2, &vlen2);
+            if (crm_nextword(sys_cmd, (int)strlen(sys_cmd), 0, &vstart2, &vlen2))
+			{
             varline = crm_lookupvarline(vht, sys_cmd, vstart2, vlen2);
+			}
+			else
+			{
+				varline = 0;
+			}
             if (varline > 0)
             {
                 fatalerror(" Sorry, syscall to a label isn't implemented in this version", "");
@@ -1177,7 +1197,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //   their buffers, and are now held up waiting for the other
             //   process to empty some space in the output buffer)
             //
-            if (strlen(inbuf) > 0)
+            if (inlen > 0)
             {
                 unsigned int hThread;
                 pusherparams *pp;
@@ -1410,9 +1430,9 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             (data_window_size >> SYSCALL_WINDOW_RATIO))
                         {
 							if (charsread == 0)
-								Sleep(timeout);
+								Sleep((DWORD)timeout);
 
-                            status = WaitForInputIdle(hminion, timeout);
+                            status = WaitForInputIdle(hminion, (DWORD)timeout);
                             // wait a little while before we try to fetch another bit of data...
                             continue; // goto readloop;
                         }
@@ -1558,7 +1578,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     fprintf(stderr, "   saving minion state: %s\n", exp_keep_buf);
                 crm_destructive_alter_nvariable(keep_buf, keep_len,
                     exp_keep_buf,
-                    strlen(exp_keep_buf));
+                    (int)strlen(exp_keep_buf));
             }
 
             //      If we're keeping this minion process around, record the useful
@@ -1594,7 +1614,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     {
                         crm_destructive_alter_nvariable(keep_buf, keep_len,
                             exit_value_string,
-                            strlen(exit_value_string));
+                            (int)strlen(exit_value_string));
                     }
                 }
                 if (!CloseHandle(hminion))

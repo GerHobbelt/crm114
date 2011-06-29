@@ -1,15 +1,114 @@
 2008-05-01 Ger Hobbelt
 
+    * BillY-equivalent src makefile is now renamed to
+
+         Makefile.vanilla
+
+      to better signify the raison-d-etre for this file: a 'vanilla UNIX
+      setup' for those who won't or can't compile the ./configure-based
+      set.
+
+      With that comes an appropriately preconfigured config headerfile
+      and #define to turn this on - set by default in
+      src/Makefile.vanilla, of course:
+
+          #define            : ORIGINAL_VANILLA_UNIX_MAKEFILE
+          #include headefile : "config_vanilla_UNIX_sys_defaults.h"
+
+    * CHANGE: now all :@:: and :+:: accepting script elements also
+      accept :#:: - it was very handy to be able to print
+      string/variable content length in output /.../ statements, that's
+      why.
+
+    * CHANGE: Vector Tokenizer now accepts 3D vector matrices (i.e.
+              multiple matrices for stride != 1 processes), comes with
+              its own structures to define cutom tokenizer functions for
+              use by the tokenizer and the code has been completely
+              refactored to facilitate these new features in the best
+              possible way.
+
+      Currently the VT code accepts up to 4 2D vector matrices in
+      parallel; currenty published classifiers only use 2. This is a
+      compile-time constant:
+
+         #define UNIFIED_VECTOR_STRIDE 4
+
+    * Fixed input line handling for MSDOS & older MAC which do not use
+      the UNIX LF ('\n') line termination, but CRLF and CR respectively.
+      (crm_expr_file_io.c)
+
+    * CHANGE: speed improvement for Win32 stdio by removing the fflush()
+      calls, which are useless anyway.
+
+      WARNING: those statement proved not THAT useless: without them the
+               syscall command would keep repeating previously generated
+               output when stdout is redirected to file.
+
+               See also the crm114 dev mailing list; suffice to say that
+               after a long time looking for the cause of this isse, the
+               _proper_ fflush() calls were added to the syscall() code
+               itself - where they _should_ be.
+
+               (Though I hate think of a fork()ing system which requires
+               these stricks to keep things going smoothly; that's one
+               of the reasons why I personally avoid fork() like the
+               Plague; it's only useful in very particular circumstances
+               and besides, Win32 doesn't have fork() at all, so
+               fork()ing code is rather unportable to boot. Use threads
+               or other modern multitasking/async I/O means instead.)
+
+    * Win32 does NOT like writing (fwrite(), ...) large amounts of data
+      to stdout/err at once (errors happen beyond 64K at least,
+      sometimes earlier, depending on your setup and Win32 platform).
+      This has been fixed by repelacing relevant calls by the new
+      function:
+
+          fwrite4stdio()
+
+      which writes the data in 'reasonable' chunks. 'reasonable' is
+      calculated as about half of a regular FILE buffer. This provides no
+      noticable performance losses on either Win32 or Linux (SuSe64).
+
+    * SKS/SVM: removed useless expandvar() calls for the filename
+      regexes.
+
+    * SCM: removed fro the source tree and make files: this code was
+      already long time antiquated and does not show up in the BillY
+      releases anyway.
+
+    * FSCM: file I/O data structures have been made cross-platform
+      portable using [u]int32_t and other fixed-width data types; other
+      classifiers already had this treatment but this one had apparently
+      slipped the dance.
+
     * The error handling routines now 'know' when we're inside the
       debugger, so failures in watched expressions (which can easily
       happen ;-) ) won't have side-effects such as execution of trap
       handlers in the script itself (ouch!).
 
+    * compiler checks (table in crm_compiler.c) have been corrected for
+      some of the more modern (experimental) classifiers.
+
     * Improved the debugger and updated QUICKREF.txt accordingly.
+
+    * Added the debugger-related script system variable
+
+        :_?:
+
+      which contains the latest error message from the CRM114 run.
+
+    * Debugger now also pops up when the complete script has run so the
+      debuggeee/user can view the last results before the application
+      terminates. Sometimes code jump commands may still work, though
+      the complete context cannot be reset of course (feed from stdin,
+      etc.).
 
     * Debugger 'v' command: line range handling split off to a separate
       routine; now handles a more flexible format too (every number can
       be 'defaulted').
+
+    * CRM114 error reports now also show the offending source code in
+      print.
 
     * Did we now finally stamp out all the boundary bugs in expandvar()?
       -- This following a bug report by Jason Lewis, which showed a
@@ -18,11 +117,38 @@
       (though is fewer, rather obscure conditions, yet a boundary bug is
       one too many anyhow).
 
-    * Checked all malloc/calloc/realloc/strdup class and added 
-      untrappableerror) statements for those spots which did not check 
-      for NULL returns - which would otherwise lead to 
+      This build includes fixes for all known/detected boundary issues
+      in there (see for a list of similar material in the calling code
+      further below), including fixes for coping with extremely large
+      variable names which need :@: or other processing.
+
+      KNOWN BUG: nested :@: statements are not parsed properly, e.g.
+
+        eval /:@::@:1+1::/
+
+      does not produce what you'd expect ('2'); this is important to
+      know when using the CRM114 debugger as the watched expressions use
+      the same expandvar() routine to produce their results. See
+      crm_debugger.c
+
+    * Following discussion about the need to escape other characters in
+      any crm114 command arg, here's the comment from crm_Expandvar.c
+      (that one again):
+
+        //
+        // As 'datastring' points to a text buffer which has - of course -
+        // already been \-de-escaped, we perform a little trick here to
+        // prevent requiring the user to specify double \-escaped '/'
+        // slashes in his/her restriction regex: since we know we're
+        // the only regex in this box, we do this by walking back from the
+        // end of the string, looking for the last '/' there is.
+        //
+
+    * Checked all malloc/calloc/realloc/strdup class and added
+      untrappableerror) statements for those spots which did not check
+      for NULL returns - which would otherwise lead to
       crashes/coredumps.
-      
+
     * expandvar() code cleanup - at least a bit.
 
       KNOWN BUG: ":@: :@: 1 + 1 ::" is not handled properly by
@@ -37,27 +163,27 @@
     * debugger: 'c' restored to its proper glory: 'c' without any arg
       should just GO. We've got 'n' for single stepping, don't we?
 
-    * UNIX syscall: KNOWN BUG: some weirdness is now occurring when 
-                               crm114 scripts execute syscall and their 
-                               own output is redirected to file (such as 
-                               for the 'make check' testcases): it looks 
-                               like the crm114 output buffer gets 
-                               rewritten to stdout completely, every 
+    * UNIX syscall: KNOWN BUG: some weirdness is now occurring when
+                               crm114 scripts execute syscall and their
+                               own output is redirected to file (such as
+                               for the 'make check' testcases): it looks
+                               like the crm114 output buffer gets
+                               rewritten to stdout completely, every
                                time a syscall is executed. :-S
-                               
+
     * makefiles/configure: upgraded to the latest autoconf/automake/etc.
 
       KNOWN BUGS: some of the AX_... macros use undocumented
                   AC_RUN_LOG() which does not exist anymore in the
                   latest release.
 
-                  This must be fixed (diff commandline flag checks and a 
+                  This must be fixed (diff commandline flag checks and a
                   few others suffer from this)
 
-    * makefiles: 'make dist' will not work from a VPATH-style setup (see 
+    * makefiles: 'make dist' will not work from a VPATH-style setup (see
       automake/autoconf manuals for what VPATH is).
-      
-      'make distcheck' does not fail on this, but you can see it happen 
+
+      'make distcheck' does not fail on this, but you can see it happen
       when running this check.
 
     * makefiles: 'make check' target now does something VERY useful: it
@@ -103,9 +229,6 @@
 
              This should be fixed by moving to the new fully async
              hnadling scheme -- not ready for release that yet. :-(
-
-    * compiler checks (table in crm_compiler.c) have been corrected for
-      some of the more modern (experimental) classifiers.
 
     * makefiles: if you want a verbose 'make check', i.e. when you want
       to debug the scripts, do so using the environment variable:
@@ -161,25 +284,216 @@
 
       The other custom scripts (tests/ref/*.filter.sh) serve particular
       purposes and don't require parameterization.
-      
+
       Want to re-generate the master 'known good' files?
       ..................................................
-      
-      Simple. 
-      
+
+      Simple.
+
         cd tests && rm -rf ref/
-        
+
       and you got rid of them all. Next, run
-      
+
         make check
-      
-      as usual and you'll get a warning for every missing reference 
-      file, which will be automatically generated. Though, of course, 
-      I'd rather see you just 'rm -f'-d only those ref/ files that need 
+
+      as usual and you'll get a warning for every missing reference
+      file, which will be automatically generated. Though, of course,
+      I'd rather see you just 'rm -f'-d only those ref/ files that need
       updating...
 
     * TODO: tests/Makefile.am cleanup: now some of those lines are
             _extremely_ large; these may be broken into readable bits.
+
+    * Removed old crufftiness in classifiers:
+
+        i = 0;
+        while (htext[i] < 0x021)
+            i++;
+        CRM_ASSERT(i < hlen);
+        j = i;
+        while (htext[j] >= 0x021)
+            j++;
+
+      Now only the new crm_nextword() repalacement calls remain in the
+      code.
+
+    * Code Cleanup: checked all heap allocation calls and made sure
+                    return values are checked for undesirable NULL
+                    pointers.
+
+                    This should later be migrated to a CRM114 equivalent
+                    of GNUlib xmalloc() et al - but this time with the
+                    option to pass along a customized error message to
+                    provide the user with more information when such a
+                    thing happens.
+
+                  + crm_nextword() calls are now all properly checked
+                    for their success/fail return code, instead of the
+                    previous situation: mostly no check at all,
+                    sometimes on return code, sometimes a check on the
+                    side effect that the returned length will be zero.
+
+                    Some of the superfluous length checks still remain,
+                    e.g.
+
+                        if (crm_nextword(htext,
+                                hlen, fn_start_here,
+                                &fnstart, &fnlen)
+                                && fnlen > 0)
+                        {
+
+                    where this suffices completely and utterly:
+
+                        if (crm_nextword(htext,
+                                hlen, fn_start_here,
+                                &fnstart, &fnlen))
+                        {
+
+                    as crm_nextword() will not return zero-length tokens
+                    as 'valid' items.
+
+    * Code Cleanup / Security Fixes for potential out-of-bounds
+      accesses:
+
+      - crm_nextword()can always report there's not more tokens to have
+        (fail return code); several spots in the code did not explicitly
+        take care of this situation, some obviouslt assuming 'nothing
+        can go wrong here'. Right.
+
+        The complete code has been inspected for this flaw and when
+        found, it has been fixed.
+
+      - This three line pattern which appears throughout the code is a
+        potential security hazard:
+
+            crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
+            hlen = apb->p1len;
+            hlen = crm_nexpandvar(htext, hlen, htext_maxlen);
+
+        as the actual produce of crm_get_pgm_arg() does not HAVE to be
+        apb->p1len (4th arg) characters. This can happen when working
+        with very large strings which do not fit in MAX_PATTERN,
+        MAX_FILE_NAME_LEN or other pattern buffer sizes used in the
+        code.
+
+        Unfortunately crm_get_pgm_arg() was a void function so the
+        caller would not hear about the actual length of the buffer
+        returned by this routine. Hence the call now has an 'int' return
+        type and returns the actual number of characters written to the
+        pattern buffer.
+
+        This means the subsequent crm_nexpandvar() call does not run the
+        risk anymore of processing to much input which it must believe
+        is legal data.
+
+        The new coding pattern looks like this:
+
+            hlen = crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
+            hlen = crm_nexpandvar(htext, hlen, htext_maxlen);
+
+        and has been applied throughout the code: all source code has
+        been reviewed for this issue.
+
+        The same goes for the
+
+            hlen = crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
+            hlen = crm_restrictvar(...
+
+        sequence, by the way...
+
+      - A related issue is that callers of crm_nexpandvar() quite often
+        write an extra NUL byte into the buffer at - matching the sample
+        shown above:
+
+              htext[hlen] = 0;
+
+        This happens either directly (shortly afterwards in the code) or
+        indirectly (through one or more crm_nextword() calls which point
+        at a part of the buffer, after which the NUL byte is written at
+        the length position returned by the crm_nextword() call.
+
+        Both situations will cause an out-of-bounds write operation,
+        which will corrupt your data/stack, when working with very large
+        strings and variable names. I'm sure variable names of ~ 2046
+        characters (excluding the two ':' delimiting colons) can be made
+        to cause this issue; of course it not 'average day use' but
+        security risks are by definition situations which MAY cause
+        trouble, and here we have one such situation.
+
+        The code has been reviewed for this issue and a multitude of
+        places were this applies were located. Due to the amount of
+        effort required to fix this in the callers itself, it is now
+        officially assumed that
+
+          crm_nexpandvar() will be used in situations where the returned
+          length will be used by the caller to write an _extra_ sentinel
+          byte to the buffer.
+
+          To ensure that the caller can do so legally, crm_nexpandvar()
+          will AT ALL TIMES return a length of no more than the maximum
+          buffer width passed to it MINUS ONE. This rule applies even
+          under the harshest error conditions inside crm_expandvar()
+
+        That means that this call
+
+             hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN);
+
+        will never fail this subsequent assertion:
+
+             CRM_ASSERT(hlen >= 0 && hlen <= MAX_PATTERN-1);
+
+        so that a subsequent line like this:
+
+             htext[hlen] = 0;
+
+        is LEGAL from now on.
+
+        The impact is that variable names and other text segments are
+        now limited to one character less in size, but at 2-16K limits
+        this is very acceptable.
+
+      ALSO, several code sections calling crm_expandvar() assumed it
+        would write such a NUL sentinel itself; to prevent other odd
+        behaviour inside the expandvar() code, this is not more so
+        anymore; besides, the old code did not do it either under
+        erroneous conditions, so there was no guarantee at all the NUL
+        sentinal would be there when the crm_expandvar() call was done.
+
+
+        The complete source code has been inspected for these issues and
+        all locations have been fixed/updated to show this behaviour
+        consistently. THE ONLY THING we did NOT do EVERYWHERE is add
+        that NUL-sentinel anyhow: only the code sections that seem to
+        require this NUL sentinel have been updated, if the sentinel
+        wasn't yet written by the calling code, due to the incorrect
+        assumption mentioned in the previous paragraph.
+
+      - Multiple locations where script variables and buffer were
+        copied/loaded, no length check was performed, so invalid results
+        would be generated for extremely large variable names, which are
+        longer than the compile-time defined sizes.
+
+        Now many places in the code have added boundary checking and
+        additional error messages to report this type of situation back
+        to the user.
+
+        TODO: inspect the complete source code for this issue and fix
+        accordingly. Now several boundaries seem to be silently applied:
+        no crash, indeed but still behaviour based on partial (stripped)
+        inputs and no failure notices for the user.
+
+    * 'crm114 -v' now also prints the revision number for proper version
+      checking.
+
+    * SCRIPT: fixed :@: integer printing: now integer are always printed
+      without any trailing decimal part a la floating point values.
+
+    * Significantly reduced the number of annoying warnings on Win32/64
+      by casting size_t returning functions to (int) where applicable.
+
+    * The script compiler now adds a reference to the command definition
+      record for each JIT/compiled command, so other code (debugger!)
+      may reference this extra info.
 
 
 2008-04-13 Ger Hobbelt

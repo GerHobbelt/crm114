@@ -1,0 +1,58 @@
+#! /bin/sh
+
+#
+# filter the produced output and reference file: 
+# handle slight alterations to error reports in GerH versus BillY vanilla:
+#
+
+# cmdline: filter <expected> <testresult>
+
+reffile="$1"
+testfile="$2"
+difffile="$3"
+targetname="$4"
+
+BUILDDIR=@builddir@
+SRCDIR=@srcdir@
+REFDIR="${SRCDIR}/ref"
+
+rm -f "${difffile}"
+
+rm -f "${targetname}.refout" 
+rm -f "${targetname}.tstout" 
+
+if [ ! -f "${reffile}" ] || [ ! -f "${testfile}" ]; then
+  echo "One of the files to compare is missing: '${reffile}' -- '${testfile}'"
+  exit 66
+fi
+
+
+
+#
+# the numbers can and MAY be different every time:
+#
+
+sed -e 's/[0-9][0-9][0-9][0-9][0-9][0-9]\+/0123456789/g' \
+    < "${reffile}" \
+    > "${targetname}.refout"
+sed -e 's/[0-9][0-9][0-9][0-9][0-9][0-9]\+/0123456789/g' \
+    < "${testfile}" \
+    > "${targetname}.tstout"
+
+
+if [ ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ]; then
+  echo "------------------------------------------------------"
+  cat "${targetname}.refout"
+  echo "------------------------------------------------------"
+  cat "${targetname}.tstout"
+  echo "------------------------------------------------------"
+fi
+
+@DIFF@ -u @DIFF_FLAGS@ "${targetname}.refout" "${targetname}.tstout" > "${difffile}"
+retcode=$?
+
+exit ${retcode}
+
+
+
+

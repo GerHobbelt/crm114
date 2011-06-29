@@ -7,8 +7,17 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
- This is CRM114, version 20080326-BlameSentansoken (TRE 0.7.5 (LGPL))
- Copyright 2001-2006 William S. Yerazunis
+ This is CRM114, version 20080502-BlameJason, rev 2257 (TRE 0.7.5 (LGPL)) (OS: linux-gnu)
+ Copyright 2001-2008 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
+Classifiers included in this build:
+  all of 'em
+
+Extra features:
+  Developer Assertions are:
+    - included
+    - UNTRAPPABLE
+    - '-Cdbg' will cause a memory access violation in a last ditch
+      effort to trigger your debugger
 

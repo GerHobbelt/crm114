@@ -254,7 +254,7 @@ void crm_vht_init(int argc, char **argv)
                                  "drop the environment vars with "
                                  "the (with flag -e)", "");
             }
-            j = strcspn(environ[i], "="); /* this also takes care of any line _without_ an '=': treat it as a var with a null value */
+            j = (int)strcspn(environ[i], "="); /* this also takes care of any line _without_ an '=': treat it as a var with a null value */
 
             /* [i_a] GROT GROT GROT: patch Win32 specific 'faked' env. vars in here: USER, PWD, ... */
 #if defined (WIN32)
@@ -515,8 +515,7 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen)
         fprintf(stderr, "  setting temp-area variable %s to value %s\n",
             varname, value);
 
-    i = crm_nextword(varname, strlen(varname), 0, &vnidx, &vnlen);
-    if (i == 0)
+    if (!crm_nextword(varname, strlen(varname), 0, &vnidx, &vnlen))
     {
         nonfatalerror("Somehow, you are assigning a value to a variable with "
                       "an unprintable name.  I'll permit it for now, but "
@@ -1117,27 +1116,20 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
 //     toss a nonfatal error.
 //
 
-void crm_destructive_alter_nvariable(char *varname, int varlen,
-                                     char *newstr, int newlen)
+void crm_destructive_alter_nvariable(const char *varname, int varlen,
+                                     const char *newstr, int newlen)
 {
     int i;
     int vhtindex, oldlen, delta;
     int vlen;
 
     //      get the first variable name and verify it exists.
-    //     GROT GROT GROT this should use nextword!!!
     //
     // [i_a] GROT GROT GROT: this 'trimming of whitespace' etc. should be completely unnecessary anyway.
     //       inspect code using it and get rid of this.
-#if 0
-    i = 0;
-    while (varname[i] < 0x021 && i < varlen)
-        i++;
-    vhtindex = crm_vht_lookup(vht, &(varname[i]), varlen);
-#else
-    crm_nextword(varname, varlen, 0, &i, &vlen);
+    if (crm_nextword(varname, varlen, 0, &i, &vlen))
+	{
     vhtindex = crm_vht_lookup(vht, &(varname[i]), vlen);
-#endif
     if (vht[vhtindex] == NULL)
     {
         // IGNORE FOR NOW
@@ -1149,6 +1141,13 @@ void crm_destructive_alter_nvariable(char *varname, int varlen,
             vlen, varlen, vlen, &(varname[i]), varlen, varname);
         return;
     }
+	}
+	else
+	{
+        fatalerror("Attempt to alter the value of a nonexistent variable.",
+					"");
+        return;
+	}
 
     //     make enough space in the input buffer to accept the new value
     oldlen = vht[vhtindex]->vlen;
@@ -1383,7 +1382,8 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen)
     }
 
 
-    crm_nextword(vname, vlen, 0, &vsidx, &vslen);
+    if (crm_nextword(vname, vlen, 0, &vsidx, &vslen))
+	{
     if (internal_trace)
     {
         fprintf(stderr, " variable len %d, name is -", vslen);
@@ -1537,6 +1537,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen)
             return 0;
         }
     }
+	}
     return 0;
 }
 

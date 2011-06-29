@@ -36,7 +36,6 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int vstart;
     int vlen;
     int mc;
-    int done;
     int vallen;
     int iso_status;
 
@@ -47,8 +46,8 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //    get the list of variable names
     //
     CRM_ASSERT(apb != NULL);
-    crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->p1start, apb->p1len);
-    tvlen = crm_nexpandvar(temp_vars, apb->p1len, MAX_VARNAME);
+    tvlen = crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->p1start, apb->p1len);
+    tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME);
     if (tvlen == 0)
     {
         nonfatalerror("This statement is missing the variable to isolate"
@@ -56,9 +55,8 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     if (internal_trace)
-        fprintf(stderr, "  creating isolated vars: ***%s***\n", temp_vars);
+		fprintf(stderr, "  creating isolated vars: (len: %d) ***%s***\n", tvlen, temp_vars);
 
-    done = 0;
     mc = 0;
 
     //  Now, find the vars (space-delimited, doncha know) and make them
@@ -67,20 +65,30 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     vstart = 0;
     vlen = 0;
     vn_start_here = 0;
-    while (!done)
+    for (;;)
     {
-        crm_nextword(temp_vars, tvlen, vn_start_here, &vstart, &vlen);
-        vn_start_here = vstart + vlen + 1;
-        if (vlen == 0)
+        if (!crm_nextword(temp_vars, tvlen, vn_start_here, &vstart, &vlen)
+			 || vlen == 0)
         {
-            done = 1;
+            break;
         }
         else  // not done yet.
         {
             //        must make a copy of the varname.
             char vname[MAX_VARNAME];
             int vmidx;
-            memmove(vname, &(temp_vars[vstart]), vlen);
+
+			        vn_start_here = vstart + vlen + 1;
+
+		if (vlen >= MAX_VARNAME)
+		{
+			nonfatalerror_ex(SRC_LOC(), "ISOLATE statement comes with a variable name which is too long (len = %d) "
+				"while the maximum allowed size is %d.",
+					vlen,
+MAX_VARNAME-1);
+			vlen = MAX_VARNAME-1;
+		}
+            memmove(vname, &temp_vars[vstart], vlen);
             vname[vlen] = 0;
             if (vlen < 3)
             {
@@ -93,7 +101,8 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             {
                 nonfatalerror("You can't ISOLATE the :_dw: data window! ",
                     "We'll just ignore that for now");
-            }
+				continue;
+			}
             else  //  OK- isolate this variable
             {
                 vmidx = crm_vht_lookup(vht, vname, vlen);
@@ -119,8 +128,10 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     {
                         // no slash value- set to ""
                         if (internal_trace)
+						{
                             fprintf(stderr, "No initialization value given, using"
                                             " a zero-length string.\n");
+						}
                         tempbuf[0] = 0;
                         vallen = 0;
                     }
@@ -129,10 +140,8 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         //  not preexisting, has a /value/, use it.
                         if (internal_trace)
                             fprintf(stderr, "using the slash-value given.\n");
-                        crm_get_pgm_arg(tempbuf, data_window_size,
-                            apb->s1start, apb->s1len);
-                        vallen = crm_nexpandvar(tempbuf, apb->s1len,
-                            data_window_size - tdw->nchars);
+                        vallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
+                        vallen = crm_nexpandvar(tempbuf, vallen, data_window_size - tdw->nchars);
                     }
                 }
                 else                //      it IS preexisting
@@ -146,10 +155,11 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     if (apb->sflags & CRM_DEFAULT)
                     {
                         if (user_trace)
+						{
                             fprintf(stderr, " var exists, default flag on, "
                                             "so no action taken.\n");
-                        goto no_isolate_action;
-                        // return (0);
+						}
+                        continue;
                     }
 
                     if (apb->s1start)
@@ -158,11 +168,8 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         //    get the /value/
                         if (internal_trace)
                             fprintf(stderr, "Using the provided slash-val.\n");
-                        crm_get_pgm_arg(tempbuf, data_window_size,
-                            apb->s1start, apb->s1len);
-                        vallen =
-                            crm_nexpandvar(tempbuf, apb->s1len,
-                                data_window_size - tdw->nchars);
+                        vallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
+                        vallen = crm_nexpandvar(tempbuf, vallen, data_window_size - tdw->nchars);
                     }
                     else
                     {
@@ -170,11 +177,17 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         //
                         if (internal_trace)
                             fprintf(stderr, "No slash-value, using old value.\n");
+						if (data_window_size < vlen + 2)
+						{
+							                fatalerror("The variable you're asking me to ISOLATE "
+                              " has a name that way too long.  I'll try to ignore"
+                              " this statement", " ");
+								break;
+						}
+
                         strcpy(tempbuf, ":*");
-                        strncat(tempbuf, vname, vlen);
-                        vallen =
-                            crm_nexpandvar(tempbuf, vlen + 2,
-                                data_window_size - tdw->nchars);
+                        memcpy(tempbuf + 2, vname, vlen);
+                        vallen = crm_nexpandvar(tempbuf, vlen + 2, data_window_size - tdw->nchars);
                     }
                 }
                 //
@@ -186,17 +199,10 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 iso_status = crm_isolate_this(&vmidx,
                     vname, 0, vlen,
                     tempbuf, 0, vallen);
-                if (iso_status > 0)
+                if (iso_status != 0)
                     return iso_status;
             }
-            //   the semicolon is there to conform to the ANSI C standard.
-            no_isolate_action:
-            ;
         }
-        vstart = vstart + vlen;
-        if (temp_vars[vstart] == 0
-            || vstart >= tvlen)
-            done = 1;
     }
     return 0;
 }

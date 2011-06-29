@@ -316,12 +316,14 @@ EXTRA_DIST = megatest_knowngood.log \
 	megatest.sh.in \
 	megatest_ng.sh.in \
 	testscript.sh.in \
-	statustest.filter.sh.in \
+	crm114_statustest.filter.sh.in \
 	crm114_error_report.filter.sh.in \
 	crm114_versiontest.filter.sh.in \
 	crm114_classify.filter.sh.in \
 	crm114_classify.filter.awk \
-	whitelist.mfp.example
+	whitelist.mfp.example \
+	crm114_isolate_test.filter.sh.in \
+	exectest_s1.sh
 	
 
 
@@ -332,11 +334,13 @@ TEST_PREREQUISITES = 	\
 	ref_dir \
 	crm114_binaries \
 	testscript.sh \
-	statustest.filter.sh \
+	crm114_statustest.filter.sh \
 	crm114_error_report.filter.sh \
 	crm114_versiontest.filter.sh \
 	crm114_classify.filter.sh \
-	crm114_classify.filter.awk
+	crm114_classify.filter.awk \
+	crm114_isolate_test.filter.sh \
+	exectest_s1.sh
 
 
 
@@ -486,11 +490,7 @@ test_timing_minutes_announcement:
 
 
 # check everything except neural: too slow :-(
-check-local:                    
-
-
-
-bogus-local1:
+check-local:                  \
 		initial_tests1	\
 		initial_tests2  \
 		further_tests  \
@@ -711,13 +711,11 @@ skudtest_test: $(TEST_PREREQUISITES) skudtest.crm $(srcdir)/whitelist.mfp.exampl
 
 statustest_test: $(TEST_PREREQUISITES) statustest.crm
 	$(SILENT)\
-	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
-	./testscript.sh statustest.crm "" - "$(builddir)/statustest.filter.sh"
+	./testscript.sh statustest.crm "" - "$(builddir)/crm114_statustest.filter.sh"
 
 exectest_test: $(TEST_PREREQUISITES) exectest.crm
 	$(SILENT)\
-	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
-	./testscript.sh exectest.crm "" - "$(builddir)/statustest.filter.sh"
+	./testscript.sh exectest.crm "" - "$(builddir)/crm114_statustest.filter.sh"
 
 unionintersecttest_test: $(TEST_PREREQUISITES) unionintersecttest.crm
 	$(SILENT)\
@@ -785,17 +783,14 @@ paolo_ov5_test: $(TEST_PREREQUISITES) paolo_ov5.crm
 
 match_isolate_test: $(TEST_PREREQUISITES) match_isolate_test.crm test_timing_seconds_announcement
 	$(SILENT)\
-	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
-	./testscript.sh match_isolate_test.crm "" - "" -e
+	./testscript.sh match_isolate_test.crm "" - "$(builddir)/crm114_isolate_test.filter.sh" -e
 
 match_isolate_reclaim_test: $(TEST_PREREQUISITES) match_isolate_reclaim.crm
 	$(SILENT)\
-	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
-	./testscript.sh match_isolate_reclaim.crm "" - "" -e
+	./testscript.sh match_isolate_reclaim.crm "" - "$(builddir)/crm114_isolate_test.filter.sh" -e
 
 call_return_test: $(TEST_PREREQUISITES) call_return_test.crm
 	$(SILENT)\
-	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh call_return_test.crm "" -
 
 translate_tr_test: $(TEST_PREREQUISITES) translate_tr.crm

@@ -1084,20 +1084,10 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         fprintf(stderr, "entered crm_neural_net_learn\n");
 
     //    Get the filename
-    crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    htext_len = apb->p1len;
+    htext_len = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
+	CRM_ASSERT(htext_len < MAX_PATTERN);
 
-#if 0
-    i = 0;
-    while (htext[i] < 0x021)
-        i++;
-    CRM_ASSERT(i < htext_len);
-    j = i;
-    while (htext[j] >= 0x021)
-        j++;
-    CRM_ASSERT(j <= htext_len);
-#else
     if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
     {
         int fev = nonfatalerror_ex(SRC_LOC(),
@@ -1109,7 +1099,6 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);
-#endif
 
     htext[j] = 0;
     strcpy(filename, &htext[i]);
@@ -1136,9 +1125,10 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         stoch_noise = NN_DEFAULT_STOCH_NOISE;
         internal_training_threshold = NN_INTERNAL_TRAINING_THRESHOLD;
 
-        crm_get_pgm_arg(s2_buf, MAX_PATTERN, apb->s2start, apb->s2len);
-        s2_len = apb->s2len;
+        s2_len = crm_get_pgm_arg(s2_buf, MAX_PATTERN, apb->s2start, apb->s2len);
         s2_len = crm_nexpandvar(s2_buf, s2_len, MAX_PATTERN);
+		CRM_ASSERT(s2_len < MAX_PATTERN);
+		s2_buf[s2_len] = 0;
         if (s2_len > 0)
         {
             if (4 != sscanf(s2_buf, "%lf %lf %d %lf",
@@ -2205,8 +2195,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 memmove(current_doc, k, sizeof(current_doc[0]) * (nn->docs_end - k));
                 nn->docs_end -= k - current_doc;
                 k = current_doc;
-	      trunced = sizeof(char)
-		* ( (char *)(nn->docs_end) - (char *)(nn->file_origin) );
+	      trunced = (int)(sizeof(char) * ((char *)(nn->docs_end) - (char *)(nn->file_origin)));
                 n_docs--;
             }
         }
@@ -2275,14 +2264,12 @@ int crm_neural_net_classify(
 
 
     //grab filenames field
-    crm_get_pgm_arg(filenames_field, MAX_PATTERN, apb->p1start, apb->p1len);
-    filenames_field_len = apb->p1len;
-    filenames_field_len =
-        crm_nexpandvar(filenames_field, filenames_field_len, MAX_PATTERN);
+    filenames_field_len = crm_get_pgm_arg(filenames_field, MAX_PATTERN, apb->p1start, apb->p1len);
+    filenames_field_len = crm_nexpandvar(filenames_field, filenames_field_len, MAX_PATTERN);
+	CRM_ASSERT(filenames_field_len < MAX_PATTERN);
 
     //grab output variable name
-    crm_get_pgm_arg(out_var, MAX_PATTERN, apb->p2start, apb->p2len);
-    out_var_len = apb->p2len;
+    out_var_len = crm_get_pgm_arg(out_var, MAX_PATTERN, apb->p2start, apb->p2len);
     out_var_len = crm_nexpandvar(out_var, out_var_len, MAX_PATTERN);
 
     //a tiny automata for your troubles to grab the names of our classifier files

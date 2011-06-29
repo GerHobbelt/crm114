@@ -255,7 +255,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-ISODATE = 2008-05-02
+ISODATE = 2008-05-03
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -ltre -lm  -lreadline
@@ -270,14 +270,14 @@ ORIGINAL_BILLY_DISTRO_DIR = /home/ger/prj/1original/crm114/src/crm114.sourceforg
 PACKAGE = crm114
 PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
 PACKAGE_NAME = CRM114
-PACKAGE_STRING = CRM114 20080326-BlameSentansoken
+PACKAGE_STRING = CRM114 20080502-BlameJason
 PACKAGE_TARNAME = crm114
-PACKAGE_VERSION = 20080326-BlameSentansoken
+PACKAGE_VERSION = 20080502-BlameJason
 PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 2251
+REVISION = 2257
 SED = /usr/bin/sed
 SET_MAKE = 
 SEVEN_ZIP = /usr/bin/7z
@@ -286,10 +286,10 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-2251
+TAR_FILENAME_POSTFIX = Ger-2257
 TRE_CONFIG = no
 UNCRUSTIFY = /usr/local/bin/uncrustify
-VERSION = 20080326-BlameSentansoken
+VERSION = 20080502-BlameJason
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
 #
@@ -363,7 +363,7 @@ UNCRUSTIFY_BIN = /usr/local/bin/uncrustify
 DIFF_BIN = /usr/bin/diff
 HTMLTIDY_BIN = /usr/bin/tidy
 TAR_CMDLINE = ${TAR_BIN} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20080326-BlameSentansoken-Ger-2251
+ARCHIVE_BASE_NAME = crm114-20080502-BlameJason-Ger-2257
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #
@@ -374,7 +374,7 @@ DATE = `date +%Y_%m_%d_%H_%M_%S`
 #     What version is this software (PLEASE don't change this just 
 #     to mess with my brain. - wsy)
 #
-#VERSION = 20080326-BlameSentansoken
+#VERSION = 20080502-BlameJason
 PREV_VERSION = 20080317-BlameJoeLangeway_VT
 #INSTALLFLAGS += -m 755
 #

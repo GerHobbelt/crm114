@@ -100,13 +100,12 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //  i = hctable[0];
 
     //           extract the hash file name
-    crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    hlen = apb->p1len;
+    hlen = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN);
+	CRM_ASSERT(hlen < MAX_PATTERN);
 
     //     get the "this is a word" regex
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = apb->s1len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
 
     //            set our cflags, if needed.  The defaults are
@@ -147,16 +146,6 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
-#if 0
-    i = 0;
-    while (htext[i] < 0x021)
-        i++;
-    CRM_ASSERT(i < hlen);
-    j = i;
-    while (htext[j] >= 0x021)
-        j++;
-    CRM_ASSERT(j <= hlen);
-#else
  if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
  {
             fev = nonfatalerror_ex(SRC_LOC(), 
@@ -168,7 +157,6 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
  j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
-#endif
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
@@ -872,32 +860,37 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the variable name (if present)
     //
-    //  crm_get_pgm_arg (ltext, MAX_PATTERN, apb->b1start, apb->b1len);
-    //llen = apb->b1len;
+    //llen = crm_get_pgm_arg (ltext, MAX_PATTERN, apb->b1start, apb->b1len);
     //llen = crm_nexpandvar (ltext, llen, MAX_PATTERN);
 
     //           extract the hash file names
-    crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
-    hlen = apb->p1len;
+    hlen = crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
     hlen = crm_nexpandvar(htext, hlen, htext_maxlen);
+	CRM_ASSERT(hlen < MAX_PATTERN);
 
     //           extract the "this is a word" regex
     //
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = apb->s1len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
 
     //            extract the optional "match statistics" variable
     //
-    crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
-    svlen = apb->p2len;
+    svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
+	CRM_ASSERT(svlen < MAX_PATTERN);
     {
        int vstart, vlen;
-        crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
+        if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
+		{
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;
         svrbl[vlen] = 0;
+		}
+		else
+		{
+        svlen = 0;
+        svrbl[0] = 0;
+		}
     }
 
     //     status variable's text (used for output stats)
@@ -1063,10 +1056,8 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     fnlen = 1;
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
-        crm_nextword(htext,
-                hlen, fn_start_here,
-                &fnstart, &fnlen);
-        if (fnlen > 0)
+        if (crm_nextword(htext, hlen, fn_start_here, &fnstart, &fnlen)
+         && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fn_start_here = fnstart + fnlen + 1;
@@ -1980,7 +1971,7 @@ classify_end_regex_loop:
                     " ");
         }
         crm_destructive_alter_nvariable(svrbl, svlen,
-                stext, strlen(stext));
+                stext, (int)strlen(stext));
     }
 
 

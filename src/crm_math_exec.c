@@ -27,8 +27,8 @@ static int math_formatter(double value, char *format, char *buf, int buflen);
 
 
 //
-//           strmath - evaluate a string for the mathematical result,
-//            returning the length of the valid string.
+// strmath - evaluate a string for the mathematical result,
+//           returning the length of the valid string.
 //
 int strmath(char *buf, int inlen, int maxlen, int *retstat)
 {
@@ -101,8 +101,10 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
     //      all initialized... let's begin.
 
     if (internal_trace)
+	{
         fprintf(stderr, "Math on '%s' len %d retstat %p\n",
             buf, inlen, (void *)retstat);
+	}
 
     for (ip = 0; ip < inlen; ip++)
     {
@@ -453,10 +455,12 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                         snprintf(tempstring, WIDTHOF(tempstring), outformat, stack[sp]);
                         tempstring[WIDTHOF(tempstring) - 1] = 0;
                         if (internal_trace)
+						{
                             fprintf(stderr,
                                 "Intermediate result string -->%s<-- \n",
                                 tempstring);
                     }
+					}
                     else
                     {
                         int64_t intpart;
@@ -464,10 +468,12 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                         snprintf(tempstring, WIDTHOF(tempstring), outformat, intpart);
                         tempstring[WIDTHOF(tempstring) - 1] = 0;
                         if (internal_trace)
-                            fprintf(stderr,
+						{
+							fprintf(stderr,
                                 "Intermediate hex result string -->%s<-- \n",
                                 tempstring);
                     }
+					}
                     //   And now do the back conversion of the result.
                     //   Note that X formatting (hexadecimal) does NOT do the
                     //   back conversion; the only effect is to store the
@@ -590,7 +596,7 @@ int math_formatter(double value, char *format, char *buf, int buflen)
              */
             buf[buflen - 1] = 0;
             /* return (outlen); ** [i_a] */
-            return strlen(buf);
+            return (int)strlen(buf);
         }
         //
         //    Nothing so special; use the user format as it is.
@@ -599,7 +605,7 @@ int math_formatter(double value, char *format, char *buf, int buflen)
         outlen = snprintf(buf, buflen, format, value);
         buf[buflen - 1] = 0;
         /* return (outlen); ** [i_a] */
-        return strlen(buf);
+        return (int)strlen(buf);
     }
 
     //   Nope - we didn't get a preferred formatting, so here's the
@@ -653,7 +659,7 @@ int math_formatter(double value, char *format, char *buf, int buflen)
     if (internal_trace)
         fprintf(stderr, "math_formatter outlen = %d / %d\n", outlen, (int)strlen(buf));
     /* return (outlen); ** [i_a] */
-    return strlen(buf);
+    return (int)strlen(buf);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1091,15 +1091,14 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //  Extract the file names for storing svm solver.( file1.svm |
     //  file2.svm | 1vs2_solver.svm )
-    crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
-    flen = apb->p1len;
+    flen = crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
     flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
 
     strcpy(
             ptext,
             "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
-    plen = strlen(ptext);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = (int)strlen(ptext);
+    //plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i != 0)
     {
@@ -1126,16 +1125,6 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //only has one input file
         if (ptext[0] != 0)
             crm_regfree(&regcb);
-#if 0
-    i = 0;
-    while (ftext[i] < 0x021)
-        i++;
-    CRM_ASSERT(i < flen);
-    j = i;
-    while (ftext[j] >= 0x021)
-        j++;
-    CRM_ASSERT(j <= flen);
-#else
  if (!crm_nextword(ftext, flen, 0, &i, &j) || j == 0)
  {
             int fev = nonfatalerror_ex(SRC_LOC(), 
@@ -1144,20 +1133,17 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 					ftext);
             return fev;
  }
- j += i;
-    CRM_ASSERT(i < flen);
+    CRM_ASSERT(i + j <= flen);
     CRM_ASSERT(j <= flen);
-#endif
-        ftext[j] = 0;
-        strcpy(file1, &ftext[i]);
+	memmove(file1, &ftext[i], j);
+	file1[j] = 0;
         file2[0] = 0;
         file3[0] = 0;
     }
     //    if (|Text|>0) hide the text into the .svm file
 
     //     get the "this is a word" regex
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = apb->s1len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
 
     //   compile the word regex
@@ -1427,7 +1413,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
 
                 //    and write the sorted hashes out.
-                ret = fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
+                ret = (int)fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
                         hashcounts + 1,
                         hashf);
                 if (ret != hashcounts + 1)
@@ -1639,9 +1625,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
     //           extract parameters for svm
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
-    plen = apb->s2len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    CRM_ASSERT(plen < MAX_PATTERN);
+    ptext[plen] = 0;
     if (plen)
     {
         //set default parameters for SVM
@@ -2175,7 +2162,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     {
                                         temp_count++;
                                     }
-                                    ret = fwrite(svm_prob.x[i], sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
+                                    ret = (int)fwrite(svm_prob.x[i], sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
                                             (temp_count + 1),
                                             hashf);
                                     if (ret != temp_count + 1)
@@ -2330,13 +2317,13 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         }
                     }
 
-                    ret = fwrite(&k1, sizeof(k1), 1, hashf);
-                    ret += fwrite(&k2, sizeof(k2), 1, hashf);
+                    ret = (int)fwrite(&k1, sizeof(k1), 1, hashf);
+                    ret += (int)fwrite(&k2, sizeof(k2), 1, hashf);
                     for (i = 0; i < svm_prob.l; i++)
-                        ret += fwrite(&(solver.alpha[i]), sizeof(solver.alpha[i]), 1, hashf);
-                    ret += fwrite(&b, sizeof(b), 1, hashf);
-                    ret += fwrite(&AB[0], sizeof(AB[0]), 1, hashf);
-                    ret += fwrite(&AB[1], sizeof(AB[1]), 1, hashf);
+                        ret += (int)fwrite(&(solver.alpha[i]), sizeof(solver.alpha[i]), 1, hashf);
+                    ret += (int)fwrite(&b, sizeof(b), 1, hashf);
+                    ret += (int)fwrite(&AB[0], sizeof(AB[0]), 1, hashf);
+                    ret += (int)fwrite(&AB[1], sizeof(AB[1]), 1, hashf);
                     if (ret != 2 + 3 + svm_prob.l)
                     {
                         fatalerror("Couldn't write the solution to the .hypsvm file named ",
@@ -2422,15 +2409,22 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //            extract the optional "match statistics" variable
     //
-    crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
-    svlen = apb->p2len;
+    svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
+	CRM_ASSERT(svlen < MAX_PATTERN);
     {
         int vstart, vlen;
-        crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
+        if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
+		{
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;
         svrbl[vlen] = 0;
+		}
+		else
+		{
+        svlen = 0;
+        svrbl[0] = 0;
+		}
     }
 
     //     status variable's text (used for output stats)
@@ -2499,9 +2493,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 #if 01
     //           extract parameters for svm
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
-    plen = apb->s2len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    CRM_ASSERT(plen < MAX_PATTERN);
+    ptext[plen] = 0;
     if (plen)
     {
         //set default parameters for SVM
@@ -2543,8 +2538,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #endif
 
     //     get the "this is a word" regex
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = apb->s1len;
+    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
 
     //   compile the word regex
@@ -2760,14 +2754,13 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
     // extract the file names.( file1.svm | file2.svm | 1vs2_solver.svm )
-    crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
-    flen = apb->p1len;
+    flen = crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
     flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
 
     strcpy(
             ptext,
             "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
-    plen = strlen(ptext);
+    plen = (int)strlen(ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i != 0)
     {
@@ -2927,8 +2920,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             }
                         }
 
-                        ret = fread(&temp_k1, sizeof(temp_k1), 1, hashf);
-                        ret += fread(&temp_k2, sizeof(temp_k2), 1, hashf);
+                        ret = (int)fread(&temp_k1, sizeof(temp_k1), 1, hashf);
+                        ret += (int)fread(&temp_k2, sizeof(temp_k2), 1, hashf);
                         if (ret != 2)
                         {
                             fatalerror("Cannot read k1/k2 from SVM solution file: ", file3);
@@ -2997,9 +2990,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         double *deci_array = NULL;
 #if 0
                         //           extract parameters for svm
-                        crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
-                        plen = apb->s2len;
+                        plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
                         plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    CRM_ASSERT(plen < MAX_PATTERN);
+    ptext[plen] = 0;
                         if (plen)
                         {
                             //set default parameters for SVM
@@ -3119,11 +3113,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         for (i = 0; i < svm_prob.l; i++)
                         {
                             alpha[i] = 0.0;
-                            ret += fread(&alpha[i], sizeof(alpha[i]), 1, hashf);
+                            ret += (int)fread(&alpha[i], sizeof(alpha[i]), 1, hashf);
                         }
-                        ret += fread(&b, sizeof(b), 1, hashf);
-                        ret += fread(&AB[0], sizeof(AB[0]), 1, hashf);
-                        ret += fread(&AB[1], sizeof(AB[1]), 1, hashf);
+                        ret += (int)fread(&b, sizeof(b), 1, hashf);
+                        ret += (int)fread(&AB[0], sizeof(AB[0]), 1, hashf);
+                        ret += (int)fread(&AB[1], sizeof(AB[1]), 1, hashf);
 
                         if (ret != 3 + svm_prob.l)
                         {
@@ -3242,7 +3236,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //   finally, save the status output
         //
         crm_destructive_alter_nvariable(svrbl, svlen,
-                stext, strlen(stext));
+                stext, (int)strlen(stext));
     }
 
     //    Return with the correct status, so an actual FAIL or not can occur.

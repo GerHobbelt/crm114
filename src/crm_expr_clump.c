@@ -1055,13 +1055,14 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int txtlen;
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
+	int len;
 
     int max_documents = 1000;
 
-    crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
+    len = crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
     //  Use crm_restrictvar to get start & length to look at.
-    i = crm_restrictvar(box_text, apb->b1len,
+    i = crm_restrictvar(box_text, len,
             NULL,
             &txtptr,
             &txtstart,
@@ -1091,20 +1092,11 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
 
-    crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    htext_len = apb->p1len;
+    htext_len = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
-#if 0
-    i = 0;
-    while (htext[i] < 0x021)
-        i++;
-    CRM_ASSERT(i < htext_len);
-    j = i;
-    while (htext[j] >= 0x021)
-        j++;
-    CRM_ASSERT(j <= htext_len);
-#else
- if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
+	CRM_ASSERT(htext_len < MAX_PATTERN);
+
+	if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
  {
             int fev = nonfatalerror_ex(SRC_LOC(), 
 				"\nYou didn't specify a valid filename: '%.*s'\n", 
@@ -1115,15 +1107,14 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
  j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);
-#endif
-    htext[j] = 0;
+
+	htext[j] = 0;
     strcpy(filename, &htext[i]);
 
     //use regex_text and regee to grab parameters
-    crm_get_pgm_arg(param_text, MAX_PATTERN, apb->s2start, apb->s2len);
-    param_text_len = apb->s2len;
+    param_text_len = crm_get_pgm_arg(param_text, MAX_PATTERN, apb->s2start, apb->s2len);
     param_text_len = crm_nexpandvar(param_text, param_text_len, MAX_PATTERN);
-
+	CRM_ASSERT(param_text_len < MAX_PATTERN);
     param_text[param_text_len] = 0;
     if (internal_trace)
         fprintf(stderr, "param_text = %s\n", param_text);
@@ -1192,14 +1183,13 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
     //we've already got a default max_documents
 
-    crm_get_pgm_arg(regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
-    regex_text_len = apb->s1len;
+    regex_text_len = crm_get_pgm_arg(regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
     if (regex_text_len == 0)
     {
         strcpy(regex_text, "[[:graph:]]+");
         regex_text_len = strlen(regex_text);
     }
-    regex_text[regex_text_len] = 0;
+    //regex_text[regex_text_len] = 0;
     regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
     if (crm_regcomp(&regee, regex_text, regex_text_len, REG_EXTENDED))
     {
@@ -1482,11 +1472,12 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int txtlen;
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
+	int boxtxtlen;
 
-    crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
+    boxtxtlen = crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
     //  Use crm_restrictvar to get start & length to look at.
-    i = crm_restrictvar(box_text, apb->b1len,
+    i = crm_restrictvar(box_text, boxtxtlen,
             NULL,
             &txtptr,
             &txtstart,
@@ -1515,20 +1506,11 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
 
-    crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    htext_len = apb->p1len;
+    htext_len = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
-#if 0
-    i = 0;
-    while (htext[i] < 0x021)
-        i++;
-    CRM_ASSERT(i < htext_len);
-    j = i;
-    while (htext[j] >= 0x021)
-        j++;
-    CRM_ASSERT(j <= htext_len);
-#else
- if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
+	CRM_ASSERT(htext_len < MAX_PATTERN);
+
+	if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
  {
             int fev = nonfatalerror_ex(SRC_LOC(), 
 				"\nYou didn't specify a valid filename: '%.*s'\n", 
@@ -1539,23 +1521,21 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
  j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);
-#endif
-    htext[j] = 0;
+
+	htext[j] = 0;
     strcpy(filename, &htext[i]);
 
     //grab output variable name
-    crm_get_pgm_arg(out_var, MAX_PATTERN, apb->p2start, apb->p2len);
-    out_var_len = apb->p2len;
+    out_var_len = crm_get_pgm_arg(out_var, MAX_PATTERN, apb->p2start, apb->p2len);
     out_var_len = crm_nexpandvar(out_var, out_var_len, MAX_PATTERN);
 
-    crm_get_pgm_arg(regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
-    regex_text_len = apb->s1len;
+    regex_text_len = crm_get_pgm_arg(regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
     if (regex_text_len == 0)
     {
         strcpy(regex_text, "[[:graph:]]+");
         regex_text_len = strlen(regex_text);
     }
-    regex_text[regex_text_len] = 0;
+    //regex_text[regex_text_len] = 0;
     regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
     if (crm_regcomp(&regee, regex_text, regex_text_len, REG_EXTENDED))
     {

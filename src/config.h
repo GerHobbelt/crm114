@@ -553,13 +553,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20080326-BlameSentansoken"
+#define PACKAGE_STRING "CRM114 20080502-BlameJason"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20080326-BlameSentansoken"
+#define PACKAGE_VERSION "20080502-BlameJason"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -568,7 +568,7 @@
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
 /* revision number of software */
-#define REVISION "2251"
+#define REVISION "2257"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4
@@ -586,13 +586,13 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-2251"
+#define TAR_FILENAME_POSTFIX "Ger-2257"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "20080326-BlameSentansoken"
+#define VERSION "20080502-BlameJason"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

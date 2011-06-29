@@ -113,12 +113,19 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
             struct stat statbuf;
 
             filenamelen = matches[2].rm_eo - matches[2].rm_so;
-
-            for (j = 0;
-                 j < filenamelen
-                 && j < MAX_FILE_NAME_LEN;
-                 j++)
+			if (filenamelen >= MAX_FILE_NAME_LEN)
+			{
+				fatalerror_ex(SRC_LOC(), "PREPROCESSOR: specified script filename '%.*s' (len: %d) "
+					"is too long; only filenames/paths up to %d characters are allowed!",
+					filenamelen, &csl->filetext[matches[2].rm_so],
+					filenamelen,
+					MAX_FILE_NAME_LEN - 1);
+			}
+            for (j = 0; j < filenamelen && j < MAX_FILE_NAME_LEN - 1; j++)
+				{
                 insertfilename[j] = csl->filetext[matches[2].rm_so + j];
+				 }
+			CRM_ASSERT(j < MAX_FILE_NAME_LEN);
             insertfilename[j] = 0;
 
             //   Check to see if this was a "delimited" insertfile name
@@ -128,8 +135,10 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 && insertfilename[filenamelen - 1] == ']')
             {
                 if (user_trace)
+				{
                     fprintf(stderr, "INSERT filename expand: '%s'",
                             insertfilename);
+				}
                 //  Get rid of the enclosing [ and ]
                 filenamelen = filenamelen - 2;
                 for (j = 0; j < filenamelen; j++)

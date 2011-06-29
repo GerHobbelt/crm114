@@ -7,7 +7,7 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
-version: 20080326-BlameSentansoken ( TRE 0.7.5 (LGPL) )
+version: 20080502-BlameJason ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?

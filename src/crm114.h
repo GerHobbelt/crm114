@@ -87,9 +87,8 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat);
 int crm_load_csl(CSL_CELL *csl);
 
 //    alter a variable to another value (this is destructive!)
-void crm_destructive_alter_variable(char *varname, char *newstr);
-void crm_destructive_alter_nvariable(char *varname, int varlen,
-        char *newstr, int newlen);
+void crm_destructive_alter_nvariable(const char *varname, int varlen,
+        const char *newstr, int newlen);
 
 //  setting a program label in the VHT
 void crm_setvar(
@@ -566,7 +565,7 @@ int crm_generic_parse_line(
 
 //    and to avoid all the mumbo-jumbo, an easy way to get a copy of
 //    an arg found by the declensional parser.
-void crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen);
+int crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen);
 
 //    useful to skip inline (# ... \#) comments and whitespace both
 int skip_comments_and_blanks(const char *buf, int start, int bufsize);
@@ -767,9 +766,10 @@ typedef enum
 	CRM_DBG_REASON_BREAKPOINT,
 	CRM_DBG_REASON_DEBUG_STATEMENT,
 	CRM_DBG_REASON_DEBUG_END_OF_PROGRAM,
+	CRM_DBG_REASON_EXCEPTION_HANDLING,
 } crm_debug_reason_t;
 
-int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call);
+int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const char *message);
 
 //     expand a variable or string with known length (8-bit and null-safe)
 int crm_nexpandvar(char *buf, int inlen, int maxlen);

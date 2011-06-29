@@ -997,7 +997,33 @@ int crm_trigger_fault(const char *reason)
             reason);
     }
 
-    original_statement = csl->cstmt;
+    if (debug_countdown > DEBUGGER_DISABLED_FOREVER) // pop up the debugger when in 'break-op-exception' mode
+{
+	if (!inside_debugger)
+	{
+		// make sure we're not causing a recursion here; while inside the debugger,
+		// we shouldn't pop up ourselves, now should we.
+		//
+		// Meanwhile, we like to catch this exception as early as possible, because
+		// then we still have a chance to 'manipulate' it if we like (like modifying
+		// the current statement position, etc...) ;-)
+		//
+		i = crm_debugger(csl, CRM_DBG_REASON_EXCEPTION_HANDLING, reason);
+        if (i == -1)
+        {
+            if (engine_exit_base != 0)
+            {
+                exit(engine_exit_base + 6);
+            }
+            else
+            {
+                exit(EXIT_SUCCESS);
+            }
+        }
+	}
+}
+
+	original_statement = csl->cstmt;
     trapline = csl->cstmt;
 
     done = 0;
@@ -1054,17 +1080,16 @@ int crm_trigger_fault(const char *reason)
             fprintf(stderr, "\n");
         }
 
-        //  Get the trap pattern and  see if we match.
-        crm_get_pgm_arg(trap_pat, MAX_PATTERN,
-            apb.s1start, apb.s1len);
+        //  Get the trap pattern and see if we match.
+        pat_len = crm_get_pgm_arg(trap_pat, MAX_PATTERN, apb.s1start, apb.s1len);
         //
         //      Do variable substitution on the pattern
-        pat_len = crm_nexpandvar(trap_pat, apb.s1len, MAX_PATTERN);
+        pat_len = crm_nexpandvar(trap_pat, pat_len, MAX_PATTERN);
 
         //
         if (user_trace)
         {
-            fprintf(stderr, "This TRAP will trap anything matching =%s= .\n",
+            fprintf(stderr, "This TRAP will trap anything matching =%s=\n",
                 trap_pat);
         }
         //       compile the regex
@@ -1084,7 +1109,7 @@ int crm_trigger_fault(const char *reason)
             // causing the traphandler line to move forward multiple times. So reassign the traphandler and
             // go from there:
             fatalerror_ex(SRC_LOC(),
-                "Regular Expression Compilation Problem in TRAP pattern '%s' while processing the trappable error '%s'",
+				"Double Trap: Regular Expression Compilation Problem in TRAP pattern '%s' while processing the trappable error '%s'.",
                 tempbuf,
                 reason);
             // trapline = csl->cstmt; // [i_a] the call to fatalerror[_ex] will have found a new trapline!
@@ -1118,12 +1143,16 @@ int crm_trigger_fault(const char *reason)
             {
                 char reasonname[MAX_VARNAME];
                 int rnlen;
-                crm_get_pgm_arg(reasonname, MAX_VARNAME, apb.p1start, apb.p1len);
-                if (apb.p1len > 2)
+                rnlen = crm_get_pgm_arg(reasonname, MAX_VARNAME, apb.p1start, apb.p1len);
+                if (rnlen > 2)
                 {
-                    rnlen = crm_nexpandvar(reasonname, apb.p1len, MAX_VARNAME);
-                    //   crm_nexpandvar null-terminates for us so we can be
-                    //   8-bit-unclean here
+                    rnlen = crm_nexpandvar(reasonname, rnlen, MAX_VARNAME);
+					CRM_ASSERT(rnlen < MAX_VARNAME);
+					reasonname[rnlen] = 0;
+                    // crm_nexpandvar null-terminates for us so we can be
+                    // 8-bit-unclean here -- [i_a] update: but it does NOT do so 
+					// under ALL circumstances, so better throw in a NUL sentinel,
+					// after we've fixed the MAX_VARNAME up there with a -1 too.
                     crm_set_temp_var(reasonname, reason);
                 }
                 done = 1;

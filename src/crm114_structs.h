@@ -201,6 +201,48 @@ typedef struct mythical_csl_cell
     unsigned int mct_allocated      : 1; // if the mct collection was allocated on the heap.
 } CSL_CELL;
 
+//     A 1024-byte standardized header for our statistical files (well, the
+//     new standard.  Old file types don't have this.  Forward migration
+//     shall take place.  :-)
+
+typedef struct {
+  uint32_t start;
+  uint32_t length;
+  uint32_t tag;
+} STATISTICS_FILE_CHUNK;
+
+typedef struct {
+  STATISTICS_FILE_CHUNK chunks [ STATISTICS_FILE_NCHUNKS ];
+                            //  The byte indexed chunks of data in this file, 
+                            //  by start, length, and tag.  This is recursive; 
+                            //  chunk[0] points to this array itself, so
+                            //  chunk[0].start is almost always 0 and 
+                            //  chunk[0].length is almost always the start of 
+                            //  the next chunk.   A -1 length means "to the
+                            //  end of the file"
+                            //   
+  uint8_t file_ident_string [ STATISTICS_FILE_IDENT_STRING_MAX ];   
+                            //  Text description of this file.  This should
+                            //  always start with "CRM114 Classdata " and then
+                            //  the classifier name etc.  Embed versioning
+                            //  information here (and get it back with strtod)
+                            //  Please pad unused space with NULLs; don't
+                            //  change the length (to make file-magic easier).
+                            //  This is always chunk[1];
+                            //
+  uint32_t data [ STATISTICS_FILE_ARB_DATA ];       
+                            //  These are "use as you will" data.  This is
+                            //  always chunk[2].  
+                            //
+  ////////////////////////////
+  //      Following in the file are more data chunks.  Note that there's
+  //      plenty of space here for pre-solves (such as an SVM might generate)
+  //      but probably NOT enough space for individual examples to get their
+  //      own chunks, unless you change the default number of chunks upward
+  //      from 1024.  
+  //////////////////////////// 
+}   STATISTICS_FILE_HEADER_STRUCT;
+
 typedef struct
 {
     crmhash_t     hash;

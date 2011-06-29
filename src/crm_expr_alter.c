@@ -55,37 +55,36 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //     get the variable name
     CRM_ASSERT(apb != NULL);
-    crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
-    if (apb->p1len < 3)
+    varnamelen = crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
+    if (varnamelen < 3)
     {
         has_output_var = 0;
         if (user_trace)
+		{
             fprintf(stderr, "There's no output var for this EVAL, so we won't "
                             "be assigning the result anywhere.\n  It better have a "
                             "relational test, or you're just wasting CPU.\n");
+		}
     }
 
     if (has_output_var)
     {
         //      do variable substitution on the variable name
-        varnamelen = crm_nexpandvar(varname, apb->p1len, MAX_VARNAME);
+        varnamelen = crm_nexpandvar(varname, varnamelen, MAX_VARNAME);
         if (varnamelen < 3)
         {
             nonfatalerror(
                     "The variable you're asking me to alter has an utterly bogus name\n",
-                    "so I'll pretend it has no output variable.");
+                    "so I'll pretend it has no output variable, so we won't "
+                            "be assigning the result anywhere.\n  It better have a "
+                            "relational test, or you're just wasting CPU.\n");
             has_output_var = 0;
         }
     }
     //     get the new pattern, and expand it.
-    crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
+    newvallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
 
- //  ihash = 0;
- //  itercount = 0;
- //  for (ahindex = 0; ahindex < MAX_EVAL_ITERATIONS; ahindex++)
- //    ahash[ahindex] = 0;
     ahindex = 0;
- //  loop_abort = 0;
  //
  //     Now, a loop - while it continues to change, keep looping.
  //     But to try and detect infinite loops, we keep track of the
@@ -98,7 +97,6 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
  // we must check against the actual, i.e. current hash value, no
  // matter what it's value is.
  //
-    newvallen = apb->s1len;
     for (itercount = 0; itercount < MAX_EVAL_ITERATIONS; itercount++)
     {
         int i;
@@ -188,8 +186,8 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //     get the variable name
     CRM_ASSERT(apb != NULL);
-    crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
-    if (apb->p1len < 3)
+    varnamelen = crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
+    if (varnamelen < 3)
     {
         nonfatalerror(
                 "This statement is missing the variable to alter,\n",
@@ -198,19 +196,20 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     //      do variable substitution on the variable name
-    varnamelen = crm_nexpandvar(varname, apb->p1len, MAX_VARNAME);
-    crm_nextword(varname, varnamelen, 0, &varnamestart, &varnamelen);
-    if (varnamelen - varnamestart < 3)
+    varnamelen = crm_nexpandvar(varname, varnamelen, MAX_VARNAME);
+    if (!crm_nextword(varname, varnamelen, 0, &varnamestart, &varnamelen)
+    || varnamelen < 3)
     {
         nonfatalerror(
-                "The variable you're asking me to alter has an utterly bogus name\n",
+                "The variable you're asking me to alter has an utterly bogus\n"
+				"name or has not been specified at all\n",
                 "so I'll ignore the whole statement.");
         return 0;
     }
 
     //     get the new pattern, and expand it.
-    crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
-    newvallen = crm_nexpandvar(tempbuf, apb->s1len, data_window_size);
+    newvallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
+    newvallen = crm_nexpandvar(tempbuf, newvallen, data_window_size);
 
     crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,
             tempbuf, newvallen);

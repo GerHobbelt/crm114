@@ -993,8 +993,7 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
             char s1text[MAX_PATTERN];
             char *dst;
 
-            crm_get_pgm_arg(s1text, MAX_PATTERN, apb->s1start, apb->s1len);
-            s1len = apb->s1len;
+            s1len = crm_get_pgm_arg(s1text, MAX_PATTERN, apb->s1start, apb->s1len);
             s1len = crm_nexpandvar(s1text, s1len, MAX_PATTERN);
 
             tokenizer->regex = dst = calloc(s1len + 1, sizeof(tokenizer->regex[0]));
@@ -1212,8 +1211,7 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
     regmatch_t match[2];     //  We'll only care about the second match
 
     //     get the second slash parameter (if used at all)
-    crm_get_pgm_arg(s2text, MAX_PATTERN, apb->s2start, apb->s2len);
-    s2len = apb->s2len;
+    s2len = crm_get_pgm_arg(s2text, MAX_PATTERN, apb->s2start, apb->s2len);
     s2len = crm_nexpandvar(s2text, s2len, MAX_PATTERN);
 
     if (s2len > 0)
