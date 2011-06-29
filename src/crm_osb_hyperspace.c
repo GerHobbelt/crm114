@@ -337,9 +337,6 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     h = 0;
     k = 0;
 
-  //    Are we actually calling the vector tokenizer??
-  //  fprintf (stderr, "gweep!!\n");
-
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector
     (apb,                                  // the APB
@@ -356,8 +353,10 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 #if USE_FIXED_UNIQUE_MODE
-    CRM_ASSERT(hashcounts >= 0);
-    CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+        CRM_ASSERT(hashcounts >= 0);
+        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+        CRM_ASSERT(hashes[hashcounts].hash == 0);
+
 
     if (internal_trace)
 	{
@@ -385,12 +384,12 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   And uniqueify the hashes array
     //
 
-    if (unique)
-    {
         CRM_ASSERT(hashcounts >= 0);
         CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
         CRM_ASSERT(hashes[hashcounts].hash == 0);
 
+    if (unique)
+    {
          for (i = j = 1; i < hashcounts; i++)
          {
              if (hashes[i].hash != hashes[j - 1].hash)

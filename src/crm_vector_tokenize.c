@@ -137,7 +137,15 @@ int crm_vector_tokenize
     int pipe_iters;
     int pipe_matrices;
     int element_step_size;
+	int single_featureblock_size;
 
+	if (internal_trace)
+{
+fprintf(stderr, "VT: textlen = %d\n", textlen);
+fprintf(stderr, "VT: start_offset = %d\n", start_offset);
+fprintf(stderr, "VT: features_bufferlen = %d\n", features_bufferlen);
+fprintf(stderr, "VT: features_stride = %d\n", features_stride);
+}
 
     // sanity checks: everything must be 'valid'; no 'default' NULL pointers, nor zeroed/out-of-range values accepted.
     if (!text || !our_coeff || !features_buffer || !features_out)
@@ -145,14 +153,15 @@ int crm_vector_tokenize
         CRM_ASSERT(!"This should never happen in a properly coded CRM114...");
         return -1;
     }
-    if (features_stride < 1)
+
+	// tag the output series with a zero asap:
+    *features_out = 0;
+
+	if (features_stride < 1)
     {
         CRM_ASSERT(!"This should never happen in a properly coded CRM114...");
         return -1;
     }
-
-    // tag the output series with a zero asap:
-    *features_out = 0;
 
     // further sanity checks
     if (features_bufferlen < features_stride)
@@ -165,13 +174,18 @@ int crm_vector_tokenize
     pipe_iters = our_coeff->pipe_iters;
     pipe_len = our_coeff->pipe_len;
     pipe_matrices = our_coeff->output_stride;
-
+	if (internal_trace)
+{
+fprintf(stderr, "VT: pipe_iters = %d\n", pipe_iters);
+fprintf(stderr, "VT: pipe_len = %d\n", pipe_len);
+fprintf(stderr, "VT: pipe_matrices = %d\n", pipe_matrices);
+}
     if (pipe_iters <= 0 || pipe_iters > UNIFIED_VECTOR_LIMIT)
     {
         // index out of configurable range
        nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
             "the VT iteration count (%d) is out of bounds [%d .. %d].",
-	pipe_iters, 0, UNIFIED_VECTOR_LIMIT);
+	pipe_iters, 1, UNIFIED_VECTOR_LIMIT);
         return -1;
     }
     if (pipe_len <= 0 || pipe_len > UNIFIED_WINDOW_LEN)
@@ -179,28 +193,38 @@ int crm_vector_tokenize
         // index out of configurable range
        nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
             "the VT pipeline depth (%d) is out of bounds [%d .. %d].",
-	pipe_len, 0, UNIFIED_WINDOW_LEN);
+	pipe_len, 1, UNIFIED_WINDOW_LEN);
         return -1;
     }
-    if (pipe_matrices < 0 || pipe_matrices > UNIFIED_VECTOR_STRIDE)
+    if (pipe_matrices <= 0 || pipe_matrices > UNIFIED_VECTOR_STRIDE)
     {
         // index out of configurable range
        nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
             "the number of VT matrixes (%d) is out of bounds [%d .. %d]. We don't support any stride that large.",
-	pipe_matrices, 0, UNIFIED_VECTOR_STRIDE);
+	pipe_matrices, 1, UNIFIED_VECTOR_STRIDE);
         return -1;
     }
 
-    if (pipe_iters * pipe_matrices > features_bufferlen)
+single_featureblock_size = pipe_iters * pipe_matrices;
+	if (internal_trace)
+{
+fprintf(stderr, "VT: single_featureblock_size = %d\n", single_featureblock_size);
+}
+
+    if (single_featureblock_size > features_bufferlen)
     {
         // feature storage space too small:
        nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
             "the feature bucket is too small (%d) to contain the minimum required number of features (%d) at least.",
-	features_bufferlen, pipe_iters * pipe_matrices);
+	features_bufferlen, single_featureblock_size);
         return -1;         // can't even store the features from one token, so why bother?
     }
 
     element_step_size = pipe_matrices * features_stride;
+	if (internal_trace)
+{
+fprintf(stderr, "VT: element_step_size = %d\n", element_step_size);
+}
 
     // is the tokenizer also configured properly?
     if (!tokenizer->tokenizer)
@@ -246,6 +270,10 @@ int crm_vector_tokenize
         // cough up a fresh token burst now and put them at the front of the pipe, i.e. at the END of the array:
         i = tokenizer->tokenizer(tokenizer, &hashpipe[UNIFIED_WINDOW_LEN - 1], CRM_VT_BURST_SIZE);
         // did we get any?
+	if (internal_trace)
+{
+fprintf(stderr, "VT: tokenizer delivered %d tokens\n", i);
+}
         if (i < 0)
 {
             return -1;
@@ -276,6 +304,9 @@ int crm_vector_tokenize
         {
             int matrix;
             const crmhash_t *coeff_array;
+		// remember how far we filled the features bucket already; 
+		// we're going to interleave another block:
+	    int basepos = feature_pos; 
 
 
             coeff_array = our_coeff->coeff_array;
@@ -283,7 +314,7 @@ int crm_vector_tokenize
             // select the proper 2D matrix plane from the 3D matrix cube on every round:
             // one full round per available coefficient matrix
             for (matrix = 0;
-                 matrix < our_coeff->output_stride;
+                 matrix < pipe_matrices;
                  matrix++, coeff_array += pipe_iters * pipe_len)
             {
                 int irow;
@@ -291,8 +322,9 @@ int crm_vector_tokenize
                 CRM_ASSERT(matrix >= 0);
                 CRM_ASSERT(matrix < UNIFIED_VECTOR_STRIDE);
 
-                // set up index for interleaved feature storage:
-                feature_pos = matrix;
+                // reset the index for interleaved feature storage:
+                feature_pos = basepos + matrix;
+
                 //
                 // Features for the different 'strides' are stored in interleaved format, e.g.
                 // for stride=2 Markovian:
@@ -359,16 +391,19 @@ int crm_vector_tokenize
                     feature_pos += element_step_size;
                 }
             }
+	    // and correct for the interleaving we just did:
+    		feature_pos -= element_step_size - 1; // feature_pos points 'element_step_size' elems PAST the last write; should be only +1(ONE)
 
             // check if we should get another series of tokens ... or maybe not.
-            if (feature_pos >= features_bufferlen)
+	    // only allow another burst when we can at least write a single feature strip.
+            if (feature_pos + single_featureblock_size > features_bufferlen)
             {
                 break;
             }
         }
 
         // check if we should get another series of tokens ... or maybe not.
-        if (feature_pos >= features_bufferlen)
+        if (feature_pos + single_featureblock_size > features_bufferlen)
         {
             break;
         }
@@ -378,6 +413,10 @@ int crm_vector_tokenize
     // *next_offset = tokenizer->input_next_offset;
 
     *features_out = feature_pos - element_step_size + 1; // feature_pos points 'element_step_size' elems PAST the last write; should be only +1(ONE)
+	if (user_trace || internal_trace)
+{
+fprintf(stderr, "VT: feature count = %d\n", *features_out);
+}
     // [i_a]
     // Fringe case: yes, we discard the last few feature(s) stored when the
     // feature_bufferlen % pipe_matrices != 0 where pipe_matrices > 0 as then an
@@ -642,7 +681,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
 			}
 
 			regcomp_status = crm_regcomp(&obj->regcb, obj->regex, obj->regexlen, obj->regex_compiler_flags);
-            if (regcomp_status > 0)
+            if (regcomp_status != 0)
             {
                 char errortext[4096];
 
@@ -889,7 +928,7 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
         tokenizer->max_big_token_count = OSBF_MAX_LONG_TOKENS;
     }
 
-	if (tokenizer->regex_compiler_flags_are_set)
+	if (!tokenizer->regex_compiler_flags_are_set)
 	{
 		if (!apb)
 		{
@@ -936,6 +975,7 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
 			tokenizer->regex_compiler_flags_are_set = 1;
 	}
 	}
+	CRM_ASSERT(tokenizer->regex_compiler_flags_are_set);
 
     // Now all of the defaults have been filled in; we now see if the
     // caller has overridden any (or all!) of them.   We assume that the
@@ -982,7 +1022,7 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
         if (s1len)
         {
             int regcomp_status = crm_regcomp(&tokenizer->regcb, regex, regexlen, tokenizer->regex_compiler_flags);
-            if (regcomp_status > 0)
+            if (regcomp_status != 0)
             {
                 char errortext[4096];
 

@@ -223,7 +223,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //       compile the regex
     i = crm_regcomp(&preg, pch, flen, regexflags);
-    if (i > 0)
+    if (i != 0)
     {
         crm_regerror(i, &preg, tempbuf, data_window_size);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
@@ -324,7 +324,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //       compile the paste match regex
     i = crm_regcomp(&preg, pch, flen, regexflags);
-    if (i > 0)
+    if (i != 0)
     {
         crm_regerror(i, &preg, tempbuf, data_window_size);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);

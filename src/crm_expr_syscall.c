@@ -327,7 +327,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //           for a variable.
     //
     //           syntax is:
-    //               syscall (:to:) (:from:) (:ctl:) /commandline/ /[alt-OS]alt-commandline/ ...
+    //               syscall (:to:) (:from:) (:ctl:) /commandline/ ...
     int inlen;
     int outlen;
     char from_var[MAX_VARNAME];
@@ -502,49 +502,6 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (user_trace)
         fprintf(stderr, "   command will be ***%s***\n", sys_cmd);
 
-    //      get possible alternative command to execute: if the given OS matches ours, we exec this one instead!
-    //
-    if (apb->s2start != NULL)
-    {
-        char alt_sys_cmd[MAX_PATTERN];
-        int alt_cmd_len;
-        char *p;
-        char *os;
-
-        crm_get_pgm_arg(alt_sys_cmd, MAX_PATTERN, apb->s2start, apb->s2len);
-        alt_cmd_len = crm_nexpandvar(alt_sys_cmd, apb->s2len, MAX_PATTERN);
-        p = strchr(alt_sys_cmd, ']');
-        os = NULL;
-        if (p != NULL)
-        {
-            os = strnchr(alt_sys_cmd, '[', p - alt_sys_cmd);
-        }
-        if (p == NULL || os == NULL)
-        {
-            nonfatalerror(
-                "Failed to decode the alternative syscall commandline: The OS has probably NOT been defined.\n"
-                "The alt command line looks like this: ",
-                alt_sys_cmd);
-        }
-        else
-        {
-            if (user_trace)
-            {
-                fprintf(stderr,
-                    "   alternative command will be (for OS: %.*s) '%s', while our OS is [%s]\n",
-                    (int)(p + 1 - os),
-                    os,
-                    p + 1,
-                    HOSTTYPE);
-            }
-            if (strncasecmp(os + 1, HOSTTYPE, strlen(HOSTTYPE)) == 0)
-            {
-                // matching OS! --> override the syscall commandline!
-                strcpy(sys_cmd, p + 1);
-                cmd_len = strlen(sys_cmd);
-            }
-        }
-    }
 
     //     Do we reuse an already-existing process?  Check to see if the
     //     keeper variable has it... note that we have to :* prefix it
@@ -651,17 +608,17 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //    set the current pid and parent pid.
                 {
                     char pidstr[32];
-                    int pid;
+                    pid_t pid;
 #if defined (HAVE_GETPID)
-                    pid = (int)getpid();
-                    sprintf(pidstr, "%d", pid);
+                    pid = getpid();
+                    sprintf(pidstr, "%d", (int)pid);
                     crm_set_temp_var(":_pid:", pidstr);
                     if (user_trace)
                         fprintf(stderr, "My new PID is %s\n", pidstr);
 #endif
 #if defined (HAVE_GETPPID)
-                    pid = (int)getppid();
-                    sprintf(pidstr, "%d", pid);
+                    pid = getppid();
+                    sprintf(pidstr, "%d", (int)pid);
                     crm_set_temp_var(":_ppid:", pidstr);
 #endif
                 }

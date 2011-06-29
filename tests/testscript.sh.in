@@ -39,9 +39,11 @@ report_warning()
   echo ""
 }
 
-report_msg()
+debug_msg()
 {
-  echo "  $1"
+  if [ ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ]; then
+    echo "  $1"
+  fi
 }
 
 write2ref=0
@@ -55,13 +57,14 @@ tmpout="$0.tempout"
 tmperr="$0.temperr"
 tmpchk="$0.tempchk"
 diffout="$0.diffout"
+filtout="$0.filtout"
 
 literalscript=0
 if [ ! -f "${scriptfile}" ]; then
   # echo "sed proc = " 
-  # echo `echo "${scriptfile}" | sed -e "s/^-{.\+} */-{/" `
-  if [ "x`echo "${scriptfile}" | sed -e "s/^-{.\+} */-{/" `" = "x-{" ]; then
-    report_msg "going to use '${scriptfile}' as literal test script"
+  # echo `echo "${scriptfile}" | sed -e "s/^-{.*} */-{/" `
+  if [ "x`echo "${scriptfile}" | sed -e "s/^-{.*} */-{/" `" = "x-{" ]; then
+    debug_msg "going to use '${scriptfile}' as literal test script"
     literalscript=1
   else
     report_error "crm114 test script '${scriptfile}' does not exist"
@@ -84,7 +87,7 @@ if [ ! -z "${expected}" ]; then
   if [ "x${expected}" = "x-" ]; then
     if [ ${literalscript} = 0 ]; then
       expected="ref/${scriptfile}.refoutput"
-      report_msg "going to use expected outfile file '${expected}'..."
+      debug_msg "going to use expected outfile file '${expected}'..."
     else
       report_error "expected outfile file '${expected}' does not exist and cannot be 'generated' from the script filename as you specified a literal script!"
       exit 64
@@ -103,41 +106,45 @@ shift
 shift
 shift
 shift
+args=$@
 
-args="$@"
 # hmmm... weird; using $@ everywhere instead of this args above will strip off any but the first arg.
 # must be screwing up somewhere...
 # Hm. Mebbee the @xyz@ expansions in here done by configure? :-S
 
 rm -f "${tmperr}" 
 rm -f "${tmpout}"
+rm -f "${tmpchk}"
+rm -f "${diffout}"
+rm -f "${filtout}"
 
 # see if inputfile is a nonempty string; run CRM test scenario accordingly
 
-report_msg "going to run CRM114 '${scriptfile}' with commandline: ${args}"
+echo "test: CRM114 '${scriptfile}' ${args}"
+
+debug_msg "going to run CRM114 '${scriptfile}' with commandline: '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
 
 retcode=65536
 if [ -z "${inputdata}" ]; then
-  report_msg "input is nil/empty"
-  report_msg ": crm114 ${scriptfile} ${args}"
-  ${CRM_BIN} "${scriptfile}" ${args} 2> "${tmperr}" > "${tmpout}"
+  debug_msg "input is nil/empty"
+  debug_msg ": crm114 ${scriptfile} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
+  ${CRM_BIN} "${scriptfile}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" 2> "${tmperr}" > "${tmpout}"
   retcode=$?
 else
   # see if file exists; if not, assume input to be literal text
   if [ -f "${inputdata}" ]; then
     # run test:
-    report_msg ": crm114 ${scriptfile} ${args}"
-    ${CRM_BIN} "${scriptfile}" ${args} < "${inputdata}" 2> "${tmperr}" > "${tmpout}"
+    debug_msg ": crm114 ${scriptfile} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
+    ${CRM_BIN} "${scriptfile}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" < "${inputdata}" 2> "${tmperr}" > "${tmpout}"
     retcode=$?
   else
-    report_msg ": echo '${inputdata}' | crm114 ${scriptfile} ${args}"
-    echo "${inputdata}" | ${CRM_BIN} "${scriptfile}" ${args} 2> "${tmperr}" > "${tmpout}"
+    debug_msg ": echo '${inputdata}' | crm114 ${scriptfile} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
+    echo "${inputdata}" | ${CRM_BIN} "${scriptfile}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" 2> "${tmperr}" > "${tmpout}"
   fi
 fi
 
 
 # now create a reference compare file:
-rm -f "${tmpchk}"
 echo "TEST SCRIPT + COMMANDLINE:"  > "${tmpchk}"
 echo "${scriptfile} ${args}"      >> "${tmpchk}"
 echo ""                           >> "${tmpchk}"
@@ -153,6 +160,7 @@ echo "STDOUT TEST OUTPUT:"        >> "${tmpchk}"
 if [ -f "${tmpout}" ]; then
   cat "${tmpout}"                 >> "${tmpchk}"
 fi
+echo ""                           >> "${tmpchk}"
 
 
 if [ ${write2ref} = 1 ]; then
@@ -164,28 +172,42 @@ fi
 # and compare that chk file with the reference file:
 retcode=65536
 if [ ! -z "${diffscript}" ]; then
-  "${diffscript}" "${expected}" "${tmpchk}" "${diffout}"
+  "${diffscript}" "${expected}" "${tmpchk}" "${filtout}"
   retcode=$?
+  # because the diffscript will certainly postprocess the data, we should
+  # produce a 'true' (original) diff output for display when we FAIL:
+  # (yet the result OK/FAIL is determined by the diffscript above!)
+  @DIFF@ -u @DIFF_FLAGS@ "${expected}" "${tmpchk}" > "${diffout}"
 else
   @DIFF@ -u @DIFF_FLAGS@ "${expected}" "${tmpchk}" > "${diffout}"
   retcode=$?
 fi
 
-report_msg "retcode = ${retcode}"
+debug_msg "CRM114_TEST_GEN = ${CRM114_TEST_GEN}"
+debug_msg "srcdir = ${srcdir}"
+debug_msg "home = ${HOME}"
+debug_msg "CRM114_CHECK_OVERRIDE = ${CRM114_CHECK_OVERRIDE}"
+debug_msg "exit ${CRM114_CHECK_OVERRIDE} vs. retcode = ${retcode}"
+
 if [ ${retcode} == 0 ]; then
-  echo "OK"
+  echo -n "OK"
 else
   echo "---- diff report: ----"
   cat "${diffout}"
   echo "----------------------"
-  echo "FAIL"
+  echo -n "FAIL"
 fi
-
-echo "CRM114_TEST_GEN = ${CRM114_TEST_GEN}"
-echo "srcdir = ${srcdir}"
-echo "home = ${HOME}"
-
-exit ${retcode}
+if [ ! -z "${CRM114_CHECK_OVERRIDE}" ]; then
+  if [ ${CRM114_CHECK_OVERRIDE} == 0 ]; then
+    echo "(OVERRIDEN:OK)"
+  else
+    echo "(OVERRIDEN:FAIL)"
+  fi
+  exit ${CRM114_CHECK_OVERRIDE}
+else
+  echo ""
+  exit ${retcode}
+fi
 
 
 

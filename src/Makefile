@@ -255,7 +255,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-ISODATE = 2008-04-29
+ISODATE = 2008-05-01
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -ltre -lm  -lreadline
@@ -277,7 +277,7 @@ PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 2231
+REVISION = 2241
 SED = /usr/bin/sed
 SET_MAKE = 
 SEVEN_ZIP = /usr/bin/7z
@@ -286,7 +286,7 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-2231
+TAR_FILENAME_POSTFIX = Ger-2241
 TRE_CONFIG = no
 UNCRUSTIFY = /usr/local/bin/uncrustify
 VERSION = 20080326-BlameSentansoken
@@ -363,7 +363,7 @@ UNCRUSTIFY_BIN = /usr/local/bin/uncrustify
 DIFF_BIN = /usr/bin/diff
 HTMLTIDY_BIN = /usr/bin/tidy
 TAR_CMDLINE = ${TAR_BIN} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20080326-BlameSentansoken-Ger-2231
+ARCHIVE_BASE_NAME = crm114-20080326-BlameSentansoken-Ger-2241
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #
@@ -590,7 +590,7 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(CRMFILES) \
 	$(TEXTFILES) 
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c statustest.filter.sh
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c \

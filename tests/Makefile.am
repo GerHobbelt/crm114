@@ -6,6 +6,7 @@
 ## under the terms of the GNU GPL.  See the file COPYING.
 
 ## Copyright (C) 2003, 2004 Joost van Baal
+## Copyright (C) 2007-2008 Ger Hobbelt
 
 
 DISTCLEANFILES =
@@ -63,7 +64,7 @@ E = $(SILENT) $(ECHO)
 
 
 
-MEGATESTFILES = \
+MEGATEST_INPUT_FILES = \
 	mt_ng_Bit_Entropy_2.input \
 	mt_ng_OSB_Markov_Chisquared_Unique_2.input \
 	mt_ng_OSB_Markovian_1.input \
@@ -125,6 +126,156 @@ MEGATESTFILES = \
 	INTRO_mt_ng_reference_2.input \
 	QUICKREF_mt_ng_reference_1.input
 
+TEST_REFERENCE_FILES:                             \
+        ref/String_Hyperspace_test1.step4.refoutput \
+        ref/OSBF_Local_Confidence_test1.step2.refoutput \
+        ref/Neural_Network_test1.step2.refoutput \
+        ref/Bit_Entropy_Toroid_test1.step4.refoutput \
+        ref/Support_Vector_Machine_test1.step4.refoutput \
+        ref/Support_Vector_Machine_Unigram_test1.step1.refoutput \
+        ref/OSB_Markovian_test1.step3.refoutput \
+        ref/Unigram_Winnow_test1.step4.refoutput \
+        ref/String_Unigram_Hyperspace_test1.step1.refoutput \
+        ref/Support_Vector_Machine_test1.step1.refoutput \
+        ref/OSB_Markovian_test1.step1.refoutput \
+        ref/syscall_exit_test.refoutput \
+        ref/Unigram_Winnow_test1.step3.refoutput \
+        ref/OSB_Winnow_test1.step1.refoutput \
+        ref/windowtest_fromvar.crm.refoutput \
+        ref/Neural_Network_test1.step4.refoutput \
+        ref/OSB_Markov_Chisquared_Unique_test1.step2.refoutput \
+        ref/backwardstest.crm.2.refoutput \
+        ref/rewritetest.crm.refoutput \
+        ref/Unigram_Winnow_test1.step1.refoutput \
+        ref/quine.crm.refoutput \
+        ref/Vector_3_word_bag_Hyperspace_test1.step1.refoutput \
+        ref/OSB_Winnow_test1.step9.refoutput \
+        ref/match_isolate_test.crm.refoutput \
+        ref/paolo_ov2.crm.refoutput \
+        ref/mathrpntest.crm.refoutput \
+        ref/Fast_Substring_Compression_Match_test1.step4.refoutput \
+        ref/Vector_3_word_bag_Hyperspace_test1.step2.refoutput \
+        ref/OSB_Markov_Unique_test1.step3.refoutput \
+        ref/String_Kernel_SVM_Unique_test1.step5.refoutput \
+        ref/paolo_ov3.crm.refoutput \
+        ref/bracktest.crm.refoutput \
+        ref/OSB_Winnow_test1.step6.refoutput \
+        ref/windowtest.crm.refoutput \
+        ref/Unigram_Hyperspace_test1.step2.refoutput \
+        ref/paolo_ov4.crm.refoutput \
+        ref/Bit_Entropy_Toroid_test1.step1.refoutput \
+        ref/escapetest.crm.refoutput \
+        ref/Support_Vector_Machine_test1.step5.refoutput \
+        ref/OSB_Winnow_test1.step5.refoutput \
+        ref/Unigram_Bayesian_test1.step2.refoutput \
+        ref/String_Hyperspace_test1.step3.refoutput \
+        ref/Unigram_Bayesian_test1.step4.refoutput \
+        ref/defaulttest.crm.refoutput \
+        ref/syscall123_test.refoutput \
+        ref/inserttest_a.crm.refoutput \
+        ref/OSBF_Local_Confidence_test1.step3.refoutput \
+        ref/SBPH_Markovian_test1.step2.refoutput \
+        ref/OSBF_Local_Confidence_test1.step1.refoutput \
+        ref/OSB_Hyperspace_test1.step2.refoutput \
+        ref/Unigram_Bayesian_test1.step1.refoutput \
+        ref/Clump_Pmulc_test1.step1.refoutput \
+        ref/OSB_Markovian_test1.step4.refoutput \
+        ref/Clump_Pmulc_test1.step2.refoutput \
+        ref/matchtest.crm.refoutput \
+        ref/Unigram_Hyperspace_test1.step3.refoutput \
+        ref/Clump_Pmulc_test1.step3.refoutput \
+        ref/Bit_Entropy_test1.step3.refoutput \
+        ref/skudtest.crm.refoutput \
+        ref/beeptest.crm.refoutput \
+        ref/SBPH_Markovian_test1.step1.refoutput \
+        ref/statustest.crm.refoutput \
+        ref/OSB_3_letter_Hyperspace_test1.step2.refoutput \
+        ref/overalterisolatedtest.crm.refoutput \
+        ref/match_isolate_reclaim.crm.refoutput \
+        ref/Unigram_Winnow_test1.step2.refoutput \
+        ref/OSB_Markov_Chisquared_Unique_test1.step3.refoutput \
+        ref/Bit_Entropy_test1.step4.refoutput \
+        ref/SBPH_Markovian_test1.step3.refoutput \
+        ref/call_return_test.crm.refoutput \
+        ref/Fast_Substring_Compression_Match_test1.step2.refoutput \
+        ref/unionintersecttest.crm.refoutput \
+        ref/Neural_Network_test1.step6.refoutput \
+        ref/approxtest.crm.refoutput \
+        ref/randomiotest.crm.refoutput \
+        ref/String_Unigram_Hyperspace_test1.step3.refoutput \
+        ref/Clump_Pmulc_test1.step5.refoutput \
+        ref/OSB_Hyperspace_test1.step3.refoutput \
+        ref/String_Unigram_Hyperspace_test1.step2.refoutput \
+        ref/paolo_overvars.crm.refoutput \
+        ref/String_Kernel_SVM_test1.step2.refoutput \
+        ref/Unigram_Bayesian_test1.step3.refoutput \
+        ref/OSBF_Local_Confidence_test1.step4.refoutput \
+        ref/OSB_Markov_Unique_test1.step4.refoutput \
+        ref/OSB_Markov_Chisquared_Unique_test1.step1.refoutput \
+        ref/eval_infiniteloop.crm.refoutput \
+        ref/Fast_Substring_Compression_Match_test1.step3.refoutput \
+        ref/Bit_Entropy_test1.step2.refoutput \
+        ref/String_Kernel_SVM_Unique_test1.step3.refoutput \
+        ref/zz_translate_test.crm.refoutput \
+        ref/String_Hyperspace_test1.step1.refoutput \
+        ref/OSB_Markov_Unique_test1.step2.refoutput \
+        ref/Clump_Pmulc_test1.step4.refoutput \
+        ref/Vector_3_word_bag_Hyperspace_test1.step3.refoutput \
+        ref/Unigram_Hyperspace_test1.step4.refoutput \
+        ref/String_Kernel_SVM_test1.step1.refoutput \
+        ref/fataltraptest.crm.refoutput \
+        ref/Neural_Network_test1.step1.refoutput \
+        ref/paolo_ov5.crm.refoutput \
+        ref/String_Unigram_Hyperspace_test1.step4.refoutput \
+        ref/String_Kernel_SVM_Unique_test1.step2.refoutput \
+        ref/OSB_3_letter_Hyperspace_test1.step1.refoutput \
+        ref/String_Kernel_SVM_test1.step5.refoutput \
+        ref/Support_Vector_Machine_test1.step2.refoutput \
+        ref/SBPH_Markovian_test1.step4.refoutput \
+        ref/crm114_version.refoutput \
+        ref/syscall_jibber_test.refoutput \
+        ref/Unigram_Hyperspace_test1.step1.refoutput \
+        ref/OSB_Winnow_test1.step2.refoutput \
+        ref/Support_Vector_Machine_Unigram_test1.step2.refoutput \
+        ref/OSB_Winnow_test1.step10.refoutput \
+        ref/Unigram_Winnow_test1.step6.refoutput \
+        ref/translate_tr.crm.refoutput \
+        ref/Neural_Network_test1.step5.refoutput \
+        ref/Unigram_Winnow_test1.step5.refoutput \
+        ref/alternating_example_neural.crm.refoutput \
+        ref/Support_Vector_Machine_Unigram_test1.step5.refoutput \
+        ref/Bytewise_Correlation_test1.step1.refoutput \
+        ref/Bit_Entropy_Toroid_test1.step3.refoutput \
+        ref/OSB_Markov_Unique_test1.step1.refoutput \
+        ref/Bit_Entropy_Toroid_test1.step2.refoutput \
+        ref/Support_Vector_Machine_test1.step3.refoutput \
+        ref/String_Kernel_SVM_test1.step3.refoutput \
+        ref/Support_Vector_Machine_Unigram_test1.step4.refoutput \
+        ref/OSB_Winnow_test1.step7.refoutput \
+        ref/backwardstest.crm.refoutput \
+        ref/OSB_3_letter_Hyperspace_test1.step4.refoutput \
+        ref/Bytewise_Correlation_test1.step2.refoutput \
+        ref/indirecttest.crm.refoutput \
+        ref/Neural_Network_test1.step3.refoutput \
+        ref/defaulttest.crm.2.refoutput \
+        ref/String_Kernel_SVM_Unique_test1.step1.refoutput \
+        ref/Vector_3_word_bag_Hyperspace_test1.step4.refoutput \
+        ref/OSB_Winnow_test1.step8.refoutput \
+        ref/Bit_Entropy_test1.step1.refoutput \
+        ref/String_Kernel_SVM_Unique_test1.step4.refoutput \
+        ref/mathalgtest.crm.refoutput \
+        ref/Fast_Substring_Compression_Match_test1.step1.refoutput \
+        ref/String_Hyperspace_test1.step2.refoutput \
+        ref/String_Kernel_SVM_test1.step4.refoutput \
+        ref/OSB_Winnow_test1.step4.refoutput \
+        ref/OSB_Winnow_test1.step3.refoutput \
+        ref/OSB_Markov_Chisquared_Unique_test1.step4.refoutput \
+        ref/Support_Vector_Machine_Unigram_test1.step3.refoutput \
+        ref/OSB_Hyperspace_test1.step4.refoutput \
+        ref/OSB_Hyperspace_test1.step1.refoutput \
+        ref/OSB_3_letter_Hyperspace_test1.step3.refoutput \
+        ref/OSB_Markovian_test1.step2.refoutput
+
 
 test_SCRIPTS = \
 	matchtest.crm windowtest.crm overalterisolatedtest.crm exectest.crm \
@@ -160,17 +311,41 @@ test_UBERSCRIPTS = megatest.sh \
     	megatest.bat \
     	megatest_ng.sh \
 	testscript.sh \
-	statustest.filter.sh
+	statustest.filter.sh \
+	crm114_error_report.filter.sh \
+	crm114_versiontest.filter.sh \
+	crm114_classify.filter.sh
+
 
 
 
 EXTRA_DIST = megatest_knowngood.log \
 	test_rewrites.mfp \
-	$(test_SCRIPTS) $(test_UBERSCRIPTS) $(MEGATESTFILES) \
+	$(test_SCRIPTS) $(test_UBERSCRIPTS) \
+	$(MEGATEST_INPUT_FILES) $(TEST_REFERENCE_FILES) \
 	megatest.sh.in \
     	megatest_ng.sh.in \
 	testscript.sh.in \
-	statustest.filter.sh.in
+	statustest.filter.sh.in \
+	crm114_error_report.filter.sh.in \
+	crm114_versiontest.filter.sh.in \
+	crm114_classify.filter.sh.in \
+	crm114_classify.filter.awk \
+	whitelist.mfp.example
+	
+
+
+# WARNING: the 'ref' files should NOT be a dependency in this set, as that would prevent us
+#          from being able to auto-generate the reference files when those are absent.
+TEST_PREREQUISITES = 	\
+	$(MEGATEST_INPUT_FILES) \
+	ref_dir \
+	crm114_binaries \
+	testscript.sh \
+	crm114_error_report.filter.sh \
+	crm114_versiontest.filter.sh \
+	crm114_classify.filter.sh \
+	crm114_classify.filter.awk
 
 
 
@@ -178,10 +353,19 @@ EXTRA_DIST = megatest_knowngood.log \
 # TESTS = test_basics test_other test_megatest_ng test_mailfilter test_mailreaver
 TESTS = 
 
-# check_PROGRAMS = test_basics test_other test_mailfilter test_mailreaver
 check_PROGRAMS = 
 
+
+
 test: test_basics test_other test_classifiers test_mailfilter test_mailreaver
+
+
+crm114_binaries: 
+	$(E) "Creating diff archives"; 
+	(cd $(top_builddir)/src && $(MAKE) $(AM_MAKEFLAGS) all);
+	
+ref_dir:
+	$(MKDIR_P) ref
 
 
 # original BillY test script:
@@ -283,26 +467,55 @@ test_classifiers:			\
 
 
 
-test_timing_announcement:
+test_timing_seconds_announcement:
 	$(E) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
-	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
-	$(E) "   30 minutes to run on a 3 GHz AMD/XP machine.  Please"
+	$(E) "   to exercise much of CRM114 under TRE.  This takes several"
+	$(E) "   seconds to run on a 3 GHz AMD/XP machine.  Please"
 	$(E) "   be patient; you (hopefully) won't see anything till the"
 	$(E) "   full set of tests complete.  If you didn't use TRE, all"
 	$(E) "   bets are off."
 	$(E) ""
 	$(E) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	-sleep 10
+
+test_timing_minutes_announcement:
+	$(E) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	$(E) ""
+	$(E) "   This runs a moderately interesting set of base tests"
+	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
+	$(E) "   *** 15 MINUTES *** to run on a 3 GHz AMD/XP machine.  Please"
+	$(E) "   be patient; you (hopefully) won't see anything till the"
+	$(E) "   full set of tests complete.  If you didn't use TRE, all"
+	$(E) "   bets are off."
+	$(E) ""
+	$(E) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+#	-sleep 10
 
 
-check-local:                      \
+# check everything except neural: too slow :-(
+check-local:                    \
 		initial_tests1	\
-		markovian_classifier_tests
-	$(E) "************************************"
-	$(E) "* check-local CALLED"
-	$(E) "************************************"
+		initial_tests2  \
+		further_tests  \
+		markovian_classifier_tests \
+		OSBF_classifier_tests \
+		OSB_classifier_tests \
+		Hyperspace_classifier_tests \
+		Bit_Entropy_classifier_tests \
+		FSCM_classifier_tests \
+		SVM_SKS_classifier_tests \
+		Correlator_classifier_tests \
+		CLUMP_classifier_tests
+	$(E) "*******************************************"
+	$(E) "*               TESTING DONE!"
+	$(E) "*  All 'megatest'-derived test cases have"
+	$(E) "*  been checked: OK (some may have been"
+	$(E) "*  'OVERRIDDEN', please check the output"
+	$(E) "*  when you worry about those..."
+	$(E) "*"
+	$(E) "*******************************************"
 
 
 
@@ -327,6 +540,7 @@ script:                      \
 
 
 initial_tests1:              \
+		version_test \
 		bracktest_test \
 		escapetest_test \
 		fataltraptest_test \
@@ -357,11 +571,11 @@ initial_tests1:              \
 
 # slower tests:
 initial_tests2:              \
-		match_isolate_test_test \
+		match_isolate_test \
 		match_isolate_reclaim_test \
-		call_return_test_test \
+		call_return_test \
 		translate_tr_test \
-		zz_translate_test_test \
+		zz_translate_test \
 		quine_test
 
 further_tests:                            \
@@ -444,292 +658,408 @@ CLUMP_classifier_tests:                        \
 
 
 
-bracktest_test: testscript.sh bracktest.crm
+version_test: $(TEST_PREREQUISITES) crm114_versiontest.filter.sh
+	$(SILENT)\
+	./testscript.sh '-{}' "" "ref/crm114_version.refoutput" "./crm114_versiontest.filter.sh" -v
+
+bracktest_test: $(TEST_PREREQUISITES) bracktest.crm
+	$(SILENT)\
 	./testscript.sh bracktest.crm "" -
 
-escapetest_test: testscript.sh escapetest.crm
+escapetest_test: $(TEST_PREREQUISITES) escapetest.crm
+	$(SILENT)\
 	./testscript.sh escapetest.crm "" -
 
-fataltraptest_test: testscript.sh fataltraptest.crm
-	./testscript.sh fataltraptest.crm "" -
+fataltraptest_test: $(TEST_PREREQUISITES) fataltraptest.crm
+	$(SILENT)\
+	./testscript.sh fataltraptest.crm "" - "./crm114_error_report.filter.sh"
 
-inserttest_a_test: testscript.sh inserttest_a.crm
+inserttest_a_test: $(TEST_PREREQUISITES) inserttest_a.crm
+	$(SILENT)\
 	./testscript.sh inserttest_a.crm "" -
 
-matchtest_test: testscript.sh matchtest.crm
-	./testscript.sh matchtest.crm     matchtest_mt_ng_1.input -
+matchtest_test: $(TEST_PREREQUISITES) matchtest.crm
+	$(SILENT)\
+	./testscript.sh matchtest.crm matchtest_mt_ng_1.input - "./crm114_error_report.filter.sh"
 
-backwardstest_test1: testscript.sh backwardstest.crm
+backwardstest_test1: $(TEST_PREREQUISITES) backwardstest.crm
+	$(SILENT)\
 	./testscript.sh backwardstest.crm backwardstest_mt_ng_1.input -
 
-backwardstest_test2: testscript.sh backwardstest.crm
+backwardstest_test2: $(TEST_PREREQUISITES) backwardstest.crm
+	$(SILENT)\
 	./testscript.sh backwardstest.crm backwardstest_mt_ng_2.input "ref/backwardstest.crm.2.refoutput"
 
-overalterisolatedtest_test: testscript.sh overalterisolatedtest.crm
+overalterisolatedtest_test: $(TEST_PREREQUISITES) overalterisolatedtest.crm
+	$(SILENT)\
 	./testscript.sh overalterisolatedtest.crm "" -
 
-rewritetest_test: testscript.sh rewritetest.crm
+rewritetest_test: $(TEST_PREREQUISITES) rewritetest.crm
+	$(SILENT)\
 	./testscript.sh rewritetest.crm "" -
 
-skudtest_test: testscript.sh skudtest.crm
+skudtest_test: $(TEST_PREREQUISITES) skudtest.crm whitelist.mfp.example
+	$(SILENT)\
 	./testscript.sh skudtest.crm "" -
 
-statustest_test: testscript.sh statustest.crm statustest.filter.sh
+statustest_test: $(TEST_PREREQUISITES) statustest.crm statustest.filter.sh
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh statustest.crm "" - "./statustest.filter.sh"
 
-unionintersecttest_test: testscript.sh unionintersecttest.crm
+unionintersecttest_test: $(TEST_PREREQUISITES) unionintersecttest.crm
+	$(SILENT)\
 	./testscript.sh unionintersecttest.crm "" -
 
-beeptest_test: testscript.sh beeptest.crm
+beeptest_test: $(TEST_PREREQUISITES) beeptest.crm
+	$(SILENT)\
 	./testscript.sh beeptest.crm "" -
 
-defaulttest_test1: testscript.sh defaulttest.crm
+defaulttest_test1: $(TEST_PREREQUISITES) defaulttest.crm
+	$(SILENT)\
 	./testscript.sh defaulttest.crm "" -
 
-defaulttest_test2: testscript.sh defaulttest.crm
-	./testscript.sh defaulttest.crm  "" "ref/defaulttest.crm.2.refoutput" "" --blah="command override"
+defaulttest_test2: $(TEST_PREREQUISITES) defaulttest.crm
+	$(SILENT)\
+	./testscript.sh defaulttest.crm  "" "ref/defaulttest.crm.2.refoutput" "" "--blah=command override"
 
-windowtest_test: testscript.sh windowtest.crm
+windowtest_test: $(TEST_PREREQUISITES) windowtest.crm
+	$(SILENT)\
 	./testscript.sh windowtest.crm windowtest_mt_ng_1.input -
 
-windowtest_fromvar_test: testscript.sh windowtest_fromvar.crm
+windowtest_fromvar_test: $(TEST_PREREQUISITES) windowtest_fromvar.crm
+	$(SILENT)\
 	./testscript.sh windowtest_fromvar.crm windowtest_fromvar_mt_ng_1.input -
 
-approxtest_test: testscript.sh approxtest.crm
+approxtest_test: $(TEST_PREREQUISITES) approxtest.crm
+	$(SILENT)\
 	./testscript.sh approxtest.crm approxtest_mt_ng_1.input -
 
-mathalgtest_test: testscript.sh mathalgtest.crm
+mathalgtest_test: $(TEST_PREREQUISITES) mathalgtest.crm
+	$(SILENT)\
 	./testscript.sh mathalgtest.crm  "" -
 
-mathrpntest_test: testscript.sh mathrpntest.crm
+mathrpntest_test: $(TEST_PREREQUISITES) mathrpntest.crm
+	$(SILENT)\
 	./testscript.sh mathrpntest.crm  "" - "" -q 1
 
-eval_infiniteloop_test: testscript.sh eval_infiniteloop.crm
-	./testscript.sh eval_infiniteloop.crm "" -
+eval_infiniteloop_test: $(TEST_PREREQUISITES) eval_infiniteloop.crm
+	$(SILENT)\
+	./testscript.sh eval_infiniteloop.crm "" - "./crm114_error_report.filter.sh"
 
-randomiotest_test: testscript.sh randomiotest.crm
+randomiotest_test: $(TEST_PREREQUISITES) randomiotest.crm
+	$(SILENT)\
 	./testscript.sh randomiotest.crm "" -
 
-paolo_overvars_test: testscript.sh paolo_overvars.crm
+paolo_overvars_test: $(TEST_PREREQUISITES) paolo_overvars.crm
+	$(SILENT)\
 	./testscript.sh paolo_overvars.crm "" -
 
-paolo_ov2_test: testscript.sh paolo_ov2.crm
+paolo_ov2_test: $(TEST_PREREQUISITES) paolo_ov2.crm
+	$(SILENT)\
 	./testscript.sh paolo_ov2.crm "" -
 
-paolo_ov3_test: testscript.sh paolo_ov3.crm
+paolo_ov3_test: $(TEST_PREREQUISITES) paolo_ov3.crm
+	$(SILENT)\
 	./testscript.sh paolo_ov3.crm "" -
 
-paolo_ov4_test: testscript.sh paolo_ov4.crm
+paolo_ov4_test: $(TEST_PREREQUISITES) paolo_ov4.crm
+	$(SILENT)\
 	./testscript.sh paolo_ov4.crm "" -
 
-paolo_ov5_test: testscript.sh paolo_ov5.crm
+paolo_ov5_test: $(TEST_PREREQUISITES) paolo_ov5.crm
+	$(SILENT)\
 	./testscript.sh paolo_ov5.crm "" -
 
-match_isolate_test_test: testscript.sh match_isolate_test.crm
+match_isolate_test: $(TEST_PREREQUISITES) match_isolate_test.crm test_timing_seconds_announcement
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh match_isolate_test.crm "" - "" -e
 
-match_isolate_reclaim_test: testscript.sh match_isolate_reclaim.crm
+match_isolate_reclaim_test: $(TEST_PREREQUISITES) match_isolate_reclaim.crm
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh match_isolate_reclaim.crm "" - "" -e
 
-call_return_test_test: testscript.sh call_return_test.crm
+call_return_test: $(TEST_PREREQUISITES) call_return_test.crm
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh call_return_test.crm "" -
 
-translate_tr_test: testscript.sh translate_tr.crm
+translate_tr_test: $(TEST_PREREQUISITES) translate_tr.crm
+	$(SILENT)\
 	./testscript.sh translate_tr.crm "" -
 
-zz_translate_test_test: testscript.sh zz_translate_test.crm
+zz_translate_test: $(TEST_PREREQUISITES) zz_translate_test.crm
+	$(SILENT)\
 	./testscript.sh zz_translate_test.crm "" -
 
-quine_test: testscript.sh quine.crm
+quine_test: $(TEST_PREREQUISITES) quine.crm
+	$(SILENT)\
 	./testscript.sh quine.crm "" -
 
 
 syscall123_test: testscript.sh
+	$(SILENT)\
 	./testscript.sh '-{window; isolate (:s:); syscall () (:s:) /echo one two three/; output /:*:s:/}' "" "ref/syscall123_test.refoutput"
 
 # ***** checking return and exit codes
 
 syscall_exit_test: testscript.sh
+	$(SILENT)\
 	./testscript.sh '-{window; isolate (:s:); syscall () () (:s:) /exit 123/; output / Status: :*:s: \n/}' "" "ref/syscall_exit_test.refoutput"
 
 # ***** check that failed syscalls will code right
 syscall_jibber_test: testscript.sh
+	$(SILENT)\
 	./testscript.sh '-{window; isolate (:s:); syscall () () (:s:) /jibberjabber 2>&1 /; output / Status: :*:s: \n/}' "" "ref/syscall_jibber_test.refoutput"
 
 indirecttest_test: testscript.sh
+	$(SILENT)\
 	./testscript.sh indirecttest.crm "" -
 
 # ****  Default (SBPH Markovian) classifier ************************************************************************************************************************************************************************************************
-SBPH_Markovian_test1: testscript.sh test_timing_announcement
+SBPH_Markovian_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Default (SBPH Markovian) classifier "
 	$(E) "*******************************************"
 	-rm -f randtst.txt
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/SBPH_Markovian_test1.step1.refoutput"
+
+	$(SILENT)\
 	./testscript.sh '-{learn (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/SBPH_Markovian_test1.step2.refoutput"
-	./testscript.sh '-{ isolate (:s:) {classify ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_SBPH_Markovian_1.input "ref/SBPH_Markovian_test1.step3.refoutput"
-	./testscript.sh '-{ isolate (:s:) {classify ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_SBPH_Markovian_2.input "ref/SBPH_Markovian_test1.step4.refoutput"
+	$(SILENT)\
+	./testscript.sh '-{ isolate (:s:) {classify ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_SBPH_Markovian_1.input "ref/SBPH_Markovian_test1.step3.refoutput" "./crm114_classify.filter.sh"
+	$(SILENT)\
+	./testscript.sh '-{ isolate (:s:) {classify ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_SBPH_Markovian_2.input "ref/SBPH_Markovian_test1.step4.refoutput" "./crm114_classify.filter.sh"
 
 # **** OSB Markovian classifier ************************************************************************************************************************************************************************************************
-OSB_Markovian_test1: testscript.sh test_timing_announcement
+OSB_Markovian_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* OSB Markovian classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn <osb> (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/OSB_Markovian_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <osb> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/OSB_Markovian_test1.step2.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <osb> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_OSB_Markovian_1.input "ref/OSB_Markovian_test1.step3.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <osb> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_OSB_Markovian_2.input "ref/OSB_Markovian_test1.step4.refoutput"
 
 
 # **** OSB Markov Unique classifier ************************************************************************************************************************************************************************************************
-OSB_Markov_Unique_test1: testscript.sh test_timing_announcement
+OSB_Markov_Unique_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* OSB Markov Unique classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn <osb unique > (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/OSB_Markov_Unique_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <osb unique > (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/OSB_Markov_Unique_test1.step2.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <osb unique> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_OSB_Markov_Unique_1.input "ref/OSB_Markov_Unique_test1.step3.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <osb unique> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_OSB_Markov_Unique_2.input "ref/OSB_Markov_Unique_test1.step4.refoutput"
 
 # **** OSB Markov Chisquared Unique classifier ************************************************************************************************************************************************************************************************
-OSB_Markov_Chisquared_Unique_test1: testscript.sh test_timing_announcement
+OSB_Markov_Chisquared_Unique_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* OSB Markov Chisquared Unique classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn <osb unique chi2> (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/OSB_Markov_Chisquared_Unique_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <osb unique chi2> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/OSB_Markov_Chisquared_Unique_test1.step2.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <osb unique chi2 > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_OSB_Markov_Chisquared_Unique_1.input "ref/OSB_Markov_Chisquared_Unique_test1.step3.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <osb unique chi2> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_OSB_Markov_Chisquared_Unique_2.input "ref/OSB_Markov_Chisquared_Unique_test1.step4.refoutput"
 
 # **** OSBF Local Confidence (Fidelis) classifier ************************************************************************************************************************************************************************************************
-OSBF_Local_Confidence_test1: testscript.sh test_timing_announcement
+OSBF_Local_Confidence_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* OSBF Local Confidence (Fidelis) classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn < osbf > (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/OSBF_Local_Confidence_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn < osbf > (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/OSBF_Local_Confidence_test1.step2.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <osbf> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_OSBF_Local_Confidence_Fidelis_1.input "ref/OSBF_Local_Confidence_test1.step3.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <osbf> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_OSBF_Local_Confidence_Fidelis_2.input "ref/OSBF_Local_Confidence_test1.step4.refoutput"
 
 # **** OSB Winnow classifier ************************************************************************************************************************************************************************************************
-OSB_Winnow_test1: testscript.sh test_timing_announcement
+OSB_Winnow_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* OSB Winnow classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow> (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/OSB_Winnow_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow refute> (q_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/OSB_Winnow_test1.step2.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/OSB_Winnow_test1.step3.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow refute> (i_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/OSB_Winnow_test1.step4.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <winnow> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }       '  mt_ng_OSB_Winnow_1.input "ref/OSB_Winnow_test1.step5.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <winnow> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}      '  mt_ng_OSB_Winnow_2.input "ref/OSB_Winnow_test1.step6.refoutput"
 	$(E) ""
 	$(E) "Now verify that winnow learns affect only the named file (i_test.css)"
 	$(E) ""
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow> (i_test.css) /[[:graph:]]+/}'  COLOPHON_mt_ng_reference_3.input "ref/OSB_Winnow_test1.step7.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <winnow> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}      '  mt_ng_OSB_Winnow_2.input "ref/OSB_Winnow_test1.step8.refoutput"
 	$(E) ""
 	$(E) "and now refute-learn into q_test.css"
 	$(E) ""
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow refute > (q_test.css) /[[:graph:]]+/}'  FAQ_mt_ng_reference_4.input "ref/OSB_Winnow_test1.step9.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <winnow> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}      '  mt_ng_OSB_Winnow_2.input "ref/OSB_Winnow_test1.step10.refoutput"
 
 # **** Unigram Bayesian classifier ************************************************************************************************************************************************************************************************
-Unigram_Bayesian_test1: testscript.sh test_timing_announcement
+Unigram_Bayesian_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Unigram Bayesian classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn <unigram> (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/Unigram_Bayesian_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <unigram> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/Unigram_Bayesian_test1.step2.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Unigram_Bayesian_1.input "ref/Unigram_Bayesian_test1.step3.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <unigram> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Unigram_Bayesian_2.input "ref/Unigram_Bayesian_test1.step4.refoutput"
 
 # **** unigram Winnow classifier ************************************************************************************************************************************************************************************************
-Unigram_Winnow_test1: testscript.sh test_timing_announcement
+Unigram_Winnow_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* unigram Winnow classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow unigram > (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/Unigram_Winnow_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow unigram refute> (q_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/Unigram_Winnow_test1.step2.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow unigram> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/Unigram_Winnow_test1.step3.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <winnow unigram refute> (i_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/Unigram_Winnow_test1.step4.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <winnow unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }       '  mt_ng_unigram_Winnow_1.input "ref/Unigram_Winnow_test1.step5.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify <winnow unigram> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}      '  mt_ng_unigram_Winnow_2.input "ref/Unigram_Winnow_test1.step6.refoutput"
 
 # **** OSB Hyperspace classifier ************************************************************************************************************************************************************************************************
-OSB_Hyperspace_test1: testscript.sh test_timing_announcement
+OSB_Hyperspace_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* OSB Hyperspace classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn <hyperspace unique> (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/OSB_Hyperspace_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <hyperspace unique> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/OSB_Hyperspace_test1.step2.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_OSB_Hyperspace_1.input "ref/OSB_Hyperspace_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_OSB_Hyperspace_2.input "ref/OSB_Hyperspace_test1.step4.refoutput"
 
 # **** OSB three-letter Hyperspace classifier ************************************************************************************************************************************************************************************************
-OSB_3_letter_Hyperspace_test1: testscript.sh test_timing_announcement
+OSB_3_letter_Hyperspace_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* OSB three-letter Hyperspace classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn <hyperspace unique> (q_test.css) /.../}'  QUICKREF_mt_ng_reference_1.input "ref/OSB_3_letter_Hyperspace_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn <hyperspace unique> (i_test.css) /.../}'  INTRO_mt_ng_reference_2.input "ref/OSB_3_letter_Hyperspace_test1.step2.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:) /.../ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_OSB_3_letter_Hyperspace_1.input "ref/OSB_3_letter_Hyperspace_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:) /.../ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_OSB_3_letter_Hyperspace_2.input "ref/OSB_3_letter_Hyperspace_test1.step4.refoutput"
 
 
 # **** Unigram Hyperspace classifier ************************************************************************************************************************************************************************************************
-Unigram_Hyperspace_test1: testscript.sh test_timing_announcement
+Unigram_Hyperspace_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Unigram Hyperspace classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn < hyperspace unique unigram> (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/Unigram_Hyperspace_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn < hyperspace unique unigram> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/Unigram_Hyperspace_test1.step2.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify < hyperspace unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Unigram_Hyperspace_1.input "ref/Unigram_Hyperspace_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify <hyperspace unigram> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Unigram_Hyperspace_2.input "ref/Unigram_Hyperspace_test1.step4.refoutput"
 
 # **** String Hyperspace classifier ************************************************************************************************************************************************************************************************
-String_Hyperspace_test1: testscript.sh test_timing_announcement
+String_Hyperspace_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* String Hyperspace classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn < hyperspace string> (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/String_Hyperspace_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn < hyperspace string> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/String_Hyperspace_test1.step2.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify < hyperspace string> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_String_Hyperspace_1.input "ref/String_Hyperspace_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify <hyperspace string> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_String_Hyperspace_2.input "ref/String_Hyperspace_test1.step4.refoutput"
 
 # **** String Unigram Hyperspace classifier ************************************************************************************************************************************************************************************************
-String_Unigram_Hyperspace_test1: testscript.sh test_timing_announcement
+String_Unigram_Hyperspace_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* String Unigram Hyperspace classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn < hyperspace string unigram> (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/String_Unigram_Hyperspace_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn < hyperspace string unigram> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/String_Unigram_Hyperspace_test1.step2.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify < hyperspace string unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_String_Unigram_Hyperspace_1.input "ref/String_Unigram_Hyperspace_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify <hyperspace string unigram> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_String_Unigram_Hyperspace_2.input "ref/String_Unigram_Hyperspace_test1.step4.refoutput"
 
 # **** Vector 3-word-bag Hyperspace classifier ************************************************************************************************************************************************************************************************
@@ -737,177 +1067,249 @@ String_Unigram_Hyperspace_test1: testscript.sh test_timing_announcement
 #    then the number of iterations of the pipe, then pipelen * iters
 #    integer coefficients.  Missing coefficients are taken as zero,
 #    extra coefficients are disregarded.
-Vector_3_word_bag_Hyperspace_test1: testscript.sh test_timing_announcement
+Vector_3_word_bag_Hyperspace_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Vector 3-word-bag Hyperspace classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn < hyperspace > (q_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 1 / }'  QUICKREF_mt_ng_reference_1.input "ref/Vector_3_word_bag_Hyperspace_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn < hyperspace > (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 1/}'  INTRO_mt_ng_reference_2.input "ref/Vector_3_word_bag_Hyperspace_test1.step2.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify < hyperspace > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ /vector: 3 1 1 1 1 1  /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Vector_3_word_bag_Hyperspace_1.input "ref/Vector_3_word_bag_Hyperspace_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); {classify <hyperspace > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ /vector: 3 1 1 1 1 1 /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Vector_3_word_bag_Hyperspace_2.input "ref/Vector_3_word_bag_Hyperspace_test1.step4.refoutput"
 
 
 # **** Bit-Entropy classifier ************************************************************************************************************************************************************************************************
-Bit_Entropy_test1: testscript.sh test_timing_announcement
+Bit_Entropy_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Bit-Entropy classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn < entropy unique crosslink> (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/Bit_Entropy_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn < entropy unique crosslink> (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/Bit_Entropy_test1.step2.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify < entropy unique crosslink> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Bit_Entropy_1.input "ref/Bit_Entropy_test1.step3.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify <entropy unique crosslink> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Bit_Entropy_2.input "ref/Bit_Entropy_test1.step4.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v entropy=50 -v o_entropy=370 -v jumps=4 -v o_jumps=7 -v prob=2.0 -v pR=3.0"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); {classify < entropy unique crosslink> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Bit_Entropy_1.input "ref/Bit_Entropy_test1.step3.refoutput" "./crm114_classify.filter.sh"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v file_features=300 -v entropy=50 -v o_entropy=370 -v jumps=40 -v o_jumps=7 -v prob=5.0 -v pR=5.0"; export CRM114_CHECK_FILTER_ARGS; \
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
+	./testscript.sh '-{ isolate (:s:); {classify <entropy unique crosslink> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Bit_Entropy_2.input "ref/Bit_Entropy_test1.step4.refoutput" "./crm114_classify.filter.sh"
 
 # **** Bit-Entropy Toroid classifier ************************************************************************************************************************************************************************************************
-Bit_Entropy_Toroid_test1: testscript.sh test_timing_announcement
+Bit_Entropy_Toroid_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Bit-Entropy Toroid classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn < entropy > (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/Bit_Entropy_Toroid_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn < entropy > (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/Bit_Entropy_Toroid_test1.step2.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Bit_Entropy_Toroid_1.input "ref/Bit_Entropy_Toroid_test1.step3.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Bit_Entropy_Toroid_2.input "ref/Bit_Entropy_Toroid_test1.step4.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v entropy=100 -v jumps=10 -v prob=1.0 -v pR=4.0"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Bit_Entropy_Toroid_1.input "ref/Bit_Entropy_Toroid_test1.step3.refoutput" "./crm114_classify.filter.sh"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v entropy=25 -v jumps=2 -v prob=1.0e-5 -v pR=1.0"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Bit_Entropy_Toroid_2.input "ref/Bit_Entropy_Toroid_test1.step4.refoutput" "./crm114_classify.filter.sh"
 
 
 # **** Fast Substring Compression Match Classifier ************************************************************************************************************************************************************************************************
-Fast_Substring_Compression_Match_test1: testscript.sh test_timing_announcement
+Fast_Substring_Compression_Match_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Fast Substring Compression Match Classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn < fscm > (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/Fast_Substring_Compression_Match_test1.step1.refoutput" "" -s 200000 
+	$(SILENT)\
 	./testscript.sh '-{learn < fscm > (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/Fast_Substring_Compression_Match_test1.step2.refoutput" "" -s 200000 
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Fast_Substring_Compression_Match_1.input "ref/Fast_Substring_Compression_Match_test1.step3.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Fast_Substring_Compression_Match_2.input "ref/Fast_Substring_Compression_Match_test1.step4.refoutput"
 
 # **** Neural Network Classifier ************************************************************************************************************************************************************************************************
-Neural_Network_test1: testscript.sh test_timing_announcement
+Neural_Network_test1: $(TEST_PREREQUISITES) test_timing_minutes_announcement
 	$(E) "*******************************************"
 	$(E) "* Neural Network Classifier "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{learn < neural append > (q_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/Neural_Network_test1.step1.refoutput" "" -s 32768 
+	$(SILENT)\
 	./testscript.sh '-{learn < neural append > (i_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/Neural_Network_test1.step2.refoutput" "" -s 32768 
+	$(SILENT)\
 	./testscript.sh '-{learn < neural refute fromstart > (q_test.css) /[[:graph:]]+/}'  INTRO_mt_ng_reference_2.input "ref/Neural_Network_test1.step3.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{learn < neural refute fromstart > (i_test.css) /[[:graph:]]+/}'  QUICKREF_mt_ng_reference_1.input "ref/Neural_Network_test1.step4.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Neural_Network_1.input "ref/Neural_Network_test1.step5.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Neural_Network_2.input "ref/Neural_Network_test1.step6.refoutput"
 
 
 
 # **** Alternate Neural Network Classifier test script ************************************************************************************************************************************************************************************************
-Neural_Network_test2: testscript.sh test_timing_announcement
+Neural_Network_test2: $(TEST_PREREQUISITES) test_timing_minutes_announcement
 	$(E) "*******************************************"
 	$(E) "* Alternate Neural Network Classifier test script "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh alternating_example_neural.crm "" -
 
 # **** Support Vector Machine (SVM) unigram classifier ************************************************************************************************************************************************************************************************
-Support_Vector_Machine_Unigram_test1: testscript.sh test_timing_announcement
+Support_Vector_Machine_Unigram_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Support Vector Machine (SVM) unigram classifier "
 	$(E) "*******************************************"
 	-rm -f i_vs_q_test.css
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (i_test.css) /[[:graph:]]+/; liaf}'  INTRO_mt_ng_reference_2.input "ref/Support_Vector_Machine_Unigram_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (q_test.css) /[[:graph:]]+/; liaf }'  QUICKREF_mt_ng_reference_1.input "ref/Support_Vector_Machine_Unigram_test1.step2.refoutput"
 	$(E) ""
 	$(E) "  build the actual hyperplanes"
 	$(E) ""
-	./testscript.sh '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }' "ref/Support_Vector_Machine_Unigram_test1.step3.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify < svm unigram unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Support_Vector_Machine_SVM_unigram_1.input "ref/Support_Vector_Machine_Unigram_test1.step4.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify < svm unigram unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Support_Vector_Machine_SVM_unigram_2.input "ref/Support_Vector_Machine_Unigram_test1.step5.refoutput"
+	$(SILENT)\
+	./testscript.sh '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }' "" "ref/Support_Vector_Machine_Unigram_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v prob=0.1 -v pR=0.2"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); {classify < svm unigram unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Support_Vector_Machine_SVM_unigram_1.input "ref/Support_Vector_Machine_Unigram_test1.step4.refoutput" "./crm114_classify.filter.sh"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v prob=1e-4 -v pR=0.03 -vo_pR=22.74"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); {classify < svm unigram unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Support_Vector_Machine_SVM_unigram_2.input "ref/Support_Vector_Machine_Unigram_test1.step5.refoutput" "./crm114_classify.filter.sh"
 
 
 # **** Support Vector Machine (SVM) classifier ************************************************************************************************************************************************************************************************
-Support_Vector_Machine_test1: testscript.sh test_timing_announcement
+Support_Vector_Machine_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Support Vector Machine (SVM) classifier "
 	$(E) "*******************************************"
 	-rm -f i_vs_q_test.css
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (i_test.css) /[[:graph:]]+/; liaf}'  INTRO_mt_ng_reference_2.input "ref/Support_Vector_Machine_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (q_test.css) /[[:graph:]]+/; liaf }'  QUICKREF_mt_ng_reference_1.input "ref/Support_Vector_Machine_test1.step2.refoutput"
 	$(E) ""
 	$(E) "  build the actual hyperplanes"
 	$(E) ""
-	./testscript.sh '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < svm unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }' "ref/Support_Vector_Machine_test1.step3.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify < svm unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Support_Vector_Machine_SVM_1.input "ref/Support_Vector_Machine_test1.step4.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify < svm unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Support_Vector_Machine_SVM_2.input "ref/Support_Vector_Machine_test1.step5.refoutput"
+	$(SILENT)\
+	./testscript.sh '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < svm unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }' "" "ref/Support_Vector_Machine_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v prob=4e-3 -v o_prob=0.1275 -v pR=0.04 -v o_pR=8.36"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); {classify < svm unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_Support_Vector_Machine_SVM_1.input "ref/Support_Vector_Machine_test1.step4.refoutput" "./crm114_classify.filter.sh"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v prob=2e-4 -v pR=0.04 -v o_pR=14.775"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); {classify < svm unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Support_Vector_Machine_SVM_2.input "ref/Support_Vector_Machine_test1.step5.refoutput" "./crm114_classify.filter.sh"
 
 
 # **** String Kernel SVM (SKS) classifier ************************************************************************************************************************************************************************************************
-String_Kernel_SVM_test1: testscript.sh test_timing_announcement
+String_Kernel_SVM_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* String Kernel SVM (SKS) classifier "
 	$(E) "*******************************************"
 	-rm -f i_vs_q_test.css
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (i_test.css) /[[:graph:]]+/; liaf}'  INTRO_mt_ng_reference_2.input "ref/String_Kernel_SVM_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (q_test.css) /[[:graph:]]+/; liaf }'  QUICKREF_mt_ng_reference_1.input "ref/String_Kernel_SVM_test1.step2.refoutput"
 	$(E) ""
 	$(E) "  build the actual hyperplanes"
 	$(E) ""
-	./testscript.sh '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks > /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ }' "ref/String_Kernel_SVM_test1.step3.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify < sks > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_String_Kernel_SVM_SKS_1.input "ref/String_Kernel_SVM_test1.step4.refoutput"
-	./testscript.sh '-{ isolate (:s:); {classify < sks > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_String_Kernel_SVM_SKS_2.input "ref/String_Kernel_SVM_test1.step5.refoutput"
+	$(SILENT)\
+	./testscript.sh '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks > /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ }' "" "ref/String_Kernel_SVM_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v prob=0.0004 -v pR=0.03"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); {classify < sks > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_String_Kernel_SVM_SKS_1.input "ref/String_Kernel_SVM_test1.step4.refoutput" "./crm114_classify.filter.sh"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v prob=2e-4 -v pR=0.04"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); {classify < sks > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_String_Kernel_SVM_SKS_2.input "ref/String_Kernel_SVM_test1.step5.refoutput" "./crm114_classify.filter.sh"
 
 
 # **** String Kernel SVM (SKS) Unique classifier ************************************************************************************************************************************************************************************************
-String_Kernel_SVM_Unique_test1: testscript.sh test_timing_announcement
+String_Kernel_SVM_Unique_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* String Kernel SVM (SKS) Unique classifier "
 	$(E) "*******************************************"
 	-rm -f i_vs_q_test.css
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (i_test.css) /[[:graph:]]+/ / 0 0 100 0.001 1 1 4/; liaf}'  INTRO_mt_ng_reference_2.input "ref/String_Kernel_SVM_Unique_test1.step1.refoutput"
+	$(SILENT)\
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/;  translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (q_test.css) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ ; liaf }'  QUICKREF_mt_ng_reference_1.input "ref/String_Kernel_SVM_Unique_test1.step2.refoutput"
 	$(E) ""
 	$(E) "  build the actual hyperplanes"
 	$(E) ""
-	./testscript.sh '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks unique > /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ }' "ref/String_Kernel_SVM_Unique_test1.step3.refoutput"
-	./testscript.sh '-{ isolate (:s:);  translate /.,!?@#$%^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_String_Kernel_SVM_SKS_Unique_1.input "ref/String_Kernel_SVM_Unique_test1.step4.refoutput"
-	./testscript.sh '-{ isolate (:s:); translate /.,!?@#$%^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_String_Kernel_SVM_SKS_Unique_2.input "ref/String_Kernel_SVM_Unique_test1.step5.refoutput"
+	$(SILENT)\
+	./testscript.sh '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks unique > /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ }' "" "ref/String_Kernel_SVM_Unique_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v features=10 -v prob=0.004 -v pR=0.1"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:);  translate /.,!?@#$%^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }'  mt_ng_String_Kernel_SVM_SKS_Unique_1.input "ref/String_Kernel_SVM_Unique_test1.step4.refoutput" "./crm114_classify.filter.sh"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v features=10 -v prob=0.004 -v pR=0.1"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:); translate /.,!?@#$%^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_String_Kernel_SVM_SKS_Unique_2.input "ref/String_Kernel_SVM_Unique_test1.step5.refoutput" "./crm114_classify.filter.sh"
 
 
 # **** Bytewise Correlation classifier ************************************************************************************************************************************************************************************************
-Bytewise_Correlation_test1: testscript.sh test_timing_announcement
+Bytewise_Correlation_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Bytewise Correlation classifier "
 	$(E) "*******************************************"
 	-rm -f i_vs_q_test.css
 	-rm -f i_test.css
 	-rm -f q_test.css
-	./testscript.sh '-{ isolate (:s:) {classify <correlate> ( INTRO_mt_ng_reference_2.input | QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Bytewise_Correlation_1.input "ref/Bytewise_Correlation_test1.step1.refoutput"
-	./testscript.sh '-{ isolate (:s:) {classify <correlate> ( INTRO_mt_ng_reference_2.input | QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Bytewise_Correlation_2.input "ref/Bytewise_Correlation_test1.step2.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v features=10 -v prob=0.004 -v pR=0.1"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:) {classify <correlate> ( INTRO_mt_ng_reference_2.input | QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Bytewise_Correlation_1.input "ref/Bytewise_Correlation_test1.step1.refoutput" "./crm114_classify.filter.sh"
+	$(SILENT)\
+	CRM114_CHECK_FILTER_ARGS="-v features=10 -v prob=0.004 -v pR=0.1"; export CRM114_CHECK_FILTER_ARGS; \
+	./testscript.sh '-{ isolate (:s:) {classify <correlate> ( INTRO_mt_ng_reference_2.input | QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}'  mt_ng_Bytewise_Correlation_2.input "ref/Bytewise_Correlation_test1.step2.refoutput" "./crm114_classify.filter.sh"
 
 # **** Clump \/ Pmulc Test ************************************************************************************************************************************************************************************************
-Clump_Pmulc_test1: testscript.sh test_timing_announcement
+Clump_Pmulc_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 	$(E) "*******************************************"
 	$(E) "* Clump \/ Pmulc Test "
 	$(E) "*******************************************"
 	-rm -f i_test.css
 	-rm -f q_test.css
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump <bychunk> [:one_paragraph:] (i_test.css) /[[:graph:]]+/; output /./ ; liaf}'  INTRO_mt_ng_reference_2.input "ref/Clump_Pmulc_test1.step1.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump [:one_paragraph:] <bychunk> (i_test.css) /[[:graph:]]+/; output /./; liaf }'  QUICKREF_mt_ng_reference_1.input "ref/Clump_Pmulc_test1.step2.refoutput"
 	$(E) ""
 	$(E) "Now see where our paragraphs go to"
 	$(E) ""
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: \n:*:s:\n/} alius { output / Unsure result \n:*:s:\n/ } }'  mt_ng_Clump_Pmulc_1.input "ref/Clump_Pmulc_test1.step3.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: \n:*:s:\n/} alius { output / Unsure result \n:*:s:\n/ } }'  mt_ng_Clump_Pmulc_2.input "ref/Clump_Pmulc_test1.step4.refoutput"
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh '-{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: \n:*:s:\n/} alius { output / Unsure result \n:*:s:\n/ } }'  mt_ng_Clump_Pmulc_3.input "ref/Clump_Pmulc_test1.step5.refoutput"
 
 
@@ -932,7 +1334,7 @@ cleanup_test:
 # Le Hack:
 #
 check-am: all-am
-	@\
+	$(SILENT)\
 	CRM114_TEST_GEN=1; export CRM114_TEST_GEN; \
 	srcdir=$(srcdir); export srcdir; \
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS); \
@@ -940,4 +1342,5 @@ check-am: all-am
 
 
 .PHONY: test test_basics test_other test_megatest test_megatest_ng test_mailfilter test_mailreaver megatest megatest_ng test_classifiers
+
 

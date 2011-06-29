@@ -369,7 +369,7 @@ bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge
 noinst_PROGRAMS = testvectok crm_test_hashes
 
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c statustest.filter.sh
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
 
 
 cssutil_SOURCES = cssutil.c \

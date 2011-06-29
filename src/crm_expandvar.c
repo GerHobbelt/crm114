@@ -32,6 +32,9 @@
 #include "crm114.h"
 
 
+#define PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT   1 // 0 to disable, 1 to enable 20080430 i_a
+
+
 //
 //
 //     crm_nexpandvar - given a string and it's length, go through it
@@ -138,9 +141,20 @@ int crm_zexpandvar(char *buf,
 
     //    efficiency check - do we even _have_ a :*: in the buffer?
     //
-
-    if (inlen == 0)
-        return 0;
+ 
+#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
+  char hack_c = buf[inlen];
+  buf[inlen] = ' '; // prove bad behaviour: this is written outside buf valid range, so should have no effect
+  buf[inlen] = '\\'; // and neither should this one
+#endif
+ 
+  if (inlen == 0)
+{
+#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
+buf[inlen] = hack_c;
+#endif
+    return (0);
+}
 
     is = 0;
     id = 0;
@@ -159,8 +173,14 @@ int crm_zexpandvar(char *buf,
         {
             /* return (inlen); -- this is a serious buffer overflow risk as any
             * using routines will assume the maxlen will never be surpassed! */
+#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
+buf[inlen] = hack_c;
+#endif
             return maxlen;
         }
+#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
+buf[inlen] = hack_c;
+#endif
         return inlen;
 
         // goto bailout; -- same thing as 'return inlen' anyhow.
@@ -188,7 +208,7 @@ int crm_zexpandvar(char *buf,
                 //   Check for a few common things: \n, \a, \xNN, \oNNN
                 is++;
                 //
-                switch (is >= inlen ? 0 : buf[is])
+                switch (is >= inlen ? 0 : buf[is]) // [i_a] makes sure '\\' as last char in string is 'done' properly
                 {
                 case '0':
                     {
@@ -361,6 +381,9 @@ int crm_zexpandvar(char *buf,
     {
         if (internal_trace)
             fprintf(stderr, "No further expansions possible\n");
+#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
+buf[inlen] = hack_c;
+#endif
         return inlen;
     }
 
@@ -403,6 +426,9 @@ int crm_zexpandvar(char *buf,
             "Try making the window set smaller with the -w option");
         if (q == 0)
         {
+#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
+buf[inlen] = hack_c;
+#endif
             return inlen;
         }
     }
@@ -871,6 +897,9 @@ int crm_zexpandvar(char *buf,
                         {
                             q = fatalerror("Problem during math evaluation of ",
                                 mathtext);
+#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
+buf[inlen] = hack_c;
+#endif
                             return inlen;
 
                             // goto bailout; -- same thing as 'return inlen' anyhow.
@@ -918,6 +947,9 @@ int crm_zexpandvar(char *buf,
                     {
                         q = fatalerror("Problem during math evaluation of ",
                             mathtext);
+#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
+buf[inlen] = hack_c;
+#endif
                         return inlen;
 
                         // goto bailout; -- same thing as 'return inlen' anyhow.
@@ -960,6 +992,9 @@ int crm_zexpandvar(char *buf,
         if (retstat)
             fprintf(stderr, "retstat was: %d\n", *retstat);
     }
+#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
+buf[inlen] = hack_c;
+#endif
     return inlen;
 }
 
@@ -1237,7 +1272,7 @@ int crm_restrictvar(char  *boxstring,
                 //
                 //    Compile up that regex
                 j = crm_regcomp(&preg, scanbuf, nw_len, REG_EXTENDED);
-                if (j > 0)
+                if (j != 0)
                 {
                     int curstmt;
                     curstmt = csl->cstmt;

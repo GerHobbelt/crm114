@@ -72,36 +72,36 @@
 
 typedef struct mythical_scm_header
 {
-    int n_bytes;           //this is the length of rememebred text, the number
-                            //of hashbuckets, and the size of the hash root
-    int n_trains;          //how many times have we had to train this guy
-    int n_features;        //number of bytes we've eaten up to n_bytes
-    int free_hash_nodes;   //index of first in free chain
-    int free_prefix_nodes; //index of first in free chain
-    int hash_root_offset;
-    int hash_offset;
-    int prefix_offset;
-    int text_offset;
-    int text_pos;          //we wrap around when we fill the buffer
-    int indeces_offset;
+    uint32_t n_bytes;           //this is the length of remembered text, the number
+                               //of hashbuckets, and the size of the hash root
+    uint32_t n_trains;          //how many times have we had to train this guy
+    uint32_t n_features;        //number of bytes we've eaten up to n_bytes
+    uint32_t free_hash_nodes;   //index of first in free chain
+    uint32_t free_prefix_nodes; //index of first in free chain
+    uint32_t hash_root_offset;
+    uint32_t hash_offset;
+    uint32_t prefix_offset;
+    uint32_t text_offset;
+    uint32_t text_pos;          //we wrap around when we fill the buffer
+    uint32_t indeces_offset;
 } SCM_HEADER_STRUCT;
 
 //nodes for our hash table of three character prefixes
 typedef struct mythical_hash
 {
-    char          prefix_text[4]; //we make it 4 bytes so thing align nicely
-    unsigned int key;            //hash key of the three charactor prefix
-    int          next;           //in hash chain
-    int          prev;
-    int          first; //first prefix node
+    char         prefix_text[4]; //we make it 4 bytes so thing align nicely
+    crmhash_t    key;            //hash key of the three charactor prefix
+    int32_t    next;           //in hash chain
+    int32_t    prev;    // WARNING: bit 31 (sign bit!) is used to sign is this node is FIRST in its chain!
+    int32_t    first; //first prefix node
 } HASH_STRUCT;
 
 //one node for every contiguous three characters in stored text
 typedef struct mythical_prefix
 {
-    int offset;
-    int prev;
-    int next;
+    int32_t offset;
+    int32_t prev;    // WARNING: bit 31 (sign bit!) is used to sign is this node is FIRST in its chain!
+    int32_t next;
 } PREFIX_STRUCT;
 
 //pointers to runtime structures to pass around so that we don't have a
@@ -110,17 +110,20 @@ typedef struct mythical_scm_state
 {
     SCM_HEADER_STRUCT *header;
     //we dup some stuff from the header to shorten things up
-    int *text_pos, n_bytes, *free_hash_nodes, *free_prefix_nodes;
+    uint32_t *text_pos;
+	int  n_bytes;
+	uint32_t *free_hash_nodes;
+	int32_t *free_prefix_nodes;
     //s->hash_root[key % n_bytes] is the first hash_node in the chain that key
     //would be in
-    int *hash_root;
+    uint32_t *hash_root;
     //s->hashee[i] is the ith hash node
     HASH_STRUCT *hashee;
     //and so forth...
     PREFIX_STRUCT *prefix;
     char          *text;
     char          *learnfilename; //the classifier file we're working on
-    int          *indeces;
+    uint32_t       *indeces;
 } SCM_STATE_STRUCT;
 
 
@@ -145,26 +148,26 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
     h->free_prefix_nodes = 0;
     h->free_hash_nodes = 0;
     h->hash_root_offset = sizeof(SCM_HEADER_STRUCT);
-    h->hash_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes * sizeof(int);
+    h->hash_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes * sizeof(uint32_t);
     h->prefix_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes *
-                       (sizeof(int) + sizeof(HASH_STRUCT));
+                       (sizeof(uint32_t) + sizeof(HASH_STRUCT));
     h->text_offset = sizeof(SCM_HEADER_STRUCT) +
-                     n_bytes * (sizeof(int) + sizeof(HASH_STRUCT)
+                     n_bytes * (sizeof(uint32_t) + sizeof(HASH_STRUCT)
                                 + sizeof(PREFIX_STRUCT));
     h->text_pos = 0;
     h->indeces_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes *
-                        (sizeof(int) + sizeof(HASH_STRUCT)
+                        (sizeof(uint32_t) + sizeof(HASH_STRUCT)
                          + sizeof(PREFIX_STRUCT) + sizeof(char));
     s->header = h;
     s->text_pos = &h->text_pos;
     s->n_bytes = h->n_bytes;
     s->free_hash_nodes = &h->free_hash_nodes;
     s->free_prefix_nodes = &h->free_prefix_nodes;
-    s->hash_root = (int *)&o[h->hash_root_offset];
+    s->hash_root = (uint32_t *)&o[h->hash_root_offset];
     s->hashee = (HASH_STRUCT *)&o[h->hash_offset];
     s->prefix = (PREFIX_STRUCT *)&o[h->prefix_offset];
     s->text =   (char *)&o[h->text_offset];
-    s->indeces = (int *)&o[h->indeces_offset];
+    s->indeces = (uint32_t *)&o[h->indeces_offset];
 
     for (i = 0; i < n_bytes; i++)
     {
@@ -196,11 +199,11 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
 
         filesize = sizeof(SCM_HEADER_STRUCT) +
                    n_bytes *
-                   (sizeof(int) +
+                   (sizeof(uint32_t) +
                     sizeof(HASH_STRUCT) +
                     sizeof(PREFIX_STRUCT) +
                     sizeof(char) +
-                    sizeof(int)
+                    sizeof(int32_t)
                    );
         f = fopen(filename, "wb");
         if (f == NULL)
@@ -279,11 +282,11 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         s->n_bytes = h->n_bytes;
         s->free_hash_nodes = &h->free_hash_nodes;
         s->free_prefix_nodes = &h->free_prefix_nodes;
-        s->hash_root = (int *)&o[h->hash_root_offset];
+        s->hash_root = (uint32_t *)&o[h->hash_root_offset];
         s->hashee = (HASH_STRUCT *)&o[h->hash_offset];
         s->prefix = (PREFIX_STRUCT *)&o[h->prefix_offset];
         s->text = (char *)&o[h->text_offset];
-        s->indeces = (int *)&o[h->indeces_offset];
+        s->indeces = (uint32_t *)&o[h->indeces_offset];
     }
     s->learnfilename = filename;
 }
@@ -439,10 +442,11 @@ static int audit_structs(SCM_STATE_STRUCT *s)
 // in a document during learning, right after concatenating it into the stored
 // text
 //
-static int add_prefix(SCM_STATE_STRUCT *s, int t)
+static uint32_t add_prefix(SCM_STATE_STRUCT *s, int t)
 {
-    unsigned int key = get_text_hash(s, t);
-    int i = s->hash_root[key % s->n_bytes], j;
+    crmhash_t key = get_text_hash(s, t);
+    uint32_t i = s->hash_root[key % s->n_bytes];
+	int j;
 
     //find the proper hashnode or set i to NULL_INDEX
     while (!(i == NULL_INDEX
@@ -502,7 +506,7 @@ static int add_prefix(SCM_STATE_STRUCT *s, int t)
 
 //we're writing over the position in the text corresponding to this prefix, so
 // remove it from tables or we'll have big trouble!
-static void delete_prefix(SCM_STATE_STRUCT *s, int p)
+static void delete_prefix(SCM_STATE_STRUCT *s, uint32_t p)
 {
     int i;
 
@@ -642,6 +646,16 @@ static int deflate(SCM_STATE_STRUCT *s, char *t, int len, int *starts, int
     int *open = (int *)tempbuf;
     int i, j, k, n;
 
+	if (len > data_window_size / sizeof(int))
+	{
+		fatalerror_ex(SRC_LOC(), "FSCM tries to deflate %d data words to a global buffer which is too small (%d words). "
+			"Please run crm114 with the '-w %d' (or a larger number) commandline switch.",
+				len,
+				data_window_size / sizeof(int),
+				len * sizeof(int));
+		return -1;
+	}
+
     //fill arrays
     for (i = 0; i < len; i++)
     {
@@ -731,7 +745,8 @@ static double power2(int i)
 static double score_document(SCM_STATE_STRUCT *s, char *doc, int len)
 {
     double score = 0.0;
-    int i, n;
+    int i;
+	int n;
     int starts[MAX_N], locals[MAX_N], lens[MAX_N];
 
     n = deflate(s, doc, len, starts, locals, lens, MAX_N);
@@ -945,11 +960,17 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     params_len = apb->s2len;
     params_len = crm_nexpandvar(params, params_len, MAX_PATTERN);
     params[params_len] = 0;
-    if (crm_regcomp(&regee, "n_bytes[[:space:]]*=[[:space:]]*([0-9]+)",
-                40, REG_EXTENDED))
+    i = crm_regcomp(&regee, "n_bytes[[:space:]]*=[[:space:]]*([0-9]+)",
+                40, REG_EXTENDED);
+	if (i != 0)
     {
         //This should never ever happen
-        fprintf(stderr, "regex compilation problem! I'm about to segfault!\n");
+                char errortext[1024];
+
+                crm_regerror(i, &regee, errortext, WIDTHOF(errortext));
+                nonfatalerror("Regular Expression Compilation Problem for FSCM: ",
+                    errortext);
+                return -1;
     }
     else if (!crm_regexec(&regee, params, params_len, WIDTHOF(pp), pp, 0, NULL))
     {

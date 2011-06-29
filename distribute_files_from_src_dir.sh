@@ -162,6 +162,9 @@ check_file                tests                QUICKREF_mt_ng_reference_1.input
 process_shfile      tests                megatest.sh                        .in
 process_shfile      tests                megatest_ng.sh                     .in
 
+check_file          tests                whitelist.mfp.example
+
+
 
 process_crm         mailfilter        classifymail.crm        .in
 process_crm         mailfilter        mailfilter.crm          .in

@@ -1054,7 +1054,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     plen = strlen(ptext);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
-    if (i > 0)
+    if (i != 0)
     {
         crm_regerror(i, &regcb, tempbuf, data_window_size);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
@@ -1125,7 +1125,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, "\nWordmatch pattern is %s", ptext);
 
         i = crm_regcomp(&regcb, ptext, plen, cflags);
-        if (i > 0)
+        if (i != 0)
         {
             crm_regerror(i, &regcb, tempbuf, data_window_size);
             nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
@@ -2071,8 +2071,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, "\nWordmatch pattern is %s", ptext);
 
         i = crm_regcomp(&regcb, ptext, plen, cflags);
-
-        if (i > 0)
+        if (i != 0)
         {
             crm_regerror(i, &regcb, tempbuf, data_window_size);
             nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
@@ -2224,7 +2223,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
     plen = strlen(ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
-    if (i > 0)
+    if (i != 0)
     {
         crm_regerror(i, &regcb, tempbuf, data_window_size);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);

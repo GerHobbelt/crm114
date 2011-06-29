@@ -236,7 +236,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //    regcomp the pattern
     i = crm_regcomp(&preg, pch, pchlen, cflags);
-    if (i > 0)
+    if (i != 0)
     {
         int curstmt;
         curstmt = csl->cstmt;

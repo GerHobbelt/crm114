@@ -416,7 +416,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (internal_trace)
         fprintf(stderr, "\nWordmatch pattern is %s", ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
-    if (i > 0)
+    if (i != 0)
     {
         crm_regerror(i, &regcb, tempbuf, data_window_size);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
@@ -946,7 +946,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (internal_trace)
         fprintf(stderr, "\nWordmatch pattern is %s", ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
-    if (i > 0)
+    if (i != 0)
     {
         crm_regerror(i, &regcb, tempbuf, data_window_size);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);

@@ -1045,6 +1045,9 @@ AC_CONFIG_FILES([Makefile
                  tests/print_binary2decimal_int32.crm
                  tests/testscript.sh
                  tests/statustest.filter.sh
+                 tests/crm114_error_report.filter.sh
+                 tests/crm114_versiontest.filter.sh
+                 tests/crm114_classify.filter.sh
                  examples/pad.crm
                  examples/shroud.crm
                  mailfilter/classifymail.crm
