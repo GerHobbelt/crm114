@@ -1,0 +1,72 @@
+#! /usr/bin/crm
+window
+{
+	isolate (:lsout:)
+	output /\n ----- executing an ls -----\n/
+	syscall ( ) (:lsout:) /ls/
+	output /:*:lsout:/
+	isolate (:calcout:)
+	output /\n ----- calculating 1 + 2 + 3 using bc -----\n/
+	syscall ( 1 + 2 + 3 \n) (:calcout:) /bc/
+	output /:*:calcout:/
+	isolate (:lslaout:)
+	output /\n ----- executing an ls -la -----\n/
+	syscall ( ) (:lslaout:) /ls -la /
+	output /:*:lslaout:/
+	isolate (:catout:)
+	output /\n ----- outputting to a file using cat -----\n/
+	syscall ( This is a cat out \n) (:catout:) /cat > e1.out/
+	output /:*:catout:/
+	isolate (:c1:)
+	isolate ( :proc:)
+	output /\n ----- keeping a process around ----  \n/
+	output /\n preparing... :*:proc:/
+	syscall <keep> ( a one \n ) ( ) (:proc:) /cat > e2.out/
+	output /\n did one... :*:proc:/
+	syscall <keep> ( and a two \n ) () (:proc:) //
+	output /\n did it again...:*:proc:/
+	syscall ( and a three \n) () (:proc:) //
+	output /\n and done ...:*:proc: \n/
+	output /\n ----- testing keep reads from proc -----\n/
+	isolate (:lslaout:) / /
+#	syscall < keep > ( ) (:lslaout:) (:proc:) /ls -la \/dev /
+	syscall < keep > ( ) (:lslaout:) (:proc:) /ls -la /
+	output /--- got immediate : \n:*:lslaout: \n ---end-----/
+    :async_test_sleeploop:
+	syscall <keep > () (:lslaout:) (:proc:) //	
+	output /--- got this later : \n-:*:lslaout:-\n/
+	{
+		#       try it first sleeping only .1 second 
+		{
+			syscall /sleep .1/
+			syscall <keep> () (:lslaout:) (:proc:) 
+	output /--- .1 sleep: got : -:*:lslaout:-/
+			match [:lslaout:] /....../
+			goto /:async_test_sleeploop:/
+		}
+		#       try again, sleeping 1 second
+		{
+			syscall <> /sleep 1/
+			syscall <keep > () (:lslaout:) (:proc:)
+	output /--- 1.0 sleep: got : \n-:*:lslaout:-\n/
+			match [:lslaout:] /......./
+			goto /:async_test_sleeploop:/
+		}
+		#       try onece again, sleeping 3 second
+		{
+			syscall <> /sleep 3/
+			syscall <keep > () (:lslaout:) (:proc:) 
+	output /--- 3.0 sleep: got : \n-:*:lslaout:\n/
+			match [:lslaout:] /......./
+			goto /:async_test_sleeploop:/
+		}
+	}
+	syscall <> () (:lslaout:) (:proc:) //
+	output /--- and finally synch\/eof : \n:*:lslaout: \n ---end-----/
+	output /Testing fire-and-forget asynch \n/
+	syscall < async > ( ) (:lslaout:) (:proc:) /ls -la \/dev /
+	output /fire and forget ls got: :*:lslaout: \n/
+
+}
+
+

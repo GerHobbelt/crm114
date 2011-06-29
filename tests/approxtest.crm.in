@@ -1,0 +1,35 @@
+#!  /usr/bin/crm 
+#   this program tests approximate regex matching.
+#
+window
+output / Start of approximate match testing. :*:_nl:/
+isolate (:words:) /molasses anaconda foo bar baz agentsmith mranderson /
+output /:*:_nl:Input string to match against: ":*:words:":*:_nl::*:_nl:/
+isolate (:patterns:)
+input (:patterns:) 
+isolate (:p:) /bleah/
+{
+	window <eofaccepts> (:p:) (:patterns:) /.*/ /:*:_nl:/ 
+	match  (:z: :pa:) [:p:] /(.+)./
+	output /:*:pa:/
+	{
+	    {
+		{
+			match (:out:) [:words:] /:*:pa:/
+			output / ---> :*:out:/
+		}
+		alius
+		{
+			output / <no match> /
+		}
+     	    }
+	    trap (:zeta:) /.*/
+	    {
+	    	output / <invalid> /
+	    }
+	}
+	output /:*:_nl:/
+	liaf
+}	
+output / end of approximate match testing. :*:_nl:/
+

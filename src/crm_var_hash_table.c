@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,8 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 
 //      initialize the variable hash table (the vht)
@@ -49,7 +52,7 @@ void crm_vht_init (int argc, char **argv)
 
 
  //   create the variable hash table (one big one, shared )
-  vht = (VHT_CELL **) malloc (sizeof (VHT_CELL *) * vht_size);
+  vht = (VHT_CELL **) malloc (sizeof (vht[0]) * vht_size); /* [i_a] */
   if (!vht)
     untrappableerror("Couldn't malloc VHT cell.\n",
 		     "No VHT cells, no variables, so no can run.  Sorry.");
@@ -58,7 +61,7 @@ void crm_vht_init (int argc, char **argv)
 
 
   //    initialize the temporary (non-data-window) area...
-  tdw = malloc (sizeof (CSL_CELL));
+  tdw = malloc (sizeof (tdw[0])); /* [i_a] */
   if (!tdw)
     untrappableerror("Couldn't malloc tdw.\n"  
 		     "We need the TDW for isolated variables."  
@@ -66,7 +69,7 @@ void crm_vht_init (int argc, char **argv)
   tdw->filename = NULL;
   tdw->rdwr = 1;
   tdw->filedes = -1;
-  tdw->filetext = malloc (sizeof (char) * data_window_size);
+  tdw->filetext = malloc (sizeof (tdw->filetext[0]) * data_window_size); /* [i_a] */
   if (!tdw->filetext)
       untrappableerror("Couldn't malloc tdw->filetext.\n"
 		       "Without this space, you can't have any isolated "
@@ -98,7 +101,7 @@ void crm_vht_init (int argc, char **argv)
     strcat (verstr, crm_regversion());
     strcat (verstr, " )");
     crm_set_temp_var (":_crm_version:", verstr);
-  };
+  }
 
   //  
   //    install the argc and argv values; restart argv values from [2]
@@ -126,8 +129,8 @@ void crm_vht_init (int argc, char **argv)
 	    sprintf (anamebuf, ":_arg%ld:", j);
 	    crm_set_temp_var ( anamebuf, argv[i] );
 	    j++;
-	  };
-      };
+	  }
+      }
     //
     //    and put the "user-visible" argc into a var as well.
     sprintf (anamebuf, "%ld", j);
@@ -157,8 +160,8 @@ void crm_vht_init (int argc, char **argv)
 	    j++;
 	    if (j>0)    strcat (posvars, " ");
 	    strcat (posvars, argv[i]);
-	  };
-      };
+	  }
+      }
     sprintf (anamebuf, "%ld", j);
     crm_set_temp_var (":_posc:", anamebuf);
     crm_set_temp_var (":_pos_str:", posvars);
@@ -184,12 +187,13 @@ void crm_vht_init (int argc, char **argv)
     }
 
 
-  };
+  }
   
   //      now, we shove the whole contents of the ENVIRON 
   //      vector into the VHT.
   
   i = 0;
+  assert(tempbuf != NULL);
   tempbuf[0] = '\000';
   if ( ! ignore_environment_vars)
     while (environ [i])
@@ -203,19 +207,23 @@ void crm_vht_init (int argc, char **argv)
 	    strcat (tempbuf, "\n");
 	  }
 	else
+	{
 	  untrappableerror ("The ENVIRONMENT variables don't fit into the "
 			     "available space. \nThis is very broken.  Try "
 			     "a larger data window (with flag -w NNNNN), \nor "
 			     "drop the environment vars with "
 			     "the (with flag -e)", "");
+	}
 	while (environ[i][j] != '=') j++;
-	name = (char *) malloc ((sizeof (char)) * (j+200));
+	name = (char *) malloc ((sizeof (name[0])) * (j+200)); /* [i_a] */
         if (!name)
+		{
           untrappableerror("Couldn't malloc :_env_ space."  
 			   "Can't continue.\n","");
+		}
 	strcpy (name, ":_env_");
 	memmove (&(name[strlen(name)]), &(environ[i][0]), j);
-	name[j+6] = '\000';
+	name[j+6] = 0;
 	strcat (name, ":");
 	j++;                  //  step past the equals sign.
 	k = 0;
@@ -224,7 +232,7 @@ void crm_vht_init (int argc, char **argv)
 	free (name);
 	free (value);
 	i++;  //   and do the next environment variable
-      };
+      }
   crm_set_temp_var (":_env_string:", tempbuf);
   
   //    see if argv [1] is a '-( whatever) arg, which limits the
@@ -245,7 +253,7 @@ void crm_vht_init (int argc, char **argv)
       closepos = 2;
       while (uvset[closepos] != ')' && uvset[closepos] != '\000')
 	closepos++;
-      uvset[closepos] = '\000';
+      uvset[closepos] = 0;
       strcat (uvset, " ");
       if (user_trace) fprintf (stderr, "UVset: =%s=\n", uvset);
     }
@@ -277,7 +285,7 @@ void crm_vht_init (int argc, char **argv)
 		    anamebuf[k] = argv[i][j];
 		    j++;
 		    k++;
-		  };
+		  }
 		anamebuf[k] = 0;
 		strcat (anamebuf, " ");
 		//
@@ -306,7 +314,7 @@ void crm_vht_init (int argc, char **argv)
 		    anamebuf[k] = argv[i][j];
 		    j++;
 		    k++;
-		  };
+		  }
 		anamebuf[k] = ':';
 		k++;
 		anamebuf[k] = '\000';
@@ -335,10 +343,10 @@ void crm_vht_init (int argc, char **argv)
 			 "flag '%s' , \n", anamebuf);
 		fprintf (stderr, 
 			 " so we'll just ignore it for now. \n");
-	      };
-	  };
-      };
-  };
+	      }
+	  }
+      }
+  }
 }
 //           routine to put a variable into the temporary (tdw)
 //           buffer.  names and values end up interleaved
@@ -365,7 +373,7 @@ void crm_set_temp_nvar (char *varname, char *value, long vallen)
       nonfatalerror ("Somehow, you are assigning a value to a variable with",
 		     "an unprintable name.  I'll permit it for now, but"
 		     "your program is probably broken.");
-    };
+    }
   
   if ( (strlen (varname) + vallen + tdw->nchars + 64) > data_window_size)
     {
@@ -378,8 +386,10 @@ void crm_set_temp_nvar (char *varname, char *value, long vallen)
 	  exit (engine_exit_base + 22);
 	}
       else
+	  {
 	exit (EXIT_FAILURE);
-    };
+	  }
+    }
 
   //       check- is this the first time we've seen this variable?  Or
   //       are we re-assigning a previous variable?
@@ -431,7 +441,7 @@ void crm_set_temp_nvar (char *varname, char *value, long vallen)
       //   
       crm_destructive_alter_nvariable ( &varname[vnidx], vnlen, 
 				       value, vallen );
-    };
+    }
 }
 
 //     GROT GROT GROT this routine needs to replaced for 8-bit-safeness.
@@ -477,7 +487,7 @@ void crm_set_windowed_nvar ( char *varname,
       for (i = start; i < start+len; i++)
 	fprintf (stderr, "%c", valtext[i]);
       fprintf (stderr, "\n");
-    };
+    }
 
   //    check and see if the variable is already in the VHT
   i = crm_vht_lookup (vht, varname, varlen);
@@ -545,8 +555,8 @@ void crm_set_windowed_nvar ( char *varname,
 	//       rebinding.  That way, all indices and offsets are in the VHT
 	//       where they can be safely updated.
 	//
-      };
-    };
+      }
+    }
 }
 
 //#define RECLAIM_ALL_EVERY_TIME 1
@@ -630,7 +640,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
       fatalerror (" Request to compress non-TDW data.  This is bogus. ",
 		     " Please file a bug report");
       return ( 0 );
-    };
+    }
 
   //    Look one character further to before and after;
   //if (oldstart > 3)  oldstart --;
@@ -667,7 +677,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	    {
 	      //   nothing to be done here - not overlapping 
 	      goto end_of_vstring_tests;
-	    };
+	    }
 
 	  //      2: dead zone entirely after current var
 	  //  
@@ -678,7 +688,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	    {
 	      //   nothing to be done here - not overlapping
 	      goto end_of_vstring_tests;
-	    };
+	    }
 
 	  //   If we get this far, the dead zone in some way overlaps with
 	  //   our current variable.
@@ -697,7 +707,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	      if ( internal_trace)
 		fprintf (stderr, " [ Compression not needed after all. ]\n");
 	      return ( 0 );
-	    };
+	    }
 
 	  //      4: dead zone overlaps front of current var; we trim the 
 	  //      dead zone to not include the current var.
@@ -717,7 +727,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	      //     noninclusive, this is right.
 	      oldend = newstart; 
 	      goto end_of_vstring_tests;
-	    };
+	    }
 	  
 	  //      5: dead zone overlaps back of current var; trim the front off
 	  //      the dead zone.
@@ -734,7 +744,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	      //     is correct.
 	      oldstart = newend ;
 	      goto end_of_vstring_tests;
-	    };
+	    }
 	  //      6: dead zone split by current var - the dead zone is actually
 	  //      split into two distinct pieces.  In this case, we need to
 	  //      recurse on the two pieces.
@@ -751,7 +761,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 			   oldstart, newstart);
 		  fprintf (stderr, " [ Second part will be %ld to %ld .]\n",
 			   newend, oldend);
-		};
+		}
 	      //
 	      //      Tricky bit here - we have to do the aft (ne-oe
 	      //      section) first, so we don't move the os-ns
@@ -801,7 +811,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	    {
 	      //   nothing to be done here - not overlapping 
 	      goto end_of_nstring_tests;
-	    };
+	    }
 
 	  //      dead zone entirely after current var
 	  //  
@@ -812,7 +822,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	    {
 	      //   nothing to be done here - not overlapping
 	      goto end_of_nstring_tests;
-	    };
+	    }
 
 	  //   If we get this far, the dead zone in some way overlaps with
 	  //   our current variable.
@@ -831,7 +841,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	      if ( internal_trace)
 		fprintf (stderr, " [ Compression not needed after all. ]\n");
 	      return ( 0 );
-	    };
+	    }
 
 	  //      dead zone overlaps front of current var; we trim the 
 	  //      dead zone to not include the current var.
@@ -851,7 +861,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	      //     noninclusive, this is right.
 	      oldend = newstart; 
 	      goto end_of_nstring_tests;
-	    };
+	    }
 	  
 	  //      dead zone overlaps back of current var; trim the front off
 	  //      the dead zone.
@@ -868,7 +878,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	      //     is correct.
 	      oldstart = newend ;
 	      goto end_of_nstring_tests;
-	    };
+	    }
 	  //      dead zone split by current var - the dead zone is actually
 	  //      split into two distinct pieces.  In this case, we need to
 	  //      recurse on the two pieces.
@@ -885,7 +895,7 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 			   oldstart, newstart);
 		  fprintf (stderr, " [ Second part will be %ld to %ld .]\n",
 			   newend, oldend);
-		};
+		}
 	      //
 	      //      Tricky bit here - we have to do the aft (ne-oe
 	      //      section) first, so we don't move the os-ns
@@ -908,8 +918,8 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	    }
 	  //       and the semicolon to keep some compilers happy
 	end_of_nstring_tests: ;
-	};
-    };
+	}
+    }
   //
   //   Well, we've now scanned the VHT, and oldstart/oldend are the
   //   actual dead zone (storage that really isn't used).
@@ -943,10 +953,10 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 	  {
 	    fprintf (stderr, " [ new isolated area will be %ld bytes. ]\n",
 		     tdw->nchars);
-	  };
-      };
+	  }
+      }
     return (- (cutlen));
-  };
+  }
 }
 
 //
@@ -974,7 +984,7 @@ void crm_destructive_alter_nvariable (char *varname, long varlen,
       		    "I hope that's OK.  The nonexistent variable is: ",
       		    &(varname[i]));
       crm_set_temp_var (&varname[i], "");
-    };
+    }
   
   //     make enough space in the input buffer to accept the new value
   oldlen = vht[vhtindex]->vlen;
@@ -988,7 +998,7 @@ void crm_destructive_alter_nvariable (char *varname, long varlen,
     {
       fatalerror (" Bogus text bloc containing variable : ", varname);  
       goto bailout;
-    };
+    }
   //
   if (user_trace)  // major debug
     {
@@ -1023,12 +1033,12 @@ void crm_destructive_alter_nvariable (char *varname, long varlen,
   //   semicolon (null stmt) on next line to keep some compilers happy:
   //
  bailout: ;
-};
+}
 
 
 //      Surgically lengthen or shorten a window.  The window pointed
 //      to by mdw gets delta extra characters added or cut at "where".
-//      (more precisely, just _before_ "where" - the insert/delet
+//      (more precisely, just _before_ "where" - the insert/delete
 //      point is just before the "where'th" character, and the
 //      where'th character will be the first one moved.  If the
 //      allocated length is not enough, additional space can be
@@ -1051,31 +1061,31 @@ void crm_slice_and_splice_window ( CSL_CELL *mdw, long where, long delta)
       fatalerror (" Data window trying to get too long.", 
 		" Try increasing the data window maximum size.");
       goto bailout;
-    };
+    }
 
   if (delta == 0)
     {
       if (internal_trace)
 	{
 	  fprintf (stderr, " zero delta, no buffer hackery required\n");
-	};
+	}
       return;
-    };
+    }
 
   // bump chars in input window delta places
   if (internal_trace)
     {
-      fprintf (stderr, "moving text in window %lx,", (long int) mdw->filetext);
+      fprintf (stderr, "moving text in window %p,", mdw->filetext);
       fprintf (stderr, " starting at %ld, ", where); 
       fprintf (stderr, "delta length is %ld\n", delta);
-    };
+    }
   
   if (delta > 0)
     {             // lengthening alteration...
       taildest = &(mdw->filetext[where + delta]);
       tailsrc = &(mdw->filetext[where]);
       taillen = mdw->nchars - where;
-    };
+    }
 
   if (delta < 0)  //   shortening alteration
     {
@@ -1087,8 +1097,8 @@ void crm_slice_and_splice_window ( CSL_CELL *mdw, long where, long delta)
     }
   if (internal_trace) 
     fprintf (stderr, 
-	     "buffer sliding, tailsrc: %lx, taildest: %lx, length: %ld\n",
-	     (long int) tailsrc, (long int) taildest, taillen);
+	     "buffer sliding, tailsrc: %p, taildest: %p, length: %ld\n",
+	     tailsrc, taildest, taillen);
 
   //     and move the actual data
   if (taillen + 1 > 0) memmove ( taildest, tailsrc, taillen + 1 );
@@ -1123,7 +1133,7 @@ void crm_slice_and_splice_window ( CSL_CELL *mdw, long where, long delta)
       data_window_size = 4 * data_window_size;
       nonfatalerror (" Data window trying to get too long.", 
   		   " increasing data window... ");
-      ndw = (char *) malloc ( data_window_size);
+      ndw = (char *) malloc ( data_window_size * sizeof(ndw[0])); /* [i_a] */
       if (!ndw)
           untrappableerror("Couldn't malloc ndw.  This is bad too.\n","");
 
@@ -1139,12 +1149,12 @@ void crm_slice_and_splice_window ( CSL_CELL *mdw, long where, long delta)
 	      vht[i]->nametxt = ndw;
 	    if (vht[i]->valtxt == mdw->filetext) 
 	      vht[i]->valtxt = ndw;
-	  };
+	  }
 
       //    and lastly, point the cdw or tdw to the new larger window.
       free (mdw->filetext);
       mdw->filetext = ndw;
-    };
+    }
 #endif
 
 
@@ -1181,12 +1191,12 @@ long crm_vht_lookup (VHT_CELL **vht, char *vname, long vlen)
 		{
 		  fprintf (stderr, "Ztart corrupted ");
 		  corrupted = 1;
-		};
+		}
 	      if (vht[i]->nametxt[vht[i]->nstart + vht[i]->nlen - 1] != ':')
 		{
 		  fprintf (stderr, "Zend corrupted ");
 		  corrupted = 1;
-		};
+		}
 	      if (corrupted)
 		{
 		  fprintf (stderr, " i %ld len %ld name = -",
@@ -1196,9 +1206,9 @@ long crm_vht_lookup (VHT_CELL **vht, char *vname, long vlen)
 			     vht[i]->nametxt[vht[i]->nstart + j]);
 		  fprintf (stderr, "- ");
 		}
-	    };
+	    }
 	}
-    };
+    }
   
 
   crm_nextword ( vname, vlen, 0, &vsidx, &vslen);
@@ -1209,7 +1219,7 @@ long crm_vht_lookup (VHT_CELL **vht, char *vname, long vlen)
 	fprintf (stderr, "%c", vname[k]);
 
       fprintf (stderr, "- .\n");
-    };
+    }
  
   hc = (strnhash ( &vname[vsidx], vslen)) % vht_size;
 
@@ -1239,9 +1249,9 @@ long crm_vht_lookup (VHT_CELL **vht, char *vname, long vlen)
 		fprintf (stderr, "%c", vname[ic]);
 	      fprintf (stderr, "(len %ld) not at %ld (empty)\n", vlen, i);
 	      fprintf (stderr, "Returning the index where it belonged.\n");
-	    };
+	    }
 	  return (i);
-	};
+	}
       
       //  there's something here - is it what we have been seeking
       if ( vlen == vht[i]->nlen &&
@@ -1260,10 +1270,10 @@ long crm_vht_lookup (VHT_CELL **vht, char *vname, long vlen)
 	    if (vht[i]->valtxt == cdw->filetext) 
 	      { fprintf (stderr, "(main)"); }
 	    else
-	      { fprintf (stderr, "(isol)"); };
+	      { fprintf (stderr, "(isol)"); }
 	    fprintf (stderr, " s: %ld, l:%ld)\n",
 		     vht[i]->vstart, vht[i]->vlen);
-	  };
+	  }
 	  return (i);
 	}
       else
@@ -1277,8 +1287,8 @@ long crm_vht_lookup (VHT_CELL **vht, char *vname, long vlen)
 	      for (ic = 0; ic < vht[i]->nlen; ic++)
 		fprintf (stderr, "%c", (vht[i]->nametxt)[ic+vht[i]->nstart] );
 	      fprintf (stderr, "' instead.");
-	    };
-	};
+	    }
+	}
 
       i++;
       //  check wraparound
@@ -1293,8 +1303,8 @@ long crm_vht_lookup (VHT_CELL **vht, char *vname, long vlen)
       if (i == (hc - 1))
 	{
 	  static char badvarname [MAX_VARNAME];
-	  strncpy (badvarname, &vname[vsidx], vslen);
-	  badvarname[vslen+1] = 0;
+	  strncpy (badvarname, &vname[vsidx], (vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1));
+	  badvarname[(vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1)] = 0;
 	  {
 	    long index;
 	    fprintf (stderr, "Variable Hash Table Dump\n");
@@ -1310,18 +1320,18 @@ long crm_vht_lookup (VHT_CELL **vht, char *vname, long vlen)
 		if (vht[index]->valtxt == cdw->filetext) 
 		  { fprintf (stderr, "(main)"); }
 		else
-		  { fprintf (stderr, "(isol)"); };
+		  { fprintf (stderr, "(isol)"); }
 		fprintf (stderr, " s: %ld, l:%ld)\n",
 		     vht[index]->vstart, vht[index]->vlen);
 		; }
-	  };
+	  }
 	  fatalerror (" Variable hash table overflow while looking "
 		      "for variable: " ,
 		      badvarname);
 	  done = 1;
 	  return (0);
-	};
-    };
+	}
+    }
   return (0);
 }
   
@@ -1357,7 +1367,7 @@ void crm_setvar (
       //    Nope, this is an empty VHT slot
       
       //  allocate a fresh, empty VHT cell
-      vht[i] = (VHT_CELL *) malloc (sizeof (VHT_CELL));
+      vht[i] = (VHT_CELL *) malloc (sizeof (vht[i][0])); /* [i_a] */
       if (!vht[i])
 	untrappableerror("Couldn't malloc space for VHT cell.  We need VHT cells for variables.  We can't continue.","");
       
@@ -1378,7 +1388,7 @@ void crm_setvar (
   else
     {
       //   The cell is already here.  :)
-    };
+    }
   //   Either way, the cell is now here, so we can set the value.
   //
   vht[i]->valtxt = valtxt;
@@ -1408,7 +1418,7 @@ void crm_setvar (
 	       vht[i]->vstart, vht[i]->vlen); 
 
       fprintf (stderr, "\n");
-    };
+    }
   
 }
 
@@ -1433,20 +1443,23 @@ long crm_lookupvarline (VHT_CELL **vht, char *text, long start, long len)
 	}
   else
     {
-      //      long q;
-      //      char *deathfu ;
-      //      deathfu = (char *) malloc ( len+10);
-      //      if (!deathfu)
-      //	untrappableerror("Couldn't malloc 'deathfu'.\n  Time to die. ","");
-      //      strncpy (deathfu, &(csl->filetext[start]), len);
-      //      q = fatalerror ("Control Referencinge a non-existent variable- this"
-      //		      "is almost always a very _bad_ thing", 
-      //		      deathfu);
+#if 0
+		long q;
+            char *deathfu ;
+	      deathfu = (char *) malloc ( (len+10) * sizeof(deathfu[0])); /* [i_a] */
+          if (!deathfu)
+      	untrappableerror("Couldn't malloc 'deathfu'.\n  Time to die. ","");
+            strncpy (deathfu, &(csl->filetext[start]), len);
+		      deathfu[len] = 0;
+            q = fatalerror ("Control Referencinge a non-existent variable- this"
+      		      "is almost always a very _bad_ thing", 
+      		      deathfu);
       //  If fatalerror found a TRAP for this error, cstmt now points to 
       //  the TRAP - 1.  We want to go to the trap itself, no auto-incr...
-      //      if ( q == 0) 
-      //	return ( csl->cstmt + 1);
-    };
+            if ( q == 0) 
+      	return ( csl->cstmt + 1);
+#endif
+  }
   return (-1);
 }
 
@@ -1492,7 +1505,7 @@ void crm_updatecaptures (char *text, long loc, long delta)
 			   vht[vht_index]->nstart,
 			   vht[vht_index]->nstart + vht[vht_index]->nlen
 			   );
-		};
+		}
 	      ostart = nstart = vht[vht_index]->vstart;
 	      oend = nstart = ostart + vht[vht_index]->vlen;
 	      nstart = crm_mangle_offset (ostart, loc, delta, 0);
@@ -1523,7 +1536,7 @@ void crm_updatecaptures (char *text, long loc, long delta)
 		fprintf (stderr, "to %ld, %ld.\n",
 			 vht[vht_index]->mstart,
 			 vht[vht_index]->mlen);
-	    };
+	    }
 	  //      Don't forget entries that may be varNAMES, not just
 	  //      var values!
 	  if (vht[vht_index]->nametxt == text)
@@ -1650,10 +1663,10 @@ long crm_mangle_offset ( long mark, long dot, long delta, long sl)
       mark = mark + delta; //  delta is negative, so we ADD it to subtract!
       if (mark < dot) mark = dot;
       return (mark);
-    };
+    }
 }
 
-///
+//
 //
 //     crm_buffer_gc - garbage-collect a buffer.  This isn't a perfect
 //     solution, but it will work.  (i.e. it's slow and annoying)//

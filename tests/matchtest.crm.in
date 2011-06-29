@@ -1,0 +1,306 @@
+#!  /usr/bin/crm 
+#   this program exercises the matching functionality of crm.  It expects
+#   an input that may contain foo*, bar*, and possibly START baz END
+window
+output /:*:_nl:  CRM114 testing match functionality :*:_nl:/
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing exact match on foo.../
+	match <> (:x:) /foo/
+	output / found exact match on ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing exact match on foo.../
+	match <> (:x:) /foo/
+	output / found exact match on ':*:x:'/
+}
+{    
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing absent match on foo.../
+	match <absent> () /foo/
+	output / match says "no foo found"./
+}
+{    
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing absent match on foo.../
+	match <absent> () /foo/
+	output / match says "no foo found"./
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing nocase match on foo.../
+	match <nocase> (:x:) /foo/
+	output / found a nocase match on ':*:x:' /
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing nocase match on foo.../
+	match <nocase> (:x:) /foo/
+	output / found a nocase match on ':*:x:' /
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing nocase absent match on foo.../
+	match <nocase absent >  /foo/
+	output / match says "no foo found"./
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing nocase absent match on foo.../
+	match <nocase absent >  /foo/
+	output / match says "no foo found"./
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing multiline match on foo.../
+	match <> (:x:) /.*foo.*/
+	output / found an allowed multiline match on ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing multiline match on foo.../
+	match <> (:x:) /.*foo.*/
+	output / found an allowed multiline match on ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing nomultiline match on foo.../
+	match <nomultiline> (:x:) /.*foo.*/
+	output / found a nomultiline match on ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing nomultiline match on foo.../
+	match <nomultiline> (:x:) /.*foo.*/
+	output / found a nomultiline match on ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing fromendchar match for foo then bar.../
+	match  () /foo/
+	output /... found the foo.../
+	match  <fromend> () /bar/
+	output /then bar /
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing fromendchar match for foo then bar.../
+	match () /foo/
+	output /... found the foo.../
+	match <fromend> () /bar/
+	output /found a bar after the foo.  (text: :*:_dw: ) /
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing fromnext match for f+oo+../
+	match <> (:x:) /f+oo+/
+	output / first ':*:x:'../
+	match <fromnext> (:x:) /f+oo+/
+	output / found one on ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing fromnext match for f+oo+../
+	match <> (:x:) /f+oo+/
+	output / first ':*:x:'../
+	match <fromnext> (:x:) /f+oo+/
+	output / found one on ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing newend match for f+oo+../
+	match <> (:x:) /f+oo+/
+	output / first ':*:x:'../
+	match <newend> (:x:) /f+oo+/
+	output / found one on ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing newend match for f+oo+../
+	match <> (:x:) /f+oo+/
+	output / first ':*:x:'../
+	match <newend> (:x:) /f+oo+/
+	output / found one on ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing indirect goto ":twist:" and ":shout:"..../
+	match <> (:x: :whereto:) /go to (:twist:|:shout:)/
+	output / got :*:whereto:.../
+	goto /:*:whereto:/
+	output / FAILED - shouldn't get here. /
+	FAIL
+	:twist:
+	output / got to TWIST./
+	FAIL
+	:shout:
+	output / got to SHOUT./
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing indirect goto ":twist:" and ":shout:"..../
+	match <> (:x: :whereto:) /go to (:twist2:|:shout2:)/
+	output / got :*:whereto:.../
+	goto /:*:whereto:/
+	output / FAILED - shouldn't get here. /
+	FAIL
+	:twist2:
+	output / got to TWIST./
+	FAIL
+	:shout2:
+	output / got to SHOUT./
+}
+{
+	window /ZZZ/ /ZZZ/
+	output / :*:_nl:Testing self-supplied-match .../
+	match <nomultiline> (:x: :pat:) /foo(.*)bar/
+	output / found ':*:pat:' .../
+	match <fromend nomultiline> (:x:) /.*:*:pat:.*/
+	output / found ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output / :*:_nl:Testing self-supplied-match .../
+	match <nomultiline> (:x: :pat:) /foo(.*)bar/
+	output / found ':*:pat:' .../
+	match <fromend nomultiline> (:x:) /.*:*:pat:.*/
+	output / found ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing indep start\/end .../
+	match <nomultiline> (:f:) /foo.*foo/
+	output / found ':*:f:' .../
+	match  (:x:) [:f:] /1/
+	output / found ':*:x:' .../
+	match <nomultiline> (:b:) /bar.*bar/
+	output / found ':*:b:'.../
+	match (:x:) [:b:] /2/
+	output / found ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing indep start\/end .../
+	match <nomultiline> (:f:) /foo.*foo/
+	output / found ':*:f:' .../
+	match  (:x:) [:f:] /1/
+	output / found ':*:x:' .../
+	match <nomultiline> (:b:) /bar.*bar/
+	output / found ':*:b:'.../
+	match (:x:) [:b:] /2/
+	output / found ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing indep start\/end .../
+	match <nomultiline> (:f:) /foo.*foo/
+	output / found ':*:f:' .../
+	match  (:x:) [:f:] /1/
+	output / found ':*:x:' .../
+	match <nomultiline> (:b:) /bar.*bar/
+	output / found ':*:b:'.../
+	match (:x:) [:b:] /2/
+	output / found ':*:x:'/
+}
+{
+	window /ZZZ/ /ZZZ/
+	output /:*:_nl:Testing indep start\/end .../
+	match <nomultiline> (:f:) /foo.*foo/
+	output / found ':*:f:' .../
+	match  (:x:) [:f:] /1/
+	output / found ':*:x:' .../
+	match <nomultiline> (:b:) /bar.*bar/
+	output / found ':*:b:'.../
+	match (:x:) [:b:] /2/
+	output / found ':*:x:'/
+}
+{
+	alter (:_dw:) /Test text >correct< results hopefully/
+	output /\nTesting box region control\n/
+	match [:_dw: 11 7] /.*/ (:x:)
+	output /got 10-17 as this: :*:x:  (should be 'correct', no angles)\n/
+}
+{
+	alter (:_dw:) /Test text >correct< results hopefully/
+	output /\nTesting box region control, part 2\n/
+	match [:_dw: 11 7] /r.*c/ (:x:)
+	output /got 10-17 as this: :*:x:  (should be 'rrec')\n/
+}
+{
+	isolate (:z:) /Test text >correct< results hopefully without problems/
+	output /\nTesting box region control, isolated variable\n/
+	match [:z: 11 7] /r.*c/ (:x:)
+	output /got 10-17 as this: :*:x:  (should be 'rrec')\n/
+	match <fromend> [:z:] /e..../ (:y:)
+	output /Fromend match: :*:y: (should be 'esult')\n/
+}
+{
+    alter (:_dw:) /Test text >correct< results hopefully/
+    output /\nTesting box region indexed control\n/
+    match [:_dw: 11 7] /.*/ (:x:)
+    output /got this: ':*:x:' (should be 'correct', no angles)\n/
+}
+{
+    alter (:_dw:) /Test text >correct< results hopefully/
+    output /\nTesting box region regex control\n/
+    match [:_dw: />.*</ ] /.*/ (:x:)
+    output /got this: ':*:x:' (should be '>correct<', with angles)\n/
+}
+{
+    alter (:_dw:) /Test text >correct< results hopefully/
+    output /\nTesting box region failing regex control\n/
+    match [:_dw: />abcdefg</ ] /.*/ (:x:)
+    output /got this: ':*:x:' (should be '', the empty string)\n/
+}
+{
+    alter (:_dw:) /Test text >correct< results hopefully/
+    output /\nTesting box region regex\/index control\n/
+    match [:_dw: />.*</ 1 7 ] /.*/ (:x:)
+    output /got this: ':*:x:' (should be 'correct', no angles)\n/
+}
+{
+    alter (:_dw:) /Test text >correct< results hopefully/
+    output /\nTesting box region index\/regex control\n/
+    match [:_dw: 5 20 />.*</] /.*/ (:x:)
+    output /got this: ':*:x:' (should be '>correct<', with angles)\n/
+}
+{
+    alter (:_dw:) /Test text >correct< results hopefully/
+    output /\nTesting box region index\/index control\n/
+    match [:_dw: 6 20 5 7 ] /.*/ (:x:)
+    output /got this: ':*:x:' (should be 'correct', no angles)\n/
+}
+{
+    alter (:_dw:) /Test text > correct < results hopefully/
+    output /\nTesting box region regex with spaces control\n/
+    match [:_dw: /> (?:[a-z])+ </ ] /.*/ (:x:)
+    output /got this: ':*:x:' (should be '> correct <', with angles)\n/
+}
+{
+    alter (:_dw:) /Test text > correct < results hopefully/
+    output /\nTesting box region regex with spaces control\n/
+    match [:_dw: /> ((?:[a-z])+) </ ] /.*/ (:x:)
+    output /got this: ':*:x:' (should be 'correct', no angles)\n/
+}
+
+
+{
+	{
+		output /testing <absent> versus binding  (the '67' bug)\n /
+		output / The next stmt --- SHOULD--- get an error message! \n / 
+		match <absent> (:incognita:) /nothinjkljiejfksn;s94jf94msks/
+		output / Bug!  You should never see this line! \n/
+	}
+	trap (:errtext:) /.*/
+	{
+		output /Caught the error, fault text was: \n:*:errtext:\n/
+	}
+}
+
+#
+output /:*:_nl:------------------END OF TESTING----------------------:*:_nl:/
+
+
+
+

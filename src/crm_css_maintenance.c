@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,7 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
 
 static long crm_zapcss ( FEATUREBUCKET_TYPE *h, 
 		    unsigned long hs, 
@@ -84,7 +86,7 @@ long crm_microgroom (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 	fprintf (stderr, "CSS file too full: microgrooming this css chain: ");
       fprintf (stderr, " %ld ",
 	   microgroom_count);
-    };
+    }
 
 
   //       We have two different algorithms for amnesia - stochastic
@@ -145,7 +147,7 @@ long crm_microgroom (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 	   == MICROGROOM_STOCHASTIC_KEY ))
 	{
 	  h[i].value = h[i].value * MICROGROOM_RESCALE_FACTOR;
-	};
+	}
       if (h[i].value == 0) zeroed_countdown--;
       i++;
       if (i >= hs ) i = 1;
@@ -221,7 +223,7 @@ long crm_microgroom (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
   else
     {
       packlen = ( hs - packstart ) + packend;
-    };
+    }
 
   //     And now zap some buckets - are we in wraparound?
   //
@@ -236,7 +238,7 @@ long crm_microgroom (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
       actually_zeroed = crm_zapcss (h, hs, packstart, hs -1 );
       actually_zeroed = actually_zeroed 
 	+ crm_zapcss (h, hs, 1,   (packlen - (hs - packstart)));
-    };
+    }
 #endif
 
 
@@ -288,7 +290,7 @@ static long crm_zapcss ( FEATUREBUCKET_TYPE *h,
   vcut = 1;
   packlen = end - start;
   //  fprintf (stderr, " S: %ld, E: %ld, L: %ld ", start, end, packlen );
-  zcountdown = packlen / 32.0 ;  //   get rid of about 3% of the data
+  zcountdown = packlen / 32;  //   get rid of about 3% of the data  /* [i_a] */
   actually_zeroed = 0;
   while (zcountdown > 0)
     {
@@ -311,12 +313,12 @@ static long crm_zapcss ( FEATUREBUCKET_TYPE *h,
 		      h[k].value = 0;
 		      zcountdown--;
 		      actually_zeroed++;
-		    };
-		};
-	    };
-	};
+		    }
+		}
+	    }
+	}
       vcut++;
-    };
+    }
   return (actually_zeroed);
 }
 
@@ -344,14 +346,15 @@ void crm_packcss (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
     {
       crm_packseg (h, seen_features, hs, packstart, (hs - packstart));
       crm_packseg (h, seen_features, hs, 1, (packlen - (hs - packstart)));
-    };
+    }
 }
       
 void crm_packseg (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 		  long hs, long packstart, long packlen)
 {
   unsigned long ifrom, ito;
-  unsigned long thash, tkey, tvalue, tseen;
+  unsigned long thash, tkey, tvalue;
+  unsigned char tseen; /* [i_a] */
 
   //  keep the compiler quiet - tseen is used only if seen_features 
   //  is non-null, but the compiler isn't smart enough to know that.
@@ -374,7 +377,7 @@ void crm_packseg (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 	   seen_features[ifrom] = 0;
 	}
       else 
-	{ if (internal_trace) fprintf (stderr, "-");};
+	{ if (internal_trace) fprintf (stderr, "-");}
     }
 
   //  Our slot values are now somewhat in disorder because empty
@@ -410,7 +413,7 @@ void crm_packseg (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 	      ito++;
 	      if (ito >= hs) ito = 1;
 	      // fprintf (stderr, "a %ld", ito);
-	    };
+	    }
 	  
 	  //
 	  //    found an empty slot, put this value there, and zero the
@@ -421,7 +424,7 @@ void crm_packseg (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 	      if ( ifrom == ito ) fprintf (stderr, "=");
 	      if ( ito < ifrom) fprintf (stderr, "<");
 	      if ( ito > ifrom ) fprintf (stderr, ">");
-	    };
+	    }
 
 	  h[ifrom].hash  = 0;
 	  h[ifrom].key   = 0;
@@ -434,8 +437,8 @@ void crm_packseg (FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
 	  h[ito].value = tvalue;
 	  if (seen_features)
 	    seen_features[ito] = tseen;
-	};
-    };
+	}
+    }
 }
 
 int crm_create_cssfile(char *cssfile, long buckets, 

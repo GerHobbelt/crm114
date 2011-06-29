@@ -1,0 +1,21 @@
+#!/usr/bin/crm 
+window
+output /:*:_nl: CRM114: Testing union and intersection :*:_nl: :*:_nl:/
+{
+	alter (:_dw:) / a b c d e f g h i j k l m n o p q r s t u v w x y z /
+	output /We start with this: ':*:_dw:' :*:_nl:/
+	match (:alpha:) /a/
+	match (:lima:) /l/
+	match (:sierra:) /s/
+	match (:zulu:) /z/
+	match (:abc:) /a b c/
+	match (:cde:) /c d e/
+	intersect (:t1:) [:abc: :cde:]
+	output /intersection of abc and cde is t1: ':*:t1:' :*:_nl:/
+	union (:t2:) [:lima: :sierra:]
+	output /union of l thru s is t2: ':*:t2:' :*:_nl:/
+	intersect (:t3:) [:abc: :t2:]
+	output /intersection of abc and t2 is t3: ':*:t3:' :*:_nl:/
+	union (:t4:) [:zulu: :t1:]
+	output /union of zulu and t1 is t4: ':*:t4:' :*:_nl:/
+}

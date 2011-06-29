@@ -1,0 +1,56 @@
+Pavuk is a World Wide Web spider / page-grabber tool (mirroring tool for
+FTP/HTTP/Gopher/(SSL)). Pavuk was originally written for the UNIX
+environment.
+
+Pavuk-gnu-win32 is a command line driven program. Please refer to the manual
+page from the source distribution (available in the ./man/ directory) and
+check the commandline syntax or look in the ./doc/Pavuk.ManPage.html file
+for a list of generally available command-line options (depending on your
+build, some may not be available to you; run
+
+  pavuk -v
+
+to inspect the included feature set available).
+
+Specific technical documentation is also available in the ./doc/ directory.
+
+This Win32 port of pavuk is a full featured version. It only lacks a GUI and
+multilingual support (i.e. no gettext support).
+
+
+!!!! WARNING !!!!
+
+This version of pavuk was compiled with the Microsoft Visual Studio 2005 SP1
+compiler. The executable will require the corresponding Microsoft runtime
+libraries to be installed on your system.
+
+Please refer to
+
+  http://en.wikipedia.org/wiki/Visual_C_Plus_Plus
+
+and
+
+  http://www.microsoft.com/downloads/details.aspx?displaylang=en&FamilyID=200b2fd9-ae1a-4a14-984d-389c36f85647
+
+for information how to download and install the appropriate Microsoft
+runtime libraries on your system if you so require.
+
+The pavuk source code distribution includes the necessary MSVC2005 solution
+and project files in the ./build/msvc2005/ directory. Make sure you have
+read the README.MSVC2005.txt file in that directory before building the
+project.
+
+-----------------
+
+The pavuk source code distribution also includes support for building pavuk
+using GCC and the new cygwin POSIX runtime. Compatibility note: it has
+significant changes in file paths handling, so please check your scenarios
+and correct paths if you was using old cygwin paths //[drive]/ to
+/cygdrive/[drive]/
+
+!!!! WARNING !!!!
+
+
+For the latest information always check the pavuk homepage at URL:
+
+  http://pavuk.sourceforge.net/

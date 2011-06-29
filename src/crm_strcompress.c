@@ -1,4 +1,4 @@
-//  crm_fscm.c //sequence correlation monster
+//crm_scm.c //sequence correlation monster
 //  by Joe Langeway derived from crm_bit_entropy.c and 
 //    produced for the crm114 so:
 //  
@@ -44,6 +44,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -56,6 +57,8 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 #define NULL_INDEX 2147483647
 
@@ -107,8 +110,11 @@ static int joe_trace = 0;
 static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
 {
   long n_hash = 2 * n_bytes, n_prefix = 2 * n_bytes;
-  
+  char *o;
+  long i;
+
   SCM_HEADER_STRUCT *h = space;
+
   h->n_bytes = n_bytes;
   h->n_bytes_used = 0;
   h->n_trains = 0;
@@ -120,7 +126,7 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
   h->text_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes * sizeof(long) + n_hash * sizeof(HASH_STRUCT) + n_prefix * sizeof(PREFIX_STRUCT);
   h->text_pos = 0;
   
-  char *o = space;
+  o = space;
   s->header = h;
   s->text_pos = &h->text_pos;
   s->n_bytes = h->n_bytes;
@@ -131,7 +137,6 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
   s->prefix = (PREFIX_STRUCT *) &o[h->prefix_offset];
   s->text =   (char *)        &o[h->text_offset];
    
-  long i;
   for(i = 0; i < n_bytes; i++)
   {
     s->hash_root[i] = NULL_INDEX;
@@ -157,21 +162,27 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
   struct stat statbuf;
   if(stat (filename, &statbuf))
   {
-    long i, filesize;
+    void *space;
+	long i, filesize;
     FILE *f;
-    filesize = sizeof(SCM_HEADER_STRUCT) + n_bytes * (sizeof(long) + 2 * sizeof(HASH_STRUCT) + 2 * sizeof(PREFIX_STRUCT) + sizeof(char));
+    
+	filesize = sizeof(SCM_HEADER_STRUCT) + n_bytes * (sizeof(long) + 2 * sizeof(HASH_STRUCT) + 2 * sizeof(PREFIX_STRUCT) + sizeof(char));
     f = fopen(filename, "wb");
     i = filesize + 1024;
     while(i--)
       fputc('\0', f);
     fclose(f);
-    void *space = crm_mmap_file(filename, 0, filesize, PROT_READ | PROT_WRITE, MAP_SHARED,  NULL);
+    space = crm_mmap_file(filename, 0, filesize, PROT_READ | PROT_WRITE, MAP_SHARED,  NULL);
     make_scm_state(s, space);
   } else
   {
-    s->header = crm_mmap_file(filename, 0, statbuf.st_size, PROT_READ | PROT_WRITE, MAP_SHARED,  NULL);
-    char *o = (char*)s->header;
-    SCM_HEADER_STRUCT *h = s->header;
+    char *o;
+	SCM_HEADER_STRUCT *h;
+
+	s->header = crm_mmap_file(filename, 0, statbuf.st_size, PROT_READ | PROT_WRITE, MAP_SHARED,  NULL);
+    o = (char*)s->header;
+    
+	h = s->header;
     s->text_pos = &h->text_pos;
     s->n_bytes = h->n_bytes;
     s->free_hash_nodes = &h->free_hash_nodes;
@@ -198,7 +209,7 @@ static void unmap_file(SCM_STATE_STRUCT *s)
   {
     int hfd;                  //  hashfile fd
     FEATURE_HEADER_STRUCT foo;
-    hfd = open (s->learnfilename, O_RDWR);
+    hfd = open (s->learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
     read (hfd, &foo, sizeof(foo));
     lseek (hfd, 0, SEEK_SET);
     write (hfd, &foo, sizeof(foo));
@@ -207,20 +218,19 @@ static void unmap_file(SCM_STATE_STRUCT *s)
 #endif
 }
 
-#ifdef USE_MATCH_PREFIX
+#if 0 /* [i_a] unused */
 static int match_prefix(SCM_STATE_STRUCT *s, long a, long b)
 {
   return s->text[a] == s->text[b] && s->text[(a+1)%s->n_bytes] == s->text[(b+1)%s->n_bytes] && s->text[(a+2)%s->n_bytes] == s->text[(b+2)%s->n_bytes];  
 } 
 #endif
 
-
 static int match_prefix_char_ptr(SCM_STATE_STRUCT *s, long a, char *b)
 {
   return s->text[a] == b[0] && s->text[(a+1)%s->n_bytes] == b[1] && s->text[(a+2)%s->n_bytes] == b[2];  
 }
 
-//removes all prefixes which have had there text written over and all hash nodes whick are left empty afterwards
+//removes all prefixes which have had their text written over and all hash nodes which are left empty afterwards
 static void macro_groom(SCM_STATE_STRUCT *s)
 {
  // printf("macrogrooming!\n");
@@ -279,11 +289,16 @@ static void macro_groom(SCM_STATE_STRUCT *s)
 
 static PREFIX_STRUCT *add_new_string(SCM_STATE_STRUCT *s, long t)
 {
+  unsigned long key;
+  long i;
+  long *m;
+  long j;
   char tt[3];
   tt[0] = s->text[t]; tt[1] = s->text[(t+1)%s->n_bytes]; tt[2] = s->text[(t+2)%s->n_bytes];
   
-  unsigned long key = strnhash(tt, 3);
-  long i = s->hash_root[key % s->n_bytes], *m = &s->hash_root[key % s->n_bytes], j;
+  key = strnhash(tt, 3);
+  i = s->hash_root[key % s->n_bytes];
+  m = &s->hash_root[key % s->n_bytes];
   
   while(i != NULL_INDEX && s->hashee[i].key != key && !match_prefix_char_ptr(s, t, s->hashee[i].prefix_text))
   {
@@ -326,7 +341,9 @@ static void refute_string(SCM_STATE_STRUCT *s, char *t, long max_len)
 {
   //printf("refuting!\n");
   unsigned long key = strnhash(t, 3);
+  long k, *l, m, n, longest_prefix = NULL_INDEX, longest_len = 0;
   long i = s->hash_root[key % s->n_bytes], *j = &s->hash_root[key % s->n_bytes];
+  
   while(i != NULL_INDEX && s->hashee[i].key != key && (t[0] != s->hashee[i].prefix_text[0] || t[1] != s->hashee[i].prefix_text[1] || t[2] != s->hashee[i].prefix_text[2]))
   {
     j = &s->hashee[i].next;
@@ -334,7 +351,7 @@ static void refute_string(SCM_STATE_STRUCT *s, char *t, long max_len)
   }
   if(i == NULL_INDEX)
     return;
-  long k, *l, m, n, longest_prefix = NULL_INDEX, longest_len = 0;
+
   l = &s->hashee[i].first;
   k = s->hashee[i].first;
   while(k != NULL_INDEX)
@@ -388,15 +405,17 @@ static void refute_string(SCM_STATE_STRUCT *s, char *t, long max_len)
 }
 
 static int pow_table_init = 1;
-static double pow_table[256];
+
+static double pow_table[256] = {0.0};
+
 static double pow15m(long i)
 {
   if(i >= 256)
     return pow((double)i, 1.5);
   if(pow_table_init)
   {
-    pow_table_init = 0;
     long j;
+    pow_table_init = 0;
     for(j = 0; j < 256; j++)
       pow_table[j] = pow((double)j, 1.5);
   }
@@ -405,9 +424,11 @@ static double pow15m(long i)
 
 static double score_string(SCM_STATE_STRUCT *s, char *t, long max_len)
 {
+  long k, *l, m, n;
   unsigned long key = strnhash(t, 3);
   long i = s->hash_root[key % s->n_bytes], *j = &s->hash_root[key % s->n_bytes];
   double score = 0.0;
+
   while(i != NULL_INDEX && s->hashee[i].key != key && (t[0] != s->hashee[i].prefix_text[0] || t[1] != s->hashee[i].prefix_text[1] || t[2] != s->hashee[i].prefix_text[2]))
   {
     j = &s->hashee[i].next;
@@ -415,7 +436,6 @@ static double score_string(SCM_STATE_STRUCT *s, char *t, long max_len)
   }
   if(i == NULL_INDEX)
     return 0.0;
-  long k, *l, m, n;
   l = &s->hashee[i].first;
   k = s->hashee[i].first;
   while(k != NULL_INDEX)
@@ -455,6 +475,7 @@ static double score_document(SCM_STATE_STRUCT *s, char *doc, long len)
 {
   long i;
   double score = 1.0; //scores start at 1 ok!?
+
   for(i = 0; i < len; i++)
     score += score_string(s, doc + i, len - i);
   //len -= 1; //to prevent probabilities greater than one
@@ -471,6 +492,7 @@ int crm_expr_scm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr, long t
   
   SCM_STATE_STRUCT S, *s = &S;
   
+  long doc_start;
   long i;
   
   if(internal_trace)
@@ -488,7 +510,7 @@ int crm_expr_scm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr, long t
   
   txtptr += txtstart;
   
-  long doc_start = *s->text_pos;
+  doc_start = *s->text_pos;
   
   if(apb->sflags & CRM_REFUTE)
     for(i = 0; i < txtlen; i++)
@@ -538,7 +560,6 @@ int crm_expr_scm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr, lon
   
   double scores[MAX_CLASSIFIERS], probs[MAX_CLASSIFIERS], norms[MAX_CLASSIFIERS], bn, pR[MAX_CLASSIFIERS];
   long n_features[MAX_CLASSIFIERS], n_bytes_used[MAX_CLASSIFIERS];
-  //  Total features never used: long total_features;
   long out_pos;
   
   double tot_score = 0.0, suc_prob = 0.0, suc_pR;
@@ -642,13 +663,17 @@ int crm_expr_scm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr, lon
     out_pos += sprintf (outbuf + out_pos, "CLASSIFY succeeds; success probability: %f  pR: %6.4f\n", suc_prob, suc_pR);
   else
     out_pos += sprintf (outbuf + out_pos, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", suc_prob, log10(suc_prob) - log10(1.0 - suc_prob) );  
-  out_pos += sprintf (outbuf + out_pos, "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f  \n", max_scorer, filenames[max_scorer], probs[max_scorer], pR[max_scorer] );
+  /* [i_a] TODO: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
+  out_pos += sprintf (outbuf + out_pos, "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f\n", max_scorer, filenames[max_scorer], probs[max_scorer], pR[max_scorer] );
   
   out_pos += sprintf (outbuf + out_pos, "Total features in input file: %ld\n", txtlen);
   
   for(i = 0; i < n_classifiers; i++)
+  {
+    /* [i_a] TODO: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
     out_pos += sprintf (outbuf + out_pos, "#%ld (%s): bytes used: %ld, features: %ld, score: %3.2e, prob: %3.2e, pR: %6.2f\n", i, filenames[i], n_bytes_used[i], n_features[i], scores[i], probs[i], pR[i] ); 
-  
+  }
+
   if(out_var_len)
     crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_pos);
   

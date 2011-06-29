@@ -26,14 +26,30 @@
 
 #include "crm114_osbf.h"
 
-char version[] = "1.1";
+//
+//    Global variables
+
+long user_trace = 0;
+
+long internal_trace = 0;
+
+long microgroom_chain_length = 0;
+
+long microgroom_stop_after = 0;
+
+
+static char version[] = "1.1";
 
 void
-helptext ()
+helptext (void)
 {
+  /* GCC warning: warning: string length ‘xxx’ is greater than the length ‘509’ ISO C89 compilers are required to support */
   fprintf (stdout,
 	   "osbf-util version %s - generic osbf file utility.\n"
 	   "Usage: osbfutil [options]... css-filename\n"
+	   "\n",
+	   VERSION);
+  fprintf (stdout,
 	   "		-b   - brief; print only summary\n"
 	   "		-h   - print this help\n"
 	   "		-q   - quite mode; no warning messages\n"
@@ -46,7 +62,8 @@ helptext ()
 	   "		-D   - dump css file to stdout in CSV format.\n"
 	   "		-R csv-file  - create and restore css from CSV.\n"
 	   "		               Options -s and -S are ignored when"
-	   " restoring.\n", VERSION);
+	   " restoring.\n"
+	   );
 }
 
 int
@@ -84,7 +101,7 @@ main (int argc, char **argv)
   char *newinputbuf;
   newinputbuf = (char *) &hfsize;
 
-  bcounts = malloc (sizeof (unsigned long) * OSBF_FEATUREBUCKET_VALUE_MAX);
+  bcounts = malloc (sizeof (bcounts[0]) * OSBF_FEATUREBUCKET_VALUE_MAX); /* [i_a] */
 
   {
     struct stat statbuf;	//  filestat buffer
@@ -230,7 +247,11 @@ main (int argc, char **argv)
       }
 
     if (optind < argc)
-      strncpy (cssfile, argv[optind], sizeof (cssfile));
+	{
+      strncpy (cssfile, argv[optind], sizeof(cssfile)/sizeof(cssfile[0]));
+      cssfile[sizeof(cssfile)/sizeof(cssfile[0]) - 1] = 0;
+	  /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
+	}
     else
       {
 	helptext ();
@@ -378,13 +399,13 @@ main (int argc, char **argv)
 	version_index = *((unsigned long *) header->version);
 	if (version_index < 0 || version_index > UNKNOWN_VERSION)
 	  version_index = UNKNOWN_VERSION;
-	fprintf (stdout, "\n Sparse spectra file %s statistics: \n", cssfile);
+	fprintf (stdout, "\n Sparse spectra file %s statistics:\n", cssfile);
 	fprintf (stdout, "\n CSS file version                 : %12s",
 		 CSS_version_name[version_index]);
 	fprintf (stdout, "\n Header size (bytes)              : %12ld",
 		 header->buckets_start * sizeof (OSBF_FEATUREBUCKET_STRUCT));
-	fprintf (stdout, "\n Bucket size (bytes)              : %12d",
-		 sizeof (OSBF_FEATUREBUCKET_STRUCT));
+	fprintf (stdout, "\n Bucket size (bytes)              : %12ld",
+		 (long)sizeof (OSBF_FEATUREBUCKET_STRUCT));
 	fprintf (stdout, "\n Total available buckets          : %12ld",
 		 header->buckets);
 	fprintf (stdout, "\n Total buckets in use             : %12ld",
@@ -395,13 +416,13 @@ main (int argc, char **argv)
 		 ofbins);
 	fprintf (stdout, "\n Total hashed datums in file      : %12lld", sum);
 	fprintf (stdout, "\n Average datums per bucket        : %12.2f",
-		 (fbuckets > 0) ? (sum * 1.0) / (fbuckets * 1.0) : 0);
+		 (fbuckets > 0) ? (sum * 1.0) / (fbuckets * 1.0) : 0.0);
 	fprintf (stdout, "\n Number of chains                 : %12ld",
 		 nchains);
 	fprintf (stdout, "\n Maximum length of overflow chain : %12ld",
 		 maxchain);
 	fprintf (stdout, "\n Average length of overflow chain : %12.2f",
-		 nchains > 0 ? (totchain * 1.0) / (nchains * 1.0) : 0);
+		 nchains > 0 ? (totchain * 1.0) / (nchains * 1.0) : 0.0);
 	fprintf (stdout, "\n Average packing density          : %12.2f\n",
 		 (fbuckets * 1.0) / (header->buckets * 1.0));
 	for (i = 0; i < OSBF_FEATUREBUCKET_VALUE_MAX; i++)
@@ -469,10 +490,10 @@ main (int argc, char **argv)
 		    fprintf (stdout, "Working...");
 		    for (i = 0; i < header->buckets; i++)
 		      {
-			if (GET_BUCKET_VALUE(hashes[i]) > (int) cmdval)
+			if (GET_BUCKET_VALUE(hashes[i]) > (long) cmdval)
 			  {
 			    BUCKET_RAW_VALUE(hashes[i]) =
-			      GET_BUCKET_VALUE(hashes[i]) - cmdval;
+			      GET_BUCKET_VALUE(hashes[i]) - (long) cmdval;
 			  }
 			else
 			  {
@@ -483,19 +504,28 @@ main (int argc, char **argv)
 		  }
 		break;
 	      case 'd':
+			  {
+				  long val = (long)cmdval;
 		if (fields != 2)
+		{
 		  fprintf (stdout,
 			   "D command requires a numeric argument!\n");
-		else if (cmdval == 0)
-		  fprintf (stdout, "You can't divide by zero, nimrod!\n");
+		}
+		else if (val == 0)
+		{
+			fprintf (stdout, "You can't divide by zero, nimrod!\n");
+		}
 		else
 		  {
 		    fprintf (stdout, "Working...");
 		    for (i = 0; i < header->buckets; i++)
+			{
 		      BUCKET_RAW_VALUE(hashes[i]) =
-			  GET_BUCKET_VALUE(hashes[i]) / cmdval;
+			  GET_BUCKET_VALUE(hashes[i]) / val;
+			}
 		    fprintf (stdout, "done.\n");
 		  }
+			  }
 		break;
 	      case 'r':
 		zloop = 1;

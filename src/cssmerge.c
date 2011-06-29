@@ -21,6 +21,18 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+
+//
+//    Global variables
+
+long user_trace = 0;
+
+long internal_trace = 0;
+
+
+
+
+
 int main (int argc, char **argv)
 {
 
@@ -63,8 +75,8 @@ int main (int argc, char **argv)
 	    if (f2 == -1)
 	      {
 		f2 = i;
-	      };
-    };
+	      }
+    }
   
   if(!argv[1] || !argv[2])
     {
@@ -74,7 +86,7 @@ int main (int argc, char **argv)
       fprintf (stdout, "  -v           -verbose reporting\n");
       fprintf (stdout, "  -s NNNN      -new file length, if needed\n"); 
       exit (EXIT_SUCCESS);
-    };
+    }
   
 
   //             quick check- does the file even exist?
@@ -84,7 +96,7 @@ int main (int argc, char **argv)
       fprintf (stderr, "\nCouldn't find the input .CSS file %s", argv[f2]);
       fprintf (stderr, "\nCan't continue\n");
       exit (EXIT_FAILURE);
-    };
+    }
   //    
   hfsize2 = statbuf.st_size;
   //         mmap the hash file into memory so we can bitwhack it
@@ -98,7 +110,7 @@ int main (int argc, char **argv)
       fprintf (stderr, "\n Couldn't open file %s for reading; errno=%d .\n",
 		 argv[f2], errno);
       exit (EXIT_FAILURE);
-    };
+    }
 
   //            see if output file [f1] exists
   //             and stat it to get it's length
@@ -116,7 +128,7 @@ int main (int argc, char **argv)
 		   "\n Couldn't open file %s for writing; errno=%d .\n",
 		   argv[f1], errno);
 	  exit (EXIT_FAILURE);
-        };
+        }
       //       put in  bytes of NULL
       for (j = 0; j < sparse_spectrum_file_length
 	     * sizeof (FEATUREBUCKET_TYPE); j++) 
@@ -124,7 +136,7 @@ int main (int argc, char **argv)
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (argv[f1], &statbuf);
-    };
+    }
   //    
   hfsize1 = statbuf.st_size;
   //         mmap the hash file into memory so we can bitwhack it
@@ -138,7 +150,7 @@ int main (int argc, char **argv)
       fprintf (stderr, "\n Couldn't map file %s; errno=%d .\n",
 	       argv[f1], errno);
       exit (EXIT_FAILURE);
-    };
+    }
   
   //
   hfsize1 = hfsize1 / sizeof (FEATUREBUCKET_TYPE);
@@ -226,8 +238,8 @@ int main (int argc, char **argv)
 			   "Operation aborted at input bucket offset %lud .\n",
 			   i);
 		  exit (EXIT_FAILURE);
-		};
-	    };
+		}
+	    }
 	  //
 	  //   OK, we either found the correct bucket, or
 	  //   an empty bucket.  Either is fine... we clobber hash and key,
@@ -235,8 +247,8 @@ int main (int argc, char **argv)
 	  h1[hindex].hash   = hash;
 	  h1[hindex].key    = key;
 	  h1[hindex].value += value;
-	};
-    };
+	}
+    }
   if (verbose) fprintf (stderr, "\n");
   exit (EXIT_SUCCESS);
 }

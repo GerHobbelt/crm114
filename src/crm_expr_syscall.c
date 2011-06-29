@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,8 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 #ifdef WIN32
 typedef struct
@@ -50,12 +53,61 @@ typedef struct
   int timeout;
 } suckerparams;
 
+/*
+   return a malloc()ed string containing both errorcode and [optional] description
+ */
+static char *GetErrorString(const char *msg, DWORD errorcode)
+{
+	  char *errstr = NULL;
+	  DWORD fmtret;
+	  LPSTR dstbuf = NULL;
+	  int size;
+	  int len;
+
+	  fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER
+		  , NULL, errorcode, 0, (LPTSTR)&dstbuf, 0, NULL);
+	  if (!msg || !*msg)
+	  {
+		  msg = "%ld";
+	  }
+	  /* guestimate a proper buffer size here: */
+	  size = 80 + strlen(msg) + ((fmtret > 0 && dstbuf != NULL) ? strlen(dstbuf) : 0);
+	  errstr = malloc(sizeof(errstr[0]) * size);
+	  snprintf(errstr, size, msg, (long)errorcode);
+	  errstr[size - 1] = 0;
+	  len = strlen(errstr);
+	  if (dstbuf != NULL && fmtret > 0 && size - len > 0)
+	  {
+		  snprintf(errstr + len, size - len, " (%s)", dstbuf);
+	  }
+	  errstr[size - 1] = 0;
+	  if (dstbuf)
+	  {
+		  LocalFree(dstbuf);
+	  }
+	  return errstr;
+}
+
+static void fatalerror_Win32(const char *msg)
+{
+	DWORD error = GetLastError();
+	char *errmsg = GetErrorString("error code %ld", error);
+
+	fatalerror(msg, errmsg);
+	free(errmsg);
+}
+
+
 DWORD WINAPI pusher_proc(LPVOID lpParameter)
 {
   DWORD bytesWritten;
   pusherparams *p = (pusherparams *)lpParameter;
-  WriteFile(p->to_minion, p->inbuf, p->inlen, &bytesWritten, NULL);
+  if (!WriteFile(p->to_minion, p->inbuf, p->inlen, &bytesWritten, NULL))
+  {
+	  fprintf(stderr, "The pusher failed to send %ld input bytes to the minion.\n", (long)p->inlen);
+  }
   free(p->inbuf);
+  p->inbuf = NULL;
   if (p->internal_trace)
     fprintf (stderr, "pusher: input sent to minion.\n");
 
@@ -63,7 +115,11 @@ DWORD WINAPI pusher_proc(LPVOID lpParameter)
   //    wait for it to exit.
   if (! p->keep_proc)
     {
-      CloseHandle (p->to_minion);
+      if (!CloseHandle (p->to_minion))
+		  {
+			  fprintf(stderr, "The pusher failed to close the minion input pipe.\n");
+		  }
+
       if (internal_trace)
         fprintf (stderr, "minion input pipe closed\n");
     }
@@ -76,18 +132,25 @@ DWORD WINAPI sucker_proc(LPVOID lpParameter)
 {
   DWORD bytesRead;
   suckerparams *p = (suckerparams *)lpParameter;
-  char *outbuf = malloc(sizeof(char) * 8192);
 
-  //  we're in the sucker process here- just throw away
-  //  everything till we get EOF, then exit.
+#define OUTBUF_SIZE			8192 /* [i_a] */
+
+  char *obuf = malloc(sizeof(obuf[0]) * OUTBUF_SIZE);  /* [i_a] */
+
+  /*  we're in the sucker process here- just throw away
+      everything till we get EOF, then exit. */
   while (1)
     {
       Sleep (p->timeout);
-      ReadFile(p->from_minion, outbuf,
-               8192, &bytesRead, NULL);
+      if (!ReadFile(p->from_minion, obuf,
+               OUTBUF_SIZE, &bytesRead, NULL))
+	  {
+		  fprintf(stderr, "The sucker failed to read any data from the minion.\n");
+	  }
       if (bytesRead == 0) break;
-    };
+    }
   return 0;
+#undef OUTBUF_SIZE
 }
 #endif
 
@@ -111,16 +174,24 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   long exp_keep_len;
   long vstart;
   long vlen;
-  long done, charsread;
+  long done;
   int keep_proc;
   int async_mode;
+#ifdef WIN32  /* [i_a] */
+  DWORD charsread;
+  HANDLE to_minion[2];
+  HANDLE from_minion[2];
+  char sys_cmd_2nd[MAX_PATTERN];
+#else
+  long charsread;
   int to_minion[2];
   int from_minion[2];
-  pid_t minion;
   int minion_exit_status;
   pid_t pusher;
   pid_t sucker;
   pid_t random_child;
+#endif
+  pid_t minion; /* [i_a] */
   int status;
   long timeout;	
   
@@ -159,14 +230,14 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       if (user_trace)
 	fprintf (stderr, "Keeping the process around if possible\n");
       keep_proc = 1;
-    };
+    }
   async_mode = 0;
   if (apb->sflags & CRM_ASYNC)
     {
       if (user_trace)
 	fprintf (stderr, "Letting the process go off on it's own");
       async_mode = 1;
-    };
+    }
   
   //     Sanity check - <async> is incompatible with <keep>
   //
@@ -177,7 +248,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		     "we will use that.\n",
 		     "You need to fix this program.");
       async_mode = 0;
-    };
+    }
 
   //    get the input variable(s)
   //
@@ -233,12 +304,16 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   strcat (exp_keep_buf, ":*");
   strncat (exp_keep_buf, keep_buf, keep_len);
   exp_keep_len = crm_nexpandvar (exp_keep_buf, keep_len+2, MAX_PATTERN);
-  sscanf (exp_keep_buf, "MINION PROC PID: %d from-pipe: %d to-pipe: %d",
+
+#ifdef POSIX
+  if (3 != sscanf (exp_keep_buf, "MINION PROC PID: %d from-pipe: %d to-pipe: %d",
 	  &minion,
 	  &from_minion[0],
-	  &to_minion[1]);
-  
-#ifdef POSIX
+	  &to_minion[1]))
+		  {
+//			  nonfatalerror("Failed to decode the minion setup: ", exp_keep_buf);
+		  }
+
   //      if, no minion already existing, we create
   //      communications pipes and launch the subprocess.  This
   //      code borrows concepts from both liblaunch and from
@@ -256,7 +331,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  nonfatalerror ("Problem setting up the to/from pipes to a minion. ",
 			 "Perhaps the system file descriptor table is full?");
 	  return (1);
-	};
+	}
       minion = fork();
 
       if (minion < 0)
@@ -264,7 +339,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  nonfatalerror ("Tried to fork your minion, but it failed.",
 		      "Your system may have run out of process slots");
 	  return (1);
-	};
+	}
 
       if (minion == 0)
 	{   //  START OF IN THE MINION
@@ -321,18 +396,26 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		  char filename[MAX_PATTERN];
 		  if (sys_cmd[vstart] == '<')
 		    {
-		      strncpy (filename, &sys_cmd[vstart+1], vlen);
+				/* [i_a] make sure no buffer overflow is going to happen here */
+				if (vlen-1 >= MAX_PATTERN)
+					vlen = MAX_PATTERN - 1+1;
+		      strncpy (filename, &sys_cmd[vstart+1], vlen-1);
+			  assert(vlen-1 < MAX_PATTERN);
 		      filename[vlen-1] = '\0';
 		      if (user_trace)
 			fprintf (stderr, "Redirecting minion stdin to %s\n", 
 				 filename);
 		      freopen (filename, "rb", stdin); 
-		    };
+		    }
 		  if (sys_cmd[vstart] == '>')
 		    {
 		      if (sys_cmd[vstart+1] != '>')
 			{
-			  strncpy (filename, &sys_cmd[vstart+1], vlen);
+				/* [i_a] make sure no buffer overflow is going to happen here */
+				if (vlen-1 >= MAX_PATTERN)
+					vlen = MAX_PATTERN - 1+1;
+			  strncpy (filename, &sys_cmd[vstart+1], vlen-1);
+			  assert(vlen-1 < MAX_PATTERN);
 			  filename[vlen-1] = '\0';
 			  if (user_trace)
 			    fprintf (stderr, 
@@ -342,15 +425,19 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			}
 		      else
 			{
-			  strncpy (filename, &sys_cmd[vstart+2], vlen);
+				/* [i_a] make sure no buffer overflow is going to happen here */
+				if (vlen-2 >= MAX_PATTERN)
+					vlen = MAX_PATTERN - 1+2;
+			  strncpy (filename, &sys_cmd[vstart+2], vlen-2);
+			  assert(vlen-2 < MAX_PATTERN);
 			  filename[vlen-2] = '\0';
 			  if (user_trace)
 			    fprintf (stderr, 
 				     "Appending minion stdout to %s\n", 
 				     filename);
-			  freopen (filename, "a+", stdout); 
+			  freopen (filename, "ab+", stdout); 
 			}
-		    };
+		    }
 		}
 	      csl->cstmt = varline;
 	      //   and note that this isn't a failure.
@@ -371,9 +458,10 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	      if (retcode == -1 ) 
 		{
 		  char errstr [4096];
-		  sprintf (errstr, 
-			   "The command was >%s< and returned exit code %d .",
+		  snprintf (errstr, NUMBEROF(errstr),
+			   "The command was >%s< and returned exit code %d.",
 			   sys_cmd, WEXITSTATUS (retcode));
+		  errstr[NUMBEROF(errstr) - 1] = 0;
 		  nonfatalerror ("This program tried a shell command that "
 				 "didn't run correctly. ",
 				 errstr);
@@ -383,23 +471,23 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		    }
 		  else
 		    exit (WEXITSTATUS (retcode ));
-		};
+		}
 	      exit ( WEXITSTATUS (retcode) );
-	    };
-	};      //    END OF IN THE MINION
+	    }
+	}      //    END OF IN THE MINION
     }
   else
     {
       if (user_trace)
 	fprintf (stderr, "  reusing old minion PID: %d\n", minion);
-    };
+    }
   //      Now, we're out of the minion for sure.
   //    so we close the pipe ends we know we won't be using.
   if (to_minion[0] != 0) 
     {
       close (to_minion[0]);
       close (from_minion[1]);
-    };
+    }
   //  
   //   launch "pusher" process to send the buffer to the minion
   //    (this hint from Dave Soderberg).  This avoids the deadly
@@ -426,8 +514,8 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  //  The pusher always exits with success, so do NOT
 	  //  do not use the engine_exit_base value
 	  exit ( EXIT_SUCCESS );
-	};
-    };
+	}
+    }
   //    now we're out of the pusher process.
   //    if we don't want to keep this proc, we close it's input, and
   //    wait for it to exit.
@@ -464,7 +552,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  if (done < 0) done = 0;
 	  outbuf [done] = '\000';
 	  outlen = done ;
-	};
+	}
       if (keep_proc == 1 || async_mode == 1)
 	{
 	  //   we're in either 'keep' 'async' mode.  Set nonblocking mode, then
@@ -479,7 +567,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  outbuf [done] = '\000';
 	  outlen = done ;
 	  //fcntl (from_minion[0], F_SETFL, 0);
-	};
+	}
 
       //   If the minion process managed to fill our buffer, and we
       //   aren't "keep"ing it around, OR if the process is "async",
@@ -505,9 +593,9 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 				    data_window_size >> SYSCALL_WINDOW_RATIO );
 		  //  in the sucker here, don't use engine_exit_base exit
 		  if (charsread == 0) exit (EXIT_SUCCESS);
-		};
-	    };
-	};
+		}
+	    }
+	}
       
       //  and set the returned value into from_var.
       if (user_trace)
@@ -517,7 +605,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	fprintf (stderr, "  storing return str in var %s\n", from_var);
       
       crm_destructive_alter_nvariable ( from_var, vlen, outbuf, outlen);
-    };
+    }
   
   //  Record useful minion data, if possible.
   if (strlen (keep_buf) > 0)
@@ -533,7 +621,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       crm_destructive_alter_nvariable (keep_buf, keep_len,
 				       exp_keep_buf, 
 				       strlen (exp_keep_buf));
-    };
+    }
   //      If we're keeping this minion process around, record the useful
   //      information, like pid, in and out pipes, etc.
   if (keep_proc || async_mode)
@@ -564,10 +652,18 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    crm_destructive_alter_nvariable (keep_buf, keep_len,
 					   exit_value_string,
 					   strlen (exit_value_string));
-	};
-    };
+	}
+    }
 #endif
 #ifdef WIN32
+  if (3 != sscanf (exp_keep_buf, "MINION PROC PID: %ld from-pipe: %p to-pipe: %p",
+	  &minion,
+	  &from_minion[0],
+	  &to_minion[1]))
+		  {
+//			  nonfatalerror("Failed to decode the minion setup: ", exp_keep_buf);
+		  }
+
   //      if, no minion already existing, we create
   //      communications pipes and launch the subprocess.  This
   //      code borrows concepts from both liblaunch and from
@@ -576,7 +672,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (minion == 0)
     {
       int retcode;
-      long vstart, vlen;
+      long vstart2, vlen2;
       long varline;
 
       if (user_trace)
@@ -587,10 +683,18 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       pipeSecAttr.lpSecurityDescriptor = NULL;
 
       status = CreatePipe(&to_minion[0], &to_minion[1], &pipeSecAttr, 2^10 * 32);
+	  if (!status)
+	  {
+		  fatalerror_Win32("Failed to create minion pipe #1");
+	  }
       status = CreatePipe(&from_minion[0], &from_minion[1], &pipeSecAttr, 2^10 * 32);
+	  if (!status)
+	  {
+		  fatalerror_Win32("Failed to create minion pipe #2");
+	  }
 
-      crm_nextword (sys_cmd, strlen (sys_cmd), 0, &vstart, &vlen);
-      varline = crm_lookupvarline (vht, sys_cmd, vstart, vlen);
+      crm_nextword (sys_cmd, strlen (sys_cmd), 0, &vstart2, &vlen2);
+      varline = crm_lookupvarline (vht, sys_cmd, vstart2, vlen2);
       if (varline > 0)
         {
             fatalerror (" Sorry, syscall to a label isn't implemented in this version", "");
@@ -598,61 +702,121 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       else
         {
           STARTUPINFO si;
-          PROCESS_INFORMATION pi;
+		  PROCESS_INFORMATION pi = {0};
           HANDLE stdout_save, stdin_save;
           HANDLE to_minion_write, from_minion_read;
+		  DWORD error = 0;
 
           stdout_save = GetStdHandle(STD_OUTPUT_HANDLE);
-          SetStdHandle(STD_OUTPUT_HANDLE, from_minion[1]);
+          if (!SetStdHandle(STD_OUTPUT_HANDLE, from_minion[1]))
+		  {
+			  fatalerror_Win32("Failed to redirect stdout for minion");
+		  }
 
           stdin_save = GetStdHandle(STD_INPUT_HANDLE);
-          SetStdHandle(STD_INPUT_HANDLE, to_minion[0]);
+          if (!SetStdHandle(STD_INPUT_HANDLE, to_minion[0]))
+  		  {
+			  fatalerror_Win32("Failed to redirect stdin for minion");
+		  }
 
-          DuplicateHandle(GetCurrentProcess(), from_minion[0], GetCurrentProcess(), &from_minion_read , 0, FALSE, DUPLICATE_SAME_ACCESS);
-          CloseHandle(from_minion[0]);
+          if (!DuplicateHandle(GetCurrentProcess(), from_minion[0], GetCurrentProcess(), &from_minion_read , 0, FALSE, DUPLICATE_SAME_ACCESS))
+		  {
+			  fatalerror_Win32("Failed to dup the read handle for minion");
+		  }
+          if (!CloseHandle(from_minion[0]))
+		  {
+			  fatalerror_Win32("Failed to close the read handle after dup for minion");
+		  }
           from_minion[0] = from_minion_read;
 
-          DuplicateHandle(GetCurrentProcess(), to_minion[1], GetCurrentProcess(), &to_minion_write , 0, FALSE, DUPLICATE_SAME_ACCESS);
-          CloseHandle(to_minion[1]);
+          if (!DuplicateHandle(GetCurrentProcess(), to_minion[1], GetCurrentProcess(), &to_minion_write , 0, FALSE, DUPLICATE_SAME_ACCESS))
+		  {
+			  fatalerror_Win32("Failed to dup the write handle for minion");
+		  }
+          if (!CloseHandle(to_minion[1]))
+		  {
+			  fatalerror_Win32("Failed to close the write handle after dup for minion");
+		  }
           to_minion[1] = to_minion_write;
 
           if (user_trace)
             fprintf (stderr, "systemcalling on shell command %s\n",
                      sys_cmd);
 
-
           ZeroMemory( &si, sizeof(si) );
           si.cb = sizeof(si);
 
           ZeroMemory( &pi, sizeof(pi) );
 
-          retcode = CreateProcess(NULL, sys_cmd, NULL, NULL, TRUE , NULL, NULL, NULL, &si, &pi);
+		  /* MSVC spec says 'sys_cmd' will be edited inside CreateProcess. Keep the original around for
+		     the second attempt: */
+		  strcpy(sys_cmd_2nd, sys_cmd);
+
+          retcode = CreateProcess(NULL, sys_cmd, NULL, NULL, TRUE , 0, NULL, NULL, &si, &pi);
 
           if (!retcode)
-            {
-              char errstr [4096];
-              sprintf (errstr, "The command was >>%s<< and returned exit code %d .",
-                       sys_cmd, retcode);
-              fatalerror ("This program tried a shell command that "
-                          "didn't run correctly. ",
-                       errstr);
-	      { if (engine_exit_base != 0)
-		  {
-		    exit (engine_exit_base + 13);
+          {
+              error = GetLastError();
+				
+			  if (error == ERROR_FILE_NOT_FOUND)
+			  {
+				  /* this might be an 'internal' command: try a second time, now after prefixing it with 'cmd /c': */
+				  strcpy(sys_cmd, "cmd /c ");
+				  strncat(sys_cmd, sys_cmd_2nd, (sizeof(sys_cmd) - sizeof("cmd /c "))/sizeof(sys_cmd[0]));
+					  
+			      retcode = CreateProcess(NULL, sys_cmd, NULL, NULL, TRUE , 0, NULL, NULL, &si, &pi);
+
+				  error = GetLastError();
+			  }
 		  }
-		else
-		  exit ( EXIT_FAILURE );
-	      }
+
+			  if (!retcode)
+				{
+				  char *errmsg = GetErrorString("error code %ld", error);
+				  char *errstr;
+				  int size;
+				  int len;
+				  const char *msgfmt = "command >>%s<< - CreateProcess returned %s";
+
+				  // use the undamaged sys_cmd entry for error reporting...
+				  size = 1 + strlen(errmsg) + strlen(sys_cmd_2nd) + strlen(msgfmt);
+				  errstr = malloc(sizeof(errstr[0]) * size);
+				  snprintf(errstr, size, msgfmt, sys_cmd_2nd, (long)error);
+				  errstr[size - 1] = 0;
+
+				  fatalerror("This program tried a shell command that "
+							  "didn't run correctly. ",
+						   errstr);
+				  free(errstr);
+				  free(errmsg);
+
+			   if (engine_exit_base != 0)
+			  {
+				exit(engine_exit_base + 13);
+			  }
+			else
+			{
+			  exit(EXIT_FAILURE);
+			   } 
             }
 	  else
             {
               minion = pi.dwProcessId;
               hminion = pi.hProcess;
-              SetStdHandle(STD_OUTPUT_HANDLE, stdout_save);
-              SetStdHandle(STD_INPUT_HANDLE, stdin_save);
-              CloseHandle(pi.hThread);
+              if (!SetStdHandle(STD_OUTPUT_HANDLE, stdout_save))
+	  		  {
+				  fatalerror_Win32("Failed to reset stdout for minion");
+			  }
+              if (!SetStdHandle(STD_INPUT_HANDLE, stdin_save))
+	  		  {
+				  fatalerror_Win32("Failed to reset stdin for minion");
+			  }
+              if (!CloseHandle(pi.hThread))
+	  		  {
+				  fatalerror_Win32("Failed to close the execution thread handle for minion");
+			  }
             }
-        };
+        }
     }
   else
     {
@@ -660,15 +824,23 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fprintf (stderr, "  reusing old minion PID: %d\n", minion);
       hminion = OpenProcess(PROCESS_ALL_ACCESS, 0, minion);
       if (hminion == NULL)
-        fatalerror("Couldn't open the existing minion process", "");
-    };
+	  {
+        fatalerror_Win32("Couldn't open the existing minion process");
+	  }
+    }
   //      Now, we're out of the minion for sure.
   //    so we close the pipe ends we know we won't be using.
   if (to_minion[0] != 0)
     {
-      CloseHandle (to_minion[0]);
-      CloseHandle (from_minion[1]);
-    };
+      if (!CloseHandle (to_minion[0]))
+	  {
+		  fatalerror_Win32("Failed to close read pipe for minion");
+	  }
+      if (!CloseHandle (from_minion[1]))
+	  {
+		  fatalerror_Win32("Failed to close write pipe for minion");
+	  }
+    }
   //
   //   launch "pusher" process to send the buffer to the minion
   //    (this hint from Dave Soderberg). This avoids the deadly
@@ -680,8 +852,8 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (strlen (inbuf) > 0)
     {
       HANDLE hThread;
-      pusherparams pp;
-      char *inbuf_copy = malloc(sizeof(char) * inlen+1);
+	  pusherparams pp = {0};
+      char *inbuf_copy = malloc(sizeof(inbuf_copy[0]) * (inlen+1)); /* [i_a] */
       int i;
       //Since the pusher thread may continue executing after the
       //syscall statement has finished, we need to make a copy of
@@ -695,7 +867,10 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       pp.internal_trace = internal_trace;
       pp.keep_proc = keep_proc;
       pp.to_minion = to_minion[1];
-      CreateThread(NULL, 0, pusher_proc , &pp , 0, &hThread);
+      if (!CreateThread(NULL, 0, pusher_proc, &pp, 0, (LPDWORD)&hThread))
+	  {
+		  fatalerror_Win32("Failed to start the pusher thread");
+	  }
     }
 
   //   and see what is in the pipe for us.
@@ -715,10 +890,13 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
           Sleep (timeout);
           charsread = 0;
 
-          ReadFile(from_minion[0],
+          if (!ReadFile(from_minion[0],
                    outbuf + done,
                    (data_window_size >> SYSCALL_WINDOW_RATIO) - done - 2,
-                   &charsread, NULL);
+                   &charsread, NULL))
+	   	  {
+			  fatalerror_Win32("Failed to sync-read any data from the minion");
+		  }
 
           done = done + charsread;
           if (charsread > 0 && done + 2 < (data_window_size >> SYSCALL_WINDOW_RATIO))
@@ -730,14 +908,17 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       else
         {
           //   we're in 'async' mode. Just grab what we can
-          ReadFile(from_minion[0],
+          if (!ReadFile(from_minion[0],
                    &outbuf[done],
-                   (data_window_size >> SYSCALL_WINDOW_RATIO), &charsread, NULL);
+                   (data_window_size >> SYSCALL_WINDOW_RATIO), &charsread, NULL))
+	   	  {
+			  fatalerror_Win32("Failed to async read any data from the minion");
+		  }
+
           done = charsread;
           if (done < 0) done = 0;
           outbuf [done] = '\000';
           outlen = done ;
-
         }
 
         //   If the minion process managed to fill our buffer, and we
@@ -751,10 +932,13 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
              && keep_proc == 0))
           {
             HANDLE hThread;
-            suckerparams sp;
+			suckerparams sp = {0};
             sp.from_minion = from_minion[0];
             sp.timeout = timeout;
-            CreateThread(NULL, 0, sucker_proc , &sp , NULL, &hThread);
+            if (!CreateThread(NULL, 0, sucker_proc, &sp, 0, (LPDWORD)&hThread))
+			  {
+				  fatalerror_Win32("Failed to start the sucker thread");
+			  }
           }
 
           //  and set the returned value into from_var.
@@ -771,16 +955,16 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       if (strlen (keep_buf) > 0)
         {
           sprintf (exp_keep_buf,
-                   "MINION PROC PID: %d from-pipe: %d to-pipe: %d",
+                   "MINION PROC PID: %ld from-pipe: %p to-pipe: %p",
                    minion,
                    from_minion[0],
                    to_minion[1]);
           if (internal_trace)
-            fprintf (stderr, "   saving minion state: %s \n", exp_keep_buf);
+            fprintf (stderr, "   saving minion state: %s\n", exp_keep_buf);
           crm_destructive_alter_nvariable (keep_buf, keep_len,
                                            exp_keep_buf,
                                            strlen (exp_keep_buf));
-        };
+        }
 
       //      If we're keeping this minion process around, record the useful
       //      information, like pid, in and out pipes, etc.
@@ -792,13 +976,20 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
           //   no, we're not keeping it around, so close the pipe.
           //
-          CloseHandle(from_minion [0]);
+          if (!CloseHandle(from_minion [0]))
+		  {
+			  fatalerror_Win32("Failed to close the read pipe for non-async minion");
+		  }
 
-          WaitForSingleObject(hminion, INFINITE);
+          if (WAIT_FAILED == WaitForSingleObject(hminion, INFINITE))
+		  {
+			  fatalerror_Win32("Failed while waiting for the minion to terminate");
+		  }
+
           if (!GetExitCodeProcess(hminion, &exit_code))
-            {
-              DWORD error = GetLastError();
-            }
+		  {
+			  fatalerror_Win32("Failed to grab the exit code from the system call");
+		  }
           if ( crm_vht_lookup (vht, keep_buf, strlen (keep_buf)))
             {
               char exit_value_string[MAX_VARNAME];
@@ -812,9 +1003,12 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 crm_destructive_alter_nvariable (keep_buf, keep_len,
                                                  exit_value_string,
                                                  strlen (exit_value_string));
-        };
-      CloseHandle(hminion);
-    };
+        }
+      if (!CloseHandle(hminion))
+	  {
+		  fatalerror_Win32("Failed to close the system call minion handle");
+	  }
+    }
 #endif
   return (0);
-};
+}

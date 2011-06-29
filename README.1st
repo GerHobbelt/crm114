@@ -1,0 +1,37 @@
+# $Id: README.1st,v 1.7 2004/08/19 11:10:25 vanbaal Exp $
+
+This is a repackaging of Bill Yerazunis's CRM114.  The official
+CRM114 releases are available from http://crm114.sourceforge.net/ .
+
+Some of the differences with official release: Bill's Makefile is replaced with
+configure and Makefile.in.  Files listing BSD specific build tricks are
+removed.  INSTALL file, documenting configure, added.  Lib TRE not distributed
+with CRM114.  The crm114 interpreter and the accompanying tools have
+manpages.  See the NEWS file for more details.
+
+Since the Makefile is replaced, remarks on make targets and build/install
+instructions in documentation like README are likely not relevant for this
+package!
+
+The ChangeLog is about changes on the difference of Bill's .src.tar.gz and this
+auto*.tar.gz only.  Some of the changes made by Bill (which are likely much
+more interesting to you) are recorded in README.
+
+Stuff here is build from CVS at http://sourceforge.net/cvs/?group_id=47249 .
+Instructions on how to build from CVS are in
+http://cvs.sourceforge.net/viewcvs.py/crm114/crm114/HACKING?view=markup .
+
+As long as the changes are not yet integrated in the official CRM114 release,
+new builds of this tarball are published on
+http://sourceforge.net/project/showfiles.php?group_id=47249 and will be
+announced on the crm114-general (in lists.sourceforge.net) mailing list.  An
+archive of this list is published on
+http://sourceforge.net/mailarchive/forum.php?forum_id=32320 .
+
+Work on this autoconfiscation is done by Joost van Baal
+<joostvb-crm114@mdcc.cx>, Raul Miller <moth@magenta.com> and Peter E. Popovich
+<peter@popovich.net>.  Some of the implemented ideas are from Paolo
+<pp@ieee.org>.
+
+       -- Joost van Baal
+

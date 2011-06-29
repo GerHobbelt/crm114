@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,7 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
 
 
 //    How to learn correlation-style- just append the text to be 
@@ -70,7 +72,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   
 
   if (internal_trace)
-    fprintf (stderr, "executing a LEARN (correlation format) \n");
+    fprintf (stderr, "executing a LEARN (correlation format)\n");
 
   //   Keep the gcc compiler from complaining about unused variables
   //  i = hctable[0];
@@ -102,20 +104,20 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       eflags = 1;
       if (user_trace)
 	fprintf (stderr, "turning oncase-insensitive match\n");
-    };
+    }
   if (apb->sflags & CRM_REFUTE)
     {
       sense = -sense;
       if (user_trace)
 	fprintf (stderr, " refuting learning\n");
-    };
+    }
   microgroom = 0;
   if (apb->sflags & CRM_MICROGROOM)
     {
       microgroom = 1;
       if (user_trace)
 	fprintf (stderr, " enabling microgrooming.\n");
-    };
+    }
 
   //
   //             grab the filename, and stat the file
@@ -143,7 +145,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	{
 	  fprintf (stderr, "\nCreating new correlate file %s\n", &htext[i]);
 	  fprintf (stderr, "Opening file %s for write\n", &htext[1]);
-	};
+	}
       f = fopen (&htext[i], "wb");
       if (!f)
 	{
@@ -158,14 +160,14 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  else
 	    exit (EXIT_FAILURE);
 
-        };
+        }
       //      fputc ('\001', f); don't do any output at all.
       made_new_file = 1;
       //      
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (&htext[i], &statbuf);
-    };
+    }
   //    
   hfsize = statbuf.st_size;
   if (user_trace) 
@@ -175,21 +177,21 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //
   //         open the text file into memory so we can bitwhack it
   //
-  hfd = open (&(htext[i]), O_RDWR);
+  hfd = open (&(htext[i]), O_RDWR | O_BINARY);
   if (hfd < 0) 
     {
       fev = fatalerror ("Couldn't open the correlation file named: ",
 			&htext[i]);
       return (fev);
-    };
+    }
 
   //
   //    get the text to "learn" (well, append to the correlation file)
   //
   //     This is the text that we'll append to the correlation file.
-  k = 0;
-  j = 0;
-  i = 0;
+
+  /* [i_a] removed i=0: important! */
+
   if (llen > 0)
     {
       vhtindex = crm_vht_lookup (vht, ltext, llen);
@@ -197,7 +199,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   else
     {
       vhtindex = crm_vht_lookup (vht, ":_dw:", 5);
-    };
+    }
   
   if (vht[vhtindex] == NULL)
     {
@@ -205,7 +207,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       q = fatalerror (" Attempt to LEARN from a nonexistent variable ",
 		  ltext);
       return (q);
-    };
+    }
   mdw = NULL;
   if (tdw->filetext == vht[vhtindex]->valtxt)
     mdw = tdw;
@@ -226,12 +228,16 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       fwrite (&(mdw->filetext[textoffset]), 
 	      ((textlen < 128) ? textlen : 128),1,stderr);
       fprintf (stderr, "\n");
-    };
+    }
 
   //      append the "learn" text to the end of the file.
   //
   lseek (hfd, 0, SEEK_END);
-  write (hfd, &(mdw->filetext[textoffset]), textlen);
+  if (textlen != write(hfd, &(mdw->filetext[textoffset]), textlen))
+  {
+	  fatalerror("Failed to append the 'learn' text to the correlation file '%s'\n", &htext[i]);
+  }
+
   close (hfd);
 
   return (0);
@@ -286,10 +292,10 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long long total_quad_hits;    // actual total cube hits for all classifiers
   long long total_features;     // total number of characters in the system
 
-  long totalhits [MAX_CLASSIFIERS];
+  hitcount_t totalhits [MAX_CLASSIFIERS];
   double tprob;         //  total probability in the "success" domain.
 
-  double textlen;    //  text length  - rougly corresponds to
+  long textlen;    //  text length  - rougly corresponds to   /* [i_a] */
                         //  information content of the text to classify
   
   double ptc[MAX_CLASSIFIERS]; // current running probability of this class
@@ -335,7 +341,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     memmove (svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
     svrbl[vlen] = '\000';
-  };
+  }
   
   //     status variable's text (used for output stats)
   //    
@@ -351,7 +357,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       cflags += REG_ICASE;
       eflags = 1;
-    };
+    }
 
   //   compile the word regex
 /* unused code
@@ -363,7 +369,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
       nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
       goto regcomp_failed;
-    };
+    }
 */
   
 
@@ -383,9 +389,9 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       cube_hits[i] = 0;       // cube of the runlength
       quad_hits[i] = 0;       // quad of the runlength
       incr_hits[i] = 0;      // 1+2+3... hits hits
-      totalhits[i] = 0.0;     // absolute hit counts 
+      totalhits[i] = 0;     // absolute hit counts   /* [i_a] */
       ptc[i] = 0.5;      // priori probability
-    };
+    }
 
   // 
   
@@ -400,7 +406,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //   GROT GROT GROT  this isn't NULL-clean on filenames.  But then
   //    again, stdio.h itself isn't NULL-clean on filenames.
   if (user_trace)
-    fprintf (stderr, "Classify list: -%s- \n", htext);
+    fprintf (stderr, "Classify list: -%s-\n", htext);
   fn_start_here = 0;
   fnlen = 1;
   while ( fnlen > 0 && ((maxhash < MAX_CLASSIFIERS-1)))
@@ -414,20 +420,20 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  fn_start_here = fnstart + fnlen + 1;
 	  fname[fnlen] = '\000';
 	  if (user_trace)
-	    fprintf (stderr, "Classifying with file -%s- "\
+	    fprintf (stderr, "Classifying with file -%s- "
 			     "succhash=%ld, maxhash=%ld\n",
 			     fname, succhash, maxhash);
 	  if ( fname[0] == '|' && fname[1] == '\000')
 	    {
 	      if (vbar_seen)
 		{
-		  nonfatalerror ("Only one ' | ' allowed in a CLASSIFY. \n" ,
+		  nonfatalerror ("Only one ' | ' allowed in a CLASSIFY.\n" ,
 				 "We'll ignore it for now.");
 		}
 	      else
 		{
 		  succhash = maxhash;
-		};
+		}
 	      vbar_seen ++;
 	    }
 	  else
@@ -472,26 +478,28 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			      fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
 					       &htext[i]);
 			      return (fev);
-			    };
+			    }   /* [i_a] */
 
 			  //
 			  //     save the name for later...
 			  //
-			  hashname[maxhash] = (char *) malloc (fnlen+10);
+			  hashname[maxhash] = (char *) malloc((fnlen+10) * sizeof(hashname[maxhash][0])); /* [i_a] */
 			  if (!hashname[maxhash])
+			  {
 			    untrappableerror(
 			      "Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.");
+			  }
 			  strncpy(hashname[maxhash],fname,fnlen);
 			  hashname[maxhash][fnlen]='\000';
 			  maxhash++;
-			};
-		};
-	    };
+			}
+		}
+	    }
 	  if (maxhash > MAX_CLASSIFIERS-1)
 	    nonfatalerror ("Too many classifier files.",
 			   "Some may have been disregarded");
-	};
-    };
+	}
+    }
 
   //
   //    If there is no '|', then all files are "success" files.  
@@ -512,14 +520,14 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (maxhash == 0)
     {
       fatalerror ("Couldn't open at least 1 .css files for classify().", "");
-    };
+    }
   //	do we have at least 1 valid .css file at both sides of '|'?
   //if (!vbar_seen || succhash < 0 || (maxhash < succhash + 2))
   //  {
   //    nonfatalerror (
   //      "Couldn't open at least 1 .css file per SUCC | FAIL classes "
   //	" for classify().\n","Hope you know what are you doing.");
-  //  };
+  //  }
 
   //
   //   now all of the files are mmapped into memory,
@@ -583,7 +591,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		  //   nope, they didn't match. 
 		  //   So, we do the end-of-runlength stuff:
 		  ilm = 0;
-		};
+		}
 	      if (0)
 		fprintf (stderr, "ik: %ld  it: %ld  chars %c %c lin: %lld  sqr: %lld cube: %lld quad: %lld\n",
 			 ik, it,
@@ -593,9 +601,9 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			 square_hits[k],
 			 cube_hits[k],
 			 quad_hits[k]);
-	    };
-	};
-    };
+	    }
+	}
+    }
   
 
   //   Now we have the total hits for each text corpus.  We can then
@@ -627,7 +635,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       total_cube_hits += cube_hits[k];
       total_quad_hits += quad_hits[k];
       total_features += hashlens[k];
-    };
+    }
 
 
   for (k = 0; k < maxhash; k++)
@@ -655,7 +663,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       else
 	{
 	  ptc [k] = 0.5;
-	};
+	}
     }
 
 
@@ -693,11 +701,11 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       for (k = 0; k < maxhash; k++)
 	{
 	  fprintf (stderr, 
-		   " file: %ld  linear: %lld  square: %lld  RMS: %6.4e  ptc[%ld] = %6.4e \n",
+		   " file: %ld  linear: %lld  square: %lld  RMS: %6.4e  ptc[%ld] = %6.4e\n",
 		   k, linear_hits[k], square_hits[k], 
 		   sqrt(0.0+square_hits[k]), k, ptc[k]);
-	};
-    };
+	}
+    }
   //    
 
   ;      //  end of repeat-the-regex loop
@@ -708,13 +716,13 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   for (k = 0; k < maxhash; k++)
     {
 	crm_munmap_file(hashes[k]);
-    };
+    }
   
   if (user_trace) 
     {
       for (k = 0; k < maxhash; k++)
 	fprintf (stderr, "Probability of match for file %ld: %f\n", k, ptc[k]);
-    };
+    }
   //
   tprob = 0.0;
   for (k = 0; k < succhash; k++)
@@ -731,13 +739,13 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       for (m = 0; m < succhash; m++)
 	{
 	  accumulator = accumulator + ptc[m];
-	};
+	}
       remainder = 10 * DBL_MIN;
       for (m = succhash; m < maxhash; m++)
 	if (bestseen != m)
 	  {
 	    remainder = remainder + ptc[m];
-	  };
+	  }
       overall_pR = log10 (accumulator) - log10 (remainder);
       
       //   note also that strcat _accumulates_ in stext.
@@ -751,7 +759,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       else
 	{
 	  sprintf (buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR );
-	};
+	}
       if (strlen (stext) + strlen(buf) <= stext_maxlen)
 	strcat (stext, buf);
       bestseen = 0;
@@ -762,13 +770,14 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	if (bestseen != m)
 	  {
 	    remainder = remainder + ptc[m];
-	  };
-      sprintf (buf, "Best match to file #%ld (%s) "\
-	       "prob: %6.4f  pR: %6.4f  \n",
+	  }
+      snprintf (buf, NUMBEROF(buf), "Best match to file #%ld (%s) "\
+	       "prob: %6.4f  pR: %6.4f\n",
 	       bestseen,
 	       hashname[bestseen],
 	       ptc[bestseen],
 	       (log10(ptc[bestseen]) - log10(remainder)));
+	  buf[NUMBEROF(buf) - 1] = 0;
       if (strlen (stext) + strlen(buf) <= stext_maxlen)
 	strcat (stext, buf);
       sprintf (buf, "Total features in input file: %ld\n", hashlens[bestseen]);
@@ -782,10 +791,10 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    if (k != m)
 	      {
 		remainder = remainder + ptc[m];
-	      };
-	  sprintf (buf, 
+	      }
+	  snprintf (buf, NUMBEROF(buf),
 		   "#%ld (%s):"\
-		   " features: %ld, L1: %lld L2: %lld L3: %lld, l4: %lld prob: %3.2e, pR: %6.2f \n", 
+		   " features: %ld, L1: %lld L2: %lld L3: %lld, l4: %lld prob: %3.2e, pR: %6.2f\n", 
 		   k,
 		   hashname[k],
 		   hashlens[k],
@@ -795,10 +804,11 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		   quad_hits[k],
 		   ptc[k], 
 		   (log10 (ptc[k]) - log10 (remainder) )  );
+	  buf[NUMBEROF(buf) - 1] = 0;
 	  // strcat (stext, buf);
 	  if (strlen(stext)+strlen(buf) <= stext_maxlen)
 	    strcat (stext, buf);
-	};
+	}
       // check here if we got enough room in stext to stuff everything
       // perhaps we'd better rise a nonfatalerror, instead of just
       // whining on stderr
@@ -808,10 +818,10 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			 "the statistics text.  Perhaps you could try bigger "
 			 "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
 			 " ");
-	};
+	}
       crm_destructive_alter_nvariable (svrbl, svlen, 
 				       stext, strlen (stext));
-    };
+    }
   
   //
   //  Free the hashnames, to avoid a memory leak.
@@ -826,7 +836,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
       csl->aliusstk [csl->mct[csl->cstmt]->nest_level] = -1;
       return (0);
-    };
+    }
   
   
   //    
@@ -835,4 +845,4 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     fprintf (stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
 // regcomp_failed:
   return (0);
-};
+}

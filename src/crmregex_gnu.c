@@ -14,24 +14,7 @@
 //      into whatever calls your preferred regex package uses.   
 //
 
-//#include "crm114_sysincludes.h"
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
-#include <float.h>
-#include <math.h>
-#include <locale.h>
-#include <sys/times.h>
-#include <signal.h>
+#include "crm114_sysincludes.h" /* [i_a] */
 
 #include <regex.h>
 
@@ -59,8 +42,8 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 	  fatalerror ("The regex contains a NUL inside the stated length,",
 		  "but your GNU regex library can't handle embedded NULs.  Therefore, treat all results WITH GREAT SUSPICION.");
 	  null_errored = 1;
-	};
-    };
+	}
+    }
   //  
   //   bug workaround for regex libraries that can't compile the null regex
   if (regex_len == 0)
@@ -92,7 +75,7 @@ int crm_regexec ( regex_t *preg, char *string, long string_len,
     {
       fprintf (stderr, "    crocking in a NULL for the %c\n", 
 	     savedcrockchar);
-    };
+    }
 
   if (strlen (string) < string_len)
     {
@@ -104,7 +87,7 @@ int crm_regexec ( regex_t *preg, char *string, long string_len,
 		      "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");
 	  null_errored = 1;
 	}
-    };
+    }
   regexresult = regexec ( preg, string, nmatch, pmatch, eflags);
   
   //    and de-crock the nulled character
@@ -123,12 +106,12 @@ size_t crm_regerror (int errorcode, regex_t *preg, char *errbuf,
 
 void crm_regfree (regex_t *preg)
 {
-    return (regfree (preg));
-};
+    regfree (preg); /* [i_a] */
+}
 
-char * crm_regversion ()
+char * crm_regversion (void)
 {
   static char verstr [128] = "Gnu Regex" ;
 
   return (verstr);
-};
+}

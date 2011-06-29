@@ -22,6 +22,7 @@
 #include "crm114.h"
 
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -34,6 +35,8 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 //        And the translate routine.  We use strntrn to do the hard work;
 //        this code here is just glue code.
@@ -68,7 +71,7 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       if (user_trace)
 	fprintf (stderr, "  uniquing flag turned on...\n");
       strntrn_flags = strntrn_flags | CRM_UNIQUE;
-    };
+    }
   //
   //                                How about the LITERAL flag
   if (apb->sflags & CRM_LITERAL)
@@ -76,7 +79,7 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       if (user_trace)
 	fprintf (stderr, "  literal (no invert or ranges) turned on...\n");
       strntrn_flags = strntrn_flags | CRM_LITERAL ;
-    };
+    }
 
   //      Get the destination for the translation
   //    
@@ -86,7 +89,7 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //  {
   //    strcpy (destination, ":_dw:");
   //    destination_len = 5;
-  //  };
+  //  }
 
   if (internal_trace)
     fprintf (stderr, " destination: ***%s*** len=%ld\n",
@@ -116,8 +119,8 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   if (internal_trace)
     fprintf (stderr, 
-	     "restriction out: vmidx: %ld  mdw: %ld   start: %ld  len: %ld\n",
-	     vmidx, (long) mdwptr, offset, len);
+	     "restriction out: vmidx: %ld  mdw: %p   start: %ld  len: %ld\n",
+	     vmidx, mdwptr, offset, len);  /* [i_a] */
   if ( i < 0)
     {
       long curstmt;
@@ -133,9 +136,9 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	{
 	  csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 	  csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
-	};
+	}
       goto nonfatal_route_outwards;
-    };
+    }
   
   //    No problems then.  We can just memmove the result into tempbuf
   memmove (tempbuf, &mdwptr[offset], len);
@@ -183,7 +186,7 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       nonfatalerror ("Messy problem in TRANSLATE.",
 		     "Try again with -t tracing maybe?");
       goto nonfatal_route_outwards;
-    };
+    }
 
   //
   //    OK, we have final result and a valid length.  Now push that
@@ -195,11 +198,11 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   if (user_trace) 
     {
-      long i;
+      long i2;
       fprintf (stderr, "Result of TRANSLATE: -");
-      for(i=0;i<retlen;i++) fputc(tempbuf[i],stderr);
+      for(i2=0;i2<retlen;i2++) fputc(tempbuf[i2],stderr);
       fprintf (stderr, "- len %ld\n", retlen);
-    };
+    }
   crm_destructive_alter_nvariable (destination, destination_len, 
 				   tempbuf, retlen);
 
@@ -210,6 +213,6 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     nonfatal_route_outwards:
       if (user_trace)
 	fprintf (stderr, "The TRANSLATE FAULTed and we're taking the TRAP out");
-    };
+    }
   return (0);
-};  
+}  

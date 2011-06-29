@@ -21,6 +21,16 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+//
+//    Global variables
+
+long user_trace = 0;
+
+long internal_trace = 0;
+
+
+
+
 int main (int argc, char **argv)
 {
 
@@ -39,14 +49,14 @@ int main (int argc, char **argv)
       {
         fprintf (stdout, "Usage: cssdiff <cssfile1> <cssfile2>\n");
         return (EXIT_SUCCESS);
-      };
+      }
     //             quick check- does the first file even exist?
     k = stat (argv[1], &statbuf);
     if (k != 0)
       {
 	fprintf (stderr, "\n CSS file '%s' not found. \n", argv[1]);
 	exit (EXIT_FAILURE);
-      };
+      }
     //    
     hfsize = statbuf.st_size;
     //         mmap the hash file into memory so we can bitwhack it
@@ -61,7 +71,7 @@ int main (int argc, char **argv)
 	fprintf (stderr, "\n MMAP failed on file %s\n",
 		 argv[1]);
 	exit (EXIT_FAILURE);
-      };
+      }
     hfsize1 = statbuf.st_size / sizeof (FEATUREBUCKET_TYPE);
 
     //
@@ -72,7 +82,7 @@ int main (int argc, char **argv)
       {
 	fprintf (stderr, "\n.CSS file '%s' not found.\n", argv[2]);
 	exit (EXIT_FAILURE);
-      };
+      }
 
     hfsize2 = statbuf.st_size;
     //         mmap the hash file into memory so we can bitwhack it
@@ -86,7 +96,7 @@ int main (int argc, char **argv)
 	fprintf (stderr, "\n MMAP failed on file %s\n",
 		 argv[2]);
 	exit (EXIT_FAILURE);
-      };
+      }
 
     hfsize2 = hfsize2 / sizeof (FEATUREBUCKET_TYPE);
 
@@ -105,7 +115,7 @@ int main (int argc, char **argv)
 		 "\n.CSS files %s, %s :\n lengths differ: %ld vs %ld.\n",
 		 argv[1],argv[2], hfsize1, hfsize2);
 	fprintf (stderr, "\n This is not a fatal error, but be warned.\n");
-      };
+      }
 
     f1 = 0;
     f2 = 0;
@@ -141,7 +151,7 @@ int main (int argc, char **argv)
 	      {
 		k++;
 		if (k >= hfsize2) k = 1;
-	      };
+	      }
 	    
 	    //   Now we've found the corresponding (or vacant) slot in
 	    //   h2.  Do our tallies...
@@ -156,8 +166,8 @@ int main (int argc, char **argv)
 	    j = h1[i].value - h2[k].value;
 	    if (j < 0) j = 0;
 	    dom1 += j;
-	  };
-      };
+	  }
+      }
     //
     //      And repeat for file 2.
     for ( i = 1; i < hfsize2; i++) 
@@ -174,7 +184,7 @@ int main (int argc, char **argv)
 		{
 		  k++;
 		  if (k >= hfsize1) k = 1;
-		};
+		}
 
 	      //   Now we've found the corresponding (or vacant) slot in
 	      //   h1.  Do our tallies...
@@ -189,8 +199,8 @@ int main (int argc, char **argv)
 	      j = h2[i].value - h1[k].value;
 	      if (j < 0) j = 0;
 	      dom2 += j;
-	  };
-      };
+	  }
+      }
     
     fprintf (stdout, "\n File 1 total features            : %12ld", f1);
     fprintf (stdout, "\n File 2 total features            : %12ld\n", f2);

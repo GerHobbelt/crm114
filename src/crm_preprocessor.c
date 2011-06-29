@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,9 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
+
 //      crm preprocessor - pre-process a CRM file to make it 
 //      palatable to the sorry excuse we have for a compiler.
 int crm_preprocessor (CSL_CELL *csl, int flags)
@@ -91,7 +95,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
       untrappableerror (
 	 "Regular Expression Compilation Problem during INSERT processing:", 
 	 tempbuf);
-    };
+    }
 
   //
   //    Do the initial breaking pass   
@@ -167,7 +171,10 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 	  status = stat ( insertfilename, &statbuf );
 	  if (! status )
 	    {
-	      //
+		int fd;
+		int rlen;
+
+		//
 	      //    OK, now we have to "insert" the file, but we have to
 	      //    do it gracefully.  In particular, the file itself
 	      //    must be loaded, then newline-fixupped, then 
@@ -183,10 +190,10 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 	      if (user_trace)
 		{
 		  fprintf (stderr, "Inserting file '%s' .\n", insertfilename);
-		};
+		}
 
-	      ecsl = (CSL_CELL *) malloc (sizeof (CSL_CELL));
-	      insert_buf = malloc (sizeof (char) * max_pgmsize);
+	      ecsl = (CSL_CELL *) malloc (sizeof (ecsl[0])); /* [i_a] */
+	      insert_buf = malloc (sizeof (insert_buf[0]) * max_pgmsize); /* [i_a] */
 	      if (!insert_buf || !ecsl)
 		untrappableerror ("Couldn't malloc enough memory to do"
 				  " the insert of file ", insertfilename);
@@ -201,18 +208,32 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 	      ecsl->filetext = insert_buf;
 	      ecsl->nchars = 0;
 	      //   OK, we now have a buffer.  Read the file in...
-	      {
-		int fd;
+
 		fd = open (insertfilename, O_RDONLY);
-		read (fd, 
+
+		/* [i_a] make sure we never overflow the buffer: */
+		if (statbuf.st_size + 2 > max_pgmsize)
+		{
+			statbuf.st_size = max_pgmsize - 2; // 2: \n + NUL
+		}
+
+		rlen = read (fd, 
 		      ecsl->filetext,
 		      statbuf.st_size);
 		close (fd);
+
+		ecsl->nchars = rlen; /* [i_a] not: statbuf.st_size; -- as the MSVC documentation says:
+							 read returns the number of bytes read, which might be less than count 
+							 if there are fewer than count bytes left in the file or if the file 
+							 was opened in text mode, in which case each carriage return–line feed (CR-LF) pair 
+							 is replaced with a single linefeed character. Only the single 
+							 linefeed character is counted in the return value.
+							 */
 		//
-		//   file's read in, put in a trailing newline
-		ecsl->nchars = statbuf.st_size;
-		ecsl->filetext[ecsl->nchars] = '\n';
-		ecsl->nchars ++;
+		//   file's read in, put in a trailing newline. And add a NUL sentinel too when we're at it! But DON'T count that one too!
+		ecsl->filetext[ecsl->nchars++] = '\n';
+		assert(ecsl->nchars < max_pgmsize);
+		ecsl->filetext[ecsl->nchars] = 0;
 		ecsl->filename = insertfilename;
 		//
 		//   now do the statement-break thing on this file
@@ -222,17 +243,16 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 		//
 		//   will it fit?
 		//
-		if ( (csl->nchars + ecsl->nchars + 64) 
-		     > (sizeof (char) * max_pgmsize))
+		if ((csl->nchars + ecsl->nchars + 64) > max_pgmsize)
 		  untrappableerror ( " Program file buffer overflow when "
-				     " INSERTing file ", insertfilename);
+				     "INSERTing file ", insertfilename);
 
 		//   Does the result end with a newline?  If not, fix it.
 		if (ecsl->filetext[ecsl->nchars-1] != '\n')
 		  {
 		    ecsl->filetext [ecsl->nchars ] = '\n';
 		    ecsl->nchars++;
-		  };
+		  }
 		
 		//   Does the result end with two newlines?  Fix 
 		//   that, too.
@@ -240,7 +260,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 		//    && ecsl->filetext[ecsl->nchars-2] == '\n')
 		//  {
 		//    ecsl->nchars--;
-		//  };
+		//  }
 
 		//  Make a hole in the csl->filetext
 		//
@@ -268,8 +288,6 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 		//    Now we clean up (de-malloc all that memory)
 		free (ecsl->filetext);
 		free (ecsl);
-	      }
-	      
 	    }
 	  else
 	    {
@@ -297,14 +315,20 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 		  fprintf (stderr, "Can't find '%s' to insert.\n"
 			   "Inserting a FAULT instead\n",
                                   insertfilename);
-		};
+		}
 
 	      //
 	      //    Build the fault string.
-	      sprintf (faulttext,
-		       "\n######  THE NEXT LINE WAS AUTO_INSERTED BECAUSE THE FILE COULDN'T BE FOUND \nfault /Couldn't insert the file named '%s' that you asked for.  This is probably a bad thing./\n",
+	      snprintf (faulttext, MAX_VARNAME,
+		       "\n######  THE NEXT LINE WAS AUTO_INSERTED BECAUSE THE FILE COULDN'T BE FOUND \nfault / Couldn't insert the file named '%s' that you asked for.  This is probably a bad thing./\n",
 		       insertfilename);
-	      textlen = strlen (faulttext)  ; //  -1 gets rid of the \0
+		  faulttext[MAX_VARNAME - 1] = 0;
+	      textlen = strlen(faulttext);
+
+		  if ((csl->nchars + textlen) > max_pgmsize)
+			untrappableerror ( " Program file buffer overflow when "
+				     "inserting a FAULT (INSERT file not found) message for file ", insertfilename);
+
 	      //
 	      //       make a hole to put the fault string into.
 	      // 
@@ -322,16 +346,16 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 		fprintf (stderr, "Added %ld chars to crmprogram\n",
 			 textlen );
 	      csl->nchars += textlen;
-	    };
+	    }
 	  i = matches[1].rm_so + 1;
-	};
+	}
       if (internal_trace)
 	fprintf (stderr,
 		 "----------Result after preprocessing-----\n"
 		 "%s"
 		 "\n-------------end preprocessing------\n",
 		 csl->filetext);
-    };
+    }
   
   //     define a hash of the expanded program for sanity checking on bugreps:
   //
@@ -340,14 +364,14 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
     sprintf (myhash, "%08lX", strnhash (csl->filetext, csl->nchars));
     myhash[8] = '\0';
     crm_set_temp_var (":_pgm_hash:", myhash);
-  };
+  }
 
   ///   GROT GROT GROT  for some reason, Gnu Regex segfaults if it
   //    tries to free this register.
   //  crm_regfree (&preg);
   //fprintf (stderr, "returning\n");
   return (0);
-};
+}
 
 //
 //     Set up statement breaks.
@@ -393,7 +417,7 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 	      in_comment = 0;
 	      //    Userbug containment - a newline closes all nests
 	      paren_nest = slash_nest = angle_nest = box_nest = 0;
-	    };
+	    }
 	  //   other nonprinting characters do not change things.
 	}
       else
@@ -411,7 +435,7 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 		  neednewline = 1;
 		  seennewline = 0;
 		  in_comment = 0;
-		};
+		}
 	    }
 	  else
 	    {
@@ -419,7 +443,7 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 	      //    to add a newline.  Or maybe not...
 	      if (neednewline) 
 		{
-		  if ((csl->nchars+1) > (sizeof(char) * max_pgmsize))
+		  if ((csl->nchars+1) > max_pgmsize)
 		    untrappableerror ( "Program file buffer overflow - "
 				       "post-inserting newline to: ",
 				       &(csl->filetext[i]));
@@ -434,7 +458,7 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 		  nchars++;
 		  neednewline = 0;
 		  seennewline = 1;
-		};
+		}
 	      //
 	      switch (csl->filetext[i])
 		{
@@ -475,8 +499,8 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			//   actions.
 			//
 			i++;
-		      };
-		  };
+		      }
+		  }
 		  break;
 
 		case '{':
@@ -494,7 +518,7 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 		      { 
 			if ( !seennewline )
 			  {
-			    if ((csl->nchars+1) > sizeof(char)*max_pgmsize)
+			    if ((csl->nchars+1) > max_pgmsize)
 			      untrappableerror ( "Program buffer overflow when"
 						 "post-inserting newline on:",
 						 &csl->filetext[i]);
@@ -507,13 +531,13 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			    csl->nchars++;
 			    nchars++;
 			    i++;
-			  };
+			  }
 			seennewline = 0;
 			//   and mark that we need a newline before any more
 			//   printable characters come through.
 			neednewline = 1;
 		      }
-		  };
+		  }
 		  break;
 		case ';':     
 		  {
@@ -551,9 +575,9 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			    csl->filetext[i] = '\n';
 			    neednewline = 0;
 			    seennewline = 1;
-			  };
-		      };
-		  };
+			  }
+		      }
+		  }
 		  break;
 		case '#':
 		  {  
@@ -565,8 +589,8 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			slash_nest == 0)
 		      {
 			in_comment = 1;
-		      };
-		  };
+		      }
+		  }
 		  break;
 		case '(':
 		  {  
@@ -577,8 +601,8 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			slash_nest == 0)
 		      {
 			paren_nest = 1;
-		      };
-		  };
+		      }
+		  }
 		  break;
 		case ')':
 		  {  
@@ -589,8 +613,8 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			slash_nest == 0)
 		      {
 			paren_nest = 0;
-		      };
-		  };
+		      }
+		  }
 		  break;
 		case '<':
 		  {  
@@ -601,8 +625,8 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			slash_nest == 0)
 		      {
 			angle_nest = 1;
-		      };
-		  };
+		      }
+		  }
 		  break;
 		case '>':
 		  {  
@@ -613,8 +637,8 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			slash_nest == 0)
 		      {
 			angle_nest = 0;
-		      };
-		  };
+		      }
+		  }
 		  break;
 		case '[':
 		  {  
@@ -625,8 +649,8 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			slash_nest == 0)
 		      {
 			box_nest = 1;
-		      };
-		  };
+		      }
+		  }
 		  break;
 		case ']':
 		  {  
@@ -637,8 +661,8 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			slash_nest == 0)
 		      {
 			box_nest = 0;
-		      };
-		  };
+		      }
+		  }
 		  break;
 		case '/':
 		  {  
@@ -654,9 +678,9 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			else
 			  {
 			    slash_nest = 0;
-			  };
-		      };
-		  };
+			  }
+		      }
+		  }
 		  break;
 		default: 
 		  {
@@ -665,13 +689,13 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 		    //  clearing of all the "seen/need" flags 
 		    seennewline = 0;
 		    neednewline = 0;
-		  };
+		  }
 		  break;
-		};
-	    };
-	};
-    };
-};
+		}
+	    }
+	}
+    }
+}
 
   
 

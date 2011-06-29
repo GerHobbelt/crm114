@@ -22,6 +22,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -34,12 +35,15 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
 
+/* [i_a]
 //    The following sqrtf mumbojumbo because ppc_osx doesn't define sqrtf
 //    like it should.
 #ifndef sqrtf
 #define sqrtf(x) sqrt((x))
 #endif
+*/
 
 
 //////////////////////////////////////////////////////////////////
@@ -133,14 +137,14 @@ extern char *tempbuf;
 //      slot with 1 bit per vector (64? 128 bits?)  Merge vectors when you
 //      run out of slots in the vector table.  (advantage- can have multi
 //      classes in one table; put bitmap into the class. )  Advantage
-//      of hashing- you only touch what you need.  Downside: Wastes most of he 
+//      of hashing- you only touch what you need.  Downside: Wastes most of the 
 //      storage in the bitmap.  Upside: can use bitmap to have multiple 
 //      text classes in the same file.  
 //  
 //    Option B3 - Use shared bit allocations, so classes use shared
 //      bit patterns.  The bad news is that this generates phantom classes
 // 
-//    Option C1 - use MySQL to do the storage.  Easy to implennt
+//    Option C1 - use MySQL to do the storage.  Easy to implement
 //
 //    *****************************************************************
 //
@@ -164,7 +168,7 @@ typedef struct mythical_hyperspace_cell {
 //     prime numbers, and preferably superincreasing, though both of those
 //     are not strict requirements.
 //
-static long hctable[] =
+static const long hctable[] =
     { 1, 7,
       3, 13,
       5, 29,
@@ -264,7 +268,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       eflags = 1;
       if (user_trace)
 	fprintf (stderr, "turning oncase-insensitive match\n");
-    };
+    }
   if (apb->sflags & CRM_REFUTE)
     {
       sense = -sense;
@@ -275,21 +279,21 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //return (0);
       if (user_trace)
 	fprintf (stderr, " refuting learning\n");
-    };
+    }
   microgroom = 0;
   if (apb->sflags & CRM_MICROGROOM)
     {
       microgroom = 1;
       if (user_trace)
 	fprintf (stderr, " enabling microgrooming.\n");
-    };
+    }
   unique = 0;
   if (apb->sflags & CRM_UNIQUE)
     {
       unique = 1;
       if (user_trace)
 	fprintf (stderr, " enabling uniqueifying features.\n");
-    };
+    }
 
   use_unigram_features = 0;
   if (apb->sflags & CRM_UNIGRAM)
@@ -297,7 +301,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       use_unigram_features = 1;
       if (user_trace)
 	fprintf (stderr, " using only unigram features.\n");
-    };
+    }
 
   //
   //             grab the filename, and stat the file
@@ -316,7 +320,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //    pre-existing memory.  We just write to the end of the file instead.
   //    malloc up the unsorted hashbucket space  
   hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, 
-		   sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT));
+		   sizeof (hashes[0]));  /* [i_a] */
   hashcounts = 0;
   //  put in a zero as the start marker.
   hashes[hashcounts].hash = 0;
@@ -334,7 +338,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
       nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
       goto regcomp_failed;
-    };
+    }
   
   
   //   Start by priming the pipe... we will shift to the left next.
@@ -356,7 +360,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
     {
       hashpipe[h] = 0xDEADBEEF;
-    };
+    }
   
   //    and the big feature-generator loop... go through all of the text.
   i = 0;
@@ -393,7 +397,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    match[0].rm_eo ++;
 	  if ( match[0].rm_so == match[0].rm_eo)
 	    k = 1;
-	};
+	}
       
       if (k != 0 || textoffset > textmaxoffset)
 	goto learn_end_regex_loop;
@@ -415,13 +419,13 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		     (long) match[0].rm_eo,
 		     wlen,
 		     tempbuf);
-	  };
+	  }
 	if (match[0].rm_eo == 0)
 	  {
 	    nonfatalerror ( "The LEARN pattern matched zero length! ",
 			    "\n Forcing an increment to avoid an infinite loop.");
 	    match[0].rm_eo = 1;
-	  };
+	  }
 
 
 	//      Shift the hash pipe down one
@@ -429,7 +433,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	for (h = OSB_BAYES_WINDOW_LEN-1; h > 0; h--)
 	  {
 	    hashpipe [h] = hashpipe [h-1];
-	  };
+	  }
 
 	
 	//  and put new hash into pipeline
@@ -441,7 +445,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
 	      fprintf (stderr, " %ld", hashpipe[h]);
 	    fprintf (stderr, "\n");
-	  };
+	  }
 	    
 	
 	//  and account for the text used up.
@@ -491,11 +495,11 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    hashes[hashcounts].hash = h1;
 		    //		hashes[hashcounts].key = h2;
 		    hashcounts++;
-		  };
-	      };
-	  };
-      };
-    };   //   end the while k==0
+		  }
+	      }
+	  }
+      }
+    }   //   end the while k==0
 
  learn_end_regex_loop:
 
@@ -531,11 +535,11 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  {
 	    hashes[j]= hashes[i];
 	    j++;
-	  };
+	  }
 	i++;
-      };
+      }
       hashcounts = j;
-    };
+    }
 
   if (user_trace)
     fprintf (stderr, "Unique hashes generated: %ld\n", hashcounts);
@@ -588,7 +592,9 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       long thisstart, thislen, thisend;
       double bestrad;
       long wrapup;
-      double kandu, unotk, knotu, dist, radiance;
+      long kandu; /* [i_a] */
+	  long unotk, knotu;    /* [i_a] */
+	  double dist, radiance;
       long k, u;
       long file_hashlens;
       HYPERSPACE_FEATUREBUCKET_STRUCT *file_hashes;
@@ -620,8 +626,8 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			       NULL);
 	      file_hashlens = file_hashlens 
 		/ sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT );
-	    };
-      };
+	    }
+      }
 
       wrapup = 0;
 
@@ -659,13 +665,13 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    u++;
 		    k++;
 		    kandu++;
-		  };
+		  }
 		if (cmp > 0)  // unknown is greater, step k forward
 		  {
 		    //  increment on k, because maybe u will match next time.
 		    knotu++;
 		    k++;
-		  };
+		  }
 		//   End of the U's?  If so, skip k to the end marker
 		//    and finish.
 		if ( u >= hashcounts - 1 )  
@@ -675,14 +681,14 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      {
 			k++;
 			knotu++;
-		      };
-		  };
+		      }
+		  }
 		//   End of the K's?  If so, skip U to the end marker
 		if ( k >= file_hashlens - 1 
 		     || file_hashes[k].hash == 0  )  //  end of doc features
 		  {
 		    unotk += hashcounts - u;
-		  };
+		  }
 
 		//    end of the U's or end of the K's?  If so, end document.
 		if (u >= hashcounts - 1
@@ -691,8 +697,8 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		  {
 		    wrapup = 1;
 		    k++;
-		  };
-	      };
+		  }
+	      }
 	  
 	  //  Now the per-document wrapup...
 	  wrapup = 0;                     // reset wrapup for next file
@@ -730,7 +736,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      bestend = thisend;
 	      bestrad = radiance;
 	    }
-	};  
+	}  
       //  end of the per-document stuff - now chop out the part of the 
       //  file between beststart and bestend.
       
@@ -764,7 +770,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      newhashlenbytes);
 	//	fprintf (stderr, "Return from truncate is %ld\n", k);
       }
-    };
+    }
   // end of deletion path.    
   return (0);
 }
@@ -815,7 +821,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   regex_t regcb;
   regmatch_t match[5];      //  we only care about the outermost match
 
-  long totalhits[MAX_CLASSIFIERS];  // actual total hits per classifier
+  hitcount_t totalhits[MAX_CLASSIFIERS];  // actual total hits per classifier
   long totalfeatures;   //  total features
   double tprob;         //  total probability in the "success" domain.
 
@@ -842,16 +848,16 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     Basic match parameters
   //     These are computed intra-document, other stuff is only done
   //     at the end of the document.  
-  float knotu;   // features in known doc, not in unknown
-  float unotk;   // features in unknown doc, not in known
-  float kandu;   // feature in both known and unknown
+  long knotu;   // features in known doc, not in unknown    /* [i_a] */
+  long unotk;   // features in unknown doc, not in known    /* [i_a] */
+  long kandu;   // feature in both known and unknown    /* [i_a] */
   
   //     Distance is the pythagorean distance (sqrt) between the
   //     unknown and a known-class text; we choose closest.  (this
   //     is (for each U and K feature, SQRT of count of U ~K + K ~ U)
-  float dist;
-  float closest_dist [MAX_CLASSIFIERS];
-  float closest_normalized [MAX_CLASSIFIERS];
+  double dist;
+  double closest_dist [MAX_CLASSIFIERS];
+  double closest_normalized [MAX_CLASSIFIERS];
 
   //#define KNN_ON
 #ifdef KNN_ON
@@ -873,14 +879,14 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //  -  Submission is how many of the features of the unknown do NOT
   //    exist in the known.  (for each U, count of ~K) 
   //  -- Dominance minus Submission is a figure of merit of match.
-  float max_dominance [MAX_CLASSIFIERS]; 
-  float dominance_normalized [MAX_CLASSIFIERS];
-  float max_submission [MAX_CLASSIFIERS];
-  float submission_normalized [MAX_CLASSIFIERS];
-  float max_equivalence [MAX_CLASSIFIERS];
-  float equivalence_normalized [MAX_CLASSIFIERS];
-  float max_des [MAX_CLASSIFIERS];
-  float des_normalized [MAX_CLASSIFIERS];
+  double max_dominance [MAX_CLASSIFIERS]; 
+  double dominance_normalized [MAX_CLASSIFIERS];
+  double max_submission [MAX_CLASSIFIERS];
+  double submission_normalized [MAX_CLASSIFIERS];
+  double max_equivalence [MAX_CLASSIFIERS];
+  double equivalence_normalized [MAX_CLASSIFIERS];
+  double max_des [MAX_CLASSIFIERS];
+  double des_normalized [MAX_CLASSIFIERS];
   
   
   //     Radiance - sum of the 1/r^2 radiances of each known text
@@ -890,11 +896,11 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     Flux is like Radiance, but the standard unit candle at each text
   //     is replaced by a flux source of intensity proportional to the
   //     number of features in the known text.
-  float radiance;
-  float class_radiance [MAX_CLASSIFIERS];
-  float class_radiance_normalized [MAX_CLASSIFIERS];
-  float class_flux [MAX_CLASSIFIERS];
-  float class_flux_normalized [MAX_CLASSIFIERS];
+  double radiance;
+  double class_radiance [MAX_CLASSIFIERS];
+  double class_radiance_normalized [MAX_CLASSIFIERS];
+  double class_flux [MAX_CLASSIFIERS];
+  double class_flux_normalized [MAX_CLASSIFIERS];
 
   //     try using just the top n matches
   //  for thk=0.1
@@ -909,7 +915,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   
   //        make the space for the unknown text's hashes
   unk_hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, 
-		   sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT));
+		   sizeof (unk_hashes[0]));  /* [i_a] */
   unk_hashcount = 0;
   unk_hashcount++;
 
@@ -938,7 +944,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     memmove (svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
     svrbl[vlen] = '\000';
-  };
+  }
   if (user_trace)
     fprintf (stderr, "Status out var %s (len %ld)\n",
 	     svrbl, svlen);
@@ -957,7 +963,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       cflags = REG_ICASE | cflags;
       eflags = 1;
-    };
+    }
 
   not_microgroom = 1;
   if (apb->sflags & CRM_MICROGROOM)
@@ -965,7 +971,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       not_microgroom = 0;
       if (user_trace)
 	fprintf (stderr, " disabling fast-skip optimization.\n");
-    };
+    }
 
   use_unique = 0;
   if (apb->sflags & CRM_UNIQUE)
@@ -973,7 +979,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       use_unique = 1;
       if (user_trace)
 	fprintf (stderr, " unique engaged - repeated features are ignored \n");
-    };
+    }
 
   use_unigram_features = 0;
   if (apb->sflags & CRM_UNIGRAM)
@@ -981,7 +987,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       use_unigram_features = 1;
       if (user_trace)
 	fprintf (stderr, " using only unigram features. \n");
-    };
+    }
 
   //   compile the word regex
   if ( internal_trace)
@@ -992,7 +998,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
       nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
       goto regcomp_failed;
-    };
+    }
 
 
   
@@ -1039,7 +1045,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      else
 		{
 		  succhash = maxhash;
-		};
+		}
 	      vbar_seen ++;
 	    }
 	  else
@@ -1084,7 +1090,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      //	  fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
 		      //			   fname);
 		      //	  return (fev);
-		      //	};
+		      //	}
 
 		      //    read it in (this does not work either);
 		      if (0)
@@ -1095,27 +1101,27 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			  hashf= fopen (fname, "rb");
 			  fread (hashes[maxhash], 1, hashlens[maxhash], hashf);
 			  fclose (hashf);
-			};
+			}
 			  
 		      //  set this hashlens to the length in features instead
 		      //  of the length in bytes.
 		      hashlens[maxhash] = hashlens[maxhash] 
 			/ sizeof ( HYPERSPACE_FEATUREBUCKET_STRUCT );
-		      hashname[maxhash] = (char *) malloc (fnlen+10);
+		      hashname[maxhash] = (char *) malloc((fnlen+10) * sizeof(hashname[maxhash][0])); /* [i_a] */
 		      if (!hashname[maxhash])
 			untrappableerror(
 					 "Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.");
 		      strncpy(hashname[maxhash],fname,fnlen);
 		      hashname[maxhash][fnlen]='\000';
 		      maxhash++;
-		    };
-		};
-	    };
+		    }
+		}
+	    }
 	  if (maxhash > MAX_CLASSIFIERS-1)
 	    nonfatalerror ("Too many classifier files.",
 			   "Some may have been disregarded");
-	};
-    };
+	}
+    }
 
   //
   //    If there is no '|', then all files are "success" files.  
@@ -1132,14 +1138,14 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (maxhash == 0)
     {
       nonfatalerror ("Couldn't open at least 1 .css files for classify().", "");
-    };
+    }
   //	do we have at least 1 valid .css file at both sides of '|'?
-  // if (!vbar_seen || succhash < 0 || (maxhash < succhash + 2))
-  //  {
-  //    nonfatalerror (
-  //      "Couldn't open at least 1 .css file per SUCC | FAIL category "
-  //	" for classify().\n","Hope you know what are you doing.");
-  //  };
+   if (!vbar_seen || succhash < 0 || (maxhash <= succhash))
+    {
+      nonfatalerror (
+        "Couldn't open at least 1 .css file per SUCC | FAIL category "
+  	"for classify().\n","Hope you know what are you doing.");
+    }
 
   //
   //   now all of the files are mmapped into memory,
@@ -1158,7 +1164,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
     {
       hashpipe[h] = 0xDEADBEEF;
-    };
+    }
 
   totalfeatures = 0;
   
@@ -1218,18 +1224,18 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		   wlen,
 		   tempbuf);
 	  
-	};
+	}
       if (match[0].rm_eo == 0)
 	{
 	  nonfatalerror ( "The CLASSIFY pattern matched zero length! ",
 			  "\n Forcing an increment to avoid an infinite loop.");
 	  match[0].rm_eo = 1;
-	};
+	}
       //  slide previous hashes up 1
       for (h = OSB_BAYES_WINDOW_LEN-1; h > 0; h--)
 	{
 	  hashpipe [h] = hashpipe [h-1];
-	};
+	}
 
       
       //  and put new hash into pipeline
@@ -1241,7 +1247,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
 	      fprintf (stderr, " %ld", hashpipe[h]);
 	    fprintf (stderr, "\n");
-	  };
+	  }
       
       //   account for the text we used up...
       textoffset = textoffset + match[0].rm_eo;
@@ -1285,10 +1291,10 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		  unk_hashes[unk_hashcount].hash = h1;
 		  //	      unk_hashes[unk_hashcount].key = h2;
 		  unk_hashcount++;
-		};
-	    };
-	};
-    };      //  end of repeat-the-regex loop
+		}
+	    }
+	}
+    }      //  end of repeat-the-regex loop
  classify_end_regex_loop:
 
   ////////////////////////////////////////////////////////////
@@ -1319,9 +1325,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    {
 	    unk_hashes[j] = unk_hashes[i];
 	    j++;
-	    };
+	    }
 	  i++;
-	};
+	}
       j--;
       unk_hashcount = j;
     }
@@ -1358,7 +1364,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	totalhits[i] = 0;
 	//	for (j = 0; j < TOP_N; j++)
 	//  topn[i][j] = 0.0;
-      };
+      }
 
 #ifdef KNN_ON
     //      Initialize the KNN neighborhood.
@@ -1396,7 +1402,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  {
 	    fprintf (stderr, "now processing file %ld\n", cls);
 	    fprintf (stderr, "Hashlens = %ld\n", hashlens[cls]);
-	  };
+	  }
 
 	while (k < hashlens[cls] && hashes[cls][k].hash == 0) 
 	  k++;
@@ -1407,9 +1413,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    nfeats = 0;
 	    ufeats = 0;
 	    kfeats = 0;
-	    unotk = 0.0;
-	    knotu = 0.0;
-	    kandu = 0.0;
+	    unotk = 0; /* [i_a] */
+	    knotu = 0; /* [i_a] */
+	    kandu = 0; /* [i_a] */
 	    wrapup = 0;
 	    {
 	      long j;
@@ -1442,7 +1448,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    ufeats++;
 		    kfeats++;
 		    collapse_vec_same[(unk_hashes[u].hash & 0xFF)]++;
-		  };
+		  }
 		if (cmp > 0)  // unknown is greater, step k forward
 		  {
 		    //  increment on k, because maybe u will match next time.
@@ -1450,7 +1456,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    k++;
 		    kfeats++;
 		    collapse_vec_diff[(hashes[cls][k].hash & 0xFF)]++;
-		  };
+		  }
 		//   End of the U's?  If so, skip k to the end marker
 		//    and finish.
 		if ( u >= unk_hashcount - 1 )  
@@ -1461,15 +1467,15 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			k++;
 			kfeats++;
 			knotu++;
-		      };
-		  };
+		      }
+		  }
 		//   End of the K's?  If so, skip U to the end marker
 		if ( k >= hashlens[cls] - 1 
 		     || hashes[cls][k].hash == 0  )  //  end of doc features
 		  {
 		    unotk += unk_hashcount - u;
 		    ufeats += unk_hashcount - u;
-		  };
+		  }
 
 		//    end of the U's or end of the K's?  If so, end document.
 		if (u >= unk_hashcount - 1
@@ -1478,8 +1484,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		  {
 		    wrapup = 1;
 		    k++;
-		  };
-	      };
+		  }
+	      }
 	    
 	    //  Now the wrapup...
 	    wrapup = 0;
@@ -1562,7 +1568,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		//      num   = (collapse_vec_diff[i]*collapse_vec_diff[i]);
 		//      denom = (collapse_vec_same[i]*collapse_vec_same[i]);
 		//      dist += num / ( denom + 1.0);
-		//    };
+		//    }
 		//  //  dist = (sqrtf (num) / sqrtf(denom));
 		//}
 
@@ -1644,7 +1650,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 		//		fprintf (stderr, "%1ld %10ld %10ld %10ld  ", 
 		// cls, kandu, unotk, knotu);
-	        //fprintf (stderr, "%15.5f %15.5f\n", dist, radiance);	
+	        //fprintf (stderr, "%15.5f %15.5lf\n", dist, radiance);	
 		class_radiance[cls] += radiance;
 		class_radiance_normalized[cls] += radiance / nfeats;
 
@@ -1680,24 +1686,25 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			  top_n_class[i] = local_class;
 			  local_val = temp_val;
 			  local_class = temp_class;
-			};
-		    };
-		};
+			}
+		    }
+		}
 #endif		
-	      };
-	  };  //  end per-document stuff
+	      }
+	  }  //  end per-document stuff
 	// fprintf (stderr, "exit K = %ld\n", k);
-      };
+      }
 	
     //    TURN THIS ON IF YOU WANT TO SEE ALL OF THE HUMILIATING DEAD
     //    ENDS OF EVALUATIONS THAT DIDN'T WORK OUT WELL....
     if (internal_trace)
       //if (1)
       for (i = 0; i < maxhash; i++)
+	  {
 	fprintf (stderr, 
-		 "f: %ld  dist %f %f  \n"
+		 "f: %ld  dist %f %f\n"
 		 "dom: %f %f  equ: %f %f sub: %f %f\n" 
-		 "DES: %f %f  \nrad: %f %f  flux: %f %f\n\n",
+		 "DES: %f %f\nrad: %f %f  flux: %f %f\n\n",
 		 i, 
 		 closest_dist[i], closest_normalized[i],
 		 max_dominance[i], dominance_normalized[i],
@@ -1706,8 +1713,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		 max_des[i], des_normalized[i],
 		 class_radiance[i], class_radiance_normalized[i],
 		 class_flux[i], class_flux_normalized[i]);
-    
-  };
+	  }
+  }
 
   //////////////////////////////////////////////
   // 
@@ -1728,7 +1735,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    // class_radiance[top_n_class[j]] ++;
 	    //  class_radiance[top_n_class[j]] += KNN_NEIGHBORHOOD_SIZE - j;
 	    class_radiance[top_n_class[j]] += top_n_val[j];
-	  };
+	  }
       }
   }
 #endif
@@ -1752,16 +1759,18 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	if (ptc[i] < 0.000000000000000000000001)
          ptc[i] =   0.000000000000000000000001;
 	tprob = tprob + ptc[i];
-      };
+      }
     for (i = 0; i < maxhash; i++)
       ptc[i] = ptc[i] / tprob;
      
   if (user_trace) 
     {
       for (k = 0; k < maxhash; k++)
+	  {
 	fprintf (stderr, "Match for file %ld:  radiance: %f  prob: %f\n",
 		 k, class_radiance[k], ptc[k]);
-    };
+	  }
+    }
   }
   //
   tprob = 0.0;
@@ -1779,13 +1788,16 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       for (m = 0; m < succhash; m++)
 	  {
 	    accumulator = accumulator + ptc[m];
-	  };
+	  }
       remainder = 1000 * DBL_MIN;
       for (m = succhash; m < maxhash; m++)
+	  {
 	if (bestseen != m)
 	  {
 	    remainder = remainder + ptc[m];
-	  };
+	  }
+	  }
+
       //  overall_pR = 10 * (log10 (accumulator) - log10 (remainder));
       //overall_pR = 10 * (accumulator - remainder);
       overall_pR = 10 * (log10 (accumulator) - log10(remainder));
@@ -1806,19 +1818,29 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       else
 	{
 	  sprintf (buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR );
-	};
+	}
       if (strlen (stext) + strlen(buf) <= stext_maxlen)
 	strcat (stext, buf);
       bestseen = 0;
       for (k = 0; k < maxhash; k++)
+	  {
 	if (ptc[k] > ptc[bestseen] ) bestseen = k;
       remainder = 1000 * DBL_MIN;
+	  }
       for (m = 0; m < maxhash; m++)
+	  {
 	if (bestseen != m)
 	  {
 	    remainder = remainder + ptc[m];
-	  };
-      sprintf (buf, "Best match to file #%ld (%s) "\
+	  }
+	  }
+	  assert(bestseen >= 0);
+	  /* assert(bestseen < maxhash); ** [i_a] this one was triggered in a zero file error condition 
+		                                due to the nonfatalness of the maxhash==0 error report. */
+	  buf[0] = 0;
+	  if (bestseen < maxhash)
+	  {
+      snprintf (buf, 1024, "Best match to file #%ld (%s) "\
     		    "prob: %6.4f  pR: %6.4f  \n",
 	       bestseen,
 	       hashname[bestseen],
@@ -1830,6 +1852,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	       //    rescaled yet again for pR from 1500 to 150
 	       // 25 * (log10(ptc[bestseen]) - log10(remainder))
 	       );
+	  buf[1024-1] = 0;
+	  }
       if (strlen (stext) + strlen(buf) <= stext_maxlen)
 	strcat (stext, buf);
       sprintf (buf, "Total features in input file: %ld\n", totalfeatures); 
@@ -1840,20 +1864,25 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  long m;
 	  remainder = 1000 * DBL_MIN;
 	  for (m = 0; m < maxhash; m++)
+	  {
 	      if (k != m)
 		{
 		  remainder = remainder + ptc[m];
-		};
-	  sprintf (buf, 
-		   "#%ld (%s):"\
-		   " features: %ld, hits: %ld, radiance: %3.2e, prob: %3.2e, pR: %6.2f \n", 
+		}
+	  }
+	  assert(k >= 0);
+	  assert(k < maxhash);
+	  snprintf (buf, NUMBEROF(buf),
+		   "#%ld (%s):"
+		   " features: %ld, hits: %ld, radiance: %3.2e, prob: %3.2e, pR: %6.2f\n", 
 		   k,
 		   hashname[k],
 		   hashlens[k],
-		   totalhits[k],
+		   (long)totalhits[k],
 		   class_radiance[k],
 		   ptc[k], 
-		   10 * (log10 (ptc[k]) - log10 (remainder) )  );
+		   10.0 * (log10 (ptc[k]) - log10 (remainder) )  );
+	  buf[NUMBEROF(buf) - 1] = 0;
 	  //  Rescaled for +/- 10 pR units optimal thick threshold
 	  //250 * (log10 (ptc[k]) - log10 (remainder) )  );
 	  //    rescaled yet again for pR from 1500 to 150
@@ -1862,7 +1891,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  // strcat (stext, buf);
 	  if (strlen(stext)+strlen(buf) <= stext_maxlen)
 	    strcat (stext, buf);
-	};
+	}
       // check here if we got enough room in stext to stuff everything
       // perhaps we'd better rise a nonfatalerror, instead of just
       // whining on stderr
@@ -1872,10 +1901,10 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			 "the statistics text.  Perhaps you could try bigger "
 			 "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
 			 " ");
-	};
+	}
       crm_destructive_alter_nvariable (svrbl, svlen, 
 				       stext, strlen (stext));
-    };
+    }
   
 
   //  cleanup time!
@@ -1884,7 +1913,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       //      close (hfds [k]);
       crm_munmap_file ((void *) hashes[k]);
-    };
+    }
   //  and let go of the regex buffery      
   if (ptext[0] != '\0') crm_regfree (&regcb);
 
@@ -1935,8 +1964,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
       csl->aliusstk [csl->mct[csl->cstmt]->nest_level] = -1;
       return (0);
-    };
+    }
   //    
  regcomp_failed:
   return (0);
-};
+}

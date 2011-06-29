@@ -21,15 +21,28 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-char version[] = "1.2";
+
+//
+//    Global variables
+
+long user_trace = 0;
+
+long internal_trace = 0;
+
+
+
+static char version[] = "1.2";
 
 void
-helptext ()
+helptext (void)
 {
+  /* GCC warning: cssutil.c:53: warning: string length ‘516’ is greater than the length ‘509’ ISO C89 compilers are required to support */
   fprintf (stdout,
 	   "cssutil version %s - generic css file utility.\n"
 	   "Usage: cssutil [options]... css-file\n"
-
+	   "\n",
+	   VERSION);
+  fprintf (stdout,
 	   "		-b   - brief; print only summary\n"
 	   "		-h   - print this help\n"
 	   "		-q   - quite mode; no warning messages\n"
@@ -40,8 +53,8 @@ helptext ()
 	   "			       2^n + 1 boundary.\n"
 	   "		-v   - print version and exit\n"
 	   "		-D   - dump css file to stdout in CSV format.\n"
-           "		-R csv-file  - create and restore css from CSV\n",
-	   VERSION);
+           "		-R csv-file  - create and restore css from CSV\n"
+	   );
 }
 
 int
@@ -89,7 +102,7 @@ main (int argc, char **argv)
   histbins = FEATUREBUCKET_VALUE_MAX;
   if (histbins > FEATUREBUCKET_HISTOGRAM_MAX) 
     histbins = FEATUREBUCKET_HISTOGRAM_MAX;
-  bcounts = malloc (sizeof (unsigned long) * (histbins + 2) );
+  bcounts = malloc (sizeof (bcounts[0]) * (histbins + 2) ); /* [i_a] */
 
   {
     struct stat statbuf;	//  filestat buffer
@@ -187,8 +200,12 @@ main (int argc, char **argv)
       }
 
     if (optind < argc)
-      strncpy (cssfile, argv[optind], sizeof (cssfile));
-    else
+	{
+      strncpy (cssfile, argv[optind], sizeof(cssfile)/sizeof(cssfile[0]));
+      cssfile[sizeof(cssfile)/sizeof(cssfile[0]) - 1] = 0;
+	  /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
+	}
+	else
       {
 	helptext ();
 	exit (EXIT_SUCCESS);
@@ -269,7 +286,7 @@ main (int argc, char **argv)
 	      //  " The slot is busy, too.  It's hosed.  Time to die.");
 	      //goto regcomp_failed;
 	      fprintf (stderr, "\n Minor Caution - this file has the learncount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");  
-	    };
+	    }
 	}
       //      fprintf (stderr, "This file has had %ld documents learned!\n",
       //	       hashes[h1].value);
@@ -293,12 +310,12 @@ main (int argc, char **argv)
 	      //  " The slot is busy, too.  It's hosed.  Time to die.");
 	      //goto regcomp_failed ;
 	      fprintf (stderr, "\n Minor Caution - this file has the featurecount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");  
-	    };
+	    }
 	}
       //fprintf (stderr, "This file has had %ld features learned!\n",
       //	       hashes[h1].value);
       features_learned = hashes[h1].value;
-    };
+    }
 
 #endif 
 
@@ -477,9 +494,9 @@ main (int argc, char **argv)
 		    fprintf (stdout, "Working...");
 		    for (i = 1; i < hfsize; i++)
 		      {
-			if (hashes[i].value > (int) cmdval)
+			if (hashes[i].value > (long) cmdval)
 			  {
-			    hashes[i].value = hashes[i].value - cmdval;
+			    hashes[i].value = hashes[i].value - (long)cmdval;
 			  }
 			else
 			  {

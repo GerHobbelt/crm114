@@ -2,9 +2,8 @@
 //     in utilities, but not in the CRM114 engine itself; these don't do
 //     what you need for the full crm114 runtime.
 //
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
+//  include some standard files
+#include "crm114_sysincludes.h"   /* [i_a] */
 
 long fatalerror ( char *str1, char *str2)
 {

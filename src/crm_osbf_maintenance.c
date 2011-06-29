@@ -39,6 +39,7 @@ char *CSS_version_name[] = {
   "Unknown"
 };
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -51,9 +52,11 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
 
 //    microgroom flag for osbf
-static int osbf_microgroom;
+static int osbf_microgroom = 0;
+
 // turn microgroom on (1) or off (0)
 void crm_osbf_set_microgroom(int value)
 {
@@ -108,7 +111,7 @@ crm_osbf_microgroom (OSBF_FEATURE_HEADER_STRUCT * header,
       if (microgroom_count == 1)
 	fprintf (stderr, "CSS file too full: microgrooming this css chain: ");
       fprintf (stderr, " %ld ", microgroom_count);
-    };
+    }
 
 //   micropack - start at initial chain start, move to back of 
 //   chain that overflowed, then scale just that chain.
@@ -315,7 +318,7 @@ crm_osbf_packcss (OSBF_FEATURE_HEADER_STRUCT * header,
     {
       crm_osbf_packseg (header, packstart, (header->buckets - packstart));
       crm_osbf_packseg (header, 0, (packlen - (header->buckets - packstart)));
-    };
+    }
 }
 
 void
@@ -385,10 +388,10 @@ crm_osbf_packseg (OSBF_FEATURE_HEADER_STRUCT * header,
 		fprintf (stderr, "<");
 	      if (ito > ifrom)
 		fprintf (stderr, ">");
-	    };
+	    }
 
-	};
-    };
+	}
+    }
 }
 
 /* get next bucket index */
@@ -592,7 +595,8 @@ crm_osbf_insert_bucket (OSBF_FEATURE_HEADER_STRUCT * header,
   BUCKET_KEY (hashes[bindex]) = key;
 }
 
-static OSBF_HEADER_UNION hu;
+static OSBF_HEADER_UNION hu = {{{0}}};
+
 int
 crm_osbf_create_cssfile (char *cssfile, unsigned long buckets,
 			 unsigned long major, unsigned long minor,
@@ -610,7 +614,7 @@ crm_osbf_create_cssfile (char *cssfile, unsigned long buckets,
     {
       fatalerror ("Couldn't open the new .cfc file for writing; file = ",
                   cssfile);
-    };
+    }
   // Set the header.
   *((unsigned long *) hu.header.version) = major;	// quick hack for now...
   hu.header.flags = minor;

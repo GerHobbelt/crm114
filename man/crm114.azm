@@ -1,0 +1,877 @@
+\: vim:syntax=tex
+\: $Id: crm114.azm,v 1.12 2004/08/19 11:10:49 vanbaal Exp $
+
+\: this is a manpage in zoem format.  see http://micans.org/zoem/
+\: and man_zmm(7)
+
+\: zoem >= 04-027 is needed for typesetting this document
+
+\: Tnx Stijn van Dongen for zoem user support
+\""{
+
+some stuff not parsed by zoem here: the alternative way of adding a zoem
+comment.
+
+}
+
+\def{"man::synstyle"}{long}
+\: \def{"man::synstyle"}{short}
+\def{"man::defstyle"}{long}
+\import{man.zmm}
+
+\import{./include.zmm}
+
+\set{"man::name"}{crm114}
+\set{"man::html-title"}{crm114}
+\set{"man::section"}{1}
+
+\"man::preamble"
+\${html}{\"man::maketoc"}
+
+\sec{name}{NAME}
+\NAME{crm114}{The Controllable Regex Mutilator}
+
+\sec{synopsis}{SYNOPSIS}
+  \par
+  \crm
+
+   \synoptopt{-d}{N}{enter debugger after running N cycles. Omitting N
+     means N equals 0.}
+   \synoptopt{-e}{do not import any environment variables}
+   \synoptopt{-h}{print help text}
+   \synoptopt{-p}{generate an execution-time-spent profile on exit}
+   \synoptopt{-P}{N}{max program lines}
+   \synoptopt{-q}{m}{mathmode (0,1 = alg/RPN only in EVAL, 2,3 = alg/RPN
+     everywhere)}
+   \synoptopt{-s}{N}{new feature file (.css) size is N (default 1 meg+1
+     featureslots)}
+   \synoptopt{-S}{N}{new feature file (.css) size is N rounded to 2^I+1
+     featureslots}
+   \synoptopt{-t}{user trace output}
+   \synoptopt{-T}{implementors trace output (only for the masochistic!)}
+   \synoptopt{-u}{dir}{chdir to directory dir before starting execution}
+   \synoptopt{-v}{print CRM114 version identification and exit}
+   \synoptopt{-w}{N}{max data window (bytes, default 16 megs)}
+   \synoptopt{--}{signals the end CRM114 flags; prior flags are not seen by
+           the user program;   subsequent args are not processed by CRM114}
+   \synoptopt{--foo}{creates the user variable :foo: with the value SET}
+   \synoptopt{--x=y}{creates the user variable :x: with the value y}
+   \synoptopt{-\{}{stmts\}}{execute the statements inside the \{\} brackets}
+   \synreqopt{crmfile}{.crm file name}
+
+\sec{warning}{WARNING}
+
+This document \bf{might} be obsolete.  See the VERSION section below.  Patches
+updating this document are very welcome.  Sent them to the people with CVS
+write access, as listed on
+\aref{https://sourceforge.net/project/memberlist.php?group_id=47249}{the
+SourceForge CRM114 member page}.
+
+\sec{description}{DESCRIPTION}
+
+CRM114 is a language designed to write filters in.  It caters to
+filtering email, system log streams, html, and other marginally
+human-readable ASCII that may occasion to grace your computer.
+
+\par
+
+CRM114's unique strengths are the data structure (everything is
+a string and a string can overlap another string), it's ability
+to work on truly infinitely long input streams, it's ability to
+use extremely advanced classifiers to sort text, and the ability
+to do approximate regular expressions (that is, regexes that
+don't quite match) via the TRE regex library.
+
+\par
+
+CRM114 also sports a very powerful subprocess control facility, and
+a unique syntax and program structure that puts the fun back in
+programming (OK, you can run away screaming now).  The syntax is 
+declensional rather than positional; the type of quote marks around
+an argument determine what that argument will be used for.
+
+\par
+
+The typical CRM114 program uses regex operations more often
+than addition (in fact, math was only added to TRE in the waning
+days of 2003, well after CRM114 had been in daily use for over 
+a year and a half).
+
+\par
+
+In other words, crm114 is a very \bf{very} powerful mutagenic filter that
+happens to be a programming language as well.
+
+\par
+
+The filtering style of the CRM-114 discriminator is based on the fact
+that most spam, normal log file messages, or other uninteresting data
+is easily categorized by a few characteristic patterns (such as
+"Mortgage leads", "advertise on the internet", and "mail-order toner
+cartridges".)  CRM114 may also be useful to folks who are on multiple
+interlocking mailing lists.
+
+\par
+
+In a bow to Unix-style flexibility, by default CRM114 reads it's
+input from standard input, and by default sends it's output to
+standard output.  Note that the default action has a zero-length
+output.  Redirection and use of other input or output files is
+possible, as well as the use of windowing, either delimiter-based or
+time-based, for real-time continuous applications.
+
+\par
+
+CRM114 can be used for other than mail filtering; consider it to be a version
+of \it{grep} with super powers.  If perl is a seventy-bladed swiss army knife,
+CRM114 is a razor-sharp katana that can talk.
+
+\sec{invocation}{INVOCATION}
+
+Absent the -\{ program \} flag, the first argument is taken to be the name of
+a file containing a crm114 program, subsequent arguments are merely supplied
+as :_argN: values.  Use single quotes around commandline programs 
+'-\{ like this \}' to prevent the shell from doing odd things to your
+command-line programs.
+
+\par
+
+CRM114 can be directly invoked by the shell if the first line of your
+program file uses the shell standard, as in:
+
+\verbatim{#! /usr/bin/crm}
+
+\car
+
+You can use CRM114 flags on the shell-standard invocation line, and
+hide them with '--' from the program itself; '--' incidentally prevents
+the invoking user from changing any CRM114 invocation flags.
+
+\par
+
+Flags should be located after any positional variables on the command
+line.  Flags \it{are} visible as :_argN: variables, so you can create
+your own flags for your own programs (separate CRM114 and user flags
+with '--').
+
+Two examples on how to do this:
+
+\verbatim{./foo.crm bar mugga < baz  -t -w 150000}
+\verbatim{./foo.crm -t -w 1500000 -- bar < baz mugga}
+
+\car
+
+One example on how \bf{not} to do this:
+
+\verbatim{./foo.crm -t -w 150000 bar < baz mugga}
+
+\car
+
+(That's WRONG!)
+
+\par
+
+You can put a list of user-settable vars on the \v{#!/usr/bin/crm}
+invocation line.  CRM114 will print these out when a program is
+invoked directly (e.g. "./myprog.crm -h", not "crm myprog.crm -h")
+with the -h (for help) flag.  (note that this works ONLY on bash
+on Linux- *BSD's have a different bash interpretation and this
+doesn't work)
+
+\par
+
+Example:
+
+\verbatim{#!/usr/bin/crm  -( var1 var2=A var2=B var2=C )}
+\car
+This allows only \v{var1} and \v{var2} be set on the command line.  If a
+variable is not assigned a value, the user can set any value desired.  If the
+variable is equated to a set of values, those are the \it{only} values allowed.
+
+\par
+
+Another example:
+
+\verbatim{#!/usr/bin/crm  -( var1 var2=foo )  --} \car This allows \v{var1} to
+be set to any value, \v{var2} may only be set to either \v{foo} or not at all,
+and no other variables may be set nor may invocation flags be changed (because
+of the trailing "--").  Since "--" also blocks '-h' for help, such programs
+should provide their own help facility.
+
+
+\sec{variables}{VARIABLES}
+
+Variable names and locations start with a : , end with a : , and may
+contain only characters that have ink (i.e. the [:graph:] class) with
+few exceptions.
+
+\par
+
+Examples \v{:here:}, \v{:ThErE:}, \v{:every-where_0123+45%6789:},
+\v{:this_is_a_very_very_long_var_name_that_does_not_tell_us_much:}.
+
+Builtin variables:
+
+\begin{itemize}{
+    {compact}{1}
+    {contiguous}{1}
+    {w1}{20}
+}
+  \item{:_nl:}                newline
+  \item{:_ht:}                horizontal tab
+  \item{:_bs:}                backspace
+  \item{:_sl:}                a slash
+  \item{:_sc:}                a semicolon
+  \item{:_arg0: thru :_argN:} command-line args, including \it{all} flags
+  \item{:_argc:}              how many command line arguments there were
+  \item{:_pos0: thru :_posN:} positional args ('-' or '--' args deleted)
+  \item{:_posc:}              how many positional arguments there were
+  \item{:_pos_str:}           all positional arguments concatented
+  \item{:_env_whatever:}      environment value 'whatever'
+  \item{:_env_string:}        all environmental arguments concatenated
+  \item{:_crm_version:}       the version of the CRM system
+  \item{:_dw:}                the current data window contents
+\end{itemize}
+
+\sec{variable expansion}{VARIABLE EXPANSION}
+
+Variables are expanded by the \v{:*:} var-expansion operator,
+e.g. \v{:*:_nl:} expands to a newline character.  Uninitialized vars
+evaluate to their text name (and the colons stay).
+
+\par
+
+You can also use the standard constant C '\\' characters, such as "\\n"
+for newline, as well as excaped hexadecimal and octal characters like
+\\xHH and \\oOOO but these are constants, not variables, and cannot be
+redefined.
+
+\par
+
+Depending on the value of "math mode" (flag -q). you can also use
+\v{:#:string_or_var:} to get the length of a string, and \v{:@:string_or_var:}
+to do basic mathematics and inequality testing, either only in EVALs
+or for all var-expanded expressions.  See "Sequence of Evaluation"
+below for more details.
+
+\sec{program behaviour}{PROGRAM BEHAVIOR}
+
+Default behavior is to read all of standard input till EOF into the
+default data window (named \v{:_dw:}), then execute the program (this is
+overridden if first executable statement is a WINDOW statement).
+
+\par
+
+Variables don't get their own storage unless you ISOLATE them (see
+below), instead variables are start/length pairs indexing into the
+default data window.  Thus, ALTERing an unISOLATEd variable changes
+the value of the default data buffer itself.  This is a great power,
+so use it only for good, and never for evil.
+
+\sec{statements and stuff}{STATEMENTS AND STUFF}
+
+Statements are separated with a ';' or with a newline.
+
+\begin{itemize}{
+    {contiguous}{1}
+    {w1}{7}
+}
+  \item{\\} '\\' is the string-text escape character.  You only \it{need} to
+    escape the literal representation of closing delimiters inside var-expanded
+    arguments.
+  \par
+           You can use the classic C/C++ \\-escapes, such as \\n, \\r,
+           \\t, \\a, \\b, \\v, \\f, \\0, and also \\xHH and \\oOOO for hex and
+           octal characters, respectively.
+  \par
+           A '\\' as the \it{last} character of a line means the next line
+           is just a continuation of this one.
+  \par
+           A \\-escape that isn't recognized as something special isn't
+           an error; you may \it{optionally} escape any of the delimiters
+           \v{>}, \v{)} \v{]} \v{\}} \v{;} \v{/} \v{#} \v{\\} and get just
+           that character.
+  \par
+           A '\\' anywhere else is just a literal backslash, so the regex
+           ([abc])\\1 is written just that way; there is no need to
+           double-backslash the \\1 (although it will work if you do).
+
+  \items{
+    {# this is a comment}
+    {# and this too \\#}
+  }
+           A comment is not a piece of preprocessor
+           sugar -- it is a \it{statement} and ends at the newline or at "\\#".
+
+  \item{insert filename} inserts the file verbatim at this line at compile
+           time.
+
+  \item{;} statement separator - must ALWAYS be escaped as \\; unless it's
+           inside delimiters or else it will mark the end of the statement.
+  \item{\{ and \}} start and end blocks of statements. Must always be '\\'
+           escaped or inside delimiters or these will mark the start/end of a
+           block.
+  \item{noop} no-op statement
+  \item{:label:} define a GOTOable label
+  \item{accept} writes the current data window to standard output; execution
+           continues.
+  \item{alius} if the last bracket-group succeeded, ALIUS skips to end of \{\}
+           block (a skip, not a FAIL); if the prior group FAILed, ALIUS does
+           nothing.  Thus, ALIUS is both an ELSE clause and a CASE statement.
+  \item{alter (:var:) /new-val/} destructively change value of var to newval;
+      (:var:) is var to change (var-expanded); /new-val/ is value to change
+      to (var-expanded).
+  \item{classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/}
+      compare the statistics of the current data window buffer with classfiles
+      c1...cN.
+
+      \begin{itemize}{
+          {compact}{1}
+          {contiguous}{1}
+          {w1}{16}
+      }
+        \item{<flags>} If <flags> is set to <nocase>, ignore case in
+            word-pat, does not change case in hash (use tr() to do that on
+            :in: if you want it).
+        \item{(:c1: ...} file or files to consider "success" files.  The
+            CLASSIFY succeeds if these files as a group match best.  If not,
+            the CLASSIFY does a FAIL.
+        \item{|} optional separator.  Spaces on each side of the " | " are
+            required.
+        \item{.... :cN:)} optional files to the right of " | " are considered
+            as a group to "fail". If statement fails, execution skips to end
+            of enclosing \{..\} block, which exits with a FAIL status (see
+            ALIUS for why this is useful).
+        \item{(:stats:)} optional var that will get a text formatted matching
+            summary
+        \item{[:in:]} restrict statistical measure to the string inside :in:
+        \item{/word-pat/}  regex to describe what a parseable word is.
+      \end{itemize}
+  \item{eval (:result:) /instring/} repeatedly evaluates /instring/ until it
+                                   ceases to change, then places that result
+                                   as the value of :result: .  EVAL uses
+                                   smart (but foolable) heuristics to avoid
+                                   infinite loops, like evaluating a string
+                                   that evaluates to a request to evaluate
+                                   itself again.  The error rate is about
+                                   1 / 2^62 and will detect chain groups of
+                                   length 255 or less.
+
+                                   If the instring uses math evaluation
+                                   (see section below on math operations)
+                                   and the evaluation has an inequality
+                                   test, (>, < or =) then if the inequality
+                                   fails, the EVAL will FAIL to the end of
+                                   block.  If the evaluation has a numeric
+                                   fault (e.g. divide-by-zero) the EVAL will
+                                   do a TRAPpable FAULT.
+
+  \item{exit /:retval:/} ends program execution.  If supplied, the
+                                   return value is converted to an integer
+                                   and returned as the exit code of the
+                                   crm114 program.  If no retval is supplied,
+                                   the return value is 0.
+
+  \item{fail} skips down to end of the current \{ \} block
+                                   and causes that block to exit with a FAIL
+                                   status (see ALIUS for why this is useful)
+
+  \item{fault /faultstr/} forces a FAULT with the given string as
+                                   the reason.  The fault string is
+                                   val-expanded.
+
+  \item{goto /:label:/} unconditional branch (you can use a variable as the
+                                   goal, e.g. /:*:there:/ )
+
+  \item{hash (:result:) /input/} compute a fast 32-bit hash of the /input/,
+                                   and ALTER :result: to the
+                                   hexadecimal hash value.  HASH is
+                                   \it{not} warranted to be constant across
+                                   major releases of CRM114, nor is it
+                                   cryptographically secure.
+      \begin{itemize}{
+          {compact}{1}
+          {contiguous}{1}
+          {w1}{16}
+      }
+        \item{(:result:)} value that gets result.
+        \item{/input/}    string to be hashed (can contain expanded :*:vars:,
+                            defaults to the data window :_dw:)
+      \end{itemize}
+
+  \item{intersect (:out:) [:var1: :var2: ...]} makes :out: contain the part of
+                                   the data window that is the intersection of
+                                   :var1 :var2: ...  ISOLATEd vars are ignored.
+                                   This only resets the value of the captured
+                                   variable, and does NOT alter any text in 
+                                   the data window.
+
+  \item{isolate (:var:) /initial-value/} puts :var: into a data area outside of
+                                   the data buffer; subsequent changes to this 
+                                   var don't change the data buffer (though 
+                                   they may change the value of any var
+                                   subsequently set inside of this var).  
+                                   If the var already was ISOLATED, this is 
+                                   a noop.
+      \begin{itemize}{
+          {compact}{1}
+          {contiguous}{1}
+          {w1}{16}
+      }
+        \item{(:var:)}             name of ISOLATEd var (var-expanded)
+        \item{/initial-value/}     optional initial value for :var:
+                                   (var-expanded).  If no value is supplied,
+                                   the previous value is retained/copied.
+      \end{itemize}
+
+  \item{input <flags> (:result:) [:filename:]} read in the content of filename.
+                                        If no filename, then read stdin
+      \begin{itemize}{
+          {compact}{1}
+          {contiguous}{1}
+          {w1}{16}
+      }
+        \item{<byline>}     read one line only
+        \item{(:result:)}   var that gets the input value
+        \item{[:filename:]} the file to read
+      \end{itemize}
+  \item{learn <flags> (:class:) [:in:] /word-pat/} learn the statistics of
+                                       the :in: var (or the input window if no
+                                       var) as an example of class :class:
+      \begin{itemize}{
+          {compact}{1}
+          {contiguous}{1}
+          {w1}{16}
+      }
+        \item{<flags>} can be any of <nocase>, <refute> and <microgroom>.
+          <nocase>: ignore case in matching word-pat (does not ignore case in
+          hash- use tr() to do that on :in: if you want it). <refute>: this is
+          an anti-example of this class- unlearn it!  <microgroom>: enable the
+          microgroomer to purge less-important information automatically
+          whenever the statistics file gets to crowded.
+        \item{(:class:)} name of file holding hashed results; nominal file
+          extension is .css
+        \item{[:in:]} captured var containing the text to be learned (if
+          omitted, the full contents of the data window is used)
+        \item{/word-pat/} regex that defines a "word".  Things that aren't
+          "words" are ignored.
+      \end{itemize}
+  \item{liaf} skips UP to START of the current \{\} block (LIAF is FAIL
+      spelled backwards)
+
+  \item{match <flags> (:var1: ...) [:in:] /regex/} Attempt to match the given
+      regex; if match succeds, variables are bound; if match fails, program
+      skips to the closing '\}' of this block
+      \begin{itemize}{
+          {compact}{1}
+          {contiguous}{1}
+          {w1}{16}
+      }
+        \item{<flags>} flags can be any of
+          \begin{itemize}{
+              {compact}{1}
+              {contiguous}{1}
+          }
+            \item{<absent>} statement succeeds if match not present
+            \item{<nocase>} ignore case when matching
+            \item{<fromstart>} start match at start of the [:in:] var
+            \item{<fromcurrent>} start match at start of previous successful
+               match on the [:in:] var
+            \item{<fromnext>} start match at one character past the start of
+               the previous successful match on the [:in:] var
+            \item{<fromend>} start match at one character past the end of
+               prev. match on this [:in:] var
+            \item{<newend>} require match to end after end of prev. match on
+               this [:in:] var
+            \item{<backwards>} search backward in the [:in:] variable from the
+               last successful match.
+            \item{<nomultiline>} don't allow this match to span lines
+          \end{itemize}
+        \item{(:var1: ...)} optional variables to bind to regex result and
+           '(' ')' subregexes
+        \item{[:in:]} search only in the variable specified; if omitted, :_dw:
+           (the full input data window) is used
+        \item{/regex/} POSIX regex (with \\ escapes as needed)
+      \end{itemize}
+
+              If you build CRM114 to use the GNU regex library for MATCHing,
+              be warned that GNU REGEX has numerous issues.  See the 
+              KNOWN_BUGS file for a detailed listing.
+
+  \item{output <flags> [filename] /output-text/} output an arbitrary string 
+                                    with captured values expanded.
+    \begin{itemize}{
+              {compact}{1}
+              {contiguous}{1}
+              {w1}{16}
+    }
+      \item{<flags>} <append>: append to the file (otherwise, overwrites)
+      \item{[filename]} filename to send output (var-expanded), default output
+                     is to stdout
+      \item{/output-text/} string to output (var-expanded)
+    \end{itemize}
+
+  \item{syscall <flags> (:in:) (:out:) (:status:) /command/} execute a shell
+    command
+    \begin{itemize}{
+              {compact}{1}
+              {contiguous}{1}
+              {w1}{16}
+    }
+      \item{<flags>} can be any of <keep> and <async>. <keep>: keep this
+        process around; if kept, then a syscall with the same :keep: var will
+        continue feeding to and reading from the kept proc. <async>: don't
+        wait for process to send an EOF; just grab what's available in
+        the process's output pipe and proceed (limit per syscall is 256 Kbytes)
+      \item{(:in:)} var-expanded string to feed to command as input (can be
+        null if you don't want to send the process something.)  You \bf{must}
+        specify this if you want to specify an :out: variable.
+      \item{(:out:)} var-expanded varname to place results into (\bf{must}
+        pre-exist, can be null if you don't want to read the process's
+        output (yet, or at all).  Limit per syscall is 256 Kbytes.  You
+        \bf{must} specify this if you want to use the :status: variable)
+      \item{(:status:)} if you want to keep a minion proc around, or catch the
+        exit status of the process, specify a var here.  The minion process's
+        PID and pipes will be stored here.  The program can access the proc
+        again with another syscall by using this var again.  When the process
+        exits, it's exit code will be stored here.
+    \end{itemize}
+
+  \item{trap (:reason:) /trap_regex/} traps faults from both FAULT statements
+    and program errors occurring anywhere in the preceding bracket-block.  If
+    no fault exists, TRAP does a SKIP to end of block.  If there is a fault
+    and the fault reason string matches the trap_regex, the fault is trapped,
+    and execution continues with the line after the TRAP, otherwise the fault
+    is passed up to the next surrounding trapped bracket block.
+    \begin{itemize}{
+              {compact}{1}
+              {contiguous}{1}
+              {w1}{16}
+    }
+      \item{(:reason:)} the fault message that caused this FAULT.  If it was a
+         user fault, this is the text the user supplied in the FAULT statement.
+      \item{/trap_regex/} the regex that determines what kind of faults this
+         TRAP will accept.  Putting a wildcard here (e.g. /.*/ means that ALL
+         faults will be trapped here.
+    \end{itemize}
+
+  \item{union (:out:) [:var1: :var2: ...]} makes :out: contain the union of
+    the data window segments that contains var1, var2...  plus any intervening
+    text as well.  Any ISOLATEd var is ignored.  This is non-surgical, and
+    does not alter the data window
+
+  \item{window <flags> (:w-var:) (:s-var:) /cut-regex/ /add-regex/} window
+    slider.  This deletes to and including the cut-regex from :var: (default:
+    use the data window), then reads adds from std. input till add-regex
+    (inclusive).
+    \begin{itemize}{
+              {compact}{1}
+              {contiguous}{1}
+              {w1}{16}
+    }
+      \item{<flags>} flags can be any of
+        \begin{itemize}{
+              {compact}{1}
+              {contiguous}{1}
+              {w1}{16}
+        }
+          \item{<nocase>} ignore case when matching cut- and add- regexes
+          \item{<bychar>} check input for add-regex every character
+          \item{<byline>} check input for add-regex every line
+          \item{<byeof>} wait for EOF to check for add-regex (extra characters
+            are kept around for later)
+          \item{<eofends>} read lots of input; the input is up to the regex
+            match OR the contents till EOF
+        \end{itemize}
+      \item{(:w-var:)} what var to window
+      \item{(:s-var:)} what var to use for source (defaults to stdin, if you
+        use a source var you \bf{must} specify the windowed var.
+      \item{/cut-regex/} var-expanded cut pattern
+      \item{/add-regex/} var-expanded add pattern, if absent reads till EOF
+    \end{itemize}
+    If both cut-regex and add-regex are omitted, and this window statement is
+    the \it{first executable} statement in the program, then CRM114 does
+    \it{not} wait to read a anything from standard input input before starting
+    program execution.
+\end{itemize}
+
+\sec{a quick regex intro}{A QUICK REGEX INTRO}
+
+A regex is a pattern match.  Do a "man 7 regex" for details.
+
+\par
+
+Matches are, by default "first starting point that matches, then 
+longest match possible that can fit".
+
+\begin{itemize}{
+    {contiguous}{1}
+    {w1}{7}
+}
+  \items{{a through z}{A through Z}{0 through 9}} all match themselves.
+  \item{most punctuation} matches itself, but check below!
+  \item{*} repeat preceding 0 or more times
+  \item{+} repeat preceding 1 or more times
+  \item{?} repeat preceding 0 or 1 time
+  \item{*?, +?, ??} repeat preceding, but \it{shortest} match that fits, given
+                the already-selected start point of the regex. (only
+                supported by TRE regex, not GNU regex)
+  \item{[abcde]} any one of the letters a, b, c, d, or e
+  \item{[a-q]} the letters a through q (just one of them)
+  \item{\{n,m\}} repetition count: match the preceding at least n and no more
+             than m times (POSIX restricts this to a maximum of 255
+             repeats)
+  \item{[[:<:]]} matches at the start of a word (GNU regex only)
+  \item{[[:>:]]} matches the end of a word (GNU regex only)
+  \item{^} as first char of a match, matches the start of a line (ONLY in
+                <nomultiline> matches.
+  \item{$} as last char of a match, matches at the end of a line (ONLY in 
+                <nomultiline> matches)
+  \item{.} (a period) matches any single character (except start-of-line or
+            end of line "virtual characters", but it does match a newline).
+  \item{a|b} match a or b
+  \item{(match)} the () go away, and the string that matched inside is
+             available for capturing.  Use \\\\( and \\\\) to match actual 
+             parenthesis (the first '\\' tells "show the second '\\' to 
+             the regex engine, the second '\\' forces a literalization
+             onto the parenthesis character. 
+  \item{\\n} matches the N'th parenthesized subexpression.  Remember to
+              backslash-escape the backslash (e.g. write this as \\\\1)
+              This is only if you're using TRE, not GNU regex.
+\end{itemize}
+
+The following are other POSIX expressions, which mostly do what you'd
+guess they'd do from their names.
+
+\verbatim{
+  [[:alnum:]]
+  [[:alpha:]]
+  [[:blank:]]
+  [[:cntrl:]]
+  [[:digit:]]
+  [[:lower:]]
+  [[:upper:]]
+  [[:graph:]]
+  [[:print:]]
+  [[:punct:]]
+  [[:space:]]
+  [[:xdigit:]]
+}
+
+[[:graph:]] matches any character that puts ink on paper or lights a pixel.
+[[:print:]] matches any character that moves the "print head" or cursor.
+
+\sec{notes on sequence of evalutation}{NOTES ON SEQUENCE OF EVALUTATION}
+
+By default, CRM114 supports string length and mathematical evaluation
+only in an EVAL statement, although it can be set to allow these in
+any place where a var-expanded variable is allowed (see the -q flag).
+The default value ( zero ) allows stringlength and math evaluation
+only in EVAL statements, and uses non-precedence (that is, strict
+left-to-right unless parenthesis are used) algebraic notation.  -q 1
+uses RPN instead of algebraic, again allowing stringlength and math
+evaluation only in EVAL expressions.  Modes 2 and 3 allow stringlength
+and math evaluation in \it{any} var-expanded expression, with
+non-precedence algebraic notation and RPN notation respectively.
+
+Evaluation is always left-to-right; there is no precedence of
+operators beyond the sequential passes noted below.
+
+The evaluation is done in four sequential passes:
+
+
+\begin{itemize}{
+    {contiguous}{1}
+    {compact}{1}
+    {type}{arabic}
+}
+  \item \\-constants like \\n, \\o377 and \\x3F are substituted 
+  \item :*:var: variables are substituted (note the difference between
+      a constant like '\\n' and a variable like ":*:_nl:" here - constants
+      are substituted first, then variables are substituted.)
+  \item :#:var: string-length operations are performed
+  \item :@:expression: mathematical expressions are performed; syntax is
+      either RPN or non-precedenced (parens required) algebraic
+      notation.  Embedded non-evaluated strings in a mathematical
+      expression is currently a no-no.
+    \par
+      Allowed operators are: + - * / % > < = only.
+    \par
+      Only >, <, and = set logical results; they also evaluate to
+      1 and 0 for continued chain operations - e.g. 
+
+        \verbatim{((:*:a: > 3) + (:*:b: > 5) + (:*:c: > 9) > 2)}
+
+      is true IFF any of the following is true
+      \begin{itemize}{
+          {contiguous}{1}
+          {compact}{1}
+      }
+         \item a > 3 and b > 5
+         \item a > 3 and c > 9
+         \item b > 5 and c > 9
+      \end{itemize}
+\end{itemize}
+
+\sec{notes on approximate regex matching}{NOTES ON APPROXIMATE REGEX MATCHING}
+
+Only the TRE engine supports approximate matching.  The GNU engine does
+not support approximate matching.
+
+\par
+
+Approximate matching is specified similarly to a "repetition count" in
+a regular regex, using brackets.  This approximation applies to the
+previous parenthesized expression (again, just like repetion counts).
+You can specify maximum total changes, and how many inserts, deletes,
+and substitutions you wish to allow.  The minimum-error match is found
+and reported, if it exists within the bounds you state.
+
+\par
+
+The basic syntax is:
+
+ \verbatim{(text-to-match)\{~[maxerrs] [#maxsubsts] [+maxinserts] [-maxdeletes]\}}
+
+Note that the '~' (with an optional maxerr count) is \it{required} (that's how
+we know it's an approximate regex rather than just a rep-count); if you
+don't specify a max error count, you will get the best match, if you do,
+the match will have at most that many errors.
+
+\par
+
+Remember that you specify the changes to the text in the \it{pattern}
+necessary to make it match the text in the string being searched.
+
+\par
+
+You cannot use approximate regexes and backrefs (like \\1) in the same 
+regex.  This is a limitation of in TRE at this point.
+
+\par
+
+You can also use an inequality in addition to the basic syntax above:
+
+\verbatim{(text-to-match)\{~[maxerrs] [basic-syntax] [nI + mD + oS < K] \}}
+
+where n, m, and o are the costs per insertion, deletion, and substitution
+respectively, 'I', 'D', and 'S' are indicators to tell which cost goes
+with which kind of error, and K is the total cost of the errors; the cost
+of the errors is always strictly less than K.
+
+Here are some examples.
+
+\begin{itemize}{
+    {contiguous}{1}
+    {w1}{7}
+}
+  \item{(foobar)} exactly matches "foobar"
+  \item{(foobar)\{~\}} finds the closest match to "foobar", with the minimum
+     number of inserts, deletes, and substitutions.  Always succeeds.
+  \item{(foobar)\{~3\}} finds the closest match to "foobar", with no more than
+     3 inserts, deletes, or substitutions
+  \item{(foobar)\{~2 +2 -1 #1)} find the closest match to "foobar", with at
+     most two errors total, and at most two inserts, one delete, and one
+     substitution.
+  \item{(foobar)\{~4 #1 1i + 2d < 5 \}} find the closest match to "foobar",
+     with at most four errors total, at most one substitution, and with the
+     number of insertions plus 2x the number of deletions less than 5.
+  \item{(foo)\{~1\}(bar)\{~1)} find the closest match to "foobar", with at
+     most one error in the "foo" and one error in the "bar".
+\end{itemize}
+
+\sec{overall language notes}{OVERALL LANGUAGE NOTES}
+
+Here's how to remember what goes where in the CRM114 language.
+
+\par
+
+Unlike most computer languages, CRM114 uses inflection (or declension)
+rather than position to describe what role each part of a statement
+plays.  The declensions are marked by the delimiters- the /, ( and ), <
+and >, and [ and ].
+
+\par
+
+By and large, you can mix up the arguments to each kind of statement
+without changing their meaning.  Only the ACTION needs to be first.
+Other parts of the statement can occur in any order, save that
+multiple (paren_args) and /pattern_args/ must stay in their nominal
+order but can go anywhere in the statement.  They do not need to be
+consecutive.
+
+\par
+
+The parts of a CRM114 statement are:
+
+\begin{itemize}{
+    {compact}{1}
+    {contiguous}{1}
+    {w1}{16}
+}
+  \item{ACTION} the verb.  This is at the start of the statement.
+  \item{/pattern/} the overall pattern the verb should use, analogous to the
+    "subject" of the statement.
+  \item{<flags>} modifies how the ACTION does the work.  You'd call these
+    "adverbs" in human languages.
+  \item{(vars)} what variables to use as adjuncts in the action (what would
+    be called the "direct objects").  These can get changed when the action
+    happens.
+  \item{[limited-to]} where the action is allowed to take place (think of it
+    as the "indirect object").  These are not directly changed by the action.
+\end{itemize}
+
+\sec{see also}{SEE ALSO}
+
+\sibref{cssmerge}{cssmerge(1)}, \sibref{cssdiff}{cssdiff(1)}, \sibref{cssutil}{cssutil(1)}
+
+\par
+
+The CRM114 homepage is at \httpref{http://crm114.sf.net/} .
+
+\sec{version}{VERSION}
+
+This manpage: $Id: crm114.azm,v 1.12 2004/08/19 11:10:49 vanbaal Exp $
+
+\par
+
+This manpage describes the crm114 utility as it has been described by
+QUICKREF.txt, shipped with crm114-20040212-BlameJetlag.src.tar.gz.  The
+DESCRIPTION section is copy-and-pasted from INTRO.txt as distributed with the
+same source tarball.
+
+\par
+
+Converted from plain ascii to zoem by Joost van Baal.
+
+\sec{copyright}{COPYRIGHT}
+
+Copyright (C) 2001, 2002, 2003, 2004  William S. Yerazunis
+
+\par
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+\par
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+\par
+
+You should have received a copy of the GNU General Public License
+along with this program (see COPYING); if not, check with
+http://www.gnu.org/copyleft/gpl.html or write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
+
+\sec{author}{AUTHOR}
+
+\"man::author"
+
+\"man::postamble"
+

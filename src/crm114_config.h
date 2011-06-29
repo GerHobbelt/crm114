@@ -144,8 +144,8 @@
 //         Winnow algorithm parameters here...  
 //
 #define OSB_WINNOW_WINDOW_LEN 5
-#define OSB_WINNOW_PROMOTION 1.23
-#define OSB_WINNOW_DEMOTION 0.83
+#define OSB_WINNOW_PROMOTION 1.23f
+#define OSB_WINNOW_DEMOTION 0.83f
 //
 //     Now, choose whether we want to use the "old" or the "new" local
 //     probability calculation.  The "old" one works slightly better

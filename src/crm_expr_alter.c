@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,8 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 
 int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
@@ -51,7 +54,7 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   long varnamelen = 0;
   long newvallen;
   unsigned long long ihash;
-  unsigned long long ahash [MAX_EVAL_ITERATIONS];
+  unsigned long long ahash[MAX_EVAL_ITERATIONS];
   long ahindex;
   long itercount;
   long loop_abort;
@@ -74,7 +77,7 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	fprintf (stderr, "There's no output var for this EVAL, so we won't "
 		 "be assigning the result anywhere.\n  It better have a "
 		 "relational test, or you're just wasting CPU.\n");
-    };
+    }
   
   if (has_output_var)
     {
@@ -86,8 +89,8 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			 "The variable you're asking me to alter has an utterly bogus name\n",
 			 "so I'll pretend it has no output variable.");
 	  has_output_var = 0;
-	};
-    };
+	}
+    }
   //     get the new pattern, and expand it.
   crm_get_pgm_arg (tempbuf, data_window_size, apb->s1start, apb->s1len);
   
@@ -120,19 +123,26 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	ihash = (ihash << 30) + strnhash (&tempbuf[1], newvallen - 2); 
       if (internal_trace)
 	fprintf (stderr, "Eval ihash = %lld\n", ihash);
-      for (i = 0;  i < itercount; i++)
-	if (ahash[i] == ihash)
+    for (i = 0;  i < itercount; i++)
+	  {
+	  assert(i < MAX_EVAL_ITERATIONS);
+  	if (ahash[i] == ihash)
 	  {
 	    loop_abort = 1;
 	    if ( i != itercount - 1)
 	      loop_abort = 2;
-	  };
+	  }
+	  }
+	  /* assert(i < MAX_EVAL_ITERATIONS); ** [i_a] this one was triggered during the infiniteloop test */
+	  if (i < MAX_EVAL_ITERATIONS)
+	{
       ahash[i] = ihash;
+	}
       newvallen = crm_qexpandvar (tempbuf, newvallen, 
 				  data_window_size, &qex_stat );
-    };
+    }
    
-  if (itercount == MAX_EVAL_ITERATIONS )
+  if (itercount == MAX_EVAL_ITERATIONS)
     {
       nonfatalerror ("The variable you're attempting to EVAL seems to eval "
 		     "infinitely, and hence I cannot compute it.  I did try "
@@ -148,7 +158,7 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		     "infinite loop.  I think I should give up.  I got this "
 		     "far: ", tempbuf);
       return (0);
-    };
+    }
   
   //     and shove it out to wherever it needs to be shoved.
   //
@@ -196,7 +206,7 @@ int crm_expr_alter (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		     "This statement is missing the variable to alter,\n",
 			   "so I'll ignore the whole statement.");
 	    return (0);
-	  };
+	  }
 	
 	//      do variable substitution on the variable name
 	varnamelen = crm_nexpandvar (varname, apb->p1len, MAX_VARNAME);
@@ -207,7 +217,7 @@ int crm_expr_alter (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  "The variable you're asking me to alter has an utterly bogus name\n",
 		"so I'll ignore the whole statement.");
 	    return (0);
-	  };
+	  }
 
 	//     get the new pattern, and expand it.
 	crm_get_pgm_arg (tempbuf, data_window_size, apb->s1start, apb->s1len);
@@ -216,4 +226,4 @@ int crm_expr_alter (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	crm_destructive_alter_nvariable (&varname[varnamestart], varnamelen, 
 					tempbuf, newvallen);
 	return (0);
-};
+}

@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,13 +34,15 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 //
 //        Here it is, the core of CRM114 - the execution engine toplevel,
 //      which, given a CSL and a CDW, executes the CSL against the CDW      
 //
 
-int crm_invoke ()
+int crm_invoke (void)
 {
   long i, j, k;
   long status;
@@ -61,7 +64,7 @@ int crm_invoke ()
     {
       untrappableerror ( "Can't execute a file without compiling first.\n",
 		   "This means that CRM114 is somehow broken.");
-    };
+    }
 
   //    empty out the alius stack (nothing FAILed yet.)
   //
@@ -75,8 +78,8 @@ int crm_invoke ()
       if (cmdline_break <= csl->nstmts)
 	{
 	  csl->mct[cmdline_break]->stmt_break = 1;
-	};
-    };
+	}
+    }
 
   if (user_trace > 0)
     fprintf (stderr, "Starting to execute %s at line %ld\n",
@@ -89,7 +92,7 @@ int crm_invoke ()
     {
       tstmt = csl->cstmt;
       times ( (void *) &timer1);
-    };
+    }
 
   if (csl->cstmt >= csl->nstmts)
     {
@@ -100,7 +103,7 @@ int crm_invoke ()
       done = 1;
       status = 0;
       goto invoke_done;
-    };
+    }
 
   slen = (csl->mct[csl->cstmt+1]->fchar) - (csl->mct[csl->cstmt ]->fchar);
 
@@ -112,7 +115,7 @@ int crm_invoke ()
 	fprintf (stderr, "%c", 
 		 csl->filetext[csl->mct[csl->cstmt]->fchar+i]);
       fprintf (stderr, "\n");
-    };
+    }
 
 
   //    THIS IS THE ULTIMATE SCREAMING TEST - CHECK VHT EVERY LOOP
@@ -139,7 +142,7 @@ int crm_invoke ()
       //
       if ( ! csl->mct[csl->cstmt]->apb )
 	{
-	  csl->mct[csl->cstmt]->apb = malloc (sizeof (ARGPARSE_BLOCK));
+	  csl->mct[csl->cstmt]->apb = malloc(sizeof(csl->mct[csl->cstmt]->apb[0]));  /* [i_a] */
 	  if ( ! csl->mct[csl->cstmt]->apb ) 
 	    untrappableerror ( "Couldn't malloc the space to incrementally "
 			       "compile a statement.  ", 
@@ -156,9 +159,9 @@ int crm_invoke ()
 	{
 	  //    The CSL->MCT->APB was valid, we can just reuse the old apb.
 	  if (internal_trace)
-	    fprintf (stderr, "JIT parse reusing line %ld \n", csl->cstmt); 
+	    fprintf (stderr, "JIT parse reusing line %ld\n", csl->cstmt); 
 	  apb =  csl->mct[csl->cstmt]->apb;
-	};
+	}
       //    Either way, the flags might have changed, so we run the
       //    standard flag parser against the flags found (if any)
       {
@@ -170,9 +173,9 @@ int crm_invoke ()
 	//    fprintf (stderr, 
 	//           "flagz --%s-- len %d\n", flagz, strlen(flagz));
 	apb->sflags = crm_flagparse (flagz, fl);
-      };
+      }
       break;
-    };
+    }
   //    and maybe drop into the debugger?
   //
   cycle_counter++;
@@ -189,15 +192,15 @@ int crm_invoke ()
 	    }
 	  else
 	    exit ( EXIT_SUCCESS );
-	};
+	}
       if (i == 1)
 	goto invoke_top;
-    };
+    }
 
   if (user_trace > 0)
     {
       fprintf (stderr, "\nExecuting line %ld :\n", csl->cstmt);
-    };
+    }
 
 
   //  so, we're not off the end of the program (yet), which means look
@@ -238,13 +241,14 @@ int crm_invoke ()
       {
         char bogusbuffer[1024];
 	char bogusstmt [1024];
-        sprintf (bogusbuffer, "Statement %ld is bogus!!!  Here's the text: \n",
+		size_t width = CRM_MIN(NUMBEROF(bogusstmt) - 1, csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
+
+        sprintf (bogusbuffer, "Statement %ld is bogus!!!  Here's the text:\n",
  		 csl->cstmt);
 	memmove (bogusstmt, 
 		&csl->filetext[csl->mct[csl->cstmt]->start],
-		csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
-	bogusstmt [csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start]
-	  = '\000';
+		width);
+	bogusstmt[width] = 0;
         fatalerror (bogusbuffer, bogusstmt);
 	goto invoke_bailout;
       }
@@ -259,7 +263,12 @@ int crm_invoke ()
 	retlen = crm_nexpandvar (retstr, retlen, MAX_PATTERN);
 	retval = 0;
 	if (retlen > 0)
-	  sscanf (retstr, "%d", &retval);
+	{
+	  if (1 != sscanf (retstr, "%d", &retval))
+      {
+		  nonfatalerror("Failed to decode the CRM114 exit code: ", retstr);
+	  }
+	}
 	if (user_trace)
 	  fprintf (stderr, "Exiting at statement %ld with value %d\n", 
 		   csl->cstmt, retval);
@@ -289,8 +298,8 @@ int crm_invoke ()
 	//    Nope!  We can now pop back up to the previous context
 	//    just by popping the most recent csl off.
 	if (internal_trace)
-	  fprintf (stderr, "Return - popping CSL back to %lx\n", 
-		   (long) csl->caller );
+	  fprintf (stderr, "Return - popping CSL back to %p\n", 
+		   csl->caller );  /* [i_a] */
 	
 	//     Do the argument transfer here.
 	//     Evaluate the "subject", and return that.  
@@ -315,7 +324,7 @@ int crm_invoke ()
 		long i;
 		//fprintf (stderr, "idx: %lu  vht[idx]: %lu", idx, vht[idx] );
 		noffset = vht[idx]->nstart;
-		//fprintf (stderr, " idx: %lu noffset: %lu \n/", idx, noffset);
+		//fprintf (stderr, " idx: %lu noffset: %lu\n/", idx, noffset);
 		namestart 
 		  = &(vht[idx]->nametxt[noffset]);
 		namelen = vht[idx]->nlen;
@@ -345,13 +354,13 @@ int crm_invoke ()
 	  char depthstr[33];
 	  sprintf (depthstr, "%ld", csl->calldepth);
 	  crm_set_temp_var (":_cd:", depthstr);
-	};
+	}
       }
       break;
       
     case CRM_GOTO:
       {
-	static char target[MAX_VARNAME];
+	char target[MAX_VARNAME];
 	long tarlen;
 	//  look up the variable name in the vht.  If it's not there, or 
 	//  not in our file, call a fatal error.
@@ -402,8 +411,8 @@ int crm_invoke ()
 		fatalerror (" Can't GOTO the nonexistent label/line: ", 
 			    target);
 		goto invoke_bailout;
-	      };
-	  };
+	      }
+	  }
       }
       break;
 
@@ -421,7 +430,7 @@ int crm_invoke ()
 	//   and mark that we "failed", so an ALIUS will take this as a 
 	//   failing statement block
 	csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
-      };
+      }
       break;
 	
     case CRM_LIAF:
@@ -434,7 +443,7 @@ int crm_invoke ()
 	if (user_trace)
 	  fprintf (stderr, "Executing hard-LIAF at line %ld\n", csl->cstmt);
 	csl->cstmt = csl->mct[csl->cstmt]->liaf_index - 1 ;
-      };
+      }
       break;
 
     case CRM_ALIUS:
@@ -447,9 +456,9 @@ int crm_invoke ()
 	if (csl->aliusstk [csl->mct[csl->cstmt]->nest_level + 1] == 1)
 	  {
 	    if (user_trace)
-	      fprintf (stderr, "prior group exit OK, ALIUS fails forward. \n");
+	      fprintf (stderr, "prior group exit OK, ALIUS fails forward.\n");
 	    csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;  
-	  };
+	  }
       }
       break;
 
@@ -490,20 +499,21 @@ int crm_invoke ()
 	//   We malloc the reason - better free() it when we take the trap.
 	//   in crm_trigger_fault
 	//
-	reason = malloc (rlen + 5);
+	reason = malloc ((rlen + 5) * sizeof(reason[0])); /* [i_a] */
         if (!reason)
 	  untrappableerror(
 	    "Couldn't malloc 'reason' in CRM_FAULT - out of memory.\n", 
 	    "Don't you just HATE it when the error fixup routine gets"
 	    "an error?!?!");
 	strncpy (reason, rbuf, rlen+1);
+	reason[rlen+1] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
 	fresult = crm_trigger_fault (reason);
 	if (fresult != 0)
 	  {
 	    fatalerror("Your program has no TRAP for the user defined fault:",
 			reason);
 	    goto invoke_bailout;
-	  };
+	  }
       }
       break;
 
@@ -516,7 +526,7 @@ int crm_invoke ()
 	//
 	//
 	if (user_trace)
-	  fprintf (stderr, "Executing an ACCEPT \n");
+	  fprintf (stderr, "Executing an ACCEPT\n");
 	//
 	//
 	varname[0] = '\0';
@@ -624,33 +634,41 @@ int crm_invoke ()
 
 	if (internal_trace)
 	  {
-	    fprintf (stderr, "String: '%s' \n hashed to: %08lX\n", 
+	    fprintf (stderr, "String: '%s'\n hashed to: %08lX\n", 
 		     tempbuf,
 		     hval);
-	  };
+	  }
 
 	//    and stuff the new value in.
 	crm_destructive_alter_nvariable (&varname[vns], vnl,
 					 newstr, strlen (newstr));
 
-      };
+      }
       break;
 
     case CRM_TRANSLATE:
       {
 	crm_expr_translate (csl, apb);
-      };
+      }
       break;
 
     case CRM_LEARN:
       {
 	crm_expr_learn (csl, apb);
-      };
+      }
       break;
       
       //   we had to split out classify- it was just too big.
     case CRM_CLASSIFY:
       crm_expr_classify ( csl, apb);
+      break;
+
+    case CRM_CLUMP:
+      crm_expr_clump_nn (csl, apb);
+      break;
+
+    case CRM_PMULC:
+      crm_expr_pmulc_nn (csl, apb);
       break;
 
     case CRM_ISOLATE:
@@ -662,7 +680,7 @@ int crm_invoke ()
     case CRM_INPUT:
       {
 	crm_expr_input (csl, apb);
-      };
+      }
       break;
 
     case CRM_SYSCALL:
@@ -707,7 +725,7 @@ int crm_invoke ()
 	    fatalerror (" Can't CALL the nonexistent label: ", target);
 	    goto invoke_bailout;
 	  }
-	newcsl = (CSL_CELL *) malloc (sizeof (CSL_CELL));
+	newcsl = (CSL_CELL *) malloc (sizeof (newcsl[0]));  /* [i_a] */
 	newcsl->filename = csl->filename;
 	newcsl->filetext = csl->filetext;
 	newcsl->filedes = csl->filedes;
@@ -789,7 +807,7 @@ int crm_invoke ()
 			     "No such return value var, creating var %s\n",
 			     outbuf);
 		  crm_set_temp_var( outbuf, "");
-		};
+		}
 	      ret_idx = crm_vht_lookup (vht, outbuf, retnamelen);
 	      if (user_trace)
 		fprintf (stderr, " Setting return value to VHT cell %lu", 
@@ -816,13 +834,13 @@ int crm_invoke ()
 	    char depthstr[33];
 	    sprintf (depthstr, "%ld", csl->calldepth);
 	    crm_set_temp_var (":_cd:", depthstr);
-	  };
+	  }
 
 	  //  maybe run some JIT parsing on the called statement?
 	  //
 	  if ( ! csl->mct[csl->cstmt]->apb )
 	    {
-	      csl->mct[csl->cstmt]->apb = malloc (sizeof (ARGPARSE_BLOCK));
+	      csl->mct[csl->cstmt]->apb = malloc (sizeof (csl->mct[csl->cstmt]->apb[0]));  /* [i_a] */
 	      if ( ! csl->mct[csl->cstmt]->apb ) 
 		untrappableerror ( "Couldn't malloc the space to incrementally "
 				   "compile a statement.  ", 
@@ -833,7 +851,7 @@ int crm_invoke ()
 	      	       &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
 		       slen,
 		       csl->mct[csl->cstmt]->apb);
-	    };
+	    }
 	  //    and start using the JITted apb
 	  apb = csl->mct[csl->cstmt]->apb;
 	  //
@@ -871,7 +889,7 @@ int crm_invoke ()
 		  crm_compress_tdw_section (vht[vmidx]->valtxt,
 					    oldvstart,
 					    oldvstart+oldvlen);
-		};
+		}
 	      //  
 	      //      finally, we can put the variable in.  (this is
 	      //      an ALTER to a zero-length variable, which is why
@@ -917,11 +935,12 @@ int crm_invoke ()
 	//     note- since vars never contain wchars, we're OK here.
 	crm_get_pgm_arg (temp_vars, MAX_VARNAME, apb->b1start, apb->b1len);
 	tvlen = crm_nexpandvar (temp_vars, apb->b1len, MAX_VARNAME);
+	assert(tvlen < MAX_VARNAME);
 	if (internal_trace)
 	  {
 	    fprintf (stderr, "  Intersecting vars: ***%s***\n", temp_vars);
 	    fprintf (stderr, "   with result in ***%s***\n", out_var);
-	  };
+	  }
 	done = 0;
 	mc = 0;
 	vstart = 0;
@@ -979,13 +998,13 @@ int crm_invoke ()
 			if ((vht[vht_index]->vstart + vht[vht_index]->vlen) 
 			    < iend)
 			  iend = vht[vht_index]->vstart + vht[vht_index]->vlen;
-		      };
-		  };
-	      };
+		      }
+		  }
+	      }
 	    vstart = vstart + vlen;
 	    if (temp_vars[vstart] == '\000')
 	      done = 1;
-	  };
+	  }
 	//
 	//      all done with the looping, set the start and length of the 
 	//      first var.
@@ -1089,13 +1108,13 @@ int crm_invoke ()
 			if ((vht[vht_index]->vstart + vht[vht_index]->vlen) 
 			    > iend)
 			  iend = vht[vht_index]->vstart + vht[vht_index]->vlen;
-		      };
-		  };
-	      };
+		      }
+		  }
+	      }
 	    vstart = vstart + vlen;
 	    if (temp_vars[vstart] == '\000')
 	      done = 1;
-	  };
+	  }
 	//
 	//      all done with the looping, set the start and length of the 
 	//      output var.
@@ -1122,35 +1141,36 @@ int crm_invoke ()
       {
         char bogusbuffer[1024];
 	char bogusstmt [1024];
+	size_t width = CRM_MIN(NUMBEROF(bogusstmt) - 1, csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
         sprintf (bogusbuffer, "Statement %ld NOT YET IMPLEMENTED !!!"
-		 "Here's the text: \n",
+		 "Here's the text:\n",
 		 csl->cstmt);
 	memmove(bogusstmt, 
 		&csl->filetext[csl->mct[csl->cstmt]->start],
-		csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
-	bogusstmt [csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start]
-	  = '\000';
+		width);
+	bogusstmt[width] = 0;
         fatalerror (bogusbuffer, bogusstmt);
 	goto invoke_bailout;
 
-      };
+      }
       break;
 
     default:
       {
         char bogusbuffer[1024];
 	char bogusstmt [1024];
-        sprintf (bogusbuffer, 
-		 "Statement %ld way, way bizarre !!!  Here's the text: \n",
+        size_t width = CRM_MIN(NUMBEROF(bogusstmt) - 1, csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
+    
+		sprintf (bogusbuffer, 
+		 "Statement %ld way, way bizarre !!!  Here's the text:\n",
 		 csl->cstmt);
 	memmove (bogusstmt, 
 		&csl->filetext[csl->mct[csl->cstmt]->start],
-		csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
-	bogusstmt [csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start]
-	  = '\000';
+		width);
+	bogusstmt[width] = 0;
         fatalerror (bogusbuffer, bogusstmt);
 	goto invoke_bailout;
-      };
+      }
     }
 
   //    If we're in some sort of strange abort mode, and we just need to move
@@ -1163,7 +1183,7 @@ int crm_invoke ()
       times ( (void *) &timer2);
       csl->mct[tstmt]->stmt_utime += (timer2.tms_utime - timer1.tms_utime);
       csl->mct[tstmt]->stmt_stime += (timer2.tms_stime - timer1.tms_stime);
-    };
+    }
 
 
   //    go on to next statement (unless we're failing, laifing, etc,

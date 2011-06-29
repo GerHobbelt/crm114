@@ -23,6 +23,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -35,6 +36,7 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
 
 //     Here's the real statement description table.
 //
@@ -110,7 +112,7 @@ int crm_load_csl (CSL_CELL *csl)
   else
     {
       csl->filedes = open (csl->filename, O_RDONLY);
-    };
+    }
 
   if (csl->filedes < 0)
     {
@@ -119,10 +121,10 @@ int crm_load_csl (CSL_CELL *csl)
       else
         untrappableerror ("Couldn't open the file: ",
 			  csl->filename );
-    };
+    }
   
   if (internal_trace > 0)
-    fprintf (stderr, "file open on file descriptor %ld \n", csl->filedes);
+    fprintf (stderr, "file open on file descriptor %ld\n", csl->filedes);
   
   // and stat the file descriptor
   fstat (csl->filedes, &statbuf);
@@ -134,16 +136,22 @@ int crm_load_csl (CSL_CELL *csl)
 		      " You need to use smaller programs or the -P flag, ");
 
   //   and read in the source file
-  csl->filetext = (char *) malloc ( max_pgmsize * sizeof (char));
+  csl->filetext = (char *) malloc ( max_pgmsize * sizeof (csl->filetext[0]));  /* [i_a] */
   if (csl->filetext == NULL) 
     untrappableerror ("malloc of the file text failed","" );
   if (internal_trace > 0)
-    fprintf (stderr, "File text malloc'd at %lX \n", (long int) csl->filetext);
+    fprintf (stderr, "File text malloc'd at %p\n", csl->filetext);  /* [i_a] */
 
   //    put in a newline at the beginning
   csl->filetext[0] = '\n';
 
+  /* [i_a] make sure we never overflow the buffer: */
+  if (csl->nchars + 1 + 3 > max_pgmsize)
+  {
+	  csl->nchars = max_pgmsize - 1 - 3;
+  }
   //     read the file in...
+  assert(csl->nchars + 1 + 3 <= max_pgmsize);
   i = read (csl->filedes, &(csl->filetext[1]), csl->nchars);
 
   //     and put a cr and then a null at the end.
@@ -153,11 +161,12 @@ int crm_load_csl (CSL_CELL *csl)
   csl->filetext[i] = '\n';
   i++;
   csl->filetext[i] = '\000';
+  assert(i < max_pgmsize);
   csl->nchars = i;
 
   csl->hash = strnhash (csl->filetext, csl->nchars);
   if (user_trace)
-    fprintf (stderr, "Hash of program: %lX, length %ld bytes \n", 
+    fprintf (stderr, "Hash of program: %lX, length %ld bytes\n", 
 	     csl->hash, csl->nchars );
  
   return 0;
@@ -260,7 +269,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
     {
       if (  pgmtext[i] == '\n' )
 	j++;
-    };
+    }
 
   csl->nstmts = j;
 
@@ -269,23 +278,23 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
     fprintf (stderr, "Program statements: %ld, program length %ld\n", 
 	     j, pgmlength);
   
-  csl->mct = (MCT_CELL **) malloc (sizeof (MCT_CELL * ) * (csl->nstmts + 10) );
+  csl->mct = (MCT_CELL **) malloc (sizeof(csl->mct[0]) * (csl->nstmts + 10)); /* [i_a] */
   if (!csl->mct)
     untrappableerror("Couldn't malloc MCT table.\n"
 		     "This is where your compilation results go, "
                      "so if we can't compile, we can't run.  Sorry.","");
   
   if (internal_trace > 0)
-    fprintf (stderr, "microcompile table at %lX\n", (long) csl->mct);
+    fprintf (stderr, "microcompile table at %p\n", (void *)csl->mct);  /* [i_a] */
   
   //  malloc all of the statement cells.
   for (i = 0; i < csl->nstmts + 10; i++)
     {
-      csl->mct[i] = (MCT_CELL *) malloc (sizeof (MCT_CELL));
+      csl->mct[i] = (MCT_CELL *) malloc (sizeof(csl->mct[i][0]));  /* [i_a] */
       if (!csl->mct[i])
 	untrappableerror(
 		"Couldn't malloc MCT cell. This is very bad.\n","");
-    };
+    }
 
   // ***  Microcompile phase 2 - set statement types
   
@@ -323,7 +332,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
       if (stmt_table[stab_idx].namelen == 0)
 	stmt_table[stab_idx].namelen = strlen (stmt_table[stab_idx].stmt_name);
       stab_idx++;
-    };
+    }
   stab_max = stab_idx;
   //
   //    now the statement table should be set up.
@@ -391,13 +400,13 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	{
 	  stab_done = 1;
 	  stab_stmtcode = CRM_NOOP;
-	};
+	}
       //                            Comment lines are also NOOPS
       if ( pgmtext[nbindex] == '#') 
 	{
 	  stab_done = 1;
 	  stab_stmtcode = CRM_NOOP;
-	};
+	}
       //                             :LABEL: lines get special treatment
       if ( pgmtext[nbindex] == ':' 
 	   && pgmtext[nbindex + nblength - 1] == ':')
@@ -407,14 +416,14 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	  k = strcspn (&pgmtext[nbindex+1], ":");
 	  crm_setvar ( NULL, -1, pgmtext, nbindex, k+2, 
 		       NULL, 0, 0,  stmtnum);
-	};
+	}
 
       //                 INSERTs get special handling (NOOPed..)
       if ( strncasecmp ( &pgmtext[nbindex], "insert=", 7) == 0)
 	{
 	  stab_done = 1;
 	  stab_stmtcode = CRM_NOOP;
-	};
+	}
       i = -1;
 
       //                      Now a last big loop for the rest of the stmts.
@@ -433,10 +442,10 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 		csl->preload_window = 0;
 	      //   and mark off the executable statements
 	      if (stmt_table[i].is_executable) seenaction = 1;
-	    };
+	    }
 	  if (i >= stab_max) 
 	    stab_done = 1;
-	};
+	}
 
       //            Fill in the MCT entry with what we've learned.
       //
@@ -461,8 +470,8 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 		 ic < csl->mct[stmtnum + 1]->start-1 ;
 		 ic++)
 	      fprintf (stderr, "%c", pgmtext[ic]);
-	  };
-	};		   
+	  }
+	}		   
 
 #ifdef STAB_TEST
       if (stab_stmtcode != csl->mct[stmtnum]-> stmt_type)
@@ -470,7 +479,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	  fprintf (stderr,"Darn!  Microcompiler stab error (not your fault!)\n"
 		   "Please file a bug report if you can.  The data is:\n");
 	  fprintf (stderr, 
-   "Stab got %ld, Ifstats got %d, on line %ld with len %ld \n",
+   "Stab got %ld, Ifstats got %d, on line %ld with len %ld\n",
 		   stab_stmtcode,
 		   csl->mct[stmtnum]->stmt_type,
 		   stmtnum,
@@ -478,7 +487,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	  fprintf (stderr, "String was >>>");
 	  fwrite ( &pgmtext[nbindex], 1, nblength, stderr);
 	  fprintf (stderr, "<<<\n\n");
-	};
+	}
 #endif
 
 
@@ -487,7 +496,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	fatalerror (" Your program seems to achieve a negative nesting",
 		       "level, which is quite likely bogus.");
 	  
-      // move on to the next statement - +1 to get past the \n
+      // move on to the next statement - +1 to get past the\n
       sindex = sindex + slength + 1;
 
       stmtnum++;
@@ -528,7 +537,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	      csl->mct[stmtnum]->liaf_index = stack[sdx];
 	      sdx++;
 	      stack[sdx] = stmtnum;
-	    };
+	    }
 	    break;
 	  case CRM_CLOSEBRACKET:
 	    {
@@ -537,7 +546,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	      //  stack and LIAF there.
 	      sdx--;
 	      csl->mct[stmtnum]->liaf_index = stack [sdx];
-	    };
+	    }
 	    break;
 	  default:
 	    {
@@ -564,7 +573,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	      csl->mct[stmtnum]->fail_index = stack[sdx];
 	      sdx++;
 	      stack[sdx] = stmtnum;
-	    };
+	    }
 	    break;
 	  case CRM_OPENBRACKET:
 	    {
@@ -573,7 +582,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	      //  stack and FAIL there.
 	      sdx--;
 	      csl->mct[stmtnum]->fail_index = stack [sdx];
-	    };
+	    }
 	    break;
 	  default:
 	    {
@@ -598,7 +607,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	      //  but we ourselves TRAP to the next TRAP statement
 	      csl->mct[stmtnum]->trap_index = stack[sdx];
 	      stack[sdx] = stmtnum;
-	    };
+	    }
 	    break;
 	  case CRM_OPENBRACKET:
 	    {
@@ -607,7 +616,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	      //  stack and aim TRAP there.
 	      sdx--;
 	      csl->mct[stmtnum]->trap_index = stack [sdx];
-	    };
+	    }
 	    break;
 	  case CRM_CLOSEBRACKET:
 	    {
@@ -616,7 +625,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	      stack[sdx + 1] = stack [sdx];
 	      sdx++;
 	      csl->mct[stmtnum]->trap_index = stack [sdx];
-	    };
+	    }
 	    break;
 	  default:
 	    {
@@ -663,7 +672,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	      {
 		fprintf (stderr, "%c", pgmtext[k]);
 		k++;
-	      };
+	      }
 	    if (prettyprint_listing > 4)
 	      fprintf (stderr,"-");
 

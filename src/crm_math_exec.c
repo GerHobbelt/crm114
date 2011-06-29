@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,8 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 static int math_formatter ( double value, char *format, char *buf, long buflen);
 
@@ -53,7 +56,7 @@ long strmath (char *buf, long inlen, long maxlen, long *retstat)
 		  " have a negative length string!  \n");
       internal_trace = old_internal_trace;
       return (0);
-    };
+    }
 
   //   Check for first-character control of Algebraic v. RPN
   if (buf[0] == 'A')
@@ -119,8 +122,8 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
   //      all initialized... let's begin.
   
   if (internal_trace) 
-    fprintf (stderr, "Math on '%s' len %ld retstat %lx \n", 
-	     buf, inlen, (long) retstat);
+    fprintf (stderr, "Math on '%s' len %ld retstat %p\n", 
+	     buf, inlen, (void *)retstat);  /* [i_a] */
 
   for (ip = 0; ip < inlen; ip++)
     {
@@ -133,7 +136,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	  errstat = nonfatalerror ("Stack Underflow in math evaluation",
 			 "");
 	  return (0);
-	};
+	}
 
       if (sp >= DEFAULT_MATHSTK_LIMIT)
 	{
@@ -141,7 +144,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 				 "CRM114 Barbie says 'This math is too hard'.",
 				 buf);
 	  return (0);
-	};
+	}
 
       switch (buf[ip])
 	{
@@ -173,7 +176,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		    sinc = 1;
 		  }
 		break;
-	      };
+	      }
 	    if (buf[ip] == '+' && !( isdigit (buf[ip+1])))
 	      {
 		if (sp > 0)
@@ -183,7 +186,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		    sinc = 1;
 		  }
 		break;
-	      };
+	      }
 	    
 	    //   Neither unary +/-  so we use strtod to convert 
 	    //   the string we're looking at to floating point.
@@ -195,7 +198,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	    //    Now, move [ip] over to accomodate characters used.
 	    //    (the -1 is because there's an auto-increment in the big 
 	    //    FOR-loop)
-	    ip = ((unsigned long) frejected) - ((unsigned long) buf ) - 1;
+	    ip = (long)(frejected - buf) - 1;  /* [i_a] */
 	  }
 	  break;
 	  //
@@ -209,7 +212,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		stack[sp] = stack[sp] * stack[sp+1];
 		sinc = 1;
 	      }
-	  };
+	  }
 	  break;
 	case '/':
 	  {
@@ -220,7 +223,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		stack[sp] = stack[sp] / stack[sp+1];
 		sinc = 1;
 	      }
-	  };
+	  }
 	  break;
 	case '%':
 	  {
@@ -230,7 +233,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		stack[sp] = ((long long) stack[sp]) % ((long long)stack[sp+1]);
 		sinc = 1;
 	      }
-	  };
+	  }
 	  break;
 	  
 	case '^': // exponentiation - for positive bases, neg base + int exp.
@@ -243,7 +246,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	      else
 		stack[sp] = pow (stack[sp], stack[sp+1]);
 	      if (internal_trace)
-		fprintf (stderr, "exp out: %lf\n", stack[sp]);
+		fprintf (stderr, "exp out: %f\n", stack[sp]);
 	      sinc = 1;
 	    }
 	  break;
@@ -274,10 +277,10 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		  {
 		    if (retstat) *retstat = 1;
 		    stack[sp] = 0;
-		  };
+		  }
 		sinc = 1;
 	      }
-	  };
+	  }
 	  break;
 
 	case '!':
@@ -295,10 +298,10 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		  {
 		    if (retstat) *retstat = 1;
 		    stack[sp] = 0;
-		  };
+		  }
 		sinc = 1;
 	      }
-	  };
+	  }
 	  break;
 
 	case '>':
@@ -318,7 +321,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		      {
 			if (retstat) *retstat = 1;
 			stack[sp] = 0;
-		      };
+		      }
 		    sinc = 1;
 		  }
 	      }
@@ -336,10 +339,10 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		      {
 			if (retstat) *retstat = 1;
 			stack[sp] = 0;
-		      };
+		      }
 		    sinc = 1;
 		  }
-	      };
+	      }
 	  }
 	  break;
 
@@ -360,7 +363,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		      {
 			if (retstat) *retstat = 1;
 			stack[sp] = 0;
-		      };
+		      }
 		    sinc = 1;
 		  }
 	      }
@@ -378,11 +381,11 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		      {
 			if (retstat) *retstat = 1;
 			stack[sp] = 0;
-		      };
+		      }
 		    sinc = 1;
 		  }
-	      };
-	  };
+	      }
+	  }
 	  break;
 	case 'e':
 	case 'E':
@@ -405,26 +408,30 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		//  to the format string so we get integer output.
 		if ( buf[ip] == 'x' || buf[ip] == 'X')
 		  {
-		    snprintf (outformat, 63, "%%%g.0ll%c",
+		    snprintf (outformat, NUMBEROF(outformat), "%%%g.0ll%c",
                              stack[sp+1], (short) buf[ip] );
+			outformat[NUMBEROF(outformat) - 1] = 0;
                   }
                 else
                   {
 		    if ( ((long)stack[sp+1]) / 1 == stack[sp+1])
 		      {
-			snprintf(outformat, 63, "%%%g.0%c", stack[sp+1], buf[ip]);
+			snprintf(outformat, NUMBEROF(outformat), "%%%g.0%c", stack[sp+1], buf[ip]);
+			outformat[NUMBEROF(outformat) - 1] = 0;
 		      }
 		    else
 		      {
-			snprintf(outformat, 63, "%%%g%c", stack[sp+1], buf[ip]);
-		      };
-		  };
+			snprintf(outformat, NUMBEROF(outformat), "%%%g%c", stack[sp+1], buf[ip]);
+			outformat[NUMBEROF(outformat) - 1] = 0;
+		      }
+		  }
 		if (internal_trace)
 		  fprintf (stderr, "Format string -->%s<-- \n", outformat);
 		stack[sp+1] = 0;
 		if (buf[ip] != 'x' && buf[ip] != 'X')
 		  {
-		    snprintf (tempstring, 2047, outformat, stack[sp]);
+		    snprintf (tempstring, NUMBEROF(tempstring), outformat, stack[sp]);
+			tempstring[NUMBEROF(tempstring) - 1] = 0;
 		    if (internal_trace)
 		      fprintf (stderr, 
 			       "Intermediate result string -->%s<-- \n", 
@@ -434,12 +441,13 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		  {
 		    long long intpart ;
 		    intpart = ((long long) stack[sp]) / 1;
-		    snprintf (tempstring, 2047, outformat, intpart);
+		    snprintf (tempstring, NUMBEROF(tempstring), outformat, intpart);
+			tempstring[NUMBEROF(tempstring) - 1] = 0;
 		    if (internal_trace)
 		      fprintf (stderr, 
 			       "Intermediate hex result string -->%s<-- \n", 
 			       tempstring);
-		  };
+		  }
 		//   And now do the back conversion of the result.
 		//   Note that X formatting (hexadecimal) does NOT do the 
 		//   back conversion; the only effect is to store the 
@@ -448,7 +456,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		    buf[ip] != 'X')
 		  stack[sp] = strtod (tempstring, NULL);
 	      }
-	  };
+	  }
 	  break;
 	case ' ':
 	case '\n':
@@ -458,7 +466,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	  //        seeing.  
 	  {
 	    sinc = 1;
-	  };
+	  }
 	  break;
 	case '(':
 	case ')':
@@ -467,7 +475,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	    nonfatalerror ("It's just silly to use parenthesis in RPN!",
 			   " Perhaps you should check your setups?");
 	    sinc = 1;
-	  };
+	  }
 	  break;
 
 	default:
@@ -478,10 +486,10 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	    nonfatalerror (" Sorry, but I can't do RPN math on the un-mathy "
 			   "character found: ", bogus); 
 	    sinc = 1;
-	  };
+	  }
 	  break;
-	};
-    };
+	}
+    }
 
   if (internal_trace)
     {
@@ -490,7 +498,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	       ip, sp, stack[sp], buf[ip]);
       if (retstat) 
 	fprintf (stderr, "retstat = %ld\n", *retstat);
-    };
+    }
 
   //      now the top of stack contains the result of the calculation.
   //      fprintf it into the output buffer, and we're done.
@@ -510,6 +518,10 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 int math_formatter ( double value, char *format, char *buf, long buflen)
 {
   long outlen;
+  assert(buf != NULL);
+  assert(buflen > 0);
+  assert(format != NULL);
+
   //  If the user supplied a format, use that.
   //  
   if (format && format[0] != '\0')
@@ -521,20 +533,46 @@ int math_formatter ( double value, char *format, char *buf, long buflen)
       if (format[strlen(format)-1] == 'x'
 	  || format[strlen(format)-1] == 'X')
 	{
-	  long long equiv ;
+	  long long equiv;
 	  if (internal_trace)
 	    fprintf (stderr, "Final hex format: %s\n", format ); 
-	  equiv = value * 1;
+	  equiv = value;
 	  outlen = snprintf (buf, buflen, format, equiv);
-	  return (outlen);
-	};
+	  /*
+		[i_a] taken from MSVC2005 documentation (and why it's dangerous to simply return outlen)
+		- emphasis is mine -:
+
+		Return Value
+
+		Let len be the length of the formatted data string (not including the terminating null). len 
+		and count are in bytes for _snprintf, wide characters for _snwprintf.
+
+		If len < count, then len characters are stored in buffer, a null-terminator is appended, 
+		and len is returned.
+
+		If len = count, then len characters are stored in buffer, no null-terminator is appended, 
+		and len is returned.
+
+		If len > count, then count characters are stored in buffer, no null-terminator is appended, 
+		and a NEGATIVE value is returned.
+
+		If buffer is a null pointer and count is nonzero, or format is a null pointer, the invalid 
+		parameter handler is invoked, as described in Parameter Validation. If execution is 
+		allowed to continue, THESE FUNCTIONS RETURN -1 and set errno to EINVAL.
+	  */
+	  buf[buflen - 1] = 0;
+	  /* return (outlen); ** [i_a] */
+	  return strlen(buf);
+	}
       //  	
       //    Nothing so special; use the user format as it is.
       if (internal_trace)
 	fprintf (stderr, "Final format: %s\n", format ); 
       outlen = snprintf (buf, buflen, format, value);
-      return (outlen);
-    };
+	  buf[buflen - 1] = 0;
+	  /* return (outlen); ** [i_a] */
+	  return strlen(buf);
+    }
      
   //   Nope - we didn't get a preferred formatting, so here's the 
   //   adaptive smart code.
@@ -545,6 +583,7 @@ int math_formatter ( double value, char *format, char *buf, long buflen)
   if (value == 0.0 )
     {
       outlen = snprintf (buf, buflen, "0");
+	  buf[buflen - 1] = 0;
       goto formatdone;
     }
   //
@@ -553,6 +592,7 @@ int math_formatter ( double value, char *format, char *buf, long buflen)
   if (value > 1000000000000.0 || value < -1000000000000.0 )
     {
       outlen = snprintf (buf, buflen, "%.5E", value);
+	  buf[buflen - 1] = 0;
       goto formatdone;
     }
   // 
@@ -561,6 +601,7 @@ int math_formatter ( double value, char *format, char *buf, long buflen)
   if ( value  < 0.01 && value > -0.01 )
     {
       outlen = snprintf (buf, buflen, "%.5E", value);
+	  buf[buflen - 1] = 0;
       goto formatdone;
     }
   //
@@ -569,19 +610,22 @@ int math_formatter ( double value, char *format, char *buf, long buflen)
   if (((long)(value*2.0) / 2) == value)
     {
       outlen = snprintf (buf, buflen, "%.0f", value);
+	  buf[buflen - 1] = 0;
       goto formatdone;
     }
   //
   //       if none of the above, print with five digits precision
   //
   outlen = snprintf (buf, buflen, "%.5f", value);
+  buf[buflen - 1] = 0;
   //
   //
   //         one way or another, once we're here, we've sprinted it.
  formatdone:
   if (internal_trace)
-    fprintf (stderr, "math_formatter outlen = %ld\n", outlen);
-  return (outlen);
+    fprintf (stderr, "math_formatter outlen = %ld / %ld\n", outlen, strlen(buf));
+  /* return (outlen); ** [i_a] */
+  return strlen(buf);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -650,7 +694,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 			    "CRM114 Barbie says 'This math is too hard'.");
 	  if (retstat) *retstat = 0;
           return (0);
-        };
+        }
 
       switch (validstack[sp])
 	{
@@ -683,9 +727,9 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		leftarg[sp] = strtod (&buf[ip], &frejected);
 		if (user_trace) 
 		  fprintf (stderr, " Got left arg %e\n", leftarg[sp]);
-		ip = ((unsigned long) frejected) - ((unsigned long) buf) - 1;
+		ip = (long)(frejected - buf) - 1;  /* [i_a] */
 		validstack[sp] = LEFTVALID;
-	      };
+	      }
 	      break;
 	    case '(':
 	      {
@@ -707,8 +751,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 				       " (need to have a number here).");
 	      if (retstat) *retstat = 0;
 	      return (0);
-	      break;	
-	    };
+	    }
 	  break;
 	  
 	  //  if left arg is valid; next thing must be an operator;
@@ -752,8 +795,8 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		      fprintf (stderr, "two-char operator\n");
 		    opstack[sp] = ((opstack[sp] << 8) | buf[ip+1]);
 		    ip++;
-		  };
-	      };
+		  }
+	      }
 	      break;
 	    case ')':
 	      //   close paren pops the stack, and returns the left arg
@@ -770,7 +813,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		{
 		  leftarg[sp] = leftarg [sp+1];
 		  validstack[sp] = LEFTVALID;
-		};
+		}
 	      break;
 	    case ' ':
 	      break;
@@ -779,7 +822,6 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 				       buf);
 	      if (retstat) *retstat = 0;
 	      return (0);
-	      break;
 	    }
 	  break;
 	  
@@ -821,9 +863,9 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		rightarg = strtod (&buf[ip], &frejected);
 		if (internal_trace) 
 		  fprintf (stderr, " Got right arg %e\n", rightarg);
-		ip = ((unsigned long) frejected) - ((unsigned long) buf) - 1;
+		ip = (long)(frejected - buf) - 1;  /* [i_a] */
 		validstack[sp] = validstack[sp] | RIGHTVALID;
-	      };
+	      }
 	    case ' ':
 	      break;
 	    default:
@@ -831,9 +873,8 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 				       buf);
 	      if (retstat) *retstat = 0;
 	      return (0);
-	      break;
-	    };
-	};
+	    }
+	}
       
       //////////////////////////////////////////////////
       //
@@ -860,7 +901,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	      leftarg[sp] = leftarg[sp] / rightarg;
 	      break;
 	    case '%':
-	      leftarg[sp] = (long long) leftarg[sp] % (long long) rightarg;
+	      leftarg[sp] = ((long long) leftarg[sp]) % ((long long) rightarg);  /* [i_a] */
 	      break;
 	    case '^':
 	      //    since we don't do complex numbers (yet) handle as NaN
@@ -870,7 +911,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	      else
 		leftarg[sp] = pow (leftarg[sp], rightarg);
 	      if (internal_trace)
-	        fprintf (stderr, "exp out: %lf\n", leftarg[sp]);
+	        fprintf (stderr, "exp out: %f\n", leftarg[sp]);
 	      break;
 	    case 'v': //   Logarithm  BASE v ARG
 	      //      Negative bases on logarithms?  Not for us!  force NaN
@@ -886,7 +927,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		  state = 0;}
 	      else
 		{ leftarg[sp] = 0;
-		  state = 1;};
+		  state = 1;}
 	      break;
 	    case '>':
 	      if (leftarg[sp] > rightarg)
@@ -894,7 +935,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		  state = 0;}
 	      else
 		{ leftarg[sp] = 0;
-		  state = 1;};
+		  state = 1;}
 	      break;
 	    case '=':
 	      if (leftarg[sp] == rightarg)
@@ -902,7 +943,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
  		  state = 0; }
 	      else
 		{ leftarg[sp] = 0;
-		  state = 1;};
+		  state = 1;}
 	      break;
 	    case (('<' << 8) + '='):
 	      if (leftarg[sp] <= rightarg)
@@ -910,7 +951,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		  state = 0;}
 	      else 
 		{ leftarg[sp] = 0;
-		  state = 1;};
+		  state = 1;}
 	      break;
 	    case (('>' << 8) + '='):
 	      if (leftarg[sp] >= rightarg)
@@ -918,7 +959,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		  state = 0;}
 	      else
 		{ leftarg[sp] = 0;
-		  state = 1;};
+		  state = 1;}
 	      break;
 	    case ( ('!' << 8) + '='):
 	      if (leftarg[sp] != rightarg)
@@ -926,7 +967,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		  state = 0;}
 	      else
 		{ leftarg[sp] = 0;
-		  state = 1;};
+		  state = 1;}
 	      break;
 	      //           Formatting operators
 	    case 'e':
@@ -938,29 +979,34 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	    case 'x':
 	    case 'X':
 	      {
+		char tempstring[2048];  /* [i_a] */
+
 		if (internal_trace)
 		  fprintf (stderr, "Formatting operator %c \n", 
 			   (short)opstack[sp]);
-		char tempstring [2048];
+		// char tempstring [2048];  // [i_a]
 		//     Do we have a float or an int format?
 		if (opstack[sp] == 'x' || opstack[sp] == 'X')
 		  {
-		    snprintf (outformat, 255, "%%%g.0ll%c",
+		    snprintf (outformat, NUMBEROF(outformat), "%%%g.0ll%c",
 			     rightarg, (short) opstack[sp]);
+			outformat[NUMBEROF(outformat) - 1] = 0;
 		  }
 		else 
 		  {
 		    if (((long) rightarg) / 1 == rightarg)
 		      {
-			snprintf (outformat, 255, "%%%g.0%c",
+			snprintf (outformat, NUMBEROF(outformat), "%%%g.0%c",
 				 rightarg, (short) opstack[sp]);
+			outformat[NUMBEROF(outformat) - 1] = 0;
 		      }
 		    else
 		      {
-			snprintf (outformat, 255, "%%%g%c", 
+			snprintf (outformat, NUMBEROF(outformat), "%%%g%c", 
 				 rightarg, (short)opstack[sp]);
-		      };
-		  };
+			outformat[NUMBEROF(outformat) - 1] = 0;
+		      }
+		  }
 		if (internal_trace)
 		  fprintf (stderr, "Format string -->%s<-- \n", outformat);
 		
@@ -973,7 +1019,8 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		  {
 		    if (internal_trace)
 		      fprintf (stderr, "Normal convert ");
-		    snprintf (tempstring, 2047, outformat, leftarg[sp] );
+		    snprintf (tempstring, NUMBEROF(tempstring), outformat, leftarg[sp] );
+			tempstring[NUMBEROF(tempstring) - 1] = 0;
 		    leftarg[sp] = strtod (tempstring, NULL);
 		    validstack[sp] = LEFTVALID;
 		  }
@@ -986,12 +1033,13 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 		    long long equiv;
 		    if (internal_trace)
 		      fprintf (stderr, "Oct/Hex Convert ");
-		    equiv = leftarg[sp] + 0.0;
+		    equiv = leftarg[sp];
 		    if (internal_trace)
 		      fprintf (stderr, "equiv -->%10lld<-- \n", equiv);
-		    snprintf (tempstring, 2047, outformat, equiv);
-		  };
-	      };
+		    snprintf (tempstring, NUMBEROF(tempstring), outformat, equiv);
+			tempstring[NUMBEROF(tempstring) - 1] = 0;
+		  }
+	      }
 	      break;
 	    default:	      	      
               errstat = nonfatalerror ("Math operator makes no sense in: ",
@@ -999,9 +1047,9 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	      if (retstat) *retstat = 0;
 	      return (0);
 	      break;
-	    };
+	    }
 	  validstack[sp] = LEFTVALID;
-	};
+	}
       
       //   Check to see that the stack is still valid.
       if (sp < 0)
@@ -1010,13 +1058,11 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 				   buf);
 	  if (retstat) *retstat = 0;
           return (0);
-        };
-      
-      
-    };
+        }
+    }
   //      We made it all the way through.  Now return the math formatter result
   if (internal_trace)
-    fprintf (stderr, "Returning at sp= %ld and value %lf\n", sp, leftarg[sp]);
+    fprintf (stderr, "Returning at sp= %ld and value %f\n", sp, leftarg[sp]);
   if (retstat) *retstat = state;
 
   //      Check that we made it all the way down the stack  
@@ -1032,8 +1078,10 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
   {
     long return_length;
     return_length = (math_formatter (leftarg[sp], outformat, buf, maxlen ));
+	assert(return_length >= 0);
+	assert(return_length < NUMBEROF(outformat));
     outformat [return_length] = '\000';
     return (return_length);
-  };
+  }
 }      
 

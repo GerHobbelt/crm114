@@ -1,0 +1,15 @@
+#!/usr/bin/crm
+window
+output /:*:_nl: CRM114 testing brackets, escapes and \#'s :*:_nl:/
+output /:*:_nl: If you don't see any compiler error messages, that means the test passed. :*:_nl:/
+
+{ 
+	}
+	# are you annoyed?  I am.  
+	{
+        { { { } } } 
+}
+{ #  these brackets should never be seen.... {  and }
+# nor these { ; } 
+}
+output /:*:_nl:/

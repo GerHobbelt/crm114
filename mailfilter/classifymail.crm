@@ -1,0 +1,54 @@
+#! /usr/bin/crm
+#                      a quick classify only.
+#
+#      this ISOLATE will guarantee that :fileprefix: exists, and keep it's
+#      prior (commandline) value if it does, and an empty string if it doesnt
+isolate (:fileprefix:)
+#
+#
+#       This is the code to read the per-user configuration.  Note
+#       that because this happens during the run, it will _override_
+#       any comand line arguments that get set.
+{
+	isolate (:option_txt:)
+	isolate (:ev:)
+	isolate (:verbose_startup:)
+#   read in the mail filter configuration file.
+	input [:*:fileprefix:mailfilter.cf] (:option_txt:)
+
+#	output /options == :*:option_txt:\n/
+#   reset loop for matching to start of :option_txt:
+	match [:option_txt:] //
+
+#   and loop till there are no more options.
+	{
+#   find a line that looks like a parameter setting...
+		match < fromend nomultiline > (:line: :name: :value:) \
+		                [:option_txt:] /^([[:graph:]]+).*\/(.*)\/.*$/
+		{
+#   don't execute the assign if there's a # at the start of the line.
+			match <absent> [:name:] /^\x23/
+			{
+#   debugging print	
+				match [:verbose_startup:] /SET/
+				output / :*:name:\n    :*:value:\n/
+			}
+			isolate (:*:name:) /:*:value:/
+		}
+		liaf
+	} 
+}
+#
+#       now do the actual work
+{
+	# match (:data:) /.*/
+	match (:data:) [:_dw: 0 :*:decision_length:] /.*/
+	isolate (:stats:)
+	{
+	     classify [:data:] <:*:clf:> ( :*:fileprefix:nonspam.css | :*:fileprefix:spam.css ) (:stats:) /:*:lcr:/
+	     output / file nonspam.css matches better \n:*:stats::*:_nl:/
+	     exit /0/
+	}
+	output / file spam.css matches better \n:*:stats::*:_nl:/
+	exit /1/
+}

@@ -1,0 +1,37 @@
+\: $Id: include.zmm.in,v 1.5 2004/08/21 10:32:58 vanbaal Exp $
+
+\: This file is free software; you can distribute it and/or modify it
+\: under the terms of the GNU GPL.  See the file COPYING.
+\:
+\: Copyright (C) 2003, 2004 Joost van Baal, Copyright (C) 2002, 2003 Stijn van Dongen
+
+\setx{"man::year"}{\zinsert{../stamp.year}}
+\setx{"man::month"}{\zinsert{../stamp.month}}
+\setx{"man::day"}{\zinsert{../stamp.day}}
+
+\: \setx{"man::tag"}{\zinsert{../VERSION}}
+\setx{"man::tag"}{20040627-BlameSeifkes-auto.1}
+
+\setx{"man::year"}{\tr{}{\012}{}{\"man::year"}}
+\setx{"man::month"}{\tr{}{\012}{}{\"man::month"}}
+\setx{"man::day"}{\tr{}{\012}{}{\"man::day"}}
+\setx{"man::tag"}{\tr{}{\012}{}{\"man::tag"}}
+
+\set{"man::author"}{William S. Yerazunis.  Manpage typesetting by Joost van Baal and Shalendra Chhabra}
+
+\: Joost van Baal <joostvb-crm114@mdcc.cx>}
+
+\: this needs zoem > 03-265 (zoem CVS 2003-10-08)
+\set{"man::cat"}{CRM114}
+
+\def{prefix}{/usr/local}
+
+\def{cssdiff}{\bf{cssdiff}}
+\def{cssmerge}{\bf{cssmerge}}
+\def{cssutil}{\bf{cssutil}}
+\def{crm}{\bf{crm}}
+\: \def{rc}{\it{rc}}
+
+\: \def{rcpath}{@SYSCONF_PATH@/crm114/rc}
+\: \def{ttrcpath}{\tt{\rcpath}}
+

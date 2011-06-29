@@ -36,7 +36,7 @@
 #define BYTE_ALIGN 4
 
 //TYPEDEFS
-//we use index_t whenever we're talking about indeces because we might want to shrink things done later
+//we use index_t whenever we're talking about indices because we might want to shrink things done later
 typedef long index_t;
 //we use NULL_INDEX just like we'd use NULL with pointers
 #define NULL_INDEX 2147483647
@@ -44,7 +44,7 @@ typedef long index_t;
 #define HAPAX_INDEX 2147483646
 
 //we need some kind of floating point type to generate correlation scores
-typedef float COOCCURRENCE_SCORE_TYPE;
+typedef double COOCCURRENCE_SCORE_TYPE;
 #define REALLY_SMALL_SCORE -1000000.0
 
 typedef struct mythical_cluster

@@ -1,0 +1,22 @@
+#! /usr/bin/crm
+{
+	output /:*:_nl: CRM114: testing windowing on windows from a variable :*:_nl: :*:_nl:/
+	isolate  (:instuff:) /:*:_dw:/
+	alter (:_dw:) /data window test text /
+	isolate (:t:)
+	output / Input stuff is : :*:instuff: :*:_nl: :*:_nl:/
+	output /:*:_nl: testing delimited by 'A':*:_nl: /
+	{
+		window (:t:) (:instuff:) /A/ /A/
+		output / Data Window: :*:_dw: :*:_nl:/
+		output / Windowed value = :*:t: :*:_nl:/
+		output / Remaining stuff = :*:instuff: :*:_nl: :*:_nl:/
+		liaf
+	}
+	alius
+	{
+		output /  Bounced out of the WINDOW loop -- no further stuff/
+		output /:*:_nl:/
+	}
+	output / End of window-from-variable testing :*:_nl:/
+}

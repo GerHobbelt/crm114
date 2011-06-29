@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,8 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 //        And the match routine.  What a humungous mess...
 int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
@@ -90,35 +93,35 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       if (user_trace)
 	fprintf (stderr, "  nocase turned on...\n");
       casep = 1;
-    };
+    }
   //      is the "basic regex" (obsolete, but useful) flag set?
   if (apb->sflags & CRM_BASIC)
     {
       if (user_trace)
 	fprintf (stderr, "  basic regex match turned on...\n");
       extended_regex_p = 0;
-    };
+    }
 
   if (apb->sflags & CRM_NOMULTILINE)
     {
       if (user_trace)
 	fprintf (stderr, "  nomultiline turned on...\n");
       nomultilinep = 1;
-    };
+    }
   
   if (apb->sflags & CRM_ABSENT)
     {
       if (user_trace)
 	fprintf (stderr, "  absent flag turned on...\n");
       absentp = 1;
-    };
+    }
 
   if (apb->sflags & CRM_LITERAL)
     {
       if (user_trace)
 	fprintf (stderr, "  literal pattern search turned on...\n");
       literal_pattern_p = 1;
-    };
+    }
 
   
   //  default is NO special fromming...
@@ -129,42 +132,42 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       if (user_trace)
 	fprintf (stderr, "  fromstart turned on...\n");
       fromp = CRM_FROMSTART;
-    };
+    }
 
   if (apb->sflags & CRM_FROMNEXT)
     {
       if (user_trace)
 	fprintf (stderr, "  fromnext turned on...\n");
       fromp = CRM_FROMNEXT;
-    };
+    }
   
   if (apb->sflags & CRM_FROMEND)
     {
       if (user_trace)
 	fprintf (stderr, "  fromend turned on...\n");
       fromp = CRM_FROMEND;
-    };
+    }
   
   if (apb->sflags & CRM_NEWEND)
     {
       if (user_trace)
 	fprintf (stderr, "  newend turned on...\n");
       fromp = CRM_NEWEND;
-    };
+    }
 
   if (apb->sflags & CRM_BACKWARDS)
     {
       if (user_trace)
 	fprintf (stderr, "  backwards search turned on...\n");
       fromp = CRM_BACKWARDS;
-    };
+    }
   
   if (apb->sflags & CRM_FROMCURRENT)
     {
       if (user_trace)
 	fprintf (stderr, "  from-current search turned on...\n");
       fromp = CRM_FROMCURRENT;
-    };
+    }
   
   //   Now, from the flags, calculate the cflags and eflags
   cflags = casep * REG_ICASE 
@@ -205,8 +208,8 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   if (internal_trace)
     fprintf (stderr, 
-	     "restricted: vmidx: %ld  mdw: %ld   start: %ld  len: %ld\n",
-	     vmidx, (long) mdwptr, source_start, source_len);
+	     "restricted: vmidx: %ld  mdw: %p   start: %ld  len: %ld\n",
+	     vmidx, mdwptr, source_start, source_len);  /* [i_a] */
   if ( i < 0)
     {
       long curstmt;
@@ -222,9 +225,9 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	{
 	  csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 	  csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
-	};
+	}
       goto nonfatal_route_outwards;
-    };
+    }
   
   //    get the regex pattern out of the // slashes
   crm_get_pgm_arg (pch, MAX_PATTERN, apb->s1start, apb->s1len);
@@ -251,9 +254,9 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	{
 	  csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 	  csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
-	};
+	}
       goto nonfatal_route_outwards;
-    };
+    }
 
 
   //     Get the string to be matched upon...
@@ -279,7 +282,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	{
 	  csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 	  csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
-	};
+	}
       goto nonfatal_route_outwards;
     }
 #endif 
@@ -304,8 +307,8 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    }
 	  else
 	    exit (EXIT_FAILURE);
-	};
-    };
+	}
+    }
 #ifdef SUPERCEDED
   vtextoffset = vht[vmidx]->vstart;
   vtextend = vtextoffset + vht[vmidx]->vlen;
@@ -329,24 +332,24 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (fromp == CRM_FROMCURRENT)
     {    
       textoffset = vpmstart;
-    };
+    }
   if (fromp == CRM_NEWEND)
     {
       textoffset = vpmstart;
-    };
+    }
   if (fromp == CRM_FROMNEXT)
     {
       textoffset = vpmstart + 1 ;
-    };
+    }
   if (fromp == CRM_FROMEND)
     {
       textoffset = vpmend ;
-    };
+    }
   if (fromp == CRM_BACKWARDS)
     { 
       if ( vpmstart > 0) 
-	{ textoffset = vpmstart - 1; } else {textoffset = vpmstart; };
-    };
+	{ textoffset = vpmstart - 1; } else {textoffset = vpmstart; }
+    }
 
   mtextlen = vtextend - textoffset;
 
@@ -371,7 +374,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
       fprintf (stderr, "    start matchable zone: %ld, begin search %ld, length %ld\n",
 	       vtextstartlimit, textoffset, mtextlen);
-    };
+    }
 
   //       Here is the crux.  Do the REGEX match, maybe in a loop
   //       if we're iterating to find a result with a different end 
@@ -400,8 +403,8 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			     nmatches, matches, eflags, NULL);
 	    j = matches[0].rm_eo;
 	    if (( (textoffset + j) > oldend) && (i == 0)) done = 1;
-	  };
-      };
+	  }
+      }
       break;
     case CRM_BACKWARDS:
       {
@@ -421,15 +424,15 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    i = crm_regexec (&preg, mtext, mtextlen,
 			     nmatches, matches, eflags, NULL);
 	    j = matches[0].rm_so;
-	  };
-      };
+	  }
+      }
     default:
       {
 	mtext = &mdw->filetext[textoffset];
 	i = crm_regexec ( &preg, mtext, mtextlen, 
 			  nmatches, matches, eflags, NULL);
-      };
-    };
+      }
+    }
   
   crm_regfree (&preg);
   
@@ -530,7 +533,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			   k++)
 			fprintf (stderr, "%c", mdw->filetext[k]);
 		      fprintf (stderr, "\n");
-		    };
+		    }
 		  vnext = vstart + vlen;
 		  //  HERE'S THE DANGEROUS PART..  because varible
 		  //  names have been expanded, we can't assume
@@ -545,7 +548,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		    //   Otherwise, we'd have a memory leak.
 		    //
 		    if (!vn)
-		      vn = (char *) malloc (MAX_VARNAME+16);
+		      vn = (char *) malloc ((MAX_VARNAME+16) * sizeof(vn[0]));  /* [i_a] */
 		    if (!vn)
 		      untrappableerror("Couldn't malloc vn.\n Can't fix that.","");
 		    strncpy (vn, &(bindable_vars[vstart]), vlen);
@@ -566,8 +569,8 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			      index_texts[mc] = vht[vi]->valtxt;
 			      index_starts[mc] = vht[vi]->vstart;
 			      index_lengths[mc] = vht[vi]->vlen;
-			    };
-			};
+			    }
+			}
 			//    watch out for nonparticipating () submatches...
 			//    (that is, submatches that weren't used because
 			//     of a|(b(c)) regexes.  These have .rm_so offsets
@@ -589,9 +592,9 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 				       "profound, but not acceptable.  ", 
 				       "Therefore, I'm ignoring this "
 				       "re-definition.");
-		      };
+		      }
 		    // free (vn);
-		  };
+		  }
 		  //    and move on to the next binding (if any)
 		  vstart = vnext;
 		  mc++;
@@ -600,8 +603,8 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 				   "Exceeded MAX_SUBREGEX limit-too many parens in match",
 				   " Looks like you blew the gaskets on 'er.\n"); 
 		  
-		};
-	    };
+		}
+	    }
 	  //
 	  //      Now do cleanup/reclamation of old memory space, if needed.
 	  //
@@ -636,9 +639,9 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			  {
 			    maxi = i;
 			    maxstart = index_starts[i];
-			  };
+			  }
 		      }
-		  };
+		  }
 		//  Now we know the last reclaim area; we can safely
 		//  reclaim that area (and no other)
 		if (maxi >= 0)
@@ -663,13 +666,13 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		    //   and zap out the reclaimed entry, so other entries
 		    //   can also be reclaimed in the proper order.
 		    index_starts[maxi] = -1;
-		  };
+		  }
 		if (maxi == -1)
 		  done = 1;
-	      };
-	  };
-	};
-    };
+	      }
+	  }
+	}
+    }
 
 
   if (0)
@@ -677,7 +680,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     nonfatal_route_outwards:
       if (user_trace)
 	fprintf (stderr, "The MATCH FAULTed and we're taking the TRAP out");
-    };
+    }
 
   return (0);
-};  
+}  

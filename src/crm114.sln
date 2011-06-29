@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm114", "crm114.vcproj", "{4A077629-8590-434C-9486-0D069DF341A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssdiff", "cssdiff.vcproj", "{4A077629-8590-434C-9486-0D069DF341A1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssmerge", "cssmerge.vcproj", "{4A077629-8590-434C-9486-0D069DF341A5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cssutil", "cssutil.vcproj", "{4A077629-8590-434C-9486-0D069DF341A3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "obsf-util", "osbf-util.vcproj", "{4A077629-8590-434C-9486-0D069DF341A2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtre_dll", "..\..\libtre\tre\win32\libtre_dll.vcproj", "{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtre_lib", "..\..\libtre\tre\win32\libtre_lib.vcproj", "{B3002C27-B40B-413E-BDB4-13E6678F199B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "retest", "..\..\libtre\tre\win32\retest.vcproj", "{7437BF7D-E5EF-4580-9222-1EE3727A6E62}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4A077629-8590-434C-9486-0D069DF341A4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A4}.Debug|Win32.Build.0 = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A4}.Release|Win32.ActiveCfg = Release|Win32
+		{4A077629-8590-434C-9486-0D069DF341A4}.Release|Win32.Build.0 = Release|Win32
+		{4A077629-8590-434C-9486-0D069DF341A1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A1}.Debug|Win32.Build.0 = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A1}.Release|Win32.ActiveCfg = Release|Win32
+		{4A077629-8590-434C-9486-0D069DF341A1}.Release|Win32.Build.0 = Release|Win32
+		{4A077629-8590-434C-9486-0D069DF341A5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A5}.Debug|Win32.Build.0 = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A5}.Release|Win32.ActiveCfg = Release|Win32
+		{4A077629-8590-434C-9486-0D069DF341A5}.Release|Win32.Build.0 = Release|Win32
+		{4A077629-8590-434C-9486-0D069DF341A3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A3}.Debug|Win32.Build.0 = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A3}.Release|Win32.ActiveCfg = Release|Win32
+		{4A077629-8590-434C-9486-0D069DF341A3}.Release|Win32.Build.0 = Release|Win32
+		{4A077629-8590-434C-9486-0D069DF341A2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A2}.Debug|Win32.Build.0 = Debug|Win32
+		{4A077629-8590-434C-9486-0D069DF341A2}.Release|Win32.ActiveCfg = Release|Win32
+		{4A077629-8590-434C-9486-0D069DF341A2}.Release|Win32.Build.0 = Release|Win32
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}.Debug|Win32.Build.0 = Debug|Win32
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}.Release|Win32.ActiveCfg = Release|Win32
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}.Release|Win32.Build.0 = Release|Win32
+		{B3002C27-B40B-413E-BDB4-13E6678F199B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B3002C27-B40B-413E-BDB4-13E6678F199B}.Debug|Win32.Build.0 = Debug|Win32
+		{B3002C27-B40B-413E-BDB4-13E6678F199B}.Release|Win32.ActiveCfg = Release|Win32
+		{B3002C27-B40B-413E-BDB4-13E6678F199B}.Release|Win32.Build.0 = Release|Win32
+		{7437BF7D-E5EF-4580-9222-1EE3727A6E62}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7437BF7D-E5EF-4580-9222-1EE3727A6E62}.Debug|Win32.Build.0 = Debug|Win32
+		{7437BF7D-E5EF-4580-9222-1EE3727A6E62}.Release|Win32.ActiveCfg = Release|Win32
+		{7437BF7D-E5EF-4580-9222-1EE3727A6E62}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

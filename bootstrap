@@ -1,0 +1,105 @@
+#!/bin/sh
+#
+# $Id: bootstrap,v 1.8 2004/08/18 09:21:22 vanbaal Exp $
+#
+# bootstrap - script to bootstrap the distribution rolling engine
+#
+# usage:
+#  sh ./bootstrap && ./configure && make distcheck
+#
+# this yields a tarball which one can install doing
+#
+# $ tar zxf PACKAGENAME-*.tar.gz
+# $ cd PACKAGENAME-*
+# $ ./configure
+# $ make
+# # make install
+#
+
+# requirements:
+#  GNU autoconf, from e.g. ftp.gnu.org:/pub/gnu/autoconf/
+#  GNU automake, from e.g. ftp.cygnus.com:/pub/tromey/
+
+# Based upon gnupg-1.2.3/scripts/autogen.sh, which is
+#
+#  Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+#
+#  This file is free software; as a special exception the author gives
+#  unlimited permission to copy and/or distribute it, with or without
+#  modifications, as long as this notice is preserved.
+#
+#  This program is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+#  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# modified for CRM114 by Joost van Baal
+
+PGM=CRM114
+autoconf_vers=2.58
+automake_vers=1.6
+aclocal_vers=1.6
+
+if (autoconf --version) < /dev/null > /dev/null 2>&1 ; then
+    if (autoconf --version | awk 'NR==1 { if( $3 >= '$autoconf_vers') \
+                               exit 1; exit 0; }');
+    then
+       echo "**Error**: "\`autoconf\'" is too old."
+       echo '           (version ' $autoconf_vers ' or newer is required)'
+       DIE="yes"
+    fi
+else
+    echo
+    echo "**Error**: You must have "\`autoconf\'" installed to compile $PGM."
+    echo '           (version ' $autoconf_vers ' or newer is required)'
+    DIE="yes"
+fi
+
+if (automake --version) < /dev/null > /dev/null 2>&1 ; then
+  if (automake --version | awk 'NR==1 { if( $4 >= '$automake_vers') \
+                             exit 1; exit 0; }');
+     then
+     echo "**Error**: "\`automake\'" is too old."
+     echo '           (version ' $automake_vers ' or newer is required)'
+     DIE="yes"
+  fi
+  if (aclocal --version) < /dev/null > /dev/null 2>&1; then
+    if (aclocal --version | awk 'NR==1 { if( $4 >= '$aclocal_vers' ) \
+                                                exit 1; exit 0; }' );
+    then
+      echo "**Error**: "\`aclocal\'" is too old."
+      echo '           (version ' $aclocal_vers ' or newer is required)'
+      DIE="yes"
+    fi
+  else
+    echo
+    echo "**Error**: Missing "\`aclocal\'".  The version of "\`automake\'
+    echo "           installed doesn't appear recent enough."
+    DIE="yes"
+  fi
+else
+    echo
+    echo "**Error**: You must have "\`automake\'" installed to compile $PGM."
+    echo '           (version ' $automake_vers ' or newer is required)'
+    DIE="yes"
+fi
+
+if test "$DIE" = "yes"; then
+    exit 1
+fi
+
+if test ! -f stamp.year
+then
+    echo "Generating stamp files for zoem manpage source..."
+    sh ./setversion
+fi
+
+## alternatively, explicitly call
+##  aclocal && autoheader && \
+##    && automake --add-missing [--verbose] \
+##    && autoconf
+
+echo "Running autoreconf..."
+autoreconf --install --symlink
+
+echo "You can now run \"./configure && make distcheck\"."
+

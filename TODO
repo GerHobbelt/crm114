@@ -1,0 +1,143 @@
+# $Id: TODO,v 1.28 2004/08/19 11:47:33 vanbaal Exp $
+
+CRM114 TODO list, targetted at build and distribution issues. TODO: merge in
+Bill's docs/things_to_do.txt , which is more about CRM114 proper.
+
+- Make sure this file gets installed.
+
+- make sure manpage for crm114(1) is up to date.  Possibly write crmcss(5).
+  Write crmmailfilter(1).  Remove now-duplicate stuff from README, FAQ,
+  CRM114_Mailfilter_HOWTO.txt, QUICKREF.
+
+- decide on wether or not shipping lib TRE tarball with this one
+  * ./configure should do something sane in absence of libtre.
+    Currently (2004-01-14) it falls back to using glibc regexp.
+    This, however, should be fully stresstested.
+  * test wether we catch errors of missing LD_LIBRARY_PATH: the
+    broken-run-time test in configure should work.
+  * these things might be solved by using pkg-config:
+    as Ville Laurikari wrote dd Sat, 3 Jan 2004 16:07:01 +0200:
+ The best way
+ to handle linking to TRE is of course to use pkg-config and autoconf:
+ .
+  PKG_CHECK_MODULES(TRE, tre >= 0.6.4)
+ .
+ This will check that at least version 0.6.4 of TRE is installed.  If
+ found, it will define the TRE_LIBS and TRE_CFLAGS substitution
+ variables which can be used for compiling and linking stuff against
+ TRE.  If the package does not exist, reasonable error messages are
+ shown.
+ I'd recommend to use this in the autoconfiscated version of crm114.  I
+ haven't tried for a while if the .pc files work, so be prepared for
+ problems :)
+
+- list mailing list address in documentation
+
+- get rid of stuff in cvs/sf/crm114/tools , or, at least minize it: keep
+  diff with Bill's tarball minimal.
+
+- learn Bill how to build tarball on his system, using autotools
+
+- set up a cvs-commit mailing list, get commit messages sent there.
+
+- Add tip from Stefan Seyfried on how to invoke mailfilter as a pure filter
+  to CRM114_Mailfilter_HOWTO.txt:
+
+From: Stefan Seyfried
+To: crm114-general@lists.sourceforge.net
+Message-ID: <20040216024248.GA16615@message-id.gmane0305.slipkontur.de>
+Subject: [Crm114-general] Re: Some chars removed from subject of spam mails
+Date: Mon, 16 Feb 2004 03:42:48 +0100
+
+On Sun, Feb 15, 2004 at 05:48:08PM +0100, Joost van Baal wrote:
+> On Sun, Feb 15, 2004 at 05:16:08PM +0100, Philipp Weis wrote:
+> >
+> > But I do not want mailfilter
+> > to send me anything. I just want to use it as a filter that adds one
+> > header and nothing more.
+>
+> <aol>me too</aol>
+
+ok. Again my hack from my .procmailrc:
+
+---------------------bite here---------------------------------
+CRMSCORE=`$HOME/bin/crmstats.sh`
+
+:0fw: .formail.crm114.lock
+  | formail -I "X-CRM114-Score: $CRMSCORE"
+---------------------bite here---------------------------------
+
+~/bin/crmstats.sh is a simple script:
+---------------------bite here---------------------------------
+#!/bin/bash
+grep -a -v "^X-CRM114" | \
+  /usr/bin/crm -u /home/seife/.crm114 mailfilter.crm --stats_only
+---------------------bite here---------------------------------
+
+This inserts exactly one line, "X-CRM114-Score: " with the pR rating on
+which my mua (mutt) matches and highlights mails. Of course procmail could
+deal with the negative classified mails, but it is only a matter of two
+keypresses to auto-tag and move them away so i did not bother.
+--
+Stefan Seyfried
+
+
+- JvB: stop hacking on CRM114 at february 19, 2004: my time is precious.
+
+- make sure autoconfiscated CRM114 works out-of-the box on Bill's platform.
+  Optionally: on FreeBSD, on Mac OSX.
+  This CRM114 branch is reported to run on OpenBSD (3.3),
+  Debian GNU/Linux (woody, dec 2003 sid), Red Hat Linux 7.2 and Sun Solaris (9).
+
+  (Easily test in homedirectory doing:
+
+   wget http://laurikari.net/tre/tre-0.6.3.tar.gz
+   ./configure --prefix=$HOME/local && make && make install
+   wget http://mdcc.cx/~joostvb/crm114/auto/crm114-20031219-RC12.6.tar.gz
+   LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib:$HOME/local/lib ./configure \
+    LDFLAGS=-L$HOME/local/lib CPPFLAGS=-I$HOME/local/include \
+    --prefix=$HOME/opt/crm114 && make && make install
+   export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib:$HOME/local/lib
+   ~/opt/crm114/bin/crm114
+
+  )
+
+- mailfilter should work out of the box, without copying large chunks of
+  code to one's homedirectory.  User configuration should be supported, in
+  $HOME/ .
+  * mailfilter.crm should get renamed to crmfilter, installed in /usr/bin/
+  * once include path issues are resolved, decide on e.g. ~/.crmfilter/ .
+
+- configure ideally should support choosing between _3_ regexp libs.  Not
+  just TRE and libc GNU regex.  E.g. configure --with-tre|gnu|rx
+  * gnu-regex: ftp://ftp.gnu.org/gnu/regex/regex-0.12.tar.gz , now shipped as a
+  part of GNU C library.  See also
+  libregex0 - GNU regular expression library, run time libraries. [libc5]
+  glibc seems to ship regex from Isamu Hasegawa since 2.3.
+  * rx: http://www.netsw.org/system/libs/regex/ , ship rx-1.9a ( 07-Jun-1998 )
+  and later.  ftp.gnu.org  has rx-1.5.tar.gz. (Oct 31  1998)
+  * rxspencer-alpha3.8.g2.tar.gz (12-Sep-2002) Henry Spencers implementation
+  of the POSIX.2 regex(3) library, http://arglist.com/regex/
+  ftp://zoo.toronto.edu/pub/regex.shar http://www.netsw.org/system/libs/regex/
+  Debian manpages package ships a regex(7) manpage taken from Henry Spencer’s
+  regex package.
+
+- configure.ac could better use pkg-config, see comments in the file.
+
+- megatest.sh should work out of the box, _after_ installation.
+  I'd be nice to have a ``make test'' run this, _before_ installation.
+
+- C sources should have
+
+  #ifdef HAVE_CONFIG_H
+  #include "config.h"
+  #endif
+
+- document how to have both a /usr/bin/crm114-tre and a /usr/bin/crm114-rx
+  installed: ./configure --program-suffix ; cd src ; make install .
+
+- refer to Peter Popovich's RPM in docs. (.spec is gone): point to
+  http://popovich.net/crm114/
+
+- add link to http://camram.sourceforge.net/ .
+

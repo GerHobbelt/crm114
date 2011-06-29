@@ -1,0 +1,10 @@
+# $Id: HACKING,v 1.5 2003/12/21 17:23:47 vanbaal Exp $
+
+Building CRM114 from CVS, using the autoconfiscated tree.
+=========================================================
+
+~$ CVSROOT=:ext:cvs.sourceforge.net:/cvsroot/crm114 cvs co tools
+
+and take a look at tools/README .
+
+

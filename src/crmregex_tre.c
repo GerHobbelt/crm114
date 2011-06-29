@@ -56,7 +56,7 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
   if (regex_len == 0) 
     {
       return (regncomp (preg, "()", 2, cflags));
-    };
+    }
 
   //   Are we cacheing compiled regexes?  Maybe not...
 #if CRM_REGEX_CACHESIZE == 0
@@ -68,7 +68,7 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
     for (i = 0; i < regex_len; i++)
       {
 	fprintf (stderr, "%2X", regex[i]);
-      };
+      }
     fprintf (stderr, "\n");
   }
 
@@ -112,8 +112,8 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 	    cflags_temp = cflags;
 	    status_temp = regex_cache[i].status;
 	    found_it = i;
-	  };
-      };
+	  }
+      }
 #endif
 #ifdef REGEX_CACHE_RANDOM_ACCESS
     //
@@ -134,7 +134,7 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 	cflags_temp = cflags;
 	status_temp = regex_cache[i].status;
 	found_it = i;
-      };
+      }
 #endif
     
     //    note that on exit, i now is the index where we EITHER found
@@ -145,13 +145,13 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 	//  We didn't find it.  Do the compilation instead, putting
 	//   the results into the _temp vars.
 	if (internal_trace) fprintf (stderr, "couldn't find it\n");
-	regex_temp = (char *) malloc (regex_len + 1);
+	regex_temp = (char *) malloc ((regex_len + 1) * sizeof(regex_temp[0])); /* [i_a] */
 	memcpy (regex_temp, regex, regex_len);
 	rlen_temp = regex_len;
 	cflags_temp = cflags;
 	if (internal_trace) 
 	  fprintf (stderr, "Compiling %s (len %ld).\n", regex_temp, rlen_temp);
-	ppreg_temp = (regex_t *) malloc (rtsize);
+	ppreg_temp = (regex_t *) malloc (rtsize * sizeof(ppreg_temp[0]));  /* [i_a] */
 	if (ppreg_temp == NULL) 
 	  fatalerror ("Unable to allocate a pattern register buffer header.  ",
 		      "This is hopeless.  ");
@@ -162,7 +162,7 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 	//   and pretend that this was at the last index, so it
 	//    moves everything else further down the list.
 	i = CRM_REGEX_CACHESIZE - 1;
-      };
+      }
 	
     //   Either way, at this point, the _temp vars contain the new and
     //    correct regex information; this information has vacated the slot
@@ -184,11 +184,11 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 	  {
 	    regfree (regex_cache[i].preg);
 	    free (regex_cache[i].preg);
-	  };
+	  }
 	if (regex_cache[i].regex != NULL) free (regex_cache[i].regex);
 	regex_cache[i].regex = NULL;
 	regex_cache[i].regex_len = 0;
-      };
+      }
 	  
 
     //       If needed, slide 0 through i-1 down to 1..i, to make room
@@ -203,8 +203,8 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 	    regex_cache[j].regex_len = regex_cache[j-1].regex_len;
 	    regex_cache[j].cflags    = regex_cache[j-1].cflags;
 	    regex_cache[j].status    = regex_cache[j-1].status;
-	  };
-      };
+	  }
+      }
 
     //   and always stuff the _temps (which are correct) in at [0]
     regex_cache[0].preg      = ppreg_temp;
@@ -227,11 +227,11 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
           {
             regfree (regex_cache[i].preg);
             free (regex_cache[i].preg);
-          };
+          }
         if (regex_cache[i].regex != NULL) free (regex_cache[i].regex);
         regex_cache[i].regex = NULL;
         regex_cache[i].regex_len = 0;
-      };
+      }
 
     //   and  stuff the _temps (which are correct) in at [i]
     regex_cache[i].preg      = ppreg_temp;
@@ -247,7 +247,7 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
       fprintf (stderr, " About to return\n");
     memcpy (preg, ppreg_temp, rtsize);
     return (regex_cache[i].status);    
-  };
+  }
 #endif
 }
 //
@@ -263,7 +263,7 @@ int crm_regexec ( regex_t *preg, char *string, long string_len,
       nonfatalerror("crm_regexec - Regular Expression Execution Problem:\n",
 		    "NULL pointer to the string to match .");
       return (REG_NOMATCH);
-    };
+    }
   if (aux_string == NULL
       || strlen (aux_string) < 1)
     {
@@ -277,11 +277,18 @@ int crm_regexec ( regex_t *preg, char *string, long string_len,
       regaparams_t pblock;
       mblock.nmatch = nmatch;
       mblock.pmatch = pmatch;
-      sscanf (aux_string, "%d %d %d %d", 
+	      pblock.cost_subst = 0;
+	      pblock.cost_ins = 0;
+	      pblock.max_cost = 0;
+	      pblock.cost_del = 0;
+      if (4 != sscanf (aux_string, "%d %d %d %d", 
 	      &pblock.cost_subst,
 	      &pblock.cost_ins,
 	      &pblock.max_cost,
-	      &pblock.cost_del);
+	      &pblock.cost_del))
+	  {
+		  fatalerror("Failed to decode 4 numeric cost parameters for approximate matching ", aux_string);
+	  }
       if (user_trace)
 	fprintf (stderr,
 	 "Using approximate match.  Costs: Subst %d Ins %d Max %d Del %d \n",
@@ -295,7 +302,7 @@ int crm_regexec ( regex_t *preg, char *string, long string_len,
       if (user_trace)
 	fprintf (stderr, "approximate Regex match returned %d .\n", i);
       return (i);
-    };
+    }
 }
 
 
@@ -304,7 +311,7 @@ size_t crm_regerror (int errorcode, regex_t *preg, char *errbuf,
 
 {
   return (regerror (errorcode, preg, errbuf, errbuf_size));
-};
+}
 
 void crm_regfree (regex_t *preg)
 {
@@ -315,11 +322,12 @@ void crm_regfree (regex_t *preg)
 #else
    return (regfree (preg));
 #endif
-};
+}
 
-char * crm_regversion ()
+char * crm_regversion (void)
 {
   static char vs[129];
+  assert(strlen(tre_version()) < 129);
   strcat (vs, (char *) tre_version ());
   return (vs);
-};
+}

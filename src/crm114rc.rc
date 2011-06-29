@@ -1,0 +1,54 @@
+
+#include "crm114rc.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+CRM114_ICON             ICON                    "crm114.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2007,4,28,0
+ PRODUCTVERSION 2007,4,28,0
+ FILEFLAGSMASK 0x37L
+#ifdef _DEBUG
+ FILEFLAGS 0x23L
+#else
+ FILEFLAGS 0x22L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "CRM114 - the Controllable Regex Mutilator\nCRM114 is a system to examine incoming e-mail, system log streams, data files or other data streams, and to sort, filter, or alter the incoming files or data streams according to the user's wildest desires."
+            " Criteria for categorization of data can be via a host of methods, including regexes, approximate regexes, a Hidden Markov Model, Orthogonal Sparse Bigrams, WINNOW, Correllation, KNN/Hyperspace, or Bit Entropy (or by other means - it's all programmable).\nAccuracy has been seen in excess of 99.9 per cent. In other words, CRM114 learns, and it learns fast.\nCRM114 is compatible with SpamAssassin or other spam-flagging software; it can also be pipelined in front of or behind procmail. CRM114 is also useful as a syslog or firewall log filter, to alert you to important events but ignore the ones that aren't meaningful.\nPeople have been able to run CRM114 on Linux, BSD, Mac OS-X, and Windows (natively and with Cygwin), and it has even been integrated with Microsoft Outlook and QUALCOMM Eudora. See the 'Cool Things' link below for details. I can't help on any of these except Linux, though if you ask on the mailing list, someone might be able to assist you.\nNot every user gets great results with the default classifier; that's why CRM114 has several different classifiers available. It's easy to switch classifiers and run a script to see what the tradeoffs are in terms of speed, accuracy, disk space, rate of learning, etc."
+            VALUE "CompanyName", "CRM114"
+            VALUE "FileDescription", "CRM114"
+            VALUE "FileVersion", "2007, 4, 28, 0"
+            VALUE "InternalName", "crm114-20070428-BlameSpamConf"
+            VALUE "LegalCopyright", "Copyright (C) 2005 - 2007"
+            VALUE "LegalTrademarks", "Released as Open Source"
+            VALUE "OriginalFilename", "crm114"
+            VALUE "ProductName", "CRM114"
+            VALUE "ProductVersion", "2007, 4, 28, 0"
+            VALUE "SpecialBuild", "crm114-20070428-BlameSpamConf"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+

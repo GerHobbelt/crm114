@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,7 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
 
 
 //           Allow creation of a temporary isolated variable;
@@ -99,7 +101,7 @@ int crm_expr_isolate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			     " has an utterly bogus name.  I'll ignore"
 			     " the rest of the statement", " ");
 	      break;
-	    };
+	    }
 	  if (strcmp (vname, ":_dw:") == 0)
 	    {
 	      nonfatalerror ("You can't ISOLATE the :_dw: data window! ",
@@ -148,7 +150,7 @@ int crm_expr_isolate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 				       apb->s1start, apb->s1len);
 		      vallen = crm_nexpandvar(tempbuf, apb->s1len, 
 					      data_window_size - tdw->nchars);
-		    };
+		    }
 		}
 	      else
 		//      it IS preexisting
@@ -166,7 +168,7 @@ int crm_expr_isolate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 				 "so no action taken.\n");
 		      goto no_isolate_action;
 		      // return (0);
-		    };
+		    }
 		  
 		  if (apb->s1start)
 		    {
@@ -191,8 +193,8 @@ int crm_expr_isolate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		      vallen = 
 			crm_nexpandvar (tempbuf, vlen+2, 
 					data_window_size - tdw->nchars);
-		    };
-		};
+		    }
+		}
 	      //
 	      //     Now we have the name of the variable in vname/vlen,
 	      //    and the value string in tempbuf/vallen.  We can then
@@ -205,17 +207,17 @@ int crm_expr_isolate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	      if ( iso_status > 0) 
 		return (iso_status);
 
-	    };
+	    }
 	  //   the semicolon is to keep the C compiler happy.
 	no_isolate_action: ;
-	};
+	}
       vstart = vstart + vlen;
       if (temp_vars[vstart] == '\000'
 	  || vstart >= tvlen )
 	done = 1;
-    };
+    }
   return (0);
-};
+}
 
 
 //
@@ -246,7 +248,7 @@ int crm_isolate_this (long *vptr,
 
   if (internal_trace)
     {
-      fprintf (stderr, "using crm_isolate_this, vptr = %lX\n", (long) vptr);
+      fprintf (stderr, "using crm_isolate_this, vptr = %p\n", (void *)vptr);  /* [i_a] */
     }
 
   
@@ -282,7 +284,7 @@ int crm_isolate_this (long *vptr,
   else
     {
       is_old = 1;
-    };
+    }
 
   if (is_old && vht[vmidx]->valtxt == tdw->filetext)
     {
@@ -299,7 +301,7 @@ int crm_isolate_this (long *vptr,
       is_old_isolated = 0;
       //  and how much space will we need?
       neededlen += valuelen;
-    };
+    }
 
   //     Do a check - is there enough space in the tdw to hold
   //     the new variable (both name and value)?
@@ -308,7 +310,7 @@ int crm_isolate_this (long *vptr,
       char vname[129];
       strncpy (vname, &nametext[namestart], 
 	       ( (128 < namelen) ? 128 : namelen));
-      vname[129] = 0;
+      vname[128] = 0; /* [i_a] boundary bug */
       fatalerror ("You have blown the memory-storage gaskets while trying"
 		  "to store the ISOLATEd variable ", vname);
       return (1);
@@ -381,7 +383,7 @@ int crm_isolate_this (long *vptr,
     {
       tdw->filetext[tdw->nchars] = '\n';
       tdw->nchars++;
-    };
+    }
   //            (end of danger zone)
   //
   vht[vmidx]->vstart = tdw->nchars;
@@ -417,8 +419,8 @@ int crm_isolate_this (long *vptr,
       crm_compress_tdw_section (vht[vmidx]->valtxt,
 				oldvstart , 
 				oldvstart+oldvlen);
-    };
+    }
 
   return (0);
-};
+}
 

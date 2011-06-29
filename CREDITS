@@ -1,0 +1,306 @@
+Many thanks to all who send any fix or suggestions or bug reports.
+If we forgot to add your name, fell free to send a note.
+
+Current Maintainers:
+
+    Martin Fouts <fouts at users.sourceforge.net>
+    Dirk Stöcker <stoecker at users.sourceforge.net>
+
+Developers of current version:
+
+    Martin Fouts <fouts at users.sourceforge.net>
+	Many changes, updates, new options
+    Dirk Stöcker <stoecker at users.sourceforge.net>
+	Bug fixes, new options, German translation, fixed NLS builds
+    Markus Prosch <pro at iis.fhg.de>
+        Changes of version 0.9pl30b
+    Ulf Härnhammar <metaur at users.sourceforge.net>
+        Fixed buffer overflows, security fixes, some cleanup
+    Paul Slusarz <kmicic at ideaworks.com>
+        Some patches
+
+Supporters of pre SourceForge versions:
+
+    Ondrejicka Stefan <ondrej at idata.sk>
+	The main author
+    Richard Jelinek <rj at suse.de>
+	For bug reports, suggestions and english message corrections.
+    Robo Dobozy <robo at idata.sk>
+	For bug reports, suggestions.
+    Janusz Kawczak <jkawczak at fisher.stats.uwo.ca>
+	For bug report.
+    Bernhard Sadlowski <sadlowsk at mathematik.uni-bielefeld.de>
+	For several bug reports and fixes.
+    Jiri Novak <bati at skodanet.cz>
+	For reporting bug in Nws.
+    Jan Skarabela <linux at brana.brno-city.cz>
+	For reporting bug in Nws.
+    Jürgen Grieb <juergen at eskimo.bb.bawue.de>
+	For German translations and bug reports.
+    Philip Chong <pchong at EECS.Berkeley.EDU>
+	For bug fix and sevarl bug reports.
+    Juracic Peter <juracic at dec50.vm.stuba.sk>
+	For several bug reports.
+    Ted Chong <ted at djmarkets.com.sg>
+	For several suggestions.
+    Stephan Fuhrmann <Stephan.Fuhrmann at stud.uni-karlsruhe.de>
+	For several suggestions and ideas.
+    Petr VYHNALEK <vyhnalek at alef.mpo.cz>
+	For Czech translation, a lot of bug reports
+    Martin Krumpolec <krumpo at pobox.sk>
+	For Win32 port bug reports
+    Bernd Lutkenhoner <Lutkenh at uni-muenster.de>
+	For ideas.
+    Garrick Neil Hays <haysg at ucs.orst.edu>
+	For bug reports.
+    Lou Sortman <lou at rtp.koz.com>
+	For bug report and suggestions.
+    Liang Yen Fu <liang at ttisdc.toshiba.co.jp>
+	For bug report.
+    Tim Perkins <tjwp2 at cus.cam.ac.uk>
+	For bug report.
+    Stefan Ring <sring at gmx.net>
+	For bug report.
+    Luke <luke at zeta.org.au>
+	For nice ideas.
+    Marc David Rovner <mrovner at cygnus.com>
+	For excelent idea and for forcing me to implement it :-)
+    Petr Stanek <snek at penguin.vscht.cz>
+	For suggestions and bug reports.
+    Kai Duebert <kad at gmx.de>
+	For corrections in man page.
+    Terrance K W Lai <kwlai at clp.com.hk>
+	For bug report.
+    Andrew Ross <ross at undpafg.org.pk>
+	For bug report.
+    kroth <kroth at ti.com>
+	For bug report & fix.
+    Dmitry Semenov <sem at nest.vinnica.ua>
+	For very good bug reports and ideas.
+    Andy Fingerhut <jaf at arl.wustl.edu>
+	For good bug reports and fixes.
+    Bruno Seoane <bseoane at tsc.uvigo.es>
+	For bug report.
+    Allen Rouse <arouse at austin.ibm.com>
+	For SOCKS implementation idea.
+    Orestes Sanchez Benavente <osb19 at tid.es>
+	For very good bug reports and fixes.
+    Håvard Skinnemoen <skinnemo at stud.ntnu.no>
+	For gtk+1.2 portability patches.
+    Holger Pfaff <Holger.Pfaff.gp at icn.siemens.de>
+	For bug report.
+    Bob Tracy <rct at wlk.com>
+	For bug report.
+    Malte Lance <malte.lance at gmx.net>
+	For bug reports , fixes and ideas.
+    Stefan Stidl <sti at ims.at>
+	For finding very long living bug in robots.txt code and for ideas.
+    Andreas Kraska <andreas.kraska at hbs.regiocom.net>
+	For collecting nice icons for pavuk.
+    Filipe Kasuga <kasuga at kshq.sys>
+	For several ideas.
+    Petr Cech <cech at atrey.karlin.mff.cuni.cz>
+	For Czech translations, ideas and for maintaining Debian packages
+	of pavuk.
+    Tomas Dobrovolny <TomasDobrovolny at email.cz>
+	For excelent bug reports, and ideas.
+    Frank <godot at uni-paderborn.de>
+	For lot of ideas.
+    Steffen Kern <alfi at rocks.pn.org>
+	For lot of bug reports and nice GTK patches.
+    Szabolcs Szakacsits <szaka at sienet.hu>
+	For establishing pavuk mailing lists, for several patches ,bug 
+	reports and consultations.
+    Luke B. Bishop <nanosoft at nanosoft.hypermart.net>
+	For lot of ideas.
+    Bill Miller <bmiller at usgs.gov>
+	For bug reports and bug fixes.
+    Sergey Taranenko <star at itk.dp.ua>
+	For many new ideas and suggestions and several bug reports.
+    Marc Haber <Marc.Haber at gmx.de>
+	For several bug reports.
+    Barrie Slaymaker <rbs at telerama.com>
+	For few bug reports.
+    STi <sstidl at earthling.net>
+	For ideas.
+    private eye <privateeye at MailAndNews.com>
+	For bug report about not working SSL.
+    Zdenek Kabelac <kabi at informatics.muni.cz>
+	For any ideas.
+    Robert Gasch <robert_gasch at peoplesoft.com>
+	For good bug report.
+    Colin Marquardt <colin.marquardt at gmx.de>
+	For remake of German translations, for many corrections in english
+	messages and a lot of UI ideas.
+    Jan Tomasek <xtomasej at fel.cvut.cz>
+	For ideas, bug reports and for donating me licence for SemTel Windows
+	telnet client. And for maintaining mirror of pavuk WWW pages in 
+	Czech republic.
+    T. S. Horsnell <tsh at mrc-lmb.cam.ac.uk>
+	For buf report.
+    Toussaint Frederic <ftoussin at club-internet.fr>
+	For nice icons and french translation. And for maintaining mirror
+	in France.
+    Oliver George <o_george at postoffice.utas.edu.au>
+	For transfer rate limiting idea.
+    Anders Nordby <anordby at sdata.no>
+	For memory leaks report.
+    rick <rick at mail.artmold.com>
+	For reporting bugs in syncing code and for lot of discusions about
+	pavuk messages.
+    yannik at softhome.net
+	For testing the SOCKS proxy with pavuk.
+    James Feeney <james at topaz.nurealm.net>
+	For excelent idea. (the result was -fnrules option :-))
+    Marian Vaginger <maros at opalmultimedia.sk>
+	For maintaining FTP mirror of pavuk.
+    Javier Comeron <javierc at afina.es>
+	For maintaing spanish message catalog.
+    Diego Antona Archilla <dantona at servidor.unam.mx>
+	For bug report.
+    Mika Joukainen <mjoukai at ratol.fi>
+	For idea about filtering advertisement banners.
+    Laurent Salle <Laurent.Salle at wanadoo.fr>
+	For bug report.
+    dawit.yimam at gmd.de
+	For bug reports.
+    Niraj Sachdeva <niraj at getafix.aero.iisc.ernet.in>
+	For help with portability to HPUX. For idea about ftpdir mode.
+	For bug reports.
+    Kevin Gamiel <kgamiel at islandedge.com>
+	For bug report. For donations.
+    Robert Siemer <siemer at i309.hadiko.de>
+	For help.
+    Jaydeep Desai <jaydeep_desai at hotmail.com>
+	For help with DG-UX portability and bug reports.
+    Ian Hastie <ianh at iahastie.clara.net>
+	For reporting problems with SSL3 servers, when using SSLv23 method.
+    Ernest Beinrohr - OERNii <oernii at oernii.sk>
+	For additional HTTP header fields idea.
+    Jeff Roberson <jroberson at aventail.com>
+	For excelent guid about persistent SSL ID in all SSL sessions,
+	patch for binding socket to specified local network interfaces,
+	some bug reports. For donating HTML test suite.
+    Holdrich Kristian <kristian.holdich at wcom.co.uk>
+	For FreeBSD portability fixes.
+    Samuel Laker <slaker1 at ibm.net>
+	For proposed ideas about filtering documents by server IP addreses.
+    Andreas Mohr <andreas.mohr at tui.de>
+	For idea about specifying .pavukrc location via env variable and
+	for bugreport about not working FTP authentication via HTTP gateway
+	for FTP.
+    Dave Beckett <D.J.Beckett at ukc.ac.uk>
+	For providing FTP mirror in UK. For bug reports about HTML rewriting 
+	bugs and for idea about extending slog file format.
+    Marc Chantome <mchantome at passerelle7.ort.fr>
+	For reporting bugs in configure script on Solaris.
+    Le Faucheur Frederic <frederic.lefaucheur at francetelecom.fr>
+	For reporting bug with Win FTP servers and for other bug reports.
+	For maintaining French message catalog.
+    Didier Macouin <dm at adit.fr>
+	For french translation of man page.
+    aldomel <aldomel at ix.netcom.com>
+	For fixes in Makefiles.
+    Peter Erbak <erbak at pvtnet.cz>
+	For bug report and opinions.
+    Robert Brennecke <northstar at wildapache.net>
+	For better solution for computing difference between localtime na GMT.
+    Roar Bergheim <roar at ii.uib.no>
+	For test on db_185.h header file for Berkeley DB 1.8x header file
+    Michal TALMAN <talman at regionet.cz>
+	For bug reports.
+    Felix von Leitner <leitner at fefe.de>
+	For patch to get working pavuk with publicfile FTP server.
+    Antoine Martin <antoine.martin at bruyeres.cea.fr>
+	For bug report.
+    Thomas Coppock <Thomas.Coppock at uk.sun.com>
+	For bug report.
+    Nicolay Mausz <mausz at castor.uni-trier.de>
+	For bug reports, patches (rmpar in -fnrules, jspatterns) and ideas.
+    Gabor Z. Papp <gzp at papp.hu>
+	For bug report and idea about -del_after option.
+    Antonio Fragola <mrshark at linuxfan.com>
+	For Italian translation of pavuk messages.
+    Marc Tooley <sudog at sudog.com>
+	For bug reports and ideas.
+    Antoine Martin <antoine.martin at cea.fr>
+	For MT related bug reports and tetsings.
+    Moritz Barsnick <barsnick at gmx.net>
+	For spelling corrections.
+    Artem Frolov <frolov at sigma.ispras.ru>
+	For bug reports.
+    Joël Savignon <js at neosystem.com>
+	For idea with -sinlepage option.
+    Steven Haryanto <steven at haryan.to>
+	For cmdln passwords hiding idea.
+    Matthew <matthew at mlemieux.com>
+	For precise bugreports.
+    Mark D. Anderson <mda at discerning.com>
+	For donation, ideas and bugreports.
+    Bjorn R. Bjornsson <brb at enrich.halo.is>
+	For bug report and ideas.
+    Brunie-Taton Alain <abrunie at boostworks.com>
+	For bugfix (oddly detected text/html;encoding MIME type).
+    Raun Nohavitza <raunn at volterra.com>
+	For FTP related bug reports.
+    Markus Mayer <mmayer at iname.com>
+	For idea with supporting robots exclusion using <META name=robots ...>
+	and bug reports.
+    Ronald Tschaler <ronald at innovation.ch>
+	For http://www.innovation.ch/java/ntlm.html - document with detailed
+	description of reverseengenered NTLM.
+    Joël GRONDIN <galanga at voila.fr>
+	For detailed bug reports, and great suggestions about FTP problems and
+	missing features.
+    Christian Axbrink <cristian.axbrink at telia.com>
+	For bug report and suggestions.
+    Beno Kardel <kardel at bigfoot.de>
+	For ftp proxy authorization patch.
+    Korn Andras <korn at chardonay.math.bme.hu>
+	For idea about -retrieve_symlink option.
+    Georg Rehm <Georg.Rehm at germanistik.uni-giessen.de>
+	For bug reports, aid with debuging and many suggestions.
+    Aleksander Adamowski <a.adamowski at altkom.com.pl>
+	For bug report.
+    David Hoffman <hoffman at CS.Stanford.EDU>
+	For fixing bug in -fnrules option handling.
+    Olivier Sirol <czo at asim.lip6.fr>
+	For idea about -limit_inlines/-dont_limit_inlines options.
+    Monika Nowotnik <mn at promail.pl>
+	For NTLM related bug reports.
+    Albert Chin-A-Young <china at thewrittenword.com>
+	For patches to fix building on big endian machines, for patch
+	which adds seeding of random number generators in OpenSSL code,
+	for configure script patches, for suggestions and bug reports
+    mirko <mirko.s at gmx.net>
+	For patch to fix non working RE pattern optins imn multithreaded mode.
+    Andrew Price <Andrew.Price at pricea.madasafish.com>
+	For bug reports.
+    Majkel Kretshmar <ajkel.kretschmar at epost.de>
+	For idea about %M/%E in -fnrules option.
+    Frédéric L . W . Meunier <fredlwm at marseille.penguinpowered.com>
+	For bug reports and suggestions.
+    Jinghua Liu <jinghua at jlab.org>
+	For bug reports.
+    Marco Strack <m.strack at gmx.de>
+	For suggestions.
+    Jeremy P. Campbell <jeremy at tdgi.com>
+	For bug reports.
+    Andreas Schilling <andreas at wsi-gris.uni-tuebingen.de>
+	For Win32 related bug reports and ideas.
+    stvictor at techst02.technion.ac.il
+	For idea about -hack_add_index/-nohack_add_index .
+    Eun-Mok Lee <lee at fokus.gmd.de>
+	For bug reports.
+    Tony Gale <gale at syntax.dera.gov.uk>
+	For bug reports and ideas.
+    Richard Ems <r.ems.mtg at gmx.net>
+	For bug reports.
+    ha shao <hashao at chinese.com>
+	For bug reports.
+    Marko Daris <markod at hermes.si>
+	For idea about -ftp_login_handshake .
+    Christian Canella <christian.canella at vnumail.com>
+	For suggestions.
+    SATO Satoru <ss at gnome.gr.jp>
+	For maintaining Japanese message catalog.

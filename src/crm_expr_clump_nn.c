@@ -97,6 +97,7 @@ statistics.
 // finally include stuff specific to this beast
 #include "crm_expr_clump_nn.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -111,15 +112,17 @@ extern char *outbuf;
 extern char *tempbuf;
 
 //end crap that appears in every file
+*/
 
 //GLOBALS parameters passed from crm
 
-long max_tokens;
-long max_cor_tokens;
-double flat_weight;
-double sharp_weight;
-double gauss_weight;
-double gauss_sigma;
+/* [i_a] */
+static long max_tokens = 0;
+static long max_cor_tokens = 0;
+static double flat_weight = 0.0;
+static double sharp_weight = 0.0;
+static double gauss_weight = 0.0;
+static double gauss_sigma = 0.0;
 
 //GLOBALS for debugging only, Joe hates globals
 
@@ -128,11 +131,9 @@ double gauss_sigma;
 //  THOUGH THESE ARE STILL THE GLOBALS WE USE
 static int joe_trace = 0;
 
-int go_flat = 0; //select scoring method
+/* [i_a] */
+static int go_flat = 0; //select scoring method
 
-int just_peeking = 0; //  when this is set, learn will just give us
-		      //  some info, this isn't really meant for the
-		      //  crm114, it's for research
 
 // GROT GROT GROT we F'ed up! - should be NONFATALERROR
 
@@ -200,7 +201,7 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename);
 static void unmap_file_for_learn(CLUSTEROR_STATE_STRUCT *s);
 
 //  if we refuted we couldn't figure out the nearest neighbor
-//  sincrementally, so instead we marked the bit set token_nn_changed
+//  incrementally, so instead we marked the bit set token_nn_changed
 //  with all the tokens whose cooccurence values had changed, now we
 //  go through and compute nearest neighbors and record changes back
 //  in token_nn_changed
@@ -258,7 +259,7 @@ static COOCCURRENCE_SCORE_TYPE add_N(CLUSTEROR_STATE_STRUCT *s, COOCCURRENCE_SCO
 static index_t simple_hash_lookup(CLUSTEROR_STATE_STRUCT *s, long hash_key);
 
 //  called by add_occ to update frequency list
-static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t, long c);
+static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t, COOCCURRENCE_SCORE_TYPE c);
 
 //  for debugging
 static void print_header(CLUSTEROR_STATE_STRUCT *s);
@@ -296,7 +297,7 @@ static COOCCURRENCE_SCORE_TYPE score_cooccurance_slow_and_clean2(CLUSTEROR_STATE
 			PijHat = get_cooc(s, i, j) / N,
 			L = PijHat / PijHyp,
 			correlation = crm_log(L);
-	return correlation;
+	return (COOCCURRENCE_SCORE_TYPE)correlation;
 }
 
 static COOCCURRENCE_SCORE_TYPE score_cooccurance(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
@@ -415,7 +416,7 @@ static void add_cooc(CLUSTEROR_STATE_STRUCT *s,
 	  || score_cooccurance(s,i,j) 
 	  > score_cooccurance(s, j, s->cor_tokens[ s->cor_tokens[cj].nearest_neihbor ].token)	)
 	{
-	  //  if(joe_trace) fprintf(stderr, "%ld is %ld's new nearest neihbor!\n", ci, cj);
+	  //  if(joe_trace) fprintf(stderr, "%ld is %ld's new nearest neighbor!\n", ci, cj);
 	  if(s->old_nearest_neihbors[cj] == NULL_INDEX)
 	    s->old_nearest_neihbors[cj] = s->cor_tokens[cj].nearest_neihbor;
 	  s->cor_tokens[cj].nearest_neihbor = ci;
@@ -475,6 +476,8 @@ static void set_edge(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j, int e)
     {
       if(get_edge(s, i, j))
 	return;
+	  { 
+		  /* [i_a] it is C code, not C++ */
       index_t a = grab_edge(s), b = grab_edge(s);
       s->graph[a].edge_to = j;
       s->graph[a].next = s->cor_tokens[i].edges;
@@ -482,6 +485,7 @@ static void set_edge(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j, int e)
       s->graph[b].edge_to = i;
       s->graph[b].next = s->cor_tokens[j].edges;
       s->cor_tokens[j].edges = b;
+	  }
     } else
     {
       index_t a;
@@ -652,13 +656,13 @@ static index_t grab_fresh_token(CLUSTEROR_STATE_STRUCT *s)
 
 static void wipe_cooccurences(CLUSTEROR_STATE_STRUCT *s, index_t t) //t is the cor_index
 {
+  index_t i, j; /* [i_a] it is C code, not C++ */
   if(t >= s->header->n_cor_tokens)
     {
       fprintf(stderr, "Tried to qipe a stupid token number!\n");
       break_point();
     }
   
-  index_t i, j;
   i = t * (t + 1) / 2;
   for(j = 0; j < t; j++)
     s->cooccurences[i + j] = 0;
@@ -708,9 +712,10 @@ static void audit_frequency_list(CLUSTEROR_STATE_STRUCT *s)
 }
 
 //  maintain tables to mark MAX_COR_TOKENS most frequent tokens
-static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t, long c)
+static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t, COOCCURRENCE_SCORE_TYPE c)
 {
-  long a, b, count = (s->tokens[t].count += c);
+  long a, b;
+  COOCCURRENCE_SCORE_TYPE count = (s->tokens[t].count += c);
   //  if(joe_trace) fprintf(stderr, "entered add_token_count\n");
   //  one line for loops are fun!
   //  fprintf(stderr,"1\n");
@@ -1043,7 +1048,7 @@ static int test_memory_consistancy(unsigned char *m, int n)
 {
   int i, j = n / 2;
   for(i = 0; i < n / 2; i++)
-    m[i] = m[i + j] = rand() % 256;
+    m[i] = m[i + j] = (unsigned char)(rand() % 256);
   for(i = 0; i < n / 2; i++)
     if(m[i] != m[i + j])
       return 0;
@@ -1056,6 +1061,8 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 {
   long i, file_size;
   struct stat statbuf;
+  /* [i_a] it is C code, not C++ */
+  FILE *f;
   
   if(stat (filename, &statbuf)) //if the file didn't exist already
     {
@@ -1094,11 +1101,19 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
       
       if(joe_trace) fprintf(stderr, "new file size is %ld bytes\n", file_size);
       
-      FILE *f = fopen(filename, "wb");
+	  /* [i_a] it is C code, not C++ */
+      f = fopen(filename, "wb");
+	  if (f != NULL)
+	  {
       i = file_size + 1024;
       while(i--)
 	fputc('\0', f);
       fclose(f);
+	  }
+	  else
+	  {
+		  fatalerror("Could not create map file: ", filename);
+	  }
       
       if(joe_trace) fprintf(stderr, "\ndone writing file, about to mmap\n");
       s->header = crm_mmap_file(filename, 0, file_size, PROT_READ | PROT_WRITE, MAP_SHARED,  NULL /*&actual_file_size*/);
@@ -1118,6 +1133,7 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 	  fprintf(stderr, "Couldn't map new file %s! errno = %d\n", filename, errno);
 	  break_point();
 	}
+	  assert(s->header != NULL);
       s->header->max_tokens = n_tokens;
       s->header->max_cor_tokens = n_cor_tokens;
       if(joe_trace) fprintf(stderr,"about to make a new cluster state allowing for %ld tokens\n", s->header->max_tokens);
@@ -1293,9 +1309,11 @@ static void score_document_flat(CLUSTEROR_STATE_STRUCT *s, index_t *doc, long le
 #ifdef NOT_USED
 static int check_if_connected(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 {
-  if(joe_trace) fputc('c',stderr);
+  /* [i_a] it is C code, not C++ */
   index_t *stack = (index_t *)outbuf, *stack_ptr = stack;
   index_t a, b;
+
+  if(joe_trace) fputc('c',stderr);
   
   *stack_ptr++ = i;
   while(stack_ptr > stack)
@@ -1337,9 +1355,12 @@ int given = 0, goten = 0;
 
 static long cluster_audit(CLUSTEROR_STATE_STRUCT *s)
 {
-  fprintf(stderr, "Auditing clusters ...\n");
+  /* [i_a] it is C code, not C++ */
   long *cluster_closed = (long *)inbuf;
   index_t a, b;
+
+  fprintf(stderr, "Auditing clusters ...\n");
+
   b = (MAX_CLUSTERS + 31) / 32;
   for(a = 0; a < b; a++)
     cluster_closed[a] = 0;
@@ -1415,8 +1436,11 @@ static void give_back_cluster(CLUSTEROR_STATE_STRUCT *s, index_t c)
 
 static index_t get_fresh_cluster(CLUSTEROR_STATE_STRUCT *s)
 {
-  if(joe_trace) fputc('g',stderr);
+  /* [i_a] it is C code, not C++ */
   index_t c = s->header->first_unused_cluster_slot;
+
+  if(joe_trace) fputc('g',stderr);
+
   if(c == MAX_CLUSTERS)
     {
       fprintf(stderr, "\nWe've run out of cluster slots. This is thoroughly impossible.\n We've given out a total of %d and goten back %d\n", given, goten);
@@ -1458,8 +1482,8 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
      ||	(s->cor_tokens[j].cluster != NULL_INDEX 
 	 && s->clusters[ s->cor_tokens[j].cluster ].next_free != NULL_INDEX))
     {
+      index_t q; /* [i_a] */
       fprintf(stderr, "\nmade to join a cluster in the free list!\n cluster(%ld) = %ld, cluster(%ld) = %ld, next(%ld) = %ld, next(%ld) = %ld\n", i, s->cor_tokens[i].cluster, j, s->cor_tokens[j].cluster, s->cor_tokens[i].cluster, s->clusters[ s->cor_tokens[i].cluster ].next_free, s->cor_tokens[j].cluster, s->clusters[ s->cor_tokens[j].cluster ].next_free);
-      index_t q;
       fprintf(stderr, "adjacent to %ld:\n", i);
       for(q = s->cor_tokens[i].edges; q != NULL_INDEX; q = s->graph[q].next)
 	fprintf(stderr, "\tcluster(%ld) = %ld\n", s->graph[q].edge_to, s->cor_tokens[ s->graph[q].edge_to ].cluster);
@@ -1491,6 +1515,9 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
       if( joe_trace ) fputc('I', stderr);
       return;  //this can happen if i and j were already joined transitively
     }
+
+  {
+	    /* [i_a] it is C code, not C++ */
   index_t a, b, c, old_cluster;
   index_t *stack = (index_t *)tempbuf, *stack_ptr = stack;
   
@@ -1544,6 +1571,7 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
   
   if(old_cluster != NULL_INDEX)
     give_back_cluster(s, old_cluster);
+  } /* [i_a] */
 }
 
 
@@ -1552,13 +1580,16 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 //  this guy tests for connectivity while begining cut
 static void speculative_split_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 {
-  if(joe_trace) fputc('S',stderr);
+  /* [i_a] it is C code, not C++ */
   index_t c;
   index_t a, b;
   index_t *stack = (index_t *)tempbuf, *stack_ptr = stack;
   index_t *groupI = (index_t *)inbuf, n_groupI = 0;
   index_t *groupJ = (index_t *)outbuf, n_groupJ = 0;
   COOCCURRENCE_SCORE_TYPE occI = 0.0, occJ = 0.0;
+
+  if(joe_trace) fputc('S',stderr);
+
   *stack_ptr++ = i;
   while(stack_ptr > stack)
     {
@@ -1714,14 +1745,16 @@ int test_bit_vectors()
 //  which occurs in the null terminated string *escape_these and
 //  returns how many charectors it copied to out
 
-static long copy_and_escape(char *out, char *in, char *escape_these)
+static long copy_and_escape(char *out, const char *in, const char *escape_these)
 {
-  char *i = in, *o = out, *m;
+  const char *i = in;
+  char *o = out;
   if(joe_trace)
     fprintf(stderr, "escaping string: %s\n", in);
   
   while(*i)
     {
+      const char *m;
       for(m = escape_these; *m != '\0'; m++)
 	if(*i == *m)
 	  break;
@@ -1742,10 +1775,10 @@ static long copy_and_escape(char *out, char *in, char *escape_these)
 //  keys are given as a null terminated array of pointers to null
 //  terminated strings, no key may be a suffix of another or behavior
 //  is undefined anything besides digits and key names can be used to
-//  delimit values are placed in an array of longs called values,
+//  delimit values are placed in an array of doubles called values,
 //  default values should already be in it
 
-static void parse_monster(char *text, long len, char **keys, double *values)
+static void parse_monster(char *text, long len, const char **keys, double *values)
 {
   regex_t regee;
   char regee_text[MAX_PATTERN];
@@ -1759,21 +1792,24 @@ static void parse_monster(char *text, long len, char **keys, double *values)
 	fprintf(stderr, "parsing for key: %s\n", *keys);
       regee_text_len = copy_and_escape(regee_text, *keys, ".()[]{}^*+-?");
       regee_text_len--; //to eat null charactor
-      regee_text_len += sprintf(regee_text + regee_text_len, "[[:space:]]*=[[:space:]]*(-?[0-9.]+)");
+      regee_text_len = strmov(regee_text + regee_text_len, "[[:space:]]*=[[:space:]]*(-?[0-9.]+)") - regee_text;
       if(joe_trace)
 	{
-	  regee_text[regee_text_len] = '\0';
-	  fprintf(stderr, "compiling regex: %s\n", regee_text);
+	  fprintf(stderr, "compiling regex: %.*s\n", (int)regee_text_len, regee_text);
 	}
       if(crm_regcomp (&regee, regee_text, regee_text_len, REG_EXTENDED))
 	{	
-	  if(joe_trace)	fprintf(stderr, "some jerk gave us a wonkee key to parse in parse_monster! : %s\n", *keys);
+	  if(joe_trace)	fprintf(stderr, "some jerk gave us a wonkey key to parse in parse_monster! : %s\n", *keys);
 	} else
 	{
 	  if(!crm_regexec ( &regee, text, len, 2, match, 0, NULL))
 	    {
 	      for(b = bufee, i = match[1].rm_so; i < match[1].rm_eo; b++, i++)
-		*b = text[i];
+		  {
+			assert(i < MAX_PATTERN);
+			*b = text[i];
+		  }
+	      assert(b - bufee < MAX_PATTERN);
 	      *b = '\0';
 	      *values = atof(bufee);
 	    }
@@ -1787,7 +1823,6 @@ static void parse_monster(char *text, long len, char **keys, double *values)
 //  it's nearest neihbor by the score
 int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-  
   char filename[MAX_PATTERN];
   long filename_len;
   
@@ -1812,6 +1847,11 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   
   index_t i;
   
+  /* [i_a] it is C code, not C++ */
+  const char *keys[] = {"max_tokens", "max_cor_tokens", "flat_weight", "sharp_weight", "gauss_weight", "gauss_sigma", (char *)0};
+  /* values[] will be edited by parse_monster(): */
+  double values[] = {MAX_TOKENS, MAX_COR_TOKENS, 0.0, 1.0, 0.0, 1.0};
+
   //joe_trace = internal_trace
   
   joe_trace = 0;
@@ -1836,9 +1876,12 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (apb->sflags & CRM_REFUTE)
     sense = -sense;
   
+  /* [i_a] it is C code, not C++ */
+  /*
   char *keys[] = {"max_tokens", "max_cor_tokens", "flat_weight", "sharp_weight", "gauss_weight", "gauss_sigma", (char *)0};
   double values[] = {MAX_TOKENS, MAX_COR_TOKENS, 0.0, 1.0, 0.0, 1.0};
-  
+  */
+
   crm_get_pgm_arg (parameters_text, MAX_PATTERN, apb->s2start, apb->s2len);
   parameters_text_len = apb->s2len;
   parameters_text_len = crm_nexpandvar (parameters_text, parameters_text_len, MAX_PATTERN);
@@ -1853,8 +1896,8 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   
   if(joe_trace)
     {
-      char **ki = keys;
-      double *vi = values;
+      const char **ki = keys;
+      const double *vi = values;
       fprintf(stderr, "parameters:\n"); 
       while(*ki)
 	fprintf(stderr, "\t%s = %0.3f\n", *ki++, *vi++);
@@ -1941,10 +1984,12 @@ int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //    the filesystem to repropagate it's caches.
   //
   {
-    if(joe_trace) fprintf(stderr, "posix blah!\n");
     int hfd;                  //  hashfile fd
     char foo;
-    hfd = open (filename, O_RDWR);
+
+    if(joe_trace) fprintf(stderr, "posix blah!\n");
+
+    hfd = open (filename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
     if(hfd == -1) fprintf(stderr, "Couldn't reopen %s to touch\n", filename);
     read (hfd, &foo, sizeof(foo));
     lseek (hfd, 0, SEEK_SET);
@@ -2025,6 +2070,11 @@ int crm_expr_pmulc_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   
   struct stat statbuf;
   
+  index_t t;  /* [i_a] it is C code, not C++ */
+
+  /* [i_a] it is C code, not C++ */
+  CLUSTEROR_STATE_STRUCT s;
+  
   joe_trace = 0;
   if(internal_trace)
     joe_trace = 1;
@@ -2060,7 +2110,8 @@ int crm_expr_pmulc_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       break_point();
     }
   
-  CLUSTEROR_STATE_STRUCT s;
+  /* [i_a] it is C code, not C++ */
+  /* CLUSTEROR_STATE_STRUCT s; */
   
   if(stat (filename, &statbuf))
     {
@@ -2095,19 +2146,20 @@ int crm_expr_pmulc_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if(joe_trace) fprintf(stderr, "tokenized\n");
   
   out_pos = 0;
+  outbuf[out_pos] = 0;
   
-  index_t t;
+  /* index_t t; ** [i_a] it is C code, not C++ */
   for(i = 0; i < tokenized_text_len; i++)
     {
       t = tokenized_text[i];
       if(t == NULL_INDEX)
-	out_pos += sprintf(outbuf + out_pos, "new ");
+	out_pos = strmov(outbuf + out_pos, "new ") - outbuf;
       else if(s.tokens[t].cor_index == NULL_INDEX)
-	out_pos += sprintf(outbuf + out_pos, "hapax ");
+	out_pos = strmov(outbuf + out_pos, "hapax ") - outbuf;
       else
 	out_pos += sprintf(outbuf + out_pos, "%ld ", s.cor_tokens[ s.tokens[t].cor_index ].cluster);
     }
-  outbuf[out_pos] = '\0';
+  assert(outbuf[out_pos] == 0);
   
   crm_munmap_file ((void *) s.header);
   
@@ -2120,7 +2172,7 @@ int crm_expr_pmulc_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #define N_BINS 100
 static void poke_around(CLUSTEROR_STATE_STRUCT *s)
 {
-  float min = 1000000.0, max = -1000000.0, a, b, bb;
+  double min = 1000000.0, max = -1000000.0, a, b, bb;
   long i, j, k, bins[N_BINS];
   printf("s->header->n_tokens = %ld\n", s->header->n_tokens);
   printf("s->header->n_clusters = %ld\n", s->header->n_clusters);
@@ -2135,7 +2187,7 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
   for(i = 0; i < N_BINS; i++)
     bins[i] = 0;
   
-  bb = (float)(max - min) / (float)N_BINS;
+  bb = (max - min) / N_BINS;
   for(i = 0; i < s->header->n_cor_tokens; i++)
     for(j = i + 1; j < s->header->n_cor_tokens; j++)
       {
@@ -2154,7 +2206,7 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
     printf("\t(%0.4f, %0.4f):\t%ld\n", b, b + bb, bins[k]);
   for(i = 0; i < N_BINS; i++)
     bins[i] = 0;
-  bb = (float)(max - min) / (float)N_BINS;
+  bb = (max - min) / N_BINS;
   for(i = 0; i < s->header->n_cor_tokens; i++)
     {
       a = score_cooccurance(s, s->cor_tokens[i].token, s->cor_tokens[ s->cor_tokens[i].nearest_neihbor ].token);
@@ -2180,7 +2232,7 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
     }
   for(i = 0; i < N_BINS; i++)
     bins[i] = 0;
-  bb = (float)(max - min) / (float)N_BINS;
+  bb = (max - min) / N_BINS;
   for(i = 0; i < s->header->n_tokens; i++)
     {
       a = get_occ(s, i);
@@ -2206,7 +2258,7 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
     }
   for(i = 0; i < N_BINS; i++)
     bins[i] = 0;
-  bb = (float)(max - min) / (float)N_BINS;
+  bb = (max - min) / N_BINS;
   for(i = 0; i < s->header->n_cor_tokens; i++)
     {
       a = get_occ(s, s->cor_tokens[i].token);
@@ -2222,5 +2274,5 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
   printf("cor_token Occurences:\n\tmin: %0.3f\tmax:%0.3f\n", min, max);
   for(k = 0, b = min; k < N_BINS; k++, b += bb)
     printf("\t(%0.3f, %0.3f):\t%ld\n", b, b + bb, bins[k]);
-  
 }
+

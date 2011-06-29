@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,14 +34,17 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 //
 //       the actual textual representations of the flags, with their values
 //     DON'T FORGET TO ALSO MODIFY THIS IN crm114_structs.h !!
 
-FLAG_DEF crm_flags[41] =
+
+const FLAG_DEF crm_flags[39] =
   {
-    {"fromstart", CRM_FROMSTART},
+    {"fromstart", CRM_FROMSTART},   /* bit 0 */
     {"fromnext", CRM_FROMNEXT},
     {"fromend", CRM_FROMEND},
     {"newend", CRM_NEWEND},
@@ -50,8 +54,8 @@ FLAG_DEF crm_flags[41] =
     {"basic", CRM_BASIC},
     {"backwards", CRM_BACKWARDS},
     {"literal", CRM_LITERAL},
-    {"nomultiline", CRM_BYLINE},
-    {"byline", CRM_BYLINE},
+    {"nomultiline", CRM_BYLINE},   /* bit 10 */
+    {"byline", CRM_BYLINE},   /* bit 10 */
     {"bychar", CRM_BYCHAR},
     {"bychunk", CRM_BYCHUNK},
     {"byeof", CRM_BYEOF},
@@ -61,28 +65,27 @@ FLAG_DEF crm_flags[41] =
     {"keep", CRM_KEEP},
     {"async", CRM_ASYNC},
     {"refute", CRM_REFUTE},
-    {"microgroom", CRM_MICROGROOM},
+    {"microgroom", CRM_MICROGROOM},   /* bit 20 */
     {"markovian", CRM_MARKOVIAN},
     {"osb", CRM_OSB_BAYES},
     {"correlate", CRM_CORRELATE},
     {"winnow", CRM_OSB_WINNOW},
-    {"unique", CRM_UNIQUE},
-    {"chi2", CRM_CHI2},
-    {"entropy", CRM_ENTROPY},
-    {"entropic", CRM_ENTROPY},  
+    {"chi2", CRM_CHI2},       /* bit 25 */
+    {"unique", CRM_UNIQUE},    /* bit 26 */
+    {"entropy", CRM_ENTROPY},   /* bit 27 */
+    {"entropic", CRM_ENTROPY},   /* bit 27 */  
     {"osbf", CRM_OSBF },
     {"hyperspace", CRM_HYPERSPACE},
-    {"unigram", CRM_UNIGRAM},
+    {"unigram", CRM_UNIGRAM},   /* bit 30 */
     {"crosslink", CRM_CROSSLINK},
-    {"default", CRM_DEFAULT},
-    {"lineedit", CRM_READLINE},
-    {"sks", CRM_SKS},
+    {"lineedit", CRM_READLINE},   /* bit 32! */  
+    {"default", CRM_DEFAULT},   /* bit 33! */
+    {"flat", CRM_FLAT},
     {"svm", CRM_SVM},
-    {"fscm", CRM_FSCM},
-    {"", 0}
+    {NULL, 0}   /* [i_a] sentinel */
   };
     
-#define CRM_MAXFLAGS 39
+/* #define CRM_MAXFLAGS 37   [i_a] */
     
 
 
@@ -140,13 +143,20 @@ unsigned long long crm_flagparse (char *input, long inlen)  //  the user input
 	      fprintf (stderr, "found flag, len %ld: ", wlen) ;
 	      for (j = 0; j < wlen; j++) fprintf (stderr, "%c", wtext[j]);
 	      fprintf (stderr, "\n");
-	    };
+	    }
 	  
 	  //    find sch in our table, squalk a nonfatal/fatal if necessary.
 	  recog_flag = 0;
-	  for (j = 0; j <= CRM_MAXFLAGS; j++)
+	  for (j = 0; crm_flags[j].string != NULL; j++) /* [i_a] loop until we've hit the sentinel at the end of the table */
 	    {
-	      // fprintf (stderr, " Trying %s (%ld) \n", crm_flags[j].string, crm_flags[j].value );
+	      // fprintf (stderr, " Trying %s (%ld) at pos = %d\n", crm_flags[j].string, crm_flags[j].value, j );
+
+			// make sure the flags are ordered properly; must match with crm114_structs.h defs, but that's kinda hard to check
+			assert(crm_flags[j].value > 0);
+			assert(j > 0 ? crm_flags[j].value >= crm_flags[j-1].value : 1);
+			assert(j > 0 ? crm_flags[j].value == crm_flags[j-1].value ? 1 : crm_flags[j].value == (crm_flags[j-1].value << 1LL) : 1);
+			assert(j == 0 ? crm_flags[j].value == 1 : 1);
+
 	      k = strlen (crm_flags[j].string);
 	      if (k == wlen 
 		  && 0 == strncasecmp (wtext, crm_flags[j].string, k))
@@ -160,19 +170,19 @@ unsigned long long crm_flagparse (char *input, long inlen)  //  the user input
 		      fprintf (stderr, "Mode #%d, '%s' turned on. \n",
 			       j,
 			       crm_flags[j].string);
-		    };
-		};
-	    };
+		    }
+		}
+	    }
 	  
 	  //   check to see if we need to squalk an error condition
 	  if (recog_flag == 0)
 	    {
 	      long q;
-	      char foo[1024];
-	      strncpy (foo, wtext, 128);
-	      foo[wlen] = '\000';
+	      char foo[129];
+	      strncpy (foo, wtext, wlen < 128 ? wlen : 128);
+		  foo[wlen < 128 ? wlen : 128] = '\000';
 	      q = nonfatalerror ("Darn...  unrecognized flag :", foo);
-	    };
+	    }
 	  
 	  
 	  //  and finally,  move sch up to point at the remaining string
@@ -180,7 +190,7 @@ unsigned long long crm_flagparse (char *input, long inlen)  //  the user input
 	}
       else
 	done = 1;
-    };
+    }
   
   if (internal_trace )
     fprintf (stderr, "Flag code is : %llx\n", outcode);
@@ -358,10 +368,10 @@ int crm_statement_parse ( char *in,
 	default:
 	  fatalerror( "Declensional parser returned an undefined typecode!",
 		      "What the HECK did you do to cause this?");
-	};
+	}
     }
   return (k);    // return value is how many declensional arguments we found.
-};
+}
 
 
 //     The new and improved line core parser routine.  Instead of
@@ -418,7 +428,7 @@ int crm_generic_parse_line (
       ftype[i] = -1;
       fstart[i] = 0;
       flen[i] = 0;
-    };
+    }
     
 
   //    scan forward, looking for any member of schars
@@ -453,7 +463,7 @@ int crm_generic_parse_line (
 		fstart[argc] = chidx + 1;
 		ftype [argc] = itype;
 		depth = 1;
-	      };
+	      }
 	  //  if it wasn't a start-character for an arg, we are done.
 	}
       else    // nope, we're in an arg, so we check for unescaped schar
@@ -477,10 +487,10 @@ int crm_generic_parse_line (
 		      for (q = fstart[argc]; q < fstart[argc]+flen[argc]; q++)
 			fprintf (stderr, "%c", txt[q]);
 		      fprintf (stderr, "-- len %ld\n", flen[argc]);
-		    };
+		    }
 		  itype = -1;
 		  argc++;
-		};
+		}
 	    }
 	  else
 	    //if (curchar == schars [itype] && txt[chidx-1] != echars[itype])
@@ -489,10 +499,10 @@ int crm_generic_parse_line (
 		    || txt[chidx-1] == txt[chidx-2]))
 	      {
 		depth++;
-	      };
-	};
+	      }
+	}
       //    if we weren't a schar or an unexcaped echar, we're done!
-    };
+    }
   if (depth != 0)
     {
       char errstmt[MAX_PATTERN];
@@ -504,12 +514,16 @@ int crm_generic_parse_line (
       //   for flen[argc] < 0 in here.
       //
       if (flen[argc] < 0) flen[argc] = 0;
-      strncpy ( errstmt, &txt[fstart[argc]], 
-		flen[argc] );
-      nonfatalerror (" This operand doesn't seem to end.  Bug?  \n -->  ",
+	  /* [i_a] make sure we don't run out of buffer here either! Twas a nasty bug to find. */
+	  if (flen[argc] >= MAX_PATTERN)
+		  flen[argc] = MAX_PATTERN - 1;
+      strncpy(errstmt, &txt[fstart[argc]], CRM_MIN(MAX_PATTERN, flen[argc]));
+	  assert(flen[argc] < MAX_PATTERN);
+	  errstmt[CRM_MIN(MAX_PATTERN - 1, flen[argc])] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
+      nonfatalerror (" This operand doesn't seem to end.  Bug?\n -->  ",
 		     errstmt);
       argc++;
-    };
+    }
   return (argc);
 }
 

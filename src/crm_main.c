@@ -24,6 +24,84 @@
 //  and include OSBF declarations
 #include "crm114_osbf.h"
 
+//
+//    Global variables
+
+/* [i_a] no variable instantiation in a common header file */
+
+
+/* [i_a] no variable instantiation in a common header file */
+long vht_size = 0;
+ 
+long cstk_limit = 0;
+
+long max_pgmlines = 0; 
+
+long max_pgmsize = 0;
+
+long user_trace = 0;
+
+long internal_trace = 0;
+
+long debug_countdown = 0;
+
+long cmdline_break = 0;
+
+long cycle_counter = 0;
+
+long ignore_environment_vars = 0;
+
+long data_window_size = 0;
+
+long sparse_spectrum_file_length = 0;
+
+long microgroom_chain_length = 0;
+
+long microgroom_stop_after = 0;
+
+float min_pmax_pmin_ratio = 0.0;
+
+long profile_execution = 0;
+
+long prettyprint_listing = 0;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
+
+long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+                       //  the user programs can use lower numbers freely.
+
+
+//        how should math be handled?
+//        = 0 no extended (non-EVAL) math, use algebraic notation
+//        = 1 no extended (non-EVAL) math, use RPN
+//        = 2 extended (everywhere) math, use algebraic notation
+//        = 3 extended (everywhere) math, use RPN
+long q_expansion_mode = 0;
+
+
+
+//   The VHT (Variable Hash Table)     
+VHT_CELL **vht;       
+
+//   The pointer to the global Current Stack Level (CSL) frame
+CSL_CELL *csl;
+
+//    the data window
+CSL_CELL *cdw;
+
+//    the temporarys data window (where argv, environ, newline etc. live)
+CSL_CELL *tdw;
+
+//    the pointer to a CSL that we use during matching.  This is flipped
+//    to point to the right data window during matching.  It doesn't have
+//    it's own data, unlike cdw and tdw.
+CSL_CELL *mdw;
+
+//    a pointer to the current statement argparse block.  This gets whacked
+//    on every new statement.
+ARGPARSE_BLOCK *apb;
+
+
+
+
 //    the command line argc, argv
 int prog_argc;
 char **prog_argv;
@@ -36,6 +114,9 @@ char *newinputbuf;
 char *inbuf;
 char *outbuf;
 char *tempbuf;
+
+
+
 
 int main (int argc, char **argv)
 {
@@ -78,7 +159,7 @@ int main (int argc, char **argv)
   //    level) cell.  We do this first, before command-line parsing,
   //    because the command line parse fills in a lot of the first level csl.
   
-  csl = (CSL_CELL *) malloc (sizeof (CSL_CELL));
+  csl = (CSL_CELL *) malloc (sizeof (csl[0]));  /* [i_a] */
   if (!csl)
     untrappableerror ("Couldn't malloc the csl.  Big problem!\n","");
   csl -> filename = NULL;
@@ -97,7 +178,7 @@ int main (int argc, char **argv)
   openparen = -1;
   
   //   and allocate the argparse block
-  apb = (ARGPARSE_BLOCK *) malloc (sizeof (ARGPARSE_BLOCK));
+  apb = (ARGPARSE_BLOCK *) malloc (sizeof (apb[0])); /* [i_a] */
   if (!apb)
     untrappableerror ("Couldn't malloc apb.  This is very bad.\n","");
 
@@ -152,7 +233,7 @@ int main (int argc, char **argv)
 	    {
 	      fprintf (stderr, "\n This program also claims to accept these command line args:" );
 	      fprintf (stderr, "\n  %s\n", &argv[openparen][1] );
-	    };
+	    }
 	  if (engine_exit_base != 0)
 	    {
 	      exit (engine_exit_base + 14);
@@ -177,7 +258,7 @@ int main (int argc, char **argv)
 		     i, argv[i]);
 	  if (user_cmd_line_vars == 0) user_cmd_line_vars = i;
 	  goto end_command_line_parse_loop;
-	};
+	}
       //   set debug levels
       if (strncmp (argv[i], "-t", 2) == 0 && strlen(argv[i]) == 2)
 	{
@@ -185,9 +266,9 @@ int main (int argc, char **argv)
 	  if (user_trace > 0)
 	    {
 	      fprintf (stderr, "Setting usertrace level to %ld\n", user_trace);
-	    };
+	    }
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       if (strncmp (argv[i], "-T", 2) == 0 && strlen(argv[i]) == 2)
 	{
@@ -195,7 +276,7 @@ int main (int argc, char **argv)
 	  if (user_trace > 0 )
 	  fprintf (stderr, "Setting internaltrace to %ld\n", internal_trace);
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       if (strncmp (argv[i], "-p", 2) == 0 && strlen(argv[i]) == 2)
 	{
@@ -203,7 +284,7 @@ int main (int argc, char **argv)
 	  if (user_trace > 0 )
 	    fprintf (stderr, "Setting profile_execution to 1" );
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       //   is this a change to the maximum number of program lines?
       if (strncmp (argv[i], "-P", 2) == 0 && strlen(argv[i]) == 2)
@@ -211,14 +292,17 @@ int main (int argc, char **argv)
 	  i++;    // move to the next arg
 	  if (i < argc)
 	    {
-	      sscanf (argv[i], "%ld", &max_pgmlines);
+	      if (1 != sscanf (argv[i], "%ld", &max_pgmlines))
+		  {
+			  fatalerror("Failed to decode the numeric -P argument [number of program lines]: ", argv[i]);
+		  }
 	      max_pgmsize = 128 * max_pgmlines;
 	    }
 	  if (user_trace > 0)
 	    fprintf (stderr, "Setting max prog lines to %ld (%ld bytes)\n", 
-		     max_pgmlines, max_pgmsize);
+		     max_pgmlines, sizeof(char) * max_pgmsize);
 	  goto end_command_line_parse_loop;
-	};
+	}
 
       //   is this a "gimme a listing" flag?
       if (strncmp (argv[i], "-l", 2) == 0 && strlen(argv[i]) == 2)
@@ -226,13 +310,16 @@ int main (int argc, char **argv)
 	  i++;    // move to the next arg
 	  if (i < argc)
 	    {
-	      sscanf (argv[i], "%ld", &prettyprint_listing);
+	      if (1 != sscanf (argv[i], "%ld", &prettyprint_listing))
+		  {
+			  fatalerror("Failed to decode the numeric -l argument [listing level]: ", argv[i]);
+		  }
 	    }
 	  if (user_trace > 0)
 	    fprintf (stderr, "Setting listing level to %ld \n", 
 		     prettyprint_listing);
 	  goto end_command_line_parse_loop;
-	};
+	}
 
       //   is this a "Use Local Country Code" flag?
       if (strncmp (argv[i], "-C", 2) == 0 && strlen(argv[i]) == 2)
@@ -241,7 +328,7 @@ int main (int argc, char **argv)
 	    fprintf (stderr, "Setting locale to local\n");
 	  setlocale (LC_ALL, "");
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       //   is this a change to the math mode (0,1 for alg/RPN but only in EVAL,
       //   2,3 for alg/RPN everywhere.
@@ -249,7 +336,12 @@ int main (int argc, char **argv)
 	{
 	  i++;    // move to the next arg
 	  if (i < argc)
-	    sscanf (argv[i], "%ld", &q_expansion_mode);
+	  {
+	    if (1 != sscanf (argv[i], "%ld", &q_expansion_mode))
+		  {
+			  fatalerror("Failed to decode the numeric -q argument [expansion mode]: ", argv[i]);
+		  }
+	  }
 	  if (user_trace > 0)
 	    {
 	      fprintf (stderr, "Setting math mode to %ld ", q_expansion_mode);
@@ -261,26 +353,31 @@ int main (int argc, char **argv)
 		fprintf (stderr, "(algebraic, in all expressions)\n");
 	      if (q_expansion_mode == 3) 
 		fprintf (stderr, "(RPN, in all expressions)\n");
-	    };
+	    }
 	  goto end_command_line_parse_loop;
-	};
+	}
 
       //   change the size of the maximum data window we'll allow
       if (strncmp (argv[i], "-w", 2) == 0 && strlen(argv[i]) == 2)
        {
          i++;    // move to the next arg
          if (i < argc)
-           sscanf (argv[i], "%ld", &data_window_size);
+		 {
+           if (1 != sscanf (argv[i], "%ld", &data_window_size))
+	      {
+			  fatalerror("Failed to decode the numeric -w argument [data windows size]: ", argv[i]);
+		  }
+		 }
          if (data_window_size < 8192)
            {
              fprintf (stderr, "Sorry, but the min data window is 8192 bytes");
              data_window_size = 8192;
-           };
+           }
          if (user_trace > 0)
            fprintf (stderr, "Setting max data window to %ld chars\n",
                     data_window_size);
          goto end_command_line_parse_loop;
-       };
+       }
        
       //   change the size of the sparse spectrum file default.
       if (strncasecmp (argv[i], "-s", 2) == 0 && strlen(argv[i]) == 2)
@@ -298,9 +395,9 @@ int main (int argc, char **argv)
 		  while ( (2<<k)+1 < sparse_spectrum_file_length)
 		    {
 		      k++;
-		    };
+		    }
 		  sparse_spectrum_file_length=(2<<k)+1;
-		};
+		}
             }
 	  else
 	    {
@@ -312,37 +409,47 @@ int main (int argc, char **argv)
 		}
 	      else
 		exit (EXIT_FAILURE);
-	    };
+	    }
 	  
 	  if (user_trace > 0)
 	    fprintf (stderr, "Setting sparse spectrum length to %ld bins\n", 
 		     sparse_spectrum_file_length );
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       //   set a break from the command line
       if (strncmp (argv[i], "-b", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  i++;    // move to the next arg
 	  if (i < argc)
-	    sscanf (argv[i], "%ld", &cmdline_break);
+	  {
+	    if (1 != sscanf (argv[i], "%ld", &cmdline_break))
+		  {
+			  fatalerror("Failed to decode the numeric -b argument [breakpoint line #]: ", argv[i]);
+		  }
+	  }
 	  if (user_trace > 0)
 	    fprintf (stderr, "Setting the command-line break to line %ld\n", 
 		     cmdline_break);
 	  goto end_command_line_parse_loop;
-	};
+	}
 
       //   set base value for detailed engine exit values
       if (strncmp (argv[i], "-E", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  i++;    // move to the next arg
 	  if (i < argc)
-	    sscanf (argv[i], "%ld", &engine_exit_base);
+	  {
+	    if (1 != sscanf (argv[i], "%ld", &engine_exit_base))
+		  {
+			  fatalerror("Failed to decode the numeric -E argument [engine exit base value]: ", argv[i]);
+		  }
+	  }
 	  if (user_trace > 0)
 	    fprintf (stderr, "Setting the engine exit base value to %ld\n", 
 		     engine_exit_base);
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       //   set countdown cycles before dropping to debugger
       if (strncmp (argv[i], "-d", 2) == 0 && strlen(argv[i]) == 2)
@@ -350,14 +457,19 @@ int main (int argc, char **argv)
 	  i++;    // move to the next arg
 	  debug_countdown = 0;
 	  if (i < argc)
-	    sscanf (argv[i], "%ld", &debug_countdown);
+	  {
+	    if (1 != sscanf (argv[i], "%ld", &debug_countdown))
+		  {
+			  fatalerror("Failed to decode the numeric -d argument [debug statement countdown]: ", argv[i]);
+		  }
+	  }
 	  if (user_trace > 0)
 	    fprintf (stderr, "Setting debug countdown to %ld statements\n", 
 		     debug_countdown);
 	  if (debug_countdown == 0)   //  if next arg wasn't numeric, back up
 	    i-- ;  
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       //   ignore environment variables?
       if (strncmp (argv[i], "-e", 2) == 0 && strlen(argv[i]) == 2)
@@ -366,7 +478,7 @@ int main (int argc, char **argv)
 	  if (user_trace > 0)
 	    fprintf (stderr, "Ignoring environment variables\n");
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       // is this to set the cwd? 
       if (strncmp (argv[i], "-u", 2) == 0 && strlen(argv[i]) == 2) 
@@ -378,13 +490,13 @@ int main (int argc, char **argv)
 	    {
 	      fprintf (stderr, "The -u working-directory change needs an arg");
 	      goto end_command_line_parse_loop;
-	    };
+	    }
 	  if ( chdir(argv[i] ))
 	    { 
 	      fprintf (stderr, "Sorry, couldn't chdir to %s \n", argv[i]); 
-	    };
+	    }
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       if (strncmp (argv[i], "-v", 2) == 0 && strlen(argv[i]) == 2)
 	{
@@ -400,7 +512,7 @@ int main (int argc, char **argv)
 	    }
 	  else
 	    exit( EXIT_SUCCESS );
-	};
+	}
       
       if (strncmp (argv[i], "-{", 2) == 0)  //  don't care about the "}"
 	{
@@ -408,7 +520,7 @@ int main (int argc, char **argv)
 	    fprintf (stderr, "Command line program at arg %d\n", i);
 	  openbracket = i;
 	  goto end_command_line_parse_loop;
-	};
+	}
       
       //
       //      What about -( var var var ) cmdline var restrictions?
@@ -428,51 +540,66 @@ int main (int argc, char **argv)
 	      if (user_trace)
 		fprintf (stderr, "cmdline arglist also locks out sysflags.\n");
 	      i = argc;
-	    };
+	    }
 	  goto end_command_line_parse_loop;
-	};
+	}
 
       //   set microgroom_stop_after
       if (strncmp (argv[i], "-m", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  i++;    // move to the next arg
 	  if (i < argc)
-	    sscanf (argv[i], "%ld", &microgroom_stop_after);
+	  {
+	    if (1 != sscanf (argv[i], "%ld", &microgroom_stop_after))
+		  {
+			  fatalerror("Failed to decode the numeric -m argument [microgroom stop after #]: ", argv[i]);
+		  }
+	  }
 	  if (user_trace > 0)
 	    fprintf (stderr, "Setting microgroom_stop_after to %ld\n", 
 		     microgroom_stop_after);
 	  if (microgroom_stop_after <= 0)   //  if value <= 0 set it to default
 	    microgroom_stop_after = MICROGROOM_STOP_AFTER;  
 	  goto end_command_line_parse_loop;
-	};
+	}
 
       //   set microgroom_chain_length length
       if (strncmp (argv[i], "-M", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  i++;    // move to the next arg
 	  if (i < argc)
-	    sscanf (argv[i], "%ld", &microgroom_chain_length);
+	  {
+	    if (1 != sscanf (argv[i], "%ld", &microgroom_chain_length))
+		  {
+			  fatalerror("Failed to decode the numeric -M argument [microgroom chain length]: ", argv[i]);
+		  }
+	  }
 	  if (user_trace > 0)
 	    fprintf (stderr, "Setting microgroom_chain_length to %ld\n", 
 		     microgroom_chain_length);
 	  if (microgroom_chain_length < 5)   //  if value <= 5 set it to default
 	    microgroom_chain_length = MICROGROOM_CHAIN_LENGTH;  
 	  goto end_command_line_parse_loop;
-	};
+	}
 
       //   set min_pmax_pmin_ratio
       if (strncmp (argv[i], "-r", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  i++;    // move to the next arg
 	  if (i < argc)
-	    sscanf (argv[i], "%f", &min_pmax_pmin_ratio);
+	  {
+	    if (1 != sscanf (argv[i], "%f", &min_pmax_pmin_ratio))
+		  {
+			  fatalerror("Failed to decode the numeric -r argument [Pmin/Pmax ratio]: ", argv[i]);
+		  }
+	  }
 	    if (user_trace > 0)
 	      fprintf (stderr, "Setting min pmax/pmin of a feature to %f\n", 
 		min_pmax_pmin_ratio);
 	  if (min_pmax_pmin_ratio < 0)   //  if value < 0 set it to 0
 	    min_pmax_pmin_ratio = OSBF_MIN_PMAX_PMIN_RATIO ;
 	  goto end_command_line_parse_loop;
-        };
+        }
       
       //  that's all of the flags.  Anything left must be
       //  the name of the file we want to use as a program
@@ -486,7 +613,7 @@ int main (int argc, char **argv)
 	  csl->filename = argv[i];
 	  if (user_trace > 0)
 	    fprintf (stderr, "Using program file %s\n", csl->filename);
-	};
+	}
     end_command_line_parse_loop:
       if (internal_trace)
 	fprintf (stderr, "End of pass %d through cmdline parse loop\n",
@@ -513,7 +640,7 @@ int main (int argc, char **argv)
 	  }
       if (user_trace > 0)
 	fprintf (stderr, "Using program file %s\n", csl->filename);
-    };
+    }
   //      If we still don't have a program, we're done.  Squalk an
   //      error.
   if (csl->filename == NULL && openbracket < 0)
@@ -527,7 +654,7 @@ int main (int argc, char **argv)
 	}
       else
 	exit (EXIT_SUCCESS);
-    };
+    }
   
   //     open, stat and load the program file
   if (openbracket < 0 )
@@ -535,7 +662,7 @@ int main (int argc, char **argv)
       {
 	if (argc <= 1)
 	  {
-	    fprintf (stderr, "CRM114 version %s \n", VERSION);
+	    fprintf (stderr, "CRM114 version %s\n", VERSION);
 	    fprintf (stderr, "Try 'crm <progname>', or 'crm -h' for help\n");
 	    if (engine_exit_base != 0)
 	      {
@@ -550,55 +677,56 @@ int main (int argc, char **argv)
 	      fprintf (stderr, "Loading program from file %s\n",
 		       csl->filename);
 	    crm_load_csl (csl);
-	  };
-      };
+	  }
+      }
     }
   else
     {
       //   if we got here, then it's a command-line program, and
       //   we should just assemble the proggie from the argv [openbracket] 
       if (strlen (&(argv[openbracket][1])) + 2048 > max_pgmsize)
-	untrappableerror ("The command line program is too big. \n",
-			  "Try increasing the max program size with -P. \n");
+	untrappableerror ("The command line program is too big.\n",
+			  "Try increasing the max program size with -P.\n");
       csl->filename = "(from command line)";
-      csl->filetext = (char *) malloc (sizeof (char) * max_pgmsize);
+      csl->filetext = (char *) malloc (sizeof (csl->filetext[0]) * max_pgmsize);   /* [i_a] */
       if (!csl->filetext)
 	untrappableerror ("Couldn't malloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.","");
-      strcpy (csl->filetext, "\n");
-      //     the [1] below gets rid of the leading - sign
-      strcat (csl->filetext, &(argv[openbracket][1]));
-      strcat (csl->filetext, "\n");
-      strcat (csl->filetext, "\n");
+
+	  /* [i_a] make sure we never overflow the buffer: */
+
+	  //     the [1] below gets rid of the leading - sign
+	  snprintf(csl->filetext, max_pgmsize, "\n%s\n\n", &(argv[openbracket][1]));
+	  csl->filetext[max_pgmsize - 1] = 0; /* make sure the string is terminated; some environments don't do this when the boundary was hit */
       csl->nchars = strlen (csl->filetext);
       csl->hash = strnhash (csl->filetext, csl->nchars);
       if (user_trace)
 	fprintf (stderr, "Hash of program: %lX, length is %ld bytes\n",
 		 csl->hash, csl->nchars);
-    };
+    }
   
   //  We get another csl-like data structure,
   //  which we'll call the cdw, which has all the fields we need, and
   //  simply allocate the data window of "adequate size" and read
   //  stuff in on stdin.
   
-  cdw = malloc (sizeof (CSL_CELL));
+  cdw = malloc (sizeof (cdw[0]));  /* [i_a] */
   if (!cdw)
     untrappableerror ("Couldn't malloc cdw.\nThis is very bad.","");
   cdw->filename = NULL;
   cdw->rdwr = 1;
   cdw->filedes = -1;
-  cdw->filetext = malloc (sizeof (char) * data_window_size);
+  cdw->filetext = malloc (sizeof (cdw->filetext[0]) * data_window_size);   /* [i_a] */
   if (!cdw->filetext)
     untrappableerror ("Couldn't malloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.","");
   //      also allocate storage for the windowed data input
-  newinputbuf = malloc (sizeof (char) * data_window_size);
+  newinputbuf = malloc (sizeof (newinputbuf[0]) * data_window_size);  /* [i_a] */
   
   //      and our three big work buffers - these are used ONLY inside
   //      of a single statement's execution and do NOT ever contain state
   //      that has to exist across statements.
-  inbuf = malloc (sizeof (char) * data_window_size);
-  outbuf = malloc (sizeof (char) * data_window_size);
-  tempbuf = malloc (sizeof (char) * data_window_size);
+  inbuf = malloc (sizeof (inbuf[0]) * data_window_size);  /* [i_a] */
+  outbuf = malloc (sizeof (outbuf[0]) * data_window_size); /* [i_a] */
+  tempbuf = malloc (sizeof (tempbuf[0]) * data_window_size); /* [i_a] */
   if (!tempbuf || !outbuf || !inbuf || !newinputbuf)
     untrappableerror (
 		      "Couldn't malloc one or more of"
@@ -635,7 +763,7 @@ int main (int argc, char **argv)
       //	{
       //	  cdw->filetext[i] = fgetc (stdin);
       //	  i++;
-      //	};
+      //	}
       //i-- ;  //     get rid of the extra ++ on i from the loop; this is the
       //            EOF "character" which prints like an umlauted-Y.
       //
@@ -658,7 +786,7 @@ int main (int argc, char **argv)
 	  if (feof (stdin))
 	    {
 	      break;
-	    };
+	    }
 	  if (ferror (stdin))
 	    {
 	      if (errno == ENOMEM && readsize > 1) //  insufficient memory?
@@ -672,10 +800,10 @@ int main (int argc, char **argv)
 			   "This is usually pretty much hopeless, but "
 			   "I'll try to keep running anyway.  ");
 		  break;
-		};
-	    };
-	};
-    };
+		}
+	    }
+	}
+    }
 
   //   data window is now preloaded (we hope), set the cdwo up.
 
@@ -719,7 +847,7 @@ int main (int argc, char **argv)
 		 0,
 		 cdw->nchars,
 		 -1);
-  };
+  }
   //
   //    We also set up the :_iso: to hold the isolated variables.
   //    Note that we must specifically NOT use this var during reclamation
@@ -750,7 +878,7 @@ int main (int argc, char **argv)
 		 0,
 		 0,
 		 -1);
-  };
+  }
 #endif
   //    Now we're here, we can actually run!
   //    set up to start at the 0'th statement (the start)
@@ -760,6 +888,6 @@ int main (int argc, char **argv)
   
   //     This is the *real* exit from the engine, so we do not override
   // the engine's exit status with an engine_exit_base value.
-  exit ( (char) status);
+  return status; /* [i_a] */
  }
 

@@ -7,43 +7,55 @@
 //  www.fsf.org .  Other licenses may be negotiated; contact the 
 //  author for details.  
 //
-long vht_size;
+
+
+/* [i_a] unsure if totalhits[] and hits[] should be floating point or integer count arrays ... */
+#if 10
+// from OSBF Hayes: hmmm, unsigned long gives better precision than float...
+typedef long hitcount_t;
+#else
+typedef double hitcount_t;
+#endif
+
+
+/* [i_a] no variable instantiation in a common header file */
+extern long vht_size;
  
-long cstk_limit;
+extern long cstk_limit;
 
-long max_pgmlines; 
+extern long max_pgmlines; 
 
-long max_pgmsize;
+extern long max_pgmsize;
 
-long max_pgmsize;
+/* extern long max_pgmsize; [i_a] */
 
-long user_trace;
+extern long user_trace;
 
-long internal_trace;
+extern long internal_trace;
 
-long debug_countdown;
+extern long debug_countdown;
 
-long cmdline_break;
+extern long cmdline_break;
 
-long cycle_counter;
+extern long cycle_counter;
 
-long ignore_environment_vars;
+extern long ignore_environment_vars;
 
-long data_window_size;
+extern long data_window_size;
 
-long sparse_spectrum_file_length;
+extern long sparse_spectrum_file_length;
 
-long microgroom_chain_length ;
+extern long microgroom_chain_length;
 
-long microgroom_stop_after;
+extern long microgroom_stop_after;
 
-float min_pmax_pmin_ratio;
+extern float min_pmax_pmin_ratio;
 
-long profile_execution;
+extern long profile_execution;
 
-long prettyprint_listing;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
+extern long prettyprint_listing;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
 
-long engine_exit_base;  //  All internal errors will use this number or higher;
+extern long engine_exit_base;  //  All internal errors will use this number or higher;
                        //  the user programs can use lower numbers freely.
 
 
@@ -52,7 +64,7 @@ long engine_exit_base;  //  All internal errors will use this number or higher;
 //        = 1 no extended (non-EVAL) math, use RPN
 //        = 2 extended (everywhere) math, use algebraic notation
 //        = 3 extended (everywhere) math, use RPN
-long q_expansion_mode;
+extern long q_expansion_mode;
 
 
 //   structure of a vht cell
@@ -293,26 +305,24 @@ typedef struct {
 #define CRM_OSBF_BAYES    CRM_OSBF
 #define CRM_HYPERSPACE    (1 << 29)
 #define CRM_UNIGRAM       (1 << 30)
-#define CRM_CROSSLINK     (1 << 31)
+#define CRM_CROSSLINK     (1LL << 31)  /* [i_a] */
 //
 //        Flags that need to be sorted back in
 //           input
 #define CRM_READLINE      (1LL << 32)
 //           isolate flags
 #define CRM_DEFAULT       (1LL << 33) 
-//           SKS classifier
-#define CRM_SKS          (1LL << 34)
+//           clump
+#define CRM_FLAT          (1LL << 34)
 //           SVM classifier
 #define CRM_SVM           (1LL << 35)
-//           FSCM classifier
-#define CRM_FSCM          (1LL << 36)
 //  
 //     and a struct to put them in.
 typedef struct 
 {
   char * string;
   unsigned long long value;
-} FLAG_DEF ;
+} FLAG_DEF;
 
 
 //*****************************************************************

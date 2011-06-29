@@ -1,0 +1,25 @@
+#! /usr/bin/crm -( agent=smith target=neo target=trinity ) --
+window
+{ 
+	output /:*:_nl: :_argc: =:*:_argc:= / 
+	output /:*:_nl: :_arg0: =:*:_arg0:= / 
+	output /:*:_nl: :_arg1: =:*:_arg1:= /
+	output /:*:_nl: :_arg2: =:*:_arg2:= /
+	output /:*:_nl: :_arg3: =:*:_arg3:= /
+	output /:*:_nl: :_arg4: =:*:_arg4:= /
+	output /:*:_nl: :_arg5: =:*:_arg5:= /
+	output /:*:_nl: :_arg6: =:*:_arg6:= /
+	output /:*:_nl: :_arg7: =:*:_arg7:= /
+	output /:*:_nl: :_arg8: =:*:_arg8:= /
+	output /:*:_nl:/
+	output /:*:_nl: :_posc: =:*:_posc:= /
+	output /:*:_nl: :_pos_str: =:*:_pos_str:= /
+	output /:*:_nl: :_pos0: =:*:_pos0:= /
+	output /:*:_nl: :_pos1: =:*:_pos1:= /
+	output /:*:_nl: :_pos2: =:*:_pos2:= /
+	output /:*:_nl: :_pos3: =:*:_pos3:= /
+	output /:*:_nl: :_pos4: =:*:_pos4:= /
+	output /:*:_nl: :_pos5: =:*:_pos5:= /
+	output /:*:_nl: :_pos6: =:*:_pos6:= /
+	output /:*:_nl:/
+}

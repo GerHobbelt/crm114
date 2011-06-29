@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,7 +34,7 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
-
+*/
 
 
 
@@ -45,7 +46,7 @@ extern char *tempbuf;
 //         -1: exit immediately
 //         0: continue
 
-long crm_debugger ()
+long crm_debugger(void)
 {
   long ichar;
   static int firsttime = 1;
@@ -66,7 +67,7 @@ long crm_debugger ()
       mytty = fopen ("CON", "rb");
 #endif
       clearerr (mytty);
-    };
+    }
 
   if (csl->mct[csl->cstmt]->stmt_break > 0)
     fprintf (stderr, "Breakpoint tripped at statement %ld\n", csl->cstmt);
@@ -85,7 +86,7 @@ long crm_debugger ()
     {
       inbuf[ichar] = fgetc (mytty);
       ichar++;
-    };  
+    }  
   inbuf [ichar] = '\000';
 
   if (feof (mytty) )  
@@ -97,7 +98,7 @@ long crm_debugger ()
 	}
       else
 	exit ( EXIT_SUCCESS );
-    };
+    }
 
 
   //   now a big siwtch statement on the first character of the command
@@ -115,7 +116,7 @@ long crm_debugger ()
 	  }
 	else
 	  exit ( EXIT_SUCCESS );
-      };
+      }
       break;
     case 'n':
     case 'N':
@@ -127,7 +128,13 @@ long crm_debugger ()
     case 'c':
     case 'C':
      {
-       sscanf (&inbuf[1], "%ld", &debug_countdown);
+		 debug_countdown = 0;
+       if (1 != sscanf (&inbuf[1], "%ld", &debug_countdown))
+      {
+		  fprintf(stderr, "Failed to decode the debug 'C' "
+			  "command countdown number '%s'. "
+			  "Assume 0: 'continue'.\n", &inbuf[1]);
+	  }
        if (debug_countdown <= 0) 
 	 {
 	   debug_countdown = -1;
@@ -136,9 +143,9 @@ long crm_debugger ()
        else
 	 {
 	   fprintf (stderr, "continuing %ld cycles...\n", debug_countdown);
-	 };
+	 }
        return (0);
-     };
+     }
      break;
     case 't':
       if (user_trace == 0 ) 
@@ -150,7 +157,7 @@ long crm_debugger ()
 	{
 	  user_trace = 0;
 	  fprintf (stderr, "User tracing off");
-	};
+	}
       break;
     case 'T':
       if (internal_trace == 0 ) 
@@ -162,20 +169,20 @@ long crm_debugger ()
 	{
 	  internal_trace = 0;
 	  fprintf (stderr, "Internal tracing off");
-	};
+	}
       break;
     case 'e':
       {
-	fprintf (stderr, "expanding: \n");
+	fprintf (stderr, "expanding:\n");
 	memmove (inbuf, &inbuf[1], strlen (inbuf) -1);
 	crm_nexpandvar (inbuf, strlen(inbuf) -1, data_window_size);
 	fprintf (stderr, "%s", inbuf);
-      };
+      }
       break;
     case 'i':
       {
 	fprintf (stderr, "Isolating %s", &inbuf[1]);
-	fprintf (stderr, "NOT YET IMPLEMENTED!  Sorry.  \n");
+	fprintf (stderr, "NOT YET IMPLEMENTED!  Sorry.\n");
       }
       break;
     case 'v':
@@ -197,15 +204,15 @@ long crm_debugger ()
 		      j++)
 		  {
 		    fprintf (stderr, "%c", csl->filetext[j]);
-		  };
+		  }
 		
-	      };
+	      }
 	  }
 	else
 	  {
 	    fprintf (stderr, "What statement do you want to view?\n");
 	  }
-      };
+      }
       break;
     case 'j':
       {
@@ -232,8 +239,8 @@ long crm_debugger ()
 	    else
 	      {
 		nextstmt = vht[vindex]->linenumber;
-	      };
-	  };
+	      }
+	  }
 	if (nextstmt <= 0) 
 	  {
 	    nextstmt = 0;
@@ -243,7 +250,7 @@ long crm_debugger ()
 	    nextstmt = csl-> nstmts;
 	    fprintf (stderr, "last statement is %ld, assume you meant that.\n",
 		     csl->nstmts);
-	  };
+	  }
 	if (csl->cstmt != nextstmt)
 	  fprintf (stderr, "Next statement is statement %ld\n", nextstmt);
 	csl->cstmt = nextstmt;
@@ -271,13 +278,13 @@ long crm_debugger ()
 	    if (vht[vindex] == NULL)
 	      {
 		fprintf (stderr, "No label '%s' in this program.  ", inbuf);
-		fprintf (stderr, "No breakpoint change made. \n");
+		fprintf (stderr, "No breakpoint change made.\n");
 	      }
 	    else
 	      {
 		breakstmt = vht[vindex]->linenumber;
-	      };
-	  };
+	      }
+	  }
 	if (breakstmt  <= -1) 
 	  {
 	    breakstmt = 0;
@@ -287,7 +294,7 @@ long crm_debugger ()
 	    breakstmt = csl-> nstmts;
 	    fprintf (stderr, "last statement is %ld, assume you meant that.\n",
 		     csl->nstmts);
-	  };
+	  }
 	csl->mct[breakstmt]->stmt_break = 1 - csl->mct[breakstmt]->stmt_break;
 	if (csl->mct[breakstmt]->stmt_break == 1)
 	  {
@@ -298,7 +305,7 @@ long crm_debugger ()
 	  {
 	    fprintf (stderr, "Clearing breakpoint at statement %ld\n", 
 		     breakstmt);
-	  };
+	  }
       }
       return (1);
       break;
@@ -333,28 +340,28 @@ long crm_debugger ()
 	outbuf [oend - ostart] = '\000';
 	olen = crm_nexpandvar (outbuf, oend - ostart, data_window_size);
 	crm_destructive_alter_nvariable (inbuf, vlen, outbuf, olen);
-      };
+      }
       break;
     case 'f':
       {
 	csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 	fprintf (stderr, "Forward to }, next statement : %ld\n", csl->cstmt);
 	csl->aliusstk [csl->mct[csl->cstmt]->nest_level] = -1;
-      };
+      }
       return (1);
       break;
     case 'l':
       {
 	csl->cstmt = csl->mct[csl->cstmt]->liaf_index;
 	fprintf (stderr, "Backward to {, next statement : %ld\n", csl->cstmt);
-      };
+      }
       return (1);
       break;
     case 'h':
       {
-	fprintf (stderr, "a :var: /value/ - alter :var: to /value/ \n");
-	fprintf (stderr, "b <n> - toggle breakpoint on line <n> \n");
-	fprintf (stderr, "b <label> - toggle breakpoint on <label> \n");
+	fprintf (stderr, "a :var: /value/ - alter :var: to /value/\n");
+	fprintf (stderr, "b <n> - toggle breakpoint on line <n>\n");
+	fprintf (stderr, "b <label> - toggle breakpoint on <label>\n");
 	fprintf (stderr, "c - continue execution till breakpoint or end\n");
 	fprintf (stderr, "c <n> - execute <number> more statements\n");
 	fprintf (stderr, "e - expand an expression\n");
@@ -367,13 +374,13 @@ long crm_debugger ()
 	fprintf (stderr, "t - toggle user-level tracing\n");
 	fprintf (stderr, "T - toggle system-level tracing\n");
 	fprintf (stderr, "v <n> - view source code statement <n>\n");
-      };
+      }
       break;
     default:
       {
-	fprintf (stderr, "Command unrecognized - type \"h\" for help. \n");
-      };
-    };
+	fprintf (stderr, "Command unrecognized - type \"h\" for help.\n");
+      }
+    }
   goto debug_top;
 }
 

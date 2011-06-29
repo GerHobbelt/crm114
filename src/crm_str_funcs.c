@@ -21,6 +21,7 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+/* [i_a]
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -33,6 +34,8 @@ extern char *newinputbuf;
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
+*/
+
 
 
 //     strnhash - generate the hash of a string of length N
@@ -102,8 +105,8 @@ long strnhash (char *str, long len)
 unsigned long strnhash (char *str, long len)
 {
   long i;
-  // unsigned long hval;
-  int32_t hval;
+  unsigned long hval; /* [i_a] Win32 native doesn't know about any int32_t ... */
+  // int32_t hval;
   unsigned long tmp;
 
   // initialize hval
@@ -187,9 +190,10 @@ typedef struct prototype_crm_mmap_cell
 } CRM_MMAP_CELL;
 
 
+
 //  We want these to hang around but not be visible outside this file.
 
-static CRM_MMAP_CELL *cache = NULL;
+CRM_MMAP_CELL *cache = NULL;
 
 
 //////////////////////////////////////
@@ -200,9 +204,9 @@ static CRM_MMAP_CELL *cache = NULL;
 //
 void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
 {
-  long munmap_status;
-
 #ifdef POSIX
+  long munmap_status; /* [i_a] */
+
   if (map->prot & PROT_WRITE)
     msync (map->addr, map->actual_len, MS_ASYNC | MS_INVALIDATE);
   munmap_status = munmap (map->addr, map->actual_len);
@@ -407,7 +411,7 @@ void *crm_mmap_file (char *filename,
 {
   CRM_MMAP_CELL *p;
   long pagesize = 0;
-  struct stat statbuf;
+  struct stat statbuf = {0}; /* [i_a] */
 #ifdef POSIX
   mode_t open_flags;
 #endif
@@ -436,7 +440,7 @@ void *crm_mmap_file (char *filename,
   //    No luck - we couldn't find the matching file/start/len/prot/mode
   //    We need to add an mmap cache cell, and mmap the file.
   //  
-  p = (void *) malloc( sizeof ( CRM_MMAP_CELL) );
+  p = (void *) malloc( sizeof (p[0]) );  /* [i_a] */
   if (p == NULL)
     {
       untrappableerror(" Unable to malloc enough memory for mmap cache.  ",
@@ -456,6 +460,7 @@ void *crm_mmap_file (char *filename,
     open_flags = O_RDONLY;
   if ( (p->prot & PROT_WRITE) && !(p->prot & PROT_READ))
     open_flags = O_WRONLY;
+  open_flags |= O_BINARY;
   if (internal_trace)
     fprintf (stderr, "MMAP file open mode: %ld\n", (long) open_flags);
 
@@ -559,8 +564,8 @@ void *crm_mmap_file (char *filename,
 	  if (actual_len)
 	    *actual_len = 0;
 	  return (MAP_FAILED);
-	};
-    };
+	}
+    }
 
   if (user_trace)
     fprintf (stderr, "MMAPping file %s for direct memory access.\n", filename);
@@ -698,7 +703,7 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
 
   //  create our output string space.  It will never be more than 256
   //  characters.  It might be less.  But we don't care.
-  outstr = malloc (256);
+  outstr = malloc (256 * sizeof(outstr[0])); /* [i_a] */
 
   //  error out if there's a problem with MALLOC
   if (!outstr)
@@ -724,7 +729,7 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
       outstr[0] = '^';
       *rlen = 1;
       return (outstr);
-    };
+    }
 
   //  No such luck.  Fill our map with "character present".
   //  fill it with 1's  ( :== "character present")
@@ -743,9 +748,9 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
   for (i = 0, j = 0 ; i < 256; i++)
     if (outstr[i])
       {
-	outstr[j] = i;
+	outstr[j] = (unsigned char)i;
 	j++;
-      };
+      }
 
   //    The final string length is j characters long, in outstr.  
   //    Don't forget to free() it later.  :-)
@@ -787,7 +792,7 @@ unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
   *rlen = adj + len;
 
   //      Get the space for our expanded string.
-  r = malloc ( 1 + *rlen);	/* 1 + to avoid empty problems */
+  r = malloc ( (1 + *rlen) * sizeof(r[0]));	/* 1 + to avoid empty problems */ /* [i_a] */
   if (!r) 
     {
       untrappableerror(
@@ -820,8 +825,8 @@ unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
 		  for (c= m+delta; c != n; c+= delta) 
 		    {
 		      r[k++]= (unsigned char) c;
-		    };
-		  r[k++]= n;
+		    }
+		  r[k++]= (unsigned char)n;
 		}
 	      j+= 1;
 	    }
@@ -831,7 +836,7 @@ unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
 	  //    It's not a range, so we just move along.  Move along!
 	  k++;
 	}
-    };
+    }
 
   //  fprintf (stderr, "Resulting range string: %s \n", r);
   //  return the char *string.
@@ -882,7 +887,7 @@ long strntrn (
       // fprintf (stderr, "Fast exit from strntrn  \n");
       *datastrlen = len;
       return (len);
-    };
+    }
 
 
   //    If CRM_LITERAL, the strings are ready, otherwise build the
@@ -892,10 +897,10 @@ long strntrn (
     {
       //       Else - we're in literal mode; just copy the 
       //       strings.
-      from = malloc (fromstrlen);
+      from = malloc (fromstrlen * sizeof(from[0])); /* [i_a] */
       strncpy  ( (char *)from,  (char *)fromstr, fromstrlen);
       flen = fromstrlen;
-      to = malloc (tostrlen);
+      to = malloc (tostrlen * sizeof(to[0])); /* [i_a] */
       strncpy ((char *) to, (char *)tostr, tostrlen);
       tlen = tostrlen;
       if (from == NULL || to == NULL) return (-1);
@@ -917,7 +922,7 @@ long strntrn (
 	  from = crm_strntrn_invert_string (temp, templen, &flen);
 	  if (!from) return (-1);
 	  free (temp);
-	};
+	}
       
       //     Build the expanded to-string
       //
@@ -935,8 +940,8 @@ long strntrn (
 	  to = crm_strntrn_invert_string (temp, templen, &tlen);
 	  if (!to) return (-1);
 	  free (temp);
-	};
-    };
+	}
+    }
       
   //  If we're in <unique> mode, squish out any duplicated
   //   characters in the input data first.  We can do this as an in-place
@@ -945,7 +950,7 @@ long strntrn (
   //
   if (CRM_UNIQUE & flags) 
     {
-      unsigned char unique_map [257];
+      unsigned char unique_map [256]; /* [i_a] */
 
       //                        build the map of the uniqueable characters
       //
@@ -963,10 +968,10 @@ long strntrn (
 	  if (datastr[j] != last || unique_map[datastr[j]] ) 
 	    {
 	      last= datastr[k++]= datastr[j];
-	    };
-	};
+	    }
+	}
       len= k;
-    };
+    }
 
   //     Minor optimization - if we're just uniquing, we don't need
 
@@ -980,7 +985,7 @@ long strntrn (
       //
       for (j= 0; j < 256; j++) 
 	{
-	  map[j]= j;
+	  map[j]= (unsigned char)j;
 	}
 
       //   go through and mod each character in the from-string to
@@ -1000,7 +1005,7 @@ long strntrn (
 	}
 
 
-      //    Finally, the map is ready.  We go thorugh the 
+      //    Finally, the map is ready.  We go through the 
       //     datastring translating one character at a time.
       //
       for (j= 0; j < len; j++) 

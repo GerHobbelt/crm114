@@ -1,0 +1,96 @@
+    CRM114 Known Bugs:
+
+1) (fixed)
+
+2) Matcher bug... This bug is in the GNU library, not my code.  If you
+match on a window longer than 20479 characters, AND you have multiline
+matching enabled, AND the pattern is of the form ".*literalvale", then
+the match will FAIL even if it should have succeeded.  The TRE library
+does not have this bug.  (see "make experimental")
+
+   (FIXED - default library is now TRE 0.7.4)
+
+3) Matcher bug - this is another bug in the GNU regex library.  If you
+have a pattern of the form ^Q$ where Q is a single character, and you
+don't specify <nomultiline>, then the match will mysteriously fail even
+if it should have succeeded.  The TRE regex library does not have this
+problem (see "make experimental").
+
+   (FIXED - default library is now TRE 0.7.4)
+
+
+3+) More on bug 3 - it seems that _many_ patterns of the form ^blah$
+do not work correctly, including the simple case for a null string of
+^$ even if you _do_ specify nomultiline.  The TRE regex library does
+not have this problem either.
+
+   (FIXED - default library is now TRE 0.7.4)
+
+
+3++)  The GNU regex engine considers /./ to match not only the 
+string "a", but also the empty string "".  This is in contrast
+to /../ which does match "aa" but not "a".
+
+   (FIXED - default library is now TRE 0.7.4)
+
+
+4) Thinking bug...  If you ALTER one variable that contains another 
+variable, the second variable moves as though you inserted/deleted
+charactes at the START of the first variable, and then overtyped
+all of the evenly matched characters.  This can lead to 
+counterintuitive results; the fix is to ISOLATE any variable that
+has to hold value across an ALTER operation.
+
+   (FIXED - default library is now TRE 0.7.4)
+
+
+5) FIXED AT LONG LAST (version 20040815) Memory leak - if you MATCH to
+bind a var, then ISOLATE that var, then MATCH it again, the old
+ISOLATEd usage is _not_ recovered.  If you do this enough, you will
+run out of buffer space and get a FATAL ERROR.
+
+The quick workaround is to use two variables- for example, :a: and 
+:isolated_a: as shown here:
+
+     match :a:
+     isolate (:isolated_a:) /:*:a:/ 
+     match (:a:) 
+     isolate (:isolated_a:) /:*:a:/ 
+
+ad infinitum, which will _not_ leak memory.
+
+   (REAL FIX in by 20060629 - off by one error in line 920 
+   of crm_var_hash_table.c)
+
+6) If you do math, and the output is bigger than a trillion or less than
+1 trillionth, the output comes out in E-notation.
+
+This is fine -except that you can't _re_use that, because the numerical
+parser doesn't understand E-notation.  
+
+Be warned.  Or send me a patch!
+
+   (FIXED - the switchover between fixed and E notation is now
+   a soft set, and the reader DOES understand E-notation)
+
+
+
+7)  If you malform a math expression (like leave off the closing colon)
+the last digit of your result gets eaten.
+
+    e.g.:
+
+    /:@: 1 + 123 :/   --> 124  (correct)
+    /:@: 1 + 123  /   --> 12   (incorrect)
+
+Patches appreciated on this one too.
+
+   ( SEMI-FIXED - you now get an error that says "you didn't end with
+     an ':', which is often an error.  However, it still gets the wrong
+     result. )
+
+
+
+    Let me know if you find any others!
+
+	-Bill Y.

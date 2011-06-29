@@ -11,38 +11,53 @@
 //    Global variables
 
 //   The VHT (Variable Hash Table)     
-VHT_CELL **vht;      
+extern VHT_CELL **vht;       /* [i_a] no variable instantiation in a common header file */
 
 //   The pointer to the global Current Stack Level (CSL) frame
-CSL_CELL *csl;
+extern CSL_CELL *csl;
 
 //    the data window
-CSL_CELL *cdw;
+extern CSL_CELL *cdw;
 
 //    the temporarys data window (where argv, environ, newline etc. live)
-CSL_CELL *tdw;
+extern CSL_CELL *tdw;
 
 //    the pointer to a CSL that we use during matching.  This is flipped
 //    to point to the right data window during matching.  It doesn't have
 //    it's own data, unlike cdw and tdw.
-CSL_CELL *mdw;
+extern CSL_CELL *mdw;
 
 //    a pointer to the current statement argparse block.  This gets whacked
 //    on every new statement.
-ARGPARSE_BLOCK *apb;
+extern ARGPARSE_BLOCK *apb;
+
+/* [i_a] */
+//    the command line argc, argv
+extern int prog_argc;
+extern char **prog_argv;
+
+//    the auxilliary input buffer (for WINDOW input)
+extern char *newinputbuf;
+
+//    the globals used when we need a big buffer  - allocated once, used 
+//    wherever needed.  These are sized to the same size as the data window.
+extern char *inbuf;
+extern char *outbuf;
+extern char *tempbuf;
+
 
 //    the microcompiler
 int crm_microcompiler (CSL_CELL *csl,
 			       VHT_CELL **vht);
 
 //  helper routine for untrappable errors
-void untrappableerror (char *msg1, char *msg2); 
+void untrappableerror (const char *msg1, const char *msg2); 
 
 //  helper routine for fatal errors
-long fatalerror (char *msg1, char *msg2); 
+long fatalerror (const char *msg1, const char *msg2); 
 
 //  helper routine for nonfatal errors
-long nonfatalerror (char *msg1, char *msg2); 
+long nonfatalerror (const char *msg1, const char *msg2); 
 
 
 //  hash function for variable tables
@@ -127,7 +142,7 @@ char * crm_mapstream ( FILE *instream); // read from instream till
                               // it goes dry, putting result into a buffer.
 
 //     actually execute a compiled CRM file
-int crm_invoke ();
+int crm_invoke (void);
 
 //     look up a variable line number (for GOTOs among other things)
 long crm_lookupvarline (VHT_CELL **vht, char *text, long start, long len);
@@ -261,10 +276,6 @@ int crm_expr_alt_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				    char *txt, long start, long len);
 int crm_expr_svm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
 				    char *txt, long start, long len);
-int crm_expr_sks_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				    char *txt, long start, long len);
-int crm_expr_fscm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				    char *txt, long start, long len);
 
 
 
@@ -288,11 +299,10 @@ int crm_expr_alt_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				       char *txt, long start, long len);
 int crm_expr_svm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
 				       char *txt, long start, long len);
-int crm_expr_sks_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				       char *txt, long start, long len);
-int crm_expr_fscm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				       char *txt, long start, long len);
 
+//  Clumping terms
+int crm_expr_clump_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+int crm_expr_pmulc_nn (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 //  surgically alter a variable
 int crm_expr_alter (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -433,7 +443,7 @@ size_t crm_regerror (int errocode, regex_t *preg, char *errbuf,
 
 void crm_regfree (regex_t *preg);
 
-char * crm_regversion ();
+char * crm_regversion (void);
 
 
 //        Portable mmap/munmap

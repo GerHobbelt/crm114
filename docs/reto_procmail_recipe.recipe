@@ -1,0 +1,104 @@
+#
+# $Id: crm114.rc,v 3.3 2005/03/28 15:48:44 rali Exp $
+#
+
+# Check message with crm114
+
+#
+# NOTE: This recipe invokes crm114 on a message. It does NOT filter
+# the message to a spam folder.  How you choose to manage that task
+# up to you.
+#
+
+CRM="/usr/local/bin/crm"
+CRMDIR="${HOME}/.crm114"
+UTRACE=""                       # -t turns on crm script tracing
+
+CRMVERSION="`${CRM} '-{ output /:*:_crm_version:/}' < /dev/null` [stats_only]"
+
+#
+# It is possible for crm114 to DoS if it receives a very large message.
+# To prevent this, the author has coded an upper bound to the size
+# message that mailfilter.crm will accept.
+#
+# We can prevent messages from hitting that limit by only feeding a
+# portion of the message to crm114, but this has a slightly more
+# subtle problem in that messages are often fed to crm114 as filters,
+# which means procmail expects the message to be modified. Using
+# head(1) to limit the message size going into a filter recipe will
+# truncate the actual message, not just a copy. "Oops"
+#
+# This recipe set uses crm114 as a direct "f"ilter if the message is
+# smaller than $BIGGEST, otherwise the message is truncated with head
+# and crm114 is set (via "--stats_only" switch) to report only. The
+# output from crm114 when run in this mode is captured and formail is
+# used to put the same headers in place that crm114 would normally
+# add.
+#
+
+BIGGEST="20000"
+
+:0
+* < ${BIGGEST}
+{
+  :0 fw
+  | ${CRM} ${UTRACE} -u ${CRMDIR} mailfilter.crm
+
+  # if crm114 failed, return the mail to the queue where the MTA will
+  # retry delivery at a later date.  (EX_TEMPFAIL in /usr/include/sysexits.h)
+
+  :0 e
+  { EXITCODE=75 }
+}
+
+#
+# If the first recipe doesn't match the size test, then the message is
+# larger than ${BIGGEST}
+#
+
+:0 E
+{
+  # For programs invoked via backtick operator, procmail puts the mail
+  # message on stdin.  The line below feeds the mail message through
+  # head to truncate it and then into crm114.
+
+  CRMOUT="`head -c ${BIGGEST} | ${CRM} -u ${CRMDIR} mailfilter.crm --stats_only\`"
+
+  # If CRMOUT is undefined (or empty) then crm114 failed. Set the exit
+  # code to 75, so that procmail uses that as an exitcode. THe MTA
+  # that invoked procmail will see that as "TEMPFAIL" and requeue the
+  # message. THe script then unsets the HOST variable to tell procmail
+  # to exit.
+
+  :0
+  * CRMOUT ?? ^^^^
+  {
+    EXITCODE=75
+    HOST
+  }
+
+  :0
+  * CRMOUT ?? ^-
+  { VALUE="SPAM" }
+
+  :0 E
+  { VALUE="Good" }
+
+  :0 f
+  | formail -A "X-CRM114-Version: ${CRMVERSION}" \
+            -A "X-CRM114-Status: ${VALUE}  ( pR: ${CRMOUT})"
+
+  CRMOUT
+  VALUE
+}
+
+:0
+* ^X-CRM114-Status: SPAM
+{ LOG="SPAM: CRM114 (Sure)${NL}" }
+
+# Unset variables
+CRM
+CRMDIR
+CRMVERSION
+UTRACE
+
