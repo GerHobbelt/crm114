@@ -58,7 +58,7 @@ isolate <default> (:class:) //
 	}
 	{
 		call /:gatlingsort:/  (:h_results:)
-		output /:*:classifier_outputs:/
+		#output /:*:classifier_outputs:/
 		output /:*:h_results:\n/
 	}
 }
@@ -88,11 +88,11 @@ isolate <default> (:classifiers:) / \
    < hyperspace unique >         0.7       0.25     .hypu   \
    < osb microgroom >            1.0      10.0      .osb    \
    < osb unique microgroom >     1.0      10.0      .osbu   \
-   < osb unigram microgroom >    1.0       1.0      .bay    \
    < osbf microgroom >           1.0      10.0      .cfc    \
    < osbf unique microgroom >    1.0      10.0      .cfcu   \
-   < entropy crosslink >         1.2       0.25     .ben    \
-   < entropy unique crosslink >  1.3       0.25     .benu   \
+   < entropy crosslink >         0.6       5.0      .ben    \
+   < entropy unique crosslink >  0.9       5.0      .benu   \
+   < osb unigram microgroom >    1.0       1.0      .bay    \
    /
 isolate <default> (:unused_classifiers:) /\
    /
@@ -112,18 +112,25 @@ isolate <default> (:unused_classifiers:) /\
 isolate <default> (:classes:) / \
    ( good      OK:     0  0.1 ) \n \
    ( spam      ADV:    0  0.0 ) \n \
-   ( rants     RANT:   0  0.0 ) \n \
-   ( parties   PLAY:   0  0.0 ) \n \
    /
 isolate <default> (:unused_classes:) / \
+   ( ham       OK:     0  0.0 ) \n \
+   ( rants     RANT:   0  0.0 ) \n \
+   ( parties   PLAY:   0  0.0 ) \n \
    ( talk      TALK:   0  0.0 ) \n \
    ( business  WORK:   0  0.0 ) \n \
-   ( emergency MAYDAY: 0  0.0 ) /
+   ( emergency MAYDAY: 0  0.0 ) \n
+   /
    
 #    What's our limit beyond which we don't run any other classifiers?
 #    
-isolate <default> (:gatling_limit:) /6.0/
-isolate <default> (:gatling_margin:) /5.0/
+#    Use these to tradeoff for speed:
+#isolate <default> (:gatling_limit:) /6.0/
+#isolate <default> (:gatling_margin:) /5.0/
+#     
+#    Use these to tradeoff for maximum accuracy:
+isolate <default> (:gatling_limit:) /100/
+isolate <default> (:gatling_margin:) /100/
 
 
 #    initialize totals and comdstring variables:
@@ -140,8 +147,8 @@ match [:classifiers:] //  # reset to start of classifiers
     match [:classifiers:] <fromend> \
 	    (:: :lclf: :lwt: :lthk: :lext: ) \
 	    /<([^>]+)>[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)/
-	# output /Classifier :*:lclf: with ext ":*:lext:" weight :*:lwt:\n /
-	# output / across classes: :*:classes: \n/
+	 # output /Classifier :*:lclf: with ext ":*:lext:" weight :*:lwt:\n /
+	 #output / across classes: :*:classes: \n/
     match [ :classes: ] // 
     isolate (:statfiles:) //
     {
@@ -155,8 +162,9 @@ match [:classifiers:] //  # reset to start of classifiers
 	#   make sure the file exists - if not, LEARN the .txt of it,
 	#   and if *that* fails, stick in CRM114's version number.
 	{
-	    input [:*:classname::*:lext: 0 100] (:filetoucher:)
-	    trap /read-open/
+	    isolate (:filetoucher:)
+	    syscall /ls -la :*:classname::*:lext:/ () (:filetoucher:)
+	    match <absent> [:filetoucher:] /:*:classname:/ 
 	    input [:*:classname:.txt] (:filetoucher:)
 	    output /Initialize: creating :*:classname::*:lext: from .txtfile\n/
 	    learn < :*:lclf: > ( :*:classname::*:lext: ) [:filetoucher:]
@@ -178,21 +186,22 @@ match [:classifiers:] //  # reset to start of classifiers
 	match [:clout:] < nomultiline> \
 		/Best.*\((.*)\.(.*)\).*pR: ([[:graph:]]+)/ \
 		(:: :classname: :ext: :pr:)
-	output /Classifier :*:ext: best on :*:classname: with pR :*:pr:\n/
+	#output /Classifier :*:ext: best on :*:classname: with pR :*:pr:\n/
 	#    Get the current votes for this class
 	match [ :classes: ] (:: :tag: :code: :curvotes: ) \
 	/\([[:space:]]+:*:classname:[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)/
-	output / Classname :*:classname: has :*:curvotes: so far.\n /
+	#output / Classname :*:classname: has :*:curvotes: so far.\n /
 	#    Get the vote-weight of this classifier
 	match [:classifiers_doppelganger:] (:: :voteweight: )  \
 	 /([[:graph:]]+)[[:space:]]+[[:graph:]]+[[:space:]]+\.:*:ext:/
-	output / classifier :*:ext: has weight :*:voteweight: \n/       
+	#output / classifier :*:ext: has weight :*:voteweight: \n/       
 	eval (:curvotes:) /:@: :*:curvotes: + :*:voteweight: :/
-	output /  class :*:classname: now has :*:curvotes: votes.\n/
+	#output /  class :*:classname: now has :*:curvotes: votes.\n/
 	{
+	    alius
 	    eval /:@: :*:pr: > 0.01 :/
 	    eval (:curvotes:) /:@: :*:curvotes: + :*:voteweight: :/
-	    output /   class :*:classname: boost to :*:curvotes: votes.\n/
+	    #output /   class :*:classname: boost to :*:curvotes: votes.\n/
 	}
     }
     #
@@ -207,15 +216,17 @@ match [:classifiers:] //  # reset to start of classifiers
 	    match [:classes:] <fromend> (:: :curvotes:) \
 		/([[:graph:]]+)[[:space:]]+\)/
 	    {
-		eval /:@: :*:curvotes: > :*:best: :/
-		isolate (:second:) /:*:best:/
-		isolate (:best:) /:*:curvotes:/
- 	    }
-	    alius
-	    {
-		eval /:@: :*:curvotes: > :*:best: :/
- 		isolate (:second:) /:*:curvotes:/
-	    }
+                {
+		    eval /:@: :*:curvotes: > :*:best: :/
+		    isolate (:second:) /:*:best:/
+		    isolate (:best:) /:*:curvotes:/
+ 	        }
+	        alius
+	        {
+		    eval /:@: :*:curvotes: > :*:second: :/
+ 		    isolate (:second:) /:*:curvotes:/
+	        }
+            }
 	    liaf
 	}
 	{
@@ -274,33 +285,47 @@ return /:*:classes:/
     # winner of a class wasn't the trained class, we train it
     # in.  		
     match // [:classifier_outputs:]   #  restart matching
-    output /:*:classifier_outputs:\n/
-    output /Learn mode.\n/
+    #output /:*:classifier_outputs:\n/
+    #output /Learn mode.\n/
     {
 	match <fromend nomultiline> [:classifier_outputs:] \
 		( :: :bestfile: :pr: ) \
 		/^Best match to file \#[0-9]+ \(([[:print:]]+)\) prob: [-+.0-9e]+  pR: ([-+.0-9]+)/ 
 
-	output /Best match was to: :*:bestfile: at pR :*:pr:\n/		
+	#output /Best match was to: :*:bestfile: at pR :*:pr:\n/
 	{
 	    #    Was the best match in our "class" regex?
 	    {
-                match [:bestfile:] /^:*:class:\.(.*)/ (:: :c_ext:)
-		output / Correct class in classifier using :*:c_ext:\n/
+                match [:bestfile:] /^:*:class:\.(.*)/ (:: :file_ext:)
+		# output / Correct class in classifier using :*:file_ext:\n/
+		#   now get thick threshold out of the :classifiers:
+		match [:classifiers:] (:: :training_flags: :thresh:) \
+		/<([^>]+)>[[:space:]]+[[:graph:]]+[[:space:]]+([[:graph:]]+)[[:space:]]+\.:*:file_ext: / \
+		{
+		    eval /:@: :*:pr: < :*:thresh: :/
+		    output /***THICKNESS LEARN*** :*:pr: :*:thresh: /
+		    goto /:retrain:/
+		}
+		goto /:no_retrain:/
 	    }
-	    #   No, it wasn't.  Train it in.  
+	    #   No, it wasn't right at all.  Train it in.  
 	    #   first, find the classifier params for this file ext.
             alius
 	    {
-		match [:bestfile:] /.*\.(.*)/ (:: :wrong_ext:)
-		output /Incorrect class from ":*:wrong_ext:" . \n/
+		match [:bestfile:] /.*\.(.*)/ (:: :file_ext:)
 		match [:classifiers:] \
-		/<([^>]+)>[[:space:]]+[[:graph:]]+[[:space:]]+[[:graph:]]+[[:space:]]+\.:*:wrong_ext: / \
-		(:: :training_flags:) 
-		output \
-		   /Learning ":*:class:.:*:wrong_ext:" with <:*:training_flags:>\n\n/
- 		learn <:*:training_flags:> (:*:class:.:*:wrong_ext:)
+		/<([^>]+)>[[:space:]]+[[:graph:]]+[[:space:]]+([[:graph:]]+)[[:space:]]+\.:*:file_ext: / \
+		(:: :training_flags: :thresh:) 
+		output /***WRONGCLASS LEARN*** ":*:file_ext:" <:*:training_flags:> \n/
+                goto /:retrain:/
 	    }
+	    :retrain:
+	    {
+		output \
+		   /LEARNing ":*:class:.:*:file_ext:" with <:*:training_flags:>\n\n/
+ 		learn <:*:training_flags:> (:*:class:.:*:file_ext:)
+	    }
+	   :no_retrain:
 	}		
 	liaf
     }

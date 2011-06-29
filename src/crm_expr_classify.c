@@ -47,6 +47,8 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   char *txt;
   long start;
   long len;
+  int retval;
+  long saved_ssfl;
 
   //            get start/length of the text we're going to learn:
   //
@@ -81,43 +83,49 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       return (fev);
     };
   
+  //  keep the original value of the ssfl, because many learners
+  //  mangle it and then it won't work right for other classifiers
+  saved_ssfl = sparse_spectrum_file_length;
+
   //            get our flags... the only ones we're interested in here
   //            are the ones that specify _which_ algorithm to use.
 
   if (apb->sflags & CRM_OSB_BAYES ) 
     {
-      return (crm_expr_osb_bayes_learn (csl, apb, txt, start, len)); 
+      retval = crm_expr_osb_bayes_learn (csl, apb, txt, start, len); 
     }
   else
     if (apb->sflags & CRM_CORRELATE)
       {
-	return (crm_expr_correlate_learn (csl, apb, txt, start, len));
+	retval = crm_expr_correlate_learn (csl, apb, txt, start, len);
       }
     else
       if (apb->sflags & CRM_OSB_WINNOW)
 	{
-	  return (crm_expr_osb_winnow_learn (csl, apb, txt, start, len));
+	  retval = crm_expr_osb_winnow_learn (csl, apb, txt, start, len);
 	}
       else
 	if (apb->sflags & CRM_OSBF )
 	  {
-	    return (crm_expr_osbf_bayes_learn (csl, apb, txt, start, len));
+	    retval = crm_expr_osbf_bayes_learn (csl, apb, txt, start, len);
 	  }
 	else
 	  if (apb->sflags & CRM_HYPERSPACE)
 	    {
-	      return(crm_expr_osb_hyperspace_learn(csl, apb, txt, start, len));
+	      retval = crm_expr_osb_hyperspace_learn(csl, apb, txt, start, len);
 	    }
 	  else
 	    if (apb->sflags & CRM_ENTROPY)
 	      {
-		return(crm_expr_bit_entropy_learn(csl, apb, txt, start, len));
+		retval = crm_expr_bit_entropy_learn(csl, apb, txt, start, len);
 	      }
 	    else
 	      {
-		return (crm_expr_markov_learn (csl, apb, txt, start, len));
+		retval = crm_expr_markov_learn (csl, apb, txt, start, len);
 	      };
-  return (0);
+  sparse_spectrum_file_length = saved_ssfl;
+	
+  return (retval);
 }
 
 //      Dispatch a CLASSIFY statement

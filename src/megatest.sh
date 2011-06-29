@@ -382,10 +382,10 @@ rm -f q_test.css
 ./crm114 '-{window; output /\n**** Bit-Entropy Toroid classifier \n/}'
 ./crm114 '-{learn < entropy > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
 ./crm114 '-{learn < entropy > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
-./crm114 '-{ isolate (:s:); {classify < entropy crosslink > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+./crm114 '-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
-./crm114 '-{ isolate (:s:); {classify <entropy crosslink> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+./crm114 '-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
 But fear not, we _do_ have the document you want. 
 EOF
 

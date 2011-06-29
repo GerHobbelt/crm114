@@ -992,8 +992,17 @@ void crm_destructive_alter_nvariable (char *varname, long varlen,
   //
   if (user_trace)  // major debug
     {
-      fprintf (stderr, "\n     surgery on the var %s, ", varname);
-      fprintf (stderr, "new value is: \n***%s***\n", newstr);
+      long i;
+      // fprintf (stderr, "\n     surgery on the var %s\n ", varname);
+      fprintf (stderr, " surgery on the var >");
+      for (i = 0; i < varlen; i++ )
+	fprintf (stderr, "%c", varname[i]);
+      fprintf (stderr, "<\n");
+      //fprintf (stderr, "new value is: \n***%s***\n", newstr);
+      fprintf (stderr, " new value is ***>");
+      for (i = 0; i < newlen; i++ )
+	fprintf (stderr, "%c", newstr[i]);
+      fprintf (stderr, "<***\n");
     }
   //     slice and splice the mdw text area, to make the right amount of 
   //     space...

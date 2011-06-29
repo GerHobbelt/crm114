@@ -1,4 +1,4 @@
- This is CRM114, version 20070320-BlameBaltar (TRE 0.7.5 (LGPL))
+ This is CRM114, version 20070406-BlameSpamConf (TRE 0.7.5 (LGPL))
  Copyright 2001-2006 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -202,8 +202,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 7470 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 7470 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 6330 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 6330 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -539,37 +539,37 @@ Match-Isolate reclamation test.  If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2099074
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2099076
 Bytes used per pass: 2097150
 Passes done: 100 
 Total flux through isolation:  419430000
-OK_IF_SIZE_CHANGES: Final isolation size: 2099091 
+OK_IF_SIZE_CHANGES: Final isolation size: 2099093 
 OK_IF_LESS_THAN_100: Total growth: 17
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2101589
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2101591
 Bytes used per pass: 2097150
 Passes done: 10 
 Total flux through isolation:  41943000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101604 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101606 
 OK_IF_LESS_THAN_10: Total growth: 15
 Bytes used per pass: 2097150
 Passes done: 20 
 Total flux through isolation:  83886000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101610 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101612 
 OK_IF_LESS_THAN_20: Total growth: 21
 Bytes used per pass: 2097150
 Passes done: 30 
 Total flux through isolation:  125829000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101611 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101613 
 OK_IF_LESS_THAN_30: Total growth: 22
 Bytes used per pass: 2097150
 Passes done: 40 
 Total flux through isolation:  167772000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101611 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101613 
 OK_IF_LESS_THAN_40: Total growth: 22
 Starting 
 
@@ -656,7 +656,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20070320-BlameBaltar ( TRE 0.7.5 (LGPL) )
+version: 20070406-BlameSpamConf ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?
@@ -862,34 +862,34 @@ Total features in input file: 10
 
 **** Bit-Entropy classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0518  pR: -1.2627
-Best match to file #1 (q_test.css) prob: 0.9482  pR: 1.2627  
+CLASSIFY fails; success probability: 0.0001  pR: -4.1249
+Best match to file #1 (q_test.css) prob: 0.9999  pR: 4.1249  
 Total features in input file: 552
-#0 (i_test.css): features: 424104 (4%), entropy: 229.188465, jumps: 15, prob: 5.18e-02, pR:  -1.26 
-#1 (q_test.css): features: 514992 (4%), entropy: 198.684196, jumps: 7, prob: 9.48e-01, pR:   1.26 
+#0 (i_test.css): features: 424104 (5%), entropy: 338.751031, jumps: 16, prob: 7.50e-05, pR:  -4.12 
+#1 (q_test.css): features: 514992 (5%), entropy: 239.098656, jumps: 7, prob: 1.00e-00, pR:   4.12 
 
  type I 
-CLASSIFY succeeds; success probability: 0.9793  pR: 1.6755
-Best match to file #0 (i_test.css) prob: 0.9793  pR: 1.6755  
+CLASSIFY succeeds; success probability: 0.9999  pR: 3.9093
+Best match to file #0 (i_test.css) prob: 0.9999  pR: 3.9093  
 Total features in input file: 408
-#0 (i_test.css): features: 424104 (4%), entropy: 125.436543, jumps: 4, prob: 9.79e-01, pR:   1.68 
-#1 (q_test.css): features: 514992 (4%), entropy: 165.914401, jumps: 13, prob: 2.07e-02, pR:  -1.68 
+#0 (i_test.css): features: 424104 (5%), entropy: 139.336707, jumps: 4, prob: 1.00e-00, pR:   3.91 
+#1 (q_test.css): features: 514992 (5%), entropy: 233.780277, jumps: 12, prob: 1.23e-04, pR:  -3.91 
 
 
 **** Bit-Entropy Toroid classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -26.0848
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 26.0848  
+CLASSIFY fails; success probability: 0.0000  pR: -6.5103
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 6.5103  
 Total features in input file: 552
-#0 (i_test.css): features: 424104 (100%), entropy: 941.868338, jumps: 92, prob: 8.23e-27, pR: -26.08 
-#1 (q_test.css): features: 514992 (100%), entropy: 311.690284, jumps: 9, prob: 1.00e+00, pR:  26.08 
+#0 (i_test.css): features: 424104 (100%), entropy: 467.925024, jumps: 26, prob: 3.09e-07, pR:  -6.51 
+#1 (q_test.css): features: 514992 (100%), entropy: 310.642608, jumps: 11, prob: 1.00e-00, pR:   6.51 
 
  type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 16.5767
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 16.5767  
+CLASSIFY succeeds; success probability: 1.0000  pR: 9.9608
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 9.9608  
 Total features in input file: 408
-#0 (i_test.css): features: 424104 (100%), entropy: 518.039706, jumps: 56, prob: 1.00e+00, pR:  16.58 
-#1 (q_test.css): features: 514992 (100%), entropy: 918.514803, jumps: 57, prob: 2.65e-17, pR: -16.58 
+#0 (i_test.css): features: 424104 (100%), entropy: 220.349567, jumps: 7, prob: 1.00e-00, pR:   9.96 
+#1 (q_test.css): features: 514992 (100%), entropy: 460.991845, jumps: 30, prob: 1.09e-10, pR:  -9.96 
 
 
 **** Bytewise Correlation classifier 

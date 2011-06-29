@@ -11,7 +11,7 @@ BINDIR=${prefix}/bin
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
 #
-# e.g.: VER_SUFFIX=-927b, then if you make install, you get crm-927b
+# e.g.: VER_SUFFIX=27B-6, then if you make install, you get crm-27b-6
 # 
 VER_SUFFIX ?= 
 
@@ -24,7 +24,7 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION = 20070320-BlameBaltar
+VERSION = 20070406-BlameSpamConf
 PREV_VERSION = 20061103-BlameDalkey
 #PREV_VERSION = 20061010-BlameBratko
 #PREV_VERSION = 20060920-BlameNico
@@ -53,9 +53,9 @@ SYSTEMTYPE = POSIX
 #  and warn on all warnable things "-Wall".  Someday add -Wextra for
 #  really picayune stuff.
 #  
-#CFLAGS += -O3 -g -Wall
+CFLAGS += -g -O3 -Wall
 #     turn this one on for no optimization debugging.
-CFLAGS += -O0 -g -Wall 
+#CFLAGS += -g -O0 -Wall 
 #     turn this one on for really picayune debugging.
 #CFLAGS += -Wextra
 #

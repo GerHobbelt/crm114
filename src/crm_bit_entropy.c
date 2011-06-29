@@ -41,7 +41,11 @@ extern char *tempbuf;
 #else
 #define crm_logl(x) log((x))
 #endif
+#ifndef sqrtf
+#define sqrtf(x) sqrt((x))
+#endif
 //     End BSD crapola.
+
 
 
 
@@ -67,7 +71,7 @@ extern char *tempbuf;
 //
 //    For those of you into references as "closest prior", see:
 //    1) Cormack, Gordon V. et al, Data Compression using Dynamic Markov 
-//       Modeling (Computer Journal #6, 1987_
+//       Modeling (Computer Journal #6, 1987
 //    2) Bratko, Andrej, Markov Modeling for Spam Filtering (?) TREC
 //       2005
 //    3) Matthew Young-Lai,  Adding state merging to the DMC data 
@@ -695,20 +699,20 @@ static double stats_2_entropy (long count, long total)
   static long init = 0;
   static double loglookups[ENT_CACHE_MAXCOUNT][ENT_CACHE_MAXTOTAL];
   double value;
-
+  
   //   if no prior information, this is 1 bit exactly of data.
   if (total < 0.5) 
     return (1.00);
   
   if (count > total)
     return (0.0);
-
+  
   //  value =  ( - (crm_logl (
   //	      (count + BIT_ENTROPIC_PROBABILITY_NERF)
   //	      / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
   //     / 0.69314718 );
   //  return (value);
-
+  
   //      Do we need to initialize the cache to "no data", which we
   //      code for as a -1 as the entropy.
   if (init == 0)
@@ -740,11 +744,11 @@ static double stats_2_entropy (long count, long total)
 
   //      But here, we know the event has come to pass and so the
   //     prior is 1.0 (the event itself is a certainty at this point;
-  //     we are now counting bits needed to encode it).
+  //     we are now just counting bits needed to encode it ! ).
   value =  ( - crm_logl (
-		     (count + BIT_ENTROPIC_PROBABILITY_NERF)
-		     / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
-	     / 0.69314718 ;
+			 (count + BIT_ENTROPIC_PROBABILITY_NERF)
+			 / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
+    / 0.69314718 ;
   
 
   //   if it fits, put it in the cache
@@ -770,12 +774,97 @@ static long fir_2_slot (double fir, long firlatlen)
 static double slot_2_fir (long slot, long firlatlen)
 {
   double outval;
-  outval = (slot + 0.5) * (firlatlen - 1);
+  outval = (slot + 0.5) / (firlatlen - 1);
   if (outval > 1.00) outval = 1.00;
   if (outval < 0.0) outval = 0.0;
   return (outval);
 }
 
+//    Dump just the significant entries in the FIRlat
+static void firlat_significant (ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+				long *firlat, long firlatlen)
+{
+  long i;
+  fprintf (stderr, "**** FIRLAT significant scan *****\n");
+  fprintf (stderr, "root node low %ld high %ld\n",
+	   nodes[0].fir_smaller, nodes[0].fir_larger);
+  for (i = 0; i < firlatlen; i++)
+    {
+      if (firlat[i] > 0)
+	{
+	  fprintf (stderr, 
+		   "FIRLAT slot %ld pval %f node %ld fv %f down %ld up %ld\n",
+		   i, slot_2_fir(i, firlatlen),
+		   firlat[i], nodes[firlat[i]].fir_prior,
+		   nodes[firlat[i]].fir_smaller,
+		   nodes[firlat[i]].fir_larger);
+	};
+    };
+}
+
+static void firlat_sanity_scan (long *firlat, long firlatlen, 
+				ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+				long nodeslen)
+{
+  long i;
+  long stepcounter;
+  //   Scan the FIRLat for errors (optional)
+  //
+  for (i = 0; i < firlatlen; i++)
+    {
+      if (firlat[i] > nodeslen || firlat[i] < 0 )
+	fprintf (stderr, 
+		 "Internal FIRLAT error: slot %ld claims OOB node %ld\n",
+		 i, firlat[i]);
+    };
+  for (i = 0; i < nodeslen; i++)
+    {
+      if (   nodes[i].fir_smaller < -1
+	     || nodes[i].fir_larger < -1
+	     || nodes[i].fir_smaller > nodeslen
+	     || nodes[i].fir_larger > nodeslen )
+	fprintf (stderr, 
+		 "Internal FIRchain error at node %ld (%f) smaller: %ld larger %ld\n",
+		 i, nodes[i].fir_prior, 
+		 nodes[i].fir_smaller, nodes[i].fir_larger);
+    };
+
+  //
+  //   Now verify the FIRLAT chain integrity upward
+  //
+  stepcounter = 0;
+  i = nodes[0].fir_larger;
+  while (stepcounter < nodeslen + 1 
+	 && nodes[i].fir_larger > 0 
+	 && nodes[i].fir_larger < nodeslen)
+    {
+      stepcounter++;
+      i = nodes[i].fir_larger;
+    };
+  if (stepcounter > nodeslen+1)
+    fprintf (stderr, "ERROR: the FIR chain is figure-6ed upward\n");
+  if (nodes[i].fir_larger != 0)
+    fprintf (stderr, "ERROR: the FIR chain goes off to node %ld\n",
+	     nodes[i].fir_larger);
+
+  //  and again, check chain integrity downward
+  stepcounter = 0;
+  i = nodes[0].fir_smaller;
+  while (stepcounter < nodeslen + 1 
+	 && nodes[i].fir_smaller > 0 
+	 && nodes[i].fir_smaller < nodeslen)
+    {
+      stepcounter++;
+      i = nodes[i].fir_smaller;
+    };
+  if (stepcounter > nodeslen+1)
+    fprintf (stderr, "ERROR: the FIR chain is figure-6ed downward\n");
+  if (nodes[i].fir_smaller != 0)
+    fprintf (stderr, "ERROR: the FIR chain goes off to node %ld\n",
+	     nodes[i].fir_smaller);
+}
+
+  
 //
 //    Helper function to find the smallest node that's larger than 
 //    the called FIR.   
@@ -797,36 +886,51 @@ static double slot_2_fir (long slot, long firlatlen)
 //
 static long firlat_find_smallest_larger
    ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+     long nodeslen,
      long *firlat,
      long firlatlen,
      double my_fir)
 {
   long hit_node;
   long firlat_entry;
-  long initial_firlat_entry;
   long step_count;
 
   //  Start out with FIRlat option.  
-  initial_firlat_entry =  fir_2_slot ( my_fir, firlatlen);
-  firlat_entry = initial_firlat_entry;
+  firlat_entry = fir_2_slot ( my_fir, firlatlen);
   if (internal_trace)
     fprintf (stderr, "FFSL: Searching for FIR: %f slot %ld \n",  
 	     my_fir, firlat_entry);
 
-  if (nodes[firlat[firlat_entry]].fir_smaller < 0
-      || nodes[firlat[firlat_entry]].fir_larger < 0)
+  if (firlat_entry < 0 || firlat_entry >= firlatlen)
+    fprintf (stderr, "FIRLAT is very hosed!\n");
+  if (internal_trace)
+    fprintf 
+      (stderr, 
+       "FFSL search: FIR: %f, slot: %ld node: %ld, smaller: %ld, larger:%ld\n",
+       (float) my_fir, firlat_entry, firlat[firlat_entry],
+       nodes[firlat[firlat_entry]].fir_smaller, 
+       nodes[firlat[firlat_entry]].fir_larger );
+  
+
+  if (firlat[firlat_entry] > nodeslen
+      || nodes[firlat[firlat_entry]].fir_smaller < 0
+      || nodes[firlat[firlat_entry]].fir_larger < 0 )
     fprintf (stderr, "Internal FIR chain error at slot %ld node %ld (%f)\n",
 	     firlat_entry, firlat[firlat_entry], my_fir);
   
   //   Move down in the firlat till we find a live node.
-  while ( firlat_entry > 0 && firlat[firlat_entry] == 0) 
+  while ( firlat_entry > 0 && firlat[firlat_entry] <= 0) 
     {
       //    fprintf (stderr, 
       //	   "firlat_entry: %ld points to node %ld so stepdown \n",
       //	   firlat_entry, firlat[firlat_entry]);
       firlat_entry--;
+      if (internal_trace)
+	fprintf (stderr, "_");
+
     }
-  
+
+
   //    Do a little metering to see if we're getting firlat entries?
   //if (firlat_entry == initial_firlat_entry)
   //  {
@@ -852,8 +956,11 @@ static long firlat_find_smallest_larger
       //   This non-null entry is where we start to look.
       hit_node = firlat[firlat_entry];
       if (internal_trace)
-	fprintf (stderr, "FFSL: non-null Entry: node: %ld prior: %f \n", 
-		 hit_node, nodes[hit_node].fir_prior);
+	fprintf (stderr,  
+		 "FFSL: non-null ENTRY at slot %ld node: %ld prior: %f down %ld up %ld\n", 
+		 firlat_entry,
+		 hit_node, nodes[hit_node].fir_prior,
+		 nodes[hit_node].fir_smaller, nodes[hit_node].fir_larger);
     };
 
 
@@ -866,6 +973,8 @@ static long firlat_find_smallest_larger
     {
       hit_node = nodes[hit_node].fir_larger;
       step_count++;
+      if (internal_trace)
+	fprintf (stderr, "+");
     };
   
   //   Part 2 - assure that (because of FIRlat issues) we are not "above"
@@ -874,6 +983,8 @@ static long firlat_find_smallest_larger
     {
       hit_node = nodes[hit_node].fir_smaller;
       step_count++;
+      if (internal_trace)
+	fprintf (stderr, "-");
     };
 
   //    and again, try going up one last time.
@@ -881,11 +992,13 @@ static long firlat_find_smallest_larger
     {
       hit_node = nodes[hit_node].fir_larger;
       step_count++;
+      if (internal_trace)
+	fprintf (stderr, "*");
     };
 
   //   hit_node is now the smallest node that's larger than us
   if (internal_trace)
-    fprintf (stderr, "FFSL: Final smallest-larger Entry/FIR: %ld %f \n", 
+    fprintf (stderr, "FFSL result node: %ld with FIR %f \n", 
 	     hit_node, 
 	     nodes[hit_node].fir_prior);
   
@@ -897,9 +1010,10 @@ static long firlat_find_smallest_larger
 
 static long firlat_find_closest_node 
   ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
-     long *firlat,
-     long firlatlen,
-     double currentfir)
+    long nodeslen,
+    long *firlat,
+    long firlatlen,
+    double currentfir)
 {		       
   long larger;
   long smaller;
@@ -932,7 +1046,7 @@ static long firlat_find_closest_node
   
   //          assume larger is closer;
   larger = firlat_find_smallest_larger
-    (nodes, firlat, firlatlen, currentfir);
+    (nodes, nodeslen, firlat, firlatlen, currentfir);
   error_larger = nodes[larger].fir_prior - currentfir;
   closest = larger;
 
@@ -946,6 +1060,7 @@ static long firlat_find_closest_node
 
 //      How we remove a node from the FIR chain and firlat
 static void firlat_remove_node  ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+				  long nodeslen,
 				  long *firlat,
 				  long firlatlen,
 				  long curnode)
@@ -968,7 +1083,7 @@ static void firlat_remove_node  ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
       {
 	//  what do we do if the node ain't in the FIR chain - nuthin!
 	//  we might be initiated on a shuffle or somesuch.
-        fprintf (stderr, " BLARG!!!!  removing a non-FIRchained node!\n");
+        //  fprintf (stderr, " BLARG!!!!  removing a non-FIRchained node!\n");
       }
     else
       {
@@ -978,8 +1093,16 @@ static void firlat_remove_node  ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
       }
   }
   //  Now we're definitely out of the chain.  Mark us so....
-  nodes[curnode].fir_smaller = -101;
-  nodes[curnode].fir_larger = -101;
+  nodes[curnode].fir_smaller = -1;
+  nodes[curnode].fir_larger = -1;
+
+  if (internal_trace)
+    fprintf 
+      ( stderr, 
+	"FIRchain delete %ld (%lf) between %ld (%lf) and %ld (%lf)\n",
+	curnode,      nodes[curnode].fir_prior,
+	smaller_node, nodes[curnode].fir_prior,
+	larger_node,  nodes[curnode].fir_prior);
 
   //  Since we're not in the chain (and unfindable that way, we can
   //  now also be removed from the FIRLAT lookaside table.
@@ -991,25 +1114,33 @@ static void firlat_remove_node  ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
       if ( firlat[firlat_entry] == curnode)
 	firlat[firlat_entry] = 0;
     }
-
-  //     This is the slot where we were supposed to be - fix it up.
-  //     This means inserting both the larger_node and smaller_node
-  //       into the FIRLat.
-  //   GROT GROT GROT BUG HERE THIS CODE IS NOT RIGHT!!!
+  
+  //     This is the slot where we once were.  Fix it up.
+  //
   firlat_entry =  fir_2_slot ( nodes[curnode].fir_prior, firlatlen);
   if (firlat[firlat_entry] == curnode)
     {
       long correct_node;
       perfect_fir = slot_2_fir ( firlat_entry, firlatlen);
       correct_node = firlat_find_closest_node 
-	( nodes, firlat, firlatlen, perfect_fir);
-      firlat[firlat_entry] = correct_node;
+	( nodes, nodeslen, firlat, firlatlen, perfect_fir);
+      if (fir_2_slot(nodes[correct_node].fir_prior, firlatlen) == firlat_entry)
+	{
+	  firlat[firlat_entry] = correct_node;
+	  if (internal_trace)
+	    fprintf (stderr, "FIRtable insert node %ld at slot %ld\n",
+		     correct_node, firlat_entry);
+	};
     }; 
+
+  if (internal_trace)
+    firlat_significant (nodes, firlat, firlatlen);
 }
 
 //     insert a node into the FIR chain and firlat
 static void firlat_insert_node
   ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+    long nodeslen,
     long *firlat,
     long firlatlen,
     long curnode)
@@ -1023,17 +1154,33 @@ static void firlat_insert_node
     fprintf (stderr, "BLARG !!!  We're reinserting node %ld twice!\n",
 	     curnode);
 
+  if (internal_trace)
+    firlat_significant (nodes, firlat, firlatlen);
+
   //   Get the next larger node
   larger_node = firlat_find_smallest_larger
-    ( nodes, firlat, firlatlen, nodes[curnode].fir_prior);
+    ( nodes, nodeslen, firlat, firlatlen, nodes[curnode].fir_prior);
   //     and the smaller node
   smaller_node = nodes[larger_node].fir_smaller;
+
+  if (internal_trace)
+    fprintf (stderr, 
+	     "FIRchain insert between node S: %ld (%f) and L: %ld (%f) \n",
+	     smaller_node, nodes[smaller_node].fir_prior,
+	     larger_node, nodes[larger_node].fir_prior);
 
   //    Plug ourselves into the fir chain
   nodes[larger_node].fir_smaller = curnode;
   nodes[curnode].fir_larger = larger_node;
   nodes[smaller_node].fir_larger = curnode;
   nodes[curnode].fir_smaller = smaller_node;
+  if (internal_trace)
+    fprintf 
+      ( stderr, 
+	"FIRchain done - inserted %ld (%lf) between %ld (%lf) and %ld (%lf)\n",
+	curnode,      nodes[curnode].fir_prior,
+	smaller_node, nodes[smaller_node].fir_prior,
+	larger_node,  nodes[larger_node].fir_prior);
 
   //    and put ourselves into the FIRLat if appropriate.
   
@@ -1046,8 +1193,9 @@ static void firlat_insert_node
       firlat [firlat_slot] = curnode;
       nodes[curnode].firlat_slot = firlat_slot;
       if (internal_trace)
-	fprintf (stderr, "Insert over zero at slot %ld (%f) with node %ld\n",
-	       firlat_slot, nodes[curnode].fir_prior, curnode);
+	fprintf (stderr, 
+		 "Inserted node %ld into empty slot at %ld (%f)\n",
+		 curnode, firlat_slot, nodes[curnode].fir_prior);
     }
   else
     {
@@ -1068,6 +1216,9 @@ static void firlat_insert_node
 		     nodes[curnode].fir_prior, curnode);
 	};
     };
+  if (internal_trace)
+    firlat_significant (nodes, firlat, firlatlen);
+
 }
   
 
@@ -1133,11 +1284,14 @@ static long nodes_init_shufflenet (
   long node, target, f;
   // long trow, tcol;
   f = firstnode ;        // because firstnode is too long!
-  for (w = 0; w < width; w++)
-    for (h = 0; h < height; h++)
+  for (w = 0; w < width; w++)      // zero to width-1
+    for (h = 0; h < height; h++)    // zero to height-1
       {
 	//      What is our "from" node?
 	node = f + h + (w * height);
+	//      Mark these nodes "not yet in the FIR chain".
+	nodes[node].fir_smaller = -1;
+	nodes[node].fir_larger = -1;
 	//      set each member of the alphabet to the shuffle of the
 	//      next column (modulo width, so the whole thing loops)
 	for (a = 0; a < ENTROPY_ALPHABET_SIZE; a++)
@@ -1158,6 +1312,9 @@ static long nodes_init_shufflenet (
 	    //	     node, a, target); 
 	    //                     aim our current node.abet there.
 	    nodes[node].abet[a].nextcell = target;
+	    //   and initialize the prior
+	    nodes[node].fir_prior = -1.0;
+
 	  }
       }
   //  fprintf (stderr, "\n");
@@ -1197,7 +1354,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long bitnum;
   long sense;
   long crosslink;
-  double crosslink_thresh;
+  double crosslink_thresh, crosslink_mincount;
   char clerrtxt[MAX_PATTERN];
   long clerrlen;
 
@@ -1298,7 +1455,8 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //      use the same -S or -s  parameter.  If we're in unique_states
       //      mode, then use the DEFAULT_ENTROPY_FILE_LENGTH.  Otherwise,
       //      only allocate enough nodes for the header, the firlat, and
-      //      the standard toroid.
+      //      the standard toroid (plus a little because we don't trust
+      //      ourselves).
       
       if (sparse_spectrum_file_length == 0 ) 
 	{
@@ -1310,7 +1468,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  else
 	    {
 	      sparse_spectrum_file_length =
-		BIT_ENTROPIC_SHUFFLE_HEIGHT * BIT_ENTROPIC_SHUFFLE_WIDTH 
+		( BIT_ENTROPIC_SHUFFLE_HEIGHT * BIT_ENTROPIC_SHUFFLE_WIDTH )
 		+ 1000;
 	    };
 	};
@@ -1331,9 +1489,9 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	       nodebytes,
 	       firlatbytes);
       
-      //       Write them bytes, all NULs.  
+      //       Write them bytes, all NULs.  (the 1024 is just some padding)
       //
-      for (j = 0; j < (firlatbytes + nodebytes + 
+      for (j = 0; j < (1024 + firlatbytes + nodebytes + 
 		       (ENTROPY_RESERVED_HEADER_LEN * sizeof (long))); j++)
 	fputc ('\000', f);
       
@@ -1408,10 +1566,18 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	{
 	  //   put in a shuffled initial state.
 	  long first_freenode;
+          long width, height;
+	  //    width should be the square root of the size, rounded down
+	  //    to a multiple of 8 (assuming byte-wise orientation)
+          width = ((int) (sqrt (sparse_spectrum_file_length)) / 8 ) * 8;
+	  //     height should be as many as possible with complete rows
+	  height = sparse_spectrum_file_length / width;
+	  if (user_trace)
+	    fprintf (stderr, "New toroid. width: %ld, height %ld\n",
+		     width, height);
 	  first_freenode = nodes_init_shufflenet 
 	    (nodes, nodeslen, 
-	     BIT_ENTROPIC_SHUFFLE_HEIGHT,
-	     BIT_ENTROPIC_SHUFFLE_WIDTH, 
+	     height, width,
 	     1);                       // the 1 means "node 1 is first node!
 	  
 	  //    mark node 1 as the start of the actual Markov chain
@@ -1438,13 +1604,6 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  nodes[1].abet[1].count = 0;
 	  nodes[1].abet[1].nextcell = 3; 
 
-	  //    initialize the START node (node 1) into the FIR system
-	  nodes[1].fir_prior = 0.5;
-	  nodes[1].fir_smaller = 2;
-	  nodes[1].fir_larger = 3;
-	  firlat[fir_2_slot (0.5, firlatlen)] = 1;
-	  nodes[1].firlat_slot = fir_2_slot(0.5, firlatlen);
-	  
 	  //   initialize node 2 (that is, first bit is zero)
 	  //    initialize the outoput on a 0 to be "nowhere"
 	  nodes[2].abet[0].count = 0;
@@ -1454,13 +1613,6 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  nodes[2].abet[1].count = 0;
 	  nodes[2].abet[1].nextcell = 0;
 
-	  //    initialize node 2 into the FIR system
-	  nodes[2].fir_prior = 0.0;
-	  nodes[2].fir_smaller = 0;
-	  nodes[2].fir_larger = 1;
-	  firlat[fir_2_slot (0.0, firlatlen)] = 2;
-	  nodes[2].firlat_slot = fir_2_slot(0.0, firlatlen);
-	  
 	  //   initialize node 3 (that is, first bit is 1)
 	  //    initialize the outoput on a 0 to be "nowhere"
 	  nodes[3].abet[0].count = 0;
@@ -1469,13 +1621,6 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  //   initialize the output on 1 to be "nowhere"
 	  nodes[3].abet[1].count = 0;
 	  nodes[3].abet[1].nextcell = 0;
-
-	  //    initialize node 2 into the FIR system
-	  nodes[3].fir_prior = 1.0;
-	  nodes[3].fir_smaller = 1;
-	  nodes[3].fir_larger = 0;
-	  firlat[fir_2_slot (1.0, firlatlen)] = 3;
-	  nodes[3].firlat_slot = fir_2_slot(1.0, firlatlen);
 
 	  //   initialize nodes 4 through n into a free list.  We don't care
 	  //   about any other field than the next node field while on the
@@ -1487,11 +1632,34 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    }
 	  nodes[0].abet[0].nextcell = 4;
 
-
 	  //    mark the last node in the freelist as the end of the node
 	  //    freelist.
 	  nodes[nodeslen-1].abet[0].nextcell = 0;
 	};
+
+      //   Either way, we have to initialize the start of the FIR system
+      //    initialize the START node (node 1) into the FIR system
+      nodes[1].fir_prior = 0.5;
+      nodes[1].fir_smaller = 2;
+      nodes[1].fir_larger = 3;
+      //firlat[fir_2_slot (0.5, firlatlen)] = 1;
+      //nodes[1].firlat_slot = fir_2_slot(0.5, firlatlen);
+
+      //    initialize node 2 into the FIR system
+      nodes[2].fir_prior = 0.0 ;
+      nodes[2].fir_smaller = 0;
+      nodes[2].fir_larger = 1;
+      //firlat[fir_2_slot (0.0, firlatlen)] = 2;
+      //nodes[2].firlat_slot = fir_2_slot(0.0, firlatlen);
+	  
+      //    initialize node 3 into the FIR system
+      nodes[3].fir_prior = 1.0;
+      nodes[3].fir_smaller = 1;
+      nodes[3].fir_larger = 0;
+      //firlat[fir_2_slot (1.0, firlatlen)] = 3;
+      //nodes[3].firlat_slot = fir_2_slot(1.0, firlatlen);
+       
+
     }
   
   //    If this isn't a new file, grab stuff out of the header:
@@ -1533,15 +1701,20 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //
 
   ////////////////////////////////////////////////////////////////
-  //     Crosslink Threshold is depenedent on the number of nodes...
+  //     Crosslink Threshold is dependent on the number of nodes...
   //  crosslink_thresh = 1.0 / nodeslen;
-    crosslink_thresh = 0.5 / nodeslen;
+  crosslink_thresh = 0.5 / nodeslen;
   //  crosslink_thresh = 0.25 / nodeslen;
   //  crosslink_thresh = 0.1 / nodeslen;
   //  crosslink_thresh = 0.05 / nodeslen;
   //  crosslink_thresh = 0.01 / nodeslen;
   //  crosslink_thresh = 0.003 / nodeslen;
   //  crosslink_thresh = 0.001 / nodeslen;
+
+  ////////////////////////////////////////////////////////////
+  //      Crosslink Mincount is the minimum number of good bits before we
+  //      allow a crosslink
+  crosslink_mincount = 2;
 
   //    Running 1 megaslot at 1E-7 thresh overflows TREC06 public.
   //    Running 2 megaslot at 1E-7 thresh uses up 76% of TREC06 public, but
@@ -1605,7 +1778,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       unsigned short nextalph;
       unsigned short nextnextalph;
       double newnodefir;
-
+      
       //  get the next alph member.
       bitnum = bitnum - ENTROPY_CHAR_SIZE;
       if (bitnum < 0)
@@ -1615,6 +1788,10 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	};
       thischar = txtptr [ textoffset ];
       thisalph = ( thischar >> bitnum ) & ENTROPY_CHAR_BITMASK;
+
+      if (internal_trace)
+	firlat_sanity_scan (firlat, firlatlen, nodes, nodeslen);
+
       
       //  nextalph is a lookahead one bit.  We use it for smarter
       //  crosslinking.
@@ -1646,7 +1823,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       if (internal_trace)
 	fprintf (stderr, "Removing node %ld from FIRlat \n",
 		 curnode);
-      firlat_remove_node (nodes, firlat, firlatlen, curnode);
+      firlat_remove_node (nodes, nodeslen, firlat, firlatlen, curnode);
       
 
       ///////////////////////////////////////////////////////////////
@@ -1696,7 +1873,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  dump_bit_entropy_data (nodes, nodeslen, firlat, firlatlen);
 	};
 
-      firlat_insert_node (nodes, firlat, firlatlen, curnode);
+      firlat_insert_node (nodes, nodeslen, firlat, firlatlen, curnode);
 
       if (internal_trace)
 	{
@@ -1787,12 +1964,13 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    {
               further_node = firlat_find_closest_node
                 ( nodes,
+		  nodeslen,
                   firlat,
                   firlatlen,
                   localfir);
               crosslink_err = fabs (localfir - nodes[further_node].fir_prior);
 	      if (crosslink_err < crosslink_thresh 
-		&& nodes[further_node].abet[nextalph].count > 0 
+		&& nodes[further_node].abet[nextalph].count > crosslink_mincount 
 		&& nodes[further_node].abet[nextalph^0x1].count == 0
 		  )
 		//&& nodes[further_node].abet[nextalph].nextcell > 0
@@ -1902,7 +2080,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      
 	      //    hook the new node into the FIR chain 
 	      firlat_insert_node
-		(nodes, firlat, firlatlen, further_node);
+		(nodes, nodeslen, firlat, firlatlen, further_node);
 	    }
 	  if (internal_trace) 
 	    fprintf (stderr, 
@@ -1992,6 +2170,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   ENTROPY_HEADER_STRUCT *headers[MAX_CLASSIFIERS]; //  pointers in the files.
   long *fmaps[MAX_CLASSIFIERS];
   long nodelens[MAX_CLASSIFIERS];
+  long nodeslen;
   long *firlats[MAX_CLASSIFIERS];
   long firlatlens[MAX_CLASSIFIERS];
   char *hashname[MAX_CLASSIFIERS];
@@ -2274,10 +2453,11 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     for (c = 0; c < maxhash; c++)
       {
 	if (internal_trace)
-	  fprintf (stderr, "Now running against classifier %ld\n", c);
+	  fprintf (stderr, "Now running against stats file %ld\n", c);
 	//        initialize our per-graph-following stuff:
 	totalfeatures = 0;
 	nodes = nodestarts[c];
+	nodeslen = nodelens[c];
 	//        initialize our starting conditions.
 	curnode = nodes[0].abet[1].nextcell;
 	localfir = nodes[nodes[0].abet[1].nextcell].fir_prior;
@@ -2290,6 +2470,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	while (textoffset + 1 < textmaxoffset || bitnum > 0)
 	  {
 	    long nodetotcount, itc;
+	    float add_entropy;
 	    bitnum = bitnum - ENTROPY_CHAR_SIZE;
 	    if (bitnum < 0)
 	      {
@@ -2299,6 +2480,10 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    thischar = txtptr [textoffset];
 	    thisalph = ( thischar >> bitnum ) & ENTROPY_CHAR_BITMASK;
 	    totalfeatures++;
+
+	    if (internal_trace)
+	      firlat_sanity_scan (firlats[c], firlatlens[c], nodes, nodeslen);
+
 
 	    //   update our local FIR to what it will be when we're
 	    //   at the next node.  (this is effective not at the
@@ -2313,60 +2498,69 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    nodetotcount = 0;
 	    for (itc = 0; itc < ENTROPY_ALPHABET_SIZE; itc++)
 	      nodetotcount += nodes[curnode].abet[itc].count;
-
-	    //    GROT GROT GROT  - - - I AM NOT SURE IF THIS IS OPTIMAL
-	    //     OR NOT --- REVISIT ME AND THINK HARDER!!!! GROT GROT GROT
-	    if ( (crosslink && nodetotcount < 1)
-		 || nodes[curnode].abet[thisalph].nextcell < 1 )
+	    if (internal_trace)
+	      fprintf (stderr, "%ld/%ld ", 
+		       nodes[curnode].abet[thisalph].count, nodetotcount);
+	    if ( 
+		( nodetotcount < 1) 
+		|| nodes[curnode].abet[thisalph].count < 1
+		|| nodes[curnode].abet[thisalph].nextcell < 1 
+		)
 	      {
-		//    Either no next cell, or this cell has no corpus
-		//    history and we're better off FIR-jumping no
+		//    Either no corpus history, or
+		//           this cell has never gone here before, or
+		//           we're off the edge of the model completely
+		//    In any case, we're better off FIR-jumping no
 		//    matter what because we'll never be back "in corpus"
-		//    Note that we use "find_close_node", not "find_closest"
-		//    because find_closest_node can take a LONG time.
 		double error;
 		nextnode = firlat_find_closest_node 
-		  (nodes, firlats[c], firlatlens[c], localfir);
+		  (nodes, nodeslen, firlats[c], firlatlens[c], localfir);
 		error = localfir - nodes[nextnode].fir_prior;
 		if (internal_trace)
 		  fprintf (stderr, 
 			   "FIR jumping, error = %12lg, new node %ld \n",
 			   error, nextnode);
 		if (error < 0.00) error = - error;
+		
 		//    and add the error entropy estimate 
 		//    due to the FIR jump; since this is knowable
 		//    due to it being "no choice", the entropy is very small.
-	        total_entropy[c] = total_entropy[c] +
-		  
-		  //pow (2.0, (error / BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT));
+		add_entropy =
+		  // pow (2.0, (error / BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT));
 		  // stats_2_entropy (1, nodelens[c]) ;
-
+		  
 		  //   the following one seems to work well.. entirely
-		  // unjustifiably, but it works.  ROC=0.128
-		  stats_2_entropy (1,10);
+		  //   unjustifiably, but it works.  ROC=0.128
+		  // stats_2_entropy (1,10);
+		   stats_2_entropy (1,1000);
+
 		  //   This one is horrible.  5% error rates...
-		  //  stats_2_entropy (nodes[nextnode].total_count, 
-		  //    nodes[0].total_count);
-		
+		  //   stats_2_entropy (nodes[nextnode].total_count, 
+		  //  nodes[0].total_count);
+		  
+		  //stats_2_entropy (0, nodetotcount);
+		  //0.5;
+
 		  //   This one is justifiable, and is very close to 
 		  //   the unjustifiable one above, but not quite as good.
 		  //  GROT GROT GROT
 		  //stats_2_entropy (1, nodetotcount + 1);
-		  //stats_2_entropy (0, nodetotcount);
-		  //0.5;
+		
+	        total_entropy[c] = total_entropy[c] + add_entropy;
 		curnode = nextnode;
 		firjumps[c]++;
 	      }
 	    else            
-	      //     else no FIRjump, always go here.  That is, if
+	      //     else no FIRjump, things look good.
 	      //     we're still "in the corpus" or we've not enabled
 	      //     FIR jumping.
 	      {
-		//       so add the entropy
-		total_entropy[c] = 
-		  total_entropy[c] +
+		add_entropy = 
 		  stats_2_entropy ( nodes[curnode].abet[thisalph].count,
 				    nodetotcount );
+		total_entropy[c] = 
+		  total_entropy[c] +
+		  add_entropy;
 		//       and move to the next node.
 		curnode = nodes[curnode].abet[thisalph].nextcell;
 		//  go back to the start cell if we're off the end and
@@ -2377,10 +2571,11 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    curnode = nodes[0].abet[0].nextcell;
 		  };
 	      };
-	    
+	    if (internal_trace)
+	      fprintf (stderr, "%f \n", add_entropy);
 	  }
       }
-
+    
     //          Test Results on TREC public testset
     // No node-merge or node-clone
     //   Unique states

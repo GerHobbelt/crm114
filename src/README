@@ -35,15 +35,15 @@ Megatest is now more detailed and captures runtime errors better.  The
 mailtrainer, because of problems they caused for non-X86 Linux users.
 A PPC GCC compiler bug was found; PPC users need to use at least a
 3.4+ GCC and preferably a 4.0++ GCC (sorry!).  A cute little bug in
-SYSCALL got stepped on (mostly).  A bad initialization in the
+SYSCALL got stepped on (mostly), as well as one that affected any program
+using two or more classifiers.  A bad initialization in the
 bit-entropy classifier was fixed, and entropy disk space required has now been
 cut by another factor of almost 2.  An incorrect result variable
 parsing in TRANSLATE was fixed.  Megatest now runs the local version
 of crm114 (as built) rather than whatever's in /usr/bin, and the
 variable :_pgm_text: contains a matchable copy of the program source,
 post-preprocessing.  Matthias's bugfixes are in.  The highly experimental
-Gatling sorter is included, but exercises several bugs in 
-the entropy classifier (be warned!)
+Gatling sorter is included, but may exercise bugs (be warned!)
 
 November 3, 2006 - BlameDalkey
 

@@ -312,6 +312,7 @@ int crm_invoke ()
 	      }
 	    else
 	      {
+		long i;
 		//fprintf (stderr, "idx: %lu  vht[idx]: %lu", idx, vht[idx] );
 		noffset = vht[idx]->nstart;
 		//fprintf (stderr, " idx: %lu noffset: %lu \n/", idx, noffset);
@@ -320,8 +321,12 @@ int crm_invoke ()
 		namelen = vht[idx]->nlen;
 		
 		if (user_trace)
-		  fprintf (stderr, " setting return value.of >%*s<\n",
-			   (int)namelen, namestart );
+		  {
+		    fprintf (stderr, " setting return value of >");
+		    for (i = 0; i < namelen; i++ )
+		      fprintf (stderr, "%c", namestart[i]);
+		    fprintf (stderr, "<\n");
+		  }
 		//     stuff the return value into that variable.
 		//
 		crm_destructive_alter_nvariable (namestart, namelen,

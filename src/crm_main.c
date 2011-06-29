@@ -650,7 +650,11 @@ int main (int argc, char **argv)
       int readsize = data_window_size - 1;
       while (! feof (stdin) && i < data_window_size - 1)
 	{
-	  i += fread (cdw->filetext + i, 1, readsize-1, stdin);
+	  //i += fread (cdw->filetext + i, 1, readsize-1, stdin);
+	  int rs;
+	  rs = i + readsize < data_window_size - 1 ? 
+	    readsize : data_window_size - i - 1;
+	  i+= fread (cdw->filetext + i, 1, rs, stdin);
 	  if (feof (stdin))
 	    {
 	      break;
