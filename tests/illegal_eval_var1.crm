@@ -1,0 +1,20 @@
+#! /usr/local/bin/crm114
+#
+# do we accept EVALing a bad variable, i.e. one without the :: delimiters?
+{
+	{
+		window 
+		eval (abc) /:@: 2 > 1:/
+		output /ouch!\n/
+	}
+	alius
+	{
+		output /yo!\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+
+

@@ -1,4 +1,5 @@
-#! @abs_top_builddir@/src/crm114
+#! @BIN_PATH@/crm114
+#
 #   test the alius statement 
 {
 	{

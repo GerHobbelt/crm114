@@ -7,7 +7,7 @@
 
 #if defined (HAVE_CONFIG_H)
 #include "config.h"
-#elif defined (WIN32)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
 #include "config_win32.h"
 #elif defined (ORIGINAL_VANILLA_UNIX_MAKEFILE)
 #include "config_vanilla_UNIX_sys_defaults.h"
@@ -16,8 +16,10 @@
     "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."
 #endif
 
-#ifdef WIN32
-#define _CRTDBG_MAP_ALLOC
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#ifndef _CRTDBG_MAP_ALLOC
+#define _CRTDBG_MAP_ALLOC 1
+#endif
 #include <windows.h>
 #else
 /*
@@ -147,8 +149,27 @@
 #define WEXITSTATUS(stat_val) ((unsigned)(stat_val) >> 8)
 #endif
 #ifndef WIFEXITED
-#define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
+#define WIFEXITED(stat_val) (((stat_val) & 0x00FF) == 0)
 #endif
+#ifndef WIFSIGNALED
+#define WIFSIGNALED(stat_val) ((stat_val) && !((stat_val) & ~0xFF))
+#endif
+#ifndef WTERMSIG
+#define WTERMSIG(stat) ((stat_val) & 0x007F)
+#endif
+#ifndef WIFSTOPPED
+#define WIFSTOPPED(stat) (((stat_val) & 0x00FF) == 0x007F)
+#endif
+#ifndef WSTOPSIG
+#define WSTOPSIG(stat) ((stat_val) >> 8)
+#endif
+#ifndef WCOREDUMP
+#define WCOREDUMP(stat) ((stat_val) & 0x0080)
+#endif
+#ifndef WIFCONTINUED
+#define WIFCONTINUED(stat) ((stat_val) == 0xFFFF)
+#endif
+
 
 
 #ifdef HAVE_VFORK_H
@@ -225,8 +246,11 @@
 
 #ifdef HAVE_GETOPT_EX_H
 #include <getopt_ex.h>
-#elif defined (WIN32)
+#elif !defined (HAVE_GETOPT_H)
 #include "getopt_ex.h"
+#define HAVE_GETOPT_LONG_ONLY_EX 1
+#define HAVE_GETOPT_LONG_EX 1
+#define HAVE_GETOPT_EX 1
 #endif
 
 
@@ -239,12 +263,18 @@
 #if defined (HAVE_TRE_REGEX)
 
 #if defined (HAVE_TRE_REGEX_H)
-#include <tre/regex.h>
+#include "tre/regex.h"
 //#elif defined (HAVE_REGEX_H)  -- [i_a] discarded this as it led to errors on other systems, where multiple RE packages may be installed.
 //#include <regex.h>            --       This also means this code now requires the libtre source distro as available on hebbut.net to compile out of the box on MSVC2005.
 #else
 #error \
     "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Are you sure you installed the TRE and TRE-DEVEL packages on your UNIX box?   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+#endif
+
+
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 
 typedef struct
@@ -253,7 +283,17 @@ typedef struct
     char   *pattern;
 } re_entry;
 
+
+#ifdef __cplusplus
+}
+#endif
+
 #elif defined (HAVE_POSIX_REGEX)
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef struct
 {
@@ -261,10 +301,19 @@ typedef struct
     char   *pattern;
 } re_entry;
 
+#ifdef __cplusplus
+}
+#endif
+
 #elif defined (HAVE_V8_REGEX)
 
 #ifndef NSUBEXP
 #include <regexp.h>
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 
 typedef struct
@@ -273,14 +322,32 @@ typedef struct
     char   *pattern;
 } re_entry;
 
+#ifdef __cplusplus
+}
+#endif
+
 #elif defined (HAVE_BSD_REGEX)
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef struct
 {
     char *pattern;
 } re_entry;
 
+#ifdef __cplusplus
+}
+#endif
+
 #elif defined (HAVE_GNU_REGEX)
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef struct
 {
@@ -288,9 +355,18 @@ typedef struct
     char *pattern;
 } re_entry;
 
+#ifdef __cplusplus
+}
+#endif
+
 #elif defined (HAVE_PCRE_REGEX)
 
 #include <pcre.h>
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef struct
 {
@@ -298,6 +374,10 @@ typedef struct
     pcre_extra *preg_extra;
     char       *pattern;
 } re_entry;
+
+#ifdef __cplusplus
+}
+#endif
 
 #else
 
@@ -360,20 +440,47 @@ typedef struct
 #undef strcasecmp
 #define strcasecmp(a, b) stricmp((a), (b))
 #endif
-#if !defined(HAVE_STRNCHR)
+#if !defined (HAVE_STRNCHR)
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #undef strnchr
 #define strnchr(s, c, n) my_strnchr(s, c, n)
 char *my_strnchr(const char *str, int c, size_t len);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 #if !defined (HAVE_UTIME) && defined (HAVE__UTIME)
 #undef utime
 #define utime(filename, timestruct)      _utime(filename, timestruct)
 #endif
+#if !defined(HAVE_MEMMEM) || defined(PREFER_PORTABLE_MEMMEM)
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#undef memmem
+#define memmem(h, hl, n, nl)	my_memmem(h, hl, n, nl)
+void *my_memmem(const void *haystack, size_t haystack_len, const void *needle, size_t needle_len);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
 
 
-#if !defined(HAVE_ISNAN)
-#if defined(HAVE__ISNAN)
-#define isnan(v)		_isnan(v)
+#if !defined (HAVE_ISNAN)
+#if defined (HAVE__ISNAN)
+#define isnan(v)                _isnan(v)
 #else
 #error "point isnan() to your platform's equivalent function"
 #endif
@@ -438,13 +545,24 @@ char *my_strnchr(const char *str, int c, size_t len);
  * This mess was adapted from the GNU getpagesize.h.
  */
 #if !defined (HAVE_GETPAGESIZE)
-#if defined (WIN32)
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 int getpagesize(void); /* see crm_port_win32.c */
+
+#ifdef __cplusplus
+}
+#endif
+
 #else
-#if defined (_SC_PAGESIZE) && HAVE_SYSCONF
+#if defined (_SC_PAGESIZE) && defined(HAVE_SYSCONF)
 #define getpagesize() sysconf(_SC_PAGESIZE)
 #else /* no _SC_PAGESIZE */
-#if HAVE_SYS_PARAM_H
+#if defined(HAVE_SYS_PARAM_H)
 /* #   include <sys/param.h> -- already done before in this file */
 #ifdef EXEC_PAGESIZE
 #define getpagesize() EXEC_PAGESIZE
@@ -474,6 +592,11 @@ int getpagesize(void); /* see crm_port_win32.c */
 
 
 
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #if defined (PREFER_PORTABLE_MEMMOVE) || !defined (HAVE_MEMMOVE)
 void *crm_memmove(void *dst, const void *src, size_t len);
@@ -543,6 +666,10 @@ clock_t times(struct tms *buf);
 
 #ifndef HAVE_TRUNCATE
 int truncate(const char *filepath, long int filesize); /* [i_a] Win32 doesn't come with a truncate() function! */
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 
@@ -623,15 +750,20 @@ int truncate(const char *filepath, long int filesize); /* [i_a] Win32 doesn't co
 
 
 // Minimum buffer to store absolute paths; used in conjuction with mk_absolute_path() for instance.
-#if defined(MAX_PATH)
-#define DIRBUFSIZE_MAX			(CRM_MAX(MAX_VARNAME, MAX_PATH * 2) + 1)
-#elif defined(PATH_MAX)
-#define DIRBUFSIZE_MAX			(CRM_MAX(MAX_VARNAME, PATH_MAX * 2) + 1)
+#if defined (MAX_PATH)
+#define DIRBUFSIZE_MAX                  (CRM_MAX(MAX_VARNAME, MAX_PATH * 2) + 1)
+#elif defined (PATH_MAX)
+#define DIRBUFSIZE_MAX                  (CRM_MAX(MAX_VARNAME, PATH_MAX * 2) + 1)
 #else
-#define DIRBUFSIZE_MAX			(CRM_MAX(MAX_VARNAME, 2048) + 1)
+#define DIRBUFSIZE_MAX                  (CRM_MAX(MAX_VARNAME, 2048) + 1)
 #endif
 
 
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #ifndef HAVE_STRMOV
 char *strmov(char *dst, const char *src);
@@ -816,7 +948,7 @@ extern char **__environ;
 #elif defined (HAVE_CRT_EXTERNS_H)
 /* derived from http://www.gnu-pascal.de/crystal/gpc/en/mail11031.html */
 #define environ (*_NSGetEnviron())
-#elif defined (WIN32)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
 #define environ         _environ
 #endif
 
@@ -867,6 +999,11 @@ extern FILE *crm_stderr;
 #define stderr  crm_stderr
 #endif
 
+#ifdef __cplusplus
+}
+#endif
+
+
 
 
 
@@ -882,9 +1019,14 @@ extern FILE *crm_stderr;
 
 
 
-#if defined(_NORMAL_BLOCK) && defined(_CRT_BLOCK)
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-#define MSVC_DEBUG_MALLOC_SERIES		1
+#if defined (_NORMAL_BLOCK) && defined (_CRT_BLOCK)
+
+#define MSVC_DEBUG_MALLOC_SERIES                1
 
 #undef free
 #undef malloc
@@ -892,11 +1034,11 @@ extern FILE *crm_stderr;
 #undef calloc
 #undef strdup
 
-#define   strdup(s)				crm114_strdup(s, _NORMAL_BLOCK, __FILE__, __LINE__)
+#define   strdup(s)                             crm114_strdup(s, _NORMAL_BLOCK, __FILE__, __LINE__)
 #define   malloc(s)             crm114_malloc(s, _NORMAL_BLOCK, __FILE__, __LINE__)
 #define   calloc(c, s)          crm114_calloc(c, s, _NORMAL_BLOCK, __FILE__, __LINE__)
 #define   realloc(p, s)         crm114_realloc(p, s, _NORMAL_BLOCK, __FILE__, __LINE__)
-#define   free(p)               crm114_free((void **)&(p), _NORMAL_BLOCK, __FILE__, __LINE__)
+#define   free(p)               crm114_free((void **)& (p), _NORMAL_BLOCK, __FILE__, __LINE__)
 
 char *crm114_strdup(const char *str, int blocktype, const char *filename, int lineno);
 void *crm114_malloc(size_t count, int blocktype, const char *filename, int lineno);
@@ -923,9 +1065,25 @@ void crm114_free(void **ptrref);
 #define malloc(c)       crm114_malloc(c)
 #define realloc(p, c)   crm114_realloc(p, c)
 #define calloc(c, s)    crm114_calloc(c, s)
+#if defined (__GNUC__) && defined (__GNUC_MINOR__) // ensure it's the GCC compiler for sure.
+// Sigh.
+// All the trouble I go through for getting rid of a single warning:
+//
+//     warning: dereferencing type-punned pointer will break strict-aliasing rules
+//
+// Though it's worth it as this warning is incorrect for this particular case.
+// Haven't found a tweak for it on the net, but this one works out nicely, it seems.
+#define free(p)         do { typeof(p) * ___p = &(p); crm114_free((void **)___p); } while (0)
+#else
 #define free(p)         crm114_free((void **)&(p))
+#endif
 
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+
 
 
 #endif /* __CRM114_SYSINCLUDES_H__ */

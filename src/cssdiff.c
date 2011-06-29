@@ -22,7 +22,6 @@
 #include "crm114.h"
 
 
-#include <getopt.h>
 
 
 
@@ -120,7 +119,9 @@ char *outbuf = NULL;
 char *tempbuf = NULL;
 
 
-
+#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = {0};
+#endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
 
 
@@ -135,8 +136,8 @@ static void helptext(void)
 {
     fprintf(stderr, " This is csdiff, version %s\n", version);
     fprintf(stderr, " Copyright 2001-2007 W.S.Yerazunis.\n");
-    fprintf(stderr
-           , " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
+    fprintf(stderr,
+            " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
     fprintf(stderr, "Usage: cssdiff <cssfile1> <cssfile2>\n");
 }
 
@@ -205,17 +206,17 @@ int main(int argc, char **argv)
         //
         hfsize1 = statbuf.st_size;
         //         mmap the hash file into memory so we can bitwhack it
-        h1 = crm_mmap_file(argv[optind]
-                          , 0
-                          , hfsize1
-                          , PROT_READ | PROT_WRITE
-                          , MAP_SHARED
-                          , CRM_MADV_RANDOM
-                          , &hfsize1);
+        h1 = crm_mmap_file(argv[optind],
+                0,
+                hfsize1,
+                PROT_READ | PROT_WRITE,
+                MAP_SHARED,
+                CRM_MADV_RANDOM,
+                &hfsize1);
         if (h1 == MAP_FAILED)
         {
-            fprintf(stderr, "\n MMAP failed on file %s\n"
-                   , argv[optind]);
+            fprintf(stderr, "\n MMAP failed on file %s\n",
+                    argv[optind]);
             exit(EXIT_FAILURE);
         }
         hfsize1 = hfsize1 / sizeof(FEATUREBUCKET_TYPE);
@@ -232,36 +233,36 @@ int main(int argc, char **argv)
 
         hfsize2 = statbuf.st_size;
         //         mmap the hash file into memory so we can bitwhack it
-        h2 = crm_mmap_file(argv[optind + 1]
-                          , 0
-                          , hfsize2
-                          , PROT_READ | PROT_WRITE
-                          , MAP_SHARED
-                          , CRM_MADV_RANDOM
-                          , &hfsize2);
+        h2 = crm_mmap_file(argv[optind + 1],
+                0,
+                hfsize2,
+                PROT_READ | PROT_WRITE,
+                MAP_SHARED,
+                CRM_MADV_RANDOM,
+                &hfsize2);
         if (h2 == MAP_FAILED)
         {
-            fprintf(stderr, "\n MMAP failed on file %s\n"
-                   , argv[optind + 1]);
+            fprintf(stderr, "\n MMAP failed on file %s\n",
+                    argv[optind + 1]);
             exit(EXIT_FAILURE);
         }
 
         hfsize2 = hfsize2 / sizeof(FEATUREBUCKET_TYPE);
 
-        fprintf(stderr, "Sparse spectra file %s has %d bins total\n"
-               , argv[optind], hfsize1);
+        fprintf(stderr, "Sparse spectra file %s has %d bins total\n",
+                argv[optind], hfsize1);
 
 
-        fprintf(stdout, "Sparse spectra file %s has %d bins total\n"
-               , argv[optind + 1], hfsize2);
+        fprintf(stdout, "Sparse spectra file %s has %d bins total\n",
+                argv[optind + 1], hfsize2);
 
         //
         //
         if (hfsize1 != hfsize2)
         {
-            fprintf(stderr
-                   , "\n.CSS files %s, %s :\n lengths differ: %d vs %d.\n"
-                   , argv[optind], argv[optind + 1], hfsize1, hfsize2);
+            fprintf(stderr,
+                    "\n.CSS files %s, %s :\n lengths differ: %d vs %d.\n",
+                    argv[optind], argv[optind + 1], hfsize1, hfsize2);
             fprintf(stderr, "\n This is not a fatal error, but be warned.\n");
         }
 
@@ -372,11 +373,10 @@ int main(int argc, char **argv)
 
 
 
-// bogus code to make link phase happy while we are in limbo between obsoleting this tool and 
+// bogus code to make link phase happy while we are in limbo between obsoleting this tool and
 // getting cssXXXX script commands working in crm114 itself.
 void free_stack_item(CSL_CELL *csl)
-{
-}
+{ }
 
 
 

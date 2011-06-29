@@ -1,0 +1,21 @@
+#! /usr/local/bin/crm114
+#
+# should pass variable decoder length checks; only when we check for the :: var delimiters, will this one be detected.
+{
+	{
+		window 
+		isolate (abc) /FUBAR/
+		output /yo!\n/
+		output /abc = ':*:abc:'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+		output /abc = ':*:abc:'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

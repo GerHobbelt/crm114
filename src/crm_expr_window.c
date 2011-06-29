@@ -23,20 +23,8 @@
 
 
 
-//    a helper function that should be in the C runtime lib but isn't.
-//
-char *my_strnchr(const char *str, int c, size_t len)
-{
-    size_t i;
+// my_strnchr() moved to crm_generic_port.c
 
-    i = 0;
-    for (i = 0; i < len; i++)
-    {
-        if (str[i] == (char)c)
-            return (char *)&str[i];
-    }
-    return NULL;
-}
 
 
 int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
@@ -225,7 +213,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fprintf(stderr, " window cut pattern ---%s---\n", pch);
 
     //       expand the match pattern
-    flen = crm_nexpandvar(pch, flen, MAX_PATTERN);
+    flen = crm_nexpandvar(pch, flen, MAX_PATTERN, vht, tdw);
     //
     //       compile the regex
     i = crm_regcomp(&preg, pch, flen, regexflags);
@@ -239,17 +227,17 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //    Get the variable we're windowing.  If there's no such
     //    variable, we default to :_dw:
 
-    wvnamelen = crm_get_pgm_arg(wvname, MAX_PATTERN, apb->p1start, apb->p1len);
-    wvnamelen = crm_nexpandvar(wvname, wvnamelen, MAX_PATTERN);
-	CRM_ASSERT(wvnamelen < MAX_PATTERN);
-	wvname[wvnamelen] = 0;
+    wvnamelen = crm_get_pgm_arg(wvname, MAX_VARNAME, apb->p1start, apb->p1len);
+    wvnamelen = crm_nexpandvar(wvname, wvnamelen, MAX_VARNAME, vht, tdw);
+    CRM_ASSERT(wvnamelen < MAX_VARNAME);
+    wvname[wvnamelen] = 0;
     //    if no svname, then we're defaulted to :_dw:
     if (!crm_nextword(wvname, wvnamelen, 0, &wvnamestart, &wvnamelen)
-     || wvnamelen < 3)
+        || wvnamelen < 3)
     {
         strcat(wvname, ":_dw:");
         wvnamelen = (int)strlen(":_dw:");
-		wvnamestart = 0;
+        wvnamestart = 0;
     }
 
     vmidx = crm_vht_lookup(vht, &wvname[wvnamestart], wvnamelen);
@@ -305,10 +293,10 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     if (user_trace)
-	{
+    {
         fprintf(stderr, "  cut completed, variable length after cut is %d\n",
                 vht[vmidx]->vlen);
-	}
+    }
 
     //**************************************************************
     //       OK, part one is done- we've windowed off the first
@@ -323,13 +311,13 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     flen = crm_get_pgm_arg(pch, MAX_PATTERN, apb->s2start, apb->s2len);
     if (user_trace)
-		fprintf(stderr, "adding input with terminator of (len: %d) --%s--,", flen, pch);
+        fprintf(stderr, "adding input with terminator of (len: %d) --%s--,", flen, pch);
 
     //       expand the match pattern
-    flen = crm_nexpandvar(pch, flen, MAX_PATTERN);
+    flen = crm_nexpandvar(pch, flen, MAX_PATTERN, vht, tdw);
 
     if (user_trace)
-		fprintf(stderr, " which expands to (len: %d) --%s--", flen, pch);
+        fprintf(stderr, " which expands to (len: %d) --%s--", flen, pch);
 
     //
     //       compile the paste match regex
@@ -346,7 +334,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //     Get the input source, if one is supplied (2nd set of parens is
     //     the var to use as input source, if it exists)
-    inputsrclen = crm_get_pgm_arg(inputsrcname, MAX_PATTERN, apb->p2start, apb->p2len);
+    inputsrclen = crm_get_pgm_arg(inputsrcname, MAX_VARNAME, apb->p2start, apb->p2len);
+    CRM_ASSERT(inputsrclen < MAX_VARNAME);
+    inputsrcname[inputsrclen] = 0;
 
     if (apb->p2start)
     {
@@ -643,8 +633,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
         }
     }  // end of the (!done) loop...
-    
-	//    It's just use the computed values from here on.
+
+    //    It's just use the computed values from here on.
 
     crm_regfree(&preg);
 
@@ -686,9 +676,13 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         if (user_trace)
             fprintf(stderr, "  CUT match failed so we're going to fail.\n");
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#endif
+        CRM_ASSERT(csl->cstmt >= 0);
+        CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
 

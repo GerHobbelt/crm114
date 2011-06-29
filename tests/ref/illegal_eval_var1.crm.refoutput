@@ -1,0 +1,18 @@
+TEST SCRIPT + COMMANDLINE:
+illegal_eval_var1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+TRAP:
+crm114: *WARNING*
+Attempt to alter the value of a nonexistent variable, so I'm creating an ISOLATED variable.  I hope that's OK.  The nonexistent variable is: 3/3: 'abc'/'abc'
+I'll try to keep working.
+This happened at line 7 of file illegal_eval_var1.crm:
+    eval (abc) /:@: 2 > 1:/
+(runtime system location: crm_var_hash_table.c(1226) in routine: crm_destructive_alter_nvariable)
+
+

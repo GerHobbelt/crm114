@@ -1,4 +1,4 @@
-#! /home/ger/prj/3actual/crm114-2/src/crm114 -( agent=smith target=neo target=trinity ) --
+#! /usr/local/bin/crm114 -( agent=smith target=neo target=trinity ) --
 window
 { 
 	output /:*:_nl: :_argc: =:*:_argc:= / 

@@ -322,7 +322,7 @@ uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
     {
         const uint32_t *k = (const uint32_t *)key;     /* read 32-bit chunks */
 #ifdef VALGRIND
-        const uint8_t  *k8;
+        const uint8_t *k8;
 #endif
 
         /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
@@ -471,7 +471,7 @@ uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
     else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0))
     {
         const uint16_t *k = (const uint16_t *)key;     /* read 16-bit chunks */
-        const uint8_t  *k8;
+        const uint8_t *k8;
 
         /*--------------- all but last block: aligned reads and different mixing */
         while (length > 12)
@@ -649,7 +649,7 @@ void hashlittle2(
     {
         const uint32_t *k = (const uint32_t *)key;     /* read 32-bit chunks */
 #ifdef VALGRIND
-        const uint8_t  *k8;
+        const uint8_t *k8;
 #endif
 
         /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
@@ -802,7 +802,7 @@ void hashlittle2(
     else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0))
     {
         const uint16_t *k = (const uint16_t *)key;     /* read 16-bit chunks */
-        const uint8_t  *k8;
+        const uint8_t *k8;
 
         /*--------------- all but last block: aligned reads and different mixing */
         while (length > 12)
@@ -977,7 +977,7 @@ uint32_t hashbig(const void *key, size_t length, uint32_t initval)
     {
         const uint32_t *k = (const uint32_t *)key;     /* read 32-bit chunks */
 #ifdef VALGRIND
-        const uint8_t  *k8;
+        const uint8_t *k8;
 #endif
 
         /*------ all but last block: aligned reads and affect 32 bits of (a,b,c) */
@@ -1553,21 +1553,21 @@ static crmhash_t old_crm114_fixed_strnhash(const char *str, int len)
         //    an effect on the output)
 
         tmp = ((unsigned char *)str)[i];
-        tmp = tmp ^ (tmp << 8);
-        tmp = tmp ^ (tmp << 16);
+        tmp ^= (tmp << 8);
+        tmp ^= (tmp << 16);
         hval ^= tmp;
 
         //    add some bits out of the middle as low order bits.
         hval = hval + ((hval >> 12) & 0x0000ffff);
 
         //     swap most and min significant bytes
-        tmp = (hval << 24) ^ ((hval >> 24) & 0xff);
+        tmp = (hval << 24) ^ (hval >> 24);
         hval &= 0x00ffff00;         // zero most and min significant bytes of hval
         hval ^= tmp;                // [X]OR with swapped bytes
 
         //    rotate hval 3 bits to the left (thereby making the
         //    3rd msb of the above mess the hsb of the output hash)
-        hval = (hval << 3) ^ ((hval >> 29) & 0x7);
+        hval = (hval << 3) ^ (hval >> 29);
     }
     return hval;
 }
@@ -1615,54 +1615,63 @@ static crmhash64_t ger_1_strnhash64(const char *str, size_t len)
 // Paul Hsieh's Superfast hash anno 2008.
 //
 // http://www.azillionmonkeys.com/qed/hash.html
-// 
+//
 #undef get16bits
 
 #if defined (MACHINE_IS_LITTLE_ENDIAN)
-#if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__) \
-  || defined(_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
-#define get16bits(d) (*((const uint16_t *) (d)))
+#if (defined (__GNUC__) && defined (__i386__)) || defined (__WATCOMC__) \
+    || defined (_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
+#define get16bits(d) (*((const uint16_t *)(d)))
 #endif
 #endif
 
 #if !defined (get16bits)
-#define get16bits(d) ((((uint32_t)(((const uint8_t *)(d))[1])) << 8)\
-                       +(uint32_t)(((const uint8_t *)(d))[0]) )
+#define get16bits(d)                                \
+    ((((uint32_t)(((const uint8_t *)(d))[1])) << 8) \
+     + (uint32_t)(((const uint8_t *)(d))[0]))
 #endif
 
-uint32_t SuperFastHash(const char * data, int len, uint32_t hash) 
+uint32_t SuperFastHash(const char *data, int len, uint32_t hash)
 {
-uint32_t tmp;
-int rem;
+    uint32_t tmp;
+    int rem;
 
-    if (len <= 0 || data == NULL) return hash;
+    if (len <= 0 || data == NULL)
+        return hash;
 
     rem = len & 3;
     len >>= 2;
 
     /* Main loop */
-    for (;len > 0; len--) {
-        hash  += get16bits (data);
-        tmp    = (get16bits (data+2) << 11) ^ hash;
+    for ( ; len > 0; len--)
+    {
+        hash  += get16bits(data);
+        tmp    = (get16bits(data + 2) << 11) ^ hash;
         hash   = (hash << 16) ^ tmp;
-        data  += 2*sizeof (uint16_t);
+        data  += 2 * sizeof(uint16_t);
         hash  += hash >> 11;
     }
 
     /* Handle end cases */
-    switch (rem) {
-        case 3: hash += get16bits (data);
-                hash ^= hash << 16;
-                hash ^= data[sizeof (uint16_t)] << 18;
-                hash += hash >> 11;
-                break;
-        case 2: hash += get16bits (data);
-                hash ^= hash << 11;
-                hash += hash >> 17;
-                break;
-        case 1: hash += *data;
-                hash ^= hash << 10;
-                hash += hash >> 1;
+    switch (rem)
+    {
+    case 3:
+        hash += get16bits(data);
+        hash ^= hash << 16;
+        hash ^= data[sizeof(uint16_t)] << 18;
+        hash += hash >> 11;
+        break;
+
+    case 2:
+        hash += get16bits(data);
+        hash ^= hash << 11;
+        hash += hash >> 17;
+        break;
+
+    case 1:
+        hash += *data;
+        hash ^= hash << 10;
+        hash += hash >> 1;
     }
 
     /* Force "avalanching" of final 127 bits */
@@ -1706,9 +1715,9 @@ static crmhash_t shtpap_strnhash(const char *str, int len)
 
     // initialize hval; encode length in hash
     hval = len;
-	hval = SuperFastHash((const char *)&hval, sizeof(hval), 0);
+    hval = SuperFastHash((const char *)&hval, sizeof(hval), 0);
 
-	return SuperFastHash(str, len, hval);
+    return SuperFastHash(str, len, hval);
 }
 
 
@@ -1716,43 +1725,81 @@ static crmhash_t shtpap_strnhash(const char *str, int len)
 
 crmhash_t strnhash(const char *str, size_t len)
 {
-	switch (selected_hashfunction)
+    crmhash_t h;
+
+    switch (selected_hashfunction)
+    {
+    case 0:
+    case 1:
+    default:
+        h = old_crm114_strnhash(str, len);
+        break;
+
+    case 2:
+        h = old_crm114_fixed_strnhash(str, (int)len);
+        break;
+
+    case 3:
+        h =  ger_1_strnhash(str, len);
+        break;
+
+    case 4:
+        h = shtpap_strnhash(str, (int)len);
+        break;
+
+    case 5:
+        h = SuperFast_strnhash(str, (int)len);
+        break;
+    }
+
+	/* save the complete 'raw' hashed text by using as many 'continuation' records as necessary */
+	crm_analysis_mark(&analysis_cfg, MARK_HASH_VALUE, len, "iLL", (unsigned int)h, (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
+	if (len > 16)
 	{
-	case 0:
-	case 1:
-	default:
-	return old_crm114_strnhash(str, len);
-		
-	case 2:
-	return old_crm114_fixed_strnhash(str, len);
-
-	case 3:
-	return ger_1_strnhash(str, len);
-
-	case 4:
-		return shtpap_strnhash(str, len);
-
-	case 5:
-		return SuperFast_strnhash(str, len);
+		for (len -= 16, str += 16; ; len -= 3 * 8, str += 3 * 8)
+		{
+			crm_analysis_mark(&analysis_cfg, MARK_HASH_CONTINUATION, len, "LLL", (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
+			if (len <= 3 * 8)
+				break;
+		}
 	}
+
+    return h;
 }
 
 
 
 crmhash64_t strnhash64(const char *str, size_t len)
 {
-	switch (selected_hashfunction)
-	{
-	case 0:
-	case 1:
-	case 2:
-	case 4:
-	default:
-	return old_crm114_strnhash64(str, len);
+    crmhash64_t h;
 
-	case 3:
-	return ger_1_strnhash64(str, len);
+    switch (selected_hashfunction)
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 4:
+    default:
+        h = old_crm114_strnhash64(str, len);
+        break;
+
+    case 3:
+        h = ger_1_strnhash64(str, len);
+        break;
+    }
+
+	crm_analysis_mark(&analysis_cfg, MARK_HASH64_VALUE, len, "LLL", (unsigned long long int)h, (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
+	if (len > 16)
+	{
+		for (len -= 16, str += 16; ; len -= 3 * 8, str += 3 * 8)
+		{
+			crm_analysis_mark(&analysis_cfg, MARK_HASH_CONTINUATION, len, "LLL", (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
+			if (len <= 3 * 8)
+				break;
+		}
 	}
+
+    return h;
 }
 
 
@@ -1790,24 +1837,25 @@ crmhash64_t strnhash64(const char *str, size_t len)
 typedef struct prototype_crm_mmap_cell
 {
     char       *name;
-    int        start;
-    int        requested_len;
-    int        actual_len;
+    int         start;
+    int         requested_len;
+    int         actual_len;
     crmhash64_t modification_time_hash; // st_mtime - time last modified
     void       *addr;
-    int        prot;   //    prot flags to be used, in the mmap() form
-                        //    that is, PROT_*, rather than O_*
+    int         prot;  //    prot flags to be used, in the mmap() form
+                       //    that is, PROT_*, rather than O_*
     int mode;          //   Mode is things like MAP_SHARED or MAP_LOCKED
 
     int unmap_count;       //  counter - unmap this after UNMAP_COUNT_MAX
     struct prototype_crm_mmap_cell *next, *prev;
-#if defined (WIN32)
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
     HANDLE fd, mapping;
 #else
     int fd;
 #endif
-    int        user_actual_len;
-    void       *user_addr;
+    int   has_header;     // !0 to indicate that this mmap()ed file comes with a CRM VERSIONING header.
+    int   user_actual_len;
+    void *user_addr;
 } CRM_MMAP_CELL;
 
 
@@ -1850,7 +1898,7 @@ static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
 #elif defined (HAVE_NSEC_STAT_TIMENSEC)
     buf[2] = (time_t)fs->st_ctimensec;
     buf[3] = (time_t)fs->st_mtimensec;
-#elif defined (WIN32)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
     /*
      * From the MSVC docs:
      *
@@ -1909,6 +1957,9 @@ static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
 
     return strnhash64((const char *)buf, sizeof(buf));
 }
+
+
+
 
 //////////////////////////////////////
 //
@@ -1985,7 +2036,7 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
     CRM_ASSERT(map->name != NULL);
     crm_touch(map->name);
 
-#elif defined (WIN32)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
     FlushViewOfFile(map->addr, 0);
     UnmapViewOfFile(map->addr);
     CloseHandle(map->mapping);
@@ -2095,7 +2146,8 @@ void crm_munmap_file(void *addr)
     if (!p)
     {
         nonfatalerror("Internal fault - this code has tried to unmap memory "
-                      "that it never mapped in the first place.  ",
+		     "that either was never mapped in the first place, or "
+                     "has already been unmapped.  ",
                 "Please file a bug report. ");
         return;
     }
@@ -2147,7 +2199,7 @@ void crm_munmap_file(void *addr)
                                 );
             }
 
-#elif defined (WIN32)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
             //unmap our view of the file, which will immediately write any
             //changes back to the file
             FlushViewOfFile(p->addr, 0);
@@ -2225,7 +2277,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
 
 #if defined (HAVE_MMAP)
     mode_t open_flags;
-#elif defined (WIN32)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
     DWORD open_flags = 0;
     DWORD createmap_flags = 0;
     DWORD openmap_flags = 0;
@@ -2289,10 +2341,10 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
         return MAP_FAILED; /* [i_a] unreachable code */
     }
     p->name = strdup(filename);
-        if (!p->name)
-        {
-            untrappableerror("Cannot allocate filename memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!p->name)
+    {
+        untrappableerror("Cannot allocate filename memory", "Stick a fork in us; we're _done_.");
+    }
     p->start = start;
     p->requested_len = requested_len;
     p->prot = prot;
@@ -2333,7 +2385,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
     p->fd = open(filename, open_flags);
     if (p->fd < 0)
     {
-      // close (p->fd);
+        // close (p->fd);
         free(p->name);
         free(p);
         if (actual_len)
@@ -2400,7 +2452,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
 
     p->user_addr = p->addr;
     p->user_actual_len = p->actual_len;
-    if (crm_correct_for_version_header(&p->user_addr, &p->user_actual_len) < 0)
+    if (crm_correct_for_version_header(&p->user_addr, &p->user_actual_len, &p->has_header) < 0)
     {
         munmap(p->addr, p->actual_len);
         close(p->fd);
@@ -2411,7 +2463,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
         return MAP_FAILED;
     }
 
-#elif defined (WIN32)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
 
     if (p->mode & MAP_PRIVATE)
     {
@@ -2499,7 +2551,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
 
     //  Jaspan-san says force-loading every page is a good thing
     //  under Windows.  I know it's a bad thing under Linux,
-    //  so we'll only do it under Windows.
+    //  so we'll only do it under Windows only.
     {
         char one_byte;
 
@@ -2511,7 +2563,7 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
 
     p->user_addr = p->addr;
     p->user_actual_len = p->actual_len;
-    if (crm_correct_for_version_header(&p->user_addr, &p->user_actual_len) < 0)
+    if (crm_correct_for_version_header(&p->user_addr, &p->user_actual_len, &p->has_header) < 0)
     {
         FlushViewOfFile(p->addr, 0);
         UnmapViewOfFile(p->addr);
@@ -2545,7 +2597,6 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
 }
 
 
-
 /*
  * Return pointer to CRM versioning header in mmap()ed memory, if such is available.
  *
@@ -2559,7 +2610,7 @@ void *crm_get_header_for_mmap_file(void *addr)
     while (p != NULL && p->user_addr != addr)
         p = p->next;
 
-    if (!p)
+    if (!p || !p->has_header)
         return NULL;
 
     return p->addr;
@@ -2610,8 +2661,8 @@ void *crm_get_header_for_mmap_file(void *addr)
 
 
 unsigned char *crm_strntrn_invert_string(unsigned char *str,
-        int len,
-        int *rlen)
+        int                                             len,
+        int                                            *rlen)
 {
     unsigned char *outstr;
     int i, j;
@@ -2680,8 +2731,8 @@ unsigned char *crm_strntrn_invert_string(unsigned char *str,
 //    We return the new string, and the new length in rlen.
 //
 unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
-        int len,
-        int *rlen)
+        int                                              len,
+        int                                             *rlen)
 {
     int j, k, adj;
     unsigned char *r;
@@ -2774,17 +2825,17 @@ unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
 
 int strntrn(
         unsigned char *datastr,
-        int *datastrlen,
-        int maxdatastrlen,
+        int           *datastrlen,
+        int            maxdatastrlen,
         unsigned char *fromstr,
-        int fromstrlen,
+        int            fromstrlen,
         unsigned char *tostr,
-        int tostrlen,
-        uint64_t flags)
+        int            tostrlen,
+        uint64_t       flags)
 {
     int len = *datastrlen;
     int flen = 0;
-	int tlen = 0;
+    int tlen = 0;
     unsigned char map[256];
     unsigned char *from = NULL;
     unsigned char *to = NULL;
@@ -2819,71 +2870,72 @@ int strntrn(
         from = calloc(fromstrlen, sizeof(from[0]));
         if (from == NULL || fromstr == NULL)
             return -1;
+
         strncpy((char *)from,  (char *)fromstr, fromstrlen);
         flen = fromstrlen;
         to = calloc(tostrlen, sizeof(to[0]));
         if (to == NULL || tostr == NULL)
-		{
-			free(from);
+        {
+            free(from);
             return -1;
-		}
+        }
         strncpy((char *)to, (char *)tostr, tostrlen);
         tlen = tostrlen;
     }
     else
     {
-		if (fromstr != NULL)
-		{
-        //  Build the expanded from-string
-        if (fromstr[0] != '^')
+        if (fromstr != NULL)
         {
-            from = crm_strntrn_expand_hyphens(fromstr, fromstrlen, &flen);
-            if (!from)
-                return -1;
+            //  Build the expanded from-string
+            if (fromstr[0] != '^')
+            {
+                from = crm_strntrn_expand_hyphens(fromstr, fromstrlen, &flen);
+                if (!from)
+                    return -1;
+            }
+            else
+            {
+                unsigned char *temp;
+                int templen;
+
+                temp = crm_strntrn_expand_hyphens(fromstr + 1, fromstrlen - 1, &templen);
+                if (!temp)
+                    return -1;
+
+                from = crm_strntrn_invert_string(temp, templen, &flen);
+                if (!from)
+                    return -1;
+
+                free(temp);
+            }
         }
-        else
+
+        if (tostr != NULL)
         {
-            unsigned char *temp;
-            int templen;
-            
-			temp = crm_strntrn_expand_hyphens(fromstr + 1, fromstrlen - 1, &templen);
-            if (!temp)
-                return -1;
+            //     Build the expanded to-string
+            //
+            if (tostr[0] != '^')
+            {
+                to = crm_strntrn_expand_hyphens(tostr, tostrlen, &tlen);
+                if (!to)
+                    return -1;
+            }
+            else
+            {
+                unsigned char *temp;
+                int templen;
 
-            from = crm_strntrn_invert_string(temp, templen, &flen);
-            if (!from)
-                return -1;
+                temp = crm_strntrn_expand_hyphens(tostr + 1, tostrlen - 1, &templen);
+                if (!temp)
+                    return -1;
 
-            free(temp);
+                to = crm_strntrn_invert_string(temp, templen, &tlen);
+                if (!to)
+                    return -1;
+
+                free(temp);
+            }
         }
-		}
-
-		if (tostr != NULL)
-		{
-        //     Build the expanded to-string
-        //
-        if (tostr[0] != '^')
-        {
-            to = crm_strntrn_expand_hyphens(tostr, tostrlen, &tlen);
-            if (!to)
-                return -1;
-        }
-        else
-        {
-            unsigned char *temp;
-            int templen;
-            
-			temp = crm_strntrn_expand_hyphens(tostr + 1, tostrlen - 1, &templen);
-            if (!temp)
-                return -1;
-
-            to = crm_strntrn_invert_string(temp, templen, &tlen);
-            if (!to)
-                return -1;
-
-            free(temp);
-        }
-		}
     }
 
     //  If we're in <unique> mode, squish out any duplicated
@@ -2895,8 +2947,8 @@ int strntrn(
     {
         unsigned char unique_map[256];
 
-		if (from == NULL)
-			return -1;
+        if (from == NULL)
+            return -1;
 
         //                        build the map of the uniqueable characters
         //
@@ -2922,12 +2974,12 @@ int strntrn(
 
     //     Minor optimization - if we're just uniquing, we don't need to:
 
-	//     Build the mapping array
+    //     Build the mapping array
     //
     if (replace)
     {
-		if (from == NULL || to == NULL)
-			return -1;
+        if (from == NULL || to == NULL)
+            return -1;
 
         //  This is replacement mode (not deletion mode) so we need
         //   to build the character map.  We
@@ -2965,8 +3017,8 @@ int strntrn(
     }
     else
     {
-		if (from == NULL)
-			return -1;
+        if (from == NULL)
+            return -1;
 
         //  No, we are not in replace mode, rather we are in delete mode
         //  so the map now says whether we're keeping the character or
@@ -3015,105 +3067,105 @@ int strntrn(
 
 
 char *crm114_strdup(const char *str
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-, int blocktype, const char *filename, int lineno
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+                   , int blocktype, const char *filename, int lineno
 #endif
-)
+                   )
 {
-	char *p = NULL;
+    char *p = NULL;
 
-	if (str)
-	{
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-		p = _strdup_dbg(str, blocktype, filename, lineno);
+    if (str)
+    {
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+        p = _strdup_dbg(str, blocktype, filename, lineno);
 #else
-		p = strdup(str);
+        p = strdup(str);
 #endif
-	}
-	return p;
+    }
+    return p;
 }
 
 void *crm114_malloc(size_t count
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-, int blocktype, const char *filename, int lineno
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+                   , int blocktype, const char *filename, int lineno
 #endif
-)
+                   )
 {
-	void *p = NULL;
+    void *p = NULL;
 
-	if (count > 0)
-	{
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-		p = _calloc_dbg(count, 1, blocktype, filename, lineno);
+    if (count > 0)
+    {
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+        p = _calloc_dbg(count, 1, blocktype, filename, lineno);
 #else
-		p = calloc(count, 1);
+        p = calloc(count, 1);
 #endif
-	}
-	return p;
+    }
+    return p;
 }
 
 void *crm114_realloc(void *ptr, size_t count
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-, int blocktype, const char *filename, int lineno
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+                    , int blocktype, const char *filename, int lineno
 #endif
-)
+                    )
 {
-	void *p = NULL;
+    void *p = NULL;
 
-	if (count > 0)
-	{
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-		p = _realloc_dbg(ptr, count, blocktype, filename, lineno);
+    if (count > 0)
+    {
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+        p = _realloc_dbg(ptr, count, blocktype, filename, lineno);
 #else
-		p = realloc(ptr, count);
+        p = realloc(ptr, count);
 #endif
-	}
-	else if (p)
-	{
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-		_free_dbg(p, blocktype);
+    }
+    else if (p)
+    {
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+        _free_dbg(p, blocktype);
 #else
-		free(p);
+        free(p);
 #endif
-	}
-	return p;
+    }
+    return p;
 }
 
 void *crm114_calloc(size_t count, size_t elem_size
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-, int blocktype, const char *filename, int lineno
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+                   , int blocktype, const char *filename, int lineno
 #endif
-)
+                   )
 {
-	void *p = NULL;
+    void *p = NULL;
 
-	if (count > 0 && elem_size > 0)
-	{
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-		p = _calloc_dbg(count, elem_size, blocktype, filename, lineno);
+    if (count > 0 && elem_size > 0)
+    {
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+        p = _calloc_dbg(count, elem_size, blocktype, filename, lineno);
 #else
-		p = calloc(count, elem_size);
+        p = calloc(count, elem_size);
 #endif
-	}
-	return p;
+    }
+    return p;
 }
 
 void crm114_free(void **ptrref
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-, int blocktype, const char *filename, int lineno
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+                , int blocktype, const char *filename, int lineno
 #endif
-)
+                )
 {
-	CRM_ASSERT(ptrref != NULL);
-	if (*ptrref)
-	{
-#if defined(MSVC_DEBUG_MALLOC_SERIES)
-		_free_dbg(*ptrref, blocktype);
+    CRM_ASSERT(ptrref != NULL);
+    if (*ptrref)
+    {
+#if defined (MSVC_DEBUG_MALLOC_SERIES)
+        _free_dbg(*ptrref, blocktype);
 #else
-		free(*ptrref);
+        free(*ptrref);
 #endif
-	}
-	*ptrref = NULL;
+    }
+    *ptrref = NULL;
 }
 
 

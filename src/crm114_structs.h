@@ -11,6 +11,11 @@
 #ifndef __CRM114_STRUCTS_H__
 #define __CRM114_STRUCTS_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 
 
 /* [i_a] unsure if totalhits[] and hits[] should be floating point or integer count arrays ... */
@@ -102,19 +107,19 @@ typedef struct mythical_vht_cell
     char *filename;      // file where defined (or NULL)
     int   filedesc;      // filedesc of defining file (or NULL)
     char *nametxt;       // block of text that hosts the variable name
-    int nstart;        // index into nametxt to start of varname
-    int  nlen;          // length of name
+    int   nstart;        // index into nametxt to start of varname
+    int   nlen;          // length of name
     char *valtxt;        // text block that hosts the captured value
                          // vstart, vlen, mstart, and mlen are all measured
                          // from the _start_ of valtxt, mstart relative to
                          // vstart, etc!!!
     int vstart;        // zero-base index of start of variable (inclusive)
     int vlen;          // length of captured value : this plus vstart is where
-                        //  you could put a NULL if you wanted to.
+                       //  you could put a NULL if you wanted to.
     int mstart;        // zero-base start of most recent match of this var
     int mlen;          // length of most recent match against this var; this
-                        //   plus mstart is where you could put a NULL if you
-                        //    wanted to.
+                       //   plus mstart is where you could put a NULL if you
+                       //    wanted to.
     int linenumber;     // linenumber of this variable (if known, else -1)
     int lazy_redirects; // how many lazy redirects are allowed (0 by default);
 } VHT_CELL;
@@ -125,26 +130,26 @@ typedef struct mythical_vht_cell
 //      in till we have to, then we cache the result.
 //
 
-#if FULL_PARSE_AT_COMPILE_TIME			
+#if FULL_PARSE_AT_COMPILE_TIME
 // TODO: make these p[n] / p[n], b[n] and s[n] ARRAYS for easier use and expansion
 #endif
 typedef struct mythical_argparse_block
 {
-    char      *a1start;  // '<>' angle delimited field: options
-    int       a1len;
-    char      *p1start;  // '()' parentheses delimited field: varlist #1
-    int       p1len;
-    char      *p2start;  // '()' parentheses delimited field: varlist #2
-    int       p2len;
-    char      *p3start;  // '()' parentheses delimited field: varlist #3
-    int       p3len;
-    char      *b1start;  // '[]' boxes delimited field: domain limits
-    int       b1len;
-    char      *s1start;  // '//' slash delimited field: regex set #1
-    int       s1len;
-    char      *s2start;  // '//' slash delimited field: regex set #2
-    int       s2len;
-    uint64_t   sflags;
+    char    *a1start;    // '<>' angle delimited field: options
+    int      a1len;
+    char    *p1start;    // '()' parentheses delimited field: varlist #1
+    int      p1len;
+    char    *p2start;    // '()' parentheses delimited field: varlist #2
+    int      p2len;
+    char    *p3start;    // '()' parentheses delimited field: varlist #3
+    int      p3len;
+    char    *b1start;    // '[]' boxes delimited field: domain limits
+    int      b1len;
+    char    *s1start;    // '//' slash delimited field: regex set #1
+    int      s1len;
+    char    *s2start;    // '//' slash delimited field: regex set #2
+    int      s2len;
+    uint64_t sflags;
 } ARGPARSE_BLOCK;
 
 
@@ -155,24 +160,25 @@ typedef struct mythical_argparse_block
 //
 typedef struct mythical_mct_cell
 {
-    char           *hosttxt;    // text buffer this statement lives in.
-#if FULL_PARSE_AT_COMPILE_TIME			
-    ARGPARSE_BLOCK  apb;        // the argparse block for this statement
+    char *hosttxt;              // text buffer this statement lives in.
+#if FULL_PARSE_AT_COMPILE_TIME
+    ARGPARSE_BLOCK apb;        // the argparse block for this statement
 #else
     ARGPARSE_BLOCK *apb;        // the argparse block for this statement
 #endif
-    int             start;      // zero-base index of start of statement (inclusive)
-    int             fchar;      // zero-base index of non-blank stmt (for prettyprint)
-    int             achar;      // zero-base index of start of args;
-    clock_t         stmt_utime; // user time spent in this statement line;
-    clock_t         stmt_stime; // system time spent in this statement line;
-    int             stmt_type;  // statement type of this line
-	const struct mythical_stmt_type *stmt_def;  // statement type definition of this line
-    int             nest_level; // nesting level of this statement
-    int             fail_index; // if this statement failed, where would we go?
-    int             liaf_index; // if this statement liafed, where would we go?
-    int             trap_index; // if this statement faults, where would we go?
-    int             stmt_break; // 1 if "break" on this stmt, 0 otherwise.
+    int     start;                                  // zero-base index of start of statement (inclusive)
+    int     fchar;                                  // zero-base index of non-blank stmt (for prettyprint)
+    int     achar;                                  // zero-base index of start of args;
+    int64_t stmt_utime;                             // user time spent in this statement line;
+    int64_t stmt_stime;                             // system time spent in this statement line;
+    int stmt_exec_count;                            // number of times this line was executed
+    int     stmt_type;                              // statement type of this line
+    const struct mythical_stmt_type *stmt_def;      // statement type definition of this line
+    int nest_level;                                 // nesting level of this statement
+    int fail_index;                                 // if this statement failed, where would we go?
+    int liaf_index;                                 // if this statement liafed, where would we go?
+    int trap_index;                                 // if this statement faults, where would we go?
+    int stmt_break;                                 // 1 if "break" on this stmt, 0 otherwise.
 } MCT_CELL;
 
 // structure of a control stack level cell.
@@ -186,21 +192,27 @@ struct mythical_csl_cell;
 
 typedef struct mythical_csl_cell
 {
-    char          *filename;                                // filename if any
-    int            rdwr;                                    // 0=readonly, 1=rdwr
-    int            filedes;                                 // file descriptor it's open on (if any)
-    char          *filetext;                                // text buffer
-    int            nchars;                                  // characters of data we have
-    crmhash_t      hash;                                    // hash of this data (if done)
-    MCT_CELL      **mct;                                    // microcompile (if compiled)
-    int            mct_size;                                // number of slots available in the MCT
-    int            nstmts;                                  // how many statements in the microcompile
-    int            preload_window;                          // do we preload the window or not?
-    int            cstmt;                                   // current executing statement of this file
-    struct mythical_csl_cell *caller;                       // pointer to this file's caller (if any)
-    int return_vht_cell;                                    // index into the VHT to stick the return value
-    int calldepth;                                          // how many calls deep is this stack frame
-    int aliusstk[MAX_BRACKETDEPTH];                         // the status stack for ALIUS
+    char      *filename;                                    // filename if any
+    int        rdwr;                                        // 0=readonly, 1=rdwr
+    int        filedes;                                     // file descriptor it's open on (if any)
+    char      *filetext;                                    // text buffer
+    int        nchars;                                      // characters of data we have
+    crmhash_t  hash;                                        // hash of this data (if done)
+    MCT_CELL **mct;                                         // microcompile (if compiled)
+    int        mct_size;                                    // number of slots available in the MCT
+    int        nstmts;                                      // how many statements in the microcompile
+    int        preload_window;                              // do we preload the window or not?
+    int        cstmt;                                       // current executing statement of this file
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+    int cstmt_recall;                                           // current executing statement of this file; may NOT be edited outside the exec engine
+    int next_stmt_due_to_trap;                                  // subsequent statement that will be executed, due to trap/fault; -1 if irrelevant
+    int next_stmt_due_to_fail;                                  // subsequent statement that will be executed, due to fail; -1 if irrelevant
+    int next_stmt_due_to_jump;                                  // subsequent statement that will be executed, due to trap/fail/fault/...; -1 if irrelevant
+#endif
+    struct mythical_csl_cell *caller;                           // pointer to this file's caller (if any)
+    int return_vht_cell;                                        // index into the VHT to stick the return value
+    int calldepth;                                              // how many calls deep is this stack frame
+    int aliusstk[MAX_BRACKETDEPTH];                             // the status stack for ALIUS
 
     unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
     unsigned int filetext_allocated : 1; // if the filetext was allocated on the heap.
@@ -211,48 +223,50 @@ typedef struct mythical_csl_cell
 //     new standard.  Old file types don't have this.  Forward migration
 //     shall take place.  :-)
 
-typedef struct {
-  uint32_t start;
-  uint32_t length;
-  uint32_t tag;
+typedef struct
+{
+    uint32_t start;
+    uint32_t length;
+    uint32_t tag;
 } STATISTICS_FILE_CHUNK;
 
-typedef struct {
-  STATISTICS_FILE_CHUNK chunks [ STATISTICS_FILE_NCHUNKS ];
-                            //  The byte indexed chunks of data in this file, 
-                            //  by start, length, and tag.  This is recursive; 
-                            //  chunk[0] points to this array itself, so
-                            //  chunk[0].start is almost always 0 and 
-                            //  chunk[0].length is almost always the start of 
-                            //  the next chunk.   A -1 length means "to the
-                            //  end of the file"
-                            //   
-  uint8_t file_ident_string [ STATISTICS_FILE_IDENT_STRING_MAX ];   
-                            //  Text description of this file.  This should
-                            //  always start with "CRM114 Classdata " and then
-                            //  the classifier name etc.  Embed versioning
-                            //  information here (and get it back with strtod)
-                            //  Please pad unused space with NULLs; don't
-                            //  change the length (to make file-magic easier).
-                            //  This is always chunk[1];
-                            //
-  uint32_t data [ STATISTICS_FILE_ARB_DATA ];       
-                            //  These are "use as you will" data.  This is
-                            //  always chunk[2].  
-                            //
-  ////////////////////////////
-  //      Following in the file are more data chunks.  Note that there's
-  //      plenty of space here for pre-solves (such as an SVM might generate)
-  //      but probably NOT enough space for individual examples to get their
-  //      own chunks, unless you change the default number of chunks upward
-  //      from 1024.  
-  //////////////////////////// 
+typedef struct
+{
+    STATISTICS_FILE_CHUNK chunks[STATISTICS_FILE_NCHUNKS];
+    //  The byte indexed chunks of data in this file,
+    //  by start, length, and tag.  This is recursive;
+    //  chunk[0] points to this array itself, so
+    //  chunk[0].start is almost always 0 and
+    //  chunk[0].length is almost always the start of
+    //  the next chunk.   A -1 length means "to the
+    //  end of the file"
+    //
+    uint8_t file_ident_string[STATISTICS_FILE_IDENT_STRING_MAX];
+    //  Text description of this file.  This should
+    //  always start with "CRM114 Classdata " and then
+    //  the classifier name etc.  Embed versioning
+    //  information here (and get it back with strtod)
+    //  Please pad unused space with NULLs; don't
+    //  change the length (to make file-magic easier).
+    //  This is always chunk[1];
+    //
+    uint32_t data[STATISTICS_FILE_ARB_DATA];
+    //  These are "use as you will" data.  This is
+    //  always chunk[2].
+    //
+    ////////////////////////////
+    //      Following in the file are more data chunks.  Note that there's
+    //      plenty of space here for pre-solves (such as an SVM might generate)
+    //      but probably NOT enough space for individual examples to get their
+    //      own chunks, unless you change the default number of chunks upward
+    //      from 1024.
+    ////////////////////////////
 }   STATISTICS_FILE_HEADER_STRUCT;
 
 typedef struct
 {
-    crmhash_t     hash;
-    crmhash_t     key;
+    crmhash_t hash;
+    crmhash_t key;
     uint32_t  value;
 } FEATUREBUCKET_STRUCT;
 
@@ -260,8 +274,8 @@ typedef struct
 typedef struct
 {
     unsigned char version[4];
-    uint32_t flags;
-    uint32_t skip_to;
+    uint32_t      flags;
+    uint32_t      skip_to;
 } FEATURE_HEADER_STRUCT;
 
 
@@ -425,13 +439,20 @@ typedef struct mythical_entropy_cell
 
 #define CRM_AUTODETECT    (1LL << 38)
 
+#define CRM_ALT_MARKOVIAN     (1LL << 39)
+#define CRM_ALT_OSB_BAYES     (1LL << 40)
+#define CRM_ALT_OSB_WINNOW    (1LL << 41)
+#define CRM_ALT_OSBF          (1LL << 42)
+#define CRM_ALT_HYPERSPACE    (1LL << 43)
+
+
 
 //
 //     and a struct to put them in.
 typedef struct
 {
-    char     *string;
-    uint64_t  value;
+    char    *string;
+    uint64_t value;
 } FLAG_DEF;
 
 
@@ -452,8 +473,8 @@ typedef struct mythical_stmt_type
     char    *stmt_name;
     int      stmt_code;
     int      namelen;
-	unsigned is_executable: 1;
-	unsigned has_non_standard_flags: 1;
+    unsigned is_executable          : 1;
+    unsigned has_non_standard_flags : 1;
     int      minangles;
     int      maxangles;
     int      minslashes;
@@ -530,7 +551,7 @@ typedef struct mythical_stmt_type
 typedef struct crm_porta_header_info
 {
     int64_t classifier_bits;
-	int32_t hash_version_in_use;
+    int32_t hash_version_in_use;
     union
     {
         char args[512];
@@ -541,6 +562,13 @@ typedef struct crm_porta_header_info
             float f;
             double d;
         } params[16];             /* assuming 16-byte alignment as worst case, this'll fit nicely in 512 bytes */
+
+        struct
+        {
+            int32_t learncount;
+            int32_t features_learned;
+            int32_t sparse_spectrum_size;
+        } OSB_Bayes;
     } v;
 } CRM_PORTA_HEADER_INFO;
 
@@ -696,6 +724,7 @@ typedef struct
 {
     // decoded elements from the header:
     crm_porta_bin_header_block binary_section;
+    CRM_PORTA_HEADER_INFO     *native_classifier_info_in_file;  // !NULL: points to identical block, but located in SRC/mmap()ed space, so updates reflect through mmap() back to the database file.
 
     char *human_readable_message;
 
@@ -711,6 +740,93 @@ typedef struct
 
 
 
+
+#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+
+
+/*
+ * Code to register and log profiling events; these events can be processed by an additional
+ * tool to produce color graphs, etc. to help analyze CRM114 runs; classifiers, etc.
+ *
+ * See for more info in crm_core_profiling.c and the crm_bmp_prof tool.
+ */
+
+
+
+typedef enum
+{
+	MARK_NUL_SENTINEL = 0, // special purpose: represents the NUL sentinel written to a profile file when sessions are appended.
+    MARK_INIT,              // register a 'session start'
+    MARK_SWITCH_CONTEXT,        // see below: for some reason CRM114 switches profile dumps halfway.
+    MARK_TERMINATION,           // mark end of crm114 run / atexit. NOT necessarily there in failure conditions, so cave canem.
+    MARK_DEBUG_INTERACTION,     // mark human interaction so we know what went down as it took so long
+    MARK_HASH_VALUE,            // register hash values
+    MARK_HASH64_VALUE,          // register hash values
+    MARK_HASH_CONTINUATION,     // continuation of the preceding MARK_HASH[64]_VALUE: stores remainder of the hashed string
+    MARK_VT_HASH_VALUE,	        // register VT-based hash values
+    MARK_OPERATION,             // register the executing opcode; this includes the classifier used using an extra MARK_CLASSIFIER marker, etc.
+    MARK_CLASSIFIER,            // register the classifier used + its settings as attrribute
+    MARK_CLASSIFIER_DB_TOTALS,
+    MARK_CHAIN_LENGTH,               // registered 'seen' chain length
+    MARK_HASHPROBE,                  // mark each hash probe attempt
+    MARK_HASHPROBE_DIRECT_HIT,       // register a direct hit in the hash table
+    MARK_HASHPROBE_HIT,              // register a hit in the hash table; a hit that is not a direct hit is a chain walk (or something alike)
+    MARK_HASHPROBE_HIT_REFUTE,
+    MARK_HASHPROBE_MISS,
+    MARK_MICROGROOM,     // marker to signal classifier decided to perform a microgroom operation
+	MARK_CLASSIFIER_PARAMS,
+	MARK_CSS_STATS_GROUP,		// dump CSS file statistics
+	MARK_CSS_STATS_HISTOGRAM,   // dump CSS file histogram
+
+    TOTAL_NUMBER_OF_MARKERS
+} crm_analysis_instrument_t;
+
+
+//
+// This structure must be cross-platform portable for remote analysis.
+// Currently, there's no Endianess marker in here, except when the profiled target
+// writes some specific 'definition' markers at the start of each run.
+//
+// NOTE: at least on Win32, the default layout of the fields in this structure
+//       are on a 64-bit boundary, so keeping the 'marker' field smaller does not
+//       have any effect on storage size. Of course we could've used #pragma (pack)
+//       or other tricks, but we rather abuse the extra bits in marker for storing
+//       the 'extra' integer value: id in the lower 16 bits; value in the upper
+//       48 bits.
+//       Because 'marker' will never take up all the 16 bits, we add the 'arg count'
+//       in the top-most 4 bits too (bits 12-15).
+//       This is definitely 'hackish', but I like it.
+//
+#include "crm_pshpack4.h"
+typedef struct
+{
+    int64_t marker;     // one of the 'crm_analysis_instrument_t'
+    union
+    {
+        double as_float;
+        int64_t as_int;
+    } value[3];              // the value to store for profile analysis, plus mebbee loop count or similar 'attribute' that comes with the value.
+    int64_t time_mark;       // time_t, counter, whatever. To be determined while we use this thing. 'reserved' now.
+} CRM_ANALYSIS_PROFILE_ELEMENT;
+#include "crm_poppack.h"
+
+
+typedef struct
+{
+    FILE *fd;      // file handle to profile store.
+    char *filepath;
+
+    char instruments[TOTAL_NUMBER_OF_MARKERS];     // set of booleans-in-char-size-type, one for each known marker. !0 meant it's a GO!
+} CRM_ANALYSIS_PROFILE_CONFIG;
+
+
+#endif /* !CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
+
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __CRM114_STRUCTS_H__ */
 

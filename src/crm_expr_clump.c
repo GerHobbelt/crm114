@@ -56,7 +56,7 @@
 
 
 
-#if !defined (CRM_WITHOUT_CLUMP)
+#if !CRM_WITHOUT_CLUMP
 
 
 
@@ -128,7 +128,7 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
     }
 
     classifier_info.classifier_bits = CRM_CLUMP;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+    classifier_info.hash_version_in_use = selected_hashfunction;
 
     if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
     {
@@ -294,7 +294,7 @@ static int compare_features(const void *a, const void *b)
 
 
 static int eat_document(ARGPARSE_BLOCK *apb,
-        char *text, int  text_len, int  *ate,
+        char *text, int text_len, int  *ate,
         regex_t *regee,
         crmhash_t *feature_space, int max_features,
         uint64_t flags)
@@ -873,7 +873,7 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
         CRM_ASSERT(!((k - C[i]) <= FLT_EPSILON && (k - C[i]) >= -FLT_EPSILON));
         CRM_ASSERT(!(C[i] <= FLT_EPSILON && C[i] >= -FLT_EPSILON));
         scoro = square(gM - (t_A - A[i]) / (k - C[i])) * (k - C[i])
-                + square(gM - A[i] / C[i]) * C[i];
+        + square(gM - A[i] / C[i]) * C[i];
         if (scoro > t_score)
         {
             t_score = scoro;
@@ -1007,8 +1007,8 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
 }
 
 static void assign_perma_cluster(CLUMPER_STATE_STRUCT *s,
-        int doc,
-        char *lab)
+        int                                            doc,
+        char                                          *lab)
 {
     int i;
 
@@ -1032,9 +1032,9 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int htext_len;
 
     char regex_text[MAX_PATTERN]; //  the regex pattern
-    int  regex_text_len;
+    int regex_text_len;
     char param_text[MAX_PATTERN];
-    int  param_text_len;
+    int param_text_len;
     int unique, unigram, bychunk;
     int n_clusters = 0;
 
@@ -1048,14 +1048,14 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     regex_t regee;
     regmatch_t matchee[2];
 
-    int  i, j, k, l;
+    int i, j, k, l;
 
     char *txtptr;
     int txtstart;
     int txtlen;
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-	int len;
+    int len;
 
     int max_documents = 1000;
 
@@ -1068,7 +1068,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txtstart,
             &txtlen,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
     if (i < 0)
     {
         int curstmt;
@@ -1076,7 +1076,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fev = 0;
         curstmt = csl->cstmt;
 
-		if (i == -1)
+        if (i == -1)
             fev = nonfatalerror(errstr, "");
         if (i == -2)
             fev = fatalerror(errstr, "");
@@ -1085,7 +1085,11 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1095,28 +1099,28 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
     htext_len = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
-	CRM_ASSERT(htext_len < MAX_PATTERN);
+    htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(htext_len < MAX_PATTERN);
 
-	if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
- {
-            int fev = nonfatalerror_ex(SRC_LOC(), 
-				"\nYou didn't specify a valid filename: '%.*s'\n", 
-					(int)htext_len,
-					htext);
-            return fev;
- }
- j += i;
+    if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
+    {
+        int fev = nonfatalerror_ex(SRC_LOC(),
+                "\nYou didn't specify a valid filename: '%.*s'\n",
+                (int)htext_len,
+                htext);
+        return fev;
+    }
+    j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);
 
-	htext[j] = 0;
+    htext[j] = 0;
     strcpy(filename, &htext[i]);
 
     //use regex_text and regee to grab parameters
     param_text_len = crm_get_pgm_arg(param_text, MAX_PATTERN, apb->s2start, apb->s2len);
-    param_text_len = crm_nexpandvar(param_text, param_text_len, MAX_PATTERN);
-	CRM_ASSERT(param_text_len < MAX_PATTERN);
+    param_text_len = crm_nexpandvar(param_text, param_text_len, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(param_text_len < MAX_PATTERN);
     param_text[param_text_len] = 0;
     if (internal_trace)
         fprintf(stderr, "param_text = %s\n", param_text);
@@ -1129,7 +1133,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
     if (!crm_regexec(&regee, param_text, param_text_len, WIDTHOF(matchee), matchee, 0, NULL))
     {
-		CRM_ASSERT(regee.re_nsub == 1);
+        CRM_ASSERT(regee.re_nsub == 1);
         param_text[matchee[1].rm_eo + 1] = 0;
         if (internal_trace)
         {
@@ -1192,7 +1196,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         regex_text_len = strlen(regex_text);
     }
     //regex_text[regex_text_len] = 0;
-    regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
+    regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN, vht, tdw);
     if (crm_regcomp(&regee, regex_text, regex_text_len, REG_EXTENDED))
     {
         return nonfatalerror("Problem compiling this regex:", regex_text);
@@ -1278,7 +1282,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         int n;
         crmhash_t feature_space[32768];
         FILE *f;
-		ssize_t old_fileoffset;
+        ssize_t old_fileoffset;
 
         if (stat(filename, &statbuf))
         {
@@ -1336,33 +1340,33 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
             classifier_info.classifier_bits = CRM_CLUMP;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+            classifier_info.hash_version_in_use = selected_hashfunction;
 
             if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
             {
                 int fev;
-				                fclose(f);
-fev = nonfatalerror_ex(SRC_LOC(),
+                fclose(f);
+                fev = nonfatalerror_ex(SRC_LOC(),
                         "\n Couldn't write header to file %s; errno=%d(%s)\n",
                         filename, errno, errno_descr(errno));
                 return fev;
             }
         }
 
-		old_fileoffset = ftell(f);
+        old_fileoffset = ftell(f);
         if (n != fwrite(feature_space, sizeof(feature_space[0]), n, f))
         {
             int fev;
-			int err = errno;
+            int err = errno;
 
             CRM_ASSERT(f != NULL);
             fclose(f);
-			// try to correct the failure by ditching the new, partially(?) written(?) data
-			truncate(filename, old_fileoffset);
-			fev = nonfatalerror_ex(SRC_LOC(), "Cannot write/append feature space to the clump backing file '%s': error = %d(%s)", 
-				filename,
-				err,
-				errno_descr(err));
+            // try to correct the failure by ditching the new, partially(?) written(?) data
+            truncate(filename, old_fileoffset);
+            fev = nonfatalerror_ex(SRC_LOC(), "Cannot write/append feature space to the clump backing file '%s': error = %d(%s)",
+                    filename,
+                    err,
+                    errno_descr(err));
             return fev;
         }
         fclose(f);
@@ -1374,10 +1378,10 @@ fev = nonfatalerror_ex(SRC_LOC(),
         }
         if (s.header->n_documents >= s.header->max_documents)
         {
-			int fev;
+            int fev;
             unmap_file(&s);
             fev = nonfatalerror("This clump backing file is full and cannot"
-                          " assimilate new documents!", filename);
+                                " assimilate new documents!", filename);
             return fev;
         }
         i = s.header->n_documents++;
@@ -1467,14 +1471,14 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     regex_t regee;
 
-    int  i, j;
+    int i, j;
 
     char *txtptr;
     int txtstart;
     int txtlen;
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-	int boxtxtlen;
+    int boxtxtlen;
 
     boxtxtlen = crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
@@ -1485,7 +1489,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &txtstart,
             &txtlen,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
     if (i < 0)
     {
         int curstmt;
@@ -1501,7 +1505,11 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1511,27 +1519,27 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
     htext_len = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
-	CRM_ASSERT(htext_len < MAX_PATTERN);
+    htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(htext_len < MAX_PATTERN);
 
-	if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
- {
-            int fev = nonfatalerror_ex(SRC_LOC(), 
-				"\nYou didn't specify a valid filename: '%.*s'\n", 
-					(int)htext_len,
-					htext);
-            return fev;
- }
- j += i;
+    if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
+    {
+        int fev = nonfatalerror_ex(SRC_LOC(),
+                "\nYou didn't specify a valid filename: '%.*s'\n",
+                (int)htext_len,
+                htext);
+        return fev;
+    }
+    j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);
 
-	htext[j] = 0;
+    htext[j] = 0;
     strcpy(filename, &htext[i]);
 
     //grab output variable name
     out_var_len = crm_get_pgm_arg(out_var, MAX_PATTERN, apb->p2start, apb->p2len);
-    out_var_len = crm_nexpandvar(out_var, out_var_len, MAX_PATTERN);
+    out_var_len = crm_nexpandvar(out_var, out_var_len, MAX_PATTERN, vht, tdw);
 
     regex_text_len = crm_get_pgm_arg(regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
     if (regex_text_len == 0)
@@ -1540,7 +1548,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         regex_text_len = strlen(regex_text);
     }
     //regex_text[regex_text_len] = 0;
-    regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
+    regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN, vht, tdw);
     if (crm_regcomp(&regee, regex_text, regex_text_len, REG_EXTENDED))
     {
         nonfatalerror("Problem compiling this regex:", regex_text);
@@ -1629,7 +1637,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 }
                 N[j]++;
             }
-	        T = 0.0; /* [i_a] */
+            T = 0.0;     /* [i_a] */
             for (i = 1; i <= s.header->n_clusters; i++)
                 T += A[i] /= N[i];
         }
@@ -1712,7 +1720,11 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (user_trace)
                 fprintf(stderr, "CLUMP was a FAIL, skipping forward.\n");
             //    and do what we do for a FAIL here
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;

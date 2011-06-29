@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114
+#! @BIN_PATH@/crm114
 #
 #        Program to test match/isolate memory reclamation
 #

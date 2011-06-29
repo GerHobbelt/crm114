@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114 -(help file delete)
+#! @bindir@/crm114 -(help file delete)
 #    
 #    Program for Associative Data - PAD
 #

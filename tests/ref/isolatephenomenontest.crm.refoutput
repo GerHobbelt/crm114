@@ -1,0 +1,14 @@
+TEST SCRIPT + COMMANDLINE:
+isolatephenomenontest.crm -e
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+a = ''
+a = 'foo'
+a = 'foo'
+a = 'foo'
+

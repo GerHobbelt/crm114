@@ -44,7 +44,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int itercount;
     int qex_stat;
     // int has_output_var;
-    int  varnamestart;
+    int varnamestart;
 
     // should use tempbuf for this instead.
     //   char newstr [MAX_PATTERN];
@@ -57,38 +57,38 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     get the variable name
     CRM_ASSERT(apb != NULL);
     varnamelen = crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
-        //      do variable substitution on the variable name
-        varnamelen = crm_nexpandvar(varname, varnamelen, MAX_VARNAME);
-		// [i_a] standardized code: get_pgm+nexpand+nextword to get a variable identifier from a parameter
+    //      do variable substitution on the variable name
+    varnamelen = crm_nexpandvar(varname, varnamelen, MAX_VARNAME, vht, tdw);
+    // [i_a] standardized code: get_pgm+nexpand+nextword to get a variable identifier from a parameter
     if (!crm_nextword(varname, varnamelen, 0, &varnamestart, &varnamelen)
-    || varnamelen < 2)
+        || varnamelen < 2)
     {
-		// we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
+        // we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
 
         if (user_trace)
-		{
+        {
             fprintf(stderr, "There's no output var for this EVAL, so we won't "
                             "be assigning the result anywhere.\n  It better have a "
                             "relational test, or you're just wasting CPU.\n");
-		}
+        }
     }
 
-		//     get the new pattern, and expand it.
+    //     get the new pattern, and expand it.
     newvallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
 
     ahindex = 0;
-	 //
-	 //     Now, a loop - while it continues to change, keep looping.
-	 //     But to try and detect infinite loops, we keep track of the
-	 //     previous values (actually, their hashes) and if one of those
-	 //     values recur, we stop evaluating and throw an error.
-	 //
-	 // Note: also take into account the condition where the _calculated_
-	 // hash may be zero: since all possible values of the crmhash64_t
-	 // type can be produced (at least theoretically) by the hash function,
-	 // we must check against the actual, i.e. current hash value, no
-	 // matter what it's value is.
-	 //
+    //
+    //     Now, a loop - while it continues to change, keep looping.
+    //     But to try and detect infinite loops, we keep track of the
+    //     previous values (actually, their hashes) and if one of those
+    //     values recur, we stop evaluating and throw an error.
+    //
+    // Note: also take into account the condition where the _calculated_
+    // hash may be zero: since all possible values of the crmhash64_t
+    // type can be produced (at least theoretically) by the hash function,
+    // we must check against the actual, i.e. current hash value, no
+    // matter what it's value is.
+    //
     for (itercount = 0; itercount < MAX_EVAL_ITERATIONS; itercount++)
     {
         int i;
@@ -125,7 +125,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             break;
 
         newvallen = crm_qexpandvar(tempbuf, newvallen,
-                data_window_size, &qex_stat);
+                data_window_size, &qex_stat, vht, tdw);
     }
 
     if (itercount == MAX_EVAL_ITERATIONS)
@@ -140,11 +140,11 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     and shove it out to wherever it needs to be shoved.
     //
     if (varnamelen >= 2)
-	{
-		// we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
-	    crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,
-            tempbuf, newvallen);
-	}
+    {
+        // we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
+        crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,
+                tempbuf, newvallen);
+    }
 
     if (internal_trace)
         fprintf(stderr, "Final qex_stat was %d\n", qex_stat);
@@ -154,11 +154,15 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         if (user_trace)
             fprintf(stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %d\n", csl->cstmt);
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+        CRM_ASSERT(csl->cstmt >= 0);
+        CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#endif
+        CRM_ASSERT(csl->cstmt >= 0);
+        CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
     return 0;
@@ -176,7 +180,7 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //      Syntax is "alter <flags> (var) /newvalue/
 
     char varname[MAX_VARNAME];
-    int  varnamestart;
+    int varnamestart;
     int varnamelen;
     int newvallen;
 
@@ -190,7 +194,7 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     varnamelen = crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
     if (varnamelen < 2)
     {
-		// we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
+        // we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
 
         nonfatalerror(
                 "This statement is missing the variable to alter,\n",
@@ -199,22 +203,22 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     //      do variable substitution on the variable name
-    varnamelen = crm_nexpandvar(varname, varnamelen, MAX_VARNAME);
+    varnamelen = crm_nexpandvar(varname, varnamelen, MAX_VARNAME, vht, tdw);
     if (!crm_nextword(varname, varnamelen, 0, &varnamestart, &varnamelen)
-    || varnamelen < 2)
+        || varnamelen < 2)
     {
-		// we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
+        // we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
 
         nonfatalerror(
                 "The variable you're asking me to alter has an utterly bogus\n"
-				"name or has not been specified at all\n",
+                "name or has not been specified at all\n",
                 "so I'll ignore the whole statement.");
         return 0;
     }
 
     //     get the new pattern, and expand it.
     newvallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
-    newvallen = crm_nexpandvar(tempbuf, newvallen, data_window_size);
+    newvallen = crm_nexpandvar(tempbuf, newvallen, data_window_size, vht, tdw);
 
     crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,
             tempbuf, newvallen);

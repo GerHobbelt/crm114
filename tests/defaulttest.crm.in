@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114
+#! @BIN_PATH@/crm114
 #   see if default actually works!
 window
 output / \n\nCRM114: testing default command line args \n/

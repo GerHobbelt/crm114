@@ -6,46 +6,77 @@
 /* DISable ASSERT/VERIFY checks */
 #undef CRM_DONT_ASSERT
 
-/* do not include experimental classifiers in the build */
+/* #define as 1: do NOT include any experimental classifiers in the build.
+   #define as 0: explicitly request INclusion in the build. #undef: assume
+   INclusion in the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_PRODUCTION_CLASSIFIERS_ONLY
 
-/* do not include the Bit-Entropy classifier in the build */
+/* #define as 1: do NOT include the Bit-Entropy classifier in the build.
+   #define as 0: explicitly request INclusion in the build. #undef: assume
+   INclusion in the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_BIT_ENTROPY
 
-/* do not include the CLUMP classifier in the build */
+/* #define as 1: do NOT include BMP-assited analysis in the build. #define as
+   0: explicitly request INclusion in the build. #undef: assume INclusion in
+   the build (i.e. use the default set in crm114_config.h) */
+#undef CRM_WITHOUT_BMP_ASSISTED_ANALYSIS
+
+/* #define as 1: do NOT include the CLUMP classifier in the build. #define as
+   0: explicitly request INclusion in the build. #undef: assume INclusion in
+   the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_CLUMP
 
-/* do not include the Correlate classifier in the build */
+/* #define as 1: do NOT include the Correlate classifier in the build. #define
+   as 0: explicitly request INclusion in the build. #undef: assume INclusion
+   in the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_CORRELATE
 
-/* do not include the FSCM classifier in the build */
+/* #define as 1: do NOT include the FSCM classifier in the build. #define as
+   0: explicitly request INclusion in the build. #undef: assume INclusion in
+   the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_FSCM
 
-/* do not include the Markov classifier in the build */
+/* #define as 1: do NOT include the Markov classifier in the build. #define as
+   0: explicitly request INclusion in the build. #undef: assume INclusion in
+   the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_MARKOV
 
 /* do not use the custom inline qsort by Michael Tokarev */
 #undef CRM_WITHOUT_MJT_INLINED_QSORT
 
-/* do not include the Neural-Net classifier in the build */
+/* #define as 1: do NOT include the Neural-Net classifier in the build.
+   #define as 0: explicitly request INclusion in the build. #undef: assume
+   INclusion in the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_NEURAL_NET
 
-/* do not include the OSBF classifier in the build */
+/* #define as 1: do NOT include the OSBF classifier in the build. #define as
+   0: explicitly request INclusion in the build. #undef: assume INclusion in
+   the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_OSBF
 
-/* do not include the OSB-Bayes classifier in the build */
+/* #define as 1: do NOT include the OSB-Bayes classifier in the build. #define
+   as 0: explicitly request INclusion in the build. #undef: assume INclusion
+   in the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_OSB_BAYES
 
-/* do not include the OSB-Hyperspace classifier in the build */
+/* #define as 1: do NOT include the OSB-Hyperspace classifier in the build.
+   #define as 0: explicitly request INclusion in the build. #undef: assume
+   INclusion in the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_OSB_HYPERSPACE
 
-/* do not include the OSB-Winnow classifier in the build */
+/* #define as 1: do NOT include the OSB-Winnow classifier in the build.
+   #define as 0: explicitly request INclusion in the build. #undef: assume
+   INclusion in the build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_OSB_WINNOW
 
-/* do not include the SKS classifier in the build */
+/* #define as 1: do NOT include the SKS classifier in the build. #define as 0:
+   explicitly request INclusion in the build. #undef: assume INclusion in the
+   build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_SKS
 
-/* do not include the SVM classifier in the build */
+/* #define as 1: do NOT include the SVM classifier in the build. #define as 0:
+   explicitly request INclusion in the build. #undef: assume INclusion in the
+   build (i.e. use the default set in crm114_config.h) */
 #undef CRM_WITHOUT_SVM
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
@@ -56,6 +87,15 @@
 
 /* BSD REs */
 #undef HAVE_BSD_REGEX
+
+/* Define to 1 if you have the `clock' function. */
+#undef HAVE_CLOCK
+
+/* Define to 1 if you have the `clock_getres' function. */
+#undef HAVE_CLOCK_GETRES
+
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
 
 /* Define to 1 if the system has the type `clock_t'. */
 #undef HAVE_CLOCK_T
@@ -111,6 +151,9 @@
 /* Define to 1 if you have the `getopt' function. */
 #undef HAVE_GETOPT
 
+/* Define to 1 if you have the `getopt_ex' function. */
+#undef HAVE_GETOPT_EX
+
 /* Define to 1 if you have the <getopt_ex.h> header file. */
 #undef HAVE_GETOPT_EX_H
 
@@ -119,6 +162,15 @@
 
 /* Define to 1 if you have the `getopt_long' function. */
 #undef HAVE_GETOPT_LONG
+
+/* Define to 1 if you have the `getopt_long_ex' function. */
+#undef HAVE_GETOPT_LONG_EX
+
+/* Define to 1 if you have the `getopt_long_only' function. */
+#undef HAVE_GETOPT_LONG_ONLY
+
+/* Define to 1 if you have the `getopt_long_only_ex' function. */
+#undef HAVE_GETOPT_LONG_ONLY_EX
 
 /* Define to 1 if you have the `getpagesize' function. */
 #undef HAVE_GETPAGESIZE
@@ -134,6 +186,9 @@
 
 /* Define to 1 if you have the `getpwuid_r' function. */
 #undef HAVE_GETPWUID_R
+
+/* Define to 1 if you have the `gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
 
 /* Define to 1 if you have the `getuid' function. */
 #undef HAVE_GETUID
@@ -222,8 +277,11 @@
 /* Define to 1 if you have the `logl' function. */
 #undef HAVE_LOGL
 
-/* compiler understands long long */
-#undef HAVE_LONG_LONG
+/* Define to 1 if you support file names longer than 14 characters. */
+#undef HAVE_LONG_FILE_NAMES
+
+/* Define to 1 if the system has the type `long long int'. */
+#undef HAVE_LONG_LONG_INT
 
 /* Define to 1 if you have the `madvise' function. */
 #undef HAVE_MADVISE
@@ -237,6 +295,9 @@
 
 /* Define to 1 if you have the `memchr' function. */
 #undef HAVE_MEMCHR
+
+/* Define to 1 if you have the `memmem' function. */
+#undef HAVE_MEMMEM
 
 /* Define to 1 if you have the `memmove' function. */
 #undef HAVE_MEMMOVE
@@ -286,6 +347,9 @@
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
 
+/* Define to 1 if you have the <poppack.h> header file. */
+#undef HAVE_POPPACK_H
+
 /* Define to 1 if you have the `posix_madvise' function. */
 #undef HAVE_POSIX_MADVISE
 
@@ -295,11 +359,38 @@
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
 
+/* Define if compiler supports #pragma pack(<size>). */
+#undef HAVE_PRAGMA_PACK
+
+/* Define if compiler does not listen strictly to large <size>s in #pragma
+   pack(<size>) but applies further member packing instead when none of the
+   (basic) members are <size> bytes or more. */
+#undef HAVE_PRAGMA_PACK_OVERSMART_COMPILER
+
+/* Define if compiler supports #pragma pack(push) / pack(pop) and
+   pack(<size>). */
+#undef HAVE_PRAGMA_PACK_PUSH_POP
+
 /* Define to 1 if you have the <process.h> header file. */
 #undef HAVE_PROCESS_H
 
+/* Define to 1 if you have the <pshpack1.h> header file. */
+#undef HAVE_PSHPACK1_H
+
+/* Define to 1 if you have the <pshpack2.h> header file. */
+#undef HAVE_PSHPACK2_H
+
+/* Define to 1 if you have the <pshpack4.h> header file. */
+#undef HAVE_PSHPACK4_H
+
 /* Define to 1 if you have the <pwd.h> header file. */
 #undef HAVE_PWD_H
+
+/* Define to 1 if you have the `QueryPerformanceCounter' function. */
+#undef HAVE_QUERYPERFORMANCECOUNTER
+
+/* Define to 1 if you have the `QueryPerformanceFrequency' function. */
+#undef HAVE_QUERYPERFORMANCEFREQUENCY
 
 /* Define to 1 if you have the <readline.h> header file. */
 #undef HAVE_READLINE_H
@@ -347,6 +438,9 @@
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -410,6 +504,15 @@
 
 /* Define to 1 if the system has the type `struct stat'. */
 #undef HAVE_STRUCT_STAT
+
+/* Define to 1 if the system has the type `struct timespec'. */
+#undef HAVE_STRUCT_TIMESPEC
+
+/* Define to 1 if the system has the type `struct timeval'. */
+#undef HAVE_STRUCT_TIMEVAL
+
+/* Define to 1 if the system has the type `struct tms'. */
+#undef HAVE_STRUCT_TMS
 
 /* Define to 1 if you have the `sysconf' function. */
 #undef HAVE_SYSCONF
@@ -560,6 +663,14 @@
    first (like Intel and VAX). */
 #undef MACHINE_IS_LITTLE_ENDIAN
 
+/* Define to 1 if `major', `minor', and `makedev' are declared in <mkdev.h>.
+   */
+#undef MAJOR_IN_MKDEV
+
+/* Define to 1 if `major', `minor', and `makedev' are declared in
+   <sysmacros.h>. */
+#undef MAJOR_IN_SYSMACROS
+
 /* directory where BillY's original crm114 distro resides */
 #undef ORIGINAL_BILLY_DISTRO_DIR
 
@@ -581,10 +692,13 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* "enable replacement memmove if system memmove is broken or missing" */
+/* enable replacement memmem if system memmem is broken or missing */
+#undef PREFER_PORTABLE_MEMMEM
+
+/* enable replacement memmove if system memmove is broken or missing */
 #undef PREFER_PORTABLE_MEMMOVE
 
-/* "enable replacement (v)snprintf if system (v)snprintf is broken" */
+/* enable replacement (v)snprintf if system (v)snprintf is broken */
 #undef PREFER_PORTABLE_SNPRINTF
 
 /* revision number of software */

@@ -83,7 +83,7 @@ if [ ! -z "${diffscript}" ]; then
 fi
 
 # expected output may be absent; if it is absent, a fresh file
-# will be created.containing a copy of the test output.
+# will be created. containing a copy of the test output.
 # this is handy to generate the 'expected output' files to start off with...
 if [ ! -z "${expected}" ]; then
   if [ "x${expected}" = "x-" ]; then
@@ -175,14 +175,15 @@ fi
 # and compare that chk file with the reference file:
 retcode=65536
 if [ ! -z "${diffscript}" ]; then
-  targetname="${BUILDDIR}/`basename ${diffscript}`.temp"
-  echo "targetname = ${targetname}"
-  "${diffscript}" "${expected}" "${tmpchk}" "${filtout}" "${targetname}"
-  retcode=$?
   # because the diffscript will certainly postprocess the data, we should
   # produce a 'true' (original) diff output for display when we FAIL:
-  # (yet the result OK/FAIL is determined by the diffscript above!)
+  # (yet the result OK/FAIL is determined by the diffscript below!)
   @DIFF@ -u @DIFF_FLAGS@ "${expected}" "${tmpchk}" > "${diffout}"
+
+  targetname="${BUILDDIR}/`basename ${diffscript}`.temp"
+  # echo "targetname = ${targetname}"
+  "${diffscript}" "${expected}" "${tmpchk}" "${filtout}" "${targetname}"
+  retcode=$?
 else
   @DIFF@ -u @DIFF_FLAGS@ "${expected}" "${tmpchk}" > "${diffout}"
   retcode=$?
@@ -193,26 +194,75 @@ debug_msg "srcdir = ${srcdir}"
 debug_msg "home = ${HOME}"
 debug_msg "CRM114_CHECK_OVERRIDE = ${CRM114_CHECK_OVERRIDE}"
 debug_msg "exit ${CRM114_CHECK_OVERRIDE} vs. retcode = ${retcode}"
+debug_msg "CRM114_CHECK_QUIET = ${CRM114_CHECK_QUIET}"
 
+
+#
+# by default show the diff, even when it's an OKAY diff.
+# Only when we're told to shut up, we'll ONLY show the diff, just to be helpful,
+# when we are going to FAIL for real, i.e. when the OVERRIDE didn't pop in
+# to save our hide.
+#
 if [ ${retcode} == 0 ]; then
-  echo -n "OK"
+  retstr="OK"
+  if [ -z "${CRM114_CHECK_QUIET}" ]; then
+    showdiff=1
+  else
+    if [ "x${CRM114_CHECK_QUIET}" == "x0" ]; then
+      showdiff=1
+    else
+      showdiff=0
+    fi
+  fi
 else
-  echo "---- diff report: ----"
-  cat "${diffout}"
-  echo "----------------------"
-  echo -n "FAIL"
+  retstr="FAIL"
+  showdiff=1
 fi
 if [ ! -z "${CRM114_CHECK_OVERRIDE}" ]; then
   if [ ${CRM114_CHECK_OVERRIDE} == 0 ]; then
-    echo "(OVERRIDEN:OK)"
+    if [ ${retcode} != 0 ]; then
+      retstr="${retstr} (OVERRIDEN:OK)"
+      retcode=0
+    fi
   else
-    echo "(OVERRIDEN:FAIL)"
+    if [ ${retcode} != ${CRM114_CHECK_OVERRIDE} ]; then
+      retstr="${retstr} (OVERRIDEN:FAIL)"
+      retcode=${CRM114_CHECK_OVERRIDE}
+    fi
   fi
-  exit ${CRM114_CHECK_OVERRIDE}
-else
-  echo ""
-  exit ${retcode}
 fi
-
+if [ ${retcode} == 0 ]; then
+  if [ ! -z "${CRM114_CHECK_QUIET}" ]; then
+    if [ "x${CRM114_CHECK_QUIET}" != "x0" ]; then
+      showdiff=0
+      debug_msg "retstr = ${retstr} -- showdiff = ${showdiff} (check quiet != 0 :== shut her up anyway)"
+    fi
+  fi
+else
+  retstr="FAIL"
+  showdiff=1
+  debug_msg "retstr = ${retstr} -- showdiff = ${showdiff} (fail: no quietness for us)"
+fi
+if [ ${retcode} == 0 ]; then
+  if [ ${showdiff} != 0 ]; then
+    if [ -s "${diffout}" ]; then
+      echo "---- diff report: ----"
+      cat "${diffout}"
+      echo "----------------------"
+    fi
+  fi
+  echo "${retstr}"
+else
+  if [ ${showdiff} != 0 ]; then
+    if [ -s "${diffout}" ]; then
+      echo "---- diff report: ----"
+      cat "${diffout}"
+      echo "----------------------"
+    fi
+  fi
+  echo "${retstr}"
+fi
+debug_msg "real exit code = ${retcode} (after overriding an' all)"
+exit ${retcode}
 
 

@@ -22,7 +22,7 @@
 #include "crm114.h"
 
 
-#if defined (WIN32)
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
 
 
 #ifndef HAVE_TRUNCATE
@@ -193,5 +193,5 @@ return pagesize;
 
 
 
-#endif /* WIN32 */
+#endif /* (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)) */
 

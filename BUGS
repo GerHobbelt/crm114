@@ -22,4 +22,7 @@ bad code that got accepted before:
 
 No closing brace but still no error? :-still
 
+-------------- ^^^^ --------------------------------------------------
+
+For all BUGS listed above, see the illegal_stmtN.* test cases in ./tests/
 

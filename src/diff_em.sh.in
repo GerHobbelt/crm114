@@ -68,3 +68,5 @@ else
 	rm -f "diff/crm114.${nametemplate}.normal.diff"
 fi
 
+exit 0
+

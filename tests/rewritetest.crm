@@ -1,4 +1,4 @@
-#! /home/ger/prj/3actual/crm114-2/src/crm114
+#! /usr/local/bin/crm114
 #   do rewriting, based on rewrite rules in rewrites.mfp
 #
 #   Start with some data in the :_dw:
@@ -11,7 +11,7 @@ accept
 output /------------------------:*:_nl:/
 {
 	isolate (:rewrites:)
-	input (:rewrites:) [test_rewrites.mfp]
+	input (:rewrites:) [/home/ger/prj/3actual/crm114/tests/test_rewrites.mfp]
 	#    reset matching on rewrites to start of string
 	match [:rewrites:] //
 }

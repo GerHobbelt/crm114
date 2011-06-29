@@ -24,7 +24,7 @@
 
 
 
-#if !defined (CRM_WITHOUT_MARKOV)
+#if !CRM_WITHOUT_MARKOV
 
 
 
@@ -54,7 +54,9 @@ static const int hctable[] =
 //    How to learn Markovian style.
 //
 int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, int txtstart, int txtlen)
+VHT_CELL **vht,
+		CSL_CELL *tdw,
+                char *txtptr, int txtstart, int txtlen)
 {
     //     learn the sparse spectrum of this input window as
     //     belonging to a particular type.
@@ -63,7 +65,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int j;
     int i;
     int k;
-    int h;                  //  h is our counter in the hashpipe;
+    int h;                   //  h is our counter in the hashpipe;
     char ptext[MAX_PATTERN]; //  the regex pattern
     int plen;
     char ltext[MAX_PATTERN]; //  the variable to learn
@@ -71,9 +73,9 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char htext[MAX_PATTERN]; //  the hash name
     int hlen;
     int cflags;
-	//int eflags;
+    //int eflags;
     struct stat statbuf;        //  for statting the hash file
-    int hfsize;                //  size of the hash file
+    int hfsize;                 //  size of the hash file
     FEATUREBUCKET_TYPE *hashes; //  the text of the hash file
     crmhash_t hashpipe[MARKOVIAN_WINDOW_LEN + 1];
     //
@@ -102,15 +104,15 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the hash file name
     hlen = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN);
+    hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN, vht, tdw);
     //
     //           extract the variable name (if present)
     llen = crm_get_pgm_arg(ltext, MAX_PATTERN, apb->b1start, apb->b1len);
-    llen = crm_nexpandvar(ltext, llen, MAX_PATTERN);
+    llen = crm_nexpandvar(ltext, llen, MAX_PATTERN, vht, tdw);
 
     //     get the "this is a word" regex
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
     //            set our cflags, if needed.  The defaults are
     //            "case" and "affirm", (both zero valued).
@@ -160,25 +162,25 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
- if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
- {
-            fev = nonfatalerror_ex(SRC_LOC(), 
-				"\nYou didn't specify a valid filename: '%.*s'\n", 
-					(int)hlen,
-					htext);
-            return fev;
- }
- j += i;
+    if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+    {
+        fev = nonfatalerror_ex(SRC_LOC(),
+                "\nYou didn't specify a valid filename: '%.*s'\n",
+                (int)hlen,
+                htext);
+        return fev;
+    }
+    j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
     learnfilename = strdup(&htext[i]);
-        if (!learnfilename)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!learnfilename)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
 
     //             and stat it to get it's length
     k = stat(learnfilename, &statbuf);
@@ -213,7 +215,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
 
         classifier_info.classifier_bits = CRM_MARKOVIAN;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+        classifier_info.hash_version_in_use = selected_hashfunction;
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
@@ -757,6 +759,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     //
                     if (microgroom && (incrs > MICROGROOM_CHAIN_LENGTH))
                     {
+#ifdef STOCHASTIC_AMNESIA
                         //     set the random number generator up...
                         //     note that this is repeatable for a
                         //     particular test set, yet dynamic.  That
@@ -764,6 +767,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //     same feature; we depend on the previous
                         //     feature's key.
                         srand((unsigned int)h2);
+#endif
                         //
                         //   and do the groom.
                         crm_microgroom(hashes, seen_features, hfsize, hindex);
@@ -877,7 +881,9 @@ regcomp_failed:
 //      How to Markovian CLASSIFY some text.
 //
 int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, int txtstart, int txtlen)
+VHT_CELL **vht,
+		CSL_CELL *tdw,
+                char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -886,7 +892,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //       the code for LEARN
     //
     int i, j;
-    int h;                  //  we use h for our hashpipe counter, as needed.
+    int h;                   //  we use h for our hashpipe counter, as needed.
     char ptext[MAX_PATTERN]; //  the regex pattern
     int plen;
     //  char ltext[MAX_PATTERN];  //  the variable to classify
@@ -897,6 +903,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int hlen;
     //  the match statistics variable
     char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
+    char *stext_ptr = stext;
     int stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
     char svrbl[MAX_PATTERN]; //  the match statistics text buffer
     int svlen;
@@ -905,9 +912,9 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     // int eflags;
     int cflags;
     int not_microgroom;   //  is microgrooming disabled (fast-quit
-                           //   optimization if 0th feature gone)
+                          //   optimization if 0th feature gone)
     int max_feature_terms; //  how many features do we get at each
-                            //    pipe position?
+                           //    pipe position?
 
     struct stat statbuf;    //  for statting the hash file
                             //  longest association set in the hashing
@@ -923,12 +930,12 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #if defined (GER)
     hitcount_t hits[MAX_CLASSIFIERS];      // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
-    int totalfeatures;                    //  total features
+    int totalfeatures;                     //  total features
     hitcount_t htf;                        // hits this feature got.
 #else
     double hits[MAX_CLASSIFIERS];    // actual hits per feature per classifier
-    int totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
-    int totalfeatures;              //  total features
+    int totalhits[MAX_CLASSIFIERS];  // actual total hits per classifier
+    int totalfeatures;               //  total features
     double htf;                      // hits this feature got.
 #endif
     double tprob;                          //  total probability in the "success" domain.
@@ -972,35 +979,35 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //          We get the variable block, start, and len from caller
     //
     // llen = crm_get_pgm_arg (ltext, MAX_PATTERN, apb->b1start, apb->b1len);
-    // llen = crm_nexpandvar (ltext, llen, MAX_PATTERN);
+    // llen = crm_nexpandvar (ltext, llen, MAX_PATTERN, vht, tdw);
 
     //           extract the hash file names
     hlen = crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
-    hlen = crm_nexpandvar(htext, hlen, htext_maxlen);
+    hlen = crm_nexpandvar(htext, hlen, htext_maxlen, vht, tdw);
 
     //           extract the "this is a word" regex
     //
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
     //            extract the optional "match statistics" variable
     //
     svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
-    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
-	CRM_ASSERT(svlen < MAX_PATTERN);
+    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(svlen < MAX_PATTERN);
     {
         int vstart, vlen;
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
-		{
-        memmove(svrbl, &svrbl[vstart], vlen);
-        svlen = vlen;
-        svrbl[vlen] = 0;
-		}
-		else
-		{
-        svlen = 0;
-        svrbl[0] = 0;
-		}
+        {
+            memmove(svrbl, &svrbl[vstart], vlen);
+            svlen = vlen;
+            svrbl[vlen] = 0;
+        }
+        else
+        {
+            svlen = 0;
+            svrbl[0] = 0;
+        }
     }
 
     //     status variable's text (used for output stats)
@@ -1166,16 +1173,18 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
         if (crm_nextword(htext, hlen, fn_start_here, &fnstart, &fnlen)
-         && fnlen > 0)
+            && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = 0;
             //      fprintf(stderr, "fname is '%s' len %d\n", fname, fnlen);
             fn_start_here = fnstart + fnlen + 1;
             if (user_trace)
+            {
                 fprintf(stderr, "Classifying with file -%s- "
                                 "succhash=%d, maxhash=%d\n",
                         fname, succhash, maxhash);
+            }
             if (fname[0] == '|' && fname[1] == 0)
             {
                 if (vbar_seen)
@@ -1199,79 +1208,79 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //             quick check- does the file even exist?
                 if (k != 0)
                 {
-                    nonfatalerror("Nonexistent Classify table named: ",
+                    return nonfatalerror("Nonexistent Classify table named: ",
                             fname);
                 }
                 else
                 {
-					// [i_a] check hashes[] range BEFORE adding another one!
-            if (maxhash >= MAX_CLASSIFIERS)
-            {
-                nonfatalerror("Too many classifier files.",
-                        "Some may have been disregarded");
-            }
-			else
-			{
-                    //  file exists - do the mmap
-                    //
-                    hashlens[maxhash] = statbuf.st_size;
-                    //  mmap the hash file into memory so we can bitwhack it
-                    hashes[maxhash] = crm_mmap_file(fname,
-                            0,
-                            hashlens[maxhash],
-                            PROT_READ | PROT_WRITE,
-                            MAP_SHARED,
-                            CRM_MADV_RANDOM,
-                            &hashlens[maxhash]);
-
-                    if (hashes[maxhash] == MAP_FAILED)
+                    // [i_a] check hashes[] range BEFORE adding another one!
+                    if (maxhash >= MAX_CLASSIFIERS)
                     {
-                        nonfatalerror("Couldn't get access to the "
-                                      "statistics file named: ",
-                                fname);
+                        nonfatalerror("Too many classifier files.",
+                                "Some may have been disregarded");
                     }
                     else
                     {
-                        //  fprintf(stderr, "MMap got %lx\n", hashes);
+                        //  file exists - do the mmap
                         //
-                        //     Check to see if this file is the right version
-                        //
-                        //     FIXME : for now, there's no version number
-                        //     associated with a .correllation file
-                        //int fev;
-                        // if (0)
-                        //if (hashes[maxhash][0].hash != 0 ||
-                        //          hashes[maxhash][0].key  != 0 ||
-                        //  hashes[maxhash][0].value!= 0)
-                        //{
-                        //  fev = fatalerror ("The .css file is the wrong version!  Filename is: ",
-                        //                   fname);
-                        //  return (fev);
-                        //}
+                        hashlens[maxhash] = statbuf.st_size;
+                        //  mmap the hash file into memory so we can bitwhack it
+                        hashes[maxhash] = crm_mmap_file(fname,
+                                0,
+                                hashlens[maxhash],
+                                PROT_READ,
+                                MAP_SHARED,
+                                CRM_MADV_RANDOM,
+                                &hashlens[maxhash]);
 
-
-                        //  set this hashlens to the length in
-                        //  features instead of the length in bytes.
-
-                        hashlens[maxhash] = hashlens[maxhash] / sizeof(FEATUREBUCKET_TYPE);
-                        //
-                        //     save the name for later...
-                        //
-                        hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
-                        if (!hashname[maxhash])
+                        if (hashes[maxhash] == MAP_FAILED)
                         {
-                            untrappableerror(
-                                    "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
+                            nonfatalerror("Couldn't get access to the "
+                                          "statistics file named: ",
+                                    fname);
                         }
                         else
                         {
-                            strncpy(hashname[maxhash], fname, fnlen);
-                            hashname[maxhash][fnlen] = 0;
+                            //  fprintf(stderr, "MMap got %lx\n", hashes);
+                            //
+                            //     Check to see if this file is the right version
+                            //
+                            //     FIXME : for now, there's no version number
+                            //     associated with a .correllation file
+                            //int fev;
+                            // if (0)
+                            //if (hashes[maxhash][0].hash != 0 ||
+                            //          hashes[maxhash][0].key  != 0 ||
+                            //  hashes[maxhash][0].value!= 0)
+                            //{
+                            //  fev = fatalerror ("The .css file is the wrong version!  Filename is: ",
+                            //                   fname);
+                            //  return (fev);
+                            //}
+
+
+                            //  set this hashlens to the length in
+                            //  features instead of the length in bytes.
+
+                            hashlens[maxhash] = hashlens[maxhash] / sizeof(FEATUREBUCKET_TYPE);
+                            //
+                            //     save the name for later...
+                            //
+                            hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
+                            if (!hashname[maxhash])
+                            {
+                                untrappableerror(
+                                        "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
+                            }
+                            else
+                            {
+                                strncpy(hashname[maxhash], fname, fnlen);
+                                hashname[maxhash][fnlen] = 0;
+                            }
+                            maxhash++;
                         }
-                        maxhash++;
                     }
                 }
-			}
             }
         }
     }
@@ -1281,7 +1290,10 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (succhash == 0)
         succhash = maxhash;
 
-    //    now, set up the normalization factor fcount[]
+    //    a CLASSIFY with no arguments is always a "success".
+    if (maxhash == 0)
+        return 0;
+
     if (user_trace)
         fprintf(stderr, "Running with %d files for success out of %d files\n",
                 succhash, maxhash);
@@ -1291,12 +1303,8 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    do we have at least 1 valid .css files?
     if (maxhash == 0)
     {
-        nonfatalerror("Couldn't open at least 2 .css files for classify().", "");
+        return nonfatalerror("Couldn't open at least 2 .css files for classify().", "");
     }
-
-    //    a CLASSIFY with no arguments is always a "success".
-    if (maxhash == 0)
-        return 0;
 
     //    do we have at least 1 valid .css file at both sides of '|'?
     if (!vbar_seen || succhash < 0 || (maxhash <= succhash))
@@ -1315,17 +1323,17 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //     Note that we _calloc_, not malloc, to zero the memory first.
                 seen_features[ifile] = calloc(hashlens[ifile] + 1, sizeof(seen_features[ifile][0]));
                 if (seen_features[ifile] == NULL)
-				{
+                {
                     untrappableerror(" Couldn't allocate enough memory to keep "
                                      " track of nonunique features.  ",
                             "This is deadly. ");
-				}
+                }
             }
             else
-			{
+            {
                 seen_features[ifile] = NULL;
-			}
-		}
+            }
+        }
 
 
 
@@ -1498,7 +1506,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
 
             //   account for the text we used up...
-            textoffset = textoffset + match[0].rm_eo;
+        textoffset += match[0].rm_eo;
             i++;
 
             //        is the pipe full enough to do the hashing?
@@ -1984,9 +1992,9 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             {
                                 //
                                 l = hashes[k][lh].value * feature_weight;
-                                totalhits[k] = totalhits[k] + l; // remember totalhits
+                            totalhits[k] += l;                             // remember totalhits  /* [i_a] compare this code with elsewhere; here totalhits is counted different; should it be double type??? */
                                 hits[k] = l * cpcorr[k];         // remember corr. hits
-                                htf = htf + hits[k];             // and hits-this-feature
+                        htf += hits[k];                         // and hits-this-feature
                                 if (unique_mode)
                                 {
                                     if (seen_features[k][lh] > 0)
@@ -2223,32 +2231,32 @@ classify_end_regex_loop:
         //
         tprob = 0.0;
         for (k = 0; k < succhash; k++)
-            tprob = tprob + ptc[k];
+    {
+        tprob += ptc[k];
+    }
         //
         //      Do the calculations and format some output, which we may or may
         //      not use... but we need the calculated result anyway.
         //
+
         if (1 /* svlen > 0 */)
         {
-            char buf[1024];
+        // char buf[1024];
             double accumulator;
             double remainder;
             double overall_pR;
             int m;
 
-            buf[0] = 0;
+        // buf[0] = 0;
             accumulator = 10 * DBL_MIN;
             for (m = 0; m < succhash; m++)
             {
-                accumulator = accumulator + ptc[m];
+                accumulator += ptc[m];
             }
             remainder = 10 * DBL_MIN;
             for (m = succhash; m < maxhash; m++)
             {
-                if (bestseen != m) // [i_a] <-- shouldn't this condition be here, like in the other files?
-                {
-                    remainder = remainder + ptc[m];
-                }
+                    remainder += ptc[m];
             }
             overall_pR = log10(accumulator) - log10(remainder);
 
@@ -2256,16 +2264,17 @@ classify_end_regex_loop:
             //  There would be a possible buffer overflow except that _we_ control
             //   what gets written here.  So it's no biggie.
 
-            if (tprob > 0.5)
-            {
-                sprintf(buf, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
-            }
-            else
-            {
-                sprintf(buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
-            }
-            if (strlen(stext) + strlen(buf) <= stext_maxlen)
-                strcat(stext, buf);
+        if (tprob > 0.5)
+        {
+            snprintf(stext_ptr, stext_maxlen, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+        }
+        else
+        {
+            snprintf(stext_ptr, stext_maxlen, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+        }
+		stext_ptr[stext_maxlen - 1] = 0;
+		stext_maxlen -= (int)strlen(stext_ptr);
+		stext_ptr += strlen(stext_ptr);
 
             //   find best single matching file
             //
@@ -2273,7 +2282,9 @@ classify_end_regex_loop:
             for (k = 0; k < maxhash; k++)
             {
                 if (ptc[k] > ptc[bestseen])
+				{
                     bestseen = k;
+				}
             }
 
             remainder = 10 * DBL_MIN;
@@ -2281,28 +2292,28 @@ classify_end_regex_loop:
             {
                 if (bestseen != m)
                 {
-                    remainder = remainder + ptc[m];
+                    remainder += ptc[m];
                 }
             }
 
             //   ... and format some output of best single matching file
             //
-            buf[0] = 0;
             if (bestseen < maxhash)
             {
-                snprintf(buf, WIDTHOF(buf), "Best match to file #%d (%s) "
+                snprintf(stext_ptr, stext_maxlen, "Best match to file #%d (%s) "
                                             "prob: %6.4f  pR: %6.4f  \n",
                         bestseen,
                         hashname[bestseen],
                         ptc[bestseen],
                         (log10(ptc[bestseen]) - log10(remainder)));
-                buf[WIDTHOF(buf) - 1] = 0;
+		stext_ptr[stext_maxlen - 1] = 0;
+		stext_maxlen -= (int)strlen(stext_ptr);
+		stext_ptr += strlen(stext_ptr);
             }
-            if (strlen(stext) + strlen(buf) <= stext_maxlen)
-                strcat(stext, buf);
-            sprintf(buf, "Total features in input file: %d\n", totalfeatures);
-            if (strlen(stext) + strlen(buf) <= stext_maxlen)
-                strcat(stext, buf);
+            snprintf(stext_ptr, stext_maxlen, "Total features in input file: %d\n", totalfeatures);
+		stext_ptr[stext_maxlen - 1] = 0;
+		stext_maxlen -= (int)strlen(stext_ptr);
+		stext_ptr += strlen(stext_ptr);
 
             //     Now do the per-file breakdowns:
             //
@@ -2314,12 +2325,12 @@ classify_end_regex_loop:
                 {
                     if (k != m)
                     {
-                        remainder = remainder + ptc[m];
+                        remainder += ptc[m];
                     }
                 }
                 CRM_ASSERT(k >= 0);
                 CRM_ASSERT(k < maxhash);
-                snprintf(buf, WIDTHOF(buf),
+                snprintf(stext_ptr, stext_maxlen, 
                         "#%d (%s):"
                         " features: %d, hits: %d, prob: %3.2e, pR: %6.2f\n",
                         k,
@@ -2328,15 +2339,15 @@ classify_end_regex_loop:
                         (int)totalhits[k],
                         ptc[k],
                         (log10(ptc[k]) - log10(remainder)));
-                buf[WIDTHOF(buf) - 1] = 0;
-                // strcat (stext, buf);
-                if (strlen(stext) + strlen(buf) <= stext_maxlen)
-                    strcat(stext, buf);
+		stext_ptr[stext_maxlen - 1] = 0;
+		stext_maxlen -= (int)strlen(stext_ptr);
+		stext_ptr += strlen(stext_ptr);
             }
+        }
             // check here if we got enough room in stext to stuff everything
             // perhaps we'd better rise a nonfatalerror, instead of just
             // whining on stderr
-            if (strcmp(&(stext[strlen(stext) - strlen(buf)]), buf) != 0)
+        if (stext_maxlen <= 1)
             {
                 nonfatalerror("WARNING: not enough room in the buffer to create "
                               "the statistics text.  Perhaps you could try bigger "
@@ -2347,20 +2358,37 @@ classify_end_regex_loop:
             {
                 crm_destructive_alter_nvariable(svrbl, svlen,
                         stext, (int)strlen(stext));
-            }
-        }
+    }
+
+
+    //  cleanup time!
+    //  remember to let go of the fd's and mmaps
+    for (k = 0; k < maxhash; k++)
+    {
+        //      close (hfds [k]);
+        crm_munmap_file((void *)hashes[k]);
+    }
+    //  and let go of the regex buffery
+    if (ptext[0] != 0)
+        crm_regfree(&regcb);
 
         //
         //  Free the hashnames, to avoid a memory leak.
         //
         for (i = 0; i < maxhash; i++)
+    {
             free(hashname[i]);
+	}
         if (tprob <= 0.5)
         {
             if (user_trace)
                 fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
             //    and do what we do for a FAIL here
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -2398,15 +2426,6 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             "Markov");
 }
 
-
-int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, int txtstart, int txtlen)
-{
-    return nonfatalerror_ex(SRC_LOC(),
-            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
-            "You may want to run 'crm -v' to see which classifiers are available.\n",
-            "Markov");
-}
 
 #endif /* CRM_WITHOUT_MARKOV */
 

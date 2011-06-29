@@ -1,9 +1,9 @@
-#! /home/ger/prj/3actual/crm114-2/src/crm114 
+#! /usr/local/bin/crm114
 #!    this little regression test by Jskud verifies match start/length works
 window
 output /:*:_nl: CRM114 testing that start \/ length works in matches :*:_nl: :*:_nl:/
 isolate (:whitelist:)
-input (:whitelist:) [whitelist.mfp.example]
+input (:whitelist:) [/home/ger/prj/3actual/crm114/tests/whitelist.mfp.example]
 output /DEBUG: whitelist==<<:*:whitelist:>>:*:_nl:/
 # match (:waste:) [:whitelist:] /^/ ; # force match so <fromend> will work
 {

@@ -24,9 +24,9 @@
 
 
 
-#if !defined (CRM_WITHOUT_OSB_HYPERSPACE)
+#if !CRM_WITHOUT_OSB_HYPERSPACE
 
-#if 0
+#if 10
 #define USE_FIXED_UNIQUE_MODE 1
 #endif
 
@@ -187,6 +187,8 @@ static int hash_compare(void const *a, void const *b)
 //
 
 int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+								  		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txtptr, int txtstart, int txtlen)
 {
     //     learn the osb_hyperspace transform  of this input window as
@@ -194,12 +196,12 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //     learn <flags> (classname) /word/
     //
     int i, j, k;
-    int h;                  //  h is our counter in the hashpipe;
+    int h;                          //  h is our counter in the hashpipe;
     char htext[MAX_PATTERN];        //  the hash name
     char hashfilename[MAX_PATTERN]; // the hashfile name
     int hlen;
     int cflags;
-	int eflags;
+    int eflags;
     struct stat statbuf;                     //  for statting the hash file
     HYPERSPACE_FEATUREBUCKET_STRUCT *hashes; //  the hashes we'll sort
     int hashcounts;
@@ -233,8 +235,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the hash file name
     hlen = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN);
-	CRM_ASSERT(hlen < MAX_PATTERN);
+    hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(hlen < MAX_PATTERN);
 
 
     //            set our cflags, if needed.  The defaults are
@@ -288,15 +290,15 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
- if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
- {
-            fev = nonfatalerror_ex(SRC_LOC(), 
-				"\nYou didn't specify a valid filename: '%.*s'\n", 
-					(int)hlen,
-					htext);
-            return fev;
- }
- j += i;
+    if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+    {
+        fev = nonfatalerror_ex(SRC_LOC(),
+                "\nYou didn't specify a valid filename: '%.*s'\n",
+                (int)hlen,
+                htext);
+        return fev;
+    }
+    j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
 
@@ -307,16 +309,16 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   Note that during a LEARN in hyperspace, we do NOT use the mmap of
     //    pre-existing memory.  We just write to the end of the file instead.
     //    malloc up the unsorted hashbucket space
-    hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT + 1 /* still space for the sentinel at worst case! */, 
+    hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT + 1 /* still space for the sentinel at worst case! */,
             sizeof(hashes[0]));
-        if (!hashes)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!hashes)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
     hashcounts = 0;
     //  put in a zero as the start marker.
     hashes[hashcounts].hash = 0;
-  //  hashes[hashcounts].key = 0;
+    //  hashes[hashcounts].key = 0;
     hashcounts++;
 
     //   No need to do any parsing of a box restriction.
@@ -337,30 +339,32 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector
     (apb,                                  // the APB
+	vht,
+	tdw,
             txtptr,                        // intput string
             txtlen,                        // how many bytes
             txtstart,                      // starting offset
-            NULL,                         // tokenizer
+            NULL,                          // tokenizer
             NULL,                          // coeff array
             (crmhash_t *)hashes,           // where to put the hashed results
             HYPERSPACE_MAX_FEATURE_COUNT,  //  max number of hashes
-            &hashcounts                   // how many hashes we actually got
-            );
-        CRM_ASSERT(hashcounts >= 0);
-        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-        hashes[hashcounts].hash = 0; // write sentinel
+            &hashcounts                    // how many hashes we actually got
+    );
+    CRM_ASSERT(hashcounts >= 0);
+    CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+    hashes[hashcounts].hash = 0;     // write sentinel
 
 
 
 #if USE_FIXED_UNIQUE_MODE
     if (internal_trace)
-	{
+    {
         fprintf(stderr, "Total unsorted hashes generated: %d\n", hashcounts);
-		for (i = 0; i < hashcounts; i++)
-		{
-			fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
-		}
-	}
+        for (i = 0; i < hashcounts; i++)
+        {
+            fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
+        }
+    }
 
     //   Now sort the hashes array.
     //
@@ -368,34 +372,34 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hash_compare);
 
     if (internal_trace)
-	{
+    {
         fprintf(stderr, "Total hashes generated PRE-unique: %d\n", hashcounts);
-		for (i = 0; i < hashcounts; i++)
-		{
-			fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
-		}
-	}
+        for (i = 0; i < hashcounts; i++)
+        {
+            fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
+        }
+    }
 
     //   And uniqueify the hashes array
     //
 
-        CRM_ASSERT(hashcounts >= 0);
-        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-        CRM_ASSERT(hashes[hashcounts].hash == 0);
+    CRM_ASSERT(hashcounts >= 0);
+    CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+    CRM_ASSERT(hashes[hashcounts].hash == 0);
 
     if (unique)
     {
-         for (i = j = 1; i < hashcounts; i++)
-         {
-             if (hashes[i].hash != hashes[j - 1].hash)
-             {
-                 hashes[j] = hashes[i];
-                 j++;
-             }
-         }
-         hashcounts = j;
+        for (i = j = 1; i < hashcounts; i++)
+        {
+            if (hashes[i].hash != hashes[j - 1].hash)
+            {
+                hashes[j] = hashes[i];
+                j++;
+            }
+        }
+        hashcounts = j;
 
-	// Put in a sentinel zero.
+        // Put in a sentinel zero.
         hashes[hashcounts].hash = 0;
     }
 
@@ -412,67 +416,67 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (user_trace)
         fprintf(stderr, "Total hashes generated: %d\n", hashcounts);
 
-  //   And uniqueify the hashes array
-  //
-  
-  i = 0;
-  j = 0;
+    //   And uniqueify the hashes array
+    //
 
-  if (internal_trace)
-    fprintf (stderr, "Pre-Unique: %d as %lx %lx %lx %lx %lx %lx %lx %lx\n",
-	     hashcounts,
-	     (unsigned long int)hashes[0].hash,
-	     (unsigned long int)hashes[1].hash,
-	     (unsigned long int)hashes[2].hash,
-	     (unsigned long int)hashes[3].hash,
-	     (unsigned long int)hashes[4].hash,
-	     (unsigned long int)hashes[5].hash,
-	     (unsigned long int)hashes[6].hash,
-	     (unsigned long int)hashes[7].hash);
-  
-  if (unique)
+    i = 0;
+    j = 0;
+
+    if (internal_trace)
+        fprintf(stderr, "Pre-Unique: %d as %lx %lx %lx %lx %lx %lx %lx %lx\n",
+                hashcounts,
+                (unsigned long int)hashes[0].hash,
+                (unsigned long int)hashes[1].hash,
+                (unsigned long int)hashes[2].hash,
+                (unsigned long int)hashes[3].hash,
+                (unsigned long int)hashes[4].hash,
+                (unsigned long int)hashes[5].hash,
+                (unsigned long int)hashes[6].hash,
+                (unsigned long int)hashes[7].hash);
+
+    if (unique)
     {
-      while ( i <= hashcounts )
-      {
-	if (hashes[i].hash != hashes[i+1].hash
-	    //	    || hashes[i].key != hashes[i+1].key )
-	    )
-	  {
-	    hashes[j]= hashes[i];
-	    j++;
-	  };
-	i++;
-      };
-      hashcounts = j;
-    };
+        while (i <= hashcounts)
+        {
+            if (hashes[i].hash != hashes[i + 1].hash
+                //	    || hashes[i].key != hashes[i+1].key )
+               )
+            {
+                hashes[j] = hashes[i];
+                j++;
+            }
+            i++;
+        }
+        hashcounts = j;
+    }
 
-  //    Put in a sentinel zero.
-  hashes[hashcounts].hash = 0;
+    //    Put in a sentinel zero.
+    hashes[hashcounts].hash = 0;
 
-  //Debug print
-  if (internal_trace)
-    fprintf (stderr, "Post-Unique: %d as %lx %lx %lx %lx %lx %lx %lx %lx\n",
-	     hashcounts,
-	     (unsigned long int)hashes[0].hash,
-	     (unsigned long int)hashes[1].hash,
-	     (unsigned long int)hashes[2].hash,
-	     (unsigned long int)hashes[3].hash,
-	     (unsigned long int)hashes[4].hash,
-	     (unsigned long int)hashes[5].hash,
-	     (unsigned long int)hashes[6].hash,
-	     (unsigned long int)hashes[7].hash);
+    //Debug print
+    if (internal_trace)
+        fprintf(stderr, "Post-Unique: %d as %lx %lx %lx %lx %lx %lx %lx %lx\n",
+                hashcounts,
+                (unsigned long int)hashes[0].hash,
+                (unsigned long int)hashes[1].hash,
+                (unsigned long int)hashes[2].hash,
+                (unsigned long int)hashes[3].hash,
+                (unsigned long int)hashes[4].hash,
+                (unsigned long int)hashes[5].hash,
+                (unsigned long int)hashes[6].hash,
+                (unsigned long int)hashes[7].hash);
 
 
 #endif
 
     if (user_trace)
-	{
+    {
         fprintf(stderr, "Unique hashes generated: %d\n", hashcounts);
-		for (i = 0; i < hashcounts; i++)
-		{
-			fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
-		}
-	}
+        for (i = 0; i < hashcounts; i++)
+        {
+            fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
+        }
+    }
     //    store hash count of this document in the first bucket's .key slot
     //  hashes[hashcounts].key = hashcounts;
 
@@ -515,7 +519,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
                 classifier_info.classifier_bits = CRM_HYPERSPACE;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+                classifier_info.hash_version_in_use = selected_hashfunction;
 
                 if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                 {
@@ -525,19 +529,19 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
 
             //    and write the sorted hashes out.
-			CRM_ASSERT(hashes[hashcounts].hash == 0);
-			CRM_ASSERT(hashcounts > 0 ? hashes[hashcounts - 1].hash != 0 : TRUE);
+            CRM_ASSERT(hashes[hashcounts].hash == 0);
+            CRM_ASSERT(hashcounts > 0 ? hashes[hashcounts - 1].hash != 0 : TRUE);
             ret = (int)fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
 #if USE_FIXED_UNIQUE_MODE
-				1 +
+                    1 +
 #endif
-hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
+                    hashcounts, /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
                     hashf);
             if (ret != hashcounts
 #if USE_FIXED_UNIQUE_MODE
-				+ 1
+                + 1
 #endif
-				)
+               )
             {
                 fatalerror("For some reason, I was unable to append a hash series to the file named ",
                         hashfilename);
@@ -624,13 +628,13 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
             u = 0;
             thisstart = k;
             if (internal_trace)
-			{
+            {
                 fprintf(stderr,
-		   "At featstart, looking at %ld (next bucket value is %ld)\n",
+                        "At featstart, looking at %ld (next bucket value is %ld)\n",
                         (unsigned long int)file_hashes[thisstart].hash,
-						(thisstart + 1 < file_hashlens ? (unsigned long int)file_hashes[thisstart + 1].hash : 0));
-			}
-			while (wrapup == 0)
+                        (thisstart + 1 < file_hashlens ? (unsigned long int)file_hashes[thisstart + 1].hash : 0));
+            }
+            while (wrapup == 0)
             {
                 //    it's an in-class feature.
                 // int cmp = hash_compare(&hashes[u], &file_hashes[k]);
@@ -693,12 +697,12 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
             thisend = k - 2;
             thislen = thisend - thisstart;
             if (internal_trace)
-			{
+            {
                 fprintf(stderr,
-		     "At featend, looking at %ld (next bucket value is %ld)\n",
+                        "At featend, looking at %ld (next bucket value is %ld)\n",
                         (unsigned long int)file_hashes[thisend].hash,
-						(thisend + 1 < file_hashlens ? (unsigned long int)file_hashes[thisend + 1].hash : 0));
-			}
+                        (thisend + 1 < file_hashlens ? (unsigned long int)file_hashes[thisend + 1].hash : 0));
+            }
 
             //  end of a document- process accumulations
 
@@ -770,7 +774,9 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
 //      How to do a Osb_Hyperspace CLASSIFY some text.
 //
 int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, int txtstart, int txtlen)
+VHT_CELL **vht,
+		CSL_CELL *tdw,
+                char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -815,7 +821,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #else
     int totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
 #endif
-    int totalfeatures;                    //  total features
+    int totalfeatures;                     //  total features
     double tprob;                          //  total probability in the "success" domain.
 
     double ptc[MAX_CLASSIFIERS]; // current running probability of this class
@@ -947,10 +953,10 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //        make the space for the unknown text's hashes
     unk_hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT + 1 /* still space for sentinel at worst case! */,
             sizeof(unk_hashes[0]));
-        if (!unk_hashes)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!unk_hashes)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
     unk_hashcount = 0;
 #ifndef VECTOR_TOKENIZER
 #if defined (GER)
@@ -965,33 +971,33 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the hash file names
     hlen = crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
-    hlen = crm_nexpandvar(htext, hlen, htext_maxlen);
-	CRM_ASSERT(hlen < MAX_PATTERN);
+    hlen = crm_nexpandvar(htext, hlen, htext_maxlen, vht, tdw);
+    CRM_ASSERT(hlen < MAX_PATTERN);
 
     //            extract the optional "match statistics" variable
     //
     svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
-    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
-	CRM_ASSERT(svlen < MAX_PATTERN);
+    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(svlen < MAX_PATTERN);
     {
         int vstart, vlen;
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
-		{
-        memmove(svrbl, &svrbl[vstart], vlen);
-        svlen = vlen;
-        svrbl[vlen] = 0;
-		}
-		else
-		{
-        svlen = 0;
-        svrbl[0] = 0;
-		}
+        {
+            memmove(svrbl, &svrbl[vstart], vlen);
+            svlen = vlen;
+            svrbl[vlen] = 0;
+        }
+        else
+        {
+            svlen = 0;
+            svrbl[0] = 0;
+        }
     }
     if (user_trace)
-	{
+    {
         fprintf(stderr, "Status out var %s (len %d)\n",
                 svrbl, svlen);
-	}
+    }
 
     //     status variable's text (used for output stats)
     //
@@ -1060,7 +1066,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
         if (crm_nextword(htext, hlen, fn_start_here, &fnstart, &fnlen)
-         && fnlen > 0)
+            && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = 0;
@@ -1096,66 +1102,66 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
                 else
                 {
-					// [i_a] check hashes[] range BEFORE adding another one!
-            if (maxhash >= MAX_CLASSIFIERS)
-            {
-                nonfatalerror("Too many classifier files.",
-                        "Some may have been disregarded");
-            }
-			else
-			{
-                    //  file exists - do the mmap
-                    //
-                    hashlens[maxhash] = statbuf.st_size;
-
-                    hashes[maxhash] = crm_mmap_file(fname,
-                            0,
-                            hashlens[maxhash],
-                            PROT_READ,
-                            MAP_SHARED,
-                            CRM_MADV_RANDOM,
-                            &hashlens[maxhash]);
-
-                    if (hashes[maxhash] == MAP_FAILED)
+                    // [i_a] check hashes[] range BEFORE adding another one!
+                    if (maxhash >= MAX_CLASSIFIERS)
                     {
-                        nonfatalerror("Couldn't memory-map the table file :",
-                                fname);
+                        nonfatalerror("Too many classifier files.",
+                                "Some may have been disregarded");
                     }
                     else
                     {
+                        //  file exists - do the mmap
                         //
-                        //     Check to see if this file is the right version
-                        //
-                        // int fev;
-                        //     if (hashes[maxhash][0].hash != 0 ||
-                        //         hashes[maxhash][0].key  != 0)
-                        //     {
-                        //         fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
-                        //                           fname);
-                        //         return (fev);
-                        //     }
+                        hashlens[maxhash] = statbuf.st_size;
 
-                        //  set this hashlens to the length in features instead
-                        //  of the length in bytes.
-                        hashlens[maxhash] /= sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
-                        //
-                        //     save the name for later...
-                        //
-                        hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
-                        if (!hashname[maxhash])
+                        hashes[maxhash] = crm_mmap_file(fname,
+                                0,
+                                hashlens[maxhash],
+                                PROT_READ,
+                                MAP_SHARED,
+                                CRM_MADV_RANDOM,
+                                &hashlens[maxhash]);
+
+                        if (hashes[maxhash] == MAP_FAILED)
                         {
-                            untrappableerror(
-                                    "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
+                            nonfatalerror("Couldn't memory-map the table file :",
+                                    fname);
                         }
                         else
                         {
-                            strncpy(hashname[maxhash], fname, fnlen);
-                            hashname[maxhash][fnlen] = 0;
+                            //
+                            //     Check to see if this file is the right version
+                            //
+                            // int fev;
+                            //     if (hashes[maxhash][0].hash != 0 ||
+                            //         hashes[maxhash][0].key  != 0)
+                            //     {
+                            //         fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
+                            //                           fname);
+                            //         return (fev);
+                            //     }
+
+                            //  set this hashlens to the length in features instead
+                            //  of the length in bytes.
+                            hashlens[maxhash] /= sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
+                            //
+                            //     save the name for later...
+                            //
+                            hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
+                            if (!hashname[maxhash])
+                            {
+                                untrappableerror(
+                                        "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
+                            }
+                            else
+                            {
+                                strncpy(hashname[maxhash], fname, fnlen);
+                                hashname[maxhash][fnlen] = 0;
+                            }
+                            maxhash++;
                         }
-                        maxhash++;
                     }
                 }
-				}
             }
         }
     }
@@ -1167,28 +1173,29 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (succhash == 0)
         succhash = maxhash;
 
+    //    a CLASSIFY with no arguments is always a "success".
+    if (maxhash == 0)
+        return 0;
+
     if (user_trace)
+    {
         fprintf(stderr, "Running with %d files for success out of %d files\n",
                 succhash, maxhash);
+    }
 
     // sanity checks...  Uncomment for super-strict CLASSIFY.
     //
     //    do we have at least 1 valid .css files?
     if (maxhash == 0)
     {
-        nonfatalerror("Couldn't open at least 1 .css files for classify().", "");
+        return nonfatalerror("Couldn't open at least 1 .css file for classify().", "");
     }
 
-    //    a CLASSIFY with no arguments is always a "success".
-    if (maxhash == 0)
-        return 0;
-
     //    do we have at least 1 valid .css file at both sides of '|'?
-    if (!vbar_seen || succhash < 0 || (maxhash <= succhash))
+    if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
-        nonfatalerror(
-                "Couldn't open at least 1 .css file per SUCC | FAIL category "
-                "for classify().\n", "Hope you know what are you doing.");
+        return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
+                      "for classify().\n", "Hope you know what are you doing.");
     }
 
 
@@ -1202,15 +1209,17 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector(apb,                             // the APB
+		vht,
+		tdw,
             txtptr,                                               // intput string
             txtlen,                                               // how many bytes
             txtstart,                                             // starting offset
-            NULL,                                                // tokenizer
+            NULL,                                                 // tokenizer
             NULL,                                                 // coeff array
             (crmhash_t *)unk_hashes,                              // where to put the hashed results
             HYPERSPACE_MAX_FEATURE_COUNT,                         //  max number of hashes
-            &unk_hashcount                                       // how many hashes we actually got
-            );                                        
+            &unk_hashcount                                        // how many hashes we actually got
+                                );
     CRM_ASSERT(unk_hashcount >= 0);
     CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
     //mark the end of a feature vector
@@ -1238,15 +1247,15 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
         CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
 
-         for (i = j = 1; i < unk_hashcount; i++)
-         {
-             if (unk_hashes[i].hash != unk_hashes[j - 1].hash)
-             {
-                 unk_hashes[j] = unk_hashes[i];
-                 j++;
-             }
-         }
-         unk_hashcount = j;
+        for (i = j = 1; i < unk_hashcount; i++)
+        {
+            if (unk_hashes[i].hash != unk_hashes[j - 1].hash)
+            {
+                unk_hashes[j] = unk_hashes[i];
+                j++;
+            }
+        }
+        unk_hashcount = j;
 
         //mark the end of a feature vector
         unk_hashes[unk_hashcount].hash = 0;
@@ -1270,10 +1279,10 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     j = 1;
     if (use_unique)
     {
-      while (i <= unk_hashcount)
+        while (i <= unk_hashcount)
         {
-	  if (unk_hashes[i].hash != unk_hashes[i+1].hash 
-	      //	      || unk_hashes[i].key != unk_hashes[i+1].key)
+            if (unk_hashes[i].hash != unk_hashes[i + 1].hash
+                //	      || unk_hashes[i].key != unk_hashes[i+1].key)
                )
             {
                 unk_hashes[j] = unk_hashes[i];
@@ -1289,7 +1298,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #endif
 
     if (user_trace)
-        fprintf(stderr, "unique hashes generated: %d\n", unk_hashcount);
+        fprintf(stderr, "Classify: unique hashes generated: %d\n", unk_hashcount);
 
     totalfeatures = unk_hashcount;
 
@@ -1324,7 +1333,6 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #ifdef KNN_ON
         //      Initialize the KNN neighborhood.
         for (i = 0; i < KNN_NEIGHBORHOOD_SIZE; i++)
-            ;
         {
             top_n_val[i] = 0.0;
             top_n_class[i] = -1;
@@ -1753,15 +1761,12 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         accumulator = 10 * DBL_MIN;
         for (m = 0; m < succhash; m++)
         {
-            accumulator = accumulator + ptc[m];
+            accumulator += ptc[m];
         }
         remainder = 10 * DBL_MIN;
         for (m = succhash; m < maxhash; m++)
         {
-            if (bestseen != m)
-            {
-                remainder = remainder + ptc[m];
-            }
+                remainder += ptc[m];
         }
 
         //  overall_pR = 10 * (log10 (accumulator) - log10 (remainder));
@@ -1801,7 +1806,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             if (bestseen != m)
             {
-                remainder = remainder + ptc[m];
+                remainder += ptc[m];
             }
         }
         CRM_ASSERT(bestseen >= 0);
@@ -1843,7 +1848,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (k != m)
                 {
-                    remainder = remainder + ptc[m];
+                    remainder += ptc[m];
                 }
             }
             CRM_ASSERT(k >= 0);
@@ -1928,24 +1933,28 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
 
-  if (tprob > 0.5)
+    if (tprob > 0.5)
     {
-      //   all done... if we got here, we should just continue execution
-      if (user_trace)
-	fprintf (stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
+        //   all done... if we got here, we should just continue execution
+        if (user_trace)
+            fprintf(stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
     }
-  else
+    else
     {
         if (user_trace)
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         //    and do what we do for a FAIL here
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#endif
+        CRM_ASSERT(csl->cstmt >= 0);
+        CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }
-  //    
+    //
     return 0;
 }
 

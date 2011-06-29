@@ -1,0 +1,131 @@
+#! @BIN_PATH@/crm114
+#
+# See extra warnings at the bottom of this script
+#
+window
+{
+	isolate (:count:) /10000/
+	isolate (:crm_exe:) //
+	# translate () [text] // // --> error report (good work, but not really what I was looking for right now. 
+	# translate (:crm_exe:) [@abs_top_builddir@/src/crm114] // // 
+	# and another error for this one:
+	# match (:crm_exe:) [@abs_top_builddir@/src/crm114] /.*/  
+	# so we end up with the Final Solution - which is a wicked hack
+	call /:cvt:/ (:crm_exe:) [@abs_top_builddir@/src/crm114]  
+
+	output /\n ----- running :*:count: syscalls (:*:crm_exe:) to see the timing -----\n/
+	{
+  		syscall /:*:crm_exe: '-{ window; }'/
+		eval (:count:) /:@::*:count:-1:/
+	        # output / :*:count: /
+	        # output /./
+		eval /:@::*:count:>0:/
+		liaf;
+	}
+	output /\n ----- done -----\n/
+
+	exit /0/;
+}
+
+#
+# as the QUICKREF says: variables are expanded and concatenated in call [...]
+# and fed into this label (:arg:). Yay! EXACTLY what we need for unescaped-/
+# challenged file paths!
+# 
+:cvt: (:tmp:)
+{
+	return /:*:tmp:/;
+}
+
+
+#
+# ============================================================================
+#
+# Extra (put here so the CRM114 will not execute this code, thus resulting in
+# these comment lines NOT being reported in the 'CRM114 -p' script code profile
+# report.
+#
+# Q: Why are other comment lines reported in the profile report? And with a 
+#    non-zero time to boot? :-S
+#
+# A: Because the new timing code uses high resolution timers and even comments
+#    end up as opcodes which will be executed by the CRM114 script engine.
+#    Of course, since only a 'skip to next line' operation is performed each time
+#    a comment is 'executed', it consumes very little time, but 'very little'
+#    is NOT ZERO, so a high-rez timer will notice these things.
+#
+#    Also, when using low-rez timers, comments, etc. MAY sometimes show up in a
+#    report as little bits of time 'overflow/bleed over' into the next statement,
+#    which may be a comment line. This is due to the new lossless end-to-end
+#    timing code, which replaces the old code which would discard bits of time
+#    some of the time. (Like vanilla CRM114 would lose those time bits too.)
+#
+#
+# Q: What are your timings?
+#
+# A: This:
+#        /usr/bin/time -v src/crm114 -p -u mailfilter ../tests/exectimingtest2.crm
+#    produces:
+#
+#         Execution Profile Results (freq = 1000000000 Hz) (Units: seconds)
+#
+#  Memory usage at completion:          0 window,      10343 isolated
+#
+#  Statement Execution Time Profiling (0 times suppressed)
+#  line:     usertime   systemtime    totaltime    exec #    time/one    code
+#     0:     0.000007     0.000000     0.000007         1    0.000007
+#     1:     0.000001     0.000000     0.000001         1    0.000001  #! /home/ger/prj/3actual/crm114/src/crm114
+#     2:     0.000041     0.000000     0.000041         1    0.000041  window
+#     3:     0.000003     0.000000     0.000003         1    0.000003  {
+#     4:     0.000016     0.000000     0.000016         1    0.000016  isolate (:count:) /10000/
+#     5:     0.000006     0.000000     0.000006         1    0.000006  isolate (:crm_exe:) //
+#     6:     0.000001     0.000000     0.000001         1    0.000001  # translate () [text] // // --> error report (good work, but not really what I was looking for right now.
+#     7:     0.000001     0.000000     0.000001         1    0.000001  # translate (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114] // //
+#     8:     0.000001     0.000000     0.000001         1    0.000001  # and another error for this one:
+#     9:     0.000002     0.000000     0.000002         1    0.000002  # match (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114] /.*/
+#    10:     0.000001     0.000000     0.000001         1    0.000001  # so we end up with the Final Solution - which is a wicked hack
+#    11:     0.000025     0.000000     0.000025         1    0.000025  call /:cvt:/ (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114]
+#    12:     0.000001     0.000000     0.000001         1    0.000001
+#    13:     0.000324     0.000000     0.000324         1    0.000324  output /\n ----- running :*:count: syscalls (:*:crm_exe:) to see the timing -----\n/
+#    14:     0.031088     0.000483     0.031571     10000    0.000003  {
+#    15:    67.522550     1.068977    68.591527     10000    0.006859  syscall /:*:crm_exe: '-{ window; }'/
+#    16:     0.935723     0.014687     0.950410     10000    0.000095  eval (:count:) /:@::*:count:-1:/
+#    17:     0.039244     0.000623     0.039867     10000    0.000004  # output / :*:count: /
+#    18:     0.020837     0.000332     0.021169     10000    0.000002  # output /./
+#    19:     0.143742     0.002327     0.146069     10000    0.000015  eval /:@::*:count:>0:/
+#    20:     0.036524     0.000596     0.037120      9999    0.000004  liaf
+#    22:     0.000002     0.000000     0.000002         1    0.000002  }
+#    23:     0.000290     0.000000     0.000290         1    0.000290  output /\n ----- done -----\n/
+#    24:     0.000004     0.000000     0.000004         1    0.000004
+#    25:     0.000022     0.000000     0.000022         1    0.000022  exit /0/
+#    27:     0.000000     0.000000     0.000000         0    0.000000  }
+#    34:     0.000000     0.000000     0.000000         0    0.000000  :cvt: (:tmp:)
+#    35:     0.000004     0.000000     0.000004         1    0.000004  {
+#    36:     0.000026     0.000000     0.000026         1    0.000026  return /:*:tmp:/
+#    38:     0.000000     0.000000     0.000000         0    0.000000  }
+#-------------------- Grand Total ----------------------
+#    42:    68.730486     1.088025    69.818511
+#        Command being timed: "/home/ger/prj/3actual/crm114/src/crm114 -p exectimingtest1.crm"
+#        User time (seconds): 30.09
+#        System time (seconds): 37.51
+#        Percent of CPU this job got: 96%
+#        Elapsed (wall clock) time (h:mm:ss or m:ss): 1:09.82
+#        Average shared text size (kbytes): 0
+#        Average unshared data size (kbytes): 0
+#        Average stack size (kbytes): 0
+#        Average total size (kbytes): 0
+#        Maximum resident set size (kbytes): 0
+#        Average resident set size (kbytes): 0
+#        Major (requiring I/O) page faults: 0
+#        Minor (reclaiming a frame) page faults: 10521922
+#        Voluntary context switches: 24969
+#        Involuntary context switches: 30158
+#        Swaps: 0
+#        File system inputs: 0
+#        File system outputs: 0
+#        Socket messages sent: 0
+#        Socket messages received: 0
+#        Signals delivered: 0
+#        Page size (bytes): 4096
+#        Exit status: 0
+#

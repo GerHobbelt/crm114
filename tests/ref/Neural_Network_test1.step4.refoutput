@@ -6,4 +6,13 @@ RETURN CODE:
 
 STDERR TEST OUTPUT:
 
+crm114: *WARNING*
+ neural: failed to converge within the training limit.   Beware your results.
+ You might want to consider a larger network as well.
+I'll try to keep working.
+This happened at line 2 of file (from command line):
+    learn < neural refute fromstart > (i_test.css) /[[:graph:]]+/
+(runtime system location: crm_neural_net.c(2190) in routine: crm_neural_net_learn)
+
 STDOUT TEST OUTPUT:
+

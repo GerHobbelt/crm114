@@ -1,0 +1,22 @@
+#! @BIN_PATH@/crm114
+#
+# do we accept EVALing the null var '::'? We MAY expect a warning log - in '-t' mode, though!
+{
+	{
+		window 
+		eval (::) /:@: 2 > 1:/
+		output /ouch!\n/
+		output /--: ':*::'\n/
+	}
+	alius
+	{
+		output /yo!\n/
+		output /--: ':*::'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+
+

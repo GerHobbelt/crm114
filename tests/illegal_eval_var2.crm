@@ -1,0 +1,23 @@
+#! /usr/local/bin/crm114
+#
+# can we set a variable in EVAL and conditionally evaluate at the same time and jump accordingly?
+# EVAL-ing into a variable which does not exist, should produce an error report anyway.
+{
+	{
+		window 
+		eval (:a:) /:@: 2 > 1:/
+		output /ouch!\n/
+		output /a = ':*:a:'\n/
+	}
+	alius
+	{
+		output /yo!\n/
+		output /a = ':*:a:'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+
+

@@ -1,0 +1,19 @@
+#! @BIN_PATH@/crm114
+#
+# do we accept ALTERing the null var '::'?
+{
+	{
+		window 
+		alter (::) /FUBAR/
+		output /yo! ':*::'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

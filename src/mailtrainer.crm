@@ -1017,7 +1017,7 @@ return /:*:pr:/
         # Yes, this means a successful 'training' MAY lead to trained files STILL being re-classified as
         # DONT KNOW when you check them lateron using a separate reaver run or other true classify operation.
         # To make sure this would be RARE case, mailtrainer now has code at the top to ensure
-        # out 'thick threshold' is never LESS THAN any of the two classify thresholds: good or bad.
+        # our 'thick threshold' is never LESS THAN any of the two classify thresholds: good or bad.
         eval /:@: :*:pr: < :*:thick_threshold: : /
         {
             {
@@ -1079,7 +1079,7 @@ return
         # Yes, this means a successful 'training' MAY lead to trained files STILL being re-classified as
         # DONT KNOW when you check them lateron using a separate reaver run or other true classify operation.
         # To make sure this would be RARE case, mailtrainer now has code at the top to ensure
-        # out 'thick threshold' is never LESS THAN any of the two classify thresholds: good or bad.
+        # our 'thick threshold' is never LESS THAN any of the two classify thresholds: good or bad.
         eval /:@: :*:pr: > (0 - :*:thick_threshold:) : /
         {
             {

@@ -1,47 +1,47 @@
-#! @abs_top_builddir@/src/crm114
+#! @bindir@/crm114
 # --(spam good repeat streak random worst verbose validate thick reload collapse report_header rfile goodcss spamcss config fileprefix)
 #
-#        A TUNE-type mailtrainer; repeat is the maximum number of
-#        repeated executions.  This filter uses the same config as
-#        mailfilter.crm.  Good and spam are trained alternately until
-#        each file has been examined and possibly trained at least REPEAT
-#        times, or until a run of at least STREAK length has been correctly
-#        classified.  If RANDOM is set, then randomize the order of the
-#        files being trained on each pass.
+# A TUNE-type mailtrainer; repeat is the maximum number of
+# repeated executions.  This filter uses the same config as
+# mailfilter.crm.  Good and spam are trained alternately until
+# each file has been examined and possibly trained at least REPEAT
+# times, or until a run of at least STREAK length has been correctly
+# classified.  If RANDOM is set, then randomize the order of the
+# files being trained on each pass.
 #
-#        Worst means to rerun the entire set, and then retrain only the
-#        N worst errors.  In the limit, this is the single worst error.
-#        This is slow but yields very "tight" and accurate files.
+# Worst means to rerun the entire set, and then retrain only the
+# N worst errors.  In the limit, this is the single worst error.
+# This is slow but yields very "tight" and accurate files.
 #
-#    Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
-#    GNU Public License (GPL) version 2.  A copy of this license is included
-#    in the distribution media, or obtain one from www.fsf.org .
+# Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
+# GNU Public License (GPL) version 2.  A copy of this license is included
+# in the distribution media, or obtain one from www.fsf.org .
 #
-#   Note to BSD users - you MUST remove EVERYTHING on the first line
-#   of this program from the first "-" to the end of the first line
-#   (including the "-" sign itself) or you will not get what you
-#   expect.  This is due to a bug in the BASH code on BSD.
+# Note to BSD users - you MUST remove EVERYTHING on the first line
+# of this program from the first "-" to the end of the first line
+# (including the "-" sign itself) or you will not get what you
+# expect.  This is due to a bug in the BASH code on BSD.
 #
 #
 # --->>>    Basic Design Philosophy ( do these IN ORDER ) - note
 #               that this is different for the worst strategy.
 #
-#    1) get directory listing of the good directory
+# 1) get directory listing of the good directory
 #
-#    2) get directory listing of the bad directory
+# 2) get directory listing of the bad directory
 #
-#    3) for repcount < repeat (N passes through entire set)
-#       and cleanrun < streak (M tests without a single error)
+# 3) for repcount < repeat (N passes through entire set)
+#    and cleanrun < streak (M tests without a single error)
 #
-#      3a) cleanrun++,
-#       test one from good ; if less than thresh, learn good, cleanrun=0.
+#    3a) cleanrun++,
+#        test one from good ; if less than thresh, learn good, cleanrun=0.
 #
-#      3b) cleanrun++,
+#    3b) cleanrun++,
 #        test one from spam; if more than -thresh, learn spam, cleanrun=0
 #
-#      3c) repcount++
+#    3c) repcount++
 #
-#    4) email results to spam results and out to stdout as well.
+# 4) email results to spam results and out to stdout as well.
 #
 ##############################################################
 #
@@ -104,33 +104,33 @@ isolate (:clf:) //
 {
     isolate (:_arg2:)
     match [:_arg2:] /--help/
-    output / This is CRM114's mailtrainer, which builds .css statistics \n/
-    output / files.  It uses DSTTTR and mailfilter.cf configuration setup.  \n/
-    output / You *must* supply at least --good and --spam to run.\n/
-    output / Command Format: \n/
-    output /      .\/mailtrainer.crm [options]* \n /
-    output /  Required options: \n/
-    output /    --spam=\/spam\/directory\/    (one msg per file) \n/
-    output /    --good=\/good\/directory\/    (one msg per file) \n/
-    output /  Optional options: \n/
-    output /    --spamcss=spam_statistics.css \n/
-    output /    --goodcss=good_statistics.css \n/
-    output /    --repeat=N   (limit how many passes, default 5) \n/
-    output /    --streak=N   (exit on N perfect, default 10000) \n/
-    output /    --random     (train in random order, default not) \n/
+    output /This is CRM114's mailtrainer, which builds .css statistics\n/
+    output /files.  It uses DSTTTR and mailfilter.cf configuration setup.\n/
+    output /You *must* supply at least --good and --spam to run.\n/
+    output /Command Format:\n/
+    output /      .\/mailtrainer.crm [options]*\n/
+    output /Required options:\n/
+    output /    --spam=\/spam\/directory\/    (one msg per file)\n/
+    output /    --good=\/good\/directory\/    (one msg per file)\n/
+    output /Optional options:\n/
+    output /    --spamcss=spam_statistics.css\n/
+    output /    --goodcss=good_statistics.css\n/
+    output /    --repeat=N   (limit how many passes, default 5)\n/
+    output /    --streak=N   (exit on N perfect, default 10000)\n/
+    output /    --random     (train in random order, default not)\n/
     output /    --worst=N    (train only the N worst errors per pass. SLOW!)\n/
-    output /    --verbose    (tell me more.)  \n/
+    output /    --verbose    (tell me more.)\n/
     output /    --validate=regex  (Don't train any filename matching regex;\n/
-    output /                 instead, hold them back and make a final test \n/
-    output /                 pass with those hold-backs at the end.) \n/
+    output /                 instead, hold them back and make a final test\n/
+    output /                 pass with those hold-backs at the end.)\n/
     output /    --thick=N.N  (TTT value; default 10.0 for OSB is good)\n/
-    output /    --reload     (if not randomizing, whenever one set of files \n/
+    output /    --reload     (if not randomizing, whenever one set of files\n/
     output /                 is exhausted, reload it.  Default- don't.)\n/
     output /    --collapse   (collapse intermediate reporting lines)\n/
     output /    --report_header='string' (include string in the header)\n/
     output /    --config=file (set config file.  Default is mailfilter.cf)\n/
     output /    --fileprefix=dir (expect all files in "fileprefix")\n/
-    output /\n That's all!  Enjoy.  \n/
+    output /\nThat's all!  Enjoy.\n/
     exit
 }
 
@@ -189,10 +189,10 @@ isolate (:clf:) //
 #    (esp. since it will contain received headers that the sender cannot
 #    see nor control.)
 {
-        match [:spw:] /DEFAULT-PASSWORD/
-        #  yes, it's the same as default.  So we scramble it just so
-        #  nobody can hack in
-        hash (:spw:) /:*:_env_string::*:_dw:/
+    match [:spw:] /DEFAULT-PASSWORD/
+    #  yes, it's the same as default.  So we scramble it just so
+    #  nobody can hack in
+    hash (:spw:) /:*:_env_string::*:_dw:/
 }
 
 #############################################################
@@ -272,44 +272,44 @@ match [:good:] (:gooddir: :goodwildcard:) /^.*[\\\/]([^\\\/]*)/
 match [:spam:] (:spamdir: :spamwildcard:) /^.*[\\\/]([^\\\/]*)/
 # make sure dir & path are set to something useful
 {
-	match <absent> [:gooddir:] /./
-	alter (:gooddir:) /./
+    match <absent> [:gooddir:] /./
+    alter (:gooddir:) /./
 }
 {
-	match <absent> [:spamdir:] /./
-	alter (:spamdir:) /./
+    match <absent> [:spamdir:] /./
+    alter (:spamdir:) /./
 }
 # make sure path has trailing slash
 {
-	match <absent> [:gooddir:] /[\\\/]$/
-	alter (:gooddir:) /:*:gooddir:\//
+    match <absent> [:gooddir:] /[\\\/]$/
+    alter (:gooddir:) /:*:gooddir:\//
 }
 {
-	match <absent> [:spamdir:] /[\\\/]$/
-	alter (:spamdir:) /:*:spamdir:\//
+    match <absent> [:spamdir:] /[\\\/]$/
+    alter (:spamdir:) /:*:spamdir:\//
 }
 # and ensure the wildcards at least match _something_: default = anything.
 {
-	match <absent> [:goodwildcard:] /./
-	{
+    match <absent> [:goodwildcard:] /./
+    {
         match [:_hosttype:] /Windows-MS/
         alter (:goodwildcard:) /*.*/
-	}
-	alius
-	{
+    }
+    alius
+    {
         alter (:goodwildcard:) /*/
-	}
+    }
 }
 {
-	match <absent> [:spamwildcard:] /./
-	{
+    match <absent> [:spamwildcard:] /./
+    {
         match [:_hosttype:] /Windows-MS/
         alter (:spamwildcard:) /*.*/
-	}
-	alius
-	{
+    }
+    alius
+    {
         alter (:spamwildcard:) /*/
-	}
+    }
 }
 
 #############################################################\
@@ -321,15 +321,15 @@ isolate (:report:) /     MailTrainer Report  \n:*:report_header:\n\n/
 # [i_a] make sure the training thick threshold is at least MAX(spam_threshold, good_threshold)
 # so that a mailtrainer + post mailreaver classify cycle for any item which is TRAINED does
 # NOT produce the counterintuitive 'don't know' result AFTER the training.
-# 
+#
 {
     eval /:@:0 - :*:spam_threshold: > :*:thick_threshold::/
-	alter (:report:) /:*:report: OVERRIDE thick threshold to at least reach SPAM threshold levels.\n/
+    alter (:report:) /:*:report: OVERRIDE thick threshold to at least reach SPAM threshold levels.\n/
     eval (:thick_threshold:) /:@:0 - :*:spam_threshold::/
 }
 {
     eval /:@::*:good_threshold: > :*:thick_threshold::/
-	alter (:report:) /:*:report: OVERRIDE thick threshold to at least reach GOOD threshold levels.\n/
+    alter (:report:) /:*:report: OVERRIDE thick threshold to at least reach GOOD threshold levels.\n/
     alter (:thick_threshold:) /:*:good_threshold:/
 }
 #
@@ -445,9 +445,9 @@ alter (:report:) /:*:report:  concise log file:      :*:rfile: \n/
         match [:spamfiles:] <fromend> /[[:graph:]]+/ (:f:)
         # make sure filepath includes spamdir/gooddir:
         {
-			match <absent> [:f:] /:*:spamdir:/
-			alter (:f:) /:*:spamdir::*:f:/
-		}
+            match <absent> [:f:] /:*:spamdir:/
+            alter (:f:) /:*:spamdir::*:f:/
+        }
         alter (:randfiles:) /:*:randfiles:S:*:f:\n/
         liaf
     }
@@ -457,9 +457,9 @@ alter (:report:) /:*:report:  concise log file:      :*:rfile: \n/
         match [:goodfiles:] <fromend>  /[[:graph:]]+/ (:f:)
         # make sure filepath includes spamdir/gooddir:
         {
-			match <absent> [:f:] /:*:gooddir:/
-			alter (:f:) /:*:gooddir::*:f:/
-		}
+            match <absent> [:f:] /:*:gooddir:/
+            alter (:f:) /:*:gooddir::*:f:/
+        }
         alter (:randfiles:) /:*:randfiles:G:*:f:\n/
         liaf
     }
@@ -474,9 +474,9 @@ alius
         match [:spamfiles:] <fromend> /[[:graph:]]+/ (:f:)
         # make sure filepath includes spamdir/gooddir:
         {
-			match <absent> [:f:] /:*:spamdir:/
-			alter (:f:) /:*:spamdir::*:f:/
-		}
+            match <absent> [:f:] /:*:spamdir:/
+            alter (:f:) /:*:spamdir::*:f:/
+        }
         liaf
     }
     # and the full filename of the good files next
@@ -485,9 +485,9 @@ alius
         match [:goodfiles:] <fromend>  /[[:graph:]]+/ (:f:)
         # make sure filepath includes spamdir/gooddir:
         {
-			match <absent> [:f:] /:*:gooddir:/
-			alter (:f:) /:*:gooddir::*:f:/
-		}
+            match <absent> [:f:] /:*:gooddir:/
+            alter (:f:) /:*:gooddir::*:f:/
+        }
         liaf
     }
     output /\n Full set of files, after complete-pathing: \n:*:goodfiles:\n/
@@ -506,9 +506,9 @@ alius
     input (:bogus_buf:) [:*:fileprefix::*:goodcss: 0 128]
     trap //
 
-	# [i_a] GROT GROT GROT
-	#
-	# This is a clear spot for the use of the new 'csscreate' command!
+    # [i_a] GROT GROT GROT
+    #
+    # This is a clear spot for the use of the new 'csscreate' command!
     csscreate <:*:clf:> /:*:lcr:/ (:*:fileprefix::*:goodcss:)
     # learn [:_nl:] <:*:clf:> /:*:lcr:/ (:*:fileprefix::*:goodcss:)
 }
@@ -516,9 +516,9 @@ alius
     input (:bogus_buf:) [:*:fileprefix::*:spamcss: 0 128]
     trap //
 
-	# [i_a] GROT GROT GROT
-	#
-	# This is a clear spot for the use of the new 'csscreate' command!
+    # [i_a] GROT GROT GROT
+    #
+    # This is a clear spot for the use of the new 'csscreate' command!
     csscreate <:*:clf:> /:*:lcr:/ (:*:fileprefix::*:spamcss:)
     # learn [:_nl:] <:*:clf:> /:*:lcr:/ (:*:fileprefix::*:spamcss:)
 }
@@ -749,7 +749,7 @@ output /DEBUG: gooddir = ':*:gooddir:'\n/
 # the bad ones at positions [G+1 .. B] in the 'bad' list as we would have
 # arrived here when G items of both lists have been trained: 'good' list is empty
 # then, no 'auto-reload' as above, so it's straight to the bitbucket with those
-# remaining bad ones. 
+# remaining bad ones.
 # I don't think you'd want that, so I guess 'reload' is _strongly_ advised.
 
 #
@@ -900,54 +900,54 @@ isolate (:i_text:) /:*:m_text:/
 #
 {
    match [:rewrites_enabled:] /yes/
-#
-# NOTE  CHANGE THIS ONE TO ISOLATE AND THE PROGRAM FAILS!
-#   isolate (:rewrites:) //
+    #
+    # NOTE  CHANGE THIS ONE TO ISOLATE AND THE PROGRAM FAILS!
+    #   isolate (:rewrites:) //
     alter (:rewrites:) //
 
-   input (:rewrites:) [:*:fileprefix:rewrites.mfp]
-#    reset matching on rewrites to start of string - if no string, no more
-#    processing of rewrites !!
-   match [:rewrites:] //
-   #
-   #
-   {
-       #    Grab the next regex; turn the one-per-line patterns into a
-       #    regex and a replacement string.
-       #    First, do the line-spanning regexes.
-       match <fromend nomultiline> (:ch: :fr1: :to:) [:rewrites:] /(.+)>-->(.*)/
-       #    see if the "fr" regex matches anywhere
-       {
-           match [:m_text:] (:place:) /:*:fr1:/
-           #  Yep, it matched... alter it and do it again
-           #
-           alter (:place:) /:*:to:/
-           liaf
-       }
-       #   Nope, didn't match... grab the next regex and try again,
-       liaf
-   }
-   #
-   #     reset back to the start of the rewrites.
-   #
-   match [:rewrites:] //
-   #
-   #      and do it again for non-line-spanners
-   {
-       #    Go through and do it again, except this time do it for
-       #    the non-line-spanning regexes.
-       match <fromend nomultiline> (:ch: :fr2: :to:) [:rewrites:] /(.+)>->(.*)/
-       #    see if the "fr" regex matches anywhere
-       {
-           match [:m_text:] <nomultiline> (:place:) /:*:fr2:/
-           #  Yep, it matched... alter it and do it again
-           #
-           alter (:place:) /:*:to:/
-           liaf
-       }
-       #   Nope, didn't match... grab the next regex and try again,
-       liaf
-   }
+    input (:rewrites:) [:*:fileprefix:rewrites.mfp]
+    #    reset matching on rewrites to start of string - if no string, no more
+    #    processing of rewrites !!
+    match [:rewrites:] //
+    #
+    #
+    {
+        #    Grab the next regex; turn the one-per-line patterns into a
+        #    regex and a replacement string.
+        #    First, do the line-spanning regexes.
+        match <fromend nomultiline> (:ch: :fr1: :to:) [:rewrites:] /(.+)>-->(.*)/
+        #    see if the "fr" regex matches anywhere
+        {
+            match [:m_text:] (:place:) /:*:fr1:/
+            #  Yep, it matched... alter it and do it again
+            #
+            alter (:place:) /:*:to:/
+            liaf
+        }
+        #   Nope, didn't match... grab the next regex and try again,
+        liaf
+    }
+    #
+    #     reset back to the start of the rewrites.
+    #
+    match [:rewrites:] //
+    #
+    #      and do it again for non-line-spanners
+    {
+        #    Go through and do it again, except this time do it for
+        #    the non-line-spanning regexes.
+        match <fromend nomultiline> (:ch: :fr2: :to:) [:rewrites:] /(.+)>->(.*)/
+        #    see if the "fr" regex matches anywhere
+        {
+            match [:m_text:] <nomultiline> (:place:) /:*:fr2:/
+            #  Yep, it matched... alter it and do it again
+            #
+            alter (:place:) /:*:to:/
+            liaf
+        }
+        #   Nope, didn't match... grab the next regex and try again,
+        liaf
+    }
 }    #  done with rewrites.
 
 #  all done; m_text now has the fully mutilated text.

@@ -1,0 +1,45 @@
+TEST SCRIPT + COMMANDLINE:
+illegal_eval_var2.crm -l 1
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+ 
+# ! /usr/local/bin/crm114
+# 
+# can we set a variable in EVAL and conditionally evaluate at the same time and jump accordingly?
+# EVAL-ing into a variable which does not exist, should produce an error report anyway.
+{ 
+  { 
+    window 
+    eval (:a:) /:@: 2 > 1:/
+    output /ouch!\\n/
+    output /a = ':*:a:'\\n/
+  } 
+  alius 
+  { 
+    output /yo!\\n/
+    output /a = ':*:a:'\\n/
+  } 
+  trap (:r:) //
+  { 
+    output /TRAP::*:r:\\n/
+  } 
+} 
+ 
+ 
+ 
+ 
+
+STDOUT TEST OUTPUT:
+TRAP:
+crm114: *WARNING*
+Attempt to alter the value of a nonexistent variable, so I'm creating an ISOLATED variable.  I hope that's OK.  The nonexistent variable is: 3/3: ':a:'/':a:'
+I'll try to keep working.
+This happened at line 8 of file illegal_eval_var2.crm:
+    eval (:a:) /:@: 2 > 1:/
+(runtime system location: crm_var_hash_table.c(1226) in routine: crm_destructive_alter_nvariable)
+
+

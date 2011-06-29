@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114
+#! @BIN_PATH@/crm114
 #   test the error reporting concerning matching delimiters.
 #
 # this code has several errors: the second 'output' comes with 

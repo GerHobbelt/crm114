@@ -1,0 +1,27 @@
+#! @BIN_PATH@/crm114
+#
+# can we handle an indirect ALTER?
+{
+	{
+		window 
+		isolate (:dst:)	/:s:/
+		isolate (:s:) /YUCK/
+		alter (:*:dst:) /FUBAR/
+		output /yo!\n/
+		output /dst = ':*:dst:'\n/
+		output /s = ':*:s:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+		output /dst = ':*:dst:'\n/
+		output /s = ':*:s:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

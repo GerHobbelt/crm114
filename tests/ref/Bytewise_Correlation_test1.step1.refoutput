@@ -1,5 +1,5 @@
 TEST SCRIPT + COMMANDLINE:
--{ isolate (:s:) {classify <correlate> ( INTRO_mt_ng_reference_2.input | QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }} 
+-{ isolate (:s:) {classify <correlate> ( /home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input | /home/ger/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }} 
 
 RETURN CODE:
 0
@@ -8,10 +8,10 @@ STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
  type Q 
-CLASSIFY fails; success probability: 0.0093  pR: -2.0254
-Best match to file #1 (QUICKREF.txt) prob: 0.9907  pR: 2.0254  
-Total features in input file: 69063
-#0 (INTRO.txt): features: 53186, L1: 219063 L2: 325594 L3: 585264, l4: 1747198 prob: 9.34e-03, pR:  -2.03 
-#1 (QUICKREF.txt): features: 69063, L1: 385852 L2: 599956 L3: 6579582, l4: 326320000 prob: 9.91e-01, pR:   2.03 
+CLASSIFY fails; success probability: 0.0094  pR: -2.0233
+Best match to file #1 (/home/ger/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input) prob: 0.9906  pR: 2.0233
+Total features in input file: 69338
+#0 (/home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input): features: 53186, L1: 219063 L2: 325594 L3: 585264, L4: 1747198 prob: 9.39e-03, pR:  -2.02
+#1 (/home/ger/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input): features: 69338, L1: 387817 L2: 602258 L3: 6582714, L4: 326326334 prob: 9.91e-01, pR:   2.02
 
 

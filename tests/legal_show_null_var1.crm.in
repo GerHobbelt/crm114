@@ -1,0 +1,19 @@
+#! @BIN_PATH@/crm114
+#
+# as the null var exists from the very start, do we allow reading from it? We _should_, though!
+{
+	{
+		window 
+		output /yo!\n/
+		output /--: ':*::'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

@@ -28,20 +28,33 @@
 //      which, given a CSL and a CDW, executes the CSL against the CDW
 //
 
-int crm_invoke(void)
+int crm_invoke(CSL_CELL *csl)
 {
     int i, j, k;
     int status;
-    int done;
+    // int done;
     int slen;
     //    a pointer to the current statement argparse block.  This gets whacked
     //    on every new statement.
     ARGPARSE_BLOCK *apb = NULL;
 
-    //     timer1, timer2, and tstmt are for time profiling.
+    //     timer1 and timer2 are for time profiling.
     //
-    struct tms timer1 = { 0 };
-    struct tms timer2 = { 0 };
+#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+	int64_t timer1 = 0;
+#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+	int64_t timer1 = 0;
+#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+	int64_t timer1 = 0;
+#elif defined (HAVE_CLOCK)
+	int64_t timer1 = 0;
+#else
+    // nada
+#endif
+#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+    struct tms timer1a = {0};
+#endif
+
     int tstmt;
 
     tstmt = 0;
@@ -72,17 +85,94 @@ int crm_invoke(void)
     }
 
     if (user_trace)
+	{
         fprintf(stderr, "Starting to execute %s at line %d\n",
                 csl->filename, csl->cstmt);
+	}
+
+    //   initialize timers ?
+	//
+	// [i_a] for better timing results (timers have a resolution which is definitely
+	//       (far) less than required to accurately time instructions by measuring
+	//       start to end as was done by Bill: this will result in significant time
+	//       losses as start and end times both contain something akin to 
+        //       'rounding errors' (inaccuricies due to low timer frequency).
+        //       To prevent 'rounding losses' in the timing measurements here, we measure
+        //       end to end; only at the start do we init the timer once for a
+        //       start to end measurement. This way, no time is 'lost' and when executing
+        //       lines repetively, the inaccuracies due to 'time overflowing into the next
+        //       statement' will average out.
+    if (profile_execution)
+    {
+#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+    LARGE_INTEGER t1;
+#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+    struct timespec t1;
+#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+    struct timeval t1;
+#elif defined (HAVE_CLOCK)
+    clock_t t1;
+#else
+    // nada
+#endif
+#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+    struct tms t1a;
+    clock_t t2a;
+#endif
+
+#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+    if (!QueryPerformanceCounter(&t1))
+    {
+        t1.QuadPart = 0;
+    }
+    timer1 = t1.QuadPart;
+#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+    if (!clock_gettime(CLOCK_REALTIME, &t1))
+    {
+        timer1 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
+    }
+    else
+    {
+        timer1 = 0; // unknown; due to error
+    }
+#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+    if (!gettimeofday(&t1))
+    {
+        timer1 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
+    }
+    else
+    {
+        timer1 = 0; // unknown; due to error
+    }
+#elif defined (HAVE_CLOCK)
+    t1 = clock();
+    if (t1 == (clock) -1)
+    {
+        timer1 = 0; // unknown; due to error
+    }
+    else
+    {
+        timer1 = t1;
+    }
+#else
+#endif
+
+#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+    t2a = times(&t1a);
+    if (t2a == (clock)-1)
+    {
+        memset(&timer1a, 0, sizeof(timer1a)); // unknown; due to error
+    }
+    else
+    {
+        timer1a = t1a;
+    }
+#endif
+    }
 
 invoke_top:
 
-    //   initialize timers ?
-    if (profile_execution)
-    {
-        tstmt = csl->cstmt;
-        times(&timer1);
-    }
+    tstmt = csl->cstmt;   // [i_a] also used by the marker analysis profiling calls
 
     if (csl->cstmt >= csl->nstmts)
     {
@@ -90,12 +180,12 @@ invoke_top:
         //  we know we can exit this invocation of the invoker
         if (user_trace)
             fprintf(stderr, "Finished the program %s.\n", csl->filename);
-        done = 1;
-        status = 0;
+        // done = 1;
+        // status = 0;
         goto invoke_done;
     }
 
-    slen = (csl->mct[csl->cstmt + 1]->fchar) - (csl->mct[csl->cstmt]->fchar);
+    slen = csl->mct[csl->cstmt + 1]->fchar - csl->mct[csl->cstmt]->fchar;
 
     if (user_trace)
     {
@@ -106,9 +196,9 @@ invoke_top:
             fprintf(stderr, "%c",
                     csl->filetext[csl->mct[csl->cstmt]->fchar + i]);
 #else
-			fwrite_ASCII_Cfied(stderr, 
-csl->filetext + csl->mct[csl->cstmt]->fchar,
-	slen);
+        fwrite_ASCII_Cfied(stderr,
+                csl->filetext + csl->mct[csl->cstmt]->fchar,
+                slen);
 #endif
         fprintf(stderr, "\n");
     }
@@ -137,7 +227,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
         //         if we've already generated the argparse block (apb) for this
         //         statement, we use it, otherwise, we create one.
         //
-#if !FULL_PARSE_AT_COMPILE_TIME			
+#if !FULL_PARSE_AT_COMPILE_TIME
         if (!csl->mct[csl->cstmt]->apb)
         {
             csl->mct[csl->cstmt]->apb = calloc(1, sizeof(csl->mct[csl->cstmt]->apb[0]));
@@ -150,10 +240,10 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //  we now have the statement's apb allocated; we point the generic
             //  apb at the same place and run with it.
             apb = csl->mct[csl->cstmt]->apb;
-            i = crm_statement_parse(
+            (void)crm_statement_parse(
                     &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
                     slen,
-					csl->mct[csl->cstmt],
+                    csl->mct[csl->cstmt],
                     apb);
         }
         else
@@ -164,9 +254,9 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             apb = csl->mct[csl->cstmt]->apb;
         }
 #else
-            apb = &csl->mct[csl->cstmt]->apb;
+        apb = &csl->mct[csl->cstmt]->apb;
 #endif
-		//    Either way, the flags might have changed, so we run the
+        //    Either way, the flags might have changed, so we run the
         //    standard flag parser against the flags found (if any)
         {
             char flagz[MAX_PATTERN];
@@ -174,10 +264,10 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 
             CRM_ASSERT(apb != NULL);
             fl = crm_get_pgm_arg(flagz, MAX_PATTERN, apb->a1start, apb->a1len);
-            fl = crm_nexpandvar(flagz, fl, MAX_PATTERN);
+            fl = crm_nexpandvar(flagz, fl, MAX_PATTERN, vht, tdw);
             //    fprintf(stderr,
             //           "flagz --%s-- len %d\n", flagz, strlen(flagz));
-			apb->sflags = crm_flagparse(flagz, fl, csl->mct[csl->cstmt]->stmt_def);
+            apb->sflags = crm_flagparse(flagz, fl, csl->mct[csl->cstmt]->stmt_def);
         }
         break;
     }
@@ -189,7 +279,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
     if (debug_countdown == 0
         || csl->mct[csl->cstmt]->stmt_break)
     {
-		i = crm_debugger(csl, (csl->mct[csl->cstmt]->stmt_break ? CRM_DBG_REASON_BREAKPOINT : CRM_DBG_REASON_UNDEFINED), NULL);
+        i = crm_debugger(csl, (csl->mct[csl->cstmt]->stmt_break ? CRM_DBG_REASON_BREAKPOINT : CRM_DBG_REASON_UNDEFINED), NULL);
         if (i == -1)
         {
             if (engine_exit_base != 0)
@@ -214,9 +304,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             fprintf(stderr, "%c",
                     csl->filetext[csl->mct[csl->cstmt]->fchar + i]);
 #else
-			fwrite_ASCII_Cfied(stderr, 
-csl->filetext + csl->mct[csl->cstmt]->fchar,
-	slen);
+        fwrite_ASCII_Cfied(stderr, csl->filetext + csl->mct[csl->cstmt]->fchar, slen);
 #endif
         fprintf(stderr, "\n");
     }
@@ -229,17 +317,20 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 
     CRM_ASSERT(csl->mct[csl->cstmt] != NULL);
     CRM_ASSERT(csl->mct[csl->cstmt + 1] != NULL);
+
+	crm_analysis_mark(&analysis_cfg, MARK_OPERATION, csl->cstmt, "iL", csl->mct[csl->cstmt]->stmt_type, (unsigned long long int)csl->mct[csl->cstmt]->apb.sflags);
+
     switch (csl->mct[csl->cstmt]->stmt_type)
     {
     case CRM_NOOP:
     case CRM_LABEL:
         {
             if (user_trace)
-			{
-				fprintf(stderr, "Statement %d is non-executable, continuing.\n",
+            {
+                fprintf(stderr, "Statement %d is non-executable, continuing.\n",
                         csl->cstmt);
-			}
-		}
+            }
+        }
         break;
 
     case CRM_OPENBRACKET:
@@ -247,21 +338,21 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //  the nest_level+1 is because the statements in front are at +1 depth
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level + 1] = 1;
             if (user_trace)
-			{
-				fprintf(stderr, "Statement %d is an openbracket. depth now %d.\n",
+            {
+                fprintf(stderr, "Statement %d is an openbracket. depth now %d.\n",
                         csl->cstmt, 1 + csl->mct[csl->cstmt]->nest_level);
-			}
-		}
+            }
+        }
         break;
 
     case CRM_CLOSEBRACKET:
         {
             if (user_trace)
-			{
+            {
                 fprintf(stderr, "Statement %d is a closebracket. depth now %d.\n",
                         csl->cstmt, csl->mct[csl->cstmt]->nest_level);
-			}
-		}
+            }
+        }
         break;
 
     case CRM_BOGUS:
@@ -288,9 +379,9 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             char retstr[MAX_PATTERN];
             CRM_ASSERT(apb != NULL);
             retlen = crm_get_pgm_arg(retstr, MAX_PATTERN, apb->s1start, apb->s1len);
-            retlen = crm_nexpandvar(retstr, retlen, MAX_PATTERN);
-			CRM_ASSERT(retlen < MAX_PATTERN);
-			retstr[retlen] = 0;
+            retlen = crm_nexpandvar(retstr, retlen, MAX_PATTERN, vht, tdw);
+            CRM_ASSERT(retlen < MAX_PATTERN);
+            retstr[retlen] = 0;
             retval = 0;
             if (retlen > 0)
             {
@@ -300,15 +391,15 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 }
             }
             if (user_trace)
-			{
-				fprintf(stderr, "Exiting at statement %d with value %d\n",
+            {
+                fprintf(stderr, "Exiting at statement %d with value %d\n",
                         csl->cstmt, retval);
-			}
-			//if (profile_execution)
+            }
+            //if (profile_execution)
             //  crm_output_profile (csl);
             //      exit (retval);
             status = retval;
-            done = 1;
+            // done = 1;
             goto invoke_done;
         }
         break;
@@ -341,8 +432,8 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 int idx;
                 unsigned int noffset;
 
-				retlen = crm_get_pgm_arg(outbuf, MAX_VARNAME, apb->s1start, apb->s1len);
-                retlen = crm_nexpandvar(outbuf, retlen, data_window_size);
+                retlen = crm_get_pgm_arg(outbuf, MAX_VARNAME, apb->s1start, apb->s1len);
+                retlen = crm_nexpandvar(outbuf, retlen, data_window_size, vht, tdw);
                 //
                 //      Now we have the return value in outbuf, and the return
                 //      length in retlen.  Get it's name
@@ -368,7 +459,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                         for (i = 0; i < namelen; i++)
                             fprintf(stderr, "%c", namestart[i]);
 #else
-			fwrite_ASCII_Cfied(stderr, namestart, namelen);
+                        fwrite_ASCII_Cfied(stderr, namestart, namelen);
 #endif
                         fprintf(stderr, "<\n");
                     }
@@ -383,7 +474,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             old_csl = csl;
             csl = csl->caller;
 #if 0
-			if (csl->filename == old_csl->filename)
+            if (csl->filename == old_csl->filename)
                 csl->filename_allocated = old_csl->filename_allocated;
 #endif
             free_stack_item(old_csl);
@@ -409,66 +500,74 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             CRM_ASSERT(apb != NULL);
             tarlen = crm_get_pgm_arg(target, MAX_VARNAME, apb->s1start, apb->s1len);
             if (tarlen < 2)
-			{
+            {
                 nonfatalerror
                 ("This program has a GOTO without a place to 'go' to.",
                         " By any chance, did you leave off the '/' delimiters? ");
-			}
-			else
-			{
-            if (internal_trace)
-			{
-                fprintf(stderr, "\n    untranslated label (len = %d) '%s',",
-                        tarlen, target);
-			}
-
-            //   do indirection if needed.
-            tarlen = crm_qexpandvar(target, tarlen, MAX_VARNAME, NULL);
-            if (internal_trace)
-			{
-                fprintf(stderr, " translates to '%s'.\n", target);
-			}
-
-            k = crm_lookupvarline(vht, target, 0, tarlen);
-
-            if (k > 0)
-            {
-                if (user_trace)
-				{
-                    fprintf(stderr, "GOTO from line %d to line %d\n",
-                            csl->cstmt,  k);
-				}
-                csl->cstmt = k; // this gets autoincremented
-                //  and going here didn't fail...
-                csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
             }
             else
             {
-                int conv_count;
-                conv_count = sscanf(target, "%d", &k);
-                if (conv_count == 1)
+                if (internal_trace)
+                {
+                    fprintf(stderr, "\n    untranslated label (len = %d) '%s',",
+                            tarlen, target);
+                }
+
+                //   do indirection if needed.
+                tarlen = crm_qexpandvar(target, tarlen, MAX_VARNAME, NULL, vht, tdw);
+                if (internal_trace)
+                {
+                    fprintf(stderr, " translates to '%s'.\n", target);
+                }
+
+                k = crm_lookupvarline(vht, target, 0, tarlen);
+
+                if (k > 0)
                 {
                     if (user_trace)
-					{
+                    {
                         fprintf(stderr, "GOTO from line %d to line %d\n",
-                                csl->cstmt, k);
-					}
-                    csl->cstmt = k - 1; // this gets autoincremented, so we must --
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+                                csl->cstmt,  k);
+                    }
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                    csl->next_stmt_due_to_jump = k;
+#else
+                    csl->cstmt = k; // this gets autoincremented
+#endif
                     //  and going here didn't fail...
                     csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
                 }
                 else
                 {
-                    //  this is recoverable if we have a trap... so we continue
-                    //   execution right to the BREAK.
-                    fatalerror(" Can't GOTO the nonexistent label/line: ",
-                            target);
-                    goto invoke_bailout;
+                    int conv_count;
+                    conv_count = sscanf(target, "%d", &k);
+                    if (conv_count == 1)
+                    {
+                        if (user_trace)
+                        {
+                            fprintf(stderr, "GOTO from line %d to line %d\n",
+                                    csl->cstmt, k);
+                        }
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                        csl->next_stmt_due_to_jump = k;
+#else
+                        csl->cstmt = k - 1; // this gets autoincremented, so we must --
+#endif
+                        CRM_ASSERT(csl->cstmt >= 0);
+                        CRM_ASSERT(csl->cstmt <= csl->nstmts);
+                        //  and going here didn't fail...
+                        csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
+                    }
+                    else
+                    {
+                        //  this is recoverable if we have a trap... so we continue
+                        //   execution right to the BREAK.
+                        fatalerror(" Can't GOTO the nonexistent label/line: ",
+                                target);
+                        goto invoke_bailout;
+                    }
                 }
             }
-			}
         }
         break;
 
@@ -483,7 +582,11 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 fprintf(stderr, "Executing hard-FAIL at line %d\n", csl->cstmt);
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
 
@@ -499,12 +602,16 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //         pointed to by the liaf_index entry for that line.
             //
             //               (note the "liaf-index - 1" cheat - we branch to
-            //               liaf_index -1 and let the incrment happen)
+            //               liaf_index -1 and let the increment happen)
             if (user_trace)
                 fprintf(stderr, "Executing hard-LIAF at line %d\n", csl->cstmt);
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_jump = csl->mct[csl->cstmt]->liaf_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->liaf_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
         }
@@ -523,9 +630,13 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             {
                 if (user_trace)
                     fprintf(stderr, "prior group exit OK, ALIUS fails forward to statement #%d.\n", csl->mct[csl->cstmt]->fail_index - 1);
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
                 csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#endif
+                CRM_ASSERT(csl->cstmt >= 0);
+                CRM_ASSERT(csl->cstmt <= csl->nstmts);
             }
         }
         break;
@@ -545,7 +656,11 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 fprintf(stderr, "Executing a TRAP statement...");
                 fprintf(stderr, " this is a NOOP unless you have a live FAULT\n");
             }
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
         }
         break;
 
@@ -563,7 +678,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 fprintf(stderr, "Forcing a FAULT at line %d\n", csl->cstmt);
             CRM_ASSERT(apb != NULL);
             rlen = crm_get_pgm_arg(rbuf, MAX_PATTERN, apb->s1start, apb->s1len);
-            rlen = crm_nexpandvar(rbuf, rlen, MAX_PATTERN);
+            rlen = crm_nexpandvar(rbuf, rlen, MAX_PATTERN, vht, tdw);
 
             //   We alloc the reason - better free() it when we take the trap.
             //   in crm_trigger_fault
@@ -579,11 +694,11 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             memcpy(reason, rbuf, rlen);
             reason[rlen] = 0;
 
-	// [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
-	if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
-	{
-	crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
-	}
+            // [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
+            if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
+            {
+                crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
+            }
 
             fresult = crm_trigger_fault(reason);
             if (fresult != 0)
@@ -622,21 +737,21 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             else
             {
                 int len_written = fwrite4stdio(&(vht[varidx]->valtxt[vht[varidx]->vstart]),
-						vht[varidx]->vlen,
+                        vht[varidx]->vlen,
                         stdout);
-				if (len_written != vht[varidx]->vlen)
-				{
-					nonfatalerror_ex(SRC_LOC(), "ACCEPT: all data (len = %d) could not be written to the output: "
-                        "errno = %d(%s)\n",
-						vht[varidx]->vlen,
-                        errno,
-                        errno_descr(errno));
-				}
-				// [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster
-				if (isatty(fileno(stdout)))
-				{
-					fflush(stdout);
-				}
+                if (len_written != vht[varidx]->vlen)
+                {
+                    nonfatalerror_ex(SRC_LOC(), "ACCEPT: all data (len = %d) could not be written to the output: "
+                                                "errno = %d(%s)\n",
+                            vht[varidx]->vlen,
+                            errno,
+                            errno_descr(errno));
+                }
+                // [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster
+                if (isatty(fileno(stdout)))
+                {
+                    fflush(stdout);
+                }
             }
             //    WE USED TO DO CHARACTER I/O.  OUCH!!!
             //      for (i = 0; i < cdw->nchars ; i++)
@@ -690,14 +805,14 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //     get the variable name
             CRM_ASSERT(apb != NULL);
             varlen = crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
-            varlen = crm_nexpandvar(varname, varlen, MAX_VARNAME);
+            varlen = crm_nexpandvar(varname, varlen, MAX_VARNAME, vht, tdw);
             //   If we didn't get a variable name, we replace the data window!
             if (!crm_nextword(varname, varlen, 0, &vns, &vnl)
-				|| vnl == 0)
+                || vnl == 0)
             {
                 strcpy(varname, ":_dw:");
                 vnl = (int)strlen(varname);
-		vns = 0;
+                vns = 0;
             }
 
             //     get the to-be-hashed pattern, and expand it.
@@ -709,16 +824,16 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 strcpy(tempbuf, ":*:_dw:");
                 newstrlen = (int)strlen(tempbuf);
             }
-            newstrlen = crm_nexpandvar(tempbuf, newstrlen, data_window_size);
+            newstrlen = crm_nexpandvar(tempbuf, newstrlen, data_window_size, vht, tdw);
 
             //    The pattern is now expanded, we can hash it to obscure meaning.
             hval = strnhash(tempbuf, newstrlen);
             snprintf(newstr, WIDTHOF(newstr), "%08lX", (unsigned long int)hval);
-			newstr[WIDTHOF(newstr) - 1] = 0;
+            newstr[WIDTHOF(newstr) - 1] = 0;
 
             if (internal_trace)
             {
-				fprintf(stderr, "String: (len: %d) '%s'\n hashed to: %08lX\n",
+                fprintf(stderr, "String: (len: %d) '%s'\n hashed to: %08lX\n",
                         newstrlen, tempbuf,
                         (unsigned long int)hval);
             }
@@ -735,27 +850,27 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 
     case CRM_MUTATE:
 #if 0
-		crm_expr_mutate(csl, apb);
+        crm_expr_mutate(csl, apb);
 #else
-		fatalerror("Shucks, this version, like, does not (yet) support the MUTATE command, like, you know? ", "This is _so_ unfair!");
+        fatalerror("Shucks, this version, like, does not (yet) support the MUTATE command, like, you know? ", "This is _so_ unfair!");
 #endif
-		break;
+        break;
 
     case CRM_SORT:
 #if 0
-		crm_expr_sort(csl, apb);
+        crm_expr_sort(csl, apb);
 #else
-		fatalerror("Shucks, this version, like, does not (yet) support the SORT command, like, you know? ", "This is _so_ unfair!");
+        fatalerror("Shucks, this version, like, does not (yet) support the SORT command, like, you know? ", "This is _so_ unfair!");
 #endif
-		break;
+        break;
 
     case CRM_LEARN:
-        crm_expr_learn(csl, apb);
+        crm_expr_learn(csl, apb, vht, tdw);
         break;
 
         //   we had to split out classify- it was just too big.
     case CRM_CLASSIFY:
-        crm_expr_classify(csl, apb);
+        crm_expr_classify(csl, apb, vht, tdw);
         break;
 
     case CRM_CSS_MERGE:
@@ -825,17 +940,17 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             CRM_ASSERT(apb != NULL);
             tarlen = crm_get_pgm_arg(target, MAX_VARNAME, apb->s1start, apb->s1len);
             if (internal_trace)
-			{
+            {
                 fprintf(stderr, "\n    untranslated label (len = %d) '%s',",
                         tarlen, target);
-			}
+            }
 
             //   do indirection if needed.
-            tarlen = crm_nexpandvar(target, tarlen, MAX_VARNAME);
+            tarlen = crm_nexpandvar(target, tarlen, MAX_VARNAME, vht, tdw);
             if (internal_trace)
-			{
+            {
                 fprintf(stderr, " translates to '%s'.\n", target);
-			}
+            }
 
             k = crm_lookupvarline(vht, target, 0, tarlen);
 
@@ -849,29 +964,33 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 goto invoke_bailout;
             }
             newcsl = (CSL_CELL *)calloc(1, sizeof(newcsl[0]));
-        if (!newcsl)
-        {
-            untrappableerror("Cannot allocate compiler memory", "Stick a fork in us; we're _done_.");
-        }
+            if (!newcsl)
+            {
+                untrappableerror("Cannot allocate compiler memory", "Stick a fork in us; we're _done_.");
+            }
             newcsl->filename = csl->filename;
-			newcsl->filename_allocated = 0;
+            newcsl->filename_allocated = 0;
             newcsl->filetext = csl->filetext;
-			newcsl->filetext_allocated = 0;
+            newcsl->filetext_allocated = 0;
             newcsl->filedes = csl->filedes;
             newcsl->rdwr = csl->rdwr;
             newcsl->nchars = csl->nchars;
             newcsl->hash = csl->hash;
             newcsl->mct = csl->mct;
             newcsl->nstmts = csl->nstmts;
-			newcsl->mct_size = csl->mct_size;
-			newcsl->mct_allocated = 0;
+            newcsl->mct_size = csl->mct_size;
+            newcsl->mct_allocated = 0;
             newcsl->preload_window = csl->preload_window;
             newcsl->caller = csl;
             newcsl->calldepth = csl->calldepth + 1;
             //     put in the target statement number - this is a label!
             CRM_ASSERT(k >= 0);
             CRM_ASSERT(k <= csl->nstmts);
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
             newcsl->cstmt = k;
+#else
+            newcsl->cstmt = k;
+#endif
             newcsl->return_vht_cell = -1;
             //     whack the alius stack so we are not in a "fail" situation
             newcsl->aliusstk[csl->mct[csl->cstmt]->nest_level + 1] = 0;
@@ -902,7 +1021,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 //    First, get the argument string into full expansion
                 CRM_ASSERT(apb != NULL);
                 argvallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->b1start, apb->b1len);
-                argvallen = crm_nexpandvar(tempbuf, argvallen, data_window_size);
+                argvallen = crm_nexpandvar(tempbuf, argvallen, data_window_size, vht, tdw);
 
                 //   Stuff the new csl with the return-value-locations'
                 //   vht index - if it's -1, then we don't have a return
@@ -916,45 +1035,45 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 if (apb->p1len > 0)
                 {
                     int ret_idx;
-                    int  retname_start, retnamelen;
+                    int retname_start, retnamelen;
                     retnamelen = crm_get_pgm_arg(outbuf, data_window_size, apb->p1start, apb->p1len);
-                    retnamelen = crm_nexpandvar(outbuf, retnamelen, data_window_size);
-					CRM_ASSERT(retnamelen < data_window_size);
+                    retnamelen = crm_nexpandvar(outbuf, retnamelen, data_window_size, vht, tdw);
+                    CRM_ASSERT(retnamelen < data_window_size);
                     if (crm_nextword(outbuf, retnamelen, 0, &retname_start, &retnamelen))
-					{
-                    ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen);
-                    if (vht[ret_idx] == NULL)
                     {
-						CRM_ASSERT(retname_start + retnamelen <= data_window_size - 1);
-						outbuf[retname_start + retnamelen] = 0;
-						// nonfatalerror
-                        // ("Your call statement wants to return a value "
-                        // "to a nonexistent variable; I'll created an "
-                        //"isolated one.  Hope that's OK. Varname was",
-                        //             outbuf);
+                        ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen);
+                        if (vht[ret_idx] == NULL)
+                        {
+                            CRM_ASSERT(retname_start + retnamelen <= data_window_size - 1);
+                            outbuf[retname_start + retnamelen] = 0;
+                            // nonfatalerror
+                            // ("Your call statement wants to return a value "
+                            // "to a nonexistent variable; I'll created an "
+                            //"isolated one.  Hope that's OK. Varname was",
+                            //             outbuf);
+                            if (user_trace)
+                            {
+                                fprintf(stderr,
+                                        "No such return value var, creating var %s\n",
+                                        &outbuf[retname_start]);
+                            }
+                            crm_set_temp_var(&outbuf[retname_start], "");
+                            ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen);
+                        }
                         if (user_trace)
-						{
-                            fprintf(stderr,
-                                    "No such return value var, creating var %s\n",
-                                    &outbuf[retname_start]);
-						}
-                        crm_set_temp_var(&outbuf[retname_start], "");
-	                    ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen);
+                        {
+                            fprintf(stderr, " Setting return value to VHT cell %d",
+                                    ret_idx);
+                        }
+                        newcsl->return_vht_cell = ret_idx;
                     }
-                    if (user_trace)
-					{
-                        fprintf(stderr, " Setting return value to VHT cell %d",
-                                ret_idx);
-					}
-                    newcsl->return_vht_cell = ret_idx;
-					}
-					else
-					{
+                    else
+                    {
                         if (user_trace)
-						{
+                        {
                             fprintf(stderr, "No return value var specified. Ignoring.\n");
-						}
-					}
+                        }
+                    }
                 }
 
 
@@ -980,7 +1099,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 
                 //  maybe run some JIT parsing on the called statement?
                 //
-#if !FULL_PARSE_AT_COMPILE_TIME			
+#if !FULL_PARSE_AT_COMPILE_TIME
                 if (!csl->mct[csl->cstmt]->apb)
                 {
                     csl->mct[csl->cstmt]->apb = calloc(1, sizeof(csl->mct[csl->cstmt]->apb[0]));
@@ -994,10 +1113,10 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                     {
                         //  we now have the statement's apb allocated; we point
                         //  the generic apb at the same place and run with it.
-                        i = crm_statement_parse(
+                        (void)crm_statement_parse(
                                 &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
                                 slen,
-								csl->mct[csl->cstmt],
+                                csl->mct[csl->cstmt],
                                 csl->mct[csl->cstmt]->apb);
                     }
                 }
@@ -1006,60 +1125,60 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 #else
                 apb = &csl->mct[csl->cstmt]->apb;
 #endif
-				//
+                //
                 //     We don't have flags, so we don't bother fixing the
                 //     flag variables.
                 //
                 //            get the paren arg of this routine
                 CRM_ASSERT(apb != NULL);
                 argnamelen = crm_get_pgm_arg(outbuf, data_window_size, apb->p1start, apb->p1len);
-                argnamelen = crm_nexpandvar(outbuf, argnamelen, data_window_size);
+                argnamelen = crm_nexpandvar(outbuf, argnamelen, data_window_size, vht, tdw);
                 //
                 //      get the generalized argument name (first varname)
                 if (crm_nextword(outbuf, argnamelen, 0, &vns, &vnl))
-				{
-		if (vnl >= data_window_size)
-		{
-			nonfatalerror_ex(SRC_LOC(), "CALL statement comes with a label reference which is too long (len = %d) "
-				"while the maximum allowed size is %d.",
-					vnl,
-data_window_size-1);
-			vnl = data_window_size - 1;
-		}
-                memmove(outbuf, &outbuf[vns], vnl);
-                outbuf[vnl] = 0;
-                if (vnl > 0)
                 {
-                    //
-                    //      and now create the isolated arg transfer variable.
-                    //
-                    //  GROT GROT GROT
-                    //  GROT GROT GROT possible tdw memory leak here...
-                    //  GROT GROT GROT the right fix is to refactor crm_expr_isolate.
-                    //  GROT GROT GROT but for now, we'll reuse the same code as
-                    //  GROT GROT GROT it does, releasing the old memory.
-                    //
-                    vmidx = crm_vht_lookup(vht, outbuf, vnl);
-                    if (vht[vmidx] && vht[vmidx]->valtxt == tdw->filetext)
+                    if (vnl >= data_window_size)
                     {
-                        oldvstart = vht[vmidx]->vstart;
-                        oldvlen = vht[vmidx]->vlen;
-                        vht[vmidx]->vstart = tdw->nchars++;
-                        vht[vmidx]->vlen   = 0;
-                        crm_compress_tdw_section(vht[vmidx]->valtxt,
-                                oldvstart,
-                                oldvstart + oldvlen);
+                        nonfatalerror_ex(SRC_LOC(), "CALL statement comes with a label reference which is too long (len = %d) "
+                                                    "while the maximum allowed size is %d.",
+                                vnl,
+                                data_window_size - 1);
+                        vnl = data_window_size - 1;
+                    }
+                    memmove(outbuf, &outbuf[vns], vnl);
+                    outbuf[vnl] = 0;
+                    if (vnl > 0)
+                    {
+                        //
+                        //      and now create the isolated arg transfer variable.
+                        //
+                        //  GROT GROT GROT
+                        //  GROT GROT GROT possible tdw memory leak here...
+                        //  GROT GROT GROT the right fix is to refactor crm_expr_isolate.
+                        //  GROT GROT GROT but for now, we'll reuse the same code as
+                        //  GROT GROT GROT it does, releasing the old memory.
+                        //
+                        vmidx = crm_vht_lookup(vht, outbuf, vnl);
+                        if (vht[vmidx] && vht[vmidx]->valtxt == tdw->filetext)
+                        {
+                            oldvstart = vht[vmidx]->vstart;
+                            oldvlen = vht[vmidx]->vlen;
+                            vht[vmidx]->vstart = tdw->nchars++;
+                            vht[vmidx]->vlen   = 0;
+                            crm_compress_tdw_section(vht[vmidx]->valtxt,
+                                    oldvstart,
+                                    oldvstart + oldvlen);
+                        }
+                        //
+                        //      finally, we can put the variable in.  (this is
+                        //      an ALTER to a zero-length variable, which is why
+                        //      we moved it to the end of the TDW.
+                        crm_set_temp_nvar(outbuf, tempbuf, argvallen);
                     }
                     //
-                    //      finally, we can put the variable in.  (this is
-                    //      an ALTER to a zero-length variable, which is why
-                    //      we moved it to the end of the TDW.
-                    crm_set_temp_nvar(outbuf, tempbuf, argvallen);
+                    //   That's it... we're done.
                 }
-                //
-                //   That's it... we're done.
-				}
-				// else: ignore.
+                // else: ignore.
             }
         }
         break;
@@ -1088,19 +1207,19 @@ data_window_size-1);
             //
             CRM_ASSERT(apb != NULL);
             ovlen = crm_get_pgm_arg(out_var, MAX_VARNAME, apb->p1start, apb->p1len);
-            ovlen = crm_nexpandvar(out_var, ovlen, MAX_VARNAME);
+            ovlen = crm_nexpandvar(out_var, ovlen, MAX_VARNAME, vht, tdw);
             ovstart = 0;
 
             //    get the list of variable names
             //
             //     note- since vars never contain wchars, we're OK here.
             tvlen = crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->b1start, apb->b1len);
-            tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME);
+            tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME, vht, tdw);
             CRM_ASSERT(tvlen < MAX_VARNAME);
             if (internal_trace)
             {
-				fprintf(stderr, "  Intersecting vars: (len: %d) ***%s***\n", tvlen, temp_vars);
-				fprintf(stderr, "   with result in (len: %d) ***%s***\n", ovlen, out_var);
+                fprintf(stderr, "  Intersecting vars: (len: %d) ***%s***\n", tvlen, temp_vars);
+                fprintf(stderr, "   with result in (len: %d) ***%s***\n", ovlen, out_var);
             }
             done = 0;
             mc = 0;
@@ -1112,8 +1231,8 @@ data_window_size-1);
             i_index = -1;
             while (!done)
             {
- if (!crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen)
- || vlen == 0)
+                if (!crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen)
+                    || vlen == 0)
                 {
                     done = 1;
                 }
@@ -1126,14 +1245,14 @@ data_window_size-1);
                     if (vht[vht_index] == NULL)
                     {
                         char varname[MAX_VARNAME];
-								if (vlen >= WIDTHOF(varname))
-		{
-			nonfatalerror_ex(SRC_LOC(), "INTERSECT statement comes with a variable name which is too long (len = %d) "
-				"while the maximum allowed size is %d.",
-					vlen,
-(int)(WIDTHOF(varname)-1));
-			vlen = WIDTHOF(varname) - 1;
-		}
+                        if (vlen >= WIDTHOF(varname))
+                        {
+                            nonfatalerror_ex(SRC_LOC(), "INTERSECT statement comes with a variable name which is too long (len = %d) "
+                                                        "while the maximum allowed size is %d.",
+                                    vlen,
+                                    (int)(WIDTHOF(varname) - 1));
+                            vlen = WIDTHOF(varname) - 1;
+                        }
                         strncpy(varname, &temp_vars[vstart], vlen);
                         varname[vlen] = 0;
                         nonfatalerror("can't intersection a nonexistent variable.",
@@ -1147,14 +1266,14 @@ data_window_size-1);
                         if (vht[vht_index]->valtxt != cdw->filetext)
                         {
                             char varname[MAX_VARNAME];
-								if (vlen >= WIDTHOF(varname))
-		{
-			nonfatalerror_ex(SRC_LOC(), "INTERSECT statement comes with a variable name which is too long (len = %d) "
-				"while the maximum allowed size is %d.",
-					vlen,
-(int)(WIDTHOF(varname)-1));
-			vlen = WIDTHOF(varname) - 1;
-		}
+                            if (vlen >= WIDTHOF(varname))
+                            {
+                                nonfatalerror_ex(SRC_LOC(), "INTERSECT statement comes with a variable name which is too long (len = %d) "
+                                                            "while the maximum allowed size is %d.",
+                                        vlen,
+                                        (int)(WIDTHOF(varname) - 1));
+                                vlen = WIDTHOF(varname) - 1;
+                            }
                             strncpy(varname, &temp_vars[vstart], vlen);
                             varname[vlen] = 0;
                             nonfatalerror("can't intersect isolated variable.",
@@ -1183,16 +1302,16 @@ data_window_size-1);
             if (vlen < 0)
                 vlen = 0;
             if (crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen))
-			{
-            crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
-                    istart, vlen,
-                    csl->cstmt);
-			}
-			else
-			{
-				nonfatalerror("INTERSECT didn't come with a target variable to store the results.", 
-					"'We focus on results around here,' the businessman said, and he wept silently.");
-			}
+            {
+                crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
+                        istart, vlen,
+                        csl->cstmt);
+            }
+            else
+            {
+                nonfatalerror("INTERSECT didn't come with a target variable to store the results.",
+                        "'We focus on results around here,' the businessman said, and he wept silently.");
+            }
         }
         break;
 
@@ -1220,7 +1339,7 @@ data_window_size-1);
             //
             CRM_ASSERT(apb != NULL);
             ovlen = crm_get_pgm_arg(out_var, MAX_VARNAME, apb->p1start, apb->p1len);
-            ovlen = crm_nexpandvar(out_var, ovlen, MAX_VARNAME);
+            ovlen = crm_nexpandvar(out_var, ovlen, MAX_VARNAME, vht, tdw);
             ovstart = 0;
 
 
@@ -1228,9 +1347,9 @@ data_window_size-1);
             //
             //    since vars never contain wchars, we don't have to be 8-bit-safe
             tvlen = crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->b1start, apb->b1len);
-            tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME);
+            tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME, vht, tdw);
             if (internal_trace)
-				fprintf(stderr, "  Uniting vars: (len: %d) ***%s***\n", tvlen, temp_vars);
+                fprintf(stderr, "  Uniting vars: (len: %d) ***%s***\n", tvlen, temp_vars);
 
             done = 0;
             mc = 0;
@@ -1242,8 +1361,8 @@ data_window_size-1);
             i_index = -1;
             while (!done)
             {
- if (!crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen)
-                || vlen == 0)
+                if (!crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen)
+                    || vlen == 0)
                 {
                     done = 1;
                 }
@@ -1297,16 +1416,16 @@ data_window_size-1);
             if (vlen < 0)
                 vlen = 0;
             if (crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen))
-			{
-            crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
-                    istart, vlen,
-                    csl->cstmt);
-			}
-			else
-			{
-				nonfatalerror("UNION didn't come with a target variable to store the results.", 
-					"'We focus on results around here,' the businessman said, and he wept silently.");
-			}
+            {
+                crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
+                        istart, vlen,
+                        csl->cstmt);
+            }
+            else
+            {
+                nonfatalerror("UNION didn't come with a target variable to store the results.",
+                        "'We focus on results around here,' the businessman said, and he wept silently.");
+            }
         }
         break;
 
@@ -1316,16 +1435,16 @@ data_window_size-1);
         if (user_trace)
             fprintf(stderr, "executing a DEBUG statement - drop to debug\n");
         debug_countdown = 0;
-		// we need to call the debugger here, because otherwise we get 'fringe' errors because
-		// we would not be able to determine _inside_ the debugger, when the current_statement-1 points
-		// at a CRM_DEBUG opcode such as this one, if the debugger was actually triggered from an
-		// embedded debug statement or from a previous debugger instruction, which just ended us
-		// at debug-line+1, such as some 'j' command.
-		//
-		// Hence we're going to tell the debugger explicitly it was this 'debug' command that
-		// caused it to be called; the debugger then MUST pop up and any run-N-statements or
-		// step-out/until-return/whatever runs will be forcibly aborted.
-		i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_STATEMENT, NULL);
+        // we need to call the debugger here, because otherwise we get 'fringe' errors because
+        // we would not be able to determine _inside_ the debugger, when the current_statement-1 points
+        // at a CRM_DEBUG opcode such as this one, if the debugger was actually triggered from an
+        // embedded debug statement or from a previous debugger instruction, which just ended us
+        // at debug-line+1, such as some 'j' command.
+        //
+        // Hence we're going to tell the debugger explicitly it was this 'debug' command that
+        // caused it to be called; the debugger then MUST pop up and any run-N-statements or
+        // step-out/until-return/whatever runs will be forcibly aborted.
+        i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_STATEMENT, NULL);
         if (i == -1)
         {
             if (engine_exit_base != 0)
@@ -1388,14 +1507,114 @@ data_window_size-1);
     //    on to the next statement, we branch here.
 invoke_bailout:
 
+	crm_analysis_mark(&analysis_cfg, MARK_OPERATION, tstmt, "");
+
     //  grab end-of-statement timers ?
     if (profile_execution)
     {
-        times(&timer2);
-        csl->mct[tstmt]->stmt_utime += (timer2.tms_utime - timer1.tms_utime);
-        csl->mct[tstmt]->stmt_stime += (timer2.tms_stime - timer1.tms_stime);
-    }
+#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+    LARGE_INTEGER t1;
+	int64_t timer2;
+#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+    struct timespec t1;
+	int64_t timer2;
+#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+    struct timeval t1;
+	int64_t timer2;
+#elif defined (HAVE_CLOCK)
+    clock_t t1;
+#else
+    // nada
+#endif
+#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+    struct tms t1a;
+    clock_t t2a;
+#endif
+	int64_t w = 0;
 
+      csl->mct[tstmt]->stmt_exec_count++;
+
+#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+    if (!QueryPerformanceCounter(&t1))
+    {
+        // unknown; due to error
+    }
+	else
+{
+    timer2 = t1.QuadPart;
+
+	w = (timer2 - timer1);
+        csl->mct[tstmt]->stmt_utime += w;
+        // csl->mct[tstmt]->stmt_stime += 0;
+        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+}
+#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+    if (!clock_gettime(CLOCK_REALTIME, &t1))
+    {
+        timer2 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
+
+	w = (timer2 - timer1);
+        csl->mct[tstmt]->stmt_utime += w;
+        // csl->mct[tstmt]->stmt_stime += 0;
+        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+    }
+    else
+    {
+        // unknown; due to error
+    }
+#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+    if (!gettimeofday(&t1))
+    {
+        timer2 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
+
+	w = (timer2 - timer1);
+        csl->mct[tstmt]->stmt_utime += w;
+        // csl->mct[tstmt]->stmt_stime += 0;
+        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+    }
+    else
+    {
+        // unknown; due to error
+    }
+#elif defined (HAVE_CLOCK)
+    t1 = clock();
+    if (t1 == (clock) -1)
+    {
+        // unknown; due to error
+    }
+    else
+    {
+	w = (t1 - timer1);
+        csl->mct[tstmt]->stmt_utime += w;
+        // csl->mct[tstmt]->stmt_stime += 0;
+        timer1 = t1; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+    }
+#else
+#endif
+
+#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+    t2a = times(&t1a);
+    if (t2a == (clock)-1)
+    {
+        // unknown; due to error
+    }
+    else
+    {
+	int64_t d = ((t1a.tms_utime - timer1a.tms_utime) + (t1a.tms_stime - timer1a.tms_stime));
+        double ratio;
+
+	if (d > 0)
+	{
+		ratio = d;
+		ratio = (t1a.tms_stime - timer1a.tms_stime) / ratio;
+		d = ratio * w;
+        	csl->mct[tstmt]->stmt_stime += d;
+        	csl->mct[tstmt]->stmt_utime -= d;
+	}
+	timer1a = t1a;
+    }
+#endif
+    }
 
     //    go on to next statement (unless we're failing, laifing, etc,
     //    in which case we have no business getting to here.
@@ -1405,20 +1624,121 @@ invoke_bailout:
 
 invoke_done:
 
+	crm_analysis_mark(&analysis_cfg, MARK_OPERATION, tstmt, "");
+
     //  grab end-of-statement timers ?
     if (profile_execution)
     {
-        times(&timer2);
-        csl->mct[tstmt]->stmt_utime += (timer2.tms_utime - timer1.tms_utime);
-        csl->mct[tstmt]->stmt_stime += (timer2.tms_stime - timer1.tms_stime);
+#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+    LARGE_INTEGER t1;
+	int64_t timer2;
+#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+    struct timespec t1;
+	int64_t timer2;
+#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+    struct timeval t1;
+	int64_t timer2;
+#elif defined (HAVE_CLOCK)
+    clock_t t1;
+#else
+    // nada
+#endif
+#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+    struct tms t1a;
+    clock_t t2a;
+#endif
+	int64_t w = 0;
+
+      csl->mct[tstmt]->stmt_exec_count++;
+
+#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+    if (!QueryPerformanceCounter(&t1))
+    {
+        // unknown; due to error
+    }
+	else
+{
+    timer2 = t1.QuadPart;
+
+	w = (timer2 - timer1);
+        csl->mct[tstmt]->stmt_utime += w;
+        // csl->mct[tstmt]->stmt_stime += 0;
+        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+}
+#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+    if (!clock_gettime(CLOCK_REALTIME, &t1))
+    {
+        timer2 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
+
+	w = (timer2 - timer1);
+        csl->mct[tstmt]->stmt_utime += w;
+        // csl->mct[tstmt]->stmt_stime += 0;
+        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+    }
+    else
+    {
+        // unknown; due to error
+    }
+#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+    if (!gettimeofday(&t1))
+    {
+        timer2 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
+
+	w = (timer2 - timer1);
+        csl->mct[tstmt]->stmt_utime += w;
+        // csl->mct[tstmt]->stmt_stime += 0;
+        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+    }
+    else
+    {
+        // unknown; due to error
+    }
+#elif defined (HAVE_CLOCK)
+    t1 = clock();
+    if (t1 == (clock) -1)
+    {
+        // unknown; due to error
+    }
+    else
+    {
+	w = (t1 - timer1);
+        csl->mct[tstmt]->stmt_utime += w;
+        // csl->mct[tstmt]->stmt_stime += 0;
+        timer1 = t1; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+    }
+#else
+#endif
+
+#if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
+    t2a = times(&t1a);
+    if (t2a == (clock)-1)
+    {
+        // unknown; due to error
+    }
+    else
+    {
+	int64_t d = ((t1a.tms_utime - timer1a.tms_utime) + (t1a.tms_stime - timer1a.tms_stime));
+        double ratio;
+
+	if (d > 0)
+	{
+		ratio = d;
+		ratio = (t1a.tms_stime - timer1a.tms_stime) / ratio;
+		d = ratio * w;
+        	csl->mct[tstmt]->stmt_stime += d;
+        	csl->mct[tstmt]->stmt_utime -= d;
+	}
+	timer1a = t1a;
+    }
+#endif
     }
 
-	//     give the debugger one last chance to do things.
+    //     give the debugger one last chance to do things.
     if (debug_countdown > DEBUGGER_DISABLED_FOREVER) // also pop up the debugger when in 'continue' or 'counted' run
-	{
-		int end_stmt_nr = csl->cstmt;
+    {
+        int end_stmt_nr = csl->cstmt;
 
-		i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_END_OF_PROGRAM, NULL);
+        i = crm_debugger(csl, CRM_DBG_REASON_DEBUG_END_OF_PROGRAM, NULL);
         if (i == -1)
         {
             if (engine_exit_base != 0)
@@ -1431,19 +1751,21 @@ invoke_done:
             }
         }
         // prevent looping when 'fail'ing to end from inside the debugger, as we're already there anyhow.
-		if (i == 1)
-		{
-		if (csl->cstmt < csl->nstmts && end_stmt_nr != csl->cstmt)
-		{
-			// only loop when debugger actually _changed_ the execution position!
-			goto invoke_top;
-		}
-		}
-	}
+        if (i == 1)
+        {
+            if (csl->cstmt < csl->nstmts && end_stmt_nr != csl->cstmt)
+            {
+                // only loop when debugger actually _changed_ the execution position!
+                goto invoke_top;
+            }
+        }
+    }
 
     //     if we asked for an output profile, give it to us.
     if (profile_execution)
+	{
         crm_output_profile(csl);
+	}
 
     return status;
 }

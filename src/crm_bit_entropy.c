@@ -22,7 +22,7 @@
 #include "crm114.h"
 
 
-#if !defined (CRM_WITHOUT_BIT_ENTROPY)
+#if !CRM_WITHOUT_BIT_ENTROPY
 
 //////////////////////////////////////////////////////////////////
 //
@@ -677,7 +677,7 @@ static double stats_2_entropy(int count, int total)
 
     //   if no prior information, this is 1 bit exactly of data.
     if (total <= 0)
-        return 1.00;
+        return 1.0;
 
     if (count >= total)
         return 0.0;
@@ -1376,12 +1376,12 @@ static int nodes_init_shufflenet(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
 //    for this particular node in the graph.
 
 static int lattice_lookahead_score(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
-        int                                                     proposed_node, // the proposed next node
+        int                                                      proposed_node, // the proposed next node
         double                                                   node_fir,
-        int                                                     crosslink_mincount,
+        int                                                      crosslink_mincount,
         double                                                   crosslink_fir_thresh,
         char                                                    *text,       // current txt ptr
-        int                                                     textoffset, // current textoffset
+        int                                                      textoffset, // current textoffset
         short                                                    bitnum      // and bitnum that got us here
                                   )
 {
@@ -1612,6 +1612,8 @@ static int lattice_lookahead_score(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
 //
 
 int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txtptr, int txtstart, int txtlen)
 {
     //     learn the osb_bayes transform spectrum of this input window as
@@ -1621,16 +1623,16 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int j, k;
     int i;
     ENTROPY_FEATUREBUCKET_STRUCT *nodes;                   //  the node array (after mapping!)
-    int nodeslen = 0;                                     //  how many nodes do we have?
-    int nodebytes;                                        //  how many bytes of nodes?
+    int nodeslen = 0;                                      //  how many nodes do we have?
+    int nodebytes;                                         //  how many bytes of nodes?
     int32_t *firlat;                                       //  the FIR prior lookaside table
     ENTROPY_HEADER_STRUCT *headers;                        //  the what-is-where headers.
     int32_t *fmap;                                         //  catcher for where the file gets mapped.
-    int firlatlen = -1;                                   //  how long is the FIR lookaside table?
-    int firlatbytes;                                      //  how many bytes of firlat
+    int firlatlen = -1;                                    //  how long is the FIR lookaside table?
+    int firlatbytes;                                       //  how many bytes of firlat
     int64_t *totalbits;                                    //  How many total feature bits in this file
     double localfir;                                       //  the FIR value we've accumulated on this path
-    int curnode;                                          //  the current node in our search
+    int curnode;                                           //  the current node in our search
 
     //     Text to be learned stuff:
     int textoffset;
@@ -1660,7 +1662,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the node file name
     hlen = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN);
+    hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN, vht, tdw);
 
     //            set our cflags, if needed.  The defaults are
     //            "case" and "affirm", (both zero valued).
@@ -1695,25 +1697,25 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
- if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
- {
-            fev = nonfatalerror_ex(SRC_LOC(), 
-				"\nYou didn't specify a valid filename: '%.*s'\n", 
-					(int)hlen,
-					htext);
-            return fev;
- }
- j += i;
+    if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+    {
+        fev = nonfatalerror_ex(SRC_LOC(),
+                "\nYou didn't specify a valid filename: '%.*s'\n",
+                (int)hlen,
+                htext);
+        return fev;
+    }
+    j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
     learnfilename = strdup(&(htext[i]));
-        if (!learnfilename)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!learnfilename)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
 
     //             and stat it to get it's length
     k = stat(learnfilename, &statbuf);
@@ -1733,7 +1735,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, "Opening %s for BEN file creation\n", learnfilename);
         }
 
-        f = fopen(learnfilename, "wb");
+		f = fopen(learnfilename, "wb");
         if (!f)
         {
             fev = nonfatalerror_ex(SRC_LOC(),
@@ -1772,7 +1774,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         nodeslen = sparse_spectrum_file_length;
         nodebytes = nodeslen * sizeof(nodes[0]);
         firlatlen = (int)(sparse_spectrum_file_length
-                           * BIT_ENTROPIC_FIR_LOOKASIDE_FRACTION);
+                          * BIT_ENTROPIC_FIR_LOOKASIDE_FRACTION);
         firlatbytes = firlatlen * sizeof(firlat[0]);
 
         if (user_trace)
@@ -1785,7 +1787,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
 
         classifier_info.classifier_bits = CRM_ENTROPY;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+        classifier_info.hash_version_in_use = selected_hashfunction;
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
@@ -1986,7 +1988,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     nodebytes = nodeslen * sizeof(nodes[0]);
 
     // headers [4] and [5] are for the int64_t totalbits.
-  //  totalbits = (long long *) &headers[4];    
+    //  totalbits = (long long *) &headers[4];
     totalbits = &(headers->totalbits);
 
     //     In this format, the first BIT_ENTROPIC_FIR_LOOKASIDE_FRACTION
@@ -2049,9 +2051,9 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (apb->s2len > 0)
     {
         clerrlen = crm_get_pgm_arg(clerrtxt, MAX_PATTERN, apb->s2start, apb->s2len);
-        clerrlen = crm_nexpandvar(clerrtxt, clerrlen, MAX_PATTERN);
-		CRM_ASSERT(clerrlen < MAX_PATTERN);
-		clerrtxt[clerrlen] = 0;
+        clerrlen = crm_nexpandvar(clerrtxt, clerrlen, MAX_PATTERN, vht, tdw);
+        CRM_ASSERT(clerrlen < MAX_PATTERN);
+        clerrtxt[clerrlen] = 0;
         crosslink_thresh = strtod(clerrtxt, NULL) * crosslink_thresh;
     }
 
@@ -2443,6 +2445,8 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
@@ -2469,7 +2473,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     struct stat statbuf;    //  for statting the hash file
 
-    int totalfeatures = 0; //  total features
+    int totalfeatures = 0;  //  total features
     double tprob;           //  total probability in the "success" domain.
 
     //    variables used when tracing the markov graph
@@ -2486,14 +2490,14 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     ENTROPY_FEATUREBUCKET_STRUCT *nodestarts[MAX_CLASSIFIERS];
     ENTROPY_FEATUREBUCKET_STRUCT *nodes;
     ENTROPY_HEADER_STRUCT *headers[MAX_CLASSIFIERS]; //  pointers in the files.
-    int32_t  *fmaps[MAX_CLASSIFIERS];
+    int32_t *fmaps[MAX_CLASSIFIERS];
     int nodelens[MAX_CLASSIFIERS];
     int nodeslen;
-    int32_t  *firlats[MAX_CLASSIFIERS];
+    int32_t *firlats[MAX_CLASSIFIERS];
     int firlatlens[MAX_CLASSIFIERS];
     char *hashname[MAX_CLASSIFIERS];
     int firjumps[MAX_CLASSIFIERS];
-    int64_t  *totalbits[MAX_CLASSIFIERS];
+    int64_t *totalbits[MAX_CLASSIFIERS];
 
     int succhash;
     int vbar_seen;     // did we see '|' in classify's args?
@@ -2510,27 +2514,28 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the hash file names
     hlen = crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
-    hlen = crm_nexpandvar(htext, hlen, htext_maxlen);
+    hlen = crm_nexpandvar(htext, hlen, htext_maxlen, vht, tdw);
 
 
     //            extract the optional "match statistics" variable
     //
     svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
-    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
+    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(svlen < MAX_PATTERN);
     {
-       int  vstart, vlen;
+        int vstart, vlen;
 
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
-		{
-        memmove(svrbl, &svrbl[vstart], vlen);
-        svlen = vlen;
-        svrbl[vlen] = 0;
-		}
-		else
-		{
-			svrbl[0] = 0;
-			svlen = 0;
-		}
+        {
+            memmove(svrbl, &svrbl[vstart], vlen);
+            svlen = vlen;
+            svrbl[vlen] = 0;
+        }
+        else
+        {
+            svlen = 0;
+            svrbl[0] = 0;
+        }
     }
 
     //     status variable's text (used for output stats)
@@ -2598,9 +2603,9 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
         if (crm_nextword(htext,
-                hlen, fn_start_here,
-                &fnstart, &fnlen)
-				&& fnlen > 0)
+                    hlen, fn_start_here,
+                    &fnstart, &fnlen)
+            && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fn_start_here = fnstart + fnlen + 1;
@@ -2637,86 +2642,86 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
                 else
                 {
-					// [i_a] check hashes[] range BEFORE adding another one!
-            if (maxhash >= MAX_CLASSIFIERS)
-            {
-                nonfatalerror("Too many classifier files.",
-                        "Some may have been disregarded");
-            }
-			else
-			{
-                    //  file exists - do the open/process/close
-                    //
-                    //  mmap the hash file into memory so we can bitwhack it
-
-                    fmaps[maxhash] = crm_mmap_file(fname,
-                            0,
-                            statbuf.st_size,
-                            PROT_READ | PROT_WRITE,
-                            MAP_SHARED,
-                            CRM_MADV_RANDOM,
-                            NULL);
-                    headers[maxhash] = (ENTROPY_HEADER_STRUCT *)fmaps[maxhash];
-
-                    if (fmaps[maxhash] == MAP_FAILED)
+                    // [i_a] check hashes[] range BEFORE adding another one!
+                    if (maxhash >= MAX_CLASSIFIERS)
                     {
-                        nonfatalerror("Couldn't memory-map the table file",
-                                fname);
+                        nonfatalerror("Too many classifier files.",
+                                "Some may have been disregarded");
                     }
                     else
                     {
+                        //  file exists - do the open/process/close
                         //
-                        //     Check to see if this file is the right version
-                        //
-                        //int fev;
-                        //if (hashes[maxhash][0].hash != 0 ||
-                        //          hashes[maxhash][0].key  != 0)
-                        //{
-                        //  fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
-                        //                   fname);
-                        //  return (fev);
-                        //}
+                        //  mmap the hash file into memory so we can bitwhack it
 
-                        //   Pull the file info out of the header (the
-                        //   first 1024 bytes is the header)
-                        //firlats[maxhash] = (int *)
-                        //     & headers[maxhash][headers[maxhash][0]];
-                        firlats[maxhash] =
-                            &(fmaps[maxhash][headers[maxhash]->firlatstart]);
-                        //firlatlens[maxhash] = headers[maxhash][1];
-                        firlatlens[maxhash] = headers[maxhash]->firlatlen;
-                        //nodestarts[maxhash] = (ENTROPY_FEATUREBUCKET_STRUCT *)
-                        //  & (headers[maxhash][headers[maxhash][2]]);
-                        nodestarts[maxhash] = (ENTROPY_FEATUREBUCKET_STRUCT *)
-                                              &(fmaps[maxhash][headers[maxhash]->nodestart]);
-                        //nodelens[maxhash] = headers[maxhash][3];
-                        nodelens[maxhash] = headers[maxhash]->nodeslen;
-		      // totalbits[maxhash] = (long long *) &headers[4];
-                        totalbits[maxhash] = &(headers[maxhash]->totalbits);
+                        fmaps[maxhash] = crm_mmap_file(fname,
+                                0,
+                                statbuf.st_size,
+                                PROT_READ | PROT_WRITE,
+                                MAP_SHARED,
+                                CRM_MADV_RANDOM,
+                                NULL);
+                        headers[maxhash] = (ENTROPY_HEADER_STRUCT *)fmaps[maxhash];
 
-                        if (internal_trace)
+                        if (fmaps[maxhash] == MAP_FAILED)
                         {
-                            fprintf(stderr,
-                                    "File #%d firlat %p len %d and nodes %p\n",
-                                    maxhash,
-                                    (void *)firlats[maxhash],
-                                    firlatlens[maxhash],
-                                    (void *)nodestarts[maxhash]);
+                            nonfatalerror("Couldn't memory-map the table file",
+                                    fname);
                         }
-
-                        //    Keep a copy of the data filename for later.
-                        hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
-                        if (!hashname[maxhash])
+                        else
                         {
-                            untrappableerror(
-                                    "Couldn't alloc hashname[maxhash]\n",
-                                    "We need that part later, so we're stuck.  Sorry.");
+                            //
+                            //     Check to see if this file is the right version
+                            //
+                            //int fev;
+                            //if (hashes[maxhash][0].hash != 0 ||
+                            //          hashes[maxhash][0].key  != 0)
+                            //{
+                            //  fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
+                            //                   fname);
+                            //  return (fev);
+                            //}
+
+                            //   Pull the file info out of the header (the
+                            //   first 1024 bytes is the header)
+                            //firlats[maxhash] = (int *)
+                            //     & headers[maxhash][headers[maxhash][0]];
+                            firlats[maxhash] =
+                                &(fmaps[maxhash][headers[maxhash]->firlatstart]);
+                            //firlatlens[maxhash] = headers[maxhash][1];
+                            firlatlens[maxhash] = headers[maxhash]->firlatlen;
+                            //nodestarts[maxhash] = (ENTROPY_FEATUREBUCKET_STRUCT *)
+                            //  & (headers[maxhash][headers[maxhash][2]]);
+                            nodestarts[maxhash] = (ENTROPY_FEATUREBUCKET_STRUCT *)
+                                                  &(fmaps[maxhash][headers[maxhash]->nodestart]);
+                            //nodelens[maxhash] = headers[maxhash][3];
+                            nodelens[maxhash] = headers[maxhash]->nodeslen;
+                            // totalbits[maxhash] = (long long *) &headers[4];
+                            totalbits[maxhash] = &(headers[maxhash]->totalbits);
+
+                            if (internal_trace)
+                            {
+                                fprintf(stderr,
+                                        "File #%d firlat %p len %d and nodes %p\n",
+                                        maxhash,
+                                        (void *)firlats[maxhash],
+                                        firlatlens[maxhash],
+                                        (void *)nodestarts[maxhash]);
+                            }
+
+                            //    Keep a copy of the data filename for later.
+                            hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
+                            if (!hashname[maxhash])
+                            {
+                                untrappableerror(
+                                        "Couldn't alloc hashname[maxhash]\n",
+                                        "We need that part later, so we're stuck.  Sorry.");
+                            }
+                            strncpy(hashname[maxhash], fname, fnlen);
+                            hashname[maxhash][fnlen] = 0;
+                            maxhash++;
                         }
-                        strncpy(hashname[maxhash], fname, fnlen);
-                        hashname[maxhash][fnlen] = 0;
-                        maxhash++;
                     }
-			}
                 }
             }
         }
@@ -2731,21 +2736,25 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (maxhash == 0)
         return 0;
 
+    if (user_trace)
+    {
+        fprintf(stderr, "Running with %d files for success out of %d files\n",
+                succhash, maxhash);
+    }
 
     // sanity checks...  Uncomment for super-strict CLASSIFY.
     //
     //    do we have at least 1 valid .css files?
     if (maxhash == 0)
     {
-        nonfatalerror("Couldn't open at least 2 .css files for classify().", "");
+        return nonfatalerror("Couldn't open at least 1 .css file for classify().", "");
     }
 
     //    do we have at least 1 valid .css file at both sides of '|'?
-    if (!vbar_seen || succhash < 0 || (maxhash <= succhash))
+    if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
-        nonfatalerror(
-                "Couldn't open at least 1 .ben file per SUCC | FAIL classes "
-                " for classify().\n", "Hope you know what are you doing.");
+        return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
+                      "for classify().\n", "Hope you know what are you doing.");
     }
 
     //   now all of the files are mmapped into memory,
@@ -3028,7 +3037,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //     FIR-hop
         //       TOE  7914/92189 and ?/96/60 minutes
         //       Fixed 5109/92189 and 378/153/63 minutes (with some suspiciously
-        //              int delays during a few messages)
+    //              long delays during a few messages)
         //   2048x2048 lattice:
         //     no FIR-hop
         //       TOE  3780 / 92189 318/87/60 min
@@ -3116,7 +3125,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //   Step 3: renormalize the probabilities to sum to 1.000
         renorm = 0.0;
         for (k = 0; k < maxhash; k++)
-            renorm = renorm + ptc[k];
+            renorm += ptc[k];
         for (k = 0; k < maxhash; k++)
         {
             ptc[k] = (ptc[k] / renorm) + 1000 * DBL_MIN;
@@ -3139,15 +3148,12 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             accumulator = 1000 * DBL_MIN;
             for (m = 0; m < succhash; m++)
             {
-                accumulator = accumulator + ptc[m];
+                accumulator += ptc[m];
             }
             remainder = 1000 * DBL_MIN;
             for (m = succhash; m < maxhash; m++)
             {
-                if (bestseen != m)
-                {
-                    remainder = remainder + ptc[m];
-                }
+                    remainder += ptc[m];
             }
             overall_pR = (log10(accumulator) - log10(remainder));
 
@@ -3155,7 +3161,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //  There would be a possible buffer overflow except that _we_ control
             //   what gets written here.  So it's no biggie.
 
-            if (tprob > 0.5000)
+            if (tprob > 0.5)
             {
                 sprintf(buf,
                         "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n",
@@ -3170,14 +3176,18 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 strcat(stext, buf);
             bestseen = 0;
             for (k = 0; k < maxhash; k++)
+			{
                 if (ptc[k] > ptc[bestseen])
+				{
                     bestseen = k;
+				}
+			}
             remainder = 1000 * DBL_MIN;
             for (m = 0; m < maxhash; m++)
             {
                 if (bestseen != m)
                 {
-                    remainder = remainder + ptc[m];
+                    remainder += ptc[m];
                 }
             }
             snprintf(buf, WIDTHOF(buf), "Best match to file #%d (%s) "
@@ -3205,7 +3215,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     if (k != m)
                     {
-                        remainder = remainder + ptc[m];
+                        remainder += ptc[m];
                     }
                 }
                 nodes = nodestarts[k];
@@ -3287,11 +3297,17 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (tprob <= 0.5)
     {
         if (user_trace)
+        {
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
+        }
         //    and do what we do for a FAIL here
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+        CRM_ASSERT(csl->cstmt >= 0);
+        CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }

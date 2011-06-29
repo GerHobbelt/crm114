@@ -19,7 +19,7 @@ For some reason, I was unable to read-open the file named 'zoob.zipulrlfjf' (exp
 Sorry, but this program is very sick and probably should be killed off.
 This happened at line 19 of file fataltraptest.crm:
     input [zoob.zipulrlfjf] (:hi:)
-(runtime system location: crm_expr_file_io.c(207) in routine: crm_expr_input)
+(runtime system location: crm_expr_file_io.c(217) in routine: crm_expr_input)
   --- and again, the next thing you see SHOULD be an error "unable to write-open"--- 
  Caught the error  - fault text was 
 crm114: *ERROR*
@@ -27,6 +27,6 @@ crm114: *ERROR*
 Sorry, but this program is very sick and probably should be killed off.
 This happened at line 30 of file fataltraptest.crm:
     output [/No/Such/Directory/frotz.mumble] /:hi:/  # This is correct code; should give the I/O error as expected
-(runtime system location: crm_expr_file_io.c(579) in routine: crm_expr_output)
+(runtime system location: crm_expr_file_io.c(593) in routine: crm_expr_output)
  
 

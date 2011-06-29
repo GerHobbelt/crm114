@@ -13,21 +13,27 @@
 #ifndef __CRM114_OBSF_H__
 #define __CRM114_OBSF_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+
 
 typedef struct
 {
-    crmhash_t     hash;
-    crmhash_t     key;
-    uint32_t value;
+    crmhash_t hash;
+    crmhash_t key;
+    uint32_t  value;
 } OSBF_FEATUREBUCKET_STRUCT;
 
 typedef struct
 {
     unsigned char version[4];
-    uint32_t flags;
-    uint32_t buckets_start; /* offset to first bucket, in bucket size units */
-    uint32_t buckets;       /* number of buckets in the file */
-    uint64_t learnings;     /* number of trainings executed */
+    uint32_t      flags;
+    uint32_t      buckets_start; /* offset to first bucket, in bucket size units */
+    uint32_t      buckets;       /* number of buckets in the file */
+    uint64_t      learnings;     /* number of trainings executed */
 } OSBF_FEATURE_HEADER_STRUCT;
 
 /* define header size to be a multiple of bucket size with aprox. 4 Kbytes */
@@ -97,9 +103,13 @@ extern char *CSS_version_name[];
 #define OSBF_MAX_LONG_TOKENS 1000
 
 extern int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txtptr, int txtoffset, int txtlen);
 extern int crm_expr_osbf_bayes_classify(CSL_CELL *csl,
         ARGPARSE_BLOCK *apb,
+VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txtptr, int txtoffset, int txtlen);
 
 extern int crm_expr_osbf_bayes_css_merge(CSL_CELL *csl,
@@ -129,7 +139,7 @@ extern int crm_expr_osbf_bayes_css_migrate(CSL_CELL *csl,
 
 extern void crm_osbf_set_microgroom(int value);
 extern void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *h,
-        unsigned int                                       hindex);
+        unsigned int                                        hindex);
 extern void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *h,
         unsigned int packstart, unsigned int packlen);
 extern void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *h,
@@ -147,9 +157,13 @@ extern void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
         unsigned int key, int value);
 extern int crm_osbf_create_cssfile(char *cssfile, unsigned int buckets,
         unsigned int major, unsigned int minor /* [i_a] unused anyway ,
-        unsigned int spectrum_start */ );
+                                                * unsigned int spectrum_start */);
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __CRM114_OBSF_H__ */
 

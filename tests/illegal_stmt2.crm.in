@@ -1,0 +1,18 @@
+#! @BIN_PATH@/crm114
+#
+#        output /hello/ [stderr
+#
+# No closing brace but still no error? :-S
+#
+{
+	window
+	{
+		output /hello/ [stderr
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+
+

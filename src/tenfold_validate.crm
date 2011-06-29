@@ -33,8 +33,7 @@ isolate <default> (:show_partitions:) //
 isolate <default> (:decision_length:) /2048/
 isolate <default> (:results:) /results/
 #
-isolate <default> (:initial_text:) \
-	/The quick brown fox jumped over the lazy dog's back 012345679/
+isolate <default> (:initial_text:) /The quick brown fox jumped over the lazy dog's back 012345679/
 #
 #    get the index file
 output /Reading from index file :*:_arg2:\n/
@@ -106,7 +105,7 @@ isolate (:f0: :f1: :f2: :f3: :f4: :f5: :f6: :f7: :f8: :f9:)
 	liaf
 }
 {
-#	match [:show_partitions:] /SET/
+	match [:show_partitions:] /SET/
 	output /F0: \n:*:f0:\n\n/
 	output /F1: \n:*:f1:\n\n/
 	output /F2: \n:*:f2:\n\n/
@@ -291,9 +290,10 @@ match [:cnames:] //
 {
 	match <fromend nomultiline> /[[:graph:]]+/ [:cnames:] (:name:)
 	output /Deleting old :*:name:.stat\n/
-	syscall /rm -rf :*:name:.stat/
-	output /CREATING :*:name:.stat \n/
+	syscall /rm -rf :*:name:.stat /
+	output /CREATING :*:name:.stat with :*:initial_text: \n/
 	learn <:*:clf:> /:*:regex:/ [:initial_text:] (:*:name:.stat)
+	syscall /ls -la 1>&2 /
 	liaf
 	{
 		match [:clf:] /svm|sks/
@@ -315,6 +315,7 @@ match [:file_list:] //
 	{
 		classify <:*:clf:> /:*:regex:/ [:ftext:] (:*:cstatfiles:) (:s:)
 	}
+	#output /:*:s:\n/
 	#   Did our classify result say we're good?
 	{
 		match [:s:] <nomultiline> (:L: :pr:) \
@@ -327,7 +328,7 @@ match [:file_list:] //
 				output /X/
 			}
 			output /\nExample file: :*:fnam: (:*:cnam:) /
-			output /(pR: :*:pr:) learning into :*:cnam:.stat .../
+			output /(pR: :*:pr:) learning into :*:cnam:.stat  /
 			learn <:*:clf:> [:ftext:] /:*:regex:/ (:*:cnam:.stat)
 			{
 				#  if doublesided, go through the list of all 

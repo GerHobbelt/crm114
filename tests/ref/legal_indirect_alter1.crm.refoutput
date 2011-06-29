@@ -1,0 +1,14 @@
+TEST SCRIPT + COMMANDLINE:
+legal_indirect_alter1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+yo!
+dst = ':s:'
+s = 'FUBAR'
+indirect(dst) = 'FUBAR'
+

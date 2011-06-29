@@ -1,0 +1,12 @@
+TEST SCRIPT + COMMANDLINE:
+legal_eval_to_null_var1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ouch!
+--: '1'
+

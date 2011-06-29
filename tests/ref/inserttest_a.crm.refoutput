@@ -14,7 +14,7 @@ now we test nonexistent file overrides
 this should not cause a FATAL ERROR, because we trap it.
 We caught the nonexistent file fault here.  Message was:
  <<start of msg>>
-Couldn't insert the file named 'there_is_no_such_file_as_this.txt' that you asked for.  This is probably a bad thing.
+ Couldn't insert the file named 'there_is_no_such_file_as_this.txt' that you asked for.  This is probably a bad thing.
  <<end of msg>> 
 via the TRAP
 End of insert testing. 

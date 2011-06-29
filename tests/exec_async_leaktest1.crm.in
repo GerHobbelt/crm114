@@ -1,0 +1,62 @@
+#! @BIN_PATH@/crm114
+#
+# As reported by Trever L. Adams, july 2008:
+##--------------------------------------------------------------------------
+##  
+##  In creating this categorizer, I have found that crm has a major bug. If
+##  you do a thousand (on my machine, ulimits and all) of the this:
+##             syscall <async> /:call_judge: <:*:file: >>:*:fifo: /
+##  You soon get errors telling you that:
+##  
+##  Couldn't memory-map the table file : chs_files/weapons.chs
+##  I'll try to keep working.
+##  This happened at line 54 of file web_categorize.crm
+##  (runtime system location: crm_osb_hyperspace.c(1157) in routine:
+##  crm_expr_osb_hyperspace_classify)
+##  The line was:
+##  
+##  
+##  On using a program to see what mmaps and open files are in use, as the
+##  memory is only slowly leaking, (400k over 1000 requests, which may all
+##  be do the following) I have to believe that the open files are the problem.
+##  
+##  The first three are the crm file (web_categorize.crm) and the stdout,
+##  stderr. There are 997 other open files. These are all pipes. Does crm114
+##  not look to and free the pips in syscall <async>? Is there a way to do
+##  it? Nothing needs to be fetched from the child process (as it is
+##  provided with the file as input and is told to hand the response back in
+##  a named pipe/fifo . I don't think <keep> fits.
+##  
+##  Are there any solutions?
+##
+##--------------------------------------------------------------------------
+#
+window
+{
+	isolate (:count:) /10000/
+	isolate (:crm_exe:) //
+	call /:cvt:/ (:crm_exe:) [@abs_top_builddir@/src/crm114]  
+
+	output /\n ----- running :*:count: syscalls (:*:crm_exe:) to check for leaks / failures -----\n/
+	{
+		syscall <async> /:*:crm_exe: '-{ window; }'/
+		eval (:count:) /:@::*:count:-1:/
+		eval /:@::*:count:>0:/
+		liaf;
+	}
+	output /\n ----- done -----\n/
+
+	exit /0/;
+}
+
+#
+# as the QUICKREF says: variables are expanded and concatenated in call [...]
+# and fed into this label (:arg:). Yay! EXACTLY what we need for unescaped-/
+# challenged file paths!
+# 
+:cvt: (:tmp:)
+{
+	return /:*:tmp:/;
+}
+
+

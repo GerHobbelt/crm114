@@ -11,7 +11,7 @@ Too many parens '()' arguments were specified for this command: we see you speci
 Sorry, but this program is very sick and probably should be killed off.
 This happened at line 29 of file fataltrapprogramerr.crm:
     output [/No/Such/Directory/frotz.mumble] (:hi:)  # GerH builds > 2257 will catch this programming mistake
-(runtime system location: crm_stmt_parser.c(671) in routine: crm_statement_parse)
+(runtime system location: crm_stmt_parser.c(677) in routine: crm_statement_parse)
 
 STDOUT TEST OUTPUT:
 

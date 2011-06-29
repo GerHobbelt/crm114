@@ -1,0 +1,23 @@
+#! /usr/local/bin/crm114
+#
+#        alter (:cacheid:) /:*:cacheid::@:_:*:cacheid2nd:/
+#
+#--> (missing : terminator for the :@: math expression, that really
+#    isn't, as _ is not a math operator; copy&paste failure) VERBOSE:
+#    reavercache_store: before correction: '2008-03-31:@:_10:21'
+#
+{
+	window
+	isolate (:cacheid:) /2008-03-31/
+	isolate (:cacheid2nd:) /10:21/
+	{
+		alter (:cacheid:) /:*:cacheid::@:_:*:cacheid2nd:/
+		output /ouch! :*:cacheid:\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+
+

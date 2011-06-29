@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114
+#! @bindir@/crm114
 #   do rewriting, based on rewrite rules in rewrites.mfp
 #
 {

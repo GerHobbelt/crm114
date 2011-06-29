@@ -1,63 +1,72 @@
-#! @abs_top_builddir@/src/crm114
+#! @bindir@/crm114
 #    -- bangline args removed for system portability --
 # -( learnspam learnnonspam learnfile stats_only config spamcss nonspamcss fileprefix force unlearn cache )
 #
-#        A statistical mail sorter with mail-to-yourself commanding
+# A statistical mail sorter with mail-to-yourself commanding
 #
-#    Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
-#    GNU Public License (GPL) version 2.  A copy of this license is included
-#    in the distribution media, or obtain one from www.fsf.org .
+# Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
+# GNU Public License (GPL) version 2.  A copy of this license is included
+# in the distribution media, or obtain one from www.fsf.org .
 #
-#   Note to SunOS and FreeBSD users - you MUST remove EVERYTHING on
-#   the first line of this program from the first "-" to the end of
-#   the first line (including the "-" sign itself) or you will not get
-#   what you expect.  This is due to "differences of opinion" on how
-#   a bangline should be dealt with.
+# Note to SunOS and FreeBSD users - you MUST remove EVERYTHING on
+# the first line of this program from the first "-" to the end of
+# the first line (including the "-" sign itself) or you will not get
+# what you expect.  This is due to "differences of opinion" on how
+# a bangline should be dealt with.
 #
 #
 # --->>>     Design Philosophy ( do these IN ORDER )
 #
-#       *  if --fileprefix is specified, all filenames EXCEPT --config
-#            are prefixed with that (You need a trailing slash on the prefix
-#            if it is a directory name.)
-#       *  if --config , grab the config file from the specified place.
-#       *  Load the mailfilter.cf config file from wherever config or
-#            fileprefix points (--config overrides --fileprefix).
-#       *  If --spamcss is specified, use that as the spam.css file
-#       *  If --nonspamcss is specified, use that as the nonspam.css file
-#       *  If --learnspam, learn as spam and exit.
-#       *  If --learnnonspam, learn as nonspam and exit
-#       *  If --force, force-feed the learning
-#       *  If --learnfile, use :learnfile:.css and :learnfile:text.txt
-#       *  If --stats_only, do normal classification but don't do any
-#                forwarding, only output the status on stdout and return
-#                the exit code.
+# * if --fileprefix is specified, all filenames EXCEPT --config
+#   are prefixed with that (You need a trailing slash on the prefix
+#   if it is a directory name.)
 #
-#       *  check for the "command word", if present, execute the command
+# * if --config , grab the config file from the specified place.
 #
-#       *  check to see if any of the whitelist patterns apply.  If so,
-#       accept the mail to /var/spool/the_user (which is actually to
-#       be found at /var/spool/mail/:*:_env_USER:
+# * Load the mailfilter.cf config file from wherever config or
+#   fileprefix points (--config overrides --fileprefix).
 #
-#       *  check to see if any of the blacklist patterns apply.  If so,
-#       flush the mail to the "blacklisted" file.
+# * If --spamcss is specified, use that as the spam.css file
 #
-#       *  check to see if it's commanded to be learned as a spam or a
-#       nonspam model.  If so, learn it to the appropriate .css (Crm
-#       Sparse Spectra) file
+# * If --nonspamcss is specified, use that as the nonspam.css file
 #
-#       *  run the email through the classifier.  If the classifier thinks
-#       it's good, send it to the /var/spool/mail/the_user file, else
-#       send it to the "doubtful" file.
+# * If --learnspam, learn as spam and exit.
+#
+# * If --learnnonspam, learn as nonspam and exit
+#
+# * If --force, force-feed the learning
+#
+# * If --learnfile, use :learnfile:.css and :learnfile:text.txt
+#
+# * If --stats_only, do normal classification but don't do any
+#   forwarding, only output the status on stdout and return
+#   the exit code.
+#
+# * check for the "command word", if present, execute the command
+#
+# * check to see if any of the whitelist patterns apply.  If so,
+#   accept the mail to /var/spool/the_user (which is actually to
+#   be found at /var/spool/mail/:*:_env_USER:
+#
+# * check to see if any of the blacklist patterns apply.  If so,
+#   flush the mail to the "blacklisted" file.
+#
+# * check to see if it's commanded to be learned as a spam or a
+#   nonspam model.  If so, learn it to the appropriate .css (Crm
+#   Sparse Spectra) file
+#
+# * run the email through the classifier.  If the classifier thinks
+#   it's good, send it to the /var/spool/mail/the_user file, else
+#   send it to the "doubtful" file.
 #
 ##############################################################
 #
-#    ---  uncomment this if you want to include a "forced"
-#         configuration file  ---
+# ---  uncomment this if you want to include a "forced"
+#      configuration file  ---
 # insert mailfilterconfig.crm
 #
 #
-#    --- These vars must have a value, or else we'll get errors ----
+# --- These vars must have a value, or else we'll get errors ----
 #
 isolate (:program_fault_exit_code:) /66/   # [i_a] in case mailfilter.cf cannot be loaded: make sure we don't get an error report cascade.
 
@@ -138,15 +147,15 @@ isolate (:mailtrainer_output:) //
         alius
         {
             #      read in the standard mail filter configuration file.
-           input [:*:fileprefix:mailfilter.cf] (:option_txt:)
+            input [:*:fileprefix:mailfilter.cf] (:option_txt:)
         }
     }
-#
-#
-# reset loop for matching to start of :option_txt:
-        match [:option_txt:] //
+    #
+    #
+    # reset loop for matching to start of :option_txt:
+            match [:option_txt:] //
 
-# and loop till there are no more options.
+    # and loop till there are no more options.
     {
         # find a line that looks like a parameter setting...
         match < fromend nomultiline > (:line: :name: :value:) \
@@ -184,8 +193,8 @@ isolate (:mailtrainer_output:) //
 #    see nor control.)
 {
     match [:spw:] /DEFAULT-PASSWORD/
-    #  yes, it's the same as default.  So we scramble it just so
-    #  nobody can hack in
+    # yes, it's the same as default.  So we scramble it just so
+    # nobody can hack in
     hash (:spw:) /:*:_env_string::*:_dw:/
 }
 
@@ -266,14 +275,13 @@ isolate (:i_text:) /:*:m_text:/
 #   If there's a command followed by text, we save the text so we can
 #    put that, and _only_ that, into the .txt corpi.
 {
-        isolate (:cmd_txt:) /:*:_dw:/
-        match (:: :cmd_txt:) [:_dw:] /command :*:spw: [^\n]*\n(.*)/
+    isolate (:cmd_txt:) /:*:_dw:/
+    match (:: :cmd_txt:) [:_dw:] /command :*:spw: [^\n]*\n(.*)/
 }
 #
 #
 #       do we do any expansions?
 {
-
     #   expansion 1: - do we perform base64 expansions?
     {
         {
@@ -358,7 +366,7 @@ isolate (:i_text:) /:*:m_text:/
 #
 {
     isolate (:m_text:) \
-      /:*:m_text: :*:_nl: :*:b_text: :*:_nl: :*:i_text: :*:_nl:/
+        /:*:m_text: :*:_nl: :*:b_text: :*:_nl: :*:i_text: :*:_nl:/
 }
 
 #########################################################
@@ -366,51 +374,51 @@ isolate (:i_text:) /:*:m_text:/
 #   Do we want to do any rewrites before running?
 #
 {
-   match [:rewrites_enabled:] /yes/
-   isolate (:rewrites:)
-   input (:rewrites:) [:*:fileprefix:rewrites.mfp]
-#    reset matching on rewrites to start of string - if no string, no more
-#    processing of rewrites !!
-   match [:rewrites:] //
-   #
-   #
-   {
-       #    Grab the next regex; turn the one-per-line patterns into a
-       #    regex and a replacement string.
-       #    First, do the line-spanning regexes.
-       match <fromend nomultiline> (:ch: :fr: :to:) [:rewrites:]  /(.+)>-->(.*)/
-       #    see if the "fr" regex matches anywhere
-       {
-           match [:m_text:] (:place:) /:*:fr:/
-           #  Yep, it matched... alter it and do it again
-           #
-           alter (:place:) /:*:to:/
-           liaf
-       }
-       #   Nope, didn't match... grab the next regex and try again,
-       liaf
-   }
-   #
-   #     reset back to the start of the rewrites.
-   #
-   match [:rewrites:] //
-   #
-   #      and do it again for non-line-spanners
-   {
-       #    Go through and do it again, except this time do it for
-       #    the non-line-spanning regexes.
-       match <fromend nomultiline> (:ch: :fr: :to:) [:rewrites:]  /(.+)>->(.*)/
-       #    see if the "fr" regex matches anywhere
-       {
-           match [:m_text:] <nomultiline> (:place:) /:*:fr:/
-           #  Yep, it matched... alter it and do it again
-           #
-           alter (:place:) /:*:to:/
-           liaf
-       }
-       #   Nope, didn't match... grab the next regex and try again,
-       liaf
-   }
+    match [:rewrites_enabled:] /yes/
+    isolate (:rewrites:)
+    input (:rewrites:) [:*:fileprefix:rewrites.mfp]
+    #    reset matching on rewrites to start of string - if no string, no more
+    #    processing of rewrites !!
+    match [:rewrites:] //
+    #
+    #
+    {
+        #    Grab the next regex; turn the one-per-line patterns into a
+        #    regex and a replacement string.
+        #    First, do the line-spanning regexes.
+        match <fromend nomultiline> (:ch: :fr: :to:) [:rewrites:]  /(.+)>-->(.*)/
+        #    see if the "fr" regex matches anywhere
+        {
+            match [:m_text:] (:place:) /:*:fr:/
+            #  Yep, it matched... alter it and do it again
+            #
+            alter (:place:) /:*:to:/
+            liaf
+        }
+        #   Nope, didn't match... grab the next regex and try again,
+        liaf
+    }
+    #
+    #     reset back to the start of the rewrites.
+    #
+    match [:rewrites:] //
+    #
+    #      and do it again for non-line-spanners
+    {
+        #    Go through and do it again, except this time do it for
+        #    the non-line-spanning regexes.
+        match <fromend nomultiline> (:ch: :fr: :to:) [:rewrites:]  /(.+)>->(.*)/
+        #    see if the "fr" regex matches anywhere
+        {
+            match [:m_text:] <nomultiline> (:place:) /:*:fr:/
+            #  Yep, it matched... alter it and do it again
+            #
+            alter (:place:) /:*:to:/
+            liaf
+        }
+        #   Nope, didn't match... grab the next regex and try again,
+        liaf
+    }
 }    #  done with rewrites.
 
 ###################################################################
@@ -448,52 +456,52 @@ isolate ( :spamcss: :nonspamcss: )
 #------------  Are we enabled for "inoculations" via email?
 #
 {
-  match [:inoculations_enabled:] /yes/
-  #
-  #  see if we have an inoculation header.
-  #
-  match <nomultiline> [:m_text:] \
+    match [:inoculations_enabled:] /yes/
+    #
+    #  see if we have an inoculation header.
+    #
+    match <nomultiline> [:m_text:] \
         /Inoculation-Sender: ([[:graph:]]+)/ (:x: :sender:)
-  match <nomultiline> [:m_text:] \
+    match <nomultiline> [:m_text:] \
         /Inoculation-Type: ([[:graph:]]+)/ (:x: :type:)
-  match <nomultiline> [:m_text:] \
+    match <nomultiline> [:m_text:] \
         /Inoculation-Authentication: (.*)$/ (:x: :auth:)
-  #
-  #   See if the sender is in our list, and if so, what is their secret?
-  #
-  isolate (:inoculation_passwd:) //
-  input (:inoculation_passwd:) [:*:fileprefix:inoc_passwd.txt]
-  match [:inoculation_passwd:] <nomultiline> \
+    #
+    #   See if the sender is in our list, and if so, what is their secret?
+    #
+    isolate (:inoculation_passwd:) //
+    input (:inoculation_passwd:) [:*:fileprefix:inoc_passwd.txt]
+    match [:inoculation_passwd:] <nomultiline> \
         /:*:sender: :*:type: (.*)/ (:x: :secret:)
-  #
-  #    We now have the shared secret, calculate the checksum we should have
-  #
-  #     grab the body...
-  match /\n\n(.*)/ (:x: :body:)
-  #
-  #     and calculate the hash.
-  isolate (:md5out:)
-  syscall (:*:secret::*:_nl::*:body:) (:md5out:) /md5sum/
-  match [:md5out:] /([[:graph:]]+)/ (:x: :md5out:)
-  #
-  #     does this hash match with the given hash?
-  match [:auth:] /:*:md5out:/
-  #
-  #     Yes, it matched.  It's a real innoculation.
-  #
-  #     grab the text we want to actually learn (this is the payload)
-  match [:m_text:] (:x: :text:) /\n\n(.*)/
-  #
-  #     and learn it appropriately
-  {
+    #
+    #    We now have the shared secret, calculate the checksum we should have
+    #
+    #     grab the body...
+    match /\n\n(.*)/ (:x: :body:)
+    #
+    #     and calculate the hash.
+    isolate (:md5out:)
+    syscall (:*:secret::*:_nl::*:body:) (:md5out:) /md5sum/
+    match [:md5out:] /([[:graph:]]+)/ (:x: :md5out:)
+    #
+    #     does this hash match with the given hash?
+    match [:auth:] /:*:md5out:/
+    #
+    #     Yes, it matched.  It's a real innoculation.
+    #
+    #     grab the text we want to actually learn (this is the payload)
+    match [:m_text:] (:x: :text:) /\n\n(.*)/
+    #
+    #     and learn it appropriately
+    {
         match [:type:] /nonspam/
         goto /:learnnonspamhere:/
-  }
-  alius
-  {
+    }
+    alius
+    {
         match [:type:] /spam/
         goto /:learnspamhere:/
-  }
+    }
 }
 #
 # -------------check for the COMMAND WORD ----------
@@ -609,7 +617,8 @@ isolate ( :spamcss: :nonspamcss: )
                 exit /:*:accepted_mail_exit_code:/
             }
         }
-        {     #  No cacheing, so we learn "natively"
+        {
+            #  No cacheing, so we learn "natively"
             #
             #    Verify that we need to learn this first (TOE strategy)
             classify <:*:clf:> [:text:] /:*:lcr:/ \
@@ -1048,9 +1057,9 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 \n--Attachment_Quote_Boundary_1234567890--\n/
         }
 
-#
-#
-#     Decide if we forward or if we just output it.
+        #
+        #
+        #     Decide if we forward or if we just output it.
         {
             {
                 #   if this match succeeds, we should forward-to-an-address?
@@ -1198,7 +1207,7 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
         learn <microgroom> (:*:fileprefix::*:spamcss:) [:m_text:] /:*:lcr:/
         goto /:autotrain_finish:/
     }
-    :autotrain_finish:
+:autotrain_finish:
     {
         {
             match [:autotrain_address:] /../

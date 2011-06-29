@@ -7,16 +7,21 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
+ Alternating Example Neural Network Classifier TRAINING 
+
+**** Alternating Example Neural Network Classifier RUNNING TEST
  type Q 
-CLASSIFY fails; success probability: 0.017262  pR: -282.7380
-Best match to file #1 (q_test.css) prob: 0.9827  pR: 282.7380  
-Total features in input file: 195
-#0 (i_test.css): prob: 1.73e-02, pR: -282.74
-#1 (q_test.css): prob: 9.83e-01, pR: 282.74
+CLASSIFY fails; success probability: 0.059712  pR: -86.0572
+Best match to file #1 (q_test.css) prob: 0.9403  pR: 86.0572  
+Total features in input file: 86
+#0 (i_test.css): icnr: 0.06 ocnr: 0.94 prob: 5.97e-02, pR: -88.01
+#1 (q_test.css): icnr: 0.93 ocnr: 0.07 prob: 9.40e-01, pR:  86.06
 
  type I 
-CLASSIFY succeeds; success probability: 0.971915  pR: 271.9152
-Best match to file #0 (i_test.css) prob: 0.9719  pR: 271.9152  
-Total features in input file: 177
-#0 (i_test.css): prob: 9.72e-01, pR: 271.92
-#1 (q_test.css): prob: 2.81e-02, pR: -271.92
+CLASSIFY succeeds; success probability: 0.819964  pR: 57.5907
+Best match to file #0 (i_test.css) prob: 0.8200  pR: 92.4527  
+Total features in input file: 168
+#0 (i_test.css): icnr: 0.96 ocnr: 0.03 prob: 8.20e-01, pR:  92.45
+#1 (q_test.css): icnr: 0.21 ocnr: 0.79 prob: 1.80e-01, pR: -57.59
+
+

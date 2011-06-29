@@ -1,4 +1,4 @@
-#! /home/ger/prj/3actual/crm114-2/src/crm114
+#! /usr/local/bin/crm114
 #   test the error report concerning matching braces and alius.
 #   see the coding error at line 17
 {

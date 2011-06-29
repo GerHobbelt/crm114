@@ -38,7 +38,7 @@
 
 
 
-static void dump_error_script_line(char *dst, int maxdstlen, CSL_CELL *csl, int stmtnum)
+static void dump_error_script_line(char *dst, int maxdstlen, CSL_CELL *csl, int stmtnum, int dump_as_hex_when_weird)
 {
     char *orig_dst = dst;
     int orig_maxdstlen = maxdstlen;
@@ -109,7 +109,7 @@ static void dump_error_script_line(char *dst, int maxdstlen, CSL_CELL *csl, int 
                 }
             }
 
-            // try to preserve our sanity whn the line length numbers are weird: heuristical fix for something that's probably utterly FUBAR.
+            // try to preserve our sanity when the line length numbers are weird: heuristical fix for something that's probably utterly FUBAR.
             if (maxchar > startchar + 255)
             {
                 maxchar = startchar + 255;
@@ -161,7 +161,7 @@ static void dump_error_script_line(char *dst, int maxdstlen, CSL_CELL *csl, int 
                 maxdstlen--;
             }
 
-            if (has_nonprintable_chars_on_board
+            if (has_nonprintable_chars_on_board && dump_as_hex_when_weird
                 && maxdstlen > WIDTHOF("The line was (in HEX bytes):\n-->") + 40 /* heuristic padding */)
             {
                 dst = strmov(dst, "The line was (in HEX bytes):\n-->");
@@ -223,158 +223,158 @@ const char *skip_path(const char *srcfile)
 
 char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
 {
-#if defined(HAVE_GETFULLPATHNAMEA) // do not check for WIN32; it does not have to be defined for 64-bit WIN64, so do the 'proper autoconf thing' here.
-	/*
-	 *      From the MS docs (GetCurrentPath()):
-	 *
-	 *      In certain rare cases, if the specified directory is on the
-	 *      current drive, the function might omit the drive letter and
-	 *      colon from the path. Therefore, the size that is returned
-	 *      by the function might be two characters less than the size
-	 *      of the specified string, not including the terminating null
-	 *      character. This behavior might occur in edge situations
-	 *      such as in a services application. If you need the drive
-	 *      letter, make a subsequent call to GetFullPathName to
-	 *      retrieve the drive letter.
-	*
-	* Which makes you think: why use GetCurrentPath() at all?
-	 */
-	if (!GetFullPathNameA(src_filepath, dst_size, dst, NULL))
-	{
-		fatalerror_Win32("Cannot fetch the expanded the path for directory '%s'",
-			src_filepath);
-		return NULL;
-	}
-#elif defined(HAVE_GETCWD)
-		char *d;
-		int len = dst_size - strlen(src_filepath) - 2;
-		char *s;
-		int skip_parent;
+#if defined (HAVE_GETFULLPATHNAMEA) // do not check for WIN32; it does not have to be defined for 64-bit WIN64 or WinCE or other, so do the 'proper autoconf thing' here.
+    /*
+     *      From the MS docs (GetCurrentPath()):
+     *
+     *      In certain rare cases, if the specified directory is on the
+     *      current drive, the function might omit the drive letter and
+     *      colon from the path. Therefore, the size that is returned
+     *      by the function might be two characters less than the size
+     *      of the specified string, not including the terminating null
+     *      character. This behavior might occur in edge situations
+     *      such as in a services application. If you need the drive
+     *      letter, make a subsequent call to GetFullPathName to
+     *      retrieve the drive letter.
+     *
+     * Which makes you think: why use GetCurrentPath() at all?
+     */
+    if (!GetFullPathNameA(src_filepath, dst_size, dst, NULL))
+    {
+        fatalerror_Win32("Cannot fetch the expanded path for directory '%s'",
+                src_filepath);
+        return NULL;
+    }
+#elif defined (HAVE_GETCWD)
+    char *d;
+    int len = dst_size - strlen(src_filepath) - 2;
+    char *s;
+    int skip_parent;
 
-	   if (len <= 0)
-	   {
-                    fatalerror_ex(SRC_LOC(),
-						"Cannot process/expand the given path '%s' to an absolute path: buffer space too small (%d characters).",
-                        src_filepath,
-                    dst_size);
-					return NULL;
-                }
+    if (len <= 0)
+    {
+        fatalerror_ex(SRC_LOC(),
+                "Cannot process/expand the given path '%s' to an absolute path: buffer space too small (%d characters).",
+                src_filepath,
+                dst_size);
+        return NULL;
+    }
 
-	if (*src_filepath != '/')
-	{
-		if (!getcwd(dst, len))
-	   {
-                    fatalerror_ex(SRC_LOC(),
-						"Cannot fetch the current dir (PWD) when calculating absolute path for '%s': system error = %d(%s)",
-                        src_filepath,
+    if (*src_filepath != '/')
+    {
+        if (!getcwd(dst, len))
+        {
+            fatalerror_ex(SRC_LOC(),
+                    "Cannot fetch the current dir (PWD) when calculating absolute path for '%s': system error = %d(%s)",
+                    src_filepath,
                     errno,
                     errno_descr(errno));
-					return NULL;
+            return NULL;
+        }
+        dst[len] = 0;
+        len = strlen(dst);
+        CRM_ASSERT(len + 1 < dst_size);
+        if (len > 0 && dst[len - 1] != '/')
+        {
+            dst[len++] = '/';
+            dst[len] = 0;
+        }
+        d = dst + len;
+        len = dst_size - len;
+        if (len < strlen(src_filepath) + 1)
+        {
+            fatalerror_ex(SRC_LOC(),
+                    "Cannot append the given relative path '%s' to the current dir (PWD) '%s': not enough space in buffer.",
+                    src_filepath,
+                    dst);
+            return NULL;
+        }
+        strcpy(d, src_filepath);
+    }
+    else
+    {
+        CRM_ASSERT(strlen(src_filepath) < dst_size);
+        strcpy(dst, src_filepath);
+    }
+
+    // when we get here, the 'absolute' but uncompressed path is stored in 'dst'.
+    //
+    // All we need to do now is 'compress' it, i.e. take out those './' and '../' directories still in there.
+    // Note that it is an error condition when '../' goes beyond the '/' root directory: this is for
+    // security reasons.
+    //
+    // 'compress' is only a reduction, so we now already know the final, compressed, result will fit in 'dst'.
+
+    len = strlen(dst);
+    s = d = dst + len - 1;
+    skip_parent = 0;
+
+    if (d[0] == '.')
+    {
+        // special case at start: full path ends in '.', '..' or something ending in a '.' period. See which it is.
+        CRM_ASSERT(d > dst);
+        if (d[-1] == '/')
+        {
+            // ends in '/.' which is just 'this dir', so discard the period: make sure a directory spec ends with a '/' this time
+            d--;
+        }
+        else if (d[-1] == '.' && d - 2 >= dst && d[-2] == '/')
+        {
+            // discard the '..' end and make sure we skip parent dir in there too!
+            skip_parent++;
+            d -= 2;
+        }
+    }
+
+    while (d >= dst)
+    {
+        if (d[0] == '/')
+        {
+            if (d - 1 >= dst && d[-1] == '/')
+            {
+                // double '/' specified in there; not allowed, discard second one.
+                d--;
+                continue;
+            }
+            // good dir coming up left: when not a 'this dir' '.' or 'parent dir' '..', make sure we check skip_parent:
+            if (d - 2 >= dst && d[-1] == '.')
+            {
+                if (d[-2] == '/')
+                {
+                    // skip a 'this dir': './'
+                    d -= 2;
+                    continue;
                 }
-	   dst[len] = 0;
-	   len = strlen(dst);
-		   CRM_ASSERT(len + 1 < dst_size);
-	   if (len > 0 && dst[len - 1] != '/')
-	   {
-		   dst[len++] = '/';
-		   dst[len] = 0;
-	   }
-	   d = dst + len;
-	   len = dst_size - len;
-	   if (len < strlen(src_filepath) + 1)
-	   {
-                    fatalerror_ex(SRC_LOC(),
-						"Cannot append the given relative path '%s' to the current dir (PWD) '%s': not enough space in buffer.",
-                        src_filepath,
-						dst);
-					return NULL;
+                if (d[-2] == '.' && d - 3 >= dst && d[-3] == '/')
+                {
+                    // skip a 'parent dir': '../'
+                    d -= 3;
+                    skip_parent++;
+                    continue;
                 }
-	   strcpy(d, src_filepath);
-	}
-	else
-	{
-		CRM_ASSERT(strlen(src_filepath) < dst_size);
-	   strcpy(dst, src_filepath);
-	}
+            }
+            // a real dir follows left: skip it?
+            if (skip_parent--)
+            {
+                d--;
+                while (d >= dst && d[0] != '/')
+                    d--;
+                continue;
+            }
+        }
+        // real dir or filename: copy to src
+        do
+        {
+            *s-- = *d--;
+        } while (d >= dst && d[0] != '/');
+    }
 
-	// when we get here, the 'absolute' but uncompressed path is stored in 'dst'.
-	//
-	// All we need to do now is 'compress' it, i.e. take out those './' and '../' directories still in there.
-	// Note that it is an error condition when '../' goes beyond the '/' root directory: this is for
-	// security reasons.
-	//
-	// 'compress' is only a reduction, so we now already know the final, compressed, result will fit in 'dst'.
-
-	len = strlen(dst);
-	s = d = dst + len - 1;
-	skip_parent = 0;
-
-		if (d[0] == '.')
-		{
-			// special case at start: full path ends in '.', '..' or something ending in a '.' period. See which it is.
-			CRM_ASSERT(d > dst); 
-				if (d[-1] == '/')
-				{
-					// ends in '/.' which is just 'this dir', so discard the period: make sure a directory spec ends with a '/' this time
-					d--;
-				}
-				else if (d[-1] == '.' && d - 2 >= dst && d[-2] == '/')
-				{
-					// discard the '..' end and make sure we skip parent dir in there too!
-					skip_parent++;
-					d -= 2;
-				}
-		}
-
-	while (d >= dst)
-	{
-		if (d[0] == '/')
-		{
-			if (d - 1 >= dst && d[-1] == '/')
-			{
-				// double '/' specified in there; not allowed, discard second one.
-				d--;
-				continue;
-			}
-			// good dir coming up left: when not a 'this dir' '.' or 'parent dir' '..', make sure we check skip_parent:
-			if (d - 2 >= dst && d[-1] == '.')
-			{
-				if (d[-2] == '/')
-				{
-					// skip a 'this dir': './'
-					d -= 2;
-					continue;
-				}
-				if (d[-2] == '.' && d - 3 >= dst && d[-3] == '/')
-				{
-					// skip a 'parent dir': '../'
-					d -= 3;
-					skip_parent++;
-					continue;
-				}
-			}
-			// a real dir follows left: skip it?
-			if (skip_parent--)
-			{
-				d--;
-				while (d >= dst && d[0] != '/')
-					d--;
-				continue;
-			}
-		}
-		// real dir or filename: copy to src
-		do
-		{
-			*s-- = *d--;
-		} while (d >= dst && d[0] != '/');
-	}
-
-	// now 's' points as start of compressed path; it also is a pointer >= dst, so move content down to 'dst':
-	memmove(dst, s, strlen(s) + 1);
+    // now 's' points as start of compressed path; it also is a pointer >= dst, so move content down to 'dst':
+    memmove(dst, s, strlen(s) + 1);
 #else
 #error "Please provide a suitable mk_absolute_path() implementation for your platform"
 #endif
-	return dst;
+    return dst;
 }
 
 
@@ -383,19 +383,48 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
  *
  *      (TODO: may even support multiple formats for easy debugging/code jumping)
  */
-static void generate_err_reason_msg(
-    char       *reason,
-    int         reason_bufsize,
-    int         srclineno,
-    const char *srcfile_full,
-    const char *funcname,
-    const char *errortype_str,
-    const char *encouraging_msg,
-    CSL_CELL   *csl,
-    int         script_codeline,
-    const char *fmt,
-    va_list     args
-    )
+void generate_err_reason_msg_va(char       *reason,
+        int         reason_bufsize,
+        int         srclineno,
+        const char *srcfile_full,
+        const char *funcname,
+        const char *errortype_str,
+        const char *encouraging_msg,
+        CSL_CELL   *csl,
+        int         script_codeline,
+        const char *fmt,
+        ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+	generate_err_reason_msg(reason,
+        reason_bufsize,
+        srclineno,
+        srcfile_full,
+        funcname,
+        errortype_str,
+        encouraging_msg,
+        csl,
+        script_codeline,
+        fmt,
+        args);
+    va_end(args);
+}
+
+void generate_err_reason_msg(
+        char       *reason,
+        int         reason_bufsize,
+        int         srclineno,
+        const char *srcfile_full,
+        const char *funcname,
+        const char *errortype_str,
+        const char *encouraging_msg,
+        CSL_CELL   *csl,
+        int         script_codeline,
+        const char *fmt,
+        va_list     args
+                                   )
 {
     int widthleft = reason_bufsize;
     int has_newline;
@@ -431,7 +460,7 @@ static void generate_err_reason_msg(
                      + (srcfile ? strlen(srcfile) : 0)
                      + (funcname ? strlen(funcname) : 0)
                      + (errortype_str ? strlen(errortype_str) : strlen(" *UNIDENTIFIED ERROR*"))
-                     ))
+                    ))
     {
         /*
          * only include what's specified. Format:
@@ -540,7 +569,7 @@ static void generate_err_reason_msg(
     }
     widthleft = reason_bufsize - (int)(dst - reason);
 
-    if (!encouraging_msg || ! * encouraging_msg)
+    if (!encouraging_msg || !*encouraging_msg)
     {
         encouraging_msg = "Sorry, but this program is very sick and probably should be killed off.";
     }
@@ -568,13 +597,13 @@ static void generate_err_reason_msg(
         int len;
 
         snprintf(dst, widthleft, "This happened at line %d of file %s:\n    ",
-            csl->cstmt, csl->filename);
+                csl->cstmt, csl->filename);
         dst[widthleft - 1] = 0;
         len = (int)strlen(dst);
         dst += len;
         widthleft -= len;
 
-        dump_error_script_line(dst, widthleft, csl, script_codeline);
+        dump_error_script_line(dst, widthleft, csl, script_codeline, 1);
         len = (int)strlen(dst);
         dst += len;
         widthleft -= len;
@@ -593,7 +622,7 @@ static void generate_err_reason_msg(
                          + (srcfile ? strlen(srcfile) : 3)
                          + (funcname ? strlen(funcname) : 3)
                          + WIDTHOF("(runtime system location: X(X) in routine: X)\n")
-                         ))
+                        ))
         {
             /*
              * (runtime system location: <sourcefile>(<sourceline>) in routine: <functionname>)\n
@@ -603,8 +632,8 @@ static void generate_err_reason_msg(
             int len;
 
             snprintf(dst, widthleft, "(runtime system location: %s(%d) in routine: ",
-                ((srcfile && *srcfile) ? srcfile : "---"),
-                srclineno);
+                    ((srcfile && *srcfile) ? srcfile : "---"),
+                    srclineno);
             dst[widthleft - 1] = 0;
             len = (int)strlen(dst);
             dst += len;
@@ -672,7 +701,8 @@ static int check_for_trap_handler(CSL_CELL *csl, const char *reason)
         if (!rbuf)
         {
             fprintf(stderr,
-                "Couldn't alloc rbuf in 'fatalerror()'!\nIt's really bad when the error fixup routine gets an error!\n");
+                    "Couldn't alloc rbuf in 'fatalerror()'!\n"
+					"It's really bad when the error fixup routine gets an error!\n");
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 3);
@@ -720,9 +750,9 @@ void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *funcnam
         }
     }
     CRM_ASSERT_MESSENGER(lineno, srcfile, funcname,
-        "\nBetter start screaming, guv', since the software's just gone critical:\n"
-        "assertion '%s' failed!%s%s\n",
-        msg, (extra_msg ? "\n" : ""), (extra_msg ? extra_msg : ""));
+            "\nBetter start screaming, guv', since the software's just gone critical:\n"
+            "assertion '%s' failed!%s%s\n",
+            msg, (extra_msg ? "\n" : ""), (extra_msg ? extra_msg : ""));
 }
 
 #endif
@@ -756,7 +786,7 @@ const char *syserr_descr(int errno_number)
 }
 #endif
 
-#if defined (WIN32)
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
 
 /*
  * return a static string containing the errorcode description.
@@ -789,7 +819,7 @@ void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, cons
     dst[max_dst_len] = 0;     // this now does NOT write out-of-bounds :-)
 
     fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
-        NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
+            NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
     if (dstbuf != NULL && fmtret > 0 && *dstbuf)
     {
         const char *s = dstbuf;
@@ -810,7 +840,7 @@ void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, cons
             {
                 // replace '%1' with ''arg''
                 *dst++ = '\'';
-				max_dst_len--;
+                max_dst_len--;
                 strncpy(dst, (arg ? arg : "\?\?\?"), max_dst_len);
                 dst[max_dst_len] = 0;
                 len = strlen(dst);
@@ -866,10 +896,10 @@ void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, cons
 void untrappableerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     untrappableerror_ex(lineno, srcfile, funcname,
-        (text2 && strlen(text2) <= 1024
-         ? " %.1024s %.1024s\n"
-         : " %.1024s %.1024s(...truncated)\n"),
-        text1, text2);
+            (text2 && strlen(text2) <= 1024
+             ? " %.1024s %.1024s\n"
+             : " %.1024s %.1024s(...truncated)\n"),
+            text1, text2);
 }
 
 void untrappableerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -886,20 +916,20 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
     char reason[MAX_PATTERN];
 
     generate_err_reason_msg(
-        reason,
-        WIDTHOF(reason),
-        lineno,
-        srcfile,
-        funcname,
-        " *UNTRAPPABLE ERROR*",
-        NULL,
-        csl,
-        csl->cstmt,
-        fmt,
-        args);
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            " *UNTRAPPABLE ERROR*",
+            NULL,
+            csl,
+            csl->cstmt,
+            fmt,
+            args);
     fputs(reason, stderr);
 
-	// [i_a] no use storing the reason message in a variable now...
+    // [i_a] no use storing the reason message in a variable now...
 
     if (engine_exit_base != 0)
     {
@@ -921,10 +951,10 @@ int fatalerror_std(int lineno, const char *srcfile, const char *funcname, const 
     //
 
     return fatalerror_ex(lineno, srcfile, funcname,
-        (text2 && strlen(text2) <= 1024 ?
-         " %.1024s %.1024s\n" :
-         " %.1024s %.1024s(...truncated)\n"),
-        text1, text2);
+            (text2 && strlen(text2) <= 1024 ?
+             " %.1024s %.1024s\n" :
+             " %.1024s %.1024s(...truncated)\n"),
+            text1, text2);
 }
 
 int fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -945,31 +975,31 @@ int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const c
     int original_statement_line = (csl != NULL ? csl->cstmt : -1);
 
     generate_err_reason_msg(
-        reason,
-        WIDTHOF(reason),
-        lineno,
-        srcfile,
-        funcname,
-        " *ERROR*",
-        NULL,
-        csl,
-        original_statement_line,
-        fmt,
-        args);
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            " *ERROR*",
+            NULL,
+            csl,
+            original_statement_line,
+            fmt,
+            args);
 
-	// [i_a] prevent side effects to the script execution from happening due to errors while inside the debugger,
-	// e.g. due to failures in the watched expressions...
-	if (inside_debugger)
-	{
-		fputs(reason, stderr);
-		return -1;
-	}
+    // [i_a] prevent side effects to the script execution from happening due to errors while inside the debugger,
+    // e.g. due to failures in the watched expressions...
+    if (inside_debugger)
+    {
+        fputs(reason, stderr);
+        return -1;
+    }
 
-	// [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
-	if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
-	{
-	crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
-	}
+    // [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
+    if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
+    {
+        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
+    }
 
     trap_catch = check_for_trap_handler(csl, reason);
     if (trap_catch == 0)
@@ -993,10 +1023,10 @@ int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const c
 int nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     return nonfatalerror_ex(lineno, srcfile, funcname,
-        (text2 && strlen(text2) <= 1024 ?
-         " %.1024s %.1024s\n" :
-         " %.1024s %.1024s(...truncated)\n"),
-        text1, text2);
+            (text2 && strlen(text2) <= 1024 ?
+             " %.1024s %.1024s\n" :
+             " %.1024s %.1024s(...truncated)\n"),
+            text1, text2);
 }
 
 int nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -1020,31 +1050,31 @@ int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, cons
     int original_statement_line = (csl != NULL ? csl->cstmt : -1);
 
     generate_err_reason_msg(
-        reason,
-        WIDTHOF(reason),
-        lineno,
-        srcfile,
-        funcname,
-        " *WARNING*",
-        "I'll try to keep working.\n",
-        csl,
-        original_statement_line,
-        fmt,
-        args);
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            " *WARNING*",
+            "I'll try to keep working.\n",
+            csl,
+            original_statement_line,
+            fmt,
+            args);
 
-	// [i_a] prevent side effects to the script execution from happening due to errors while inside the debugger,
-	// e.g. due to failures in the watched expressions...
-	if (inside_debugger)
-	{
-		fputs(reason, stderr);
-		return -1;
-	}
+    // [i_a] prevent side effects to the script execution from happening due to errors while inside the debugger,
+    // e.g. due to failures in the watched expressions...
+    if (inside_debugger)
+    {
+        fputs(reason, stderr);
+        return -1;
+    }
 
-	// [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
-	if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
-	{
-	crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
-	}
+    // [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
+    if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
+    {
+        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
+    }
 
     trap_catch = check_for_trap_handler(csl, reason);
     if (trap_catch == 0)
@@ -1062,8 +1092,8 @@ int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, cons
         if (!nonfatalerrorcount_max_reported)
         {
             trap_catch = fatalerror_ex(lineno, srcfile, funcname,
-                "Too many untrapped warnings; your program is very likely unrecoverably broken.\n"
-                "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
+                    "Too many untrapped warnings; your program is very likely unrecoverably broken.\n"
+                    "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
             nonfatalerrorcount_max_reported = 1; /* don't keep on yakking about too many whatever... */
         }
     }
@@ -1084,27 +1114,131 @@ void reset_nonfatalerrorreporting(void)
 void crm_output_profile(CSL_CELL *csl)
 {
     int i;
+	double ut, st, tt;
+  const char *unit = "seconds";
+  double freq;
+  int prec = 6;
+#if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
+    LARGE_INTEGER fr;
 
+    if (QueryPerformanceFrequency(&fr))
+    {
+        int64_t f = fr.QuadPart;
+        prec = log10(f);
+    }
+    else
+    {
+        freq = 1;         // unknown
+	unit = NULL;
+	prec = 0;
+    }
+	freq = 1.0E9;
+#elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
+    struct timespec timer1;
+    if (!clock_getres(CLOCK_REALTIME, &timer1))
+    {
+        int64_t t = timer1.tv_sec;
+        t *= 1000000000;
+        t += timer1.tv_nsec;
+        prec = log10(t);  // NOT log10(1E9/t) !
+    }
+    else
+    {
+        freq = 1;         // unknown
+	unit = NULL;
+	prec = 0;
+    }
+	freq = 1.0E9;
+#elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
+    freq = 1.0E6;     // usecs
+	prec = 3;
+#elif defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS) && defined(_SC_CLK_TCK) && defined(HAVE_SYSCONF)
+    // from the man page: Applications should use sysconf(_SC_CLK_TCK) to determine the number of clock ticks per second as it may vary from system to system.
+    long int fr = sysconf(_SC_CLK_TCK);
+    if (fr == -1)
+    {
+        freq = 1;         // unknown
+	unit = NULL;
+	prec = 0;
+    }
+	else
+{
+    freq = fr;
+	prec = log10(fr);
+}
+#elif defined (HAVE_CLOCK)
+    freq = CLOCKS_PER_SEC;     // this is the divisor, NOT the actual accuracy!
+	unit = NULL;
+	prec = 0;
+#else
+        freq = 1;         // unknown
+	unit = NULL;
+	prec = 0;
+#endif
+
+    fprintf(stderr, "\n         Execution Profile Results");
+    if (unit)
+	{
+	fprintf(stderr, " (freq = %.0f Hz) (Units: %s)", freq, unit);
+	}
+    fprintf(stderr,            "\n"
+		"\n"
+		"  Memory usage at completion: %10d window, %10d isolated\n",
+            cdw->nchars, tdw->nchars);
+    fprintf(stderr, "\n"
+		"  Statement Execution Time Profiling (0 times suppressed)\n");
     fprintf(stderr,
-        "\n         Execution Profile Results\n");
-    fprintf(stderr,
-        "\n  Memory usage at completion: %10d window, %10d isolated\n",
-        cdw->nchars, tdw->nchars);
-    fprintf(stderr,
-        "\n  Statement Execution Time Profiling (0 times suppressed)");
-    fprintf(stderr,
-        "\n  line:      usertime   systemtime    totaltime\n");
+		"  line:     usertime   systemtime    totaltime    exec #    time/one    code\n");
+	ut = st = tt = 0.0;
     for (i = 0; i < csl->nstmts; i++)
     {
-        if (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime > 0)
+            const STMT_TABLE_TYPE *stmt_def;
+
+            stmt_def = csl->mct[i]->stmt_def;
+
+		// print each executable line of code, plus braces and labels:
+            if ((stmt_def && (stmt_def->is_executable 
+		|| stmt_def->stmt_code == CRM_LABEL
+		|| stmt_def->stmt_code == CRM_OPENBRACKET
+		|| stmt_def->stmt_code == CRM_CLOSEBRACKET))
+         || (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime > 0))
         {
-            fprintf(stderr, " %5d:   %10ld   %10ld   %10ld\n",
-                i,
-                (long int)csl->mct[i]->stmt_utime,
-                (long int)csl->mct[i]->stmt_stime,
-                (long int)(csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime));
+		char line[1024];
+
+        	dump_error_script_line(line, WIDTHOF(line), csl, i, 0);
+        	CRM_ASSERT(WIDTHOF(line) > (int)strlen(line));
+		if (strchr(line, '\n'))
+{
+			strchr(line, '\n')[0] = 0;
+}
+            fprintf(stderr, " %5d: %12.*f %12.*f %12.*f %9d %11.*f  %s\n",
+                    i,
+			prec,
+                    csl->mct[i]->stmt_utime / freq,
+			prec,
+                    csl->mct[i]->stmt_stime / freq,
+			prec,
+                    (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime) / freq,
+                    csl->mct[i]->stmt_exec_count,
+			prec,
+                    (csl->mct[i]->stmt_exec_count 
+			? (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime) / (freq * csl->mct[i]->stmt_exec_count)
+			: 0.0),
+			line);
+                    ut += csl->mct[i]->stmt_utime / freq;
+			st += csl->mct[i]->stmt_stime / freq;
+			tt += (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime) / freq;
         }
     }
+            fprintf(stderr, "-------------------- Grand Total ----------------------\n"
+			" %5d: %12.*f %12.*f %12.*f\n",
+                    csl->nstmts,
+			prec,
+                    ut,
+			prec,
+                    st,
+			prec,
+                    tt);
 }
 
 
@@ -1150,29 +1284,29 @@ int crm_trigger_fault(const char *reason)
     if (user_trace)
     {
         fprintf(stderr, "Catching FAULT generated on line %d\n",
-            csl->cstmt);
+                csl->cstmt);
         fprintf(stderr, "FAULT reason:\n%s\n",
-            reason);
+                reason);
     }
 
     if (debug_countdown > DEBUGGER_DISABLED_FOREVER) // also pop up the debugger when in 'continue' or 'counted' run
-	{
-	if (!inside_debugger)
-	{
-		// make sure we're not causing a recursion here; while inside the debugger,
-		// we shouldn't pop up ourselves, now should we.
-		//
-		// Meanwhile, we like to catch this exception as early as possible, because
-		// then we still have a chance to 'manipulate' it if we like (like modifying
-		// the current statement position, etc...) ;-)
-		//
-		i = crm_debugger(csl, CRM_DBG_REASON_EXCEPTION_HANDLING, reason);
-	}
-	}
+    {
+        if (!inside_debugger)
+        {
+            // make sure we're not causing a recursion here; while inside the debugger,
+            // we shouldn't pop up ourselves, now should we.
+            //
+            // Meanwhile, we like to catch this exception as early as possible, because
+            // then we still have a chance to 'manipulate' it if we like (like modifying
+            // the current statement position, etc...) ;-)
+            //
+            i = crm_debugger(csl, CRM_DBG_REASON_EXCEPTION_HANDLING, reason);
+        }
+    }
 
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
-	original_statement = csl->cstmt;
+    CRM_ASSERT(csl->cstmt >= 0);
+    CRM_ASSERT(csl->cstmt <= csl->nstmts);
+    original_statement = csl->cstmt;
     trapline = csl->cstmt;
 
     done = 0;
@@ -1197,17 +1331,33 @@ int crm_trigger_fault(const char *reason)
             return 1;
 
         // [i_a] fixup for a trap cycle if the trap statement to be parsed is at fault itself (blowuptrapbugtest.crm)
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        csl->next_stmt_due_to_trap = trapline;
+#else
         csl->cstmt = trapline;
+#endif
 
         //       OK, we're here, with a live trap.
         slen = (csl->mct[trapline + 1]->fchar)
                - (csl->mct[trapline]->fchar);
 
-        i = crm_statement_parse(
-            &(csl->filetext[csl->mct[trapline]->fchar]),
-            slen,
-			csl->mct[trapline],
-            &apb);
+#if !FULL_PARSE_AT_COMPILE_TIME
+        if (!csl->mct[csl->cstmt]->apb)
+        {
+            (void)crm_statement_parse(
+                    &(csl->filetext[csl->mct[trapline]->fchar]),
+                    slen,
+                    csl->mct[trapline],
+                    &apb);
+        }
+        else
+        {
+            //    OR start using the JITted apb
+            apb = *csl->mct[csl->cstmt]->apb;
+        }
+#else
+        apb = csl->mct[csl->cstmt]->apb;
+#endif
         if (user_trace)
         {
             fprintf(stderr, "Trying trap at line %d:\n", trapline);
@@ -1224,8 +1374,8 @@ int crm_trigger_fault(const char *reason)
             }
 #else
             fwrite_ASCII_Cfied(stderr,
-                csl->filetext + csl->mct[trapline]->fchar,
-                csl->mct[trapline + 1]->fchar - csl->mct[trapline]->fchar);
+                    csl->filetext + csl->mct[trapline]->fchar,
+                    csl->mct[trapline + 1]->fchar - csl->mct[trapline]->fchar);
 #endif
             fprintf(stderr, "\n");
         }
@@ -1234,24 +1384,24 @@ int crm_trigger_fault(const char *reason)
         pat_len = crm_get_pgm_arg(trap_pat, MAX_PATTERN, apb.s1start, apb.s1len);
         //
         //      Do variable substitution on the pattern
-        pat_len = crm_nexpandvar(trap_pat, pat_len, MAX_PATTERN);
-		CRM_ASSERT(pat_len < MAX_PATTERN);
-		trap_pat[pat_len] = 0;
+        pat_len = crm_nexpandvar(trap_pat, pat_len, MAX_PATTERN, vht, tdw);
+        CRM_ASSERT(pat_len < MAX_PATTERN);
+        trap_pat[pat_len] = 0;
 
         //
         if (user_trace)
         {
             fprintf(stderr, "This TRAP will trap anything matching =%s=\n",
-                trap_pat);
+                    trap_pat);
         }
         //       compile the regex
         i = crm_regcomp(&preg, trap_pat, pat_len, REG_EXTENDED);
         if (i == 0)
         {
             i = crm_regexec(&preg,
-                reason,
-                (int)strlen(reason),
-                0, NULL, 0, NULL);
+                    reason,
+                    (int)strlen(reason),
+                    0, NULL, 0, NULL);
             crm_regfree(&preg);
         }
         else
@@ -1261,9 +1411,9 @@ int crm_trigger_fault(const char *reason)
             // causing the traphandler line to move forward multiple times. So reassign the traphandler and
             // go from there:
             fatalerror_ex(SRC_LOC(),
-				"Double Trap: Regular Expression Compilation Problem in TRAP pattern '%s' while processing the trappable error '%s'.",
-                tempbuf,
-                reason);
+                    "Double Trap: Regular Expression Compilation Problem in TRAP pattern '%s' while processing the trappable error '%s'.",
+                    tempbuf,
+                    reason);
             // trapline = csl->cstmt; // [i_a] the call to fatalerror[_ex] will have found a new trapline!
         }
 
@@ -1278,7 +1428,7 @@ int crm_trigger_fault(const char *reason)
             {
                 fprintf(stderr, "TRAP matched.\n");
                 fprintf(stderr, "Next statement will be %d\n",
-                    trapline);
+                        trapline);
             }
             //
             //   set the next statement to execute to be
@@ -1288,7 +1438,11 @@ int crm_trigger_fault(const char *reason)
             // CRM_ASSERT(csl->cstmt == trapline); previous code can have called fatalerror[_ex] multiple times,
             // causing the traphandler line to move forward multiple times. So reassign the traphandler and
             // go from there:
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_trap = trapline;
+#else
             csl->cstmt = trapline;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
@@ -1298,17 +1452,17 @@ int crm_trigger_fault(const char *reason)
                 char reasonname[MAX_VARNAME];
                 int rnlen;
                 rnlen = crm_get_pgm_arg(reasonname, MAX_VARNAME, apb.p1start, apb.p1len);
-                    rnlen = crm_nexpandvar(reasonname, rnlen, MAX_VARNAME);
-					CRM_ASSERT(rnlen < MAX_VARNAME);
-					reasonname[rnlen] = 0;
-                    // crm_nexpandvar null-terminates for us so we can be
-                    // 8-bit-unclean here -- [i_a] update: but it does NOT do so 
-					// under ALL circumstances, so better throw in a NUL sentinel,
-					// after we've fixed the MAX_VARNAME up there with a -1 too.
-					if (strlen(reasonname) > 0)
-					{
+                rnlen = crm_nexpandvar(reasonname, rnlen, MAX_VARNAME, vht, tdw);
+                CRM_ASSERT(rnlen < MAX_VARNAME);
+                reasonname[rnlen] = 0;
+                // crm_nexpandvar null-terminates for us so we can be
+                // 8-bit-unclean here -- [i_a] update: but it does NOT do so
+                // under ALL circumstances, so better throw in a NUL sentinel,
+                // after we've fixed the MAX_VARNAME up there with a -1 too.
+                if (strlen(reasonname) > 0)
+                {
                     crm_set_temp_var(reasonname, reason);
-					}
+                }
                 done = 1;
             }
         }
@@ -1319,7 +1473,7 @@ int crm_trigger_fault(const char *reason)
             if (user_trace)
             {
                 fprintf(stderr,
-                    "TRAP didn't match - trying next trap in line.\n");
+                        "TRAP didn't match - trying next trap in line.\n");
             }
         }
         //      and note that we haven't set "done" == 1 yet, so

@@ -1,0 +1,13 @@
+#! @BIN_PATH@/crm114
+
+{
+    window
+    isolate (:a:)           # --> 'a' (coming from the commandline)
+    output /a = ':*:a:'\n/  #
+    isolate (:a:) /foo/     # --> 'foo' (override; old 'a' is lost
+    output /a = ':*:a:'\n/  #
+    isolate <default> (:a:) /bar/  # --> in this case, :a: will _stay_ 'foo'
+    output /a = ':*:a:'\n/  #
+    isolate (:a:)
+    output /a = ':*:a:'\n/  # now what do you expect here? Then run and see if reality matches brain. For me it didn't.
+}

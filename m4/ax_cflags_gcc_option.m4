@@ -1,4 +1,4 @@
-##### http://autoconf-archive.cryp.to/ax_cflags_gcc_option.html
+##### derived from http://autoconf-archive.cryp.to/ax_cflags_gcc_option.html
 #
 # SYNOPSIS
 #
@@ -82,90 +82,6 @@
 #   modified version as well.
 
 
-AC_DEFUN([AX_CFLAGS_GCC_OPTION], [dnl
-AS_VAR_PUSHDEF([FLAGS],[CFLAGS])dnl
-AS_VAR_PUSHDEF([VAR],[ac_cv_cflags_gcc_option_$1])dnl
-AC_CACHE_CHECK([m4_ifval($2,$2,FLAGS) for gcc m4_ifval($1,$1,-option)],
-VAR,[VAR="no, unknown"
- AC_LANG_PUSH(C)
- ac_save_[]FLAGS="$[]FLAGS"
- ac_save_c_werror_flag=$ac_c_werror_flag
- ac_c_werror_flag=yes
- # [i_a] next line is a hotfix for automake 1.10/autoconf 2.62
- AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS]) 
-for ac_arg dnl
-in "-pass-exit-codes -pedantic -Werror % m4_ifval($1,$1,-option)"  dnl   GCC
-   "-pass-exit-codes -pedantic % m4_ifval($1,$1,-option) %% no, obsolete"  dnl new GCC
-   #
-do 
-   FLAGS="$ac_save_[]FLAGS "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,%,,'`
-   AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
-   [VAR=`echo $ac_arg | sed -e 's,.*% *,,'`
-    break])
-done
- ac_c_werror_flag=$ac_save_c_werror_flag
- FLAGS="$ac_save_[]FLAGS"
- AC_LANG_POP
-])
-case ".$VAR" in
-     .ok|.ok,*) m4_ifvaln($3,$3) ;;
-   .|.no|.no,*) m4_ifvaln($4,$4,[m4_ifval($1,[
-        AC_RUN_LOG([: m4_ifval($2,$2,FLAGS)="$m4_ifval($2,$2,FLAGS) $2"])
-                      m4_ifval($2,$2,FLAGS)="$m4_ifval($2,$2,FLAGS) $1"])]) ;;
-   *) m4_ifvaln($3,$3,[
-   if echo " $[]m4_ifval($2,$2,FLAGS) " | grep " $VAR " 2>&1 >/dev/null
-   then AC_RUN_LOG([: m4_ifval($2,$2,FLAGS) does contain $VAR])
-   else AC_RUN_LOG([: m4_ifval($2,$2,FLAGS)="$m4_ifval($2,$2,FLAGS) $VAR"])
-                      m4_ifval($2,$2,FLAGS)="$m4_ifval($2,$2,FLAGS) $VAR"
-   fi ]) ;;
-esac
-AS_VAR_POPDEF([VAR])dnl
-AS_VAR_POPDEF([FLAGS])dnl
-])
-
-
-dnl the only difference - the LANG selection... and the default FLAGS
-
-AC_DEFUN([AX_CXXFLAGS_GCC_OPTION], [dnl
-AS_VAR_PUSHDEF([FLAGS],[CXXFLAGS])dnl
-AS_VAR_PUSHDEF([VAR],[ac_cv_cxxflags_gcc_option_$1])dnl
-AC_CACHE_CHECK([m4_ifval($2,$2,FLAGS) for gcc m4_ifval($1,$1,-option)],
-VAR,[VAR="no, unknown"
- AC_LANG_PUSH([C++])
- ac_save_[]FLAGS="$[]FLAGS"
- ac_save_c_werror_flag=$ac_c_werror_flag
- ac_c_werror_flag=yes
- # [i_a] next line is a hotfix for automake 1.10/autoconf 2.62
- AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS]) 
-for ac_arg dnl
-in "-pass-exit-codes -pedantic -Werror % m4_ifval($1,$1,-option)"  dnl   GCC
-   "-pass-exit-codes -pedantic % m4_ifval($1,$1,-option) %% no, obsolete"  dnl new GCC
-   #
-do FLAGS="$ac_save_[]FLAGS "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,%,,'`
-   AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
-   [VAR=`echo $ac_arg | sed -e 's,.*% *,,'`
-    break])
-done
- ac_c_werror_flag=$ac_save_c_werror_flag
- FLAGS="$ac_save_[]FLAGS"
- AC_LANG_POP
-])
-case ".$VAR" in
-     .ok|.ok,*) m4_ifvaln($3,$3) ;;
-   .|.no|.no,*) m4_ifvaln($4,$4) ;;
-   *) m4_ifvaln($3,$3,[
-   if echo " $[]m4_ifval($2,$2,FLAGS) " | grep " $VAR " 2>&1 >/dev/null
-   then AC_RUN_LOG([: m4_ifval($2,$2,FLAGS) does contain $VAR])
-   else AC_RUN_LOG([: m4_ifval($2,$2,FLAGS)="$m4_ifval($2,$2,FLAGS) $VAR"])
-                      m4_ifval($2,$2,FLAGS)="$m4_ifval($2,$2,FLAGS) $VAR"
-   fi ]) ;;
-esac
-AS_VAR_POPDEF([VAR])dnl
-AS_VAR_POPDEF([FLAGS])dnl
-])
-
-
-
 dnl  implementation tactics:
 dnl   the for-argument contains a list of options. The first part of
 dnl   these does only exist to detect the compiler - usually it is
@@ -176,4 +92,58 @@ dnl   like -Woption or -Xoption as they think of it is a pass-through
 dnl   to later compile stages or something. The "%" is used as a
 dnl   delimimiter. A non-option comment can be given after "%%" marks
 dnl   which will be shown but not added to the respective C/CXXFLAGS.
+
+
+AC_DEFUN([AX_CFLAGS_GCC_OPTION],
+[
+  AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
+  AS_VAR_PUSHDEF([opt], [ac_cv_cflags_gcc_option_[]$1])
+  AC_CACHE_CHECK([m4_default([$2], [CFLAGS]) for gcc $1 command line option],
+  [opt],
+  [
+    AC_LANG_PUSH([C])
+    ax_cflags_gcc_option_save_CFLAGS="${CFLAGS}"
+    AS_VAR_SET([opt], ["no, unknown"])
+    for ac_arg in                         dnl
+      "-pass-exit-codes -pedantic -Werror % m4_ifval([$1],[$1],[-bogus_option])"  dnl   GCC
+      "-pass-exit-codes -pedantic % m4_ifval([$1],[$1],[-bogus_option]) %% no, obsolete"  dnl new GCC
+    #
+    do
+      CFLAGS="${ax_cflags_gcc_option_save_CFLAGS} "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,.*%,,'`
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+      [
+        AS_VAR_SET([opt], [`echo $ac_arg | sed -e 's,.* % *,,'`])
+        # result successful!
+        break
+      ])
+    done
+    CFLAGS="${ax_cflags_gcc_option_save_CFLAGS}"
+    # reset language
+    AC_LANG_POP
+  ])
+
+  # cache check done
+
+  AS_CASE([AS_VAR_GET([opt])],
+  [no,*], [
+            m4_ifval([$2], [AS_VAR_SET([opt], [$2])])
+            m4_ifval([$4], [$4], 
+            [ 
+              m4_ifval([$2],
+              [
+                CFLAGS=`echo "$CFLAGS AS_VAR_GET([opt])" | sed -e 's,%%.*,,' -e 's, *$,,'`
+              ])
+            ])
+  ],
+  [
+            m4_ifval([$3], [$3],
+            [
+              CFLAGS=`echo "$CFLAGS AS_VAR_GET([opt])" | sed -e 's,%%.*,,' -e 's, *$,,'`
+            ])
+  ])
+  AS_VAR_POPDEF([opt])
+])
+
+
+
 

@@ -13,7 +13,7 @@ STDOUT TEST OUTPUT:
 
  test one- input by chars, delimited by 'A' 
  Got: 
- This is the test one result A
+ 	This is the test one result A
  test two- input by EOFs, delimited by 'A' 
  Got: 
   this is the test two result A

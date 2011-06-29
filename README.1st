@@ -31,6 +31,66 @@ to have an overview of all commandline arguments listed.
 
 
 
+-----------------------------------------------------------------------
+
+Extra 'make' targets for selective testing
+==========================================
+
+As the complete 'make check' run can take ages, you can also execute
+different make test targets which will only execute particular 
+test(sets):
+
+For backwards compatibility with BillY's megatest:
+
+the original BillY test script:
+  make test_megatest:
+or
+  make megatest
+
+or the adapted version:
+
+called 'NextGen', i.e. an edited ('improved') version of BillY's test script:
+  make test_megatest_ng
+or
+  make megatest_ng
+
+
+Then there's these:
+
+  make timing_tests
+--> Running the timing test set (this may take a LONG time)
+
+A series of basic regression tests for CRM114:
+  make test_basics
+
+Test more complex CRM scripts:
+ make test_other
+
+Test the mailfilter script:
+ make test_mailfilter
+
+Test the mailreaver script:
+ make test_mailreaver
+
+A several options to test the classifiers and the crm114 language:
+
+ make test_classifiers
+ make script
+ make initial_tests1
+ make fringe_cases_compiler_tests1
+ make initial_tests2
+ make further_tests
+ make all_classifier_tests
+ make markovian_classifier_tests
+ make OSBF_classifier_tests
+ make OSB_classifier_tests
+ make Hyperspace_classifier_tests
+ make Bit_Entropy_classifier_tests
+ make FSCM_classifier_tests
+ make Neural_Net_classifier_tests
+ make SVM_SKS_classifier_tests
+ make Correlator_classifier_tests
+ make CLUMP_classifier_tests
 
 -----------------------------------------------------------------------
 

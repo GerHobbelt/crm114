@@ -3,6 +3,31 @@ ChangeLog for detailed per-file info.  Refer to README for news about changes
 in the non-autoconfiscated CRM114 core (some of the contents here is copied 
 from that file).
 
+version 20080630-BlameVT
+
+* Little to report: just now I decide to ditch the test reference files
+  so 'make check' will test GerH crossplatform correctness (bugs/features
+  between vanilla CRM and GerH (and of course I think I got things _fixed_ ;-) )
+  while the
+
+    cd src
+    make megatest   or   make megatest_ng
+
+  can be used to check against Bill's latest. Why? Too much fuss to keep
+  tracking certain subtle obscurities and I don't have time to play any
+  longer, so dumping vanilla crm114 in ./src and just having another go
+  at 'make check' will get you a definite FAIL until Ger and Bill are one
+  again. I'll wait.
+
+* Add a C++-based tool to analyze run-time statistics, collected using
+  the new '-A' commandline option (or set the environment variable
+  CRM114_PROFILING to the list of items you want to 'profile' a la '-A')
+
+  The road ahead: have that profile produce images we can look at.
+  Right now, it only spits out some ugly ASCII art and only OSB has been
+  instrumented yet.
+
+
 version 20080502-BlameJason
 
  * multiple out-of-bounds security issues fixed

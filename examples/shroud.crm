@@ -1,9 +1,9 @@
-#! /home/ger/prj/3actual/crm114-2/src/crm114
- {                 
+#! ${exec_prefix}/bin/crm114
+{
         {
                 match   < fromend >  ( :word: )   /[[:graph:]]+/
                 hash  ( :word:)   /:*:word:/
                 liaf          # Loop Iterate Awaiting Failure of match
         }
         accept            # so we accept it to stdout and we're done.
- }
+}

@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114
+#! @BIN_PATH@/crm114
 #   do rewriting, based on rewrite rules in rewrites.mfp
 #
 #   Start with some data in the :_dw:
@@ -11,7 +11,7 @@ accept
 output /------------------------:*:_nl:/
 {
 	isolate (:rewrites:)
-	input (:rewrites:) [test_rewrites.mfp]
+	input (:rewrites:) [@abs_srcdir@/test_rewrites.mfp]
 	#    reset matching on rewrites to start of string
 	match [:rewrites:] //
 }

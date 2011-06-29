@@ -1,0 +1,28 @@
+#! /usr/local/bin/crm114
+#
+# do we get a decent error message from CRM114 when our CSS files are blown to Kingdom Come or do we get... 'Floating Point Failure' and a core dump?
+#
+# same as test 1, but now there's space for the classic header only, no extra hashes - on 64 bit machines.
+# on 32-bit machines, vanilla CRM might think this is a CSS file with a single hash. Though the header is a bit off...
+{
+	{
+		window 
+		output [icfwdm1.css] /12345678x/     # Now THAT would create a very illegal CSS file. Do we catch that? 
+		                                     # (Not even one 32-bit hash could ever fit in there: filesize = 1)
+		output [icfwdm2.css] /12345678y/
+		isolate (:s:) /YUCK/
+		classify (icfwdm1.css | icfwdm2.css) (:s:) /[[:graph:]]+/ 
+		output /yo!\n/
+		output /s = ':*:s:'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+		output /s = ':*:s:'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

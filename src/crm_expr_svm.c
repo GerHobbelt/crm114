@@ -35,7 +35,7 @@
 
 
 
-#if !defined (CRM_WITHOUT_SVM)
+#if !CRM_WITHOUT_SVM
 
 
 
@@ -151,10 +151,10 @@ typedef struct mythical_cache_node
 //    "first column" and points to the start of each row.
 typedef struct mythical_cache
 {
-    int          l;        // The number of documents in the corpus
-    int         size;     // The cache size (bytes)
-    CACHE_NODE  *head;
-    CACHE_NODE   lru_headnode; //least-recent-use node
+    int         l;         // The number of documents in the corpus
+    int         size;      // The cache size (bytes)
+    CACHE_NODE *head;
+    CACHE_NODE  lru_headnode;  //least-recent-use node
 } CACHE;
 
 //   This stores the result - alpha is the weighting vector (what we are
@@ -277,10 +277,10 @@ static void cache_init(int len, int size, CACHE *svmcache)
     svmcache->l = len;
     svmcache->size = size;
     svmcache->head = (CACHE_NODE *)calloc(len, sizeof(svmcache->head[0]));
-        if (!svmcache->head)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!svmcache->head)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
 #if 0 /* [i_a] unused code... */
     size /= sizeof(Qitem_t);
     size -= len * (sizeof(CACHE_NODE) / sizeof(Qitem_t));
@@ -330,10 +330,10 @@ static void lru_insert(CACHE_NODE *h, CACHE *svmcache)
 //  length of cached data.  If it is smaller than the request length,
 //  then we need to fill in the uncached data.
 
-static int get_data(CACHE      *svmcache,
-        const int               doc_index,
-        Qitem_t               **data,
-        int                     length)
+static int get_data(CACHE *svmcache,
+        const int          doc_index,
+        Qitem_t          **data,
+        int                length)
 {
     int result = length;
     CACHE_NODE *doc = svmcache->head + doc_index;
@@ -523,12 +523,12 @@ static Qitem_t *get_DiagQ()
     Qitem_t *DiagQ = calloc(svm_prob.l, sizeof(DiagQ[0]));
     int i;
 
-        if (!DiagQ)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!DiagQ)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
 
-		for (i = 0; i < svm_prob.l; i++)
+    for (i = 0; i < svm_prob.l; i++)
     {
         DiagQ[i] = kernel(svm_prob.x[i], svm_prob.x[i]);
     }
@@ -890,10 +890,10 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
     hiTarget = (posn + 1.0) / (posn + 2.0);
     loTarget = 1 / (negn + 2.0);
     t = (double *)calloc(svm_prob.l, sizeof(t[0]));
-        if (!t)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!t)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
     for (i = 0; i < svm_prob.l; i++)
     {
         if (svm_prob.y[i] > 0)
@@ -1000,7 +1000,9 @@ static double sigmoid_predict(double decision_value, double A, double B)
 
 
 int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, int txtstart, int txtlen)
+VHT_CELL **vht,
+		CSL_CELL *tdw,
+                char *txtptr, int txtstart, int txtlen)
 {
     int i, j, k, h;
     char ftext[MAX_PATTERN];
@@ -1083,22 +1085,22 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    malloc up the unsorted hashbucket space
     hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
             sizeof(hashes[0]));
-        if (!hashes)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!hashes)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
     hashcounts = 0;
 
     //  Extract the file names for storing svm solver.( file1.svm |
     //  file2.svm | 1vs2_solver.svm )
     flen = crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
-    flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
+    flen = crm_nexpandvar(ftext, flen, MAX_PATTERN, vht, tdw);
 
     strcpy(
             ptext,
             "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
     plen = (int)strlen(ptext);
-    //plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    //plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i != 0)
     {
@@ -1125,18 +1127,18 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //only has one input file
         if (ptext[0] != 0)
             crm_regfree(&regcb);
- if (!crm_nextword(ftext, flen, 0, &i, &j) || j == 0)
- {
-            int fev = nonfatalerror_ex(SRC_LOC(), 
-				"\nYou didn't specify a valid filename: '%.*s'\n", 
-					(int)flen,
-					ftext);
+        if (!crm_nextword(ftext, flen, 0, &i, &j) || j == 0)
+        {
+            int fev = nonfatalerror_ex(SRC_LOC(),
+                    "\nYou didn't specify a valid filename: '%.*s'\n",
+                    (int)flen,
+                    ftext);
             return fev;
- }
-    CRM_ASSERT(i + j <= flen);
-    CRM_ASSERT(j <= flen);
-	memmove(file1, &ftext[i], j);
-	file1[j] = 0;
+        }
+        CRM_ASSERT(i + j <= flen);
+        CRM_ASSERT(j <= flen);
+        memmove(file1, &ftext[i], j);
+        file1[j] = 0;
         file2[0] = 0;
         file3[0] = 0;
     }
@@ -1144,7 +1146,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //     get the "this is a word" regex
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
     //   compile the word regex
     //
@@ -1335,7 +1337,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //
         if (unique)
         {
-			int j;
+            int j;
 
             i = 0;
             j = 0;
@@ -1403,7 +1405,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
                     classifier_info.classifier_bits = CRM_SVM;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+                    classifier_info.hash_version_in_use = selected_hashfunction;
 
                     if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                     {
@@ -1482,7 +1484,6 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             bestrad = 0.0;
             while (k < file_hashlens)
             {
-                int cmp;
                 //   Except on the first iteration, we're looking one cell
                 //   past the 0x0 start marker.
                 kandu = 0;
@@ -1626,7 +1627,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract parameters for svm
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
     CRM_ASSERT(plen < MAX_PATTERN);
     ptext[plen] = 0;
     if (plen)
@@ -1720,10 +1721,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             svm_prob.l = k1;
             x = calloc(svm_prob.l, sizeof(x[0]));
             y = calloc(svm_prob.l, sizeof(y[0]));
-        if (!x || !y)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+            if (!x || !y)
+            {
+                untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+            }
             for (i = 0; i < k1; i++)
             {
                 y[i] = 1;
@@ -1858,10 +1859,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 svm_prob.l = k1 + k2;
                 x = calloc(svm_prob.l, sizeof(x[0]));
                 y = calloc(svm_prob.l, sizeof(y[0]));
-        if (!x || !y)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                if (!x || !y)
+                {
+                    untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                }
                 for (i = 0; i < k1; i++)
                 {
                     y[i] = 1;
@@ -1909,10 +1910,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                 //compute decision values for all training documents
                 deci_array = (double *)calloc(svm_prob.l, sizeof(deci_array[0]));
-        if (!deci_array)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                if (!deci_array)
+                {
+                    untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                }
                 for (i = 0; i < svm_prob.l; i++)
                 {
                     deci_array[i] = calc_decision(svm_prob.x[i], solver.alpha, b);
@@ -1943,10 +1944,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     int delete_num1 = 0, delete_num2 = 0;
 
                     id_desc = calloc(svm_prob.l, sizeof(id_desc[0]));
-        if (!id_desc)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                    if (!id_desc)
+                    {
+                        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                    }
                     //id_asc = calloc(svm_prob.l, sizeof(id_asc[0]));
                     if (user_trace)
                         fprintf(stderr, "\nStart microgrooming......\n");
@@ -2056,10 +2057,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (delete_num1 != 0 || delete_num2 != 0)
                     {
                         HYPERSPACE_FEATUREBUCKET_STRUCT **new_x = calloc((k1 + k2 - delete_num1 - delete_num2), sizeof(new_x[0]));
-        if (!new_x)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                        if (!new_x)
+                        {
+                            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                        }
 
                         QSORT(int, id_desc, svm_prob.l, int_compare);
                         //now start deleting documents and write the
@@ -2080,10 +2081,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                 CRM_ASSERT(j < (k1 + k2 - delete_num1 - delete_num2));
                                 new_x[j] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)calloc((temp_count + 1),
                                         sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
-        if (!new_x[j])
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                                if (!new_x[j])
+                                {
+                                    untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                                }
                                 for (temp_i = 0; temp_i < temp_count; temp_i++)
                                     new_x[j][temp_i] = svm_prob.x[id_desc[i]][temp_i];
                                 new_x[j][temp_count].hash = 0;
@@ -2102,10 +2103,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                 CRM_ASSERT(j < (k1 + k2 - delete_num1 - delete_num2));
                                 new_x[j] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)calloc((temp_count + 1),
                                         sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
-        if (!new_x[j])
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                                if (!new_x[j])
+                                {
+                                    untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                                }
                                 for (temp_i = 0; temp_i < temp_count; temp_i++)
                                     new_x[j][temp_i] = svm_prob.x[id_desc[i]][temp_i];
                                 new_x[j][temp_count].hash = 0;
@@ -2144,7 +2145,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
                                     classifier_info.classifier_bits = CRM_SVM;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+                                    classifier_info.hash_version_in_use = selected_hashfunction;
 
                                     if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                                     {
@@ -2204,7 +2205,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
                                     classifier_info.classifier_bits = CRM_SVM;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+                                    classifier_info.hash_version_in_use = selected_hashfunction;
 
                                     if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                                     {
@@ -2255,10 +2256,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //compute A,B for sigmoid prediction
                         deci_array = (double *)realloc(deci_array, svm_prob.l
                                 * sizeof(double));
-        if (!deci_array)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                        if (!deci_array)
+                        {
+                            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                        }
                         for (i = 0; i < svm_prob.l; i++)
                         {
                             deci_array[i] = calc_decision(svm_prob.x[i],
@@ -2285,6 +2286,12 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             "Opening a solution file %s for writing alpha and b.\n",
                             file3);
                 }
+
+	//  Now a nasty bit.  Because there might be data of the 
+	//  file retained, we need to force an unmap-by-name which will allow a remap
+	//  with the new file length later on.
+	crm_force_munmap_filename(file3);
+
                 hashf = fopen(file3, "wb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
                 if (hashf == NULL)
                 {
@@ -2308,7 +2315,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
                         classifier_info.classifier_bits = CRM_SVM;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+                        classifier_info.hash_version_in_use = selected_hashfunction;
 
                         if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                         {
@@ -2364,7 +2371,9 @@ regcomp_failed:
 
 
 int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, int txtstart, int txtlen)
+VHT_CELL **vht,
+		CSL_CELL *tdw,
+                char *txtptr, int txtstart, int txtlen)
 {
     int i, j, k, h;
     char ftext[MAX_PATTERN];
@@ -2410,21 +2419,21 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //            extract the optional "match statistics" variable
     //
     svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
-    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
-	CRM_ASSERT(svlen < MAX_PATTERN);
+    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(svlen < MAX_PATTERN);
     {
         int vstart, vlen;
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
-		{
-        memmove(svrbl, &svrbl[vstart], vlen);
-        svlen = vlen;
-        svrbl[vlen] = 0;
-		}
-		else
-		{
-        svlen = 0;
-        svrbl[0] = 0;
-		}
+        {
+            memmove(svrbl, &svrbl[vstart], vlen);
+            svlen = vlen;
+            svrbl[vlen] = 0;
+        }
+        else
+        {
+            svlen = 0;
+            svrbl[0] = 0;
+        }
     }
 
     //     status variable's text (used for output stats)
@@ -2485,16 +2494,16 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    malloc up the unsorted hashbucket space
     hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
             sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
-        if (!hashes)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!hashes)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
     hashcounts = 0;
 
 #if 01
     //           extract parameters for svm
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
     CRM_ASSERT(plen < MAX_PATTERN);
     ptext[plen] = 0;
     if (plen)
@@ -2539,7 +2548,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //     get the "this is a word" regex
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
     //   compile the word regex
     //
@@ -2745,17 +2754,17 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     if (user_trace)
     {
-      fprintf(stderr,"sorted hashes:\n");
-      for (i=0;i<hashcounts;i++)
-	{
-	  fprintf(stderr, "hashes[%d]=%lud\n",i,(unsigned long int)hashes[i].hash);
-	}
+        fprintf(stderr, "sorted hashes:\n");
+        for (i = 0; i < hashcounts; i++)
+        {
+            fprintf(stderr, "hashes[%d]=%lud\n", i, (unsigned long int)hashes[i].hash);
+        }
         fprintf(stderr, "Total unique hashes generated: %d\n", hashcounts);
     }
 
     // extract the file names.( file1.svm | file2.svm | 1vs2_solver.svm )
     flen = crm_get_pgm_arg(ftext, MAX_PATTERN, apb->p1start, apb->p1len);
-    flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
+    flen = crm_nexpandvar(ftext, flen, MAX_PATTERN, vht, tdw);
 
     strcpy(
             ptext,
@@ -2797,16 +2806,16 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (k1 != 0)
         {
-	  nonfatalerror ("Refuting from nonexistent data cannot be done!"
-			 " More specifically, this data file doesn't exist: ",
-			 file1);
+            nonfatalerror("Refuting from nonexistent data cannot be done!"
+                          " More specifically, this data file doesn't exist: ",
+                    file1);
             return 0;
         }
         else if (k2 != 0)
         {
-      nonfatalerror ("Refuting from nonexistent data cannot be done!"
-		     " More specifically, this data file doesn't exist: ",
-		     file2);
+            nonfatalerror("Refuting from nonexistent data cannot be done!"
+                          " More specifically, this data file doesn't exist: ",
+                    file2);
             return 0;
         }
         else
@@ -2833,11 +2842,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashlens[0] = file1_hashlens;
             hashname[0] = (char *)calloc((strlen(file1) + 10), sizeof(hashname[0][0]));
             if (!hashname[0])
-			{
-				untrappableerror("Couldn't alloc hashname[0]\n",
+            {
+                untrappableerror("Couldn't alloc hashname[0]\n",
                         "We need that part later, so we're stuck.  Sorry.");
-			}
-			strcpy(hashname[0], file1);
+            }
+            strcpy(hashname[0], file1);
 
 
             file2_hashlens = statbuf2.st_size;
@@ -2853,11 +2862,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashlens[1] = file2_hashlens;
             hashname[1] = (char *)calloc(strlen(file2) + 10, sizeof(hashname[1][0]));
             if (!hashname[1])
-			{
+            {
                 untrappableerror("Couldn't alloc hashname[1]\n",
                         "We need that part later, so we're stuck.  Sorry.");
-			}
-			strcpy(hashname[1], file2);
+            }
+            strcpy(hashname[1], file2);
 
             //find out how many documents in file1 and file2 separately
             for (i = 0; i < file1_hashlens; i++)
@@ -2896,8 +2905,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 nonfatalerror_ex(SRC_LOC(), "For some reason, I was unable to read-open the SVM 1vs2 solution file file named '%s': error = %d(%s)",
                         file3,
-                    errno,
-                    errno_descr(errno));
+                        errno,
+                        errno_descr(errno));
             }
             // else
             {
@@ -2936,10 +2945,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 svm_prob.l = k1 + k2;
                 x = calloc(svm_prob.l, sizeof(x[0]));
                 y = calloc(svm_prob.l, sizeof(y[0]));
-        if (!x || !y)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                if (!x || !y)
+                {
+                    untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                }
                 for (i = 0; i < k1; i++)
                 {
                     y[i] = 1;
@@ -2973,10 +2982,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 svm_prob.x = x;
 
                 alpha = (double *)calloc(svm_prob.l, sizeof(alpha[0]));
-        if (!alpha)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                if (!alpha)
+                {
+                    untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                }
 
                 if ((k3 != 0) || (temp_k1 != k1) || (temp_k2 != k2))
                 {
@@ -2991,9 +3000,9 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #if 0
                         //           extract parameters for svm
                         plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
-                        plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
-    CRM_ASSERT(plen < MAX_PATTERN);
-    ptext[plen] = 0;
+                        plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
+                        CRM_ASSERT(plen < MAX_PATTERN);
+                        ptext[plen] = 0;
                         if (plen)
                         {
                             //set default parameters for SVM
@@ -3055,10 +3064,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                         //compute A,B for sigmoid prediction
                         deci_array = (double *)calloc(svm_prob.l, sizeof(deci_array[0]));
-        if (!deci_array)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+                        if (!deci_array)
+                        {
+                            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+                        }
                         for (i = 0; i < svm_prob.l; i++)
                         {
                             deci_array[i] = calc_decision(svm_prob.x[i], alpha, b);
@@ -3252,9 +3261,13 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (user_trace)
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         //    and do what we do for a FAIL here
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#endif
+        CRM_ASSERT(csl->cstmt >= 0);
+        CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }

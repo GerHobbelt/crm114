@@ -1,8 +1,8 @@
-#  maillib.crm - handy library for mail whacking - wsy 2006
+# maillib.crm - handy library for mail whacking - wsy 2006
 #
-#    Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
-#    GNU Public License (GPL) version 2.  A copy of this license is included
-#    in the distribution media, or obtain one from www.fsf.org .
+# Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
+# GNU Public License (GPL) version 2.  A copy of this license is included
+# in the distribution media, or obtain one from www.fsf.org .
 #
 
 
@@ -42,29 +42,29 @@
         }
         input [:*:cf_filename:] (:option_txt:)
     }
-#
-#
-#   reset loop for matching to start of :option_txt:
-        match [:option_txt:] //
+    #
+    #
+    #   reset loop for matching to start of :option_txt:
+            match [:option_txt:] //
 
-#   and loop till there are no more options.
+    #   and loop till there are no more options.
+    {
+        #   find a line that looks like a parameter setting...
+        match < fromend nomultiline > (:line: :name: :value:) \
+          [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
         {
-                #   find a line that looks like a parameter setting...
-                match < fromend nomultiline > (:line: :name: :value:) \
-                  [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
-                {
-                        #    don't execute the assign if there's
-                        #    a # at the start of the line.
-                        match <absent> [:name:] /^\x23/
-                        {
-                                #     Verbose startup?
-                                match [:verbose_startup:] /SET/
-                                output / :*:name:\n    :*:value:\n/
-                        }
-                        isolate (:*:name:) /:*:value:/
-                }
-                liaf
+            #    don't execute the assign if there's
+            #    a # at the start of the line.
+            match <absent> [:name:] /^\x23/
+            {
+                #     Verbose startup?
+                match [:verbose_startup:] /SET/
+                output / :*:name:\n    :*:value:\n/
+            }
+            isolate (:*:name:) /:*:value:/
         }
+        liaf
+    }
 }
 #    All done, return.
 return
@@ -203,60 +203,62 @@ isolate (:i_text:) /:*:m_text:/
 #   Do we want to do any rewrites before running?
 #
 {
-   match [:rewrites_enabled:] /yes/
-#
-# NOTE  CHANGE THIS ONE TO ISOLATE AND THE PROGRAM FAILS!
-   isolate (:rewrites:) //
-   isolate (:fileprefix:) <default> //
-   input (:rewrites:) [:*:fileprefix:rewrites.mfp]
+    match [:rewrites_enabled:] /yes/
+    #
+    # NOTE  CHANGE THIS ONE TO ISOLATE AND THE PROGRAM FAILS!
+    #
+    isolate (:rewrites:) //
+    isolate (:fileprefix:) <default> //
+    input (:rewrites:) [:*:fileprefix:rewrites.mfp]
 
-#    reset matching on rewrites to start of string - if no string, no more
-#    processing of rewrites !!
-   match [:rewrites:] //
-   #
-   #
-   {
-       #    Grab the next regex; turn the one-per-line patterns into a
-       #    regex and a replacement string.
-       #    First, do the line-spanning regexes.
-       match <fromend nomultiline> (:ch: :fr1: :to:) [:rewrites:] /(.+)>-->(.*)/
-       #    see if the "fr" regex matches anywhere
-       match [:m_text:] //
-       {
-           match [:m_text:] <fromend> (:place:) /:*:fr1:/
-           #  Yep, it matched... alter it and do it again
-           #
-           alter (:place:) /:*:to:/
-           liaf
-       }
-       #   Nope, didn't match... grab the next regex and try again,
-       liaf
-   }
-   #
-   #     reset back to the start of the rewrites.
-   #
-   match [:rewrites:] //
-   #
-   #      and do it again for non-line-spanners
-   {
-       #    Go through and do it again, except this time do it for
-       #    the non-line-spanning regexes.
-       match <fromend nomultiline> (:ch: :fr2: :to:) [:rewrites:] /(.+)>->(.*)/
-       #    see if the "fr" regex matches anywhere
-       {
-           match [:m_text:] <nomultiline> (:place:) /:*:fr2:/
-           #  Yep, it matched... alter it and do it again
-           #
-           alter (:place:) /:*:to:/
-           liaf
-       }
-       #   Nope, didn't match... grab the next regex and try again,
-       liaf
-   }
-}    #  done with rewrites.
+    #    reset matching on rewrites to start of string - if no string, no more
+    #    processing of rewrites !!
+    match [:rewrites:] //
+    #
+    #
+    {
+        #    Grab the next regex; turn the one-per-line patterns into a
+        #    regex and a replacement string.
+        #    First, do the line-spanning regexes.
+        match <fromend nomultiline> (:ch: :fr1: :to:) [:rewrites:] /(.+)>-->(.*)/
+        #    see if the "fr" regex matches anywhere
+        match [:m_text:] //
+        {
+            match [:m_text:] <fromend> (:place:) /:*:fr1:/
+            #  Yep, it matched... alter it and do it again
+            #
+            alter (:place:) /:*:to:/
+            liaf
+        }
+        #   Nope, didn't match... grab the next regex and try again,
+        liaf
+    }
+    #
+    #     reset back to the start of the rewrites.
+    #
+    match [:rewrites:] //
+    #
+    #      and do it again for non-line-spanners
+    {
+        #    Go through and do it again, except this time do it for
+        #    the non-line-spanning regexes.
+        match <fromend nomultiline> (:ch: :fr2: :to:) [:rewrites:] /(.+)>->(.*)/
+        #    see if the "fr" regex matches anywhere
+        {
+            match [:m_text:] <nomultiline> (:place:) /:*:fr2:/
+            #  Yep, it matched... alter it and do it again
+            #
+            alter (:place:) /:*:to:/
+            liaf
+        }
+        #   Nope, didn't match... grab the next regex and try again,
+        liaf
+    }
+}
+#  done with rewrites.
 
 
-        #  all done; m_text now has the fully mutilated text.
+#  all done; m_text now has the fully mutilated text.
 return /:*:m_text:/
 
 
@@ -359,9 +361,9 @@ return
 return
 
 #
-#             find header arg1, append comment arg2-n.  If no
-#             such header, create it, and add the comment.  Note that
-#             neither the header name nor the comment can contain spaces.
+# find header arg1, append comment arg2-n.  If no
+# such header, create it, and add the comment.  Note that
+# neither the header name nor the comment can contain spaces.
 #
 
 :mungmail_add_comment: (:ac_args:)
@@ -382,10 +384,10 @@ return
 return
 
 #
-#       change_subject_line
+# change_subject_line
 #
 :mungmail_mung_subject: (:new_tag:)
-#            get the Subject: line.  If none, make one.
+# get the Subject: line.  If none, make one.
 {
     {
         match (:subject_line: :subj_text:) <nocase nomultiline> \
@@ -458,7 +460,7 @@ return
         {
             call /:verbosity:/ [reavercache_init: host type = ':*:_hosttype:']
             match [:_hosttype:] /Windows-MS/
-			call /:mk_dospath:/ [:*:text_cache:] (:dospath:)
+            call /:mk_dospath:/ [:*:text_cache:] (:dospath:)
             syscall () (:tmp:) /dir \/s \/b :*:dospath: /
             call /:verbosity:/ [reavercache_init: subtree ls --> :*:tmp:]
             match [:tmp:] <absent> /texts/

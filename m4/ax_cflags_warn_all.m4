@@ -1,4 +1,4 @@
-##### http://autoconf-archive.cryp.to/ax_cflags_warn_all.html
+##### derived from http://autoconf-archive.cryp.to/ax_cflags_warn_all.html
 #
 # SYNOPSIS
 #
@@ -26,11 +26,12 @@
 #
 # LAST MODIFICATION
 #
-#   2006-12-12
+#   2008-05-24
 #
 # COPYLEFT
 #
 #   Copyright (c) 2006 Guido U. Draheim <guidod@gmx.de>
+#   Copyright (c) 2008 Ger Hobbelt <ger@hobbelt.com>
 #
 #   This program is free software; you can redistribute it and/or
 #   modify it under the terms of the GNU General Public License as
@@ -63,102 +64,6 @@
 #   modified version as well.
 
 
-AC_DEFUN([AX_CFLAGS_WARN_ALL],[dnl
-AS_VAR_PUSHDEF([FLAGS],[CFLAGS])dnl
-AS_VAR_PUSHDEF([VAR],[ac_cv_cflags_warn_all])dnl
-AC_CACHE_CHECK([m4_ifval($1,$1,FLAGS) for maximum warnings],
-VAR,[VAR="no, unknown"
- AC_LANG_PUSH(C)
- ac_save_[]FLAGS="$[]FLAGS"
- ac_save_c_werror_flag=$ac_c_werror_flag
- ac_c_werror_flag=yes
- # [i_a] next line is a hotfix for automake 1.10/autoconf 2.62
- AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS]) 
-for ac_arg dnl
-in "-pass-exit-codes -pedantic -Werror -Wno-unused-parameter -Wno-missing-field-initializers % -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers"    dnl   GCC 3/4 - NOTE that I explicitly DISABLE two 'extra' warnings here as I find those annoying most of the time
-   "-pass-exit-codes -pedantic -Werror % -Wall"             dnl   GCC
-   "-xstrconst % -v"          dnl Solaris C
-   "-std1      % -verbose -w0 -warnprotos" dnl Digital Unix
-   "-qlanglvl=ansi % -qsrcmsg -qinfo=all:noppt:noppc:noobs:nocnd" dnl AIX
-   "-ansi -ansiE % -fullwarn" dnl IRIX
-   "+ESlit     % +w1"         dnl HP-UX C
-   "-Xc        % -pvctl[,]fullmsg" dnl NEC SX-5 (Super-UX 10)
-   "-h conform % -h msglevel 2" dnl Cray C (Unicos)
-   #
-do FLAGS="$ac_save_[]FLAGS "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,%,,'`
-   AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
-   [VAR=`echo $ac_arg | sed -e 's,.*% *,,'`
-    break])
-done
- ac_c_werror_flag=$ac_save_c_werror_flag
- FLAGS="$ac_save_[]FLAGS"
- AC_LANG_POP
-])
-case ".$VAR" in
-     .ok|.ok,*) m4_ifvaln($3,$3) ;;
-   .|.no|.no,*) m4_ifvaln($4,$4,[m4_ifval($2,[
-        AC_RUN_LOG([: m4_ifval($1,$1,FLAGS)="$m4_ifval($1,$1,FLAGS) $2"])
-                      m4_ifval($1,$1,FLAGS)="$m4_ifval($1,$1,FLAGS) $2"])]) ;;
-   *) m4_ifvaln($3,$3,[
-   if echo " $[]m4_ifval($1,$1,FLAGS) " | grep " $VAR " 2>&1 >/dev/null
-   then AC_RUN_LOG([: m4_ifval($1,$1,FLAGS) does contain $VAR])
-   else AC_RUN_LOG([: m4_ifval($1,$1,FLAGS)="$m4_ifval($1,$1,FLAGS) $VAR"])
-                      m4_ifval($1,$1,FLAGS)="$m4_ifval($1,$1,FLAGS) $VAR"
-   fi ]) ;;
-esac
-AS_VAR_POPDEF([VAR])dnl
-AS_VAR_POPDEF([FLAGS])dnl
-])
-
-dnl the only difference - the LANG selection... and the default FLAGS
-
-AC_DEFUN([AX_CXXFLAGS_WARN_ALL],[dnl
-AS_VAR_PUSHDEF([FLAGS],[CXXFLAGS])dnl
-AS_VAR_PUSHDEF([VAR],[ac_cv_cxxflags_warn_all])dnl
-AC_CACHE_CHECK([m4_ifval($1,$1,FLAGS) for maximum warnings],
-VAR,[VAR="no, unknown"
- AC_LANG_PUSH([C++])
- ac_save_[]FLAGS="$[]FLAGS"
- ac_save_c_werror_flag=$ac_c_werror_flag
- ac_c_werror_flag=yes
- # [i_a] next line is a hotfix for automake 1.10/autoconf 2.62
- AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS]) 
-for ac_arg dnl
-in "-pass-exit-codes -pedantic -Werror % -Wall -Wextra "    dnl   GCC
-   "-pass-exit-codes -pedantic -Werror % -Wall"             dnl   GCC
-   "-xstrconst % -v"          dnl Solaris C
-   "-std1      % -verbose -w0 -warnprotos" dnl Digital Unix
-   "-qlanglvl=ansi % -qsrcmsg -qinfo=all:noppt:noppc:noobs:nocnd" dnl AIX
-   "-ansi -ansiE % -fullwarn" dnl IRIX
-   "+ESlit     % +w1"         dnl HP-UX C
-   "-Xc        % -pvctl[,]fullmsg" dnl NEC SX-5 (Super-UX 10)
-   "-h conform % -h msglevel 2" dnl Cray C (Unicos)
-   #
-do FLAGS="$ac_save_[]FLAGS "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,%,,'`
-   AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
-   [VAR=`echo $ac_arg | sed -e 's,.*% *,,'`
-    break])
-done
- ac_c_werror_flag=$ac_save_c_werror_flag
- FLAGS="$ac_save_[]FLAGS"
- AC_LANG_POP
-])
-case ".$VAR" in
-     .ok|.ok,*) m4_ifvaln($3,$3) ;;
-   .|.no|.no,*) m4_ifvaln($4,$4,[m4_ifval($2,[
-        AC_RUN_LOG([: m4_ifval($1,$1,FLAGS)="$m4_ifval($1,$1,FLAGS) $2"])
-                      m4_ifval($1,$1,FLAGS)="$m4_ifval($1,$1,FLAGS) $2"])]) ;;
-   *) m4_ifvaln($3,$3,[
-   if echo " $[]m4_ifval($1,$1,FLAGS) " | grep " $VAR " 2>&1 >/dev/null
-   then AC_RUN_LOG([: m4_ifval($1,$1,FLAGS) does contain $VAR])
-   else AC_RUN_LOG([: m4_ifval($1,$1,FLAGS)="$m4_ifval($1,$1,FLAGS) $VAR"])
-                      m4_ifval($1,$1,FLAGS)="$m4_ifval($1,$1,FLAGS) $VAR"
-   fi ]) ;;
-esac
-AS_VAR_POPDEF([VAR])dnl
-AS_VAR_POPDEF([FLAGS])dnl
-])
-
 dnl  implementation tactics:
 dnl   the for-argument contains a list of options. The first part of
 dnl   these does only exist to detect the compiler - usually it is
@@ -169,3 +74,76 @@ dnl   like -Woption or -Xoption as they think of it is a pass-through
 dnl   to later compile stages or something. The "%" is used as a
 dnl   delimimiter. A non-option comment can be given after "%%" marks
 dnl   which will be shown but not added to the respective C/CXXFLAGS.
+
+AC_DEFUN([AX_CFLAGS_WARN_ALL],
+[
+  AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
+  AS_VAR_PUSHDEF([opt],[ac_cv_cflags_warn_all])
+  AC_CACHE_CHECK([m4_default([$1],[CFLAGS]) for maximum warnings],
+  [opt],
+  [
+    AC_LANG_PUSH([C])
+    ax_cflags_warn_all_save_CFLAGS="$CFLAGS"
+    AS_VAR_SET([opt], ["no, unknown"])
+    #
+    # construction of those strings:
+    #   a % b
+    # where 'a' is used to 'recognize' the compiler we're talking about, which means
+    # 'b' is the set of options that actually turn on those warnings.
+    #
+    for ac_arg in                         dnl
+      "-pass-exit-codes -pedantic -Werror -Wno-unused-parameter -Wno-missing-field-initializers % -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers"    dnl   GCC 3/4 - NOTE that I explicitly DISABLE two 'extra' warnings here as I find those annoying most of the time
+      "-pass-exit-codes -pedantic -Werror % -Wall"             dnl   GCC
+      "-xstrconst % -v"                   dnl Solaris C
+      "-std1      % -verbose -w0 -warnprotos" dnl Digital Unix
+      "-qlanglvl=ansi % -qsrcmsg -qinfo=all:noppt:noppc:noobs:nocnd" dnl AIX
+      "-ansi -ansiE % -fullwarn"          dnl IRIX
+      "+ESlit     % +w1"                  dnl HP-UX C
+      "-Xc        % -pvctl[,]fullmsg"     dnl NEC SX-5 (Super-UX 10)
+      "-h conform % -h msglevel 2"        dnl Cray C (Unicos)
+    #
+    do
+      CFLAGS="$ax_cflags_warn_all_save_CFLAGS "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,%,,'`
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+      [
+        AS_VAR_SET([opt], [`echo $ac_arg | sed -e 's,.*% *,,'`])
+        break
+      ])
+    done
+    CFLAGS=$ax_cflags_warn_all_save_CFLAGS
+    AC_LANG_POP
+  ])
+
+  # cache check done
+
+  AS_CASE(AS_VAR_GET([opt]),
+  [no,*], [
+            m4_ifval([$2], [AS_VAR_SET([opt], [$2])])
+            m4_ifval([$4], [$4],
+            [
+              m4_ifval([$2],
+              [
+                CFLAGS=`echo "$CFLAGS AS_VAR_GET([opt])" | sed -e 's,%%.*,,' -e 's, *$,,'`
+              ])
+            ])
+  ],
+  [
+            m4_ifval([$3], [$3],
+            [
+              CFLAGS=`echo "$CFLAGS AS_VAR_GET([opt])" | sed -e 's,%%.*,,' -e 's, *$,,'`
+            ])
+  ])
+  AS_VAR_POPDEF([opt])
+])
+
+
+
+
+
+
+
+
+
+
+
+

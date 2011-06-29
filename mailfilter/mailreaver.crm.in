@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114
+#! @bindir@/crm114
 #  **** bangline argument config commented out for better system portability
 # -( spam good cache dontstore stats_only outbound undo verbose maxprio minprio delprio fileprefix config)
 #
@@ -13,73 +13,77 @@
 #   a bangline should be dealt with.
 #
 
+window
+
 {
     isolate (:_arg2:)
     match [:_arg2:] /--help/
-	output /This is MailReaver, the 3rd Generation mail filter "standard script"\n/
-	output /for CRM114.  The goal is to make a more maintainable, understandable,\n/
-	output /and easier-to-customize mail filter.\n/
-	output /\n/
-	output /1) we use the consolidated library "maillib.crm" for most shareable\n/
-	output /   things like parsing the .cf file, munging text, cacheing text, etc.\n/
-	output /\n/
-	output /2) we always use the CacheIDs and the Reaver (maildir-like) format\n/
-	output /   for storing incoming email in unaltered form if there is\n/
-	output /   any possibility of training it.\n/
-	output /\n/
-	output /3) We always train using mailtrainer.crm rather than training\n/
-	output /   internally.  Thus, if you want to change the way things are\n/
-	output /   trained, you need to look at mailtrainer.crm as well.\n/
-	output /\n/
-	output /\n/
+    output /This is MailReaver, the 3rd Generation mail filter "standard script"\n/
+    output /for CRM114.  The goal is to make a more maintainable, understandable,\n/
+    output /and easier-to-customize mail filter.\n/
+    output /\n/
+    output /1) we use the consolidated library "maillib.crm" for most shareable\n/
+    output /   things like parsing the .cf file, munging text, cacheing text, etc.\n/
+    output /\n/
+    output /2) we always use the CacheIDs and the Reaver (maildir-like) format\n/
+    output /   for storing incoming email in unaltered form if there is\n/
+    output /   any possibility of training it.\n/
+    output /\n/
+    output /3) We always train using mailtrainer.crm rather than training\n/
+    output /   internally.  Thus, if you want to change the way things are\n/
+    output /   trained, you need to look at mailtrainer.crm as well.\n/
+    output /\n/
+    output /\n/
     output /We use the mailfilter.cf configuration setup file.\n/
-	output /\n/
+    output /\n/
     output /You *must* supply at least an email via input redirection\n/
     output /or by specifying a --mailfile=<file> input.\n/
-	output /\n/
+    output /\n/
     output /Command Format:\n/
     output /      .\/mailreaver.crm [options]*\n/
-	output /\n/
+    output /\n/
     output /Optional options:\n/
+    output /\n/
     output / --mailfile=<file> - point at email input file. Use when you\n/
     output /                     don't want to feed mailreaver an email via\n/
     output /                     stdin.  Default: wait for input on stdin.\n/
     output / --mailout=<file>  - Write the processed email to <file>.\n/
     output /                     Default: write to stdout.\n/
-	output /\n/
-	output /We Also support the following commands on both the command line\n/
-	output /in the form "--blahblah --blahblah" and by using the\n/
-	output /"command {secretpassword} word word" method in the email body:\n/
-	output /\n/
-	output / --spam            - This is spam.  Treat appropriately.[*]\n/
-	output / --good            - This is good.  Treat appropriately.[*]\n/
-	output / --cache           - Pretend the email starts on the following line.\n/
-	output /                     Process it normally and put it in the cache.\n/
-	output / --dontstore       - Do NOT store this text into the cache.  Use\n/
-	output /                     this for text that you never want to train.\n/
-	output / --stats_only      - Output ONLY the status.  Nothing else.\n/
-	output /                     Since this means there's no output of the\n/
-	output /                     CacheIDs, we don't store the text for later training.\n/
-	output / --report_only     - Output ONLY the headers that would have\n/
-	output /                     been added, not the entire text.\n/
-	output / --outbound        - This is an "outbound" message and hence can\n/
-	output /                     assumed to be nonspam.  Train if necessary.\n/
-	output / --undo            - The message was mis-trained as type X. Undo that.\n/
-	output / --verbose         - Tell me more.\n/
-	output / --verbose_startup - Tell me more about the commands and options being decoded.\n/
-	output / --maxprio +/-     - Add a maximum priority entry\n/
-	output / --minprio +/-     - Add a minimum priority entry\n/
-	output / --delprio         - Delete a prio list entry.\n/
-	output / --fileprefix=dir  - Look in the dir for the .css and .cf files\n/
-	output / --config=filename - Use filename as the .cf file. Default is mailfilter.cf\n/
-	output /\n/
-	output / [*]  - meaning that if it's a command line flag, the entire\n/
-	output / standard input is the example text and if it's an inline\n/
-	output / command, then the example text follows the inline commandline.\n/
+    output /\n/
+    output /We Also support the following commands on both the command line\n/
+    output /in the form "--blahblah --blahblah" and by using the\n/
+    output /"command {secretpassword} word word" method in the email body:\n/
+    output /\n/
+    output / --spam            - This is spam.  Treat appropriately.[*]\n/
+    output / --good            - This is good.  Treat appropriately.[*]\n/
+    output / --cache           - Pretend the email starts on the following line.\n/
+    output /                     Process it normally and put it in the cache.\n/
+    output / --dontstore       - Do NOT store this text into the cache.  Use\n/
+    output /                     this for text that you never want to train.\n/
+    output / --stats_only      - Output ONLY the status.  Nothing else.\n/
+    output /                     Since this means there's no output of the\n/
+    output /                     CacheIDs, we don't store the text for later training.\n/
+    output / --report_only     - Output ONLY the headers that would have\n/
+    output /                     been added, not the entire text.\n/
+    output / --outbound        - This is an "outbound" message and hence can\n/
+    output /                     assumed to be nonspam.  Train if necessary.\n/
+    output / --undo            - The message was mis-trained as type X. Undo that.\n/
+    output / --verbose         - Tell me more.\n/
+    output / --verbose_startup - Tell me more about the commands and options being decoded.\n/
+    output / --fileprefix=dir  - Look in the dir for the .css and .cf files\n/
+    output / --config=filename - Use filename as the .cf file. Default is mailfilter.cf\n/
+    output /\n/
+    output /These commands are only accepted from the email body:\n/
+    output /\n/
+    output / --maxprio +\/-     - Add a maximum priority entry\n/
+    output / --minprio +\/-     - Add a minimum priority entry\n/
+    output / --delprio         - Delete a prio list entry.\n/
+    output /\n/
+    output /[*] - meaning that if it's a command line flag, the entire\n/
+    output /      standard input is the example text and if it's an inline\n/
+    output /      command, then the example text follows the inline commandline.\n/
     exit
 }
-
-
 
 #
 #     Overall Design:
@@ -107,8 +111,6 @@
 #        Step 1 - Read in the parameter file
 #
 #############################################################
-
-window
 
 isolate (:program_fault_exit_code:) /66/   # [i_a] in case mailfilter.cf cannot be loaded: make sure we don't get an error report cascade.
 
@@ -487,15 +489,15 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
             match [:text_cache:] /./
 
             isolate (:tmp:) //
-			{
-				match [:_hosttype:] /Windows-MS/
-				call /:mk_dospath:/ [:*:long_cacheid:] (:dospath:)
-				syscall () (:tmp:) /dir \/s \/b :*:dospath:/
-			}
-			alius
-			{
-				syscall () (:tmp:) /\/bin\/ls :*:long_cacheid:/
-			}
+            {
+                match [:_hosttype:] /Windows-MS/
+                call /:mk_dospath:/ [:*:long_cacheid:] (:dospath:)
+                syscall () (:tmp:) /dir \/s \/b :*:dospath:/
+            }
+            alius
+            {
+                syscall () (:tmp:) /\/bin\/ls :*:long_cacheid:/
+            }
             match [:tmp:] /:*:cacheid:/
             #
             #      remember this file on a permanent basis by linking it into
@@ -510,17 +512,17 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
             #      and remove it from the prob_* directories, as
             #      now it's known
             {
-				match [:_hosttype:] /Windows-MS/
-				call /:mk_dospath:/ [:*:text_cache:\/prob_spam\/:*:cacheid:] (:dospath:)
-				syscall /del \/f \/q :*:dospath:/
-				call /:mk_dospath:/ [:*:text_cache:\/prob_good\/:*:cacheid:] (:dospath:)
-				syscall /del \/f \/q :*:dospath:/
-			}
-			alius
-			{
-				syscall /\/bin\/rm -f  :*:text_cache:\/prob_spam\/:*:cacheid:/
-				syscall /\/bin\/rm -f  :*:text_cache:\/prob_good\/:*:cacheid:/
-			}
+                match [:_hosttype:] /Windows-MS/
+                call /:mk_dospath:/ [:*:text_cache:\/prob_spam\/:*:cacheid:] (:dospath:)
+                syscall /del \/f \/q :*:dospath:/
+                call /:mk_dospath:/ [:*:text_cache:\/prob_good\/:*:cacheid:] (:dospath:)
+                syscall /del \/f \/q :*:dospath:/
+            }
+            alius
+            {
+                syscall /\/bin\/rm -f  :*:text_cache:\/prob_spam\/:*:cacheid:/
+                syscall /\/bin\/rm -f  :*:text_cache:\/prob_good\/:*:cacheid:/
+            }
         }
         alius  # what to do if we don't use/have a cache:
         {
@@ -579,14 +581,14 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
 
             isolate (:tmp:) //
             {
-				match [:_hosttype:] /Windows-MS/
-				call /:mk_dospath:/ [:*:long_cacheid:] (:dospath:)
-				syscall () (:tmp:) /dir \/s \/b :*:dospath:/
-			}
-			alius
-			{
-				syscall () (:tmp:) /\/bin\/ls :*:long_cacheid:/
-			}
+                match [:_hosttype:] /Windows-MS/
+                call /:mk_dospath:/ [:*:long_cacheid:] (:dospath:)
+                syscall () (:tmp:) /dir \/s \/b :*:dospath:/
+            }
+            alius
+            {
+                syscall () (:tmp:) /\/bin\/ls :*:long_cacheid:/
+            }
             match [:tmp:] /:*:cacheid:/
             #
             #      remember this file on a permanent basis by linking it into
@@ -600,17 +602,17 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
             #      and remove it from the prob_* directories, as
             #      now it's known
             {
-            	match [:_hosttype:] /Windows-MS/
-				call /:mk_dospath:/ [:*:text_cache:\/prob_spam\/:*:cacheid:] (:dospath:)
-				syscall /del \/f \/q :*:dospath:/
-				call /:mk_dospath:/ [:*:text_cache:\/prob_good\/:*:cacheid:] (:dospath:)
-				syscall /del \/f \/q :*:dospath:/
-			}
-			alius
-			{
-				syscall /\/bin\/rm -f  :*:text_cache:\/prob_spam\/:*:cacheid:/
-				syscall /\/bin\/rm -f  :*:text_cache:\/prob_good\/:*:cacheid:/
-			}
+                match [:_hosttype:] /Windows-MS/
+                call /:mk_dospath:/ [:*:text_cache:\/prob_spam\/:*:cacheid:] (:dospath:)
+                syscall /del \/f \/q :*:dospath:/
+                call /:mk_dospath:/ [:*:text_cache:\/prob_good\/:*:cacheid:] (:dospath:)
+                syscall /del \/f \/q :*:dospath:/
+            }
+            alius
+            {
+                syscall /\/bin\/rm -f  :*:text_cache:\/prob_spam\/:*:cacheid:/
+                syscall /\/bin\/rm -f  :*:text_cache:\/prob_good\/:*:cacheid:/
+            }
         }
         alius  # what to do if we don't use/have a cache:
         {
@@ -618,14 +620,14 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
 
             isolate (:tmp:) //
             {
-				match [:_hosttype:] /Windows-MS/
-				call /:mk_dospath:/ [:*:long_cacheid:] (:dospath:)
-				syscall () (:tmp:) /dir \/s \/b :*:dospath:/
-			}
-			alius
-			{
-				syscall () (:tmp:) /\/bin\/ls :*:long_cacheid:/
-			}
+                match [:_hosttype:] /Windows-MS/
+                call /:mk_dospath:/ [:*:long_cacheid:] (:dospath:)
+                syscall () (:tmp:) /dir \/s \/b :*:dospath:/
+            }
+            alius
+            {
+                syscall () (:tmp:) /\/bin\/ls :*:long_cacheid:/
+            }
             match [:tmp:] /:*:cacheid:/
             #
             #      remember this file on a permanent basis by linking it into
@@ -639,17 +641,17 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
             #      and remove it from the prob_* directories, as
             #      now it's known
             {
-				match [:_hosttype:] /Windows-MS/
-				call /:mk_dospath:/ [:*:text_cache:\/prob_spam\/:*:cacheid:] (:dospath:)
-				syscall /del \/f \/q :*:dospath:/
-				call /:mk_dospath:/ [:*:text_cache:\/prob_good\/:*:cacheid:] (:dospath:)
-				syscall /del \/f \/q :*:dospath:/
-			}
-			alius
-			{
-				syscall /\/bin\/rm -f  :*:text_cache:\/prob_spam\/:*:cacheid:/
-				syscall /\/bin\/rm -f  :*:text_cache:\/prob_good\/:*:cacheid:/
-			}
+                match [:_hosttype:] /Windows-MS/
+                call /:mk_dospath:/ [:*:text_cache:\/prob_spam\/:*:cacheid:] (:dospath:)
+                syscall /del \/f \/q :*:dospath:/
+                call /:mk_dospath:/ [:*:text_cache:\/prob_good\/:*:cacheid:] (:dospath:)
+                syscall /del \/f \/q :*:dospath:/
+            }
+            alius
+            {
+                syscall /\/bin\/rm -f  :*:text_cache:\/prob_spam\/:*:cacheid:/
+                syscall /\/bin\/rm -f  :*:text_cache:\/prob_good\/:*:cacheid:/
+            }
         }
         #
         #      now it's trained; put in a marker in the headers
@@ -872,13 +874,13 @@ goto /:finish_up:/
         match [:report_only:] /SET/
         match [:_dw:] //
         {
-                match [:_dw:] <fromend> /.*?\n/ (:z:)
-                {
-                      match [:z:] <absent> /^X-CRM114/
-                      # output /Deleting :*:z:\n/
-                      alter (:z:) //
-                }
-                liaf
+            match [:_dw:] <fromend> /.*?\n/ (:z:)
+            {
+                  match [:z:] <absent> /^X-CRM114/
+                  # output /Deleting :*:z:\n/
+                  alter (:z:) //
+            }
+            liaf
         }
     }
     #accept

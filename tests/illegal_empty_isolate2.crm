@@ -1,0 +1,24 @@
+#! /usr/local/bin/crm114
+#
+# can we tolerate an empty isolate? But what if the target variable is indirect?
+{
+	{
+		window 
+		isolate (:dst:)	//
+		isolate (:*:dst:) /FUBAR/
+		output /yo!\n/
+		output /dst = ':*:dst:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+		output /dst = ':*:dst:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

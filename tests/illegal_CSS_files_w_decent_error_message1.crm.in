@@ -1,0 +1,25 @@
+#! @BIN_PATH@/crm114
+#
+# do we get a decent error message from CRM114 when our CSS files are blown to Kingdom Come or do we get... 'Floating Point Failure' and a core dump?
+{
+	{
+		window 
+		output [icfwdm1.css] /x/     # Now THAT would create a very illegal CSS file. Do we catch that? 
+		                             # (Not even one 32-bit hash could ever fit in there: filesize = 1)
+		output [icfwdm2.css] /y/
+		isolate (:s:) /YUCK/
+		classify (icfwdm1.css | icfwdm2.css) (:s:) /[[:graph:]]+/ 
+		output /yo!\n/
+		output /s = ':*:s:'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+		output /s = ':*:s:'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

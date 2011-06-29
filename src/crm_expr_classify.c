@@ -28,7 +28,9 @@
 
 //     Dispatch a LEARN statement
 //
-int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
+int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+				   		VHT_CELL **vht,
+		CSL_CELL *tdw)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
@@ -39,7 +41,7 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int retval;
     int saved_ssfl;
     uint64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to learn:
     //
@@ -53,7 +55,7 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i < 0)
     {
@@ -71,7 +73,11 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -94,52 +100,79 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
 
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 0, "L", (unsigned long long int)classifier_flags);
+
     if (classifier_flags & CRM_OSB_BAYES)
     {
-        retval = crm_expr_osb_bayes_learn(csl, apb, txt, start, len);
+        retval = crm_expr_osb_bayes_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else    if (classifier_flags & CRM_CORRELATE)
     {
-        retval = crm_expr_correlate_learn(csl, apb, txt, start, len);
+        retval = crm_expr_correlate_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else    if (classifier_flags & CRM_OSB_WINNOW)
     {
-        retval = crm_expr_osb_winnow_learn(csl, apb, txt, start, len);
+        retval = crm_expr_osb_winnow_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else    if (classifier_flags & CRM_OSBF)
     {
-        retval = crm_expr_osbf_bayes_learn(csl, apb, txt, start, len);
+        retval = crm_expr_osbf_bayes_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else    if (classifier_flags & CRM_HYPERSPACE)
     {
-        retval = crm_expr_osb_hyperspace_learn(csl, apb, txt, start, len);
+        retval = crm_expr_osb_hyperspace_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else    if (classifier_flags & CRM_ENTROPY)
     {
-        retval = crm_expr_bit_entropy_learn(csl, apb, txt, start, len);
+        retval = crm_expr_bit_entropy_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else    if (classifier_flags & CRM_SVM)
     {
-        retval = crm_expr_svm_learn(csl, apb, txt, start, len);
+        retval = crm_expr_svm_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_SKS)
     {
-        retval = crm_expr_sks_learn(csl, apb, txt, start, len);
+        retval = crm_expr_sks_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_FSCM)
     {
-        retval = crm_expr_fscm_learn(csl, apb, txt, start, len);
+      retval = crm_fast_substring_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
-        retval = crm_neural_net_learn(csl, apb, txt, start, len);
+        retval = crm_neural_net_learn(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    {
+        retval = crm_expr_alt_osb_bayes_learn(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_learn(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_learn(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_learn(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_learn(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
+        retval = crm_expr_markov_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else
     {
-        //    Default with no classifier specified is Markov
-        apb->sflags = apb->sflags | CRM_MARKOVIAN;
-        retval = crm_expr_markov_learn(csl, apb, txt, start, len);
+        apb->sflags |= CRM_AUTODETECT;
+        retval = crm_expr_markov_learn(csl, apb, vht, tdw, txt, start, len);
     }
+
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 3, "L", (unsigned long long int)classifier_flags);
 
     sparse_spectrum_file_length = saved_ssfl;
 
@@ -148,7 +181,10 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 //      Dispatch a CLASSIFY statement
 //
-int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
+int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,		
+		VHT_CELL **vht,
+		CSL_CELL *tdw
+)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
@@ -158,7 +194,7 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int len;
     int retval;
     int64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to classify:
     //
@@ -166,13 +202,13 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     boxtxtlen = crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
     //  Use crm_restrictvar to get start & length to look at.
-  i = crm_restrictvar(box_text, boxtxtlen, 
+    i = crm_restrictvar(box_text, boxtxtlen,
             NULL,
             &txt,
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -189,7 +225,11 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -206,52 +246,80 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
 
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 4, "L", (unsigned long long int)classifier_flags);
+
     if (classifier_flags & CRM_OSB_BAYES)
     {
-        retval = crm_expr_osb_bayes_classify(csl, apb, txt, start, len);
+        retval = crm_expr_osb_bayes_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_CORRELATE)
     {
-        retval = crm_expr_correlate_classify(csl, apb, txt, start, len);
+        retval = crm_expr_correlate_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_OSB_WINNOW)
     {
-        retval = crm_expr_osb_winnow_classify(csl, apb, txt, start, len);
+        retval = crm_expr_osb_winnow_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_OSBF)
     {
-        retval = crm_expr_osbf_bayes_classify(csl, apb, txt, start, len);
+        retval = crm_expr_osbf_bayes_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_HYPERSPACE)
     {
-        retval = crm_expr_osb_hyperspace_classify(csl, apb, txt, start, len);
+        retval = crm_expr_osb_hyperspace_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_ENTROPY)
     {
-        retval = crm_expr_bit_entropy_classify(csl, apb, txt, start, len);
+        retval = crm_expr_bit_entropy_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_SVM)
     {
-        retval = crm_expr_svm_classify(csl, apb, txt, start, len);
+        retval = crm_expr_svm_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_SKS)
     {
-        retval = crm_expr_sks_classify(csl, apb, txt, start, len);
+        retval = crm_expr_sks_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_FSCM)
     {
-        retval = crm_expr_fscm_classify(csl, apb, txt, start, len);
+      retval = crm_fast_substring_classify (csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
-        retval = crm_neural_net_classify(csl, apb, txt, start, len);
+        retval = crm_neural_net_classify(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    {
+        retval = crm_expr_alt_osb_bayes_classify(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_classify(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_classify(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_classify(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_classify(csl, apb, vht, tdw, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
+        retval = crm_expr_markov_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else
     {
-        //    Default with no classifier specified is Markov
-        apb->sflags = apb->sflags | CRM_MARKOVIAN;
-        retval = crm_expr_markov_classify(csl, apb, txt, start, len);
+        apb->sflags |= CRM_AUTODETECT;
+        retval = crm_expr_markov_classify(csl, apb, vht, tdw, txt, start, len);
     }
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 5, "L", (unsigned long long int)classifier_flags);
+
     return retval;
 }
 
@@ -271,7 +339,7 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int len;
     int retval;
     int64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to classify:
     //
@@ -285,7 +353,7 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -302,7 +370,11 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -318,6 +390,8 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
+
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 6, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -359,12 +433,38 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_merge(csl, apb, txt, start, len);
     }
-    else
+     else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
-        //    Default with no classifier specified is Markov
-        apb->sflags = apb->sflags | CRM_MARKOVIAN;
+        retval = crm_expr_alt_osb_bayes_css_merge(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_css_merge(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_css_merge(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_css_merge(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_css_merge(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
         retval = crm_expr_markov_css_merge(csl, apb, txt, start, len);
     }
+   else
+    {
+        apb->sflags |= CRM_AUTODETECT;
+        retval = crm_expr_markov_css_merge(csl, apb, txt, start, len);
+    }
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 7, "L", (unsigned long long int)classifier_flags);
+
     return retval;
 }
 
@@ -386,7 +486,7 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int len;
     int retval;
     int64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to classify:
     //
@@ -400,7 +500,7 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -417,7 +517,11 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -433,6 +537,8 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 8, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -474,12 +580,38 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_diff(csl, apb, txt, start, len);
     }
-    else
+     else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
-        //    Default with no classifier specified is Markov
-        apb->sflags = apb->sflags | CRM_MARKOVIAN;
+        retval = crm_expr_alt_osb_bayes_css_diff(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_css_diff(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_css_diff(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_css_diff(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_css_diff(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
         retval = crm_expr_markov_css_diff(csl, apb, txt, start, len);
     }
+    else
+    {
+        apb->sflags |= CRM_AUTODETECT;
+        retval = crm_expr_markov_css_diff(csl, apb, txt, start, len);
+    }
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 9, "L", (unsigned long long int)classifier_flags);
+
     return retval;
 }
 
@@ -495,11 +627,11 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     char errstr[MAX_PATTERN];
     int i;
     char *txt;
-    int  start;
+    int start;
     int len;
     int retval;
     int64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to classify:
     //
@@ -513,7 +645,7 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -530,7 +662,11 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -546,6 +682,8 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 10, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -587,12 +725,38 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_backup(csl, apb, txt, start, len);
     }
-    else
+     else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
-        //    Default with no classifier specified is Markov
-        apb->sflags = apb->sflags | CRM_MARKOVIAN;
+        retval = crm_expr_alt_osb_bayes_css_backup(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_css_backup(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_css_backup(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_css_backup(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_css_backup(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
         retval = crm_expr_markov_css_backup(csl, apb, txt, start, len);
     }
+    else
+    {
+        apb->sflags |= CRM_AUTODETECT;
+        retval = crm_expr_markov_css_backup(csl, apb, txt, start, len);
+    }
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 11, "L", (unsigned long long int)classifier_flags);
+
     return retval;
 }
 
@@ -611,7 +775,7 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int len;
     int retval;
     int64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to classify:
     //
@@ -625,7 +789,7 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -642,7 +806,11 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -658,6 +826,8 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 12, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -699,12 +869,38 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_restore(csl, apb, txt, start, len);
     }
-    else
+     else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
-        //    Default with no classifier specified is Markov
-        apb->sflags = apb->sflags | CRM_MARKOVIAN;
+        retval = crm_expr_alt_osb_bayes_css_restore(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_css_restore(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_css_restore(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_css_restore(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_css_restore(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
         retval = crm_expr_markov_css_restore(csl, apb, txt, start, len);
     }
+    else
+    {
+        apb->sflags |= CRM_AUTODETECT;
+        retval = crm_expr_markov_css_restore(csl, apb, txt, start, len);
+    }
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 13, "L", (unsigned long long int)classifier_flags);
+
     return retval;
 }
 
@@ -724,7 +920,7 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int len;
     int retval;
     int64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to classify:
     //
@@ -738,7 +934,7 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -755,7 +951,11 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -771,6 +971,8 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 14, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -812,12 +1014,39 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_info(csl, apb, txt, start, len);
     }
+     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    {
+        retval = crm_expr_alt_osb_bayes_css_info(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_css_info(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_css_info(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_css_info(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_css_info(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
+        retval = crm_expr_markov_css_info(csl, apb, txt, start, len);
+    }
     else
     {
         //    Default with no classifier specified
         apb->sflags |= CRM_AUTODETECT;
         retval = crm_expr_markov_css_info(csl, apb, txt, start, len);
     }
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 15, "L", (unsigned long long int)classifier_flags);
+
     return retval;
 }
 
@@ -837,7 +1066,7 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int len;
     int retval;
     int64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to classify:
     //
@@ -851,7 +1080,7 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -868,7 +1097,11 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -884,6 +1117,8 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 16, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -925,12 +1160,39 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_analyze(csl, apb, txt, start, len);
     }
+     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    {
+        retval = crm_expr_alt_osb_bayes_css_analyze(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_css_analyze(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_css_analyze(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_css_analyze(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_css_analyze(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
+        retval = crm_expr_markov_css_analyze(csl, apb, txt, start, len);
+    }
     else
     {
         //    Default with no classifier specified
         apb->sflags |= CRM_AUTODETECT;
         retval = crm_expr_markov_css_analyze(csl, apb, txt, start, len);
     }
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 17, "L", (unsigned long long int)classifier_flags);
+
     return retval;
 }
 
@@ -950,7 +1212,7 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int len;
     int retval;
     int64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to classify:
     //
@@ -964,7 +1226,7 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -981,7 +1243,11 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -997,6 +1263,9 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
+
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 18, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -1038,12 +1307,39 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_create(csl, apb, txt, start, len);
     }
+     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    {
+        retval = crm_expr_alt_osb_bayes_css_create(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_css_create(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_css_create(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_css_create(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_css_create(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
+        retval = crm_expr_markov_css_create(csl, apb, txt, start, len);
+    }
     else
     {
         //    Default with no classifier specified
         apb->sflags |= CRM_AUTODETECT;
         retval = crm_expr_markov_css_create(csl, apb, txt, start, len);
     }
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 19, "L", (unsigned long long int)classifier_flags);
+
     return retval;
 }
 
@@ -1064,7 +1360,7 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int len;
     int retval;
     int64_t classifier_flags = 0;
-	int boxtxtlen;
+    int boxtxtlen;
 
     //            get start/length of the text we're going to classify:
     //
@@ -1078,7 +1374,7 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &start,
             &len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (i > 0)
     {
@@ -1095,7 +1391,11 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1111,6 +1411,8 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 20, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -1152,12 +1454,39 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_migrate(csl, apb, txt, start, len);
     }
+     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    {
+        retval = crm_expr_alt_osb_bayes_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSB_WINNOW)
+    {
+        retval = crm_expr_alt_osb_winnow_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_OSBF)
+    {
+        retval = crm_expr_alt_osbf_bayes_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_HYPERSPACE)
+    {
+        retval = crm_expr_alt_osb_hyperspace_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ALT_MARKOVIAN)
+    {
+        retval = crm_expr_alt_markov_css_migrate(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_MARKOVIAN)
+    {
+        retval = crm_expr_markov_css_migrate(csl, apb, txt, start, len);
+    }
     else
     {
         //    Default with no classifier specified
         apb->sflags |= CRM_AUTODETECT;
         retval = crm_expr_markov_css_migrate(csl, apb, txt, start, len);
     }
+
+	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 21, "L", (unsigned long long int)classifier_flags);
+
     return retval;
 }
 

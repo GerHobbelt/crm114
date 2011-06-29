@@ -1,0 +1,19 @@
+#! /usr/local/bin/crm114
+#
+# do we accept writing content to the null var '::'?
+{
+	{
+		window 
+		isolate (::) /FUBAR/
+		output /yo!\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

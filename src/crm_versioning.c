@@ -24,6 +24,8 @@
 
 #if !defined (CRM_WITHOUT_VERSIONING_HEADER)
 
+
+
 //////////////////////////////////////////////////////////////////
 //
 //                            Versioning
@@ -571,7 +573,7 @@ int is_crm_headered_file(FILE *f)
         ret = (int)fread(sequence, sizeof(sequence[0]), WIDTHOF(sequence) - 1, f);
         sequence[WIDTHOF(sequence) - 1] = 0;
 
-		ret = is_crm_headered_mmapped_file(sequence, ret);
+        ret = is_crm_headered_mmapped_file(sequence, ret);
     }
     (void)fseek(f, old_pos, SEEK_SET);
 
@@ -585,11 +587,11 @@ int is_crm_headered_file(FILE *f)
  */
 int is_crm_headered_mmapped_file(void *buf, size_t length)
 {
-	int ret = 0;
+    int ret = 0;
 
-    if (length > CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH)
-	{
-		ret = (0 == memcmp(CRM_PORTABILITY_HEADER_SEQUENCE, buf, CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH));
+    if (length >= CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH)
+    {
+        ret = (0 == memcmp(CRM_PORTABILITY_HEADER_SEQUENCE, buf, CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH));
     }
 
     return ret;
@@ -786,7 +788,8 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
 
     /* -=# the Binary Section: #=- */
 
-    memset(&binhdr, 0, sizeof(binhdr));
+    memset(&binhdr, 0, sizeof(binhdr));  // memset() is 'better' than 'binhdr={0} init', because on MSVC at least the latter does not touch the alignment bytes between the fields and having 'random data' in there may complicate header decoding
+
     //    Header (6)              The character sequence 'CRM114'
     memcpy(binhdr.crm_identifier, "CRM114", 6);
     //      M:Alignment
@@ -895,10 +898,12 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
  *
  * NOTE: 'len' MAY be NULL. 'ptr' MUST NOT be NULL.
  */
-int crm_correct_for_version_header(void **ptr, int *len)
+int crm_correct_for_version_header(void **ptr, int *len, int *has_header)
 {
     char *s;
     int ret;
+
+    *has_header = 0;
 
     if (!ptr)
         return -1;
@@ -906,13 +911,8 @@ int crm_correct_for_version_header(void **ptr, int *len)
     if (*ptr == MAP_FAILED)
         return -1;
 
-    /* very small file? which doesn't even have enough room for the header anyway? */
-    if (len && *len < CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH)
-        return 0;
-
     s = (char *)*ptr;
-
-    ret = (0 == memcmp(CRM_PORTABILITY_HEADER_SEQUENCE, s, CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH));
+    ret = is_crm_headered_mmapped_file(s, *len);
     if (ret)
     {
 #if !defined (CRM_WITHOUT_VERSIONING_HEADER)
@@ -931,9 +931,10 @@ int crm_correct_for_version_header(void **ptr, int *len)
             }
         }
         *ptr = s;
+        *has_header = 1;
 #else
         fatalerror("This CRM114 build cannot cope with the new 'headered' CSS file format.",
-                "Please rebuild with version/portability header support or seek a prebuild CRM114 binary that can.");
+                "Please rebuild with version/portability header support or seek a prebuilt CRM114 binary that can.");
         ret = -1;   /* cannot cope with version-headered files */
 #endif
     }
@@ -954,6 +955,9 @@ int crm_correct_for_version_header(void **ptr, int *len)
  * this (native) platform ONLY. Any other version, platform, etc. will then result in a decode
  * error.
  * This is useful to quickly check the approriateness of any CRM data file for the current task.
+ *
+ * Older versions and/or platform headers imply that the database must be migrated anyhow to
+ * ensure proper operation with this platform/build anyhow.
  */
 int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_native, CRM_DECODED_PORTA_HEADER_INFO *dst)
 {
@@ -1096,11 +1100,11 @@ int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_n
             if (!(acceptable_classifiers & d->classifier_info.classifier_bits))
                 return 10;
         }
-		
-		if (d->classifier_info.hash_version_in_use != selected_hashfunction)
-		{
-			return 11;
-		}
+
+        if (d->classifier_info.hash_version_in_use != selected_hashfunction)
+        {
+            return 11;
+        }
 
 
 
@@ -1135,6 +1139,14 @@ int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_n
         dst->integer_endianess = 0;
         dst->floating_point_endianess = 0;
 
+        // because this is a true 'native format file', we can also provide a pointer to important data in SRC itself
+        // (which generally is the mmap()ed space itself - see the call structure which led to this function's invocation.
+        //
+        // The benefit of this wicked xref is that users of this versioning scheme get direct access
+        // to certified classifier-specific native dataspace in the mmap()ed zone: ANY operations performed
+        // in there reflect back to the file itself!
+        dst->native_classifier_info_in_file = &((crm_porta_bin_header_block *)(s + CRM114_TEXT_HEADERBLOCK_SIZE))->classifier_info;
+
         return 0;
     }
 
@@ -1144,6 +1156,58 @@ int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_n
 
 
 
+const char *crm_decode_header_err2msg(int errorcode)
+{
+    switch (errorcode)
+    {
+    case - 1:
+        return "Internal argument failure. Contact CRM114 support for assistance.";
 
+    case 1:
+        return "Invalid CRM114 database 'header sequence' found; this database does not have a valid header!";
+
+    case - 2:
+        return "Non-native database. Please migrate. Contact CRM114 support for assistance.";
+
+    case 2:
+        return "CSS database has a corrupted 'binary version block marker'. Your database is very probably hosed beyond repair.";
+
+    case 3:
+        return "CSS database header: integer markers do not match this platform; this may be a non-native database or the database is corrupted.";
+
+    case 4:
+        return "CSS database header: Endian markers do not match this platform; this may be a non-native database or the database is corrupted.";
+
+    case 5:
+		return "CSS database header: Floating point markers do not match this platform; this may be a non-native database or the database is corrupted.";
+
+	case 6:
+		return "CSS database header: 'CRM114' text marker does not match this platform; this may be a non-native database or the database is corrupted.";
+
+	case 7:
+		return "CSS database header: Decoded host type and/or version markers do not match this platform; this is a non-native database or the database is corrupted.";
+
+	case 8:
+		return "CSS database header: Decoded version/release numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
+
+	case 9:
+		return "CSS database header: integer size numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
+
+	case 10:
+		return "CSS database header: the classifier marker does not match the current active classifier code; this database was created for another classifier. Do not use this database for this classifier.";
+
+	case 11:
+		return "CSS database header: the hash algorithm marker does not match the current active hash type code; this database was created with another hash algorithm active. Change your hash algorithm if you wish to use this database.";
+
+    case 42:
+        return "CSS database has corrupted 'human readable info block' markers. Your database is very probably hosed.";
+
+    case 0:
+        return "Everything is OK.";
+
+    default:
+        return "Unidentifiable failure";
+    }
+}
 
 

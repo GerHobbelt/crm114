@@ -1,0 +1,11 @@
+TEST SCRIPT + COMMANDLINE:
+alius_w_comment.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+checking for a foo...no foo... checking for bar...found neither... continuing  
+

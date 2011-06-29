@@ -34,8 +34,10 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20080502-BlameJason
-PREV_VERSION=20080326-BlameSentansoken
+VERSION=20080630-BlameVT
+PREV_VERSION=20080618-BlameBadGlasses
+#PREV_VERSION=20080502-BlameJason
+#PREV_VERSION=20080326-BlameSentansoken
 #PREV_VERSION=20080325-BlameSentansoken
 #PREV_VERSION=20080317-BlameJoeLangeway_VT
 #PREV_VERSION=20080217-BlameJoeLangeway_VT
@@ -234,7 +236,7 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
 	crm_stats.c crm_expr_sks.c \
-	crm_expr_svm.c crm_expr_fscm.c \
+	crm_expr_svm.c crm_fast_substring_compression.c \
 	crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c
 
@@ -258,7 +260,8 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
 	crm_preprocessor.o \
-	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
+	crm_expr_sks.o crm_stats.o crm_expr_svm.o \
+	crm_fast_substring_compression.o \
 	crm_generic_port.o crm_stdio_port.o \
 	crm_versioning.o
 #  NOTE - no crmregex_gnu or crmregex_tre here!
@@ -483,9 +486,9 @@ crm_expr_svm.o: crm_expr_svm.c \
 	$(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_svm.c -o crm_expr_svm.o
 
-crm_expr_fscm.o: crm_expr_fscm.c \
+crm_fast_substring_compression.o: crm_fast_substring_compression.c \
 	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_fscm.c -o crm_expr_fscm.o
+	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_fast_substring_compression.c -o crm_fast_substring_compression.o
 
 crm_expr_clump.o: crm_expr_clump.c \
 	$(HFILES)

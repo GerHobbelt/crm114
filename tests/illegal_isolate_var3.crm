@@ -1,0 +1,19 @@
+#! /usr/local/bin/crm114
+#
+# should not pass variable decoder length checks.
+{
+	{
+		window 
+		isolate (a) /FUBAR/
+		output /yo!\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

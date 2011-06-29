@@ -45,7 +45,7 @@ static int crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
 //     R is the "MICROGROOM_RESCALE_FACTOR"
 //
 int crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
-        unsigned char                                  *seen_features,
+        unsigned char                                 *seen_features,
         unsigned int                                   hs,
         unsigned int                                   hindex)
 {

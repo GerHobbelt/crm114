@@ -1,9 +1,9 @@
-#! @abs_top_builddir@/src/crm114 
+#! @BIN_PATH@/crm114
 #!    this little regression test by Jskud verifies match start/length works
 window
 output /:*:_nl: CRM114 testing that start \/ length works in matches :*:_nl: :*:_nl:/
 isolate (:whitelist:)
-input (:whitelist:) [whitelist.mfp.example]
+input (:whitelist:) [@abs_srcdir@/whitelist.mfp.example]
 output /DEBUG: whitelist==<<:*:whitelist:>>:*:_nl:/
 # match (:waste:) [:whitelist:] /^/ ; # force match so <fromend> will work
 {

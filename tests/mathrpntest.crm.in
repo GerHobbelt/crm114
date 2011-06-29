@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114
+#! @BIN_PATH@/crm114
 #
 #	Test demo program for extended eval (can do string lengths,
 #       RPN math, and inequalities. 

@@ -1,0 +1,19 @@
+#! @BIN_PATH@/crm114
+#
+# can we tolerate an empty isolate?
+{
+	{
+		window 
+		isolate () /FUBAR/
+		output /yo!\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

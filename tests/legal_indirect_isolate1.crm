@@ -1,0 +1,26 @@
+#! /usr/local/bin/crm114
+#
+# can we handle an indirect isolate?
+{
+	{
+		window 
+		isolate (:dst:)	/:s:/
+		isolate (:*:dst:) /FUBAR/
+		output /yo!\n/
+		output /dst = ':*:dst:'\n/
+		output /s = ':*:s:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+		output /dst = ':*:dst:'\n/
+		output /s = ':*:s:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

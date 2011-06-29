@@ -10,21 +10,10 @@
 # Process this file with autoconf to produce a configure script.
 
 
-#############################################################
-#
-#  WARNING: several custom macros in ./m4 use the undocumented
-#       AC_RUN_LOG
-#  macro which silently barfs on the latest automake/conf setup.
-# GET RID OF IT!
-#  Use AC_RUN_TRY or similar instead. To be researched!
-#
-#                          Ger Hobbelt
-#
 
 
 
-# AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT([CRM114], [20080502-BlameJason], [crm114-general@lists.sourceforge.net])
+AC_INIT([CRM114], [20080630-BlameVT], [crm114-general@lists.sourceforge.net])
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR([m4])
@@ -33,7 +22,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.10 check-news dist-bzip2 dist-zip dist-tarZ]) 
 
 # Minimum Autoconf version required.
-AC_PREREQ([2.60])
+AC_PREREQ([2.62])
 
 # Where to generate output; srcdir location.
 AC_CONFIG_SRCDIR([src/crm_main.c])
@@ -73,6 +62,7 @@ AC_SUBST(VER_SUFFIX)
 AC_PREFIX_DEFAULT([/usr/local])
 
 
+
 # for crm114.lsm
 ISODATE=`date +%Y-%m-%d`
 AC_SUBST(ISODATE)
@@ -82,8 +72,19 @@ Copyright (C) Copyright 2001-2008  William S. Yerazunis
 ])
 
 
-ORIGINAL_BILLY_DISTRO_DIR="/home/ger/prj/1original/crm114/src/crm114.sourceforge.net/src"
-AC_DEFINE_UNQUOTED(ORIGINAL_BILLY_DISTRO_DIR, "$ORIGINAL_BILLY_DISTRO_DIR", [directory where BillY's original crm114 distro resides])
+
+AC_ARG_VAR(ORIGINAL_BILLY_DISTRO_DIR,
+[Points at a directory where the 'vanilla CRM114' source code resides;
+this is the source code as available from Bill Yerazunis (a.k.a. BillY)
+at crm114.sourceforge.net.
+Generally, you don't want to bother with item at all, unless you wish
+to generate distributions including diffs with the 'original'.])
+
+if test -z "$ORIGINAL_BILLY_DISTRO_DIR" ; then
+  ORIGINAL_BILLY_DISTRO_DIR="/home/ger/prj/1original/crm114/src/crm114.sourceforge.net/src"
+fi
+AC_DEFINE_UNQUOTED(ORIGINAL_BILLY_DISTRO_DIR, ["$ORIGINAL_BILLY_DISTRO_DIR"],
+  [directory where BillY's original crm114 distro resides])
 AC_SUBST(ORIGINAL_BILLY_DISTRO_DIR)
 
 
@@ -101,261 +102,117 @@ AC_SUBST(ORIGINAL_BILLY_DISTRO_DIR)
 #
 
 
-AC_MSG_CHECKING([if we want any experimental classifiers])
-AC_ARG_ENABLE([experimental-classifiers],
-  AC_HELP_STRING([--disable-experimental-classifiers],
-    [do not include any experimental classifiers.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([experimental-classifiers],
+  [CRM_PRODUCTION_CLASSIFIERS_ONLY],
+  [any experimental classifiers],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use these experimental classifiers.
-(default: experimental classifiers are ENABLED)]),
-  [
-   AC_MSG_RESULT($enable_experimental_classifiers)
-   if eval "test x$enable_experimental_classifiers = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_PRODUCTION_CLASSIFIERS_ONLY, 1, [do not include experimental classifiers in the build])
-   fi
-  ],
-  [
-   AC_MSG_RESULT([yes])
-  ])
-
-#
-# WARNING!
-#
-# This code assumes these classifiers are 'experimental':
-#
-#   NEURAL_NET
-#   SCM
-#   SKS
-#   SVM
-#   CLUMP
-#
-# The code below must be changed when some of these are NOT experimental anymore!
-#
+(default: experimental classifiers are ENABLED)])
 
 
-AC_MSG_CHECKING([if we want the OSB-Bayes classifier])
-AC_ARG_ENABLE([OSB-Bayes],
-  AC_HELP_STRING([--disable-OSB-Bayes],
-    [do not include the OSB-Bayes classifier.
-This will produce a smaller executable, which will report an error
+
+AX_ARG_ENABLE([OSB-Bayes],
+  [CRM_WITHOUT_OSB_BAYES],
+  [the OSB-Bayes classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: OSB-Bayes classifier is build-in)]),
-  [
-   AC_MSG_RESULT($enable_OSB_Bayes)
-   if eval "test x$enable_OSB_Bayes = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_BAYES, 1, [do not include the OSB-Bayes classifier in the build])
-   fi
-  ],
-  [
-   AC_MSG_RESULT([yes])
-  ])
+(default: OSB-Bayes classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the OSB-Winnow classifier])
-AC_ARG_ENABLE([OSB-Winnow],
-  AC_HELP_STRING([--disable-OSB-Winnow],
-    [do not include the OSB-Winnow classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([OSB-Winnow],
+  [CRM_WITHOUT_OSB_WINNOW],
+  [the OSB-Winnow classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: OSB-Winnow classifier is build-in)]),
-  [
-   AC_MSG_RESULT($enable_OSB_Winnow)
-   if eval "test x$enable_OSB_Winnow = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_WINNOW, 1, [do not include the OSB-Winnow classifier in the build])
-   fi
-  ],
-  [
-   AC_MSG_RESULT([yes])
-  ])
+(default: OSB-Winnow classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the OSBF classifier])
-AC_ARG_ENABLE([OSBF],
-  AC_HELP_STRING([--disable-OSBF],
-    [do not include the OSBF classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([OSBF],
+  [CRM_WITHOUT_OSBF],
+  [the OSBF classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: OSBF classifier is build-in)]),
-  [
-   AC_MSG_RESULT($enable_OSBF)
-   if eval "test x$enable_OSBF = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSBF, 1, [do not include the OSBF classifier in the build])
-   fi
-  ],
-  [
-   AC_MSG_RESULT([yes])
-  ])
+(default: OSBF classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the OSB-Hyperspace classifier])
-AC_ARG_ENABLE([OSB-Hyperspace],
-  AC_HELP_STRING([--disable-OSB-Hyperspace],
-    [do not include the OSB-Hyperspace classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([OSB-Hyperspace],
+  [CRM_WITHOUT_OSB_HYPERSPACE],
+  [the OSB-Hyperspace classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: OSB-Hyperspace classifier is build-in)]),
-  [
-   AC_MSG_RESULT($enable_OSB_Hyperspace)
-   if eval "test x$enable_OSB_Hyperspace = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_HYPERSPACE, 1, [do not include the OSB-Hyperspace classifier in the build])
-   fi
-  ],
-  [
-   AC_MSG_RESULT([yes])
-  ])
+(default: OSB-Hyperspace classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the Correlate classifier])
-AC_ARG_ENABLE([Correlate],
-  AC_HELP_STRING([--disable-Correlate],
-    [do not include the Correlate classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([Markov],
+  [CRM_WITHOUT_MARKOV],
+  [the Markov classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: Correlate classifier is build-in)]),
-  [
-   AC_MSG_RESULT($enable_Correlate)
-   if eval "test x$enable_Correlate = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_CORRELATE, 1, [do not include the Correlate classifier in the build])
-   fi
-  ],
-  [
-   AC_MSG_RESULT([yes])
-  ])
+(default: Markov classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the Bit-Entropy classifier])
-AC_ARG_ENABLE([Bit-Entropy],
-  AC_HELP_STRING([--disable-Bit-Entropy],
-    [do not include the Bit-Entropy classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([Correlate],
+  [CRM_WITHOUT_CORRELATE],
+  [the Correlate classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: Bit-Entropy classifier is build-in)]),
-  [
-   AC_MSG_RESULT($enable_Bit_Entropy)
-   if eval "test x$enable_Bit_Entropy = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_BIT_ENTROPY, 1, [do not include the Bit-Entropy classifier in the build])
-   fi
-  ],
-  [
-   AC_MSG_RESULT([yes])
-  ])
+(default: Correlate classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the SVM classifier])
-AC_ARG_ENABLE([SVM],
-  AC_HELP_STRING([--disable-SVM],
-    [do not include the SVM classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([Bit-Entropy],
+  [CRM_WITHOUT_BIT_ENTROPY],
+  [the Bit-Entropy classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: SVM classifier is build-in)]),
-  [
-   if eval "test x$enable_SVM = xno -o x$enable_experimental_classifiers = xno"; then
-     AC_MSG_RESULT([no])
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SVM, 1, [do not include the SVM classifier in the build])
-   else
-     AC_MSG_RESULT([yes])
-   fi
-  ],
-  [
-   AC_MSG_RESULT($enable_experimental_classifiers)
-   if eval "test x$enable_experimental_classifiers = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SVM, 1, [do not include the SVM classifier in the build])
-   fi
-  ])
+(default: Bit-Entropy classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the SKS classifier])
-AC_ARG_ENABLE([SKS],
-  AC_HELP_STRING([--disable-SKS],
-    [do not include the SKS classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([SVM],
+  [CRM_WITHOUT_SVM],
+  [the SVM classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: SKS classifier is build-in)]),
-  [
-   if eval "test x$enable_SKS = xno -o x$enable_experimental_classifiers = xno"; then
-     AC_MSG_RESULT([no])
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SKS, 1, [do not include the SKS classifier in the build])
-   else
-     AC_MSG_RESULT([yes])
-   fi
-  ],
-  [
-   AC_MSG_RESULT($enable_experimental_classifiers)
-   if eval "test x$enable_experimental_classifiers = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SKS, 1, [do not include the SKS classifier in the build])
-   fi
-  ])
+(default: SVM classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the FSCM classifier])
-AC_ARG_ENABLE([FSCM],
-  AC_HELP_STRING([--disable-FSCM],
-    [do not include the FSCM classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([SKS],
+  [CRM_WITHOUT_SKS],
+  [the SKS classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: FSCM classifier is build-in)]),
-  [
-   AC_MSG_RESULT($enable_FSCM)
-   if eval "test x$enable_FSCM = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_FSCM, 1, [do not include the FSCM classifier in the build])
-   fi
-  ],
-  [
-   AC_MSG_RESULT([yes])
-  ])
+(default: SKS classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the Neural-Net classifier])
-AC_ARG_ENABLE([Neural-Net],
-  AC_HELP_STRING([--disable-Neural-Net],
-    [do not include the Neural-Net classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([FSCM],
+  [CRM_WITHOUT_FSCM],
+  [the FSCM classifier],
+[This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: Neural-Net classifier is build-in)]),
-  [
-   if eval "test x$enable_Neural_Net = xno -o x$enable_experimental_classifiers = xno"; then
-     AC_MSG_RESULT([no])
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_NEURAL_NET, 1, [do not include the Neural-Net classifier in the build])
-   else
-     AC_MSG_RESULT([yes])
-   fi
-  ],
-  [
-   AC_MSG_RESULT($enable_experimental_classifiers)
-   if eval "test x$enable_experimental_classifiers = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_NEURAL_NET, 1, [do not include the Neural-Net classifier in the build])
-   fi
-  ])
+(default: FSCM classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the Markov classifier])
-AC_ARG_ENABLE([Markov],
-  AC_HELP_STRING([--disable-Markov],
-    [do not include the Markov classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([Neural-Net],
+  [CRM_WITHOUT_NEURAL_NET],
+  [the Neural-Net classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: Markov classifier is build-in)]),
-  [
-   AC_MSG_RESULT($enable_Markov)
-   if eval "test x$enable_Markov = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_MARKOV, 1, [do not include the Markov classifier in the build])
-   fi
-  ],
-  [
-   AC_MSG_RESULT([yes])
-  ])
+(default: Neural-Net classifier is build-in)])
 
-AC_MSG_CHECKING([if we want the CLUMP classifier])
-AC_ARG_ENABLE([CLUMP],
-  AC_HELP_STRING([--disable-CLUMP],
-    [do not include the CLUMP classifier.
-This will produce a smaller executable, which will report an error
+AX_ARG_ENABLE([CLUMP],
+  [CRM_WITHOUT_CLUMP],
+  [the CLUMP classifier],
+  [This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
-(default: CLUMP classifier is build-in)]),
-  [
-   if eval "test x$enable_CLUMP = xno -o x$enable_experimental_classifiers = xno"; then
-     AC_MSG_RESULT([no])
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_CLUMP, 1, [do not include the CLUMP classifier in the build])
-   else
-     AC_MSG_RESULT([yes])
-   fi
-  ],
-  [
-   AC_MSG_RESULT($enable_experimental_classifiers)
-   if eval "test x$enable_experimental_classifiers = xno"; then
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_CLUMP, 1, [do not include the CLUMP classifier in the build])
-   fi
-  ])
+(default: CLUMP classifier is build-in)])
+
+
+
+
+###################################################################
+
+AX_ARG_ENABLE([analysis],
+  [CRM_WITHOUT_BMP_ASSISTED_ANALYSIS],
+  [BMP-assited analysis],
+  [Enable this to create an 'instrumented' CRM114 binary which allows you to
+perform several types of analysis on the script code execution, but most importantly
+to have closer look at the performance and characteristics (behaviour) of the
+selected feature hash method, the CSS feature storage and the classifiers themselves.
+Multiple crm runs are automatically merged into a single 'profile collection'
+when you so desire; use the included 'crm_bmp_prof' tool to process the collected
+analysis data in various ways.
+
+Disable this when you want to churn out the maximum performance out of CRM114.
+(default: ENABLED)])
 
 
 
@@ -366,7 +223,9 @@ when your scripts attempt to use this classifier.
 # Checks for programs.
 #
 
-AC_PROG_CC([gcc egcs cl cc lcc])
+AC_PROG_CC([gcc egcs cl lcc cc])
+AC_PROG_CXX
+AC_PROG_CC_STDC   # check for ISO/C99 options for the compilers, if available. Be hip, don't be square.
 AC_USE_SYSTEM_EXTENSIONS
 # AC_GNU_SOURCE -- obsolete
 # AC_AIX -- obsolete
@@ -405,21 +264,31 @@ AC_PATH_PROG([DB2X_MANXML], [db2x_manxml], [])
 AC_PATH_PROG([DB2X_TEXIXML], [db2x_texixml], [])
 AC_PATH_PROG([GZIP], [gzip], [])
 AC_PATH_PROG([BZIP2], [bzip2], [])
+AC_PATH_PROG([RMAN], [rman], [])
+AX_PROG_GNU_TIME()
+
+## Zoem is a an interpretive macro language, for creating mark-up languages, by
+## Stijn van Dongen. Information about zoem can be found on the zoem webpage at
+## http://micans.org/zoem/ .
+## We need zoem >= 04-027
+AC_PATH_PROG([ZOEM], [zoem], [])
+AC_PATH_PROG([TROFF], [groff], [])
+AC_PATH_PROG([COL], [col], [])
 
 
-AX_DIFF_OPTION([E])
-AX_DIFF_OPTION([b])
-AX_DIFF_OPTION([w])
-AX_DIFF_OPTION([B])
-AX_DIFF_OPTION([d])
-AX_DIFF_OPTION([-strip-trailing-cr])
-# [i_a] GROT GROT GROT: nasty last minute hack because the AX_DIFF_OPTION macros don't work anymore :-(((((
-DIFF_FLAGS="-EbwBd --strip-trailing-cr"
+
+
+AX_CHECK_DIFF_OPTION([-E])
+AX_CHECK_DIFF_OPTION([-b])
+AX_CHECK_DIFF_OPTION([-w])
+AX_CHECK_DIFF_OPTION([-B], [DIFF_FLAGS])
+AX_CHECK_DIFF_OPTION([-d], [DIFF_FLAGS])
+AX_CHECK_DIFF_OPTION([--strip-trailing-cr], [DIFF_FLAGS])
 
 
 
 AM_CONDITIONAL([OS_HAS_DIFF], [test -n "$DIFF"])
-AM_CONDITIONAL([OS_HAS_SEVENZIP], [test -n "$SEVEN_ZIP"])
+AM_CONDITIONAL([OS_HAS_SEVEN_ZIP], [test -n "$SEVEN_ZIP"])
 AM_CONDITIONAL([OS_HAS_LZMA], [test -n "$LZMA"])
 AM_CONDITIONAL([OS_HAS_ZIP], [test -n "$ZIP"])
 AM_CONDITIONAL([OS_HAS_TAR], [test -n "$TAR"])
@@ -432,6 +301,7 @@ AM_CONDITIONAL([OS_HAS_DB2X_MANXML], [test -n "$DB2X_MANXML"])
 AM_CONDITIONAL([OS_HAS_DB2X_TEXIXML], [test -n "$DB2X_TEXIXML"])
 AM_CONDITIONAL([OS_HAS_GZIP], [test -n "$GZIP"])
 AM_CONDITIONAL([OS_HAS_BZIP2], [test -n "$BZIP2"])
+AM_CONDITIONAL([OS_HAS_GNU_TIME], [test -n "$GNU_TIME"])
 
 
 
@@ -440,15 +310,7 @@ AC_CANONICAL_HOST
 AC_DEFINE_UNQUOTED(HOSTTYPE, "$host_os", [Set host type])
 
 
-#
-# since AC_PROG_CC sets '-O2' in CFLAGS by default, while _we_'d like
-# to have '-O3', we override the operation (for gcc only) right here.
-# Of course, this is rather hackish, so if anyone knows about a cleaner
-# solution, I'm all for it!
-#                                               Ger Hobbelt
-if test ! -z "$SED"; then
-  CFLAGS=`echo $CFLAGS | $SED -e 's/ -O2//'`
-fi
+
 
 
 
@@ -469,7 +331,7 @@ AC_ARG_ENABLE([inline-qsort],
 the slower qsort() C standard library routine instead.
 (default: qsort is inlined)]),
   [
-   AC_MSG_RESULT($enable_inline_qsort)
+   AC_MSG_RESULT([$enable_inline_qsort])
    if eval "test x$enable_inline_qsort = xno"; then
      AC_DEFINE_UNQUOTED(CRM_WITHOUT_MJT_INLINED_QSORT, 1, [do not use the custom inline qsort by Michael Tokarev])
    fi
@@ -477,6 +339,20 @@ the slower qsort() C standard library routine instead.
   [
    AC_MSG_RESULT([yes])
   ])
+
+
+
+
+#
+# no multithreading support for now; that's for when this thing can cough up a libcrm114 of sorts
+#
+WITH_THREADS=no
+
+
+#
+# all (script) debug features are available by default
+#
+WITH_DEBUG_FEATURES="full (script debugging)"
 
 
 
@@ -489,21 +365,61 @@ AC_ARG_ENABLE([debug], AC_HELP_STRING([--disable-debug],
 You can explicitly specify '--enable-debug' to create a standard
 CRM (debuggable) build. (default: debugging turned OFF)]),
   [
+   #
+   # since AC_PROG_CC sets '-O2' in CFLAGS by default, while _we_'d like
+   # to have '-O3', we override the operation (for gcc only) right here.
+   # Of course, this is rather hackish, so if anyone knows about a cleaner
+   # solution, I'm all for it!
+   #                                               Ger Hobbelt
+   if test ! -z "$SED"; then
+     CFLAGS=`echo " $CFLAGS " | $SED -e 's:-O[[0-3]] : :' -e 's:-g : :' -e 's:  : :g'`
+     CXXFLAGS=`echo " $CXXFLAGS " | $SED -e 's:-O[[0-3]] : :' -e 's:-g : :' -e 's:  : :g'`
+   fi
    if eval "test x$enable_debug = xyes"; then
      AC_MSG_RESULT([debug])
-     #AX_CFLAGS_GCC_OPTION([-O0])
+     AX_CFLAGS_GCC_OPTION([-O0])
+     AX_CFLAGS_GCC_OPTION([-g3],
+       [],
+       [],
+       [AX_CFLAGS_GCC_OPTION([-g])]) # symbolic debugging
+     AX_CXXFLAGS_GCC_OPTION([-O0])
+     AX_CXXFLAGS_GCC_OPTION([-g3],
+       [],
+       [],
+       [AX_CXXFLAGS_GCC_OPTION([-g])]) # symbolic debugging
+     WITH_BUILD="debug"
+     WITH_DEBUGGING=yes
    else
      AC_MSG_RESULT([release])
-     #AX_CFLAGS_GCC_OPTION([-O3],
-     #  [],
-     #  [
-     #   AX_CFLAGS_GCC_OPTION([-O2])
-     #  ])
+     AX_CFLAGS_GCC_OPTION([-O3],
+       [],
+       [],
+       [AX_CFLAGS_GCC_OPTION([-O2])])
+     AX_CXXFLAGS_GCC_OPTION([-O3],
+       [],
+       [],
+       [AX_CXXFLAGS_GCC_OPTION([-O2])])
+     WITH_BUILD="release (maximum optimizations)"
+     WITH_DEBUGGING=no
    fi
   ],
-  [AC_MSG_RESULT([release])
-   #AX_CFLAGS_GCC_OPTION([-O3])]
-  )
+  [
+   AC_MSG_RESULT([default])
+   if test ! -z "$SED"; then
+     if test -z `echo " $CFLAGS " | $SED -e 's:.* \(-O[[0-3]]\) .*:\1:'`; then
+       # only add '-O2' if there's no '-O expression custom defined yet (by the user before [s]he started ./configure)
+       AX_CFLAGS_GCC_OPTION([-O2])
+     fi
+     if test -z `echo " $CXXFLAGS " | $SED -e 's:.* \(-O[[0-3]]\) .*:\1:'`; then
+       # only add '-O2' if there's no '-O expression custom defined yet (by the user before [s]he started ./configure)
+       AX_CXXFLAGS_GCC_OPTION([-O2])
+     fi
+   fi
+   WITH_BUILD="default"
+   WITH_DEBUGGING=no
+  ])
+
+
 
 #
 # include run-time profiling support (requires the use of specific development tools: prof/gprof)
@@ -519,22 +435,31 @@ example, gprof. (default: profiling turned OFF)]),
   [
    AC_MSG_RESULT($enable_profiling)
    ac_profiling_cc_flags=""
-   #AX_CFLAGS_GCC_OPTION([-pg], [ac_profiling_cc_flags],
-   # 	[
-   #      WITH_GPROFILING="yes"
-   #      AC_MSG_RESULT([$enable_profiling (gprof)])
-   #     ],
-   #	[
-   #     # ac_profiling_cc_flags=""
-   #	 AX_CFLAGS_GCC_OPTION([-p], [ac_profiling_cc_flags],
-   #		[
-   #		WITH_PROFILING="yes"
-   #		AC_MSG_RESULT([$enable_profiling (prof)])
-   #		])
-   #    ])
-   ## set AM_CPPFLAGS instead of CFLAGS; we don't want to influence the cc used to test stuff in this configure script
-   #AM_CPPFLAGS="$AM_CPPFLAGS $ac_profiling_cc_flags"
-   #AM_LDFLAGS="$AM_LDFLAGS $ac_profiling_cc_flags"
+   AX_CFLAGS_GCC_OPTION([-pg], [ac_profiling_cc_flags],
+    	[
+         WITH_GPROFILING="yes"
+         AC_MSG_RESULT([$enable_profiling (gprof)])
+        ],
+   	[
+   	 AX_CFLAGS_GCC_OPTION([-p], [ac_profiling_cc_flags],
+   		[
+   		WITH_PROFILING="yes"
+   		AC_MSG_RESULT([$enable_profiling (prof)])
+   		])
+       ])
+   AX_CXXFLAGS_GCC_OPTION([-pg], [ac_profiling_cc_flags],
+    	[
+         WITH_GPROFILING="yes"
+         AC_MSG_RESULT([$enable_profiling (gprof)])
+        ],
+   	[
+   	 AX_CXXFLAGS_GCC_OPTION([-p], [ac_profiling_cc_flags],
+   		[
+   		WITH_PROFILING="yes"
+   		AC_MSG_RESULT([$enable_profiling (prof)])
+   		])
+       ])
+   # delay copying into CFLAGS/CXXFLAGS/LDFLAGS; we don't want to influence the cc used to test stuff in this configure script
   ],
   [AC_MSG_RESULT([no])])
 
@@ -549,14 +474,14 @@ AC_ARG_ENABLE([extended-compile-warnings],
   [
    AC_MSG_RESULT($enable_extended_compile_warnings)
    if eval "test x$enable_extended_compile_warnings = xyes"; then
-     AX_CFLAGS_WARN_ALL(AM_CFLAGS)
-dnl  AX_CFLAGS_WARN_ALL_ANSI(AM_CFLAGS)
+     AX_CFLAGS_WARN_ALL([])
+     AX_CXXFLAGS_WARN_ALL([])
    fi
   ],
   [
    AC_MSG_RESULT([yes])
-   AX_CFLAGS_WARN_ALL(AM_CFLAGS)
-dnl  AX_CFLAGS_WARN_ALL_ANSI(AM_CFLAGS)
+   AX_CFLAGS_WARN_ALL([])
+   AX_CXXFLAGS_WARN_ALL([])
   ])
 
 #
@@ -611,19 +536,21 @@ within the CRM114 trap handler. Can't say you haven't been warned!
 
 
 
+AC_SYS_LONG_FILE_NAMES
 
 # Checks for header files.
-AC_HEADER_DIRENT
 
 # this test might fail when runtime is broken, e.g. due to ld which
 # fails to find proper libtre
 AC_HEADER_STDC
 
+AC_HEADER_MAJOR
+AC_HEADER_DIRENT
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 # AC_HEADER_ASSERT
 AC_HEADER_STAT
-AC_CHECK_HEADERS(fcntl.h float.h stdlib.h string.h unistd.h)
+AC_CHECK_HEADERS(fcntl.h float.h stdlib.h stddef.h string.h unistd.h)
 AC_CHECK_HEADERS(stdio.h ctype.h errno.h sys/types.h sys/wait.h)
 AC_CHECK_HEADERS(dirent.h unistd.h sys/mman.h sys/stat.h math.h)
 AC_CHECK_HEADERS(locale.h sys/times.h signal.h time.h sys/time.h)
@@ -634,6 +561,7 @@ AC_CHECK_HEADERS(crtdbg.h signal.h io.h direct.h process.h lmcons.h)
 AC_CHECK_HEADERS(getopt.h getopt_ex.h)
 AC_CHECK_HEADERS(endian.h sys/param.h)
 AC_CHECK_HEADERS(pwd.h)
+AC_CHECK_HEADERS(pshpack1.h pshpack2.h pshpack4.h poppack.h)
 
 
 # see: http://www.gnu-pascal.de/crystal/gpc/en/mail11031.html
@@ -654,11 +582,14 @@ AC_C_BIGENDIAN(
 	 byte first (like Intel and VAX).])]
   )
 AC_C_CHAR_UNSIGNED
-AX_C_LONG_LONG
+AX_CC_PRAGMA_PACK
+AC_TYPE_LONG_LONG_INT
 AC_C_STRINGIZE
 AC_CHECK_SIZEOF([long int])
 AC_CHECK_SIZEOF([int])
-AC_CHECK_SIZEOF([long long int])
+if test $ac_cv_type_long_long_int = yes; then
+  AC_CHECK_SIZEOF([long long int])
+fi
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
 AC_TYPE_INT64_T
@@ -673,10 +604,28 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
-AC_CHECK_TYPES([clock_t])
-AC_CHECK_TYPES([pid_t])
-AC_CHECK_TYPES([mode_t])
-AC_CHECK_TYPES([struct stat])
+AC_CHECK_TYPES([[clock_t], [pid_t], [mode_t], [struct stat], [struct timespec], [struct timeval], [struct tms]],
+ [], [], [
+AC_INCLUDES_DEFAULT[
+
+/* extra includes for these */
+@%:@ifdef HAVE_SYS_TIMES_H
+@%:@include <sys/times.h>
+@%:@endif
+@%:@if defined (TIME_WITH_SYS_TIME)
+@%:@include <sys/time.h>
+@%:@include <time.h>
+@%:@else
+@%:@if defined (HAVE_SYS_TIME_H)
+@%:@include <sys/time.h>
+@%:@elif defined (HAVE_TIME_H)
+@%:@include <time.h>
+@%:@endif
+@%:@endif
+@%:@ifdef HAVE_PROCESS_H
+@%:@include <process.h>
+@%:@endif
+]])
 AX_NSEC_STAT_FIELDS
 
 
@@ -685,34 +634,48 @@ AX_NSEC_STAT_FIELDS
 
 # Check for library functions
 AC_SEARCH_LIBS([sqrt], [m])
+AC_SEARCH_LIBS([clock_gettime], [rt])
 
+
+
+
+AC_MSG_CHECKING([wether your runtime environment is ok])
+# Check to be sure not to get some AC_FUNC_ 's fail miserably.
+AC_RUN_IFELSE([AC_LANG_PROGRAM([], [exit (0);])],
+	[AC_MSG_RESULT([yes])],
+	[AC_MSG_FAILURE([It seems your runtime environment is broken.  Does your TRE installation need an explicitly set LD_LIBRARY_PATH?])]
+)
 
 
 
 dnl *************************
 dnl regex libraries tests
 dnl *************************
-AC_ARG_WITH(regex-includes,
-  [  --with-regex-includes=DIR    where you have regex includes],
+AC_ARG_WITH([regex-includes],
+  AC_HELP_STRING([--with-regex-includes=DIR], [where you have regex includes]),
   WITH_REGEX_INC="$withval")
-if test -n "$WITH_REGEX_INC"; then
-  AM_CPPFLAGS="$AM_CPPFLAGS -I$WITH_REGEX_INC"
+if test -d "$WITH_REGEX_INC"; then
+  CFLAGS="$CFLAGS -I$WITH_REGEX_INC"
+  CXXFLAGS="$CXXFLAGS -I$WITH_REGEX_INC"
 fi
 
-AC_ARG_WITH(regex-libraries,
-  [  --with-regex-libraries=DIR   where you have regex libraries],
+AC_ARG_WITH([regex-libraries],
+  AC_HELP_STRING([--with-regex-libraries=DIR], [where you have regex libraries]),
   WITH_REGEX_LIB="$withval")
-if test -n "$WITH_REGEX_LIB"; then
+if test -d "$WITH_REGEX_LIB"; then
   LDFLAGS="$LDFLAGS -L$WITH_REGEX_LIB"
 fi
 
 dnl ********************************
 dnl all the various REGEX tests
 dnl ********************************
-AC_ARG_WITH(regex, [  --with-regex=[none/auto/posix/gnu/v8/bsd/pcre/lregex/tre]
-                             select type of regular expressions you want
-                             to use],
-  WITH_REGEX="$withval", WITH_REGEX="auto")
+AC_ARG_WITH([regex], 
+  AC_HELP_STRING([[--with-regex=[none/auto/posix/gnu/v8/bsd/pcre/lregex/tre]]],
+                 [select type of regular expressions you want to use]),
+  [WITH_REGEX="$withval"],
+  [WITH_REGEX="auto"])
+
+WITH_SELECTED_REGEX=""
 
 case "$WITH_REGEX" in
   none | auto | posix | gnu | v8 | bsd | pcre | lregex | tre) ;;
@@ -743,12 +706,14 @@ if eval "test x$want_regex_impl = xyes"; then
       AC_DEFINE_UNQUOTED(HAVE_TRE_REGEX, 1, [TRE REs])
       LIBS="$LIBS $tre_libs"
       want_regex_impl=no
+      WITH_SELECTED_REGEX=TRE
     else
       AC_SEARCH_LIBS([tre_compile], [tre], [
         AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-        AC_DEFINE_UNQUOTED(HAVE_TRE_REGEX, 1,
-          [TRE REs])
-        want_regex_impl="no"])
+        AC_DEFINE_UNQUOTED(HAVE_TRE_REGEX, 1, [TRE REs])
+        want_regex_impl="no"
+        WITH_SELECTED_REGEX=TRE
+        ])
     fi
   fi
 fi
@@ -762,7 +727,10 @@ if eval "test x$want_regex_impl = xyes"; then
     AC_CHECK_LIB(regex, regcomp, [
       AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
       AC_DEFINE_UNQUOTED(HAVE_POSIX_REGEX, 1, [POSIX REs])
-      LIBS="$LIBS -lregex"; want_regex_impl="no"])
+      LIBS="$LIBS -lregex"
+      want_regex_impl="no"
+      WITH_SELECTED_REGEX="POSIX (libregex)"
+      ])
   fi
 fi
 
@@ -777,8 +745,8 @@ if eval "test x$want_regex_impl = xyes"; then
     AC_CHECK_HEADERS(regex.h)
     ac_pregcomp="no"
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-    #include <sys/types.h>
-    #include <regex.h>
+    @%:@include <sys/types.h>
+    @%:@include <regex.h>
     ]], [[
       regex_t pr;
       regcomp(&pr , "" , 0);
@@ -788,6 +756,7 @@ if eval "test x$want_regex_impl = xyes"; then
       AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
       AC_DEFINE_UNQUOTED(HAVE_POSIX_REGEX, 1, [POSIX REs])
       want_regex_impl=no
+      WITH_SELECTED_REGEX=POSIX
     fi
   fi
 fi
@@ -807,12 +776,16 @@ if eval "test x$want_regex_impl = xyes"; then
       AC_DEFINE_UNQUOTED(HAVE_PCRE_REGEX, 1, [PCRE REs])
       LIBS="$LIBS $pcre_libs"
       want_regex_impl=no
+      WITH_SELECTED_REGEX=PCRE
     else
       AC_CHECK_LIB(pcre, pcre_compile, [
         AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
         AC_DEFINE_UNQUOTED(HAVE_PCRE_REGEX, 1,
           [PCRE REs])
-        LIBS="$LIBS -lpcre";want_regex_impl="no"])
+        LIBS="$LIBS -lpcre"
+        want_regex_impl=no
+        WITH_SELECTED_REGEX=PCRE
+        ])
     fi
   fi
 fi
@@ -833,6 +806,7 @@ if eval "test x$want_regex_impl = xyes"; then
       AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
       AC_DEFINE_UNQUOTED(HAVE_GNU_REGEX, 1, [GNU REs])
       want_regex_impl=no
+      WITH_SELECTED_REGEX=GNU
     fi
   fi
 fi
@@ -857,6 +831,7 @@ if eval "test x$want_regex_impl = xyes"; then
         AC_DEFINE_UNQUOTED(HAVE_V8_REGSUB, 1,
           [SYSV 8 RE exports regsub]))
       want_regex_impl=no
+      WITH_SELECTED_REGEX="Bell V8"
     fi
   fi
 fi
@@ -878,22 +853,10 @@ if eval "test x$want_regex_impl = xyes"; then
       AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
       AC_DEFINE_UNQUOTED(HAVE_BSD_REGEX, 1, [BSD REs])
       want_regex_impl=no
+      WITH_SELECTED_REGEX=BSD
     fi
   fi
 fi
-
-
-
-
-
-AC_MSG_CHECKING([wether your runtime environment is ok])
-# Check to be sure not to get some AC_FUNC_ 's fail miserably.
-AC_RUN_IFELSE([AC_LANG_PROGRAM([], [exit (0);])],
-	[AC_MSG_RESULT([yes])],
-	[AC_MSG_FAILURE([It seems your runtime environment is broken.  Does your TRE installation need an explicitly set LD_LIBRARY_PATH?])]
-)
-
-
 
 
 
@@ -921,7 +884,7 @@ AC_FUNC_STRTOD
 AC_FUNC_STRFTIME
 AX_FUNC_SNPRINTF
 AX_FUNC_MEMMOVE
-AC_FUNC_FORK
+AX_FUNC_MEMMEM
 VL_LIB_READLINE
 AC_CHECK_FUNCS(dup2 bcopy)
 AC_CHECK_FUNCS(memchr memset)
@@ -939,12 +902,15 @@ AC_CHECK_FUNCS(pipe)
 AC_CHECK_FUNCS(floor fabs pow log logl log10 sqrt log2 isnan _isnan)
 AC_CHECK_FUNCS(isalnum isalpha isascii isblank iscntrl isdigit isgraph islower isprint ispunct isspace isupper isxdigit)
 AC_CHECK_FUNCS(setlocale)
-AC_CHECK_FUNCS(getopt getopt_long)
+AC_CHECK_FUNCS(getopt getopt_long getopt_long_only)
+AC_CHECK_FUNCS(getopt_ex getopt_long_ex getopt_long_only_ex)
 AC_CHECK_FUNCS(__debugbreak _set_output_format _setmode _fileno _set_errno)
 AC_CHECK_FUNCS(sysconf)
 AC_CHECK_FUNCS(madvise posix_madvise)
 AC_CHECK_FUNCS(getcwd GetFullPathNameA)
 AC_CHECK_FUNCS(getuid getpwuid getpwuid_r GetUserNameA)
+AC_CHECK_FUNCS(QueryPerformanceFrequency QueryPerformanceCounter clock_gettime clock_getres clock gettimeofday)
+
 
 
 
@@ -971,9 +937,6 @@ INSTALLFLAGS="-m 755"
 
 
 
-AC_SUBST(AM_CFLAGS)
-AC_SUBST(AM_CPPFLAGS)
-AC_SUBST(AM_LDFLAGS)
 AC_SUBST(INSTALLFLAGS)
 AC_SUBST(DIFF_FLAGS)
 
@@ -984,6 +947,13 @@ AC_SUBST(DIFF_FLAGS)
 #   make dist
 #
 AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/src/config_vanilla_UNIX_sys_defaults.h.in $(top_srcdir)/win32/config_win32.h.in'])
+
+
+
+# write delayed options into CFLAGS/LDFLAGS:
+CFLAGS="$CFLAGS $ac_profiling_cc_flags"
+CXXFLAGS="$CXXFLAGS $ac_profiling_cc_flags"
+LDFLAGS="$LDFLAGS $ac_profiling_cc_flags"
 
 
 
@@ -1011,6 +981,8 @@ AC_CONFIG_FILES([Makefile
                  tests/escapetest.crm
                  tests/eval_infiniteloop.crm
                  tests/exectest.crm
+                 tests/exectimingtest1.crm
+                 tests/exectimingtest2.crm
                  tests/fataltraptest.crm
                  tests/fataltrapprogramerr.crm
                  tests/inserttest_a.crm
@@ -1018,6 +990,7 @@ AC_CONFIG_FILES([Makefile
                  tests/inserttest_c.crm
                  tests/learntest.crm
                  tests/match_isolate_test.crm
+                 tests/isolatephenomenontest.crm
                  tests/matchtest.crm
                  tests/mathalgtest.crm
                  tests/mathrpntest.crm
@@ -1043,6 +1016,7 @@ AC_CONFIG_FILES([Makefile
                  tests/bracesbugtest.crm
                  tests/blowuptrapbugtest.crm
                  tests/indirecttest.crm
+                 tests/exec_async_leaktest1.crm
                  tests/isolate_reclaim_test.crm
                  tests/match_isolate_reclaim.crm
                  tests/slashbugtest.crm
@@ -1056,6 +1030,30 @@ AC_CONFIG_FILES([Makefile
                  tests/defaulttest.crm
                  tests/print_binary2decimal_int32.crm
                  tests/match_re_fringe1.crm
+                 tests/legal_eval_to_null_var1.crm
+                 tests/legal_show_null_var1.crm
+                 tests/illegal_stmt1.crm
+                 tests/illegal_stmt2.crm
+                 tests/illegal_alter_null_var1.crm
+                 tests/illegal_isolate_null_var1.crm
+                 tests/illegal_isolate_null_var2.crm
+                 tests/illegal_isolate_var1.crm
+                 tests/illegal_isolate_var2.crm
+                 tests/illegal_CSS_files_w_decent_error_message2.crm
+                 tests/illegal_empty_alter2.crm
+                 tests/illegal_alter_var1.crm
+                 tests/illegal_CSS_files_w_decent_error_message3.crm
+                 tests/illegal_eval_var1.crm
+                 tests/illegal_eval_var2.crm
+                 tests/illegal_empty_isolate1.crm
+                 tests/illegal_CSS_files_w_decent_error_message1.crm
+                 tests/illegal_isolate_var3.crm
+                 tests/illegal_empty_alter1.crm
+                 tests/illegal_empty_isolate2.crm
+                 tests/illegal_indirect_isolate1.crm
+                 tests/legal_indirect_isolate1.crm
+                 tests/legal_indirect_alter1.crm
+                 tests/legal_eval_var1.crm
                  tests/testscript.sh
                  tests/crm114_statustest.filter.sh
                  tests/crm114_error_report.filter.sh
@@ -1090,6 +1088,8 @@ AC_OUTPUT
 
 dnl Print configuration summary
 
+my_installpath=`eval echo $exec_prefix`
+
 cat <<EOF
 
 Configuration summary
@@ -1101,15 +1101,15 @@ CRM114 is now configured as follows:
 
   CC           = $CC
   CFLAGS       = $CFLAGS
-  AM_CFLAGS    = $AM_CFLAGS
   CPP          = $CPP
   CPPFLAGS     = $CPPFLAGS
-  AM_CPPFLAGS  = $AM_CPPFLAGS
+  CXX          = $CXX
+  CXXFLAGS     = $CXXFLAGS
   LD           = $LD
   LDFLAGS      = $LDFLAGS
-  AM_LDFLAGS   = $AM_LDFLAGS
   LIBS         = $LIBS
   INSTALLFLAGS = $INSTALLFLAGS
+  BINDIR       = $BIN_PATH
 
 * CRM114 options
 
@@ -1117,15 +1117,11 @@ CRM114 is now configured as follows:
   Allow profiling using gprof:            $WITH_GPROFILING
   Allow profiling using prof:             $WITH_PROFILING
   Include debug features:                 $WITH_DEBUG_FEATURES
-  Debugging build:                        $WITH_DEBUG_BUILD
+  Build:                                  $WITH_BUILD
 
-  Native Language Support:                $WITH_NLS
-  your locales dir (for catalogs storing):
-  $LOCALE_DIR
-  UTF-8 language files:                   $WITH_UTF
   multithreading support:                 $WITH_THREADS
 
-  regular expressions library in use:     $WITH_REGEX
+  regular expressions library in use:     $WITH_REGEX ($WITH_SELECTED_REGEX)
 
 -----------------------------------------------------------------------
 
@@ -1133,15 +1129,17 @@ Congratulations, your $PACKAGE_NAME $PACKAGE_VERSION is configured now.
 You can now build and install $PACKAGE_NAME using the Makefile, by calling
 
   \$ make
+
+Before running 
+
   \$ make install
 
-You may wish to test the newly build binary by running
+you may wish to test the newly build binary by running
 
-  \$ make
- 
-or: 
- 
-  \$ make megatest
+  \$ make check
+
+which is an extended version or Bill Yerazunis' megatest. Any unacceptable
+mistakes will be reported and cause the 'check' run to abort.
 
 EOF
 

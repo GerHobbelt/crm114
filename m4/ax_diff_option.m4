@@ -1,24 +1,24 @@
-##### derived from http://autoconf-archive.cryp.to/ax_diff_flags_option.html
 #
 # SYNOPSIS
 #
-#   AX_DIFF_OPTION (optionflag [,[shellvar][,[A][,[NA]]])
+#   AX_CHECK_DIFF_OPTION(optionflag, [shellvar], [A], [NA])
 #
 # DESCRIPTION
 #
-#   AX_DIFF_OPTION(-E) would show a message as like
-#   "checking -E option for diff ... yes" and adds the
-#   optionflag to DIFF_FLAGS if it is understood. You can override the
-#   shellvar-default of DIFF_FLAGS of course.
+#   AX_CHECK_DIFF_OPTION([-E]) would show a message as like
+#   "checking -E option for diff ... yes" and executes the [A] section
+#   if it is understood, otherwise the [NA] section will be executed.
 #
-#     - $1 option-to-check-for : required ("-option" as non-value)
-#     - $2 shell-variable-to-add-to : DIFF_FLAGS
-#     - $3 action-if-found : add value to shellvariable
-#     - $4 action-if-not-found : nothing
+#   When 'shellvar' is specified, the 'optionflag' will be appended to it.
+#
+#     - $1 option-to-check-for : required
+#     - $2 shellvar : optional / DIFF_FLAGS
+#     - $3 action-if-found : optional / nothing
+#     - $4 action-if-not-found : optional / nothing
 #
 # LAST MODIFICATION
 #
-#   2007-08-05
+#   2008-05-25
 #
 # COPYLEFT
 #
@@ -55,56 +55,37 @@
 #   modified version as well.
 
 
-AC_DEFUN([AX_DIFF_OPTION], [dnl
-AS_VAR_PUSHDEF([FLAGS],[DIFF_FLAGS])dnl
-AS_VAR_PUSHDEF([VAR],[ac_cv_diff_flag_[]$1])dnl
-AC_CACHE_CHECK([option m4_ifval(-$1,-$1,[?]) for diff],
-VAR,[VAR="no"
- ac_save_[]FLAGS="$[]FLAGS"
- FLAGS="$ac_save_[]FLAGS -m4_ifval($1,$1)"
- cat >conftest.in1 <<_ACEOF
-XXX
+AC_DEFUN([AX_CHECK_DIFF_OPTION],
+[
+  AS_VAR_PUSHDEF([optvar], [ac_cv_diff_opt_[]$1])
+  AC_CACHE_CHECK([option $1 for ${DIFF}], [optvar],
+  [
+    # create two identical files to diff;
+    # we're only interested in the validity of the commandline option here:
+    cat >conftest.in1 <<_ACEOF
+      XXX
 _ACEOF
- cp conftest.in1 conftest.in2
- if test -z "X$diff" ; then
-   ac_tool=diff
- else
-   ac_tool=$diff
- fi
- $ac_tool $FLAGS conftest.in1 conftest.in2 2> conftest.er1
- ac_status=$?
- grep -v '^ *+' conftest.er1 > conftest.err
- rm -f conftest.er1
- rm -f conftest.in1
- rm -f conftest.in2
- cat conftest.err >&AS_MESSAGE_LOG_FD
- _AS_ECHO_LOG([\$? = $ac_status])
- if test $ac_status == 0 ; then
-   VAR="yes"
- fi
- FLAGS="$ac_save_[]FLAGS"
- _AS_ECHO_LOG([status = $ac_status, ] VAR [ = $VAR])
- rm -f conftest.err
+    cp conftest.in1 conftest.in2
+    AS_IF([$DIFF $1 conftest.in1 conftest.in2 2> conftest.er1],
+      [AS_VAR_SET([optvar], [yes])],
+      [AS_VAR_SET([optvar], [no])])
+    rm -f conftest.er1
+    rm -f conftest.in1
+    rm -f conftest.in2
+  ])
+  AS_IF([test AS_VAR_GET([optvar]) = yes],
+  [
+    m4_ifval([$3], [$3],
+    [ 
+      m4_ifval([$2], [$2="$$2 $1"],
+      [
+        DIFF_FLAGS="${DIFF_FLAGS} $1"
+      ])
+    ])
+  ],[
+    m4_ifval([$4], [$4], [:])
+  ])
+  AS_VAR_POPDEF([optvar])
 ])
-case ".$VAR" in
-   .no*) m4_ifvaln($4,$4,[
-         m4_ifval($1,[
-           AC_RUN_LOG([: m4_ifval($2,$2,DIFF_FLAGS)=$m4_ifval($2,$2,DIFF_FLAGS) -- diff does NOT support option -$1])
-         ])
-         ]) ;;
-   *) m4_ifvaln($3,$3,[
-   if echo " $[]m4_ifval($2,$2,DIFF_FLAGS) " | grep " $VAR " 2>&1 >/dev/null
-   then AC_RUN_LOG([: m4_ifval($2,$2,DIFF_FLAGS) does contain -$1])
-   else AC_RUN_LOG([: m4_ifval($2,$2,DIFF_FLAGS)="$m4_ifval($2,$2,DIFF_FLAGS) -$1"])
-                      m4_ifval($2,$2,DIFF_FLAGS)="$m4_ifval($2,$2,DIFF_FLAGS) -$1"
-   fi ]) ;;
-esac
-AS_VAR_POPDEF([VAR])dnl
-AS_VAR_POPDEF([FLAGS])dnl
-])
-
-
-
-
 
 

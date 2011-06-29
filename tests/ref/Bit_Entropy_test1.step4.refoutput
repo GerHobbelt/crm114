@@ -7,11 +7,11 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
- type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -6.5308
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 6.5308  
-Total features in input file: 552
-#0 (i_test.css): features: 425488 (100%), entropy: 459.942001, jumps: 26, prob: 2.95e-07, pR:  -6.53 
-#1 (q_test.css): features: 552504 (100%), entropy: 302.166313, jumps: 10, prob: 1.00e+00, pR:   6.53 
+ type I 
+CLASSIFY succeeds; success probability: 1.0000  pR: 4.8905
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 4.8905
+Total features in input file: 408
+#0 (i_test.css): features: 425488 (5%), entropy: 138.295563, jumps: 4, prob: 1.00e-00, pR:   4.89
+#1 (q_test.css): features: 554704 (5%), entropy: 256.445133, jumps: 16, prob: 1.29e-05, pR:  -4.89
 
 

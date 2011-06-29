@@ -1,4 +1,4 @@
-#! /home/ger/prj/3actual/crm114-2/src/crm114
+#! /usr/local/bin/crm114
 #
 # crm114 script to convert raw input bytes to decimal byte values which are human readable:
 #

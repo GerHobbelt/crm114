@@ -39,8 +39,8 @@ build_triplet = x86_64-unknown-linux-gnu
 host_triplet = x86_64-unknown-linux-gnu
 TESTS =
 bin_PROGRAMS = crm114$(EXEEXT) cssutil$(EXEEXT) osbf-util$(EXEEXT) \
-	cssdiff$(EXEEXT) cssmerge$(EXEEXT)
-noinst_PROGRAMS = testvectok$(EXEEXT) crm_test_hashes$(EXEEXT)
+	cssdiff$(EXEEXT) cssmerge$(EXEEXT) crm_bmp_prof$(EXEEXT)
+noinst_PROGRAMS = testvectok$(EXEEXT)
 subdir = src
 DIST_COMMON = README $(dist_lisp_LISP) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -49,13 +49,19 @@ DIST_COMMON = README $(dist_lisp_LISP) $(srcdir)/Makefile.am \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps =  \
 	$(top_srcdir)/m4/ac___function___c99_vpredef_vars.m4 \
-	$(top_srcdir)/m4/ac_c_long_long.m4 \
 	$(top_srcdir)/m4/ac_environ.m4 \
+	$(top_srcdir)/m4/ac_func_memmem.m4 \
 	$(top_srcdir)/m4/ac_func_memmove.m4 \
 	$(top_srcdir)/m4/ac_func_snprintf.m4 \
 	$(top_srcdir)/m4/ac_nsec_stat_fields.m4 \
+	$(top_srcdir)/m4/ax_arg_enable.m4 \
+	$(top_srcdir)/m4/ax_cc_pragma_pack.m4 \
+	$(top_srcdir)/m4/ax_cflags_gcc_option.m4 \
 	$(top_srcdir)/m4/ax_cflags_warn_all.m4 \
+	$(top_srcdir)/m4/ax_cxxflags_gcc_option.m4 \
+	$(top_srcdir)/m4/ax_cxxflags_warn_all.m4 \
 	$(top_srcdir)/m4/ax_diff_option.m4 \
+	$(top_srcdir)/m4/ax_gnu_time.m4 \
 	$(top_srcdir)/m4/vl_lib_readline.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -84,17 +90,24 @@ am__objects_1 = crm_compiler.$(OBJEXT) crm_errorhandlers.$(OBJEXT) \
 	crm_preprocessor.$(OBJEXT) crmregex_gnu.$(OBJEXT) \
 	crmregex_tre.$(OBJEXT) crm_stats.$(OBJEXT) \
 	crm_expr_sks.$(OBJEXT) crm_expr_svm.$(OBJEXT) \
-	crm_expr_fscm.$(OBJEXT) crm_generic_port.$(OBJEXT) \
-	crm_stdio_port.$(OBJEXT) crm_versioning.$(OBJEXT)
+	crm_fast_substring_compression.$(OBJEXT) \
+	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
+	crm_versioning.$(OBJEXT) crm_core_profiling.$(OBJEXT) \
+	crm_osb_markovian_alt.$(OBJEXT) crm_osb_bayes_alt.$(OBJEXT) \
+	crm_osb_hyperspace_alt.$(OBJEXT) crm_osb_winnow_alt.$(OBJEXT) \
+	crm_osbf_bayes_alt.$(OBJEXT)
 am__objects_2 =
 am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) $(am__objects_2) \
 	crm_main.$(OBJEXT)
 crm114_OBJECTS = $(am_crm114_OBJECTS)
 crm114_LDADD = $(LDADD)
-am_crm_test_hashes_OBJECTS = $(am__objects_2) $(am__objects_2) \
-	crm_test_hashes.$(OBJEXT)
-crm_test_hashes_OBJECTS = $(am_crm_test_hashes_OBJECTS)
-crm_test_hashes_LDADD = $(LDADD)
+am__objects_3 = crm_bmp_image_io.$(OBJEXT) \
+	crm_bmp_prof_collect.$(OBJEXT) crm_bmp_prof_report.$(OBJEXT) \
+	crm_bmp_prof_scan.$(OBJEXT) crm_bmp_prof_utils.$(OBJEXT)
+am_crm_bmp_prof_OBJECTS = crm_bmp_prof_main.$(OBJEXT) $(am__objects_3) \
+	$(am__objects_1) $(am__objects_2) $(am__objects_2)
+crm_bmp_prof_OBJECTS = $(am_crm_bmp_prof_OBJECTS)
+crm_bmp_prof_LDADD = $(LDADD)
 am_cssdiff_OBJECTS = cssdiff.$(OBJEXT) $(am__objects_1) \
 	$(am__objects_2) $(am__objects_2)
 cssdiff_OBJECTS = $(am_cssdiff_OBJECTS)
@@ -122,10 +135,15 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(crm114_SOURCES) $(crm_test_hashes_SOURCES) \
-	$(cssdiff_SOURCES) $(cssmerge_SOURCES) $(cssutil_SOURCES) \
-	$(osbf_util_SOURCES) $(testvectok_SOURCES)
-DIST_SOURCES = $(crm114_SOURCES) $(crm_test_hashes_SOURCES) \
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
+SOURCES = $(crm114_SOURCES) $(crm_bmp_prof_SOURCES) $(cssdiff_SOURCES) \
+	$(cssmerge_SOURCES) $(cssutil_SOURCES) $(osbf_util_SOURCES) \
+	$(testvectok_SOURCES)
+DIST_SOURCES = $(crm114_SOURCES) $(crm_bmp_prof_SOURCES) \
 	$(cssdiff_SOURCES) $(cssmerge_SOURCES) $(cssutil_SOURCES) \
 	$(osbf_util_SOURCES) $(testvectok_SOURCES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -142,8 +160,46 @@ elisp_comp = $(top_srcdir)/m4/elisp-comp
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run aclocal-1.10
-AMTAR = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run tar
+ACLOCAL = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run aclocal-1.10
+AMTAR = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run tar
+AUTOCONF = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run automake-1.10
+AWK = gawk
+BIN_PATH = /usr/local/bin
+BZIP2 = /usr/bin/bzip2
+CC = gcc -std=gnu99
+CCDEPMODE = depmode=gcc3
+CFLAGS = -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
+COL = /usr/bin/col
+COMPRESS = 
+CONFIG_STATUS_DEPENDENCIES = $(top_srcdir)/src/config_vanilla_UNIX_sys_defaults.h.in $(top_srcdir)/win32/config_win32.h.in
+CPP = gcc -std=gnu99 -E
+CPPFLAGS = 
+CVS2CL = 
+CXX = g++
+CXXDEPMODE = depmode=gcc3
+CXXFLAGS = -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
+CYGPATH_W = echo
+DB2X_MANXML = /usr/local/bin/db2x_manxml
+DB2X_TEXIXML = /usr/local/bin/db2x_texixml
+DB2X_XSLTPROC = /usr/local/bin/db2x_xsltproc
+DEFS = -DHAVE_CONFIG_H
+DEPDIR = .deps
+DIFF = /usr/bin/diff
+DIFF_FLAGS =  -E -b -w -B -d --strip-trailing-cr
+ECHO_C = 
+ECHO_N = -n
+ECHO_T = 
+EGREP = /usr/bin/grep -E
+EMACS = emacs
+EMACSLOADPATH = 
+EXEEXT = 
+GNU_TIME = /usr/bin/time
+GREP = /usr/bin/grep
+GZIP = /usr/bin/gzip
+HTMLTIDY = /usr/bin/tidy
+INSTALL = /usr/bin/install -c
 #PREV_VERSION=20080217-BlameJoeLangeway_VT
 #PREV_VERSION=20071201-BlameLittleStevie_VT
 #PREV_VERSION=20071126-BlameGerHobbelt
@@ -190,58 +246,24 @@ AMTAR = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run tar
 #  Tell the compiler full optimization "-O3", add debugging info "-g", 
 #  and warn on all warnable things "-Wall".  Someday add -Wextra for
 #  really picayune stuff.
-#  
-AM_CFLAGS =  -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
-# AM_CFLAGS += -g -O3
+#
+# CFLAGS += -g -O3
 #     turn this one on for no optimization, but debugging and time profiling.
-#AM_CFLAGS += -g -O0 -Wall -pg
+# CFLAGS += -g -O0 -Wall -pg
 #     turn this one on for really picayune debugging.
-AM_CPPFLAGS = 
-# AM_CPPFLAGS += -Wall
-# AM_CPPFLAGS += -Wextra 
-# AM_CPPFLAGS += -pedantic
+
+# CPPFLAGS += -Wall
+# CPPFLAGS += -Wextra 
+# CPPFLAGS += -pedantic
 
 #
 #   Choose between static and dynamic linking (we recommend static linking)
 #   Comment this out if you want dynamic linking
 #
 #    BSD users - do NOT use -static-libgcc!!!
-AM_LDFLAGS = 
-AUTOCONF = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run automake-1.10
-AWK = gawk
-BIN_PATH = /usr/local/bin
-BZIP2 = /usr/bin/bzip2
-CC = gcc
-CCDEPMODE = depmode=gcc3
-CFLAGS = -g
-COMPRESS = 
-CONFIG_STATUS_DEPENDENCIES = $(top_srcdir)/src/config_vanilla_UNIX_sys_defaults.h.in $(top_srcdir)/win32/config_win32.h.in
-CPP = gcc -E
-CPPFLAGS = 
-CVS2CL = 
-CYGPATH_W = echo
-DB2X_MANXML = /usr/local/bin/db2x_manxml
-DB2X_TEXIXML = /usr/local/bin/db2x_texixml
-DB2X_XSLTPROC = /usr/local/bin/db2x_xsltproc
-DEFS = -DHAVE_CONFIG_H
-DEPDIR = .deps
-DIFF = /usr/bin/diff
-DIFF_FLAGS = -EbwBd --strip-trailing-cr
-ECHO_C = 
-ECHO_N = -n
-ECHO_T = 
-EGREP = /usr/bin/grep -E
-EMACS = emacs
-EMACSLOADPATH = 
-EXEEXT = 
-GREP = /usr/bin/grep
-GZIP = /usr/bin/gzip
-HTMLTIDY = /usr/bin/tidy
-INSTALL = /usr/bin/install -c
+#
 #    use this one if you want program profiling.
-#AM_LDFLAGS += -static -static-libgcc -pg
+# LDFLAGS += -static -static-libgcc -pg
 #
 #   Any standard install flags?  We nominally use protection 755
 INSTALLFLAGS = -m 755
@@ -249,29 +271,30 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-ISODATE = 2008-05-24
-LDFLAGS = 
+ISODATE = 2008-09-18
+LDFLAGS =  
 LIBOBJS = 
-LIBS = -ltre -lm  -lreadline
+LIBS = -ltre -lrt -lm  -lreadline
 LN_S = ln -s
 LTLIBOBJS = 
 LZMA = 
-MAINT = 
-MAKEINFO = ${SHELL} /home/ger/prj/3actual/crm114-2/m4/missing --run makeinfo
+MAINT = #
+MAKEINFO = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 ORIGINAL_BILLY_DISTRO_DIR = /home/ger/prj/1original/crm114/src/crm114.sourceforge.net/src
 PACKAGE = crm114
 PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
 PACKAGE_NAME = CRM114
-PACKAGE_STRING = CRM114 20080502-BlameJason
+PACKAGE_STRING = CRM114 20080630-BlameVT
 PACKAGE_TARNAME = crm114
-PACKAGE_VERSION = 20080502-BlameJason
+PACKAGE_VERSION = 20080630-BlameVT
 PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 2423
+REVISION = 3366
+RMAN = /usr/bin/rman
 SED = /usr/bin/sed
 SET_MAKE = 
 SEVEN_ZIP = /usr/bin/7z
@@ -280,10 +303,12 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-2423
+TAR_FILENAME_POSTFIX = Ger-3366
+TIME = /usr/bin/time
 TRE_CONFIG = no
+TROFF = /usr/bin/groff
 UNCRUSTIFY = /usr/local/bin/uncrustify
-VERSION = 20080502-BlameJason
+VERSION = 20080630-BlameVT
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
 #
@@ -291,11 +316,13 @@ VERSION = 20080502-BlameJason
 # 
 VER_SUFFIX =  
 ZIP = /usr/bin/zip
-abs_builddir = /home/ger/prj/3actual/crm114-2/src
-abs_srcdir = /home/ger/prj/3actual/crm114-2/src
-abs_top_builddir = /home/ger/prj/3actual/crm114-2
-abs_top_srcdir = /home/ger/prj/3actual/crm114-2
+ZOEM = 
+abs_builddir = /home/ger/prj/3actual/crm114/src
+abs_srcdir = /home/ger/prj/3actual/crm114/src
+abs_top_builddir = /home/ger/prj/3actual/crm114
+abs_top_srcdir = /home/ger/prj/3actual/crm114
 ac_ct_CC = gcc
+ac_ct_CXX = g++
 am__include = include
 am__leading_dot = .
 am__quote = 
@@ -321,7 +348,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = $(SHELL) /home/ger/prj/3actual/crm114-2/m4/install-sh
+install_sh = $(SHELL) /home/ger/prj/3actual/crm114/m4/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 lispdir = ${datarootdir}/emacs/site-lisp
@@ -344,20 +371,8 @@ top_builddir = ..
 top_srcdir = ..
 DISTCLEANFILES = diff/
 CLEANFILES = *.o *~ *.bak
-GZIP_BIN = /usr/bin/gzip
-COMPRESS_BIN = 
-LZMA_BIN = 
-SEVENZIP_BIN = /usr/bin/7z
-TAR_BIN = /bin/tar
-SHAR_BIN = /usr/bin/shar
-BZIP2_BIN = /usr/bin/bzip2
-ZIP_BIN = /usr/bin/zip
-CVS2CL_BIN = 
-UNCRUSTIFY_BIN = /usr/local/bin/uncrustify
-DIFF_BIN = /usr/bin/diff
-HTMLTIDY_BIN = /usr/bin/tidy
-TAR_CMDLINE = ${TAR_BIN} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20080502-BlameJason-Ger-2423
+TAR_CMDLINE = ${TAR} cf - "$$tardir"
+ARCHIVE_BASE_NAME = crm114-20080630-BlameVT-Ger-3366
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #
@@ -368,7 +383,7 @@ DATE = `date +%Y_%m_%d_%H_%M_%S`
 #     What version is this software (PLEASE don't change this just 
 #     to mess with my brain. - wsy)
 #
-#VERSION = 20080502-BlameJason
+#VERSION = 20080630-BlameVT
 PREV_VERSION = 20080317-BlameJoeLangeway_VT
 #INSTALLFLAGS += -m 755
 #
@@ -504,13 +519,23 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
 	crm_stats.c crm_expr_sks.c \
-	crm_expr_svm.c crm_expr_fscm.c \
+	crm_expr_svm.c crm_fast_substring_compression.c \
 	crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c
+	crm_versioning.c crm_core_profiling.c \
+	crm_osb_markovian_alt.c crm_osb_bayes_alt.c crm_osb_hyperspace_alt.c \
+	crm_osb_winnow_alt.c crm_osbf_bayes_alt.c
+
+CFILES_4_BMP_PROF = \
+	crm_bmp_image_io.cpp crm_bmp_prof_collect.cpp \
+	crm_bmp_prof_report.cpp \
+	crm_bmp_prof_scan.cpp crm_bmp_prof_utils.cpp
 
 HFILES = crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h config.h \
-	config_vanilla_UNIX_sys_defaults.h crm_mjt_qsort.h
+	config_vanilla_UNIX_sys_defaults.h crm_mjt_qsort.h \
+	crm_pshpack2.h crm_pshpack1.h crm_pshpack4.h crm_poppack.h \
+	crm_bmp_prof.h \
+	../win32/config_win32.h
 
 EXTRA_DEPS = Makefile
 OFILES = crm_compiler.o crm_errorhandlers.o \
@@ -525,13 +550,15 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
 	crm_preprocessor.o crmregex_gnu.o crmregex_tre.o \
-	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
+	crm_expr_sks.o crm_stats.o crm_expr_svm.o \
+	crm_fast_substring_compression.o \
 	crm_generic_port.o crm_stdio_port.o \
-	crm_versioning.o
+	crm_versioning.o crm_core_profiling.o \
+	crm_osb_markovian_alt.o crm_osb_bayes_alt.o crm_osb_hyperspace_alt.o \
+	crm_osb_winnow_alt.o crm_osbf_bayes_alt.o 
 
-UTILFILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c \
-	testvectok.c crm_test_hashes.c \
-	crm_test_hashes.h
+UTIL_C_FILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c \
+	testvectok.c crm_bmp_prof_main.cpp
 
 CRMFILES = mailfilter.crm mailfilter.cf \
 	mailreaver.crm mailtrainer.crm \
@@ -581,10 +608,10 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	$(MEGATESTFILES) megatest_ng.sh 
 
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
-	$(UTILFILES) \
 	$(CRMFILES) \
 	$(TEXTFILES) \
-	config_vanilla_UNIX_sys_defaults.h.in
+	config_vanilla_UNIX_sys_defaults.h.in \
+	../win32/config_win32.h.in
 
 crm114_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) crm_main.c
 cssutil_SOURCES = cssutil.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
@@ -592,18 +619,17 @@ osbf_util_SOURCES = osbf-util.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 cssdiff_SOURCES = cssdiff.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 cssmerge_SOURCES = cssmerge.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 testvectok_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) testvectok.c
-crm_test_hashes_SOURCES = $(HFILES) $(EXTRA_DEPS) crm_test_hashes.c
+crm_bmp_prof_SOURCES = crm_bmp_prof_main.cpp $(CFILES_4_BMP_PROF) $(CFILES) $(HFILES) $(EXTRA_DEPS)
 
 # see for 'ELCFILES=' the documentation at http://www.gnu.org/software/automake/manual/automake.html#Emacs-Lisp
 dist_lisp_LISP = crm114-mode.el
 ELCFILES = 
-.SUFFIXES = .c .o
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+.SUFFIXES: .c .cpp .o .obj
+$(srcdir)/Makefile.in: # $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -628,9 +654,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure:  $(am__configure_deps)
+$(top_srcdir)/configure: # $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+$(ACLOCAL_M4): # $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
 config.h: stamp-h1
@@ -642,7 +668,7 @@ config.h: stamp-h1
 stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status src/config.h
-$(srcdir)/config.h.in:  $(am__configure_deps) 
+$(srcdir)/config.h.in: # $(am__configure_deps) 
 	cd $(top_srcdir) && $(AUTOHEADER)
 	rm -f stamp-h1
 	touch $@
@@ -684,9 +710,9 @@ clean-noinstPROGRAMS:
 crm114$(EXEEXT): $(crm114_OBJECTS) $(crm114_DEPENDENCIES) 
 	@rm -f crm114$(EXEEXT)
 	$(LINK) $(crm114_OBJECTS) $(crm114_LDADD) $(LIBS)
-crm_test_hashes$(EXEEXT): $(crm_test_hashes_OBJECTS) $(crm_test_hashes_DEPENDENCIES) 
-	@rm -f crm_test_hashes$(EXEEXT)
-	$(LINK) $(crm_test_hashes_OBJECTS) $(crm_test_hashes_LDADD) $(LIBS)
+crm_bmp_prof$(EXEEXT): $(crm_bmp_prof_OBJECTS) $(crm_bmp_prof_DEPENDENCIES) 
+	@rm -f crm_bmp_prof$(EXEEXT)
+	$(CXXLINK) $(crm_bmp_prof_OBJECTS) $(crm_bmp_prof_LDADD) $(LIBS)
 cssdiff$(EXEEXT): $(cssdiff_OBJECTS) $(cssdiff_DEPENDENCIES) 
 	@rm -f cssdiff$(EXEEXT)
 	$(LINK) $(cssdiff_OBJECTS) $(cssdiff_LDADD) $(LIBS)
@@ -710,7 +736,14 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/crm_bit_entropy.Po
+include ./$(DEPDIR)/crm_bmp_image_io.Po
+include ./$(DEPDIR)/crm_bmp_prof_collect.Po
+include ./$(DEPDIR)/crm_bmp_prof_main.Po
+include ./$(DEPDIR)/crm_bmp_prof_report.Po
+include ./$(DEPDIR)/crm_bmp_prof_scan.Po
+include ./$(DEPDIR)/crm_bmp_prof_utils.Po
 include ./$(DEPDIR)/crm_compiler.Po
+include ./$(DEPDIR)/crm_core_profiling.Po
 include ./$(DEPDIR)/crm_correlate.Po
 include ./$(DEPDIR)/crm_css_maintenance.Po
 include ./$(DEPDIR)/crm_debugger.Po
@@ -721,7 +754,6 @@ include ./$(DEPDIR)/crm_expr_alter.Po
 include ./$(DEPDIR)/crm_expr_classify.Po
 include ./$(DEPDIR)/crm_expr_clump.Po
 include ./$(DEPDIR)/crm_expr_file_io.Po
-include ./$(DEPDIR)/crm_expr_fscm.Po
 include ./$(DEPDIR)/crm_expr_isolate.Po
 include ./$(DEPDIR)/crm_expr_match.Po
 include ./$(DEPDIR)/crm_expr_sks.Po
@@ -729,22 +761,27 @@ include ./$(DEPDIR)/crm_expr_svm.Po
 include ./$(DEPDIR)/crm_expr_syscall.Po
 include ./$(DEPDIR)/crm_expr_translate.Po
 include ./$(DEPDIR)/crm_expr_window.Po
+include ./$(DEPDIR)/crm_fast_substring_compression.Po
 include ./$(DEPDIR)/crm_generic_port.Po
 include ./$(DEPDIR)/crm_main.Po
 include ./$(DEPDIR)/crm_markovian.Po
 include ./$(DEPDIR)/crm_math_exec.Po
 include ./$(DEPDIR)/crm_neural_net.Po
 include ./$(DEPDIR)/crm_osb_bayes.Po
+include ./$(DEPDIR)/crm_osb_bayes_alt.Po
 include ./$(DEPDIR)/crm_osb_hyperspace.Po
+include ./$(DEPDIR)/crm_osb_hyperspace_alt.Po
+include ./$(DEPDIR)/crm_osb_markovian_alt.Po
 include ./$(DEPDIR)/crm_osb_winnow.Po
+include ./$(DEPDIR)/crm_osb_winnow_alt.Po
 include ./$(DEPDIR)/crm_osbf_bayes.Po
+include ./$(DEPDIR)/crm_osbf_bayes_alt.Po
 include ./$(DEPDIR)/crm_osbf_maintenance.Po
 include ./$(DEPDIR)/crm_preprocessor.Po
 include ./$(DEPDIR)/crm_stats.Po
 include ./$(DEPDIR)/crm_stdio_port.Po
 include ./$(DEPDIR)/crm_stmt_parser.Po
 include ./$(DEPDIR)/crm_str_funcs.Po
-include ./$(DEPDIR)/crm_test_hashes.Po
 include ./$(DEPDIR)/crm_var_hash_table.Po
 include ./$(DEPDIR)/crm_vector_tokenize.Po
 include ./$(DEPDIR)/crm_versioning.Po
@@ -770,6 +807,20 @@ include ./$(DEPDIR)/testvectok.Po
 #	source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+.cpp.o:
+	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	source='$<' object='$@' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXXCOMPILE) -c -o $@ $<
+
+.cpp.obj:
+	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	source='$<' object='$@' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 elc-stamp: $(LISP)
 	@echo 'WARNING: Warnings can be ignored. :-)'
@@ -1223,7 +1274,7 @@ crm_expr_sks.o: crm_expr_sks.c \
 crm_expr_svm.o: crm_expr_svm.c \
 	$(HFILES) $(EXTRA_DEPS)
 
-crm_expr_fscm.o: crm_expr_fscm.c \
+crm_fast_substring_compression.o: crm_fast_substring_compression.c \
 	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_clump.o: crm_expr_clump.c \
@@ -1274,9 +1325,6 @@ cssmerge.o: cssmerge.c  \
 testvectok.o: testvectok.c  \
 	$(HFILES) $(EXTRA_DEPS)
 
-crm_test_hashes.o: crm_test_hashes.c crm_test_hashes.h \
-	$(HFILES) $(EXTRA_DEPS)
-
 crm_generic_port.o: crm_generic_port.c \
 	$(HFILES) $(EXTRA_DEPS)
 
@@ -1286,73 +1334,41 @@ crm_stdio_port.o: crm_stdio_port.c \
 crm_versioning.o: crm_versioning.c \
 	$(HFILES) $(EXTRA_DEPS)
 
-# cssutil$(EXEEXT): cssutil.o crm_css_maintenance.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-# 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
-# 		crm_css_maintenance.o \
-# 		crm_errorhandlers.o \
-# 		crm_str_funcs.o \
-# 		crm_generic_port.o \
-# 		crm_stdio_port.o \
-# 		crm_versioning.o \
-# 		-o cssutil$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# osbf-util$(EXEEXT): osbf-util.o crm_osbf_maintenance.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-# 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
-# 		crm_str_funcs.o \
-# 		crm_errorhandlers.o \
-# 		crm_osbf_maintenance.o \
-# 		crm_generic_port.o \
-# 		crm_stdio_port.o \
-# 		crm_versioning.o \
-# 		-o osbf-util$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# cssdiff$(EXEEXT): cssdiff.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-# 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
-# 		crm_errorhandlers.o \
-# 		crm_str_funcs.o \
-# 		crm_generic_port.o \
-# 		crm_stdio_port.o \
-# 		crm_versioning.o \
-# 		-o cssdiff$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# cssmerge$(EXEEXT): cssmerge.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-# 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
-# 		crm_str_funcs.o \
-# 		crm_errorhandlers.o \
-# 		crm_generic_port.o \
-# 		crm_stdio_port.o \
-# 		crm_versioning.o \
-# 		-o cssmerge$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# 
-# testvectok$(EXEEXT): testvectok.o $(OFILES)
-# 	$(CC) $(LDFLAGS) $(LIBS) testvectok.o \
-# 		$(OFILES) \
-# 		-o testvectok$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# 
-# crm_test_hashes$(EXEEXT): crm_test_hashes.o 
-# 	$(CC) $(LDFLAGS) $(LIBS) crm_test_hashes.o \
-# 		-o crm_test_hashes$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
+crm_core_profiling.o: crm_core_profiling.c \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_osb_markovian_alt.o: crm_osb_markovian_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_osb_bayes_alt.o: crm_osb_bayes_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_osb_hyperspace_alt.o: crm_osb_hyperspace_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_osb_winnow_alt.o: crm_osb_winnow_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_osbf_bayes_alt.o: crm_osbf_bayes_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_main.o: crm_bmp_prof_main.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_image_io.o: crm_bmp_image_io.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_collect.o: crm_bmp_prof_collect.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_report.o: crm_bmp_prof_report.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_scan.o: crm_bmp_prof_scan.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_utils.o: crm_bmp_prof_utils.cpp \
+	$(HFILES) $(EXTRA_DEPS)
 
 clean-local:
 	-rm -f crm114$(EXEEXT)
@@ -1362,6 +1378,7 @@ clean-local:
 	-rm -f cssmerge$(EXEEXT)
 	-rm -f testvectok$(EXEEXT)
 	-rm -f crm_test_hashes$(EXEEXT)
+	-rm -f crm_bmp_prof$(EXEEXT)
 	-rm -f crm114_gnu$(EXEEXT)
 	-rm -f crm114_tre$(EXEEXT)
 	-rm -f crm114
@@ -1371,6 +1388,7 @@ clean-local:
 	-rm -f cssmerge
 	-rm -f testvectok
 	-rm -f crm_test_hashes
+	-rm -f crm_bmp_prof
 	-rm -f crm114_gnu
 	-rm -f crm114_tre
 	-rm -f *.o
@@ -1472,12 +1490,12 @@ megatest: crm114$(EXEEXT) megatest.sh megatest_knowngood.log $(MEGATESTFILES)
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="
 	$(E) "=============================================================="
-	$(DIFF_BIN) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+	$(DIFF) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
-	$(DIFF_BIN) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+	$(DIFF) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 
 megatest_ng: crm114$(EXEEXT) megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.log
 	$(E) ""
@@ -1501,12 +1519,12 @@ megatest_ng: crm114$(EXEEXT) megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="
 	$(E) "=============================================================="
-	$(DIFF_BIN) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(DIFF) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
-	$(DIFF_BIN) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(DIFF) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
 
 cssfiles: spam.dir good.dir
 	$(E) ""
@@ -1528,8 +1546,8 @@ cssfiles: spam.dir good.dir
 	$(E) "   Here we go..."
 	$(E) ""
 	$(E) "   MUCH STUFF DEPRECATED!!!  Use mailreaver.crm instead..."
-	$(srcdir)/cssutil -b -r spam.css
-	$(srcdir)/cssutil -b -r nonspam.css
+	$(builddir)/cssutil -b -r spam.css
+	$(builddir)/cssutil -b -r nonspam.css
 	cp spam.css spam__$(DATE).txt
 	cp nonspam.css nonspam__$(DATE).txt
 	$(E) ""
@@ -1544,21 +1562,31 @@ cssfiles: spam.dir good.dir
 	$(E) "   You may now delete these files with impunity, or you may "
 	$(E) "   choose to keep them around as backup."
 
-rsync:  
+rsync: $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) $(CRMFILES) $(TEXTFILES) $(EXTRA_DIST) \
+		config.h.in \
+		config_vanilla_UNIX_sys_defaults.h.in \
+		../win32/config_win32.h.in
 	rsync -zrltDv \
-	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) \
+	  $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) $(CRMFILES) $(TEXTFILES) $(EXTRA_DIST) \
+		config.h.in \
+		config_vanilla_UNIX_sys_defaults.h.in \
+		../win32/config_win32.h.in
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
 
-diff: diff_em.sh $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) $(EXTRA_DIST) crm_main.c
-	-(sh ./diff_em.sh );
+diff: diff_em.sh $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) $(CRMFILES) $(TEXTFILES) $(EXTRA_DIST)
+	-( sh ./diff_em.sh );
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
 # indent -bad -bap -bl -bli0 -bls -cbi4 -cdw -cli0 -di8 -hnl -i4 -l80 -lp -nbc -nce -ncs -npcs -nprs -npsl -nsaf -nsai -nsaw -nsob -nut -pi4 -sc -ss -T index_t -T hitcount_t -T regex_t -T regmatch_t -T regamatch_t -T regaparams_t -T Qitem_t -T regoff_t -T tre_char_t -T COOCCURRENCE_SCORE_TYPE *.c *.h
-reindent: indent.sh
-	-( sh ./indent.sh $(CFILES) $(HFILES) )
-
-#.c.o:
-#	$(COMPILE) -c $< -o $@
+reindent: indent.sh $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) \
+		config.h.in \
+		config_vanilla_UNIX_sys_defaults.h.in \
+		../win32/config_win32.h.in
+	-( sh ./indent.sh $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) \
+		config.h.in \
+		config_vanilla_UNIX_sys_defaults.h.in \
+		../win32/config_win32.h.in \
+	 )
 
 .PHONY: reindent depend rsync done_all megatest help clean install uninstall-hook uninstall test megatest_ng megatest
 

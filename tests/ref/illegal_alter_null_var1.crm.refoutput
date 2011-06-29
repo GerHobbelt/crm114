@@ -1,0 +1,11 @@
+TEST SCRIPT + COMMANDLINE:
+illegal_alter_null_var1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+yo! 'FUBAR'
+

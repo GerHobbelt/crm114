@@ -44,7 +44,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int till_eof;
     int use_readline;
     int file_was_fopened;
-	int filesectlen;
+    int filesectlen;
 
     //         a couple of vars to bash upon
     int i, j;
@@ -74,18 +74,18 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //    get the list of variable names
     //
     tvlen = crm_get_pgm_arg(temp_vars, MAX_PATTERN, apb->p1start, apb->p1len);
-    tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_PATTERN);
-	CRM_ASSERT(tvlen < MAX_PATTERN);
+    tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(tvlen < MAX_PATTERN);
 
-	if (!crm_nextword(temp_vars, tvlen, 0, &tvstart, &tvlen))
+    if (!crm_nextword(temp_vars, tvlen, 0, &tvstart, &tvlen))
     {
-		// not a valid variable found in the arg.
+        // not a valid variable found in the arg.
         strcpy(temp_vars, ":_dw:");
         tvlen = (int)strlen(":_dw:");
-		tvstart = 0;
+        tvstart = 0;
     }
-	else if (tvlen < 2)
-	{
+    else if (tvlen < 2)
+    {
         nonfatalerror("The variable you're asking me to load the INPUT into has an utterly bogus name. ",
                 "So I'll ignore the whole statement.");
         return 0;
@@ -93,26 +93,26 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
     if (internal_trace)
-	{
+    {
         fprintf(stderr, "  inputting to var (len=%d): >>>%.*s<<<\n", tvlen, tvlen, temp_vars + tvstart);
-	}
+    }
 
     //   and what file to get it from...
     //
     filesectlen = crm_get_pgm_arg(filename, MAX_FILE_NAME_LEN, apb->b1start, apb->b1len);
     if (crm_nextword(filename, filesectlen, 0, &i, &j))
     {
-		if (j >= MAX_FILE_NAME_LEN)
-		{
-			nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a filename which is too long (len = %d) "
-				"while the maximum allowed size is %d.",
-					j,
-MAX_FILE_NAME_LEN-1);
-			return -1;
-		}
+        if (j >= MAX_FILE_NAME_LEN)
+        {
+            nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a filename which is too long (len = %d) "
+                                        "while the maximum allowed size is %d.",
+                    j,
+                    MAX_FILE_NAME_LEN - 1);
+            return -1;
+        }
         memmove(ifn, &filename[i], j);
-        fnlen = crm_nexpandvar(ifn, j, MAX_FILE_NAME_LEN);
-		CRM_ASSERT(fnlen < MAX_FILE_NAME_LEN);
+        fnlen = crm_nexpandvar(ifn, j, MAX_FILE_NAME_LEN, vht, tdw);
+        CRM_ASSERT(fnlen < MAX_FILE_NAME_LEN);
         ifn[fnlen] = 0;
         if (user_trace)
             fprintf(stderr, "  from filename >>>%s<<<\n", ifn);
@@ -132,27 +132,27 @@ MAX_FILE_NAME_LEN-1);
     fileoffsetlen = 0;
     if (crm_nextword(filename, filesectlen, i + j, &i, &j))
     {
-		if (j >= MAX_FILE_NAME_LEN)
-		{
-			nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a fileoffset expression which is too long (len = %d) "
-				"while the maximum allowed size is %d.",
-					j,
-MAX_FILE_NAME_LEN-1);
-			return -1;
-		}
+        if (j >= MAX_FILE_NAME_LEN)
+        {
+            nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a fileoffset expression which is too long (len = %d) "
+                                        "while the maximum allowed size is %d.",
+                    j,
+                    MAX_FILE_NAME_LEN - 1);
+            return -1;
+        }
         memmove(fileoffset, &filename[i], j);
-        fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
+        fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
         fileoffset[fileoffsetlen] = 0;
         if (1 != sscanf(fileoffset, "%d", &offset))
         {
             nonfatalerror_ex(SRC_LOC(), "Failed to decode the input expression pre-IO file offset number '%s'.",
-                fileoffset);
+                    fileoffset);
         }
         if (user_trace)
-		{
+        {
             fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
-                fileoffset, offset);
-		}
+                    fileoffset, offset);
+        }
     }
     // else default: 0
 
@@ -161,16 +161,16 @@ MAX_FILE_NAME_LEN-1);
     iolen = 0;
     if (crm_nextword(filename, filesectlen, i + j, &i, &j))
     {
-		if (j >= MAX_FILE_NAME_LEN)
-		{
-			nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a length expression which is too long (len = %d) "
-				"while the maximum allowed size is %d.",
-					j,
-MAX_FILE_NAME_LEN-1);
-			return -1;
-		}
+        if (j >= MAX_FILE_NAME_LEN)
+        {
+            nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a length expression which is too long (len = %d) "
+                                        "while the maximum allowed size is %d.",
+                    j,
+                    MAX_FILE_NAME_LEN - 1);
+            return -1;
+        }
         memmove(fileiolen, &filename[i], j);
-        fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
+        fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
         fileiolen[fileiolenlen] = 0;
         CRM_ASSERT(*fileiolen != 0);
         if (1 != sscanf(fileiolen, "%d", &iolen))
@@ -183,7 +183,7 @@ MAX_FILE_NAME_LEN-1);
             iolen = data_window_size;
         if (user_trace)
             fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
-                fileiolen, iolen);
+                    fileiolen, iolen);
     }
     else
     {
@@ -191,7 +191,7 @@ MAX_FILE_NAME_LEN-1);
         iolen = data_window_size;
     }
 
-	// [i_a] GROT GROT GROT: no checks if there's any cruft beyond the third param! :-(
+    // [i_a] GROT GROT GROT: no checks if there's any cruft beyond the third param! :-(
 
     if (user_trace)
         fprintf(stderr, "Opening file %s for file I/O (reading)\n", ifn);
@@ -215,65 +215,65 @@ MAX_FILE_NAME_LEN-1);
             if (fp == NULL)
             {
                 fatalerror_ex(SRC_LOC(),
-                    "For some reason, I was unable to read-open the file named '%s' (expanded from '%s'): error = %d(%s)",
-                    ifn,
-                    filename,
-                    errno,
-                    errno_descr(errno));
+                        "For some reason, I was unable to read-open the file named '%s' (expanded from '%s'): error = %d(%s)",
+                        ifn,
+                        filename,
+                        errno,
+                        errno_descr(errno));
                 goto input_no_open_bailout;
             }
         }
     }
 
     if (user_trace)
-	{
-		struct stat st = {0};
-		int stret;
+    {
+        struct stat st = { 0 };
+        int stret;
 
-		stret = fstat(fileno(fp), &st);
-		fprintf(stderr, "Opened file '%s' for file I/O (reading): handle %d (%s) (%d) - "
-			"stat.stret = %ld, "
-        "stat.st_dev = %ld, "
-        "stat.st_ino = %ld, "
-        "stat.st_mode = %ld, "
-        "stat.st_nlink = %ld, "
-        "stat.st_uid = %ld, "
-        "stat.st_gid = %ld, "
-        "stat.st_rdev = %ld, "
-        "stat.st_size = %ld, "
-        "stat.st_atime = %ld, "
-        "stat.st_mtime = %ld, "
-        "stat.st_ctim = %ld"
-			"\n", 
-			ifn,
-			fileno(fp),
-			(fp == os_stdin() ? "! stdin !" : "FILE"),
-			file_was_fopened,
-			(long)stret,
-        (long)st.st_dev,
-        (long)st.st_ino,
-        (long)st.st_mode,
-        (long)st.st_nlink,
-        (long)st.st_uid,
-        (long)st.st_gid,
-        (long)st.st_rdev,
-        (long)st.st_size,
-        (long)st.st_atime,
-        (long)st.st_mtime,
-        (long)st.st_ctime
-			);
-	}
+        stret = fstat(fileno(fp), &st);
+        fprintf(stderr, "Opened file '%s' for file I/O (reading): handle %d (%s) (%d) - "
+                        "stat.stret = %ld, "
+                        "stat.st_dev = %ld, "
+                        "stat.st_ino = %ld, "
+                        "stat.st_mode = %ld, "
+                        "stat.st_nlink = %ld, "
+                        "stat.st_uid = %ld, "
+                        "stat.st_gid = %ld, "
+                        "stat.st_rdev = %ld, "
+                        "stat.st_size = %ld, "
+                        "stat.st_atime = %ld, "
+                        "stat.st_mtime = %ld, "
+                        "stat.st_ctim = %ld"
+                        "\n",
+                ifn,
+                fileno(fp),
+                (fp == os_stdin() ? "! stdin !" : "FILE"),
+                file_was_fopened,
+                (long)stret,
+                (long)st.st_dev,
+                (long)st.st_ino,
+                (long)st.st_mode,
+                (long)st.st_nlink,
+                (long)st.st_uid,
+                (long)st.st_gid,
+                (long)st.st_rdev,
+                (long)st.st_size,
+                (long)st.st_atime,
+                (long)st.st_mtime,
+                (long)st.st_ctime
+               );
+    }
 
     done = 0;
 
 #if 0
-	if (!crm_nextword(temp_vars, tvlen, 0,  &vstart, &vlen) || vlen == 0)
+    if (!crm_nextword(temp_vars, tvlen, 0,  &vstart, &vlen) || vlen == 0)
     {
         done = 1;
     }
     else
 #endif
-	{
+    {
         //        must make a copy of the varname.
         //
         char vname[MAX_VARNAME];
@@ -289,7 +289,7 @@ MAX_FILE_NAME_LEN-1);
              || isatty(fileno(fp))) && offset != 0)
         {
             nonfatalerror("Hmmm, a file offset on stdin or tty won't do much. ",
-                "I'll ignore it for now.");
+                    "I'll ignore it for now.");
         }
         else if (offset != 0)
         {
@@ -298,15 +298,15 @@ MAX_FILE_NAME_LEN-1);
                 if (errno == EBADF)
                 {
                     nonfatalerror_ex(SRC_LOC(), "Dang, seems that this file '%s' isn't fseek()able!",
-                        filename);
+                            filename);
                 }
                 else
                 {
                     nonfatalerror_ex(SRC_LOC(),
-                        "Dang, seems that this file '%s' isn't fseek()able: error = %d(%s)",
-                        filename,
-                        errno,
-                        errno_descr(errno));
+                            "Dang, seems that this file '%s' isn't fseek()able: error = %d(%s)",
+                            filename,
+                            errno,
+                            errno_descr(errno));
                 }
             }
         }
@@ -317,14 +317,14 @@ MAX_FILE_NAME_LEN-1);
         {
             char *chartemp;
             chartemp = readline("");
-		if (!chartemp)
-{
-			chartemp = strdup(""); // see the UNIX man page: readline() MAY return NULL!
- }
-           if (strlen(chartemp) > data_window_size - 1)
+            if (!chartemp)
+            {
+                chartemp = strdup("");        // see the UNIX man page: readline() MAY return NULL!
+            }
+            if (strlen(chartemp) > data_window_size - 1)
             {
                 nonfatalerror("Dang, this line of text is way too long: ",
-                    chartemp);
+                        chartemp);
             }
             strncpy(inbuf, chartemp, data_window_size);
             inbuf[data_window_size - 1] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
@@ -348,7 +348,7 @@ MAX_FILE_NAME_LEN-1);
                     clearerr(fp);
                 while (!feof(fp)
                        && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
-		                // [i_a] how about MAC and PC (CR and CRLF instead of LF as line terminators)? Quick fix here: */
+                       // [i_a] how about MAC and PC (CR and CRLF instead of LF as line terminators)? Quick fix here: */
                        && (till_eof || (ichar == 0 || (inbuf[ichar - 1] != '\r' && inbuf[ichar - 1] != '\n')))
                        && ichar <= iolen)
                 {
@@ -363,7 +363,7 @@ MAX_FILE_NAME_LEN-1);
                     ichar--; //   get rid of any present newline
                 // [i_a] how about MAC and PC (CR and CRLF instead of LF as line terminators)? Quick fix here: */
                 if (ichar > 0 && inbuf[ichar] == '\r')
-                    ichar--; //   get rid of any present carriage return too (CRLF for MSDOS)
+                    ichar--;      //   get rid of any present carriage return too (CRLF for MSDOS)
                 inbuf[ichar] = 0; // and put a null on the end of it.
             }
             else
@@ -372,26 +372,26 @@ MAX_FILE_NAME_LEN-1);
                 //    a single I/O if we can.
                 ichar = 0;
                 if (feof(fp))
-                    clearerr(fp);                   // reset any EOF
+                    clearerr(fp);                        // reset any EOF
                 ichar = (int)fread(inbuf, 1, iolen, fp); // do a block I/O
-				if (ferror(fp))
-				{
-					//     and close the input file if it's not stdin.
-					if (file_was_fopened)
-					{
-						fclose(fp);
-						fp = NULL;
-						file_was_fopened = 0;
-					}
+                if (ferror(fp))
+                {
+                    //     and close the input file if it's not stdin.
+                    if (file_was_fopened)
+                    {
+                        fclose(fp);
+                        fp = NULL;
+                        file_was_fopened = 0;
+                    }
 
-					fatalerror_ex(SRC_LOC(),
-						"For some reason, I got an error while trying to read data from the file named '%s' (expanded from '%s'): error = %d(%s)",
-						ifn,
-						filename,
-						errno,
-						errno_descr(errno));
-					goto input_no_open_bailout;
-				}
+                    fatalerror_ex(SRC_LOC(),
+                            "For some reason, I got an error while trying to read data from the file named '%s' (expanded from '%s'): error = %d(%s)",
+                            ifn,
+                            filename,
+                            errno,
+                            errno_descr(errno));
+                    goto input_no_open_bailout;
+                }
                 inbuf[ichar] = 0;                   // null at the end
             }
         }
@@ -435,7 +435,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int fileiolenlen;
     int offset, iolen;
     int file_was_fopened;
-	int filesectlen;
+    int filesectlen;
 
 
 
@@ -446,8 +446,8 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //   What file name?
     //
-    
-	fnam[0] = 0;
+
+    fnam[0] = 0;
     fnlen = 0;
 
     offset = 0;
@@ -458,87 +458,87 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     fileiolen[0] = 0;
     fileiolenlen = 0;
 
-	CRM_ASSERT(apb != NULL);
+    CRM_ASSERT(apb != NULL);
     filesectlen = crm_get_pgm_arg(filename, MAX_FILE_NAME_LEN, apb->b1start, apb->b1len);
     if (crm_nextword(filename, filesectlen, 0, &i, &j))
-	{
-		if (j >= MAX_FILE_NAME_LEN)
-		{
-			nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a filename which is too long (len = %d) "
-				"while the maximum allowed size is %d.",
-					j,
-MAX_FILE_NAME_LEN-1);
-			return -1;
-		}
-    memmove(fnam, &filename[i], j);
-    fnlen = crm_nexpandvar(fnam, j, MAX_FILE_NAME_LEN);
-	CRM_ASSERT(fnlen < MAX_FILE_NAME_LEN);
-    fnam[fnlen] = 0;
-    if (user_trace)
-        fprintf(stderr, "  filename >>>%s<<<\n", fnam);
-
-    //   and what offset we need to do before the I/O...
-    //
-    if (crm_nextword(filename, filesectlen, i + j, &i, &j))
-	{
-		if (j >= MAX_FILE_NAME_LEN)
-		{
-			nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a offset expression which is too long (len = %d) "
-				"while the maximum allowed size is %d.",
-					j,
-MAX_FILE_NAME_LEN-1);
-			return -1;
-		}
-    memmove(fileoffset, &filename[i], j);
-    fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
-    fileoffset[fileoffsetlen] = 0;
-    if (*fileoffset && 1 != sscanf(fileoffset, "%d", &offset))
     {
-            return nonfatalerror("Failed to decode the output expression pre-IO file offset number: ",
-                fileoffset);
-    }
-    if (user_trace)
-    {
-        fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d\n",
-            fileoffset, offset);
+        if (j >= MAX_FILE_NAME_LEN)
+        {
+            nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a filename which is too long (len = %d) "
+                                        "while the maximum allowed size is %d.",
+                    j,
+                    MAX_FILE_NAME_LEN - 1);
+            return -1;
+        }
+        memmove(fnam, &filename[i], j);
+        fnlen = crm_nexpandvar(fnam, j, MAX_FILE_NAME_LEN, vht, tdw);
+        CRM_ASSERT(fnlen < MAX_FILE_NAME_LEN);
+        fnam[fnlen] = 0;
+        if (user_trace)
+            fprintf(stderr, "  filename >>>%s<<<\n", fnam);
+
+        //   and what offset we need to do before the I/O...
+        //
+        if (crm_nextword(filename, filesectlen, i + j, &i, &j))
+        {
+            if (j >= MAX_FILE_NAME_LEN)
+            {
+                nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a offset expression which is too long (len = %d) "
+                                            "while the maximum allowed size is %d.",
+                        j,
+                        MAX_FILE_NAME_LEN - 1);
+                return -1;
+            }
+            memmove(fileoffset, &filename[i], j);
+            fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
+            fileoffset[fileoffsetlen] = 0;
+            if (*fileoffset && 1 != sscanf(fileoffset, "%d", &offset))
+            {
+                return nonfatalerror("Failed to decode the output expression pre-IO file offset number: ",
+                        fileoffset);
+            }
+            if (user_trace)
+            {
+                fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d\n",
+                        fileoffset, offset);
+            }
+
+            //   and how many bytes to read
+            //
+            if (crm_nextword(filename, filesectlen, i + j, &i, &j))
+            {
+                if (j >= MAX_FILE_NAME_LEN)
+                {
+                    nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a length expression which is too long (len = %d) "
+                                                "while the maximum allowed size is %d.",
+                            j,
+                            MAX_FILE_NAME_LEN - 1);
+                    return -1;
+                }
+                memmove(fileiolen, &filename[i], j);
+                fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
+                fileiolen[fileiolenlen] = 0;
+                if (*fileiolen && 1 != sscanf(fileiolen, "%d", &iolen))
+                {
+                    return nonfatalerror("Failed to decode the output expression number of bytes to read: ", fileiolen);
+                }
+                if (iolen < 0)
+                    iolen = 0;
+                else if (! * fileiolen || iolen > data_window_size)
+                    iolen = data_window_size;
+                if (user_trace)
+                {
+                    fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
+                            fileiolen, iolen);
+                }
+            }
+        }
     }
 
-    //   and how many bytes to read
-    //
-    if (crm_nextword(filename, filesectlen, i + j, &i, &j))
-	{
-		if (j >= MAX_FILE_NAME_LEN)
-		{
-			nonfatalerror_ex(SRC_LOC(), "OUTPUT statement comes with a length expression which is too long (len = %d) "
-				"while the maximum allowed size is %d.",
-					j,
-MAX_FILE_NAME_LEN-1);
-			return -1;
-		}
-    memmove(fileiolen, &filename[i], j);
-    fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
-    fileiolen[fileiolenlen] = 0;
-    if (*fileiolen && 1 != sscanf(fileiolen, "%d", &iolen))
-    {
-            return nonfatalerror("Failed to decode the output expression number of bytes to read: ", fileiolen);
-    }
-    if (iolen < 0)
-        iolen = 0;
-    else if (! * fileiolen || iolen > data_window_size)
-        iolen = data_window_size;
-    if (user_trace)
-    {
-        fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
-            fileiolen, iolen);
-    }
-	}
-	}
-	}
+    // [i_a] GROT GROT GROT  and of course here too, there's no check what-so-ever to see
+    // if there's any cruft in the parameter beyond the third item above.
 
-	// [i_a] GROT GROT GROT  and of course here too, there's no check what-so-ever to see 
-	// if there's any cruft in the parameter beyond the third item above.
-
-	outf = stdout;
+    outf = stdout;
     file_was_fopened = 0;
     if (fnlen > 0)
     {
@@ -590,7 +590,7 @@ MAX_FILE_NAME_LEN-1);
     if (outf == 0)
     {
         fatalerror("For some reason, I was unable to write-open the file named",
-            fnam);
+                fnam);
     }
     else
     {
@@ -600,7 +600,7 @@ MAX_FILE_NAME_LEN-1);
         if (internal_trace)
             fprintf(stderr, "  outputting with pattern (len = %d) %.*s\n", outtextlen, outtextlen, outbuf);
         //      Do variable substitution on outbuf.
-        outtextlen = crm_nexpandvar(outbuf, outtextlen, data_window_size);
+        outtextlen = crm_nexpandvar(outbuf, outtextlen, data_window_size, vht, tdw);
 
         //      Do the seek if necessary
         //
@@ -610,7 +610,7 @@ MAX_FILE_NAME_LEN-1);
             if ((!file_was_fopened || isatty(fileno(outf))) && offset != 0)
             {
                 nonfatalerror("Hmmm, a file offset on stdout/stderr or tty won't do much. ",
-                    "I'll ignore it for now. ");
+                        "I'll ignore it for now. ");
             }
             else
             {
@@ -636,10 +636,10 @@ MAX_FILE_NAME_LEN-1);
             if (ret != outtextlen)
             {
                 fatalerror_ex(SRC_LOC(),
-					"Could not write %d bytes to file '%s': "
+                        "Could not write %d bytes to file '%s': "
                         "errno = %d(%s)\n",
-                    outtextlen,
-                    fnam,
+                        outtextlen,
+                        fnam,
                         errno,
                         errno_descr(errno));
             }

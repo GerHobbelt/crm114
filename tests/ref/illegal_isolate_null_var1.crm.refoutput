@@ -1,0 +1,25 @@
+TEST SCRIPT + COMMANDLINE:
+illegal_isolate_null_var1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+crm114: *WARNING*
+ The variable you're asking me to ISOLATE  has an utterly bogus name.  I'll ignore the rest of the statement  
+I'll try to keep working.
+This happened at line 14 of file illegal_isolate_null_var1.crm:
+    trap (:r:) //
+(runtime system location: crm_expr_isolate.c(98) in routine: crm_expr_isolate)
+
+STDOUT TEST OUTPUT:
+TRAP:
+crm114: *WARNING*
+ This statement is missing the variable to isolate so I'll just ignore the whole statement. 
+I'll try to keep working.
+This happened at line 7 of file illegal_isolate_null_var1.crm:
+    isolate (::) /FUBAR/
+(runtime system location: crm_expr_isolate.c(55) in routine: crm_expr_isolate)
+
+

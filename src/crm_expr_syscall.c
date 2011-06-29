@@ -23,98 +23,98 @@
 
 
 
-#ifdef WIN32
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
 
 /*
-   Win32 - new syscall handling per 20080401 - no April 1st joke! -:
-
-   The syscall is terminable by a specified timeout; this to prevent
-   indefinite lockup in a syscall, especially useful in those syscalls
-   that try to run UNIX commands in a Windows environment where the
-   UNIX command 'exists' though has a _completely_ different use.
-
-   Example:
-
-   Try running mailreaver's 'syscall /date +%Y%m%d_%H%M%S_%N /' without
-   an extra /Windows-MS/ alternative specified and you can twiddle
-   your thumbs until you've died of old age as Windows 'date.exe' will
-   accept NOTHING ELSE but one of these:
-   
-   - a valid input date (date.exe does not understand the commanline arg
-     there, so it assumes you want to TYPE iN a new system date instead :-(( )
-
-   - an abort (Ctrl-C or other console app abort operation, like taskmgr's
-     'End Process')
-
-   
-   Given this new setup and the fact that the old code, which mimicked 
-   the fork()ing UNIX code at least in _some_ way, would take up significant
-   CPU time polling for output and application termination when low latency
-   timeouts were specified, the code now sees it second major overhaul in
-   less than a month, only to end up at its -hopefully- final incarnation,
-   using OPERLAPPED I/O and a WAITABLE TIMER to provide both the desired
-   sync/async I/O mode without ANY use of polling ANYWHERE, while the timer
-   is there to provide syscall 'abortability' for when the executed commands
-   simply take too long and have become irritants to your operation.
-   
-   For further reading on the technicalities concerned OPERLAPPED ASYNC I/O
-   and WAITABLE TIMERS, please refer to the Microsoft/MSDN documentation.
-
-
-   As a closing note, I'd like to mention that this new approach MIGHT work
-   on Windows ME/98/95, but it has NOT been designed TO DO SO. This means?
-   It means you're VERY probably screwed if you try to run CRM114 on any of 
-   those. But then again, MEMORY MAPPED I/O, used everywhere else in CRM114,
-   is not really featured on those would-be OS's anyhow.
-
-   As we speak, according to Microsoft, Windows 95/98/ME have been gone the 
-   Way Of The Dodo for so long it would be amazing if you even remember there's
-   ever been a thing like that. So there.
-
-
-   DESIGN CONSIDERATIONS:
-
-   This time around, we're ALWAYS going to do ASYNC I/O in syscall. When
-   syscall was specified by the script compiler as being SYNCHRONOUS (no
-   <async> flag specified) it ONLY means, we're going to wait for the ASYNC
-   operation to finish. I.e. when <async> was specified, we'll start the
-   ASYNC I/O operation as usual and then we'll let it rip, while _we_ go
-   on looking for some _new_ stuff to do.
-
-   <keep> will mean we're going to try and keep the handles and process
-   alive, just like in ASYNC mode, but this time, we'll try to remember
-   it's still there the next time we're around this place.
-   
-   <keep> with <async> is apparently not supported on the UNIX side of things
-   today, but on Win32, it could be simply done by queueing the ASYNC I/O
-   operations: extra input specified with a subsequent <keep> call, while
-   any output available is fed into the presented output variable. Ah well...
-*/
+ * Win32 - new syscall handling per 20080401 - no April 1st joke! -:
+ *
+ * The syscall is terminable by a specified timeout; this to prevent
+ * indefinite lockup in a syscall, especially useful in those syscalls
+ * that try to run UNIX commands in a Windows environment where the
+ * UNIX command 'exists' though has a _completely_ different use.
+ *
+ * Example:
+ *
+ * Try running mailreaver's 'syscall /date +%Y%m%d_%H%M%S_%N /' without
+ * an extra /Windows-MS/ alternative specified and you can twiddle
+ * your thumbs until you've died of old age as Windows 'date.exe' will
+ * accept NOTHING ELSE but one of these:
+ *
+ * - a valid input date (date.exe does not understand the commanline arg
+ *   there, so it assumes you want to TYPE iN a new system date instead :-(( )
+ *
+ * - an abort (Ctrl-C or other console app abort operation, like taskmgr's
+ *   'End Process')
+ *
+ *
+ * Given this new setup and the fact that the old code, which mimicked
+ * the fork()ing UNIX code at least in _some_ way, would take up significant
+ * CPU time polling for output and application termination when low latency
+ * timeouts were specified, the code now sees it second major overhaul in
+ * less than a month, only to end up at its -hopefully- final incarnation,
+ * using OPERLAPPED I/O and a WAITABLE TIMER to provide both the desired
+ * sync/async I/O mode without ANY use of polling ANYWHERE, while the timer
+ * is there to provide syscall 'abortability' for when the executed commands
+ * simply take too long and have become irritants to your operation.
+ *
+ * For further reading on the technicalities concerned OPERLAPPED ASYNC I/O
+ * and WAITABLE TIMERS, please refer to the Microsoft/MSDN documentation.
+ *
+ *
+ * As a closing note, I'd like to mention that this new approach MIGHT work
+ * on Windows ME/98/95, but it has NOT been designed TO DO SO. This means?
+ * It means you're VERY probably screwed if you try to run CRM114 on any of
+ * those. But then again, MEMORY MAPPED I/O, used everywhere else in CRM114,
+ * is not really featured on those would-be OS's anyhow.
+ *
+ * As we speak, according to Microsoft, Windows 95/98/ME have been gone the
+ * Way Of The Dodo for so long it would be amazing if you even remember there's
+ * ever been a thing like that. So there.
+ *
+ *
+ * DESIGN CONSIDERATIONS:
+ *
+ * This time around, we're ALWAYS going to do ASYNC I/O in syscall. When
+ * syscall was specified by the script compiler as being SYNCHRONOUS (no
+ * <async> flag specified) it ONLY means, we're going to wait for the ASYNC
+ * operation to finish. I.e. when <async> was specified, we'll start the
+ * ASYNC I/O operation as usual and then we'll let it rip, while _we_ go
+ * on looking for some _new_ stuff to do.
+ *
+ * <keep> will mean we're going to try and keep the handles and process
+ * alive, just like in ASYNC mode, but this time, we'll try to remember
+ * it's still there the next time we're around this place.
+ *
+ * <keep> with <async> is apparently not supported on the UNIX side of things
+ * today, but on Win32, it could be simply done by queueing the ASYNC I/O
+ * operations: extra input specified with a subsequent <keep> call, while
+ * any output available is fed into the presented output variable. Ah well...
+ */
 
 #define CRM_USE_OLD_WIN32_SYCALL_CODE 1
 
 
 
-#if defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
+#if defined (CRM_USE_OLD_WIN32_SYCALL_CODE)
 
 typedef struct
 {
     void  *my_ptr;
     HANDLE to_minion;
     char  *inbuf;
-    int   inlen;
-    int   internal_trace;
-    int   keep_proc;
+    int    inlen;
+    int    internal_trace;
+    int    keep_proc;
 } pusherparams;
 
 typedef struct
 {
     void  *my_ptr;
     HANDLE from_minion;
-    time_t    timeout;
-    time_t   abort_timeout;
-    int   internal_trace;
-    int   keep_proc;
+    time_t timeout;
+    time_t abort_timeout;
+    int    internal_trace;
+    int    keep_proc;
 } suckerparams;
 
 
@@ -130,14 +130,14 @@ unsigned int WINAPI pusher_proc(void *lpParameter)
 
     if (!WriteFile(p->to_minion, p->inbuf, p->inlen, &bytesWritten, NULL))
     {
-		char buf[512];
-		char *s = buf;
+        char buf[512];
+        char *s = buf;
 
-		Win32_syserr_descr(&s, 512, GetLastError(), NULL);
+        Win32_syserr_descr(&s, 512, GetLastError(), NULL);
 
         fprintf(stderr,
-            "The pusher failed to send %d input bytes to the minion: %d(%s)\n",
-            (int)p->inlen, GetLastError(), s);
+                "The pusher failed to send %d input bytes to the minion: %d(%s)\n",
+                (int)p->inlen, GetLastError(), s);
     }
     free(p->inbuf);
     p->inbuf = NULL;
@@ -195,7 +195,7 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
         status = GetExitCodeProcess(p->from_minion, &exit_code);
         error = GetLastError();
         if (internal_trace)
-            fprintf(stderr, "GetExitCodeProcess() = %d/%d, %d\n", status, error, exit_code);
+            fprintf(stderr, "GetExitCodeProcess() = %d/%d, %ld\n", status, error, (long)exit_code);
 
         memset(&large_int, 0, sizeof(large_int));
         status = GetFileSizeEx(p->from_minion, &large_int);
@@ -237,7 +237,7 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
             if (large_int.HighPart || large_int.LowPart)
             {
                 if (!ReadFile(p->from_minion, obuf,
-                        OUTBUF_SIZE, &bytesRead, NULL))
+                            OUTBUF_SIZE, &bytesRead, NULL))
                 {
                     error = GetLastError();
                     switch (error)
@@ -272,8 +272,8 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
         if (eof)
             break;
 
-		if (bytesRead == 0)
-			Sleep((DWORD)p->timeout);
+        if (bytesRead == 0)
+            Sleep((DWORD)p->timeout);
 
         status = WaitForInputIdle(p->from_minion, (DWORD)p->timeout);
     }
@@ -335,7 +335,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int cmd_len;
     char keep_buf[MAX_PATTERN];
     int keep_len;
-    char exp_keep_buf[MAX_PATTERN+2];
+    char exp_keep_buf[MAX_PATTERN + 2];
     int exp_keep_len;
     int vstart;
     int vlen;
@@ -347,11 +347,11 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int charsread;
     int to_minion[2];
     int from_minion[2];
-    int minion_exit_status;
+    // int minion_exit_status;
     pid_t pusher;
     pid_t sucker;
     pid_t random_child;
-#elif defined (WIN32)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
     DWORD charsread;
     HANDLE to_minion[2];
     HANDLE from_minion[2];
@@ -360,10 +360,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     pid_t minion;
     int status;
     time_t timeout;
-	time_t abort_timeout;
+    time_t abort_timeout;
     int cnt;
-	double pollcycle_setting = 0.0;
-	double run_timeout_setting = 0.0;
+    double pollcycle_setting = 0.0;
+    double run_timeout_setting = 0.0;
 
 #if defined (HAVE_WAITPID)
     if (user_trace)
@@ -378,14 +378,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     while ((random_child = waitpid(0, &status, WNOHANG)) > 0)
         ;
-#elif defined (WIN32)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
     timeout = MINION_SLEEP_USEC / 1000; // need milliseconds for Sleep()
     if (MINION_SLEEP_USEC > 0 && timeout == 0)
     {
         timeout = 1;
     }
 #endif
-	abort_timeout = 0;
+    abort_timeout = 0;
 
     //    get the flags
     //
@@ -407,35 +407,36 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     CRM_ASSERT(apb != NULL);
     inlen = crm_get_pgm_arg(keep_buf, WIDTHOF(keep_buf), apb->a1start, apb->a1len);
-    inlen = crm_nexpandvar(keep_buf, inlen, MAX_PATTERN);
-	CRM_ASSERT(inlen < MAX_PATTERN); 
-	keep_buf[inlen] = 0;
+    inlen = crm_nexpandvar(keep_buf, inlen, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(inlen < MAX_PATTERN);
+    keep_buf[inlen] = 0;
 
-	done = sscanf(keep_buf, "%lf %lf", &pollcycle_setting, &run_timeout_setting);
-	switch (done)
-	{
-	default:
-		nonfatalerror("Unable to decode pollcycle or abort_timeout for syscall: ", keep_buf);
-		break;
+    done = sscanf(keep_buf, "%lf %lf", &pollcycle_setting, &run_timeout_setting);
+    switch (done)
+    {
+    default:
+        nonfatalerror("Unable to decode pollcycle or abort_timeout for syscall: ", keep_buf);
+        break;
 
-	case 0:
-	case -1:
-		break;
+    case 0:
+    case - 1:
+        break;
 
-	case 1:
-		run_timeout_setting = 0.0;
-	case 2:
-			timeout = (int)ceil(pollcycle_setting * 1000);
-			if (timeout < 1)
-				timeout = 1;
-			abort_timeout = (int)ceil(run_timeout_setting * 1000);
-			if (abort_timeout <= 0)
-				abort_timeout = 0;
-			break;
-	}
+    case 1:
+        run_timeout_setting = 0.0;
 
-			if (timeout < 200)
-				timeout = 200;
+    case 2:
+        timeout = (int)ceil(pollcycle_setting * 1000);
+        if (timeout < 1)
+            timeout = 1;
+        abort_timeout = (int)ceil(run_timeout_setting * 1000);
+        if (abort_timeout <= 0)
+            abort_timeout = 0;
+        break;
+    }
+
+    if (timeout < 200)
+        timeout = 200;
 
     //     Sanity check - <async> is incompatible with <keep>
     //
@@ -444,14 +445,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         nonfatalerror("This syscall uses both async and keep, but async is "
                       "incompatible with keep.  Since keep is safer"
                       "we will use that.\n",
-            "You need to fix this program.");
+                "You need to fix this program.");
         async_mode = 0;
     }
 
     //    get the input variable(s)
     //
     inlen = crm_get_pgm_arg(inbuf, data_window_size, apb->p1start, apb->p1len);
-    inlen = crm_nexpandvar(inbuf, inlen, data_window_size);
+    inlen = crm_nexpandvar(inbuf, inlen, data_window_size, vht, tdw);
     if (user_trace)
         fprintf(stderr, "  command's input wil be: ***%s***\n", inbuf);
 
@@ -461,51 +462,51 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //    so we extract that
     //
     outlen = crm_get_pgm_arg(from_var, MAX_PATTERN, apb->p2start, apb->p2len);
-    outlen = crm_nexpandvar(from_var, outlen, MAX_PATTERN);
-	CRM_ASSERT(outlen < MAX_PATTERN);
+    outlen = crm_nexpandvar(from_var, outlen, MAX_PATTERN, vht, tdw);
+    CRM_ASSERT(outlen < MAX_PATTERN);
     done = 0;
     if (crm_nextword(from_var, outlen, 0, &vstart, &vlen))
-	{
-    memmove(from_var, &from_var[vstart], vlen);
-    from_var[vlen] = 0;
-    if (user_trace)
-	{
-        fprintf(stderr, "   command output will overwrite var ***%s***\n",
-            from_var);
-	}
-    // [i_a] make sure we 'zero' the output variable, so it'll be empty when an error occurs.
-    // This way, old content doesn't stay around when errors are not checked in a CRM script.
-    if (*from_var)
     {
-        crm_destructive_alter_nvariable(from_var, vlen, "", 0);
+        memmove(from_var, &from_var[vstart], vlen);
+        from_var[vlen] = 0;
+        if (user_trace)
+        {
+            fprintf(stderr, "   command output will overwrite var ***%s***\n",
+                    from_var);
+        }
+        // [i_a] make sure we 'zero' the output variable, so it'll be empty when an error occurs.
+        // This way, old content doesn't stay around when errors are not checked in a CRM script.
+        if (*from_var)
+        {
+            crm_destructive_alter_nvariable(from_var, vlen, "", 0);
+        }
     }
-	}
-	else
-	{
-    from_var[0] = 0;
-	vlen = 0;
-	}
+    else
+    {
+        from_var[0] = 0;
+        vlen = 0;
+    }
 
 
 
     //    now get the name of the variable (if it exists) where
     //    the kept-around minion process's pipes and pid are stored.
     keep_len = crm_get_pgm_arg(keep_buf, MAX_PATTERN, apb->p3start, apb->p3len);
-    keep_len = crm_nexpandvar(keep_buf, keep_len, MAX_PATTERN);
+    keep_len = crm_nexpandvar(keep_buf, keep_len, MAX_PATTERN, vht, tdw);
     if (user_trace)
-	{
-		fprintf(stderr, "   command status kept in var (len: %d) ***%s***\n",
-            keep_len, keep_buf);
-	}
+    {
+        fprintf(stderr, "   command status kept in var (len: %d) ***%s***\n",
+                keep_len, keep_buf);
+    }
 
     //      get the command to execute
     //
     cmd_len = crm_get_pgm_arg(sys_cmd, MAX_PATTERN, apb->s1start, apb->s1len);
-    cmd_len = crm_nexpandvar(sys_cmd, cmd_len, MAX_PATTERN);
+    cmd_len = crm_nexpandvar(sys_cmd, cmd_len, MAX_PATTERN, vht, tdw);
     if (user_trace)
-	{
-		fprintf(stderr, "   command will be (len: %d) ***%s***\n", cmd_len, sys_cmd);
-	}
+    {
+        fprintf(stderr, "   command will be (len: %d) ***%s***\n", cmd_len, sys_cmd);
+    }
 
 
     //     Do we reuse an already-existing process?  Check to see if the
@@ -520,12 +521,12 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //  this is 8-bit-safe because vars are never wchars.
     if (keep_buf[0])
     {
-		CRM_ASSERT(WIDTHOF(exp_keep_buf) >= MAX_PATTERN + 2 /* space for ":*" */ );
+        CRM_ASSERT(WIDTHOF(exp_keep_buf) >= MAX_PATTERN + 2 /* space for ":*" */);
         strcpy(exp_keep_buf, ":*");
         memmove(exp_keep_buf + 2, keep_buf, keep_len);
-        exp_keep_len = crm_nexpandvar(exp_keep_buf, keep_len + 2, MAX_PATTERN);
-		CRM_ASSERT(exp_keep_len < MAX_PATTERN);
-		exp_keep_buf[exp_keep_len] = 0;
+        exp_keep_len = crm_nexpandvar(exp_keep_buf, keep_len + 2, MAX_PATTERN, vht, tdw);
+        CRM_ASSERT(exp_keep_len < MAX_PATTERN);
+        exp_keep_buf[exp_keep_len] = 0;
     }
     else
     {
@@ -533,18 +534,18 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         exp_keep_len = 0;
     }
 
-#if defined (HAVE_DUP2) && defined (HAVE_WORKING_FORK) && defined (HAVE_FORK)    \
+#if defined (HAVE_DUP2) && defined (HAVE_WORKING_FORK) && defined (HAVE_FORK) \
     && defined (HAVE_PIPE) && defined (HAVE_WAITPID) && defined (HAVE_SYSTEM)
     cnt = 0;
     if (*exp_keep_buf)
     {
         cnt = sscanf(exp_keep_buf, "MINION PROC PID: %d from-pipe: %d to-pipe: %d",
-            &minion,
-            &from_minion[0],
-            &to_minion[1]);
+                &minion,
+                &from_minion[0],
+                &to_minion[1]);
     }
-        if (!(cnt == 3
-              || (cnt == 0 && (*exp_keep_buf == 0 || strncmp(exp_keep_buf, "DEAD MINION", WIDTHOF("DEAD MINION") - 1) == 0))))
+    if (!(cnt == 3
+          || (cnt == 0 && (*exp_keep_buf == 0 || strncmp(exp_keep_buf, "DEAD MINION", WIDTHOF("DEAD MINION") - 1) == 0))))
     {
         nonfatalerror("Failed to decode the syscall minion setup: ", exp_keep_buf);
         return 1;
@@ -565,20 +566,20 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (status1 > 0 || status2 > 0)
         {
             nonfatalerror("Problem setting up the to/from pipes to a minion. ",
-                "Perhaps the system file descriptor table is full?");
+                    "Perhaps the system file descriptor table is full?");
             return 1;
         }
 
 #if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
-    fflush(stdout);
-    fflush(stderr);
+        fflush(stdout);
+        fflush(stderr);
 #endif
         minion = fork();
 
         if (minion < 0)
         {
             nonfatalerror("Tried to fork your minion, but it failed.",
-                "Your system may have run out of process slots");
+                    "Your system may have run out of process slots");
             return 1;
         }
 
@@ -610,19 +611,19 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //     shell on an external command?
             //
             if (crm_nextword(sys_cmd, strlen(sys_cmd), 0, &vstart, &vlen))
-			{
-            varline = crm_lookupvarline(vht, sys_cmd, vstart, vlen);
-			}
-			else
-			{
-				varline = 0;
-			}
+            {
+                varline = crm_lookupvarline(vht, sys_cmd, vstart, vlen);
+            }
+            else
+            {
+                varline = 0;
+            }
             if (varline > 0)
             {
                 //              sys_cmd[vstart+vlen] = 0;
                 if (user_trace)
                     fprintf(stderr, "FORK transferring control to line %s\n",
-                        &sys_cmd[vstart]);
+                            &sys_cmd[vstart]);
 
                 //    set the current pid and parent pid.
                 {
@@ -643,7 +644,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 }
                 //   See if we have redirection of stdin and stdout
                 while (crm_nextword(sys_cmd, strlen(sys_cmd), vstart + vlen,
-                           &vstart, &vlen))
+                               &vstart, &vlen))
                 {
                     char filename[MAX_PATTERN];
                     if (sys_cmd[vstart] == '<')
@@ -656,7 +657,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         filename[vlen - 1] = 0;
                         if (user_trace)
                             fprintf(stderr, "Redirecting minion stdin to %s\n",
-                                filename);
+                                    filename);
                         freopen(filename, "rb", stdin);
                     }
                     if (sys_cmd[vstart] == '>')
@@ -671,8 +672,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             filename[vlen - 1] = 0;
                             if (user_trace)
                                 fprintf(stderr,
-                                    "Redirecting minion stdout to %s\n",
-                                    filename);
+                                        "Redirecting minion stdout to %s\n",
+                                        filename);
                             freopen(filename, "wb", stdout);
                         }
                         else
@@ -685,15 +686,19 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             filename[vlen - 2] = 0;
                             if (user_trace)
                                 fprintf(stderr,
-                                    "Appending minion stdout to %s\n",
-                                    filename);
+                                        "Appending minion stdout to %s\n",
+                                        filename);
                             freopen(filename, "ab+", stdout);
                         }
                     }
                 }
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
                 csl->cstmt = varline;
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#else
+                csl->cstmt = varline;
+#endif
+                CRM_ASSERT(csl->cstmt >= 0);
+                CRM_ASSERT(csl->cstmt <= csl->nstmts);
                 //   and note that this isn't a failure.
                 csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
                 //   The minion's real work should now start; get out of
@@ -704,22 +709,70 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             {
                 if (user_trace)
                     fprintf(stderr, "Systemcalling on shell command %s\n",
-                        sys_cmd);
+                            sys_cmd);
                 retcode = system(sys_cmd);
                 //
                 //       This code only ever happens if an error occurs...
                 //
                 if (retcode == -1)
                 {
+                    // see the waitpid() manpage for more info on these macros and their use.
+                    int exit_mode = (WIFEXITED(retcode)
+                                     ? 0 /* "regular exit" */
+                                     : WIFSIGNALED(retcode)
+                                     ? WIFCONTINUED(retcode)
+                                     ? 4
+                                     : WIFSTOPPED(retcode)
+                                     ? 1 /* "stopped" */
+                                     : WCOREDUMP(retcode)
+                                     ? 2 /* "coredump!" */
+                                     : 3 /* "terminated by signal" */
+                                     : 5);
+                    const char *mode_str[6] =
+                    {
+                        "regular exit",
+                        "stopped",
+                        "coredump!",
+                        "terminated by signal",
+                        "SIGCONT (Linux)",
+                        "unidentified"
+                    };
+                    const char *first_val_str[6] =
+                    {
+                        "exit code",
+                        "stop signal",
+                        "exit (0=none)",
+                        "exit (0=none)",
+                        "bogus",
+                        "MSB"
+                    };
+                    const char *second_val_str[6] =
+                    {
+                        "signal (0=none)",
+                        "extra (0=none)",
+                        "signal (0=none)",
+                        "signal",
+                        "bogus",
+                        "LSB"
+                    };
                     nonfatalerror_ex(SRC_LOC(),
-                        "This program tried a shell command that "
-                        "didn't run correctly.\n"
-                        "The command was >%s< and returned exit code %d.\n"
-                        "errno = %d(%s)",
-                        sys_cmd,
-                        WEXITSTATUS(retcode),
-                        errno,
-                        errno_descr(errno));
+                            "This program tried a shell command that "
+                            "didn't run correctly.\n"
+                            "The command was >%s< and returned code %d "
+                            "(mode = %s --> %s = %d / %s = %d)\n"
+                            "errno = %d(%s)",
+                            sys_cmd,
+                            retcode,
+                            mode_str[exit_mode],
+                            first_val_str[exit_mode],
+                            (WIFEXITED(retcode)
+                             ? WEXITSTATUS(retcode)
+                             : WSTOPSIG(retcode)),
+                            second_val_str[exit_mode],
+                            WTERMSIG(retcode),
+                            errno,
+                            errno_descr(errno));
+
                     if (engine_exit_base != 0)
                     {
                         exit(engine_exit_base + 11);
@@ -756,8 +809,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (strlen(inbuf) > 0)
     {
 #if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
-    fflush(stdout);
-    fflush(stderr);
+        fflush(stdout);
+        fflush(stderr);
 #endif
         pusher = fork();
         //    we're in the "input pusher" process if we got here.
@@ -799,14 +852,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             usleep(timeout);
             //   synchronous read- read till we hit EOF, which is read
             //   returning a char count of zero.
-            readloop:
+readloop:
             if (internal_trace)
                 fprintf(stderr, "SYNCH READ ");
             usleep(timeout);
             charsread =
                 read(from_minion[0],
-                    &outbuf[done],
-                    (data_window_size >> SYSCALL_WINDOW_RATIO) - done - 2);
+                        &outbuf[done],
+                        (data_window_size >> SYSCALL_WINDOW_RATIO) - done - 2);
             done = done + charsread;
             if (charsread > 0
                 && done + 2 < (data_window_size >> SYSCALL_WINDOW_RATIO))
@@ -823,8 +876,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //fcntl (from_minion[0], F_SETFL, O_NONBLOCK);
             //      usleep (timeout);
             charsread = read(from_minion[0],
-                &outbuf[done],
-                (data_window_size >> SYSCALL_WINDOW_RATIO));
+                    &outbuf[done],
+                    (data_window_size >> SYSCALL_WINDOW_RATIO));
             done = charsread;
             if (done < 0)
                 done = 0;
@@ -845,8 +898,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 && keep_proc == 0))
         {
 #if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
-    fflush(stdout);
-    fflush(stderr);
+            fflush(stdout);
+            fflush(stderr);
 #endif
             sucker = fork();
             if (sucker == 0)
@@ -857,8 +910,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 {
                     usleep(timeout);
                     charsread = read(from_minion[0],
-                        &outbuf[0],
-                        data_window_size >> SYSCALL_WINDOW_RATIO);
+                            &outbuf[0],
+                            data_window_size >> SYSCALL_WINDOW_RATIO);
                     //  in the sucker here, don't use engine_exit_base exit
                     if (charsread == 0)
                         exit(EXIT_SUCCESS);
@@ -869,7 +922,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //  and set the returned value into from_var.
         if (user_trace)
             fprintf(stderr, "SYSCALL output: %d chars ---%s---.\n ",
-                outlen, outbuf);
+                    outlen, outbuf);
         if (internal_trace)
             fprintf(stderr, "  storing return str in var %s\n", from_var);
 
@@ -880,16 +933,16 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (strlen(keep_buf) > 0)
     {
         sprintf(exp_keep_buf,
-            "MINION PROC PID: %d from-pipe: %d to-pipe: %d",
-            minion,
-            from_minion[0],
-            to_minion[1]);
+                "MINION PROC PID: %d from-pipe: %d to-pipe: %d",
+                minion,
+                from_minion[0],
+                to_minion[1]);
         if (internal_trace)
             fprintf(stderr, "   saving minion state: %s \n",
-                exp_keep_buf);
+                    exp_keep_buf);
         crm_destructive_alter_nvariable(keep_buf, keep_len,
-            exp_keep_buf,
-            strlen(exp_keep_buf));
+                exp_keep_buf,
+                strlen(exp_keep_buf));
     }
     //      If we're keeping this minion process around, record the useful
     //      information, like pid, in and out pipes, etc.
@@ -897,6 +950,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     { }
     else
     {
+        int minion_exit_status = 254 << 8; // exit code 254 signals a waitpid() returning without an exit code!
+
         if (internal_trace)
             fprintf(stderr, "No keep, no async, so not keeping minion, closing everything.\n");
 
@@ -912,23 +967,23 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             char exit_value_string[MAX_VARNAME];
 
             if (internal_trace)
- {
-               fprintf(stderr, "minion waitpid result :%d; whacking %s\n",
-                    minion_exit_status,
-                    keep_buf);
-}
+            {
+                fprintf(stderr, "minion waitpid result :%d; whacking %s\n",
+                        minion_exit_status,
+                        keep_buf);
+            }
             sprintf(exit_value_string, "DEAD MINION, EXIT CODE: %d",
-                WEXITSTATUS(minion_exit_status));
+                    WEXITSTATUS(minion_exit_status));
             if (keep_len > 0)
-{
+            {
                 crm_destructive_alter_nvariable(keep_buf, keep_len,
-                    exit_value_string,
-                    strlen(exit_value_string));
-}
+                        exit_value_string,
+                        strlen(exit_value_string));
+            }
         }
     }
-#elif defined (WIN32)
-#if defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
+#elif (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+#if defined (CRM_USE_OLD_WIN32_SYCALL_CODE)
 
     if (0)
     {
@@ -945,9 +1000,9 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (*exp_keep_buf)
         {
             cnt = sscanf(exp_keep_buf, "MINION PROC PID: %d from-pipe: %p to-pipe: %p",
-                &minion,
-                &from_minion[0],
-                &to_minion[1]);
+                    &minion,
+                    &from_minion[0],
+                    &to_minion[1]);
         }
         if (!(cnt == 3
               || (cnt == 0 && (*exp_keep_buf == 0 || strncmp(exp_keep_buf, "DEAD MINION", WIDTHOF("DEAD MINION") - 1) == 0))))
@@ -971,13 +1026,13 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 fprintf(stderr, "  Must start a new minion.\n");
 
             if (crm_nextword(sys_cmd, (int)strlen(sys_cmd), 0, &vstart2, &vlen2))
-			{
-            varline = crm_lookupvarline(vht, sys_cmd, vstart2, vlen2);
-			}
-			else
-			{
-				varline = 0;
-			}
+            {
+                varline = crm_lookupvarline(vht, sys_cmd, vstart2, vlen2);
+            }
+            else
+            {
+                varline = 0;
+            }
             if (varline > 0)
             {
                 fatalerror(" Sorry, syscall to a label isn't implemented in this version", "");
@@ -1037,7 +1092,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 if (user_trace)
                 {
                     fprintf(stderr, "systemcalling on shell command %s\n",
-                        sys_cmd);
+                            sys_cmd);
                 }
 
                 // MSVC spec says 'sys_cmd' will be edited inside CreateProcess. Keep the original around for
@@ -1068,15 +1123,15 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
                     // Create the child process.
                     status = CreateProcess(NULL,
-                        sys_cmd,                                              // command line
-                        NULL,                                                 // process security attributes
-                        NULL,                                                 // primary thread security attributes
-                        TRUE,                                                 // handles are inherited
-                        CREATE_DEFAULT_ERROR_MODE /* | CREATE_NEW_CONSOLE */, // creation flags
-                        NULL,                                                 // use parent's environment
-                        NULL,                                                 // use parent's current directory
-                        &si,                                                  // STARTUPINFO pointer
-                        &pi);                                                 // receives PROCESS_INFORMATION
+                            sys_cmd,                                              // command line
+                            NULL,                                                 // process security attributes
+                            NULL,                                                 // primary thread security attributes
+                            TRUE,                                                 // handles are inherited
+                            CREATE_DEFAULT_ERROR_MODE /* | CREATE_NEW_CONSOLE */, // creation flags
+                            NULL,                                                 // use parent's environment
+                            NULL,                                                 // use parent's current directory
+                            &si,                                                  // STARTUPINFO pointer
+                            &pi);                                                 // receives PROCESS_INFORMATION
                     if (!status)
                     {
                         error = GetLastError();
@@ -1099,13 +1154,13 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
                     // use the undamaged sys_cmd entry for error reporting...
                     nonfatalerror_ex(
-                        SRC_LOC(), "This program tried a shell command that "
-                                   "didn't run correctly.\n"
-                                   "command >>%s<< - CreateProcess returned %d(0x%08lx:%s)\n",
-                        sys_cmd_2nd,
-                        (int)error,
-                        (int)error,
-                        errmsg);
+                            SRC_LOC(), "This program tried a shell command that "
+                                       "didn't run correctly.\n"
+                                       "command >>%s<< - CreateProcess returned %d(0x%08lx:%s)\n",
+                            sys_cmd_2nd,
+                            (int)error,
+                            (int)error,
+                            errmsg);
                 }
                 else
                 {
@@ -1130,7 +1185,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     if (!CloseHandle(pi.hThread))
                     {
                         fatalerror_Win32("Failed to close the execution thread handle for minion",
-                            sys_cmd);
+                                sys_cmd);
                     }
 #endif
                 }
@@ -1232,18 +1287,18 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 pp->keep_proc = keep_proc;
                 pp->to_minion = to_minion[1];
                 pusher_thread_handle = (HANDLE)_beginthreadex(NULL,
-                    0,
-                    pusher_proc,
-                    pp,
-                    CREATE_SUSPENDED,
-                    &hThread);
+                        0,
+                        pusher_proc,
+                        pp,
+                        CREATE_SUSPENDED,
+                        &hThread);
                 if (pusher_thread_handle == 0)
                 {
                     fatalerror_ex(SRC_LOC(),
-                        "Failed to init the pusher thread: "
-                        "error code %d (%s)",
-                        errno,
-                        errno_descr(errno));
+                            "Failed to init the pusher thread: "
+                            "error code %d (%s)",
+                            errno,
+                            errno_descr(errno));
                 }
                 else
                 {
@@ -1276,8 +1331,6 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     int readlen;
                     LARGE_INTEGER large_int;
                     DWORD file_flags;
-                    DWORD exit_code;
-
 
                     // Sleep(timeout);
                     // wait until all data has been fetched from the child process.
@@ -1289,6 +1342,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     //   returning a char count of zero.
                     for ( ; ;)
                     {
+                        DWORD exit_code;
+
                         if (internal_trace)
                             fprintf(stderr, "SYNCH READ ");
                         charsread = 0;
@@ -1311,7 +1366,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         status = GetExitCodeProcess(hminion, &exit_code);
                         error = GetLastError();
                         if (internal_trace)
-                            fprintf(stderr, "GetExitCodeProcess() = %d/%d, %d\n", status, error, exit_code);
+                            fprintf(stderr, "GetExitCodeProcess() = %d/%d, %ld\n", status, error, (long)exit_code);
 #if 0
                         if (status && error == ERROR_SUCCESS && exit_code == STILL_ACTIVE)
                         {
@@ -1324,11 +1379,11 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         error = GetLastError();
                         if (internal_trace)
                             fprintf(stderr,
-                                "GetFileSizeEx() = %d/%d, %d:%d\n",
-                                status,
-                                error,
-                                large_int.HighPart,
-                                large_int.LowPart);
+                                    "GetFileSizeEx() = %d/%d, %d:%d\n",
+                                    status,
+                                    error,
+                                    large_int.HighPart,
+                                    large_int.LowPart);
 
                         if (status && error == ERROR_SUCCESS && !large_int.HighPart && !large_int.LowPart)
                         {
@@ -1338,14 +1393,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 eof = TRUE;
                             }
                         }
-						else if (error != ERROR_SUCCESS)
-						{
-							eof = TRUE;
+                        else if (error != ERROR_SUCCESS)
+                        {
+                            eof = TRUE;
                             if (exit_code == STILL_ACTIVE)
                             {
-								TerminateProcess(hminion, 260);
-							}
-						}
+                                TerminateProcess(hminion, 260);
+                            }
+                        }
                         // else: eof = FALSE
 
                         CRM_ASSERT(charsread == 0);
@@ -1360,9 +1415,9 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             if (large_int.HighPart || large_int.LowPart)
                             {
                                 if (!ReadFile(from_minion[0],
-                                        outbuf + done,
-                                        readlen,
-                                        &charsread, NULL))
+                                            outbuf + done,
+                                            readlen,
+                                            &charsread, NULL))
                                 {
                                     error = GetLastError();
                                     switch (error)
@@ -1378,7 +1433,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
                                     default:
                                         fatalerror_Win32("Failed to sync-read any data from the minion",
-                                            sys_cmd);
+                                                sys_cmd);
                                         break;
                                     }
                                 }
@@ -1405,8 +1460,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (!eof /* && charsread > 0 */ && done + 2 <
                             (data_window_size >> SYSCALL_WINDOW_RATIO))
                         {
-							if (charsread == 0)
-								Sleep((DWORD)timeout);
+                            if (charsread == 0)
+                                Sleep((DWORD)timeout);
 
                             status = WaitForInputIdle(hminion, (DWORD)timeout);
                             // wait a little while before we try to fetch another bit of data...
@@ -1423,25 +1478,25 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 {
                     //   we're in 'async' mode. Just grab what we can
                     int anything_to_read = TRUE;
-                    DWORD exit_code;
                     LARGE_INTEGER large_int;
+                    DWORD exit_code;
 
                     exit_code = (DWORD)-1;
                     status = GetExitCodeProcess(hminion, &exit_code);
                     error = GetLastError();
                     if (internal_trace)
-                        fprintf(stderr, "GetExitCodeProcess() = %d/%d, %d\n", status, error, exit_code);
+                        fprintf(stderr, "GetExitCodeProcess() = %d/%d, %ld\n", status, error, (long)exit_code);
 
                     memset(&large_int, 0, sizeof(large_int));
                     status = GetFileSizeEx(from_minion[0], &large_int);
                     error = GetLastError();
                     if (internal_trace)
                         fprintf(stderr,
-                            "GetFileSizeEx() = %d/%d, %d:%d\n",
-                            status,
-                            error,
-                            large_int.HighPart,
-                            large_int.LowPart);
+                                "GetFileSizeEx() = %d/%d, %d:%d\n",
+                                status,
+                                error,
+                                large_int.HighPart,
+                                large_int.LowPart);
 
                     if ( /* status && error == ERROR_SUCCESS && */ !large_int.HighPart && !large_int.LowPart)
                     {
@@ -1462,8 +1517,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (large_int.HighPart || large_int.LowPart)
                         {
                             if (!ReadFile(from_minion[0],
-                                    &outbuf[done],
-                                    (data_window_size >> SYSCALL_WINDOW_RATIO), &charsread, NULL))
+                                        &outbuf[done],
+                                        (data_window_size >> SYSCALL_WINDOW_RATIO), &charsread, NULL))
                             {
                                 fatalerror_Win32("Failed to async read any data from the minion", sys_cmd);
                             }
@@ -1502,18 +1557,18 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     sp->keep_proc = keep_proc;
 
                     sucker_thread_handle = (HANDLE)_beginthreadex(NULL,
-                        0,
-                        sucker_proc,
-                        sp,
-                        CREATE_SUSPENDED,
-                        &hThread);
+                            0,
+                            sucker_proc,
+                            sp,
+                            CREATE_SUSPENDED,
+                            &hThread);
                     if (sucker_thread_handle == 0)
                     {
                         fatalerror_ex(SRC_LOC(),
-                            "Failed to start the sucker thread: "
-                            "error code %d (%s)",
-                            errno,
-                            errno_descr(errno));
+                                "Failed to start the sucker thread: "
+                                "error code %d (%s)",
+                                errno,
+                                errno_descr(errno));
                     }
                     else
                     {
@@ -1535,7 +1590,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //  and set the returned value into from_var.
                 if (user_trace)
                     fprintf(stderr, "SYSCALL output: %d chars ---%s---.\n ",
-                        outlen, outbuf);
+                            outlen, outbuf);
                 if (internal_trace)
                     fprintf(stderr, "  storing return str in var %s\n", from_var);
 
@@ -1546,15 +1601,15 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (strlen(keep_buf) > 0)
             {
                 sprintf(exp_keep_buf,
-                    "MINION PROC PID: %d from-pipe: %p to-pipe: %p",
-                    minion,
-                    from_minion[0],
-                    to_minion[1]);
+                        "MINION PROC PID: %d from-pipe: %p to-pipe: %p",
+                        minion,
+                        from_minion[0],
+                        to_minion[1]);
                 if (internal_trace)
                     fprintf(stderr, "   saving minion state: %s\n", exp_keep_buf);
                 crm_destructive_alter_nvariable(keep_buf, keep_len,
-                    exp_keep_buf,
-                    (int)strlen(exp_keep_buf));
+                        exp_keep_buf,
+                        (int)strlen(exp_keep_buf));
             }
 
             //      If we're keeping this minion process around, record the useful
@@ -1562,15 +1617,17 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (!keep_proc && !async_mode)
             {
                 DWORD exit_code;
+
                 if (internal_trace)
                     fprintf(stderr,
-                        "No keep, no async, so not keeping minion, closing everything.\n");
+                            "No keep, no async, so not keeping minion, closing everything.\n");
 
                 if (WAIT_FAILED == WaitForSingleObject(hminion, INFINITE))
                 {
                     fatalerror_Win32("Failed while waiting for the minion to terminate", sys_cmd);
                 }
 
+                exit_code = (DWORD)-1;
                 if (!GetExitCodeProcess(hminion, &exit_code))
                 {
                     fatalerror_Win32("Failed to grab the exit code from the system call", sys_cmd);
@@ -1581,16 +1638,16 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     if (internal_trace)
                     {
                         fprintf(stderr, "minion exit code :%d; whacking %s\n",
-                            exit_code,
-                            keep_buf);
+                                (int)exit_code,
+                                keep_buf);
                     }
                     sprintf(exit_value_string, "DEAD MINION, EXIT CODE: %d",
-                        exit_code);
+                            (int)exit_code);
                     if (keep_len > 0)
                     {
                         crm_destructive_alter_nvariable(keep_buf, keep_len,
-                            exit_value_string,
-                            (int)strlen(exit_value_string));
+                                exit_value_string,
+                                (int)strlen(exit_value_string));
                     }
                 }
                 if (!CloseHandle(hminion))
@@ -1607,12 +1664,13 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else // !defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
 
 
-        return nonfatalerror(" Sorry, syscall is completely b0rked in this version", "");
+    return nonfatalerror(" Sorry, syscall is completely b0rked in this version", "");
 
 #endif // defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
 
 #else
     return nonfatalerror(" Sorry, syscall is not supported in this version", "");
+
 #endif
     return 0;
 }

@@ -33,9 +33,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -77,8 +77,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprtd.lib"
-				OutputFile="$(OutDir)/crm114.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
@@ -128,9 +127,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -173,8 +172,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprtd.lib"
-				OutputFile="$(OutDir)/crm114.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
@@ -224,9 +222,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -269,8 +267,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprtd.lib"
-				OutputFile="$(OutDir)/crm114.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
@@ -320,9 +317,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -366,8 +363,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprt.lib"
-				OutputFile="$(OutDir)/crm114.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -415,9 +411,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -462,8 +458,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprt.lib"
-				OutputFile="$(OutDir)/crm114.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -511,9 +506,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -558,8 +553,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprt.lib"
-				OutputFile="$(OutDir)/crm114.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -604,199 +598,7 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			>
 			<File
-				RelativePath="..\src\crm_bit_entropy.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_compiler.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_correlate.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_css_maintenance.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_debugger.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_errorhandlers.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_exec_engine.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expandvar.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_alter.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_classify.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_clump.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_file_io.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_fscm.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_isolate.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_match.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_mutate.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_sks.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_svm.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_syscall.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_translate.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expr_window.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_generic_port.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\crm_main.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_markovian.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_math_exec.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_neural_net.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_osb_bayes.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_osb_hyperspace.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_osb_winnow.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_osbf_bayes.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_osbf_maintenance.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_preprocessor.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_stats.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_stdio_port.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_stmt_parser.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_str_funcs.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_var_hash_table.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_vector_tokenize.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_versioning.c"
-				>
-			</File>
-			<File
-				RelativePath=".\crm_win32_port.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_winnow_maintenance.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crmregex_gnu.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Itanium"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\crmregex_tre.c"
 				>
 			</File>
 		</Filter>
@@ -1373,22 +1175,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\setversion"
-					>
-				</File>
-				<File
-					RelativePath="..\stamp.day"
-					>
-				</File>
-				<File
-					RelativePath="..\stamp.month"
-					>
-				</File>
-				<File
-					RelativePath="..\stamp.year"
-					>
-				</File>
-				<File
 					RelativePath="..\TODO"
 					>
 				</File>
@@ -1770,7 +1556,71 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\ref\fataltrapprogramerr.crm.refoutput"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\ref\fataltraptest.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_alter_null_var1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_alter_var1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_CSS_files_w_decent_error_message1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_CSS_files_w_decent_error_message2.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_CSS_files_w_decent_error_message3.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_empty_alter1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_empty_alter2.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_empty_isolate1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_empty_isolate2.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_eval_var1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_isolate_null_var1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_isolate_null_var2.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_isolate_var1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_isolate_var2.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\illegal_isolate_var3.crm.refoutput"
 					>
 				</File>
 				<File
@@ -1782,11 +1632,35 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\ref\legal_eval_to_null_var1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\legal_eval_var1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\legal_indirect_alter1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\legal_indirect_isolate1.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\legal_show_null_var1.crm.refoutput"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\ref\match_isolate_reclaim.crm.refoutput"
 					>
 				</File>
 				<File
 					RelativePath="..\tests\ref\match_isolate_test.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\match_re_fringe1.crm.refoutput"
 					>
 				</File>
 				<File
@@ -1983,6 +1857,10 @@
 				</File>
 				<File
 					RelativePath="..\tests\ref\paolo_overvars.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\print_binary2decimal_int32.crm.refoutput"
 					>
 				</File>
 				<File
@@ -2346,6 +2224,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\isolatephenomenontest.crm"
+					>
+				</File>
+				<File
 					RelativePath="..\src\learntest.crm"
 					>
 				</File>
@@ -2502,7 +2384,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\alius_w_comment.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\aliustest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\aliustest.crm.in"
 					>
 				</File>
 				<File
@@ -2510,7 +2400,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\alternating_example_neural.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\approxtest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\approxtest.crm.in"
 					>
 				</File>
 				<File
@@ -2518,7 +2416,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\argtest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\backwardstest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\backwardstest.crm.in"
 					>
 				</File>
 				<File
@@ -2526,7 +2432,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\beeptest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\blowuptrapbugtest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\blowuptrapbugtest.crm.in"
 					>
 				</File>
 				<File
@@ -2534,7 +2448,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\bracesbugtest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\bracktest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\bracktest.crm.in"
 					>
 				</File>
 				<File
@@ -2542,7 +2464,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\call_return_test.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\classifytest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\classifytest.crm.in"
 					>
 				</File>
 				<File
@@ -2550,7 +2480,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\defaulttest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\escapetest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\escapetest.crm.in"
 					>
 				</File>
 				<File
@@ -2558,7 +2496,55 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\eval_infiniteloop.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exec_async_leaktest1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exec_async_leaktest1.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\exectest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exectest.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exectimingtest1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exectimingtest1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exectimingtest2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exectimingtest2.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exectimingtest3.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exectimingtest3.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\fataltrapprogramerr.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\fataltrapprogramerr.crm.in"
 					>
 				</File>
 				<File
@@ -2566,7 +2552,167 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\fataltraptest.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_alter_null_var1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_alter_null_var1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_alter_var1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_alter_var1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_CSS_files_w_decent_error_message1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_CSS_files_w_decent_error_message1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_CSS_files_w_decent_error_message2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_CSS_files_w_decent_error_message2.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_CSS_files_w_decent_error_message3.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_CSS_files_w_decent_error_message3.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_empty_alter1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_empty_alter1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_empty_alter2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_empty_alter2.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_empty_isolate1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_empty_isolate1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_empty_isolate2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_empty_isolate2.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_eval_var1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_eval_var1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_eval_var2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_eval_var2.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_indirect_isolate1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_indirect_isolate1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_null_var1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_null_var1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_null_var2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_null_var2.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_var1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_var1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_var2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_var2.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_var3.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_isolate_var3.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_stmt1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_stmt1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_stmt2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\illegal_stmt2.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\indirecttest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\indirecttest.crm.in"
 					>
 				</File>
 				<File
@@ -2574,7 +2720,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\inserttest_a.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\inserttest_b.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\inserttest_b.crm.in"
 					>
 				</File>
 				<File
@@ -2582,7 +2736,23 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\inserttest_c.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\isolate_reclaim_test.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\isolate_reclaim_test.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\isolatephenomenontest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\isolatephenomenontest.crm.in"
 					>
 				</File>
 				<File
@@ -2590,7 +2760,55 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\learntest.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_eval_to_null_var1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_eval_to_null_var1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_eval_var1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_eval_var1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_indirect_alter1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_indirect_alter1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_indirect_isolate1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_indirect_isolate1.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_show_null_var1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\legal_show_null_var1.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\match_isolate_reclaim.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\match_isolate_reclaim.crm.in"
 					>
 				</File>
 				<File
@@ -2598,7 +2816,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\match_isolate_test.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\match_re_fringe1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\match_re_fringe1.crm.in"
 					>
 				</File>
 				<File
@@ -2606,7 +2832,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\matchtest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\mathalgtest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\mathalgtest.crm.in"
 					>
 				</File>
 				<File
@@ -2614,7 +2848,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\mathrpntest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\nestaliustest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\nestaliustest.crm.in"
 					>
 				</File>
 				<File
@@ -2622,7 +2864,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\overalterisolatedtest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\paolo_ov2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\paolo_ov2.crm.in"
 					>
 				</File>
 				<File
@@ -2630,7 +2880,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\paolo_ov3.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\paolo_ov4.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\paolo_ov4.crm.in"
 					>
 				</File>
 				<File
@@ -2638,7 +2896,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\paolo_ov5.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\paolo_overvars.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\paolo_overvars.crm.in"
 					>
 				</File>
 				<File
@@ -2646,7 +2912,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\print_binary2decimal_int32.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\quine.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\quine.crm.in"
 					>
 				</File>
 				<File
@@ -2654,7 +2928,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\randomiotest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\rewritetest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\rewritetest.crm.in"
 					>
 				</File>
 				<File
@@ -2662,7 +2944,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\skudtest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\slashbugtest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\slashbugtest.crm.in"
 					>
 				</File>
 				<File
@@ -2670,7 +2960,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\statustest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\tenfold_validate.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\tenfold_validate.crm.in"
 					>
 				</File>
 				<File
@@ -2678,7 +2976,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\tokendelimiterbugtest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\translate_tr.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\translate_tr.crm.in"
 					>
 				</File>
 				<File
@@ -2686,7 +2992,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\trapseqbugtest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\traptest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\traptest.crm.in"
 					>
 				</File>
 				<File
@@ -2694,7 +3008,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\uncaughttraptest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\unionintersecttest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\unionintersecttest.crm.in"
 					>
 				</File>
 				<File
@@ -2702,7 +3024,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\userdirtest.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\windowtest.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\windowtest.crm.in"
 					>
 				</File>
 				<File
@@ -2710,7 +3040,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\windowtest_fromvar.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\zz_translate_test.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\zz_translate_test.crm.in"
 					>
 				</File>
 			</Filter>

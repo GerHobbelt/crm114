@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+illegal_CSS_files_w_decent_error_message3.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ouch!
+s = 'CLASSIFY fails; success probability: 0.5000  pR: 0.0000
+Best match to file #0 (icfwdm1.css) prob: 0.5000  pR: 0.0000  
+Total features in input file: 0
+#0 (icfwdm1.css): features: 1, hits: 0, prob: 5.00e-01, pR:   0.00
+#1 (icfwdm2.css): features: 1, hits: 0, prob: 5.00e-01, pR:   0.00
+'
+

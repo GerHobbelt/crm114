@@ -9,9 +9,9 @@ STDERR TEST OUTPUT:
 STDOUT TEST OUTPUT:
  type I 
 CLASSIFY succeeds; success probability: 0.5636  pR: 1.1113
-Best match to file #0 (i_test.css) weight: 46.0636  pR: 1.8624  
+Best match to file #0 (i_test.css) weight: 46.0636  pR: 1.8624
 Total features in input file: 40
-#0 (i_test.css): features: 56909.77, unseen: 1.00e+01, weight: 4.61e+01, pR:   1.86 
-#1 (q_test.css): features: 56040.17, unseen: 1.00e+01, weight: 3.57e+01, pR:   0.75 
+#0 (i_test.css): features: 56975.13, unseen: 1.00e+01, weight: 4.61e+01, pR:   1.86
+#1 (q_test.css): features: 56139.52, unseen: 1.00e+01, weight: 3.57e+01, pR:   0.75
 
 

@@ -27,8 +27,8 @@ AC_DEFUN([AX_C_PREDEF___FUNCTION__],
 [AC_CHECK_FUNCS(strcmp)
 AC_MSG_CHECKING(for working C99 __func__)
 AC_CACHE_VAL(ac_cv_have_working___func__,
-[AC_TRY_RUN(
-[#include <stdio.h>
+[AC_RUN_IFELSE(
+  [AC_LANG_SOURCE([[#include <stdio.h>
 #include <stdlib.h>
 
 const char *testfunc(void)
@@ -39,12 +39,15 @@ const char *testfunc(void)
 int main(void)
 {
     exit(!!strcmp(testfunc(), "testfunc"));
-}], ac_cv_have_working___func__=yes, ac_cv_have_working___func__=no, ac_cv_have_working___func__=cross)])
+}]])], 
+  [ac_cv_have_working___func__=yes],
+  [ac_cv_have_working___func__=no], 
+  [ac_cv_have_working___func__=cross])])
 AC_MSG_RESULT([$ac_cv_have_working___func__])
 AC_MSG_CHECKING(for working __FUNCTION__)
 AC_CACHE_VAL(ac_cv_have_working___function__,
-[AC_TRY_RUN(
-[#include <stdio.h>
+[AC_RUN_IFELSE(
+  [AC_LANG_SOURCE([[#include <stdio.h>
 #include <stdlib.h>
 
 const char *testfunc(void)
@@ -55,7 +58,10 @@ const char *testfunc(void)
 int main(void)
 {
     exit(!!strcmp(testfunc(), "testfunc"));
-}], ac_cv_have_working___function__=yes, ac_cv_have_working___function__=no, ac_cv_have_working___function__=cross)])
+}]])], 
+  [ac_cv_have_working___function__=yes], 
+  [ac_cv_have_working___function__=no], 
+  [ac_cv_have_working___function__=cross])])
 AC_MSG_RESULT([$ac_cv_have_working___function__])
 if test x$ac_cv_have_working___func__ == "xyes"; then
   AC_DEFINE(HAVE___FUNC__, 1, [Define if compiler implements __func__.])

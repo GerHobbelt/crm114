@@ -27,10 +27,12 @@ AC_DEFUN([AX_NSEC_STAT_FIELDS],
 [AC_CHECK_TYPES([struct stat])
 AC_MSG_CHECKING([for nanosecond 'struct stat' timestamps: mtimensec])
 AC_CACHE_VAL(ac_cv_have_nsec_stat_mtimensec,
-[AC_TRY_RUN(
-[#include <stdio.h>
+[AC_RUN_IFELSE(
+  [AC_LANG_SOURCE([[#include <stdio.h>
 #include <stdlib.h>
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
 
 int main(void)
 {
@@ -39,14 +41,19 @@ int main(void)
   st.st_mtimensec = 0;  
   st.st_atimensec = 0;  
   exit(0);
-}], ac_cv_have_nsec_stat_mtimensec=yes, ac_cv_have_nsec_stat_mtimensec=no, ac_cv_have_nsec_stat_mtimensec=cross)])
+}]])], 
+  [ac_cv_have_nsec_stat_mtimensec=yes], 
+  [ac_cv_have_nsec_stat_mtimensec=no], 
+  [ac_cv_have_nsec_stat_mtimensec=cross])])
 AC_MSG_RESULT([$ac_cv_have_nsec_stat_mtimensec])
 AC_MSG_CHECKING([for nanosecond 'struct stat' timestamps: mtime_nsec])
 AC_CACHE_VAL(ac_cv_have_nsec_stat_mtime_nsec,
-[AC_TRY_RUN(
-[#include <stdio.h>
+[AC_RUN_IFELSE(
+  [AC_LANG_SOURCE([[#include <stdio.h>
 #include <stdlib.h>
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
 
 int main(void)
 {
@@ -55,12 +62,15 @@ int main(void)
   st.st_mtime_nsec = 0;  
   st.st_atime_nsec = 0;  
   exit(0);
-}], ac_cv_have_nsec_stat_mtime_nsec=yes, ac_cv_have_nsec_stat_mtime_nsec=no, ac_cv_have_nsec_stat_mtime_nsec=cross)])
+}]])], 
+  [ac_cv_have_nsec_stat_mtime_nsec=yes], 
+  [ac_cv_have_nsec_stat_mtime_nsec=no], 
+  [ac_cv_have_nsec_stat_mtime_nsec=cross])])
 AC_MSG_RESULT([$ac_cv_have_nsec_stat_mtime_nsec])
 AC_MSG_CHECKING([for nanosecond 'struct stat' timestamps: mtim.tv_nsec])
 AC_CACHE_VAL(ac_cv_have_nsec_stat_mtim_tv_nsec,
-[AC_TRY_RUN(
-[#include <stdio.h>
+[AC_RUN_IFELSE(
+  [AC_LANG_SOURCE([[#include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 
@@ -71,7 +81,10 @@ int main(void)
   st.st_mtim.tv_nsec = 0;  
   st.st_atim.tv_nsec = 0;  
   exit(0);
-}], ac_cv_have_nsec_stat_mtim_tv_nsec=yes, ac_cv_have_nsec_stat_mtim_tv_nsec=no, ac_cv_have_nsec_stat_mtim_tv_nsec=cross)])
+}]])], 
+  [ac_cv_have_nsec_stat_mtim_tv_nsec=yes], 
+  [ac_cv_have_nsec_stat_mtim_tv_nsec=no],
+  [ac_cv_have_nsec_stat_mtim_tv_nsec=cross])])
 AC_MSG_RESULT([$ac_cv_have_nsec_stat_mtim_tv_nsec])
 
 if test x$ac_cv_have_nsec_stat_mtimensec == "xyes"; then

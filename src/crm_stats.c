@@ -273,52 +273,72 @@ double normalized_gauss(double x, double s)
 }
 
 
-static uint32_t rand_store[5] = {0};
+/**************Derived from MOTHER.CPP ****************** AgF 2007-08-01 *
+*  'Mother-of-All' random number generator                               *
+*                                                                        *
+*  This is a multiply-with-carry type of random number generator         *
+*  invented by George Marsaglia.  The algorithm is:                      *
+*  S = 2111111111*X[n-4] + 1492*X[n-3] + 1776*X[n-2] + 5115*X[n-1] + C   *
+*  X[n] = S modulo 2^32                                                  *
+*  C = floor(S / 2^32)                                                   *
+*                                                                        *
+*  Note:                                                                 *
+*  This implementation uses 64-bit integers for intermediate             *
+*  calculations. Works only on compilers that support 64-bit integers.   *
+*                                                                        *
+* © 1999 - 2007 A. Fog.                                                  *
+* GNU General Public License www.gnu.org/copyleft/gpl.html               *
+*************************************************************************/
+static uint32_t rand_store[5] = { 0 };
 static uint32_t rand_init_done = 0;
 
-// Output random bits
+// Output random bits: this code is an implementation of one of Marsaglia's random generators
 static uint32_t crm_rand32(void)
 {
-  uint64_t sum;
-  sum = (uint64_t)2111111111UL * (uint64_t)rand_store[3] +
-     (uint64_t)1492 * (uint64_t)(rand_store[2]) +
-     (uint64_t)1776 * (uint64_t)(rand_store[1]) +
-     (uint64_t)5115 * (uint64_t)(rand_store[0]) +
-     (uint64_t)rand_store[4];
-  rand_store[3] = rand_store[2];  rand_store[2] = rand_store[1];  rand_store[1] = rand_store[0];
-  rand_store[4] = (uint32_t)(sum >> 32);            // Carry
-  rand_store[0] = (uint32_t)(sum);                  // Low 32 bits of sum
-  return rand_store[0];
-} 
+    uint64_t sum;
+
+    sum = (uint64_t)2111111111UL * (uint64_t)rand_store[3] +
+          (uint64_t)1492 * (uint64_t)(rand_store[2]) +
+          (uint64_t)1776 * (uint64_t)(rand_store[1]) +
+          (uint64_t)5115 * (uint64_t)(rand_store[0]) +
+          (uint64_t)rand_store[4];
+    rand_store[3] = rand_store[2];
+    rand_store[2] = rand_store[1];
+    rand_store[1] = rand_store[0];
+    rand_store[4] = (uint32_t)(sum >> 32);          // Carry
+    rand_store[0] = (uint32_t)(sum);                // Low 32 bits of sum
+    return rand_store[0];
+}
 
 // this function initializes the random number generator:
-void crm_rand_init(uint32_t seed) 
+void crm_rand_init(uint32_t seed)
 {
-  int i;
-  uint32_t s = seed;
-  // make random numbers and put them into the buffer
-  for (i = 0; i < 5; i++) 
-  {
-    s = s * 29943829 - 1;
-    rand_store[i] = s;
-  }
-  // randomize some more
-  for (i=0; i<19; i++) 
-  {
-	  crm_rand32();
-  }
-  rand_init_done = 1;
+    int i;
+    uint32_t s = seed;
+
+    // make random numbers and put them into the buffer
+    for (i = 0; i < 5; i++)
+    {
+        s = s * 29943829 - 1;
+        rand_store[i] = s;
+    }
+    // randomize some more
+    for (i = 0; i < 19; i++)
+    {
+        crm_rand32();
+    }
+    rand_init_done = 1;
 }
 
 
 // returns a random number between 0 and 1:
 double crm_frand(void)
 {
-	if (!rand_init_done)
-	{
-		crm_rand_init(42);
-	}
-   return (double)crm_rand32() * (1. / (65536. * 65536.));
+    if (!rand_init_done)
+    {
+        crm_rand_init(42);
+    }
+    return (double)crm_rand32() * (1. / (65536. * 65536.));
 }
 
 
@@ -329,16 +349,18 @@ void print_histogram_float(float *f, int n, int n_buckets)
     double min, max, s;
 
     buckets = calloc(n_buckets, sizeof(buckets[0]));
-        if (!buckets)
-        {
-            untrappableerror("Cannot allocate histogram memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!buckets)
+    {
+        untrappableerror("Cannot allocate histogram memory", "Stick a fork in us; we're _done_.");
+    }
     min = max = f[0];
     for (i = 1; i < n; i++)
+	{
         if (f[i] > max)
             max = f[i];
         else if (f[i] < min)
             min = f[i];
+	}
     s = (n_buckets - 0.01) / (max - min);
     for (i = 0; i < n_buckets; i++)
         buckets[i] = 0;

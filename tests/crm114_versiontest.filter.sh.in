@@ -28,10 +28,12 @@ if [ ! -f "${reffile}" ] || [ ! -f "${testfile}" ]; then
   exit 66
 fi
 
-sed -e 's/\(This is CRM114, version [^ ,]\+\).*\(([^)]\+([^)]\+))\).*/\1 XYZ \2/' < "${reffile}" \
+sed -e 's/\(This is CRM114, version [^ ,]\+\).*\(([^,)]\+([^,)]\+\).*/\1 XYZ \2/' < "${reffile}" \
+| sed -e 's/\(version: [^ ,]\+\).*\(([^,)]\+([^,)]\+\).*/\1 XYZ \2/' \
 | sed -e '/Copyright/s/200[6-8]/200X/g' \
 | sed -e '/Classifiers included in this build/,$d' > "${targetname}.refout"
-sed -e 's/\(This is CRM114, version [^ ,]\+\).*\(([^)]\+([^)]\+))\).*/\1 XYZ \2/' < "${testfile}" \
+sed -e 's/\(This is CRM114, version [^ ,]\+\).*\(([^,)]\+([^,)]\+\).*/\1 XYZ \2/' < "${testfile}" \
+| sed -e 's/\(version: [^ ,]\+\).*\(([^,)]\+([^,)]\+\).*/\1 XYZ \2/' \
 | sed -e '/Copyright/s/200[6-8]/200X/g' \
 | sed -e '/Classifiers included in this build/,$d' > "${targetname}.tstout"
 

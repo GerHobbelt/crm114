@@ -1,4 +1,4 @@
-    The CRM114 Quick Reference Card.  Updated 20061104
+f    The CRM114 Quick Reference Card.  Updated 20061104
 
      Copyright W.S. Yerazunis, 2002-2006.  All rights reserved.
      This software is released under V2.1 of the Gnu Public License.
@@ -345,6 +345,10 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
                                   Use <fromstart> to reinitialize the network
                                   neurons to a small random state in case it
                                   gets stuck in a (rare) local minimum.
+                                  Use <bychunk> to update weights after each
+                                  document in a pass (default is to update
+                                  weights only after all documents are seen
+                                  in a pass).
 				  VERY EXPERIMENTAL!!!
       <correlate>               - use the full correlative matcher.  Very
                                   slow, but capable of matching stemmed words

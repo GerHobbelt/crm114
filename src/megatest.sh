@@ -409,9 +409,9 @@ for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Vector 3-word-bag Hyperspa
 #    the "vector: blahblah" is coded by the desired length of the pipeline,
 #    then the number of iterations of the pipe, then pipelen * iters 
 #    integer coefficients.  Missing coefficients are taken as zero, 
-#    extra coefficients are disregarded.
-./crm114 '-{learn < hyperspace > (q_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 / }' < QUICKREF_mt_ng_reference_1.input
-./crm114 '-{learn < hyperspace > (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1/}' < INTRO_mt_ng_reference_2.input
+#    extra coefficients are disregarded. [i_a] WARNING: GerH needs an extra 'step' parameter in there: an extra '1'
+./crm114 '-{learn < hyperspace > (q_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 1 / }' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn < hyperspace > (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 1/}' < INTRO_mt_ng_reference_2.input
 ./crm114 '-{ isolate (:s:); {classify < hyperspace > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ /vector: 3 1 1 1 1  /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -447,12 +447,12 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Fast Substring Compression Match Classifier \n/}' ; done
-./crm114 -s 200000 '-{learn < fscm > (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
-./crm114 -s 200000 '-{learn < fscm > (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
-./crm114 '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+./crm114 -s 200000 '-{learn < fscm > (q_test.css) }' < QUICKREF_mt_ng_reference_1.input
+./crm114 -s 200000 '-{learn < fscm > (i_test.css) }' < INTRO_mt_ng_reference_2.input
+./crm114 '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:) ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
-./crm114 '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+./crm114 '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:) ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
 But fear not, we _do_ have the document you want. 
 EOF
 

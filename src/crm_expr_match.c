@@ -49,8 +49,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int vtextoffset, vtextend, vtextstartlimit;
     int vpmstart, vpmend;
     int vmidx;
-	int fev = 0;
-	int boxtxtlen;
+    int fev = 0;
+    int boxtxtlen;
 
     //    And it all comes down to this, right here.  Matching a regex.
     //    This is the cruxpoint of the whole system.  We parse the
@@ -177,10 +177,10 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     bindable_vars_len = crm_get_pgm_arg(bindable_vars, MAX_PATTERN, apb->p1start, apb->p1len);
     if (internal_trace)
-	{
+    {
         fprintf(stderr, " bindable vars: (len = %d) ***%s***\n", bindable_vars_len, bindable_vars);
-	}
-    bindable_vars_len = crm_nexpandvar(bindable_vars, bindable_vars_len, MAX_PATTERN);
+    }
+    bindable_vars_len = crm_nexpandvar(bindable_vars, bindable_vars_len, MAX_PATTERN, vht, tdw);
 
 
     //     here's where we look for a [] var-restriction
@@ -193,7 +193,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             &source_start,
             &source_len,
             errstr,
-			WIDTHOF(errstr));
+            WIDTHOF(errstr));
 
     if (internal_trace)
     {
@@ -219,7 +219,11 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -231,13 +235,13 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     pchlen = crm_get_pgm_arg(pch, MAX_PATTERN, apb->s1start, apb->s1len);
     if (internal_trace)
         fprintf(stderr, " match pattern: (len = %d) =%s=\n", pchlen, pch);
-    pchlen = crm_nexpandvar(pch, pchlen, MAX_PATTERN);
+    pchlen = crm_nexpandvar(pch, pchlen, MAX_PATTERN, vht, tdw);
 
     if (user_trace)
-	{
+    {
         fprintf(stderr, " match pattern expands to =%s= len %d flags %x %x\n",
                 pch, pchlen, cflags, eflags);
-	}
+    }
 
     //    regcomp the pattern
     i = crm_regcomp(&preg, pch, pchlen, cflags);
@@ -252,7 +256,11 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -282,7 +290,11 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -303,7 +315,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         int fev;
         fev = fatalerror("Bogus text block (neither cdw nor tdw) on var ",
                 box_text);
-	return fev;
+        return fev;
     }
 #ifdef SUPERCEDED
     vtextoffset = vht[vmidx]->vstart;
@@ -449,9 +461,13 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             fprintf(stderr, "Regex did not match, no absent flag, failing.\n");
         if (user_trace && absentp)
             fprintf(stderr, "Regex matched but with absent flag, failing.\n");
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#endif
+        CRM_ASSERT(csl->cstmt >= 0);
+        CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
     else
@@ -480,12 +496,12 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         vht[vmidx]->mlen = matches[0].rm_eo - matches[0].rm_so;
 
         if (bindable_vars_len > 0 && absentp)
-		{
+        {
             nonfatalerror("This program specifies an 'absent' match, and also "
                           "tries to bind variables that, by the above, aren't "
                           "matched!  ",
                     "We'll ignore these variable bindings for now.");
-		}
+        }
 
         if (bindable_vars_len > 0 && !absentp)
         {
@@ -499,7 +515,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //
             char *index_texts[MAX_SUBREGEX];
             int index_starts[MAX_SUBREGEX],
-                 index_lengths[MAX_SUBREGEX];
+                index_lengths[MAX_SUBREGEX];
 
             done = 0;        //  loop till we've captured all the vars
             mc = 0;
@@ -528,16 +544,16 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     if (internal_trace)
                     {
                         fprintf(stderr, "variable -");
-			fwrite_ASCII_Cfied(stderr, bindable_vars + vstart, vlen);
+                        fwrite_ASCII_Cfied(stderr, bindable_vars + vstart, vlen);
                         fprintf(stderr, "- will be assigned from var offsets %d to %d "
                                         "(origin offsets %d to %d), value ",
                                 (int)matches[mc].rm_so,
                                 (int)matches[mc].rm_eo,
                                 (int)(matches[mc].rm_so + textoffset),
                                 (int)(matches[mc].rm_eo + textoffset));
-			fwrite_ASCII_Cfied(stderr, 
-				mdw->filetext + matches[mc].rm_so + textoffset,
-				(matches[mc].rm_so + textoffset) - (matches[mc].rm_eo + textoffset));
+                        fwrite_ASCII_Cfied(stderr,
+                                mdw->filetext + matches[mc].rm_so + textoffset,
+                                (matches[mc].rm_so + textoffset) - (matches[mc].rm_eo + textoffset));
                         fprintf(stderr, "\n");
                     }
                     vnext = vstart + vlen;
@@ -604,12 +620,12 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     vstart = vnext;
                     mc++;
                     if (mc >= MAX_SUBREGEX)
-					{
+                    {
                         nonfatalerror(
                                 "Exceeded MAX_SUBREGEX limit-too many parens in match",
                                 " Looks like you blew the gaskets on 'er.\n");
+                    }
                 }
-				}
             }
             //
             //      Now do cleanup/reclamation of old memory space, if needed.
@@ -686,10 +702,10 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
 nonfatal_route_outwards:
         if (user_trace)
-		{
+        {
             fprintf(stderr, "The MATCH FAULTed and we're taking the TRAP out");
+        }
     }
-	}
 
     return fev;
 }

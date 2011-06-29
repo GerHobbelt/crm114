@@ -338,6 +338,10 @@ noop                              - no-op statement
 :label: (:arg:)                   - define a CALLable label.  The args in
                                     the CALL statement are concatenated and
                                     put into the freshly ISOLATEd var :arg:
+:label: (:arg1:) (:arg2:)         - define a CALLable label.  The args are
+                                    produced by the CALL or SORT statement and
+                                    put into the freshly ISOLATEd var :arg1:
+                                    and :arg2:.
    (:arg:)                        - var-expanded varname to receive the
                                     caller's arguments (usually a MATCH is
                                     then done to put locally convenient
@@ -367,6 +371,7 @@ alter (:var:) /new-val/           - surgically change value of var to new-val
 call /:entrypoint_label:/
 call /:entrypoint_label:/ [:arg1: :arg2:... ]
 call /:entrypoint_label:/ [:arg1: :arg2:... ] (:ret_arg:)
+call /:entrypoint_label:/ [:arg1: :arg2:... ] [:2nd_arg1: :2nd_arg2:... ] (:ret_arg:)
                                   - do a routine call on the
                                     specified (var-expanded) entrypoint label.
                                     Note that the called routine shares
@@ -460,6 +465,10 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /svm-specific con
                                     Use <fromstart> to reinitialize the network
                                     neurons to a small random state in case it
                                     gets stuck in a (rare) local minimum.
+                                    Use <bychunk> to update weights after each
+                                    document in a pass (default is to update
+                                    weights only after all documents are seen
+                                    in a pass).
                                     VERY EXPERIMENTAL!!!
       <correlate>                 - use the full correlative matcher.  Very
                                     slow, but capable of matching stemmed words
@@ -1006,18 +1015,113 @@ return /returnval/                - return from a CALL.  Note that since
                                     accept return values, it's discarded).
 
 
-routine                           - WARNING: reserved for future use
+routine /:label:/ (:arg:)         - WARNING: reserved for future use
+
+                                    This is similar to a regular :label:
+                                    in the code (and can be called by the
+                                    'call' statement), with one major
+                                    difference: all variables which are 
+                                    _created_ in the immediately following {}-delimited 
+                                    scope block will NOT exist in the parent
+                                    scope(s) as well, NOR will they overwrite variables existing in parent scope. In other words: use
+                                    'routine' to instruct CRM114 to create
+                                    and use 'local scope' variables while
+                                    _inside_ the 'routine' {}-delimited 
+                                    code scope block. Referencing variables in there, which were only created in parent scope, will allow editing those variables. Without prefixing that
+                                    :label: with the 'routine' command, all
+                                    variables, old and new, will share the
+                                    same (parent) scope (see :label: above).
+                                    Local scope variables will be DISCARDED when the
+                                    routine RETURNs to the caller.
+                                    
+   (:arg:)                        - var-expanded varname to receive the
+                                    caller's arguments (usually a MATCH is
+                                    then done to put locally convenient
+                                    labels on the args).
+
+                                    Note that :arg: is also considered to be
+                                    a new variable in LOCAL scope (despite that
+                                    it is theoretically created outside the
+                                    next {}-delimited scope block) and will thus be discarded
+                                    following the next RETURN statement.
+                                    
+
+sort <flags> (:dest:) [:src:] /line-pat/ /line-merge-text/ /:compare-label:/
+                                  - WARNING: reserved for future use
+                                  
+                                    Sort 'lines' (each identified by the /line-pat/
+                                    regex) in ascending order. The optional
+                                    /:compare-label:/ routine will be called
+                                    to compare individual lines while sorting.
+
+  <nocase>                        - ignore case when matching
+  
+  <nomultiline>                   - execute the search in blocks of one
+                                    line of text each, so the result will
+                                    never span a line.  This means that
+                                    ^ and $ will match at the beginning
+                                    and end of each line, rather than
+                                    the beginning and end of the full text.
+                                    
+  <unique>                        - repeated copies of the same
+                                    line in :src: are removed, so only a single
+                                    copy remains. Identity of two lines is determined
+                                    by calling the optional compare routine pointed
+                                    at by /:compare-label:/.
+                                    
+    [:src:]                       - captured var containing the text
+                                    to be sorted (if omitted, the full
+                                    contents of the data window is used).
+                                    
+    [:src: n m]                   - take a substring of :src:, starting
+                                    at n and including m characters.
+                                    
+    [:src: /regex/]               - take a substring of :src: that
+                                    matches the regex.
+
+      (:dest:)                    - var-expanded varname to receive the
+                                    sorted collection of lines. Lines are merged
+                                    after sorting, by postfixing each with the
+                                    /line-merge-text/ text. (Note that this includes
+                                    the last line: it will be postfixed with this text as well.)
+
+        /line-pat/                - regex that defines a "line".  Things
+                                    that aren't "lines" are ignored.
+                                    Default is /[^\r\n]*/.
+          
+          /line-merge-text/       - LITERAL text 'glue' which will be appended to
+                                    each sorted line before writing the complete set
+                                    to :dest:.
+                                    Default is /\n/.
+                                        
+          /:compare-label:/       - Optional routine used by 'sort' to compare two
+                                    individual lines. The routine is assumed to be
+                                    defined as 'routine :label: (:arg1:) (:arg2:)':
+                                    note the use of 'routine' here and the two arguments
+                                    :arg1: and :arg2:. The return value produced by the
+                                    custom routine is assumed to be a floating point value, where
+                                    these rules are assumed:
+                                    
+                                    :arg2: > :arg1:  ==> return value >= 0.5
+                                     
+                                    :arg2: < :arg1:  ==> return value <= -0.5
+                                     
+                                    :arg2: == :arg1:  ==> return value ~ 0 (i.e. within the range
+                                                          <-0.5 .. 0.5>)
+                                                          
+                                    Note that there is no point in specifying the flag
+                                    <nocase> when also providing a /:compare-label:/ custom
+                                    sort routine.
+                                    
+                                    Default compare routine is str[case]cmp(3).
 
 
-sort                              - WARNING: reserved for future use
-
-
-syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
+syscall <flags> (:in:) (:out: :err:) (:status:) /command_or_label/ [timeout]
                                   - execute a shell command or fork
                                     to the specified label.  This happens
                                     in a fresh copy of the environment;
                                     there is no communication with the main
-                                    program except via the :in:, :out:,
+                                    program except via the :in:, :out:, :err:
                                     and :status: vars.
                                     Output over the buffer length is
                                     discarded unless you <keep> the process
@@ -1038,23 +1142,31 @@ syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
                                     is mutually exclusive with <keep>. )
         [timeout]                 - only allow the called process to run for N
                                     seconds. (0 = unlimited)
-        [pollcycle]               - set the I/O poll cycle to N seconds. Use
-                                    to reduce CPU/OS load (higher N) or increase
-                                    response speed for long running processes
-                                    which produce very little output.
          (:in:)                   - var-expanded string to feed to command
-                                    as input (can be null if you don't want
-                                    to send the process something.)  You
-                                    _MUST_ specify this if you want to
-                                    specify an :out: variable.
+                                    as input. Can be null if you don't want
+                                    to send the process something.  You
+                                    _MUST_ specify this set of braces when you want to
+                                    specify an :out:, :err: or :status: variable.
           (:out:)                 - var-expanded varname to place results
-                                    into (MUST pre-exist, can be null if
+                                    into. MUST pre-exist, can be null if
                                     you don't want to read the process's
-                                    output (yet, or at all).  Limit per
-                                    syscall is 256 Kbytes.  You _MUST_
-                                    specify this if you want to use the
-                                    :status: variable).  This is
-                                    a surgical alter.
+                                    stdout output (yet, or at all).  Limit per
+                                    syscall is 256 Kbytes.  You MUST
+                                    specify this set of braces when you want to use the
+                                    :status: variable.  This is
+                                    a surgical alter and will receive the
+                                    data written to stdout by the external
+                                    application.
+          (:err:)                 - var-expanded varname to place results
+                                    into. MUST pre-exist, can be null if
+                                    you don't want to read the process's
+                                    stderr output (yet, or at all).  Limit per
+                                    syscall is 256 Kbytes.  You MUST
+                                    specify this set of braces when you want to use the
+                                    :status: variable.  This is
+                                    a surgical alter and will receive the
+                                    data written to stderr by the external
+                                    application.
            (:status:)             - if you want to keep a minion proc
                                     around, or catch the exit status
                                     of the process, specify a varname here.
@@ -1064,7 +1176,7 @@ syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
                                     another syscall by using this var again.
                                     When the process exits, it's exit code
                                     will be surgically stored here (unless
-                                    you specified <async>)
+                                    you specified <async>).
             /command_or_label/    - the command or entrypoint you want to
                                     run.  This arg is var-expanded; if the
                                     first word is a :label:, the fork begins
@@ -1074,7 +1186,7 @@ syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
                                     be executed as a shell command.
                                     This argument is optional: when you have
                                     specified <keep> and are performing a
-                                    second/subsequent syscall, you can optionally
+                                    second/subsequent syscall, you can
                                     dispense with the // arg.
 
 

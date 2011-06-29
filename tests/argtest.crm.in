@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114 -( agent=smith target=neo target=trinity ) --
+#! @BIN_PATH@/crm114 -( agent=smith target=neo target=trinity ) --
 window
 { 
 	output /:*:_nl: :_argc: =:*:_argc:= / 

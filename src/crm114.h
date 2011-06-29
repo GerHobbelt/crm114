@@ -10,7 +10,13 @@
 #ifndef __CRM114_H__
 #define __CRM114_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
+
+#if 01
 //
 //    Global variables
 
@@ -35,9 +41,12 @@ extern CSL_CELL *mdw;
 //    on every new statement.
 //extern ARGPARSE_BLOCK *apb;
 
+#endif
 
 //    the command line argv[0]: the application path/name
 extern char *prog_argv0;
+
+#if 01
 
 //    the auxilliary input buffer (for WINDOW input)
 extern char *newinputbuf;
@@ -48,13 +57,19 @@ extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
 
+#endif
+
+
+#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+extern CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg;
+#endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
 
 
 
 //    the microcompiler
-int crm_microcompiler(CSL_CELL  *csl,
-        VHT_CELL               **vht);
+int crm_microcompiler(CSL_CELL *csl,
+        VHT_CELL              **vht);
 
 
 //  hash function for variable tables
@@ -65,13 +80,13 @@ crmhash64_t strnhash64(const char *str, size_t len);
 //  string translate function - for the TRANSLATE function
 int strntrn(
         unsigned char *datastr,
-        int *datastrlen,
-        int maxdatastrlen,
+        int           *datastrlen,
+        int            maxdatastrlen,
         unsigned char *fromstr,
-        int fromstrlen,
+        int            fromstrlen,
         unsigned char *tostr,
-        int tostrlen,
-        uint64_t  flags);
+        int            tostrlen,
+        uint64_t       flags);
 
 
 //   basic math evaluator top function
@@ -95,13 +110,13 @@ void crm_setvar(
         char *filename,                 // file where first defined (or NULL)
         int   filedesc,                 // filedesc of defining file (or NULL)
         char *nametxt,                  // block of text hosting variable name
-        int nstart,                   // index into nametxt to start varname
-        int nlen,                     // length of name
+        int   nstart,                   // index into nametxt to start varname
+        int   nlen,                     // length of name
         char *valtxt,                   // text block hosts the captured value
-        int vstart,                   // index of start of cap. value
-        int vlen,                     // length of captured value
-        int linenumber,               // linenumber (if pgm, else -1)
-        int lazy_redirects            // if nonzero, this is a lazy redirect
+        int   vstart,                   // index of start of cap. value
+        int   vlen,                     // length of captured value
+        int   linenumber,               // linenumber (if pgm, else -1)
+        int   lazy_redirects            // if nonzero, this is a lazy redirect
                );
 
 //   put a variable and a value into the temporary area
@@ -111,17 +126,17 @@ void crm_set_temp_var(const char *varname, const char *value);
 //   put a variable and a window-based value into the temp area
 void crm_set_windowed_var(char *varname,
         char                   *text,
-        int                    start,
-        int                    len,
-        int                    stmtnum);
-
-//   put a counted-length var and a data-window-based value into the temp area.
-void crm_set_windowed_nvar(char *varname,
-        int                     varlen,
-        char                    *valtext,
         int                     start,
         int                     len,
         int                     stmtnum);
+
+//   put a counted-length var and a data-window-based value into the temp area.
+void crm_set_windowed_nvar(char *varname,
+        int                      varlen,
+        char                    *valtext,
+        int                      start,
+        int                      len,
+        int                      stmtnum);
 
 //    set a program label.
 void crm_setpgmlabel(int start, int end, int stmtnum);
@@ -139,7 +154,7 @@ char *crm_mapstream(FILE *instream); // read from instream till
 // it goes dry, putting result into a buffer.
 
 //     actually execute a compiled CRM file
-int crm_invoke(void);
+int crm_invoke(CSL_CELL *csl);
 
 //     look up a variable line number (for GOTOs among other things)
 int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len);
@@ -245,10 +260,10 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
 //     get the next word in the input.  (note- the regex stops only when
 //     one hits a NULL, which may yield a slightly bogus result.
 int crm_nextword(const char *input,
-        int inlen,
-        int starthere,
-        int *start,
-        int *len);
+        int                  inlen,
+        int                  starthere,
+        int                 *start,
+        int                 *len);
 
 int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -257,57 +272,151 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 //   the learner... in variant forms...
-int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+				   		VHT_CELL **vht,
+		CSL_CELL *tdw);
 int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_neural_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, int start, int len);
-int crm_expr_alt_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_fast_substring_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+		char *txt, int start, int len);
+int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 
 
 
 //   The bigger one - classifying...
-int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,		
+		VHT_CELL **vht,
+		CSL_CELL *tdw);
 int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_neural_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_fast_substring_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+		char *txt, int start, int len);
+int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
         char *txt, int start, int len);
 
 
@@ -337,6 +446,16 @@ int crm_expr_fscm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
+int crm_expr_alt_markov_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
 
 
 
@@ -364,6 +483,16 @@ int crm_expr_sks_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 int crm_expr_fscm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_markov_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 
 
@@ -393,6 +522,16 @@ int crm_expr_fscm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
+int crm_expr_alt_markov_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
 
 
 
@@ -420,6 +559,16 @@ int crm_expr_sks_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 int crm_expr_fscm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_markov_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 
 
@@ -449,6 +598,16 @@ int crm_expr_fscm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
+int crm_expr_alt_markov_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
 
 
 
@@ -476,6 +635,16 @@ int crm_expr_sks_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 int crm_expr_fscm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_markov_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 
 
@@ -505,6 +674,16 @@ int crm_expr_fscm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
+int crm_expr_alt_markov_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
 
 
 
@@ -532,6 +711,16 @@ int crm_expr_sks_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 int crm_expr_fscm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 int crm_neural_net_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_markov_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_bayes_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_winnow_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osb_hyperspace_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txt, int start, int len);
+int crm_expr_alt_osbf_bayes_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txt, int start, int len);
 
 
@@ -575,10 +764,10 @@ int crm_expr_mutate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 //      parse a CRM114 statement; this is mostly a setup routine for
 //     the generic parser.
-int crm_statement_parse(char           *in,
-        int                            slen,
-		MCT_CELL *mct, 
-        ARGPARSE_BLOCK                 *apb);
+int crm_statement_parse(char *in,
+        int                   slen,
+        MCT_CELL             *mct,
+        ARGPARSE_BLOCK       *apb);
 
 
 //    and a generic parser routine for parsing a line according
@@ -619,17 +808,17 @@ struct magical_VT_userdef_tokenizer;
 //
 // Returns the number of tokens produced (in *tokenhash_dest).
 //
-// Returns 0 when the complete input text (obj->input_text) has been tokenized and 
+// Returns 0 when the complete input text (obj->input_text) has been tokenized and
 // no token could be produced anymore.
-// 
+//
 // Negative return values signal errors.
 //
 // Note that *obj elements will/may be updated too, to make sure the
 // next call to this function will produce the next token.
 //
-typedef int VT_tokenizer_func(struct magical_VT_userdef_tokenizer *obj, // 'this' reference
-							  crmhash_t *tokenhash_dest,
-							  int tokenhash_dest_size);
+typedef int VT_tokenizer_func (struct magical_VT_userdef_tokenizer *obj, // 'this' reference
+                               crmhash_t * tokenhash_dest,
+                               int tokenhash_dest_size);
 
 //
 // As the VT_tokenizer_func may use additional custom info stored in
@@ -650,10 +839,10 @@ typedef int VT_tokenizer_func(struct magical_VT_userdef_tokenizer *obj, // 'this
 // their environment or not.
 //
 // Returns 0 when success.
-// 
+//
 // Negative return values signal errors.
 //
-typedef int VT_tokenizer_cleanup_func(struct magical_VT_userdef_tokenizer *obj); // 'this' reference
+typedef int VT_tokenizer_cleanup_func (struct magical_VT_userdef_tokenizer *obj); // 'this' reference
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -663,39 +852,40 @@ typedef int VT_tokenizer_cleanup_func(struct magical_VT_userdef_tokenizer *obj);
 //
 typedef struct magical_VT_userdef_tokenizer
 {
-	const char *input_text;				// used to remember the input text to tokenize ...
-	int input_textlen;					// ... and its length in bytes
-	int input_next_offset;				// position where to continue grabbing the next token
+    const char *input_text;                                     // used to remember the input text to tokenize ...
+    int         input_textlen;                                  // ... and its length in bytes
+    int         input_next_offset;                              // position where to continue grabbing the next token
 
-	int max_big_token_count;			// maximum number of 'big' tokens allowed to be merged into a single 'feature' a la OSBF
-	int max_token_length;				// merge tokens longer than this with the next one into a single feature a la OSBF.
-										// Set to 0 to select the DEFAULT 'big token merge' tokenizer behaviour.
-										// Set to -1 to DISABLE any 'big token merge' tokenizer behaviour.
-										// Setting this value to a non-zero value helps 'gobble' otherwise undecipherable blocks
-										// of input such as base64 images. This 'merging/globbing' is done in the OSBF classifier
-										// among others.
-	VT_tokenizer_func    *tokenizer;	// The place to provide your own custom tokenizer function. If you don't, the VT will 
-										// apply the default here.
-	VT_tokenizer_cleanup_func *cleanup; // call this when done; may be used to free() data when applicable.
+    int max_big_token_count;                            // maximum number of 'big' tokens allowed to be merged into a single 'feature' a la OSBF
+    int max_token_length;                               /* merge tokens longer than this with the next one into a single feature a la OSBF.
+    // Set to 0 to select the DEFAULT 'big token merge' tokenizer behaviour.
+    // Set to -1 to DISABLE any 'big token merge' tokenizer behaviour.
+    // Setting this value to a non-zero value helps 'gobble' otherwise undecipherable blocks
+    // of input such as base64 images. This 'merging/globbing' is done in the OSBF classifier
+    // among others.
+	*/
+    VT_tokenizer_func *tokenizer;               // The place to provide your own custom tokenizer function. If you don't, the VT will
+    // apply the default here.
+    VT_tokenizer_cleanup_func *cleanup;     // call this when done; may be used to free() data when applicable.
 
-	///////////// regex-only tokenizers; others may abuse this too /////////////////
+    ///////////// regex-only tokenizers; others may abuse this too /////////////////
 
-	const char           *regex;        // the parsing regex (might be ignored)
-    int                   regexlen;     // length of the parsing regex
-	int regex_compiler_flags;			// set of regcomp() flags, e.g. REG_ICASE
+    const char *regex;                                  // the parsing regex (might be ignored)
+    int         regexlen;                               // length of the parsing regex
+    int         regex_compiler_flags;                   // set of regcomp() flags, e.g. REG_ICASE
 
-	/////////////// support flags, to be used by tokenizer() and cleanup()
+    /////////////// support flags, to be used by tokenizer() and cleanup()
 
-	unsigned regex_compiler_flags_are_set: 1; // !0 when 'regex_compiler_flags' has been properly initialized
+    unsigned regex_compiler_flags_are_set : 1;    // !0 when 'regex_compiler_flags' has been properly initialized
 
-	unsigned regex_malloced: 1;			// !0 when regex is strdup()ed or otherwise malloc()ed and must be free()d
+    unsigned regex_malloced : 1;                        // !0 when regex is strdup()ed or otherwise malloc()ed and must be free()d
 
-	unsigned initial_setup_done: 1;		// !0 when the internals have been configured by tokenizer() for its use.
-	unsigned eos_reached: 1;			// !0 when tokenizer() has signalled that the end of the input stream 
-										// has been reached: no more tokens to produce.
+    unsigned initial_setup_done : 1;                    // !0 when the internals have been configured by tokenizer() for its use.
+    unsigned eos_reached        : 1;                    // !0 when tokenizer() has signalled that the end of the input stream
+    // has been reached: no more tokens to produce.
 
-	/////////////// internal use: stores the compiled regex and additional info to step through the input
-    regex_t regcb;                      // the compiled regex
+    /////////////// internal use: stores the compiled regex and additional info to step through the input
+    regex_t    regcb;                   // the compiled regex
     regmatch_t match[7];                // nevertheless, we PROBABLY only care about the outermost match
 }
 VT_USERDEF_TOKENIZER;
@@ -705,7 +895,7 @@ VT_USERDEF_TOKENIZER;
 ///////////////////////////////////////////////////////////////////////////
 //
 // When you want to pass on user defined Vector Coefficient Matrices, use this.
-// 
+//
 // Note that the coeff_array stores these matrices in the format
 //
 //   output_stride : pipe_iters : pipe_len  (MS to LS)
@@ -713,7 +903,7 @@ VT_USERDEF_TOKENIZER;
 // meaning the coefficients are laid out thus:
 // - series of pipe_len column coefficients each (least significant), which means
 //   one Vector is a consecutive series of pipe_len coefficients.
-// - series of pipe_iters rows, where each row is a vector of pipe_len columns (= coefficients) 
+// - series of pipe_iters rows, where each row is a vector of pipe_len columns (= coefficients)
 //   as described above.
 // - series of output_stride 2D matrices, each consisting of a series of pipe_iters vectors (rows)
 //
@@ -722,33 +912,37 @@ VT_USERDEF_TOKENIZER;
 //
 struct magical_VT_userdef_coeff_matrix;
 
-typedef int VT_coeff_matrix_cleanup_func(struct magical_VT_userdef_coeff_matrix *obj);
+typedef int VT_coeff_matrix_cleanup_func (struct magical_VT_userdef_coeff_matrix *obj);
 
 typedef struct magical_VT_userdef_coeff_matrix
 {
     int coeff_array[UNIFIED_VECTOR_STRIDE * UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];    // the pipeline coefficient control array
-    int pipe_len;       // how long a pipeline (== coeff_array col count)
-    int pipe_iters;     // how many rows are there in coeff_array
-    int output_stride;  // how many matrices (rows x cols) are there in coeff_array
+    int pipe_len;                                                                          // how long a pipeline (== coeff_array col count)
+    int pipe_iters;                                                                        // how many rows are there in coeff_array
+    int output_stride;                                                                     // how many matrices (rows x cols) are there in coeff_array
 
-	VT_coeff_matrix_cleanup_func *cleanup; // call this when done; may be used to free() coeff_matrix when applicable.
+    VT_coeff_matrix_cleanup_func *cleanup;     // call this when done; may be used to free() coeff_matrix when applicable.
 }
 VT_USERDEF_COEFF_MATRIX;
 
 
 
 int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // the pipeline coefficient control array, etc.
-									const char *src, int srclen);
-int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,    
-					        const ARGPARSE_BLOCK       *apb,          // The args for this line of code
-						const char *regex,   
-						int regex_len,
-						int		regex_compiler_flags_override);
+        const char *src, int srclen);
+int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
+        const ARGPARSE_BLOCK                 *apb,                                        // The args for this line of code
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        const char                           *regex,
+        int                                   regex_len,
+        int                                   regex_compiler_flags_override);
 int config_vt_coeff_matrix_and_tokenizer
 (
-        ARGPARSE_BLOCK       *apb,          // The args for this line of code
-        VT_USERDEF_TOKENIZER *tokenizer,        // the parsing regex (might be ignored)
-        VT_USERDEF_COEFF_MATRIX *our_coeff  // the pipeline coefficient control array, etc.
+        ARGPARSE_BLOCK          *apb,           // The args for this line of code
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        VT_USERDEF_TOKENIZER    *tokenizer,     // the parsing regex (might be ignored)
+        VT_USERDEF_COEFF_MATRIX *our_coeff      // the pipeline coefficient control array, etc.
 );
 
 
@@ -758,30 +952,32 @@ int config_vt_coeff_matrix_and_tokenizer
 
 int crm_vector_tokenize_selector
 (
-        ARGPARSE_BLOCK       *apb,          // The args for this line of code
-        const char           *text,         // input string (null-safe!)
-        int                   textlen,      //   how many bytes of input.
-        int                   start_offset, //     start tokenizing at this byte.
-        VT_USERDEF_TOKENIZER *tokenizer,        // the parsing regex (might be ignored)
+        ARGPARSE_BLOCK          *apb,            // The args for this line of code
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        const char              *text,           // input string (null-safe!)
+        int                      textlen,        //   how many bytes of input.
+        int                      start_offset,   //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER    *tokenizer,      // the parsing regex (might be ignored)
         VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
-        crmhash_t            *features,     // where the output features go
-        int                   featureslen,  //   how many output features (max)
-        int                  *features_out   // how many feature-slots did we actually use up
+        crmhash_t               *features,       // where the output features go
+        int                      featureslen,    //   how many output features (max)
+        int                     *features_out    // how many feature-slots did we actually use up
 );
 
 // this interface method is provided only for those that 'know what they're doing',
 // i.e. (unit) test code such as testtocvek:
 int crm_vector_tokenize
 (
-        const char          *text,            // input string (null-safe!)
-        int                  textlen,         //   how many bytes of input.
-        int                  start_offset,    //     start tokenizing at this byte.
-        VT_USERDEF_TOKENIZER *tokenizer,           // the regex tokenizer (elements in struct MAY be changed)
-        const VT_USERDEF_COEFF_MATRIX *our_coeff,  // the pipeline coefficient control array, etc.
-        crmhash_t           *features_buffer,        // where the output features go
-        int                  features_bufferlen,     //   how many output features (max)
-        int                  features_stride, //   Spacing (in hashes) between features
-        int                 *features_out    // how many longs did we actually use up
+        const char                    *text,               // input string (null-safe!)
+        int                            textlen,            //   how many bytes of input.
+        int                            start_offset,       //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER          *tokenizer,          // the regex tokenizer (elements in struct MAY be changed)
+        const VT_USERDEF_COEFF_MATRIX *our_coeff,          // the pipeline coefficient control array, etc.
+        crmhash_t                     *features_buffer,    // where the output features go
+        int                            features_bufferlen, //   how many output features (max)
+        int                            features_stride,    //   Spacing (in hashes) between features
+        int                           *features_out        // how many longs did we actually use up
 );
 
 
@@ -791,24 +987,24 @@ int crm_vector_tokenize
 
 typedef enum
 {
-	CRM_DBG_REASON_UNDEFINED = 0,
-	CRM_DBG_REASON_BREAKPOINT,
-	CRM_DBG_REASON_DEBUG_STATEMENT,
-	CRM_DBG_REASON_DEBUG_END_OF_PROGRAM,
-	CRM_DBG_REASON_EXCEPTION_HANDLING,
+    CRM_DBG_REASON_UNDEFINED = 0,
+    CRM_DBG_REASON_BREAKPOINT,
+    CRM_DBG_REASON_DEBUG_STATEMENT,
+    CRM_DBG_REASON_DEBUG_END_OF_PROGRAM,
+    CRM_DBG_REASON_EXCEPTION_HANDLING,
 } crm_debug_reason_t;
 
 int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const char *message);
 
-//     expand a variable or string with known length (8-bit and null-safe)
-int crm_nexpandvar(char *buf, int inlen, int maxlen);
+// //     expand a variable or string with known length (8-bit and null-safe)
+// int crm_nexpandvar(char *buf, int inlen, int maxlen);
 
 //     execute a FAULT triggering.
 int crm_trigger_fault(const char *reason);
 
 //     do an microgroom of a hashed file.
 int crm_microgroom(FEATUREBUCKET_TYPE *h,
-        unsigned char                  *seen_features,
+        unsigned char                 *seen_features,
         int                            hs,
         unsigned int                   hindex);
 void crm_packcss(FEATUREBUCKET_TYPE *h,
@@ -820,7 +1016,7 @@ void crm_packseg(FEATUREBUCKET_TYPE *h,
 //
 //     and microgrooming for winnow files
 int crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
-        unsigned char                                  *seen_features,
+        unsigned char                                 *seen_features,
         unsigned int                                   hfsize,
         unsigned int                                   hindex);
 
@@ -843,27 +1039,29 @@ int crm_expr_math(char *instr, unsigned int inlen,
 
 //      var-expansion operators
 //             simple (escapes and vars) expansion
-int crm_nexpandvar(char *buf, int inlen, int maxlen);
+int crm_nexpandvar(char *buf, int inlen, int maxlen, VHT_CELL **vht, CSL_CELL *tdw);
 
 //             complex (escapes, vars, strlens, and maths) expansion
-int crm_qexpandvar(char *buf, int inlen, int maxlen, int *retstat);
+int crm_qexpandvar(char *buf, int inlen, int maxlen, int *retstat, VHT_CELL **vht, CSL_CELL *tdw);
 
 //              generic (everything, as you want it, bitmasked) expansion
 int crm_zexpandvar(char *buf,
         int              inlen,
         int              maxlen,
         int             *retstat,
-        int              exec_bitmask);
+        int              exec_bitmask,
+		VHT_CELL **vht,
+		CSL_CELL *tdw);
 
 //       Var-restriction operators  (do []-vars, like subscript and regex )
 int crm_restrictvar(char *boxstring,
-        int boxstrlen,
-        int *vht_idx,
-        char **outblock,
-        int *outoffset,
-        int *outlen,
-        char *errstr,
-		int maxerrlen);
+        int               boxstrlen,
+        int              *vht_idx,
+        char            **outblock,
+        int              *outoffset,
+        int              *outlen,
+        char             *errstr,
+        int               maxerrlen);
 
 
 //      crm114-specific regex compilation
@@ -958,6 +1156,28 @@ __attribute__((__format__(__printf__, 4, 0)));
  */
 void reset_nonfatalerrorreporting(void);
 
+void generate_err_reason_msg(char       *reason,
+        int         reason_bufsize,
+        int         srclineno,
+        const char *srcfile_full,
+        const char *funcname,
+        const char *errortype_str,
+        const char *encouraging_msg,
+        CSL_CELL   *csl,
+        int         script_codeline,
+        const char *fmt,
+        va_list     args);
+void generate_err_reason_msg_va(char       *reason,
+        int         reason_bufsize,
+        int         srclineno,
+        const char *srcfile_full,
+        const char *funcname,
+        const char *errortype_str,
+        const char *encouraging_msg,
+        CSL_CELL   *csl,
+        int         script_codeline,
+        const char *fmt,
+        ...);
 
 
 
@@ -1017,7 +1237,7 @@ void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *funcnam
 const char *errno_descr(int errno_number);
 /* const char *syserr_descr(int errno_number); */
 
-#if defined (WIN32)
+#if defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)
 /*
  * return a string containing the errorcode description.
  */
@@ -1033,7 +1253,7 @@ static inline void fatalerror_Win32_(int lineno, const char *file, const char *f
     char errbuf[MAX_PATTERN];
     char *errmsg = errbuf;
 
-	Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
+    Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
 
     fatalerror_ex(lineno, file, funcname, msg,
             (int)error,
@@ -1050,8 +1270,8 @@ static inline int nonfatalerror_Win32_(int lineno, const char *file, const char 
     DWORD error = GetLastError();
     char errbuf[MAX_PATTERN];
     char *errmsg = errbuf;
-	
-	Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
+
+    Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
 
     return nonfatalerror_ex(lineno, file, funcname, msg,
             (int)error,
@@ -1067,7 +1287,7 @@ static inline int nonfatalerror_Win32_(int lineno, const char *file, const char 
  * Diagnostics: Memory checks / analysis
  */
 
-#if defined (WIN32) && defined (_DEBUG)
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
 
 extern _CrtMemState crm_memdbg_state_snapshot1;
 extern int trigger_memdump;
@@ -1129,10 +1349,71 @@ int fwrite4stdio(const char *str, size_t len, FILE *out);
 int is_crm_headered_file(FILE *f);
 int is_crm_headered_mmapped_file(void *buf, size_t length);
 int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, const char *human_readable_message);
-int crm_correct_for_version_header(void **ptr, int *len);
+int crm_correct_for_version_header(void **ptr, int *len, int *has_header);
 int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_native, CRM_DECODED_PORTA_HEADER_INFO *dst);
+const char *crm_decode_header_err2msg(int errorcode);
 
 
+
+
+#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+//
+// The brunt of the profile tracking code is this one:
+//
+// fmt parameter notifies us which extra arguments are what format:
+//
+// i = int
+// L = long long int
+// d = double
+//
+// NOTE: only the least significant 48 bits of 'extra' are stored.
+//       You _can_ of course try to store larger values, e.g. 64-bit hashes, etc. in there
+//       but these will all be TRUNCATED to 48 bits!
+//
+void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument_t marker, long long int extra, const char *fmt, ...);
+
+//
+// convert set of args in human readable form to fully configured analsyis profile
+// setup.
+//
+// PLUS: if profile file is not yet opene, open it for write/append. YES, we
+// append(!) to an existing profile file, so we can cover multiple runs in a single
+// profile file for ease of use.
+//
+// Return non-zero value on error.
+//
+int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int args_length);
+
+int crm_terminate_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg);
+
+
+static /* inline */ int64_t cvt_chars2int64(const char *str, size_t len)
+{
+    union
+    {
+        char    c[8];
+        int64_t ll;
+    } v = {{ 0 }};
+    if (len > 8)
+    {
+        len = 8;
+    }
+    if (len > 0)
+    {
+        memcpy(&v.c[0], str, len);
+    }
+    return v.ll;
+}
+
+
+
+#endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
+
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __CRM114_H__ */
 

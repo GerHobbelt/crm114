@@ -22,7 +22,7 @@
 #include "crm114.h"
 
 
-#if !defined (CRM_WITHOUT_CORRELATE)
+#if !CRM_WITHOUT_CORRELATE
 
 
 //    How to learn correlation-style - just append the text to be
@@ -30,7 +30,9 @@
 //
 
 int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, int txtstart, int txtlen)
+VHT_CELL **vht,
+		CSL_CELL *tdw,
+                char *txtptr, int txtstart, int txtlen)
 {
     //     learn the given text as correlative text
     //     belonging to a particular type.
@@ -67,15 +69,15 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the hash file name
     hlen = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN);
+    hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN, vht, tdw);
     //
     //           extract the variable name (if present)
     llen = crm_get_pgm_arg(ltext, MAX_PATTERN, apb->b1start, apb->b1len);
-    llen = crm_nexpandvar(ltext, llen, MAX_PATTERN);
+    llen = crm_nexpandvar(ltext, llen, MAX_PATTERN, vht, tdw);
 
     //     get the "this is a word" regex
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
     //            set our cflags, if needed.  The defaults are
     //            "case" and "affirm", (both zero valued).
@@ -108,36 +110,25 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
-#if 0
-    i = 0;
-    while (htext[i] < 0x021)
-        i++;
-    CRM_ASSERT(i < hlen);
-    j = i;
-    while (htext[j] >= 0x021)
-        j++;
-    CRM_ASSERT(j <= hlen);
-#else
- if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
- {
-            fev = nonfatalerror_ex(SRC_LOC(), 
-				"\nYou didn't specify a valid filename: '%.*s'\n", 
-					(int)hlen,
-					htext);
-            return fev;
- }
- j += i;
+    if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+    {
+        fev = nonfatalerror_ex(SRC_LOC(),
+                "\nYou didn't specify a valid filename: '%.*s'\n",
+                (int)hlen,
+                htext);
+        return fev;
+    }
+    j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
-#endif
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
     learnfilename = strdup(&(htext[i]));
-        if (!learnfilename)
-        {
-            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
-        }
+    if (!learnfilename)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
 
 
     //             and stat it to get it's length
@@ -169,7 +160,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
 
         classifier_info.classifier_bits = CRM_CORRELATE;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+        classifier_info.hash_version_in_use = selected_hashfunction;
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
@@ -192,6 +183,16 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             fprintf(stderr, "Opening correlate file %s for append\n", learnfilename);
         }
+
+	//  Now a nasty bit.  Because there might be data of the 
+	//  file retained, we need to force an unmap-by-name which will allow a remap
+	//  with the new file length later on.
+	if (internal_trace)
+	{
+	  fprintf (stderr, "un-mmap-ping file %s for known state\n", learnfilename);
+	}
+	crm_force_munmap_filename(learnfilename);
+
         f = fopen(learnfilename, "ab+");
         if (!f)
         {
@@ -217,17 +218,17 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
             classifier_info.classifier_bits = CRM_CORRELATE;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+            classifier_info.hash_version_in_use = selected_hashfunction;
 
             if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
             {
-				int err = errno;
+                int err = errno;
 
                 fclose(f);
                 fev = nonfatalerror_ex(SRC_LOC(), "Couldn't write the header to the .hypsvm file named '%s': error %d(%s)",
                         learnfilename,
-						err,
-						errno_descr(err));
+                        err,
+                        errno_descr(err));
                 free(learnfilename);
                 return fev;
             }
@@ -288,7 +289,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
     else
     {
-		ssize_t old_fileoffset;
+        ssize_t old_fileoffset;
 
         textoffset = vht[vhtindex]->vstart;
         textlen = vht[vhtindex]->vlen;
@@ -296,7 +297,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (user_trace)
         {
             fprintf(stderr, "learning the text (len %d) :", textlen);
-            fwrite4stdio(&(mdw->filetext[textoffset]), 
+            fwrite4stdio(&(mdw->filetext[textoffset]),
                     ((textlen < 128) ? textlen : 128), stderr);
             fprintf(stderr, "\n");
         }
@@ -305,19 +306,19 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //
         CRM_ASSERT(f != NULL);
         (void)fseek(f, 0, SEEK_END);
-		old_fileoffset = ftell(f);
+        old_fileoffset = ftell(f);
         if (textlen != fwrite(&(mdw->filetext[textoffset]), 1, textlen, f))
         {
             int fev;
-			int err = errno;
+            int err = errno;
 
             fclose(f);
-			// try to correct the failure by ditching the new, partially(?) written(?) data
-			truncate(learnfilename, old_fileoffset);
-			fev = nonfatalerror_ex(SRC_LOC(), "Failed to append the 'learn' text to the correlation file '%s': error %d(%s)\n",
+            // try to correct the failure by ditching the new, partially(?) written(?) data
+            truncate(learnfilename, old_fileoffset);
+            fev = nonfatalerror_ex(SRC_LOC(), "Failed to append the 'learn' text to the correlation file '%s': error %d(%s)\n",
                     learnfilename,
-					err,
-					errno_descr(err));
+                    err,
+                    errno_descr(err));
             free(learnfilename);
             return fev;
         }
@@ -334,7 +335,9 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 //      How to do a correlate-style CLASSIFY on some text.
 //
 int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, int txtstart, int txtlen)
+VHT_CELL **vht,
+		CSL_CELL *tdw,
+                char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -370,7 +373,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int64_t square_hits[MAX_CLASSIFIERS];   // square of runlenths of match
     int64_t cube_hits[MAX_CLASSIFIERS];     // cube of runlength matches
     int64_t quad_hits[MAX_CLASSIFIERS];     // quad of runlength matches
-    int incr_hits[MAX_CLASSIFIERS];        // 1+2+3... hits per classifier
+    int incr_hits[MAX_CLASSIFIERS];         // 1+2+3... hits per classifier
 
     int64_t total_linear_hits; // actual total linear hits for all classifiers
     int64_t total_square_hits; // actual total square hits for all classifiers
@@ -407,30 +410,30 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the hash file names
     hlen = crm_get_pgm_arg(htext, htext_maxlen, apb->p1start, apb->p1len);
-    hlen = crm_nexpandvar(htext, hlen, htext_maxlen);
+    hlen = crm_nexpandvar(htext, hlen, htext_maxlen, vht, tdw);
 
     //           extract the "this is a word" regex
     //
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
+    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
     //            extract the optional "match statistics" variable
     //
     svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
-    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
+    svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN, vht, tdw);
     {
         int vstart, vlen;
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
-		{
-        memmove(svrbl, &svrbl[vstart], vlen);
-        svlen = vlen;
-        svrbl[vlen] = 0;
-		}
-		else
-		{
-			        svlen = 0;
-        svrbl[0] = 0;
-		}
+        {
+            memmove(svrbl, &svrbl[vstart], vlen);
+            svlen = vlen;
+            svrbl[vlen] = 0;
+        }
+        else
+        {
+            svlen = 0;
+            svrbl[0] = 0;
+        }
     }
 
     //     status variable's text (used for output stats)
@@ -490,9 +493,9 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
         if (crm_nextword(htext,
-                hlen, fn_start_here,
-                &fnstart, &fnlen)
-        && fnlen > 0)
+                    hlen, fn_start_here,
+                    &fnstart, &fnlen)
+            && fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = 0;
@@ -529,65 +532,65 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
                 else
                 {
-            					// [i_a] check hashes[] range BEFORE adding another one!
-            if (maxhash >= MAX_CLASSIFIERS)
-            {
-                nonfatalerror("Too many classifier files.",
-                        "Some may have been disregarded");
-            }
-			else
-			{
-        //  file exists - do the mmap
-                    //
-                    hashlens[maxhash] = statbuf.st_size;
-                    // [i_a] hashlens[maxhash] must be fixed for the header size!
-                    hashes[maxhash] = crm_mmap_file(fname,
-                            0,
-                            hashlens[maxhash],
-                            PROT_READ,
-                            MAP_SHARED,
-                            CRM_MADV_RANDOM,
-                            &hashlens[maxhash]);
-                    if (hashes[maxhash] == MAP_FAILED)
+                    // [i_a] check hashes[] range BEFORE adding another one!
+                    if (maxhash >= MAX_CLASSIFIERS)
                     {
-                        nonfatalerror("Couldn't memory-map the table file",
-                                fname);
+                        nonfatalerror("Too many classifier files.",
+                                "Some may have been disregarded");
                     }
                     else
                     {
+                        //  file exists - do the mmap
                         //
-                        //     Check to see if this file is the right version
-                        //
-                        //     FIXME : for now, there's no version number
-                        //     associated with a .correllation file
-                        // int fev;
-                        // if (0)
-                        //(hashes[maxhash][0].hash != 1 ||
-                        //  hashes[maxhash][0].key  != 0)
-                        //{
-                        //  fev = fatalerror ("The .css file is the wrong version!  Filename is: ",
-                        //                   fname);
-                        //  return (fev);
-                        //}
-
-                        //
-                        //     save the name for later...
-                        //
-                        hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
-                        if (!hashname[maxhash])
+                        hashlens[maxhash] = statbuf.st_size;
+                        // [i_a] hashlens[maxhash] must be fixed for the header size!
+                        hashes[maxhash] = crm_mmap_file(fname,
+                                0,
+                                hashlens[maxhash],
+                                PROT_READ,
+                                MAP_SHARED,
+                                CRM_MADV_RANDOM,
+                                &hashlens[maxhash]);
+                        if (hashes[maxhash] == MAP_FAILED)
                         {
-                            untrappableerror(
-                                    "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
+                            nonfatalerror("Couldn't memory-map the table file",
+                                    fname);
                         }
                         else
                         {
-                            strncpy(hashname[maxhash], fname, fnlen);
-                            hashname[maxhash][fnlen] = 0;
+                            //
+                            //     Check to see if this file is the right version
+                            //
+                            //     FIXME : for now, there's no version number
+                            //     associated with a .correllation file
+                            // int fev;
+                            // if (0)
+                            //(hashes[maxhash][0].hash != 1 ||
+                            //  hashes[maxhash][0].key  != 0)
+                            //{
+                            //  fev = fatalerror ("The .css file is the wrong version!  Filename is: ",
+                            //                   fname);
+                            //  return (fev);
+                            //}
+
+                            //
+                            //     save the name for later...
+                            //
+                            hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
+                            if (!hashname[maxhash])
+                            {
+                                untrappableerror(
+                                        "Couldn't alloc hashname[maxhash]\n", "We need that part later, so we're stuck.  Sorry.");
+                            }
+                            else
+                            {
+                                strncpy(hashname[maxhash], fname, fnlen);
+                                hashname[maxhash][fnlen] = 0;
+                            }
+                            maxhash++;
                         }
-                        maxhash++;
                     }
                 }
-				}
             }
         }
     }
@@ -601,24 +604,25 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (maxhash == 0)
         return 0;
 
-    //    now, set up the normalization factor fcount[]
     if (user_trace)
+    {
         fprintf(stderr, "Running with %d files for success out of %d files\n",
                 succhash, maxhash);
+    }
 
     // sanity checks...  Uncomment for super-strict CLASSIFY.
     //
     //    do we have at least 1 valid .css files?
     if (maxhash == 0)
     {
-        nonfatalerror("Couldn't open at least 1 .css files for classify().", "");
+        return nonfatalerror("Couldn't open at least 1 .css file for classify().", "");
     }
 
     //    do we have at least 1 valid .css file at both sides of '|'?
-    if (!vbar_seen || succhash < 0 || (maxhash <= succhash))
+    if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
-        nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category for classify().\n",
-                "Hope you know what are you doing.");
+        return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
+                      "for classify().\n", "Hope you know what are you doing.");
     }
 
     //
@@ -839,15 +843,12 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         accumulator = 10 * DBL_MIN;
         for (m = 0; m < succhash; m++)
         {
-            accumulator = accumulator + ptc[m];
+            accumulator += ptc[m];
         }
         remainder = 10 * DBL_MIN;
         for (m = succhash; m < maxhash; m++)
         {
-            if (bestseen != m)
-            {
-                remainder = remainder + ptc[m];
-            }
+                remainder += ptc[m];
         }
         overall_pR = log10(accumulator) - log10(remainder);
 
@@ -872,14 +873,16 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         for (k = 0; k < maxhash; k++)
         {
             if (ptc[k] > ptc[bestseen])
+			{
                 bestseen = k;
+			}
         }
         remainder = 10 * DBL_MIN;
         for (m = 0; m < maxhash; m++)
         {
             if (bestseen != m)
             {
-                remainder = remainder + ptc[m];
+                remainder += ptc[m];
             }
         }
 
@@ -908,7 +911,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (k != m)
                 {
-                    remainder = remainder + ptc[m];
+                    remainder += ptc[m];
                 }
             }
             snprintf(buf, WIDTHOF(buf),
@@ -955,9 +958,13 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (user_trace)
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         //    and do what we do for a FAIL here
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+        CRM_ASSERT(csl->cstmt >= 0);
+        CRM_ASSERT(csl->cstmt <= csl->nstmts);
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }

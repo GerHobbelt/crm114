@@ -1,0 +1,26 @@
+#! @BIN_PATH@/crm114
+#
+# can we handle an indirect isolate to a variable without the proper :: delimiters? We should report an error on this one.
+{
+	{
+		window 
+		isolate (:dst:)	/abc/
+		isolate (:*:dst:) /FUBAR/
+		output /yo!\n/
+		output /dst = ':*:dst:'\n/
+		output /abc = ':*:abc:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+		output /dst = ':*:dst:'\n/
+		output /abc = ':*:abc:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

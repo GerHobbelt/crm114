@@ -67,7 +67,7 @@ void crm_osbf_set_microgroom(int value)
 //     already too full, we execute a 'zero unity bins'.
 //
 void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned int                                hindex)
+        unsigned int                                 hindex)
 {
     int i, j, k;
     static int microgroom_count = 0;
@@ -278,14 +278,14 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
 void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *header,
         unsigned int packstart, unsigned int packlen)
 {
-	//    How we pack...
-	//
-	//    We look at each bucket, and attempt to reinsert it at the "best"
-	//    place.  We know at worst it will end up where it already is, and
-	//    at best it will end up lower (at a lower index) in the file, except
-	//    if it's in wraparound mode, in which case we know it will not get
-	//    back up past us (since the file must contain at least one empty)
-	//    and so it's still below us in the file.
+    //    How we pack...
+    //
+    //    We look at each bucket, and attempt to reinsert it at the "best"
+    //    place.  We know at worst it will end up where it already is, and
+    //    at best it will end up lower (at a lower index) in the file, except
+    //    if it's in wraparound mode, in which case we know it will not get
+    //    back up past us (since the file must contain at least one empty)
+    //    and so it's still below us in the file.
 
 
     OSBF_FEATUREBUCKET_STRUCT *h;
@@ -576,7 +576,7 @@ static OSBF_HEADER_UNION hu = { { { 0 } } };
 
 int crm_osbf_create_cssfile(char *cssfile, unsigned int buckets,
         unsigned int major, unsigned int minor /* [i_a] unused anyway ,
-        unsigned int spectrum_start */ )
+                                                * unsigned int spectrum_start */)
 {
     FILE *f;
     int i;
@@ -597,7 +597,7 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned int buckets,
         CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
         classifier_info.classifier_bits = CRM_OSBF;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+        classifier_info.hash_version_in_use = selected_hashfunction;
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {

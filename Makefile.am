@@ -7,36 +7,21 @@
 ## Copyright (C) 2003, 2004 Joost van Baal
 ## Copyright (C) 2007-2008 Ger Hobbelt
 
-GZIP_BIN       = @GZIP@
-COMPRESS_BIN   = @COMPRESS@
-LZMA_BIN       = @LZMA@
-SEVENZIP_BIN   = @SEVEN_ZIP@
-TAR_BIN        = @TAR@
-SHAR_BIN       = @SHAR@
-BZIP2_BIN      = @BZIP2@
-ZIP_BIN        = @ZIP@
-CVS2CL_BIN     = @CVS2CL@
-UNCRUSTIFY_BIN = @UNCRUSTIFY@
-DIFF_BIN       = @DIFF@
-HTMLTIDY_BIN   = @HTMLTIDY@
-DB2X_XSLTPROC  = @DB2X_XSLTPROC@
-DB2X_MANXML    = @DB2X_MANXML@
-DB2X_TEXIXML   = @DB2X_TEXIXML@
 
 
 # [i_a] instruct AC_LOCAL to correctly include the ./m4 directory too
 ACLOCAL_AMFLAGS = -I $(top_srcdir)/m4
 
 
-SEVENZIP_OPTIONS=a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on
-# SEVENZIP_OPTIONS=a -si
+SEVEN_ZIP_OPTIONS=a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on
+# SEVEN_ZIP_OPTIONS=a -si
 
 
 
 
 PACKAGE = @PACKAGE_TARNAME@
 TAR_FILENAME_POSTFIX = @TAR_FILENAME_POSTFIX@
-VER_SUFFIX = @VER_SUFFIX@ 
+VER_SUFFIX = @VER_SUFFIX@
 VERSION = @VERSION@
 ARCHIVE_BASE_NAME = @PACKAGE_TARNAME@-@PACKAGE_VERSION@-@TAR_FILENAME_POSTFIX@
 
@@ -78,7 +63,7 @@ SUBDIRS = docs examples mailfilter man src tests
 doc_DATA = AUTHORS COPYING ChangeLog HACKING README TODO NEWS README.1st
 
 
-DISTCLEANFILES = 
+DISTCLEANFILES =
 CLEANFILES = *~ *.bak
 MAINTAINERCLEANFILES = configure.in aclocal.m4 Makefile.in
 
@@ -88,17 +73,18 @@ MSVC_PRJ_FILES = win32/config_win32.h win32/config_win32.h.in \
 	win32/resource.h win32/crm114.ico win32/cssmerge.vcproj win32/cssutil.vcproj \
 	win32/getopt.h win32/getopt_ex.h win32/getopt.c win32/getopt_ex.c \
 	win32/crm_win32_port.c \
-	win32/megatest.bat win32/crm114rc.h win32/crm114rc.rc 
+	win32/megatest.bat win32/crm114rc.h win32/crm114rc.rc
 
 EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
 	stamp.year stamp.day stamp.month \
 	distribute_files_from_src_dir.sh fix_crlf.sh \
-	m4/ac_c_long_long.m4 m4/ac_environ.m4 m4/ac_func_memmove.m4 \
-	m4/ac_func_snprintf.m4 m4/ax_cflags_warn_all_ansi.m4 \
+	m4/ac_environ.m4 m4/ac_func_memmove.m4 m4/ac_func_memmem.m4 \
+	m4/ac_func_snprintf.m4 m4/ax_arg_enable.m4 \
 	m4/ax_cflags_warn_all.m4 m4/vl_lib_readline.m4 \
 	m4/ax_cflags_gcc_option.m4 m4/ax_diff_option.m4 \
 	m4/ac___function___c99_vpredef_vars.m4 \
-	m4/ac_nsec_stat_fields.m4 \
+	m4/ac_nsec_stat_fields.m4 m4/ax_cc_pragma_pack.m4 \
+	m4/ax_gnu_time.m4 \
 	mk_distros.sh \
 	uncrustify.cfg \
 	cleanup.bat autogen.sh CREDITS README.win32 BUGS \
@@ -134,17 +120,17 @@ if MAINTAINER_MODE
 
 # ChangeLog: NEWS
 # 	-( test "X$(cvs2cl)" != "X" && $(cvs2cl) --prune --accum -U ../CVSROOT/users )
-	
-BillY-sync:
-	$(SILENT) distribute_files_from_src_dir.sh 
 
-endif 
+BillY-sync:
+	$(SILENT) distribute_files_from_src_dir.sh
+
+endif
 
 stamp.year stamp.day stamp.month: ChangeLog configure.ac
 	sh $(srcdir)/setversion
 
 
-help: 
+help:
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) help);
 
 
@@ -158,7 +144,7 @@ dist-gzip: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).src.tar.gz
 if OS_HAS_TAR
 if OS_HAS_GZIP
-	$(TAR_BIN) -c $(distdir) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).src.tar.gz
+	$(TAR) -c $(distdir) | GZIP=$(GZIP_ENV) $(GZIP) -c >$(ARCHIVE_BASE_NAME).src.tar.gz
 endif
 endif
 	$(am__remove_distdir)
@@ -167,7 +153,7 @@ dist-bzip2: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).src.tar.bz2
 if OS_HAS_TAR
 if OS_HAS_BZIP2
-	$(TAR_BIN) -c $(distdir) | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).src.tar.bz2
+	$(TAR) -c $(distdir) | $(BZIP2) -9 -c >$(ARCHIVE_BASE_NAME).src.tar.bz2
 endif
 endif
 	$(am__remove_distdir)
@@ -176,7 +162,7 @@ dist-lzma: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).src.tar.lzma
 if OS_HAS_TAR
 if OS_HAS_LZMA
-	$(TAR_BIN) -c $(distdir) | $(LZMA_BIN) -9 -c >$(ARCHIVE_BASE_NAME).src.tar.lzma
+	$(TAR) -c $(distdir) | $(LZMA) -9 -c >$(ARCHIVE_BASE_NAME).src.tar.lzma
 endif
 endif
 	$(am__remove_distdir)
@@ -185,15 +171,15 @@ dist-tarZ: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).src.tar.Z
 if OS_HAS_TAR
 if OS_HAS_COMPRESS
-	$(TAR_BIN) -c $(distdir) | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).src.tar.Z
+	$(TAR) -c $(distdir) | $(COMPRESS) -c >$(ARCHIVE_BASE_NAME).src.tar.Z
 endif
 endif
 	$(am__remove_distdir)
 
 dist-7z: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).src.7z
-if OS_HAS_SEVENZIP
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).src.7z $(distdir)
+if OS_HAS_SEVEN_ZIP
+	$(SEVEN_ZIP) $(SEVEN_ZIP_OPTIONS) $(ARCHIVE_BASE_NAME).src.7z $(distdir)
 endif
 	$(am__remove_distdir)
 
@@ -201,7 +187,7 @@ dist-shar: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).src.shar.gz
 if OS_HAS_SHAR
 if OS_HAS_GZIP
-	$(SHAR_BIN) $(distdir) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).src.shar.gz
+	$(SHAR) $(distdir) | GZIP=$(GZIP_ENV) $(GZIP) -c >$(ARCHIVE_BASE_NAME).src.shar.gz
 endif
 endif
 	$(am__remove_distdir)
@@ -209,16 +195,16 @@ endif
 dist-zip: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).zip
 if OS_HAS_ZIP
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).src.zip $(distdir)
+	$(ZIP) -rq $(ARCHIVE_BASE_NAME).src.zip $(distdir)
 endif
 	$(am__remove_distdir)
 
 
 
-diff: 
-	$(SILENT) echo "Creating diff archives"; 
+diff:
+	$(SILENT) echo "Creating diff archives";
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) diff);
-	
+
 
 # Note: the COPYING+ChangeLog in there is just to make sure the dist-diff
 #       archivers have something to archive; if not, they'll fail in 'make distcheck' at least.
@@ -241,36 +227,36 @@ dist-diff: diff $(EXTRA_4_DIFF_DIST)
 	-rm -f $(ARCHIVE_BASE_NAME).context.diff.zip
 if OS_HAS_TAR
 if OS_HAS_GZIP
-	$(TAR_BIN) -c src/diff/*.unified.* $(EXTRA_4_DIFF_DIST) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.gz
-	$(TAR_BIN) -c src/diff/*.normal.* $(EXTRA_4_DIFF_DIST) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.gz
-	$(TAR_BIN) -c src/diff/*.context.* $(EXTRA_4_DIFF_DIST) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.gz
+	$(TAR) -c src/diff/*.unified.* $(EXTRA_4_DIFF_DIST) | GZIP=$(GZIP_ENV) $(GZIP) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.gz
+	$(TAR) -c src/diff/*.normal.* $(EXTRA_4_DIFF_DIST) | GZIP=$(GZIP_ENV) $(GZIP) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.gz
+	$(TAR) -c src/diff/*.context.* $(EXTRA_4_DIFF_DIST) | GZIP=$(GZIP_ENV) $(GZIP) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.gz
 endif
 if OS_HAS_BZIP2
-	$(TAR_BIN) -c src/diff/*.unified.* $(EXTRA_4_DIFF_DIST) | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
-	$(TAR_BIN) -c src/diff/*.normal.* $(EXTRA_4_DIFF_DIST) | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.bz2
-	$(TAR_BIN) -c src/diff/*.context.* $(EXTRA_4_DIFF_DIST) | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).context.diff.tar.bz2
+	$(TAR) -c src/diff/*.unified.* $(EXTRA_4_DIFF_DIST) | $(BZIP2) -9 -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
+	$(TAR) -c src/diff/*.normal.* $(EXTRA_4_DIFF_DIST) | $(BZIP2) -9 -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.bz2
+	$(TAR) -c src/diff/*.context.* $(EXTRA_4_DIFF_DIST) | $(BZIP2) -9 -c >$(ARCHIVE_BASE_NAME).context.diff.tar.bz2
 endif
 if OS_HAS_COMPRESS
-	$(TAR_BIN) -c src/diff/*.unified.* $(EXTRA_4_DIFF_DIST) | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.Z
-	$(TAR_BIN) -c src/diff/*.normal.* $(EXTRA_4_DIFF_DIST) | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.Z
-	$(TAR_BIN) -c src/diff/*.context.* $(EXTRA_4_DIFF_DIST) | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.Z
+	$(TAR) -c src/diff/*.unified.* $(EXTRA_4_DIFF_DIST) | $(COMPRESS) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.Z
+	$(TAR) -c src/diff/*.normal.* $(EXTRA_4_DIFF_DIST) | $(COMPRESS) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.Z
+	$(TAR) -c src/diff/*.context.* $(EXTRA_4_DIFF_DIST) | $(COMPRESS) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.Z
 endif
 endif
-if OS_HAS_SEVENZIP
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).unified.diff.7z src/diff/*.unified.* $(EXTRA_4_DIFF_DIST)
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).normal.diff.7z src/diff/*.normal.* $(EXTRA_4_DIFF_DIST)
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).context.diff.7z src/diff/*.context.* $(EXTRA_4_DIFF_DIST)
+if OS_HAS_SEVEN_ZIP
+	$(SEVEN_ZIP) $(SEVEN_ZIP_OPTIONS) $(ARCHIVE_BASE_NAME).unified.diff.7z src/diff/*.unified.* $(EXTRA_4_DIFF_DIST)
+	$(SEVEN_ZIP) $(SEVEN_ZIP_OPTIONS) $(ARCHIVE_BASE_NAME).normal.diff.7z src/diff/*.normal.* $(EXTRA_4_DIFF_DIST)
+	$(SEVEN_ZIP) $(SEVEN_ZIP_OPTIONS) $(ARCHIVE_BASE_NAME).context.diff.7z src/diff/*.context.* $(EXTRA_4_DIFF_DIST)
 endif
 if OS_HAS_ZIP
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).unified.diff.zip src/diff/*.unified.* $(EXTRA_4_DIFF_DIST)
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).normal.diff.zip src/diff/*.normal.* $(EXTRA_4_DIFF_DIST)
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).context.diff.zip src/diff/*.context.* $(EXTRA_4_DIFF_DIST)
+	$(ZIP) -rq $(ARCHIVE_BASE_NAME).unified.diff.zip src/diff/*.unified.* $(EXTRA_4_DIFF_DIST)
+	$(ZIP) -rq $(ARCHIVE_BASE_NAME).normal.diff.zip src/diff/*.normal.* $(EXTRA_4_DIFF_DIST)
+	$(ZIP) -rq $(ARCHIVE_BASE_NAME).context.diff.zip src/diff/*.context.* $(EXTRA_4_DIFF_DIST)
 endif
 
-	
+
 
 dist-win32-bin: distdir
-	$(SILENT) echo "Creating MSVC binary archives from `pwd`"; 
+	$(SILENT) echo "Creating MSVC binary archives from `pwd`";
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.7z
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.zip
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.tar.gz
@@ -278,24 +264,24 @@ dist-win32-bin: distdir
 	-mkdir win32/bin
 if OS_HAS_TAR
 if OS_HAS_GZIP
-	$(TAR_BIN) -c $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' ` | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).Win32.bin.tar.gz
+	$(TAR) -c $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' ` | GZIP=$(GZIP_ENV) $(GZIP) -c >$(ARCHIVE_BASE_NAME).Win32.bin.tar.gz
 endif
 if OS_HAS_BZIP2
-	$(TAR_BIN) -c $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' ` | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).Win32.bin.tar.bz2
+	$(TAR) -c $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' ` | $(BZIP2) -9 -c >$(ARCHIVE_BASE_NAME).Win32.bin.tar.bz2
 endif
 if OS_HAS_COMPRESS
 endif
 endif
-if OS_HAS_SEVENZIP
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).Win32.bin.7z $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' `
+if OS_HAS_SEVEN_ZIP
+	$(SEVEN_ZIP) $(SEVEN_ZIP_OPTIONS) $(ARCHIVE_BASE_NAME).Win32.bin.7z $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' `
 endif
 if OS_HAS_ZIP
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).Win32.bin.zip $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' `
+	$(ZIP) -rq $(ARCHIVE_BASE_NAME).Win32.bin.zip $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' `
 endif
 
 
-distribution: distdir dist-diff dist-win32-bin 
-	$(SILENT) echo "Creating src archives"; 
+distribution: distdir dist-diff dist-win32-bin
+	$(SILENT) echo "Creating src archives";
 	-rm -f $(ARCHIVE_BASE_NAME).src.tar.gz
 	-rm -f $(ARCHIVE_BASE_NAME).src.tar.bz2
 	-rm -f $(ARCHIVE_BASE_NAME).src.tar.lzma
@@ -305,28 +291,28 @@ distribution: distdir dist-diff dist-win32-bin
 	-rm -f $(ARCHIVE_BASE_NAME).zip
 if OS_HAS_TAR
 if OS_HAS_GZIP
-	$(TAR_BIN) -c $(distdir) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).src.tar.gz
+	$(TAR) -c $(distdir) | GZIP=$(GZIP_ENV) $(GZIP) -c >$(ARCHIVE_BASE_NAME).src.tar.gz
 endif
 if OS_HAS_BZIP2
-	$(TAR_BIN) -c $(distdir) | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).src.tar.bz2
+	$(TAR) -c $(distdir) | $(BZIP2) -9 -c >$(ARCHIVE_BASE_NAME).src.tar.bz2
 endif
 if OS_HAS_LZMA
-	$(TAR_BIN) -c $(distdir) | $(LZMA_BIN) -9 -c >$(ARCHIVE_BASE_NAME).src.tar.lzma
+	$(TAR) -c $(distdir) | $(LZMA) -9 -c >$(ARCHIVE_BASE_NAME).src.tar.lzma
 endif
 if OS_HAS_COMPRESS
-	$(TAR_BIN) -c $(distdir) | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).src.tar.Z
+	$(TAR) -c $(distdir) | $(COMPRESS) -c >$(ARCHIVE_BASE_NAME).src.tar.Z
 endif
 endif
-if OS_HAS_SEVENZIP
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).src.7z $(distdir)
+if OS_HAS_SEVEN_ZIP
+	$(SEVEN_ZIP) $(SEVEN_ZIP_OPTIONS) $(ARCHIVE_BASE_NAME).src.7z $(distdir)
 endif
 if OS_HAS_SHAR
 if OS_HAS_GZIP
-	$(SHAR_BIN) $(distdir) | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).src.shar.gz
+	$(SHAR) $(distdir) | GZIP=$(GZIP_ENV) $(GZIP) -c >$(ARCHIVE_BASE_NAME).src.shar.gz
 endif
 endif
 if OS_HAS_ZIP
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).src.zip $(distdir)
+	$(ZIP) -rq $(ARCHIVE_BASE_NAME).src.zip $(distdir)
 endif
 	$(am__remove_distdir)
 
@@ -349,13 +335,13 @@ dist dist-all: distribution
 #
 #dist-hook: dist-gzip dist-bzip2 dist-tarZ
 # ^^^ you'll get an infinite loop when you add these dependencies!
-dist-hook: 
-	cd $(top_distdir) 
+dist-hook:
+	cd $(top_distdir)
 	$(E) "   ************************************"
 	$(E) "   dist-hook"
 	$(E) "   ************************************"
 	-mkdir win32/bin
-	$(SILENT) echo "Copying the archive(s) to standard $(distdir).tar.xxx' names suitable for distcheck"; 
+	$(SILENT) echo "Copying the archive(s) to standard $(distdir).tar.xxx' names suitable for distcheck";
 	-rm -f $(distdir).tar.gz
 	-rm -f $(distdir).tar.bz2
 	-rm -f $(distdir).tar.Z
@@ -370,7 +356,7 @@ if OS_HAS_COMPRESS
 	$(LN_S) $(ARCHIVE_BASE_NAME).src.tar.Z $(distdir).tar.Z
 endif
 endif
-	
+
 
 
 clean-local:
@@ -383,6 +369,8 @@ distcheck-hook:
 	$(E) "   ************************************"
 	$(E) "   distcheck-hook!"
 	$(E) "   ************************************"
+	cd $(distdir)/_build \
+		&& echo "rm -rf xyz"
 
 
 
@@ -391,23 +379,113 @@ distcheck-hook:
 
 
 
-.PHONY: reindent depend dist-7z dist-diff dist-maint dist-msvc distribution dist-all
+.PHONY: reindent depend dist-7z dist-diff dist-maint dist-msvc distribution dist-all diff
 
 
 reindent:
-	$(SILENT) echo "Reformatting sources"; 
+	$(E) "Reformatting sources";
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) reindent);
 
 depend:
-	$(SILENT) echo "Calculating dependencies for the sources"; 
+	$(E) "Calculating dependencies for the sources";
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) depend);
 
 megatest:
-	$(SILENT) echo "Running the regression test:"; 
+	$(E) "Running the regression test:";
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) megatest);
 
+megatest_ng:
+	$(E) "Running the regression test:";
+	(cd src && $(MAKE) $(AM_MAKEFLAGS) megatest_ng);
+
 test:
-	$(SILENT) echo "Running the complete test set (this may take a LONG time):"; 
-	(cd src && $(MAKE) $(AM_MAKEFLAGS) test);
+	$(E) "Running the complete test set (this may take a LONG time):";
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test);
+
+timing_tests:
+	$(E) "Running the timing test set (this may take a LONG time):";
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) timing_tests);
+
+# original BillY test script:
+test_megatest:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_megatest);
+
+# 'NextGen', i.e. an edited ('improved') version of BillY's test script:
+test_megatest_ng:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_megatest_ng);
+
+# series of basic regression tests for CRM114:
+test_basics:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_basics);
+
+# test more complex CRM scripts
+test_other:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_other);
+
+# test the mailfilter script
+test_mailfilter:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_mailfilter);
+
+# test the mailreaver script
+test_mailreaver:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_mailreaver);
+
+test_classifiers:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_classifiers);
+
+script:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) script);
+
+initial_tests1:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) initial_tests1);
+
+fringe_cases_compiler_tests1:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) fringe_cases_compiler_tests1);
+
+# slower tests:
+initial_tests2:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) initial_tests2);
+
+further_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) further_tests);
+
+all_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) all_classifier_tests);
+
+# classifier tests grouped:
+markovian_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) markovian_classifier_tests);
+
+OSBF_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) OSBF_classifier_tests);
+
+OSB_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) OSB_classifier_tests);
+
+Hyperspace_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) Hyperspace_classifier_tests);
+
+Bit_Entropy_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) Bit_Entropy_classifier_tests);
+
+FSCM_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) FSCM_classifier_tests);
+
+Neural_Net_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) Neural_Net_classifier_tests);
+
+SVM_SKS_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) SVM_SKS_classifier_tests);
+
+Correlator_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) Correlator_classifier_tests);
+
+CLUMP_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) CLUMP_classifier_tests);
+
+
+
+
+
 
 

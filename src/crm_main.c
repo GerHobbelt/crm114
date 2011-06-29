@@ -118,6 +118,10 @@ char *outbuf = NULL;
 char *tempbuf = NULL;
 
 
+#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = {0};
+#endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
+
 
 
 
@@ -144,11 +148,11 @@ void free_stack_item(CSL_CELL *csl)
 
             if (cp != NULL)
             {
-#if !FULL_PARSE_AT_COMPILE_TIME			
+#if !FULL_PARSE_AT_COMPILE_TIME
                 free(cp->apb);
                 cp->apb = NULL;
 #endif
-				// free(cp->hosttxt);
+                // free(cp->hosttxt);
                 free(cp);
                 csl->mct[i] = NULL;
             }
@@ -228,6 +232,8 @@ static void crm_final_cleanup(void)
 
     free_debugger_data();
 
+    crm_terminate_analysis(&analysis_cfg);
+
     cleanup_stdin_out_err_as_os_handles();
 }
 
@@ -249,13 +255,15 @@ int main(int argc, char **argv)
     char *stdout_filename = "stdout (default)";
     char *stderr_filename = "stderr (default)";
 
+	char *profile_argset = NULL;
+
     init_stdin_out_err_as_os_handles();
 #if 0
-	setvbuf(stdout, stdout_buf, _IOFBF, sizeof(stdout_buf));
+    setvbuf(stdout, stdout_buf, _IOFBF, sizeof(stdout_buf));
     setvbuf(stderr, stderr_buf, _IOFBF, sizeof(stderr_buf));
 #endif
 
-#if defined (WIN32) && defined (_DEBUG)
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
     /*
      * Hook in our client-defined reporting function.
      * Every time a _CrtDbgReport is called to generate
@@ -369,6 +377,12 @@ int main(int argc, char **argv)
     csl->caller = NULL;
     csl->calldepth = 0;
     csl->aliusstk[0]  = 0; // this gets initted later.
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+    csl->cstmt_recall = 0;
+    csl->next_stmt_due_to_fail = -1;
+    csl->next_stmt_due_to_trap = -1;
+    csl->next_stmt_due_to_jump = -1;
+#endif
 
     openbracket = -1;
     openparen = -1;
@@ -383,6 +397,20 @@ int main(int argc, char **argv)
     //  user_trace = 1;
     //internal_trace = 1;
 
+#if 01
+	profile_argset = getenv("CRM114_PROFILING");
+	if (profile_argset && profile_argset[0])
+	{
+		i = crm_init_analysis(&analysis_cfg, profile_argset, -1);
+		if (i)
+		{
+			untrappableerror_ex(SRC_LOC(), "Failed to init analysis code using env.var. CRM114_PROFILING settings: '%s': error code %d. Urck!",
+				profile_argset, i);
+		}
+	}
+#endif
+
+
     for (i = 1; i < argc; i++)
     {
         // fprintf(stderr, "Arg %d = '%s' \n", i, argv[i]);
@@ -393,15 +421,17 @@ int main(int argc, char **argv)
             || (argc == 1))
         {
             fprintf(stderr, " CRM114 version %s, rev %s (regex engine: %s)\n ",
-                VERSION,
-                REVISION,
-                crm_regversion());
+                    VERSION,
+                    REVISION,
+                    crm_regversion());
             fprintf(stderr, " Copyright 2001-2008 William S. Yerazunis\n");
             fprintf(stderr, " This software is licensed under the GPL "
                             "with ABSOLUTELY NO WARRANTY\n");
             fprintf(stderr, "     For language help, RTFRM.\n");
             fprintf(stderr, "     Command Line Options:\n");
             fprintf(stderr, " -{statements}   executes statements\n");
+            fprintf(stderr, " -A 'file markerset'\n");
+            fprintf(stderr, "         turn on EXR-assisted analysis profiling. See the docs for more info\n");
             fprintf(stderr, " -b nn   sets a breakpoint on stmt nn\n");
             fprintf(stderr, " -d nn   run nn statements, then drop to debug\n");
             fprintf(stderr, " -e      ignore environment variables\n");
@@ -442,7 +472,7 @@ int main(int argc, char **argv)
             fprintf(stderr, " -Cdbg   direct developer support: trigger the C/IDE debugger when an\n"
                             "         internal error is hit.\n");
 #endif
-#if defined (WIN32) && defined (_DEBUG)
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
             fprintf(stderr, " -memdump\n"
                             "         direct developer support: dump all detected memory leaks\n");
 #endif
@@ -475,7 +505,7 @@ int main(int argc, char **argv)
         {
             if (user_trace)
                 fprintf(stderr, "Commandline set of user variable at %d '%s'.\n",
-                    i, argv[i]);
+                        i, argv[i]);
             if (user_cmd_line_vars == 0)
                 user_cmd_line_vars = i;
             goto end_command_line_parse_loop;
@@ -510,7 +540,29 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Configuring CRM114 to use hash function %d\n",
-                    selected_hashfunction);
+                        selected_hashfunction);
+            }
+            goto end_command_line_parse_loop;
+        }
+        // did user specify his/her desire to have an analysis profile run?
+        if (strncmp(argv[i], "-A", 2) == 0 && strlen(argv[i]) == 2)
+        {
+            i++;  // move to the next arg
+            if (i < argc)
+            {
+                if (crm_init_analysis(&analysis_cfg, argv[i], -1))
+                {
+                    untrappableerror("Failed to decode the -A argument: ", argv[i]);
+                }
+            }
+            else
+            {
+                untrappableerror("The commandline analysis profiling option '-A' requires an extra argument: ", "Uh-oh...");
+            }
+
+            if (user_trace)
+            {
+                fprintf(stderr, "Configuring CRM114 to use BMP-assisted analysis profiling. We're GO! from NOW!\n");
             }
             goto end_command_line_parse_loop;
         }
@@ -553,7 +605,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting max prog lines to %d (%d bytes)\n",
-                    max_pgmlines, (int)(sizeof(char) * max_pgmsize));
+                        max_pgmlines, (int)(sizeof(char) * max_pgmsize));
             }
             goto end_command_line_parse_loop;
         }
@@ -572,7 +624,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting listing level to %d\n",
-                    prettyprint_listing);
+                        prettyprint_listing);
             }
             goto end_command_line_parse_loop;
         }
@@ -638,7 +690,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting max data window to %d chars\n",
-                    data_window_size);
+                        data_window_size);
             }
             goto end_command_line_parse_loop;
         }
@@ -679,7 +731,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting sparse spectrum length to %d bins\n",
-                    sparse_spectrum_file_length);
+                        sparse_spectrum_file_length);
             }
             goto end_command_line_parse_loop;
         }
@@ -698,7 +750,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting the command-line break to line %d\n",
-                    cmdline_break);
+                        cmdline_break);
             }
             goto end_command_line_parse_loop;
         }
@@ -717,7 +769,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting the engine exit base value to %d\n",
-                    engine_exit_base);
+                        engine_exit_base);
             }
             goto end_command_line_parse_loop;
         }
@@ -737,11 +789,11 @@ int main(int argc, char **argv)
                     // untrappableerror("Failed to decode the numeric -d argument [debug statement countdown]: ", argv[i]);
                 }
             }
-		
+
             if (user_trace)
             {
                 fprintf(stderr, "Setting debug countdown to %d statements\n",
-                    debug_countdown);
+                        debug_countdown);
             }
             goto end_command_line_parse_loop;
         }
@@ -769,7 +821,7 @@ int main(int argc, char **argv)
             if (chdir(argv[i]))
             {
                 fprintf(stderr, "Sorry, couldn't chdir to '%s'; errno=%d(%s)\n",
-                    argv[i], errno, errno_descr(errno));
+                        argv[i], errno, errno_descr(errno));
             }
             goto end_command_line_parse_loop;
         }
@@ -784,15 +836,15 @@ int main(int argc, char **argv)
 
             //   NOTE - version info goes to stdout, not stderr, just like GCC does
             fprintf(stdout, " This is CRM114, version %s, rev %s (%s) (OS: %s)\n",
-                VERSION,
-                REVISION,
-                crm_regversion(),
-                HOSTTYPE);
+                    VERSION,
+                    REVISION,
+                    crm_regversion(),
+                    HOSTTYPE);
             fprintf(stdout, " Copyright 2001-2008 William S. Yerazunis\n");
             fprintf(stdout, " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
             fprintf(stdout, "\n"
                             "Classifiers included in this build:\n");
-#if !defined (CRM_WITHOUT_BIT_ENTROPY)
+#if !CRM_WITHOUT_BIT_ENTROPY
             snprintf(dst, len, "  Bit-Entropy\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -802,7 +854,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_CORRELATE)
+#if !CRM_WITHOUT_CORRELATE
             snprintf(dst, len, "  Correlate\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -812,7 +864,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_FSCM)
+#if !CRM_WITHOUT_FSCM
             snprintf(dst, len, "  FSCM\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -822,7 +874,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_MARKOV)
+#if !CRM_WITHOUT_MARKOV
             snprintf(dst, len, "  Markov\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -832,7 +884,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_NEURAL_NET)
+#if !CRM_WITHOUT_NEURAL_NET
             snprintf(dst, len, "  Neural-Net\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -842,7 +894,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_OSBF)
+#if !CRM_WITHOUT_OSBF
             snprintf(dst, len, "  OSBF\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -852,7 +904,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_OSB_BAYES)
+#if !CRM_WITHOUT_OSB_BAYES
             snprintf(dst, len, "  OSB-Bayes\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -862,7 +914,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_OSB_HYPERSPACE)
+#if !CRM_WITHOUT_OSB_HYPERSPACE
             snprintf(dst, len, "  OSB-Hyperspace\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -872,7 +924,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_OSB_WINNOW)
+#if !CRM_WITHOUT_OSB_WINNOW
             snprintf(dst, len, "  OSB-Winnow\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -882,7 +934,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_SKS)
+#if !CRM_WITHOUT_SKS
             snprintf(dst, len, "  SKS\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -892,7 +944,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_SVM)
+#if !CRM_WITHOUT_SVM
             snprintf(dst, len, "  SVM\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -902,7 +954,7 @@ int main(int argc, char **argv)
             all_included = 0;
 #endif
 
-#if !defined (CRM_WITHOUT_CLUMP)
+#if !CRM_WITHOUT_CLUMP
             snprintf(dst, len, "  CLUMP\n");
             dst[len - 1] = 0;
             partlen = (int)strlen(dst);
@@ -1006,7 +1058,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting microgroom_stop_after to %d\n",
-                    microgroom_stop_after);
+                        microgroom_stop_after);
             }
             if (microgroom_stop_after <= 0)  //  if value <= 0 set it to default
                 microgroom_stop_after = MICROGROOM_STOP_AFTER;
@@ -1027,7 +1079,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting microgroom_chain_length to %d\n",
-                    microgroom_chain_length);
+                        microgroom_chain_length);
             }
             if (microgroom_chain_length < 5)  //  if value <= 5 set it to default
                 microgroom_chain_length = MICROGROOM_CHAIN_LENGTH;
@@ -1048,7 +1100,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting min pmax/pmin of a feature to %f\n",
-                    min_pmax_pmin_ratio);
+                        min_pmax_pmin_ratio);
             }
             if (min_pmax_pmin_ratio < 0)  //  if value < 0 set it to 0
                 min_pmax_pmin_ratio = OSBF_MIN_PMAX_PMIN_RATIO;
@@ -1075,7 +1127,7 @@ int main(int argc, char **argv)
                          || strcmp(argv[i], "2") == 0)
                 {
                     untrappableerror("'-in' cannot use the stdout/stderr handles 1/2! This argument is therefor illegal: ",
-                        argv[i]);
+                            argv[i]);
                 }
                 else
                 {
@@ -1090,7 +1142,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting stdin replacement file '%s'\n",
-                    stdin_filename);
+                        stdin_filename);
             }
             goto end_command_line_parse_loop;
         }
@@ -1159,7 +1211,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting stdout replacement file '%s'\n",
-                    stdout_filename);
+                        stdout_filename);
             }
             goto end_command_line_parse_loop;
         }
@@ -1228,7 +1280,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Setting stderr replacement file '%s'\n",
-                    stderr_filename);
+                        stderr_filename);
             }
             goto end_command_line_parse_loop;
         }
@@ -1242,7 +1294,7 @@ int main(int argc, char **argv)
             goto end_command_line_parse_loop;
         }
 #endif
-#if defined (WIN32) && defined (_DEBUG)
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
         if (strncmp(argv[i], "-memdump", 8) == 0 && strlen(argv[i]) == 8)
         {
             trigger_memdump = 1;
@@ -1266,11 +1318,11 @@ int main(int argc, char **argv)
             if (user_trace)
                 fprintf(stderr, "Using program file %s\n", csl->filename);
         }
-        end_command_line_parse_loop:
+end_command_line_parse_loop:
         if (internal_trace)
         {
             fprintf(stderr, "End of pass %d through cmdline parse loop\n",
-                i);
+                    i);
         }
     }
 
@@ -1290,7 +1342,7 @@ int main(int argc, char **argv)
             {
                 if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
                     untrappableerror("Couldn't open the file, ",
-                        "filename too long.");
+                            "filename too long.");
                 csl->filename = argv[i];
                 csl->filename_allocated = 0;
                 i = argc;
@@ -1337,7 +1389,7 @@ int main(int argc, char **argv)
             if (user_trace)
             {
                 fprintf(stderr, "Loading program from file %s\n",
-                    csl->filename);
+                        csl->filename);
             }
             crm_load_csl(csl);
         }
@@ -1349,7 +1401,7 @@ int main(int argc, char **argv)
         if (strlen(&(argv[openbracket][1])) + 2048 > max_pgmsize)
         {
             untrappableerror("The command line program is too big.\n",
-                "Try increasing the max program size with -P.\n");
+                    "Try increasing the max program size with -P.\n");
         }
         csl->filename = "(from command line)";
         csl->filename_allocated = 0;
@@ -1358,15 +1410,15 @@ int main(int argc, char **argv)
         if (!csl->filetext)
         {
             untrappableerror(
-                "Couldn't alloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.",
-                "");
+                    "Couldn't alloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.",
+                    "");
         }
 
         /* [i_a] make sure we never overflow the buffer: */
 
-	// [i_a] WARNING: ALWAYS make sure the program ends with TWO newlines so that we have a program
+        // [i_a] WARNING: ALWAYS make sure the program ends with TWO newlines so that we have a program
         //       which comes with an 'empty' statement at the very end. This is mandatory to ensure
-	//       a valid 'alius' fail forward target is available at the end of the program at all times.
+        //       a valid 'alius' fail forward target is available at the end of the program at all times.
 
         //     the [1] below gets rid of the leading '-' char
         snprintf(csl->filetext, max_pgmsize, "\n%s\n\n", &(argv[openbracket][1]));
@@ -1376,7 +1428,7 @@ int main(int argc, char **argv)
         if (user_trace)
         {
             fprintf(stderr, "Hash of program: 0x%08lX, length is %d bytes: %s\n-->\n%s",
-                (unsigned long int)csl->hash, csl->nchars, csl->filename, csl->filetext);
+                    (unsigned long int)csl->hash, csl->nchars, csl->filename, csl->filetext);
         }
     }
 
@@ -1387,20 +1439,20 @@ int main(int argc, char **argv)
 
     cdw = calloc(1, sizeof(cdw[0]));
     if (!cdw)
-	{
+    {
         untrappableerror("Couldn't alloc cdw.\nThis is very bad.", "");
-	}
+    }
     cdw->filename = NULL;
     cdw->rdwr = 1;
     cdw->filedes = -1;
     cdw->filetext = calloc(data_window_size, sizeof(cdw->filetext[0]));
     cdw->filetext_allocated = 1;
     if (!cdw->filetext)
-	{
-		untrappableerror(
-            "Couldn't alloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.",
-            "");
-	}
+    {
+        untrappableerror(
+                "Couldn't alloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.",
+                "");
+    }
 
     //      also allocate storage for the windowed data input
     newinputbuf = calloc(data_window_size, sizeof(newinputbuf[0]));
@@ -1414,10 +1466,10 @@ int main(int argc, char **argv)
     if (!tempbuf || !outbuf || !inbuf || !newinputbuf)
     {
         untrappableerror(
-            "Couldn't alloc one or more of"
-            "newinputbuf,inbuf,outbuf,tempbuf.\n"
-            "These are all necessary for operation."
-            "We can't run.", "");
+                "Couldn't alloc one or more of"
+                "newinputbuf,inbuf,outbuf,tempbuf.\n"
+                "These are all necessary for operation."
+                "We can't run.", "");
     }
 
     //     Initialize the VHT, add in a few predefined variables
@@ -1462,7 +1514,7 @@ int main(int argc, char **argv)
         //          smaller readsizes on systems that can't handle full
         //          POSIX-style massive block transfers.
         int readsize = data_window_size - 1;
-#if defined (WIN32)
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
         readsize = CRM_MIN(16384, readsize);   // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
 #endif
         while (!feof(stdin) && i < data_window_size - 1)
@@ -1528,15 +1580,15 @@ int main(int argc, char **argv)
         memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
         tdw->nchars++;
         crm_setvar(NULL,
-            0,
-            tdw->filetext,
-            dwname,
-            dwlen,
-            cdw->filetext,
-            0,
-            cdw->nchars,
-            -1,
-            0);
+                0,
+                tdw->filetext,
+                dwname,
+                dwlen,
+                cdw->filetext,
+                0,
+                cdw->nchars,
+                -1,
+                0);
     }
     //
     //    We also set up the :_iso: to hold the isolated variables.
@@ -1560,22 +1612,22 @@ int main(int argc, char **argv)
         memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
         tdw->nchars++;
         crm_setvar(NULL,
-            0,
-            tdw->filetext,
-            isoname,
-            isolen,
-            tdw->filetext,
-            0,
-            0,
-            -1,
-            0);
+                0,
+                tdw->filetext,
+                isoname,
+                isolen,
+                tdw->filetext,
+                0,
+                0,
+                -1,
+                0);
     }
 #endif
     //    Now we're here, we can actually run!
     //    set up to start at the 0'th statement (the start)
     csl->cstmt = 0;
 
-    status = crm_invoke();
+    status = crm_invoke(csl);
 
     //     This is the *real* exit from the engine, so we do not override
     // the engine's exit status with an engine_exit_base value.

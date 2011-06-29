@@ -10,8 +10,6 @@
 ## This script is free software; you can distribute it and/or modify it
 ## under the terms of the GNU GPL.  See the file COPYING.
 
-TROFF = groff
-COL = col
 
 SILENT = @SILENT@
 
@@ -20,7 +18,7 @@ SILENT = @SILENT@
 ## Stijn van Dongen. Information about zoem can be found on the zoem webpage at
 ## http://micans.org/zoem/ .
 ## We need zoem >= 04-027
-ZOEM = zoem
+
 
 azms = crm.azm crm114.azm cssdiff.azm cssmerge.azm cssutil.azm
 txts = crm.txt crm114.txt cssdiff.txt cssmerge.txt cssutil.txt
@@ -62,6 +60,10 @@ SUFFIXES = .1 .5 .8 .html .azm .ps .txt
 	$(ZOEM) -d roff -i $< -o $@
 	$(ZOEM) -d roff -i $< -o $@
 
+.azm.html:
+	$(ZOEM) -d html -i $< -o $@
+	$(ZOEM) -d html -i $< -o $@
+
 .1.ps:
 	$(TROFF) -man $< > $@
 
@@ -70,10 +72,6 @@ SUFFIXES = .1 .5 .8 .html .azm .ps .txt
 
 .8.ps:
 	$(TROFF) -man $< > $@
-
-.azm.html:
-	$(ZOEM) -d html -i $< -o $@
-	$(ZOEM) -d html -i $< -o $@
 
 .1.txt:
 	$(TROFF) -t -e -mandoc -Tlatin1 $< | $(COL) -bxp > $@

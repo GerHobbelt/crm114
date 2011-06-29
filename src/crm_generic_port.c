@@ -51,11 +51,144 @@ char *strmov(char *dst, const char *src)
 void *crm_memmove(void *dst, const void *src, size_t len)
 {
 #if defined (HAVE_BCOPY)
-    bcopy(src, dst, len);
+    
+	bcopy(src, dst, len);
     return dst;
 
 #else
-#error "provide a proper memmove() implementation, please"
+
+	if (len > 0 && dst && src)
+	{
+		uint8_t *d = (uint8_t *)dst;
+		uint8_t *s = (uint8_t *)src;
+
+		if (d > s)
+		{
+			d += len;
+			s += len;
+				switch (len & 0xF) // len mod 16: Duff's Device; start
+				{
+				case 15:
+				*d-- = *s--;
+				case 14:
+				*d-- = *s--;
+				case 13:
+				*d-- = *s--;
+				case 12:
+				*d-- = *s--;
+				case 11:
+				*d-- = *s--;
+				case 10:
+				*d-- = *s--;
+				case 9:
+				*d-- = *s--;
+				case 8:
+				*d-- = *s--;
+				case 7:
+				*d-- = *s--;
+				case 6:
+				*d-- = *s--;
+				case 5:
+				*d-- = *s--;
+				case 4:
+				*d-- = *s--;
+				case 3:
+				*d-- = *s--;
+				case 2:
+				*d-- = *s--;
+				case 1:
+				*d-- = *s--;
+				case 0:
+					len >>= 4; // len DIV 16
+					break;
+				}
+			for (;len-- > 0;)
+			{
+				*d-- = *s--;
+				*d-- = *s--;
+				*d-- = *s--;
+				*d-- = *s--;
+
+				*d-- = *s--;
+				*d-- = *s--;
+				*d-- = *s--;
+				*d-- = *s--;
+
+				*d-- = *s--;
+				*d-- = *s--;
+				*d-- = *s--;
+				*d-- = *s--;
+
+				*d-- = *s--;
+				*d-- = *s--;
+				*d-- = *s--;
+				*d-- = *s--;
+			}
+		}
+		else
+		{
+				switch (len & 0xF) // len mod 16: Duff's Device; start
+				{
+				case 15:
+				*d++ = *s++;
+				case 14:
+				*d++ = *s++;
+				case 13:
+				*d++ = *s++;
+				case 12:
+				*d++ = *s++;
+				case 11:
+				*d++ = *s++;
+				case 10:
+				*d++ = *s++;
+				case 9:
+				*d++ = *s++;
+				case 8:
+				*d++ = *s++;
+				case 7:
+				*d++ = *s++;
+				case 6:
+				*d++ = *s++;
+				case 5:
+				*d++ = *s++;
+				case 4:
+				*d++ = *s++;
+				case 3:
+				*d++ = *s++;
+				case 2:
+				*d++ = *s++;
+				case 1:
+				*d++ = *s++;
+				case 0:
+					len >>= 4; // len DIV 16
+					break;
+				}
+			for (; len-- > 0; )
+			{
+				*d++ = *s++;
+				*d++ = *s++;
+				*d++ = *s++;
+				*d++ = *s++;
+
+				*d++ = *s++;
+				*d++ = *s++;
+				*d++ = *s++;
+				*d++ = *s++;
+
+				*d++ = *s++;
+				*d++ = *s++;
+				*d++ = *s++;
+				*d++ = *s++;
+
+				*d++ = *s++;
+				*d++ = *s++;
+				*d++ = *s++;
+				*d++ = *s++;
+			}
+		}
+	}
+	return dst;
+
 #endif
 }
 
@@ -81,8 +214,8 @@ void crm_touch(const char *filename)
      * write access to the file, but don't own it.  */
     if (utime(filename, NULL))
     {
-		fatalerror_ex(SRC_LOC(), "Unable to touch file '%s'; it might be that this file is used by another application - system error: %d(%s)\n",
-			filename, errno, errno_descr(errno));
+        fatalerror_ex(SRC_LOC(), "Unable to touch file '%s'; it might be that this file is used by another application - system error: %d(%s)\n",
+                filename, errno, errno_descr(errno));
     }
 #else
     /*
@@ -96,7 +229,7 @@ void crm_touch(const char *filename)
     if (hfd < 0)
     {
         fatalerror_ex(SRC_LOC(), "Couldn't touch file '%s'; it might be that this file is used by another application - system error: %d(%s)\n",
-			filename, errno, errno_descr(errno));
+                filename, errno, errno_descr(errno));
     }
     else
     {
@@ -137,113 +270,202 @@ int file_memset(FILE *dst, unsigned char val, int count)
 
 
 /*
-   ASCII/C dump a byte sequence to FILE* (probably stdout/stderr).
-
-   This routine is a high-speed (buffered I/O) method for writing out
-   binary data as ASCII 'C' data.
-
-   Use this, for instance, to dump variable names and other tidbits
-   to stderr while diagnosing CRM114 behaviour: it will prevent CRM114
-   from screwing up your console window config (which it would otherwise
-   be capable of doing by spewing binary data to it, including 
-   undesirable ESC/byte sequences).
-
-   Return value: the number of bytes written to FILE*.
-
-   return -1 when an error occurred (check 'errno' for more info then)
-*/
+ * ASCII/C dump a byte sequence to FILE* (probably stdout/stderr).
+ *
+ * This routine is a high-speed (buffered I/O) method for writing out
+ * binary data as ASCII 'C' data.
+ *
+ * Use this, for instance, to dump variable names and other tidbits
+ * to stderr while diagnosing CRM114 behaviour: it will prevent CRM114
+ * from screwing up your console window config (which it would otherwise
+ * be capable of doing by spewing binary data to it, including
+ * undesirable ESC/byte sequences).
+ *
+ * Return value: the number of bytes written to FILE*.
+ *
+ * return -1 when an error occurred (check 'errno' for more info then)
+ */
 int fwrite_ASCII_Cfied(FILE *dst, const char *src, int len)
 {
-	char buf[2048+4];
-	int i;
-	int cnt = 0;
-	int j;
+    char buf[2048 + 4];
+    int i;
+    int cnt = 0;
+    int j;
 
-	for (j = i = 0; i < len; i++)
+    for (j = i = 0; i < len; i++)
+    {
+        unsigned char c = (unsigned char)src[i];
+
+        switch (c)
+        {
+        case '\\':
+            buf[j++] = '\\';
+            buf[j++] = '\\';
+            break;
+
+
+        case '\n':
+            buf[j++] = '\\';
+            buf[j++] = 'n';
+            break;
+
+        case '\r':
+            buf[j++] = '\\';
+            buf[j++] = 'r';
+            break;
+
+        case '\t':
+            buf[j++] = '\\';
+            buf[j++] = 't';
+            break;
+
+        case '\a':
+            buf[j++] = '\\';
+            buf[j++] = 'a';
+            break;
+
+        case '\b':
+            buf[j++] = '\\';
+            buf[j++] = 'b';
+            break;
+
+        case '\v':
+            buf[j++] = '\\';
+            buf[j++] = 'v';
+            break;
+
+        case '\f':
+            buf[j++] = '\\';
+            buf[j++] = 'f';
+            break;
+
+        default:
+            if (crm_isascii(c) && crm_isprint(c))
+            {
+                buf[j++] = c;
+            }
+            else
+            {
+                buf[j++] = '\\';
+                buf[j++] = 'x';
+                CRM_ASSERT((c >> 4) >= 0 && (c >> 4) <= 0xF);
+                buf[j++] = "0123456789abcdef"[c >> 4];
+                buf[j++] = "0123456789abcdef"[c & 0xF];
+            }
+            break;
+        }
+
+        // biggest chunk to be dumped per char is the HEX escape @ 4 chars
+        if (j > WIDTHOF(buf) - 4)
+        {
+            if (j != fwrite4stdio(buf, j, dst))
+            {
+                // error!
+                return -1;
+            }
+            cnt += j;
+            j = 0;
+        }
+    }
+    // dump remainder of buffer to dst
+    if (j > 0)
+    {
+        if (j != fwrite4stdio(buf, j, dst))
+        {
+            // error!
+            return -1;
+        }
+        cnt += j;
+    }
+    return cnt;
+}
+
+
+#if !defined(HAVE_MEMMEM) || defined(PREFER_PORTABLE_MEMMEM)
+
+void *my_memmem(const void *haystack, size_t haystack_len, const void *needle, size_t needle_len)
 {
-	int c = (unsigned char)src[i];
-	
-		switch (c)
+	const uint8_t *h;
+	const uint8_t *n;
+
+	if (needle_len == 0)
+		return (void *)haystack;
+
+	if (needle_len > haystack_len)
+		return NULL;
+
+	// could do a Boyer-Moore search here, but only for larger needle_len...
+	//
+	// aw, shucks, we'll do it the brute way:
+	n = (const uint8_t *)needle;
+	h = (const uint8_t *)haystack;
+
+	do
+	{
+		const uint8_t *f = memchr(h, n[0], haystack_len);
+		size_t i;
+		const uint8_t *n0 = NULL;
+
+		if (!f)
+			return NULL;
+
+		haystack_len -= (f - h);
+
+		// see if we have a full match. Optimization: keep track of occurrences of n[0] too:
+		do
+		{
+		for (i = 1; i < needle_len; i++)
+		{
+			if (n0 && f[i] == n[0])
+				n0 = &n[i];
+			if (f[i] != n[i])
+				break;
+		}
+		if (i == needle_len)
+		{
+			// scored a hit!
+			return (void *)f;
+		}
+		// n0 points to the next possibility, if it is !NULL
+		if (!n0)
+			break;
+
+		haystack_len -= (n0 - f);
+		f += (n0 - f);
+		} while (haystack_len >= needle_len);
+		// when we get here, either we've run out of haystack 
+		// OR the complete needle_len area of haystack didn't have another n[0]:
+		// in the latter case, we can skip all those bytes as we scanned them already.
+		if (haystack_len >= needle_len)
+		{
+			haystack_len -= needle_len;
+			h = f + needle_len;
+		}
+	} while (haystack_len >= needle_len);  // still got a fightin' chance to find that needle?
+
+	return NULL;
+}
+
+#endif
+
+
+#if !defined (HAVE_STRNCHR)
+
+//    a helper function that should be in the C runtime lib but isn't.
+//
+char *my_strnchr(const char *str, int c, size_t len)
 {
-case '\\':
-	buf[j++] = '\\';
-	buf[j++] = '\\';
-	break;
+    size_t i;
 
-	
-case '\n':
-	buf[j++] = '\\';
-	buf[j++] = 'n';
-	break;
-
-case '\r':
-	buf[j++] = '\\';
-	buf[j++] = 'r';
-	break;
-
-case '\t':
-	buf[j++] = '\\';
-	buf[j++] = 't';
-	break;
-
-case '\a':
-	buf[j++] = '\\';
-	buf[j++] = 'a';
-	break;
-
-case '\b':
-	buf[j++] = '\\';
-	buf[j++] = 'b';
-	break;
-
-case '\v':
-	buf[j++] = '\\';
-	buf[j++] = 'v';
-	break;
-
-case '\f':
-	buf[j++] = '\\';
-	buf[j++] = 'f';
-	break;
-
-default:
-	if (crm_isascii(c) && crm_isprint(c))
-	{
-		buf[j++] = c;
-	}
-	else
-	{
-		buf[j++] = '\\';
-		buf[j++] = 'x';
-		CRM_ASSERT((c >> 4) >= 0 && (c >> 4) <= 0xF);
-		buf[j++] = "0123456789abcdef"[c >> 4];
-		buf[j++] = "0123456789abcdef"[c & 0xF];
-	}
-break;
+    i = 0;
+    for (i = 0; i < len; i++)
+    {
+        if (str[i] == (char)c)
+            return (char *)&str[i];
+    }
+    return NULL;
 }
 
- // biggest chunk to be dumped per char is the HEX escape @ 4 chars
-if (j > WIDTHOF(buf) - 4)
-{
-	if (j != fwrite4stdio(buf, j, dst))
-	{
-		// error!
-		return -1;
-}
-	cnt += j;
-j = 0;
-}
-}
- // dump remainder of buffer to dst
-if (j > 0)
-{
-	if (j != fwrite4stdio(buf, j, dst))
-	{
-		// error!
-		return -1;
-}
-	cnt += j;
-}
-return cnt;
-}
+#endif
+
 

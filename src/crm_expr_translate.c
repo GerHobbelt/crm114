@@ -47,7 +47,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //   the "to" charset
     char toset[MAX_PATTERN];
     int toset_len;
-	int tmpbuflen;
+    int tmpbuflen;
 
     //
     strntrn_flags = 0;
@@ -74,7 +74,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //      Get the destination for the translation
     //
     destination_len = crm_get_pgm_arg(destination, MAX_VARNAME, apb->p1start, apb->p1len);
-    destination_len = crm_nexpandvar(destination, destination_len, MAX_VARNAME);
+    destination_len = crm_nexpandvar(destination, destination_len, MAX_VARNAME, vht, tdw);
     //if (destination_len == 0)
     //  {
     //    strcpy (destination, ":_dw:");
@@ -82,10 +82,10 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //  }
 
     if (internal_trace)
-		fprintf(stderr, " destination: (len: %d) ***%s***\n",
-            destination_len, destination);
+        fprintf(stderr, " destination: (len: %d) ***%s***\n",
+                destination_len, destination);
     if (!crm_nextword(destination, destination_len, 0, &dst_nstart, &destination_len)
-     || destination_len < 3)
+        || destination_len < 3)
     {
         strcpy(destination, ":_dw:");
         destination_len = 5;
@@ -101,18 +101,18 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //  Use crm_restrictvar to get start & length to look at.
     i = crm_restrictvar(tempbuf, tmpbuflen,
-        &vmidx,
-        &mdwptr,
-        &offset,
-        &len,
-        errstr,
-        WIDTHOF(errstr));
+            &vmidx,
+            &mdwptr,
+            &offset,
+            &len,
+            errstr,
+            WIDTHOF(errstr));
 
     if (internal_trace)
     {
         fprintf(stderr,
-            "restriction out: vmidx: %d  mdw: %p   start: %d  len: %d\n",
-            vmidx, mdwptr, offset, len);
+                "restriction out: vmidx: %d  mdw: %p   start: %d  len: %d\n",
+                vmidx, mdwptr, offset, len);
     }
 
     if (i < 0)
@@ -128,7 +128,11 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     If so, continue from there, otherwise, we FAIL.
         if (curstmt == csl->cstmt)
         {
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -147,46 +151,46 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     if not LITERAL, then expand them as well
     if (!(strntrn_flags & CRM_LITERAL))
     {
-        fromset_len = crm_nexpandvar(fromset, fromset_len, MAX_PATTERN);
+        fromset_len = crm_nexpandvar(fromset, fromset_len, MAX_PATTERN, vht, tdw);
     }
 
     if (user_trace)
     {
         fprintf(stderr, " from-charset expands to =%s= len %d\n",
-            fromset, fromset_len);
+                fromset, fromset_len);
     }
 
 
     //    get the TO charset out of the second // slashes
     toset_len = crm_get_pgm_arg(toset, MAX_PATTERN, apb->s2start, apb->s2len);
     if (internal_trace)
-		fprintf(stderr, " TO-charset: (len: %d) =%s=\n", toset_len, toset);
+        fprintf(stderr, " TO-charset: (len: %d) =%s=\n", toset_len, toset);
 
     //     if not LITERAL, then expand them as well
     if (!(strntrn_flags & CRM_LITERAL))
-	{
-        toset_len = crm_nexpandvar(toset, toset_len, MAX_PATTERN);
-	}
+    {
+        toset_len = crm_nexpandvar(toset, toset_len, MAX_PATTERN, vht, tdw);
+    }
 
     if (user_trace)
-	{
+    {
         fprintf(stderr, " to-charset expands to =%s= len %d\n",
-            toset, toset_len);
-	}
+                toset, toset_len);
+    }
 
     //    We have it all now - the [expanded] input in tempbuf, the
     //     from-charset, the to-charset, and the flags.  We can now
     //      make the big call to strntrn and get the new (in-place) string.
 
     retlen = strntrn((unsigned char *)tempbuf, &len, data_window_size,
-        (unsigned char *)fromset, fromset_len,
-        (unsigned char *)toset, toset_len,
-        strntrn_flags);
+            (unsigned char *)fromset, fromset_len,
+            (unsigned char *)toset, toset_len,
+            strntrn_flags);
 
     if (retlen < 0)
     {
         fev = nonfatalerror("Messy problem in TRANSLATE.",
-            "Try again with -t tracing maybe?");
+                "Try again with -t tracing maybe?");
         goto nonfatal_route_outwards;
     }
 
@@ -211,13 +215,13 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fprintf(stderr, "- len %d\n", retlen);
     }
     crm_destructive_alter_nvariable(destination + dst_nstart, destination_len, /* [i_a] */
-        tempbuf, retlen);
+            tempbuf, retlen);
 
     //  All done - return to caller.
     //
     if (0)
     {
-        nonfatal_route_outwards:
+nonfatal_route_outwards:
         if (user_trace)
             fprintf(stderr, "The TRANSLATE FAULTed and we're taking the TRAP out");
     }

@@ -51,8 +51,11 @@ int crm_microgroom(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
     int packstart;   // first used bucket in the chain
     int packlen;     // # of used buckets in the chain
     int packend;     // last used bucket in the chain
+
+#ifdef STOCHASTIC_AMNESIA
     //  for stochastic grooming we need a place for the random...
     unsigned int randy;
+#endif
     int zeroed_countdown;
     int actually_zeroed;
     int force_rescale;
@@ -80,7 +83,9 @@ int crm_microgroom(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
     //
 
     steps = 0;
+#ifdef STOCHASTIC_AMNESIA
     randy = 0;
+#endif
     force_rescale = 0;
 
 #ifdef STOCHASTIC_AMNESIA
@@ -473,7 +478,7 @@ int crm_create_cssfile(char *cssfile, int buckets,
         CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
         classifier_info.classifier_bits = CRM_OSBF;
-		classifier_info.hash_version_in_use = selected_hashfunction;
+        classifier_info.hash_version_in_use = selected_hashfunction;
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {

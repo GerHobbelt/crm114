@@ -104,9 +104,22 @@ BEGIN {
 	next;
 }
 
-/-{.*\( *\.\//	{
+# #0 (i_test.css): prob: 9.66e-01, pR: 265.70
+
+/#[0-9] \([^\)]*\): prob: .* pR: .*/	{
+	# make sure old and new filenames match by stripping off a lot:
+	s = $2;
+	gsub(/.*\//, "", s);
+	sub(/\..*/, "", s);
+	sub(/\(/, "", s);
+	printf("%s =%s=: prob: %e, pR: %e\n", $1, s, tol($4, prob, o_prob), tol($6, pR, o_pR));
+	next;
+}
+
+/-\{.*\( *\.*\/[-a-zA-Z0-9\/._]*/	{
 	s = $0;
 	gsub(/ \.\//, " ", s);
+	gsub(/ \/[-a-zA-Z0-9\/._]*\/[A-Z]/, " *", s);
 	printf("%s\n", s);
 	next;
 }

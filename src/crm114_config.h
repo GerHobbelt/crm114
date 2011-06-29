@@ -351,7 +351,7 @@
 //     cookies on a fatal error
 #define MAX_NONFATAL_ERRORS 100
 
-//     How big is a feature bucket?  Is it a byte, a short, a long, 
+//     How big is a feature bucket?  Is it a byte, a short, a long,
 //     a float, whatever.  :)
 #define FEATUREBUCKET_TYPE FEATUREBUCKET_STRUCT
 //#define FEATUREBUCKET_VALUE_MAX 32767
@@ -380,7 +380,7 @@
 
 //     Neural Net training setups
 //
-//     Note- convergence seems to work well at 
+//     Note- convergence seems to work well at
 //    alpha 0.2 init_noise 0.5 stoch_noise 0.1 gain_noise 0.00000001
 //    alpha 0.2 init_noise 0.2 stoch_noise 0.1 gain_noise 0.00000001
 //    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 0.00000001
@@ -399,18 +399,18 @@
 #define NN_ZERO_TRACKING 0.9999
 //   Threshold for back propagation
 #define NN_INTERNAL_TRAINING_THRESHOLD 0.1
-//  Just use 1 neuron excitation per token coming in. 
+//  Just use 1 neuron excitation per token coming in.
 #define NN_N_PUMPS 1
-//  How many training cycles before we punt out 
+//  How many training cycles before we punt out
 #define NN_MAX_TRAINING_CYCLES 500
 //  When doing a "nuke and retry", allow this many training cycles.
 #define NN_MAX_TRAINING_CYCLES_FROMSTART 5000
 //  How many times to allow a punt?
 #define NN_FROMSTART_PUNTING 1000000
 //  After how many "not needed" cycles do we microgroom this doc away?
-#define NN_MICROGROOM_THRESHOLD 10      
+#define NN_MICROGROOM_THRESHOLD 1000000      
 //  use the sparse retina design?  No, it's not good.
-#define NN_SPARSE_RETINA 0 
+#define NN_SPARSE_RETINA 0
 
 //    End of configurable parameters.
 
@@ -426,31 +426,95 @@
 
 // which classifiers are 'experimental' for this release?
 #if defined (CRM_PRODUCTION_CLASSIFIERS_ONLY)
+#if CRM_PRODUCTION_CLASSIFIERS_ONLY
 
-#undef CRM_WITHOUT_NEURAL_NET
+// HOWEVER, if the user defined any of these to be EXPLICITLY included, alas, let 'em have it!
+
+#ifndef CRM_WITHOUT_NEURAL_NET
 #define CRM_WITHOUT_NEURAL_NET 1
+#endif
 
-#undef CRM_WITHOUT_SKS
+#ifndef CRM_WITHOUT_SKS
 #define CRM_WITHOUT_SKS 1
+#endif
 
-#undef CRM_WITHOUT_SVM
+#ifndef CRM_WITHOUT_SVM
 #define CRM_WITHOUT_SVM 1
+#endif
 
-#undef CRM_WITHOUT_CLUMP
+#ifndef CRM_WITHOUT_CLUMP
 #define CRM_WITHOUT_CLUMP 1
+#endif
 
-#endif /* CRM_PRODUCTION_CLASSIFIERS_ONLY */
+#endif /* CRM_PRODUCTION_CLASSIFIERS_ONLY != 0 */
+#endif /* defined(CRM_PRODUCTION_CLASSIFIERS_ONLY) */
+
+
+
+
+// now make sure all the classifiers have their enable/disable flag set for compile time inclusion:
+
+#if !defined (CRM_WITHOUT_BIT_ENTROPY)
+#define CRM_WITHOUT_BIT_ENTROPY       0
+#endif
+
+#if !defined (CRM_WITHOUT_CLUMP)
+#define CRM_WITHOUT_CLUMP       0
+#endif
+
+#if !defined (CRM_WITHOUT_CORRELATE)
+#define CRM_WITHOUT_CORRELATE       0
+#endif
+
+#if !defined (CRM_WITHOUT_FSCM)
+#define CRM_WITHOUT_FSCM       0
+#endif
+
+#if !defined (CRM_WITHOUT_MARKOV)
+#define CRM_WITHOUT_MARKOV       0
+#endif
+
+#if !defined (CRM_WITHOUT_NEURAL_NET)
+#define CRM_WITHOUT_NEURAL_NET       0
+#endif
+
+#if !defined (CRM_WITHOUT_OSBF)
+#define CRM_WITHOUT_OSBF       0
+#endif
+
+#if !defined (CRM_WITHOUT_OSB_BAYES)
+#define CRM_WITHOUT_OSB_BAYES       0
+#endif
+
+#if !defined (CRM_WITHOUT_OSB_HYPERSPACE)
+#define CRM_WITHOUT_OSB_HYPERSPACE       0
+#endif
+
+#if !defined (CRM_WITHOUT_OSB_WINNOW)
+#define CRM_WITHOUT_OSB_WINNOW       0
+#endif
+
+#if !defined (CRM_WITHOUT_SKS)
+#define CRM_WITHOUT_SKS       0
+#endif
+
+#if !defined (CRM_WITHOUT_SVM)
+#define CRM_WITHOUT_SVM       0
+#endif
+
+
+
 
 
 
 // a special variable which holds the last error report for watching in the debugger.
 //
-// Of course, the varname could be reached from the CRM script 
+// Of course, the varname could be reached from the CRM script
 // itself too, but that's not the intent.
-#define HIDDEN_DEBUG_FAULT_REASON_VARNAME	":_?:"
+#define HIDDEN_DEBUG_FAULT_REASON_VARNAME       ":_?:"
 
 // with that also comes a special NEGATIVE VALUED 'signal' value for the debugger enable counter:
-// 
+//
 // -2 signals the debugger is currently DISabled but will become ENabled in the future
 //    due to a 'debug' statement in the script.
 //
@@ -459,14 +523,14 @@
 // -1 means the debugger is temporarily disabled by a debugger instruction to be re-ENabled
 //    when hitting a breakpoint.
 //
-#define DEBUGGER_DISABLED_FOREVER			-3
+#define DEBUGGER_DISABLED_FOREVER                       -3
 
 
 //
 // Set this to non-zero to turn on the new 'full compiler' support: arguments are parsed at an early stage,
 // reduced JITting and IMPROVED error checking!
 //
-#define FULL_PARSE_AT_COMPILE_TIME			1
+#define FULL_PARSE_AT_COMPILE_TIME                      1
 
 
 

@@ -19,10 +19,10 @@ Testing nocase match on foo...
 Testing nocase absent match on foo... match says "no foo found".
 Testing nocase absent match on foo...
 Testing multiline match on foo... found an allowed multiline match on '
-multiline:  this is a multiline test of foo
-multiline-- should see both lines ZZZ'
+	multiline:  this is a multiline test of foo
+	multiline-- should see both lines ZZZ'
 Testing multiline match on foo...
-Testing nomultiline match on foo... found a nomultiline match on 'nomultiline:  this is a nomultiline test of foo'
+Testing nomultiline match on foo... found a nomultiline match on '	nomultiline:  this is a nomultiline test of foo'
 Testing nomultiline match on foo...
 Testing fromendchar match for foo then bar...... found the foo...then bar 
 Testing fromendchar match for foo then bar...... found the foo...
@@ -32,7 +32,7 @@ Testing newend match for f+oo+.. first 'foo'.. found one on 'ffooo'
 Testing newend match for f+oo+.. first 'foo'..
 Testing indirect goto ":twist:" and ":shout:".... got :twist:... got to TWIST.
 Testing indirect goto ":twist:" and ":shout:".... got :shout2:... got to SHOUT. 
-Testing self-supplied-match ... found '123' ... found 'smith 123 anderson ZZZ' 
+Testing self-supplied-match ... found '123' ... found '	smith 123 anderson ZZZ' 
 Testing self-supplied-match ... found '123' ...
 Testing indep start/end ... found 'foo bar 1 2 foo' ... found '1' ... found 'bar 1 2 foo bar'... found '2'
 Testing indep start/end ... found 'foo bar foo' ...
@@ -75,11 +75,12 @@ testing <absent> versus binding  (the '67' bug)
   The next stmt --- SHOULD--- get an error message! 
  Caught the error, fault text was: 
 
-./crm114: *WARNING* 
+crm114: *WARNING*
  This program specifies an 'absent' match, and also tries to bind variables that, by the above, aren't matched!   We'll ignore these variable bindings for now.
 I'll try to keep working.
-This happened at line 292 of file matchtest.crm
-(runtime system location: crm_expr_match.c(479) in routine: crm_expr_match)
+This happened at line 293 of file matchtest.crm:
+    match <absent> (:incognita:) /nothinjkljiejfksn;s94jf94msks/
+(runtime system location: crm_expr_match.c(503) in routine: crm_expr_match)
 
 
 ------------------END OF TESTING----------------------

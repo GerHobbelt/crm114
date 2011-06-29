@@ -2,9 +2,16 @@ TEST SCRIPT + COMMANDLINE:
 -{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump <bychunk> [:one_paragraph:] (i_test.css) /[[:graph:]]+/; output /./ ; liaf} 
 
 RETURN CODE:
-0
+154
 
 STDERR TEST OUTPUT:
+
+crm114: *UNTRAPPABLE ERROR*
+ Cannot allocate distance matrix M[] (C) Stick a fork in us; we're _done_.
+Sorry, but this program is very sick and probably should be killed off.
+This happened at line 3 of file (from command line):
+    clump <bychunk> [:one_paragraph:] (i_test.css) /[[:graph:]]+/
+(runtime system location: crm_expr_clump.c(782) in routine: thresholding_average_cluster)
 
 STDOUT TEST OUTPUT:
 

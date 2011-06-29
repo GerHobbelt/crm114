@@ -1,0 +1,18 @@
+TEST SCRIPT + COMMANDLINE:
+illegal_empty_isolate2.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+TRAP:
+crm114: *WARNING*
+ This statement is missing the variable to isolate so I'll just ignore the whole statement. 
+I'll try to keep working.
+This happened at line 8 of file illegal_empty_isolate2.crm:
+    isolate (:*:dst:) /FUBAR/
+(runtime system location: crm_expr_isolate.c(55) in routine: crm_expr_isolate)
+
+

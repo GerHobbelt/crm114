@@ -46,6 +46,8 @@ sed -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]\+\):\?/ERR 1: Thi
     -e 'p' \
     < "${reffile}" \
 | sed -e 's/For some reason, I was unable to \([a-z]\+\)-open the file named '"'"'\?\([^'"'"']\+\)'"'"'\?.*/For some reason, I was unable to \1-open the file named "\2"/' \
+    -e 's:@BIN_PATH@:abs_top_builddir:g' \
+    -e 's:/usr/local/bin:abs_top_builddir:g' \
     > "${targetname}.refout"
 sed -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]\+\):\?/ERR 1: This happened at line \1 of file \2:/'  \
     -e 's/.*crm114: \*\([A-Z]\+\)\*/ERR 3: crm114: *\1*/' \
@@ -59,6 +61,8 @@ sed -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]\+\):\?/ERR 1: Thi
     -e 'p' \
     < "${testfile}" \
 | sed -e 's/For some reason, I was unable to \([a-z]\+\)-open the file named '"'"'\?\([^'"'"']\+\)'"'"'\?.*/For some reason, I was unable to \1-open the file named "\2"/' \
+    -e 's:@BIN_PATH@:abs_top_builddir:g' \
+    -e 's:/usr/local/bin:abs_top_builddir:g' \
     > "${targetname}.tstout"
 
 

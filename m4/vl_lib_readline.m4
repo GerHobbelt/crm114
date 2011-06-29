@@ -73,7 +73,8 @@ AC_DEFUN([VL_LIB_READLINE], [
           TRY_LIB="-l$readline_lib -l$termcap_lib"
         fi
         LIBS="$ORIG_LIBS $TRY_LIB"
-        AC_TRY_LINK_FUNC(readline, vl_cv_lib_readline="$TRY_LIB")
+        AC_LINK_IFELSE([AC_LANG_CALL([], [readline])],
+          [vl_cv_lib_readline="$TRY_LIB"])
         if test -n "$vl_cv_lib_readline"; then
           break
         fi
@@ -95,7 +96,8 @@ AC_DEFUN([VL_LIB_READLINE], [
     AC_CACHE_CHECK([whether readline supports history],
                    vl_cv_lib_readline_history, [
       vl_cv_lib_readline_history="no"
-      AC_TRY_LINK_FUNC(add_history, vl_cv_lib_readline_history="yes")
+      AC_LINK_IFELSE([AC_LANG_CALL([], [add_history])],
+        [vl_cv_lib_readline_history="yes"])
     ])
     if test "$vl_cv_lib_readline_history" = "yes"; then
       AC_DEFINE(HAVE_READLINE_HISTORY, 1,

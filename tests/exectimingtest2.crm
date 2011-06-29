@@ -1,0 +1,158 @@
+#! /usr/local/bin/crm114
+#
+# See extra warnings at the bottom of this script
+#
+window
+{
+	isolate (:count:) /10000/
+	isolate (:crm_exe:) //
+	# translate () [text] // // --> error report (good work, but not really what I was looking for right now. 
+	# translate (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114] // // 
+	# and another error for this one:
+	# match (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114] /.*/  
+	# so we end up with the Final Solution - which is a wicked hack
+	call /:cvt:/ (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114]  
+
+	output /\n ----- running :*:count: syscalls (:*:crm_exe:) to see the timing -----\n/
+	{
+  		syscall /:*:crm_exe: mailreaver.crm -- --help/
+		eval (:count:) /:@::*:count:-1:/
+	        # output / :*:count: /
+	        # output /./
+		eval /:@::*:count:>0:/
+		liaf;
+	}
+	output /\n ----- done -----\n/
+
+	exit /0/;
+}
+
+#
+# as the QUICKREF says: variables are expanded and concatenated in call [...]
+# and fed into this label (:arg:). Yay! EXACTLY what we need for unescaped-/
+# challenged file paths!
+# 
+:cvt: (:tmp:)
+{
+	return /:*:tmp:/;
+}
+
+
+#
+# ============================================================================
+#
+# Extra (put here so the CRM114 will not execute this code, thus resulting in
+# these comment lines NOT being reported in the 'CRM114 -p' script code profile
+# report.
+#
+# Q: Why are other comment lines reported in the profile report? And with a 
+#    non-zero time to boot? :-S
+#
+# A: Because the new timing code uses high resolution timers and even comments
+#    end up as opcodes which will be executed by the CRM114 script engine.
+#    Of course, since only a 'skip to next line' operation is performed each time
+#    a comment is 'executed', it consumes very little time, but 'very little'
+#    is NOT ZERO, so a high-rez timer will notice these things.
+#
+#    Also, when using low-rez timers, comments, etc. MAY sometimes show up in a
+#    report as little bits of time 'overflow/bleed over' into the next statement,
+#    which may be a comment line. This is due to the new lossless end-to-end
+#    timing code, which replaces the old code which would discard bits of time
+#    some of the time. (Like vanilla CRM114 would lose those time bits too.)
+#
+#
+# Q: How should I run this script?
+#
+# A: Preferrably from your mailreaver.crm/mailfilter.cf directory.
+#    Do something like this:
+#
+#        /usr/bin/time -v src/crm114 -p -u mailfilter ../tests/exectimingtest2.crm
+#
+#    When you are not (mailfilter.cf, etc. is in the ./mailfilter directory in
+#    this example, while the test script is in ./tests: NOTICE that the relative
+#    path is NOT relative to our current directory ./ but relative to the '-u'
+#    path! Caveat Emptor!
+#
+#    The example shell command above runs the test script within a 'GNU time' 
+#    timing harnass. At least on my system (Suse 10.2, AMD64) I found the default
+#    bash 'time' command is severely b0rked: it reports sub-second times for
+#    processes which consume several seconds, both CPU and wall clock. :-(
+#
+#    Hence the
+#        /usr/bin/time 
+#    in there, instead of just 'time'. Besides, bash 'time' does not recognize 
+#    the '-v' arg.
+#
+#
+# Q: What are your timings?
+#
+# A: This:
+#        /usr/bin/time -v src/crm114 -p -u mailfilter ../tests/exectimingtest2.crm
+#    produces:
+#
+#
+#         Execution Profile Results (freq = 1000000000 Hz) (Units: seconds)
+#
+#  Memory usage at completion:          0 window,      12679 isolated
+#
+#  Statement Execution Time Profiling (0 times suppressed)
+#  line:     usertime   systemtime    totaltime    exec #    time/one    code
+#     0:     0.000007     0.000000     0.000007         1    0.000007
+#     1:     0.000001     0.000000     0.000001         1    0.000001  #! /home/ger/prj/3actual/crm114/src/crm114
+#     2:     0.000001     0.000000     0.000001         1    0.000001  #
+#     3:     0.000001     0.000000     0.000001         1    0.000001  # See extra warnings at the bottom of this script
+#     4:     0.000001     0.000000     0.000001         1    0.000001  #
+#     5:     0.000042     0.000000     0.000042         1    0.000042  window
+#     6:     0.000003     0.000000     0.000003         1    0.000003  {
+#     7:     0.000018     0.000000     0.000018         1    0.000018  isolate (:count:) /10000/
+#     8:     0.000006     0.000000     0.000006         1    0.000006  isolate (:crm_exe:) //
+#     9:     0.000001     0.000000     0.000001         1    0.000001  # translate () [text] // // --> error report (good work, but not really what I was looking for right now.
+#    10:     0.000001     0.000000     0.000001         1    0.000001  # translate (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114] // //
+#    11:     0.000001     0.000000     0.000001         1    0.000001  # and another error for this one:
+#    12:     0.000002     0.000000     0.000002         1    0.000002  # match (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114] /.*/
+#    13:     0.000001     0.000000     0.000001         1    0.000001  # so we end up with the Final Solution - which is a wicked hack
+#    14:     0.000024     0.000000     0.000024         1    0.000024  call /:cvt:/ (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114]
+#    15:     0.000001     0.000000     0.000001         1    0.000001
+#    16:     0.000280     0.000000     0.000280         1    0.000280  output /\n ----- running :*:count: syscalls (:*:crm_exe:) to see the timing -----\n/
+#    17:     0.034141     0.000031     0.034172     10000    0.000003  {
+#    18:   155.994599     0.165432   156.160031     10000    0.015616  syscall /:*:crm_exe: mailreaver.crm -- --help/
+#    19:     1.020616     0.014926     1.035542     10000    0.000104  eval (:count:) /:@::*:count:-1:/
+#    20:     0.023977     0.000021     0.023998     10000    0.000002  # output / :*:count: /
+#    21:     0.018111     0.000013     0.018124     10000    0.000002  # output /./
+#    22:     0.180274     0.000264     0.180538     10000    0.000018  eval /:@::*:count:>0:/
+#    23:     0.041136     0.000068     0.041204      9999    0.000004  liaf
+#    25:     0.000004     0.000000     0.000004         1    0.000004  }
+#    26:     0.000293     0.000000     0.000293         1    0.000293  output /\n ----- done -----\n/
+#    27:     0.000002     0.000000     0.000002         1    0.000002
+#    28:     0.000022     0.000000     0.000022         1    0.000022  exit /0/
+#    30:     0.000000     0.000000     0.000000         0    0.000000  }
+#    37:     0.000000     0.000000     0.000000         0    0.000000  :cvt: (:tmp:)
+#    38:     0.000003     0.000000     0.000003         1    0.000003  {
+#    39:     0.000027     0.000000     0.000027         1    0.000027  return /:*:tmp:/
+#    41:     0.000000     0.000000     0.000000         0    0.000000  }
+#-------------------- Grand Total ----------------------
+#    97:   157.313596     0.180755   157.494351
+#        Command being timed: "/home/ger/prj/3actual/crm114/src/crm114 -u ../mailfilter -p ../tests/exectimingtest2.crm"
+#        User time (seconds): 107.39
+#        System time (seconds): 44.81
+#        Percent of CPU this job got: 96%
+#        Elapsed (wall clock) time (h:mm:ss or m:ss): 2:37.50
+#        Average shared text size (kbytes): 0
+#        Average unshared data size (kbytes): 0
+#        Average stack size (kbytes): 0
+#        Average total size (kbytes): 0
+#        Maximum resident set size (kbytes): 0
+#        Average resident set size (kbytes): 0
+#        Major (requiring I/O) page faults: 0
+#        Minor (reclaiming a frame) page faults: 11759516
+#        Voluntary context switches: 32266
+#        Involuntary context switches: 42902
+#        Swaps: 0
+#        File system inputs: 0
+#        File system outputs: 0
+#        Socket messages sent: 0
+#        Socket messages received: 0
+#        Signals delivered: 0
+#        Page size (bytes): 4096
+#        Exit status: 0
+#

@@ -1,3 +1,133 @@
+2008-07-17 Ger Hobbelt
+
+    * Fixed Makefiles, scripts and ./configure to fully support VPATH: e.g. you can now
+      build and test CRM114 from a specific (different) build directory, using this sequence for example:
+
+        mkdir _build
+        cd _build
+        ../configure --srcdir=..
+        make
+        make check
+
+    * Added 'statistics gathering' (I called it 'profiling' when I wrote it about a month ago, but that
+      name has so many re-uses here, and besides, 'statistics gathering' covers much better what it actually does)
+      to OSB; I intend to add it to the other classifiers too for deep analysis support.
+
+      With that comes a new tool to process these 'data traces' into useful numbers and graphs.
+
+      Currently, the tool only produces some stats and some crudy ASCII art, but that's just the start.
+      
+      'Statistics gathering' this way has been chosen in order to permit 'tracing' multiple runs
+      on CRM114 with the absolute minimum of extra load caused by 'collecting' the information.
+      A separate tool has been written as I believe the data processing should NOT occur in CRM114 itself;
+      I envision two major output channels, both for processing large quantities of data into human-parsable
+      stats and graphs: number series and/or scripts, which should be fed to R (the Open Source 'S'-equivalent statistics package)
+      and a second feed of a rather more novel type: rendered video. For that purpose, a future version
+      of the processing tool will have a dependency on OpenEXR, as the HDRI nature of that particular format
+      is especially suited to display data with a wide dynamic range.
+
+    * Taking care of 'make check' and other 'make' test targets' verbosity: a few environment variables have
+      been introduced:
+
+        CRM114_MAKE_SCRIPTS_DEBUG=1
+        export CRM114_MAKE_SCRIPTS_DEBUG
+
+      ... and, yes, don't forget that 'export' statement or it won't work within 'make': full verbosity
+      for when you wih to debug the test/filter scripts themselves. (tests/testscript.sh.in + tests/crm114*filter.sh.in 
+      test output filter scripts) 'unset CRM114_MAKE_SCRIPTS_DEBUG' will turn test script debugging verbosity OFF again.
+
+        CRM114_CHECK_QUIET=1
+        export CRM114_CHECK_QUIET
+
+      Don't forget to assign it a non-zero number to turn it ON; setting it to '0' or 'unset'ting it will turn this option
+      OFF: when ON, don't show diff reports unless we've got a test that FAILs.
+
+      In other words: use CRM114_CHECK_QUIET=1;export CRM114_CHECK_QUIET to shut up 'make check' et al, so you only
+      see al list of test titles and 'OK's flowing by - until you hit a FAIL, which will show you WHY it failed (diff output between actual output and reference (= expected) output.
+
+    * Test script / 'make check' notes:
+
+      A) hassle-free refreshing / updating test references
+
+      the generic test script has been designed so that both testing AND refreshing reference data is a breathe:
+      simply delete (or move) the reference data in ./tests/ref and the testscript will automatically copy the test
+      outputs for the next runs to the reference directory (while printing a warning for each test reference which is updated in
+      this way). Of course, you can also delete a single reference file: the next time this test is performed, its test
+      result will be used as reference from then on.
+
+      Procedure when validating new test results as 'correct' and old results as 'NOT correct anymore' is thus:
+
+        rm tests/ref/<testname>.*
+        make check          (or other 'make <testtarget>' which tests <testname>)
+
+      to update the reference.
+
+      Any subsequent 'make check' or other 'make <testtarget>' which tests <testname> will use that reference to
+      test as usual.
+
+      
+      B) test filters to cope with permissable variations in test output
+
+      The generic test script comes with a set of 'filter' scripts to 'postprocess' test output, BEFORE
+      that output is fed to a comparator (diff). In fact, when you specify a filter script (4th commandline
+      argument for testscript.sh) the testscript assumes the filter WILL ALSO PERFORM THE COMPARISON ITSELF.
+      This is done to allow the filter scripts to compare output with reference in other ways that are not possible 
+      with UNIX diff. Hence, the exit value of the filter script is used as a OK/FAIL signal: 0 = OK, anything else = FAIL.
+
+      Note that the filter scripts accept custom environment variables to drive their behaviour (see tests/Makefile.am
+      for several examples of this, especially with the classifier tests).
+
+      The generic testscript itself also accepts an additional environment variable:
+
+        CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE;
+
+      which can also be used as part of a 'make' action (see tests/Makefile.am for several examples) to 'override'
+      the test results. In effect, those tests are thus completely overriden; they do execute, but since we know their
+      results are buggy / instable, we can prevent those tests from aborting test sets of which they are part. ('make check' 
+      and other 'make' test targets will stop at the first FAILed test.)
+
+      Note that the value assigned to CRM114_CHECK_OVERRIDE is used as the 'permanent' test result; 0=OK, any other
+      value will cause a 'permanent' failure.
+
+    * All major/medium test targets have been 'exported' down to the root Makefile, so you don't need to 'cd tests'
+      anymore to run a particular set of tests.
+
+
+2008-05-25 Ger Hobbelt
+
+    * Upgraded the custom M4 macros and otherwise pushed the autoconf bits
+      into the Century of the Fruitbat, kicking and screaming.
+      
+      Seriously, the compiler flags, etc. are working as expected. Finally.
+      And all this goodness requires autoconf 2.62 or beyond now, so stay abreast, my dears.
+
+    * UNIX: CRM114 'syscall' acted up and barfed in the tests; amazingly this
+      hadn't happened before, but it turns out it's a big difference if you
+      compile with no optimizations (because the configure script did not properly check for them)
+      or suddenly have access to -O3 / -O2 optimized binaries.
+
+      Turns out there's an uninitialized variable in there.
+
+      While at it, checked the waitpid() man page, decided NOT to check the return
+      value depite my anal retentive preferences in that regard, but instead made sure the
+      error report now shows the correct info as children can also be aborted in various ways.
+
+    * GCC 3 produced wads of warnings when finally -O3 was turned on. A single warning was
+      particularly annoying and happened only in those places where I had overriden
+      the free() function to ensure that the pointer passed to it is also NULLed once done
+      do prevent any remaining code from accessing unalloced memory anymore - at least for the usual cases of such.
+
+         warning: dereferencing type-punned pointer will break strict-aliasing rules
+
+      Turns out the warning is not useful, but it took a bit of work to get rid of it.
+      This required the use of GCC specific code constructs, which have bee properly encapsulated in
+      crm114_sysincludes.h
+
+    * Added Neural Net tests to 'make check' again. Thanks to the new random generator, these
+      don't take 15 whole minutes anymore: first test fails, second succeeds - within tolerances.
+      (See tests/Makefile.am)
+
+
 2008-05-21 Ger Hobbelt
 
     * Added the match_re_fringe1.crm test case after some new discoveries

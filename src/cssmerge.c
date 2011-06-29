@@ -23,7 +23,6 @@
 
 
 
-#include <getopt.h>
 
 
 
@@ -121,7 +120,9 @@ char *outbuf = NULL;
 char *tempbuf = NULL;
 
 
-
+#if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
+CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = {0};
+#endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
 
 
@@ -136,8 +137,8 @@ static void helptext(void)
 {
     fprintf(stderr, " This is cssmerge, version %s\n", version);
     fprintf(stderr, " Copyright 2001-2007 W.S.Yerazunis.\n");
-    fprintf(stderr
-           , " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
+    fprintf(stderr,
+            " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
     fprintf(stdout, "Usage: cssmerge <out-cssfile> <in-cssfile> [-v] [-s]\n");
     fprintf(stdout, " <out-cssfile> will be created if it doesn't exist.\n");
     fprintf(stdout, " <in-cssfile> must already exist.\n");
@@ -191,8 +192,8 @@ int main(int argc, char **argv)
             }
             else
             {
-                fprintf(stderr, "\nOverriding new-create length to %d\n"
-                       , sparse_spectrum_file_length);
+                fprintf(stderr, "\nOverriding new-create length to %d\n",
+                        sparse_spectrum_file_length);
             }
             break;
 
@@ -228,17 +229,17 @@ int main(int argc, char **argv)
     //
     hfsize2 = statbuf.st_size;
     //         mmap the hash file into memory so we can bitwhack it
-    h2 = crm_mmap_file(argv[optind + 1]
-                      , 0
-                      , hfsize2
-                      , PROT_READ | PROT_WRITE
-                      , MAP_SHARED
-                      , CRM_MADV_RANDOM
-                      , &hfsize2);
+    h2 = crm_mmap_file(argv[optind + 1],
+            0,
+            hfsize2,
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED,
+            CRM_MADV_RANDOM,
+            &hfsize2);
     if (h2 == MAP_FAILED)
     {
-        fprintf(stderr, "\n Couldn't open file %s for reading; errno=%d(%s).\n"
-               , argv[optind + 1], errno, errno_descr(errno));
+        fprintf(stderr, "\n Couldn't open file %s for reading; errno=%d(%s).\n",
+                argv[optind + 1], errno, errno_descr(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -254,9 +255,9 @@ int main(int argc, char **argv)
         f = fopen(argv[optind], "wb");
         if (!f)
         {
-            untrappableerror_ex(SRC_LOC()
-                               , "\n Couldn't open file %s for writing; errno=%d(%s)\n"
-                               , argv[optind], errno, errno_descr(errno));
+            untrappableerror_ex(SRC_LOC(),
+                    "\n Couldn't open file %s for writing; errno=%d(%s)\n",
+                    argv[optind], errno, errno_descr(errno));
         }
         else
         {
@@ -275,8 +276,8 @@ int main(int argc, char **argv)
 
                 if (crm_decode_header(orig_header, CRM_OSBF | CRM_MARKOVIAN, TRUE, &h_inf))
                 {
-                    fatalerror("The original .CSS file format is not supported by this utility."
-                              , argv[optind + 1]);
+                    fatalerror("The original .CSS file format is not supported by this utility.",
+                            argv[optind + 1]);
                     fclose(f);
                     return -1;
                 }
@@ -287,8 +288,8 @@ int main(int argc, char **argv)
 
             if (0 != fwrite_crm_headerblock(f, &classifier_info, user_msg))
             {
-                nonfatalerror("Couldn't write the header to the .CSS file named "
-                          , argv[optind]);
+                nonfatalerror("Couldn't write the header to the .CSS file named ",
+                        argv[optind]);
                 fclose(f);
                 free(user_msg);
                 return -1;
@@ -298,12 +299,12 @@ int main(int argc, char **argv)
             //       put in  bytes of NULL
 
             // fputc(0, f);/* [i_a] fprintf(f, "%c", 0); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
-            if (file_memset(f, 0
-                           , sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+            if (file_memset(f, 0,
+                        sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
             {
-                untrappableerror_ex(SRC_LOC()
-                                   , "\n Couldn't write to file %s; errno=%d(%s)\n"
-                                   , argv[optind], errno, errno_descr(errno));
+                untrappableerror_ex(SRC_LOC(),
+                        "\n Couldn't write to file %s; errno=%d(%s)\n",
+                        argv[optind], errno, errno_descr(errno));
             }
             fclose(f);
         }
@@ -314,28 +315,28 @@ int main(int argc, char **argv)
     //
     hfsize1 = statbuf.st_size;
     //         mmap the hash file into memory so we can bitwhack it
-    h1 = crm_mmap_file(argv[optind]
-                      , 0
-                      , hfsize1
-                      , PROT_READ | PROT_WRITE
-                      , MAP_SHARED
-                      , CRM_MADV_RANDOM
-                      , &hfsize1);
+    h1 = crm_mmap_file(argv[optind],
+            0,
+            hfsize1,
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED,
+            CRM_MADV_RANDOM,
+            &hfsize1);
     if (h1 == MAP_FAILED)
     {
-        fprintf(stderr, "\n Couldn't map file %s; errno=%d(%s).\n"
-               , argv[optind], errno, errno_descr(errno));
+        fprintf(stderr, "\n Couldn't map file %s; errno=%d(%s).\n",
+                argv[optind], errno, errno_descr(errno));
         exit(EXIT_FAILURE);
     }
 
     //
     hfsize1 = hfsize1 / sizeof(FEATUREBUCKET_TYPE);
-    fprintf(stderr, "\nOutput sparse spectra file %s has %d bins total\n"
-           , argv[optind], hfsize1);
+    fprintf(stderr, "\nOutput sparse spectra file %s has %d bins total\n",
+            argv[optind], hfsize1);
 
     hfsize2 = hfsize2 / sizeof(FEATUREBUCKET_TYPE);
-    fprintf(stderr, "\nInput sparse spectra file %s has %d bins total\n"
-           , argv[optind + 1], hfsize2);
+    fprintf(stderr, "\nInput sparse spectra file %s has %d bins total\n",
+            argv[optind + 1], hfsize2);
 
 
 #ifdef OSB_LEARNCOUNTS
@@ -411,8 +412,8 @@ int main(int argc, char **argv)
                 {
                     fprintf(stdout, "\n\n ****** FATAL ERROR ******\n"
                                     "There are too many features to fit into a css file of this size.\n"
-                                    "Operation aborted at input bucket offset %d.\n"
-                           , i);
+                                    "Operation aborted at input bucket offset %d.\n",
+                            i);
                     exit(EXIT_FAILURE);
                 }
             }
@@ -433,11 +434,10 @@ int main(int argc, char **argv)
 
 
 
-// bogus code to make link phase happy while we are in limbo between obsoleting this tool and 
+// bogus code to make link phase happy while we are in limbo between obsoleting this tool and
 // getting cssXXXX script commands working in crm114 itself.
 void free_stack_item(CSL_CELL *csl)
-{
-}
+{ }
 
 
 

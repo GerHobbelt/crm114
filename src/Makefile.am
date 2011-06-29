@@ -15,24 +15,9 @@ DISTCLEANFILES = diff/
 CLEANFILES = *.o *~ *.bak
 
 
-GZIP_BIN       = @GZIP@
-COMPRESS_BIN   = @COMPRESS@
-LZMA_BIN       = @LZMA@
-SEVENZIP_BIN   = @SEVEN_ZIP@
-TAR_BIN        = @TAR@
-SHAR_BIN       = @SHAR@
-BZIP2_BIN      = @BZIP2@
-ZIP_BIN        = @ZIP@
-CVS2CL_BIN     = @CVS2CL@
-UNCRUSTIFY_BIN = @UNCRUSTIFY@
-DIFF_BIN       = @DIFF@
-HTMLTIDY_BIN   = @HTMLTIDY@
-DB2X_XSLTPROC  = @DB2X_XSLTPROC@
-DB2X_MANXML    = @DB2X_MANXML@
-DB2X_TEXIXML   = @DB2X_TEXIXML@
 
 
-TAR_CMDLINE  = ${TAR_BIN} cf - "$$tardir"
+TAR_CMDLINE  = ${TAR} cf - "$$tardir"
 
 
 
@@ -113,26 +98,24 @@ PREV_VERSION=20080317-BlameJoeLangeway_VT
 #  Tell the compiler full optimization "-O3", add debugging info "-g", 
 #  and warn on all warnable things "-Wall".  Someday add -Wextra for
 #  really picayune stuff.
-#  
-AM_CFLAGS = @AM_CFLAGS@
-# AM_CFLAGS += -g -O3
+#
+# CFLAGS += -g -O3
 #     turn this one on for no optimization, but debugging and time profiling.
-#AM_CFLAGS += -g -O0 -Wall -pg
+# CFLAGS += -g -O0 -Wall -pg
 #     turn this one on for really picayune debugging.
 
-AM_CPPFLAGS = @AM_CPPFLAGS@
-# AM_CPPFLAGS += -Wall
-# AM_CPPFLAGS += -Wextra 
-# AM_CPPFLAGS += -pedantic
+# CPPFLAGS += -Wall
+# CPPFLAGS += -Wextra 
+# CPPFLAGS += -pedantic
 
 #
 #   Choose between static and dynamic linking (we recommend static linking)
 #   Comment this out if you want dynamic linking
 #
 #    BSD users - do NOT use -static-libgcc!!!
-AM_LDFLAGS = @AM_LDFLAGS@
+#
 #    use this one if you want program profiling.
-#AM_LDFLAGS += -static -static-libgcc -pg
+# LDFLAGS += -static -static-libgcc -pg
 #
 #   Any standard install flags?  We nominally use protection 755
 INSTALLFLAGS = @INSTALLFLAGS@
@@ -273,13 +256,24 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
 	crm_stats.c crm_expr_sks.c \
-	crm_expr_svm.c crm_expr_fscm.c \
+	crm_expr_svm.c crm_fast_substring_compression.c \
 	crm_generic_port.c crm_stdio_port.c \
-	crm_versioning.c
+	crm_versioning.c crm_core_profiling.c \
+	crm_osb_markovian_alt.c crm_osb_bayes_alt.c crm_osb_hyperspace_alt.c \
+	crm_osb_winnow_alt.c crm_osbf_bayes_alt.c
+
+CFILES_4_BMP_PROF = \
+	crm_bmp_image_io.cpp crm_bmp_prof_collect.cpp \
+	crm_bmp_prof_report.cpp \
+	crm_bmp_prof_scan.cpp crm_bmp_prof_utils.cpp
+
 
 HFILES = crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h config.h \
-	config_vanilla_UNIX_sys_defaults.h crm_mjt_qsort.h
+	config_vanilla_UNIX_sys_defaults.h crm_mjt_qsort.h \
+	crm_pshpack2.h crm_pshpack1.h crm_pshpack4.h crm_poppack.h \
+	crm_bmp_prof.h \
+	../win32/config_win32.h
 
 EXTRA_DEPS = Makefile
 
@@ -295,15 +289,19 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
 	crm_preprocessor.o crmregex_gnu.o crmregex_tre.o \
-	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
+	crm_expr_sks.o crm_stats.o crm_expr_svm.o \
+	crm_fast_substring_compression.o \
 	crm_generic_port.o crm_stdio_port.o \
-	crm_versioning.o
+	crm_versioning.o crm_core_profiling.o \
+	crm_osb_markovian_alt.o crm_osb_bayes_alt.o crm_osb_hyperspace_alt.o \
+	crm_osb_winnow_alt.o crm_osbf_bayes_alt.o 
 
 
 
-UTILFILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c \
-	testvectok.c crm_test_hashes.c \
-	crm_test_hashes.h
+
+
+UTIL_C_FILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c \
+	testvectok.c crm_bmp_prof_main.cpp
 
 
 CRMFILES = mailfilter.crm mailfilter.cf \
@@ -358,18 +356,19 @@ TEXTFILES = COLOPHON.txt pad.dat \
 
 
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
-	$(UTILFILES) \
 	$(CRMFILES) \
 	$(TEXTFILES) \
-	config_vanilla_UNIX_sys_defaults.h.in
+	config_vanilla_UNIX_sys_defaults.h.in \
+	../win32/config_win32.h.in
+
 
 
 TESTS =
 
 
 
-bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge
-noinst_PROGRAMS = testvectok crm_test_hashes
+bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge crm_bmp_prof
+noinst_PROGRAMS = testvectok
 
 
 crm114_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) crm_main.c
@@ -385,7 +384,7 @@ cssmerge_SOURCES = cssmerge.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 
 testvectok_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) testvectok.c
 
-crm_test_hashes_SOURCES = $(HFILES) $(EXTRA_DEPS) crm_test_hashes.c
+crm_bmp_prof_SOURCES = crm_bmp_prof_main.cpp $(CFILES_4_BMP_PROF) $(CFILES) $(HFILES) $(EXTRA_DEPS)
 
 
 # see for 'ELCFILES=' the documentation at http://www.gnu.org/software/automake/manual/automake.html#Emacs-Lisp
@@ -535,7 +534,7 @@ crm_expr_sks.o: crm_expr_sks.c \
 crm_expr_svm.o: crm_expr_svm.c \
 	$(HFILES) $(EXTRA_DEPS)
 
-crm_expr_fscm.o: crm_expr_fscm.c \
+crm_fast_substring_compression.o: crm_fast_substring_compression.c \
 	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_clump.o: crm_expr_clump.c \
@@ -586,9 +585,6 @@ cssmerge.o: cssmerge.c  \
 testvectok.o: testvectok.c  \
 	$(HFILES) $(EXTRA_DEPS)
 
-crm_test_hashes.o: crm_test_hashes.c crm_test_hashes.h \
-	$(HFILES) $(EXTRA_DEPS)
-
 crm_generic_port.o: crm_generic_port.c \
 	$(HFILES) $(EXTRA_DEPS)
 
@@ -598,74 +594,48 @@ crm_stdio_port.o: crm_stdio_port.c \
 crm_versioning.o: crm_versioning.c \
 	$(HFILES) $(EXTRA_DEPS)
 
+crm_core_profiling.o: crm_core_profiling.c \
+	$(HFILES) $(EXTRA_DEPS)
 
-# cssutil$(EXEEXT): cssutil.o crm_css_maintenance.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-# 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
-# 		crm_css_maintenance.o \
-# 		crm_errorhandlers.o \
-# 		crm_str_funcs.o \
-# 		crm_generic_port.o \
-# 		crm_stdio_port.o \
-# 		crm_versioning.o \
-# 		-o cssutil$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# osbf-util$(EXEEXT): osbf-util.o crm_osbf_maintenance.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-# 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
-# 		crm_str_funcs.o \
-# 		crm_errorhandlers.o \
-# 		crm_osbf_maintenance.o \
-# 		crm_generic_port.o \
-# 		crm_stdio_port.o \
-# 		crm_versioning.o \
-# 		-o osbf-util$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# cssdiff$(EXEEXT): cssdiff.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-# 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
-# 		crm_errorhandlers.o \
-# 		crm_str_funcs.o \
-# 		crm_generic_port.o \
-# 		crm_stdio_port.o \
-# 		crm_versioning.o \
-# 		-o cssdiff$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# cssmerge$(EXEEXT): cssmerge.o crm_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-# 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
-# 		crm_str_funcs.o \
-# 		crm_errorhandlers.o \
-# 		crm_generic_port.o \
-# 		crm_stdio_port.o \
-# 		crm_versioning.o \
-# 		-o cssmerge$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# 
-# testvectok$(EXEEXT): testvectok.o $(OFILES)
-# 	$(CC) $(LDFLAGS) $(LIBS) testvectok.o \
-# 		$(OFILES) \
-# 		-o testvectok$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
-# 
-# crm_test_hashes$(EXEEXT): crm_test_hashes.o 
-# 	$(CC) $(LDFLAGS) $(LIBS) crm_test_hashes.o \
-# 		-o crm_test_hashes$(EXEEXT)
-# 	$(E) ""
-# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
-# 	$(E) ""
-# 
+crm_osb_markovian_alt.o: crm_osb_markovian_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+	
+crm_osb_bayes_alt.o: crm_osb_bayes_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+	
+crm_osb_hyperspace_alt.o: crm_osb_hyperspace_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+	
+crm_osb_winnow_alt.o: crm_osb_winnow_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+	
+crm_osbf_bayes_alt.o: crm_osbf_bayes_alt.c \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_main.o: crm_bmp_prof_main.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_image_io.o: crm_bmp_image_io.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_collect.o: crm_bmp_prof_collect.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_report.o: crm_bmp_prof_report.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_scan.o: crm_bmp_prof_scan.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+crm_bmp_prof_utils.o: crm_bmp_prof_utils.cpp \
+	$(HFILES) $(EXTRA_DEPS)
+
+
+
+
+
+
+
 
 clean-local:
 	-rm -f crm114$(EXEEXT)
@@ -675,6 +645,7 @@ clean-local:
 	-rm -f cssmerge$(EXEEXT)
 	-rm -f testvectok$(EXEEXT)
 	-rm -f crm_test_hashes$(EXEEXT)
+	-rm -f crm_bmp_prof$(EXEEXT)
 	-rm -f crm114_gnu$(EXEEXT)
 	-rm -f crm114_tre$(EXEEXT)
 	-rm -f crm114
@@ -684,6 +655,7 @@ clean-local:
 	-rm -f cssmerge
 	-rm -f testvectok
 	-rm -f crm_test_hashes
+	-rm -f crm_bmp_prof
 	-rm -f crm114_gnu
 	-rm -f crm114_tre
 	-rm -f *.o
@@ -796,12 +768,12 @@ megatest: crm114$(EXEEXT) megatest.sh megatest_knowngood.log $(MEGATESTFILES)
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="
 	$(E) "=============================================================="
-	$(DIFF_BIN) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+	$(DIFF) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
-	$(DIFF_BIN) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+	$(DIFF) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 
 
 
@@ -827,12 +799,12 @@ megatest_ng: crm114$(EXEEXT) megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="
 	$(E) "=============================================================="
-	$(DIFF_BIN) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(DIFF) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
-	$(DIFF_BIN) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(DIFF) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
 
 
 
@@ -859,8 +831,8 @@ cssfiles: spam.dir good.dir
 	$(E) "   Here we go..."
 	$(E) ""
 	$(E) "   MUCH STUFF DEPRECATED!!!  Use mailreaver.crm instead..."
-	$(srcdir)/cssutil -b -r spam.css
-	$(srcdir)/cssutil -b -r nonspam.css
+	$(builddir)/cssutil -b -r spam.css
+	$(builddir)/cssutil -b -r nonspam.css
 	cp spam.css spam__$(DATE).txt
 	cp nonspam.css nonspam__$(DATE).txt
 	$(E) ""
@@ -878,27 +850,37 @@ cssfiles: spam.dir good.dir
 
 
 
-rsync:  
+rsync: $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) $(CRMFILES) $(TEXTFILES) $(EXTRA_DIST) \
+		config.h.in \
+		config_vanilla_UNIX_sys_defaults.h.in \
+		../win32/config_win32.h.in
 	rsync -zrltDv \
-	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) \
+	  $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) $(CRMFILES) $(TEXTFILES) $(EXTRA_DIST) \
+		config.h.in \
+		config_vanilla_UNIX_sys_defaults.h.in \
+		../win32/config_win32.h.in
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
 
 
-diff: diff_em.sh $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) $(EXTRA_DIST) crm_main.c
-	-(sh ./diff_em.sh );
+
+diff: diff_em.sh $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) $(CRMFILES) $(TEXTFILES) $(EXTRA_DIST)
+	-( sh ./diff_em.sh );
 
 
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
 # indent -bad -bap -bl -bli0 -bls -cbi4 -cdw -cli0 -di8 -hnl -i4 -l80 -lp -nbc -nce -ncs -npcs -nprs -npsl -nsaf -nsai -nsaw -nsob -nut -pi4 -sc -ss -T index_t -T hitcount_t -T regex_t -T regmatch_t -T regamatch_t -T regaparams_t -T Qitem_t -T regoff_t -T tre_char_t -T COOCCURRENCE_SCORE_TYPE *.c *.h
-reindent: indent.sh
-	-( sh ./indent.sh $(CFILES) $(HFILES) )
+reindent: indent.sh $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) \
+		config.h.in \
+		config_vanilla_UNIX_sys_defaults.h.in \
+		../win32/config_win32.h.in
+	-( sh ./indent.sh $(CFILES) $(HFILES) $(UTIL_C_FILES) $(CFILES_4_BMP_PROF) \
+		config.h.in \
+		config_vanilla_UNIX_sys_defaults.h.in \
+		../win32/config_win32.h.in \
+	 )
 
 
-.SUFFIXES = .c .o
-
-#.c.o:
-#	$(COMPILE) -c $< -o $@
 
 
 

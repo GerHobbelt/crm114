@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114
+#! @BIN_PATH@/crm114
 #   test the error report concerning matching braces and alius.
 #   see the coding error at line 17
 {

@@ -24,13 +24,13 @@
 
 
 
-#if 10
+#if 0
 #define ORIGINAL_VT_CODE  1
 #endif
 
 
 
-#if defined(ORIGINAL_VT_CODE)
+#if defined (ORIGINAL_VT_CODE)
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@
 //    all boats equally, or something like that.
 //
 //    If you need two sets of hashes, call this routine twice, with
-//    different pipeline coefficient arrays (the OSB and Markov 
+//    different pipeline coefficient arrays (the OSB and Markov
 //    classifiers need this)
 //
 //    If the features_out area becomes close to overflowing, then
@@ -77,10 +77,10 @@
 //
 //    yields "Classic CRM114" OSB features.  The unit vector
 //
-//     {{1}} 
+//     {{1}}
 //
 //    yields unigrams (that is, single units of whatever the
-//    the tokenizing regex matched).  The 1x2array 
+//    the tokenizing regex matched).  The 1x2array
 //
 //     {{1 1}}
 //
@@ -89,7 +89,7 @@
 //     {{1 2}}
 //
 //    yields bigrams that are order sensitive.
-// 
+//
 //    Because the array elements are used as dot-product multipliers
 //    on the hashed token value pipeline, there is a small advantage to
 //    having the elements of the array being odd (low bit set) and
@@ -103,160 +103,157 @@
 
 int crm_vector_tokenize
 (
-        const char          *text,            // input string (null-safe!)
-        int                  textlen,         //   how many bytes of input.
-        int                  start_offset,    //     start tokenizing at this byte.
-        VT_USERDEF_TOKENIZER *tokenizer,           // the regex tokenizer (elements in struct MAY be changed)
-        const VT_USERDEF_COEFF_MATRIX *our_coeff,  // the pipeline coefficient control array, etc.
-        crmhash_t           *features,        // where the output features go
-        int                  featureslen,     //   how many output features (max)
-        int                  features_stride, //   Spacing (in hashes) between features
-        int                 *features_out    // how many longs did we actually use up
+        const char                    *text,            // input string (null-safe!)
+        int                            textlen,         //   how many bytes of input.
+        int                            start_offset,    //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER          *tokenizer,       // the regex tokenizer (elements in struct MAY be changed)
+        const VT_USERDEF_COEFF_MATRIX *our_coeff,       // the pipeline coefficient control array, etc.
+        crmhash_t                     *features,        // where the output features go
+        int                            featureslen,     //   how many output features (max)
+        int                            features_stride, //   Spacing (in hashes) between features
+        int                           *features_out     // how many longs did we actually use up
 )
 {
-  int hashpipe[UNIFIED_WINDOW_LEN];    // the pipeline for hashes
-  int keepgoing;                       // the loop controller
-  int i, j, k;             // some handy index vars
-  int regcomp_status;
-  int text_offset;
-  int irow, icol;
-  unsigned int ihash;
-  char errortext[4096];
+    int hashpipe[UNIFIED_WINDOW_LEN];  // the pipeline for hashes
+    int keepgoing;                     // the loop controller
+    int i, j, k;                       // some handy index vars
+    int regcomp_status;
+    int text_offset;
+    int irow, icol;
+    unsigned int ihash;
+    char errortext[4096];
 
-  //    now do the work.
+    //    now do the work.
 
-  *features_out = 0;
-  keepgoing = 1;
-  j = 0;
+    *features_out = 0;
+    keepgoing = 1;
+    j = 0;
 
-  //    Compile the regex.   
-  if (tokenizer && tokenizer->regexlen)
+    //    Compile the regex.
+    if (tokenizer && tokenizer->regexlen)
     {
-		regcomp_status = crm_regcomp (&tokenizer->regcb, tokenizer->regex, tokenizer->regexlen, REG_EXTENDED);
-      if (regcomp_status > 0)
-	{
-	  crm_regerror (regcomp_status, &tokenizer->regcb, errortext, 4096);
-	  nonfatalerror("Regular Expression Compilation Problem: ",
-			  errortext);
-	  return (-1);
-	};
-    };
-
-  // fill the hashpipe with initialization
-  for (i = 0; i < UNIFIED_WINDOW_LEN; i++)
-    hashpipe[i] = 0xDEADBEEF ;
-  
-  //   Run the hashpipe, either with regex, or without.
-  //
-  text_offset = start_offset;
-  while (keepgoing)
-    {
-      //  If the pattern is empty, assume non-graph-delimited tokens
-      //  (supposedly an 8% speed gain over regexec)
-      if (tokenizer->regexlen == 0)
-	{
-	  k = 0;
-          //         skip non-graphical characthers 
-	  tokenizer->match[0].rm_so = 0;
-          while (!crm_isgraph (text [text_offset + tokenizer->match[0].rm_so])
-                 && text_offset + tokenizer->match[0].rm_so < textlen)
-            tokenizer->match[0].rm_so ++;
-          tokenizer->match[0].rm_eo = tokenizer->match[0].rm_so;
-          while (crm_isgraph (text [text_offset + tokenizer->match[0].rm_eo])
-                 && text_offset + tokenizer->match[0].rm_eo < textlen)
-            tokenizer->match[0].rm_eo ++;
-          if ( tokenizer->match[0].rm_so == tokenizer->match[0].rm_eo)
-            k = 1;
+        regcomp_status = crm_regcomp(&tokenizer->regcb, tokenizer->regex, tokenizer->regexlen, REG_EXTENDED);
+        if (regcomp_status > 0)
+        {
+            crm_regerror(regcomp_status, &tokenizer->regcb, errortext, 4096);
+            nonfatalerror("Regular Expression Compilation Problem: ",
+                    errortext);
+            return -1;
         }
-      else
-	{
-	  k = crm_regexec (&tokenizer->regcb, 
-			   &text[text_offset], 
-			   textlen - text_offset,
-			   WIDTHOF(tokenizer->match), tokenizer->match,
-			   REG_EXTENDED, NULL);
-	};
-
-
-      //   Are we done?
-      if ( k == 0 )
-	{
-	  //   Not done,we have another token (the text in text[match[0].rm_so,
-	  //    of length match[0].rm_eo - match[0].rm_so size)
-	  
-	  //
-	  if (user_trace)
-	  {
-	    fprintf (stderr, "Token; k: %d T.O: %d len %d ( %d %d on >",
-		     k,
-		     text_offset,
-		     tokenizer->match[0].rm_eo - tokenizer->match[0].rm_so,
-		     tokenizer->match[0].rm_so,
-		     tokenizer->match[0].rm_eo);
-	    for (k = tokenizer->match[0].rm_so+text_offset; 
-		 k < tokenizer->match[0].rm_eo+text_offset; 
-		 k++)
-	      fprintf (stderr, "%c", text[k]);
-	    fprintf (stderr, "< )\n");
-	  };
-	  
-	  //   Now slide the hashpipe up one slot, and stuff this new token
-	  //   into the front of the pipeline
-	  //
-	  // for (i = UNIFIED_WINDOW_LEN; i > 0; i--)  // GerH points out that
-	  //  hashpipe [i] = hashpipe[i-1];            //  this smashes stack
-	  memmove (& hashpipe [1], hashpipe, 
-		   sizeof (hashpipe) - sizeof (hashpipe[0]) );
- 
-	  hashpipe[0] = strnhash( &text[tokenizer->match[0].rm_so+text_offset], 
-				  tokenizer->match[0].rm_eo - tokenizer->match[0].rm_so);
-	  
-	  //    Now, for each row in the coefficient array, we create a
-	  //   feature.
-	  //    
-	  for (irow = 0; irow < our_coeff->pipe_iters; irow++)
-	    {
-	      ihash = 0;
-	      for (icol = 0; icol < our_coeff->pipe_len; icol++)
-		ihash = ihash + 
-		  hashpipe[icol] * our_coeff->coeff_array[ (our_coeff->pipe_len * irow) + icol];
-	      
-	      //    Stuff the final ihash value into reatures array
-	      features[*features_out] = ihash;
-	      if (internal_trace)
-		fprintf (stderr, 
-			 "New Feature: %lx at %d\n", (unsigned long int)ihash, *features_out);
-	      *features_out = *features_out + features_stride ;
-	    };
-	  
-	  //   And finally move on to the next place in the input.
-	  //   
-	  //  Move to end of current token.
-	  text_offset = text_offset + tokenizer->match[0].rm_eo;
-#if 0
-	  if (next_offset)
-	  *next_offset = text_offset + 1; 
-#endif
-	  }
-      else
-	//     Failed to match.  This is the end...
-	{
-	  keepgoing = 0;
-#if 0
-	  if (next_offset)
-	    *next_offset = tokenizer->match[0].rm_eo;
-#endif
-	  };
-      
-      //    Check to see if we have space left to add more 
-      //    features assuming there are any left to add.
-      if ( *features_out + our_coeff->pipe_iters + 1 > featureslen)
-	{
-	  keepgoing = 0;
-	}
-
     }
-  return (0);
+
+    // fill the hashpipe with initialization
+    for (i = 0; i < UNIFIED_WINDOW_LEN; i++)
+        hashpipe[i] = 0xDEADBEEF;
+
+    //   Run the hashpipe, either with regex, or without.
+    //
+    text_offset = start_offset;
+    while (keepgoing)
+    {
+        //  If the pattern is empty, assume non-graph-delimited tokens
+        //  (supposedly an 8% speed gain over regexec)
+        if (tokenizer->regexlen == 0)
+        {
+            k = 0;
+            //         skip non-graphical characthers
+            tokenizer->match[0].rm_so = 0;
+            while (!crm_isgraph(text[text_offset + tokenizer->match[0].rm_so])
+                   && text_offset + tokenizer->match[0].rm_so < textlen)
+                tokenizer->match[0].rm_so++;
+            tokenizer->match[0].rm_eo = tokenizer->match[0].rm_so;
+            while (crm_isgraph(text[text_offset + tokenizer->match[0].rm_eo])
+                   && text_offset + tokenizer->match[0].rm_eo < textlen)
+                tokenizer->match[0].rm_eo++;
+            if (tokenizer->match[0].rm_so == tokenizer->match[0].rm_eo)
+                k = 1;
+        }
+        else
+        {
+            k = crm_regexec(&tokenizer->regcb,
+                    &text[text_offset],
+                    textlen - text_offset,
+                    WIDTHOF(tokenizer->match), tokenizer->match,
+                    REG_EXTENDED, NULL);
+        }
+
+
+        //   Are we done?
+        if (k == 0)
+        {
+            //   Not done,we have another token (the text in text[match[0].rm_so,
+            //    of length match[0].rm_eo - match[0].rm_so size)
+
+            //
+            if (user_trace)
+            {
+                fprintf(stderr, "Token; k: %d T.O: %d len %d ( %d %d on >",
+                        k,
+                        text_offset,
+                        tokenizer->match[0].rm_eo - tokenizer->match[0].rm_so,
+                        tokenizer->match[0].rm_so,
+                        tokenizer->match[0].rm_eo);
+                for (k = tokenizer->match[0].rm_so + text_offset;
+                     k < tokenizer->match[0].rm_eo + text_offset;
+                     k++)
+                    fprintf(stderr, "%c", text[k]);
+                fprintf(stderr, "< )\n");
+            }
+
+            //   Now slide the hashpipe up one slot, and stuff this new token
+            //   into the front of the pipeline
+            //
+            // for (i = UNIFIED_WINDOW_LEN; i > 0; i--)  // GerH points out that
+            //  hashpipe [i] = hashpipe[i-1];            //  this smashes stack
+            memmove(&hashpipe[1], hashpipe,
+                    sizeof(hashpipe) - sizeof(hashpipe[0]));
+
+            hashpipe[0] = strnhash(&text[tokenizer->match[0].rm_so + text_offset],
+                    tokenizer->match[0].rm_eo - tokenizer->match[0].rm_so);
+
+            //    Now, for each row in the coefficient array, we create a
+            //   feature.
+            //
+            for (irow = 0; irow < our_coeff->pipe_iters; irow++)
+            {
+                ihash = 0;
+                for (icol = 0; icol < our_coeff->pipe_len; icol++)
+                    ihash = ihash +
+                            hashpipe[icol] * our_coeff->coeff_array[(our_coeff->pipe_len * irow) + icol];
+
+                //    Stuff the final ihash value into reatures array
+                features[*features_out] = ihash;
+                if (internal_trace)
+                    fprintf(stderr,
+                            "New Feature: %lx at %d\n", (unsigned long int)ihash, *features_out);
+                *features_out = *features_out + features_stride;
+            }
+
+            //   And finally move on to the next place in the input.
+            //
+            //  Move to end of current token.
+            text_offset = text_offset + tokenizer->match[0].rm_eo;
+        }
+        else
+        //     Failed to match.  This is the end...
+        {
+            keepgoing = 0;
+        }
+
+        //    Check to see if we have space left to add more
+        //    features assuming there are any left to add.
+        if (*features_out + our_coeff->pipe_iters + 1 + 2 > featureslen)
+        {
+            keepgoing = 0;
+        }
+    }
+#if 0
+	if (next_offset)
+    *next_offset = text_offset + match[0].rm_eo;
+#endif
+	features[*features_out] = 0;
+  features[*features_out+1] = 0; 
+    return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -369,15 +366,15 @@ int crm_vector_tokenize
 //
 int crm_vector_tokenize
 (
-    const char                    *text,               // input string (null-safe!)
-    int                            textlen,            //   how many bytes of input.
-    int                            start_offset,       //     start tokenizing at this byte.
-    VT_USERDEF_TOKENIZER          *tokenizer,          // the regex tokenizer (elements in struct MAY be changed)
-    const VT_USERDEF_COEFF_MATRIX *our_coeff,          // the pipeline coefficient control array, etc.
-    crmhash_t                     *features_buffer,    // where the output features go
-    int                            features_bufferlen, //   how many output features (max)
-    int                            features_stride,    //   Spacing (in hashes) between features
-    int                           *features_out        // how many longs did we actually use up
+        const char                    *text,               // input string (null-safe!)
+        int                            textlen,            //   how many bytes of input.
+        int                            start_offset,       //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER          *tokenizer,          // the regex tokenizer (elements in struct MAY be changed)
+        const VT_USERDEF_COEFF_MATRIX *our_coeff,          // the pipeline coefficient control array, etc.
+        crmhash_t                     *features_buffer,    // where the output features go
+        int                            features_bufferlen, //   how many output features (max)
+        int                            features_stride,    //   Spacing (in hashes) between features
+        int                           *features_out        // how many longs did we actually use up
 )
 {
     crmhash_t hashpipe[CRM_VT_BURST_SIZE + UNIFIED_WINDOW_LEN - 1];  // the pipeline for hashes
@@ -388,15 +385,15 @@ int crm_vector_tokenize
     int pipe_iters;
     int pipe_matrices;
     int element_step_size;
-	int single_featureblock_size;
+    int single_featureblock_size;
 
-	if (internal_trace)
-{
-fprintf(stderr, "VT: textlen = %d\n", textlen);
-fprintf(stderr, "VT: start_offset = %d\n", start_offset);
-fprintf(stderr, "VT: features_bufferlen = %d\n", features_bufferlen);
-fprintf(stderr, "VT: features_stride = %d\n", features_stride);
-}
+    if (internal_trace)
+    {
+        fprintf(stderr, "VT: textlen = %d\n", textlen);
+        fprintf(stderr, "VT: start_offset = %d\n", start_offset);
+        fprintf(stderr, "VT: features_bufferlen = %d\n", features_bufferlen);
+        fprintf(stderr, "VT: features_stride = %d\n", features_stride);
+    }
 
     // sanity checks: everything must be 'valid'; no 'default' NULL pointers, nor zeroed/out-of-range values accepted.
     if (!text || !our_coeff || !features_buffer || !features_out)
@@ -405,10 +402,10 @@ fprintf(stderr, "VT: features_stride = %d\n", features_stride);
         return -1;
     }
 
-	// tag the output series with a zero asap:
+    // tag the output series with a zero asap:
     *features_out = 0;
 
-	if (features_stride < 1)
+    if (features_stride < 1)
     {
         CRM_ASSERT(!"This should never happen in a properly coded CRM114...");
         return -1;
@@ -425,69 +422,69 @@ fprintf(stderr, "VT: features_stride = %d\n", features_stride);
     pipe_iters = our_coeff->pipe_iters;
     pipe_len = our_coeff->pipe_len;
     pipe_matrices = our_coeff->output_stride;
-	if (internal_trace)
-{
-fprintf(stderr, "VT: pipe_iters = %d\n", pipe_iters);
-fprintf(stderr, "VT: pipe_len = %d\n", pipe_len);
-fprintf(stderr, "VT: pipe_matrices = %d\n", pipe_matrices);
-}
+    if (internal_trace)
+    {
+        fprintf(stderr, "VT: pipe_iters = %d\n", pipe_iters);
+        fprintf(stderr, "VT: pipe_len = %d\n", pipe_len);
+        fprintf(stderr, "VT: pipe_matrices = %d\n", pipe_matrices);
+    }
     if (pipe_iters <= 0 || pipe_iters > UNIFIED_VECTOR_LIMIT)
     {
         // index out of configurable range
-       nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
-            "the VT iteration count (%d) is out of bounds [%d .. %d].",
-	pipe_iters, 1, UNIFIED_VECTOR_LIMIT);
+        nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
+                                    "the VT iteration count (%d) is out of bounds [%d .. %d].",
+                pipe_iters, 1, UNIFIED_VECTOR_LIMIT);
         return -1;
     }
     if (pipe_len <= 0 || pipe_len > UNIFIED_WINDOW_LEN)
     {
         // index out of configurable range
-       nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
-            "the VT pipeline depth (%d) is out of bounds [%d .. %d].",
-	pipe_len, 1, UNIFIED_WINDOW_LEN);
+        nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
+                                    "the VT pipeline depth (%d) is out of bounds [%d .. %d].",
+                pipe_len, 1, UNIFIED_WINDOW_LEN);
         return -1;
     }
     if (pipe_matrices <= 0 || pipe_matrices > UNIFIED_VECTOR_STRIDE)
     {
         // index out of configurable range
-       nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
-            "the number of VT matrixes (%d) is out of bounds [%d .. %d]. We don't support any stride that large.",
-	pipe_matrices, 1, UNIFIED_VECTOR_STRIDE);
+        nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
+                                    "the number of VT matrixes (%d) is out of bounds [%d .. %d]. We don't support any stride that large.",
+                pipe_matrices, 1, UNIFIED_VECTOR_STRIDE);
         return -1;
     }
 
-single_featureblock_size = pipe_iters * pipe_matrices;
-	if (internal_trace)
-{
-fprintf(stderr, "VT: single_featureblock_size = %d\n", single_featureblock_size);
-}
+    single_featureblock_size = pipe_iters * pipe_matrices;
+    if (internal_trace)
+    {
+        fprintf(stderr, "VT: single_featureblock_size = %d\n", single_featureblock_size);
+    }
 
     if (single_featureblock_size > features_bufferlen)
     {
         // feature storage space too small:
-       nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
-            "the feature bucket is too small (%d) to contain the minimum required number of features (%d) at least.",
-	features_bufferlen, single_featureblock_size);
+        nonfatalerror_ex(SRC_LOC(), "Sanity check failed while starting up the VT (Vector Tokenizer): "
+                                    "the feature bucket is too small (%d) to contain the minimum required number of features (%d) at least.",
+                features_bufferlen, single_featureblock_size);
         return -1;         // can't even store the features from one token, so why bother?
     }
 
     element_step_size = pipe_matrices * features_stride;
-	if (internal_trace)
-{
-fprintf(stderr, "VT: element_step_size = %d\n", element_step_size);
-}
+    if (internal_trace)
+    {
+        fprintf(stderr, "VT: element_step_size = %d\n", element_step_size);
+    }
 
     // is the tokenizer also configured properly?
     if (!tokenizer->tokenizer)
     {
-       nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-            "The VT tokenizer has not been set up!");
+        nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
+                "The VT tokenizer has not been set up!");
         return -1;
     }
     if (!tokenizer->cleanup)
     {
-       nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-            "Nobody's apparently cleaning up after the VT tokenizer!");
+        nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
+                "Nobody's apparently cleaning up after the VT tokenizer!");
         return -1;
     }
 
@@ -521,14 +518,14 @@ fprintf(stderr, "VT: element_step_size = %d\n", element_step_size);
         // cough up a fresh token burst now and put them at the front of the pipe, i.e. at the END of the array:
         i = tokenizer->tokenizer(tokenizer, &hashpipe[UNIFIED_WINDOW_LEN - 1], CRM_VT_BURST_SIZE);
         // did we get any?
-	if (internal_trace)
-{
-fprintf(stderr, "VT: tokenizer delivered %d tokens\n", i);
-}
+        if (internal_trace)
+        {
+            fprintf(stderr, "VT: tokenizer delivered %d tokens\n", i);
+        }
         if (i < 0)
-{
+        {
             return -1;
-}
+        }
 
         // EOS reached?
         // i.e. did we actually GET a new token or was the input already utterly empty to start with now?
@@ -555,9 +552,9 @@ fprintf(stderr, "VT: tokenizer delivered %d tokens\n", i);
         {
             int matrix;
             const int *coeff_array;
-		// remember how far we filled the features bucket already; 
-		// we're going to interleave another block:
-	    int basepos = feature_pos; 
+            // remember how far we filled the features bucket already;
+            // we're going to interleave another block:
+            int basepos = feature_pos;
 
 
             coeff_array = our_coeff->coeff_array;
@@ -607,7 +604,7 @@ fprintf(stderr, "VT: tokenizer delivered %d tokens\n", i);
                     // as there are hash methods available which have much better avalanche behaviour.
                     //
                     // To use such thing, we'll need to store the picked token hashes as is, then feed the new
-                    // collection to the hash routine  as if this collection of token hashes is raw input.
+                    // collection to the hash routine as if this collection of token hashes is raw input.
                     //
                     register crmhash_t ihash = 0;
 
@@ -622,7 +619,7 @@ fprintf(stderr, "VT: tokenizer delivered %d tokens\n", i);
                         register crmhash_t universal_multiplier = ca[icol];
                         // assert: make sure the multiplier values are odd for proper spread.
                         CRM_ASSERT(universal_multiplier == 0 ? TRUE : (universal_multiplier & 1));
-                        // the - munus 'icol' is intentional: reverse d pipeline: older is lower index.
+                        // the - minus 'icol' is intentional: reverse d pipeline: older is lower index.
                         ihash += hp[-icol] * universal_multiplier;
                     }
 
@@ -633,20 +630,33 @@ fprintf(stderr, "VT: tokenizer delivered %d tokens\n", i);
                     }
                     features_buffer[feature_pos] = ihash;
 
-                    if (internal_trace)
+					crm_analysis_mark(&analysis_cfg, MARK_VT_HASH_VALUE, irow, "LLi", (unsigned long long int)ihash, (long long int)feature_pos, (int)matrix);
+                
+					if (internal_trace)
                     {
                         fprintf(stderr, "New Feature: %08lX at %d\n",
-                            (unsigned long int)ihash,
-                            feature_pos);
+                                (unsigned long int)ihash,
+                                feature_pos);
                     }
                     feature_pos += element_step_size;
                 }
             }
-	    // and correct for the interleaving we just did:
-    		feature_pos -= element_step_size - 1; // feature_pos points 'element_step_size' elems PAST the last write; should be only +1(ONE)
+            // and correct for the interleaving we just did:
+            feature_pos -= element_step_size - 1;     // feature_pos points 'element_step_size' elems PAST the last write; should be only +1(ONE)
+
+
+
+			// TODO
+			// TBD
+			// check that feature_pos correction (maybe traverse matrices in reverse?) related to interleaving
+			// PLUS the featurepos correction at the very end of this routine!
+
+
+
+
 
             // check if we should get another series of tokens ... or maybe not.
-	    // only allow another burst when we can at least write a single feature strip.
+            // only allow another burst when we can at least write a single feature strip.
             if (feature_pos + single_featureblock_size > features_bufferlen)
             {
                 break;
@@ -664,10 +674,10 @@ fprintf(stderr, "VT: tokenizer delivered %d tokens\n", i);
     // *next_offset = tokenizer->input_next_offset;
 
     *features_out = feature_pos - element_step_size + 1; // feature_pos points 'element_step_size' elems PAST the last write; should be only +1(ONE)
-	if (user_trace || internal_trace)
-{
-fprintf(stderr, "VT: feature count = %d\n", *features_out);
-}
+    if (user_trace || internal_trace)
+    {
+        fprintf(stderr, "VT: feature count = %d\n", *features_out);
+    }
     // [i_a]
     // Fringe case: yes, we discard the last few feature(s) stored when the
     // feature_bufferlen % pipe_matrices != 0 where pipe_matrices > 0 as then an
@@ -690,7 +700,6 @@ fprintf(stderr, "VT: feature count = %d\n", *features_out);
 
 
 #endif
-
 
 
 
@@ -791,8 +800,8 @@ static const int unigram_coeff[] =
 // Return the number of tokens produced; return a negative number on error.
 //
 static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
-                                           crmhash_t            *tokenhash_dest,
-                                           int                   tokenhash_dest_size)
+        crmhash_t                                               *tokenhash_dest,
+        int                                                      tokenhash_dest_size)
 {
     const char *txt;
     int txt_len;
@@ -811,15 +820,15 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
     }
     txt = obj->input_text + obj->input_next_offset;
     txt_len = obj->input_textlen - obj->input_next_offset;
-	if (txt_len <= 0)
-	{
-		obj->eos_reached = 1;
-	}
-	if (obj->eos_reached)
-	{
-		// you'll have no more tokens until you reset 'eos_reached'...
-		return 0;
-	}
+    if (txt_len <= 0)
+    {
+        obj->eos_reached = 1;
+    }
+    if (obj->eos_reached)
+    {
+        // you'll have no more tokens until you reset 'eos_reached'...
+        return 0;
+    }
 
     //  If the pattern is empty, assume non-graph-delimited tokens
     //  (supposedly an 8% speed gain over regexec)
@@ -855,7 +864,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
                 // Fringe case inside a fringe case: what if a document is ONLY whitespace, i.e.
                 // ZERO tokens? DECISION: we DO NOT produce a 'faked' token for that one; zero stays
                 // zero.
-		        obj->eos_reached = 1;
+                obj->eos_reached = 1;
                 break;
             }
 
@@ -865,26 +874,26 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
             if (user_trace)
             {
                 fprintf(stderr, "Token; k: %d re: --- T.O: %d len %d ( %d %d on >",
-                    k,
-                    (int)(txt - obj->input_text),
-                    e - b,
-                    b,
-                    e);
+                        k,
+                        (int)(txt - obj->input_text),
+                        e - b,
+                        b,
+                        e);
                 fwrite_ASCII_Cfied(stderr, txt + b, e - b);
                 fprintf(stderr, "< )\n");
             }
 
-			//
+            //
             //   Now stuff this new token into the front of the pipeline
             //   Since 'front' means 'higher index' we just drop it into slot [k].
             //
-            
-			token_len = e - b;
-			token = &txt[b];
+
+            token_len = e - b;
+            token = &txt[b];
 
             if (obj->max_token_length <= 0)
             {
-				// no 'big token globbing' enabled...
+                // no 'big token globbing' enabled...
                 tokenhash_dest[k] = strnhash(token, token_len);
             }
             else
@@ -902,7 +911,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
                 else
                 {
                     k--;                         // fix loop k++: stay at the previous feature!
-					CRM_ASSERT(k >= 0);
+                    CRM_ASSERT(k >= 0);
 
                     // [i_a] GROT GROT GROT
                     // original OSBF code (see crm_osbf_bayes.c) made tokens position INDEPENDENT inside the single feature; this should not be!
@@ -915,9 +924,19 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
                     if (token_len > obj->max_token_length && big_token_count < obj->max_big_token_count)
                     {
                         big_token_count++;
+
+						if (user_trace)
+						{
+							fprintf(stderr, "WARNING: continuation of 'big token' -- globbed %d tokens!\n", big_token_count);
+						}
                     }
                     else
                     {
+						if (user_trace)
+						{
+							fprintf(stderr, "WARNING: end of 'big token' detected @ %d globbed tokens!\n", big_token_count);
+						}
+
                         big_token_count = 0;
                         // okay, end of 'long token into single feature' run: allow loop to increment 'k' index now
                     }
@@ -935,23 +954,23 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
 
         if (!obj->initial_setup_done)
         {
-			int regcomp_status;
-			
-			if (!obj->regex_compiler_flags_are_set)
-			{
-			   nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-					"Why have the VT tokenizer regex flags not been set up? Developer asleep at the keyboard again?");
-				return -1;
-			}
+            int regcomp_status;
 
-			regcomp_status = crm_regcomp(&obj->regcb, obj->regex, obj->regexlen, obj->regex_compiler_flags);
+            if (!obj->regex_compiler_flags_are_set)
+            {
+                nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
+                        "Why have the VT tokenizer regex flags not been set up? Developer asleep at the keyboard again?");
+                return -1;
+            }
+
+            regcomp_status = crm_regcomp(&obj->regcb, obj->regex, obj->regexlen, obj->regex_compiler_flags);
             if (regcomp_status != 0)
             {
                 char errortext[4096];
 
                 crm_regerror(regcomp_status, &obj->regcb, errortext, WIDTHOF(errortext));
                 nonfatalerror("Regular Expression Compilation Problem for VT (Vector Tokenizer): ",
-                    errortext);
+                        errortext);
                 return -1;
             }
             obj->initial_setup_done = 1;
@@ -966,29 +985,29 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
             status = crm_regexec(&obj->regcb, txt, txt_len, WIDTHOF(obj->match), obj->match, obj->regex_compiler_flags, NULL);
             if (status != REG_OK)
             {
-				if (status == REG_NOMATCH)
-				{
-					// [i_a] WARNING: fringe case where an input stream is terminated by whitespace:
-					//       if we don't take care of that special occasion it will produce one extra
-					//       'token' for a ZERO-length word. What's one token on several thousand, you
-					//       may ask?
-					//       It's the difference between an exact match for two documents, one terminated
-					//       with extra whitespace, while the other isn't, or, if we don't fix this fringe
-					//       case, only a _probable_ match - hopefully, but that depends on the number of
-					//       matches so far (token count) and classifier.
-					//       Since we look at documents as 'streams of tokens', non-token data should be
-					//       discarded, not only at the start and middle of the documents, but also at the
-					//       end!
-#if 0					
-					if (k == 0)
-					{
-						// Fringe case inside a fringe case: what if a document is ONLY whitespace, i.e.
-						// ZERO tokens? DECISION: we DO NOT produce a 'faked' token for that one; zero stays
-						// zero.
-					}
+                if (status == REG_NOMATCH)
+                {
+                    // [i_a] WARNING: fringe case where an input stream is terminated by whitespace:
+                    //       if we don't take care of that special occasion it will produce one extra
+                    //       'token' for a ZERO-length word. What's one token on several thousand, you
+                    //       may ask?
+                    //       It's the difference between an exact match for two documents, one terminated
+                    //       with extra whitespace, while the other isn't, or, if we don't fix this fringe
+                    //       case, only a _probable_ match - hopefully, but that depends on the number of
+                    //       matches so far (token count) and classifier.
+                    //       Since we look at documents as 'streams of tokens', non-token data should be
+                    //       discarded, not only at the start and middle of the documents, but also at the
+                    //       end!
+#if 0
+                    if (k == 0)
+                    {
+                        // Fringe case inside a fringe case: what if a document is ONLY whitespace, i.e.
+                        // ZERO tokens? DECISION: we DO NOT produce a 'faked' token for that one; zero stays
+                        // zero.
+                    }
 #endif
-					obj->eos_reached = 1;
-				}
+                    obj->eos_reached = 1;
+                }
                 break;
             }
 
@@ -998,28 +1017,28 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
             if (user_trace)
             {
                 fprintf(stderr, "Token; k: %d re: %d T.O: %d len %d ( %d %d on >",
-                    k,
-                    status,
-                    (int)(txt - obj->input_text),
-                    (int)(obj->match[0].rm_eo - obj->match[0].rm_so),
-                    (int)obj->match[0].rm_so,
-                    (int)obj->match[0].rm_eo);
+                        k,
+                        status,
+                        (int)(txt - obj->input_text),
+                        (int)(obj->match[0].rm_eo - obj->match[0].rm_so),
+                        (int)obj->match[0].rm_so,
+                        (int)obj->match[0].rm_eo);
                 fwrite_ASCII_Cfied(stderr, &txt[obj->match[0].rm_so],
-                    (obj->match[0].rm_eo - obj->match[0].rm_so));
+                        (obj->match[0].rm_eo - obj->match[0].rm_so));
                 fprintf(stderr, "< )\n");
             }
 
-			//
+            //
             //   Now stuff this new token into the front of the pipeline
             //   Since 'front' means 'higher index' we just drop it into slot [k].
             //
 
-			token_len = obj->match[0].rm_eo - obj->match[0].rm_so;
-			token = &txt[obj->match[0].rm_so];
+            token_len = obj->match[0].rm_eo - obj->match[0].rm_so;
+            token = &txt[obj->match[0].rm_so];
 
             if (obj->max_token_length <= 0)
             {
-				// no 'big token globbing' enabled...
+                // no 'big token globbing' enabled...
                 tokenhash_dest[k] = strnhash(token, token_len);
             }
             else
@@ -1031,13 +1050,20 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
 
                     if (token_len > obj->max_token_length)
                     {
+						if (user_trace)
+						{
+							fprintf(stderr, "WARNING: start of 'big token' detected (min. length = %d) @ token len = %d -- globbing tokens!\n",
+									obj->max_token_length,
+									token_len);
+						}
+
                         big_token_count++;
                     }
                 }
                 else
                 {
                     k--;                         // fix loop k++: stay at the previous feature!
-					CRM_ASSERT(k >= 0);
+                    CRM_ASSERT(k >= 0);
 
                     // [i_a] GROT GROT GROT
                     // original OSBF code (see crm_osbf_bayes.c) made tokens position INDEPENDENT inside the single feature; this should not be!
@@ -1068,14 +1094,14 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
     obj->input_next_offset = (int)(txt - obj->input_text);
 
 #if 0
-	// extra check if we tokenized the completed input yet:
-	if (txt_len <= 0)
-	{
-		obj->eos_reached = 1;
-	}
+    // extra check if we tokenized the completed input yet:
+    if (txt_len <= 0)
+    {
+        obj->eos_reached = 1;
+    }
 #endif
 
-	return k;
+    return k;
 }
 
 
@@ -1090,21 +1116,21 @@ static int default_regex_VT_tokenizer_cleanup_func(VT_USERDEF_TOKENIZER *obj)
     crm_regfree(&obj->regcb);
     memset(&obj->regcb, 0, sizeof(obj->regcb));
 
-	obj->regex_malloced = 0;
-	obj->eos_reached = 0;
-	obj->initial_setup_done = 0;
-	obj->input_next_offset = 0;
-	obj->input_text = 0;
-	obj->input_textlen = 0;
-	memset(obj->match, 0, sizeof(obj->match));
-	obj->max_big_token_count = 0;
-	obj->max_token_length = 0;
-	obj->regex_compiler_flags = 0;
-	obj->regex_compiler_flags_are_set = 0;
-	obj->regexlen = 0;
-	obj->tokenizer = 0;
+    obj->regex_malloced = 0;
+    obj->eos_reached = 0;
+    obj->initial_setup_done = 0;
+    obj->input_next_offset = 0;
+    obj->input_text = 0;
+    obj->input_textlen = 0;
+    memset(obj->match, 0, sizeof(obj->match));
+    obj->max_big_token_count = 0;
+    obj->max_token_length = 0;
+    obj->regex_compiler_flags = 0;
+    obj->regex_compiler_flags_are_set = 0;
+    obj->regexlen = 0;
+    obj->tokenizer = 0;
 
-	obj->cleanup = 0;
+    obj->cleanup = 0;
 
     return 0;
 }
@@ -1112,12 +1138,12 @@ static int default_regex_VT_tokenizer_cleanup_func(VT_USERDEF_TOKENIZER *obj)
 
 static int default_VT_coeff_matrix_cleanup_func(struct magical_VT_userdef_coeff_matrix *obj)
 {
-	memset(obj->coeff_array, 0, sizeof(obj->coeff_array));
-	obj->output_stride = 0;
-	obj->pipe_iters = 0;
-	obj->pipe_len = 0;
+    memset(obj->coeff_array, 0, sizeof(obj->coeff_array));
+    obj->output_stride = 0;
+    obj->pipe_iters = 0;
+    obj->pipe_len = 0;
 
-	obj->cleanup = 0;
+    obj->cleanup = 0;
 
     return 0;
 }
@@ -1148,22 +1174,24 @@ static int default_VT_coeff_matrix_cleanup_func(struct magical_VT_userdef_coeff_
  *      Return 0 on success, negative return values on error.
  */
 int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
-                        const ARGPARSE_BLOCK *apb,  // The args for this line of code
-                        const char           *regex,
-                        int                   regex_len,
-						int		regex_compiler_flags_override)
+        const ARGPARSE_BLOCK                 *apb,  // The args for this line of code
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        const char                           *regex,
+        int                                   regex_len,
+        int                                   regex_compiler_flags_override)
 {
     if (!tokenizer)
     {
-       nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-            "Where's the VT tokenizer gone? There's work to do here!");
+        nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
+                "Where's the VT tokenizer gone? There's work to do here!");
         return -1;
     }
 #if 10
-	if (!apb)
+    if (!apb)
     {
-       nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
-            "Where's the APB (Application Program Block) gone? Developer asleep at the keyboard again?");
+        nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
+                "Where's the APB (Application Program Block) gone? Developer asleep at the keyboard again?");
         return -1;
     }
 #endif
@@ -1182,9 +1210,9 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
     // apply the OSBF 'big token globbing into single feature hash' property to
     // ALL OF 'EM, regardless of classifier, as I expect other classifiers to benefit
     // from this little heuristic as well:
-    if (tokenizer->max_token_length == 0)
+    if (tokenizer->max_token_length == -1)
     {
-        // is user didn't want us to do this, s/he'd set max_token_length to -1...
+        // is user didn't want us to do this, s/he'd set max_token_length to 0...
         tokenizer->max_token_length = OSBF_MAX_TOKEN_SIZE;
     }
     if (tokenizer->max_big_token_count == 0)
@@ -1192,54 +1220,54 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
         tokenizer->max_big_token_count = OSBF_MAX_LONG_TOKENS;
     }
 
-	if (!tokenizer->regex_compiler_flags_are_set)
-	{
-		if (!apb)
-		{
-			tokenizer->regex_compiler_flags = regex_compiler_flags_override;
-			tokenizer->regex_compiler_flags_are_set = 1;
-		}
-		else
-		{
-		int cflags = REG_EXTENDED;
+    if (!tokenizer->regex_compiler_flags_are_set)
+    {
+        if (!apb)
+        {
+            tokenizer->regex_compiler_flags = regex_compiler_flags_override;
+            tokenizer->regex_compiler_flags_are_set = 1;
+        }
+        else
+        {
+            int cflags = REG_EXTENDED;
 
-		if (apb->sflags & CRM_NOCASE)
-    {
-        cflags |= REG_ICASE;
-        if (user_trace)
-		{
-            fprintf(stderr, "turning on case-insensitive match\n");
-		}
+            if (apb->sflags & CRM_NOCASE)
+            {
+                cflags |= REG_ICASE;
+                if (user_trace)
+                {
+                    fprintf(stderr, "turning on case-insensitive match\n");
+                }
+            }
+            if (apb->sflags & CRM_BASIC)
+            {
+                cflags &= ~REG_EXTENDED;
+                if (user_trace)
+                {
+                    fprintf(stderr, "  basic regex match turned on...\n");
+                }
+            }
+            if (apb->sflags & CRM_NOMULTILINE)
+            {
+                cflags |= REG_NEWLINE;
+                if (user_trace)
+                {
+                    fprintf(stderr, "  nomultiline turned on...\n");
+                }
+            }
+            if (apb->sflags & CRM_LITERAL)
+            {
+                cflags |= REG_LITERAL;
+                if (user_trace)
+                {
+                    fprintf(stderr, "  literal pattern search turned on...\n");
+                }
+            }
+            tokenizer->regex_compiler_flags = cflags;
+            tokenizer->regex_compiler_flags_are_set = 1;
+        }
     }
-    if (apb->sflags & CRM_BASIC)
-    {
-        cflags &= ~REG_EXTENDED;
-        if (user_trace)
-		{
-            fprintf(stderr, "  basic regex match turned on...\n");
-		}
-    }
-    if (apb->sflags & CRM_NOMULTILINE)
-    {
-        cflags |= REG_NEWLINE;
-        if (user_trace)
-		{
-			fprintf(stderr, "  nomultiline turned on...\n");
-		}
-    }
-    if (apb->sflags & CRM_LITERAL)
-    {
-        cflags |= REG_LITERAL;
-        if (user_trace)
-		{
-			fprintf(stderr, "  literal pattern search turned on...\n");
-		}
-	}
-			tokenizer->regex_compiler_flags = cflags;
-			tokenizer->regex_compiler_flags_are_set = 1;
-	}
-	}
-	CRM_ASSERT(tokenizer->regex_compiler_flags_are_set);
+    CRM_ASSERT(tokenizer->regex_compiler_flags_are_set);
 
     // Now all of the defaults have been filled in; we now see if the
     // caller has overridden any (or all!) of them.   We assume that the
@@ -1258,13 +1286,13 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
             char *dst;
 
             s1len = crm_get_pgm_arg(s1text, MAX_PATTERN, apb->s1start, apb->s1len);
-            s1len = crm_nexpandvar(s1text, s1len, MAX_PATTERN);
+            s1len = crm_nexpandvar(s1text, s1len, MAX_PATTERN, vht, tdw);
 
             tokenizer->regex = dst = calloc(s1len + 1, sizeof(tokenizer->regex[0]));
-        if (!dst)
-        {
-            untrappableerror("Cannot allocate VT memory", "Stick a fork in us; we're _done_.");
-        }
+            if (!dst)
+            {
+                untrappableerror("Cannot allocate VT memory", "Stick a fork in us; we're _done_.");
+            }
             memcpy(dst, s1text, s1len * sizeof(tokenizer->regex[0]));
             dst[s1len] = 0;
             tokenizer->regexlen = s1len;
@@ -1275,10 +1303,10 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
             char *dst;
 
             tokenizer->regex = dst = calloc(regex_len + 1, sizeof(tokenizer->regex[0]));
-        if (!dst)
-        {
-            untrappableerror("Cannot allocate VT memory", "Stick a fork in us; we're _done_.");
-        }
+            if (!dst)
+            {
+                untrappableerror("Cannot allocate VT memory", "Stick a fork in us; we're _done_.");
+            }
             memcpy(dst, regex, regex_len * sizeof(tokenizer->regex[0]));
             dst[regex_len] = 0;
             tokenizer->regexlen = regex_len;
@@ -1299,7 +1327,7 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
 
                 crm_regerror(regcomp_status, &regcb, errortext, WIDTHOF(errortext));
                 nonfatalerror("Regular Expression Compilation Problem for VT (Vector Tokenizer): ",
-                    errortext);
+                        errortext);
                 return -1;
             }
         }
@@ -1313,11 +1341,11 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
 
 
 static int fetch_value(int *value_ref,
-                       const char **src_ref,
-                       int         *srclen_ref,
-                       int lower_limit,
-                       int upper_limit,
-                       const char  *description)
+        const char        **src_ref,
+        int                *srclen_ref,
+        int                 lower_limit,
+        int                 upper_limit,
+        const char         *description)
 {
     int i;
     const char *src = *src_ref;
@@ -1337,59 +1365,59 @@ static int fetch_value(int *value_ref,
     toklen = CRM_MIN(i, WIDTHOF(valbuf) - 1);
     if (toklen > 0)
     {
-    	memcpy(valbuf, src, toklen);
-	valbuf[toklen] = 0;
+        memcpy(valbuf, src, toklen);
+        valbuf[toklen] = 0;
 
-    conv_ptr = valbuf;
+        conv_ptr = valbuf;
 #ifndef HAVE__SET_ERRNO
-    errno = 0;
+        errno = 0;
 #else
-    _set_errno(0);                             // Win32/MSVC
+        _set_errno(0);                         // Win32/MSVC
 #endif
-    value = strtol(valbuf, &conv_ptr, 0);
-    if (errno != 0 || *conv_ptr)
-    {
-        nonfatalerror_ex(SRC_LOC(), "You've specified a %s "
-                                    "that cannot be completely decoded [break at offset %d]: "
-                                    "'%s' is not within the limited range %d..%d.",
-            description,
-            (int)(conv_ptr - valbuf), valbuf,
-            lower_limit, upper_limit);
-        return -1;
-    }
-    if (value < lower_limit || value > upper_limit)
-    {
-        nonfatalerror_ex(SRC_LOC(), "You've specified a %s "
-                                    "that is out of range: '%s' --> %ld, for limited range %d..%d.",
-            description,
-            valbuf, value,
-            lower_limit, upper_limit);
-        return -1;
-    }
-    if (internal_trace)
-    {
-        fprintf(stderr, "%s = %ld\n", description, value);
-    }
+        value = strtol(valbuf, &conv_ptr, 0);
+        if (errno != 0 || *conv_ptr)
+        {
+            nonfatalerror_ex(SRC_LOC(), "You've specified a %s "
+                                        "that cannot be completely decoded [break at offset %d]: "
+                                        "'%s' is not within the limited range %d..%d.",
+                    description,
+                    (int)(conv_ptr - valbuf), valbuf,
+                    lower_limit, upper_limit);
+            return -1;
+        }
+        if (value < lower_limit || value > upper_limit)
+        {
+            nonfatalerror_ex(SRC_LOC(), "You've specified a %s "
+                                        "that is out of range: '%s' --> %ld, for limited range %d..%d.",
+                    description,
+                    valbuf, value,
+                    lower_limit, upper_limit);
+            return -1;
+        }
+        if (internal_trace)
+        {
+            fprintf(stderr, "%s = %ld\n", description, value);
+        }
 
-    *value_ref = (int)value;
-    *src_ref = src + i;
-    *srclen_ref = srclen - i;
+        *value_ref = (int)value;
+        *src_ref = src + i;
+        *srclen_ref = srclen - i;
 
-    return 0;
-	}
-else
-{
-	// only trailing whitespace discovered. Bugger!
-    *value_ref = 0;
-    *src_ref = src + i;
-    *srclen_ref = srclen - i;
+        return 0;
+    }
+    else
+    {
+        // only trailing whitespace discovered. Bugger!
+        *value_ref = 0;
+        *src_ref = src + i;
+        *srclen_ref = srclen - i;
 
         nonfatalerror_ex(SRC_LOC(), "We'd expected to see another value specified for the %s "
                                     "but alas, the script apparently didn't deliver enough for that. "
-									"Next time, make sure you've got a full custom vector!",
-            description);
+                                    "Next time, make sure you've got a full custom vector!",
+                description);
         return -1;
-}
+    }
 }
 
 
@@ -1410,7 +1438,7 @@ else
 // When successful, it will return 0.
 //
 int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // the pipeline coefficient control array, etc.
-                                    const char *src, int srclen)
+        const char *src, int srclen)
 {
     if (src && *src)
     {
@@ -1463,8 +1491,9 @@ int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // t
 
 
 int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
-                                    const ARGPARSE_BLOCK    *apb  // The args for this line of code
-                                    )
+        const ARGPARSE_BLOCK                                *apb,  // The args for this line of code
+		VHT_CELL **vht,
+		CSL_CELL *tdw                                 )
 {
     char s2text[MAX_PATTERN];
     int s2len;
@@ -1474,7 +1503,7 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
 
     //     get the second slash parameter (if used at all)
     s2len = crm_get_pgm_arg(s2text, MAX_PATTERN, apb->s2start, apb->s2len);
-    s2len = crm_nexpandvar(s2text, s2len, MAX_PATTERN);
+    s2len = crm_nexpandvar(s2text, s2len, MAX_PATTERN, vht, tdw);
 
     if (s2len > 0)
     {
@@ -1490,8 +1519,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
             crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
             nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Matrix: "
                                         "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
-                vt_weight_regex,
-                errmsg);
+                    vt_weight_regex,
+                    errmsg);
             return -1;
         }
 
@@ -1548,9 +1577,11 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
 //
 int config_vt_coeff_matrix_and_tokenizer
 (
-    ARGPARSE_BLOCK          *apb,               // The args for this line of code
-    VT_USERDEF_TOKENIZER    *tokenizer,         // the parsing regex (might be ignored)
-    VT_USERDEF_COEFF_MATRIX *our_coeff          // the pipeline coefficient control array, etc.
+        ARGPARSE_BLOCK          *apb,           // The args for this line of code
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        VT_USERDEF_TOKENIZER    *tokenizer,     // the parsing regex (might be ignored)
+        VT_USERDEF_COEFF_MATRIX *our_coeff      // the pipeline coefficient control array, etc.
 )
 {
     //    To do the defaulting, we work from the "bottom up", filling
@@ -1579,7 +1610,7 @@ int config_vt_coeff_matrix_and_tokenizer
     if (!apb || !tokenizer || !our_coeff)
     {
         nonfatalerror("Sanity check failed while configuring VT (Vector Tokenizer) default coefficient matrix and tokenizer setup.",
-            "That developer overthere should've passed some nice, clean, zeroed structures in there, you know. Or was it you?");
+                "That developer overthere should've passed some nice, clean, zeroed structures in there, you know. Or was it you?");
         return -1;
     }
 
@@ -1625,13 +1656,13 @@ int config_vt_coeff_matrix_and_tokenizer
         || classifier_flags & CRM_OSB
         || classifier_flags & CRM_WINNOW
         || classifier_flags & CRM_OSBF
-        )
+       )
     {
         //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
         default_coeff.output_stride = 2;
     }
 
-	//
+    //
     //     Do we want a string kernel a.k.a. <by_char> flag?  If so, then we have to override
     //     a few things.
     //
@@ -1643,7 +1674,7 @@ int config_vt_coeff_matrix_and_tokenizer
         coeff_array += WIDTHOF(string1_coeff);
         memmove(coeff_array, string2_coeff, sizeof(string2_coeff));
         coeff_array += WIDTHOF(string2_coeff);
-#if !defined(ORIGINAL_VT_CODE)
+#if !defined (ORIGINAL_VT_CODE)
         default_coeff.pipe_len = WIDTHOF(string1_coeff);            // was 5
         default_coeff.pipe_iters = 1;
         CRM_ASSERT(default_coeff.pipe_len == WIDTHOF(string1_coeff));             // was 5
@@ -1651,7 +1682,7 @@ int config_vt_coeff_matrix_and_tokenizer
 #else
         default_coeff.pipe_len = 5;            // was 5
         default_coeff.pipe_iters = 1;
-        CRM_ASSERT(default_coeff.pipe_len <= OSB_BAYES_WINDOW_LEN);             // was 5
+        CRM_ASSERT(default_coeff.pipe_len <= OSB_BAYES_WINDOW_LEN);               // was 5
         CRM_ASSERT(default_coeff.pipe_len <= WIDTHOF(string1_coeff));             // was 5
         CRM_ASSERT(default_coeff.pipe_len <= WIDTHOF(string2_coeff));             // was 5
 #endif
@@ -1668,9 +1699,9 @@ int config_vt_coeff_matrix_and_tokenizer
             tokenizer->regexlen = 1;
             tokenizer->regex_malloced = 0;
 
-			// override the regex flags too, no matter if those have been set before:
-			tokenizer->regex_compiler_flags = REG_EXTENDED;
-			tokenizer->regex_compiler_flags_are_set = 1;
+            // override the regex flags too, no matter if those have been set before:
+            tokenizer->regex_compiler_flags = REG_EXTENDED;
+            tokenizer->regex_compiler_flags_are_set = 1;
         }
     }
 
@@ -1707,10 +1738,10 @@ int config_vt_coeff_matrix_and_tokenizer
 
     if (!tokenizer->initial_setup_done)
     {
-        if (config_vt_tokenizer(tokenizer, apb, NULL, 0, REG_EXTENDED))
+        if (config_vt_tokenizer(tokenizer, apb, vht, tdw, NULL, 0, REG_EXTENDED))
         {
             nonfatalerror("Error while configuring VT (Vector Tokenizer) default tokenizer setup",
-                "");
+                    "");
             return -1;
         }
     }
@@ -1719,22 +1750,22 @@ int config_vt_coeff_matrix_and_tokenizer
     if (our_coeff->pipe_len == 0 || our_coeff->pipe_iters == 0 || our_coeff->output_stride == 0)
     {
         VT_USERDEF_COEFF_MATRIX coeff_matrix = { 0 };
-        if (get_vt_vector_from_2nd_slasharg(&coeff_matrix, apb))
+        if (get_vt_vector_from_2nd_slasharg(&coeff_matrix, apb, vht, tdw))
         {
             nonfatalerror(
-                "There's a boo-boo in the 2nd slash argument where we try to look for the 'vector:...' "
-                "coefficient matrix collection while configuring VT (Vector Tokenizer) default coefficient "
-                "matrix and tokenizer setup.",
-                "");
+                    "There's a boo-boo in the 2nd slash argument where we try to look for the 'vector:...' "
+                    "coefficient matrix collection while configuring VT (Vector Tokenizer) default coefficient "
+                    "matrix and tokenizer setup.",
+                    "");
             return -1;
         }
         else if (coeff_matrix.pipe_len != 0 && coeff_matrix.pipe_iters != 0 && coeff_matrix.output_stride != 0)
         {
             memmove(our_coeff, &coeff_matrix, sizeof(coeff_matrix));
         }
-        else 
+        else
         {
-	        // no custom spec in second slash arg? too bad, use our defaults instead
+            // no custom spec in second slash arg? too bad, use our defaults instead
             memmove(our_coeff, &default_coeff, sizeof(default_coeff));
         }
     }
@@ -1750,10 +1781,10 @@ int config_vt_coeff_matrix_and_tokenizer
         for (matrix = 0; matrix < our_coeff->output_stride; matrix++)
         {
             fprintf(stderr, "========== matrix[%d/%d] = %d x %d ==========\n",
-                matrix,
-                our_coeff->output_stride,
-                our_coeff->pipe_iters,
-                our_coeff->pipe_len);
+                    matrix,
+                    our_coeff->output_stride,
+                    our_coeff->pipe_iters,
+                    our_coeff->pipe_len);
 
             for (irow = 0; irow < our_coeff->pipe_iters; irow++)
             {
@@ -1808,80 +1839,87 @@ int config_vt_coeff_matrix_and_tokenizer
 
 int crm_vector_tokenize_selector
 (
-    ARGPARSE_BLOCK          *apb,               // The args for this line of code
-    const char              *text,              // input string (null-safe!)
-    int                      textlen,           //   how many bytes of input.
-    int                      start_offset,      //     start tokenizing at this byte.
-    VT_USERDEF_TOKENIZER    *user_tokenizer,         // the parsing regex (might be ignored)
-    VT_USERDEF_COEFF_MATRIX *user_coeff,         // the pipeline coefficient control array, etc.
-    crmhash_t               *features,          // where the output features go
-    int                      featureslen,       //   how many output features (max)
-    int                     *features_out       // how many feature-slots did we actually use up
+        ARGPARSE_BLOCK          *apb,                // The args for this line of code
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        const char              *text,               // input string (null-safe!)
+        int                      textlen,            //   how many bytes of input.
+        int                      start_offset,       //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER    *user_tokenizer,     // the parsing regex (might be ignored)
+        VT_USERDEF_COEFF_MATRIX *user_coeff,         // the pipeline coefficient control array, etc.
+        crmhash_t               *features,           // where the output features go
+        int                      featureslen,        //   how many output features (max)
+        int                     *features_out        // how many feature-slots did we actually use up
 )
 {
     int status;
-    VT_USERDEF_TOKENIZER    default_toker = {0};
-    VT_USERDEF_COEFF_MATRIX default_coeff = {0};
-    VT_USERDEF_TOKENIZER    *tokenizer;
+    VT_USERDEF_TOKENIZER default_toker = { 0 };
+    VT_USERDEF_COEFF_MATRIX default_coeff = { 0 };
+    VT_USERDEF_TOKENIZER *tokenizer;
     VT_USERDEF_COEFF_MATRIX *coeff;
 
 
     // sanity checks
     if (!text || !features || !features_out)
     {
-       nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer) selector.",
-            "Either we were'nt passed a text or no feature bucket to put the data in.");
-         return -1;
+        nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer) selector.",
+                "Either we were'nt passed a text or no feature bucket to put the data in.");
+        return -1;
     }
     *features_out = 0;
     if (featureslen < 1)
     {
-       nonfatalerror("Sanity check coughed up a hairball while starting up the VT (Vector Tokenizer) selector.",
-            "That was one rediculously small feature bucket size right there.");
+        nonfatalerror("Sanity check coughed up a hairball while starting up the VT (Vector Tokenizer) selector.",
+                "That was one rediculously small feature bucket size right there.");
         return -1;
     }
-tokenizer = user_tokenizer;
-	if (!tokenizer)
-{
-tokenizer = &default_toker;
-}
-coeff = user_coeff;
-if (!coeff)
-{
-coeff = &default_coeff;
-}
+    tokenizer = user_tokenizer;
+    if (!tokenizer)
+    {
+        tokenizer = &default_toker;
+    }
+    coeff = user_coeff;
+    if (!coeff)
+    {
+        coeff = &default_coeff;
+    }
 
     //    now do the work.
 
     // set up a default tokenizer and/or coefficient matrix if 'they' didn't specify one yet.
-    if (config_vt_coeff_matrix_and_tokenizer(apb, tokenizer, coeff))
+    if (config_vt_coeff_matrix_and_tokenizer(apb, vht, tdw, tokenizer, coeff))
     {
         return -1;
     }
 
 
+  if (user_trace)
+    fprintf (stderr, "Vector tokenization summary: start %d len %d\n",
+	     start_offset, textlen);
+
+
     //    We now have our parameters all set, and we can run the vector hashing.
     status = crm_vector_tokenize(text,
-        textlen,
-        start_offset,
-        tokenizer,
-        coeff,
-        features,
-        featureslen,
-        1,
-        features_out);
+            textlen,
+            start_offset,
+            tokenizer,
+            coeff,
+            features,
+            featureslen,
+            1,
+            features_out);
 
-	// cleanup our own 'default' structures...
-	if (!user_tokenizer)
-{
-	tokenizer->cleanup(tokenizer);
-}
-if (!user_coeff)
-{
-coeff->cleanup(coeff);
-}
+    // cleanup our own 'default' structures...
+    if (!user_tokenizer)
+    {
+        tokenizer->cleanup(tokenizer);
+    }
+    if (!user_coeff)
+    {
+        coeff->cleanup(coeff);
+    }
 
-	if (status < 0)
+    if (status < 0)
         return status;
 
     return *features_out;
@@ -1902,15 +1940,15 @@ coeff->cleanup(coeff);
 //     versions of the vector tokenizer
 //////////////////////////////////////////////////////////////////////////
 
-//  crm_vector_tokenize_selector is the "single interface" to get 
-//  the right vector tokenizer result given an classifier algorithm default, 
+//  crm_vector_tokenize_selector is the "single interface" to get
+//  the right vector tokenizer result given an classifier algorithm default,
 //  an int64 "flags", and a coeff vector with pipelen and pipe_iters
 //
 //  Algorithm:  coeff / pipelen / pipe_iters are highest priority; if
 //                coeff is non-NULL, use those.
 //              A specfication in the FLAGS is next highest priority; if
 //                the FLAGS specifies a particular tokenization, use that.
-//              Finally, use the default for the particular classifier 
+//              Finally, use the default for the particular classifier
 //
 //  Nota Bene: you'll have to add new defaults here as new classifier
 //  algorithms get added.
@@ -1918,306 +1956,537 @@ coeff->cleanup(coeff);
 
 int crm_vector_tokenize_selector
 (
-        ARGPARSE_BLOCK       *apb,          // The args for this line of code
-        const char           *text,         // input string (null-safe!)
-        int                   textlen,      //   how many bytes of input.
-        int                   start_offset, //     start tokenizing at this byte.
-        VT_USERDEF_TOKENIZER *tokenizer,        // the parsing regex (might be ignored)
+        ARGPARSE_BLOCK          *apb,            // The args for this line of code
+		VHT_CELL **vht,
+		CSL_CELL *tdw,
+        const char              *text,           // input string (null-safe!)
+        int                      textlen,        //   how many bytes of input.
+        int                      start_offset,   //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER    *tokenizer,      // the parsing regex (might be ignored)
         VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
-        crmhash_t            *features,     // where the output features go
-        int                   featureslen,  //   how many output features (max)
-        int                  *features_out   // how many feature-slots did we actually use up
+        crmhash_t               *features,       // where the output features go
+        int                      featureslen,    //   how many output features (max)
+        int                     *features_out    // how many feature-slots did we actually use up
 )
 {
-
-  //    To do the defaulting, we work from the "bottom up", filling
-  //    in defaults as we go.
-  //
-  //    First, we pick the length by what the classifier expects/needs.
-  //    Some classifiers (Markov, OSB, and Winnow) use the OSB feature
-  //    set, which is 64-bit features (referred to as "hash and key",
+    //    To do the defaulting, we work from the "bottom up", filling
+    //    in defaults as we go.
+    //
+    //    First, we pick the length by what the classifier expects/needs.
+    //    Some classifiers (Markov, OSB, and Winnow) use the OSB feature
+    //    set, which is 64-bit features (referred to as "hash and key",
   //    where hash and key are each 32-bit).  Others (Hyperspace, SVM)
-  //    use only 32-bit features.  And finally, Correlate, FSCM and 
+  //    use only 32-bit features; FSCM uses them as an ersatz entry
+  //    to do index speedup.  And finally, Correlate and 
   //    Bit Entropy don't use tokenization at all; getting here with those
-  //    is an error of the first water.  :-)
-  //
-  //    Second, the actual hashing vector is chosen.  Because of a 
-  //    historical accident (well, actually stupidity on Bill's part)
-  //    Markov and OSB use slightly different hashing control vectors; they
-  //    should have been the same.  
-  //
-  uint64_t classifier_flags;
-  int featurebits;
+    //    is an error of the first water.  :-)
+    //
+    //    Second, the actual hashing vector is chosen.  Because of a
+    //    historical accident (well, actually stupidity on Bill's part)
+    //    Markov and OSB use slightly different hashing control vectors; they
+    //    should have been the same.
+    //
+    uint64_t classifier_flags;
+    int featurebits;
 
-  int *hash_vec0;
-  int hash_len0;
-  int hash_iters0;
-  int *hash_vec1;
-  int hash_len1;
-  int hash_iters1;
-  int output_stride;
-  char *my_regex;
-  int my_regex_len;
+    int *hash_vec0;
+    int hash_len0;
+    int hash_iters0;
+    int *hash_vec1;
+    int hash_len1;
+    int hash_iters1;
+    int output_stride = 1;
+    char *my_regex;
+    int my_regex_len;
 
-  char s1text[MAX_PATTERN];
-  int s1len;
-
-
- // For slash-embedded pipeline definitions.
-  int ca[UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT]; 
-
-  char *string_kern_regex = ".";
-  int string_kern_regex_len = 1;
-
-  //    Set up some clean initial values for the important parameters.
-  //    Default is always the OSB featureset, 32-bit features.
-  //
-  classifier_flags = apb->sflags;
-  featurebits = 32;
-  hash_vec0 = osb1_coeff;
-  hash_len0 = OSB_BAYES_WINDOW_LEN;    // was 5
-  hash_iters0 = 4; // should be 4
-  hash_vec1 = osb2_coeff;
-  hash_len1 = OSB_BAYES_WINDOW_LEN;     // was 5
-  hash_iters1 = 4; // should be 4
-  output_stride = 1;
-
-  //    put in the passed-in regex values, if any.
-  my_regex = regex;
-  my_regex_len = regexlen;
+    char s1text[MAX_PATTERN];
+    int s1len;
 
 
-  //    Now we can proceed to set up the work in a fairly linear way.
+    // For slash-embedded pipeline definitions.
+    int ca[UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];
 
-  //    If it's the Markov classifier, then different coeffs and a longer len
-  if ( classifier_flags & CRM_MARKOVIAN)
+    char *string_kern_regex = ".";
+    int string_kern_regex_len = 1;
+  char *fscm_kern_regex = ".";
+  int fscm_kern_regex_len = 1;
+
+  if (user_trace)
+    fprintf (stderr, "Vector tokenization summary: start %ld len %ld\n",
+	     txtstart, txtlen);
+
+    //    Set up some clean initial values for the important parameters.
+    //    Default is always the OSB featureset, 32-bit features.
+    //
+    classifier_flags = apb->sflags;
+    featurebits = 32;
+    hash_vec0 = osb1_coeff;
+    hash_len0 = OSB_BAYES_WINDOW_LEN;  // was 5
+    hash_iters0 = 4;                   // should be 4
+    hash_vec1 = osb2_coeff;
+    hash_len1 = OSB_BAYES_WINDOW_LEN;   // was 5
+    hash_iters1 = 4;                    // should be 4
+    output_stride = 1;
+
+    //    put in the passed-in regex values, if any.
+    my_regex = regex;
+    my_regex_len = regexlen;
+
+
+    //    Now we can proceed to set up the work in a fairly linear way.
+
+    //    If it's the Markov classifier, then different coeffs and a longer len
+    if (classifier_flags & CRM_MARKOVIAN)
     {
-      hash_vec0 = markov1_coeff;
-      hash_vec1 = markov2_coeff;
-      hash_iters0 = hash_iters1 = 16;
-    };
+        hash_vec0 = markov1_coeff;
+        hash_vec1 = markov2_coeff;
+        hash_iters0 = hash_iters1 = 16;
+    }
 
-  //     If it's one of the 64-bit-key classifiers, then the featurebits
-  //     need to be 64.
-  if ( classifier_flags & CRM_MARKOVIAN 
-       || classifier_flags & CRM_OSB
-       || classifier_flags & CRM_WINNOW
-       || classifier_flags & CRM_OSBF
+    //     If it's one of the 64-bit-key classifiers, then the featurebits
+    //     need to be 64.
+    if (classifier_flags & CRM_MARKOVIAN
+        || classifier_flags & CRM_OSB
+        || classifier_flags & CRM_WINNOW
+        || classifier_flags & CRM_OSBF
        )
     {
-      //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
-      featurebits = 64;
-      output_stride = 2;
-    };
-  
-  //     Do we want a string kernel?  If so, then we have to override
-  //     a few things.
+        //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
+        featurebits = 64;
+        output_stride = 2;
+    }
 
-  if ( classifier_flags & CRM_STRING)
+  //       The new FSCM does in fact do tokeniation and hashing over
+  //       a string kernel, but only for the indexing.  
+  if (classifier_flags & CRM_FSCM)
     {
-      //      fprintf (stderr, "String Kernel");
       hash_vec0 = string1_coeff;
-      hash_len0 = 5;
+      hash_len0 = 8;
       hash_iters0 = 1;
       hash_vec1 = string2_coeff;
-      hash_len1 = 5;
-      hash_iters1 = 1;
-      if (!my_regex)
-	{
-	  my_regex = string_kern_regex;
-	  my_regex_len = string_kern_regex_len;
-	};
-    };
-
-  //     Do we want a unigram system?  If so, then we change a few more
-  //     things.
-  if ( classifier_flags & CRM_UNIGRAM)
-    {
-      hash_vec0 = unigram_coeff;
-      hash_len0 = 1;
-      hash_iters0 = 1;
-      hash_vec1 = unigram_coeff;
       hash_len1 = 1;
-      hash_iters1 = 1;
-    };
-  
-
-  //     Now all of the defaults have been filled in; we now see if the 
-  //     caller has overridden any (or all!) of them.   We assume that the
-  //     user who overrides them has pre-sanity-checked them as well.
-  
-  //     First check- did the user override the regex?
-
-  //    Did the user program specify a first slash paramter?  (only
-  //    override this if a regex was passed in)
-  if (! regex)
-    {
-      crm_get_pgm_arg (s1text, MAX_PATTERN, apb->s1start, apb->s1len);
-      s1len = apb->s1len;
-      s1len = crm_nexpandvar (s1text, s1len, MAX_PATTERN);
-      my_regex = s1text;
-      my_regex_len = s1len;
-    };
-
-
-  //      Did the user specify a pipeline vector set ?   If so, it's
-  //      in the second set of slashes.
-  {
-    char s2text[MAX_PATTERN];
-    int s2len;
-    int local_pipe_len;
-    int local_pipe_iters;
-    char *vt_weight_regex = "vector: ([ 0-9]*)";
-    regex_t regcb;
-    int regex_status;
-    regmatch_t match[5];   //  We'll only care about the second match 
-    local_pipe_len = 0;
-    local_pipe_iters = 0;
-
-    //     get the second slash parameter (if used at all)
-    crm_get_pgm_arg (s2text, MAX_PATTERN, apb->s2start, apb->s2len);
-    s2len = apb->s2len;
-    s2len = crm_nexpandvar (s2text, s2len, MAX_PATTERN);
-
-    if (s2len > 0)
-      {
-	//   Compile up the regex to find the vector tokenizer weights
-	crm_regcomp
-	  (&regcb, vt_weight_regex, strlen (vt_weight_regex),
-	   REG_ICASE | REG_EXTENDED);
-	
-	//   Use the regex to find the vector tokenizer weights       
-	regex_status =  crm_regexec (&regcb,
-				     s2text,
-				     s2len,
-				     5,
-				     match,
-				     REG_EXTENDED,
-				     NULL);
-	
-	//   Did we actually get a match for the extended parameters?
-	if (regex_status == 0)
-	  {
-	    char *conv_ptr;
-	    int i;
-
-	    //  Yes, it matched.  Set up the pipeline coeffs specially.
-	    //   The first parameter is the pipe length 
-	    conv_ptr = & s2text[match[1].rm_so];
-	    local_pipe_len = strtol (conv_ptr, &conv_ptr, 0);
-	    if (local_pipe_len > UNIFIED_WINDOW_LEN)
-	      {
-		nonfatalerror ("You've specified a tokenizer pipe length "
-			      "that is too long.", "  I'll trim it.");
-		local_pipe_len = UNIFIED_WINDOW_LEN;
-	      };
-	    //fprintf (stderr, "local_pipe_len = %ld\n", local_pipe_len);
-	    //   The second parameter is the number of repeats
-	    local_pipe_iters = strtol (conv_ptr, &conv_ptr, 0);
-	    if (local_pipe_iters > UNIFIED_VECTOR_LIMIT)
-	      {
-		nonfatalerror("You've specified too high a tokenizer "
-			      "iteration count.", "  I'll trim it.");
-		local_pipe_iters = UNIFIED_VECTOR_LIMIT;
-	      };
-	    //fprintf (stderr, "pipe_iters = %ld\n", local_pipe_iters);
-
-	    //    Now, get the coefficients.
-	    for (i = 0; i < local_pipe_len * local_pipe_iters; i++)
-	      {
-		ca[i] = strtol (conv_ptr, &conv_ptr, 0);
-		//  fprintf (stderr, "coeff: %ld\n", ca[i]);
-	      };
-
-	    //   If there was a numeric coeff array, use that, else
-	    //   use our slash coeff array.
-	    if (! coeff_array)
-	      {
-		coeff_array = ca;
-		pipe_len = local_pipe_len;
-		pipe_iters = local_pipe_iters;
-	      };
-	  };
-	//  free the compiled regex.
-	crm_regfree (&regcb);
-      };
-  };
-  
-  //      if any non-default coeff array was given, use that instead.
-  if (coeff_array) 
-    {
-      hash_vec0 = coeff_array;
-      //                    GROT GROT GROT --2nd array should be different from
-      //                    first array- how can we do that nonlinearly?
-      //                    This will work for now, but birthday clashes will
-      //                    happen more often in 64-bit featuresets
-      hash_vec1 = coeff_array;    
-    };
-
-  if (pipe_len > 0)
-    {
-      hash_len0 = pipe_len;
-      hash_len1 = pipe_len;
-    };
-
-  if (pipe_iters > 0)
-    {
-      hash_iters0 = pipe_iters;
-      hash_iters1 = pipe_iters;
-    };
-
-  //    We now have our parameters all set, and we can run the vector hashing.
-  //
-  if (output_stride == 1)
-    {
-      crm_vector_tokenize (
-			   text,
-			   textlen,
-			   start_offset,
-			   my_regex,
-			   my_regex_len,
-			   hash_vec0,
-			   hash_len0,
-			   hash_iters0,
-			   features,
-			   featureslen,
-			   1,           //  stride 1 for 32-bit
-			   features_out,
-			   next_offset);
+      hash_iters1 = 0;
+      if (regexlen > 0)
+	{
+	  my_regex = regex;
+	  my_regex_len = regexlen;
+	}
+      else
+	{
+	  my_regex = fscm_kern_regex;
+	  my_regex_len = fscm_kern_regex_len;
+	}
     }
-  else
+  
+    //     Do we want a string kernel?  If so, then we have to override
+    //     a few things.
+
+    if (classifier_flags & CRM_STRING)
     {
-      //        We're doing the 64-bit-long features for Markov/OSB
-      crm_vector_tokenize (
-			   text,
-			   textlen,
-			   start_offset,
-			   my_regex,
-			   my_regex_len,
-			   hash_vec0,
-			   hash_len0,
-			   hash_iters0,
-			   features,
-			   featureslen,
-			   1,           //  stride 1 for 32-bit
-			   features_out,
-			   next_offset);
-      crm_vector_tokenize (
-			   text,
-			   textlen,
-			   start_offset,
-			   regex,
-			   regexlen,
-			   hash_vec1,
-			   hash_len1,
-			   hash_iters1,
-			   &(features[1]),
-			   featureslen,
-			   1,           //  stride 1 for 32-bit
-			   features_out,
-			   next_offset);
+        //      fprintf (stderr, "String Kernel");
+        hash_vec0 = string1_coeff;
+        hash_len0 = 5;
+        hash_iters0 = 1;
+        hash_vec1 = string2_coeff;
+        hash_len1 = 5;
+        hash_iters1 = 1;
+      if (regexlen == 0)
+        {
+            my_regex = string_kern_regex;
+            my_regex_len = string_kern_regex_len;
+        }
+    }
+
+    //     Do we want a unigram system?  If so, then we change a few more
+    //     things.
+    if (classifier_flags & CRM_UNIGRAM)
+    {
+        hash_vec0 = unigram_coeff;
+        hash_len0 = 1;
+        hash_iters0 = 1;
+        hash_vec1 = unigram_coeff;
+        hash_len1 = 1;
+        hash_iters1 = 1;
+    }
+
+
+    //     Now all of the defaults have been filled in; we now see if the
+    //     caller has overridden any (or all!) of them.   We assume that the
+    //     user who overrides them has pre-sanity-checked them as well.
+
+    //     First check- did the user override the regex?
+
+    //    Did the user program specify a first slash paramter?  (only
+    //    override this if a regex was passed in)
+  if (regexlen > 0)
+    {
+        crm_get_pgm_arg(s1text, MAX_PATTERN, apb->s1start, apb->s1len);
+        s1len = apb->s1len;
+        s1len = crm_nexpandvar(s1text, s1len, MAX_PATTERN, vht, tdw);
+        my_regex = s1text;
+        my_regex_len = s1len;
+    }
+
+
+    //      Did the user specify a pipeline vector set ?   If so, it's
+    //      in the second set of slashes.
+    {
+        char s2text[MAX_PATTERN];
+        int s2len;
+        int local_pipe_len;
+        int local_pipe_iters;
+        char *vt_weight_regex = "vector: ([ 0-9]*)";
+        regex_t regcb;
+        int regex_status;
+        regmatch_t match[5]; //  We'll only care about the second match
+        local_pipe_len = 0;
+        local_pipe_iters = 0;
+
+        //     get the second slash parameter (if used at all)
+        crm_get_pgm_arg(s2text, MAX_PATTERN, apb->s2start, apb->s2len);
+        s2len = apb->s2len;
+        s2len = crm_nexpandvar(s2text, s2len, MAX_PATTERN, vht, tdw);
+
+        if (s2len > 0)
+        {
+            //   Compile up the regex to find the vector tokenizer weights
+            crm_regcomp
+            (&regcb, vt_weight_regex, strlen(vt_weight_regex),
+                    REG_ICASE | REG_EXTENDED);
+
+            //   Use the regex to find the vector tokenizer weights
+            regex_status =  crm_regexec(&regcb,
+                    s2text,
+                    s2len,
+                    5,
+                    match,
+                    REG_EXTENDED,
+                    NULL);
+
+            //   Did we actually get a match for the extended parameters?
+            if (regex_status == 0)
+            {
+                char *conv_ptr;
+                int i;
+
+                //  Yes, it matched.  Set up the pipeline coeffs specially.
+                //   The first parameter is the pipe length
+                conv_ptr = &s2text[match[1].rm_so];
+                local_pipe_len = strtol(conv_ptr, &conv_ptr, 0);
+                if (local_pipe_len > UNIFIED_WINDOW_LEN)
+                {
+                    nonfatalerror("You've specified a tokenizer pipe length "
+                                  "that is too long.", "  I'll trim it.");
+                    local_pipe_len = UNIFIED_WINDOW_LEN;
+                }
+                //fprintf (stderr, "local_pipe_len = %ld\n", local_pipe_len);
+                //   The second parameter is the number of repeats
+                local_pipe_iters = strtol(conv_ptr, &conv_ptr, 0);
+                if (local_pipe_iters > UNIFIED_VECTOR_LIMIT)
+                {
+                    nonfatalerror("You've specified too high a tokenizer "
+                                  "iteration count.", "  I'll trim it.");
+                    local_pipe_iters = UNIFIED_VECTOR_LIMIT;
+                }
+                //fprintf (stderr, "pipe_iters = %ld\n", local_pipe_iters);
+
+                //    Now, get the coefficients.
+                for (i = 0; i < local_pipe_len * local_pipe_iters; i++)
+                {
+                    ca[i] = strtol(conv_ptr, &conv_ptr, 0);
+                    //  fprintf (stderr, "coeff: %ld\n", ca[i]);
+                }
+
+                //   If there was a numeric coeff array, use that, else
+                //   use our slash coeff array.
+                if (!coeff_array)
+                {
+                    coeff_array = ca;
+                    pipe_len = local_pipe_len;
+                    pipe_iters = local_pipe_iters;
+                }
+            }
+            //  free the compiled regex.
+            crm_regfree(&regcb);
+        }
     };
-    return (*features_out);
+
+    //      if any non-default coeff array was given, use that instead.
+    if (coeff_array)
+    {
+        hash_vec0 = coeff_array;
+        //                    GROT GROT GROT --2nd array should be different from
+        //                    first array- how can we do that nonlinearly?
+        //                    This will work for now, but birthday clashes will
+        //                    happen more often in 64-bit featuresets
+        hash_vec1 = coeff_array;
+    }
+
+    if (pipe_len > 0)
+    {
+        hash_len0 = pipe_len;
+        hash_len1 = pipe_len;
+    }
+
+    if (pipe_iters > 0)
+    {
+        hash_iters0 = pipe_iters;
+        hash_iters1 = pipe_iters;
+    }
+
+    //    We now have our parameters all set, and we can run the vector hashing.
+    //
+  if (internal_trace)
+    fprintf (stderr, "Sext offset: %ld, length: %ld\n", start_offset, txtlen);
+
+    if (output_stride == 1)
+    {
+        crm_vector_tokenize(
+                text,
+                textlen,
+                start_offset,
+                my_regex,
+                my_regex_len,
+                hash_vec0,
+                hash_len0,
+                hash_iters0,
+                features,
+                featureslen,
+                1,                      //  stride 1 for 32-bit
+                features_out,
+                next_offset);
+    }
+    else
+    {
+        //        We're doing the 64-bit-long features for Markov/OSB
+        crm_vector_tokenize(
+                text,
+                textlen,
+                start_offset,
+                my_regex,
+                my_regex_len,
+                hash_vec0,
+                hash_len0,
+                hash_iters0,
+                features,
+                featureslen,
+			   2,           //  stride 1 for 32-bit
+                features_out,
+                next_offset);
+        crm_vector_tokenize(
+                text,
+                textlen,
+                start_offset,
+                regex,
+                regexlen,
+                hash_vec1,
+                hash_len1,
+                hash_iters1,
+                &(features[1]),
+                featureslen,
+			   2,           //  stride 1 for 32-bit
+                features_out,
+                next_offset);
+    }
+    return *features_out;
+}
+
+
+//  crm_vector_markov_1 gets the features of the markov H1 field
+
+long crm_vector_markov_1
+(
+  char *txtptr,             // input string (null-safe!)  
+  long txtstart,          //     start tokenizing at this byte.                
+  long txtlen,           //   how many bytes of input.                        
+  char *regex,            // the parsing regex (might be ignored)              
+  long regexlen,          //   length of the parsing regex                     
+  unsigned long *features,         // where the output features go             
+  long featureslen,       //   how many output features (max)                  
+  long *features_out,     // how many longs did we actually use up             
+  long *next_offset       // next invocation should start at this offset       
+ )
+{
+
+
+  return crm_vector_tokenize
+    ( txtptr,
+      txtstart,
+      txtlen,
+      regex,
+      regexlen,
+      markov1_coeff,
+      5, 
+      16,
+      features,
+      featureslen,
+      2,                 //  stride 2 for 64-bit features
+      features_out,
+      next_offset );
+}
+
+
+
+//  crm_vector_markov_2 is the H2 field in the Markov classifier.
+long crm_vector_markov_2
+(
+  char *txtptr,             // input string (null-safe!)  
+  long txtstart,      //     start tokenizing at this byte.                
+  long txtlen,           //   how many bytes of input.                        
+  char *regex,            // the parsing regex (might be ignored)              
+  long regexlen,          //   length of the parsing regex                     
+  unsigned long *features,         // where the output features go             
+  long featureslen,       //   how many output features (max)                  
+  long *features_out,     // how many longs did we actually use up             
+  long *next_offset       // next invocation should start at this offset       
+ )
+{
+
+  return crm_vector_tokenize
+    ( txtptr,
+      txtstart,
+      txtlen,
+      regex,
+      regexlen,
+      markov2_coeff,
+      5, 
+      16,
+      features,
+      featureslen,
+      2,                    // Stride 2 for 64-bit features
+      features_out,
+      next_offset );
+}
+
+//            vectorized OSB featureset generator.
+//
+long crm_vector_osb1
+(
+  char *txtptr,             // input string (null-safe!)
+  long txtstart,      //     start tokenizing at this byte.                
+  long txtlen,           //   how many bytes of input.                        
+  char *regex,            // the parsing regex (might be ignored)              
+  long regexlen,          //   length of the parsing regex                     
+  unsigned long *features,         // where the output features go             
+  long featureslen,       //   how many output features (max)                  
+  long *features_out,     // how many longs did we actually use up             
+  long *next_offset       // next invocation should start at this offset       
+ )
+{
+
+  return crm_vector_tokenize
+    ( txtptr,
+      txtstart,
+      txtlen,
+      regex,
+      regexlen,
+      osb1_coeff,
+      OSB_BAYES_WINDOW_LEN, 
+      4,  // should be 4
+      features,
+      featureslen,
+      2,
+      features_out,
+      next_offset );
+}
+
+long crm_vector_osb2
+(
+  char *txtptr,             // input string (null-safe!)       
+  long txtstart,      //     start tokenizing at this byte.                
+  long txtlen,           //   how many bytes of input.                        
+  char *regex,            // the parsing regex (might be ignored)              
+  long regexlen,          //   length of the parsing regex                     
+  unsigned long *features,         // where the output features go             
+  long featureslen,       //   how many output features (max)                  
+  long *features_out,     // how many longs did we actually use up             
+  long *next_offset       // next invocation should start at this offset       
+ )
+{
+
+  return crm_vector_tokenize
+    ( txtptr,
+      txtstart,
+      txtlen,
+      regex,
+      regexlen,
+      osb2_coeff,
+      OSB_BAYES_WINDOW_LEN, 
+      4,  // should be 4
+      features,
+      featureslen,
+      2,
+      features_out,
+      next_offset );
+}
+
+
+//            vectorized string kernel featureset generator.
+//
+long crm_vector_string_kernel1
+(
+  char *txtptr,             // input string (null-safe!) 
+  long txtstart,      //     start tokenizing at this byte.                
+  long txtlen,           //   how many bytes of input.                        
+  long string_kern_len,   //   length of the kernel (must be < 16)
+  unsigned long *features, // where the output features go             
+  long featureslen,       //   how many output features (max)                  
+  long *features_out,     // how many longs did we actually use up             
+  long *next_offset       // next invocation should start at this offset       
+ )
+{
+
+  //    The coeffs should be relatively prime.  Relatively...
+
+  if (string_kern_len > 15) string_kern_len = 15;
+
+  return crm_vector_tokenize
+    ( txtptr,
+      txtstart,
+      txtlen,
+      ".",     // regex
+      1,       // regexlen
+      string1_coeff,
+      string_kern_len, //  how many coeffs to use
+      1,               //  how many variations (just one)
+      features,
+      featureslen,
+      1,
+      features_out,
+      next_offset );
+}
+
+long crm_vector_string_kernel2
+(
+  char *txtptr,             // input string (null-safe!)  
+  long txtstart,      //     start tokenizing at this byte.                
+  long txtlen,           //   how many bytes of input.                        
+  long string_kern_len,   //   length of the kernel (must be < 16)
+  unsigned long *features, // where the output features go             
+  long featureslen,       //   how many output features (max)                  
+  long *features_out,     // how many longs did we actually use up             
+  long *next_offset       // next invocation should start at this offset       
+ )
+{
+
+  //    The coeffs should be relatively prime.  Relatively...
+
+  if (string_kern_len > 15) string_kern_len = 15;
+
+  return crm_vector_tokenize
+    ( txtptr,
+      txtstart,
+      txtlen,
+      ".",     // regex
+      1,       // regexlen
+      string2_coeff,
+      string_kern_len, //  how many coeffs to use
+      1,               //  how many variations (just one)
+      features,
+      featureslen,
+      1,
+      features_out,
+      next_offset );
 }
 
 

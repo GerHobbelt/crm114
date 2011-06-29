@@ -1,4 +1,4 @@
-#! @abs_top_builddir@/src/crm114114
+#! @BIN_PATH@/crm114
 #
 #      Test basic TRANSLATE functionality
 #

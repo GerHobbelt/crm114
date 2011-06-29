@@ -1,0 +1,19 @@
+#! @BIN_PATH@/crm114
+#
+# should pass variable decoder length checks; only when we check for the :: var delimiters, will this one be detected.
+{
+	{
+		window 
+		isolate (abc) /FUBAR/
+		output /yo!\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

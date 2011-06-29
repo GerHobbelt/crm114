@@ -1,0 +1,27 @@
+#! /usr/local/bin/crm114
+#
+# can we handle an indirect ALTER leading to an illegal var?
+{
+	{
+		window 
+		isolate (:dst:)	/s/     # 'forgot' the :: delimiter around ':s:' there.
+		isolate (:s:) /YUCK/
+		alter (:*:dst:) /FUBAR/
+		output /yo!\n/
+		output /dst = ':*:dst:'\n/
+		output /s = ':*:s:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+		output /dst = ':*:dst:'\n/
+		output /s = ':*:s:'\n/
+		output /indirect(dst) = ':+:dst:'\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

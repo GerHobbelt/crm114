@@ -1,0 +1,19 @@
+#! /usr/local/bin/crm114
+#
+# do we accept ALTERing an illegal variable, i.e. without the '::'?
+{
+	{
+		window 
+		alter (abc) /FUBAR/
+		output /yo!\n/
+	}
+	alius
+	{
+		output /ouch!\n/
+	}
+	trap (:r:) //
+	{
+		output /TRAP::*:r:\n/
+	}
+}
+

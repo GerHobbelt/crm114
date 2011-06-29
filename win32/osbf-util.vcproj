@@ -33,9 +33,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -77,8 +77,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprtd.lib"
-				OutputFile="$(OutDir)/obsf-util.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
@@ -128,9 +127,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -173,8 +172,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprtd.lib"
-				OutputFile="$(OutDir)/obsf-util.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
@@ -224,9 +222,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -269,8 +267,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprtd.lib"
-				OutputFile="$(OutDir)/obsf-util.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
@@ -320,9 +317,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -366,8 +363,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprt.lib"
-				OutputFile="$(OutDir)/obsf-util.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -415,9 +411,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -462,8 +458,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprt.lib"
-				OutputFile="$(OutDir)/obsf-util.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -511,9 +506,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName)_$(ConfigurationName) directory"
+				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)_$(ConfigurationName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -558,8 +553,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=" msvcprt.lib"
-				OutputFile="$(OutDir)/obsf-util.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -604,66 +598,6 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
-			<File
-				RelativePath="..\src\crm_debugger.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_errorhandlers.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_expandvar.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_generic_port.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_math_exec.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_osbf_maintenance.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_stdio_port.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_stmt_parser.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_str_funcs.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_var_hash_table.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crm_versioning.c"
-				>
-			</File>
-			<File
-				RelativePath=".\crm_win32_port.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\crmregex_tre.c"
-				>
-			</File>
-			<File
-				RelativePath=".\getopt.c"
-				>
-			</File>
-			<File
-				RelativePath=".\getopt_ex.c"
-				>
-			</File>
 			<File
 				RelativePath="..\src\osbf-util.c"
 				>
