@@ -191,7 +191,7 @@ isolate (:i_text:) /:*:m_text:/
 }
 
 #    and reassemble the mucked-over text into the :m_text: var, always
-#    with the base64's expanded, then the extacted comments
+#    with the base64's expanded, then the extracted comments
 #
 {
     alter (:m_text:) \

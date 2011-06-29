@@ -682,7 +682,7 @@ static double stats_2_entropy(long count, long total)
   if (count >= total)
     return 0.0;
 
-  //  value =  ( - (logl(
+  //  value =  ( - (crm_logl (
   //          (count + BIT_ENTROPIC_PROBABILITY_NERF)
   //          / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
   //     / 0.69314718 );
@@ -712,7 +712,7 @@ static double stats_2_entropy(long count, long total)
   //      "correct" entropy is factored by the unknown prior:
   // value =  ( - ( ( count + BIT_ENTROPIC_PROBABILITY_NERF)
   //     / ( total + BIT_ENTROPIC_PROBABILITY_NERF))
-  //     *  (logl (
+  //     *  (crm_logl (
   //        (count + BIT_ENTROPIC_PROBABILITY_NERF)
   //        / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
   //     / 0.69314718 );
@@ -720,7 +720,7 @@ static double stats_2_entropy(long count, long total)
   //      But here, we know the event has come to pass and so the
   //     prior is 1.0 (the event itself is a certainty at this point;
   //     we are now just counting bits needed to encode it ! ).
-  value =  (-logl(
+  value =  ( - crm_logl (
               (count + BIT_ENTROPIC_PROBABILITY_NERF)
               / (total + BIT_ENTROPIC_PROBABILITY_NERF)))
           / 0.69314718;
@@ -1629,6 +1629,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long sense;
   int crosslink;
   double crosslink_thresh;
+  double crosslink_mincount;
   char clerrtxt[MAX_PATTERN];
   long clerrlen;
 
@@ -2009,6 +2010,11 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //  crosslink_thresh = 0.003 / nodeslen;
   //  crosslink_thresh = 0.001 / nodeslen;
 
+  ////////////////////////////////////////////////////////////
+  //      Crosslink Mincount is the minimum number of good bits before we
+  //      allow a crosslink
+  crosslink_mincount = 2;
+
   //    Running 1 megaslot at 1E-7 thresh overflows TREC06 public.
   //    Running 2 megaslot at 1E-7 thresh uses up 76% of TREC06 public, but
   //     with lousy TER (36/10000, 24/1000) and 5140 total errors
@@ -2262,6 +2268,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         ////////////////////////////////////////////////////////////
         //      Crosslink Mincount is the minimum number of good bits before we
         //      allow a crosslink
+        // [i_a] another definition of this mincount: GROT GROT GROT
         long crosslink_mincount = 1;
 
         further_node = firlat_find_closest_node(nodes,
@@ -2687,6 +2694,11 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (succhash == 0)
     succhash = maxhash;
 
+  //    a CLASSIFY with no arguments is always a "success".
+  if (maxhash == 0)
+    return (0);
+
+  
   // sanity checks...  Uncomment for super-strict CLASSIFY.
   //
   //    do we have at least 1 valid .css files?
@@ -2694,10 +2706,6 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   {
     nonfatalerror("Couldn't open at least 2 .css files for classify().", "");
   }
-
-  //    a CLASSIFY with no arguments is always a "success".
-  if (maxhash == 0)
-    return 0;
 
   //    do we have at least 1 valid .css file at both sides of '|'?
   if (!vbar_seen || succhash < 0 || (maxhash <= succhash))
@@ -2837,13 +2845,14 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //      allow a crosslink
           long crosslink_mincount = 0;
 
-          //  Note that the localfir is the fir *after* our current
-          //  bit (that is, thisalph, which is at txtoffset:bitnum).
-          nextnode = firlat_find_closest_node
-                     (nodes, nodeslen, firlats[c], firlatlens[c], localfir);
-          //
-          //   Do a little search to find the best node to jump to
-          //
+		  //  Note that the localfir is the fir *after* our current
+		  //  bit (that is, thisalph, which is at txtoffset:bitnum).
+		nextnode = firlat_find_closest_node 
+		  (nodes, nodeslen, firlats[c], firlatlens[c], localfir);
+		//
+		//   Do a little search to find the best node to jump to
+		//
+		
           oneup = nodes[nextnode].fir_larger;
           onedown = nodes[nextnode].fir_smaller;
 

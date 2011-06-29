@@ -29,119 +29,119 @@
 //                            Versioning
 //                            ==========
 //
-//    CRM114 files can be fitted with a header block, which should ideally 
-//    be one (or more) mmap()ped pages so as not to influence mmap() 
-//    performance in any way, while this header block can be used to store 
+//    CRM114 files can be fitted with a header block, which should ideally
+//    be one (or more) mmap()ped pages so as not to influence mmap()
+//    performance in any way, while this header block can be used to store
 //    any version and platform related info useful to CRM114 users.
 //
 //    These information particles can be used to:
 //
-//    - detect / validate the proper use of various CRM file contents 
+//    - detect / validate the proper use of various CRM file contents
 //      (different classifiers)
 //
-//    - detect if CRM114 is using a 'current version' of the data [format]; 
-//      where applicable CRM114 can thus provide an upgrade path OR report 
-//      the impossibility of such (e.g. when the classifier has been removed 
+//    - detect if CRM114 is using a 'current version' of the data [format];
+//      where applicable CRM114 can thus provide an upgrade path OR report
+//      the impossibility of such (e.g. when the classifier has been removed
 //      or changed in incompatible ways)
 //
 //    - help tools to properly recognize and report on CRM114 data files
 //
-//    - help tools to convert CRM114 files from other versions and/or 
-//      platforms (e.g. for automated upgrades and cross-platform 
+//    - help tools to convert CRM114 files from other versions and/or
+//      platforms (e.g. for automated upgrades and cross-platform
 //      synchronization)
 //
 //
 //    Basic Design
 //    ------------
 //
-//    The Header Block is sized at precisely 8 KByte, which should be 
-//    sufficient to store any machine- and human-readable info which should 
+//    The Header Block is sized at precisely 8 KByte, which should be
+//    sufficient to store any machine- and human-readable info which should
 //    accompany the actual data stored in the CSS file proper.
 //
-//    The Header Block size is set to 8KB because it is assumed that most 
-//    (if not all) systems out there have a mmap() page size for which 8K 
-//    will be an integer multiple >= 1. (See also the getpagesize() code in 
+//    The Header Block size is set to 8KB because it is assumed that most
+//    (if not all) systems out there have a mmap() page size for which 8K
+//    will be an integer multiple >= 1. (See also the getpagesize() code in
 //    CRM114.)
 //
-//    To facilitate both machines and humans perusing the file, the 8K 
-//    header is split into two sections, each of size 4K: the Header block 
-//    always starts with a 4K human readable ASCII text area, followed by 4K 
-//    of machine-readable fields and byte sequences. The initial 'human 
-//    readable text' section is also used to store some file type 
-//    recognition data, which can be used by file type/MIME type detection 
-//    tools (a bit similar to ZIP files which always start with the 
-//    character sequence 'PK' for instance; for file to MIME type 
-//    conversions using initial byte sequences see the UNIX man page 
+//    To facilitate both machines and humans perusing the file, the 8K
+//    header is split into two sections, each of size 4K: the Header block
+//    always starts with a 4K human readable ASCII text area, followed by 4K
+//    of machine-readable fields and byte sequences. The initial 'human
+//    readable text' section is also used to store some file type
+//    recognition data, which can be used by file type/MIME type detection
+//    tools (a bit similar to ZIP files which always start with the
+//    character sequence 'PK' for instance; for file to MIME type
+//    conversions using initial byte sequences see the UNIX man page
 //    mime.types(5) for example).
 //
-//    Furthermore, the initial 4K section is constructed in such a way that 
-//    the human readable text stored herein will be displayed on screen 
+//    Furthermore, the initial 4K section is constructed in such a way that
+//    the human readable text stored herein will be displayed on screen
 //    when:
 //
-//    - the CRM file is e'x'ecutable on UNIX and 'run' as is: it will behave 
+//    - the CRM file is e'x'ecutable on UNIX and 'run' as is: it will behave
 //      like a very basic shell script.
 //
 //    - the CRM file is fed to UNIX tools like 'head'
 //
 //    - the CRM file is 'type'd on MSDOS or Windows compatible systems.
 //
-//    We hope that the mechanism/structure used also works out favorably on 
+//    We hope that the mechanism/structure used also works out favorably on
 //    non-UNIX MACintosh boxes and other platforms.
 //
 //    The second 4K block is intended for machine-only use:
 //
-//    - version, classifier and other info is stored here for tools to 
+//    - version, classifier and other info is stored here for tools to
 //      detect and decide on upgrade/transformation paths available.
 //
-//    - 'marker' sequences are stored by the originating platform to allow 
-//      tools able to copy/transform the data in a cross-platform/compiler 
-//      portable manner to detect relevant info such as integer/float size, 
+//    - 'marker' sequences are stored by the originating platform to allow
+//      tools able to copy/transform the data in a cross-platform/compiler
+//      portable manner to detect relevant info such as integer/float size,
 //      format, Endianess, etc.
 //
-//    - additional statistics and or creation info may be stored in this 
+//    - additional statistics and or creation info may be stored in this
 //      section to aid reporting and analysis tools
 //
 //
 //    Header block format / layout
 //    ----------------------------
 //
-//    The human readable text area consists of ASCII text, separated into 
-//    multiple lines like any text file using the UNIX LF character sequence 
-//    to indicate the end of a line (all OS's, including MSDOS, Windows and 
-//    MAC OS/X, can often handle this text format automatically, while many 
-//    [bare bones] UNIX boxes will struggle to display the MSDOS (CR LF) or 
-//    MAC (CR-only) text formats). Unfortunately, some tools on WINDOWS 
-//    (Notepad, ...) do not handle the LF-only line termination well, but 
+//    The human readable text area consists of ASCII text, separated into
+//    multiple lines like any text file using the UNIX LF character sequence
+//    to indicate the end of a line (all OS's, including MSDOS, Windows and
+//    MAC OS/X, can often handle this text format automatically, while many
+//    [bare bones] UNIX boxes will struggle to display the MSDOS (CR LF) or
+//    MAC (CR-only) text formats). Unfortunately, some tools on WINDOWS
+//    (Notepad, ...) do not handle the LF-only line termination well, but
 //    this is decided to be the lesser nuisance.
 //
-//    The text is terminated by a mix of EOL/EOF signaling characters to 
+//    The text is terminated by a mix of EOL/EOF signaling characters to
 //    fool simple text file tools:
 //
-//    Sentinel (5)            A sequence of these bytes: EOL (ASCII(26)), 
-//                            ETX (ASCII(4)), EOT (ASCII(5)), 
+//    Sentinel (5)            A sequence of these bytes: EOL (ASCII(26)),
+//                            ETX (ASCII(4)), EOT (ASCII(5)),
 //                            FF (ASCII(12)), FS (ASCII(28))
 //
-//    The text is then padded with ASCII NUL (ASCII(0)) bytes to completely 
+//    The text is then padded with ASCII NUL (ASCII(0)) bytes to completely
 //    fill the initial 4K block.
 //
-//    NOTE: The first two lines of text (i.e. all text up to the second LF) 
-//    is used to aid automated file type recognition tools and will include 
-//    some basic file format info in ':' colon separated fixed width text 
-//    fields. These initial bytes can be used by MIME type detection tools, 
+//    NOTE: The first two lines of text (i.e. all text up to the second LF)
+//    is used to aid automated file type recognition tools and will include
+//    some basic file format info in ':' colon separated fixed width text
+//    fields. These initial bytes can be used by MIME type detection tools,
 //    etc.
 //
 //
 //    Initial bytes / file recognition marker
 //    ---------------------------------------
 //
-//    The initial bytes of the header block are always these 11 characters 
-//    (for simplified automated file type recognition) where '\n' represents 
+//    The initial bytes of the header block are always these 11 characters
+//    (for simplified automated file type recognition) where '\n' represents
 //    a single LF (ASCII(10dec)) character:
 //
 //    "#!\n#CRM114:"
 //
-//    These are immediately followed by a 10 character, space padded, text, 
-//    identifying the classifier which creates/uses this file, terminated by 
+//    These are immediately followed by a 10 character, space padded, text,
+//    identifying the classifier which creates/uses this file, terminated by
 //    a colon ':' as the eleventh character:
 //
 //    "SKS       :"
@@ -153,67 +153,68 @@
 //    "MARKOV    :"
 //    "NEURAL    :"
 //    "HYPERSPACE:"
-//    "OSBF-BAYES:"
+//    "OSBF      :"
+//    "OSB-BAYES :"
 //    "BITENTROPY:"
 //    "CORRELATE :"
 //
-//    Next, the CRM version used to create this file is included as a 35 
+//    Next, the CRM version used to create this file is included as a 35
 //    character fixed width, space padded, field, e.g.:
 //
 //    "20060611-SomewhatTamedBeast       :"
 //
-//    Platform specifics follow next: each element, its width and sample 
-//    field content are listed in the table below. All fields are space 
+//    Platform specifics follow next: each element, its width and sample
+//    field content are listed in the table below. All fields are space
 //    padded to the left, just like the fields described so far:
 //
 //    Field           Width             Example(s)
 //                    (excl. colon)
 //
-//    Format Version  4                 "0001:" --> the exception to the 
-//                                                  space padding rule: a 
+//    Format Version  4                 "0001:" --> the exception to the
+//                                                  space padding rule: a
 //                                                  zero-padded number!
 //
-//    Host Type       20                "windows-MS:" (host type as 
-//                                         determined by the ./configure 
-//                                         script. If unknown, use "???" or 
+//    Host Type       20                "windows-MS:" (host type as
+//                                         determined by the ./configure
+//                                         script. If unknown, use "???" or
 //                                         "unknown" instead)
 //
-//    Future versions of CRM114 may add additional fields, so any software 
-//    scanning these files should be line oriented, despite the fixed width 
-//    of the individual fields.         
-//    
+//    Future versions of CRM114 may add additional fields, so any software
+//    scanning these files should be line oriented, despite the fixed width
+//    of the individual fields.
+//
 //    Additional fields will be located following the last field described above.
 //
-//    The third line is there for the sole purpose of cajoling UNIX boxes 
-//    into displaying the remaining text when the file is run as executable 
+//    The third line is there for the sole purpose of cajoling UNIX boxes
+//    into displaying the remaining text when the file is run as executable
 //    ('x' access rights):
 //
 //      cat <<-EOF\n
 //
 //    where once again '\n' represents a single LF character.
 //
-//    The next lines in the human readable text area are for general 
-//    information purposes. These may include statistics information or 
-//    other types of memo data, e.g. owner & purpose info for your personal 
+//    The next lines in the human readable text area are for general
+//    information purposes. These may include statistics information or
+//    other types of memo data, e.g. owner & purpose info for your personal
 //    / company use.
 //
 //    WARNING: *none* of these lines may start with the character sequence:
 //
 //               'EOF'
 //
-//             We suggest using two leading spacing for each line of text to 
+//             We suggest using two leading spacing for each line of text to
 //             prevent this issue from ever occurring.
 //
-//    To allow storage of multiple text sections, which can be decoded to 
-//    some degree at least by automated systems, each section will be start 
-//    with a header line, followed by a line which only contains as many '=' 
-//    characters as the length of the previous 'header' line. Next, an empty 
-//    line will precede the content, which will be terminated By a double 
+//    To allow storage of multiple text sections, which can be decoded to
+//    some degree at least by automated systems, each section will be start
+//    with a header line, followed by a line which only contains as many '='
+//    characters as the length of the previous 'header' line. Next, an empty
+//    line will precede the content, which will be terminated By a double
 //    empty line.
 //
-//    NOTE: content MAY contain double empty lines: the double-LF sequence 
-//          is only considered to be a terminator when followed immediately 
-//          by an EOF sequence OR a header line (plus '=' line) as described 
+//    NOTE: content MAY contain double empty lines: the double-LF sequence
+//          is only considered to be a terminator when followed immediately
+//          by an EOF sequence OR a header line (plus '=' line) as described
 //          above.
 //
 //    An example:
@@ -221,12 +222,12 @@
 //        CRM114 Header Block: Trial Info
 //        ===============================
 //
-//        This is a valid blurb of human-readable content, stored in a 
+//        This is a valid blurb of human-readable content, stored in a
 //        CRM114 header block.
 //
 //
-//        As you can see, it can contain series of empty lines, like the 
-//        double occurrence just above, because this paragraph does NOT look 
+//        As you can see, it can contain series of empty lines, like the
+//        double occurrence just above, because this paragraph does NOT look
 //        like a 'header line', such as the one that started all this.
 //
 //        Enjoy CRM114!
@@ -240,13 +241,13 @@
 //    End of Text
 //    -----------
 //
-//    The human readable header block is terminated by the 10 character 
+//    The human readable header block is terminated by the 10 character
 //    sequence
 //
 //      EOF\n
 //      exit;\n
 //
-//    as shown also in the example above, followed by the 5 character 
+//    as shown also in the example above, followed by the 5 character
 //    Sentinel (EOL ETX EOT FF FS) as mentioned earlier in this text.
 //
 //
@@ -255,60 +256,60 @@
 //    The Machine Readable Section
 //    ----------------------------
 //
-//    The initial fields just mimic the initial line of the human-readable 
-//    section. However, additional fields are available to report and detect 
+//    The initial fields just mimic the initial line of the human-readable
+//    section. However, additional fields are available to report and detect
 //    platform specifics of the CRM114 binary used to create this file.
 //
 //    NOTES:
 //
-//      We may decide to store file statistics, etc. in this section for 
-//      ease of analysis/reporting/validation of the file (statistics listed 
-//      in this block should of course match the statistics that can be 
-//      derived from the actual file content itself! If not, we've got a 
+//      We may decide to store file statistics, etc. in this section for
+//      ease of analysis/reporting/validation of the file (statistics listed
+//      in this block should of course match the statistics that can be
+//      derived from the actual file content itself! If not, we've got a
 //      corrupted file on our hands!)
 //
-//      (Design Note: the initial concept reserved the last 128 bytes of 
-//      this 4K block for padding and a CRC32 checksum (padding used to make 
-//      sure the checksum would never be all zeroes, which was a magic value 
-//      to signal 'no checksum available'). However, this checksum business 
-//      has been discarded altogether, because a checksum for only this 
-//      header block isn't all that worthy anyway: the actual CRM classifier 
-//      data is important but may still be corrupted despite that checksum, 
-//      and calculating the checksum is also considered to be way too much 
-//      overhead for too little gain, especially when this header block is 
-//      used to store information which may be updated during every (learn) 
+//      (Design Note: the initial concept reserved the last 128 bytes of
+//      this 4K block for padding and a CRC32 checksum (padding used to make
+//      sure the checksum would never be all zeroes, which was a magic value
+//      to signal 'no checksum available'). However, this checksum business
+//      has been discarded altogether, because a checksum for only this
+//      header block isn't all that worthy anyway: the actual CRM classifier
+//      data is important but may still be corrupted despite that checksum,
+//      and calculating the checksum is also considered to be way too much
+//      overhead for too little gain, especially when this header block is
+//      used to store information which may be updated during every (learn)
 //      run of CRM114. Bye bye, checksum!
 //
-//      The last 128 bytes of this 4K block are reserved and must be filled 
+//      The last 128 bytes of this 4K block are reserved and must be filled
 //      with all zero(0) bytes.
 //
 //
 //    Fields in the binary section and platform specifics
 //    ---------------------------------------------------
 //
-//    The 4K machine readable block does carry the (fixed width) fields 
-//    listed below, each of which is stored in 'network byte order' (Big 
-//    Endian). All Fields are aligned at a 16 byte boundary to ensure easy 
-//    access for any platform.                     
-//    
-//    A special initial block ('Marker') is used to report and detect 
+//    The 4K machine readable block does carry the (fixed width) fields
+//    listed below, each of which is stored in 'network byte order' (Big
+//    Endian). All Fields are aligned at a 16 byte boundary to ensure easy
+//    access for any platform.
+//
+//    A special initial block ('Marker') is used to report and detect
 //    platform specifics such as
 //
-//    - int32_t / int64_t / float / double alignment within C structures 
-//      (which depends on both the platform/CPU and the C compiler used to 
+//    - int32_t / int64_t / float / double alignment within C structures
+//      (which depends on both the platform/CPU and the C compiler used to
 //      create the CRM114 binary)
 //
 //    - Endianess (Big / Little / Mixed) for int32_t and int64_t
 //
 //    - Endianess and format for float and double
 //
-//    - sizes of the integer and floating point types will be reported using 
-//      additional fields, but do not reside in the 'Marker' block; the 
-//      'Marker' block stores 'magical values' to report Endianess and such 
-//      and is mostly useful for cross-[platform/compiler build] upgrade 
+//    - sizes of the integer and floating point types will be reported using
+//      additional fields, but do not reside in the 'Marker' block; the
+//      'Marker' block stores 'magical values' to report Endianess and such
+//      and is mostly useful for cross-[platform/compiler build] upgrade
 //      tools for CRM114.
 //
-//    As we assume a worst case alignment of 16 bytes per integer, each of 
+//    As we assume a worst case alignment of 16 bytes per integer, each of
 //    the elements above will be calculated at 16 bytes cost a piece ==>
 //
 //    - alignment (at 2 fields per item to test this):        4 * 2 * 16
@@ -319,7 +320,7 @@
 //
 //    -->                                        total:        = 26 * 16
 //
-//    The fields in the 4K machine readable section (all fields are padded 
+//    The fields in the 4K machine readable section (all fields are padded
 //    with NUL ASCII(0) bytes to fulfil the 16 byte alignment requirement):
 //
 //    Field (Width)           Description
@@ -328,141 +329,141 @@
 //
 //
 //    Marker (26*16)          As described above:
-//    	
-//                            Alignment is tested by using 'struct'ures 
-//                            which have one character HEX(FF), followed by 
-//                            the type to detect the alignment for. Magic 
-//                            integer values are HEX(5A) for each byte, so 
-//                            no Endianess issues should ensue here (yet). 
-//                            
-//                            Endianess is detected by writing 
-//                            HEX(0FEDCBA987654321) derived sequences, 
-//                            limited in bytes by the size of the type for 
+//
+//                            Alignment is tested by using 'struct'ures
+//                            which have one character HEX(FF), followed by
+//                            the type to detect the alignment for. Magic
+//                            integer values are HEX(5A) for each byte, so
+//                            no Endianess issues should ensue here (yet).
+//
+//                            Endianess is detected by writing
+//                            HEX(0FEDCBA987654321) derived sequences,
+//                            limited in bytes by the size of the type for
 //                            the generating platform/compiler.
 //
-//                            The fields in the 'Marker' section are listed 
+//                            The fields in the 'Marker' section are listed
 //                            now:
 //
 //      M:Alignment
 //
-//        int32_t (32)        HEX(FF) char and a int32_t with magic value 
-//                            mentioned above. Magic will be truncated to 
+//        int32_t (32)        HEX(FF) char and a int32_t with magic value
+//                            mentioned above. Magic will be truncated to
 //                            int32_t size by the compiler.
 //
-//        int64_t (32)        HEX(FF) char and a int64_t with magic value 
-//                            mentioned above. Magic will be truncated to 
+//        int64_t (32)        HEX(FF) char and a int64_t with magic value
+//                            mentioned above. Magic will be truncated to
 //                            int32_t size by the compiler.
 //
-//        float (32)          HEX(FF) char and a float with magic value 
-//                            15365221879119872 (which should produce the 
-//                            HEX bytes 5A5A5A5A for IEEE754 compliant 
-//                            systems). Detect alignment by looking for the 
-//                            first non-NUL byte as IEEE compliancy is NOT 
+//        float (32)          HEX(FF) char and a float with magic value
+//                            15365221879119872 (which should produce the
+//                            HEX bytes 5A5A5A5A for IEEE754 compliant
+//                            systems). Detect alignment by looking for the
+//                            first non-NUL byte as IEEE compliancy is NOT
 //                            guaranteed on all systems)
 //
-//        double (32)         HEX(FF) char and a double with magic value 
-//                            10843961455707782 (which should produce the 
-//                            HEX bytes 4343434343434343 for IEEE754 
+//        double (32)         HEX(FF) char and a double with magic value
+//                            10843961455707782 (which should produce the
+//                            HEX bytes 4343434343434343 for IEEE754
 //                            compliant systems).
 //
 //
 //      M:Endianess
 //
-//        int32_t (16)        Writes int32_t-truncated HEX value 
-//                            HEX(0FEDCBA987654321) in this field. Endianess 
-//                            is determined by the order of the bytes that 
-//                            represent this value (Big Endian 32 bit e.g. 
-//                            87,65,43,21, while Little Endian 32-bit will 
+//        int32_t (16)        Writes int32_t-truncated HEX value
+//                            HEX(0FEDCBA987654321) in this field. Endianess
+//                            is determined by the order of the bytes that
+//                            represent this value (Big Endian 32 bit e.g.
+//                            87,65,43,21, while Little Endian 32-bit will
 //                            produce 21,43,65,87).
 //
-//        int64_t (16)        Writes int64_t-truncated HEX value 
-//                            HEX(0FEDCBA987654321) in this field. Endianess 
-//                            is determined as above. Should produce 8 bytes 
+//        int64_t (16)        Writes int64_t-truncated HEX value
+//                            HEX(0FEDCBA987654321) in this field. Endianess
+//                            is determined as above. Should produce 8 bytes
 //                            0F,ED,... (when Big Endian)
 //
-//        float:value1 (16)   Writes float magic value -65016332288, which 
-//                            should generate the value HEX(D1723468); byte 
-//                            order determines float Endianess (which may 
+//        float:value1 (16)   Writes float magic value -65016332288, which
+//                            should generate the value HEX(D1723468); byte
+//                            order determines float Endianess (which may
 //                            differ from integer Endianess!)
 //
-//        float:value2 (16)   Writes float magic value 1305747233177600, 
-//                            which should generate the value HEX(5894723F); 
-//                            byte order determines float Endianess (which 
-//                            may differ from integer Endianess!) This extra 
-//                            value is used to help tools on other platforms 
+//        float:value2 (16)   Writes float magic value 1305747233177600,
+//                            which should generate the value HEX(5894723F);
+//                            byte order determines float Endianess (which
+//                            may differ from integer Endianess!) This extra
+//                            value is used to help tools on other platforms
 //                            detect floating point format and Endianess.
 //
-//        float:filler (96)   Six 16 byte blocks with NUL bytes only. 
+//        float:filler (96)   Six 16 byte blocks with NUL bytes only.
 //                            Reserved for future use.
 //
-//        double:value1 (16)  Writes double magic value -2246777488905480, 
-//                            which should generate the value 
-//                            HEX(C31FEDBA98765420); byte order determines 
-//                            double Endianess (which may differ from 
+//        double:value1 (16)  Writes double magic value -2246777488905480,
+//                            which should generate the value
+//                            HEX(C31FEDBA98765420); byte order determines
+//                            double Endianess (which may differ from
 //                            integer Endianess!)
 //
-//        double:value2 (16)  Writes double magic value 282803858680781.90, 
-//                            which should generate the value 
-//                            HEX(42F01356789ABCDE); byte order determines 
-//                            double Endianess (which may differ from 
-//                            integer Endianess!) This extra value is used 
-//                            to help tools on other platforms detect 
+//        double:value2 (16)  Writes double magic value 282803858680781.90,
+//                            which should generate the value
+//                            HEX(42F01356789ABCDE); byte order determines
+//                            double Endianess (which may differ from
+//                            integer Endianess!) This extra value is used
+//                            to help tools on other platforms detect
 //                            doubleing point format and Endianess.
 //
-//        double:filler (96)  Six 16 byte blocks with NUL bytes only. 
+//        double:filler (96)  Six 16 byte blocks with NUL bytes only.
 //                            Reserved for future use.
 //
 //
 //
-//    Header II (6)           The character sequence 'CRM114', padded by NUL 
-//                            bytes. (This field can be used to make sure 
-//                            the header was constructed properly; if the 
-//                            '16-byte alignment for everything' assumption 
-//                            was broken on the originating system, the 
-//                            distance between this and the previous Header 
-//                            marker can be used to deduce the _actual_ 
+//    Header II (6)           The character sequence 'CRM114', padded by NUL
+//                            bytes. (This field can be used to make sure
+//                            the header was constructed properly; if the
+//                            '16-byte alignment for everything' assumption
+//                            was broken on the originating system, the
+//                            distance between this and the previous Header
+//                            marker can be used to deduce the _actual_
 //                            alignment.)
 //
-//    Host Type (32)          Host type as determined by the ./configure 
-//                            script. If unknown, use "???" or "unknown" 
+//    Host Type (32)          Host type as determined by the ./configure
+//                            script. If unknown, use "???" or "unknown"
 //                            instead.
 //
-//    Version (48)            A copy of the equivalent field in the first 
-//                            line of the human readable section, though 
-//                            THIS time it is NOT space-padded, but NUL(0) 
-//                            padded, while the last character always MUST 
-//                            be a NUL(0) to make sure this byte sequence 
-//                            can be processed like a regular 'C' string. An 
+//    Version (48)            A copy of the equivalent field in the first
+//                            line of the human readable section, though
+//                            THIS time it is NOT space-padded, but NUL(0)
+//                            padded, while the last character always MUST
+//                            be a NUL(0) to make sure this byte sequence
+//                            can be processed like a regular 'C' string. An
 //                            example:
 //
 //                              "20060611-SomewhatTamedBeast"
 //
-//                            Note that this field allows for a Version 
-//                            string of up to 47 characters (plus NUL 
+//                            Note that this field allows for a Version
+//                            string of up to 47 characters (plus NUL
 //                            sentinel).
 //
 //
-//    Platform specifics are next: each element, its width and sample field 
-//    content are listed in the table below. All fields are int32_t integer 
+//    Platform specifics are next: each element, its width and sample field
+//    content are listed in the table below. All fields are int32_t integer
 //    native format, unless otherwise specified.
 //
-//    WARNING: this means that cross-platform tools should *first* decode 
-//             the Endianess and alignment sections above, before attempting 
-//             to decode this data. We are aware this complicates the 
-//             decoder logic, but simplifies the writer. And since the 
-//             decoder must be able to cope with the alignment and Endianess 
-//             differences anyway (if the tool is to process the data stored 
-//             in this file), the decoder complexity does not change for the 
+//    WARNING: this means that cross-platform tools should *first* decode
+//             the Endianess and alignment sections above, before attempting
+//             to decode this data. We are aware this complicates the
+//             decoder logic, but simplifies the writer. And since the
+//             decoder must be able to cope with the alignment and Endianess
+//             differences anyway (if the tool is to process the data stored
+//             in this file), the decoder complexity does not change for the
 //             worse after all.
 //
 //    NOTE: Note that the '16 byte alignment' also applies for these fields!
 //
 //    Field           Width (bytes)     Example(s)
 //
-//    Format Version  4                 1 (initial header format version as 
+//    Format Version  4                 1 (initial header format version as
 //                                         described here)
 //
-//    (Endianess      0                 must be 'auto-detected' using the 
+//    (Endianess      0                 must be 'auto-detected' using the
 //                                      sections above
 //
 //    INT Word Size   4                 4 --> sizeof(int)
@@ -470,43 +471,43 @@
 //    LONG Size       4                 8 --> sizeof(long)
 //
 //    LONG LONG Size  4                 8 --> sizeof(long long)
-//                                      0 --> 'long long' is unknown type on 
+//                                      0 --> 'long long' is unknown type on
 //                                            this box
 //
 //    INT32 Size      4                 4 --> sizeof(int32_t)
 //
 //    INT64 Size      4                 8 --> sizeof(int64_t)
 //
-//    INT32 Alignment 0                 must be 'auto-detected' using the 
+//    INT32 Alignment 0                 must be 'auto-detected' using the
 //                                      sections above
 //
-//    INT64 Alignment 0                 must be 'auto-detected' using the 
+//    INT64 Alignment 0                 must be 'auto-detected' using the
 //                                      sections above
 //
 //    FLOAT Size      4                 4 --> sizeof(float)
 //
 //    DOUBLE Size     4                 8 --> sizeof(double)
 //
-//    (FLOAT/double IEEE Endianess 
-//                    0                 must be 'auto-detected' using the 
+//    (FLOAT/double IEEE Endianess
+//                    0                 must be 'auto-detected' using the
 //                                      sections above
 //
 //
-//    Next is the classifier (and its options) which was used to create this 
+//    Next is the classifier (and its options) which was used to create this
 //    file:
 //
-//    Classifier      8                 The binary equivalent of the 
-//                                      corresponding field in the first 
-//                                      line of the human readable section, 
-//                                      though THIS time it is encoded as a 
-//                                      64-bit bitfield. It will contain one 
-//                                      or more of the flags defined in 
+//    Classifier      8                 The binary equivalent of the
+//                                      corresponding field in the first
+//                                      line of the human readable section,
+//                                      though THIS time it is encoded as a
+//                                      64-bit bitfield. It will contain one
+//                                      or more of the flags defined in
 //                                      crm114_structs.h, e.g.
 //
 //                                        CRM_OSB_WINNOW
 //
 //    Classifier Arguments
-//                    512               This depends on the classifier and 
+//                    512               This depends on the classifier and
 //                                      platform: arbitrary content.
 //
 //
@@ -577,84 +578,84 @@ int is_crm_headered_file(FILE *f)
   return ret;
 }
 
-  
-  
+
+
 static const char *hrmsg =
-"                        Versioning\n"
-"                        ==========\n"
-"\n"
-"CRM114 files can be fitted with a header block, which should ideally\n"
-"be one (or more) mmap()ped pages so as not to influence mmap()\n"
-"performance in any way, while this header block can be used to store\n"
-"any version and platform related info useful to CRM114 users.\n"
-"\n"
-"These information particles can be used to:\n"
-"\n"
-"- detect / validate the proper use of various CRM file contents\n"
-"  (different classifiers)\n"
-"\n"
-"- detect if CRM114 is using a 'current version' of the data [format];\n"
-"  where applicable CRM114 can thus provide an upgrade path OR report\n"
-"  the impossibility of such (e.g. when the classifier has been removed\n"
-"  or changed in incompatible ways)\n"
-"\n"
-"- help tools to properly recognize and report on CRM114 data files\n"
-"\n"
-"- help tools to convert CRM114 files from other versions and/or\n"
-"  platforms (e.g. for automated upgrades and cross-platform\n"
-"  synchronization)\n"
-"\n"
-"\n"
-"Basic Design\n"
-"------------\n"
-"\n"
-"The Header Block is sized at precisely 8 KByte, which should be\n"
-"sufficient to store any machine- and human-readable info which should\n"
-"accompany the actual data stored in the CSS file proper.\n"
-"\n"
-"The Header Block size is set to 8KB because it is assumed that most\n"
-"(if not all) systems out there have a mmap() page size for which 8K\n"
-"will be an integer multiple >= 1. (See also the getpagesize() code in\n"
-"CRM114.)\n"
-"\n"
-"To facilitate both machines and humans perusing the file, the 8K\n"
-"header is split into two sections, each of size 4K: the Header block\n"
-"always starts with a 4K human readable ASCII text area, followed by 4K\n"
-"of machine-readable fields and byte sequences. The initial 'human\n"
-"readable text' section is also used to store some file type\n"
-"recognition data, which can be used by file type/MIME type detection\n"
-"tools (a bit similar to ZIP files which always start with the\n"
-"character sequence 'PK' for instance; for file to MIME type\n"
-"conversions using initial byte sequences see the UNIX man page\n"
-"mime.types(5) for example).\n"
-"\n"
-"Furthermore, the initial 4K section is constructed in such a way that\n"
-"the human readable text stored herein will be displayed on screen\n"
-"when:\n"
-"\n"
-"- the CRM file is e'x'ecutable on UNIX and 'run' as is: it will behave\n"
-"  like a very basic shell script.\n"
-"\n"
-"- the CRM file is fed to UNIX tools like 'head'\n"
-"\n"
-"- the CRM file is 'type'd on MSDOS or Windows compatible systems.\n"
-"\n"
-"We hope that the mechanism/structure used also works out favorably on\n"
-"non-UNIX MACintosh boxes and other platforms.\n"
-"\n"
-"The second 4K block is intended for machine-only use:\n"
-"\n"
-"- version, classifier and other info is stored here for tools to\n"
-"  detect and decide on upgrade/transformation paths available.\n"
-"\n"
-"- 'marker' sequences are stored by the originating platform to allow\n"
-"  tools able to copy/transform the data in a cross-platform/compiler\n"
-"  portable manner to detect relevant info such as integer/float size,\n"
-"  format, Endianess, etc.\n"
-"\n"
-"- additional statistics and or creation info may be stored in this\n"
-"  section to aid reporting and analysis tools\n"
-;  
+  "                        Versioning\n"
+  "                        ==========\n"
+  "\n"
+  "CRM114 files can be fitted with a header block, which should ideally\n"
+  "be one (or more) mmap()ped pages so as not to influence mmap()\n"
+  "performance in any way, while this header block can be used to store\n"
+  "any version and platform related info useful to CRM114 users.\n"
+  "\n"
+  "These information particles can be used to:\n"
+  "\n"
+  "- detect / validate the proper use of various CRM file contents\n"
+  "  (different classifiers)\n"
+  "\n"
+  "- detect if CRM114 is using a 'current version' of the data [format];\n"
+  "  where applicable CRM114 can thus provide an upgrade path OR report\n"
+  "  the impossibility of such (e.g. when the classifier has been removed\n"
+  "  or changed in incompatible ways)\n"
+  "\n"
+  "- help tools to properly recognize and report on CRM114 data files\n"
+  "\n"
+  "- help tools to convert CRM114 files from other versions and/or\n"
+  "  platforms (e.g. for automated upgrades and cross-platform\n"
+  "  synchronization)\n"
+  "\n"
+  "\n"
+  "Basic Design\n"
+  "------------\n"
+  "\n"
+  "The Header Block is sized at precisely 8 KByte, which should be\n"
+  "sufficient to store any machine- and human-readable info which should\n"
+  "accompany the actual data stored in the CSS file proper.\n"
+  "\n"
+  "The Header Block size is set to 8KB because it is assumed that most\n"
+  "(if not all) systems out there have a mmap() page size for which 8K\n"
+  "will be an integer multiple >= 1. (See also the getpagesize() code in\n"
+  "CRM114.)\n"
+  "\n"
+  "To facilitate both machines and humans perusing the file, the 8K\n"
+  "header is split into two sections, each of size 4K: the Header block\n"
+  "always starts with a 4K human readable ASCII text area, followed by 4K\n"
+  "of machine-readable fields and byte sequences. The initial 'human\n"
+  "readable text' section is also used to store some file type\n"
+  "recognition data, which can be used by file type/MIME type detection\n"
+  "tools (a bit similar to ZIP files which always start with the\n"
+  "character sequence 'PK' for instance; for file to MIME type\n"
+  "conversions using initial byte sequences see the UNIX man page\n"
+  "mime.types(5) for example).\n"
+  "\n"
+  "Furthermore, the initial 4K section is constructed in such a way that\n"
+  "the human readable text stored herein will be displayed on screen\n"
+  "when:\n"
+  "\n"
+  "- the CRM file is e'x'ecutable on UNIX and 'run' as is: it will behave\n"
+  "  like a very basic shell script.\n"
+  "\n"
+  "- the CRM file is fed to UNIX tools like 'head'\n"
+  "\n"
+  "- the CRM file is 'type'd on MSDOS or Windows compatible systems.\n"
+  "\n"
+  "We hope that the mechanism/structure used also works out favorably on\n"
+  "non-UNIX MACintosh boxes and other platforms.\n"
+  "\n"
+  "The second 4K block is intended for machine-only use:\n"
+  "\n"
+  "- version, classifier and other info is stored here for tools to\n"
+  "  detect and decide on upgrade/transformation paths available.\n"
+  "\n"
+  "- 'marker' sequences are stored by the originating platform to allow\n"
+  "  tools able to copy/transform the data in a cross-platform/compiler\n"
+  "  portable manner to detect relevant info such as integer/float size,\n"
+  "  format, Endianess, etc.\n"
+  "\n"
+  "- additional statistics and or creation info may be stored in this\n"
+  "  section to aid reporting and analysis tools\n"
+;
 
 
 /*
@@ -716,7 +717,7 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
   }
   else if (classifier_info->classifier_bits & CRM_OSBF)
   {
-    class_id = "OSBF-BAYES";
+    class_id = "OSBF";
   }
   else if (classifier_info->classifier_bits & CRM_ENTROPY)
   {
@@ -725,6 +726,10 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
   else if (classifier_info->classifier_bits & CRM_CORRELATE)
   {
     class_id = "CORRELATE";
+  }
+  else if (classifier_info->classifier_bits & CRM_OSB_BAYES)
+  {
+    class_id = "OSB-BAYES";
   }
 
   ret = fprintf(f, "%s%-10.10s:%-35.35s:%04d:%-20.20s:\ncat <<-EOF\n",
@@ -736,7 +741,7 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
   if (ret <= 0)
     return -1;
 
-  cnt += ret;               
+  cnt += ret;
   if (!human_readable_message)
     human_readable_message = hrmsg;
   if (human_readable_message)
@@ -888,6 +893,10 @@ int crm_correct_for_version_header(void **ptr, long *len)
   if (*ptr == MAP_FAILED)
     return -1;
 
+  /* very small file? which doesn't even have enough room for the header anyway? */
+  if (len && *len < CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH)
+    return 0;
+
   s = (char *)*ptr;
 
   ret = (0 == memcmp(CRM_PORTABILITY_HEADER_SEQUENCE, s, CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH));
@@ -896,7 +905,18 @@ int crm_correct_for_version_header(void **ptr, long *len)
 #if !defined (CRM_WITHOUT_VERSIONING_HEADER)
     s += CRM114_HEADERBLOCK_SIZE;
     if (len)
-      *len -= CRM114_HEADERBLOCK_SIZE;
+    {
+      if (*len < CRM114_HEADERBLOCK_SIZE)
+      {
+        fatalerror("The CRM114 'headered' CSS file is corrupt: file size is too small.",
+                   "Please recover a backup with a correct version/portability header or seek help.");
+        return -1;
+      }
+      else
+      {
+        *len -= CRM114_HEADERBLOCK_SIZE;
+      }
+    }
     *ptr = s;
 #else
     fatalerror("This CRM114 build cannot cope with the new 'headered' CSS file format.",

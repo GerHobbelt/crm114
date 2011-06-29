@@ -1,0 +1,131 @@
+VT 2007: Vector Tokenization
+============================
+
+(from email in CRM114 mailing list)
+
+
+
+Summary:
+
+Vector tokenization (VT) is a generalization of the MRF / OSB / OSBF system; 
+it lets you specifiy the way regexed tokens are to be combined into 
+features.  It lets you control how features are assembled without having to 
+hack the C code.  It's not a new idea (see "A Unified Approach to Spam 
+Filtration").
+
+By default, with VT you get the standard tokenization we've come to know and 
+love.  But you can switch tokenizations now independently of the classifier 
+algorithms, just like the /slashregex/ lets you specify tokenization on the 
+fly.
+
+The VT code auto-defaults depending on the classifer: if you don't specify 
+anything different, you get what you got before (modulo edge effects on how 
+the first and last few tokens in a text are treated).
+
+But it also means that any VTed classifier can use any other token patterns, 
+like
+
+    UNIGRAM   - one token equals one feature.
+    STRING    - four tokens in a row equals one feature, default
+                regex here is /./ (that is, one byte = one token)
+
+You can even specify (in the second slash parameter) the vectors that 
+translate token streams to feature streams.  You do this with the "vector:" 
+command in the second slash parameter of the classify.  
+
+Read on further if you want gory details.
+
+         - Bill Yerazunis
+
+
+
+    The Gory Details - Skip This if you Don't Care
+    ==============================================
+    
+
+The second-slash format for vector tokenization is
+ 
+    / vector: PipeLen PipeIters val1 val2 val3 val4 .... /
+
+"Pipelen" is an integer to specify how many tokens in a row might be 
+included in the token-to-feature translation.
+
+"PipeIters" is an integer to specify how many different such weightings are 
+in the vector.
+
+val1 through valN are the actual pipeline coding values.  One pipeline set 
+is PipeLen integers, and there need to be PipeIter such sets (if you don't 
+have enough, the missing ones are taken as zeroes, and if you have too many, 
+the excess ones are ignored). 
+
+It is suggested but not required that the pipe valN values be small odd 
+prime integers;
+
+   - a zero means "disregard this value in this iteration"
+
+   - a nonzero value means "use the token at this position in the pipeline
+
+   - a nonzero value that is unique in a vector: set means "don't equate a 
+     word at this position with the same word anywhere else in the pipeline"
+
+   - a nonzero value that is shared within a vector: set means "the same 
+     word in either position means the same thing; merge those to be the 
+     same output feature".
+
+Some examples (extra spaces are disregarded; I'm adding them to make it 
+visually more intuitive):
+
+  vector: 1   1   1
+
+means the pipeline is 1 regexed token long, there is only one feature to 
+generated from the pipeline position, and that feature is to be treated 
+uniquely (kinda redundant, I know).  This is what we would normally call a 
+UNIGRAM feature, as one regexed token becomes one feature.
+
+   ---
+
+Say we wanted word pairs (something you can't get in current CRM114 without 
+using preprocessing).  You could do that with:
+
+  vector: 2  1   1 2
+
+Here, the pipe is 2 tokens long, there is 1 feature per pipeline position, 
+and the one output feature is to take pipe position 1 and pipe position 2 
+independently (that is, if the word pairs are in a different order, then 
+it's a different feature.
+
+    ---
+
+Now, let's try sharing word positions.  Here's word pairs where order is 
+disregarded; "foo bar" is the same feature as "bar foo":
+
+  vector: 2  1   1 1
+
+(that is, a 2-long pipe, 1 feature generated from each pipeline position, 
+both positions count, and the position values are not differentiated.
+
+   ---
+
+Here's one for the first two terms of sparse bigrams:
+
+  vector: 3  2    1 2 0   1 0 3
+
+This makes a 3 token long pipeline; there are two features to be generated 
+at each pipeline position.  The first feature (the "1 2 0") uses position 1 
+and position 2 (and keeps them discriminated; switching 1 and 2 around gives 
+a different feature).  The second feature (the "1 0 3") uses only position 1 
+and 3 of the pipeline in that order, and disregards position 2.
+
+   ---
+
+Now try this: 
+ 
+  vector: 3   2   1 2 0   1 0 2 
+
+This means the pipeline is three tokens long; there are two feature 
+vectorsets following; the first feature output is token 1 in the first place 
+and token 2 in the second and disregard token 3.  The second feature will 
+have token 1 in the first place, token three in the second place, and will 
+disregard token 2.  Note that this means that the same word appearing in 
+position 2 of the pipeline or position 3 of the pipeline WILL GENERATE THE 
+SAME FEATURE.

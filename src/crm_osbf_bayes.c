@@ -499,6 +499,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //
       th = 0;
       //
+      CRM_ASSERT(2 * OSB_BAYES_WINDOW_LEN <= WIDTHOF(hctable));
       for (j = 1; j < OSB_BAYES_WINDOW_LEN; j++)
       {
         h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];

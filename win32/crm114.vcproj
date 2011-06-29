@@ -567,6 +567,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\docs\VT_generic_Vector_Tokenization.txt"
+				>
+			</File>
+			<File
 				RelativePath="..\docs\winnow-spam.pdf"
 				>
 			</File>
@@ -834,6 +838,22 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\mailfilter.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\src\maillib.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\src\mailreaver.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\src\mailtrainer.crm"
+					>
+				</File>
+				<File
 					RelativePath="..\src\Makefile.am"
 					>
 				</File>
@@ -1009,22 +1029,6 @@
 			</File>
 			<File
 				RelativePath="..\src\mac_crbugtest.crm"
-				>
-			</File>
-			<File
-				RelativePath="..\src\mailfilter.crm"
-				>
-			</File>
-			<File
-				RelativePath="..\src\maillib.crm"
-				>
-			</File>
-			<File
-				RelativePath="..\src\mailreaver.crm"
-				>
-			</File>
-			<File
-				RelativePath="..\src\mailtrainer.crm"
 				>
 			</File>
 			<File

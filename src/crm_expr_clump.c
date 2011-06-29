@@ -1021,7 +1021,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   regmatch_t matchee[2];
 
   long i, j, k, l;
-
+  
   char *txtptr;
   long txtstart;
   long txtlen;

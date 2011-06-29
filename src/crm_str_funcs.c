@@ -1431,51 +1431,53 @@ int hash_selftest(void)
 //     hashing individual whitespace-delimited tokens, on a Transmeta
 //     666 MHz.
 
-/*****    OLD VERSION NOT 64-BIT PORTABLE DON'T USE ME *********
- * long strnhash (char *str, long len)
- * {
- * long i;
- * long hval;
- * char *hstr;
- * char chtmp;
- *
- * // initialize hval
- * hval= len;
- *
- * hstr = (char *) &hval;
- *
- * //  for each character in the incoming text:
- *
- * for ( i = 0; i < len; i++)
- *  {
- *    //    xor in the current byte against each byte of hval
- *    //    (which alone gaurantees that every bit of input will have
- *    //    an effect on the output)
- *    //hstr[0] = (hstr[0] & ( ~ str[i] ) ) | ((~ hstr [0]) & str[i]);
- *    //hstr[1] = (hstr[1] & ( ~ str[i] ) ) | ((~ hstr [1]) & str[i]);
- *    //hstr[2] = (hstr[2] & ( ~ str[i] ) ) | ((~ hstr [2]) & str[i]);
- *    //hstr[3] = (hstr[3] & ( ~ str[i] ) ) | ((~ hstr [3]) & str[i]);
- *
- *    hstr[0] ^= str[i];
- *    hstr[1] ^= str[i];
- *    hstr[2] ^= str[i];
- *    hstr[3] ^= str[i];
- *
- *    //    add some bits out of the middle as low order bits.
- *    hval = hval + (( hval >> 12) & 0x0000ffff) ;
- *
- *    //     swap bytes 0 with 3
- *    chtmp = hstr [0];
- *    hstr[0] = hstr[3];
- *    hstr [3] = chtmp;
- *
- *    //    rotate hval 3 bits to the left (thereby making the
- *    //    3rd msb of the above mess the hsb of the output hash)
- *    hval = (hval << 3 ) + (hval >> 29);
- *  }
- * return (hval);
- * }
- ****/
+/*****    OLD VERSION NOT 64-BIT PORTABLE DON'T USE ME *********/
+#if 0
+long strnhash (char *str, long len)
+{
+  long i;
+  long hval;
+  char *hstr;
+  char chtmp;
+
+  // initialize hval
+  hval= len;
+
+  hstr = (char *) &hval;
+
+  //  for each character in the incoming text:
+
+  for ( i = 0; i < len; i++)
+    {
+      //    xor in the current byte against each byte of hval
+      //    (which alone gaurantees that every bit of input will have
+      //    an effect on the output)
+      //hstr[0] = (hstr[0] & ( ~ str[i] ) ) | ((~ hstr [0]) & str[i]);
+      //hstr[1] = (hstr[1] & ( ~ str[i] ) ) | ((~ hstr [1]) & str[i]);
+      //hstr[2] = (hstr[2] & ( ~ str[i] ) ) | ((~ hstr [2]) & str[i]);
+      //hstr[3] = (hstr[3] & ( ~ str[i] ) ) | ((~ hstr [3]) & str[i]);
+
+      hstr[0] ^= str[i];
+      hstr[1] ^= str[i];
+      hstr[2] ^= str[i];
+      hstr[3] ^= str[i];
+
+      //    add some bits out of the middle as low order bits.
+      hval = hval + (( hval >> 12) & 0x0000ffff) ;
+		     
+      //     swap bytes 0 with 3 
+      chtmp = hstr [0];
+      hstr[0] = hstr[3];
+      hstr [3] = chtmp;
+
+      //    rotate hval 3 bits to the left (thereby making the
+      //    3rd msb of the above mess the hsb of the output hash)
+      hval = (hval << 3 ) + (hval >> 29);
+    }
+  return (hval);
+}
+#endif
+/****/
 
 // This is a more portable hash function, compatible with the original.
 // It should return the same value both on 32 and 64 bit architectures.
@@ -2085,6 +2087,13 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
                         start,
                         filename);
   }
+  if (requested_len <= 0)
+  {
+    untrappableerror_ex(SRC_LOC(),
+                        "The system cannot memory map (mmap) an empty "
+						"file.   Tough luck for file '%s'.",
+                        filename);
+  }
 
   //    Search for the file - if it's already mmaped, just return it.
   for (p = cache; p != NULL; p = p->next)
@@ -2098,7 +2107,7 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
       // check the mtime; if this differs between cache and stat
       // val, then someone outside our process has played with the
       // file and we need to unmap it and remap it again.
-      struct stat statbuf;
+	  struct stat statbuf = {0};
       int k = stat(filename, &statbuf);
       if (k != 0 || p->modification_time_hash != calc_file_mtime_hash(&statbuf, filename))
       {
@@ -2205,7 +2214,21 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
     return MAP_FAILED;
   }
 
+  p->user_addr = p->addr;
+  p->user_actual_len = p->actual_len;
+  if (crm_correct_for_version_header(&p->user_addr, &p->user_actual_len) < 0)
+  {
+    munmap(p->addr, p->actual_len);
+    close(p->fd);
+    free(p->name);
+    free(p);
+    if (actual_len)
+      *actual_len = 0;
+    return MAP_FAILED;
+  }
+
 #elif defined (WIN32)
+
   if (p->mode & MAP_PRIVATE)
   {
     open_flags = GENERIC_READ;
@@ -2301,6 +2324,20 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
     for (i = 0; i < p->actual_len; i += pagesize)
       one_byte = addr[i];
   }
+
+  p->user_addr = p->addr;
+  p->user_actual_len = p->actual_len;
+  if (crm_correct_for_version_header(&p->user_addr, &p->user_actual_len) < 0)
+  {
+    FlushViewOfFile(p->addr, 0);
+    UnmapViewOfFile(p->addr);
+    CloseHandle(p->mapping);
+    CloseHandle(p->fd);
+    free(p->name);
+    free(p);
+    return MAP_FAILED;
+  }
+
 #else
 #error "please provide a mmap() equivalent"
 #endif
@@ -2315,10 +2352,6 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
     cache->prev = p;
   }
   cache = p;
-
-  p->user_addr = p->addr;
-  p->user_actual_len = p->actual_len;
-  crm_correct_for_version_header(&p->user_addr, &p->user_actual_len);
 
   //   If the caller asked for the length to be passed back, pass it.
   if (actual_len)

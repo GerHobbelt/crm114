@@ -9,6 +9,9 @@
 
 AUTOMAKE_OPTIONS = check-news
 
+# used for configuring ./bootstrap // autoreconf:
+ACLOCAL_FLAGS=-I m4
+
 
 PACKAGE = @PACKAGE_TARNAME@
 TAR_FILENAME_POSTFIX = @TAR_FILENAME_POSTFIX@
@@ -112,5 +115,9 @@ depend:
 megatest:
 	$(SILENT) echo "Running the regression test:"; 
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) megatest);
+
+test:
+	$(SILENT) echo "Running the complete test set (this may take a LONG time):"; 
+	(cd src && $(MAKE) $(AM_MAKEFLAGS) test);
 
 

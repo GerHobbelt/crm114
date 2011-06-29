@@ -2,7 +2,16 @@ CRM114 NEWS - user visible changes (and some other changes also.)
 Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
-  
+
+Version 20071201-BlameLittleStevie_VT  
+
+* Added VT (Vector Tokenization) to the Hyperspace classifier. The others
+  will follow its lead in this.
+
+* Fixed Makefile.am so standard ./bootstrap script works as expected.
+
+* KNOWN BUG for clump/pmulc still applies! :-(
+
   
 Version 20071015-BlameGerHobbelt
 

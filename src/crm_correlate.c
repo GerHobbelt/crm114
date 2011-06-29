@@ -555,6 +555,10 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (succhash == 0)
     succhash = maxhash;
 
+  //    a CLASSIFY with no arguments is always a "success".
+  if (maxhash == 0)
+    return (0);
+
   //    now, set up the normalization factor fcount[]
   if (user_trace)
     fprintf(stderr, "Running with %d files for success out of %d files\n",
@@ -567,10 +571,6 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   {
     nonfatalerror("Couldn't open at least 1 .css files for classify().", "");
   }
-
-  //    a CLASSIFY with no arguments is always a "success".
-  if (maxhash == 0)
-    return 0;
 
   //    do we have at least 1 valid .css file at both sides of '|'?
   if (!vbar_seen || succhash < 0 || (maxhash <= succhash))
@@ -782,7 +782,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //      Do the calculations and format some output, which we may or may
   //      not use... but we need the calculated result anyway.
   //
-  if (1)
+  if (1 /* svlen > 0 */ )
   {
     char buf[1024];
     double accumulator;

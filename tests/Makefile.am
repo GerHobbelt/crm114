@@ -86,5 +86,30 @@ megatest: $(test_SCRIPTS) megatest_knowngood.log megatest.sh
 	$(diff) -ubwBd megatest_knowngood.log megatest_test.log & sleep 1
 
 
-.PHONY: 
+
+test: test_basics test_other test_megatest test_mailfilter test_mailreaver
+
+
+# series of basic regression tests for CRM114:
+test_basics:
+
+
+# test more complex CRM scripts in ../src
+test_other:
+
+
+# run the BillY regression test script
+test_megatest:
+
+
+# test the mailfilter script
+test_mailfilter:
+
+
+# test the mailreaver script
+test_mailreaver:
+
+
+
+.PHONY: test test_basics test_other test_megatest test_mailfilter test_mailreaver megatest
 

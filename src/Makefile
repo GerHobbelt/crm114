@@ -228,7 +228,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2007-11-03
+ISODATE = 2008-01-27
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -242,9 +242,9 @@ OBJEXT = o
 PACKAGE = crm114
 PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
 PACKAGE_NAME = CRM114
-PACKAGE_STRING = CRM114 20071015-BlameGerHobbelt
+PACKAGE_STRING = CRM114 20071201-BlameLittleStevie_VT
 PACKAGE_TARNAME = crm114
-PACKAGE_VERSION = 20071015-BlameGerHobbelt
+PACKAGE_VERSION = 20071201-BlameLittleStevie_VT
 PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
@@ -277,7 +277,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-806
+TAR_FILENAME_POSTFIX = Ger-1483
 TRE_CONFIG = no
 
 #
@@ -288,7 +288,7 @@ TRE_CONFIG = no
 #     What version is this software (PLEASE don't change this just 
 #     to mess with my brain. - wsy)
 #
-VERSION = 20071015-BlameGerHobbelt
+VERSION = 20071201-BlameLittleStevie_VT
 
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.

@@ -356,7 +356,7 @@ long crm_zexpandvar(char *buf,
   if (cp == NULL)
   {
     if (internal_trace)
-      fprintf(stderr, "No further expansions possible");
+      fprintf(stderr, "No further expansions possible\n");
     return inlen;
   }
 

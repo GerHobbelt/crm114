@@ -11,7 +11,7 @@
 
 
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT(CRM114, 20071015-BlameGerHobbelt, crm114-general@lists.sourceforge.net)
+AC_INIT(CRM114, 20071201-BlameLittleStevie_VT, crm114-general@lists.sourceforge.net)
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR(m4)

@@ -25,7 +25,9 @@ doc_DATA = classify_details.txt \
  QUICKREF.txt \
  reto_procmail_recipe.recipe \
  things_to_do.txt \
- README
+ README \
+ VT_generic_Vector_Tokenization.txt
+ 
 
 EXTRA_DIST = $(doc_DATA)
 

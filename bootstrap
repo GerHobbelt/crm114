@@ -99,7 +99,7 @@ fi
 ##    && autoconf
 
 echo "Running autoreconf..."
-autoreconf --install --symlink
+autoreconf --install --symlink -I m4    
 
 echo "You can now run \"./configure && make distcheck\"."
 

@@ -700,7 +700,13 @@ static inline int crm_isxdigit(unsigned char c)
 
 
 #if !defined (HAVE_LOGL) && defined (HAVE_LOG)
-#define logl(val)       log(val)
+#define crm_logl(val)       log(val)
+#else
+#if defined (HAVE_LOGL) 
+#define crm_logl(val)       logl(val)
+#else
+#error define/find a suitable high precision log10 function for your system
+#endif
 #endif
 
 #if !defined (HAVE_LOG2) && defined (HAVE_LOG)

@@ -16,7 +16,7 @@
 #
 # COPYLEFT
 #
-#   Copyright (c) 2002 Rüdiger Kuhlmann <info@ruediger-kuhlmann.de>
+#   Copyright (c) 2002 Rï¿½diger Kuhlmann <info@ruediger-kuhlmann.de>
 #
 #   Copying and distribution of this file, with or without
 #   modification, are permitted in any medium without royalty provided
@@ -28,6 +28,8 @@ AC_MSG_CHECKING(for working memmove)
 AC_CACHE_VAL(ac_cv_have_working_memmove,
 [AC_TRY_RUN(
 [#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int main(void)
 {

@@ -354,6 +354,19 @@ EOF
 
 rm -f i_test.css 
 rm -f q_test.css
+./crm114 '-{window; output /\n**** OSB three-letter Hyperspace classifier \n/}'
+./crm114 '-{learn <hyperspace unique> (q_test.css) /.../}' < QUICKREF.txt
+./crm114 '-{learn <hyperspace unique> (i_test.css) /.../}' < INTRO.txt
+./crm114 '-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:) /.../ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+to do basic mathematics and inequality testing, either only in EVALs
+EOF
+./crm114 '-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:) /.../ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+But fear not, we _do_ have the document you want. 
+EOF
+
+
+rm -f i_test.css 
+rm -f q_test.css
 ./crm114 '-{window; output /\n**** Unigram Hyperspace classifier \n/}'
 ./crm114 '-{learn < hyperspace unique unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
 ./crm114 '-{learn < hyperspace unique unigram> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
@@ -361,6 +374,46 @@ rm -f q_test.css
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
 ./crm114 '-{ isolate (:s:); {classify <hyperspace unigram> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+But fear not, we _do_ have the document you want. 
+EOF
+
+rm -f i_test.css 
+rm -f q_test.css
+./crm114 '-{window; output /\n**** String Hyperspace classifier \n/}'
+./crm114 '-{learn < hyperspace string> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
+./crm114 '-{learn < hyperspace string> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{ isolate (:s:); {classify < hyperspace string> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+to do basic mathematics and inequality testing, either only in EVALs
+EOF
+./crm114 '-{ isolate (:s:); {classify <hyperspace string> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+But fear not, we _do_ have the document you want. 
+EOF
+
+rm -f i_test.css 
+rm -f q_test.css
+./crm114 '-{window; output /\n**** String Unigram Hyperspace classifier \n/}'
+./crm114 '-{learn < hyperspace string unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
+./crm114 '-{learn < hyperspace string unigram> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{ isolate (:s:); {classify < hyperspace string unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+to do basic mathematics and inequality testing, either only in EVALs
+EOF
+./crm114 '-{ isolate (:s:); {classify <hyperspace string unigram> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+But fear not, we _do_ have the document you want. 
+EOF
+
+rm -f i_test.css 
+rm -f q_test.css
+./crm114 '-{window; output /\n**** Vector 3-word-bag Hyperspace classifier \n/}'
+#    the "vector: blahblah" is coded by the desired length of the pipeline,
+#    then the number of iterations of the pipe, then pipelen * iters 
+#    integer coefficients.  Missing coefficients are taken as zero, 
+#    extra coefficients are disregarded.
+./crm114 '-{learn < hyperspace > (q_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 / }' < QUICKREF.txt
+./crm114 '-{learn < hyperspace > (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1/}' < INTRO.txt
+./crm114 '-{ isolate (:s:); {classify < hyperspace > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ /vector: 3 1 1 1 1  /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+to do basic mathematics and inequality testing, either only in EVALs
+EOF
+./crm114 '-{ isolate (:s:); {classify <hyperspace > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ /vector: 3 1 1 1 1 /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
 But fear not, we _do_ have the document you want. 
 EOF
 

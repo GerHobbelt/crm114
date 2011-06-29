@@ -300,7 +300,9 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       {
         hashes[h1].hash = hcode;
         hashes[h1].key = 0;
-        hashes[h1].value = 1;
+	// [i_a] make sure init is correct, even when we start by learning 
+        //       in 'refute' mode without learning that sample before!
+        hashes[h1].value = ((apb->sflags & CRM_REFUTE) ? /* -1 */ 0 : sense);
         learns_index = h1;
       }
       else
@@ -344,7 +346,9 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       {
         hashes[h1].hash = hcode;
         hashes[h1].key = 0;
-        hashes[h1].value = 1;
+	// [i_a] make sure init is correct, even when we start by learning 
+        //       in 'refute' mode without learning that sample before!
+        hashes[h1].value = ((apb->sflags & CRM_REFUTE) ? /* -1 */ 0 : sense);
         features_index = h1;
       }
       else
@@ -360,6 +364,18 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //   the learncount matched.
       {
         features_index = h1;
+        /* [i_a] added this code below: update learncount here too! */
+        if (sense > 0)
+        {
+          hashes[h1].value += sense;
+        }
+        else
+        {
+          if (hashes[h1].value + sense > 0)
+            hashes[h1].value += sense;
+          else
+            hashes[h1].value = 0;
+        }
         if (user_trace)
         {
           fprintf(stderr, "This file has had %lu features learned!\n",
@@ -676,6 +692,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //     first term (0th) is always on
         h1 = hashpipe[0] * hctable[0];
         //     2nd and onward terms are variable.
+        ASSERT(2 * MARKOVIAN_WINDOW_LEN <= WIDTHOF(hctable));
         for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
         {
           h1 += hashpipe[h] * hctable[h * 2] * ((j >> (h - 1)) & 0x0001);
@@ -913,9 +930,11 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long thistotal;
   long feature_weight = 1;
 
+#if 0 /* [i_a] unused */
   double top10scores[10];
   long top10polys[10];
   char top10texts[10][MAX_PATTERN];
+#endif
 
   //    for UNIQUE runs
   long unique_mode = 0;
@@ -1033,12 +1052,15 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     pltc[i] = 0.5;          // local probability
   }
 
+#if 0 /* [i_a] unused */
   for (i = 0; i < 10; i++)
   {
     top10scores[i] = 0;
     top10polys[i] = 0;
     strcpy(top10texts[i], "");
   }
+#endif
+
   //        --  probabilistic evaluator ---
   //     S = success; A = a testable attribute of success
   //     ns = not success, na = not attribute
@@ -1084,7 +1106,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     somewhat ad-hoc interpretation that it is unreasonable to
   //     assume that any finite number of samples can appropriately
   //     represent an infinite continuum of spewage, so we can bound
-  //     the certainty of any meausre to be in the range:
+  //     the certainty of any measure to be in the range:
   //
   //        limit: [ 1/featurecount+2 , 1 - 1/featurecount+2].
   //
@@ -1260,7 +1282,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         seen_features[ifile] = calloc(hashlens[ifile] + 1, sizeof(seen_features[ifile][0]));
         if (seen_features[ifile] == NULL)
           untrappableerror(" Couldn't allocate enough memory to keep "
-                           " track of nonuniuqe features.  ",
+                           " track of nonunique features.  ",
                            "This is deadly. ");
       }
       else
@@ -2148,7 +2170,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //      Do the calculations and format some output, which we may or may
     //      not use... but we need the calculated result anyway.
     //
-    if (1)
+  if (1 /* svlen > 0 */ )
     {
       char buf[1024];
       double accumulator;

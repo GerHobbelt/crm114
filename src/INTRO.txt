@@ -169,7 +169,7 @@ statements that it does cover.  The QUICKREF quick reference card
 makes a much better attempt at covering every capability, at the
 expense of a terse format.
 
-If you want the big manual, we have that too- it's on the web page
+If you want the big manual, we have that too - it's on the web page
 (but not part of this download; it's big).
 
 And again, CRM114 is GPLed software and a community effort - if you 
@@ -287,7 +287,7 @@ which accepts an arbitrary input (just hit ^D for now), then outputs
 	Hello, world!
 
 
-Some mechanics- assuming you you want to run these programs as
+Some mechanics - assuming you want to run these programs as
 standalones, make sure the first line of your program is a line that
 looks like this:
 
