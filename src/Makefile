@@ -89,37 +89,37 @@ am__objects_1 = crm_compiler.$(OBJEXT) crm_errorhandlers.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
 	crm_versioning.$(OBJEXT)
 am__objects_2 =
-am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) \
+am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) $(am__objects_2) \
 	crm_main.$(OBJEXT)
 crm114_OBJECTS = $(am_crm114_OBJECTS)
 crm114_LDADD = $(LDADD)
 am_cssdiff_OBJECTS = cssdiff.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	crm_versioning.$(OBJEXT) $(am__objects_2)
+	crm_versioning.$(OBJEXT) $(am__objects_2) $(am__objects_2)
 cssdiff_OBJECTS = $(am_cssdiff_OBJECTS)
 cssdiff_LDADD = $(LDADD)
 am_cssmerge_OBJECTS = cssmerge.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	crm_versioning.$(OBJEXT) $(am__objects_2)
+	crm_versioning.$(OBJEXT) $(am__objects_2) $(am__objects_2)
 cssmerge_OBJECTS = $(am_cssmerge_OBJECTS)
 cssmerge_LDADD = $(LDADD)
 am_cssutil_OBJECTS = cssutil.$(OBJEXT) crm_css_maintenance.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	crm_versioning.$(OBJEXT) $(am__objects_2)
+	crm_versioning.$(OBJEXT) $(am__objects_2) $(am__objects_2)
 cssutil_OBJECTS = $(am_cssutil_OBJECTS)
 cssutil_LDADD = $(LDADD)
 am_osbf_util_OBJECTS = osbf-util.$(OBJEXT) \
 	crm_osbf_maintenance.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	crm_versioning.$(OBJEXT) $(am__objects_2)
+	crm_versioning.$(OBJEXT) $(am__objects_2) $(am__objects_2)
 osbf_util_OBJECTS = $(am_osbf_util_OBJECTS)
 osbf_util_LDADD = $(LDADD)
 am_testvectok_OBJECTS = $(am__objects_1) $(am__objects_2) \
-	testvectok.$(OBJEXT)
+	$(am__objects_2) testvectok.$(OBJEXT)
 testvectok_OBJECTS = $(am_testvectok_OBJECTS)
 testvectok_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
@@ -233,7 +233,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2008-01-28
+ISODATE = 2008-01-30
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -282,7 +282,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-1495
+TAR_FILENAME_POSTFIX = Ger-1509
 TRE_CONFIG = no
 
 #
@@ -390,10 +390,11 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c
 
-HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
+HFILES = crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h crm_expr_clump_nn.h config.h \
 	config_BillY.h crm_mjt_qsort.h
 
+EXTRA_DEPS = Makefile
 OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
 	crm_stmt_parser.o crm_vector_tokenize.o \
@@ -460,28 +461,28 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(CRMFILES) \
 	$(TEXTFILES)
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
+crm114_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) crm_main.c
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 osbf_util_SOURCES = osbf-util.c \
 	crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 cssdiff_SOURCES = cssdiff.c \
 	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 cssmerge_SOURCES = cssmerge.c \
 	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
-testvectok_SOURCES = $(CFILES) $(HFILES) testvectok.c
+testvectok_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) testvectok.c
 .SUFFIXES = .c .o
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -874,154 +875,154 @@ crm114: $(OFILES) crmregex_tre.o crm_main.o
 #
 
 crm_main.o: crm_main.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_compiler.o: crm_compiler.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_errorhandlers.o: crm_errorhandlers.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_exec_engine.o: crm_exec_engine.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_preprocessor.o: crm_preprocessor.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_var_hash_table.o: crm_var_hash_table.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_math_exec.o: crm_math_exec.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expandvar.o: crm_expandvar.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_stmt_parser.o: crm_stmt_parser.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_alter.o: crm_expr_alter.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_match.o: crm_expr_match.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_file_io.o: crm_expr_file_io.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_syscall.o: crm_expr_syscall.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_classify.o: crm_expr_classify.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_clump_nn.o: crm_expr_clump_nn.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_translate.o: crm_expr_translate.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_window.o: crm_expr_window.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_isolate.o: crm_expr_isolate.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_css_maintenance.o: crm_css_maintenance.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_winnow_maintenance.o: crm_winnow_maintenance.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_osbf_maintenance.o: crm_osbf_maintenance.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_markovian.o: crm_markovian.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_osb_bayes.o: crm_osb_bayes.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_osbf_bayes.o: crm_osbf_bayes.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_osb_hyperspace.o: crm_osb_hyperspace.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_strcompress.o: crm_strcompress.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_sks.o: crm_expr_sks.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_svm.o: crm_expr_svm.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_fscm.o: crm_expr_fscm.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_expr_clump.o: crm_expr_clump.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_stats.o: crm_stats.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_neural_net.o: crm_neural_net.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 #crm_osb_neural.o: crm_osb_neural.c \
-#	$(HFILES)
+#	$(HFILES) $(EXTRA_DEPS)
 
 crm_bit_entropy.o: crm_bit_entropy.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_osb_winnow.o: crm_osb_winnow.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_correlate.o: crm_correlate.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_debugger.o: crm_debugger.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_str_funcs.o: crm_str_funcs.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_vector_tokenize.o: crm_vector_tokenize.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crmregex_tre.o: crmregex_tre.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crmregex_gnu.o: crmregex_gnu.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_util_errorhandlers.o: crm_util_errorhandlers.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 cssutil.o: cssutil.c  \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 osbf-util.o: osbf-util.c  \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 cssdiff.o: cssdiff.c  \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 cssmerge.o: cssmerge.c  \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 testvectok.o: testvectok.c  \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_generic_port.o: crm_generic_port.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_stdio_port.o: crm_stdio_port.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 crm_versioning.o: crm_versioning.c \
-	$(HFILES)
+	$(HFILES) $(EXTRA_DEPS)
 
 cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
@@ -1332,7 +1333,7 @@ dist-diff: diff
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
 # indent -bad -bap -bl -bli0 -bls -cbi4 -cdw -cli0 -di8 -hnl -i4 -l80 -lp -nbc -nce -ncs -npcs -nprs -npsl -nsaf -nsai -nsaw -nsob -nut -pi4 -sc -ss -T index_t -T hitcount_t -T regex_t -T regmatch_t -T regamatch_t -T regaparams_t -T Qitem_t -T regoff_t -T tre_char_t -T COOCCURRENCE_SCORE_TYPE *.c *.h
 reindent: indent.sh
-	-( sh ./indent.sh )
+	-( sh ./indent.sh $(CFILES) $(HFILES) )
 
 .c.o:
 	$(COMPILE) -c $< -o $@

@@ -25,6 +25,9 @@
 /* do not include the Markov classifier in the build */
 /* #undef CRM_WITHOUT_MARKOV */
 
+/* do not use the custom inline qsort by Michael Tokarev */
+/* #undef CRM_WITHOUT_MJT_INLINED_QSORT */
+
 /* do not include the Neural-Net classifier in the build */
 /* #undef CRM_WITHOUT_NEURAL_NET */
 
@@ -208,6 +211,9 @@
 /* compiler understands long long */
 #define HAVE_LONG_LONG 1
 
+/* Define to 1 if you have the `madvise' function. */
+#undef HAVE_MADVISE 
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
  * to 0 otherwise. */
 #define HAVE_MALLOC 1
@@ -265,6 +271,9 @@
 
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
+
+/* Define to 1 if you have the `posix_madvise' function. */
+#undef HAVE_POSIX_MADVISE 
 
 /* POSIX REs */
 /* #undef HAVE_POSIX_REGEX */

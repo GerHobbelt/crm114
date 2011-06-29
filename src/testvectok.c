@@ -127,58 +127,57 @@ char *tempbuf = NULL;
 // from crm_vector_tokenize.c
 int main(void)
 {
-  char input[1024];
-  int i, j;
-  int ret;
-  int k;
-  crmhash_t feavec[2048];
+    char input[1024];
+    int i, j;
+    int ret;
+    int k;
+    crmhash_t feavec[2048];
 
-  char my_regex[256];
+    char my_regex[256];
 
-  static const crmhash_t coeff[] =
-  {
-    1, 3, 0, 0, 0,
-    1, 0, 5, 0, 0,
-    1, 0, 0, 11, 0,
-    1, 0, 0, 0, 23
-  };
+    static const crmhash_t coeff[] =
+    {
+        1, 3, 0, 0, 0
+        , 1, 0, 5, 0, 0
+        , 1, 0, 0, 11, 0
+        , 1, 0, 0, 0, 23
+    };
 
-          stdout = os_stdout();
-          stderr = os_stderr();
-          stdin = os_stdin();
+    stdout = os_stdout();
+    stderr = os_stderr();
+    stdin = os_stdin();
 
-  strcpy(my_regex, "[[:alpha:]]+");
-  fprintf(stdout, "Enter a test string: ");
-  fgets(input, sizeof(input), stdin);
-  input[sizeof(input) - 1] = 0;
-  fprintf(stdout, "Input = '%s'\n", input);
-  // fscanf(stdin, "%1023s", input);
-  // fprintf(stdout, "Input = '%s'\n", input);
+    strcpy(my_regex, "[[:alpha:]]+");
+    fprintf(stdout, "Enter a test string: ");
+    fgets(input, sizeof(input), stdin);
+    input[sizeof(input) - 1] = 0;
+    fprintf(stdout, "Input = '%s'\n", input);
+    // fscanf(stdin, "%1023s", input);
+    // fprintf(stdout, "Input = '%s'\n", input);
 
-  ret = crm_vector_tokenize(
-    input,
-    strlen(input),
-    0,
-    my_regex,
-    strlen(my_regex),
-    coeff,
-    5,
-    4,
-    feavec,
-    2048,
-    1,
-    &j,
-    &i);
+    ret = crm_vector_tokenize(
+            input
+                             , strlen(input)
+                             , 0
+                             , my_regex
+                             , strlen(my_regex)
+                             , coeff
+                             , 5
+                             , 4
+                             , feavec
+                             , 2048
+                             , 1
+                             , &j
+                             , &i);
 
-  for (k = 0; k < j; k++)
-  {
-    fprintf(stdout, "feature[%4d] = %12ld (%08lX)\n", k, (long)feavec[k], (long)feavec[k]);
-   }
+    for (k = 0; k < j; k++)
+    {
+        fprintf(stdout, "feature[%4d] = %12ld (%08lX)\n", k, (long)feavec[k], (long)feavec[k]);
+    }
 
-  fprintf(stdout, "... and next_offset is %d\n", i);
-  return (ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+    fprintf(stdout, "... and next_offset is %d\n", i);
+    return ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
 
 
 
@@ -191,39 +190,40 @@ int main(void)
 
 void free_stack_item(CSL_CELL *csl)
 {
-  if (!csl)
-    return;
+    if (!csl)
+        return;
 
-  if (csl->mct && csl->mct_allocated)
-  {
-    int i;
-
-    for (i = 0; i < csl->mct_size; i++)
+    if (csl->mct && csl->mct_allocated)
     {
-      MCT_CELL *cp = csl->mct[i];
+        int i;
 
-      if (cp != NULL)
-      {
-        free(cp->apb);
-        cp->apb = NULL;
-        // free(cp->hosttxt);
-        free(cp);
-        csl->mct[i] = NULL;
-      }
+        for (i = 0; i < csl->mct_size; i++)
+        {
+            MCT_CELL *cp = csl->mct[i];
+
+            if (cp != NULL)
+            {
+                free(cp->apb);
+                cp->apb = NULL;
+                // free(cp->hosttxt);
+                free(cp);
+                csl->mct[i] = NULL;
+            }
+        }
+        free(csl->mct);
+        csl->mct = NULL;
     }
-    free(csl->mct);
-    csl->mct = NULL;
-  }
 
-  if (csl->filename_allocated)
-  {
-    free(csl->filename);
-  }
-  csl->filename = NULL;
-  if (csl->filetext_allocated)
-  {
-    free(csl->filetext);
-  }
-  csl->filetext = NULL;
-  free(csl);
+    if (csl->filename_allocated)
+    {
+        free(csl->filename);
+    }
+    csl->filename = NULL;
+    if (csl->filetext_allocated)
+    {
+        free(csl->filetext);
+    }
+    csl->filetext = NULL;
+    free(csl);
 }
+

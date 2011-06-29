@@ -30,229 +30,229 @@
 //
 int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-  char box_text[MAX_PATTERN];
-  char errstr[MAX_PATTERN];
-  long i;
-  char *txt;
-  long start;
-  long len;
-  int retval;
-  long saved_ssfl;
-  uint64_t classifier_flags = 0;
+    char box_text[MAX_PATTERN];
+    char errstr[MAX_PATTERN];
+    long i;
+    char *txt;
+    long start;
+    long len;
+    int retval;
+    long saved_ssfl;
+    uint64_t classifier_flags = 0;
 
-  //            get start/length of the text we're going to learn:
-  //
-  CRM_ASSERT(apb != NULL);
-  crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
-
-  //  Use crm_restrictvar to get start & length to look at.
-  i = crm_restrictvar(box_text, apb->b1len,
-                      NULL,
-                      &txt,
-                      &start,
-                      &len,
-                      errstr);
-
-  if (i < 0)
-  {
-    long curstmt;
-    long fev;
-    CRM_ASSERT(i == -1 || i == -2);
-    fev = 0;
-    curstmt = csl->cstmt;
-    if (i == -1)
-      fev = nonfatalerror(errstr, "");
-    if (i == -2)
-      fev = fatalerror(errstr, "");
+    //            get start/length of the text we're going to learn:
     //
-    //     did the FAULT handler change the next statement to execute?
-    //     If so, continue from there, otherwise, we FAIL.
-    if (curstmt == csl->cstmt)
+    CRM_ASSERT(apb != NULL);
+    crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
+
+    //  Use crm_restrictvar to get start & length to look at.
+    i = crm_restrictvar(box_text, apb->b1len
+                       , NULL
+                       , &txt
+                       , &start
+                       , &len
+                       , errstr);
+
+    if (i < 0)
     {
-      csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-      csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
+        long curstmt;
+        long fev;
+        CRM_ASSERT(i == -1 || i == -2);
+        fev = 0;
+        curstmt = csl->cstmt;
+        if (i == -1)
+            fev = nonfatalerror(errstr, "");
+        if (i == -2)
+            fev = fatalerror(errstr, "");
+        //
+        //     did the FAULT handler change the next statement to execute?
+        //     If so, continue from there, otherwise, we FAIL.
+        if (curstmt == csl->cstmt)
+        {
+            csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
+        }
+        return fev;
     }
-    return fev;
-  }
 
-  //  keep the original value of the ssfl, because many learners
-  //  mangle it and then it won't work right for other classifiers
-  saved_ssfl = sparse_spectrum_file_length;
+    //  keep the original value of the ssfl, because many learners
+    //  mangle it and then it won't work right for other classifiers
+    saved_ssfl = sparse_spectrum_file_length;
 
-  //            get our flags... the only ones we're interested in here
-  //            are the ones that specify _which_ algorithm to use.
+    //            get our flags... the only ones we're interested in here
+    //            are the ones that specify _which_ algorithm to use.
 
-  classifier_flags = apb->sflags;
+    classifier_flags = apb->sflags;
 
-  //     Joe thinks that this should be a table or a loop.
-  classifier_flags = classifier_flags &
-                     (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                      | CRM_NEURAL_NET | CRM_SCM);
+    //     Joe thinks that this should be a table or a loop.
+    classifier_flags = classifier_flags &
+                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+                        | CRM_NEURAL_NET | CRM_SCM);
 
-  if (classifier_flags & CRM_OSB_BAYES)
-  {
-    retval = crm_expr_osb_bayes_learn(csl, apb, txt, start, len);
-  }
-  else    if (classifier_flags & CRM_CORRELATE)
-  {
-    retval = crm_expr_correlate_learn(csl, apb, txt, start, len);
-  }
-  else    if (classifier_flags & CRM_OSB_WINNOW)
-  {
-    retval = crm_expr_osb_winnow_learn(csl, apb, txt, start, len);
-  }
-  else    if (classifier_flags & CRM_OSBF)
-  {
-    retval = crm_expr_osbf_bayes_learn(csl, apb, txt, start, len);
-  }
-  else    if (classifier_flags & CRM_HYPERSPACE)
-  {
-    retval = crm_expr_osb_hyperspace_learn(csl, apb, txt, start, len);
-  }
-  else    if (classifier_flags & CRM_ENTROPY)
-  {
-    retval = crm_expr_bit_entropy_learn(csl, apb, txt, start, len);
-  }
-  else    if (classifier_flags & CRM_SVM)
-  {
-    retval = crm_expr_svm_learn(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_SKS)
-  {
-    retval = crm_expr_sks_learn(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_FSCM)
-  {
-    retval = crm_expr_fscm_learn(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_SCM)
-  {
-    retval = crm_expr_scm_learn(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_NEURAL_NET)
-  {
-    retval = crm_neural_net_learn(csl, apb, txt, start, len);
-  }
-  else
-  {
-    //    Default with no classifier specified is Markov
-    apb->sflags = apb->sflags | CRM_MARKOVIAN;
-    retval = crm_expr_markov_learn(csl, apb, txt, start, len);
-  }
+    if (classifier_flags & CRM_OSB_BAYES)
+    {
+        retval = crm_expr_osb_bayes_learn(csl, apb, txt, start, len);
+    }
+    else    if (classifier_flags & CRM_CORRELATE)
+    {
+        retval = crm_expr_correlate_learn(csl, apb, txt, start, len);
+    }
+    else    if (classifier_flags & CRM_OSB_WINNOW)
+    {
+        retval = crm_expr_osb_winnow_learn(csl, apb, txt, start, len);
+    }
+    else    if (classifier_flags & CRM_OSBF)
+    {
+        retval = crm_expr_osbf_bayes_learn(csl, apb, txt, start, len);
+    }
+    else    if (classifier_flags & CRM_HYPERSPACE)
+    {
+        retval = crm_expr_osb_hyperspace_learn(csl, apb, txt, start, len);
+    }
+    else    if (classifier_flags & CRM_ENTROPY)
+    {
+        retval = crm_expr_bit_entropy_learn(csl, apb, txt, start, len);
+    }
+    else    if (classifier_flags & CRM_SVM)
+    {
+        retval = crm_expr_svm_learn(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_SKS)
+    {
+        retval = crm_expr_sks_learn(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_FSCM)
+    {
+        retval = crm_expr_fscm_learn(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_SCM)
+    {
+        retval = crm_expr_scm_learn(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_NEURAL_NET)
+    {
+        retval = crm_neural_net_learn(csl, apb, txt, start, len);
+    }
+    else
+    {
+        //    Default with no classifier specified is Markov
+        apb->sflags = apb->sflags | CRM_MARKOVIAN;
+        retval = crm_expr_markov_learn(csl, apb, txt, start, len);
+    }
 
-  sparse_spectrum_file_length = saved_ssfl;
+    sparse_spectrum_file_length = saved_ssfl;
 
-  return retval;
+    return retval;
 }
 
 //      Dispatch a CLASSIFY statement
 //
 int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-  char box_text[MAX_PATTERN];
-  char errstr[MAX_PATTERN];
-  long i;
-  char *txt;
-  long start;
-  long len;
-  long retval;
-  int64_t classifier_flags = 0;
+    char box_text[MAX_PATTERN];
+    char errstr[MAX_PATTERN];
+    long i;
+    char *txt;
+    long start;
+    long len;
+    long retval;
+    int64_t classifier_flags = 0;
 
-  //            get start/length of the text we're going to classify:
-  //
-  CRM_ASSERT(apb != NULL);
-  crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
-
-  //  Use crm_restrictvar to get start & length to look at.
-  i = crm_restrictvar(box_text, apb->b1len,
-                      NULL,
-                      &txt,
-                      &start,
-                      &len,
-                      errstr);
-
-  if (i > 0)
-  {
-    long curstmt;
-    long fev;
-    fev = 0;
-    curstmt = csl->cstmt;
-    if (i == 1)
-      fev = nonfatalerror(errstr, "");
-    if (i == 2)
-      fev = fatalerror(errstr, "");
+    //            get start/length of the text we're going to classify:
     //
-    //     did the FAULT handler change the next statement to execute?
-    //     If so, continue from there, otherwise, we FAIL.
-    if (curstmt == csl->cstmt)
+    CRM_ASSERT(apb != NULL);
+    crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
+
+    //  Use crm_restrictvar to get start & length to look at.
+    i = crm_restrictvar(box_text, apb->b1len
+                       , NULL
+                       , &txt
+                       , &start
+                       , &len
+                       , errstr);
+
+    if (i > 0)
     {
-      csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-      csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
+        long curstmt;
+        long fev;
+        fev = 0;
+        curstmt = csl->cstmt;
+        if (i == 1)
+            fev = nonfatalerror(errstr, "");
+        if (i == 2)
+            fev = fatalerror(errstr, "");
+        //
+        //     did the FAULT handler change the next statement to execute?
+        //     If so, continue from there, otherwise, we FAIL.
+        if (curstmt == csl->cstmt)
+        {
+            csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
+        }
+        return fev;
     }
-    return fev;
-  }
 
-  //            get our flags... the only ones we're interested in here
-  //            are the ones that specify _which_ algorithm to use.
-  classifier_flags = apb->sflags;
+    //            get our flags... the only ones we're interested in here
+    //            are the ones that specify _which_ algorithm to use.
+    classifier_flags = apb->sflags;
 
-  classifier_flags = classifier_flags &
-                     (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                      | CRM_NEURAL_NET | CRM_SCM);
+    classifier_flags = classifier_flags &
+                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+                        | CRM_NEURAL_NET | CRM_SCM);
 
-  if (classifier_flags & CRM_OSB_BAYES)
-  {
-    retval = crm_expr_osb_bayes_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_CORRELATE)
-  {
-    retval = crm_expr_correlate_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_OSB_WINNOW)
-  {
-    retval = crm_expr_osb_winnow_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_OSBF)
-  {
-    retval = crm_expr_osbf_bayes_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_HYPERSPACE)
-  {
-    retval = crm_expr_osb_hyperspace_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_ENTROPY)
-  {
-    retval = crm_expr_bit_entropy_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_SVM)
-  {
-    retval = crm_expr_svm_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_SKS)
-  {
-    retval = crm_expr_sks_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_FSCM)
-  {
-    retval = crm_expr_fscm_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_SCM)
-  {
-    retval = crm_expr_scm_classify(csl, apb, txt, start, len);
-  }
-  else if (classifier_flags & CRM_NEURAL_NET)
-  {
-    retval = crm_neural_net_classify(csl, apb, txt, start, len);
-  }
-  else
-  {
-    //    Default with no classifier specified is Markov
-    apb->sflags = apb->sflags | CRM_MARKOVIAN;
-    retval = crm_expr_markov_classify(csl, apb, txt, start, len);
-  }
-  return 0;
+    if (classifier_flags & CRM_OSB_BAYES)
+    {
+        retval = crm_expr_osb_bayes_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_CORRELATE)
+    {
+        retval = crm_expr_correlate_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_OSB_WINNOW)
+    {
+        retval = crm_expr_osb_winnow_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_OSBF)
+    {
+        retval = crm_expr_osbf_bayes_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_HYPERSPACE)
+    {
+        retval = crm_expr_osb_hyperspace_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_ENTROPY)
+    {
+        retval = crm_expr_bit_entropy_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_SVM)
+    {
+        retval = crm_expr_svm_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_SKS)
+    {
+        retval = crm_expr_sks_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_FSCM)
+    {
+        retval = crm_expr_fscm_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_SCM)
+    {
+        retval = crm_expr_scm_classify(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_NEURAL_NET)
+    {
+        retval = crm_neural_net_classify(csl, apb, txt, start, len);
+    }
+    else
+    {
+        //    Default with no classifier specified is Markov
+        apb->sflags = apb->sflags | CRM_MARKOVIAN;
+        retval = crm_expr_markov_classify(csl, apb, txt, start, len);
+    }
+    return 0;
 }
 
 

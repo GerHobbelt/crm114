@@ -210,6 +210,9 @@
 /* compiler understands long long */
 #undef HAVE_LONG_LONG
 
+/* Define to 1 if you have the `madvise' function. */
+#undef HAVE_MADVISE
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
@@ -267,6 +270,9 @@
 
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
+
+/* Define to 1 if you have the `posix_madvise' function. */
+#undef HAVE_POSIX_MADVISE
 
 /* POSIX REs */
 #undef HAVE_POSIX_REGEX

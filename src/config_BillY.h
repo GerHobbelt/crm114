@@ -176,13 +176,13 @@
 #define HAVE_ISXDIGIT 1
 
 /* Define to 1 if you have the <libintl.h> header file. */
-#undef HAVE_LIBINTL_H 
+#undef HAVE_LIBINTL_H
 
 /* Define to 1 if you have the `m' library (-lm). */
 #define HAVE_LIBM 1
 
 /* Define if you have a readline compatible library */
-#undef HAVE_LIBREADLINE 
+#undef HAVE_LIBREADLINE
 
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
@@ -209,7 +209,7 @@
 #define HAVE_LONG_LONG 1
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
-   to 0 otherwise. */
+ * to 0 otherwise. */
 #define HAVE_MALLOC 1
 
 /* Define to 1 if you have the <math.h> header file. */
@@ -246,15 +246,15 @@
 #undef HAVE_NETINET_IN_H
 
 /* Define if run-time library offers nanosecond time interval in struct
-   stat:c/m/atimensec. */
+ * stat:c/m/atimensec. */
 #undef HAVE_NSEC_STAT_TIMENSEC
 
 /* Define if run-time library offers nanosecond time interval in struct
-   stat:c/m/atime_nsec. */
+ * stat:c/m/atime_nsec. */
 #undef HAVE_NSEC_STAT_TIME_NSEC
 
 /* Define if run-time library offers nanosecond time interval in struct
-   stat:c/m/atim.tv_nsec. */
+ * stat:c/m/atim.tv_nsec. */
 #undef HAVE_NSEC_STAT_TIM_TV_NSEC
 
 /* PCRE REs */
@@ -288,7 +288,7 @@
 #undef HAVE_READLINE_READLINE_H
 
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
-   and to 0 otherwise. */
+ * and to 0 otherwise. */
 #define HAVE_REALLOC 1
 
 /* REs support */
@@ -313,7 +313,7 @@
 #define HAVE_STAT 1
 
 /* Define to 1 if `stat' has the bug that it succeeds when given the
-   zero-length file name argument. */
+ * zero-length file name argument. */
 /* #undef HAVE_STAT_EMPTY_STRING_BUG */
 
 /* Define to 1 if you have the <stdarg.h> header file. */
@@ -389,14 +389,14 @@
 #define HAVE_SYSTEM 1
 
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
-   */
+ */
 #undef HAVE_SYS_DIR_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #define HAVE_SYS_MMAN_H 1
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
-   */
+ */
 #undef HAVE_SYS_NDIR_H
 
 /* Define to 1 if you have the <sys/param.h> header file. */
@@ -508,15 +508,15 @@
 #define HOSTTYPE "linux-gnu"
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
-   slash. */
+ * slash. */
 #define LSTAT_FOLLOWS_SLASHED_SYMLINK 1
 
 /* Define to 1 if your processor stores words with the most significant byte
-   first (like Motorola and SPARC, unlike Intel and VAX). */
+ * first (like Motorola and SPARC, unlike Intel and VAX). */
 /* #undef MACHINE_IS_BIG_ENDIAN */
 
 /* Define to 1 if your processor stores words with the least significant byte
-   first (like Intel and VAX). */
+ * first (like Intel and VAX). */
 #define MACHINE_IS_LITTLE_ENDIAN 1
 
 /* Name of package */
@@ -547,8 +547,8 @@
 #define PROTOTYPES 1
 
 /* Define to 1 if the `setvbuf' function takes the buffering type as its
-   second argument and the buffer pointer as the third, as on System V before
-   release 3. */
+ * second argument and the buffer pointer as the third, as on System V before
+ * release 3. */
 /* #undef SETVBUF_REVERSED */
 
 /* The size of `int', as computed by sizeof. */
@@ -579,40 +579,40 @@
 #define VER_SUFFIX ""
 
 /* Define to 1 if on AIX 3.
-   System headers sometimes define this.
-   We just want to avoid a redefinition error message.  */
+ * System headers sometimes define this.
+ * We just want to avoid a redefinition error message.  */
 #ifndef _ALL_SOURCE
 /* # undef _ALL_SOURCE */
 #endif
 
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
-# define _GNU_SOURCE 1
+#define _GNU_SOURCE 1
 #endif
 
 /* Define to 1 if on MINIX. */
 /* #undef _MINIX */
 
 /* Define to 2 if the system does not provide POSIX.1 features except with
-   this defined. */
+ * this defined. */
 /* #undef _POSIX_1_SOURCE */
 
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 /* #undef _POSIX_SOURCE */
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
-   #define below would cause a syntax error. */
+ * <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
+ #define below would cause a syntax error. */
 /* #undef _UINT32_T */
 
 /* Define for Solaris 2.5.1 so the uint64_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
-   #define below would cause a syntax error. */
+ * <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
+ #define below would cause a syntax error. */
 /* #undef _UINT64_T */
 
 /* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
-   #define below would cause a syntax error. */
+ * <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
+ #define below would cause a syntax error. */
 /* #undef _UINT8_T */
 
 /* Define to 1 if type `char' is unsigned and you are not using gcc.  */
@@ -627,25 +627,25 @@
 /* #undef const */
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
-   calls it, or to nothing if 'inline' is not supported under any name.  */
+ * calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
 /* #undef inline */
 #endif
 
 /* Define to the type of a signed integer type of width exactly 16 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef int16_t */
 
 /* Define to the type of a signed integer type of width exactly 32 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef int32_t */
 
 /* Define to the type of a signed integer type of width exactly 64 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef int64_t */
 
 /* Define to the type of a signed integer type of width exactly 8 bits if such
-   a type exists and the standard includes do not define it. */
+ * a type exists and the standard includes do not define it. */
 /* #undef int8_t */
 
 /* Define to rpl_malloc if the replacement function should be used. */
@@ -664,25 +664,25 @@
 /* #undef size_t */
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef uint16_t */
 
 /* Define to the type of an unsigned integer type of width exactly 32 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef uint32_t */
 
 /* Define to the type of an unsigned integer type of width exactly 64 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef uint64_t */
 
 /* Define to the type of an unsigned integer type of width exactly 8 bits if
-   such a type exists and the standard includes do not define it. */
+ * such a type exists and the standard includes do not define it. */
 /* #undef uint8_t */
 
 /* Define as `fork' if `vfork' does not work. */
 /* #undef vfork */
 
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
-   code using `volatile' can become incorrect without. Disable with care. */
+ * code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
 

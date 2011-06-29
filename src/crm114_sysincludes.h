@@ -13,7 +13,7 @@
 #include "config_BillY.h"
 #else
 #error \
-  "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."
+    "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."
 #endif
 
 #ifdef WIN32
@@ -229,7 +229,7 @@
 /* REs support */
 #ifndef HAVE_REGEX
 #error \
-  "crm114 MUST be compiled with regex support. It's a regex mutilator, remember? Try to run './configure --disable-extended-compile-checks --with-regex=tre' and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+    "crm114 MUST be compiled with regex support. It's a regex mutilator, remember? Try to run './configure --disable-extended-compile-checks --with-regex=tre' and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 #if defined (HAVE_TRE_REGEX)
@@ -240,21 +240,21 @@
 #include <regex.h>
 #else
 #error \
-  "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+    "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 typedef struct
 {
-  regex_t preg;
-  char   *pattern;
+    regex_t preg;
+    char   *pattern;
 } re_entry;
 
 #elif defined (HAVE_POSIX_REGEX)
 
 typedef struct
 {
-  regex_t preg;
-  char   *pattern;
+    regex_t preg;
+    char   *pattern;
 } re_entry;
 
 #elif defined (HAVE_V8_REGEX)
@@ -265,23 +265,23 @@ typedef struct
 
 typedef struct
 {
-  regexp *preg;
-  char   *pattern;
+    regexp *preg;
+    char   *pattern;
 } re_entry;
 
 #elif defined (HAVE_BSD_REGEX)
 
 typedef struct
 {
-  char *pattern;
+    char *pattern;
 } re_entry;
 
 #elif defined (HAVE_GNU_REGEX)
 
 typedef struct
 {
-  struct re_pattern_buffer preg;
-  char *pattern;
+    struct re_pattern_buffer preg;
+    char *pattern;
 } re_entry;
 
 #elif defined (HAVE_PCRE_REGEX)
@@ -290,9 +290,9 @@ typedef struct
 
 typedef struct
 {
-  pcre       *preg;
-  pcre_extra *preg_extra;
-  char       *pattern;
+    pcre       *preg;
+    pcre_extra *preg_extra;
+    char       *pattern;
 } re_entry;
 
 #else
@@ -301,7 +301,7 @@ typedef struct
 #include <regex.h>
 #else
 #error \
-  "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+    "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 #endif
@@ -364,31 +364,31 @@ typedef struct
 
 
 /*
-crm_mmap() advise arg values for use by madvise/posix_madvise() in there:
-
-CRM_MADV_NORMAL
-
-	Specifies that the application has no advice to give on its  behavior  with  respect  to  the  specified
-	range. It is the default characteristic if no advice is given for a range of memory.
-
-CRM_MADV_SEQUENTIAL
-
-	Specifies  that  the application expects to access the specified range sequentially from lower addresses
-	to higher addresses.
-
-CRM_MADV_RANDOM
-
-	Specifies that the application expects to access the specified range in a random order.
-
-CRM_MADV_WILLNEED
-
-	Specifies that the application expects to access the specified range in the near future.
-
-CRM_MADV_DONTNEED
-
-	Specifies that the application expects that it will not access the specified range in the near future.
-*/
-#if defined(HAVE_MADVISE)
+ * crm_mmap() advise arg values for use by madvise/posix_madvise() in there:
+ *
+ * CRM_MADV_NORMAL
+ *
+ *      Specifies that the application has no advice to give on its  behavior  with  respect  to  the  specified
+ *      range. It is the default characteristic if no advice is given for a range of memory.
+ *
+ * CRM_MADV_SEQUENTIAL
+ *
+ *      Specifies  that  the application expects to access the specified range sequentially from lower addresses
+ *      to higher addresses.
+ *
+ * CRM_MADV_RANDOM
+ *
+ *      Specifies that the application expects to access the specified range in a random order.
+ *
+ * CRM_MADV_WILLNEED
+ *
+ *      Specifies that the application expects to access the specified range in the near future.
+ *
+ * CRM_MADV_DONTNEED
+ *
+ *      Specifies that the application expects that it will not access the specified range in the near future.
+ */
+#if defined (HAVE_MADVISE)
 
 #define CRM_MADV_NORMAL          MADV_NORMAL
 #define CRM_MADV_SEQUENTIAL      MADV_SEQUENTIAL
@@ -396,7 +396,7 @@ CRM_MADV_DONTNEED
 #define CRM_MADV_WILLNEED        MADV_WILLNEED
 #define CRM_MADV_DONTNEED        MADV_DONTNEED
 
-#elif defined(HAVE_POSIX_MADVISE)
+#elif defined (HAVE_POSIX_MADVISE)
 
 #define CRM_MADV_NORMAL          POSIX_MADV_NORMAL
 #define CRM_MADV_SEQUENTIAL      POSIX_MADV_SEQUENTIAL
@@ -432,7 +432,7 @@ int getpagesize(void); /* see crm_port_win32.c */
 #define getpagesize() EXEC_PAGESIZE
 #else /* no EXEC_PAGESIZE */
 #ifdef NBPG
-#define getpagesize() NBPG * CLSIZE
+#define getpagesize() NBPG *CLSIZE
 #ifndef CLSIZE
 #define CLSIZE 1
 #endif /* no CLSIZE */
@@ -472,12 +472,12 @@ void *crm_memmove(void *dst, const void *src, size_t len);
 #if defined (HAVE_STAT_EMPTY_STRING_BUG)
 static inline int crm_stat(const char *path, struct stat *buf)
 {
-  if (!path || ! * path || !buf)
-  {
-    errno = EINVAL;
-    return -1;
-  }
-  return stat(path, buf);
+    if (!path || ! * path || !buf)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+    return stat(path, buf);
 }
 #undef stat
 #define stat(path, buf)         crm_stat(path, buf)
@@ -492,10 +492,10 @@ typedef long int clock_t;
 #ifndef HAVE_TIMES
 struct tms
 {
-  clock_t tms_utime;    // user time
-  clock_t tms_stime;    // system time
-  clock_t tms_cutime;   // user time of children
-  clock_t tms_cstime;   // system time of children
+    clock_t tms_utime;  // user time
+    clock_t tms_stime;  // system time
+    clock_t tms_cutime; // user time of children
+    clock_t tms_cstime; // system time of children
 };
 #endif
 
@@ -596,7 +596,7 @@ int truncate(const char *filepath, long filesize); /* [i_a] Win32 doesn't come w
 
 
 
-#if !defined(TRUE) || !defined(FALSE)
+#if !defined (TRUE) || !defined (FALSE)
 #undef FALSE
 #undef TRUE
 #define FALSE 0
@@ -618,12 +618,12 @@ char *strmov(char *dst, const char *src);
 
 static union
 {
-  char int8_t_incorrect[sizeof(int8_t) == 1];
-  char uint8_t_incorrect[sizeof(uint8_t) == 1];
-  char int16_t_incorrect[sizeof(int16_t) == 2];
-  char uint16_t_incorrect[sizeof(uint16_t) == 2];
-  char int32_t_incorrect[sizeof(int32_t) == 4];
-  char uint32_t_incorrect[sizeof(uint32_t) == 4];
+    char int8_t_incorrect[sizeof(int8_t) == 1];
+    char uint8_t_incorrect[sizeof(uint8_t) == 1];
+    char int16_t_incorrect[sizeof(int16_t) == 2];
+    char uint16_t_incorrect[sizeof(uint16_t) == 2];
+    char int32_t_incorrect[sizeof(int32_t) == 4];
+    char uint32_t_incorrect[sizeof(uint32_t) == 4];
 };
 #endif
 
@@ -644,72 +644,72 @@ static union
 
 static inline int crm_isalnum(unsigned char c)
 {
-  return isalnum(c);
+    return isalnum(c);
 }
 static inline int crm_isalpha(unsigned char c)
 {
-  return isalpha(c);
+    return isalpha(c);
 }
 
 #ifdef HAVE_ISASCII
 static inline int crm_isascii(unsigned char c)
 {
-  return isascii(c);
+    return isascii(c);
 }
 #else
 static inline int crm_isascii(unsigned char c)
 {
-  return !(c >> 7);
+    return !(c >> 7);
 }
 #endif
 
 #ifdef HAVE_ISBLANK
 static inline int crm_isblank(unsigned char c)
 {
-  return isblank(c);
+    return isblank(c);
 }
 #else
 static inline int crm_isblank(unsigned char c)
 {
-  return (c == ' ') || (c == '\t');
+    return (c == ' ') || (c == '\t');
 }
 #endif
 
 static inline int crm_iscntrl(unsigned char c)
 {
-  return iscntrl(c);
+    return iscntrl(c);
 }
 static inline int crm_isdigit(unsigned char c)
 {
-  return isdigit(c);
+    return isdigit(c);
 }
 static inline int crm_isgraph(unsigned char c)
 {
-  return isgraph(c);
+    return isgraph(c);
 }
 static inline int crm_islower(unsigned char c)
 {
-  return islower(c);
+    return islower(c);
 }
 static inline int crm_isprint(unsigned char c)
 {
-  return isprint(c);
+    return isprint(c);
 }
 static inline int crm_ispunct(unsigned char c)
 {
-  return ispunct(c);
+    return ispunct(c);
 }
 static inline int crm_isspace(unsigned char c)
 {
-  return isspace(c);
+    return isspace(c);
 }
 static inline int crm_isupper(unsigned char c)
 {
-  return isupper(c);
+    return isupper(c);
 }
 static inline int crm_isxdigit(unsigned char c)
 {
-  return isxdigit(c);
+    return isxdigit(c);
 }
 
 // and to make sure no-one will use the system funcs:
@@ -756,7 +756,7 @@ static inline int crm_isxdigit(unsigned char c)
 #if !defined (HAVE_LOGL) && defined (HAVE_LOG)
 #define crm_logl(val)       log(val)
 #else
-#if defined (HAVE_LOGL) 
+#if defined (HAVE_LOGL)
 #define crm_logl(val)       logl(val)
 #else
 #error define/find a suitable high precision log10 function for your system
@@ -838,10 +838,10 @@ extern FILE *crm_stderr;
 
 
 // include qsort implementation by Michael Tokarev (http://www.corpit.ru/mjt/qsort.html)
-#if !defined(CRM_WITHOUT_MJT_INLINED_QSORT)
+#if !defined (CRM_WITHOUT_MJT_INLINED_QSORT)
 #include "crm_mjt_qsort.h"
 #else
-#define QSORT(type, base, count, func)		qsort(base, count, sizeof(type), func)
+#define QSORT(type, base, count, func)          qsort(base, count, sizeof(type), func)
 #endif
 
 

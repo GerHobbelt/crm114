@@ -211,6 +211,9 @@
 /* compiler understands long long */
 #define HAVE_LONG_LONG 1
 
+/* Define to 1 if you have the `madvise' function. */
+#define HAVE_MADVISE 1
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #define HAVE_MALLOC 1
@@ -268,6 +271,9 @@
 
 /* Define to 1 if you have the `pipe' function. */
 #define HAVE_PIPE 1
+
+/* Define to 1 if you have the `posix_madvise' function. */
+#define HAVE_POSIX_MADVISE 1
 
 /* POSIX REs */
 /* #undef HAVE_POSIX_REGEX */
@@ -570,7 +576,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1495"
+#define TAR_FILENAME_POSTFIX "Ger-1509"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
