@@ -1701,9 +1701,10 @@ void crm_updatecaptures(char *text, int loc, int delta)
 		memnCdump(stderr, vht[vht_index]->nametxt + vht[vht_index]->nstart,  vht[vht_index]->nlen);
 #endif
                     fprintf(stderr, " ");
-                    fprintf(stderr, " s: %d, l:%d, e:%d n:%d ~ %d ...",
+                    fprintf(stderr, " s: %d, l:%d/%d, e:%d n:%d ~ %d ...",
                             vht[vht_index]->vstart,
                             vht[vht_index]->vlen,
+                            vht[vht_index]->nlen,
                             vht[vht_index]->vstart + vht[vht_index]->vlen,
                             vht[vht_index]->nstart,
                             vht[vht_index]->nstart + vht[vht_index]->nlen

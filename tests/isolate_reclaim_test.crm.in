@@ -1,4 +1,4 @@
-#! @CRM@
+#! /usr/bin/crm
 #
 #     Test the reclamation of ISOLATEd variables.
 #

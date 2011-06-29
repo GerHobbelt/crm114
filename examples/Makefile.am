@@ -26,7 +26,6 @@ crm_DATA = \
  blacklist.mfp \
  priolist.mfp \
  rewrites.mfp \
- test_rewrites.mfp \
  whitelist.mfp \
  whitelist.mfp.example
 

@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 #   test the error report concerning matching braces and alius.
 #   see the coding error at line 17
 {

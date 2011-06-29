@@ -1080,7 +1080,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     strcpy(
             ptext,
-            "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
+            "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
     plen = strlen(ptext);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
@@ -2704,7 +2704,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     strcpy(
             ptext,
-            "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
+            "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
     plen = strlen(ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i > 0)
@@ -2829,6 +2829,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (user_trace)
                 fprintf(stderr,
                         "\nThe total number of documents in file2 is %d\n", k2);
+
             hashf = fopen(file3, "rb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
             if (hashf == NULL)
             {

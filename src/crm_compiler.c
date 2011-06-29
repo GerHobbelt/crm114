@@ -80,104 +80,6 @@ static STMT_TABLE_TYPE stmt_table[] =
 
 
 
-int skip_blanks(const char *buf, int start, int bufsize)
-{
-    CRM_ASSERT(buf != NULL);
-    CRM_ASSERT(start >= 0);
-    CRM_ASSERT(bufsize >= 0);
-
-    for ( ; start < bufsize && buf[start]; start++)
-    {
-        if (!crm_iscntrl(buf[start])
-            && !crm_isblank(buf[start])
-            && !crm_isspace(buf[start]))
-        {
-            break;
-        }
-    }
-    return start;
-}
-
-int skip_nonblanks(const char *buf, int start, int bufsize)
-{
-    CRM_ASSERT(buf != NULL);
-    CRM_ASSERT(start >= 0);
-    CRM_ASSERT(bufsize >= 0);
-
-    for ( ; start < bufsize && buf[start]; start++)
-    {
-        if (crm_iscntrl(buf[start])
-            || crm_isblank(buf[start])
-            || crm_isspace(buf[start]))
-        {
-            break;
-        }
-    }
-    return start;
-}
-
-int skip_command_token(const char *buf, int start, int bufsize)
-{
-    CRM_ASSERT(buf != NULL);
-    CRM_ASSERT(start >= 0);
-    CRM_ASSERT(bufsize >= 0);
-
-    // commands must start with a letter:
-    if (start < bufsize)
-    {
-        if (crm_isalpha(buf[start]) || buf[start] == '_')
-        {
-            start++;
-            for ( ; start < bufsize && buf[start]; start++)
-            {
-                if (!crm_isalnum(buf[start])
-                    && buf[start] != '_')
-                {
-                    break;
-                }
-            }
-        }
-        else
-        {
-            switch (buf[start])
-            {
-            case '{':
-            case '}':
-                return start + 1;
-
-            case '#':
-                return start + 1;
-
-            case ':':
-                // probably a label - scan till next ':'
-                for (start++; start < bufsize && buf[start]; start++)
-                {
-                    if (buf[start] == ':')
-                    {
-                        return start + 1;
-                    }
-                }
-                break;
-
-            default:
-                // panic! just return till whitespace comes. This is bad anyway
-                for (start++; start < bufsize && buf[start]; start++)
-                {
-                    if (crm_iscntrl(buf[start])
-                        || crm_isblank(buf[start])
-                        || crm_isspace(buf[start]))
-                    {
-                        return start;
-                    }
-                }
-                break;
-            }
-        }
-    }
-    return start;
-}
-
-
 
 
 //   Get a file into a memory buffer.  We can either prep to execute
@@ -420,7 +322,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         fprintf(stderr, "microcompile table at %p\n", (void *)csl->mct);
 
     //  alloc all of the statement cells.
-    for (i = 0; i < csl->nstmts + 10; i++)
+    for (i = 0; i < csl->mct_size; i++)
     {
         csl->mct[i] = (MCT_CELL *)calloc(1, sizeof(csl->mct[i][0]));
         if (!csl->mct[i])
@@ -478,6 +380,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //
         slength = strcspn(&pgmtext[sindex], "\n");
 
+		CRM_ASSERT(stmtnum < csl->mct_size);
         // allocate and fill in the mct table entry for this line
         csl->mct[stmtnum]->hosttxt = pgmtext;
         csl->mct[stmtnum]->apb = NULL;
@@ -515,10 +418,19 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         while (pgmtext[aindex] < 0x021 && aindex < slength + sindex)
             aindex++;
 #else
+		// skip any leading whitespace
         nbindex = skip_blanks(pgmtext, nbindex, slength + sindex);
 
         //  save up the first nonblank char:
         csl->mct[stmtnum]->fchar = nbindex;
+
+		// skip leading comments too!
+        aindex = skip_comments_and_blanks(pgmtext, nbindex, slength + sindex);
+		if (aindex < slength + sindex)
+		{
+			// only skip LEADING comments if there's ANYTHING FOLLOWING it!
+			nbindex = aindex;
+		}
 
         // and set up the start of arguments as well, they start at the first
         // nonblank after the first blank after the command...
@@ -894,12 +806,17 @@ pgmtext + csl->mct[stmtnum]->start,
                 //   print out text of the first statement:
                 if (prettyprint_listing > 4)
                     fprintf(stderr, "-");
-                k = csl->mct[stmtnum]->fchar;
+
+				k = csl->mct[stmtnum]->fchar;
+#if 0
                 while (pgmtext[k] > 0x021 && k < csl->mct[stmtnum]->achar)
                 {
                     //fprintf(stderr, "%c", pgmtext[k]);
                     k++;
                 }
+#else
+				        k = skip_command_token(pgmtext, k, csl->mct[stmtnum]->achar);
+#endif
 		memnCdump(stderr, 
 pgmtext + csl->mct[stmtnum]->fchar,
 			k - csl->mct[stmtnum]->fchar);

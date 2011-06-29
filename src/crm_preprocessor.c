@@ -485,9 +485,11 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     && csl->filetext[i + 1] == '#')
                 {
                     i++;
-                    neednewline = 1;
+#if 0 // [i_a] 20080325 - fix for alius_w_comment.crm processing...
+					neednewline = 1;
                     seennewline = 0;
-                    in_comment = 0;
+#endif
+					in_comment = 0;
                     statement_state = 0;
                 }
             }
@@ -525,7 +527,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     //     We do this whether or not we're in a nesting.
                     if (csl->filetext[i + 1] == '\n' || csl->filetext[i + 1] == '\r')
                     {
-                        const char *crlf_mode_descr[] =
+                        static const char *crlf_mode_descr[] =
                         {
                             "UNIX", NULL, "MAC", "MSDOS"
                         };
@@ -537,7 +539,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                                         );
 
                         if (internal_trace)
-                            fprintf(stderr, " backquoted %sEOL - splicing.\n",
+                            fprintf(stderr, " backquoted %s EOL - splicing.\n",
                                     crlf_mode_descr[crlf_mode]
                                    );
                         // (2 | crlf_mode) --> 2 for UNIX/MAC, 3 for MSDOS   :-)

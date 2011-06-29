@@ -493,13 +493,13 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
                     case BYEOF:
                         {
-                            //    if BYEOF, we read as big a hunk as will fit.
+                            //    if BYEOF, we read as big a chunk as will fit.
                             //    If that's less than the full buffer, we declare
                             //    that we got an EOF as well.
                             if (user_trace)
                                 fprintf(stderr, "  bigchunk BYEOF read starting \n");
                             //
-                            //        fread doesn't stop on pipe empty, while
+                            //        fread (stdin) doesn't return on pipe empty
                             icount = fread(&(newinputbuf[newbuflen]), 1,
                                     data_window_size - (newbuflen + 256),
                                     stdin);
@@ -640,8 +640,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
         }
     }  // end of the (!done) loop...
-       //
-       //    It's just use the computed values from here on.
+    
+	//    It's just use the computed values from here on.
 
     crm_regfree(&preg);
 

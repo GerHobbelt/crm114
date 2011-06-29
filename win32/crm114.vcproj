@@ -603,10 +603,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\configure"
-				>
-			</File>
-			<File
 				RelativePath="..\configure.ac"
 				>
 			</File>
@@ -968,7 +964,15 @@
 			Filter="*.crm"
 			>
 			<File
+				RelativePath="..\src\alius_w_comment.crm"
+				>
+			</File>
+			<File
 				RelativePath="..\src\aliustest.crm"
+				>
+			</File>
+			<File
+				RelativePath="..\src\alternating_example_neural.crm"
 				>
 			</File>
 			<File
@@ -1215,10 +1219,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\backwardstest_mt_ng.input"
-					>
-				</File>
-				<File
 					RelativePath="..\src\backwardstest_mt_ng_1.input"
 					>
 				</File>
@@ -1228,10 +1228,6 @@
 				</File>
 				<File
 					RelativePath="..\src\INTRO_mt_ng_reference_2.input"
-					>
-				</File>
-				<File
-					RelativePath="..\src\matchtest_mt_ng.input"
 					>
 				</File>
 				<File

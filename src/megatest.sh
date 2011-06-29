@@ -487,7 +487,11 @@ days of 2003, well after CRM114 had been in daily use for over
 a year and a half).
 EOF
 
+rm -f i_test.css 
+rm -f q_test.css
 
+./crm114 '-{window; output /\n**** Alternate Neural Network Classifier test script \n/}'
+./crm114 alternating_example_neural.crm
 
 rm -f i_vs_q_test.css
 rm -f i_test.css 

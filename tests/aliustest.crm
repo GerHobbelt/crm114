@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 #   test the alius statement 
 {
 	{

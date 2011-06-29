@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 #   test the error reporting concerning matching delimiters.
 #
 # this code has several errors: the second 'output' comes with 

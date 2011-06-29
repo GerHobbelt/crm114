@@ -1050,7 +1050,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
 
     strcpy(ptext,
-            "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
+            "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
     plen = strlen(ptext);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
@@ -2219,7 +2219,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
 
     strcpy(ptext,
-            "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
+            "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
     plen = strlen(ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i > 0)
@@ -2344,7 +2344,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             stringf = fopen(file3, "rb"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
             if (stringf == NULL)
             {
-                nonfatalerror("For some reason, I was unable to read-open the SKS 1vs2 solution file file named ",
+                nonfatalerror_ex(SRC_LOC(), "For some reason, I was unable to read-open the SKS 1vs2 solution file named '%s'",
                         file3);
             }
             // else

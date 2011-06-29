@@ -1,4 +1,4 @@
-#! @CRM@
+#! /usr/bin/crm 
 # --(spam good repeat streak random worst verbose validate thick reload collapse report_header rfile goodcss spamcss config fileprefix)
 #
 #        A TUNE-type mailtrainer; repeat is the maximum number of

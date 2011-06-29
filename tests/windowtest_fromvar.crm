@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 {
 	output /:*:_nl: CRM114: testing windowing on windows from a variable :*:_nl: :*:_nl:/
 	isolate  (:instuff:) /:*:_dw:/

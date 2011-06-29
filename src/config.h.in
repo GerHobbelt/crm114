@@ -6,6 +6,9 @@
 /* DISable ASSERT/VERIFY checks */
 #undef CRM_DONT_ASSERT
 
+/* do not include experimental classifiers in the build */
+#undef CRM_PRODUCTION_CLASSIFIERS_ONLY
+
 /* do not include the Bit-Entropy classifier in the build */
 #undef CRM_WITHOUT_BIT_ENTROPY
 
@@ -14,9 +17,6 @@
 
 /* do not include the Correlate classifier in the build */
 #undef CRM_WITHOUT_CORRELATE
-
-/* do not include experimental classifiers in the build */
-#undef CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS
 
 /* do not include the FSCM classifier in the build */
 #undef CRM_WITHOUT_FSCM

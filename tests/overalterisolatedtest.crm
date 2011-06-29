@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 window
 {
 	output /:*:_nl:   CRM114 testing ALTERation and copying :*:_nl::*:_nl:/

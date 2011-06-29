@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 window
 output /\nStart of insert processor testing \n/
 output / start here .../

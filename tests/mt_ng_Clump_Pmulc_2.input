@@ -1,0 +1,6 @@
+CRM114's unique strengths are the data structure (everything is
+a string and a string can overlap another string), it's ability
+to work on truly infinitely long input streams, it's ability to
+use extremely advanced classifiers to sort text, and the ability
+to do approximate regular expressions (that is, regexes that
+don't quite match) via the TRE regex library.

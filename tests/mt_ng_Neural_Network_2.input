@@ -1,0 +1,10 @@
+CRM114 also sports a very powerful subprocess control facility, and
+a unique syntax and program structure that puts the fun back in
+programming (OK, you can run away screaming now).  The syntax is
+declensional rather than positional; the type of quote marks around
+an argument determine what that argument will be used for.
+
+The typical CRM114 program uses regex operations more often
+than addition (in fact, math was only added to TRE in the waning
+days of 2003, well after CRM114 had been in daily use for over
+a year and a half).

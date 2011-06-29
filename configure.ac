@@ -11,7 +11,7 @@
 
 
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT(CRM114, 20080317-BlameJoeLangeway_VT, crm114-general@lists.sourceforge.net)
+AC_INIT(CRM114, 20080325-BlameSentansoken, crm114-general@lists.sourceforge.net)
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR(m4)
@@ -75,7 +75,7 @@ when your scripts attempt to use these experimental classifiers.
   [
    if eval "test x$enable_experimental_classifiers = xno"; then
      AC_MSG_RESULT([no, we don't])
-     AC_DEFINE_UNQUOTED(CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS, 1, [do not include experimental classifiers in the build])
+     AC_DEFINE_UNQUOTED(CRM_PRODUCTION_CLASSIFIERS_ONLY, 1, [do not include experimental classifiers in the build])
    else
      AC_MSG_RESULT([au contraire, mon ami, we want it!])
    fi
@@ -914,6 +914,8 @@ AC_CONFIG_FILES([Makefile
                  src/diff_em.sh
                  src/indent.sh
                  tests/Makefile
+                 tests/megatest.sh
+                 tests/megatest_ng.sh
                  tests/aliustest.crm
                  tests/approxtest.crm
                  tests/argtest.crm
@@ -957,6 +959,10 @@ AC_CONFIG_FILES([Makefile
                  tests/trapseqbugtest.crm
                  tests/translate_tr.crm
                  tests/call_return_test.crm
+                 tests/alternating_example_neural.crm
+                 tests/alius_w_comment.crm
+                 tests/zz_translate_test.crm
+                 tests/defaulttest.crm
                  examples/pad.crm
                  examples/shroud.crm
                  mailfilter/classifymail.crm

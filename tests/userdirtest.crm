@@ -1,7 +1,0 @@
-#! :|crm
-window
-output /:*:_nl: CRM114 - syscall test - 'ls' -- :*:_nl: :*:_nl:/
-{
-	syscall () (:_dw:) /ls .\/tre-0.7.2/
-	accept
-}

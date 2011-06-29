@@ -3,6 +3,16 @@ Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
 
+version 20080325-BlameSentansoken
+
+ * INTifada: 'long' fetish has been removed from the code: now everything is an 'int'
+   like every good boy should, unless it specifically NEEDS to be something else.
+   
+ * Merged latest Neural Net code
+ 
+ * Bugfixes in the crm language parser (variable hash storage)
+ 
+
 version 20080317-BlameJoeLangeway_VT
 
  * (BillY) Improved / Fixed VT code

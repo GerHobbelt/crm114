@@ -144,7 +144,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fromset_len = crm_nexpandvar(fromset, apb->s1len, MAX_PATTERN);
 
     if (user_trace)
-        fprintf(stderr, " from-charset expands to =%s= len %d \n",
+        fprintf(stderr, " from-charset expands to =%s= len %d\n",
                 fromset, fromset_len);
 
 

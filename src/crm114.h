@@ -568,6 +568,14 @@ int crm_generic_parse_line(
 //    an arg found by the declensional parser.
 void crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen);
 
+//    useful to skip inline (# ... \#) comments and whitespace both
+int skip_comments_and_blanks(const char *buf, int start, int bufsize);
+
+int skip_blanks(const char *buf, int start, int bufsize);
+
+int skip_nonblanks(const char *buf, int start, int bufsize);
+
+int skip_command_token(const char *buf, int start, int bufsize);
 
 
 //     The vector tokenizer - used to turn text into hash vectors.

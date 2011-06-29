@@ -7,6 +7,9 @@
 /* DISable ASSERT/VERIFY checks */
 /* #undef CRM_DONT_ASSERT */
 
+/* do not include experimental classifiers in the build */
+/* #undef CRM_PRODUCTION_CLASSIFIERS_ONLY */
+
 /* do not include the Bit-Entropy classifier in the build */
 /* #undef CRM_WITHOUT_BIT_ENTROPY */
 
@@ -15,9 +18,6 @@
 
 /* do not include the Correlate classifier in the build */
 /* #undef CRM_WITHOUT_CORRELATE */
-
-/* do not include experimental classifiers in the build */
-/* #undef CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS */
 
 /* do not include the FSCM classifier in the build */
 /* #undef CRM_WITHOUT_FSCM */
@@ -553,13 +553,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20080317-BlameJoeLangeway_VT"
+#define PACKAGE_STRING "CRM114 20080325-BlameSentansoken"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20080317-BlameJoeLangeway_VT"
+#define PACKAGE_VERSION "20080325-BlameSentansoken"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -591,13 +591,13 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1951"
+#define TAR_FILENAME_POSTFIX "Ger-1954"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "20080317-BlameJoeLangeway_VT"
+#define VERSION "20080325-BlameSentansoken"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 #   inifinite loop within the trap/error handling: badaBOOM!
 #
 {   

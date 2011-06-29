@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 window
 output /:*:_nl: CRM114 testing outcall and status codes :*:_nl:/
 {

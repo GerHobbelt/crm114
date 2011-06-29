@@ -1,4 +1,4 @@
-#! @CRM@ 
+#!  /usr/bin/crm 
 #   this program exercises the matching functionality of crm.  It expects
 #   an input that may contain foo*, bar*, and possibly START baz END
 window

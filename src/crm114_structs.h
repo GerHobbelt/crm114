@@ -66,7 +66,7 @@ extern double min_pmax_pmin_ratio;
 
 extern int profile_execution;
 
-extern int prettyprint_listing;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
+extern int prettyprint_listing;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode, 4= with line info+attribs dump, 5=with extra --/== line markers
 
 extern int engine_exit_base;  //  All internal errors will use this number or higher;
 //  the user programs can use lower numbers freely.

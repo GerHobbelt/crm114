@@ -1,0 +1,22 @@
+#! /usr/bin/crm
+#   test the alius statement 
+{
+	# test comment to skip \# window
+	{ # and this one \#
+		# and another one \#{	
+		
+		# so? \#	output  # what? \#/checking for a foo.../#if we mingle comments with code? \# # like this?
+			match /foo/
+			output /Found a foo :*:_nl:/
+		}
+		alius  # a line comment
+		{
+			# multiple commands on a single line; no semicolons to separate them though ;-) parser should be able to cope...
+			output /no foo... checking for bar.../			match /bar/			output /Found a bar.  :*:_nl:/
+		}
+		alius  # second line comment
+		{
+			output /found neither... continuing  :*:_nl:/
+		}
+	}
+}

@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 #
 #      stress-out EVAL by an infinitely looping evaluation.  This SHOULD
 #      cause an nonfatal error.

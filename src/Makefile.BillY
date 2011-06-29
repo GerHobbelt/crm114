@@ -34,8 +34,9 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20080317-BlameJoeLangeway_VT
-PREV_VERSION=20080217-BlameJoeLangeway_VT
+VERSION=20080325-BlameSentansoken
+PREV_VERSION=20080317-BlameJoeLangeway_VT
+#PREV_VERSION=20080217-BlameJoeLangeway_VT
 #PREV_VERSION=20071201-BlameLittleStevie_VT
 #PREV_VERSION=20071126-BlameGerHobbelt
 #PREV_VERSION=20071015-BlameGerHobbelt
@@ -186,13 +187,11 @@ MEGATESTFILES = \
 	mt_ng_OSB_Markovian_2.input \
 	mt_ng_String_Unigram_Hyperspace_1.input \
 	mt_ng_Unigram_Hyperspace_2.input \
-	matchtest_mt_ng.input \
 	mt_ng_Vector_3_word_bag_Hyperspace_1.input \
 	mt_ng_String_Hyperspace_1.input \
 	approxtest_mt_ng_1.input \
 	mt_ng_Clump_Pmulc_3.input \
 	approxtest_mt_ng_2.input \
-	backwardstest_mt_ng.input \
 	mt_ng_OSB_Hyperspace_1.input \
 	mt_ng_OSB_3_letter_Hyperspace_2.input \
 	mt_ng_OSB_Hyperspace_2.input \
@@ -281,7 +280,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	rewritetest.crm test_rewrites.mfp \
 	randomiotest.crm isolate_reclaim_test.crm \
 	match_isolate_test.crm match_isolate_reclaim.crm \
-	call_return_test.crm defaulttest.crm \
+	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
 	shroud.crm quine.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
@@ -526,12 +525,10 @@ crmregex_tre.o: crmregex_tre.c \
 	$(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crmregex_tre.c -o crmregex_tre.o
 
-crmregex_gnu.o: crmregex_gnu.c \
-	$(HFILES)
+crmregex_gnu.o: crmregex_gnu.c $(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -c crmregex_gnu.c -o crmregex_gnu.o
 
-crm_util_errorhandlers.o: crm_util_errorhandlers.c \
-	$(HFILES)
+crm_util_errorhandlers.o: crm_util_errorhandlers.c $(HFILES)
 	$(CC) $(CFLAGS) -D$(SYSTEMTYPE) -c crm_util_errorhandlers.c \
 	-o crm_util_errorhandlers.o
 

@@ -1,0 +1,78 @@
+#! /usr/bin/crm
+window
+{
+	output / Alternating Example Neural Network Classifier TRAINING \n/
+#   load the files in
+	isolate (:intro: :quickref:)
+	input (:intro:) [ INTRO_mt_ng_reference_2.input 0 32768]
+	input (:quick:) [ QUICKREF_mt_ng_reference_1.input 0 32768]
+
+#    Now loop.
+     isolate (:loopcontrol:) //
+     isolate (:loopcounter:) /0/
+     { 
+        eval (:loopcounter:) / :@: :*:loopcounter: + 1 : /
+        #        output /Top of loop at :*:loopcounter: \n/
+	match [:loopcontrol:] <absent> /./
+	{
+		{
+		#         Grab a good chunk of intro...
+			match <fromend> (:onep:) /(....){255}.*?\n/ [:intro:]
+			match [:onep:] /.../
+			learn [:onep:] < neural unigram append> (i_test.css)
+			learn [:onep:] < neural unigram refute append> (q_test.css)
+		}
+		alius  #  Set done mark
+		{
+			alter (:loopcontrol:) /X/
+		}
+	}
+	{
+		{
+			#         Grab a good chunk of quickref...
+			match <fromend> (:twop:) /(....){255}.*?\n/ [:quick:]
+			match [:twop:] /.../
+			learn [:twop:] < neural unigram append> (q_test.css)
+			learn [:twop:] < neural unigram refute append> (i_test.css)
+		}
+		alius     #  reset to start of intro file.
+		{
+			alter (:loopcontrol:) /X/
+		}
+	}
+	liaf
+     }
+     #   Now run one fromstart loop on each of the files
+     learn [:_nl:] <neural fromstart> (i_test.css)
+     learn [:_nl:] <neural fromstart> (q_test.css)
+}
+
+output /\n**** Alternating Example Neural Network Classifier RUNNING TEST\n/
+
+isolate (:s:)
+isolate (:filetxt:) //
+
+{ 
+  input (:filetxt:) [ QUICKREF_mt_ng_reference_1.input 25000 4096 ]
+  match (:t1:) [:filetxt:] /(....){255}.*?\n\n/ 
+  {
+    classify < neural unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ [:t1:] 
+    output / type I \n:*:s:\n/
+  } 
+  alius 
+  { output / type Q \n:*:s:\n/ } 
+}
+
+{ 
+  isolate (:t2:) //
+  input (:filetxt:) [ INTRO_mt_ng_reference_2.input 25000 4096 ]
+  match (:t2:) [:filetxt:] /(....){255}.*?\n/ 
+
+  {
+    classify < neural unigram > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ [:t2:]
+    output / type I \n:*:s:\n/
+  } 
+  alius 
+  { output / type Q \n:*:s:\n/ }
+}
+

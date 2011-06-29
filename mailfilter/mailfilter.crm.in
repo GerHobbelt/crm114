@@ -1,4 +1,4 @@
-#! @CRM@
+#! /usr/bin/crm
 #    -- bangline args removed for system portability --
 # -( learnspam learnnonspam learnfile stats_only config spamcss nonspamcss fileprefix force unlearn cache )
 #

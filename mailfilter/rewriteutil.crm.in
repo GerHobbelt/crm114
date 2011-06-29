@@ -1,4 +1,4 @@
-#! @CRM@
+#! /usr/bin/crm
 #   do rewriting, based on rewrite rules in rewrites.mfp
 #
 {

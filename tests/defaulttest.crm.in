@@ -1,0 +1,8 @@
+#!/usr/bin/crm
+#   see if default actually works!
+window
+output / \n\nCRM114: testing default command line args \n/
+output /blah 1 = :*:blah:\n/
+isolate < default > (:blah:) /new value/ 
+output /blah 2 = :*:blah:\n/
+

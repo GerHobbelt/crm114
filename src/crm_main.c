@@ -310,7 +310,7 @@ int main(int argc, char **argv)
 
 	// force MSwin/Win32 console I/O into binary mode: treat \r\n and \n as completely different - like it is on *NIX boxes!
 #if defined(HAVE__SETMODE) && defined(HAVE__FILENO) && defined(O_BINARY)
-	_setmode(_fileno(crm_stdin), O_BINARY);
+	(void)_setmode(_fileno(crm_stdin), O_BINARY);
 #endif
 
     //   copy program path/name into global static...
@@ -1358,7 +1358,7 @@ end_command_line_parse_loop:
 
     //    Call the pre-processor on the program
     //
-    status = crm_preprocessor(csl, 0);
+	status = crm_preprocessor(csl, 0);
 
     //    Now, call the microcompiler on the program file.
     status = crm_microcompiler(csl, vht);

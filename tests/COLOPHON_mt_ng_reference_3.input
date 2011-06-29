@@ -1,0 +1,49 @@
+The CRM114 Discriminator system was written mostly while going to and
+from my day job on Boston's MBTA commuter rail trains.  The
+development machine was a Sony Picturebook C1VP running Red Hat Linux
+7.2 ( soon upgraded to Red Hat 7.3, then RH 7.3 on a Fujitsu P2120).
+Editing was with GNU Emacs 21.2.1 , compiling was with GCC 2.96, and
+debugging with GDB frontended with DDD 3.3.1 .
+
+It took about 100 days of commuting to do the initial work, mostly in
+1/2 hour stretches.  This included design, coding, testing, and
+documentation.  I expect that it shows.  The upside of all this is
+that the code is simple enough to understand because it's all
+comprehendable in 1/2 hour stretches.  The downside is that it 
+probably reads in a somewhat choppy style. 
+
+If CRM114 is useful code to someone, please use it; if you find a bug
+or an wierdness, send in an email and we'll create a fix or an
+update.  Like the readme says, this isn't the PERL swiss army knife,
+this is a razor-sharp katana that can talk.
+
+Much of the power of CRM114 versus Perl, awk, et al is due to the
+linear-time and approximate regex matching engines written by Ville
+Laurikari, and all the glory for that particular section of the code
+belongs to Ville, not me.
+
+I would like to thank Darren Leigh, David Kramer, Reto Lichtensteiger,
+John Bowker, Ville Laurikari, Eric Johanssen, Adolfo Santiago, Danko
+Miklos, Dave Corcoran, Ben Livingood, George Burdell, P Oscar Boykin,
+Corrado Cau, Ruven Gottlieb, Kurt Bigler, Barry Jaspan, Fidelis Assis,
+Christian Siefkes, Shalendra Chhabra, Paolo Pazolli, and many others
+for their sharp eyes and analytic skills.
+
+I would also like to thank Richard M. Stallman and Linus Torvalds, for
+leading by example.
+
+This code is copyrighted by William S. Yerazunis, and released under
+the Free Software Foundation's GPL license, version 2.0 or later; a
+copy is enclosed.  Go to www.fsf.org to get newer versions, if
+desired.  If you need a different release, please contact the author;
+release under other licensing arrangements is possible to negotiate.
+
+As Napoleon said:
+
+    "When all else fails, march toward the sound of the guns." 
+
+		-Bill Yerazunis
+
+
+
+

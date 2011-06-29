@@ -211,6 +211,12 @@ for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Neural Network Classifier 
 
 
 
+rm -f i_test.css 
+rm -f q_test.css
+
+./crm114 '-{window; output /\n**** Alternate Neural Network Classifier test script \n/}'
+./crm114 alternating_example_neural.crm
+
 rm -f i_vs_q_test.css
 rm -f i_test.css 
 rm -f q_test.css

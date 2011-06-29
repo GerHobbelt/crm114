@@ -1,7 +1,10 @@
 2008-03-25 Ger Hobbelt
 
-    * 'int'ified crm114 sources - finally got fed up and killed the 'long' fetish.
+    * 'int'ified ('INTifada') crm114 sources - finally got fed up and killed the 'long' fetish.
 
+      INTifada: 'long' fetish has been removed from the code: now everything is an 'int'
+      like every good boy should, unless it specifically NEEDS to be something else.
+      
       Process to redo this in a blunt way (I did it the hard way: code inspection):
 
         convert 'long long' to int64_t and unsigned long long to uint64_t
@@ -13,7 +16,46 @@
     * Added memnCdump() routine to report variables, etc. to stderr/stdout, so non-ascii
       variables, mucked up scripts, etc. don't get a chance to blow up the console 
       anymore.
-      
+
+	* Merged latest Neural Net code
+	
+	* Bugfixes in the crm language parser (variable hash storage)
+	
+	* Language parser could not cope with the line
+	
+	    alius   # line comment
+	    
+	  Nor would it handle
+	  
+	    # urgh \# alius
+	    
+	  correctly by processing - you wish - the 'alius' opcode in there.
+	  
+	  The new code can cope with series of comments and inter-command comments like these lines:
+	  
+	    # so? \#  output  # what? \#/checking for a foo.../#if we mingle comments with code? \# # like this?
+	    
+	  See alius_w_comment.crm for a few test cases.
+	
+	* Bugfix in 'file1 | file2 | file3' regexes in SKS and SVM: now correctly copes with
+	  megatest.sh's 
+	  
+  	    ./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }'
+  	    
+  	  Note that 'q_test.css|' in there: file2 will be decoded by the old regex, but no match
+  	  for file3 as the relevant part of the old regex said: 
+  	  
+  	    [[:space:]]+\\|[[:space:]]+([[:graph:]]+)
+  	    
+  	  Note the '+'-es in there following those [[:space:]] classes.
+  	
+  	
+  	  
+  
+  	  
+
+ 
+       
 
 2008-03-24 Ger Hobbelt
 

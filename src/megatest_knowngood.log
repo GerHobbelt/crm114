@@ -1,4 +1,4 @@
- This is CRM114, version 20080317-BlameJoeLangeway_VT (TRE 0.7.5 (LGPL))
+ This is CRM114, version 20080325-BlameSentansoken (TRE 0.7.5 (LGPL))
  Copyright 2001-2006 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -205,8 +205,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 8939 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 8939 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 19836 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 19836 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -543,37 +543,37 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2099038
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2099037
 Bytes used per pass: 2097150
 Passes done: 100 
 Total flux through isolation:  419430000
-OK_IF_SIZE_CHANGES: Final isolation size: 2099055 
+OK_IF_SIZE_CHANGES: Final isolation size: 2099054 
 OK_IF_LESS_THAN_100: Total growth: 17
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2101520
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2101519
 Bytes used per pass: 2097150
 Passes done: 10 
 Total flux through isolation:  41943000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101535 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101534 
 OK_IF_LESS_THAN_10: Total growth: 15
 Bytes used per pass: 2097150
 Passes done: 20 
 Total flux through isolation:  83886000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101541 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101540 
 OK_IF_LESS_THAN_20: Total growth: 21
 Bytes used per pass: 2097150
 Passes done: 30 
 Total flux through isolation:  125829000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101542 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101541 
 OK_IF_LESS_THAN_30: Total growth: 22
 Bytes used per pass: 2097150
 Passes done: 40 
 Total flux through isolation:  167772000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101542 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101541 
 OK_IF_LESS_THAN_40: Total growth: 22
 Starting 
 
@@ -661,7 +661,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20080317-BlameJoeLangeway_VT ( TRE 0.7.5 (LGPL) )
+version: 20080325-BlameSentansoken ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?
@@ -978,39 +978,56 @@ Total features in input file: 51
 
 
 **** Neural Network Classifier 
-punt...punt...punt...punt...punt...
+
 ./crm114: *WARNING* 
  neural: failed to converge within the training limit.   Beware your results.
  You might want to consider a larger network as well.
 I'll try to keep working.
 This happened at line 2 of file (from command line)
-(runtime system location: crm_neural_net.c(1679) in routine: crm_neural_net_learn)
+(runtime system location: crm_neural_net.c(1678) in routine: crm_neural_net_learn)
 The line was: 
---> learn < neural refute fromstart > (q_test.css) /[[:graph:]]+/
+--> learn < neural refute fromstart > (q_test.css) 
 <--
-punt...punt...punt...punt...punt...
+
 ./crm114: *WARNING* 
  neural: failed to converge within the training limit.   Beware your results.
  You might want to consider a larger network as well.
 I'll try to keep working.
 This happened at line 2 of file (from command line)
-(runtime system location: crm_neural_net.c(1679) in routine: crm_neural_net_learn)
+(runtime system location: crm_neural_net.c(1678) in routine: crm_neural_net_learn)
 The line was: 
---> learn < neural refute fromstart > (i_test.css) /[[:graph:]]+/
+--> learn < neural refute fromstart > (i_test.css) 
 <--
  type Q 
-CLASSIFY fails; success probability: 0.500000  pR: 0.0000
-Best match to file #0 (i_test.css) prob: 0.5000  pR: 0.0000  
-Total features in input file: 336
-#0 (i_test.css): prob: 5.00e-01, pR:   0.00
-#1 (q_test.css): prob: 5.00e-01, pR:   0.00
+CLASSIFY fails; success probability: 0.393070  pR: -1.6237
+Best match to file #1 (q_test.css) prob: 0.6069  pR: 1.6237  
+Total features in input file: 335
+#0 (i_test.css): prob: 3.93e-01, pR:  -1.62
+#1 (q_test.css): prob: 6.07e-01, pR:   1.62
 
  type Q 
-CLASSIFY fails; success probability: 0.500000  pR: 0.0000
-Best match to file #0 (i_test.css) prob: 0.5000  pR: 0.0000  
-Total features in input file: 466
-#0 (i_test.css): prob: 5.00e-01, pR:   0.00
-#1 (q_test.css): prob: 5.00e-01, pR:   0.00
+CLASSIFY fails; success probability: 0.449258  pR: -0.5074
+Best match to file #1 (q_test.css) prob: 0.5507  pR: 0.5074  
+Total features in input file: 465
+#0 (i_test.css): prob: 4.49e-01, pR:  -0.51
+#1 (q_test.css): prob: 5.51e-01, pR:   0.51
+
+ Alternating Example Neural Network Classifier TRAINING 
+
+**** Alternating Example Neural Network Classifier RUNNING TEST
+ type Q 
+CLASSIFY fails; success probability: 0.017262  pR: -282.7380
+Best match to file #1 (q_test.css) prob: 0.9827  pR: 282.7380  
+Total features in input file: 195
+#0 (i_test.css): prob: 1.73e-02, pR: -282.74
+#1 (q_test.css): prob: 9.83e-01, pR: 282.74
+
+ type I 
+CLASSIFY succeeds; success probability: 0.971915  pR: 271.9152
+Best match to file #0 (i_test.css) prob: 0.9719  pR: 271.9152  
+Total features in input file: 177
+#0 (i_test.css): prob: 9.72e-01, pR: 271.92
+#1 (q_test.css): prob: 2.81e-02, pR: -271.92
 
 
 **** Support Vector Machine (SVM) unigram classifier 

@@ -1,4 +1,4 @@
-#!/usr/bin/crm
+#! /usr/bin/crm
 { 
 	window
 	output /:*:_nl: CRM114: test syscall 'echo beep' :*:_nl:/

@@ -307,11 +307,9 @@ int crm_zexpandvar(char *buf,
                     }
                     break;
 
-#if 01 /* [i_a] don't know why this was #if 0 anymore @ march 2008 :-( */
                 case '>':
                 case ')':
                 case ']':
-#endif
                 case '/':
                 case ';':
                 case '{':
@@ -333,7 +331,7 @@ int crm_zexpandvar(char *buf,
                         //       the '\' character _stays_ as a literal
                         buf[id] = '\\';
                         id++;
-                        if (is < inlen)  // watch out for end-of-string
+                        if (is < inlen)  // watch out for end-of-string [i_a]
 						{
 							buf[id] = buf[is];
 							id++;
@@ -545,7 +543,7 @@ int crm_zexpandvar(char *buf,
         inlen = id - 1;
 
         if (internal_trace)
-            fprintf(stderr, " :*: var-expansion yields: =%s= len %d \n", buf, inlen);
+            fprintf(stderr, " :*: var-expansion yields: =%s= len %d\n", buf, inlen);
     }
 
     //     END OF :*: EXPANSIONS
@@ -680,7 +678,7 @@ int crm_zexpandvar(char *buf,
         buf[id] = 0;
         inlen = id - 1;
         if (internal_trace)
-            fprintf(stderr, "indirection :+: expansion yields: =%s= len %d \n", buf, inlen);
+            fprintf(stderr, "indirection :+: expansion yields: =%s= len %d\n", buf, inlen);
     }
 
     //     END OF :+: EXPANSIONS
@@ -809,7 +807,7 @@ int crm_zexpandvar(char *buf,
         //    and because id always gets an extra increment...
         inlen = id - 1;
         if (internal_trace)
-            fprintf(stderr, " strlen :#: expansion yields: =%s= len %d \n", buf, inlen);
+            fprintf(stderr, " strlen :#: expansion yields: =%s= len %d\n", buf, inlen);
     }
     //       END OF :#: STRING LENGTH EXPANSIONS
 

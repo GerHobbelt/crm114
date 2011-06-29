@@ -37,7 +37,8 @@ VER_SUFFIX = @VER_SUFFIX@
 #     to mess with my brain. - wsy)
 #
 VERSION = @VERSION@
-PREV_VERSION=20080217-BlameJoeLangeway_VT
+PREV_VERSION=20080317-BlameJoeLangeway_VT
+#PREV_VERSION=20080217-BlameJoeLangeway_VT
 #PREV_VERSION=20071201-BlameLittleStevie_VT
 #PREV_VERSION=20071126-BlameGerHobbelt
 #PREV_VERSION=20071015-BlameGerHobbelt
@@ -89,7 +90,7 @@ SILENT = @SILENT@
 AM_CFLAGS = @AM_CFLAGS@
 # AM_CFLAGS += -g -O3
 #     turn this one on for no optimization, but debugging and time profiling.
-#AM_CFLAGS += -g -O0 -Wall -pg -CB
+#AM_CFLAGS += -g -O0 -Wall -pg
 #     turn this one on for really picayune debugging.
 
 AM_CPPFLAGS = @AM_CPPFLAGS@
@@ -200,13 +201,11 @@ MEGATESTFILES = \
 	mt_ng_OSB_Markovian_2.input \
 	mt_ng_String_Unigram_Hyperspace_1.input \
 	mt_ng_Unigram_Hyperspace_2.input \
-	matchtest_mt_ng.input \
 	mt_ng_Vector_3_word_bag_Hyperspace_1.input \
 	mt_ng_String_Hyperspace_1.input \
 	approxtest_mt_ng_1.input \
 	mt_ng_Clump_Pmulc_3.input \
 	approxtest_mt_ng_2.input \
-	backwardstest_mt_ng.input \
 	mt_ng_OSB_Hyperspace_1.input \
 	mt_ng_OSB_3_letter_Hyperspace_2.input \
 	mt_ng_OSB_Hyperspace_2.input \
@@ -296,7 +295,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	rewritetest.crm test_rewrites.mfp \
 	randomiotest.crm isolate_reclaim_test.crm \
 	match_isolate_test.crm match_isolate_reclaim.crm \
-	call_return_test.crm defaulttest.crm \
+	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
 	shroud.crm quine.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
@@ -306,7 +305,8 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	test_svm.crm \
 	classifymail.crm \
 	tokendelimiterbugtest.crm bracesbugtest.crm \
-	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm
+	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
+	alius_w_comment.crm
 
 
 TEXTFILES = COLOPHON.txt pad.dat \
@@ -741,7 +741,6 @@ uninstall:
 	-rm -rf $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)
 	-rm -rf $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)
 	-rm -rf $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)
-	-rm -rf $(DESTDIR)$(bindir)/osbfutil$(VER_SUFFIX)
 	-rm -rf $(DESTDIR)$(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 
@@ -758,7 +757,7 @@ uninstall:
 #       do change, either your kit isn't quite right or your
 #       install is broken (or you've found a bug).
 #
-megatest: crm114 megatest.sh megatest_knowngood.log
+megatest: crm114 megatest.sh megatest_knowngood.log $(MEGATESTFILES) 
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
 	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
@@ -775,10 +774,6 @@ megatest: crm114 megatest.sh megatest_knowngood.log
 	-( if [ ! -e ./inserttest_a.crm      ] ; then cp $(srcdir)/*.crm ./           ; fi )
 	-( if [ ! -e ./rewrites.mfp          ] ; then cp $(srcdir)/*.mfp ./           ; fi )
 	-( if [ ! -e ./blacklist.mfp.example ] ; then cp $(srcdir)/*.example ./       ; fi )
-	-( if [ ! -e ./QUICKREF.txt          ] ; then cp $(srcdir)/QUICKREF.txt ./    ; fi )
-	-( if [ ! -e ./INTRO.txt             ] ; then cp $(srcdir)/INTRO.txt ./       ; fi )
-	-( if [ ! -e ./COLOPHON.txt          ] ; then cp $(srcdir)/COLOPHON.txt ./    ; fi )
-	-( if [ ! -e ./FAQ.txt               ] ; then cp $(srcdir)/FAQ.txt ./         ; fi )
 	$(srcdir)/megatest.sh 2 > megatest_test.log 2>&1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
@@ -793,7 +788,7 @@ megatest: crm114 megatest.sh megatest_knowngood.log
 
 
 
-test: crm114 megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.log
+megatest_ng: crm114 megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.log
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
 	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
@@ -810,10 +805,6 @@ test: crm114 megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.log
 	-( if [ ! -e ./inserttest_a.crm      ] ; then cp $(srcdir)/*.crm ./           ; fi )
 	-( if [ ! -e ./rewrites.mfp          ] ; then cp $(srcdir)/*.mfp ./           ; fi )
 	-( if [ ! -e ./blacklist.mfp.example ] ; then cp $(srcdir)/*.example ./       ; fi )
-	-( if [ ! -e ./QUICKREF.txt          ] ; then cp $(srcdir)/QUICKREF.txt ./    ; fi )
-	-( if [ ! -e ./INTRO.txt             ] ; then cp $(srcdir)/INTRO.txt ./       ; fi )
-	-( if [ ! -e ./COLOPHON.txt          ] ; then cp $(srcdir)/COLOPHON.txt ./    ; fi )
-	-( if [ ! -e ./FAQ.txt               ] ; then cp $(srcdir)/FAQ.txt ./         ; fi )
 	$(srcdir)/megatest_ng.sh 2 > megatest_ng_test.log 2>&1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
@@ -825,6 +816,10 @@ test: crm114 megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.log
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
 	$(diff) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
+
+
+
+test: megatest_ng
 
 
 
@@ -973,7 +968,7 @@ reindent: indent.sh
 
 
 
-.PHONY: reindent depend rsync done_all megatest help clean install uninstall-hook uninstall
+.PHONY: reindent depend rsync done_all megatest help clean install uninstall-hook uninstall test megatest_ng megatest
 
 
 

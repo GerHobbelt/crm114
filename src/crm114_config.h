@@ -26,6 +26,10 @@
 #endif
 
 
+// This will be defined in ./configure OR your own config_Billy.h/config_Win32.h
+//
+//#define CRM_PRODUCTION_CLASSIFIERS_ONLY
+
 //
 //   default size of the variables hashtable (a.k.a. the VHT)
 //
@@ -333,7 +337,7 @@
 //     cookies on a fatal error
 #define MAX_NONFATAL_ERRORS 100
 
-//     How big is a feature bucket?  Is it a byte, a short, a int,
+//     How big is a feature bucket?  Is it a byte, a short, a long, 
 //     a float, whatever.  :)
 #define FEATUREBUCKET_TYPE FEATUREBUCKET_STRUCT
 //#define FEATUREBUCKET_VALUE_MAX 32767
@@ -350,23 +354,34 @@
 #define NN_MAX_FEATURES 65536
 
 //     Neural Net training setups
-#define NN_DEFAULT_ALPHA 0.5
+//
+//     Note- convergence seems to work well at 
+//    alpha 0.2 init_noise 0.5 stoch_noise 0.1 gain_noise 0.00000001
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.1 gain_noise 0.00000001
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 0.00000001
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 0.00000001
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 2.0
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 2.0 zerotr 0.9999
+
+#define NN_DEFAULT_ALPHA 0.2
 //   Initialization noise magnitude
-#define NN_INITIALIZATION_NOISE_MAGNITUDE 0.1
+#define NN_INITIALIZATION_NOISE_MAGNITUDE 0.2
 //   Stochastic noise magnitude
 #define NN_DEFAULT_STOCH_NOISE 0.05
 //   Gain noise magnitude
-#define NN_DEFAULT_GAIN_NOISE 0.0
+#define NN_DEFAULT_GAIN_NOISE 2.0
+//   Zero-tracking factor - factor the weights move toward zero every epoch
+#define NN_ZERO_TRACKING 0.9999
 //   Threshold for back propagation
-#define NN_INTERNAL_TRAINING_THRESHOLD 0.25
+#define NN_INTERNAL_TRAINING_THRESHOLD 0.1
 //  Just use 1 neuron excitation per token coming in. 
 #define NN_N_PUMPS 1
 //  How many training cycles before we punt out 
-#define NN_MAX_TRAINING_CYCLES 100
+#define NN_MAX_TRAINING_CYCLES 500
 //  When doing a "nuke and retry", allow this many training cycles.
-#define NN_MAX_TRAINING_CYCLES_FROMSTART 1000
+#define NN_MAX_TRAINING_CYCLES_FROMSTART 5000
 //  How many times to allow a punt?
-#define NN_FROMSTART_PUNTING 5
+#define NN_FROMSTART_PUNTING 1000000
 //  After how many "not needed" cycles do we microgroom this doc away?
 #define NN_MICROGROOM_THRESHOLD 10      
 //  use the sparse retina design?  No, it's not good.
@@ -385,7 +400,7 @@
 
 
 // which classifiers are 'experimental' for this release?
-#if defined (CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS)
+#if defined (CRM_PRODUCTION_CLASSIFIERS_ONLY)
 
 #undef CRM_WITHOUT_NEURAL_NET
 #define CRM_WITHOUT_NEURAL_NET 1
@@ -402,7 +417,7 @@
 #undef CRM_WITHOUT_CLUMP
 #define CRM_WITHOUT_CLUMP 1
 
-#endif /* CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS */
+#endif /* CRM_PRODUCTION_CLASSIFIERS_ONLY */
 
 
 

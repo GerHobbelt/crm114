@@ -7,63 +7,112 @@
 
 ## Copyright (C) 2003, 2004 Joost van Baal
 
-PACKAGE = @PACKAGE_TARNAME@
-VER_SUFFIX = @VER_SUFFIX@ 
-VERSION = @VERSION@
-SILENT = @SILENT@
-
-
-testdir = $(datadir)/doc/$(PACKAGE)/examples/tests
-
 
 DISTCLEANFILES = 
 CLEANFILES = *~ *.bak
 
 
 
+PACKAGE = @PACKAGE_TARNAME@
+VER_SUFFIX = @VER_SUFFIX@ 
+VERSION = @VERSION@
+SILENT = @SILENT@
+
+
+
+
+testdir = $(datadir)/doc/$(PACKAGE)/examples/tests
+
+
+
+DIFF_FLAGS = @DIFF_FLAGS@
+
+ECHO = echo
+E = $(SILENT) $(ECHO)
+
+MEGATESTFILES = \
+	mt_ng_Bit_Entropy_2.input \
+	mt_ng_OSB_Markov_Chisquared_Unique_2.input \
+	mt_ng_OSB_Markovian_1.input \
+	mt_ng_OSB_Markov_Chisquared_Unique_1.input \
+	mt_ng_String_Unigram_Hyperspace_2.input \
+	mt_ng_String_Kernel_SVM_SKS_Unique_1.input \
+	mt_ng_Support_Vector_Machine_SVM_1.input \
+	mt_ng_Bit_Entropy_1.input \
+	mt_ng_unigram_Winnow_1.input \
+	mt_ng_Bytewise_Correlation_2.input \
+	mt_ng_OSB_Winnow_1.input \
+	mt_ng_Bit_Entropy_Toroid_1.input \
+	mt_ng_Neural_Network_1.input \
+	mt_ng_String_Kernel_SVM_SKS_1.input \
+	mt_ng_OSB_3_letter_Hyperspace_1.input \
+	mt_ng_Support_Vector_Machine_SVM_2.input \
+	windowtest_fromvar_mt_ng_1.input \
+	mt_ng_Neural_Network_2.input \
+	mt_ng_Fast_Substring_Compression_Match_1.input \
+	backwardstest_mt_ng_1.input \
+	mt_ng_Unigram_Bayesian_2.input \
+	mt_ng_Support_Vector_Machine_SVM_unigram_2.input \
+	mt_ng_String_Hyperspace_2.input \
+	mt_ng_SBPH_Markovian_1.input \
+	mt_ng_OSB_Markov_Unique_2.input \
+	mt_ng_Unigram_Hyperspace_1.input \
+	mt_ng_Unigram_Bayesian_1.input \
+	mt_ng_OSBF_Local_Confidence_Fidelis_2.input \
+	mt_ng_String_Kernel_SVM_SKS_2.input \
+	matchtest_mt_ng_1.input \
+	mt_ng_OSB_Markovian_2.input \
+	mt_ng_String_Unigram_Hyperspace_1.input \
+	mt_ng_Unigram_Hyperspace_2.input \
+	mt_ng_Vector_3_word_bag_Hyperspace_1.input \
+	mt_ng_String_Hyperspace_1.input \
+	approxtest_mt_ng_1.input \
+	mt_ng_Clump_Pmulc_3.input \
+	approxtest_mt_ng_2.input \
+	mt_ng_OSB_Hyperspace_1.input \
+	mt_ng_OSB_3_letter_Hyperspace_2.input \
+	mt_ng_OSB_Hyperspace_2.input \
+	mt_ng_Vector_3_word_bag_Hyperspace_2.input \
+	mt_ng_Bit_Entropy_Toroid_2.input \
+	windowtest_mt_ng_1.input \
+	mt_ng_OSB_Markov_Unique_1.input \
+	mt_ng_OSBF_Local_Confidence_Fidelis_1.input \
+	mt_ng_unigram_Winnow_2.input \
+	mt_ng_Fast_Substring_Compression_Match_2.input \
+	backwardstest_mt_ng_2.input \
+	mt_ng_Bytewise_Correlation_1.input \
+	mt_ng_String_Kernel_SVM_SKS_Unique_2.input \
+	mt_ng_Clump_Pmulc_1.input \
+	mt_ng_OSB_Winnow_2.input \
+	mt_ng_Clump_Pmulc_2.input \
+	mt_ng_SBPH_Markovian_2.input \
+	mt_ng_Support_Vector_Machine_SVM_unigram_1.input \
+	COLOPHON_mt_ng_reference_3.input \
+	FAQ_mt_ng_reference_4.input
+
+
 test_SCRIPTS = \
-	aliustest.crm \
-	approxtest.crm \
-	argtest.crm \
-	backwardstest.crm \
-	beeptest.crm \
-	bracktest.crm \
-	classifytest.crm \
-	escapetest.crm \
-	eval_infiniteloop.crm \
-	exectest.crm \
-	fataltraptest.crm \
-	inserttest_a.crm \
-	inserttest_b.crm \
-	inserttest_c.crm \
-	learntest.crm \
-	match_isolate_test.crm \
-	matchtest.crm \
-	mathalgtest.crm \
-	mathrpntest.crm \
-	nestaliustest.crm \
-	overalterisolatedtest.crm \
-	paolo_overvars.crm \
-	randomiotest.crm \
+	matchtest.crm windowtest.crm overalterisolatedtest.crm exectest.crm \
+	learntest.crm classifytest.crm \
+	escapetest.crm argtest.crm beeptest.crm skudtest.crm aliustest.crm \
+	nestaliustest.crm eval_infiniteloop.crm \
+	traptest.crm fataltraptest.crm uncaughttraptest.crm \
+	inserttest_a.crm inserttest_b.crm inserttest_c.crm \
+	backwardstest.crm approxtest.crm \
+	mathalgtest.crm mathrpntest.crm \
+	indirecttest.crm translate_tr.crm zz_translate_test.crm \
 	rewritetest.crm \
-	skudtest.crm \
-	statustest.crm \
-	traptest.crm \
-	uncaughttraptest.crm \
-	unionintersecttest.crm \
-	userdirtest.crm \
-	windowtest.crm \
-	windowtest_fromvar.crm \
+	randomiotest.crm isolate_reclaim_test.crm \
+	match_isolate_test.crm match_isolate_reclaim.crm \
+	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
+	bracktest.crm unionintersecttest.crm \
+	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	tenfold_validate.crm \
-	tokendelimiterbugtest.crm \
-	bracesbugtest.crm \
-	blowuptrapbugtest.crm \
-	trapseqbugtest.crm \
-	indirecttest.crm \
-	isolate_reclaim_test.crm \
-	match_isolate_reclaim.crm \
-	slashbugtest.crm \
-	translate_tr.crm
+	tokendelimiterbugtest.crm bracesbugtest.crm \
+	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
+	alius_w_comment.crm
+
+
 
 
 test_UBERSCRIPTS = megatest.sh \
@@ -71,28 +120,68 @@ test_UBERSCRIPTS = megatest.sh \
     megatest_ng.sh \
 	testscript.sh
 
+
+
 EXTRA_DIST = megatest_knowngood.log \
-	$(test_SCRIPTS) $(test_UBERSCRIPTS)
+	test_rewrites.mfp \
+	$(test_SCRIPTS) $(test_UBERSCRIPTS) $(MEGATESTFILES)
  
 
 
 
-megatest: $(test_SCRIPTS) megatest_knowngood.log megatest.sh
-	$(SILENT) echo ""
-	$(SILENT) echo "    This runs a moderately interesting set of base tests"
-	$(SILENT) echo "    to exercise much of CRM114 under TRE.  This takes about"
-	$(SILENT) echo "    1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
-	$(SILENT) echo "    be patient; you (hopefully) won't see anything till the"
-	$(SILENT) echo "    full set of tests complete.  If you didn't use TRE, all"
-	$(SILENT) echo "    bets are off."
-	$(SILENT) echo ""
-	$(SILENT) echo "    Lines of output that start with OK_IF_mumble are allowed"
-	$(SILENT) echo "    to change values.  No other lines should.  If other lines"
-	$(SILENT) echo "    do change, either your kit isn't quite right or your"
-	$(SILENT) echo "    install is broken (or you've found a bug)."
-	$(SILENT) echo ""
-	megatest.sh > megatest_test.log 2>&1
-	$(diff) -ubwBd megatest_knowngood.log megatest_test.log & sleep 1
+megatest: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest.sh
+	$(E) ""
+	$(E) "   This runs a moderately interesting set of base tests"
+	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
+	$(E) "   1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
+	$(E) "   be patient; you (hopefully) won't see anything till the"
+	$(E) "   full set of tests complete.  If you didn't use TRE, all"
+	$(E) "   bets are off."
+	$(E) ""
+	$(E) "   Lines of output that start with OK_IF_mumble are allowed"
+	$(E) "   to change values.  No other lines should.  If other lines"
+	$(E) "   do change, either your kit isn't quite right or your"
+	$(E) "   install is broken (or you've found a bug)."
+	$(E) ""
+	megatest.sh 2 > megatest_test.log 2>&1
+	$(E) "=============================================================="
+	$(E) "=================== MEGATEST DIFF REPORT ====================="
+	$(E) "===================      (unified)       ====================="
+	$(E) "=============================================================="
+	$(diff) -u $(DIFF_FLAGS) megatest_knowngood.log megatest_test.log & sleep 1
+	$(E) "=============================================================="
+	$(E) "=================== MEGATEST DIFF REPORT ====================="
+	$(E) "===================      (regular)       ===================="
+	$(E) "=============================================================="
+	$(diff) $(DIFF_FLAGS) megatest_knowngood.log megatest_test.log & sleep 1
+
+
+megatest_ng: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest_ng.sh
+	$(E) ""
+	$(E) "   This runs a moderately interesting set of base tests"
+	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
+	$(E) "   1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
+	$(E) "   be patient; you (hopefully) won't see anything till the"
+	$(E) "   full set of tests complete.  If you didn't use TRE, all"
+	$(E) "   bets are off."
+	$(E) ""
+	$(E) "   Lines of output that start with OK_IF_mumble are allowed"
+	$(E) "   to change values.  No other lines should.  If other lines"
+	$(E) "   do change, either your kit isn't quite right or your"
+	$(E) "   install is broken (or you've found a bug)."
+	$(E) ""
+	megatest_ng.sh 2 > megatest_ng_test.log 2>&1
+	$(E) "=============================================================="
+	$(E) "=================== MEGATEST DIFF REPORT ====================="
+	$(E) "===================      (unified)       ====================="
+	$(E) "=============================================================="
+	$(diff) -u $(DIFF_FLAGS) megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(E) "=============================================================="
+	$(E) "=================== MEGATEST DIFF REPORT ====================="
+	$(E) "===================      (regular)       ===================="
+	$(E) "=============================================================="
+	$(diff) $(DIFF_FLAGS) megatest_knowngood.log megatest_ng_test.log & sleep 1
+
 
 
 
@@ -108,7 +197,7 @@ test_other:
 
 
 # run the BillY regression test script
-test_megatest:
+test_megatest: megatest_ng
 
 
 # test the mailfilter script
@@ -120,5 +209,5 @@ test_mailreaver:
 
 
 
-.PHONY: test test_basics test_other test_megatest test_mailfilter test_mailreaver megatest
+.PHONY: test test_basics test_other test_megatest test_mailfilter test_mailreaver megatest megatest_ng
 

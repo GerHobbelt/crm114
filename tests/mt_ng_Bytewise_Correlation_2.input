@@ -1,0 +1,3 @@
+CRM114 is a language designed to write filters in.  It caters to
+filtering email, system log streams, html, and other marginally
+human-readable ASCII that may occasion to grace your computer.

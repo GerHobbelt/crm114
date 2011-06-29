@@ -1,0 +1,144 @@
+(foo) {1}
+(fou){~}
+(foo) {1}
+(fou){~0}
+(foo) {1}
+(fou){~1}
+(foo) {1}
+(fou){~2}
+(fou){~3}
+(fuu){~}
+(fuu){~0}
+(fuu){~1}
+(fuu){~2}
+(fuu){~3}
+(fou){#}
+(fou){#0}
+(fou){#1}
+(fou){#2}
+(fou){#3}
+(fou){# ~1}
+(fou){#0 ~1}
+(fou){#1 ~1}
+(fou){#2 ~1}
+(fou){#3 ~1}
+(fuu){#}
+(fuu){#0}
+(fuu){#1}
+(fuu){#2}
+(fuu){#3}
+(fuu){# ~1}
+(fuu){#0 ~1}
+(fuu){#1 ~1}
+(fuu){#2 ~1}
+(fuu){#3 ~1}
+(fuu){# ~2}
+(fuu){#0 ~2}
+(fuu){#1 ~2}
+(fuu){#2 ~2}
+(fuu){#3 ~2}
+(fuu){# ~3}
+(fuu){#0 ~3}
+(fuu){#1 ~3}
+(fuu){#2 ~3}
+(fuu){#3 ~3}
+(fuu){# ~}
+(fuu){#0 ~}
+(fuu){#1 ~}
+(fuu){#2 ~}
+(fuu){#3 ~}
+(fou){#}
+(fou){#0}
+(fou){+1 -1}
+(fou){+2 -2}
+(fou){+3 -3}
+(fou){# ~1}
+(fou){#0 ~1}
+(fou){+1 -1 ~1}
+(fou){+2 -2 ~1}
+(fou){+3 -3 ~1}
+(fou){# ~2}
+(fou){#0 ~2}
+(fou){+1 -1 ~2}
+(fou){+2 -2 ~2}
+(fou){+3 -3 ~2}
+(fou){# ~3}
+(fou){#0 ~3}
+(fou){+1 -1 ~3}
+(fou){+2 -2 ~3}
+(fou){+3 -3 ~3}
+(fou){# ~}
+(fou){#0 ~}
+(fou){+1 -1 ~}
+(fou){+2 -2 ~}
+(fou){+3 -3 ~}
+(fuu){#}
+(fuu){#0}
+(fuu){+1 -1}
+(fuu){+2 -2}
+(fuu){+3 -3}
+(fuu){# ~1}
+(fuu){#0 ~1}
+(fuu){+1 -1 ~1}
+(fuu){+2 -2 ~1}
+(fuu){+3 -3 ~1}
+(fuu){# ~2}
+(fuu){#0 ~2}
+(fuu){+1 -1 ~2}
+(fuu){+2 -2 ~2}
+(fuu){+3 -3 ~2}
+(fuu){# ~3}
+(fuu){#0 ~3}
+(fuu){+1 -1 ~3}
+(fuu){+2 -2 ~3}
+(fuu){+3 -3 ~3}
+(fuu){# ~}
+(fuu){#0 ~}
+(fuu){+1 -1 ~}
+(fuu){+2 -2 ~}
+(fuu){+3 -3 ~}
+(anaconda){~}
+(anaonda){ 1i + 1d < 1 }
+(anaonda){ 1i + 1d < 2 }
+(ananda){ 1i + 1d < 1 }
+(ananda){ 1i + 1d < 2 }
+(ananda){ 1i + 1d < 3 }
+(ana123conda){ 1i + 1d < 2 }
+(ana123conda){ 1i + 1d < 3 }
+(ana123conda){ 1i + 1d < 4 }
+(ana123cona){ 1i + 1d < 4 }
+(ana123cona){ 1i + 1d < 5 }
+(ana123coa){ 1i + 1d < 4 }
+(ana123coa){ 1i + 1d < 5 }
+(ana123coa){ 1i + 1d < 6 }
+(ana123ca){ 1i + 1d < 4 }
+(ana123a){ 1i + 1d < 4 }
+(ana123a){ 1i + 1d < 3 }
+(anukeonda){~}
+(anaconda){ 1i + 1d < 1}
+(anaconda){ 1i + 1d < 1, #1}
+(anaconda){ 1i + 1d < 1 #1 ~10 }
+(anaconda){ #1, ~1, 1i + 1d < 1 }
+(anaconda){ #1 ~1 1i + 1d < 1 }
+(anacnda){ #1 ~1 1i + 1d < 1 }
+(agentsmith){~}
+(annndersen){~}
+(anentemstn){~}
+(anacda){~}
+(anacda){ #1 ~1 1i + 1d < 1 }
+(znacnda){ #1 ~1 1i + 1d < 1 }
+(znacnda){ #1 ~2 1i + 1d < 1 }
+(znacnda){ #1 ~3 1i + 1d < 1 }
+(znacnda){ #1 ~3 1i + 1d < 2 }
+(anac){~1}(onda){~1}
+(aac){~1}(onda){~1}
+(ac){~1}(onda){~1}
+(anac){~1}(oda){~1}
+(aac){~1}(oa){~1}
+(ac){~1}(oa){~1}
+(anac){~1}(onda){~1}
+(anZac){~1}(onZda){~1}
+(anZZac){~1}(onZda){~1}
+(anZac){~1}(onZZda){~1}
+([a-n]){3,100}
+([a-n]){3,100}?

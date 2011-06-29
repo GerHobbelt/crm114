@@ -1,4 +1,4 @@
-//  crm_preprocessor.c  - Controllable Regex Mutilator,  version v1.0
+//  crm_stmt_parser.c  - Controllable Regex Mutilator,  version v1.0
 //  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
@@ -79,6 +79,152 @@ const FLAG_DEF crm_flags[] =
 };
 
 /* #define CRM_MAXFLAGS 42   [i_a] unused in the new code */
+
+
+
+int skip_blanks(const char *buf, int start, int bufsize)
+{
+    CRM_ASSERT(buf != NULL);
+    CRM_ASSERT(start >= 0);
+    CRM_ASSERT(bufsize >= 0);
+
+    for ( ; start < bufsize && buf[start]; start++)
+    {
+        if (!crm_iscntrl(buf[start])
+            && !crm_isblank(buf[start])
+            && !crm_isspace(buf[start]))
+        {
+            break;
+        }
+    }
+    return start;
+}
+
+int skip_nonblanks(const char *buf, int start, int bufsize)
+{
+    CRM_ASSERT(buf != NULL);
+    CRM_ASSERT(start >= 0);
+    CRM_ASSERT(bufsize >= 0);
+
+    for ( ; start < bufsize && buf[start]; start++)
+    {
+        if (crm_iscntrl(buf[start])
+            || crm_isblank(buf[start])
+            || crm_isspace(buf[start]))
+        {
+            break;
+        }
+    }
+    return start;
+}
+
+int skip_command_token(const char *buf, int start, int bufsize)
+{
+    CRM_ASSERT(buf != NULL);
+    CRM_ASSERT(start >= 0);
+    CRM_ASSERT(bufsize >= 0);
+
+    // commands must start with a letter or underscore
+    if (start < bufsize)
+    {
+        if (crm_isalpha(buf[start]) || buf[start] == '_')
+        {
+            start++;
+            for ( ; start < bufsize && buf[start]; start++)
+            {
+                if (!crm_isalnum(buf[start])
+                    && buf[start] != '_')
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            switch (buf[start])
+            {
+            case '{':
+            case '}':
+                return start + 1;
+
+            case '#':
+                return start + 1;
+
+            case ':':
+                // probably a label - scan till next ':'
+                for (start++; start < bufsize && buf[start]; start++)
+                {
+                    if (buf[start] == ':')
+                    {
+                        return start + 1;
+                    }
+                }
+                break;
+
+            default:
+                // panic! just return till whitespace comes. This is bad anyway
+                for (start++; start < bufsize && buf[start]; start++)
+                {
+                    if (crm_iscntrl(buf[start])
+                        || crm_isblank(buf[start])
+                        || crm_isspace(buf[start]))
+                    {
+                        return start;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    return start;
+}
+
+
+int skip_comments_and_blanks(const char *buf, int start, int bufsize)
+{
+    CRM_ASSERT(buf != NULL);
+    CRM_ASSERT(start >= 0);
+    CRM_ASSERT(bufsize >= 0);
+
+    // comments start with # and end with a \r, \n (or a combination thereof), or the sequence '\\'+'#'
+    for ( ; start < bufsize && buf[start]; start++)
+    {
+		// skip blanks
+        if (!crm_iscntrl(buf[start])
+            && !crm_isblank(buf[start])
+            && !crm_isspace(buf[start]))
+        {
+			// or might it be a comment?
+		if (buf[start] == '#')
+        {
+            start++;
+            for ( ; start < bufsize && buf[start]; start++)
+            {
+				if (buf[start] == '\\' && start + 1 < bufsize && buf[start + 1] == '#')
+				{
+                    start += 2;
+					break;
+                }
+				if (buf[start] == '\r' || buf[start] == '\n')
+				{
+					// do correct start: no need to rescan \r or \n in the outer loop as it iscntrl()
+					start++;
+                    break;
+                }
+            }
+			start--; // correct for the start++ in the outer loop
+        }
+		else
+		{
+			// nope, aparently not.
+			break;
+		}
+		}
+	}
+    return start;
+}
+
+
 
 
 
@@ -224,7 +370,7 @@ int crm_nextword(const char *input,
 
     //    if we get to here, then we have a valid string.
     *len = 0;
-    while ((*start + *len) <= inlen  /* [i_a] */
+    while ((*start + *len) < inlen
            && input[*start + *len] > 0x20)
         *len += 1;
 
@@ -410,7 +556,7 @@ int crm_statement_parse(char           *in,
 //
 int crm_generic_parse_line(
         char *txt,                       //   the start of the program line
-        int   len,                       //   how int is the line
+        int   len,                       //   how long is the line
         int   maxargs,                   //   howm many things to search for (max)
         int  *ftype,                     //   type of thing found (index by schars)
         int  *fstart,                    //   starting location of found arg
@@ -480,25 +626,30 @@ int crm_generic_parse_line(
             //  :label:
             //  action
             //
-            if (crm_isspace(curchar))
+#if 0
+			if (crm_isspace(curchar))
                 continue;
-            switch (curchar)
+#else
+			chidx = skip_comments_and_blanks(txt, chidx, len);
+			if (chidx >= len)
+				continue;
+            curchar = txt[chidx];
+#endif
+			switch (curchar)
             {
             case '{':
             case '}':
                 // no args allowed: check that!
-                for (chidx++; chidx < len; chidx++)
+				chidx = skip_comments_and_blanks(txt, chidx + 1, len);
+
+                if (chidx < len && !crm_isspace(txt[chidx]))
                 {
-                    if (!crm_isspace(txt[chidx]))
-                    {
-                        nonfatalerror_ex(SRC_LOC(
-                                                ),
-                                " Curly braces delineate code sections. Is a action/command missing here?\n Bug in statement?\n --> %.*s%s",
-                                (len > 1024 ? 1024 : len),
-                                txt,
-                                (len > 1024 ? "(...truncated)" : ""));
-                        return 0;
-                    }
+                    nonfatalerror_ex(SRC_LOC(),
+                            " Curly braces delineate code sections. Is a action/command missing here?\n Bug in statement?\n --> %.*s%s",
+                            (len > 1024 ? 1024 : len),
+                            txt,
+                            (len > 1024 ? "(...truncated)" : ""));
+                    return 0;
                 }
                 return 0;
 
@@ -539,7 +690,7 @@ int crm_generic_parse_line(
                     // counted both start and end ':' --> label has now been scanned
 
                     submode = 0;                  // reset submode
-                    itype = CRM_FIND_ARG_SECTION; // start to parse arg sections now.
+                    itype = CRM_FIND_ARG_SECTION; // start to parse arg sections now: this may be a 'callable label'
                 }
                 break;
 
@@ -549,7 +700,8 @@ int crm_generic_parse_line(
             break;
 
         case CRM_PARSE_ACTION:
-            // parsing the command; when it ends, it may be followed by any of the <>[]()// sections
+            // parsing the command (starting at the SECOND char of it!)
+			// when it ends, it may be followed by any of the <>[]()// sections
             switch (curchar)
             {
             case '<':
@@ -585,7 +737,13 @@ int crm_generic_parse_line(
         case CRM_FIND_ARG_SECTION:
             //    is curchar one of the start chars?  (this is 8-bit-safe,
             //     because schars is always normal ASCII)
-            submode = 0;
+
+			chidx = skip_comments_and_blanks(txt, chidx, len);
+			if (chidx >= len)
+				continue;
+            curchar = txt[chidx];
+
+			submode = 0;
             switch (curchar)
             {
             case '<':
@@ -610,13 +768,13 @@ int crm_generic_parse_line(
                 break;
 
             default:
-                if (!crm_isspace(curchar))
+                if (!crm_isspace(txt[chidx]))
                 {
                     nonfatalerror_ex(SRC_LOC(),
                             " The statement contains an unidentified operand delimiter '%c'(HEX:%02X). "
                             "Only these are currently supported: <>()[]//\n Bug in statement?\n --> %.*s%s",
-                            (crm_isprint(curchar) ? curchar : '.'),
-                            (int)curchar,
+                            (crm_isprint(txt[chidx]) ? txt[chidx] : '.'),
+                            (int)txt[chidx],
                             (len > 1024 ? 1024 : len),
                             txt,
                             (len > 1024 ? "(...truncated)" : ""));

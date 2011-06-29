@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm
 {
 	match (:data:) /.*/
 	isolate (:stats:)

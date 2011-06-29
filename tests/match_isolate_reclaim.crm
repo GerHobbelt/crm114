@@ -1,4 +1,4 @@
-#! :|crm
+#!/usr/bin/crm
 #
 #        Program to test match/isolate memory reclamation
 #

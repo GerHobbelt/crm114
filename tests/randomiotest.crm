@@ -1,4 +1,4 @@
-#! :|crm
+#!/usr/bin/crm
 #
 #    Random I/O test - test lseeking I/O
 #

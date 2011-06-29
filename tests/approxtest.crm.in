@@ -1,4 +1,4 @@
-#! @CRM@ 
+#!  /usr/bin/crm 
 #   this program tests approximate regex matching.
 #
 window

@@ -1,4 +1,4 @@
-#! :|crm
+#! /usr/bin/crm   
 {
 	{
 		output / searching for a foo.../

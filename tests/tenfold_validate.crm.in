@@ -1,4 +1,4 @@
-#! @CRM@
+#!/usr/bin/crm
 #     
 #    Program to do 10-fold validation on N classes using various classifiers.
 #
