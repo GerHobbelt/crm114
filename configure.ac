@@ -419,7 +419,7 @@ DIFF_FLAGS="-EbwBd --strip-trailing-cr"
 
 
 AM_CONDITIONAL([OS_HAS_DIFF], [test -n "$DIFF"])
-AM_CONDITIONAL([OS_HAS_SEVENZIP], [test -n "$SEVEN_TAR"])
+AM_CONDITIONAL([OS_HAS_SEVENZIP], [test -n "$SEVEN_ZIP"])
 AM_CONDITIONAL([OS_HAS_LZMA], [test -n "$LZMA"])
 AM_CONDITIONAL([OS_HAS_ZIP], [test -n "$ZIP"])
 AM_CONDITIONAL([OS_HAS_TAR], [test -n "$TAR"])

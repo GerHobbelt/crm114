@@ -6760,7 +6760,7 @@ else
   OS_HAS_DIFF_FALSE=
 fi
 
- if test -n "$SEVEN_TAR"; then
+ if test -n "$SEVEN_ZIP"; then
   OS_HAS_SEVENZIP_TRUE=
   OS_HAS_SEVENZIP_FALSE='#'
 else

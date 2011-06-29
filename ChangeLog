@@ -92,6 +92,8 @@
             that. Nevertheless, this should stay, so the compiler
             definitions will be fixed for this. Fixed in the compiler table.
 
+    * Fixed configure.ac as 7zip was suddenly unrecognized since a 
+      few releases. :-(
 
 
 2008-05-01 Ger Hobbelt
