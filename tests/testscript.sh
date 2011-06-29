@@ -181,6 +181,10 @@ else
   echo "FAIL"
 fi
 
+echo "CRM114_TEST_GEN = ${CRM114_TEST_GEN}"
+echo "srcdir = ${srcdir}"
+echo "home = ${HOME}"
+
 exit ${retcode}
 
 

@@ -61,6 +61,8 @@ E = $(SILENT) $(ECHO)
 
 
 
+
+
 MEGATESTFILES = \
 	mt_ng_Bit_Entropy_2.input \
 	mt_ng_OSB_Markov_Chisquared_Unique_2.input \
@@ -282,6 +284,7 @@ test_classifiers:			\
 
 
 test_timing_announcement:
+	$(E) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
 	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
@@ -290,19 +293,13 @@ test_timing_announcement:
 	$(E) "   full set of tests complete.  If you didn't use TRE, all"
 	$(E) "   bets are off."
 	$(E) ""
-	$(E) "   Lines of output that start with OK_IF_mumble are allowed"
-	$(E) "   to change values.  No other lines should.  If other lines"
-	$(E) "   do change, either your kit isn't quite right or your"
-	$(E) "   install is broken (or you've found a bug)."
-	$(E) ""
+	$(E) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	-sleep 10
 
 
-check-hook:
-	$(E) "************************************"
-	$(E) "* check-hook CALLED"
-	$(E) "************************************"
-
-check-local:
+check-local:                      \
+		initial_tests1	\
+		markovian_classifier_tests
 	$(E) "************************************"
 	$(E) "* check-local CALLED"
 	$(E) "************************************"
@@ -919,6 +916,27 @@ cleanup_test:
 	-rm -f q_test.css
 
 
+
+
+
+
+
+#
+# because automake doesn't produce a 'make check' rule that I want...
+#
+# original code:
+# check-am: all-am
+#	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+#	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
+#
+# Le Hack:
+#
+check-am: all-am
+	@\
+	CRM114_TEST_GEN=1; export CRM114_TEST_GEN; \
+	srcdir=$(srcdir); export srcdir; \
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS); \
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
 
 
 .PHONY: test test_basics test_other test_megatest test_megatest_ng test_mailfilter test_mailreaver megatest megatest_ng test_classifiers
