@@ -147,9 +147,14 @@ extern char *tempbuf;
 //      For now, we will KISS, till we see how well this actually
 //      performs.  
 //   
-//    Option K1:   64-bit hashes, sorted, 0x0/0x0 sentinels between
+//    Option K1:   32-bit hashes, sorted, 0x0 sentinels between
 //      class instances.  No class merging.  No weighting- if something
-//      occurs twice, put in two entries.  
+//      occurs twice, put in two copies of the same entry, and no such thing
+//      as a negative weight (N.B.: we can create "anti" points with a new
+//      sentinel, i.e. use 0x0 as the sentinel value for "last thing was
+//      positive (which is what we do now) and 0x01 for "last thing is
+//      a negative example", which has negative luminance (which we
+//      don't do yet).  
 //
 
 typedef struct mythical_hyperspace_cell {
@@ -164,6 +169,9 @@ typedef struct mythical_hyperspace_cell {
 //     prime numbers, and preferably superincreasing, though both of those
 //     are not strict requirements.
 //
+
+#define VECTOR_TOKENIZER
+#ifndef VECTOR_TOKENIZER
 static long hctable[] =
     { 1, 7,
       3, 13,
@@ -176,6 +184,7 @@ static long hctable[] =
       397, 1637,
       797, 3277 };
       
+#endif
 
 
 int hash_compare (void const *a, void const *b)
@@ -219,7 +228,10 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long hashcounts;
   unsigned long hashpipe[OSB_BAYES_WINDOW_LEN+1]; 
   //
+
+#ifndef VECTOR_TOKENIZER
   regex_t regcb;
+#endif
   regmatch_t match[5];      //  we only care about the outermost match
   long textoffset;
   long textmaxoffset;
@@ -228,6 +240,9 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long unique;
   long use_unigram_features;
   long fev;
+
+  long next_offset;        //  UNUSED in the current code
+
   //  long made_new_file; 
   //
   //  unsigned long learns_index = 0;
@@ -322,7 +337,18 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   hashes[hashcounts].hash = 0;
   //  hashes[hashcounts].key = 0;
   hashcounts++;
-  
+
+  //   No need to do any parsing of a box restriction.
+  //   We got txtptr, txtstart, and txtlen from the caller.
+  //
+  textoffset = txtstart;
+  textmaxoffset = txtstart + txtlen;
+
+
+#ifndef VECTOR_TOKENIZER
+
+  //  The Old Feature Generator - now supplanted with the vector
+  //   tokenizer feature generator.  THIS CODE NOW INACTIVE
 
   //   compile the word regex
   //
@@ -346,18 +372,13 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   i = 0;
 
   
-  //   No need to do any parsing of a box restriction.
-  //   We got txtptr, txtstart, and txtlen from the caller.
-  //
-  textoffset = txtstart;
-  textmaxoffset = txtstart + txtlen;
-
-  
   //   init the hashpipe with 0xDEADBEEF 
   for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
     {
       hashpipe[h] = 0xDEADBEEF;
     };
+
+
   
   //    and the big feature-generator loop... go through all of the text.
   i = 0;
@@ -506,8 +527,110 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
  regcomp_failed:
 
+#else
+  //   Use the flagged vector tokenizer.  
 
+#ifdef NotInAMillionYears
 
+   First, get any optional
+  //   tokenizer pipeline setups (defined by the keyword "pipeline",
+  //   followed by the number of pipeline vectors, followed by the length
+  //   of the pipeline vectors, followed by the pipeline weight (must
+  //   be integers)  one pipeline worth at a time.
+  {
+    char s2text[MAX_PATTERN];
+    long s2len;
+    long coeff_array[UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];
+    long *ca;
+    long pipelen;
+    long pipe_iters;
+    char *vt_weight_regex = "vector: ([ 0-9]*)";
+    long regex_status;
+    regmatch_t match[5];   //  We'll only care about the second match
+
+    ca = NULL;
+    pipelen = 0;
+    pipe_iters = 0;
+
+    //     get the second slash parameter (if used at all)
+    crm_get_pgm_arg (s2text, MAX_PATTERN, apb->s2start, apb->s2len);
+    s2len = apb->s2len;
+    s2len = crm_nexpandvar (ptext, plen, MAX_PATTERN);
+    
+    //   Compile up the regex to find the vector tokenizer weights
+    crm_regcomp 
+      (&regcb, vt_weight_regex, strlen (vt_weight_regex), 
+       REG_ICASE | REG_EXTENDED);
+
+    //   Use the regex to find the vector tokenizer weights
+    regex_status =  crm_regexec (&regcb, 
+				 s2text,
+				 s2len,
+				 5,
+				 match,
+				 REG_EXTENDED,
+				 NULL);
+
+    //   Did we actually get a match for the extended parameters?
+    // if (regex_status == 0)
+    if (0)
+      {
+	char *conv_ptr;
+	long i;
+	//  Yes, it matched.  Set up the pipeline coeffs specially.
+	//   The first parameter is the pipe length
+	conv_ptr = & s2text[match[1].rm_so];
+	pipelen = strtol (conv_ptr, &conv_ptr, 0);
+	fprintf (stderr, "pipelen = %ld\n", pipelen);
+	//   The second parameter is the number of repeats
+	pipe_iters = strtol (conv_ptr, &conv_ptr, 0);
+	fprintf (stderr, "pipe_iters = %ld\n", pipe_iters);
+	for (i = 0; i < pipelen * pipe_iters; i++)
+	  coeff_array[i] = strtol (conv_ptr, &conv_ptr, 0);		  
+	ca = coeff_array;
+      };
+	
+    crm_vector_tokenize_selector
+      (apb,                   // the APB
+       txtptr,                 // intput string 
+       txtlen,                 // how many bytes
+       txtstart,               // starting offset
+       ptext,                  // parser regex
+       plen,                   // parser regex len
+       ca,                     // tokenizer coeff array
+       pipelen,                // tokenizer pipeline len
+       pipe_iters,             // tokenizer pipeline iterations
+       (unsigned long *) hashes,     // where to put the hashed results
+       HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
+       &hashcounts,             // how many hashes we actually got
+       &next_offset);           // where to start again for more hashes
+    
+  }
+#endif
+  //   keep the compiler happy...
+  match[0].rm_so = 0;
+  hashpipe[0] = 0;
+  h = 0;
+  k = 0;
+
+   //   Use the flagged vector tokenizer
+   crm_vector_tokenize_selector
+     (apb,                   // the APB
+      txtptr,                 // intput string 
+      txtlen,                 // how many bytes
+      txtstart,               // starting offset
+      ptext,                  // parser regex
+      plen,                   // parser regex len
+      NULL,                   // tokenizer coeff array
+      0,                      // tokenizer pipeline len
+      0,                      // tokenizer pipeline iterations
+      (unsigned long *) hashes,     // where to put the hashed results
+      HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
+      &hashcounts,             // how many hashes we actually got
+      &next_offset);           // where to start again for more hashes
+   
+#endif
+   
   //   Now sort the hashes array.
   //
   qsort (hashes, hashcounts, 
@@ -814,6 +937,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   HYPERSPACE_FEATUREBUCKET_STRUCT *unk_hashes;
   long unk_hashcount;
 
+  long next_offset;  // UNUSED for now!
+
   struct stat statbuf;      //  for statting the hash file
   unsigned long hashpipe[OSB_BAYES_WINDOW_LEN+1]; 
   regex_t regcb;
@@ -833,8 +958,6 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long maxhash;
   long fnstart, fnlen;
   long fn_start_here;
-  long textoffset;
-  long textmaxoffset;
   long bestseen;
   long thistotal;
 
@@ -1151,6 +1274,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //	" for classify().\n","Hope you know what are you doing.");
   //  };
 
+
+#ifndef VECTOR_TOKENIZER
+
   //
   //   now all of the files are mmapped into memory,
   //   and we can do the polynomials and add up points.
@@ -1302,6 +1428,33 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	};
     };      //  end of repeat-the-regex loop
  classify_end_regex_loop:
+
+#else
+  //   keep the compiler happy...
+  match[0].rm_so = 0;
+  hashpipe[0] = 0;
+  h = 0;
+  k = 0;
+
+
+
+  //   Use the flagged vector tokenizer
+  crm_vector_tokenize_selector
+    (apb,                   // the APB
+     txtptr,                 // intput string 
+     txtlen,                 // how many bytes
+     txtstart,               // starting offset
+     ptext,                  // parser regex
+     plen,                   // parser regex len
+     NULL,                   // tokenizer coeff array
+     0,                      // tokenizer pipeline len
+     0,                      // tokenizer pipeline iterations
+     (unsigned long *) unk_hashes,     // where to put the hashed results
+     HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
+     &unk_hashcount,             // how many hashes we actually got
+     &next_offset);           // where to start again for more hashes
+
+#endif
 
   ////////////////////////////////////////////////////////////
   //

@@ -365,6 +365,28 @@ int crm_generic_parse_line (
 void crm_get_pgm_arg (char *to, long tolen, char *from, long fromlen) ;
 
 
+
+//     The vector tokenizer - used to turn text into hash vectors.
+//
+
+long crm_vector_tokenize_selector
+(
+ ARGPARSE_BLOCK *apb,     // The args for this line of code
+ char *text,             // input string (null-safe!) 
+ long textlen,           //   how many bytes of input. 
+ long start_offset,      //     start tokenizing at this byte.
+ char *regex,            // the parsing regex (might be ignored)   
+ long regexlen,          //   length of the parsing regex  
+ long *coeff_array,      // the pipeline coefficient control array 
+ long pipe_len,          //  how long a pipeline (== coeff_array row length)
+ long pipe_iters,        //  how many rows are there in coeff_array 
+ unsigned long *features,         // where the output features go   
+ long featureslen,       //   how many output features (max)
+ long *features_out,     // how many longs did we actually use up
+ long *next_offset       // next invocation should start at this offset
+ );
+
+
 //     crm execution-time debugging environment - an interpreter unto itself
 //
 long crm_debugger ();

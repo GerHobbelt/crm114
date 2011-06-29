@@ -43,6 +43,10 @@ extern char *tempbuf;
 //    any way desired, including the right to relicense the code in
 //    any way desired.
 //
+////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////
+//
 //    Vectorized tokenizing - get a bunch of features in a nice
 //    predigested form (a counted array of chars plus control params
 //    go in, and a nice array of 32-bit ints come out.  The idea is to
@@ -72,17 +76,20 @@ extern char *tempbuf;
 //      { 1 0 0 0 23 0}
 //      { 1 0 0 0 0 47}}
 //
-//    yields "Classic CRM114" OSB features, and the 2x3 array 
+//    yields "Classic CRM114" OSB features.  The unit vector
 //
-//     {{1 1 0}
-//      {1 0 1}}
+//     {{1}} 
+//
+//    yields unigrams (that is, single units of whatever the
+//    the tokenizing regex matched).  The 1x2array 
+//
+//     {{1 1}}
 //
 //    yields bigrams that are not position nor order sensitive, while
 //
-//     {{1 2 0}
-//      {1 0 2}}
+//     {{1 2}}
 //
-//    yields bigrams that are order sensitive, but not position sensitive.
+//    yields bigrams that are order sensitive.
 // 
 //    Because the array elements are used as dot-product multipliers
 //    on the hashed token value pipeline, there is a small advantage to
@@ -105,7 +112,7 @@ long crm_vector_tokenize
    long *coeff_array,      // the pipeline coefficient control array
    long pipe_len,          //  how long a pipeline (== coeff_array row length)
    long pipe_iters,        //  how many rows are there in coeff_array
-   unsigned long *features,         // where the output features go
+   unsigned long *features, // where the output features go
    long featureslen,       //   how many output features (max)
    long features_stride,   //   Spacing (in words) between features
    long *features_out,     // how many longs did we actually use up
@@ -138,7 +145,7 @@ long crm_vector_tokenize
 	  crm_regerror (regcomp_status, &regcb, errortext, 4096);
 	  nonfatalerror5 ("Regular Expression Compilation Problem: ",
 			  errortext, CRM_ENGINE_HERE);
-	  return (regcomp_status);
+	  return (-1);
 	};
     };
 
@@ -185,7 +192,7 @@ long crm_vector_tokenize
 	  //    of length match[0].rm_eo - match[0].rm_so size)
 	  
 	  //
-	  //if (user_trace)
+	  if (user_trace)
 	  {
 	    fprintf (stderr, "Token; k: %ld T.O: %ld len %d ( %d %d on >",
 		     k,
@@ -223,8 +230,9 @@ long crm_vector_tokenize
 	      
 	      //    Stuff the final ihash value into reatures array
 	      features[*features_out] = ihash;
-	      fprintf (stderr, 
-		       "New Feature: %lx at %ld\n",ihash, *features_out);
+	      if (internal_trace)
+		fprintf (stderr, 
+			 "New Feature: %lx at %ld\n",ihash, *features_out);
 	      *features_out = *features_out + features_stride ;
 	    };
 	  
@@ -397,6 +405,14 @@ long crm_vector_tokenize_selector
   long hash_len1;
   long hash_iters1;
   long output_stride;
+  char *my_regex;
+  long my_regex_len;
+
+ // For slash-embedded pipeline definitions.
+  long ca[UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT]; 
+
+  char *string_kern_regex = ".";
+  long string_kern_regex_len = 1;
 
   //    Set up some clean initial values for the important parameters.
   //    Default is always the OSB featureset, 32-bit features.
@@ -410,6 +426,11 @@ long crm_vector_tokenize_selector
   hash_len1 = 5;
   hash_iters1 = 5;
   output_stride = 1;
+
+  //    put in the passed-in regex values, if any.
+  my_regex = regex;
+  my_regex_len = regexlen;
+
 
   //    Now we can proceed to set up the work in a fairly linear way.
 
@@ -434,17 +455,23 @@ long crm_vector_tokenize_selector
       output_stride = 2;
     };
   
-  //     Do we want a string kernel?  If so, then we have to change 
+  //     Do we want a string kernel?  If so, then we have to override
   //     a few things.
 
   if ( classifier_flags & CRM_STRING)
     {
+      //      fprintf (stderr, "String Kernel");
       hash_vec0 = string1_coeff;
       hash_len0 = 5;
       hash_iters0 = 1;
       hash_vec1 = string2_coeff;
       hash_len1 = 5;
       hash_iters1 = 1;
+      if (!my_regex)
+	{
+	  my_regex = string_kern_regex;
+	  my_regex_len = string_kern_regex_len;
+	};
     };
 
   //     Do we want a unigram system?  If so, then we change a few more
@@ -458,20 +485,103 @@ long crm_vector_tokenize_selector
       hash_len1 = 1;
       hash_iters1 = 1;
     };
-
-
+  
 
   //     Now all of the defaults have been filled in; we now see if the 
   //     caller has overridden any (or all!) of them.   We assume that the
   //     user who overrides them has pre-sanity-checked them as well.
   //
+  {
+    char s2text[MAX_PATTERN];
+    long s2len;
+    long local_pipe_len;
+    long local_pipe_iters;
+    char *vt_weight_regex = "vector: ([ 0-9]*)";
+    regex_t regcb;
+    long regex_status;
+    regmatch_t match[5];   //  We'll only care about the second match 
+    local_pipe_len = 0;
+    local_pipe_iters = 0;
+
+    //     get the second slash parameter (if used at all)
+    crm_get_pgm_arg (s2text, MAX_PATTERN, apb->s2start, apb->s2len);
+    s2len = apb->s2len;
+    s2len = crm_nexpandvar (s2text, s2len, MAX_PATTERN);
+
+    if (s2len > 0)
+      {
+	//   Compile up the regex to find the vector tokenizer weights
+	crm_regcomp
+	  (&regcb, vt_weight_regex, strlen (vt_weight_regex),
+	   REG_ICASE | REG_EXTENDED);
+	
+	//   Use the regex to find the vector tokenizer weights       
+	regex_status =  crm_regexec (&regcb,
+				     s2text,
+				     s2len,
+				     5,
+				     match,
+				     REG_EXTENDED,
+				     NULL);
+	
+	//   Did we actually get a match for the extended parameters?
+	if (regex_status == 0)
+	  {
+	    char *conv_ptr;
+	    long i;
+
+	    //  Yes, it matched.  Set up the pipeline coeffs specially.
+	    //   The first parameter is the pipe length 
+	    conv_ptr = & s2text[match[1].rm_so];
+	    local_pipe_len = strtol (conv_ptr, &conv_ptr, 0);
+	    if (local_pipe_len > UNIFIED_WINDOW_LEN)
+	      {
+		nonfatalerror5 ("You've specified a tokenizer pipe length "
+			      "that is too long.", "  I'll trim it.",
+			      CRM_ENGINE_HERE);
+		local_pipe_len = UNIFIED_WINDOW_LEN;
+	      };
+	    //fprintf (stderr, "local_pipe_len = %ld\n", local_pipe_len);
+	    //   The second parameter is the number of repeats
+	    local_pipe_iters = strtol (conv_ptr, &conv_ptr, 0);
+	    if (local_pipe_iters > UNIFIED_VECTOR_LIMIT)
+	      {
+		nonfatalerror5 ("You've specified too high a tokenizer "
+			      "iteration count.", "  I'll trim it.",
+			      CRM_ENGINE_HERE);
+		local_pipe_iters = UNIFIED_VECTOR_LIMIT;
+	      };
+	    //fprintf (stderr, "pipe_iters = %ld\n", local_pipe_iters);
+
+	    //    Now, get the coefficients.
+	    for (i = 0; i < local_pipe_len * local_pipe_iters; i++)
+	      {
+		ca[i] = strtol (conv_ptr, &conv_ptr, 0);
+		//  fprintf (stderr, "coeff: %ld\n", ca[i]);
+	      };
+
+	    //   If there was a numeric coeff array, use that, else
+	    //   use our slash coeff array.
+	    if (! coeff_array)
+	      {
+		coeff_array = ca;
+		pipe_len = local_pipe_len;
+		pipe_iters = local_pipe_iters;
+	      };
+	  };
+	//  free the compiled regex.
+	crm_regfree (&regcb);
+      };
+  };
+  
+  //      if any non-default coeff array was given, use that instead.
   if (coeff_array) 
     {
       hash_vec0 = coeff_array;
       //                    GROT GROT GROT --2nd array should be different from
       //                    first array- how can we do that nonlinearly?
       //                    This will work for now, but birthday clashes will
-      //                    happen more often in OSB/Markov featuresets
+      //                    happen more often in 64-bit featuresets
       hash_vec1 = coeff_array;    
     };
 
@@ -495,8 +605,8 @@ long crm_vector_tokenize_selector
 			   text,
 			   textlen,
 			   start_offset,
-			   regex,
-			   regexlen,
+			   my_regex,
+			   my_regex_len,
 			   hash_vec0,
 			   hash_len0,
 			   hash_iters0,
@@ -513,8 +623,8 @@ long crm_vector_tokenize_selector
 			   text,
 			   textlen,
 			   start_offset,
-			   regex,
-			   regexlen,
+			   my_regex,
+			   my_regex_len,
 			   hash_vec0,
 			   hash_len0,
 			   hash_iters0,

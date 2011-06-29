@@ -24,8 +24,9 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20071126-BlameGerHobbelt
-PREV_VERSION=20070917-BlameGerHobbelt
+VERSION=20071201-BlameLittleStevie_VT
+PREV_VERSION=20071126-BlameGerHobbelt
+#PREV_VERSION=20070917-BlameGerHobbelt
 #VERSION=20070830-BlameGerHobbelt
 #PREV_VERSION=20070828-BlameGerHobbelt
 #PREV_VERSION=20070827-BlameGerHobbelt
@@ -469,8 +470,9 @@ clean:
 	-rm -f crm114_gnu
 	-rm -f crm114_tre
 	-rm -f *.o
-#   if the next line doesn't work in your version of make, 
-#    don't worry.  cd down into the TRE directory and 'make clean' manually
+	#   if the next line doesn't work in your version of make, 
+	#    don't worry.  It just means you have TRE in another place.	
+	#    You can cd to the TRE directory and 'make clean' manually
 	-( [ "$(TRE_TARFILE)" ] && cd $(TRE_TARFILE) && make clean )
 
 

@@ -141,7 +141,12 @@
 #define UNIFIED_BAYES_WINDOW_LEN 5
 //
 //      Unified tokenization pipeline length.
+//          maximum window length _ever_.  
 #define UNIFIED_WINDOW_LEN 32
+//          
+//          maximum number of weight vectors to be applied to the pipeline
+#define UNIFIED_VECTOR_LIMIT 256
+
 ////   
 //         Winnow algorithm parameters here...  
 //
