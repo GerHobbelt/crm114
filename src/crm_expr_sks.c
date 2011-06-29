@@ -968,18 +968,18 @@ static double sigmoid_predict(double decision_value, double A, double B)
 int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, long txtstart, long txtlen)
 {
-    long cflags, eflags;
-    long sense;
-    long microgroom;
-    long unique;
+    int cflags, eflags;
+    int sense;
+    int microgroom;
+    int unique;
     char ftext[MAX_PATTERN];
-    long flen;
+    int flen;
     char file1[MAX_PATTERN];
     char file2[MAX_PATTERN];
     char file3[MAX_PATTERN];
     char ptext[MAX_PATTERN]; //the regrex pattern
-    long plen;
-    long i, j, k;
+    int plen;
+    int i, j, k;
     regex_t regcb;
     regmatch_t match[5];
     long textoffset;
@@ -1079,7 +1079,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //only has one input file
         if (ptext[0] != 0)
             crm_regfree(&regcb);
-#if 10
+#if 0
         i = 0;
         while (ftext[i] < 0x021)
             i++;
@@ -1089,7 +1089,14 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             j++;
     CRM_ASSERT(j <= flen);
 #else
- crm_nextword(ftext, 0, flen, &i, &j);
+ if (!crm_nextword(ftext, flen, 0, &i, &j) || j == 0)
+ {
+            int fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)flen,
+					ftext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < flen);
     CRM_ASSERT(j <= flen);
@@ -1891,11 +1898,11 @@ regcomp_failed:
 int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, long txtstart, long txtlen)
 {
-    long i, j, k;
+    int i, j, k;
     char ftext[MAX_PATTERN];
-    long flen;
+    int flen;
     char ptext[MAX_PATTERN]; //the regrex pattern
-    long plen;
+    int plen;
     char file1[MAX_PATTERN];
     char file2[MAX_PATTERN];
     char file3[MAX_PATTERN];
@@ -1906,8 +1913,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     HYPERSPACE_FEATUREBUCKET_STRUCT *hashes; //  the hashes we'll sort
     long hashcounts;
     long cflags, eflags;
-    long microgroom;
-    long unique;
+    int microgroom;
+    int unique;
     struct stat statbuf1;    //  for statting the hash file1
     struct stat statbuf2;    //  for statting the hash file2
     struct stat statbuf3;    //  for statting the hash file3
@@ -1919,7 +1926,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long svlen;
     //  the match statistics variable
     char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
-    long stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
+    int stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
     FILE *stringf;
     long stringlens[MAX_CLASSIFIERS];
     char *stringname[MAX_CLASSIFIERS];
@@ -1937,7 +1944,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     svlen = apb->p2len;
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
     {
-        long vstart, vlen;
+        int vstart, vlen;
         crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;

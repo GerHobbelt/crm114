@@ -32,12 +32,12 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
     char *txt;
-    long start;
-    long len;
+    int start;
+    int len;
     int retval;
-    long saved_ssfl;
+    int saved_ssfl;
     uint64_t classifier_flags = 0;
 
     //            get start/length of the text we're going to learn:
@@ -55,8 +55,8 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (i < 0)
     {
-        long curstmt;
-        long fev;
+        int curstmt;
+        int fev;
         CRM_ASSERT(i == -1 || i == -2);
         fev = 0;
         curstmt = csl->cstmt;
@@ -152,11 +152,11 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
     char *txt;
-    long start;
-    long len;
-    long retval;
+    int start;
+    int len;
+    int retval;
     int64_t classifier_flags = 0;
 
     //            get start/length of the text we're going to classify:
@@ -174,8 +174,8 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (i > 0)
     {
-        long curstmt;
-        long fev;
+        int curstmt;
+        int fev;
         fev = 0;
         curstmt = csl->cstmt;
         if (i == 1)
@@ -265,11 +265,11 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
     char *txt;
-    long start;
-    long len;
-    long retval;
+    int start;
+    int len;
+    int retval;
     int64_t classifier_flags = 0;
 
     //            get start/length of the text we're going to classify:
@@ -287,8 +287,8 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (i > 0)
     {
-        long curstmt;
-        long fev;
+        int curstmt;
+        int fev;
         fev = 0;
         curstmt = csl->cstmt;
         if (i == 1)
@@ -380,11 +380,11 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
     char *txt;
-    long start;
-    long len;
-    long retval;
+    int start;
+    int len;
+    int retval;
     int64_t classifier_flags = 0;
 
     //            get start/length of the text we're going to classify:
@@ -402,8 +402,8 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (i > 0)
     {
-        long curstmt;
-        long fev;
+        int curstmt;
+        int fev;
         fev = 0;
         curstmt = csl->cstmt;
         if (i == 1)
@@ -493,11 +493,11 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
     char *txt;
-    long start;
-    long len;
-    long retval;
+    int  start;
+    int len;
+    int retval;
     int64_t classifier_flags = 0;
 
     //            get start/length of the text we're going to classify:
@@ -515,8 +515,8 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (i > 0)
     {
-        long curstmt;
-        long fev;
+        int curstmt;
+        int fev;
         fev = 0;
         curstmt = csl->cstmt;
         if (i == 1)
@@ -605,11 +605,11 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
     char *txt;
-    long start;
-    long len;
-    long retval;
+    int start;
+    int len;
+    int retval;
     int64_t classifier_flags = 0;
 
     //            get start/length of the text we're going to classify:
@@ -627,8 +627,8 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (i > 0)
     {
-        long curstmt;
-        long fev;
+        int curstmt;
+        int fev;
         fev = 0;
         curstmt = csl->cstmt;
         if (i == 1)
@@ -718,11 +718,11 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
     char *txt;
-    long start;
-    long len;
-    long retval;
+    int start;
+    int len;
+    int retval;
     int64_t classifier_flags = 0;
 
     //            get start/length of the text we're going to classify:
@@ -740,8 +740,8 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (i > 0)
     {
-        long curstmt;
-        long fev;
+        int curstmt;
+        int fev;
         fev = 0;
         curstmt = csl->cstmt;
         if (i == 1)
@@ -831,11 +831,11 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
     char *txt;
-    long start;
-    long len;
-    long retval;
+    int start;
+    int len;
+    int retval;
     int64_t classifier_flags = 0;
 
     //            get start/length of the text we're going to classify:
@@ -853,8 +853,8 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (i > 0)
     {
-        long curstmt;
-        long fev;
+        int curstmt;
+        int fev;
         fev = 0;
         curstmt = csl->cstmt;
         if (i == 1)
@@ -944,11 +944,11 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
     char *txt;
-    long start;
-    long len;
-    long retval;
+    int start;
+    int len;
+    int retval;
     int64_t classifier_flags = 0;
 
     //            get start/length of the text we're going to classify:
@@ -966,8 +966,8 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     if (i > 0)
     {
-        long curstmt;
-        long fev;
+        int curstmt;
+        int fev;
         fev = 0;
         curstmt = csl->cstmt;
         if (i == 1)

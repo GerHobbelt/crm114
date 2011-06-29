@@ -1,0 +1,11 @@
+#! :|crm
+#   inifinite loop within the trap/error handling: badaBOOM!
+#
+{   
+		{
+			fault  plutonium   # yeah? so mister my_fault is gonna cycle like mad, right? Right!
+		}
+	trap /.* (:my_fault:)
+	{
+	}
+}

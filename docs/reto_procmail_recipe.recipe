@@ -2,12 +2,12 @@
 # $Id: crm114.rc,v 3.3 2005/03/28 15:48:44 rali Exp $
 #
 
-# Check message with crm114
+# Check message with crm114  -- by reto.
 
 #
 # NOTE: This recipe invokes crm114 on a message. It does NOT filter
 # the message to a spam folder.  How you choose to manage that task
-# up to you.
+# up to you.    
 #
 
 CRM="/usr/local/bin/crm"

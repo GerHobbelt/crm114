@@ -1,91 +1,214 @@
 2008-03-24 Ger Hobbelt
 
-    * Latest gcc versions recognize and handle trigraphs like you'd expect ;-) so all 
+    * Latest gcc versions recognize and handle trigraphs like you'd expect ;-) so all
       "???" sequences have been converted to "\?\?\?" to keep GCC and other compilers
       from unintentionally recognizing a trigraph there.
-    
+
     * added second // slash arg to the CRM 'syscall' cvommand to specify alternative
       commands for other OS-es. This is intended to allow CRM114 and CRM script writers
       to cope with the absolutely NON-portable syscall operation: this is only portable
       across UNIX boxes - and then only to a degree.
-      
-      So the second slash arg has format: 
-      
+
+      So the second slash arg has format:
+
         /[hoststring]commandline/
-        
+
       where 'hoststring' is the compile-time HOSTTYPE string, which, for example, for
       the Win32 builds is 'Windows-MS'. BTW: hoststring-comparison is caseINSENSITIVE.
-      
+
       The square brackets are used to delimit the hoststring, so when the 'hoststring'
       matches the compile-time constant in your CRM114 binary, the 'commandline' will
       be used to replace the commandline as specified in the first // slash arg.
-      
+
       See randomiotest.crm for an example.
-      
-    * Fixed OSBF/OSB/Markovian classify code when too many CSS databases to use for 
+
+    * Fixed OSBF/OSB/Markovian classify code when too many CSS databases to use for
       classification have been specified - this prevents an array-overrun & out-of-bounds
       memory access.
-      
+
     * Got fed up with the minor differences between Win32 and UNIX megatest: created
       a copy in megatest_ng.sh, which should produce indentical results to megatest.sh, but
-      uses input files instead of the UNIX shell <<-EOF...EOF code.
-      
+      uses input files (*.input) instead of the UNIX shell <<-EOF...EOF code.
+
       This is mirrored in the new megatest.bat, which can thus use the same input files;
       I've found that the difference between a LF or CRLF line termination byte sequence
       does lead to some significant differences in the test results.
-      
-    
-      
-      
-    
-      
-    
+
+    * Major fixes to the Win32 syscall command; now
+
+        exectest.crm
+
+      does actually run on Win32. Please note that UNIX commands still won't work allow
+      of a sudden on a Win32 box - unless you provide the proper binaries and environment -
+      but at least vanilla syscall, syscall <keep> and even syscall <async> now work async
+      expected: no crash or indefinite lockup anymore!
+
+      Note that this still applies:
+        "Sorry, syscall to a label isn't implemented in this version "
+
+    * Adapted error reporting to match Bill's code. See the
+
+        bill_style_errormessage
+
+      constant in crm_[util_]errorhandlers.c - maybe we'll make this run-time configurable
+      one day, instead of compile-time like it is today...
+
+      Bill's format puts the code info at the end, instead of at the start, and looks
+      like this:
+
+         (runtime system location: crm_expr_file_io.c(151) in routine: crm_expr_input)
+
+    * Win32 megatest now tests OK for these classifiers (run
+
+        ( megatest.bat 2 2>&1 ) > megatest_win32.log
+
+      in a DOS box to verify):
+
+          ****  Default (SBPH Markovian) classifier
+          **** OSB Markovian classifier
+          **** OSB Markov Unique classifier
+          **** OSB Markov Chisquared Unique classifier
+          **** OSBF Local Confidence (Fidelis) classifier
+          **** OSB Winnow classifier
+          **** Unigram Bayesian classifier
+          **** unigram Winnow classifier
+
+          **** OSB Hyperspace classifier                  <-- matches better when you define
+                    #define USE_FIXED_UNIQUE_MODE     0  /* zero! trurn OFF to match Bill's! */
+                WARNING: there's a VT bug in the 20080324 wget copy of CRM114, which reflects
+                         on the knowngood: it is NOT good in that regard. The GerH builds
+                         includes the fixes, but will differ from knowngood until the base has
+                         been fixed too.
+
+          **** OSB three-letter Hyperspace classifier     <-- as above
+          **** Unigram Hyperspace classifier              <-- as above
+          **** String Hyperspace classifier               <-- as above
+          **** String Unigram Hyperspace classifier       <-- as above
+          **** Vector 3-word-bag Hyperspace classifier    <-- as above
+          **** Bit-Entropy classifier        <-- entropy numbers differ 0.00001 percent at most.
+                                                 Which might be considered excellent.
+          **** Fast Substring Compression Match Classifier
+          **** Bytewise Correlation classifier            <--- turned out A-OK, when I finally discovered that fixing typo's etc
+                                                               in documents does NOT help megatest.sh to produce identical
+                                                               results. I'm a dunce.
+
+
+      dubious:
+
+          **** Bit-Entropy Toroid classifier  <-- 10% difference in pR and slight difference in jump counts. Cause yet unknown.
+
+          **** Support Vector Machine (SVM) unigram classifier  <-- passes the test with 0.2% difference in pR tops,
+                                                                    but yaks about some files in certain tests,
+                                                                    due to tightened error checking in GerH.
+                                                                    A 'hm'.
+          **** Support Vector Machine (SVM) classifier          <-- as above. Another 'hm'.
+          **** String Kernel SVM (SKS) classifier
+          **** String Kernel SVM (SKS) Unique classifier        (maybe a bug in megatest_ng.sh ??? )
+
+
+      dangerous:
+
+          **** Neural Network Classifier     <-- crashes; feature counts which differ wildly between 64-bit UNIX,
+                                                 knowngood and Win32.
+
+          **** Clump / Pmulc Test            <-- if you like wierd crashes and code which shouldn't have worked in the first
+                                                 place...
+
+
+      Meanwhile
+
+              echo === TEST 014 ===
+              .\crm114 matchtest.crm  < matchtest_mt_ng_1.input
+
+      still needs some medical attention IMHO, as CRM114 on Win32 is much more
+      'picky' about whitespace than its UNIX brethren.  Why? Don't know yet.
+      But it shown in line leading and trailing whitespace sometimes.
+
+      Probably due to the clunky whitespace skip loops in the CRM114 code.
+
+
+    * UNIX / GNU make now comes with a working 'test' target, which actually uses the new
+      megatest_ng.sh New Generation ;-) shell script. As before, a diff with Bill's
+      knowngood is provided when done. so now you can
+
+        make test
+
+      like everybody else out there!
+
+    * Included VT and other fixes reported in the CRM114 ML these last few days:
+
+         Hyperspace featurecounts Fixed
+
+         TRE interface/regex cache fixed (Paolo) -- I discarded my older fix,
+                                                    because I have not been able
+                                                    to guarantee that it
+                                                    would've worked, where
+                                                    Paolo's does - has been
+                                                    tested on a victim.
+
+    * Updated and reformatted (indent cleanup) QUICKREF.txt.
+
+    * QUICKREF.txt now includes preliminary documentation for the new CRM statements:
+
+        cssanalyze <flags> (:report:) (:c1:) /params/
+        cssbackup <flags> (:report:) (:dst: :c1:) /params/
+        csscreate <flags> (:report:) (:c1:) /params/
+        cssdiff <flags> (:report:) (:c1: :c2:) /params/
+        cssinfo <flags> (:report:) (:c1:) /params/
+        cssmerge <flags> (:report:) (destfile) (:c1:...:cN:) /params/
+        cssrestore <flags> (:report:) (:c1: :src:) /params/
+
+      These are intended to obsolete the external css* tools in due time and should
+      be able to handle each classifier (see the bottom of classifier sources for the
+      preliminary hooks/code).
+
+
 2008-01-28 Ger Hobbelt
 
-	* (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The others
-	  will follow its lead in this.
-	
-	* Included qsort implementation by Michael Tokarev 
-	  (http://www.corpit.ru/mjt/qsort.html) for a bit of improved performance as
-	  suggested by Paolo.
-	
-	* Fixed Makefile.am so standard ./bootstrap script works as expected, including
-	  'make distcheck': that one doesn't fail anymore.
-	
-	* Included the original BillY makefile in src/: it is minimally patched to make
-	  it behave as expected with the new GNU/autoconf enabled code in here.
-	
-	  For those who like to compile this thing the old fashioned way on compatible
-	  systems, please run
-	
-	    cd src
-	    ./make_BillY.sh
-	    ./make_BillY.sh megatest
-	
-	  as a replacement for the old BillY make action:
-	
-	    cd src
-	    make
-	    make megatest
-	
-	  i.e. replace 'make' in Bill's documents with make_BillY.sh if you want to go 
-	  down that road (you'll miss out on all the ./configure goodness though ;-) ).
-	
-	  Note that a special configuration headerfile (src/config_BillY.h) is
-	  provided to help make_BillY compile on compatible UNIX systems. This headerfile
-	  includes a toned down UNIX build configuration. Tested on SuSE Linux, but 
-	  should (hopefully) build on other UNIXes as well. If any compile time errors
-	  occur here, please edit the src/config_BillY.h headerfile according and please
-	  post the diffs/changes to the crm developer mailing list.
-	
-	  WARNING: src/make_BillY.sh et al are provided as a 'backwards compatible build
-	   	   fix' ONLY and are NOT meant to replace the available ./configure-driven
-		   build/install available in this or future GerXXXX crm distro/builds!
-	
+  * (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The others
+    will follow its lead in this.
+
+  * Included qsort implementation by Michael Tokarev
+    (http://www.corpit.ru/mjt/qsort.html) for a bit of improved performance as
+    suggested by Paolo.
+
+  * Fixed Makefile.am so standard ./bootstrap script works as expected, including
+    'make distcheck': that one doesn't fail anymore.
+
+  * Included the original BillY makefile in src/: it is minimally patched to make
+    it behave as expected with the new GNU/autoconf enabled code in here.
+
+    For those who like to compile this thing the old fashioned way on compatible
+    systems, please run
+
+      cd src
+      ./make_BillY.sh
+      ./make_BillY.sh megatest
+
+    as a replacement for the old BillY make action:
+
+      cd src
+      make
+      make megatest
+
+    i.e. replace 'make' in Bill's documents with make_BillY.sh if you want to go
+    down that road (you'll miss out on all the ./configure goodness though ;-) ).
+
+    Note that a special configuration headerfile (src/config_BillY.h) is
+    provided to help make_BillY compile on compatible UNIX systems. This headerfile
+    includes a toned down UNIX build configuration. Tested on SuSE Linux, but
+    should (hopefully) build on other UNIXes as well. If any compile time errors
+    occur here, please edit the src/config_BillY.h headerfile according and please
+    post the diffs/changes to the crm developer mailing list.
+
+    WARNING: src/make_BillY.sh et al are provided as a 'backwards compatible build
+         fix' ONLY and are NOT meant to replace the available ./configure-driven
+       build/install available in this or future GerXXXX crm distro/builds!
+
         * Made initial provisions to merge the crm tools with crm itself: added the
           statements cssmerge / cssdiff / cssinfo / cssanalyze / cssbackup / cssrestore / csscreate.
-          
-          These statements should suffice to cover the functionality found in the 
+
+          These statements should suffice to cover the functionality found in the
           cssutil / osbf_util / cssmerge / cssdiff tools.
 
         * Improved the indent.sh shell script and src/Makefile a bit; the included uncrustify.cfg
@@ -95,574 +218,574 @@
                      in a suitable layout. The code will compile, but correct this one by hand
                      to undo the damage there (until I find what's wrong with uncrustify :-( ).
 
-	* KNOWN BUG for clump/pmulc still applies! :-(
-	
-	
+  * KNOWN BUG for clump/pmulc still applies! :-(
+
+
 Version 20071015-BlameGerHobbelt
 
 2007-08-03 Ger Hobbelt
 
-	* revived the autoconfiscated crm114 build setup
+  * revived the autoconfiscated crm114 build setup
 
-	* fixed several items
+  * fixed several items
 
-	* added stuff for the Win32 port
+  * added stuff for the Win32 port
 
-	* various minor tweaks and fixes
+  * various minor tweaks and fixes
 
-	* improved internal error checking
-
-2004-08-21 12:32  Joost van Baal <joostvb-crm114@mdcc.cx>
-
-	* man/include.zmm.in: make ./configure's prefix available to
-	  manpages
+  * improved internal error checking
 
 2004-08-21 12:32  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/: cssutil.azm, cssmerge.azm: reverted some of Shalen's
-	  commits back: use include.zmm
+  * man/include.zmm.in: make ./configure's prefix available to
+    manpages
+
+2004-08-21 12:32  Joost van Baal <joostvb-crm114@mdcc.cx>
+
+  * man/: cssutil.azm, cssmerge.azm: reverted some of Shalen's
+    commits back: use include.zmm
 
 2004-08-21 12:26  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/cssdiff.azm: reverted some of Shalen's commits back: use
-	  include.zmm
+  * man/cssdiff.azm: reverted some of Shalen's commits back: use
+    include.zmm
 
 2004-08-21 12:22  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm.azm: reverted some of Shalen's commits back: use
-	  include.zmm.	Refer to QUICKREF.txt in the right location
+  * man/crm.azm: reverted some of Shalen's commits back: use
+    include.zmm.  Refer to QUICKREF.txt in the right location
 
 2004-08-20 02:32  schhabra
 
-	* man/: crm.azm, cssdiff.azm, cssmerge.azm, cssutil.azm: Have
-	  Updated Man Pages at Thu Aug 19 20:31:38 EDT 2004 .Now Man Pages
-	  have Version 2. However could not find anything in doc/docs
-	  directory to update.	Thanks Shalendra Chhabra
-	  (schhabra@cs.ucr.edu)
+  * man/: crm.azm, cssdiff.azm, cssmerge.azm, cssutil.azm: Have
+    Updated Man Pages at Thu Aug 19 20:31:38 EDT 2004 .Now Man Pages
+    have Version 2. However could not find anything in doc/docs
+    directory to update.  Thanks Shalendra Chhabra
+    (schhabra@cs.ucr.edu)
 
 2004-08-19 13:34  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS: document changes in 20040816.BlameClockworkOrange-auto.3
+  * NEWS: document changes in 20040816.BlameClockworkOrange-auto.3
 
 2004-08-19 13:23  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* src/001_crm_main.c_missing_exit_code.patch: contributed patch
-	  from Johan Petersson, Message-Id:
-	  <6.1.1.1.2.20040818184005.054339b8@mail.trilithium.net>, To:
-	  crm114-general@lists.sourceforge.net, Date: Wed, 18 Aug 2004
-	  18:52:12 +0200
+  * src/001_crm_main.c_missing_exit_code.patch: contributed patch
+    from Johan Petersson, Message-Id:
+    <6.1.1.1.2.20040818184005.054339b8@mail.trilithium.net>, To:
+    crm114-general@lists.sourceforge.net, Date: Wed, 18 Aug 2004
+    18:52:12 +0200
 
 2004-08-19 13:18  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* examples/Makefile.am: ship whitelist.mfp.example too, tnx Paolo
+  * examples/Makefile.am: ship whitelist.mfp.example too, tnx Paolo
 
 2004-08-19 13:10  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm114.azm: warning about possible obsoleteness
+  * man/crm114.azm: warning about possible obsoleteness
 
 2004-08-19 13:10  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* README.1st: credits, note on status of ChangeLog
+  * README.1st: credits, note on status of ChangeLog
 
 2004-08-19 11:36  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* Makefile.am: autogenerate ChangeLog
+  * Makefile.am: autogenerate ChangeLog
 
 2004-08-19 11:33  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS: documented manpage stuff
+  * NEWS: documented manpage stuff
 
 2004-08-19 11:30  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/Makefile.am: extra manpage crm(1) added
+  * man/Makefile.am: extra manpage crm(1) added
 
 2004-08-19 11:28  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm.azm: cosmetics, refer to crm114(1)
+  * man/crm.azm: cosmetics, refer to crm114(1)
 
 2004-08-19 11:24  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm.azm: another generic crm manpage; contributed by
-	  Shalendra Chhabra
+  * man/crm.azm: another generic crm manpage; contributed by
+    Shalendra Chhabra
 
 2004-08-19 11:23  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/cssutil.azm: cosmetics, include example
+  * man/cssutil.azm: cosmetics, include example
 
 2004-08-19 11:23  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/include.zmm.in: credits
+  * man/include.zmm.in: credits
 
 2004-08-19 11:14  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/cssutil.azm: manpage update, contributed by Shalendra Chhabra
+  * man/cssutil.azm: manpage update, contributed by Shalendra Chhabra
 
 2004-08-19 11:12  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/cssmerge.azm: use include.zmm, cosmetics
+  * man/cssmerge.azm: use include.zmm, cosmetics
 
 2004-08-19 11:08  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/cssmerge.azm: manpage update, contributed by Shalendra
-	  Chhabra
+  * man/cssmerge.azm: manpage update, contributed by Shalendra
+    Chhabra
 
 2004-08-19 11:06  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/cssdiff.azm: use include.zmm, document version, add verbose
-	  example
+  * man/cssdiff.azm: use include.zmm, document version, add verbose
+    example
 
 2004-08-19 10:56  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/cssdiff.azm: manpage update, contributed by Shalendra Chhabra
+  * man/cssdiff.azm: manpage update, contributed by Shalendra Chhabra
 
 2004-08-18 20:17  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* ChangeLog: generated by running "cvs2cl --prune --stdout -U
-	  ../CVSROOT/users"
+  * ChangeLog: generated by running "cvs2cl --prune --stdout -U
+    ../CVSROOT/users"
 
 2004-08-18 16:53  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* Makefile.am, NEWS, TODO: some stuff for next release
+  * Makefile.am, NEWS, TODO: some stuff for next release
 
 2004-08-18 15:52  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, TODO, configure.ac: more hassle with new tests
+  * NEWS, TODO, configure.ac: more hassle with new tests
 
 2004-08-18 15:26  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* tests/Makefile.am: ship 5 more tests from Bill
+  * tests/Makefile.am: ship 5 more tests from Bill
 
 2004-08-18 15:17  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* docs/Makefile.am: fix missing doc, thanks Ondrej
+  * docs/Makefile.am: fix missing doc, thanks Ondrej
 
 2004-08-18 11:44  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* README: install README in topsrcdir: autotools compliant
+  * README: install README in topsrcdir: autotools compliant
 
 2004-08-18 11:29  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS: make sure intro in NEWS file is not too long: current
-	  version number should appear in the first few lines of this file
+  * NEWS: make sure intro in NEWS file is not too long: current
+    version number should appear in the first few lines of this file
 
 2004-08-18 11:21  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* bootstrap: we generate .bz2 out of the box
+  * bootstrap: we generate .bz2 out of the box
 
 2004-08-18 11:20  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* Makefile.am: create a .bz2 compressed tarball too.  check NEWS
-	  file for sanity
+  * Makefile.am: create a .bz2 compressed tarball too.  check NEWS
+    file for sanity
 
 2004-08-18 11:03  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* src/Makefile.am: minor change in code layout: crm_css_maintenance
+  * src/Makefile.am: minor change in code layout: crm_css_maintenance
 
 2004-08-18 10:50  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* README: make autotools stop whining
+  * README: make autotools stop whining
 
 2004-08-18 10:26  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* README.1st: Bill has incorporated some of the splitting, we no
-	  longer have to do that
+  * README.1st: Bill has incorporated some of the splitting, we no
+    longer have to do that
 
 2004-08-18 10:20  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS: document missed releases
+  * NEWS: document missed releases
 
 2004-08-18 10:10  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* README: i dont feel like maintaining my own fork of Bill's README
-	  file
+  * README: i dont feel like maintaining my own fork of Bill's README
+    file
 
 2004-07-18 13:47  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO: one more thing TODO
+  * TODO: one more thing TODO
 
 2004-07-18 13:46  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* configure.ac: added comment about pkg-config
+  * configure.ac: added comment about pkg-config
 
 2004-06-29 21:25  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* .cvsignore, Makefile.am, bootstrap, configure.ac, setversion:
-	  make sure date stamp files for inclusion in zoem manpage source
-	  are generated
+  * .cvsignore, Makefile.am, bootstrap, configure.ac, setversion:
+    make sure date stamp files for inclusion in zoem manpage source
+    are generated
 
 2004-06-29 19:33  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm114.azm: make it work with zoem-04-108 and newer
+  * man/crm114.azm: make it work with zoem-04-108 and newer
 
 2004-06-29 03:13  Raul Miller <moth@magenta.com>
 
-	* configure.ac, src/Makefile.am: updates for BlameSeifkes
+  * configure.ac, src/Makefile.am: updates for BlameSeifkes
 
 2004-04-21 05:37  Peter E. Popovich <peter@popovich.net>
 
-	* NEWS, configure.ac, examples/Makefile.am, mailfilter/Makefile.am:
-	  updated for 2004018-BlameEasterBunny
+  * NEWS, configure.ac, examples/Makefile.am, mailfilter/Makefile.am:
+    updated for 2004018-BlameEasterBunny
 
 2004-04-12 19:52  Raul Miller <moth@magenta.com>
 
-	* src/Makefile.am: redoing commit, just to be sure...
+  * src/Makefile.am: redoing commit, just to be sure...
 
 2004-04-12 19:45  Raul Miller <moth@magenta.com>
 
-	* src/crm114.c: remove files from cvs which are supplied (or were
-	  supplied) by upstream tarball
+  * src/crm114.c: remove files from cvs which are supplied (or were
+    supplied) by upstream tarball
 
 2004-04-12 19:43  Raul Miller <moth@magenta.com>
 
-	* tests/.cvsignore: added .mfp to tests cvsignore, keeping with the
-	  grand tradition that nothing of any practical use actually goes
-	  into cvs.
+  * tests/.cvsignore: added .mfp to tests cvsignore, keeping with the
+    grand tradition that nothing of any practical use actually goes
+    into cvs.
 
 2004-04-12 19:42  Raul Miller <moth@magenta.com>
 
-	* src/Makefile.am, tests/.cvsignore, tests/testscript.sh:
-	  BlameMarys, with testscript.sh -- this time, for sure
+  * src/Makefile.am, tests/.cvsignore, tests/testscript.sh:
+    BlameMarys, with testscript.sh -- this time, for sure
 
 2004-04-12 19:25  Raul Miller <moth@magenta.com>
 
-	* src/Makefile.am: fix stupid bug in tests/testscript.sh
+  * src/Makefile.am: fix stupid bug in tests/testscript.sh
 
 2004-04-12 19:20  Raul Miller <moth@magenta.com>
 
-	* NEWS: updated NEWS for BlameMarys
+  * NEWS: updated NEWS for BlameMarys
 
 2004-04-12 19:17  Raul Miller <moth@magenta.com>
 
-	* configure.ac, src/Makefile.am: Updates for BlameMarys
+  * configure.ac, src/Makefile.am: Updates for BlameMarys
 
 2004-04-09 10:36  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/Makefile.am: note on zoem version requirement added
+  * man/Makefile.am: note on zoem version requirement added
 
 2004-04-09 10:34  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* bootstrap: added note on bzip2 target
+  * bootstrap: added note on bzip2 target
 
 2004-04-09 10:33  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* configure.ac: added cvs tags
+  * configure.ac: added cvs tags
 
 2004-04-09 10:28  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm114.azm: made zoem >= 04-027 compliant
+  * man/crm114.azm: made zoem >= 04-027 compliant
 
 2004-04-08 21:51  Raul Miller <moth@magenta.com>
 
-	* NEWS, configure.ac, src/Makefile.am: Initial updates for
-	  StPatrick (sources are now split, upstream)
+  * NEWS, configure.ac, src/Makefile.am: Initial updates for
+    StPatrick (sources are now split, upstream)
 
 2004-03-13 22:13  Raul Miller <moth@magenta.com>
 
-	* configure.ac: fix version date
+  * configure.ac: fix version date
 
 2004-03-13 21:58  Raul Miller <moth@magenta.com>
 
-	* configure.ac: new autoconfiscated version
+  * configure.ac: new autoconfiscated version
 
 2004-03-10 20:19  Bill Yerazunis <wsy@merl.com>
 
-	* src/crm114.c: First import by wsy - thank you for not making fun
-	  of this.
+  * src/crm114.c: First import by wsy - thank you for not making fun
+    of this.
 
 2004-02-25 20:07  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS: do not duplicate docs
+  * NEWS: do not duplicate docs
 
 2004-02-25 19:57  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, configure.ac: new release: manpage finetuning
+  * NEWS, configure.ac: new release: manpage finetuning
 
 2004-02-25 19:53  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm114.azm: finetuning of spaces. thanks Seth Hanford
+  * man/crm114.azm: finetuning of spaces. thanks Seth Hanford
 
 2004-02-25 10:41  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/: cssdiff.azm, cssmerge.azm: recent zoem is more picky on
-	  syn*opt syntax
+  * man/: cssdiff.azm, cssmerge.azm: recent zoem is more picky on
+    syn*opt syntax
 
 2004-02-19 11:17  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/: crm114.azm, cssmerge.azm: now is zoem v 2003-300 compliant
+  * man/: crm114.azm, cssmerge.azm: now is zoem v 2003-300 compliant
 
 2004-02-18 21:40  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm114.azm: added DESCRIPTION section, from first part of
-	  INTRO.txt
+  * man/crm114.azm: added DESCRIPTION section, from first part of
+    INTRO.txt
 
 2004-02-18 15:44  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm114.azm: finished crm114(1) manpage
+  * man/crm114.azm: finished crm114(1) manpage
 
 2004-02-18 14:29  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm114.azm: converted some more, valid zoem: zoem 03-265-1
-	  knows how to typeset this
+  * man/crm114.azm: converted some more, valid zoem: zoem 03-265-1
+    knows how to typeset this
 
 2004-02-18 13:17  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/: crm114.azm, include.zmm.in: converted a bit more from
-	  QUICKREF to zoem syntax.  beware!  current file will likely fail
-	  to be parsed by zoem.  working on it
+  * man/: crm114.azm, include.zmm.in: converted a bit more from
+    QUICKREF to zoem syntax.  beware!  current file will likely fail
+    to be parsed by zoem.  working on it
 
 2004-02-16 20:11  Raul Miller <moth@magenta.com>
 
-	* configure.ac: cleanup version number, install tests under
-	  doc/crm114/ instead of just doc//
+  * configure.ac: cleanup version number, install tests under
+    doc/crm114/ instead of just doc//
 
 2004-02-16 20:00  Raul Miller <moth@magenta.com>
 
-	* tests/Makefile.am: use PACKAGE instead of PACKAGE_TARNAME at
-	  install time
+  * tests/Makefile.am: use PACKAGE instead of PACKAGE_TARNAME at
+    install time
 
 2004-02-16 18:36  Raul Miller <moth@magenta.com>
 
-	* src/Makefile.am: combined crm_classify.c and crm_learn.c into
-	  crm_features.c renamed crm_helpers.c as crm_errohandlers.c
+  * src/Makefile.am: combined crm_classify.c and crm_learn.c into
+    crm_features.c renamed crm_helpers.c as crm_errohandlers.c
 
 2004-02-16 07:06  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO: Stefan Seyfried's hack should be in docs
+  * TODO: Stefan Seyfried's hack should be in docs
 
 2004-02-15 16:35  Raul Miller <moth@magenta.com>
 
-	* ChangeLog, NEWS, configure.ac, src/Makefile.am: Updated for
-	  Jetlag
+  * ChangeLog, NEWS, configure.ac, src/Makefile.am: Updated for
+    Jetlag
 
 2004-02-11 22:31  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/Makefile.am: added crm114.azm, in order to be able to build
-	  it while testing
+  * man/Makefile.am: added crm114.azm, in order to be able to build
+    it while testing
 
 2004-02-11 22:31  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm114.azm: converted some more of QUICKREF.txt
+  * man/crm114.azm: converted some more of QUICKREF.txt
 
 2004-02-11 08:38  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/crm114.azm: skeleton of crm114 manpage
+  * man/crm114.azm: skeleton of crm114 manpage
 
 2004-02-08 12:49  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, README.1st: another link to more info
+  * NEWS, README.1st: another link to more info
 
 2004-02-08 11:10  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO: found url of .spec
+  * TODO: found url of .spec
 
 2004-02-07 21:53  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* examples/Makefile.am: oops, should have fixed this earlier:
-	  megatest.log is renamed
+  * examples/Makefile.am: oops, should have fixed this earlier:
+    megatest.log is renamed
 
 2004-02-07 21:50  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, TODO, configure.ac: cosmetics on NEWS layout
+  * NEWS, TODO, configure.ac: cosmetics on NEWS layout
 
 2004-02-07 19:30  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* .cvsignore, NEWS, README: update copyright notice, ship a pathed
-	  README from Bill, Bill notes in our NEWS
+  * .cvsignore, NEWS, README: update copyright notice, ship a pathed
+    README from Bill, Bill notes in our NEWS
 
 2004-02-07 18:00  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, man/Makefile.am: oops, we are shipping obsolete manpages
+  * NEWS, man/Makefile.am: oops, we are shipping obsolete manpages
 
 2004-02-07 14:07  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, configure.ac: new upstream
+  * NEWS, configure.ac: new upstream
 
 2004-01-22 21:12  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, configure.ac, mailfilter/Makefile.am: new upstream, new
-	  quirks
+  * NEWS, configure.ac, mailfilter/Makefile.am: new upstream, new
+    quirks
 
 2004-01-14 19:17  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* ChangeLog, NEWS, README.1st, TODO, configure.ac,
-	  examples/.cvsignore, src/Makefile.am: support both gnu and tre
-	  regex lib
+  * ChangeLog, NEWS, README.1st, TODO, configure.ac,
+    examples/.cvsignore, src/Makefile.am: support both gnu and tre
+    regex lib
 
 2004-01-11 13:29  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* configure.ac: inspiration from mutt configure.in
+  * configure.ac: inspiration from mutt configure.in
 
 2004-01-11 13:23  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, README.1st, TODO, configure.ac: did some research on how to
-	  enable multiple regex libs. offering just gnu and tre seems
-	  enough to me
+  * NEWS, README.1st, TODO, configure.ac: did some research on how to
+    enable multiple regex libs. offering just gnu and tre seems
+    enough to me
 
 2004-01-07 10:07  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO: and more
+  * TODO: and more
 
 2004-01-07 09:31  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO: more stuff to do
+  * TODO: more stuff to do
 
 2004-01-06 14:36  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* README.1st: updated
+  * README.1st: updated
 
 2004-01-06 14:26  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, configure.ac: building from new release by Bill
+  * NEWS, configure.ac: building from new release by Bill
 
 2004-01-06 14:05  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO, bootstrap: release a .tar.bz2 too
+  * TODO, bootstrap: release a .tar.bz2 too
 
 2004-01-01 21:52  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS: new release
+  * NEWS: new release
 
 2004-01-01 21:42  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* Makefile.am, NEWS, TODO, configure.ac, src/Makefile.am: flexible
-	  sh-bang path, symlink /usr/bin/crm
+  * Makefile.am, NEWS, TODO, configure.ac, src/Makefile.am: flexible
+    sh-bang path, symlink /usr/bin/crm
 
 2004-01-01 20:09  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* Makefile.am, NEWS, configure.ac, man/Makefile.am: manpages get
-	  build and installed
+  * Makefile.am, NEWS, configure.ac, man/Makefile.am: manpages get
+    build and installed
 
 2004-01-01 19:56  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* man/: cssdiff.azm, cssmerge.azm, cssutil.azm, include.zmm.in:
-	  added first shot at manpages
+  * man/: cssdiff.azm, cssmerge.azm, cssutil.azm, include.zmm.in:
+    added first shot at manpages
 
 2003-12-30 18:46  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO: another idea
+  * TODO: another idea
 
 2003-12-30 18:23  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, TODO, configure.ac, src/Makefile.am: new split scheme,
-	  build from new release by Bill
+  * NEWS, TODO, configure.ac, src/Makefile.am: new split scheme,
+    build from new release by Bill
 
 2003-12-26 17:56  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* configure.ac: runtime check, eyecandy
+  * configure.ac: runtime check, eyecandy
 
 2003-12-26 12:11  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO: runs on RH
+  * TODO: runs on RH
 
 2003-12-23 23:13  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, TODO, configure.ac, examples/Makefile.am,
-	  mailfilter/Makefile.am, tests/Makefile.am: preliminary support
-	  for expanding shebang path in .crm scripts
+  * NEWS, TODO, configure.ac, examples/Makefile.am,
+    mailfilter/Makefile.am, tests/Makefile.am: preliminary support
+    for expanding shebang path in .crm scripts
 
 2003-12-22 22:51  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* examples/Makefile.am: typo
+  * examples/Makefile.am: typo
 
 2003-12-22 22:50  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, TODO, configure.ac, examples/Makefile.am: configure.ac
-	  rebuild and cleanup, proper location of .mfp files
+  * NEWS, TODO, configure.ac, examples/Makefile.am: configure.ac
+    rebuild and cleanup, proper location of .mfp files
 
 2003-12-22 07:44  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO: some ideas of Paolo merged in
+  * TODO: some ideas of Paolo merged in
 
 2003-12-21 22:12  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO, configure.ac: robust libtre check enabled
+  * TODO, configure.ac: robust libtre check enabled
 
 2003-12-21 20:55  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, TODO, configure.ac: preparing next release, more TODO stuff
+  * NEWS, TODO, configure.ac: preparing next release, more TODO stuff
 
 2003-12-21 20:46  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* configure.ac: we do not need c++!
+  * configure.ac: we do not need c++!
 
 2003-12-21 18:21  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* HACKING, NEWS, configure.ac: new release, new hacking
-	  instructions
+  * HACKING, NEWS, configure.ac: new release, new hacking
+    instructions
 
 2003-12-21 16:25  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* src/Makefile.am, configure.ac: paolo split: crm114.c splitted in
-	  per-function source files
+  * src/Makefile.am, configure.ac: paolo split: crm114.c splitted in
+    per-function source files
 
 2003-12-21 14:47  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* TODO: TODO file for autoconfiscation
+  * TODO: TODO file for autoconfiscation
 
 2003-12-20 22:48  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* Makefile.am, NEWS, README.1st, configure.ac, examples/.cvsignore,
-	  mailfilter/Makefile.am, tests/Makefile.am: note on what this is
-	  about added
+  * Makefile.am, NEWS, README.1st, configure.ac, examples/.cvsignore,
+    mailfilter/Makefile.am, tests/Makefile.am: note on what this is
+    about added
 
 2003-12-20 20:39  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* Makefile.am, NEWS, configure.ac, docs/.cvsignore,
-	  docs/Makefile.am, mailfilter/.cvsignore, mailfilter/Makefile.am,
-	  tests/.cvsignore, tests/Makefile.am: restructuring tarball
-	  layout, phase 1
+  * Makefile.am, NEWS, configure.ac, docs/.cvsignore,
+    docs/Makefile.am, mailfilter/.cvsignore, mailfilter/Makefile.am,
+    tests/.cvsignore, tests/Makefile.am: restructuring tarball
+    layout, phase 1
 
 2003-12-19 22:24  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* NEWS, configure.ac, examples/Makefile.am: fixed typos:
-	  "crm114-20031219-RC12.3.tar.gz is ready for distribution"
+  * NEWS, configure.ac, examples/Makefile.am: fixed typos:
+    "crm114-20031219-RC12.3.tar.gz is ready for distribution"
 
 2003-12-19 22:09  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* .cvsignore, Makefile.am, configure.ac, examples/.cvsignore,
-	  examples/Makefile.am, src/.cvsignore, src/Makefile.am: new layout
-	  of tarball: split stuff among directories
+  * .cvsignore, Makefile.am, configure.ac, examples/.cvsignore,
+    examples/Makefile.am, src/.cvsignore, src/Makefile.am: new layout
+    of tarball: split stuff among directories
 
 2003-12-19 19:10  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* .cvsignore, Makefile.am, NEWS, configure.ac: now installs some
-	  docs
+  * .cvsignore, Makefile.am, NEWS, configure.ac: now installs some
+    docs
 
 2003-12-19 18:16  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* crm114.lsm.in: description fixed
+  * crm114.lsm.in: description fixed
 
 2003-12-19 17:38  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* configure.ac: new release: version updated
+  * configure.ac: new release: version updated
 
 2003-12-19 17:29  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* .cvsignore, AUTHORS, ChangeLog, HACKING, NEWS, bootstrap,
-	  configure.ac: make distcheck works
+  * .cvsignore, AUTHORS, ChangeLog, HACKING, NEWS, bootstrap,
+    configure.ac: make distcheck works
 
 2003-12-19 17:11  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* HACKING, Makefile.am, bootstrap: start documenting how to work
-	  with this stuff, added Id tags
+  * HACKING, Makefile.am, bootstrap: start documenting how to work
+    with this stuff, added Id tags
 
 2003-12-19 17:04  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* Makefile.am, configure.ac, crm114.lsm.in: autoconfiscation
-	  skeleton
+  * Makefile.am, configure.ac, crm114.lsm.in: autoconfiscation
+    skeleton
 
 2003-12-19 17:02  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* bootstrap: Initial import.
+  * bootstrap: Initial import.
 
 2003-12-19 17:02  Joost van Baal <joostvb-crm114@mdcc.cx>
 
-	* bootstrap, .cvsignore, HACKING, Makefile.am, NEWS, README, TODO,
-	  configure.ac, docs/.cvsignore, docs/Makefile.am,
-	  examples/.cvsignore, examples/Makefile.am, mailfilter/.cvsignore,
-	  mailfilter/Makefile.am, man/.cvsignore, man/Makefile.am,
-	  man/crm114.azm, man/cssdiff.azm, man/cssmerge.azm,
-	  man/cssutil.azm, man/include.zmm.in, src/.cvsignore,
-	  src/Makefile.am, tests/.cvsignore, tests/Makefile.am: Initial
-	  revision
+  * bootstrap, .cvsignore, HACKING, Makefile.am, NEWS, README, TODO,
+    configure.ac, docs/.cvsignore, docs/Makefile.am,
+    examples/.cvsignore, examples/Makefile.am, mailfilter/.cvsignore,
+    mailfilter/Makefile.am, man/.cvsignore, man/Makefile.am,
+    man/crm114.azm, man/cssdiff.azm, man/cssmerge.azm,
+    man/cssutil.azm, man/include.zmm.in, src/.cvsignore,
+    src/Makefile.am, tests/.cvsignore, tests/Makefile.am: Initial
+    revision
 

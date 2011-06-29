@@ -29,23 +29,23 @@
 //
 int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-    long strntrn_flags;
+    uint64_t strntrn_flags;
     char destination[MAX_VARNAME];
-    long destination_len, dst_nstart;
+    int destination_len, dst_nstart;
     //   for source, we use tempbuf
-    long vmidx;
+    int vmidx;
     char *mdwptr;
-    long offset;
-    long len, retlen;
+    int offset;
+    int len, retlen;
     char errstr[MAX_PATTERN];
-    long i;
+    int i;
 
     //   the "from" charset
     char fromset[MAX_PATTERN];
-    long fromset_len;
+    int fromset_len;
     //   the "to" charset
     char toset[MAX_PATTERN];
-    long toset_len;
+    int toset_len;
 
     //
     strntrn_flags = 0;
@@ -58,7 +58,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         if (user_trace)
             fprintf(stderr, "  uniquing flag turned on...\n");
-        strntrn_flags = strntrn_flags | CRM_UNIQUE;
+        strntrn_flags |= CRM_UNIQUE;
     }
     //
     //                                How about the LITERAL flag
@@ -66,7 +66,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         if (user_trace)
             fprintf(stderr, "  literal (no invert or ranges) turned on...\n");
-        strntrn_flags = strntrn_flags | CRM_LITERAL;
+        strntrn_flags |= CRM_LITERAL;
     }
 
     //      Get the destination for the translation

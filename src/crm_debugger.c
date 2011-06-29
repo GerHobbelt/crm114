@@ -443,8 +443,8 @@ long crm_debugger(void)
                 if (i == 0)
                 {
                     //    maybe the user put in a label?
-                    long tstart;
-                    long tlen;
+                    int tstart;
+                    int tlen;
                     crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
                             &tstart, &tlen);
                     memmove(inbuf, &inbuf[1 + tstart], tlen);
@@ -490,8 +490,8 @@ long crm_debugger(void)
                 if (i == 0)
                 {
                     //    maybe the user put in a label?
-                    long tstart;
-                    long tlen;
+                    int tstart;
+                    int tlen;
                     crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
                             &tstart, &tlen);
                     memmove(inbuf, &inbuf[1 + tstart], tlen);
@@ -536,9 +536,9 @@ long crm_debugger(void)
             {
                 //  do a debugger-level alteration
                 //    maybe the user put in a label?
-                long vstart, vlen;
-                long vindex;
-                long ostart, oend, olen;
+                int vstart, vlen;
+                int vindex;
+                int ostart, oend, olen;
                 crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
                         &vstart, &vlen);
                 memmove(inbuf, &inbuf[1 + vstart], vlen);

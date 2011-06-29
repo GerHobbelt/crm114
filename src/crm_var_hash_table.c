@@ -215,7 +215,7 @@ void crm_vht_init(int argc, char **argv)
         int got_to_fake_em = FAKE_PWD | FAKE_USER;
 #endif
 
-        long i, j;
+        int i, j;
 
         i = 0;
 
@@ -484,12 +484,12 @@ void crm_vht_init(int argc, char **argv)
 //           late to fix it now.
 //
 //
-void crm_set_temp_nvar(char *varname, char *value, long vallen)
+void crm_set_temp_nvar(char *varname, char *value, int  vallen)
 {
-    long namestart, namelen;
-    long valstart;
-    long i;
-    long vnidx, vnlen;
+    int  namestart, namelen;
+    int valstart;
+    int i;
+    int vnidx, vnlen;
 
     //       do the internal_trace thing
     if (internal_trace)
@@ -499,9 +499,9 @@ void crm_set_temp_nvar(char *varname, char *value, long vallen)
     i = crm_nextword(varname, strlen(varname), 0, &vnidx, &vnlen);
     if (i == 0)
     {
-        nonfatalerror("Somehow, you are assigning a value to a variable with",
-                "an unprintable name.  I'll permit it for now, but"
-                "your program is probably broken.");
+        nonfatalerror("Somehow, you are assigning a value to a variable with "
+                "an unprintable name.  I'll permit it for now, but "
+                "your program is probably broken.", "");
     }
 
     if ((strlen(varname) + vallen + tdw->nchars + 64) > data_window_size)
@@ -1094,23 +1094,23 @@ end_of_nstring_tests:
 //     toss a nonfatal error.
 //
 
-void crm_destructive_alter_nvariable(char *varname, long varlen,
-        char *newstr, long newlen)
+void crm_destructive_alter_nvariable(char *varname, int varlen,
+        char *newstr, int newlen)
 {
-    long i;
-    long vhtindex, oldlen, delta;
+    int i;
+    int vhtindex, oldlen, delta;
 
     //      get the first variable name and verify it exists.
     //     GROT GROT GROT this should use nextword!!!
     //
     // [i_a] GROT GROT GROT: this 'trimming of whitespace' etc. should be completely unnecessary anyway.
     //       inspect code using it and get rid of this.
-#if 10
+#if 0
     i = 0;
     while (varname[i] < 0x021 && i < varlen)
         i++;
 #else
- crm_nextword(varname, 0, varlen, &i, &varlen);
+ crm_nextword(varname, varlen, 0, &i, &varlen);
 #endif
     vhtindex = crm_vht_lookup(vht, &(varname[i]), varlen);
     if (vht[vhtindex] == NULL)
@@ -1297,13 +1297,13 @@ while (delta + mdw->nchars > data_window_size - 1)
 //    or the index of the appropriate NULL slot to put
 //    the var in, if not found.
 
-long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
+int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
 {
     crmhash_t hc;
-    unsigned long i, j, k;
+    int i, j, k;
     int done;
-    long vsidx;
-    long vslen;
+    int vsidx;
+    int vslen;
 
     j = 0; // just so J is used.
 
@@ -1311,8 +1311,8 @@ long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
     //   time!
     if (1)
     {
-        long i, j;
-        long corrupted;
+        int i, j;
+        int corrupted;
         for (i = 0; i < vht_size; i++)
         {
             corrupted = 0;
@@ -1440,20 +1440,23 @@ long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
         //   get close to overflow.
         if (i == (hc - 1))
         {
-            static char badvarname[MAX_VARNAME];
+            /* static */ char badvarname[MAX_VARNAME];
             strncpy(badvarname, &vname[vsidx], (vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1));
             badvarname[(vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1)] = 0;
+            if (internal_trace)
             {
-                long index;
+                int index;
                 fprintf(stderr, "Variable Hash Table Dump\n");
                 for (index = 0; index < vht_size; index++)
                 {
                     int ic;
                     fprintf(stderr, "  var '");
                     for (ic = 0; ic < vht[index]->nlen; ic++)
+					{
                         fprintf(stderr, "%c",
                                 (vht[index]->nametxt)[ic + vht[index]->nstart]);
-                    fprintf(stderr, "'[%ld] found at %ld (",
+					}
+					fprintf(stderr, "'[%ld] found at %ld (",
                             vht[index]->nlen,  index);
                     if (vht[index]->valtxt == cdw->filetext)
                     {
@@ -1465,7 +1468,6 @@ long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
                     }
                     fprintf(stderr, " s: %ld, l:%ld)\n",
                             vht[index]->vstart, vht[index]->vlen);
-                    ;
                 }
             }
             fatalerror(" Variable hash table overflow while looking "

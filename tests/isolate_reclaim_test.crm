@@ -1,0 +1,103 @@
+#! :|crm
+#
+#     Test the reclamation of ISOLATEd variables.
+#
+#
+window
+isolate (:l:) //
+alter (:_dw:) /foo bar baz/
+match (:z:) /.*/
+output /\n isol: :*:_iso:\n/
+isolate (:l:) //
+#   Note that :i: contains the trailing linefeed, etc. from the input, but
+#    that :: does not.  So, when we reclaim :i:, we get back one character.
+#
+isolate (:i:) /:*:z:/
+output /i is >:*:i:<\n/
+match [:i:] (:: :f: :c: :b:) /(foo)(.*)(baz)/
+isolate (:endmarker:) /endmark/
+eval (:l:) /:#:_iso:/
+output /starting used: :*:l:\n/
+match (:i:)   /./
+eval (:l:) /:#:_iso:/
+output /release :i: used: :*:l:\n/
+match (::)   /./
+eval (:l:) /:#:_iso:/
+output /release ::  used: :*:l:\n/
+match (:i:)   /./
+eval (:l:) /:#:_iso:/
+output /release :i: used: :*:l:\n/
+match (:f:)   /./
+eval (:l:) /:#:_iso:/
+output /release :f: used: :*:l:\n/
+match (:c:)   /./
+eval (:l:) /:#:_iso:/
+output /release :c: used: :*:l:\n/
+match (:b:)   /./
+eval (:l:) /:#:_iso:/
+output /release :b: used: :*:l:\n/
+
+exit
+
+isolate (:i:) /:*:z:/
+output /i is >:*:i:<\n/
+match [:i:] (:: :f: :c: :b:) /(foo)(.*)(baz)/
+eval (:l:) /:#:_iso:/
+output /starting used: :*:l:\n/
+match (::)   /./
+eval (:l:) /:#:_iso:/
+output /release ::  used: :*:l:\n/
+match (:i:)   /./
+eval (:l:) /:#:_iso:/
+output /release :i: used: :*:l:\n/
+match (:f:)   /./
+eval (:l:) /:#:_iso:/
+output /release :f: used: :*:l:\n/
+match (:c:)   /./
+eval (:l:) /:#:_iso:/
+output /release :c: used: :*:l:\n/
+match (:b:)   /./
+eval (:l:) /:#:_iso:/
+output /release :b: used: :*:l:\n/
+
+isolate (:i:) /:*:z:/
+output /i is >:*:i:<\n/
+match [:i:] (:: :f: :c: :b:) /(foo)(.*)(baz)/
+eval (:l:) /:#:_iso:/
+output /starting used: :*:l:\n/
+match (::)   /./
+eval (:l:) /:#:_iso:/
+output /release ::  used: :*:l:\n/
+match (:i:)   /./
+eval (:l:) /:#:_iso:/
+output /release :i: used: :*:l:\n/
+match (:f:)   /./
+eval (:l:) /:#:_iso:/
+output /release :f: used: :*:l:\n/
+match (:c:)   /./
+eval (:l:) /:#:_iso:/
+output /release :c: used: :*:l:\n/
+match (:b:)   /./
+eval (:l:) /:#:_iso:/
+output /release :b: used: :*:l:\n/
+
+isolate (:i:) /:*:z:/
+output /i is >:*:i:<\n/
+match [:i:] (:: :f: :c: :b:) /(foo)(.*)(baz)/
+eval (:l:) /:#:_iso:/
+output /starting used: :*:l:\n/
+match (::)   /./
+eval (:l:) /:#:_iso:/
+output /release ::  used: :*:l:\n/
+match (:i:)   /./
+eval (:l:) /:#:_iso:/
+output /release :i: used: :*:l:\n/
+match (:f:)   /./
+eval (:l:) /:#:_iso:/
+output /release :f: used: :*:l:\n/
+match (:c:)   /./
+eval (:l:) /:#:_iso:/
+output /release :c: used: :*:l:\n/
+match (:b:)   /./
+eval (:l:) /:#:_iso:/
+output /release :b: used: :*:l:\n/

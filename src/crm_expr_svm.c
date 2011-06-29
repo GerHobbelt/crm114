@@ -989,7 +989,7 @@ static double sigmoid_predict(double decision_value, double A, double B)
 int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, long txtstart, long txtlen)
 {
-    long i, j, k, h;
+    int i, j, k, h;
     char ftext[MAX_PATTERN];
     long flen;
     char file1[MAX_PATTERN];
@@ -1000,13 +1000,13 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long textmaxoffset;
     HYPERSPACE_FEATUREBUCKET_STRUCT *hashes; //  the hashes we'll sort
     long hashcounts;
-    long cflags, eflags;
-    long sense;
-    long microgroom;
-    long unique;
-    long use_unigram_features;
+    int cflags, eflags;
+    int sense;
+    int microgroom;
+    int unique;
+    int use_unigram_features;
     char ptext[MAX_PATTERN]; //the regrex pattern
-    long plen;
+    int plen;
     regex_t regcb;
     regmatch_t match[5];
     struct stat statbuf1;    //  for statting the hash file1
@@ -1109,7 +1109,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //only has one input file
         if (ptext[0] != 0)
             crm_regfree(&regcb);
-#if 10
+#if 0
     i = 0;
     while (ftext[i] < 0x021)
         i++;
@@ -1119,7 +1119,14 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         j++;
     CRM_ASSERT(j <= flen);
 #else
- crm_nextword(ftext, 0, flen, &i, &j);
+ if (!crm_nextword(ftext, flen, 0, &i, &j) || j == 0)
+ {
+            int fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)flen,
+					ftext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < flen);
     CRM_ASSERT(j <= flen);
@@ -2366,7 +2373,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     svlen = apb->p2len;
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
     {
-        long vstart, vlen;
+        int vstart, vlen;
         crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;

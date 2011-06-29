@@ -27,7 +27,6 @@
 //
 //    Global variables
 
-/* [i_a] no variable instantiation in a common header file */
 
 
 /* [i_a] no variable instantiation in a common header file */
@@ -765,9 +764,10 @@ int main(int argc, char **argv)
             int partlen;
 
             //   NOTE - version info goes to stdout, not stderr, just like GCC does
-            fprintf(stdout, " This is CRM114, version %s (%s)\n"
+			fprintf(stdout, " This is CRM114, version %s (%s) (OS: %s)\n"
                    , VERSION
-                   , crm_regversion());
+                   , crm_regversion()
+				   , HOSTTYPE);
             fprintf(stdout, " Copyright 2001-2007 William S. Yerazunis\n");
             fprintf(stdout, " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
             fprintf(stdout, "\n"

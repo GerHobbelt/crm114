@@ -1,0 +1,709 @@
+#! @CRM@
+#  **** bangline argument config commented out for better system portability
+# -( spam good cache dontstore stats_only outbound undo verbose maxprio minprio delprio fileprefix config)
+#
+#    Copyright (C) 2002-2007 William S. Yerazunis; licensed under the
+#    GNU Public License (GPL) version 2.  A copy of this license is included
+#    in the distribution media, or obtain one from www.fsf.org .
+#
+#   Note to SunOS and FreeBSD users - you MUST remove EVERYTHING on
+#   the first line of this program from the first "-" to the end of
+#   the first line (including the "-" sign itself) or you will not get
+#   what you expect.  This is due to "differences of opinion" on how
+#   a bangline should be dealt with.
+#
+#     This is MailReaver, the 3rd Generation mail filter "standard script" 
+#     for CRM114.  The goal is to make a more maintainable, understandable,
+#     and easier-to-customize mail filter.
+#
+#    1) we use the consolidated library "maillib.crm" for most shareable
+#       things like parsing the .cf file, munging text, cacheing text, etc.
+#
+#    2) we always use the CacheIDs and the Reaver (maildir-like) format 
+#       for storing incoming email in unaltered form if there is 
+#       any possibility of training it. 
+# 
+#    3) We always train using mailtrainer.crm rather than training 
+#       internally.  Thus, if you want to change the way things are
+#       trained, you need to look at mailtrainer.crm as well.
+#
+#
+#     We support the following commands, on both the command line
+#     in the form "--blahblah --blahblah"  and 
+#     by using the "command {secretpassword} word word" method
+#
+#       spam		- this is spam.  Treat appropriately.[*]
+#       good		- this is good.  Treat appropriately.[*]
+#       cache           - pretend the email starts on the following line.
+#                         process it normally and put it in the cache.
+#       dontstore         - do NOT store this text into the cache.  Use
+#                         this for text that you never want to train.
+#	stats_only	- output ONLY the status.  Nothing else.  
+#			Since this means there's no output of the 
+#                       CacheIDs, we don't store the text for later training.
+#       report_only     - output ONLY the headers that would have 
+#                       been added, not the entire text.
+#	outbound	- this is an "outbound" message and hence can
+#			assumed to be nonspam.  Train if necessary.
+#	undo		- the message was mis-trained as type X.  Undo that.
+#	verbose		- tell me more.
+#	maxprio +/-	- add a maximum priority entry
+#       minprio +/-	- add a minimum priority entry
+#       delprio         - delete a prio list entry.
+#       fileprefix=dir  - look in the dir for the .css and .cf files
+#       config=filename - use filename as the .cf file
+#
+#     [*]  - meaning that if it's a command line flag, the entire
+#     standard input is the example text and if it's an inline 
+#     command, then the example text follows the inline commandline.
+#  
+#     Overall Design:
+#
+#	1) Read in the parameter file
+#
+#       2) Check for commands.  Set flags as appropriate
+#
+#	3) Are any command flags set?  
+#          
+#          3a) run those commands
+#
+#          3b) report the results and exit
+#
+#        ... otherwise...
+#
+#	4) Run the priolist
+#
+#	5) Run the classifier
+#
+#	6) Dispatch on the result
+#
+##############################################################
+#
+#        Step 1 - Read in the parameter file
+#
+#############################################################
+#
+#    ---  uncomment this if you want to include a "forced"
+#         configuration file  ---
+#
+# insert mailfilterconfig.crm
+#
+#
+#    --- These vars must have a value, or else we'll get errors ----
+#
+isolate <default> (:fileprefix:) //
+#
+isolate (:classifier_reason:) /no reason yet/
+#
+isolate (:classify_status:) //
+#
+isolate (:our_exit_code:) /0/
+#
+isolate (:stats:) / pR: 0.000000 /
+#
+isolate (:pr:) / pR: 0.00000/
+#
+isolate (:subj_text:) / (None) /
+#
+isolate (:add_extra_stuff:) //
+#
+isolate (:decision_length:) /8192/
+#
+#      Isolate these email addresses, and give them values,
+#      in case the user doesn't.
+isolate (:reject_address:) //
+isolate (:unsure_address:) //
+isolate (:fail_priority_mail_to:) //
+isolate (:fail_classify_mail_to:) //
+isolate (:fail_blacklist_mail_to:) //
+isolate (:fail_SSM_mail_to:)  //
+isolate (:log_rejections:) //
+isolate <default> (:report_only:) //
+#
+#
+#        load the config file
+isolate <default> (:config:) /:*:fileprefix:mailfilter.cf/
+call /:load_cf_file:/ [:*:config:]
+
+#######################################################################
+#     
+#    Do a quick check- has the password been changed or not?  If it's
+#    still the default, put in something that will be well-nigh unguessable
+#    (esp. since it will contain recieved headers that the sender cannot
+#    see nor control.)
+{
+    match [:spw:] /DEFAULT-PASSWORD/
+    #  yes, it's the same as default.  So we scramble it just so
+    #  nobody can hack in without major trickery.
+    hash (:spw:) /:*:_env_string::*:_dw:/
+}
+
+######################################################################
+#
+#     if a particular "fail" category hasn't been assigned, but 
+#     the :general_fails_to: category has, then send there instead
+{
+    match [:fail_priority_mail_to:] /./ <absent>
+    isolate (:fail_priority_mail_to:) /:*:general_fails_to:/
+}
+{
+    match [:fail_classify_mail_to:] /./ <absent>
+    isolate (:fail_classify_mail_to:) /:*:general_fails_to:/
+}
+
+
+#########################################################################
+#
+#       START OF ACTUAL MAIL PROCESSING HERE
+#
+#########################################################################
+#
+#      Does the user want us to log all incoming mail?  This is handy for
+#      testing and auditing purposes; by default it is turned off in the
+#      configuration file.
+{
+    match [:log_to_allmail.txt:] /yes/
+    output [:*:fileprefix:allmail.txt] <append> /:*:mail_separator:/
+    output [:*:fileprefix:allmail.txt] <append> /:*:_dw:/
+}
+
+#     allow logging to anywhere...
+{
+    match [:log_all_mail_to_file:] /./
+    output [:*:fileprefix::*:log_all_mail_to_file:] <append> /:*:mail_separator:/
+    output [:*:fileprefix::*:log_all_mail_to_file:] <append> /:*:_dw:/
+}
+
+
+########################################################################
+#
+#       2) Check for a command.  Set flags as appropriate.  Note that we
+#       can't just dispatch on the presence of a flag, because we need
+#	to merge in anything that might be in an inline command.
+#
+########################################################################
+#
+#      Our commands are of the form:
+#
+#      command password <command>  extra_args
+#
+#      and the extra_args are one or more of
+#      	spam
+#       good
+#	cache
+#       dontstore
+#	stats_only
+#	outbound
+#	undo
+#	verbose
+#  
+#
+#    Start our searching at the start of our input.
+#        If nothing else requires it, we use the current input as the 
+#        text to be operated upon.
+{
+    isolate (:spam: :good: :cache: :dontstore: :stats_only: ) 
+    isolate (:outbound: :undo: :verbose:)
+    isolate (:in_text:)  /:*:_dw:/ 
+    #   now find the command, and set the cmdline insert point.
+    match (:: :cmdline:) /.*(.)/
+    match (:cmdline:) /\n\n/
+    match <nomultiline> (:cmdline: :cmds:) /^command :*:spw: (.*)$/ 
+    {
+	#    Yep, found a command.  Grab remaining text in case 
+	#     we aren't using the cached version
+	match <fromend> (:in_text:) /.*/
+	#
+	#      Parse out the command (and in the case of the prio lists,
+	#      actually do the work)
+	{
+	    #      Command to learn spam
+	    isolate (:spam:) <default> //
+	    match [:cmds:] /spam/
+	    alter (:spam:) /SET/
+	}
+	{
+	    #      Command to learn good
+	    isolate (:good:) <default> //
+	    match [:cmds:] /good/
+	    alter (:good:) /SET/
+	}
+	{
+	    #      Command to use the cached text copy
+	    isolate (:cache:) <default> //
+	    match [:cmds:] /cache/
+	    alter (:cache:) /SET/
+	}
+	{
+	    #      Command to NOT store this in the cache for later
+	    isolate (:dontstore:) <default> //
+	    match [:cmds:] /dontstore/
+	    alter (:dontstore:) /SET/
+	}
+	{
+	    #      Command to run stats_only, which implies dont store.
+	    isolate (:stats_only:) <default> //
+	    match [:cmds:] /stats_only/
+	    alter (:stats_only:) /SET/
+	}
+	{
+	    #      Command to run outbound mode
+	    isolate (:outbound:) <default> //
+	    match [:cmds:] /outbound/
+	    alter (:outbound:) /SET/
+	}
+	{
+	    #      Command to UNdo
+	    isolate (:undo:) <default> //
+	    match [:cmds:] /undo/
+	    alter (:undo:) /SET/
+	}
+	#
+	#     The following commands can only be used inline, not
+	#     on the command line, and they do NOT use the text.
+	{
+	    #      Command to set a maxprio entry
+	    match [:cmds:] \
+		    /maxprio ([-+][[:graph:]]+) / \
+		    (:: :prio_regex:)
+	    input [:*:fileprefix:priolist.mfp] (:priotext:)
+	    alter (:priotext:) \
+		    /:*:prio_regex:\n:*:priotext:/
+	    output [:*:fileprefix:priolist.mfp] /:*:priotext:/
+	    call /:mungmail_add:/ [X-CRM114-Success: Added new highest priority entry ":*:prio_regex:" ]
+	    accept
+	    exit
+	}
+	{
+	    #      Command to set a minprio entry
+	    match [:cmds:] \
+		    /minprio ([-+][[:graph:]]+)/ \
+		    (:: :prio_regex:)
+	    input [:*:fileprefix:priolist.mfp] (:priotext:)
+	    alter (:priotext:) \
+		    /:*:priotext:\n:*:prio_regex:/
+	    output [:*:fileprefix:priolist.mfp] /:*:priotext:/
+	    call /:mungmail_add:/ [X-CRM114-Success: Added new lowest priority entry ":*:prio_regex:" ]
+	    accept
+	    exit
+	}
+	{
+	    #      Command to delete a priolist entry
+	    match [:cmds:] \
+		    /delprio ([[:graph:]]+)/ \
+		    (:: :prio_regex:)
+	    input [:*:fileprefix:priolist.mfp] (:priotext:)
+	    match [:priotext:] <nomultiline> \
+		    /^.*:*:prio_regex:.*$/ (:die:)
+	    alter (:die:) /\n/
+	    output [:*:fileprefix:priolist.mfp] /:*:priotext:/
+	    call /:mungmail_add:/ [X-CRM114-Success: Deleted priority entry ":*:prio_regex:" ]
+	    accept
+	    exit
+	}
+    }
+}
+
+#######  Inter-flag dependencies fixed up here.  
+
+{
+    match [:stats_only:] /SET/
+    alter (:dontstore:) /SET/
+}
+
+
+
+###################################################################
+#
+#       See if there's already a CacheID in the headers- if so, grab it.
+#
+isolate (:cacheid:) //
+{
+    {
+	match [:in_text:] <nomultiline> (:: :cacheid:)  \
+		/X-CRM114-CacheID:.*sfid-([[:graph:]]+)/
+	isolate (:cacheid:) 
+	isolate (:long_cacheid:) /:*:text_cache:\/texts\/:*:cacheid:/
+    }
+    alius    #  nope, not in the explicit headers.  Check for it as a 
+    #           comment in the Message-Id: header.
+    {
+	match [:in_text:] <nomultiline> (:: :cacheid:)  \
+		/Message-Id:.*\(sfid-([[:graph:]]+)\)/
+	isolate (:cacheid:) 
+	isolate (:long_cacheid:) /:*:text_cache:\/texts\/:*:cacheid:/
+    }
+    #      ADD OTHER PLACES TO CHECK HERE
+}
+
+####################################################################
+#
+#      Do we save the text into the cache, or has that already happened
+#
+# Unless "dontstore" is set or we already have a CacheID, we're supposed
+# to save the text.  Saving is the usual case, mind you.  Normally this
+# is the whole text, but if we had an inline "command cache" line then
+# use whatever text follows the "command password cache" line and stuff
+# that into the cache rather than the whole text.  You don't normally
+# need to do this except as a prelude to training this new text.
+#
+{
+    match <absent> [:cacheid:] /./
+    match <absent> [:dontstore:] /SET/ 
+    #      yes - so the text to be worked follows the command line.
+    #      which is already in :in_text:   This also calculates the 
+    #      new cacheids named :cacheid: and :long_cacheid: .
+    call /:reavercache_init:/
+    call /:reavercache_store:/ [:*:_dw:]  
+}
+
+#####################################################################
+#####################################################################
+#
+#	Command flags are all set; at this point we can run strictly from
+#	the :var: values and the text held in :in_text:
+#
+#####################################################################
+#####################################################################
+
+
+#
+#       We still need to cope with the following possibilities:
+#        learn as spam, learn as nonspam, classify, and stats_only.
+#
+#       But at least now we can run the preprocessing on :in_text:
+#
+#output /\nPREPROCESS INPUT:\n :*:in_text:\n/
+{
+    #  note - this work gets thrown away if we are training from cache
+    match (:chopped:) [:in_text: 0 :*:decision_length:] /.*/
+    alter (:in_text:) /:*:chopped:/
+    call /:mail_preprocess:/ [:*:in_text:] (:in_text:)
+}
+#output /\nPREPROCESS RESULT:\n :*:in_text:\n/
+
+#
+#    Are we supposed to learn this as spam?
+{
+    match [:spam:] /SET/
+    {
+	isolate (:tmp:) //
+	syscall () (:tmp:) /\/bin\/ls :*:long_cacheid:/
+	match [:tmp:] /:*:cacheid:/
+	#
+	#      remember this file on a permanent basis by linking it into
+	#      the known-spam directory.
+	syscall /:*:cache_dupe_command: :*:text_cache:\/texts\/:*:cacheid: :*:text_cache:\/known_spam\/:*:cacheid: /
+	#
+	#      Now run mailtrainer.crm on the new copy
+	isolate (:mailtrainer_output:)
+	syscall /:*:fileprefix::*:trainer_invoke_command: --fileprefix=:*:fileprefix: --spam=:*:text_cache:\/known_spam\/:*:cacheid: --good=:*:text_cache:\/empty\/ / () (:mailtrainer_output:)
+	#output /mailtrainer output:  ':*:mailtrainer_output:'\n/
+	#      and remove it from the prob_* directories, as
+	#      now it's known
+	syscall /\/bin\/rm -rf  :*:text_cache:\/prob_spam\/:*:cacheid:/
+	syscall /\/bin\/rm -rf  :*:text_cache:\/prob_good\/:*:cacheid:/
+	#
+	#      now it's trained; put in a marker in the headers
+	call /:mungmail_delete:/ [X-CRM114-Status: ]
+	call /:mungmail_delete:/ [X-CRM114-Unsure: ]
+	call /:mungmail_add:/ [X-CRM114-Action: LEARNED AND CACHED SPAM]
+	#   Insert the training report in the msgbody, if desired
+	{
+	    match [:add_mailtrainer_report:] /yes/
+	    match (:: :firstline:) /.*(.)/
+	    match (:: :firstline:) /\n\n()/
+	    alter (:firstline:) / -------\n :*:mailtrainer_output:\n ------ \n/
+	}
+	{
+	    match [:confirm_flag_subject_string:] /./
+	    call /:mungmail_mung_subject:/ [:*:confirm_flag_subject_string:]
+	}
+	accept
+	exit /:*:accepted_mail_exit_code:/
+    }
+    alius
+    {
+	#  GROT GROT GROT  We should make a better attempt at finding 
+	#  the file, like looking in known_spam and known_good.
+	#
+	match (:: :firstline:) /.*(.)/
+	match (:: :firstline:) /\n\n()/
+	alter (:firstline:) /\n\n-----\n  Problem: couldn't find the cached text.\n  Perhaps you've already trained it?  \n No action taken.\n\n/
+	accept
+	exit /:*:accepted_mail_exit_code:/
+    }
+}
+#
+#    Are we supposed to learn this as good?
+{
+    match [:good:] /SET/
+    {
+	isolate (:tmp:) //
+	syscall () (:tmp:) /\/bin\/ls :*:long_cacheid:/
+	match [:tmp:] /:*:cacheid:/
+	#
+	#      remember this file on a permanent basis by linking it into
+	#      the known-good directory.
+	syscall /:*:cache_dupe_command: :*:text_cache:\/texts\/:*:cacheid: :*:text_cache:\/known_good\/:*:cacheid: /
+	#
+	#      Now run mailtrainer.crm on the new copy
+	isolate (:mailtrainer_output:)
+	syscall /:*:fileprefix::*:trainer_invoke_command: --fileprefix=:*:fileprefix: --good=:*:text_cache:\/known_good\/:*:cacheid: --spam=:*:text_cache:\/empty\/ / () (:mailtrainer_output:)
+	#output /mailtrainer output:  ':*:mailtrainer_output:'\n/
+	#      and remove it from the prob_* directories, as
+	#      now it's known
+	syscall /\/bin\/rm -rf  :*:text_cache:\/prob_spam\/:*:cacheid:/
+	syscall /\/bin\/rm -rf  :*:text_cache:\/prob_good\/:*:cacheid:/
+	#
+	#      now it's trained; put in a marker in the headers
+	call /:mungmail_delete:/ [X-CRM114-Status: ]
+	call /:mungmail_delete:/ [X-CRM114-Unsure: ]
+	call /:mungmail_add:/ [X-CRM114-Action: LEARNED AND CACHED GOOD]
+	#   Insert the training report in the msgbody, if desired
+	{
+	    match [:add_mailtrainer_report:] /yes/
+	    match (:: :firstline:) /.*(.)/
+	    match (:: :firstline:) /\n\n()/
+	    alter (:firstline:) / -------\n :*:mailtrainer_output:\n ------ \n/
+	}
+	{
+	    match [:confirm_flag_subject_string:] /./
+	    call /:mungmail_mung_subject:/ [:*:confirm_flag_subject_string:]
+	}
+	accept
+	exit /:*:accepted_mail_exit_code:/
+    }
+    alius
+    {
+	#  GROT GROT GROT  We should make a better attempt at finding 
+	#  the file, like looking in known_spam and known_good.
+	#
+	match (:: :firstline:) /.*(.)/
+	match (:: :firstline:) /\n\n()/
+	alter (:firstline:) /\n\n-----\n  Problem: couldn't find the cached text.\n  Perhaps you've already trained it?  \n No action taken.\n\n/
+	accept
+	exit /:*:accepted_mail_exit_code:/
+    }
+}
+
+##########################################################################
+#
+#      Not a learn, so it's a CLASSIFY job.  Maybe full, maybe stats_only.  
+#      We try the Priolist first (eventually) then fall back on the
+#      classifiers.   Priolist patterns start in column 1, and are a + or
+#      a - immediately followed by a regex.
+#
+isolate (:priolist:)
+input (:priolist:) [:*:fileprefix:priolist.mfp]
+#
+#
+{
+    #... Grab the next regexturn the one-per-line patterns into a regex
+    match <fromend nomultiline> (:w: :pm: :pat:) [:priolist:]  /(.)(.+)/
+    #... see if this regex matches the incoming mail
+    {
+	match <nomultiline> (:reason:) /:*:pat:/
+	#  Yep, it matched... branch based on pm
+	#
+	{
+	    match [:pm:] /[+]/
+	    # put in a little tag saying why prio-listed
+	    alter (:classifier_reason:) /** ACCEPT: CRM114 Priority Whitelisted by: :*:reason: **:*:_nl:/
+	    alter (:stats:) /Match to priority pattern :*:pat:\n Forced pR: 999.99 /
+	    match [:stats:] (:: :pr:) /Forced pR: ([[:graph:]]+)/
+	    goto /:looks_good:/
+	}
+	#   No, we didn't have a +, was it a '-'?
+	{
+	    match [:pm:] /[-]/
+	    alter (:classifier_reason:) /** REJECT: CRM114 Priority Blacklisted by: :*:reason: **:*:_nl:/
+	    alter (:reject_address:) /:*:fail_priority_mail_to:/
+	    {
+		output [:*:fileprefix:rejected_by_blacklist.txt] <append> /:*:_dw:/
+	    }
+	    alter (:stats:) /Match to priority pattern :*:pat:\n Forced pR: -999.99 /
+	    match [:stats:] (:: :pr:) /pR: ([[:graph:]]+)/
+	    goto /:looks_spam:/
+	}
+    }
+    #   Nope, didn't match as a priority... grab the next regex until
+    #   there are no prio-list regexes left
+    liaf
+}
+
+#######################################################################
+#
+#      No joy on the priolist.  Use the Classifier.
+#
+{
+    isolate (:stats:) //
+    classify [:in_text:] <:*:clf:> /:*:lcr:/ \
+	    (:*:fileprefix:nonspam.css :*:fileprefix:spam.css) (:stats:) 
+    match [:stats:] <nomultiline> \
+	    /^#0.* pR: ([-. 0-9]+)/ (:: :pr:)
+    {
+	#    Is this a stats_only run?
+	#
+	match [:stats_only:] /SET/
+	output /:*:pr:/
+	exit /:*:accepted_mail_return_code:/
+    }
+    #
+    #      It's a pure classify.  Three possibilities:
+    {
+	#   Case 1 - It's spam.
+	eval /:@: :*:pr: <= :*:spam_threshold: :/
+	goto /:looks_spam:/
+    }
+    {
+	#   Case 2 - It's good.
+	eval /:@: :*:pr: >= :*:good_threshold: :/
+	goto /:looks_good:/
+    }
+    {
+	#   Case 3 - Unsure
+	goto /:looks_unsure:/
+    }
+}
+##################################################################
+#
+#      Final Dispatch - one of :looks_spam:, :looks_good:, or :looks_unsure:
+#      will be gone-to.
+#
+#################################################################
+
+:looks_spam:
+{
+    #     Do we log rejections somewhere?
+    {
+	match [:log_rejections_to_file:] /./
+	output [:*:fileprefix::*:log_rejections_to_file:] <append> /:*:mail_separator:/
+	output [:*:fileprefix::*:log_rejections_to_file:] <append> /:*:_dw:/
+    }
+
+    #     Do we put prob_spams into the prob_spam directory?
+    {
+	match [:text_cache:] /./
+	match [:cacheid:] /./
+	syscall /:*:cache_dupe_command: :*:text_cache:\/texts\/:*:cacheid: :*:text_cache:\/prob_spam\/:*:cacheid: /
+    }
+
+    #     flag the subject line
+    {
+	match [:spam_flag_subject_string:] /./
+	call /:mungmail_mung_subject:/ [:*:spam_flag_subject_string:]
+    }
+    isolate (:subj_text:) 
+    alter (:our_exit_code:) /:*:rejected_mail_exit_code:/
+    alter (:reject_address:) /:*:fail_classify_mail_to:/
+    {
+	match [:add_headers:] /yes/
+	call /:mungmail_unique:/ \
+		[X-CRM114-Version: :*:_crm_version: MR-:*:_pgm_hash: ]
+	call /:mungmail_add_cache_info:/ [:*:cacheid:]
+	call /:mungmail_unique:/ [X-CRM114-Status: SPAM  ( :*:pr: )] 
+	call /:mungmail_delete:/ [X-CRM114-Notice: ]
+    }  
+    #
+    #    Since sending mail needs complicated args, we do it here rather
+    #    than in a mungmail routine - and if we send mail, we exit here 
+    #    rather than in the usual finish-up routine.
+    {
+	match [:reject_address:] /.../
+        syscall (:*:_dw:) /mail :*:reject_address: -s ' :*:subj_text: '/
+	exit /:*:our_exit_code:/
+    }
+}
+goto /:finish_up:/
+
+:looks_good:
+{
+    #     Do we put prob_good mail into the prob_good directory?
+    {
+	match [:text_cache:] /./
+	match [:cacheid:] /./
+	syscall /:*:cache_dupe_command: :*:text_cache:\/texts\/:*:cacheid: :*:text_cache:\/prob_good\/:*:cacheid: /
+    }
+
+
+    alter (:our_exit_code:) /:*:accepted_mail_exit_code:/
+    {
+	match [:good_flag_subject_string:] /./
+	call /:mungmail_mung_subject:/ [:*:good_flag_subject_string:]
+    }
+    {
+	match [:add_headers:] /yes/
+	call /:mungmail_delete:/ [X-CRM114-Notice: ]
+	call /:mungmail_unique:/ \
+		[X-CRM114-Version: :*:_crm_version: MR-:*:_pgm_hash: ]
+	call /:mungmail_add_cache_info:/ [:*:cacheid:]
+	call /:mungmail_unique:/ [X-CRM114-Status: GOOD ( :*:pr: )]
+    }
+}
+goto /:finish_up:/
+
+:looks_unsure:
+{
+    alter (:our_exit_code:) /:*:unsure_mail_exit_code:/
+    {
+	match [:unsure_flag_subject_string:] /./
+	call /:mungmail_mung_subject:/ [:*:unsure_flag_subject_string:]
+    }
+    {
+	match [:add_headers:] /yes/
+	call /:mungmail_unique:/ \
+		[X-CRM114-Version: :*:_crm_version: MR-:*:_pgm_hash: ]
+	call /:mungmail_add_cache_info:/ [:*:cacheid:]
+	call /:mungmail_unique:/ [X-CRM114-Status: UNSURE ( :*:pr: )]
+	call /:mungmail_unique:/ [X-CRM114-Notice: Please train this message. ]
+    }
+}
+goto /:finish_up:/
+
+
+###############################################################
+#
+#         Finish up - common exit routine
+
+:finish_up:
+{
+    {
+	#   If :report_only: is SET then delete everything that's 
+	#    not a X-CRM114 header
+	match [:report_only:] /SET/
+	match [:_dw:] //
+	{	
+		match [:_dw:] <fromend> /.*?\n/ (:z:)
+                {     
+		      match [:z:] <absent> /^X-CRM114/
+		      # output /Deleting :*:z:\n/
+                      alter (:z:) //
+		}
+		liaf
+        }
+    }
+    accept
+}
+exit /:*:our_exit_code:/
+
+################################################################
+#
+#        Catch failures.
+
+trap (:broken_program_message:) /.*/
+{
+        accept
+        output /:*:_nl: Aw, crud.  mailreaver.crm broke.  Here's the error: :*:\_nl:/
+        output /:*:broken_program_message:/
+        output [stderr] /:*:_nl: ERROR: mailreaver.crm broke.  Here's the error\: :*:_nl:/
+        output [stderr] /ERROR: :*:broken_program_message:/
+    }
+exit /:*:program_fault_exit_code:/
+
+
+######################################################################3
+#
+#              Library insertions start here.
+insert maillib.crm
+

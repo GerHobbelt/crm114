@@ -1,0 +1,72 @@
+#! :|crm
+#
+#      Test basic TRANSLATE functionality
+#
+window
+output /\nTRANSLATE basic functionality test \n\n/
+#
+#
+#    Basic test - does it rot13?  Does it come back?
+alter (:_dw:) \
+  /foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e/
+output /original: :*:_dw:\n/
+translate /a-z/ /n-za-m/
+output /rot13:    :*:_dw:\n/
+translate /a-z/ /n-za-m/
+output /again:    :*:_dw:\n/
+#
+#    Ascending and descending ranges?
+translate /a-z0-9/ /z-a9-0/
+output /invrange: :*:_dw:\n/
+#
+#    Does uniquing work?
+alter (:_dw:) \
+  /foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e/
+translate <unique> /a-z/ /a-z/
+output /unique:   :*:_dw:\n/
+#
+#    Does literal work?  Prove it.
+alter (:_dw:) \
+  /foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e/
+translate  /a-z/ /z-a/
+output /invrange: :*:_dw:\n/
+alter (:_dw:) \
+  /foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e/
+translate <literal> /a-z/ /z-a/
+output /literal:  :*:_dw:\n/
+#
+#     How about literal and unique together?
+alter (:_dw:) \
+  /foo bar zappaaaaa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e/
+translate <literal unique> /a-z/ /z-a/
+output /lit+uniq: :*:_dw:\n/
+#
+#      deletion?
+alter (:_dw:) \
+  /foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e/
+translate /a-z13579/ 
+output /deletion: :*:_dw:\n/
+#
+#      inversions of first charset?
+alter (:_dw:) \
+  /foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e/
+translate /^a-z13579/ 
+output /del-inv:  :*:_dw:\n/
+#
+#      inversions of second charset?
+alter (:_dw:) \
+  /foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e/
+translate /a-z13579/ /^a-z/ 
+translate /^a-zA-Z0-9/ /wxyz/
+output /del-inv2: :*:_dw:\n/
+#
+#      source var and dest. var?
+isolate (:my_src:) \
+  /foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e/
+translate [:my_src:] /a-zA-Z/ /A-Za-z/ 
+output /srcvar:   :*:_dw:\n/
+isolate (:my_dest:)
+translate [:my_src:] (:my_dest:) /a-zA-Z/ /Z-Az-a/ 
+output /src-dest: :*:my_dest:\n/
+#
+#

@@ -2570,7 +2570,7 @@ crmhash_t mult6_hash(const unsigned char *str, int len, crmhash_t seed)
     md5_context ctx;
 
     md5_starts( &ctx );
-    md5_update( &ctx, (const char *)&seed, sizeof(seed) );
+    md5_update( &ctx, (const unsigned char *)&seed, sizeof(seed) );
     md5_update( &ctx, str, len );
     md5_finish( &ctx, md5sum );
 

@@ -218,10 +218,10 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //     belonging to a particular type.
     //     learn <flags> (classname) /word/
     //
-    long i, j, k;
+    int i, j, k;
     long h;                  //  h is our counter in the hashpipe;
     char ptext[MAX_PATTERN]; //  the regex pattern
-    long plen;
+    int plen;
     char htext[MAX_PATTERN];        //  the hash name
     char hashfilename[MAX_PATTERN]; // the hashfile name
     FILE *hashf;                    // stream of the hashfile
@@ -241,11 +241,11 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     regmatch_t match[5];    //  we only care about the outermost match
     long textoffset;
     long textmaxoffset;
-    long sense;
-    long microgroom;
+    int sense;
+    int microgroom;
     int unique;
     int use_unigram_features;
-    long fev;
+    int fev;
 
     int next_offset;      //  UNUSED in the current code
 
@@ -324,7 +324,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
-#if 10
+#if 0
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -334,7 +334,14 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         j++;
     CRM_ASSERT(j <= hlen);
 #else
- crm_nextword(htext, 0, hlen, &i, &j);
+ if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+ {
+            fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)hlen,
+					htext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
@@ -1094,10 +1101,10 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long hashlens[MAX_CLASSIFIERS];
     char *hashname[MAX_CLASSIFIERS];
     long succhash;
-    long vbar_seen;     // did we see '|' in classify's args?
+    int vbar_seen;     // did we see '|' in classify's args?
     long maxhash;
-    long fnstart, fnlen;
-    long fn_start_here;
+    int fnstart, fnlen;
+    int fn_start_here;
     long textoffset;
     long textmaxoffset;
     long bestseen;
@@ -1246,7 +1253,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     svlen = apb->p2len;
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
     {
-        long vstart, vlen;
+        int vstart, vlen;
         crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;

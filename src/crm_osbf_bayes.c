@@ -194,15 +194,15 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //     belonging to a particular type.
     //     learn <flags> (classname) /word/
     //
-    long i, j, k;
+    int i, j, k;
     long h;                     //  h is our counter in the hashpipe;
     char ptext[MAX_PATTERN];    //  the regex pattern
-    long plen;
+    int plen;
     //  char ltext[MAX_PATTERN];  //  the variable to learn
     //long llen;
     char htext[MAX_PATTERN];    //  the hash name
-    long hlen;
-    long cflags, eflags;
+    int hlen;
+    int cflags, eflags;
     struct stat statbuf;                //  for statting the hash file
     OSBF_FEATUREBUCKET_STRUCT *hashes;  //  the text of the hash file
     OSBF_FEATURE_HEADER_STRUCT *header; //  header of the hash file
@@ -212,8 +212,8 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     regex_t regcb;
     long textoffset;
     long textmaxoffset;
-    long sense;
-    long fev;
+    int sense;
+    int fev;
     char *learnfilename;
     struct token_search ts;
 
@@ -287,7 +287,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
-#if 10
+#if 0
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -297,7 +297,14 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         j++;
     CRM_ASSERT(j <= hlen);
 #else
-    crm_nextword(htext, 0, hlen, &i, &j);
+ if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+ {
+            fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)hlen,
+					htext);
+            return fev;
+ }
     j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
@@ -632,32 +639,32 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //       This code should look very familiar- it's cribbed from
     //       the code for LEARN
     //
-    long i, j, k;
+    int i, j, k;
     long h;                     //  we use h for our hashpipe counter, as needed.
     char ptext[MAX_PATTERN];    //  the regex pattern
-    long plen;
+    int plen;
     //  char ltext[MAX_PATTERN];  //  the variable to classify
     //long llen;
     char ostext[MAX_PATTERN];   //  optional pR offset
-    long oslen;
+    int oslen;
     double pR_offset;
     //  the hash file names
     char htext[MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN];
-    long htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
-    long hlen;
+    int htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
+    int hlen;
     //  the match statistics variable
     char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
-    long stext_maxlen =
+    int stext_maxlen =
         MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
-    long slen;
+    int slen;
     char svrbl[MAX_PATTERN];    //  the match statistics text buffer
     long svlen;
-    long fnameoffset;
+    int fnameoffset;
     char fname[MAX_FILE_NAME_LEN];
-    long eflags;
-    long cflags;
+    int eflags;
+    int cflags;
     //  long vhtindex;
-    long not_microgroom = 1;
+    int not_microgroom = 1;
 
     struct stat statbuf;        //  for statting the hash file
     regex_t regcb;
@@ -695,10 +702,10 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long hashlens[MAX_CLASSIFIERS];
     char *hashname[MAX_CLASSIFIERS];
     long succhash;
-    long vbar_seen;             // did we see '|' in classify's args?
+    int vbar_seen;             // did we see '|' in classify's args?
     long maxhash;
-    long fnstart, fnlen;
-    long fn_start_here;
+    int fnstart, fnlen;
+    int fn_start_here;
     long textoffset;
     long textmaxoffset;
     long bestseen;
@@ -769,7 +776,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     svlen = apb->p2len;
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
     {
-        long vstart, vlen;
+        int vstart, vlen;
         crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;

@@ -88,8 +88,16 @@ dist-msvc: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.project.zip
 	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).Win32.project.zip $(distdir) )
 
-
-dist-all: distribution
+dist-win32-bin: distdir
+	$(SILENT) echo "Creating MSVC binary archives from `pwd`"; 
+	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.7z
+	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.tar.bz2
+	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).Win32.bin.7z win32/bin/*.exe win32/bin/*.dll )
+	( test "X$(tar)" != "X" && $(tar) -c  win32/bin/*.exe win32/bin/*.dll | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).Win32.bin.tar.gz )
+	( test "X$(tar)" != "X" && $(tar) -c  win32/bin/*.exe win32/bin/*.dll | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).Win32.bin.tar.bz2 )
+	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.zip
+	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).Win32.bin.zip  win32/bin/*.exe win32/bin/*.dll )
 
 distribution: distdir dist-diff
 	$(SILENT) echo "Creating src archives"; 
@@ -102,6 +110,13 @@ distribution: distdir dist-diff
 	-rm -f $(ARCHIVE_BASE_NAME).src.zip
 	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).src.zip $(distdir) )
 	$(am__remove_distdir)
+
+
+
+dist-all: distribution dist-win32-bin
+
+
+
 
 
 .PHONY: reindent depend dist-7z dist-diff dist-maint dist-msvc distribution dist-all

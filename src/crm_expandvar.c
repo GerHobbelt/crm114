@@ -1008,36 +1008,36 @@ bailout:
 //     nextwords, you're done.
 //
 
-long crm_restrictvar(char  *boxstring,
-        long                boxstrlen,
-        long               *vht_idx,
-        char              **outblock,
-        long               *outoffset,
-        long               *outlen,
-        char               *errstr)
+int crm_restrictvar(char  *boxstring,
+        int boxstrlen,
+        int *vht_idx,
+        char **outblock,
+        int *outoffset,
+        int *outlen,
+        char *errstr)
 {
     char datastring[MAX_PATTERN + 1];
-    long datastringlen;
+    int datastringlen;
 
     char varname[MAX_PATTERN + 1];
-    long varnamelen;
-    long vmidx;
+    int varnamelen;
+    int vmidx;
 
     regex_t preg;
     regmatch_t matches[MAX_SUBREGEX];
 
     char scanbuf[MAX_PATTERN + 1];
-    long scanbuflen;
+    int scanbuflen;
 
-    long nw_start, nw_len;
+    int nw_start, nw_len;
 
     char *mdw;             //  the data window that this var is stored in.
     char *start_ptr;
-    long actual_offset;
-    long actual_len;
-    long in_subscript;
+    int actual_offset;
+    int actual_len;
+    int in_subscript;
 
-    long i, j;
+    int i, j;
 
     nw_start = 0;
     nw_len = 0;
@@ -1084,8 +1084,8 @@ long crm_restrictvar(char  *boxstring,
     //  fprintf(stderr, "vmidx = %ld, vht[vmidx] = %lx\n", vmidx, vht[vmidx]);
   if (internal_trace)
     {
-    fprintf (stderr, "vmidx = %ld, vht[vmidx] = %p\n", 
-	     (long) vmidx, vht[vmidx]);
+		fprintf (stderr, "vmidx = %d, vht[vmidx] = %p\n", 
+	     vmidx, vht[vmidx]);
     }
     //       Is it a real variable?
     if (((void *)vht[vmidx]) == NULL)
@@ -1212,7 +1212,7 @@ long crm_restrictvar(char  *boxstring,
         {
             //      it's not an int; see if it's a /regex/
 
-            long regex_start;
+        int regex_start;
             in_subscript = 0; //  no longer in subscript-length mode.
             if (datastring[nw_start] == '/')
             {
@@ -1247,7 +1247,7 @@ long crm_restrictvar(char  *boxstring,
 	      j = crm_regcomp (&preg, scanbuf, nw_len, REG_EXTENDED);
 	      if (j > 0) 
                 {
-                    long curstmt;
+            int curstmt;
                     curstmt = csl->cstmt;
                     crm_regerror(i, &preg, tempbuf, data_window_size);
                     strcpy(errstr,
@@ -1320,13 +1320,13 @@ long crm_restrictvar(char  *boxstring,
     {
         fprintf(stderr, "Final non-nulls: ");
         if (vht_idx)
-            fprintf(stderr, " VHTidx %ld", (unsigned long)*vht_idx);
+            fprintf(stderr, " VHTidx %d", *vht_idx);
         if (outblock)
             fprintf(stderr, " blockaddr %p", *outblock);
         if (outoffset)
-            fprintf(stderr, " startoffset %ld", (unsigned long)*outoffset);
+            fprintf(stderr, " startoffset %d", *outoffset);
         if (outlen)
-            fprintf(stderr, " length %ld", (unsigned long)*outlen);
+            fprintf(stderr, " length %d", *outlen);
         fprintf(stderr, "\n");
     }
     return 0;

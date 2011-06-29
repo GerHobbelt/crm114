@@ -31,13 +31,13 @@
 int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char temp_vars[MAX_VARNAME];
-    long tvlen;
-    long vn_start_here;
-    long vstart;
-    long vlen;
-    long mc;
-    long done;
-    long vallen;
+    int tvlen;
+    int vn_start_here;
+    int vstart;
+    int vlen;
+    int mc;
+    int done;
+    int vallen;
     int iso_status;
 
     if (user_trace)

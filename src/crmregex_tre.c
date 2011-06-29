@@ -100,7 +100,7 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
                 if (regex_cache[j].regex_len > 0) fprintf(stderr,
                         "  regex[%d]:'%s' cf=%#x(%#x) len=%d(%d)\n",
                         j, regex_cache[j].regex, regex_cache[j].cflags, cflags,
-                        regex_cache[j].regex_len, regex_len);
+                        (int)regex_cache[j].regex_len, regex_len);
             }
         }
 

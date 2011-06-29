@@ -52,20 +52,20 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //       to do this, but this is simple and unlikely to be broken in
     //       subtle ways.
 
-    static long newbuflen = 0;
+    static int newbuflen = 0;
     char pch[MAX_PATTERN];
 
-    long i;
-    long srcidx;
+    int i;
+    int srcidx;
     int inputsrc;
     char inputsrcname[MAX_VARNAME];
-    long inputsrclen;
+    int inputsrclen;
     char *savedinputtxt;
-    long savedinputtxtlen;
+    int savedinputtxtlen;
     char wvname[MAX_VARNAME];
-    long wvnamelen;
+    int wvnamelen;
     CSL_CELL *mdw;
-    long flen;
+    int flen;
     int regexflags;
     regex_t preg;
     //  int inputmode;
@@ -74,7 +74,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int inputEOFaccept;  //  accept an EOF as pat-end  < acceptEOF >
     int saweof;
     int failout;
-    long vmidx;
+    int vmidx;
     regmatch_t matches[2]; //  we're only interested in the first match.
     int done;
     int firsttime;

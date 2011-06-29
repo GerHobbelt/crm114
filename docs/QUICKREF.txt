@@ -1,6 +1,6 @@
-    The CRM114 Quick Reference Card.  Updated 20061104
+     The CRM114 Quick Reference Card.  Updated 20080324
 
-     Copyright W.S. Yerazunis, 2002-2006.  All rights reserved.
+     Copyright W.S. Yerazunis, 2002-2008.  All rights reserved.
      This software is released under V2.1 of the Gnu Public License.
      Go to www.fsf.org to get a complete copy of the license.
 
@@ -12,37 +12,89 @@
 Invoke as 'crm whatever' or use '#!/usr/bin/crm' as the first line
 of a script file containing the program text.
 
-  -d N   - run N cycles, then drop into debugger.  If no N, debug immediately
-  -e     - no environment variables imported
-  -E     - set engine runtime exit base value 
-  -h     - print help text
-  -l N   - print a listing (detail level 1 through 5)
-  -p     - generate an execution-time-spent profile on exit
-  -P N   - max program lines
-  -q m   - default mathmode (0,1 = alg/RPN in EVAL, 2,3 = alg/RPN everywhere)
-  -s N   - new feature file (.css) size is N (default 1 meg+1 featureslots)
-  -S N   - new feature file (.css) size is N rounded up to 2^I+1 featureslots
-  -t     - prettyprint source listing & give user level execution trace output 
-  -T     - implementors trace output (only for the masochistic!)
-  -u dir - chdir to directory dir before starting execution 
-  -v     - print CRM114 version identification and exit.
-  -w N   - max data window (bytes, default 16 megs)
-  --     - signals the end CRM114 flags; prior flags are not seen by 
-	   the user program; subsequent args are not processed by CRM114.
-  --foo  - creates the user variable :foo: with the value SET
-  --x=y  - creates the user variable :x: with the value y	   
-  -{ stmts }  - execute the statements inside the {} brackets.
+Command Line Options:
+
+ -{statements}  - execute the statements inside the {} brackets
+
+ -b N           - sets a breakpoint on stmt N
+
+ -d N           - run N cycles, then drop into debugger. If no N, debug
+                  immediately
+
+ -e             - no environment variables imported
+
+ -E N           - set engine runtime exit base value N
+
+ -h             - print help text
+
+ -H N           - select hash function N - handle this with the utmost care!
+                  (default=0)
+
+ -l N           - print a listing (detail level 1 through 5)
+
+ -m N           - max number of microgroomed buckets in a chain
+
+ -M N           - max chain length - triggers microgrooming if enabled
+
+ -p             - generate an execution-time-spent profile on exit
+
+ -P N           - max program lines @ 128 chars/line
+
+ -q N           - mathmode (0,1 alg/RPN in EVAL,2,3 alg/RPN everywhere)
+
+ -r N           - set OSBF min pmax/pmin ratio (default=9)
+
+ -s N           - new sparse spectra feature file (.css) size is N (default
+                  1 meg+1 featureslots)
+
+ -S N           - new feature file (.css) size is N rounded up to 2^I+1
+                  featureslots
+
+ -C             - use env. locale (default POSIX)
+
+ -t             - give user level execution trace output
+
+ -T             - implementors trace output (only for the masochistic!)
+
+ -u dir         - chdir to directory dir before starting execution
+
+ -v             - print CRM114 version identification and exit
+
+ -w N           - max data window (bytes, default 16 megs)
+
+ --             - signals the end CRM114 flags; prior flags are not seen by the
+                  user program; subsequent args are not processed by CRM114.
+
+ --foo          - creates the user variable :foo: with the value SET
+
+ --x=y          - creates the user variable :x: with the value y
+
+ -in file       - use file instead of stdin for input. Note that '-in' may
+                  specify the standard handle value '0' for stdin.
+
+ -out file      - use file instead of stdout for output
+
+ -err file      - use file instead of stderr for output. Note that '-out' may
+                  use the same file as '-err'. Note also that '-out' and '-err'
+                  may specify the standard
+
+                - handle values '1' for stdout and '2' for stderr. This implies
+                  that '-err 1' is essentially identical to the UNIX shell
+                  '2>&1' redirection.
+
+ -Cdbg          - direct developer support: trigger the C/IDE debugger when an
+                  internal error is hit.
 
 Absent the -{ program } flag, the first arg is taken to be the name of
 a file containing a crm114 program, subsequent args are merely supplied
-as :_argN: values.  Use single quotes around commandline programs 
+as :_argN: values.  Use single quotes around commandline programs
 '-{ like this }' to prevent the shell from doing odd things to your
-command-line programs.  
+command-line programs.
 
 CRM114 can be directly invoked by the shell if the first line of your
 program file uses the shell standard, as in:
 
-	#! /usr/bin/crm
+        #! /usr/bin/crm
 
 You can use CRM114 flags on the shell-standard invocation line, and
 hide them with '--' from the program itself; '--' incidentally prevents
@@ -51,15 +103,15 @@ the invoking user from changing any CRM114 invocation flags.
 Flags should be located after any positional variables on the command
 line.  Flags _are_ visible as :_argN: variables, so you can create
 your own flags for your own programs (separate CRM114 and user flags
-with '--').  
+with '--').
 
 Examples:
 
    ./foo.crm bar mugga < baz  -t -w 150000      <--- Use this
 
-   ./foo.crm -t -w 1500000 -- bar < baz mugga   <--- or this 
+   ./foo.crm -t -w 1500000 -- bar < baz mugga   <--- or this
 
-   ./foo.crm -t -w 150000 bar < baz mugga      <--- NOT like this
+   ./foo.crm -t -w 150000 bar < baz mugga       <--- NOT like this
 
 
 You can put a list of user-settable vars on the '#!/usr/bin/crm'
@@ -70,18 +122,18 @@ Darwin - FreeBSD and Solaris have a different implementations and this
 doesn't work.  Don't use this in programs that need to be portable)
 
 Example:
- 
+
 #!/usr/bin/crm  -( var1 var2=A var2=B var2=C )
 
-			- allows only var1 and var2 be set on the
+                        - allows only var1 and var2 be set on the
                           command line.  If a variable is not assigned
                           a value, the user can set any value desired.
                           If the variable is equated to a set of
                           values, those are the _only_ values allowed.
 
-#!/usr/bin/crm  -( var1 var2=foo )  --    
+#!/usr/bin/crm  -( var1 var2=foo )  --
 
-		        - allows var1 to be set to any value, var2 may
+                        - allows var1 to be set to any value, var2 may
                           only be set to either "foo" or not at all,
                           and no other variables may be set nor may
                           invocation flags be changed (because of the
@@ -96,31 +148,31 @@ contain only characters that have ink (i.e. the [:graph:] class) with
 a few exceptions- basically, no embedded ':' characters.  They are case
 sensitive.
 
-Examples :here: , :ThErE:, :every-where_0123+45%6789: , 
+Examples :here: , :ThErE:, :every-where_0123+45%6789: ,
 :this_is_a_very_very_long_var_name_that_does_not_tell_us_much: .
-  
-Builtin variables: 
-	  :_nl: - newline
-	  :_ht: - horizontal tab
-	  :_bs: - backspace
-	  :_sl: - a slash
-	  :_sc: - a semicolon
-	  :_arg0: thru :_argN: - command-line args, including _all_ flags
-	  :_argc: - how many command line arguments there were
-	  :_pos0: thru :_posN: - positional args ('-' or '--' args deleted)
-	  :_posc: - how many positional arguments there were
-	  :_pos_str:  - all positional arguments concatented
+
+Builtin variables:
+          :_nl: - newline
+          :_ht: - horizontal tab
+          :_bs: - backspace
+          :_sl: - a slash
+          :_sc: - a semicolon
+          :_arg0: thru :_argN: - command-line args, including _all_ flags
+          :_argc: - how many command line arguments there were
+          :_pos0: thru :_posN: - positional args ('-' or '--' args deleted)
+          :_posc: - how many positional arguments there were
+          :_pos_str:  - all positional arguments concatented
           :_env_whatever: - environment value 'whatever'
-	  :_env_string:  - all environmental arguments concatenated
-	  :_crm_version: - the version of the CRM system
-	  :_cd: - the current call depth
-	  :_cs: - the current statement number
-	  :_pgm_hash: - hash of the current program - for version verification
-	  :_pgm_text: - copy of post-processed source code - matchable 
-	  :_pid: - process ID of the current process.
-	  :_ppid: - process ID of the parent of the current process.
-	  :_dw: - the current data window contents (usually the default arg)
-	  :_iso: - the current isolated data block (change at your own peril!)
+          :_env_string:  - all environmental arguments concatenated
+          :_crm_version: - the version of the CRM system
+          :_cd: - the current call depth
+          :_cs: - the current statement number
+          :_pgm_hash: - hash of the current program - for version verification
+          :_pgm_text: - copy of post-processed source code - matchable
+          :_pid: - process ID of the current process.
+          :_ppid: - process ID of the parent of the current process.
+          :_dw: - the current data window contents (usually the default arg)
+          :_iso: - the current isolated data block (change at your own peril!)
 
 ----  VARIABLE EXPANSION  ----
 
@@ -133,7 +185,7 @@ Variables are expanded by the ':*:' var-expansion operator,
 e.g. :*:_nl: expands to a newline character.  Uninitialized vars
 evaluate to their text name (and the colons stay).  User variables
 are also expanded with the :*: operator, so :*:foo: expands to whatever
-value :foo: has. 
+value :foo: has.
 
 Variables are indirected by the :+: indirection operator; the reason
 for the :+: operator is that if :foo: contains the name of another
@@ -188,33 +240,34 @@ so use it only for good, and never for evil.
            A '\' anywhere else is just a literal backslash, so the regex
            ([abc])\1 is written just that way; there is no need to
            double-backslash the \1 (although it will work if you do).  This
-	   is because the first backslash escapes the second backslash,
-	   so only one backslash is "seen" at runtime.
+           is because the first backslash escapes the second backslash,
+           so only one backslash is "seen" at runtime.
 
 
 # this is a comment
 
-# and this too \#        - A comment is not a piece of preprocessor sugar-
-                      it is a -statement- and ends at the newline or at "\#"
+# and this too \#                 - A comment is not a piece of preprocessor
+                                    sugar - it is a -statement- and ends at
+                                    the newline or at "\#"
 
 
 insert filename                   - inserts the file verbatim at this
-				    line at compile time.  If the file
-				    can't be INSERTed, a system-generated
+                                    line at compile time.  If the file
+                                    can't be INSERTed, a system-generated
                                     FAULT statement is inserted.  Use a TRAP
-				    to catch this fault if you want to
-                                    allow program execution to continue 
+                                    to catch this fault if you want to
+                                    allow program execution to continue
                                     without the missing INSERT file.
-       filename			     - the local (-u applied) file to insert
-       [expanded_filename]           - the filename is first expanded against 
-                                       command-line and environment variables.
+       filename                   - the local (-u applied) file to insert
+       [expanded_filename]        - the filename is first expanded against
+                                    command-line and environment variables.
 
 
-  ;                               - semicolon is a statement separator - 
+  ;                               - semicolon is a statement separator -
                                     unless it's inside delimiters
-				    it must be escaped as \; or else
-				    it _will_ mark the end of the
-				    statement.
+                                    it must be escaped as \; or else
+                                    it _will_ mark the end of the
+                                    statement.
 
 
 { and }                           - start and end blocks of
@@ -224,627 +277,793 @@ insert filename                   - inserts the file verbatim at this
                                     block.
 
 
-noop			          - no-op statement
+noop                              - no-op statement
 
 
-:label:                           - define a GOTOable label 
+:label:                           - define a GOTOable label
 
-:label: (:arg:)			  - define a CALLable label.  The args in
-				    the CALL statement are concatenated and
-				    put into the freshly ISOLATEd var :arg:
-   (:arg:)                         - var-expanded varname to recieve the
-				     caller's arguments (usually a MATCH is
-				     then done to put locally convenient 
-				     labels on the args).
+:label: (:arg:)                   - define a CALLable label.  The args in
+                                    the CALL statement are concatenated and
+                                    put into the freshly ISOLATEd var :arg:
+   (:arg:)                        - var-expanded varname to recieve the
+                                    caller's arguments (usually a MATCH is
+                                    then done to put locally convenient
+                                    labels on the args).
 
 
-accept			          - writes the current data window to standard 
+accept                            - writes the current data window to standard
                                     output; execution continues.
 
 
-alius				  - if the last bracket-group succeeded, ALIUS
-				    skips to end of {} block (a skip, not a 
+alius                             - if the last bracket-group succeeded, ALIUS
+                                    skips to end of {} block (a skip, not a
                                     FAIL); if the prior group FAILed,
-				    ALIUS does nothing.  Thus, ALIUS is both 
-				    an ELSE clause and a CASE statement.  
+                                    ALIUS does nothing.  Thus, ALIUS is both
+                                    an ELSE clause and a CASE statement.
 
 
 alter (:var:) /new-val/           - surgically change value of var to newval
-      (:var:)                       - var to change (var-expanded)
-              /new-val/             - value to change to (var-expanded)
+      (:var:)                     - var to change (var-expanded)
+              /new-val/           - value to change to (var-expanded)
 
 
-call /:entrypoint_label:/ [:arg1: :arg2:... ] (:ret_arg:) 
-                                  do a routine call on the	
-				  specified (var-expanded) entrypoint label.
-				  Note that the called routine shares 
-				  all variables (including the data window
-				  :_dw:).  Return is accomplished with the
-				  RETURN statement.  
+call /:entrypoint_label:/ [:arg1: :arg2:... ] (:ret_arg:)
+                                  - do a routine call on the
+                                    specified (var-expanded) entrypoint label.
+                                    Note that the called routine shares
+                                    all variables (including the data window
+                                    :_dw:).  Return is accomplished with the
+                                    RETURN statement.
      /:entrypoint_label:/         - the location to call
-       [:arg1: :arg2: ...]       - var-expanded list of args to call.
-                                   These are concatenated and supplied
-                                   to the called routine as a single
-                                   ISOLATEd var, to be used as desired
-                                   (usually a MATCH parses the arglist
-                                   as desired, then :*: is used for
-                                   call-by-value arguments, and :+:
-                                   indirection is used to retrieve
-                                   call-by-name arguments).  Call-by-value
-                                   arguments are NOT modifiable by the
-				   callee, while call-by-name arguments
-				   are modifiable.
-        (:ret_arg:)              - this variable gets the returned value
-                                   from the routine called (if it returns
-                                   anything).  If it had a previous value,
-                                   that value is overwritten on return.
+       [:arg1: :arg2: ...]        - var-expanded list of args to call.
+                                    These are concatenated and supplied
+                                    to the called routine as a single
+                                    ISOLATEd var, to be used as desired
+                                    (usually a MATCH parses the arglist
+                                    as desired, then :*: is used for
+                                    call-by-value arguments, and :+:
+                                    indirection is used to retrieve
+                                    call-by-name arguments).  Call-by-value
+                                    arguments are NOT modifiable by the
+                                    callee, while call-by-name arguments
+                                    are modifiable.
+        (:ret_arg:)               - this variable gets the returned value
+                                    from the routine called (if it returns
+                                    anything).  If it had a previous value,
+                                    that value is overwritten on return.
 
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
-				- compare the statistics of the current data
-				  window buffer with classfiles c1...cN .
-                                  In general, class statistics files are
-                                  NOT portable between different classifiers!
-      <nocase>                  - ignore case in word-pat, does not
-			          ignore case in actual text (use tr()
-				  or the TRANSLATE command 
-				  to do that on :in: if you want it)   
-      <microgroom>              - enable the microgroomer to purge
-                                  less-important information automatically
-                                  whenever the statistics file gets to
-                                  crowded.  However, this disables certain 
-                                  optimizations that can speed classification.
-      <unique>                  - use unique features only; this improves
-                                  accuracy while using less memory.
-                                  Usable with Markov and OSB modes.
-      <unigram>			- use single-word features only;  his makes 
-                                  CRM114 almost exactly equivalent to most 
-                                  other Bayesian classifiers.  Works with 
-                                  the OSB, Winnow and hyperspace classifiers.
-      <osb>			- use orthogonal sparse bigram (OSB)
-                                  features and Markovian classification
-                                  instead of Markovian SBPH features.
-				  OSB uses a subset of SBPH featuers 
-				  with about 1/4 the memory and disk needs,
-				  and about 4x the speed of full Markovian,
-				  with basically the same accuracy.
-      <osbf>                    - use the Fidelis Confidence Factor 
-                                  local probability generator.  This
-                                  format is not compatible with the default,
-                                  but with singlesided threshold training
-                                  ( typically pR of 10-30 ) achieves the best 
-                                  accuracy yet.
-      <winnow>                  - use the Winnow nonstatistical classifier
-                                  and the OSB frontend feature generator.
-                                  Winnow uses .cow files, which are not 
-                                  compatible with the .css files for 
-                                  the Markovian (default) and OSB classifers.
-      <hyperspace>              - use hyperspace matching; each learned 
-                                  document represents a light source in a
-                                  4-billion-dimensional hyperspace, and the 
-                                  set of sources that shines most brightly onto
-                                  the unknown document's hyperspatial location
-                                  is the matching class.  EXPERIMENTAL!!!
-      <entropy>                 - use the bit-entropy classifier.  This uses
-                                  compressibility of the unknown given the 
-                                  prior learned text as a perfect compressor
-                                  model.  No tokenization happens- this 
-                                  classifier works one bit at a time.  
-                                  EXPERIMENTAL !!!
-      <svm>                     - use the SVM classifier.  This uses SVM 
-                                  (support vector machine) techniques.  NB:
-                                  for now VERY EXPERIMENTAL; OSB or unigram
-                                  features (default OSB features), 
-                                  2-class only, generates A_vs_B files.
-      <correlate>               - use the full correlative matcher.  Very
-                                  slow, but capable of matching stemmed words
-                                  in any language and of matching binary files
-	       (:c1: ...                - file or files to consider "success"
-					  files.  The CLASSIFY succeeds if
-					  these files as a group match best.
-                                          if not, the CLASSIFY does a FAIL.
-                      |                 - optional separator.  Spaces on each 
-                                          side of the " | " are required.
-                       .... :cN:)       - optional files to the right of " | "
-					  are considered as a group to "fail".
-					  If statement fails, execution skips 
-					  to end of enclosing {..} block, 
-                                          which exits with a FAIL status (see
-                                          ALIUS for why this is useful).
-                    (:stats:)		- optional var that will be 
-                                          surgically changed to contain
-                                          a formatted matching summary. In
-					  some versions, must pre-exist.
-			[:in:]	        - restrict statistical measure to
-					  the string inside :in:
-                        [:in: n m]      - take a substring of :in:, starting
-                                          at n and including m characters
-                        [:in: /regex/]  - take a substring of :in: that
-                                          matches the regex
-			  /word-pat/    - regex to describe what a 
-					  parseable word is.  Default is 
-                                          /[[:graph:]]+/
- 			  /pR_offset/   - OSBF: change the classify threshold;
-			  		  with this optional parameter the
-					  success/failure decision point can
-					  be changed from the default 0 to what
-					  you specify. If given, the pR in
-					  'stats' will be printed in the form
-					  pR/pR_offset. 
-                          /svm-specific controls/ - a vector of seven parameters
-                                          for SVM-classifiers
+                                  - compare the statistics of the current data
+                                    window buffer with classfiles c1...cN .
+                                    In general, class statistics files are
+                                    NOT portable between different classifiers!
+      <nocase>                    - ignore case in word-pat, does not
+                                    ignore case in actual text (use tr()
+                                    or the TRANSLATE command
+                                    to do that on :in: if you want it)
+      <microgroom>                - enable the microgroomer to purge
+                                    less-important information automatically
+                                    whenever the statistics file gets to
+                                    crowded.  However, this disables certain
+                                    optimizations that can speed classification.
+      <unique>                    - use unique features only; this improves
+                                    accuracy while using less memory.
+                                    Usable with Markov and OSB modes.
+      <unigram>                   - use single-word features only;  his makes
+                                    CRM114 almost exactly equivalent to most
+                                    other Bayesian classifiers.  Works with
+                                    the OSB, Winnow and hyperspace classifiers.
+      <osb>                       - use orthogonal sparse bigram (OSB)
+                                    features and Markovian classification
+                                    instead of Markovian SBPH features.
+                                    OSB uses a subset of SBPH featuers
+                                    with about 1/4 the memory and disk needs,
+                                    and about 4x the speed of full Markovian,
+                                    with basically the same accuracy.
+      <osbf>                      - use the Fidelis Confidence Factor
+                                    local probability generator.  This
+                                    format is not compatible with the default,
+                                    but with singlesided threshold training
+                                    ( typically pR of 10-30 ) achieves the best
+                                    accuracy yet.
+      <winnow>                    - use the Winnow nonstatistical classifier
+                                    and the OSB frontend feature generator.
+                                    Winnow uses .cow files, which are not
+                                    compatible with the .css files for
+                                    the Markovian (default) and OSB classifers.
+      <hyperspace>                - use hyperspace matching; each learned
+                                    document represents a light source in a
+                                    4-billion-dimensional hyperspace, and the
+                                    set of sources that shines most brightly onto
+                                    the unknown document's hyperspatial location
+                                    is the matching class.  EXPERIMENTAL!!!
+      <entropy>                   - use the bit-entropy classifier.  This uses
+                                    compressibility of the unknown given the
+                                    prior learned text as a perfect compressor
+                                    model.  No tokenization happens- this
+                                    classifier works one bit at a time, always.
+                                    EXPERIMENTAL !!!
+      <svm>                       - use the SVM classifier.  This uses SVM
+                                    (support vector machine) techniques.  NB:
+                                    for now VERY EXPERIMENTAL; OSB or unigram
+                                    features (default OSB features),
+                                    2-class only, generates A_vs_B files.
+      <sks>                       - use the String Kernel SVM.  String kernels
+                                    take one character at a time as token
+                                    features, but don't use omitted subsections
+                                    like the OSB feature set.  VERY EXPERIMENTAL.
+                                    2-class only, generates A_vs_B files.
+      <neural>                    - use a three-layer neural network with
+                                    stochastic back-propagation training.
+                                    Use <fromstart> to reinitialize the network
+                                    neurons to a small random state in case it
+                                    gets stuck in a (rare) local minimum.
+                                    VERY EXPERIMENTAL!!!
+      <correlate>                 - use the full correlative matcher.  Very
+                                    slow, but capable of matching stemmed words
+                                    in any language and of matching binary files
+               (:c1: ...          - file or files to consider "success"
+                                    files.  The CLASSIFY succeeds if
+                                    these files as a group match best.
+                                    if not, the CLASSIFY does a FAIL.
+                     |            - optional separator.  Spaces on each
+                                    side of the " | " are required.
+                     .... :cN:)   - optional files to the right of " | "
+                                    are considered as a group to "fail".
+                                    If statement fails, execution skips
+                                    to end of enclosing {..} block,
+                                    which exits with a FAIL status (see
+                                    ALIUS for why this is useful).
+                 (:stats:)        - optional var that will be
+                                    surgically changed to contain
+                                    a formatted matching summary. In
+                                    some versions, must pre-exist.
+                   [:in:]         - restrict statistical measure to
+                                    the string inside :in:
+                   [:in: n m]     - take a substring of :in:, starting
+                                    at n and including m characters
+                   [:in: /regex/] - take a substring of :in: that
+                                    matches the regex
+                     /word-pat/   - regex to describe what a
+                                    parseable word is.  Default is
+                                    /[[:graph:]]+/
+                      /pR_offset/ - OSBF: change the classify threshold;
+                                    with this optional parameter the
+                                    success/failure decision point can
+                                    be changed from the default 0 to what
+                                    you specify. If given, the pR in
+                                    'stats' will be printed in the form
+                                    pR/pR_offset.
+                     /svm-specific controls/
+                                  - a vector of seven parameters for
+                                    SVM-classifiers
 
-clump [:text:] (clumpfile) /regex/ - does incremental parametric
-                                   clumping of tokens to generate
-                                   local (ascii numeric) synonyms.
-                                   Algorithm and parameters are
-                                   variable, the stored clumps go into
-                                   clumpfile, and can be looked up
-                                   with pmulc.
-      [:text:]             -       input text; var-restriction allowed
-      (clumpfile)          -       name of file to hold the clumps
-      /regex/              -       optional tokenization regex; default is 
-                                   /[[:graph:]]+/
-      /params/             -       control parameters
+clump [:text:] (clumpfile) (stat) <flags> /regex/ /params/
+                                  - does incremental parametric clustering of
+                                    documents to generate document groups.  No
+                                    pre-judged corpus is required.
+      [:text:]                    - input text; var-restriction allowed
+      (clumpfile)                 - name of file to hold the clumps (all docs
+                                    go into the same clumpfile)
+      (status)                    - Status output, for the result of the clump.
+                                    Clumping the null input text will give
+                                    a status dump of all the documents in
+                                    the entire clumpfile.
+      <flags>                     - special control flags; unigram, unique,
+                                    and refute are supported, with the same
+                                    meanings as in LEARN and CLASSIFY.  Default
+                                    clustering is by document-to-document
+                                    nearest-neighbor hyperspatial distance.
+                                    If you add the bychunk flag, then the
+                                    distance is to the cluster's centroid.
+      /regex/                     - optional tokenization regex; default is
+                                    /[[:graph:]]+/
+      /params/                    - control parameters: "tag=somename" label
+                                    to later refer to this document.
+                                    "clump=somename" forces a name onto a
+                                    cluster.  "n_clusters=N" says how many
+                                    doc clusters you want; if N=0 then it
+                                    will simply store the document and wait
+                                    for more (much faster computationally).
+                                    If N < 0 the number of clusters is
+                                    determined automatically.
 
+cssanalyze <flags> (:report:) (:c1:) /params/
+                                  - analyze the CRM database
+                                    :c1: and report into :report:. The analysis
+                                    may include extensive integrity checks.
 
-debug                      -       drop immediately into the interactive
-                                   debugger.
+      <flags>                     - special control flags; default and basic
+                                    are supported.
 
-
-eval (:result:) /instring/ -       repeatedly evaluates /instring/ until it
-                                   ceases to change, then
-                                   surgically places that result as
-                                   the value of :result: .  EVAL uses
-                                   smart (but foolable) heuristics to
-                                   avoid infinite loops, like
-                                   evaluating a string that evaluates
-                                   to a request to evaluate itself
-                                   again.  The error rate is about 1 /
-                                   2^62 and (in the default configuration) 
-                                   will detect looping chain groups
-                                   of length 4096 or less.
-
-                                   If the instring uses math
-                                   evaluation (see section below on
-                                   math operations) and the evaluation
-                                   has an inequality test, (>, >=, <,
-                                   <=, =, or !=) then if the test
-                                   fails, the EVAL will FAIL to the
-                                   end of block.  Math is IEEE-compliant,
-                                   so unreasonable things like divide-by-zero
-                                   may yield NaN (Not A Number) or +/- INF
- 
-
-exit  /:exitcode:/		 - ends program execution.  If supplied, the
-				   return value is converted to an integer 
-				   and returned as the exit code of the 
-				   crm114 program.  
-      /:exitcode:/               - variable to be converted to an integer
-                                   and returned.  If no exit code is supplied,
-				   the exit code value is 0.
-
-
-fail				 - skips down to end of the current { } block
-                                   and causes that block to exit with a FAIL
-                                   status (see ALIUS for why this is useful)
+      /params/                    - control parameters a la cssutil.
 
 
-fault /faultstr/                 - forces a FAULT with the given string as
-                                   the reason.  
-      /faultstr/                    - the val-expanded fault reason string 
+                                    WARNING: THIS IS A PLANNED COMMAND, which
+                                    will obsolete the external cssutil tool
+                                    in due time.
 
 
-goto /:label:/                   - unconditional branch (you can use 
-				   a variable as the goal, e.g. /:*:there:/ )
+cssbackup <flags> (:report:) (:dst: :c1:) /params/
+                                  - export/backup the CRM database :c1: into
+                                    file :dst:. The output format is CSV.
+                                    Messages are written to :report:.
+
+      <flags>                     - special control flags; default is
+                                    supported.
+
+      /params/                    - control parameters a la cssutil.
 
 
-hash (:result:) /input/          - compute a fast 32-bit hash of the 
-                                   /input/, and ALTER :result: to the 
-                                   hexadecimal hash value.  HASH is
-                                   _not_ warranted to be constant across
-                                   major releases of CRM114, nor is it
-				   cryptographically secure.
-     (:result:)                     - value that gets result.
-               /input/              - string to be hashed (can contain 
-                                      expanded :vars: , defaults to 
-				      the data window :_dw: )
+                                    WARNING: THIS IS A PLANNED COMMAND, which
+                                    will obsolete the external cssutil tool
+                                    in due time.
 
 
-intersect (:out:) [:var1: :var2: ...] - makes :out: contain the part
-                                   of the data window that is the
-                                   intersection of :var1 :var2: ...
-                                   ISOLATEd vars are ignored.  This
-                                   only resets the value of the
-                                   captured :out: variable, and does
-                                   NOT alter any text in the data
-                                   window.
-				      				     
+csscreate <flags> (:report:) (:c1:) /params/
+                                  - create a new CRM database :c1: as specified
+                                    by /params/. This command can be used to
+                                    create new/empty CRM databases for any
+                                    classifier.
+                                    Messages are written to :report:.
 
-isolate (:var:) <flags> /initial-value/  - puts :var: into a data area 
-                                   outside of the default data window
-				   buffer; subsequent changes to this 
-				   var don't change the data buffer (though 
-                                   they may change the value of any var
-				   subsequently set inside of this var).  
-				   If the var already was ISOLATED, this is 
-				   will stay isolated but it will surgically
-                                   alter the value if a /value/ is given.
-       <default>                    - only create and set var if it didn't
-                                      exist before (ideal for setting defaults)
-           (:var:)                  - name of ISOLATEd var (var-expanded)
-                /initial-value/     - optional initial value for :var:
-				      (var-expanded).  If no value is
-				      supplied, the previous value is
-				      retained/copied.
+      <flags>                     - special control flags; default is
+                                    supported.
 
-input <flags> (:result:) [:filename:] - read in the content of filename 
-                                        if no filename, then read stdin
-      <byline>                       - read one line only
-         (:result:)                  - var that gets the input value
-                                      (surgical overwrite).
-            [:filename:]             - the file to read.  The first 
-                                      blank-delimited word is taken and
-                                      var-expanded; the result is the filename,
-                                      even if it includes embedded spaces.  
-				      Default is to read stdin.
-            [:filename: offset len]  - optionally, move to offset in the
-                                      file, and read len bytes.
-                                      Offset and len are individually
-                                      blank-delimited, and
-                                      var-expanded with mathematics
-                                      enabled.  If len is unspecified,
-                                      the read extends to EOF or buffer 
-				      limit.
+      /params/                    - control parameters a la cssutil.
 
 
-learn <flags> (:class:) [:in:] /word-pat/ - learn the statistics of the :in: 
-			       var (or the input window if no var)
-                               as an example of class :class:
-      <refute>               - flag this is as an anti-example of this
-			       class- unlearn it!
-      <nocase>               - ignore case in word-pat, does not
-                               ignore case in actual text (use tr()
-                               or the TRANSLATE command 
-                               to do that on :in: if you want it)   
-      <microgroom>           - enable the microgroomer to purge
-                               less-important information automatically
-                               whenever the statistics file gets to
-                               crowded.  However, this disables other
-			       optimizations that can speed up 
-      <osb>		     - use orthogonal sparse bigram (OSB)
-                               features and Markovian classification
-                               instead of Markovian SBPH features.
-			       OSB uses a subset of SBPH featuers 
-			       with about 1/4 the memory and disk needs,
-			       and about 4x the speed of full Markovian,
-      <osbf>                 - use the Fidelis Confidence Factor 
-                               local probability generator.  This
-                               format is not compatible with the default,
-                               but with singlesided threshold training
-                               ( typically pR of 10-30 ) achieves the best 
-                               accuracy yet.
-      <winnow>               - use the Winnow nonstatistical classifier
-                               and the OSB frontend feature generator.
-                               Winnow uses .cow files, which are not 
-                               compatible with the .css files for 
-                               the Markovian (default) and OSB classifers.
-                               Remember that for Winnow to be at it's best
-                               in accuracy, it has to be trained both with
-                               positive cases that failed to make a minimum
-                               threshold (typically with a per-file (not 
-                               overall) match quality that was below
-                               a pR of .2 or more) as well as <refute> for
-                               "negative reinforcement" training for any 
-                               "not in class" per-file match qualities that
-			       weren't at a pR of -.2 or less.)
-      <hyperspace>           - use hyperspace matching; each learned 
-                               document represents a light source in a
-                               4-billion-dimensional hyperspace, and the 
-                               set of sources that shines most brightly onto
-                               the unknown document's hyperspatial location
-                               is the matching class.  EXPERIMENTAL!!!
-      <unigram>		     - use single-word features only; using this
-                               this makes CRM114 almost exactly 
-                               equivalent to most other Bayesian 
-                               classifiers.  Also works with the Winnow and
-                               hyperspace classifiers.
-      <entropy>              - use the bit-entropy classifier.  This uses
-                               compressibility of the unknown given the
-                               prior learned text as a perfect compressor
-                               model.  No tokenization happens- this
-                               classifier works one bit at a time.  The
-                               tokenizer regex is ignored; the second //
-                               argument can hold an optional "fuzz factor"
-                               for how close an approximation is allowed.
-      <correlate>            - use the full correlative matcher.  Very
-                               slow, but capable of matching stemmed words
-                               in any language and of matching binary files.
-                               Correlative matching does not tokenize, and
-                               so you don't need to supply it with a word-pat.
-              (:class:)              - name of file holding hashed results;
-                                       nominal file extension is .css
-                    [:in:]           - captured var containing the text
-                                       to be learned (if omitted, the full
-                                       contents of the data window is used)
-                    [:in: n m]       - take a substring of :in:, starting
-                                       at n and including m characters
-                    [:in: /regex/]   - take a substring of :in: that
-                                       matches the regex
-    /word-pat/                       - regex that defines a "word".  Things
-				       that aren't "words" are ignored.  
-                                       Default is /[[:graph:]]+/.  Ignored
-                                       in correllation and bit-entropy.
-    /entropy_fuzz/                     Bit-entropy: this number is the 
-                                       "fuzz" factor in determining when to
-                                       loop back the compression algorithm
-                                       Markov chain versus allocating new
-                                       nodes.  You must specify an empty
-                                       word-pat to use entropy fuzz.
-    /svm-specific controls/          - a vector of seven parameters
-                                          for SVM-classifiers
+                                    WARNING: THIS IS A PLANNED COMMAND, which
+                                    will obsolete the external cssutil tool
+                                    in due time.
 
 
-liaf				 - skips UP to START of the current {} block
-					 (LIAF is FAIL spelled backwards)
+cssdiff <flags> (:report:) (:c1: :c2:) /params/
+                                  - report differences between the CRM
+                                    databases :c1: and :c2: into :report:.
+
+      <flags>                     - special control flags; default and unique
+                                    are supported.
+
+      /params/                    - control parameters a la cssmerge.
 
 
-match <flags> (:var1: ...) [:in:] /regex/  - Attempt to match the given regex;
-                                   if match succeds, variables are bound;
-                                   if match fails, program skips to the
-                                   closing '}' of this block
-      <absent>                     - statement succeeds if match not present
-      <nocase>                     - ignore case when matching
-      <literal>	                   - No special characters in regex (only
-                                     supported with TREregex, not GNUregex.)
-                                     Think of this as WYSIWYG matching.
-      <fromstart>                  - start match at start of the [:in:] var
-      <fromcurrent>		   - start match at start of previous 
-				     successful match on the [:in:] var
-      <fromnext>                   - start match at one character past
-                                     the start of the previous successful
-                                     match on the [:in:] var
-      <fromend>                    - start match at one character past
-                                     the end of prev. match on this [:in:] var
-      <newend>                     - require match to end after end of
-                                     prev. match on this [:in:] var
-      <backwards>                  - search backward in the [:in:] variable
-				     from the last successful match.
-      <nomultiline>                - execute the search in blocks of one
-				     line of text each, so the result will
-				     never span a line.  This means that
-				     ^ and $ will match at the beginning
-				     and end of each line, rather than 
-				     the beginning and end of the full text.
-              (:var1: ...)         - optional result vars.  The first
-                                     var gets the text matched by the
-                                     full regex.  The second, third, etc.
-                                     vars get each subsequent parenthesized
-                                     subexpression, in left-to-right order
-                                     of the subexpression's left parenthesis.
-                                     These are "captures", not ALTERs, so
-                                     text overlapping prior :var: values is
-                                     left unchanged.
-              [:in:]               - search only in the variable specified;
-                                     if omitted, :_dw: (the full input data
-                                     window) is used
-              [:in: :start: :len:] - search in the :in: input var, limiting
-                                     the area searched to :start: to :len:
-				     (zero-origin counted)
-              [:in: /inregex/ ]    - search in the :in: input var, limiting
-                                     the searched area to whatever matches
-                                     the inregex (this doesn't use or affect
-				     previous successful match values)
-                         /regex/   - POSIX regex (with \ escapes as needed)
-    
+                                    WARNING: THIS IS A PLANNED COMMAND, which
+                                    will obsolete the external cssdiff tool
+                                    in due time.
+
+
+cssinfo <flags> (:report:) (:c1:) /params/
+                                  - list information about the CRM database
+                                    :c1: into :report:.
+
+      <flags>                     - special control flags; default is
+                                    supported.
+
+      /params/                    - control parameters a la cssutil.
+
+
+                                    WARNING: THIS IS A PLANNED COMMAND, which
+                                    will obsolete the external cssutil tool
+                                    in due time.
+
+
+cssmerge <flags> (:report:) (destfile) (:c1:...:cN:) /params/
+                                  - merge the CRM databases :c1: ... :cN: into
+                                    destfile.
+                                    Messages are written to :report:.
+
+      <flags>                     - special control flags; default, unique,
+                                    and microgroom are supported.
+
+      /params/                    - control parameters a la cssmerge.
+
+
+                                    WARNING: THIS IS A PLANNED COMMAND, which
+                                    will obsolete the external cssmerge tool
+                                    in due time.
+
+
+cssrestore <flags> (:report:) (:c1: :src:) /params/
+                                  - import/restore the CRM database :c1: from
+                                    file :src:. The input format is CSV.
+                                    Messages are written to :report:.
+
+      <flags>                     - special control flags; default is
+                                    supported.
+
+      /params/                    - control parameters a la cssutil.
+
+
+                                    WARNING: THIS IS A PLANNED COMMAND, which
+                                    will obsolete the external cssutil tool
+                                    in due time.
+
+
+debug                             - drop immediately into the interactive
+                                    debugger.
+
+
+eval (:result:) /instring/        - repeatedly evaluates /instring/ until it
+                                    ceases to change, then
+                                    surgically places that result as
+                                    the value of :result: .  EVAL uses
+                                    smart (but foolable) heuristics to
+                                    avoid infinite loops, like
+                                    evaluating a string that evaluates
+                                    to a request to evaluate itself
+                                    again.  The error rate is about 1 /
+                                    2^62 and (in the default configuration)
+                                    will detect looping chain groups
+                                    of length 4096 or less.
+
+                                    If the instring uses math
+                                    evaluation (see section below on
+                                    math operations) and the evaluation
+                                    has an inequality test, (>, >=, <,
+                                    <=, =, or !=) then if the test
+                                    fails, the EVAL will FAIL to the
+                                    end of block.  Math is IEEE-compliant,
+                                    so unreasonable things like divide-by-zero
+                                    may yield NaN (Not A Number) or +/- INF
+
+
+exit  /:exitcode:/                - ends program execution.  If supplied, the
+                                    return value is converted to an integer
+                                    and returned as the exit code of the
+                                    crm114 program.
+      /:exitcode:/                - variable to be converted to an integer
+                                    and returned.  If no exit code is supplied,
+                                    the exit code value is 0.
+
+
+fail                              - skips down to end of the current { } block
+                                    and causes that block to exit with a FAIL
+                                    status (see ALIUS for why this is useful)
+
+
+fault /faultstr/                  - forces a FAULT with the given string as
+                                    the reason.
+      /faultstr/                  - the val-expanded fault reason string
+
+
+goto /:label:/                    - unconditional branch (you can use
+                                    a variable as the goal, e.g. /:*:there:/ )
+
+
+hash (:result:) /input/           - compute a fast 32-bit hash of the
+                                    /input/, and ALTER :result: to the
+                                    hexadecimal hash value.  HASH is
+                                    _not_ warranted to be constant across
+                                    major releases of CRM114, nor is it
+                                    cryptographically secure.
+     (:result:)                   - value that gets result.
+               /input/            - string to be hashed (can contain
+                                    expanded :vars: , defaults to
+                                    the data window :_dw: )
+
+
+intersect (:out:) [:var1: :var2: ...]
+                                  - makes :out: contain the part
+                                    of the data window that is the
+                                    intersection of :var1 :var2: ...
+                                    ISOLATEd vars are ignored.  This
+                                    only resets the value of the
+                                    captured :out: variable, and does
+                                    NOT alter any text in the data
+                                    window.
+
+
+isolate (:var:) <flags> /initial-value/
+                                  - puts :var: into a data area
+                                    outside of the default data window
+                                    buffer; subsequent changes to this
+                                    var don't change the data buffer (though
+                                    they may change the value of any var
+                                    subsequently set inside of this var).
+                                    If the var already was ISOLATED, this is
+                                    will stay isolated but it will surgically
+                                    alter the value if a /value/ is given.
+       <default>                  - only create and set var if it didn't
+                                    exist before (ideal for setting defaults)
+           (:var:)                - name of ISOLATEd var (var-expanded)
+                /initial-value/   - optional initial value for :var:
+                                    (var-expanded).  If no value is
+                                    supplied, the previous value is
+                                    retained/copied.
+
+input <flags> (:result:) [:filename:]
+                                  - read in the content of filename
+                                    if no filename, then read stdin
+    <byline>                      - read one line only
+     (:result:)                   - var that gets the input value
+                                    (surgical overwrite).
+      [:filename:]                - the file to read.  The first
+                                    blank-delimited word is taken and
+                                    var-expanded; the result is the filename,
+                                    even if it includes embedded spaces.
+                                    Default is to read stdin.
+       [:filename: offset len]    - optionally, move to offset in the
+                                    file, and read len bytes.
+                                    Offset and len are individually
+                                    blank-delimited, and
+                                    var-expanded with mathematics
+                                    enabled.  If len is unspecified,
+                                    the read extends to EOF or buffer
+                                    limit.
+
+
+learn <flags> (:class:) [:in:] /word-pat/
+                                  - learn the statistics of the :in:
+                                    var (or the input window if no var)
+                                    as an example of class :class:
+      <refute>                    - flag this is as an anti-example of this
+                                    class- unlearn it!
+      <nocase>                    - ignore case in word-pat, does not
+                                    ignore case in actual text (use tr()
+                                    or the TRANSLATE command
+                                    to do that on :in: if you want it)
+      <microgroom>                - enable the microgroomer to purge
+                                    less-important information automatically
+                                    whenever the statistics file gets to
+                                    crowded.  However, this disables other
+                                    optimizations that can speed up
+      <osb>                       - use orthogonal sparse bigram (OSB)
+                                    features and Markovian classification
+                                    instead of Markovian SBPH features.
+                                    OSB uses a subset of SBPH featuers
+                                    with about 1/4 the memory and disk needs,
+                                    and about 4x the speed of full Markovian,
+      <osbf>                      - use the Fidelis Confidence Factor
+                                    local probability generator.  This
+                                    format is not compatible with the default,
+                                    but with singlesided threshold training
+                                    ( typically pR of 10-30 ) achieves the best
+                                    accuracy yet.
+      <winnow>                    - use the Winnow nonstatistical classifier
+                                    and the OSB frontend feature generator.
+                                    Winnow uses .cow files, which are not
+                                    compatible with the .css files for
+                                    the Markovian (default) and OSB classifers.
+                                    Remember that for Winnow to be at it's best
+                                    in accuracy, it has to be trained both with
+                                    positive cases that failed to make a minimum
+                                    threshold (typically with a per-file (not
+                                    overall) match quality that was below
+                                    a pR of .2 or more) as well as <refute> for
+                                    "negative reinforcement" training for any
+                                    "not in class" per-file match qualities that
+                                    weren't at a pR of -.2 or less.)
+      <hyperspace>                - use hyperspace matching; each learned
+                                    document represents a light source in a
+                                    4-billion-dimensional hyperspace, and the
+                                    set of sources that shines most brightly onto
+                                    the unknown document's hyperspatial location
+                                    is the matching class.  EXPERIMENTAL!!!
+      <unigram>                   - use single-word features only; using this
+                                    this makes CRM114 almost exactly
+                                    equivalent to most other Bayesian
+                                    classifiers.  Also works with the Winnow and
+                                    hyperspace classifiers.
+      <entropy>                   - use the bit-entropy classifier.  This uses
+                                    compressibility of the unknown given the
+                                    prior learned text as a perfect compressor
+                                    model.  No tokenization happens- this
+                                    classifier works one bit at a time.  The
+                                    tokenizer regex is ignored; the second //
+                                    argument can hold an optional "fuzz factor"
+                                    for how close an approximation is allowed.
+      <correlate>                 - use the full correlative matcher.  Very
+                                    slow, but capable of matching stemmed words
+                                    in any language and of matching binary files.
+                                    Correlative matching does not tokenize, and
+                                    so you don't need to supply it with a word-pat.
+              (:class:)           - name of file holding hashed results;
+                                    nominal file extension is .css
+                 [:in:]           - captured var containing the text
+                                    to be learned (if omitted, the full
+                                    contents of the data window is used)
+                 [:in: n m]       - take a substring of :in:, starting
+                                    at n and including m characters
+                 [:in: /regex/]   - take a substring of :in: that
+                                    matches the regex
+    /word-pat/                    - regex that defines a "word".  Things
+                                    that aren't "words" are ignored.
+                                    Default is /[[:graph:]]+/.  Ignored
+                                    in correllation and bit-entropy.
+    /entropy_fuzz/                  Bit-entropy: this number is the
+                                    "fuzz" factor in determining when to
+                                    loop back the compression algorithm
+                                    Markov chain versus allocating new
+                                    nodes.  You must specify an empty
+                                    word-pat to use entropy fuzz.
+    /svm-specific controls/       - a vector of seven parameters
+                                    for SVM-classifiers
+
+
+liaf                              - skips UP to START of the current {} block
+                                    (LIAF is FAIL spelled backwards)
+
+
+match <flags> (:var1: ...) [:in:] /regex/
+                                  - Attempt to match the given regex;
+                                    if match succeds, variables are bound;
+                                    if match fails, program skips to the
+                                    closing '}' of this block
+      <absent>                    - statement succeeds if match not present
+      <nocase>                    - ignore case when matching
+      <literal>                          - No special characters in regex (only
+                                    supported with TREregex, not GNUregex.)
+                                    Think of this as WYSIWYG matching.
+      <fromstart>                 - start match at start of the [:in:] var
+      <fromcurrent>                  - start match at start of previous
+                                    successful match on the [:in:] var
+      <fromnext>                  - start match at one character past
+                                    the start of the previous successful
+                                    match on the [:in:] var
+      <fromend>                   - start match at one character past
+                                    the end of prev. match on this [:in:] var
+      <newend>                    - require match to end after end of
+                                    prev. match on this [:in:] var
+      <backwards>                 - search backward in the [:in:] variable
+                                    from the last successful match.
+      <nomultiline>               - execute the search in blocks of one
+                                    line of text each, so the result will
+                                    never span a line.  This means that
+                                    ^ and $ will match at the beginning
+                                    and end of each line, rather than
+                                    the beginning and end of the full text.
+         (:var1: ...)             - optional result vars.  The first
+                                    var gets the text matched by the
+                                    full regex.  The second, third, etc.
+                                    vars get each subsequent parenthesized
+                                    subexpression, in left-to-right order
+                                    of the subexpression's left parenthesis.
+                                    These are "captures", not ALTERs, so
+                                    text overlapping prior :var: values is
+                                    left unchanged.
+         [:in:]                   - search only in the variable specified;
+                                    if omitted, :_dw: (the full input data
+                                    window) is used
+         [:in: :start: :len:]     - search in the :in: input var, limiting
+                                    the area searched to :start: to :len:
+                                    (zero-origin counted)
+         [:in: /inregex/ ]        - search in the :in: input var, limiting
+                                    the searched area to whatever matches
+                                    the inregex (this doesn't use or affect
+                                    previous successful match values)
+                /regex/           - POSIX regex (with \ escapes as needed)
+
           NB: If you build CRM114 to use the GNU regex library for MATCHing,
-	      be warned that GNU REGEX has numerous issues.  See the 
-	      KNOWN_BUGS file for a detailed listing.
+              be warned that GNU REGEX has numerous issues.  See the
+              KNOWN_BUGS file for a detailed listing.
 
 
-output <flags> [filename] /output-text/ - output an arbitrary string 
-			            with captured values expanded.
-       <append>			  - append to the file (otherwise, the 
-				    previous contents of the file is lost).
-	    [:filename:]          - the file to write.  The first
+output <flags> [filename] /output-text/
+                                  - output an arbitrary string
+                                    with captured values expanded.
+       <append>                   - append to the file (otherwise, the
+                                    previous contents of the file is lost).
+         [:filename:]             - the file to write.  The first
                                     blank-delimited word is taken and
                                     var-expanded; the result is the
                                     filename, even if it includes
                                     embedded spaces.  Default output
                                     is to stdout.  stderr is recognized.
-            [:filename: offset len] - optionally, move to offset in
+         [:filename: offset len]  - optionally, move to offset in
                                     the file, and maximum write len
                                     bytes.  Offset and len are
                                     individually blank-delimited, and
                                     var-expanded with mathematics
                                     enabled.  If len is unspecified,
                                     the write is the length of the
-				    expansion of /output-text/
+                                    expansion of /output-text/
               /output-text/       - string to output (var-expanded)
 
-pmulc (clumpfile) [:text:] /regex/  - use the clumpfile as a lookup 
-                                    to translate tokens into their 
-                                    equivalence classes.
-      [:text:]              -       input text; var-restriction allowed
-      (clumpfile)           -       name of file to holding the clumps
-      /regex/               -       optional tokenization regex; default is
+pmulc (clumpfile) [:text:] <flags> /regex/
+                                  - use the clumpfile as a lookup
+                                    to translate documents to their
+                                    appropriate clusters.  The text does
+                                    not get added into the clumpfile.
+      [:text:]                    - input text; var-restriction allowed.
+      (clumpfile)                 - name of file to holding the clumps
+      /regex/                     - optional tokenization regex; default is
                                     /[[:graph:]]+/
-
-
+      <flags>                     - The optional flags are bychunk, unique,
+                                    and unigram, with the same functions
+                                    as under clump.
 
 return /returnval/                - return from a CALL.  Note that since
                                     CALL executes in shared space with the
                                     caller, all changes made in the CALLed
                                     routine are shared with the caller.
-      /returnval/                  - this (var-expanded) value is returned
-                                     to the caller (or if the caller doesn't
-                                     accept return values, it's discarded).
+      /returnval/                 - this (var-expanded) value is returned
+                                    to the caller (or if the caller doesn't
+                                    accept return values, it's discarded).
 
-syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ 
-                                    - execute a shell command or fork 
-                                      to the specified label.  This happens
-                                      in a fresh copy of the environment; 
-                                      there is no communication with the main 
-                                      program except via the :in:, :out:, 
-                                      and :status: vars.
-                                      Output over the buffer length is 
-				      discarded unless you <keep> the process
-                                      around for multiple readings.
-        <keep>                      - don't send an EOF after feeding the
-				      full input (this will usually keep the
-				      syscalled process around).  Later
-                                      syscalls with the same :status:
-                                      var will continue feeding to and 
-                                      reading from the kept proc.
-        <async>                     - don't wait for process to output an
-                                      EOF; just grab what's available in 
-                                      the process's output pipe and proceed
-				      (default limit per syscall is 256 Kb).
-                                      The process then runs to completion 
-                                      independently and asynchronously.
-                                      (This is "fire and forget" mode, and
-                                      is mutually exclusive with <keep>. )
-               (:in:)               - var-expanded string to feed to command
-                                      as input (can be null if you don't want
-                                      to send the process something.)  You
-				      _MUST_ specify this if you want to 
-				      specify an :out: variable.
-                (:out:)             - var-expanded varname to place results
-                                      into (MUST pre-exist, can be null if
-                                      you don't want to read the process's
-                                      output (yet, or at all).  Limit per
-				      syscall is 256 Kbytes.  You _MUST_
-                                      specify this if you want to use the
-                                      :status: variable).  This is 
-                                      a surgical alter.
-                  (:status:)        - if you want to keep a minion proc
-                                      around, or catch the exit status
-				      of the process, specify a varname here.  
-				      The minion process's PID and pipes 
-                                      will be stored here.  The program
-				      can access the proc again with 
-                                      another syscall by using this var again.
-                                      When the process exits, it's exit code
-                                      will be surgically stored here (unless
-                                      you specified <async>)
-                /command_or_label/  - the command or entrypoint you want to
-                                      run.  This arg is var-expanded; if the
-                                      first word is a :label:, the fork begins
-                                      execution at the label.  If the first
-                                      word is not a :label:, then the entire
-                                      string is handed off to the shell to
-                                      be executed as a shell command.
+routine                           - WARNING: reserved for future use
 
+syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ /[match_OS]alt_command/
+                                   - execute a shell command or fork
+                                     to the specified label.  This happens
+                                     in a fresh copy of the environment;
+                                     there is no communication with the main
+                                     program except via the :in:, :out:,
+                                     and :status: vars.
+                                     Output over the buffer length is
+                                     discarded unless you <keep> the process
+                                     around for multiple readings.
+        <keep>                     - don't send an EOF after feeding the
+                                     full input (this will usually keep the
+                                     syscalled process around).  Later
+                                     syscalls with the same :status:
+                                     var will continue feeding to and
+                                     reading from the kept proc.
+        <async>                    - don't wait for process to output an
+                                     EOF; just grab what's available in
+                                     the process's output pipe and proceed
+                                     (default limit per syscall is 256 Kb).
+                                     The process then runs to completion
+                                     independently and asynchronously.
+                                     (This is "fire and forget" mode, and
+                                     is mutually exclusive with <keep>. )
+         (:in:)                    - var-expanded string to feed to command
+                                     as input (can be null if you don't want
+                                     to send the process something.)  You
+                                     _MUST_ specify this if you want to
+                                     specify an :out: variable.
+          (:out:)                  - var-expanded varname to place results
+                                     into (MUST pre-exist, can be null if
+                                     you don't want to read the process's
+                                     output (yet, or at all).  Limit per
+                                     syscall is 256 Kbytes.  You _MUST_
+                                     specify this if you want to use the
+                                     :status: variable).  This is
+                                     a surgical alter.
+           (:status:)              - if you want to keep a minion proc
+                                     around, or catch the exit status
+                                     of the process, specify a varname here.
+                                     The minion process's PID and pipes
+                                     will be stored here.  The program
+                                     can access the proc again with
+                                     another syscall by using this var again.
+                                     When the process exits, it's exit code
+                                     will be surgically stored here (unless
+                                     you specified <async>)
+            /command_or_label/     - the command or entrypoint you want to
+                                     run.  This arg is var-expanded; if the
+                                     first word is a :label:, the fork begins
+                                     execution at the label.  If the first
+                                     word is not a :label:, then the entire
+                                     string is handed off to the shell to
+                                     be executed as a shell command.
+         /[match_OS]alt_command/   - specifies an alternative command for the
+                                     given OS: the string match_OS must match
+                                     your compiled HOSTTYPE (see 'crm -v'
+                                     output: the '(OS: XXX)' part of the first
+                                     line) in which case CRM114 will use the
+                                     alt_command instead.
 
-translate <flags> (:dest:) [:src] /from_charset/ /to_charset/   - do a 
-				  tr()-like translation of 8-bit characters in
-				  the from_charset to the corresponding 
-                                  characters in the to_charset.
-  <unique>                       - repeated sequential copies of the same 
-                                   char in from_charset are replaced by a
-                                   single copy, then translated.   
-  <literal>                      - from_charset and to_charset are literal,
-                                   no var-expansion, ranging, or inversion
-                                   performed.
-  [:src:]                        - source of data.  Can be var-restricted.
-                                   Default is the default data window :_dw:
-  (:dest:)                       - destination to put result.  defaults to
-                                   the default data window :_dw:
-  /from_charset/                 - var-expanded charset of characters to 
-                                   be translated from.  Use hyphens for ranges
-                                   like a-e meaning abcde .  Reversed ranges
-                                   such as e-a meaning edcba work.  (this is
-                                   different than tr() !)  Set inversion
-                                   as in ^a-z mean all characters that 
-                                   aren't lower case characters works.
-                                   Character duplication is not an error.
-				   To use - as a literal character, make it 
-                                   the first or last character.  To use ^ 
-                                   as a literal character, make it any but
-                                   the first character.  ASCII \-escapes
-                                   like \n and \xFF work.
-  /to_charset/                   - charset of characters to be translated
-                                   to.  Same rules as from_charset; excess 
-                                   characters are ignored; if not enough 
-                                   characters are available, start over using
-                                   the to_charset characters from the 
-                                   beginning (this is different than tr().)
-				   If to_charset is not given, then all
-				   chars in from_charset are deleted.
+                                     NOTE: this feature has been added to
+                                     provide CRM script writers with a way to
+                                     specify the correct commands for each
+                                     supported Operating System, as OS commands
+                                     are highly nonportable (especially outside
+                                     the UNIX realm).
 
 
-trap (:reason:) /trap_regex/     - traps faults from both FAULT statements
-                                   and program errors occurring anywhere in
-				   the preceding bracket-block.  If no fault
-				   exists, TRAP does a SKIP to end of block.
-				   If there is a fault and the fault reason
-                                   string matches the trap_regex, the fault 
-				   is trapped, and execution continues with
-				   the line after the TRAP, otherwise the 
-                                   fault is passed up to the next surrounding 
-                                   trapped bracket block.
-     (:reason:)                     - the fault message that caused this
-                                      FAULT.  If it was a user fault, this
-                                      is the text the user supplied in the
-                                      FAULT statement.  This variable is
-                                      allocated as an ISOLATED variable.
-          /trap_regex/              - the regex that determines what kind of
-				      faults this TRAP will accept.  Putting
-				      a wildcard here (e.g. /.*/ means that
-				      ALL trappable faults will be trapped.
+translate <flags> (:dest:) [:src] /from_charset/ /to_charset/
+                                  - do a tr()-like translation of 8-bit
+                                    characters in the from_charset to the
+                                    corresponding characters in the to_charset.
+  <unique>                        - repeated sequential copies of the same
+                                    char in from_charset are replaced by a
+                                    single copy, then translated.
+  <literal>                       - from_charset and to_charset are literal,
+                                    no var-expansion, ranging, or inversion
+                                    performed.
+  [:src:]                         - source of data.  Can be var-restricted.
+                                    Default is the default data window :_dw:
+  (:dest:)                        - destination to put result.  defaults to
+                                    the default data window :_dw:
+  /from_charset/                  - var-expanded charset of characters to
+                                    be translated from.  Use hyphens for ranges
+                                    like a-e meaning abcde .  Reversed ranges
+                                    such as e-a meaning edcba work.  (this is
+                                    different than tr() !)  Set inversion
+                                    as in ^a-z mean all characters that
+                                    aren't lower case characters works.
+                                    Character duplication is not an error.
+                                    To use - as a literal character, make it
+                                    the first or last character.  To use ^
+                                    as a literal character, make it any but
+                                    the first character.  ASCII \-escapes
+                                    like \n and \xFF work.
+  /to_charset/                    - charset of characters to be translated
+                                    to.  Same rules as from_charset; excess
+                                    characters are ignored; if not enough
+                                    characters are available, start over using
+                                    the to_charset characters from the
+                                    beginning (this is different than tr().)
+                                    If to_charset is not given, then all
+                                    chars in from_charset are deleted.
 
 
-union (:out:) [:var1: :var2: ...] - makes :out: contain the union of the data
-                                   window segments that contains var1, var2... 
-                                   plus any intervening text as well.  Any 
-                                   ISOLATEd var is ignored.  This is 
-                                   non-surgical, and does not alter the 
-                                   data window
+trap (:reason:) /trap_regex/      - traps faults from both FAULT statements
+                                    and program errors occurring anywhere in
+                                    the preceding bracket-block.  If no fault
+                                    exists, TRAP does a SKIP to end of block.
+                                    If there is a fault and the fault reason
+                                    string matches the trap_regex, the fault
+                                    is trapped, and execution continues with
+                                    the line after the TRAP, otherwise the
+                                    fault is passed up to the next surrounding
+                                    trapped bracket block.
+     (:reason:)                   - the fault message that caused this
+                                    FAULT.  If it was a user fault, this
+                                    is the text the user supplied in the
+                                    FAULT statement.  This variable is
+                                    allocated as an ISOLATED variable.
+          /trap_regex/            - the regex that determines what kind of
+                                    faults this TRAP will accept.  Putting
+                                    a wildcard here (e.g. /.*/ means that
+                                    ALL trappable faults will be trapped.
 
 
-window <flags> (:w-var:) (:s-var:) /cut-regex/ /add-regex/ - window slider.
-				   This deletes to and including the
-				   cut-regex from :var: (default: use the 
-                                   data window), then reads adds from std. 
-                                   input till we find add-regex (inclusive).  
-       <nocase>                    - ignore case when matching cut- and add-
-				     regexes
-       <bychar>                    - (default) read one char at a time and 
-                                     check input for add-regex every character,
-				     so never reads "too much" from stdin..
-       <bychunk>                   - reads as much data as available, then 
-                                     checks with the regex. ( unused 
-                                     characters are kept around for later)
-       <byeof>                     - wait for EOF to check add-regex (unused
-				     characters are kept around for later)
-       <eofaccepts>                - accept an EOF as being a successful
-                                     regex match ( default is only a successful
-                                     add-regex matches. CAUTION: can cause 
-				     rapid looping!)
-       <eofretry>                  - keep reading past an EOF; reset the stream
-                                     and wait again for more input. (default 
-				     is to FAIL on EOF.  CAUTION: this can
-				     cause rapid looping!)
-            (:w-var:)              - what var to window
-	       (:s-var:)           - what var to use for source (defaults to
-				     stdin, if you use a source var you _must_
-                                     specify the windowed var.)
-              /cut-regex/          - var-expanded cut pattern.  Everything
-                                     up to and including this is deleted.
-                      /add-regex/  - var-expanded add pattern, if absent 
-                                     reads till EOF.  This pattern is a minimal
-                                     match pattern, so if the pattern can match
-                                     a zero-length string ( say, /.*/ ), this
-                                     can yield zero characters added.  Use
-                                     a pattern like /.+/ to prevent this.
+union (:out:) [:var1: :var2: .. .]
+                                  - makes :out: contain the union of the data
+                                    window segments that contains var1, var2...
+                                    plus any intervening text as well.  Any
+                                    ISOLATEd var is ignored.  This is
+                                    non-surgical, and does not alter the
+                                    data window
 
-                            *****    If both cut-regex and add-regex are 
-				     omitted, and this window statement is
-                                     an executable no-op... EXCEPT that if it's
-				     the _first_ _executable_ statement in
-				     the program, then the WINDOW statement
-				     configures CRM114 to _not_ wait
-				     to read a anything from standard input
-				     input before starting program execution.
+
+window <flags> (:w-var:) (:s-var:) /cut-regex/ /add-regex/
+                                  - window slider.
+                                    This deletes to and including the
+                                    cut-regex from :var: (default: use the
+                                    data window), then reads adds from std.
+                                    input till we find add-regex (inclusive).
+       <nocase>                   - ignore case when matching cut- and add-
+                                    regexes
+       <bychar>                   - (default) read one char at a time and
+                                    check input for add-regex every character,
+                                    so never reads "too much" from stdin..
+       <bychunk>                  - reads as much data as available, then
+                                    checks with the regex. ( unused
+                                    characters are kept around for later)
+       <byeof>                    - wait for EOF to check add-regex (unused
+                                    characters are kept around for later)
+       <eofaccepts>               - accept an EOF as being a successful
+                                    regex match ( default is only a successful
+                                    add-regex matches. CAUTION: can cause
+                                    rapid looping!)
+       <eofretry>                 - keep reading past an EOF; reset the stream
+                                    and wait again for more input. (default
+                                    is to FAIL on EOF.  CAUTION: this can
+                                    cause rapid looping!)
+            (:w-var:)             - what var to window
+               (:s-var:)          - what var to use for source (defaults to
+                                    stdin, if you use a source var you _must_
+                                    specify the windowed var.)
+              /cut-regex/         - var-expanded cut pattern.  Everything
+                                    up to and including this is deleted.
+                 /add-regex/      - var-expanded add pattern, if absent
+                                    reads till EOF.  This pattern is a minimal
+                                    match pattern, so if the pattern can match
+                                    a zero-length string ( say, /.*/ ), this
+                                    can yield zero characters added.  Use
+                                    a pattern like /.+/ to prevent this.
+
+                            *****   If both cut-regex and add-regex are
+                                    omitted, and this window statement is
+                                    an executable no-op... EXCEPT that if it's
+                                    the _first_ _executable_ statement in
+                                    the program, then the WINDOW statement
+                                    configures CRM114 to _not_ wait
+                                    to read a anything from standard input
+                                    input before starting program execution.
 
 
 
@@ -852,28 +1071,29 @@ window <flags> (:w-var:) (:s-var:) /cut-regex/ /add-regex/ - window slider.
 
 A regex is a pattern match.  Do a "man 7 regex" for details.
 
-Matches are, by default "first starting point that matches, then 
-longest match possible that can fit".  
+Matches are, by default "first starting point that matches, then
+longest match possible that can fit".
 
   a through z
   A through Z   - all match themselves
   0 thorugh 9
-  
+
   most punctuation - matches itself, but check below!
 
-  .       - the 'period' char, matches any character	
+  .         the 'period' char, matches any character
 
-  *       - repeat preceding 0 or more times
-  
-  +       - repeat preceding 1 or more times
- 
-  ?       - repeat preceding 0 or 1 time 
+  *         repeat preceding 0 or more times
+
+  +         repeat preceding 1 or more times
+
+  ?         repeat preceding 0 or 1 time
 
   [abcde]    any one of the letters a, b, c, d, or e
-	      
+
   [a-q]      the letters a through q (just one of them)
 
-  [a-eh-mqzt]   the letters a through e, plus h through m, plus q, z, and t
+  [a-eh-mqzt]
+             the letters a through e, plus h through m, plus q, z, and t
 
   [^xyz]     any one letter EXCEPT one of x, y, or z
 
@@ -884,37 +1104,37 @@ longest match possible that can fit".
   {n,}       repetition count: match the preceding at least n times
 
   {n,m}      repetition count: match the preceding at least n and no more
-	     than m times (sadly, POSIX restricts this to a maximum of 255
-	     repeats.  Nested repeats like (.{255}){10} will work, but are
-	     very very slow).
+             than m times (sadly, POSIX restricts this to a maximum of 255
+             repeats.  Nested repeats like (.{255}){10} will work, but are
+             very very slow).
 
 
   [[:<:]]    matches at the start of a word (GNU regex only)
   \<         matches at the start of a word (TRE regex only)
- 
+
   [[:>:]]    matches the end of a word (GNU regex only)
   \>         matches at the end of a word (TRE regex only)
 
-  ^          As the first character in a match, it matches only at the 
-             start of a block; this usually means start of the 
+  ^          As the first character in a match, it matches only at the
+             start of a block; this usually means start of the
              input variable.  If you use <nomultiline> then each line is
              it's own block and so ^ means "start of line".
 
-  ^          As the last character in a match, it matches only at the 
-             end of a block; this usually means the end of the 
+  ^          As the last character in a match, it matches only at the
+             end of a block; this usually means the end of the
              input variable.  If you use <nomultiline> then each line is
              it's own block and so $ means "end of line".
 
-  .         (a period) matches any _single_ character (except start-of-line or
-            end of line "virtual characters", but it does match a newline).
+  .          (a period) matches any _single_ character (except start-of-line or
+             end of line "virtual characters", but it does match a newline).
 
-  (match)    - the () go away, and the string that matched inside is
-	     available for capturing.  Use \( and \) to match actual 
-	     parenthesis. 
+  (match)    the () go away, and the string that matched inside is
+             available for capturing.  Use \( and \) to match actual
+             parenthesis.
 
-  a|b        match a _or_ b, such as foo|bar which will match "foo" or 
-             "bar" (multiple characters!).  To get a shorter extent of 
-             ORing, use parenthesis, e.g. /f(oo|ba)r/ matches "foor" 
+  a|b        match a _or_ b, such as foo|bar which will match "foo" or
+             "bar" (multiple characters!).  To get a shorter extent of
+             ORing, use parenthesis, e.g. /f(oo|ba)r/ matches "foor"
              or "fbar", but not foo or bar.
 
 The following are other POSIX expressions, which mostly do what you'd
@@ -922,11 +1142,11 @@ guess they'd do from their names.
 
   [[:alnum:]]   <-- a-z, A-Z and 0-9
   [[:alpha:]]   <-- a-z and A-Z
-  [[:blank:]]   <-- space and tab only 
+  [[:blank:]]   <-- space and tab only
   [[:space:]]   <-- "whitespace" (space, tab, vertical tab (^K), \n, \r, ..)
   [[:cntrl:]]   <-- control characters
   [[:digit:]]   <-- 0-9
-  [[:lower:]]   <-- lower-case letters a-z 
+  [[:lower:]]   <-- lower-case letters a-z
   [[:upper:]]   <-- upper-case letters A-Z
   [[:graph:]]   <-- any character that puts ink on paper or lights a pixel
   [[:print:]]   <-- any character that moves the "print head" or cursor.
@@ -937,72 +1157,75 @@ guess they'd do from their names.
 ----- The following are only available with the TRE-based versions -----
 
 
-  *?, +?, ??, {n,m}?  - repeat the preceding expression 0-or-more,
-   	      1-or-more, 0-or-1, or n-to-m times, but _shortest_ match
-   	      that fits, given the already-selected start point of the
-   	      regex. This is an "anti-greedy" match, unlike the normal
+  *?, +?, ??, {n,m}?
+            - repeat the preceding expression 0-or-more,
+              1-or-more, 0-or-1, or n-to-m times, but _shortest_ match
+              that fits, given the already-selected start point of the
+              regex. This is an "anti-greedy" match, unlike the normal
               match that wants to have the longest possible resultiing match
 
   \N        - where N is 1 through 9 - matches the N'th parenthesized
-	      previous subexpression.  You don't have to backslash-escape 
-	      the backslash (e.g. write this as \1 or as \\1, either will
-	      work)
+              previous subexpression.  You don't have to backslash-escape
+              the backslash (e.g. write this as \1 or as \\1, either will
+              work)
 
-  \Q        - start verbatim quoting - all following characters represent 
-              exactly themselves; no repcounts or wildcards apply.  This is 
+  \Q        - start verbatim quoting - all following characters represent
+              exactly themselves; no repcounts or wildcards apply.  This is
               _only_ terminated by a \E or the end of the regex.
 
-  \E        - end of verbatim quoting. 
+  \E        - end of verbatim quoting.
 
-  \<	    - start of a word (doesn't use up a character)
-  
-  \>	    - end of a word (doesn't use up a character)
+  \<        - start of a word (doesn't use up a character)
 
-  \d	    - a digit
+  \>        - end of a word (doesn't use up a character)
 
-  \D	    - not a digit
+  \d        - a digit
 
-  \s	    - a space
+  \D        - not a digit
 
-  \S	    - not a space
+  \s        - a space
 
-  \w	    - a word char ( a-z, A-Z, 0-9, or _ )
+  \S        - not a space
 
-  \W	    - not a word char
+  \w        - a word char ( a-z, A-Z, 0-9, or _ )
+
+  \W        - not a word char
 
 
-  (?:some-regex) - parenthesize a subexpression, but _don't_ capture a 
+  (?:some-regex)
+            - parenthesize a subexpression, but _don't_ capture a
               submatch for it.
 
-  (?inr-inr:regex) - Let you turn on or off case independence, nomultiline,
+  (?inr-inr:regex)
+            - Let you turn on or off case independence, nomultiline,
               and right-associative (rather than the default left-associative)
-	      matching.  These nest as well.
+              matching.  These nest as well.
 
               i - case independent matching.  examples:
 
-	           /(?i:abc)/              matches 'abc', 'AbC', 'ABC', etc...
+                   /(?i:abc)/             matches 'abc', 'AbC', 'ABC', etc...
 
-                   /(?i:ABC(?-i:de)FGH)/   matches ABCdeFGH, abcdefgh,
+                   /(?i:ABC(?-i:de)FGH)/  matches ABCdeFGH, abcdefgh,
                                           but not ABCdEFGH or ABCDEFGH
 
               n - don't match newlines with wildcards such as .* or with
-                  anti-wildcards like [^j-z].  "-n" _allows_ matching of 
+                  anti-wildcards like [^j-z].  "-n" _allows_ matching of
                   newlines (this is slightly counterintuitive).  eg:
 
-                  /(?n:a.*z)/            matches 'abcxyz' but not
-                                          'abc
-                                           xyz'
+                  /(?n:a.*z)/             matches 'abcxyz' but not
+                                           'abc
+                                            xyz'
 
-                  /(?-n:a.*z)/           matches both (this does NOT override
-                                         the <nomultiline> flag; <nomultiline>
-                                         essentially "blocks" the searched text
-                                         at newlines, and searches within
-                                         those blocks only)
+                  /(?-n:a.*z)/            matches both (this does NOT override
+                                          the <nomultiline> flag; <nomultiline>
+                                          essentially "blocks" the searched text
+                                          at newlines, and searches within
+                                          those blocks only)
 
               r - right-associate matching.  This changes only sub-matches,
-                  never whether the match itself succeeds or fails.  (I 
-		  haven't come up with a good example for this; any
-		  suggestions?)
+                  never whether the match itself succeeds or fails.  (I
+                  haven't come up with a good example for this; any
+                  suggestions?)
 
 
 
@@ -1020,7 +1243,7 @@ evaluation only in EVAL expressions.  Modes 2 and 3 allow stringlength
 and math evaluation in _any_ var-expanded expression, with
 non-precedence algebraic notation and RPN notation respectively.
 
-You can overide whether to use Algebraic or RPN precedence of any 
+You can overide whether to use Algebraic or RPN precedence of any
 math evaluation by using an A or an R as the first character of the
 math evaluation string.
 
@@ -1031,7 +1254,7 @@ The evaluation is done in four sequential passes:
 
  1)   \-constants like \n, \o377 and \x3F are substituted in.  You must
       use three digits for octal and two digits for hex.  To write something
-      that will literally appear as one of these constants, escape the 
+      that will literally appear as one of these constants, escape the
       backslasn with another backslash, i.e. to output '\o075' use '\\o075'.
 
  2)   :*:var: variables are substituted (note the difference between
@@ -1048,7 +1271,7 @@ The evaluation is done in four sequential passes:
 
  4)   :#:var: string-length operations are performed.  (you don't have to
       expand a :var: first, you can take the string length directly, as
-      in :#:_dw: to get the length of the default data window.  Thus, you 
+      in :#:_dw: to get the length of the default data window.  Thus, you
       can take the length of a string that contains a :, which would normally
       "end" the :#: operator ).
 
@@ -1059,26 +1282,26 @@ The evaluation is done in four sequential passes:
       the math string is an A or an R, it forces Algebraic or RPN
       evaluation; otherwise the -q value determines which evaluator
       to use.
-    
-      Allowed operators are:  
+
+      Allowed operators are:
 
              + - * / % ^ v > < = >= <= != e E f F g G x X only.
 
       The '^' operator is exponentiation; A ^ B is A raised to the B power.
-      The 'v' operator is any-base log; A v B is the log of B in logbase 
+      The 'v' operator is any-base log; A v B is the log of B in logbase
       A ; note that the logbase is _required_ and there is no default.
-      
+
 
       Only >, >=, <, <=, = and != set logical results; they also evaluate
-      to 1 and 0 for continued chain operations - e.g. 
+      to 1 and 0 for continued chain operations - e.g.
 
-	((:*:a: > 3) + (:*:b: > 5) + (:*:c: > 9) > 2)
+        ((:*:a: > 3) + (:*:b: > 5) + (:*:c: > 9) > 2)
 
       is true IFF any of the following is true
 
-	 a > 3 and b > 5
-	 a > 3 and c > 9
-	 b > 5 and c > 9
+         a > 3 and b > 5
+         a > 3 and c > 9
+         b > 5 and c > 9
 
       Formatting operators: e E f F g G x X - the left side value is
       unchanged, but the right side value is used as a formatting
@@ -1104,7 +1327,7 @@ and substitutions you wish to allow.  The minimum-error match is found
 and reported, if it exists within the bounds you state.
 
 The basic syntax is:
-  
+
   (text-to-match){~[maxerrs] [#maxsubsts] [+maxinserts] [-maxdeletes]}
 
 Note that the '~' (with an optional maxerr count) is _required_ (that's how
@@ -1115,7 +1338,7 @@ the match will have at most that many errors.
 Remember that you specify the changes to the text in the _pattern_
 necessary to make it match the text in the string being searched.
 
-You cannot use approximate regexes and backrefs (like \1) in the same 
+You cannot use approximate regexes and backrefs (like \1) in the same
 regex.  This is a limitation of in TRE at this point.
 
 You can also use an inequality in addition to the basic syntax above:
@@ -1132,24 +1355,26 @@ Here are some examples.
   (foobar)       - exactly matches "foobar"
 
   (foobar){~}    - finds the closest match to "foobar", with the minimum number
-		   of inserts, deletes, and substitutions.  This match always
-		   succeeds, as six substitutions or additions is always
-		   enough to turn any string into one that contains 'foobar'.
+                   of inserts, deletes, and substitutions.  This match always
+                   succeeds, as six substitutions or additions is always
+                   enough to turn any string into one that contains 'foobar'.
 
   (foobar){~3}   - finds the closest match to "foobar", with no more than 3
-	           inserts, deletes, or substitutions
+                   inserts, deletes, or substitutions
 
-  (foobar){~2 +2 -1 #1) - find the closest match to "foobar", with at most
-		   two errors total, and at most two inserts, one delete,
-		   and one substitution.
+  (foobar){~2 +2 -1 #1)
+                 - find the closest match to "foobar", with at most
+                   two errors total, and at most two inserts, one delete,
+                   and one substitution.
 
-  (foobar){~4 #1 1i + 2d < 5 } - find the closest match to "foobar",
-		   with at most four errors total, at most one substitution,
-		   and with the number of insertions plus 2x the number of
-		   deletions less than 5.
-  
-  (foo){~1}(bar){~1) - find the closest match to "foobar", with at most one
-		   error in the "foo" and one error in the "bar".
+  (foobar){~4 #1 1i + 2d < 5 }
+                 - find the closest match to "foobar", with at most four
+                   errors total, at most one substitution, and with the number
+                   of insertions plus 2x the number of deletions less than 5.
+
+  (foo){~1}(bar){~1)
+                 - find the closest match to "foobar", with at most one
+                   error in the "foo" and one error in the "bar".
 
 
      ------------ Notes on Classifier Choices -------
@@ -1157,17 +1382,17 @@ Here are some examples.
 CRM114 allows the user a whole gamut of different classification
 algorithms, and various tunings on classifications.
 
-The default classifier is a Markovian classifier that attempts to model 
+The default classifier is a Markovian classifier that attempts to model
 the language as a Markov Random Field with site size of 5 (in plainspeak,
-it looks at each word in the context of a window 5 words long; words 
+it looks at each word in the context of a window 5 words long; words
 within that window are considered "directly related" and are used to
-generate local probabilities.  Words outside that 5-word window are 
+generate local probabilities.  Words outside that 5-word window are
 not considered in relation to each word, but get considered when the window
-slides over to them).  
+slides over to them).
 
-The Markovian classifier is quite fast; more than fast enough for a 
-single user or even a small office.  Filtering speed varies - with no
-optimization and overflow safegaurding (that is, with <microgroom> 
+The Markovian classifier is quite fast; more than fast enough for a
+single user or even a small office.  Filtering speed varies- with no
+optimization and overflow safegaurding (that is, with <microgroom>
 enabled) filtering speed is usually in excess of what a fractional
 T1 line can downlink.
 
@@ -1184,7 +1409,7 @@ considered deprecated for new work, although it is still supported.
 The recommended classifier right now for production work is OSB or
 OSBF. ]
 
-The next generation filter (and one of the two recommended for 
+The next generation filter (and one of the two recommended for
 new production work] is the OSB filter, based on orthogonal sparse
 bigrams.  OSB is natively about 4x faster than full Markovian, but
 loses some of this advantage if overflow safegaurding (no
@@ -1192,9 +1417,9 @@ loses some of this advantage if overflow safegaurding (no
 space is unlimited, and more accurate than Markovian if disk space is
 limited.  OSB is the recommended default for new users because
 it works very well across a broad range of inputs.  OSB uses .css
-files as well, but (because of a coding error that was released 
+files as well, but (because of a coding error that was released
 into the wild and unnoticed until most people were already using
-it in the incompatible form) OSB is, by default, incompatible with 
+it in the incompatible form) OSB is, by default, incompatible with
 Markov .css files; there is a compile-time switch to make it compatible
 if you want.
 
@@ -1210,7 +1435,7 @@ Another filter with excellent statistics is the Winnow filter.  Winnow
 is a non-statistical method that uses the OSB front end feature
 generator.  Winnow is different than the statistical filters, in that
 it absolutely requires both positive training and negative training to
-work, but then it works _very_ well.  
+work, but then it works _very_ well.
 
 With Winnow, you don't just train errors into the correct class (i.e.
 in emulation of an SVM).  Instead, you set a "thick threshold"
@@ -1228,35 +1453,35 @@ thick-threshold, you may have to train one or both files as well.
 
 The slowest classifier is the correlative filter.  This filter is based on
 a full NxM correlation of the unknown text against each of the known text
-corpora.  It's very slow (perhaps 100x slower than Markovian) but is 
+corpora.  It's very slow (perhaps 100x slower than Markovian) but is
 capable of classifying texts containing stemmed words, of texts composed of
-binary files, and texts that cannot be reasonably "tokenized".  
+binary files, and texts that cannot be reasonably "tokenized".
 The <correlate> filter should be considered perpetually an experimental
 feature, and it is not as well characterized as the Markovian or OSB filters.
 The correlative filter is not recommended for general production work.
 
-A semi-experimental filter is the Hyperspace filter; this uses a 
+A semi-experimental filter is the Hyperspace filter; this uses a
 variation on the K-Nearest-Neighbor method.  It's usually not quite
 as accurate as OSB, but it can filter againts very high levels of
 intentional obfuscation.  Hyperspace uses a different (and self-growing)
 file format.  Hyperspace usually trains best with a small thick-threshold
-training, similar to Winnow; as of 20061101 the factors have been 
-renormalized so that Hyperspace values within +/- 10 pR units give a 
-good thick-threshold for training.  
+training, similar to Winnow; as of 20061101 the factors have been
+renormalized so that Hyperspace values within +/- 10 pR units give a
+good thick-threshold for training.
 
 The bit-entropy filter is a different *kind* of filter; instead of
 using tokens, it constructs an optimal compression system out
-of the known texts, then it tries to compress the unknown text 
+of the known texts, then it tries to compress the unknown text
 as much as possible, using the known texts as prior probabilities.
 Better compression implies closer match.  The amazing thing about this
 is that it works at all- and it actually works very well.  Because
-there's no tokenizer, the entropy filter can work against languages 
+there's no tokenizer, the entropy filter can work against languages
 that don't use spaces to delimit words, such as some Asian languages.
 It works quite well against spam.  This filter is still experimental
 and noncompatible upgrades may occur - keep your training data if you
 use this filter!
 
-				     
+
      ------------ Overall Language Notes ------------
 
 Here's how to remember what goes where in the CRM114 language.
@@ -1275,29 +1500,29 @@ consecutive.
 
 The parts of a CRM114 statement are:
 
-	  ACTION	     - the verb.  This is at the start of the 
+          ACTION             - the verb.  This is at the start of the
                                statment.
 
-          /pattern/	     - the overall pattern the verb should 
-                               use, analogous to the "subject" of the 
+          /pattern/          - the overall pattern the verb should
+                               use, analogous to the "subject" of the
                                statement.
 
-	  <flags>	     - modifies how the ACTION does the work. 
-			       You'd call these "adverbs" in human 
+          <flags>            - modifies how the ACTION does the work.
+                               You'd call these "adverbs" in human
                                languages.
 
-	  (vars)	     - what variables to use as adjuncts in 
-                               the action (what would be called the 
+          (vars)             - what variables to use as adjuncts in
+                               the action (what would be called the
                                "direct objects").  These can get changed
-			       when the action happens.
+                               when the action happens.
 
-	  [limited-to]       - where the action is allowed to take place
-			       (think of it as the "indirect object").
-			       Generally these are not directly changed
-			       by the action.  These may contain "adjectival
-			       phrases - var restrictions, either by subscript
-			       or by regex or both.
-			       
+          [limited-to]       - where the action is allowed to take place
+                               (think of it as the "indirect object").
+                               Generally these are not directly changed
+                               by the action.  These may contain "adjectival
+                               phrases - var restrictions, either by subscript
+                               or by regex or both.
+
 
 
 

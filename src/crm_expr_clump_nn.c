@@ -2242,10 +2242,10 @@ static void parse_monster(char *text, long len, const char **keys, double *value
 int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char filename[MAX_PATTERN];
-    long filename_len;
+    int filename_len;
 
     char regex_text[MAX_PATTERN];
-    long regex_text_len;
+    int regex_text_len;
     regex_t regee;
     COOCCURRENCE_SCORE_TYPE sense = 1.0;
 
@@ -2254,11 +2254,11 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
     char   *text;
-    long text_start, text_len;
+    int text_start, text_len;
 
     //  these happenin second slashed string in /key=value key=value ... / style
     char parameters_text[MAX_PATTERN];
-    long parameters_text_len;
+    int parameters_text_len;
 
     index_t *tokenized_text;
     int tokenized_text_len;
@@ -2491,16 +2491,16 @@ static void nolearning_tokenize(
 int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char filename[MAX_PATTERN];
-    long filename_len;
+    int filename_len;
 
     char regex_text[MAX_PATTERN];
-    long regex_text_len;
+    int regex_text_len;
     regex_t regee;
 
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
     char   *text;
-    long text_start, text_len;
+    int text_start, text_len;
 
     index_t *tokenized_text;
     int tokenized_text_len;
@@ -2509,7 +2509,7 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     long out_pos;
 
     char out_var[MAX_PATTERN];
-    long out_var_len;
+    int out_var_len;
 
     struct stat statbuf;
 

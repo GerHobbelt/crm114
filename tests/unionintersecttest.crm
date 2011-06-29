@@ -1,4 +1,4 @@
-#!/usr/bin/crm 
+#! :|crm
 window
 output /:*:_nl: CRM114: Testing union and intersection :*:_nl: :*:_nl:/
 {

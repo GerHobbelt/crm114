@@ -1,4 +1,4 @@
-#!/usr/bin/crm
+#! @CRM@
 {
      window
      output /isolate :a: as 'hdgdgb aaa hdgdb', match b as \/aaa\/\n/

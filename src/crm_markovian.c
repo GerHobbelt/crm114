@@ -60,17 +60,18 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //     belonging to a particular type.
     //     learn <flags> (classname) /word/
     //
-    long j;
-    long i;
-    long k;
+    int j;
+    int i;
+    int k;
     long h;                  //  h is our counter in the hashpipe;
     char ptext[MAX_PATTERN]; //  the regex pattern
-    long plen;
+    int plen;
     char ltext[MAX_PATTERN]; //  the variable to learn
-    long llen;
+    int llen;
     char htext[MAX_PATTERN]; //  the hash name
-    long hlen;
-    long cflags, eflags;
+    int hlen;
+    int cflags;
+	//int eflags;
     struct stat statbuf;        //  for statting the hash file
     long hfsize;                //  size of the hash file
     FEATUREBUCKET_TYPE *hashes; //  the text of the hash file
@@ -118,14 +119,14 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //            "case" and "affirm", (both zero valued).
     //            and "microgroom" disabled.
     cflags = REG_EXTENDED;
-    eflags = 0;
+    //eflags = 0;
     sense = +1;
     unique_mode = 0;
     seen_features = NULL;
     if (apb->sflags & CRM_NOCASE)
     {
-        cflags = cflags | REG_ICASE;
-        eflags = 1;
+        cflags |= REG_ICASE;
+        //eflags = 1;
         if (user_trace)
             fprintf(stderr, "turning oncase-insensitive match\n");
     }
@@ -162,7 +163,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
-#if 10
+#if 0
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -172,7 +173,14 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         j++;
     CRM_ASSERT(j <= hlen);
 #else
- crm_nextword(htext, 0, hlen, &i, &j);
+ if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+ {
+            fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)hlen,
+					htext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
@@ -886,26 +894,26 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //       This code should look very familiar- it's cribbed from
     //       the code for LEARN
     //
-    long i, j;
+    int i, j;
     long h;                  //  we use h for our hashpipe counter, as needed.
     char ptext[MAX_PATTERN]; //  the regex pattern
-    long plen;
+    int plen;
     //  char ltext[MAX_PATTERN];  //  the variable to classify
     //long llen;
     //  the hash file names
     char htext[MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN];
-    long htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
-    long hlen;
+    int htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
+    int hlen;
     //  the match statistics variable
     char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
-    long stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
+    int stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
     char svrbl[MAX_PATTERN]; //  the match statistics text buffer
     long svlen;
-    long fnameoffset;
+    int fnameoffset;
     char fname[MAX_FILE_NAME_LEN];
-    long eflags;
-    long cflags;
-    long not_microgroom;   //  is microgrooming disabled (fast-quit
+    // int eflags;
+    int cflags;
+    int not_microgroom;   //  is microgrooming disabled (fast-quit
                            //   optimization if 0th feature gone)
     long max_feature_terms; //  how many features do we get at each
                             //    pipe position?
@@ -947,10 +955,10 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long hashlens[MAX_CLASSIFIERS];
     char *hashname[MAX_CLASSIFIERS];
     long succhash;
-    long vbar_seen;     // did we see '|' in classify's args?
+    int vbar_seen;     // did we see '|' in classify's args?
     long maxhash;
-    long fnstart, fnlen;
-    long fn_start_here;
+    int fnstart, fnlen;
+    int fn_start_here;
     long textoffset;
     long textmaxoffset;
     long bestseen;
@@ -993,7 +1001,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     svlen = apb->p2len;
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
     {
-        long vstart, vlen;
+        int vstart, vlen;
         crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;
@@ -1007,14 +1015,14 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //            set our flags, if needed.  The defaults are
     //            "case"
     cflags = REG_EXTENDED;
-    eflags = 0;
+    //eflags = 0;
 
     if (apb->sflags & CRM_NOCASE)
     {
         if (user_trace)
             fprintf(stderr, " setting NOCASE for tokenization\n");
         cflags += REG_ICASE;
-        eflags = 1;
+        //eflags = 1;
     }
 
     not_microgroom = 1;

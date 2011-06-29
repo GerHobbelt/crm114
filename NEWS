@@ -17,7 +17,8 @@ version 20080317-BlameJoeLangeway_VT
    
  * Added megatest-ng.sh (ng = NextGen): this is a major step towards EXACT
    reproducability of CRM114 megatest classifier numbers on Win32 versus UNIX.
-
+   
+ * See ChangeLog for more news.
 
 
 Version 20071201-BlameLittleStevie_VT  

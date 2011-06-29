@@ -98,9 +98,9 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
     char *remtext;
     long remlen;
     char *wtext;
-    long flagsearch_start_here;
-    long wstart;
-    long wlen;
+    int flagsearch_start_here;
+    int wstart;
+    int wlen;
     uint64_t outcode;
 
     int done;
@@ -208,10 +208,10 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
 //     a valid word, and *start and *length, which give it's position.
 //
 int crm_nextword(const char *input,
-        long                  inlen,
-        long                  starthere,
-        long                 *start,
-        long                 *len)
+        int inlen,
+        int starthere,
+         int *start,
+        int *len)
 {
     *start = starthere;
     *len = 0;

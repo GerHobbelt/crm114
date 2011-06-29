@@ -36,7 +36,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //     belonging to a particular type.
     //     learn <flags> (classname) /regex/ (regex is ignored)
     //
-    long i, j, k;
+    int i, j, k;
     char ptext[MAX_PATTERN]; //  the regex pattern
     long plen;
     char ltext[MAX_PATTERN]; //  the variable to learn
@@ -111,7 +111,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
-#if 10
+#if 0
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -121,7 +121,14 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         j++;
     CRM_ASSERT(j <= hlen);
 #else
- crm_nextword(htext, 0, hlen, &i, &j);
+ if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+ {
+            fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)hlen,
+					htext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
@@ -151,7 +158,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         f = fopen(learnfilename, "wb");
         if (!f)
         {
-            fev = fatalerror_ex(SRC_LOC(),
+            fev = nonfatalerror_ex(SRC_LOC(),
                     "\n Couldn't open your new correlate file %s for writing; errno=%d(%s)\n",
                     learnfilename,
                     errno,
@@ -164,7 +171,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
-            fev = fatalerror_ex(SRC_LOC(),
+            fev = nonfatalerror_ex(SRC_LOC(),
                     "\n Couldn't write header to file %s; errno=%d(%s)\n",
                     learnfilename, errno, errno_descr(errno));
             fclose(f);
@@ -369,10 +376,10 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long hashlens[MAX_CLASSIFIERS];
     char *hashname[MAX_CLASSIFIERS];
     int succhash;
-    long vbar_seen;     // did we see '|' in classify's args?
+    int vbar_seen;     // did we see '|' in classify's args?
     int maxhash;
-    long fnstart, fnlen;
-    long fn_start_here;
+    int fnstart, fnlen;
+    int fn_start_here;
     long textoffset;
     long bestseen;
     long thistotal;
@@ -400,7 +407,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     svlen = apb->p2len;
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
     {
-        long vstart, vlen;
+        int vstart, vlen;
         crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;

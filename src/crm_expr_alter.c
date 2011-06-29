@@ -177,9 +177,9 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //      Syntax is "alter <flags> (var) /newvalue/
 
     char varname[MAX_VARNAME];
-    long varnamestart;
-    long varnamelen;
-    long newvallen;
+    int  varnamestart;
+    int varnamelen;
+    int newvallen;
 
     // should use tempbuf for this instead.
     //   char newstr [MAX_PATTERN];

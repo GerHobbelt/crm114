@@ -384,13 +384,13 @@
 #
 #   ---- Things rated less than or equal to this are SPAM
 #:spam_threshold: /-0.01/
-#:spam_threshold: /-5.0/
-:spam_threshold: /-10.0/
+:spam_threshold: /-5.0/
+#:spam_threshold: /-10.0/
 #:spam_threshold: /-20.0/
   
 #   ---- mailfilter uses a single threshold and operates symmetrically.
 #   --- (this is only to provide backward compatibility)
-:thick_threshold: /10.0/
+:thick_threshold: /5.0/
 
 #   ---- What regex do we use for LEARN/CLASSIFY?  the first is the
 #   ---- "old standard".  Other ones are handy for different spam

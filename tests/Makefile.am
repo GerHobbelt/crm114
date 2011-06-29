@@ -56,10 +56,19 @@ test_SCRIPTS = \
  windowtest_fromvar.crm \
  tenfold_validate.crm \
  tokendelimiterbugtest.crm \
- bracesbugtest.crm
+ bracesbugtest.crm \
+ blowuptrapbugtest.crm \
+ trapseqbugtest.crm \
+ indirecttest.crm \
+ isolate_reclaim_test.crm \
+ match_isolate_reclaim.crm \
+ slashbugtest.crm \
+ translate_tr.crm
 
 
 test_UBERSCRIPTS = megatest.sh \
+    megatest.bat \
+    megatest_ng.sh \
 	testscript.sh
 
 EXTRA_DIST = megatest_knowngood.log \

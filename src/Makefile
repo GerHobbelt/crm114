@@ -239,7 +239,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2008-03-23
+ISODATE = 2008-03-25
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -288,7 +288,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-1935
+TAR_FILENAME_POSTFIX = Ger-1945
 TRE_CONFIG = no
 
 #
@@ -509,7 +509,8 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	gatlingsort.crm tenfold_validate.crm \
 	test_svm.crm \
 	classifymail.crm \
-	tokendelimiterbugtest.crm bracesbugtest.crm
+	tokendelimiterbugtest.crm bracesbugtest.crm \
+	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm
 
 TEXTFILES = COLOPHON.txt pad.dat \
 	QUICKREF.txt INTRO.txt knownbugs.txt FAQ.txt things_to_do.txt \
@@ -524,16 +525,15 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	rename-gz \
 	megatest.sh megatest_knowngood.log megatest_knowngood.orginal.log \
 	make_BillY.sh Makefile.BillY \
+	exectest_s1.sh \
 	$(MEGATESTFILES) megatest_ng.sh 
 
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(UTILFILES) \
 	$(CRMFILES) \
-	$(TEXTFILES)
+	$(TEXTFILES) 
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt \
-		merge-results-29-oct-2007.txt x.bak
-
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c \

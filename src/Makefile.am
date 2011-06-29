@@ -291,7 +291,8 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	gatlingsort.crm tenfold_validate.crm \
 	test_svm.crm \
 	classifymail.crm \
-	tokendelimiterbugtest.crm bracesbugtest.crm
+	tokendelimiterbugtest.crm bracesbugtest.crm \
+	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm
 
 
 TEXTFILES = COLOPHON.txt pad.dat \
@@ -307,6 +308,7 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	rename-gz \
 	megatest.sh megatest_knowngood.log megatest_knowngood.orginal.log \
 	make_BillY.sh Makefile.BillY \
+	exectest_s1.sh \
 	$(MEGATESTFILES) megatest_ng.sh 
 
 
@@ -314,7 +316,7 @@ TEXTFILES = COLOPHON.txt pad.dat \
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(UTILFILES) \
 	$(CRMFILES) \
-	$(TEXTFILES)
+	$(TEXTFILES) 
 
 
 
@@ -322,8 +324,8 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge testvectok crm_test_hashes
 
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt \
-		merge-results-29-oct-2007.txt x.bak
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 
+
 
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \

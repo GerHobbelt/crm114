@@ -1498,9 +1498,9 @@ long strnhash(const char *str, long len)
 #if 0
 crmhash_t strnhash(const char *str, long len)
 #endif
-static crmhash_t old_crm114_strnhash(const char *str, long len)
+static crmhash_t old_crm114_strnhash(const char *str, size_t len)
 {
-    long i;
+    size_t i;
     // unsigned long hval;
     int32_t hval;
     crmhash_t tmp;
@@ -1611,7 +1611,7 @@ static crmhash64_t ger_1_strnhash64(const char *str, size_t len)
 }
 
 
-crmhash_t strnhash(const char *str, long len)
+crmhash_t strnhash(const char *str, size_t len)
 {
 	switch (selected_hashfunction)
 	{
@@ -2509,11 +2509,11 @@ void *crm_get_header_for_mmap_file(void *addr)
 
 
 unsigned char *crm_strntrn_invert_string(unsigned char *str,
-        long                                            len,
-        long                                           *rlen)
+        int len,
+        int *rlen)
 {
     unsigned char *outstr;
-    long i, j;
+    int i, j;
 
     //  create our output string space.  It will never be more than 256
     //  characters.  It might be less.  But we don't care.
@@ -2579,10 +2579,10 @@ unsigned char *crm_strntrn_invert_string(unsigned char *str,
 //    We return the new string, and the new length in rlen.
 //
 unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
-        long                                             len,
-        long                                            *rlen)
+        int len,
+        int *rlen)
 {
-    long j, k, adj;
+    int j, k, adj;
     unsigned char *r;
 
     //    How much space do we need for the expanded-hyphens string
@@ -2671,22 +2671,22 @@ unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
 //       This routine returns a long >=0 strlen on success,
 //        and a negative number on failure.
 
-long strntrn(
+int strntrn(
         unsigned char *datastr,
-        long          *datastrlen,
-        long           maxdatastrlen,
+        int *datastrlen,
+        int maxdatastrlen,
         unsigned char *fromstr,
-        long           fromstrlen,
+        int fromstrlen,
         unsigned char *tostr,
-        long           tostrlen,
-        long           flags)
+        int tostrlen,
+        uint64_t flags)
 {
-    long len = *datastrlen;
-    long flen, tlen;
+    int len = *datastrlen;
+    int flen, tlen;
     unsigned char map[256];
     unsigned char *from = NULL;
     unsigned char *to = NULL;
-    long j, k, last;
+    int j, k, last;
 
     //               If tostrlen == 0, we're deleting, except if
     //                 ASLO fromstrlen == 0, in which case we're possibly
@@ -2735,7 +2735,7 @@ long strntrn(
         else
         {
             unsigned char *temp;
-            long templen;
+            int templen;
             temp = crm_strntrn_expand_hyphens(fromstr + 1, fromstrlen - 1, &templen);
             if (!temp)
                 return -1;
@@ -2758,7 +2758,7 @@ long strntrn(
         else
         {
             unsigned char *temp;
-            long templen;
+            int templen;
             temp = crm_strntrn_expand_hyphens(tostr + 1, tostrlen - 1, &templen);
             if (!temp)
                 return -1;

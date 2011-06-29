@@ -1618,7 +1618,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //     belonging to a particular type.
     //     learn <flags> (classname) /word/
     //
-    long j, k;
+    int j, k;
     int i;
     ENTROPY_FEATUREBUCKET_STRUCT *nodes;                   //  the node array (after mapping!)
     long nodeslen = 0;                                     //  how many nodes do we have?
@@ -1696,7 +1696,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
-#if 10
+#if 0
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -1706,7 +1706,14 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         j++;
     CRM_ASSERT(j <= hlen);
 #else
- crm_nextword(htext, 0, hlen, &i, &j);
+ if (!crm_nextword(htext, hlen, 0, &i, &j) || j == 0)
+ {
+            fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)hlen,
+					htext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < hlen);
     CRM_ASSERT(j <= hlen);
@@ -2495,10 +2502,10 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int64_t  *totalbits[MAX_CLASSIFIERS];
 
     long succhash;
-    long vbar_seen;     // did we see '|' in classify's args?
+    int vbar_seen;     // did we see '|' in classify's args?
     long maxhash;
-    long fnstart, fnlen;
-    long fn_start_here;
+    int fnstart, fnlen;
+    int fn_start_here;
     long textoffset;
     long textmaxoffset;
     long bestseen;
@@ -2519,7 +2526,8 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     svlen = apb->p2len;
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
     {
-        long vstart, vlen;
+       int  vstart, vlen;
+
         crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;

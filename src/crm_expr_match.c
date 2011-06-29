@@ -26,30 +26,30 @@
 //        And the match routine.  What a humungous mess...
 int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-    long i;
-    long j;
-    long k;
-    long mc;
+    int i;
+    int j;
+    int k;
+    int mc;
     char pch[MAX_PATTERN];
-    long pchlen;
+    int pchlen;
     char errstr[MAX_PATTERN + 128];
     char *mdwptr;
     regex_t preg;
     int casep, nomultilinep, absentp, fromp, extended_regex_p, literal_pattern_p;
     int cflags, eflags;
     char *mtext;
-    long mtextlen;
+    int mtextlen;
     long textoffset;
     char bindable_vars[MAX_PATTERN];
-    long bindable_vars_len;
+    int bindable_vars_len;
     char box_text[MAX_PATTERN];
     regmatch_t matches[MAX_SUBREGEX];
     long nmatches;
-    long source_start;
-    long source_len;
-    long vtextoffset, vtextend, vtextstartlimit;
-    long vpmstart, vpmend;
-    long vmidx;
+    int source_start;
+    int source_len;
+    int vtextoffset, vtextend, vtextstartlimit;
+    int vpmstart, vpmend;
+    int vmidx;
 
     //    And it all comes down to this, right here.  Matching a regex.
     //    This is the cruxpoint of the whole system.  We parse the

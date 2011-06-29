@@ -1,0 +1,1226 @@
+#! @CRM@
+# --(spam good repeat streak random worst verbose validate thick reload collapse report_header rfile goodcss spamcss config fileprefix)
+#
+#        A TUNE-type mailtrainer; repeat is the maximum number of
+#        repeated executions.  This filter uses the same config as 
+#        mailfilter.crm.  Good and spam are trained alternately until
+#        each file has been examined and possibly trained at least REPEAT
+#        times, or until a run of at least STREAK length has been correctly
+#        classified.  If RANDOM is set, then randomize the order of the 
+#        files being trained on each pass. 
+#
+#        Worst means to rerun the entire set, and then retrain only the
+#        N worst errors.  In the limit, this is the single worst error.
+#        This is slow but yields very "tight" and accurate files.
+#
+#    Copyright (C) 2002-2007 William S. Yerazunis; licensed under the 
+#    GNU Public License (GPL) version 2.  A copy of this license is included 
+#    in the distribution media, or obtain one from www.fsf.org .
+#
+#   Note to BSD users - you MUST remove EVERYTHING on the first line
+#   of this program from the first "-" to the end of the first line
+#   (including the "-" sign itself) or you will not get what you
+#   expect.  This is due to a bug in the BASH code on BSD.  
+#
+#
+# --->>>    Basic Design Philosophy ( do these IN ORDER ) - note
+#               that this is different for the worst strategy.
+#
+#    1) get directory listing of the good directory
+#	
+#    2) get directory listing of the bad directory
+#
+#    3) for repcount < repeat (N passes through entire set)
+#       and cleanrun < streak (M tests without a single error)
+#        
+#      3a) cleanrun++, 
+#	test one from good ; if less than thresh, learn good, cleanrun=0.
+#
+#      3b) cleanrun++,
+#        test one from spam; if more than -thresh, learn spam, cleanrun=0
+#
+#      3c) repcount++
+#
+#    4) email results to spam results and out to stdout as well.
+#
+##############################################################
+#
+window
+#
+#    ---  uncomment this if you want to include a "forced" 
+#         configuration file  ---
+# insert mailfilterconfig.crm
+#
+#
+#    --- These vars must have a value, or else we'll get errors ----
+#
+isolate (:classifier_reason:) /no reason yet/
+#
+isolate (:classify_status:) //
+#
+isolate (:our_exit_code:) /0/
+#
+isolate (:stats:) / pR: 0.000000 /
+#
+isolate (:pr:) / pR: 0.00000/
+#
+isolate (:subj_text:) / (None) /
+#
+isolate (:add_extra_stuff:) //
+#
+isolate (:decision_length:) /4096/
+#
+#      Isolate these email addresses, and give them values, 
+#      in case the user doesn't.
+isolate (:reject_address:) //
+isolate (:fail_priority_mail_to:) //
+isolate (:fail_blacklist_mail_to:) //
+isolate (:fail_SSM_mail_to:)  //
+isolate (:log_rejections:) //
+#
+#      this ISOLATE will guarantee that :fileprefix: exists, and keep it's
+#      prior (commandline) value if it does, and an empty string if it doesnt
+isolate (:fileprefix:) <default> //
+isolate (:spamcss:) <default> /spam.css/
+isolate (:goodcss:) <default> /nonspam.css/
+#
+#       This ISOLATE will guarantee that :force: will exist, and keep the
+#       commandline value ("SET") , or the null string if the user doesn't 
+#       use --force on the command line.
+isolate (:force:)
+#
+#       This ISOLATE will guarantee that :unlearn: will exist, and will keep
+#       the commandline value ("SET") or the null string if the user doesn't
+#       use --unlearn on the command line.
+isolate (:unlearn:)
+#
+#       now, :clf: is the classify & learn flags; note that we have two 
+#       separate flags here in a bizarre chain.  The reason is that :unlearn:
+#       can have the value "SET", whereas :rft: needs "refute"
+isolate (:clf:) //
+#
+{
+    isolate (:_arg2:)
+    match [:_arg2:] /--help/
+    output / This is CRM114's mailtrainer, which builds .css statistics \n/
+    output / files.  It uses DSTTTR and mailfilter.cf configuration setup.  \n/
+    output / You *must* supply at least --good and --spam to run.\n/
+    output / Command Format: \n/
+    output /      .\/mailtrainer.crm [options]* \n /
+    output /  Required options: \n/
+    output /    --spam=\/spam\/directory\/    (one msg per file) \n/
+    output /    --good=\/good\/directory\/    (one msg per file) \n/
+    output /  Optional options: \n/
+    output /    --spamcss=spam_statistics.css \n/
+    output /    --goodcss=good_statistics.css \n/
+    output /    --repeat=N   (limit how many passes, default 5) \n/
+    output /    --streak=N   (exit on N perfect, default 10000) \n/
+    output /    --random     (train in random order, default not) \n/
+    output /    --worst=N    (train only the N worst errors per pass. SLOW!)\n/
+    output /    --verbose    (tell me more.)  \n/
+    output /    --validate=regex  (Don't train any filename matching regex;\n/
+    output /                 instead, hold them back and make a final test \n/
+    output /                 pass with those hold-backs at the end.) \n/
+    output /    --thick=N.N  (TTT value; default 10.0 for OSB is good)\n/
+    output /    --reload     (if not randomizing, whenever one set of files \n/
+    output /                 is exhausted, reload it.  Default- don't.)\n/
+    output /    --collaspe   (collapse intermediate reporting lines)\n/
+    output /    --report_header='string' (include string in the header)\n/ 
+    output /    --config=file (set config file.  Default is mailfilter.cf)\n/
+    output /    --fileprefix=dir (expect all files in "fileprefix")\n/
+    output /\n That's all!  Enjoy.  \n/    
+    exit
+}
+
+
+#####################################################################
+#
+#       This is the code to read the per-user configuration.  Note
+#       that because this happens during the run, it will _override_
+#       any comand line arguments that get set.
+{
+    isolate (:option_txt:)
+    isolate (:ev:)
+    isolate (:verbose_startup:)
+    isolate (:config:)
+    #   
+    #    Part 1  - read in the options/configuration file
+    #	
+    {
+        {
+                match [:config:] /.+/
+                input [:*:config:] (:option_txt:)
+        }
+        alius
+        {
+		#      read in the standard mail filter configuration file.
+               input [:*:fileprefix:mailfilter.cf] (:option_txt:)
+        }
+    }
+#
+#
+#   reset loop for matching to start of :option_txt:
+	match [:option_txt:] //
+
+#   and loop till there are no more options.
+	{
+		#   find a line that looks like a parameter setting...
+		match < fromend nomultiline > (:line: :name: :value:) \
+		  [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
+		{
+			#    don't execute the assign if there's 
+			#    a # at the start of the line.
+			match <absent> [:name:] /^\x23/
+			{
+				#     Verbose startup?
+				match [:verbose_startup:] /SET/
+				output / :*:name:\n    :*:value:\n/
+			}
+			isolate (:*:name:) /:*:value:/
+		}
+		liaf
+	} 
+}
+#
+#    Do a quick check- has the password been changed or not?  If it's
+#    still the default, put in something that will be well-nigh unguessable
+#    (esp. since it will contain recieved headers that the sender cannot
+#    see nor control.)
+{
+	match [:spw:] /DEFAULT-PASSWORD/
+	#  yes, it's the same as default.  So we scramble it just so
+	#  nobody can hack in 
+	hash (:spw:) /:*:_env_string::*:_dw:/
+}
+
+#############################################################
+#            
+#         Set up the addresses that we might need to mail to
+#
+isolate (:reject_address:) /:*:general_fails_to:/
+{
+	match [:fail_priority_mail_to:] <absent> /[[:graph:]]/
+	alter (:fail_priority_mail_to:) /:*:general_fails_to:/
+}
+{
+	match [:fail_blacklist_mail_to:] <absent> /[[:graph:]]/
+	alter (:fail_blacklist_mail_to:) /:*:general_fails_to:/
+}
+{
+	match [:fail_SSM_mail_to:] <absent> /[[:graph:]]/
+	alter (:fail_SSM_mail_to:) /:*:general_fails_to:/
+}
+#
+#      Does the user want us to log all incoming mail?  This is handy for
+#      testing and auditing purposes.
+{
+	match [:log_to_allmail.txt:] /yes/
+	output [:*:fileprefix:allmail.txt] <append> /:*:_dw:/
+}
+
+
+###########################################################
+#    Set up defaults for mail training...
+#    
+isolate <default> (:spam:)  /ERROR!!!/
+isolate <default> (:good:)  /ERROR!!!/
+isolate <default> (:repeat:)   /1/
+isolate <default> (:streak:)   /10000/
+isolate <default> (:random:)   /no/
+isolate <default> (:worst:)    /no/
+isolate <default> (:verbose:)  /no/
+isolate <default> (:validate:) //    # note that this is a bit tricky
+isolate <default> (:reload:)   /no/
+isolate <default> (:collapse:) //
+isolate <default> (:report_header:) //
+isolate <default> (:rfile:)    //
+
+##### if --thick is specified, it overrides the :thick_threshold from *.cf  
+isolate <default> (:thick:)    /no/
+{
+	match <absent> [:thick:] /^no$/
+	alter (:thick_threshold:) /:*:thick:/
+}
+
+#   and set up our bookkeeping variables
+#
+isolate (:throughall:) /0/
+isolate (:cleanrun:) /0/
+isolate <default> (:spamfiles:) //
+isolate <default> (:goodfiles:) //
+isolate (:filename:) //
+isolate (:lfilename:) //
+isolate (:worst_results:) //
+isolate (:worst_retrains:) //
+isolate (:z:) //
+
+isolate (:exp_text: :a: :b: :c: :h:)
+
+isolate (:m_text: :b_text: :i_text: :comment: :commentbin: :rewrites:)
+
+
+###########################################################
+#
+#       set gooddir and spamdir to the directory parts of the spec
+#
+match [:good:] (:gooddir:) /^.*\//
+match [:spam:] (:spamdir:) /^.*\//
+
+
+
+#############################################################\
+#
+#       Start our report:
+#
+isolate (:report:) /     MailTrainer Report  \n:*:report_header:\n\n/
+#
+alter (:report:) /:*:report: Commanded on: \n/
+alter (:report:) /:*:report:  spam source directory: :*:spamdir: \n/
+alter (:report:) /:*:report:  good source directory: :*:gooddir: \n/
+alter (:report:) /:*:report:  classifier config:     :*:clf:  \n/
+alter (:report:) /:*:report:  threshold thickness:   :*:thick_threshold: \n/
+alter (:report:) /:*:report:  max repetitions:       :*:repeat:  \n/
+alter (:report:) /:*:report:  stop when a streak of: :*:streak:  \n/
+alter (:report:) /:*:report:  randomization is:      :*:random:  \n/
+alter (:report:) /:*:report:  worst is:              :*:worst: \n/
+alter (:report:) /:*:report:  verbose is:            :*:verbose: \n/
+alter (:report:) /:*:report:  auto-reload:           :*:reload: \n/
+alter (:report:) /:*:report:  concise log file:      :*:rfile: \n/
+
+{
+   {
+	match [:validate:] /./
+	alter (:report:) /:*:report:  validation regex:      :*:validate: \n/
+   }
+   alius
+   {
+	alter (:report:) /:*:report:  validation regex:      (none) \n/
+	alter (:validate:) /[^\x00-\xFF]/    # this regex never matches.
+   }
+}
+#
+
+{        #  do we do an output report at the top?
+    match [:collapse:] <absent> /SET/
+    output /:*:report:/
+}
+
+{
+    #  do we output the report header anyway
+    match [:report_header:] /SET/
+    output /:*:report:/
+    {
+	# do we have an rfile?
+	match [:rfile:] /./
+	output <append> [:*:rfile:] /:*:report:/
+    }
+}
+
+
+###########################################################
+#
+#
+
+############################################################
+#
+#       Get the good directory and the spam directory files
+#
+{
+	syscall /ls :*:spam: / () (:spamfiles:)
+	# output /spamfiles:  ':*:spamfiles:'\n/
+	trap /.*/ (:reason:)
+	{
+		output / :*:reason:/
+		output /Unable to read your spamdir at :*:spamdir: \n/
+		alter (:report:) /:*:report: Unable to read your spamdir at :*:spamdir: \n/
+		goto /:error_exit:/
+	}
+}
+
+{
+	syscall /ls :*:good: / () (:goodfiles:)
+	# output /goodfiles:  ':*:goodfiles:'\n/
+	trap /.*/ (:reason:)
+	{
+		output /:*:reason:/
+		output /Unable to read your gooddir at :*:gooddir: \n/
+		alter (:report:) /:*:report: Unable to read your gooddir at :*:gooddir: \n/
+		goto /:error_exit:/
+	}
+}
+
+#################################################################
+#
+#     If --random, then we create the randomized interleaved list.
+#     The list is the full filenames of the spam and good files,
+#     each line is prefixed by S for Spam and G for Good
+{
+    match [:random:] /SET/
+    isolate (:randfiles:) //
+    #  put the full filename for the spam files first
+    match [:spamfiles:] //
+    {
+	match [:spamfiles:] <fromend> /[[:graph:]]+/ (:f:)
+	alter (:randfiles:) /:*:randfiles:S:*:spam::*:f:\n/
+	liaf
+    }
+    # and the full filename of the good files next
+    match [:goodfiles:] //
+    {
+	match [:goodfiles:] <fromend>  /[[:graph:]]+/ (:f:)
+	alter (:randfiles:) /:*:randfiles:G:*:good::*:f:\n/
+	liaf
+    }
+    # output / Full set of files, before sort-randomization: \n:*:randfiles:\n/
+    #    now randomize the files.  NOTE that this requires a shuffler
+    #    command somewhere.
+    syscall (:*:randfiles:) (:randfiles:) /:*:fileprefix::*:trainer_randomizer_command: / 
+    # output /\n Full set of files, after randomize: \n:*:randfiles:\n/
+
+}
+
+#################################################################
+#
+#          Create spam.css and nonspam.css if they don't exist.
+#  (just learn a newline into each one)
+    
+learn [:_nl:] <:*:clf:> /:*:lcr:/  \
+	(:*:fileprefix::*:goodcss:)
+
+learn [:_nl:] <:*:clf:> /:*:lcr:/  \
+	(:*:fileprefix::*:spamcss:)
+
+
+####################################################################
+#
+#      Top of the "entire directory" loop
+:directory_loop_top:
+#
+###################################################################
+{
+	{
+		eval /:@: :*:repeat: > :*:throughall: :/
+		alter (:report:) /:*:report: \n\n Running all files\n/	
+		output / \nRunning all files \n/
+	}
+	alius
+	{
+		alter (:report:) /:*:report:\n\nFinished :*:repeat: passes \n/
+		output / \n Finished :*:repeat: passes.  \n/
+		goto /:good_exit:/
+	}
+}
+########################################################################
+#
+#    Set up training lists for this pass.  We'll be chopping them up
+#    presently.
+# 
+#   the spam training list for this pass:
+isolate (:stl:) /:*:spamfiles:/
+#
+#   the good training list for this pass:
+isolate (:gtl:) /:*:goodfiles:/
+#
+#   the random training list for this pass:
+{
+	match [:random:] /SET/
+	isolate (:rtl:) /:*:randfiles:/
+}
+#
+
+{
+	match <absent> [:worst:] /no/
+	output /\nTake a break.  This will require some time to finish. \n\n/
+	{
+		match [:worst:] /SET/   #  if no count set, default is 10
+		alter (:worst:) /10/  
+	}  
+	goto /:worst_training:/
+}
+
+###################################################################
+#    the top of the one-file-pair loop
+###################################################################3
+:one_file_pair_top:
+
+
+##############################################################
+#   Are we in "alternate one each" mode, or random shuffled mode?
+#
+{
+    {
+	match [:random:] /SET/
+	#   get a filename  
+	#   Remember that random-mode filenames are full-length already.
+	call /:clip_filename:/ [:rtl:] (:lfilename:)
+	match [:lfilename:] /(.)(.*)/ (:: :ftype: :filename:)
+	#  Don't run it if it's in the "validate" set
+	match <absent> [:filename:] /:*:validate:/
+	{
+	    match [:ftype:] /G/
+	    output / \nGood :*:filename: /
+	    {        #   Maybe it's a qualified name, maybe it's not
+		input [:*:filename: 0 :*:decision_length:]
+		trap /unable to read-open/
+		output /\n COULDN'T READ THE GOOD FILE ':*:filename:' \n/
+		alter (:_dw:) /:*:_nl:/
+	    }
+	    call /:do_mutilations:/ # leaves the result in :m_text:
+	    #    output / M_TEXT: :*:m_text:\n/
+            call /:test_train_good:/
+	}
+	alius
+	{
+	    output / \nSpam :*:filename: /
+	    {        #   Maybe it's a qualified name, maybe it's not
+		input [:*:filename: 0 :*:decision_length:]
+		trap /unable to read-open/
+		output /\n COULDN'T READ THE SPAM FILE ':*:filename:'\n/
+		alter (:_dw:) /:*:_nl:/
+	    }
+	    call /:do_mutilations:/ # leaves the result in :m_text:
+	    #    output / M_TEXT: :*:m_text:\n/
+            call /:test_train_spam:/
+	}
+    }
+    alius
+    {
+	match <absent> [:random:] /SET/
+	#  No, we are in alternate mode.  Do 1 good, then 1 spam file.
+	#
+	# Get the first good file.  Note that if no files left, the match
+	#  just falls through and we don't do anything with this.
+	{
+	    call /:clip_filename:/ [:gtl:] (:filename:)
+	    match [:filename:] /./
+	    #  check - is this file in the validate set ?  If no, proceed.
+	    match <absent> [:filename:] /:*:validate:/
+	    output / \nGood file :*:filename: /
+	    {	     #   Maybe it's a qualified name, maybe it's not
+		input [:*:gooddir::*:filename: 0 :*:decision_length:]
+		trap /unable to read-open/
+		input [:*:filename: 0 :*:decision_length:]
+		trap /unable to read-open/
+		output /\n COULDN'T READ THE GOOD FILE ':*:filename:'\n/
+		alter (:_dw:) /:*:_nl:/
+	    }
+	    call /:do_mutilations:/ # leaves the result in :m_text:
+	    #    output / M_TEXT: :*:m_text:\n/
+	    call /:test_train_good:/
+	}
+	#  repeat for the first spam file.  Again, if the match fails, there
+	#   were no filenames left, so we just fall through.
+	{
+	    call /:clip_filename:/ [:stl:] (:filename:)
+	    match [:filename:] /./
+	    #  check - is this file in the validate set ?  If no, proceed.
+	    match <absent> [:filename:] /:*:validate:/
+	    output / \nSpam file :*:filename: /
+	    {              #   maybe it's a qualified name, maybe it's not
+		input [:*:spamdir::*:filename: 0 :*:decision_length:] 
+		trap /unable to read-open/
+		input [:*:filename: 0 :*:decision_length:]
+		trap /unable to read-open/
+		output /\n COULDN'T READ THE SPAM FILE ':*:filename:'\n/
+		alter (:_dw:) /:*:_nl:/
+	    }
+	    call /:do_mutilations:/  # leaves the result in :m_text:
+	    call /:test_train_spam:/
+	}
+    }
+}
+	
+#       Do we exit, or go 'round again?
+#
+#    First check on a long-enough streak of good classifications.
+{
+	eval /:@: :*:cleanrun: > :*:streak: : /
+	alter (:report:) /:*:report: \n Got a clean run of :*:cleanrun: \n  Exiting now. \n\n/
+	output /\nExcellent!  Got a streak of :*:cleanrun: without errors. \n/
+	output / Finishing up. \n/
+	goto /:good_exit:/
+}
+
+#          did we get through all of the file names?
+#
+{                            #  Most common case - neither fileset is empty
+    {
+	match [:random:] /SET/
+	{
+	    match [:rtl:] /./
+	    goto /:one_file_pair_top:/
+	}
+    }
+    alius
+    {
+	match [:gtl:]  /./
+	match [:stl:]  /./
+	goto /:one_file_pair_top:/
+    }
+}
+#
+#        If a fileset is empty, and reload is set, we reload that fileset
+#          independently and immediately
+{
+	match [:reload:] /SET/
+	{
+		match [:gtl:] <absent> /./
+	        eval (:throughall:) /:@: :*:throughall: + 0.5 :/
+		{
+			eval /:@: :*:throughall: < :*:repeat: : /
+			isolate (:gtl:) /:*:goodfiles:/
+			alter (:report:) /:*:report: \n\n Repeating good files\n/
+			output / \nRepeating good files \n/
+			goto /:one_file_pair_top:/
+		}
+		alius
+		{
+			goto /:good_exit:/
+		}
+	}
+	{
+		match [:stl:] <absent> /./
+	        eval (:throughall:) /:@: :*:throughall: + 0.5 :/
+		{
+			eval /:@: :*:throughall: < :*:repeat: : /
+			isolate (:stl:) /:*:spamfiles:/
+			alter (:report:) /:*:report: \n\n Repeating spam files\n/
+			output / \nRepeating spam files \n/
+			goto /:one_file_pair_top:/
+		}
+		alius
+		{
+			goto /:good_exit:/
+		}
+	}
+
+}
+	
+#         yep; through all the filenames.  Increment the :throughall: counter
+#         and maybe go through it all again.
+{
+	eval (:throughall:) /:@: :*:throughall: + 1 :/
+	goto /:directory_loop_top:/
+}
+
+#          All done now with repeats through the loop.  
+#           Now we update the report and we're done.
+alter (:report:) /:*:report: \n\n Finished with :*:repeat: passes. \n\n  Training complete!  \n\n\n  /
+
+goto /:good_exit:/
+
+
+	
+
+##############################################################
+#
+#      Grab the text that we're going to actually work with.
+#
+
+:do_mutilations:
+
+#    
+#      We copy this into m_text - the "mutilated text".  It 
+#      will become an annotated _copy_  of the incoming text, 
+#      with whatever changes we think will help us classify better.
+#
+#      We clip m_text to be the first :decision_length: characters of
+#      the incoming mail.
+#
+match (:m_text:) [:_dw: 0 :*:decision_length:] /.*/
+isolate (:m_text:) 
+
+#
+#      :b_text: is the text with base64's expanded.
+isolate (:b_text:) /:*:m_text:/
+#
+#      :i_text: is the text with Hypertextus Interruptus removed. 
+isolate (:i_text:) /:*:m_text:/
+#
+#
+#
+#	do we do any expansions?
+{
+
+    #   expansion 1: - do we perform base64 expansions?
+    {
+          {
+                match [:do_base64:] /yes/
+                {
+                    #  yes, expand base64's if there are any
+                    #
+                    #    Note: some spams don't even bother to use
+                    #    a 'Content-Transfer-Encoding marker,
+                    #    and even fewer use Content-Type: text/whatever
+                    #    so we have to sort of wing it, when to expand
+                    #    what _might_ be base64 and when to ignore it.
+                    #    For now, if it says it's a base64, it gets
+                    #    expanded, no matter what the type.  Maybe
+                    #    someday someone will put in a lockout for
+                    #    things like .jpg files, .doc files, etc.
+                    # 
+                    #isolate (:exp_text: :a: :b: :c: :h:)
+
+                    match [:b_text:] <nocase> (:a: :h: :b:) \
+                        /(Content-Transfer-Encoding): base64(.*)/
+
+
+		    #match (:a:) <nocase> \
+		    #	/Content-Transfer-Encoding: base64((.)*)/
+
+		    #match [:a:] <nocase> (:h: :b:) \
+		    #	/base64(.*)/
+
+                    match (:c:) [:b:]  \
+                        /([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
+                    #
+
+                    syscall (:*:c:) (:exp_text:) /:*:mime_decoder: /
+                    #   and stuff the result back into b_text for
+                    #   classification right in context.
+                    alter (:c:) /:*:exp_text:/
+                    #   and mark this piece of mime as "prior".
+                    alter (:h:) /Content-Transfer-Prior-Encoding/
+                    #   repeat till no more Mime base64 encodings 
+                    liaf
+                }
+        }
+        alius
+        {
+            #   if no base64 expansions enabled, empty out :b_text:
+            #            
+            alter (:b_text:) //
+        }
+    } 
+    #
+    #   If we had expansions, bust the html contents out of them, otherwise
+    #   ignore b_text as it's redundant
+    {
+        {
+            match [:b_text:] <nocase> /Content-Transfer-Prior-Encoding/
+            alter (:i_text:) /:*:b_text:/
+        }
+        alius
+        {
+            #   if :b_text: _didn't_ have a base64, it's useless
+            alter (:b_text:) //
+        }
+    }
+    #   expansion 2 :  do we bust HTML comments ( a.k.a. 
+    #    hypertextus interruptus) out?
+    {
+        match [:undo_interruptus:] /yes/
+        alter (:commentbin:) //
+        {
+            match [:i_text:] (:comment:) /<!--([^-]|-[^-]|--[^>])*-->/
+            alter (:commentbin:) /:*:commentbin: :*:comment:/
+            alter ( :comment: ) //
+            liaf
+        }
+        #     if we had at least 80 characters worth of comments, then
+        #     it's worth using the decommented text, else not.
+        #     (this my personal judgement call)
+        {
+             {
+                  match [:commentbin:] /(.){80,}/
+             }
+             alius
+             {
+                  alter (:i_text:) //
+             }
+    	}
+    }
+}
+#    and reassemble the mucked-over text into the :m_text: var, always
+#    with the base64's expanded, then a second decommented copy 
+#
+{
+    alter (:m_text:) \
+      /:*:m_text: :*:_nl: :*:b_text: :*:_nl: :*:i_text: :*:_nl:/
+}
+
+#########################################################   
+#
+#   Do we want to do any rewrites before running?  
+#    
+{
+   match [:rewrites_enabled:] /yes/
+#
+# NOTE  CHANGE THIS ONE TO ISOLATE AND THE PROGRAM FAILS!
+#   isolate (:rewrites:) //
+    alter (:rewrites:) //
+
+   input (:rewrites:) [:*:fileprefix:rewrites.mfp]
+#    reset matching on rewrites to start of string - if no string, no more
+#    processing of rewrites !!
+   match [:rewrites:] //
+   #
+   #
+   {
+       #    Grab the next regex; turn the one-per-line patterns into a 
+       #    regex and a replacement string.
+       #    First, do the line-spanning regexes.
+       match <fromend nomultiline> (:ch: :fr1: :to:) [:rewrites:] /(.+)>-->(.*)/
+       #    see if the "fr" regex matches anywhere
+       {
+	   match [:m_text:] (:place:) /:*:fr1:/
+	   #  Yep, it matched... alter it and do it again
+	   #
+	   alter (:place:) /:*:to:/
+	   liaf
+       }
+       #   Nope, didn't match... grab the next regex and try again,
+       liaf
+   }
+   #
+   #     reset back to the start of the rewrites.
+   #
+   match [:rewrites:] //
+   #
+   #      and do it again for non-line-spanners
+   {
+       #    Go through and do it again, except this time do it for
+       #    the non-line-spanning regexes.
+       match <fromend nomultiline> (:ch: :fr2: :to:) [:rewrites:] /(.+)>->(.*)/
+       #    see if the "fr" regex matches anywhere
+       {
+	   match [:m_text:] <nomultiline> (:place:) /:*:fr2:/
+	   #  Yep, it matched... alter it and do it again
+	   #
+	   alter (:place:) /:*:to:/
+	   liaf
+       }
+       #   Nope, didn't match... grab the next regex and try again,
+       liaf
+   }
+}    #  done with rewrites.
+
+	#  all done; m_text now has the fully mutilated text.
+return
+
+#############################################################
+#        Get a filename off the front of a list, whacking the list.
+#############################################################
+#
+:clip_filename: (:namelist:)
+{
+	{
+		isolate (:filename:) //     # start with an empty filename
+		match [:*:namelist:] /([[:print:]]+)\n/ (:wholeline: :filename:)
+		match [:filename:] /./      # assure filename is non-NULL
+		isolate (:filename:)
+		alter (:wholeline:) //      # surgically delete the found filename
+		# output /Got the filename :*:filename:/
+	}
+	alius
+	{
+		alter (:filename:) //
+	}
+}
+return /:*:filename:/
+
+#############################################################
+#       Get the pR of whatever (passed in)
+#############################################################
+#
+:get_pr: (:text:)
+{
+	{
+		#output /Good css: ':*:fileprefix::*:goodcss:'\n/
+		#output /spam css:    ':*:fileprefix::*:spamcss:' \n/
+		#output /lcr:         ':*:lcr:' \n/
+		#output /clf:         ':*:clf:' \n/
+		#output /text:        ':*:text:' \n/
+	        classify <:*:clf:> [:*:text:] /:*:lcr:/ \
+	          (:*:fileprefix::*:goodcss: :*:fileprefix::*:spamcss: ) \
+        	  (:classify_status:)
+	}
+
+	###  output /\n:*:classify_status:\n/
+	match [:classify_status:] <nomultiline> \
+         /^#0.* pR: ([-. 0-9]+)/ ( :: :pr:)
+}
+return (:*:pr:)
+
+
+##############################################################
+#       The actual code that does a CLASSIFY and maybe a LEARN
+#
+#     This assumes the input text is in :m_text:
+#
+##############################################################
+#
+
+:test_train_good:
+
+{
+	#   Classify the text
+	call /:get_pr:/ [:m_text:]
+	{
+		eval /:@: :*:pr: < :*:thick_threshold: : /
+		{
+			{
+				eval /:@: :*:pr: > 0 :/
+				output / -- (:*:pr:) train /
+			}
+			alius
+			{
+				output / ER (:*:pr:) train /
+			}
+		}
+		alter (:report:) /:*:report: Training GOOD on :*:filename: (pR was :*:pr:) \n /
+
+		learn [:m_text:] <:*:clf:> /:*:lcr:/  \
+			(:*:fileprefix::*:goodcss:)
+
+		alter (:cleanrun:) /0/
+		#   REclassify to see if we're now "good"; if not, refute!
+		call /:get_pr:/ [:m_text:]
+        	{
+		        eval /:@: :*:pr: < :*:thick_threshold: : /
+			{
+				match [:clf:] <absent nocase> /hyperspace/
+        	        	output /& refute /
+                		alter (:report:) /:*:report: & refute/
+
+                		learn [:m_text:] <:*:clf: refute> /:*:lcr:/  \
+                        	  (:*:fileprefix::*:spamcss:)
+
+			}
+			alius
+			{
+        	        	output /& repeat /
+                		alter (:report:) /:*:report: & repeat/
+                		learn [:m_text:] <:*:clf:> /:*:lcr:/  \
+                        	  (:*:fileprefix::*:goodcss:)
+			}
+		}
+		{
+		    match [:collapse:] <absent> /SET/
+		    output /\n/
+		}
+	}
+	alius
+	{
+		eval (:cleanrun:) /:@: :*:cleanrun: + 1:/
+	}
+}
+return
+
+:test_train_spam:
+{
+    #   Classify the text
+    call /:get_pr:/ [:m_text:]
+    {
+	eval /:@: :*:pr: > (0 - :*:thick_threshold:) : /
+	{
+	    {
+		eval /:@: :*:pr: < 0 :/
+		output / -- (:*:pr:) train /
+	    }
+	    alius
+	    {
+		output / ER (:*:pr:) train /
+	    }
+	}
+	alter (:report:) /:*:report: Training SPAM on :*:filename: (pR was :*:pr:) \n /
+
+	learn [:m_text:] <:*:clf:> /:*:lcr:/  \
+		(:*:fileprefix::*:spamcss:)
+
+	alter (:cleanrun:) /0/
+	#   REclassify to see if we're now "good"; if not, refute!
+	call /:get_pr:/ [:m_text:]
+	{
+	    eval /:@: :*:pr: > (0 - :*:thick_threshold:) : /
+	    {
+		match [:clf:] <absent nocase> /hyperspace/
+		output /& refute /
+		alter (:report:) /:*:report: & refute/
+		learn [:m_text:] <:*:clf: refute> /:*:lcr:/  \
+			(:*:fileprefix::*:goodcss:)
+	    }
+	    alius
+	    {
+		output /& repeat /
+		alter (:report:) /:*:report: & repeat/
+		learn [:m_text:] <:*:clf:> /:*:lcr:/  \
+			(:*:fileprefix::*:spamcss:)
+	    }
+	}
+	{
+	    match [:collapse:] /SET/ <absent>
+	    output /\n/
+	}
+    }
+    alius
+    {
+	eval (:cleanrun:) /:@: :*:cleanrun: + 1:/
+    }
+}
+return
+
+
+###################################################
+:error_exit:
+{
+	output /\n\n Something went very wrong.  You might want to debug.\n\n/
+	exit /1/
+}
+
+#####################################################
+:good_exit:
+{
+	# did the user ask for a validation pattern?
+	#   ( this is the never-match pattern )
+	match [:validate:] <absent literal> /[^\x00-\xFF]/ 
+	isolate (:spamtested:) /0/
+	isolate (:spampassed:) /0/
+	isolate (:goodtested:) /0/
+	isolate (:goodpassed:) /0/
+	isolate (:tottested:) /0/
+	isolate (:totpassed:) /0/
+	isolate (:overall:) /0/
+	isolate (:stl:) /:*:spamfiles:/		
+	isolate (:gtl:) /:*:goodfiles:/
+	output /\n   Starting validation run, pattern ':*:validate:' \n/
+        {
+                call /:clip_filename:/ [:gtl:] (:filename:)
+                match [:filename:] /./
+                {
+                #  check - is this file in the validate set ?  If YES, proceed
+		  match [:filename:] /:*:validate:/
+	          input [:*:gooddir::*:filename: 0 :*:decision_length:]
+	          call /:do_mutilations:/
+       		  call /:get_pr:/ [:m_text:]
+		  #  Keep track of our statistics
+	          {
+		    # eval (:pr:) /:@: 0 - :*:pr: :/
+		    eval (:goodtested:) /:@: :*:goodtested: + 1 :/
+		    eval (:goodpassed:) /:@: :*:goodpassed: + ( :*:pr: > 0 ) :/ 
+		  }
+                  output /\n:*:gooddir::*:filename: G (:*:goodpassed:) :*:pr: /
+		}
+                liaf
+	}
+        {
+                call /:clip_filename:/ [:stl:] (:filename:)
+                match [:filename:] /./
+                {
+		#  check - is this file in the validate set ?  If YES, proceed
+                  match [:filename:] /:*:validate:/
+                  input [:*:spamdir::*:filename: 0 :*:decision_length:]
+                  call /:do_mutilations:/ 
+                  call /:get_pr:/ [:m_text:]
+		  #  Keep track of our statistics
+	          {
+		     eval (:pr:) /:@: 0 - :*:pr: :/
+		     eval (:spamtested:) /:@: :*:spamtested: + 1 :/
+		     eval (:spampassed:) /:@: :*:spampassed: + ( :*:pr: > 0 ) :/
+		  }
+                  output /\n:*:spamdir::*:filename: G (:*:spampassed:) :*:pr: /
+		}
+                liaf
+	}
+	output /\n Summary of validation on :*:validate::/
+	alter (:report:) /:*:report: \n\n Summary of validation:\n/
+	eval (:overall:) /:@: 100 * :*:goodpassed: \/ :*:goodtested: :/
+	output /\nGood files: :*:goodtested:  correct: :*:goodpassed:  accuracy: :*:overall:/
+	alter (:report:)  /:*:report: \nGood files: :*:goodtested:  correct: :*:goodpassed:  accuracy: :*:overall:/
+	{
+	    match [:rfile:] /./
+	    output <append> [:*:rfile:] /\n:*:overall:/
+	}
+	eval (:overall:) /:@: 100 * :*:spampassed: \/ :*:spamtested: :/
+	output /\nSpam files: :*:spamtested:  correct: :*:spampassed:  accuracy: :*:overall:/
+	alter (:report:) /:*:report: \nSpam files: :*:spamtested:  correct: :*:spampassed:  accuracy: :*:overall:/
+	{
+	    match [:rfile:] /./
+	    output <append> [:*:rfile:] /\n:*:overall:/
+	}
+	eval (:tottested:) /:@: :*:goodtested: + :*:spamtested: : /
+	eval (:totpassed:) /:@: :*:goodpassed: + :*:spampassed: : /
+	eval (:overall:) /:@: 100 * (:*:totpassed: \/ :*:tottested: ) :/ 
+	output /\nOverall:   :*:tottested:  correct: :*:totpassed:  accuracy: :*:overall:\n/
+	alter (:report:) /:*:report: \nOverall:    :*:tottested:  correct: :*:totpassed:  accuracy: :*:overall: \n/
+	{
+	    match [:rfile:] /./
+	    output <append> [:*:rfile:] /\n:*:overall:\n/
+	}
+ 
+}
+
+#  output /:*:report:/
+exit /0/
+
+:nada:
+return
+
+###########################################################
+#
+#    Worst training - similar to an SVM, but without the
+#    grace and beauty.  We train only the minimal set of
+#    features that gain us the maximal response.
+#
+#    Algorithm 
+#       1 - train a *single* example into each class.
+#	2 - evaluate all other examples.
+#       3 - pick the "worst error(s)" in each class
+#       4 - Are the worst errors close enough?  If so, stop
+#       5 - train those worst errors
+#       6 - go to 2
+
+:worst_training:
+
+#####  Step 1 - train a single example in each class, to get "off center"
+{
+	match [:gtl:] /([[:print:]]+)\n/ (:wholeline: :filename:)
+	match [:filename:] /./
+	isolate (:filename:)
+	alter (:wholeline:) //
+	input [:*:gooddir::*:filename: 0 :*:decision_length:]
+	call /:do_mutilations:/
+	{                        # if this is a ZERO :pr:, train something
+		call /:get_pr:/ [:m_text:]
+		eval /:@: :*:pr: = 0 :/
+		output /\n Learning :*:filename: as initial goodmail seed.\n/
+        	learn [:m_text:] <:*:clf:> /:*:lcr:/  \
+	           	(:*:fileprefix::*:goodcss:)
+       }
+}
+{
+	match [:stl:] /([[:print:]]+)\n/ (:wholeline: :filename:)
+	match [:filename:] /./
+	isolate (:filename:)
+	alter (:wholeline:) //
+	input [:*:spamdir::*:filename: 0 :*:decision_length:]
+	call /:do_mutilations:/
+	{                        # if this is a ZERO :pr:, train something
+		call /:get_pr:/ [:m_text:]
+		eval /:@: :*:pr: = 0 :/
+		output /\n Learning :*:filename: as initial spam seed.\n/
+		learn [:m_text:] <:*:clf:> /:*:lcr:/  \
+        	   (:*:fileprefix::*:spamcss:)
+	}
+}
+
+output /\n/  # make a little space before the "sputter" display.
+
+#####  Step 2 - Test each of the files, and keep track of the :worst: worst
+#####            error cases.  To make our life easy, we just call out to 
+#####             the "sort" utility via syscall.
+#####          Note that there's no need to do this alternating, because
+#####		sort()ing will fix order anyway.
+:worst_loop:
+
+#   load up the good files and spam files
+isolate (:gtl:) /:*:goodfiles:/
+isolate (:stl:) /:*:spamfiles:/
+
+
+{
+	alter (:worst_results:) //
+	{
+		call /:clip_filename:/ [:stl:] (:filename:)
+		match [:filename:] /./
+		{
+		  #  check- is this file in the validate set ?  If no, proceed.
+		  match <absent> [:filename:] /:*:validate:/
+		  input [:*:spamdir::*:filename: 0 :*:decision_length:]	
+		  call /:do_mutilations:/
+		  call /:get_pr:/ [:m_text:] 
+		  eval (:pr:) /:@: 0 - :*:pr: f 10.4:/
+		  alter (:worst_results:) \
+		    /:*:worst_results:\n:*:pr: S :*:spamdir::*:filename:/
+		  output \
+		    /\n:*:pr: S :*:spamdir::*:filename:/
+		}
+		liaf
+	}
+	{
+		call /:clip_filename:/ [:gtl:] (:filename:)
+		match [:filename:] /./
+		{
+		  #  check- is this file in the validate set ?  If no, proceed.
+		  match <absent> [:filename:] /:*:validate:/
+		  input [:*:gooddir::*:filename: 0 :*:decision_length:]	
+		  call /:do_mutilations:/
+		  call /:get_pr:/ [:m_text:]
+		  eval (:pr:) /:@: :*:pr: f 10.4 :/
+		  alter (:worst_results:)  \
+		    /:*:worst_results:\n:*:pr: G :*:gooddir::*:filename:/
+		  output  \
+		    /\n:*:pr: G :*:gooddir::*:filename:/
+		}
+		liaf
+	}
+}
+
+#####  Step 3 --- Sort the worst results, to get the N worst errors
+#####              Note that this is a "numeric" sort, and minimum values
+#####               are "worst" in either direction.
+
+{
+	syscall /sort -n / (:*:worst_results:) (:worst_results:)
+	match /([^\n]+\n){1,:*:worst:}/ [:worst_results:] \
+		(:worst_retrains:)
+	output /\n\n   Worst Training Candidates: \n\n/
+	output /:*:worst_retrains:/
+} 
+
+#####   Step 4 ---  Is the worst of the worst good enough?
+#####               Note that we test here, before we retrain anything.
+#####    (note the .00001 adder - that's to prevent getting exactly stuck)
+{
+	match (:pr:) [:worst_retrains:] /[[:graph:]]+/
+	eval /:@: ( :*:pr: + .00001 ) > :*:thick_threshold: :/
+	output / \n Looks good... exiting! \n/
+	goto /:good_exit:/
+}
+
+#####   Step 5 ---  Train only those worst errors
+#####               Easily done, as the full filename is "coded" into 
+#####               the report, as well as what to train it as.
+
+{
+	match (:nextline: :pr: :type: :filename:) [:worst_retrains:] \
+	 /([[:graph:]]+) +([[:graph:]]+) +([[:graph:]]+)\n/ 
+	input [:*:filename: 0 :*:decision_length:] 
+	call /:do_mutilations:/
+	isolate (:m_text:) /:*:_dw:/
+	{
+		{
+			match [:type:] /G/
+			output /\nConsidering :*:filename: as good\n/
+			call /:test_train_good:/
+		}
+		alius
+		{
+			output /\nConsidering :*:filename: as spam\n/
+			call /:test_train_spam:/
+		}
+	}
+	alter (:nextline:) //
+	liaf
+}
+
+output /\n/
+
+######   Step 6 - otherwise, go to 2 
+######
+goto /:worst_loop:/
+
+
+######################################################3
+#trap (:broken_program_message:) /.*/
+{
+	output /:*:_nl: Aw, crud.  mailtrainer.crm broke.  Here's the error: :*:_nl:/
+	output /:*:broken_program_message:/
+	output [stderr] /:*:_nl: ERROR: mailtrainer.crm broke.  Here's the error: :*:_nl:/
+	output [stderr] /ERROR: :*:broken_program_message:/
+}
+exit /:*:program_fault_exit_code:/
+
+
+
+

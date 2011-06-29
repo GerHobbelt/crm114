@@ -28,24 +28,24 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //           Allow input of text from stdin.
     FILE *fp;
     char temp_vars[MAX_PATTERN];
-    long tvlen;
+    int tvlen;
     char filename[MAX_FILE_NAME_LEN];
-    long fnlen;
+    int fnlen;
     char ifn[MAX_FILE_NAME_LEN];
     char fileoffset[MAX_FILE_NAME_LEN];
-    long fileoffsetlen;
+    int fileoffsetlen;
     char fileiolen[MAX_FILE_NAME_LEN];
-    long fileiolenlen;
+    int fileiolenlen;
     long offset, iolen;
-    long vstart;
-    long vlen;
+    int  vstart;
+    int vlen;
     int done;
     int till_eof;
     int use_readline;
     int file_was_fopened;
 
     //         a couple of vars to bash upon
-    long i, j;
+    int  i, j;
 
     if (user_trace)
         fprintf(stderr, "executing an INPUT statement\n");
@@ -282,7 +282,7 @@ input_no_open_bailout:
 
 int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-    long i, j;
+    int  i, j;
 
     //    output a string, usually to stdout unless otherwise
     //    specified in the output statement.
@@ -296,11 +296,11 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     char filename[MAX_FILE_NAME_LEN];
     char fnam[MAX_FILE_NAME_LEN];
-    long fnlen;
+    int  fnlen;
     char fileoffset[MAX_FILE_NAME_LEN];
-    long fileoffsetlen;
+    int fileoffsetlen;
     char fileiolen[MAX_FILE_NAME_LEN];
-    long fileiolenlen;
+    int fileiolenlen;
     long offset, iolen;
     int file_was_fopened;
 

@@ -1,4 +1,4 @@
-#!/usr/bin/crm -(help file delete)
+#! :|crm -(help file delete)
 #    
 #    Program for Associative Data - PAD
 #

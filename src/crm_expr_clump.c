@@ -293,7 +293,7 @@ static int compare_features(const void *a, const void *b)
 
 
 static int eat_document(ARGPARSE_BLOCK *apb,
-        char *text, long text_len, long *ate,
+        char *text, int  text_len, int  *ate,
         regex_t *regee,
         crmhash_t *feature_space, int max_features,
         uint64_t flags)
@@ -304,7 +304,7 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     crmhash_t hash_coefs[] = { 1, 3, 5, 11, 23, 47 };
     regmatch_t match[1];
     char *t_start;
-    long t_len;
+    int t_len;
     int unigram, unique, string;
 
     unique = !!(apb->sflags & CRM_UNIQUE);
@@ -387,15 +387,15 @@ static int eat_document(ARGPARSE_BLOCK *apb,
 }
 
 
-static long find_closest_document(ARGPARSE_BLOCK *apb,
+static int find_closest_document(ARGPARSE_BLOCK *apb,
         CLUMPER_STATE_STRUCT *s,
-        char *text, long text_len,
+        char *text, int text_len,
         regex_t *regee,
         uint64_t flags)
 {
     crmhash_t feature_space[32768];
-    long n, i;
-    long b = -1;
+    int n, i;
+    int b = -1;
     float b_s = 0.0;
     float n_s;
 
@@ -1006,10 +1006,10 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
 }
 
 static void assign_perma_cluster(CLUMPER_STATE_STRUCT *s,
-        long                                           doc,
-        char                                          *lab)
+        int doc,
+        char *lab)
 {
-    long i;
+    int i;
 
     for (i = 1; i <= s->header->n_perma_clusters; i++)
     {
@@ -1028,12 +1028,12 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     char htext[MAX_PATTERN];
     char filename[MAX_PATTERN];
-    long htext_len;
+    int htext_len;
 
     char regex_text[MAX_PATTERN]; //  the regex pattern
-    long regex_text_len;
+    int  regex_text_len;
     char param_text[MAX_PATTERN];
-    long param_text_len;
+    int  param_text_len;
     int unique, unigram, bychunk;
     int n_clusters = 0;
 
@@ -1047,11 +1047,11 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     regex_t regee;
     regmatch_t matchee[2];
 
-    long i, j, k, l;
+    int  i, j, k, l;
 
     char *txtptr;
-    long txtstart;
-    long txtlen;
+    int txtstart;
+    int txtlen;
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
 
@@ -1091,7 +1091,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     htext_len = apb->p1len;
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
-#if 10
+#if 0
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -1101,7 +1101,14 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         j++;
     CRM_ASSERT(j <= htext_len);
 #else
- crm_nextword(htext, 0, htext_len, &i, &j);
+ if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
+ {
+            int fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)htext_len,
+					htext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);
@@ -1452,11 +1459,11 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     regex_t regee;
 
-    long i, j;
+    int  i, j;
 
     char *txtptr;
-    long txtstart;
-    long txtlen;
+    int txtstart;
+    int txtlen;
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
 
@@ -1494,7 +1501,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     htext_len = apb->p1len;
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
-#if 10
+#if 0
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -1504,7 +1511,14 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         j++;
     CRM_ASSERT(j <= htext_len);
 #else
- crm_nextword(htext, 0, htext_len, &i, &j);
+ if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
+ {
+            int fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)htext_len,
+					htext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);

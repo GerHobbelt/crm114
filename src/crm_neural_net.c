@@ -470,7 +470,7 @@ static int make_new_backing_file(const char *filename)
 
 static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
 {
-    long i;
+    int i;
     NEURAL_NET_HEAD_STRUCT *h;
     struct stat statee;
     float *w;
@@ -826,22 +826,24 @@ static int compare_hash_vals(const void *a, const void *b)
 //     separately.  Instead, we modulo at runtime onto the retina.
 //
 static int eat_document(ARGPARSE_BLOCK *apb,
-        char *text, long text_len, long *ate,
+        char *text, int text_len, int  *ate,
         regex_t *regee,
-        crmhash_t *feature_space, long max_features,
+        crmhash_t *feature_space, int max_features,
         uint64_t flags, crmhash_t *sum)
 {
     crmhash_t /* unsigned long */ hash_pipe[OSB_BAYES_WINDOW_LEN];
-    unsigned long hash_coefs[] =
+#ifdef USE_OLD_TOKENIZER
+    static const unsigned long hash_coefs[] =
     {
         1, 3, 5, 11, 23, 47
     };
-    regmatch_t match[1];
+#endif
+	regmatch_t match[1];
     char *t_start;
     long t_len;
     long f;
   int n_features = 0;
-  long i, j;
+  int i, j;
 
     int unigram, unique, string;
   int next_offset;
@@ -1047,21 +1049,23 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     NEURAL_NET_STRUCT NN, *nn = &NN;
     char *filename;
     char htext[MAX_PATTERN];
-    long htext_len;
+    int htext_len;
     struct stat statee;
 
     regex_t regee;
     char regex_text[MAX_PATTERN]; //  the regex pattern
-    long regex_text_len;
+    int regex_text_len;
 
     crmhash_t /* unsigned long */ bag[NN_MAX_FEATURES];
 
   crmhash_t sum;
 
-  long i, j, n_features;
+  int  i, j;
+  long n_features;
   long old_file_size;
     crmhash_t *new_doc_start, *current_doc, *k, *l;
-  long found_duplicate, n_docs, n_docs_trained, out_of_class, current_doc_len;
+  int  found_duplicate;
+  long n_docs, n_docs_trained, out_of_class, current_doc_len;
   long n_cycles, filesize_on_disk, soft_cycle_limit;
 
   FILE *f;
@@ -1072,7 +1076,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   double alpha = NN_DEFAULT_ALPHA;
   double alphalocal;
   
-  long this_doc_was_wrong;
+  int this_doc_was_wrong;
 
   //     in_class_docs and out_class_docs are lookaside lists so
   //     we can alternate training of in-class and out-of-class
@@ -1096,7 +1100,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     htext_len = apb->p1len;
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
 
-#if 10
+#if 0
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -1106,7 +1110,14 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         j++;
     CRM_ASSERT(j <= htext_len);
 #else
- crm_nextword(htext, 0, htext_len, &i, &j);
+ if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
+ {
+            int fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)htext_len,
+					htext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);
@@ -2076,25 +2087,25 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, long txtstart, long txtlen)
 {
     char filenames_field[MAX_PATTERN];
-    long filenames_field_len;
+    int filenames_field_len;
     char filenames[MAX_CLASSIFIERS][MAX_FILE_NAME_LEN];
 
     NEURAL_NET_STRUCT NN, *nn = &NN;
 
     regex_t regee;
     char regex_text[MAX_PATTERN];     //  the regex pattern
-    long regex_text_len;
+    int regex_text_len;
 
     crmhash_t bag[NN_MAX_FEATURES], sum;
 
-  long i, j, k, n, n_classifiers, out_pos; 
-  long fail_on = MAX_CLASSIFIERS;
+  int i, j, k, n, n_classifiers, out_pos; 
+  int fail_on = MAX_CLASSIFIERS;
 
     float output[MAX_CLASSIFIERS][2];
     double p[MAX_CLASSIFIERS], pR[MAX_CLASSIFIERS], suc_p, suc_pR, tot;
 
     char out_var[MAX_PATTERN];
-    long out_var_len;
+    int out_var_len;
 
 
     if (internal_trace)

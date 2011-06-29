@@ -948,10 +948,21 @@ AC_CONFIG_FILES([Makefile
                  tests/tenfold_validate.crm
                  tests/tokendelimiterbugtest.crm
                  tests/bracesbugtest.crm
+                 tests/blowuptrapbugtest.crm
+                 tests/indirecttest.crm
+                 tests/isolate_reclaim_test.crm
+                 tests/match_isolate_reclaim.crm
+                 tests/slashbugtest.crm
+                 tests/trapseqbugtest.crm
+                 tests/translate_tr.crm
+                 tests/call_return_test.crm
                  examples/pad.crm
                  examples/shroud.crm
                  mailfilter/classifymail.crm
                  mailfilter/mailfilter.crm
+                 mailfilter/maillib.crm
+                 mailfilter/mailreaver.crm
+                 mailfilter/mailtrainer.crm
                  mailfilter/rewriteutil.crm
 ])
 

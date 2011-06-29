@@ -660,26 +660,26 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //       This code should look very familiar- it's cribbed from
     //       the code for LEARN
     //
-    long i, j, k;
+    int i, j, k;
     long h;                  //  we use h for our hashpipe counter, as needed.
     char ptext[MAX_PATTERN]; //  the regex pattern
-    long plen;
+    int plen;
     //  the hash file names
     char htext[MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN];
-    long htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
-    long hlen;
+    int htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
+    int hlen;
     //  the match statistics variable inbuf
     char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
     long stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
-    long slen;
+    int slen;
     char svrbl[MAX_PATTERN]; //  the match statistics text buffer
     long svlen;
     long fnameoffset;
     char fname[MAX_FILE_NAME_LEN];
-    long eflags;
-    long cflags;
-    long not_microgroom = 1;
-    long use_unigrams;
+    int eflags;
+    int cflags;
+    int not_microgroom = 1;
+    int use_unigrams;
 
     struct stat statbuf;    //  for statting the hash file
     crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
@@ -719,10 +719,10 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long hashlens[MAX_CLASSIFIERS];
     char *hashname[MAX_CLASSIFIERS];
     long succhash;
-    long vbar_seen;     // did we see '|' in classify's args?
+    int vbar_seen;     // did we see '|' in classify's args?
     long maxhash;
-    long fnstart, fnlen;
-    long fn_start_here;
+    int fnstart, fnlen;
+    int fn_start_here;
     long textoffset;
     long textmaxoffset;
     long bestseen;
@@ -760,7 +760,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     svlen = apb->p2len;
     svlen = crm_nexpandvar(svrbl, svlen, MAX_PATTERN);
     {
-        long vstart, vlen;
+        int vstart, vlen;
         crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
         memmove(svrbl, &svrbl[vstart], vlen);
         svlen = vlen;

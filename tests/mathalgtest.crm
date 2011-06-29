@@ -1,4 +1,4 @@
-#!/usr/bin/crm
+#! :|crm
 #
 #	Test demo program for extended eval (can do string lengths,
 #       algebraic math, and inequalities. 

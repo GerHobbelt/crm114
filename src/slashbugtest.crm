@@ -1,0 +1,34 @@
+#! /usr/bin/crm
+#   test the error reporting concerning matching delimiters.
+#
+# this code has several errors: the second 'output' comes with 
+# unused/illegal arguments, something which is NOT detected by
+# CRM114. It is simply ignored. No 'hello world' for you, my dear.
+#
+# Then the / delimiters in the alius-separated output statements
+# are not matched, which results in a trap, where the error line
+# depends on your input on stdin when you run
+#   crm slashbugtest.crm
+# , but the errorline is way off, thanks to those semicolons and
+# the curly braces on the same line as the other statements here.
+#
+{output /Hi/;output /hello world/	[and the second one around] /in a wicked place/;{output /checking for a foo.../;match /foo/;output /Found a foo :*:_nl::*:bogus:/
+		}
+		alius
+		{
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			output /no foo... checking for bar.../
+			match /bar/
+			output Found a bar. X2 fail  :*:_nl:
+			# -- expect an error report on the next line/alius
+		}   
+		alius
+		{
+			output found neither... continuing  :*:_nl:/
+			fault  plutonium   # yeah? any poisoning going on?
+		}
+		trap (:my_fault /nuts/  :)   /abacadabra/ /buzz/
+		{
+			output  dammit! \/\//
+		}
+}

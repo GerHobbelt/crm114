@@ -59,24 +59,20 @@ int crm_microcompiler(CSL_CELL  *csl,
 
 
 //  hash function for variable tables
-#if defined (CRM_WITH_OLD_HASH_FUNCTION)
-crmhash_t strnhash(const char *str, long len);
-#else
 crmhash_t strnhash(const char *str, size_t len);
-#endif
 
 crmhash64_t strnhash64(const char *str, size_t len);
 
 //  string translate function - for the TRANSLATE function
-long strntrn(
+int strntrn(
         unsigned char *datastr,
-        long          *datastrlen,
-        long           maxdatastrlen,
+        int *datastrlen,
+        int maxdatastrlen,
         unsigned char *fromstr,
-        long           fromstrlen,
+        int fromstrlen,
         unsigned char *tostr,
-        long           tostrlen,
-        long           flags);
+        int tostrlen,
+        uint64_t  flags);
 
 
 //   basic math evaluator top function
@@ -93,8 +89,8 @@ int crm_load_csl(CSL_CELL *csl);
 
 //    alter a variable to another value (this is destructive!)
 void crm_destructive_alter_variable(char *varname, char *newstr);
-void crm_destructive_alter_nvariable(char *varname, long varlen,
-        char *newstr, long newlen);
+void crm_destructive_alter_nvariable(char *varname, int varlen,
+        char *newstr, int newlen);
 
 //  setting a program label in the VHT
 void crm_setvar(
@@ -111,7 +107,7 @@ void crm_setvar(
                );
 
 //   put a variable and a value into the temporary area
-void crm_set_temp_nvar(char *varname, char *value, long vallen);
+void crm_set_temp_nvar(char *varname, char *value, int vallen);
 void crm_set_temp_var(char *varname, char *value);
 
 //   put a variable and a window-based value into the temp area
@@ -176,7 +172,7 @@ long crm_expandvar(char *buf, long maxlen);
 //   it's either stored in, or ought to be stored in (i.e. check for a NULL
 //   VHT cell before use).
 
-long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen);
+int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen);
 
 
 //     crm_extractflag - given an arbitrary string cmd (start/len)
@@ -251,10 +247,10 @@ uint64_t crm_flagparse(char *input, long inlen); //  the user input
 //     get the next word in the input.  (note- the regex stops only when
 //     one hits a NULL, which may yield a slightly bogus result.
 int crm_nextword(const char *input,
-        long                  inlen,
-        long                  starthere,
-        long                 *start,
-        long                 *len);
+        int inlen,
+        int starthere,
+        int *start,
+        int *len);
 
 int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -694,13 +690,13 @@ long crm_zexpandvar(char *buf,
         long              exec_bitmask);
 
 //       Var-restriction operators  (do []-vars, like subscript and regex )
-long crm_restrictvar(char  *boxstring,
-        long                boxstrlen,
-        long               *vht_idx,
-        char              **outblock,
-        long               *outoffset,
-        long               *outlen,
-        char               *errstr);
+int crm_restrictvar(char *boxstring,
+        int boxstrlen,
+        int *vht_idx,
+        char **outblock,
+        int *outoffset,
+        int *outlen,
+        char *errstr);
 
 
 //      crm114-specific regex compilation

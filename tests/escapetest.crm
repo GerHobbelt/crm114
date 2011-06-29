@@ -1,4 +1,4 @@
-#!/usr/bin/crm
+#! :|crm
 { 
 	window
 	output / :*:_nl:  CRM114 testing backslash :*:_nl: :*:_nl:/

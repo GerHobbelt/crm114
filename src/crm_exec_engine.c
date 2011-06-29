@@ -598,10 +598,10 @@ invoke_top:
             //      varlist with hash of the evaluated string.
 
             char varname[MAX_VARNAME];
-            long varlen;
-            long vns, vnl;
+            int varlen;
+            int vns, vnl;
             char newstr[MAX_VARNAME];
-            long newstrlen;
+            int newstrlen;
             crmhash_t hval;     //   hash value
 
             if (user_trace)
@@ -785,10 +785,10 @@ invoke_top:
             //    is still shared.
             //
             {
-                long argvallen, argnamelen;
+                int argvallen, argnamelen;
                 CSL_CELL *oldcsl;
-                long vns, vnl;
-                long vmidx, oldvstart, oldvlen;
+                int vns, vnl;
+                int vmidx, oldvstart, oldvlen;
                 //
                 //    First, get the argument string into full expansion
                 CRM_ASSERT(apb != NULL);
@@ -809,8 +809,8 @@ invoke_top:
                 newcsl->return_vht_cell = -1;
                 if (apb->p1len > 0)
                 {
-                    unsigned long ret_idx;
-                    long retname_start, retnamelen;
+                    long ret_idx;
+                    int  retname_start, retnamelen;
                     crm_get_pgm_arg(outbuf, data_window_size,
                             apb->p1start, apb->p1len);
                     retnamelen = apb->p1len;
@@ -939,16 +939,16 @@ invoke_top:
         //           Captured values not in the data window are ignored.
         {
             char temp_vars[MAX_VARNAME];
-            long tvlen;
+            int tvlen;
             char out_var[MAX_VARNAME];
-            long ovstart;
-            long ovlen;
-            long vstart;
-            long vend;
-            long vlen;
-            long istart, iend, ilen, i_index;
-            long mc;
-            long done;
+            int ovstart;
+            int ovlen;
+            int vstart;
+            int vend;
+            int vlen;
+            int istart, iend, ilen, i_index;
+            int mc;
+            int done;
 
             if (user_trace)
                 fprintf(stderr, "executing an INTERSECT statement");
@@ -982,7 +982,7 @@ invoke_top:
             i_index = -1;
             while (!done)
             {
-#if 10
+#if 0
                 while (temp_vars[vstart] < 0x021
                        && vstart < tvlen)  //  was temp_vars[vstart] != 0)
                     vstart++;
@@ -991,7 +991,7 @@ invoke_top:
                        && vstart + vlen < tvlen)
                     vlen++;
 #else
- crm_nextword(temp_vars, vstart, tvlen, &vstart, &vlen);
+ crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen);
 #endif
                 if (vlen == 0)
                 {
@@ -1059,16 +1059,16 @@ invoke_top:
         //           Captured values not in the data window are ignored.
         {
             char temp_vars[MAX_VARNAME];
-            long tvlen;
+            int tvlen;
             char out_var[MAX_VARNAME];
-            long ovstart;
-            long ovlen;
-            long vstart;
-            long vend;
-            long vlen;
-            long istart, iend, ilen, i_index;
-            long mc;
-            long done;
+            int ovstart;
+            int ovlen;
+            int vstart;
+            int vend;
+            int vlen;
+            int istart, iend, ilen, i_index;
+            int mc;
+            int done;
 
             if (user_trace)
                 fprintf(stderr, "executing a UNION statement");
@@ -1099,7 +1099,7 @@ invoke_top:
             i_index = -1;
             while (!done)
             {
-#if 10
+#if 0
                 while (temp_vars[vstart] < 0x021
                        && vstart < tvlen)  //  was temp_vars[vstart] != 0)
                     vstart++;
@@ -1108,7 +1108,7 @@ invoke_top:
                        && vstart + vlen < tvlen)
                     vlen++;
 #else
- crm_nextword(temp_vars, vstart, tvlen, &vstart, &vlen);
+ crm_nextword(temp_vars, tvlen, vstart, &vstart, &vlen);
 #endif
                 if (vlen == 0)
                 {

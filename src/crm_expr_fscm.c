@@ -765,11 +765,11 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 {
     char filename[MAX_PATTERN];
     char htext[MAX_PATTERN];
-    long htext_len;
+    int  htext_len;
 
     SCM_STATE_STRUCT S, *s = &S;
 
-    long i, j;
+    int i, j;
     long doc_start;
 
     if (internal_trace)
@@ -780,7 +780,7 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     htext_len = apb->p1len;
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
 
-#if 10
+#if 0
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -790,7 +790,14 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         j++;
     CRM_ASSERT(j <= htext_len);
 #else
- crm_nextword(htext, 0, htext_len, &i, &j);
+ if (!crm_nextword(htext, htext_len, 0, &i, &j) || j == 0)
+ {
+            int fev = nonfatalerror_ex(SRC_LOC(), 
+				"\nYou didn't specify a valid filename: '%.*s'\n", 
+					(int)htext_len,
+					htext);
+            return fev;
+ }
  j += i;
     CRM_ASSERT(i < htext_len);
     CRM_ASSERT(j <= htext_len);

@@ -252,14 +252,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     long outlen;
     char from_var[MAX_VARNAME];
     char sys_cmd[MAX_PATTERN];
-    long cmd_len;
+    int cmd_len;
     char keep_buf[MAX_PATTERN];
-    long keep_len;
+    int keep_len;
     char exp_keep_buf[MAX_PATTERN];
-    long exp_keep_len;
-    long vstart;
-    long vlen;
-    long done;
+    int exp_keep_len;
+    int vstart;
+    int vlen;
+    int done;
     int keep_proc;
     int async_mode;
 
@@ -347,7 +347,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(from_var, MAX_PATTERN, apb->p2start, apb->p2len);
     outlen = crm_nexpandvar(from_var, apb->p2len, MAX_PATTERN);
     done = 0;
-#if 10
+#if 0
     vstart = 0;
     while (from_var[vstart] < 0x021 && from_var[vstart] > 0x0)
         vstart++;
@@ -355,7 +355,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     while (from_var[vstart + vlen] >= 0x021)
         vlen++;
 #else
-    crm_nextword(from_var, 0, outlen, &vstart, &vlen);
+    crm_nextword(from_var, outlen, 0, &vstart, &vlen);
 #endif
     memmove(from_var, &from_var[vstart], vlen);
     from_var[vlen] = 0;
@@ -857,8 +857,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //
         if (minion == 0)
         {
-            long vstart2, vlen2;
-            long varline;
+            int vstart2, vlen2;
+            int varline;
 
             if (user_trace)
                 fprintf(stderr, "  Must start a new minion.\n");
