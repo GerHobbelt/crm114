@@ -1323,12 +1323,16 @@ Optional Features:
                           SHOULD not get triggered EVER, so you MAY assume
                           specifying this option is a 'free speedup'.
                           (default: assertions are ENABLED)
-  --enable-untrappable-assertions
-                          assertion checks are untrappable (instead of merely
-                          being a trappable error report). This means any
-                          triggered assertion checks will NOT show up in your
-                          CRM trap handlers. (default: assertions are
-                          'trappable')
+  --enable-trappable-assertions
+                          make assertion checks trappable (instead of being a
+                          untrappable error report). This means any triggered
+                          assertion checks will show up in your CRM trap
+                          handlers, but BEWARE: under specific (rather
+                          theoretical) circumstances you may now be greeted by
+                          a coredump due to an inifinite loop caused by
+                          assertion failures within the CRM114 trap handler.
+                          Can't say you haven't been warned! (default:
+                          assertions are 'untrappable')
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -6162,9 +6166,15 @@ _ACEOF
 fi
 
 
-# Check whether --enable-untrappable-asserts was given.
-if test "${enable_untrappable_asserts+set}" = set; then
-  enableval=$enable_untrappable_asserts;
+# Check whether --enable-trappable-asserts was given.
+if test "${enable_trappable_asserts+set}" = set; then
+  enableval=$enable_trappable_asserts;
+cat >>confdefs.h <<_ACEOF
+#define CRM_ASSERT_IS_UNTRAPPABLE 0
+_ACEOF
+
+else
+
 cat >>confdefs.h <<_ACEOF
 #define CRM_ASSERT_IS_UNTRAPPABLE 1
 _ACEOF

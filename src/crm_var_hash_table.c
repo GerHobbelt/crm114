@@ -1498,14 +1498,14 @@ void crm_setvar(
 
         //for (j = 0; j < vht[i]->nlen; j++)
         //        fprintf (stderr, "%c", vht[i]->nametxt[vht[i]->nstart+j]);
-        fwrite(&(vht[i]->nametxt[vht[i]->nstart]), vht[i]->nlen, 1, stderr);
+        fwrite(&(vht[i]->nametxt[vht[i]->nstart]), 1, vht[i]->nlen, stderr);
 
         fprintf(stderr, " at vht entry %d ", i);
 
         fprintf(stderr, " with value -");
         //      for (j = 0; j < vht[i]->vlen; j++)
         //        fprintf (stderr, "%c", vht[i]->valtxt[vht[i]->vstart+j]);
-        fwrite(&(vht[i]->valtxt[vht[i]->vstart]), vht[i]->vlen, 1, stderr);
+        fwrite(&(vht[i]->valtxt[vht[i]->vstart]), 1, vht[i]->vlen, stderr);
 
         fprintf(stderr, "- (start %ld, length %ld)",
                 vht[i]->vstart, vht[i]->vlen);

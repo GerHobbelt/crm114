@@ -485,7 +485,7 @@ learn_end_regex_loop:
 
 regcomp_failed:
 
-
+#if defined(GER)
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
     //mark the end of a feature vector
@@ -530,7 +530,40 @@ regcomp_failed:
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
     CRM_ASSERT(hashes[hashcounts].hash == 0);
+#else
 
+  //   Now sort the hashes array.
+  //
+  qsort (hashes, hashcounts, 
+	 sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT),
+	 &hash_compare );
+
+  hashcounts--;
+  if (user_trace)
+    fprintf (stderr, "Total hashes generated: %ld\n", hashcounts);
+
+  //   And uniqueify the hashes array
+  //
+  
+  i = 1;
+  j = 1;
+  
+  if (unique)
+    {
+      while ( i <= hashcounts )
+      {
+	if (hashes[i].hash != hashes[i+1].hash
+	    //	    || hashes[i].key != hashes[i+1].key )
+	    )
+	  {
+	    hashes[j]= hashes[i];
+	    j++;
+	  };
+	i++;
+      };
+      hashcounts = j;
+    };
+#endif
     if (user_trace)
         fprintf(stderr, "Unique hashes generated: %ld\n", hashcounts);
     //    store hash count of this document in the first bucket's .key slot
@@ -596,8 +629,13 @@ regcomp_failed:
         long thisstart, thislen, thisend;
         double bestrad;
         long wrapup;
+#if defined(GER)
         long kandu;
         long unotk, knotu;
+#else
+        double kandu;
+        double unotk, knotu;
+#endif
         double dist, radiance;
         long k, u;
         long file_hashlens;
@@ -722,7 +760,11 @@ regcomp_failed:
 
             //    Proper pythagorean (Euclidean) distance - best in
             //   SpamConf 2006 paper
+#if defined(GER)
             dist = sqrt(unotk + knotu);
+#else
+	  dist = sqrtf (unotk + knotu) ;
+#endif
 
             // PREV RELEASE VER --> radiance = 1.0 / ((dist * dist )+ 1.0);
             //
@@ -826,7 +868,11 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     regex_t regcb;
     regmatch_t match[5];    //  we only care about the outermost match
 
+#if defined(GER)
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
+#else
+    long totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
+#endif
     long totalfeatures;                    //  total features
     double tprob;                          //  total probability in the "success" domain.
 
@@ -853,6 +899,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //     Basic match parameters
     //     These are computed intra-document, other stuff is only done
     //     at the end of the document.
+#if defined(GER)
     long knotu; // features in known doc, not in unknown
     long unotk; // features in unknown doc, not in known
     long kandu; // feature in both known and unknown
@@ -863,6 +910,18 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     double dist;
     double closest_dist[MAX_CLASSIFIERS];
     double closest_normalized[MAX_CLASSIFIERS];
+#else
+  float knotu;   // features in known doc, not in unknown
+  float unotk;   // features in unknown doc, not in known
+  float kandu;   // feature in both known and unknown
+  
+  //     Distance is the pythagorean distance (sqrt) between the
+  //     unknown and a known-class text; we choose closest.  (this
+  //     is (for each U and K feature, SQRT of count of U ~K + K ~ U)
+  float dist;
+  float closest_dist [MAX_CLASSIFIERS];
+  float closest_normalized [MAX_CLASSIFIERS];
+#endif
 
     //#define KNN_ON
 #ifdef KNN_ON
@@ -884,6 +943,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //  -  Submission is how many of the features of the unknown do NOT
     //    exist in the known.  (for each U, count of ~K)
     //  -- Dominance minus Submission is a figure of merit of match.
+#if defined(GER)
     double max_dominance[MAX_CLASSIFIERS];
     double dominance_normalized[MAX_CLASSIFIERS];
     double max_submission[MAX_CLASSIFIERS];
@@ -906,6 +966,30 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     double class_radiance_normalized[MAX_CLASSIFIERS];
     double class_flux[MAX_CLASSIFIERS];
     double class_flux_normalized[MAX_CLASSIFIERS];
+#else
+  float max_dominance [MAX_CLASSIFIERS]; 
+  float dominance_normalized [MAX_CLASSIFIERS];
+  float max_submission [MAX_CLASSIFIERS];
+  float submission_normalized [MAX_CLASSIFIERS];
+  float max_equivalence [MAX_CLASSIFIERS];
+  float equivalence_normalized [MAX_CLASSIFIERS];
+  float max_des [MAX_CLASSIFIERS];
+  float des_normalized [MAX_CLASSIFIERS];
+  
+  
+  //     Radiance - sum of the 1/r^2 radiances of each known text
+  //     onto the unknown.  Unlike Distance and Dominance, Radiance
+  //     is a function of an entire class, not of a single example
+  //     in the class.   More radiance is a closer match.
+  //     Flux is like Radiance, but the standard unit candle at each text
+  //     is replaced by a flux source of intensity proportional to the
+  //     number of features in the known text.
+  float radiance;
+  float class_radiance [MAX_CLASSIFIERS];
+  float class_radiance_normalized [MAX_CLASSIFIERS];
+  float class_flux [MAX_CLASSIFIERS];
+  float class_flux_normalized [MAX_CLASSIFIERS];
+#endif
 
     //     try using just the top n matches
     //  for thk=0.1
@@ -922,7 +1006,11 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     unk_hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
                         sizeof(unk_hashes[0]));
     unk_hashcount = 0;
+#if defined(GER)
     // unk_hashcount++;
+#else
+  unk_hashcount++;
+#endif
 
     //           extract the variable name (if present)
     //    (we now get those fromt he caller)
@@ -1314,6 +1402,7 @@ classify_end_regex_loop:
     //     we can do fast comparisons against each document's hashes in
     //     the hyperspace vector files.
 
+#if defined(GER)
     CRM_ASSERT(unk_hashcount >= 0);
     CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
     //mark the end of a feature vector
@@ -1354,6 +1443,36 @@ classify_end_regex_loop:
     CRM_ASSERT(unk_hashcount >= 0);
     CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
     CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
+#else
+  qsort (unk_hashes, unk_hashcount, sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT),
+	 &hash_compare);
+
+  unk_hashcount--;
+  if (user_trace)
+    fprintf (stderr, "Total hashes in the unknown text: %ld\n", unk_hashcount);
+
+
+
+  //       uniqueify the hashes array.
+  i = 1;
+  j = 1;
+  if (use_unique)
+    {
+      while (i <= unk_hashcount)
+	{
+	  if (unk_hashes[i].hash != unk_hashes[i+1].hash 
+	      //	      || unk_hashes[i].key != unk_hashes[i+1].key)
+	      )
+	    {
+	    unk_hashes[j] = unk_hashes[i];
+	    j++;
+	    };
+	  i++;
+	};
+      j--;
+      unk_hashcount = j;
+    }
+#endif
 
     if (user_trace)
         fprintf(stderr, "unique hashes generated: %ld\n", unk_hashcount);

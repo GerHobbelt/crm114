@@ -217,8 +217,12 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                    && (till_eof || (ichar == 0 || inbuf[ichar - 1] != '\n'))
                    && ichar <= iolen)
             {
-                inbuf[ichar] = fgetc(fp);
+				int c = fgetc(fp);
+				if (c != EOF)
+				{
+                inbuf[ichar] = c;
                 ichar++;
+				}
             }
             if (ichar > 0 && inbuf[ichar] == '\n') ichar--; //   get rid of any present newline
             // [i_a] GROT GROT GROT: how about MAC and PC (CR and CRLF instead of LF as line terminators) */
@@ -375,6 +379,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
         //      Do the seek if necessary
         //
+		CRM_ASSERT(fileoffsetlen >= 0);
         if (fileoffsetlen > 0)
         {
             //      fprintf (stderr, "SEEKING to %ld\n", offset);
@@ -390,9 +395,22 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
         //   and send it to outf
         //
-        fwrite(outbuf, outtextlen, 1, outf);
+		if (outtextlen > 0)
+		{
+        int ret = fwrite(outbuf, 1, outtextlen, outf);
+		if (ret != outtextlen)
+		{
+			fatalerror_ex(SRC_LOC(),
+				"Could not write %ld bytes to file %s\n", 
+				outtextlen,
+				fnam);
+		}
+		}
         fflush(outf);
-        if (outf != stdout && outf != stderr) fclose(outf);
+        if (outf != stdout && outf != stderr) 
+		{
+			fclose(outf);
+		}
     }
 
     return 0;

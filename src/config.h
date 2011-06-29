@@ -2,7 +2,7 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* untrappable ASSERT/VERIFY checks */
-/* #undef CRM_ASSERT_IS_UNTRAPPABLE */
+#define CRM_ASSERT_IS_UNTRAPPABLE 1
 
 /* DISable ASSERT/VERIFY checks */
 /* #undef CRM_DONT_ASSERT */
@@ -492,7 +492,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-124"
+#define TAR_FILENAME_POSTFIX "Ger-138"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

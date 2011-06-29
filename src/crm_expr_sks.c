@@ -110,7 +110,7 @@
 //    Tau is a small minimum positive number (divide-by-zero noodge)
 #define TAU 1e-12
 
-#if 10
+#if defined(GER)
 typedef double Qitem_t;
 #else
 typedef float Qitem_t;
@@ -315,6 +315,7 @@ static int get_data(CACHE     *svmcache,
         }
         else
         {
+			memset(doc->data + doc->len, 0, (length - doc->len) * sizeof(doc->data[0]));
             svmcache->size -= (length - doc->len);
             result = doc->len;
             doc->len = length;
@@ -1731,7 +1732,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 b = calc_b();
 
                 //compute decision values for all training documents
-                deci_array = (double *)malloc(svm_prob.l * sizeof(deci_array[0]));
+                deci_array = (double *)calloc(svm_prob.l, sizeof(deci_array[0]));
                 for (i = 0; i < svm_prob.l; i++)
                 {
                     deci_array[i] = calc_decision(svm_prob.x[i], solver.alpha, b);
@@ -1787,7 +1788,9 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 free(solver.alpha);
                 solver.alpha = NULL;
                 free(x);
+				x = NULL;
                 free(y);
+				y = NULL;
                 if (user_trace)
                     fprintf(stderr,
                             "Finish calculating SVM hyperplane, store the solution to %s!\n",
@@ -2161,9 +2164,6 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
         else
         {
-            int *y = NULL;
-            HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
-
             k1 = 0;
             k2 = 0;
 
@@ -2242,6 +2242,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             // else
             {
                 int temp_k1 = 0, temp_k2 = 0;
+				int *y = NULL;
+				HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 
                 if (k3 == 0)
                 {
@@ -2286,7 +2288,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     }
                 }
                 svm_prob.x = x;
-                alpha = (double *)malloc(svm_prob.l * sizeof(alpha[0]));
+                alpha = (double *)calloc(svm_prob.l, sizeof(alpha[0]));
 
                 if ((k3 != 0) || (temp_k1 != k1) || (temp_k2 != k2))
                 {
@@ -2371,8 +2373,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         solver.G = NULL;
                         solver.alpha = NULL;
                         DiagQ = NULL;
-                        free(x);
-                        free(y);
+//                        free(x);
+//                        free(y);
                         if (user_trace)
                             fprintf(stderr,
                                     "Recalculation of svm hyperplane is finished!\n");
@@ -2413,7 +2415,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         // in case we can't load the data from file: initialize with zeroes.
                         for (i = 0; i < svm_prob.l; i++)
                         {
-                            alpha[1] = 0.0;
+                            alpha[i] = 0.0;
                         }
                     }
                 }
@@ -2426,6 +2428,10 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 decision = sigmoid_predict(decision, AB[0], AB[1]);
                 free(alpha);
                 alpha = NULL;
+                free(x);
+				x = NULL;
+                free(y);
+				y = NULL;
             }
             crm_force_munmap_filename(file1);
             crm_force_munmap_filename(file2);

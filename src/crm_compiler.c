@@ -26,8 +26,6 @@
 //
 static STMT_TABLE_TYPE stmt_table[] =
 {
-    /* *INDENT-OFF* */
-
     //  text      internal    nlen exec?   min max  min max  min max  flags
     //   rep        code                  slashargs  parens  boxes
     //
@@ -78,7 +76,6 @@ static STMT_TABLE_TYPE stmt_table[] =
     { "pmulc",    CRM_PMULC,    0,  1,       0,  1,  0,  0,  0,  1,  0 },
     /* { "NoMoreStmts",CRM_UNIMPLEMENTED,0,0,   0,  0,  0,  0,  0,  0,  0}, */
     { NULL } /* [i_a] sentinel */
-    /* *INDENT-ON* */
 };
 
 
@@ -391,7 +388,8 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         fprintf(stderr, "Program statements: %ld, program length %ld\n",
                 j, pgmlength);
 
-    csl->mct = (MCT_CELL **)calloc((csl->nstmts + 10), sizeof(csl->mct[0]));
+	csl->mct_size = csl->nstmts + 10;
+    csl->mct = (MCT_CELL **)calloc(csl->mct_size, sizeof(csl->mct[0]));
     csl->mct_allocated = 1;
     if (!csl->mct)
         untrappableerror("Couldn't malloc MCT table.\n"
@@ -406,8 +404,10 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     {
         csl->mct[i] = (MCT_CELL *)calloc(1, sizeof(csl->mct[i][0]));
         if (!csl->mct[i])
+		{
             untrappableerror(
                 "Couldn't malloc MCT cell. This is very bad.\n", "");
+		}
     }
 
     // ***  Microcompile phase 2 - set statement types
@@ -700,6 +700,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     }
 
     numstmts = stmtnum - 1;
+	CRM_ASSERT(numstmts <= csl->mct_size);
 
     //  check to be sure that the brackets close!
 
@@ -759,6 +760,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //   Work upwards next, assigning the fail targets
         sdx = 0;
         stack[sdx] = numstmts + 1;
+		CRM_ASSERT(numstmts <= csl->mct_size);
         for (stmtnum = numstmts; stmtnum >= 0; stmtnum--)
         {
             switch (csl->mct[stmtnum]->stmt_type)
@@ -796,6 +798,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //   Work upwards again, assigning the TRAP targets
         sdx = 0;
         stack[sdx] = numstmts + 1;
+		CRM_ASSERT(numstmts <= csl->mct_size);
         for (stmtnum = numstmts; stmtnum >= 0; stmtnum--)
         {
             switch (csl->mct[stmtnum]->stmt_type)
@@ -897,6 +900,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //    Finally got to the end.  Fill in the last bits of the CSL
         //  with the new information, and return.
 
+		CRM_ASSERT(numstmts <= csl->mct_size);
         csl->nstmts = numstmts;
 
         if (internal_trace)

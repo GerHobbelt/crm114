@@ -18,5 +18,5 @@ fi
 ./configure
 make
 make megatest
-cp src/megatest_test.log src/megatest_knowngood.log
+# cp src/megatest_test.log src/megatest_knowngood.log
 make distribution

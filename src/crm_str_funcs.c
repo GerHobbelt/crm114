@@ -1373,7 +1373,47 @@ int hash_selftest(void)
 // parts of the code updated accordingly.
 // -- Fidelis
 
-#if defined (CRM_WITH_OLD_HASH_FUNCTION)
+#if !defined(GER)
+
+#if defined(CRM_WITH_OLD_HASH_FUNCTION)
+
+unsigned long strnhash (char *str, long len)
+{
+  long i;
+  // unsigned long hval;
+  int32_t hval;
+  unsigned long tmp;
+
+  // initialize hval
+  hval= len;
+
+  //  for each character in the incoming text:
+  for ( i = 0; i < len; i++)
+    {
+      //    xor in the current byte against each byte of hval
+      //    (which alone gaurantees that every bit of input will have
+      //    an effect on the output)
+
+      tmp = str[i] & 0xFF;
+      tmp = tmp | (tmp << 8) | (tmp << 16) | (tmp << 24);
+      hval ^= tmp;
+
+      //    add some bits out of the middle as low order bits.
+      hval = hval + (( hval >> 12) & 0x0000ffff) ;
+
+      //     swap most and min significative bytes 
+      tmp = (hval << 24) | ((hval >> 24) & 0xff);
+      hval &= 0x00ffff00;           // zero most and min significative bytes of hval
+      hval |= tmp;                  // OR with swapped bytes
+
+      //    rotate hval 3 bits to the left (thereby making the
+      //    3rd msb of the above mess the hsb of the output hash)
+      hval = (hval << 3) + (hval >> 29);
+    }
+  return (hval);
+}
+
+#else
 
 crmhash_t strnhash(char *str, size_t len)
 {
@@ -1411,6 +1451,8 @@ crmhash_t strnhash(char *str, size_t len)
     return hval;
 }
 
+#endif
+
 crmhash64_t strnhash64(char *str, size_t len)
 {
     crmhash64_t ihash = strnhash(str, len);
@@ -1422,7 +1464,7 @@ crmhash64_t strnhash64(char *str, size_t len)
     //     tangled.  Hopefully it will work.
     //
     if (len > 3)
-        ihash = (ihash << 30) + strnhash(&tempbuf[1], newvallen - 2);
+        ihash = (ihash << 30) + strnhash(&str[1], len - 2);
     return ihash;
 }
 
@@ -1516,7 +1558,7 @@ static CRM_MMAP_CELL *cache = NULL;
 //     Watch out tho- this takes a CRM_MMAP_CELL, not a *ptr, so don't
 //     call it from anywhere except inside this file.
 //
-void crm_unmap_file_internal(CRM_MMAP_CELL *map)
+static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
 {
 #if defined(HAVE_MSYNC) || defined(HAVE_MUNMAP)
     int munmap_status;
@@ -1668,7 +1710,6 @@ void crm_force_munmap_addr(void *addr)
 
     //   Step 3: use the standard munmap to complete the unmapping
     crm_munmap_file(addr);
-    return;
 }
 
 
@@ -1860,6 +1901,8 @@ void *crm_mmap_file(char *filename,
                 crm_force_munmap_filename(filename);
                 // when you get here, anything pointed at by p is damaged: free()d memory in function call above.
                 p = cache;
+				if (!p)
+					break;
                 continue;
             }
             else

@@ -35,19 +35,18 @@
 
 
 
-static void dump_error_script_line(CSL_CELL *csl)
+static void dump_error_script_line(CSL_CELL *csl, int iline)
 {
     //     Check to see - is there a trap available or is this a non-trap
     //     program?
     //
     if (csl && csl->nstmts > 0 && csl->mct && csl->filetext
-        && csl->cstmt >= 0 && csl->cstmt < csl->nstmts && csl->mct[csl->cstmt])
+        && iline >= 0 && iline < csl->nstmts && csl->mct[iline]
+	&& csl->mct[iline + 1])
     {
-        int iline;
         int maxchar;
 
         fprintf(stderr, "The line was:\n--> ");
-        iline = csl->cstmt;
         maxchar = csl->mct[iline + 1]->fchar;
         // maxchar == 0: this may happen when there's a fatalerror in the compiler
         if (maxchar < csl->mct[iline]->fchar)
@@ -492,7 +491,7 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *fmt, va_li
         args
     );
     fputs(reason, stderr);
-    dump_error_script_line(csl);
+	dump_error_script_line(csl, csl->cstmt);
 
     if (engine_exit_base != 0)
     {
@@ -535,6 +534,7 @@ long fatalerror_va(int lineno, const char *srcfile, const char *fmt, va_list arg
 {
     char reason[MAX_PATTERN];
     long trap_catch;
+	long original_statement_line = (csl != NULL ? csl->cstmt : -1);
 
     generate_err_reason_msg(
         reason,
@@ -555,7 +555,7 @@ long fatalerror_va(int lineno, const char *srcfile, const char *fmt, va_list arg
     }
 
     fputs(reason, stderr);
-    dump_error_script_line(csl);
+    dump_error_script_line(csl, original_statement_line);
 
     if (engine_exit_base != 0)
     {
@@ -591,6 +591,7 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *fmt, va_list 
 {
     char reason[MAX_PATTERN];
     long trap_catch;
+	long original_statement_line = (csl != NULL ? csl->cstmt : -1);
     static long nonfatalerrorcount = 0;
 
     generate_err_reason_msg(
@@ -612,7 +613,7 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *fmt, va_list 
     }
 
     fputs(reason, stderr);
-    dump_error_script_line(csl);
+    dump_error_script_line(csl, original_statement_line);
 
     nonfatalerrorcount++;
 
@@ -698,6 +699,9 @@ long crm_trigger_fault(char *reason)
     long slen;
     long done;
     long trapline;
+	long original_statement;
+
+	CRM_ASSERT(csl != NULL);
 
     //  Non null fault_text rstring -we'll take the trap
     if (user_trace)
@@ -708,14 +712,15 @@ long crm_trigger_fault(char *reason)
                 reason);
     }
 
+	original_statement = csl->cstmt;
     trapline = csl->cstmt;
 
     done = 0;
     while (!done)
     {
+		CRM_ASSERT(csl->mct[trapline]->trap_index != trapline);
         if (csl->mct[trapline]->trap_index >= csl->nstmts
             || (trapline = csl->mct[trapline]->trap_index) == -1)
-
         {
             if (user_trace)
             {
@@ -730,6 +735,9 @@ long crm_trigger_fault(char *reason)
         //
         if (csl->mct[trapline]->stmt_type != CRM_TRAP)
             return 1;
+
+		// [i_a] fixup for a trap cycle if the trap statement to be parsed is at fault itself (blowuptrapbugtest.crm)
+        csl->cstmt = trapline;
 
         //       OK, we're here, with a live trap.
         slen = (csl->mct[trapline + 1]->fchar)
@@ -777,9 +785,14 @@ long crm_trigger_fault(char *reason)
         else
         {
             crm_regerror(i, &preg, tempbuf, data_window_size);
-            csl->cstmt = trapline;
-            fatalerror("Regular Expression Compilation Problem in TRAP pattern:",
-                       tempbuf);
+            // CRM_ASSERT(csl->cstmt == trapline); previous code can have called fatalerror[_ex] multiple times, 
+			// causing the traphandler line to move forward multiple times. So reassign the traphandler and
+			// go from there:
+            fatalerror_ex(SRC_LOC(),
+				"Regular Expression Compilation Problem in TRAP pattern '%s' while processing the trappable error '%s'",
+                       tempbuf,
+					   reason);
+		    // trapline = csl->cstmt; // [i_a] the call to fatalerror[_ex] will have found a new trapline!
         }
 
 
@@ -800,7 +813,10 @@ long crm_trigger_fault(char *reason)
             //   the TRAP statement itself.
 
 
-            csl->cstmt = trapline;
+            // CRM_ASSERT(csl->cstmt == trapline); previous code can have called fatalerror[_ex] multiple times, 
+			// causing the traphandler line to move forward multiple times. So reassign the traphandler and
+			// go from there:
+			csl->cstmt = trapline;
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
             //
             //     If there's a trap variable, modify it.

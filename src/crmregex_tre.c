@@ -96,7 +96,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
         if (internal_trace) fprintf(stderr, "Checking the regex cache for %s\n",
                                     regex);
         j = 0;
-#ifdef REGEX_CACHE_LINEAR_SEARCH
+#if defined(REGEX_CACHE_LINEAR_SEARCH)
         //
         //          Linear Search uses a strict LRU algorithm to cache
         //          the precompiled regexes.
@@ -120,8 +120,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
                 found_it = i;
             }
         }
-#endif
-#ifdef REGEX_CACHE_RANDOM_ACCESS
+#elif defined(REGEX_CACHE_RANDOM_ACCESS)
         //
         //             Random Access uses an associative cache based on
         //             the hash of the regex (mod the size of the cache).
@@ -141,6 +140,8 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
             status_temp = regex_cache[i].status;
             found_it = i;
         }
+#else
+#error "Must have #define'd ONE of these: REGEX_CACHE_RANDOM_ACCESS, REGEX_CACHE_LINEAR_SEARCH"
 #endif
 
         //    note that on exit, i now is the index where we EITHER found
@@ -175,7 +176,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
         //     at index i,
 
 
-#ifdef REGEX_CACHE_LINEAR_SEARCH
+#if defined(REGEX_CACHE_LINEAR_SEARCH)
         //   If we're in linear search, we move 0 through i-1 down to 1
         //   through i and then we stuff the _temp vars into the [i] cache
         //   area.  Note that if it was the final slot (at
@@ -218,10 +219,10 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
         regex_cache[0].regex_len = rlen_temp;
         regex_cache[0].status    = status_temp;
         regex_cache[0].cflags    = cflags_temp;
-#endif
 
-#ifdef REGEX_CACHE_RANDOM_ACCESS
-        //
+#elif defined(REGEX_CACHE_RANDOM_ACCESS)
+
+		//
         //      In a random access system, we just overwrite the single
         //      slot that we expected our regex to be in...
 
@@ -246,6 +247,8 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
         regex_cache[i].status    = status_temp;
         regex_cache[i].cflags    = cflags_temp;
 
+#else
+#error "Must have #define'd ONE of these: REGEX_CACHE_RANDOM_ACCESS, REGEX_CACHE_LINEAR_SEARCH"
 #endif
 
         //  Just about done.  Set up the return preg..
@@ -338,6 +341,26 @@ char *crm_regversion(void)
     CRM_ASSERT(strlen(tre_version()) < 129);
     strcat(vs, (char *)tre_version());
     return vs;
+}
+
+
+void free_regex_cache(void)
+{
+	int i;
+
+    for (i = 0; i < WIDTHOF(regex_cache); i++)
+    {
+        if (regex_cache[i].preg != NULL)
+        {
+            regfree(regex_cache[i].preg);
+            free(regex_cache[i].preg);
+        }
+        if (regex_cache[i].regex != NULL)
+		{
+			free(regex_cache[i].regex);
+		}
+    }
+	memset(regex_cache, 0, sizeof(regex_cache));
 }
 
 

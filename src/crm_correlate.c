@@ -236,8 +236,8 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (user_trace)
         {
             fprintf(stderr, "learning the text (len %ld) :", textlen);
-            fwrite(&(mdw->filetext[textoffset]),
-                   ((textlen < 128) ? textlen : 128), 1, stderr);
+            fwrite(&(mdw->filetext[textoffset]), 1,
+                   ((textlen < 128) ? textlen : 128), stderr);
             fprintf(stderr, "\n");
         }
 

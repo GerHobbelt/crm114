@@ -741,7 +741,7 @@ static long fir_2_slot(double fir, long firlatlen)
 {
     long ifir;
 
-    ifir = (long)(fir * (firlatlen - 1));
+  ifir = (fir * (firlatlen - 1.00));
     if (ifir < 0) ifir = 0;
     if (ifir >= firlatlen) ifir = firlatlen - 1;
     return ifir;
@@ -764,7 +764,7 @@ static double slot_2_fir(long slot, long firlatlen)
      *     firlatlen slots.
      *     That means the 'middle' FIR value for a slot S is the fir value ((S + 0.5) / firlatlen).
      */
-#if 1
+#if defined(GER)
     outval = (slot + 0.5) / firlatlen;
 #else
     outval = (slot + 0.5) / (firlatlen - 1);
@@ -1345,7 +1345,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long *firlat;                        //  the FIR prior lookaside table
     ENTROPY_HEADER_STRUCT *headers;      //  the what-is-where headers.
     long *fmap;                          // catcher for where the file gets mapped.
-    long firlatlen = 0;                  //  how long is the FIR lookaside table?
+  long firlatlen = -1;             //  how long is the FIR lookaside table?
     long firlatbytes;                    //  how many bytes of firlat
     long long *totalbits;                //  How many total feature bits in this file
     double localfir;                     //  the FIR value we've accumulated on this path
@@ -2400,19 +2400,23 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         totalbits[maxhash] = &(headers[maxhash]->totalbits);
 
                         if (internal_trace)
+						{
                             fprintf(stderr,
                                     "File #%ld firlat %p len %ld and nodes %p\n",
                                     maxhash,
                                     (void *)firlats[maxhash],
                                     firlatlens[maxhash],
                                     (void *)nodestarts[maxhash]);
+						}
 
                         //    Keep a copy of the data filename for later.
                         hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
                         if (!hashname[maxhash])
+						{
                             untrappableerror(
                                 "Couldn't malloc hashname[maxhash]\n",
                                 "We need that part later, so we're stuck.  Sorry.");
+						}
                         strncpy(hashname[maxhash], fname, fnlen);
                         hashname[maxhash][fnlen] = 0;
                         maxhash++;
@@ -2420,8 +2424,10 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
             }
             if (maxhash > MAX_CLASSIFIERS - 1)
+			{
                 nonfatalerror("Too many classifier files.",
                               "Some may have been disregarded");
+			}
         }
     }
 
@@ -2505,7 +2511,11 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             while (textoffset + 1 < textmaxoffset || bitnum > 0)
             {
                 long nodetotcount, itc;
+#if defined(GER)
                 double add_entropy;
+#else
+	    float add_entropy;
+#endif
                 bitnum = bitnum - ENTROPY_CHAR_SIZE;
                 if (bitnum < 0)
                 {
@@ -2782,7 +2792,11 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             for (k = 0; k < maxhash; k++)
             {
                 long m;
+#if defined(GER)
                 double pctused;
+#else
+	    float pctused;
+#endif
                 remainder = 1000 * DBL_MIN;
                 for (m = 0; m < maxhash; m++)
                     if (k != m)

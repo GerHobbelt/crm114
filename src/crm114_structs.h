@@ -172,6 +172,7 @@ typedef struct mythical_csl_cell
     long          nchars;                //  characters of data we have
     unsigned long hash;                  //  hash of this data (if done)
     MCT_CELL      **mct;                 //  microcompile (if compiled)
+	long		  mct_size;			     // number of slots available in the MCT
     long          nstmts;                //  how many statements in the microcompile
     long          preload_window;        //  do we preload the window or not?
     long          cstmt;                 //  current executing statement of this file

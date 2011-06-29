@@ -2,7 +2,7 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* untrappable ASSERT/VERIFY checks */
-/* #undef CRM_ASSERT_IS_UNTRAPPABLE */
+#define CRM_ASSERT_IS_UNTRAPPABLE 1
 
 /* DISable ASSERT/VERIFY checks */
 /* #undef CRM_DONT_ASSERT */

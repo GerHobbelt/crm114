@@ -168,7 +168,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 //    we know it's actual size and can actually -insert-
                 //    it.
                 //
-                //    We malloc a big hunk of memory, read the file in.
+                //    We malloc a big chunk of memory, read the file in.
                 //    We expand it there (with impunity), then
                 //    we make a temporary copy in malloced memory,
                 //    and do the real insertion.

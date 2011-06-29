@@ -531,7 +531,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //          icount = read (0, &(newinputbuf[newbuflen]), 1);
                             //
                             if (user_trace)
-                                fprintf(stderr, "   single character BYCHAR read \n");
+                                fprintf(stderr, "   single character BYCHAR read\n");
                             icount = fread(&(newinputbuf[newbuflen]), 1, 1, stdin);
                         }
                         break;

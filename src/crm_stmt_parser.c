@@ -359,6 +359,7 @@ int crm_statement_parse(char           *in,
         default:
             fatalerror("Declensional parser returned an undefined typecode!",
                        "What the HECK did you do to cause this?");
+			break;
         }
     }
     return k;    // return value is how many declensional arguments we found.
@@ -437,7 +438,7 @@ int crm_generic_parse_line(
         fprintf(stderr, "\n");
     }
 
-    while (chidx < len  &&  argc <= maxargs)
+    while (chidx < len && argc <= maxargs)
     {
         chidx++;
         curchar = txt[chidx];
@@ -496,7 +497,9 @@ int crm_generic_parse_line(
     }
     if (depth != 0)
     {
-        char errstmt[MAX_PATTERN];
+		int operand_len;
+		int statement_len;
+
         flen[argc] = chidx - fstart[argc];
         //
         //   GROT GROT GROT Somehow, sometimes we get flen[argc] < 0.   It's
@@ -508,11 +511,16 @@ int crm_generic_parse_line(
         /* [i_a] make sure we don't run out of buffer here either! Twas a nasty bug to find. */
         if (flen[argc] >= MAX_PATTERN)
             flen[argc] = MAX_PATTERN - 1;
-        strncpy(errstmt, &txt[fstart[argc]], CRM_MIN(MAX_PATTERN, flen[argc]));
-        CRM_ASSERT(flen[argc] < MAX_PATTERN);
-        errstmt[CRM_MIN(MAX_PATTERN - 1, flen[argc])] = 0;   /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
-        nonfatalerror(" This operand doesn't seem to end.  Bug?\n -->  ",
-                      errstmt);
+		operand_len = CRM_MIN(MAX_PATTERN, flen[argc]);
+		CRM_ASSERT(chidx >= 0);
+		statement_len = chidx;
+        nonfatalerror_ex(SRC_LOC(), 
+			" The operand '%.*s'%s doesn't seem to end.  Bug in statement?\n -->  %.*s",
+			(operand_len > 1024 ? 1024 : operand_len),
+                      &txt[fstart[argc]],
+					  (operand_len > 1024 ? "(...truncated)" : ""),
+					  statement_len,
+					  txt);
         argc++;
     }
     return argc;

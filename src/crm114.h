@@ -59,7 +59,11 @@ int crm_microcompiler(CSL_CELL *csl,
 
 
 //  hash function for variable tables
+#if defined(CRM_WITH_OLD_HASH_FUNCTION)
+unsigned long strnhash(char *str, long len);
+#else
 crmhash_t strnhash(char *str, size_t len);
+#endif
 
 crmhash64_t strnhash64(char *str, size_t len);
 
@@ -650,6 +654,10 @@ void free_hash_table(VHT_CELL **vht, size_t vht_size);
 void free_arg_parseblock(ARGPARSE_BLOCK *apb);
 void free_stack_item(CSL_CELL *csl);
 void free_stack(CSL_CELL *csl);
+
+void cleanup_expandvar_allocations(void);
+
+void free_regex_cache(void);
 
 
 

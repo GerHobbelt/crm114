@@ -85,6 +85,15 @@ long crm_qexpandvar(char *buf, long inlen, long maxlen, long *qex_stat)
                           | CRM_EVAL_MATH);
 }
 
+
+//  the maximum length allocated so far for these random buffers...
+static long current_maxlen = 0;
+//  a temporary work buffer...
+static char *tbuf = NULL;
+//  and another for variable names...
+static char *vname = NULL;
+
+
 //     crm_zexpandvar - "expanded" expandvar.  Does all the expansions,
 //     but does not repeat the evaluations.  If you want repeats, you
 //     must do that yourself (that way, this function will always
@@ -118,13 +127,6 @@ long crm_zexpandvar(char *buf,
     long is, id;
     long vht_index;
     long q;
-
-    //  the maximum length allocated so far for these random buffers...
-    static long current_maxlen = 0;
-    //  a temporary work buffer...
-    static char *tbuf = NULL;
-    //  and another for variable names...
-    static char *vname = NULL;
 
     char *cp;
     long vlen;
@@ -1298,5 +1300,10 @@ all_done:
 
 
 
+void cleanup_expandvar_allocations(void)
+{
+	free(tbuf);
+	free(vname);
+}
 
 

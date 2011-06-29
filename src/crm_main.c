@@ -138,9 +138,9 @@ void free_stack_item(CSL_CELL *csl)
 
     if (csl->mct && csl->mct_allocated)
     {
-        long i;
+        int i;
 
-        for (i = 0; i < csl->nstmts + 10; i++)
+		for (i = 0; i < csl->mct_size; i++)
         {
             MCT_CELL *cp = csl->mct[i];
 
@@ -199,6 +199,8 @@ static void crm_final_cleanup(void)
     // move every malloc/free to use xmalloc/xcalloc/xrealloc/xfree, so we can be sure
     // [x]free() will be able to cope with NULL pointers as it is.
 
+	crm_munmap_all();
+
     free_hash_table(vht, vht_size);
     vht = NULL;
     free_stack(csl);
@@ -211,6 +213,9 @@ static void crm_final_cleanup(void)
     //mdw = NULL;
     //free_arg_parseblock(apb);
     //apb = NULL;
+
+	free_regex_cache();
+	cleanup_expandvar_allocations();
 
     free(newinputbuf);
     newinputbuf = NULL;
@@ -282,8 +287,8 @@ int main(int argc, char **argv)
     // Set the new bits
     _CrtSetDbgFlag(i);
 
-    // set a malloc marker we can use it in the leak dump at the end of the program:
-    bogus_ptr = _calloc_dbg(1, 1, _CLIENT_BLOCK, __FILE__, __LINE__);
+//    // set a malloc marker we can use it in the leak dump at the end of the program:
+//    bogus_ptr = _calloc_dbg(1, 1, _CLIENT_BLOCK, __FILE__, __LINE__);
 #endif
 
     //  printf (" args: %d \n", argc);
@@ -1004,7 +1009,7 @@ end_command_line_parse_loop:
         //
         //         This is the much faster way.
         //
-        //      i = fread (cdw->filetext, 1, data_window_size -1, stdin);
+        //      i = fread (cdw->filetext, 1, data_window_size - 1, stdin);
         //
         //          JesusFreke suggests this instead- retry with successively
         //          smaller readsizes on systems that can't handle full

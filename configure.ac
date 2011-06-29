@@ -134,11 +134,16 @@ a 'free speedup'. (default: assertions are ENABLED)]),
   AC_DEFINE_UNQUOTED(CRM_DONT_ASSERT, 1, [DISable ASSERT/VERIFY checks])
   )
 
-AC_ARG_ENABLE([untrappable-asserts],
-  AC_HELP_STRING([--enable-untrappable-assertions],
-    [assertion checks are untrappable (instead of merely being a
-trappable error report). This means any triggered assertion checks
-will NOT show up in your CRM trap handlers. (default: assertions are 'trappable')]),
+AC_ARG_ENABLE([trappable-asserts],
+  AC_HELP_STRING([--enable-trappable-assertions],
+    [make assertion checks trappable (instead of being a
+untrappable error report). This means any triggered assertion 
+checks will show up in your CRM trap handlers, but BEWARE: under
+specific (rather theoretical) circumstances you may now be greeted
+by a coredump due to an inifinite loop caused by assertion failures
+within the CRM114 trap handler. Can't say you haven't been warned!
+(default: assertions are 'untrappable')]),
+  AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 0, [TRAPPABLE(!) ASSERT/VERIFY checks - (this is dangerous!)]),
   AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 1, [untrappable ASSERT/VERIFY checks])
   )
 

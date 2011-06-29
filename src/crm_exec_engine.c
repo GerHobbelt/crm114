@@ -145,6 +145,7 @@ invoke_top:
                 &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
                 slen,
                 apb);
+
         }
         else
         {
@@ -504,20 +505,23 @@ invoke_top:
             //
             reason = calloc((rlen + 5), sizeof(reason[0]));
             if (!reason)
+			{
                 untrappableerror(
                     "Couldn't malloc 'reason' in CRM_FAULT - out of memory.\n",
                     "Don't you just HATE it when the error fixup routine gets"
                     "an error?!?!");
+			}
             strncpy(reason, rbuf, rlen + 1);
             reason[rlen + 1] = 0;/* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
             fresult = crm_trigger_fault(reason);
-            free(reason);
             if (fresult != 0)
             {
                 fatalerror("Your program has no TRAP for the user defined fault:",
                            reason);
+	            free(reason);
                 goto invoke_bailout;
             }
+            free(reason);
         }
         break;
 

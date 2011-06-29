@@ -21,6 +21,11 @@
 #ifndef __CRM114_CONFIG_H__
 #define __CRM114_CONFIG_H__
 
+#ifndef CRM_ASSERT_IS_UNTRAPPABLE
+#define CRM_ASSERT_IS_UNTRAPPABLE 1  /* untrappable by default, if config.h screwed up */
+#endif
+
+
 //
 //   default size of the variables hashtable (a.k.a. the VHT)
 #define DEFAULT_VHT_SIZE 4095
@@ -328,6 +333,9 @@
 //    End of configurable parameters.
 
 
+
+
+#define CRM_WITH_OLD_HASH_FUNCTION 1
 
 #endif /* __CRM114_CONFIG_H__ */
 

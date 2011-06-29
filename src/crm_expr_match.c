@@ -537,13 +537,13 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     //  will be usable.  So, we create the varname as a temp
                     //  var, and then can reassign it with impunity.
                     {
-                        static char *vn;
+                        char *vn;
 
                         //   DANGER here - we malloc the var, use it
                         //   in crm_set_windowed_nvar, and then free it.
                         //   Otherwise, we'd have a memory leak.
                         //
-                        if (!vn)
+                        // if (!vn)
                             vn = (char *)calloc((MAX_VARNAME + 16), sizeof(vn[0]));
                         if (!vn)
                             untrappableerror("Couldn't malloc vn.\n Can't fix that.", "");
@@ -589,7 +589,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                           "Therefore, I'm ignoring this "
                                           "re-definition.");
                         }
-                        // free (vn);
+                        free (vn);
                     }
                     //    and move on to the next binding (if any)
                     vstart = vnext;
