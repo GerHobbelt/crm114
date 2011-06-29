@@ -1138,6 +1138,8 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (suc_prob <= 0.5)
     {
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
     return 0;

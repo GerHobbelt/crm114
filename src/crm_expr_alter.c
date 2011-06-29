@@ -159,11 +159,17 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         if (user_trace)
             fprintf(stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %d\n", csl->cstmt);
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
     return 0;
 }
+
+
 
 int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {

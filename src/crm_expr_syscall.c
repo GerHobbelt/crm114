@@ -406,10 +406,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     CRM_ASSERT(apb != NULL);
-    keep_len = crm_get_pgm_arg(keep_buf, WIDTHOF(keep_buf), apb->a1start, apb->a1len);
-    keep_len = crm_nexpandvar(keep_buf, keep_len, MAX_PATTERN);
-	CRM_ASSERT(keep_len < MAX_PATTERN); 
-	keep_buf[keep_len] = 0;
+    inlen = crm_get_pgm_arg(keep_buf, WIDTHOF(keep_buf), apb->a1start, apb->a1len);
+    inlen = crm_nexpandvar(keep_buf, inlen, MAX_PATTERN);
+	CRM_ASSERT(inlen < MAX_PATTERN); 
+	keep_buf[inlen] = 0;
 
 	done = sscanf(keep_buf, "%lf %lf", &pollcycle_setting, &run_timeout_setting);
 	switch (done)
@@ -518,7 +518,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     from_minion[1] = 0;
     //exp_keep_buf[0] = 0;
     //  this is 8-bit-safe because vars are never wchars.
-    if (keep_len > 0)
+    if (keep_buf[0])
     {
 		CRM_ASSERT(WIDTHOF(exp_keep_buf) >= MAX_PATTERN + 2 /* space for ":*" */ );
         strcpy(exp_keep_buf, ":*");
@@ -692,6 +692,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     }
                 }
                 csl->cstmt = varline;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
                 //   and note that this isn't a failure.
                 csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
                 //   The minion's real work should now start; get out of
@@ -751,7 +753,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //   their buffers, and are now held up waiting for the other
     //   process to empty some space in the output buffer)
     //
-    if (inlen > 0)
+    if (strlen(inbuf) > 0)
     {
 #if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
     fflush(stdout);
@@ -1197,7 +1199,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //   their buffers, and are now held up waiting for the other
             //   process to empty some space in the output buffer)
             //
-            if (inlen > 0)
+            if (strlen(inbuf) > 0)
             {
                 unsigned int hThread;
                 pusherparams *pp;
@@ -1274,8 +1276,6 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     int readlen;
                     LARGE_INTEGER large_int;
                     DWORD file_flags;
-                    DWORD chars_available;
-                    DWORD chars_avail_in_this_message;
                     DWORD exit_code;
 
 
@@ -1347,30 +1347,6 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 							}
 						}
                         // else: eof = FALSE
-
-#if 0
-                        file_flags = 0;
-                        status = GetHandleInformation(from_minion[0], &file_flags);
-                        error = GetLastError();
-                        if (internal_trace)
-                            fprintf(stderr, "GetHandleInformation() = %d/%d, %08lX\n", status, error, file_flags);
-
-                        readlen = (data_window_size >> SYSCALL_WINDOW_RATIO) - done - 2;
-
-                        status = PeekNamedPipe(from_minion[0],
-                            outbuf + done,
-                            readlen,
-                            &charsread,
-                            &chars_available,
-                            &chars_avail_in_this_message);
-                        error = GetLastError();
-                        if (internal_trace)
-                            fprintf(stderr, "PeekNamedPipe() = %d/%d, read:%d, avail: %d, in msg: %d\n", status, error,
-                                charsread,
-                                chars_available,
-                                chars_avail_in_this_message);
-                        // kinda funny: chars_avail_in_this_message is -chars_available (yep, minus!)
-#endif
 
                         CRM_ASSERT(charsread == 0);
                         if (!eof)

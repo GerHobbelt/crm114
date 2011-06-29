@@ -37,8 +37,8 @@
     #
     {
         {
-                match <absent> [:cf_filename:] /.+/
-                return
+            match <absent> [:cf_filename:] /.+/
+            return
         }
         input [:*:cf_filename:] (:option_txt:)
     }
@@ -462,27 +462,27 @@ return
 			call /:verbosity:/ [reavercache_init: subtree ls --> :*:tmp:]
 			match [:tmp:] <absent> /texts/
 			call /:verbosity:/ [reavercache_init: create subdirectories]
-			syscall () () /mkdir :*:text_cache: / [0.1]
-			syscall () () /mkdir :*:text_cache:\\texts / [0.1]
-			syscall () () /mkdir :*:text_cache:\\prob_good / [0.1]
-			syscall () () /mkdir :*:text_cache:\\prob_spam / [0.1]
-			syscall () () /mkdir :*:text_cache:\\known_good / [0.1]
-			syscall () () /mkdir :*:text_cache:\\known_spam / [0.1]
-			syscall () () /mkdir :*:text_cache:\\empty / [0.1]
+			syscall () () /mkdir :*:text_cache: /
+			syscall () () /mkdir :*:text_cache:\\texts /
+			syscall () () /mkdir :*:text_cache:\\prob_good /
+			syscall () () /mkdir :*:text_cache:\\prob_spam /
+			syscall () () /mkdir :*:text_cache:\\known_good /
+			syscall () () /mkdir :*:text_cache:\\known_spam /
+			syscall () () /mkdir :*:text_cache:\\empty /
 		}
 		alius
 		{
-			syscall () (:tmp:) /ls :*:text_cache: 2>&1 / [0.1]   # [i_a] why the redirect? both stdout and stderr are captured?
+			syscall () (:tmp:) /ls :*:text_cache: 2>&1 /    # [i_a] why the redirect? both stdout and stderr are captured?
 			call /:verbosity:/ [reavercache_init: subtree ls --> :*:tmp:]
 			match [:tmp:] <absent> /texts/
 			call /:verbosity:/ [reavercache_init: create subdirectories]
 			syscall () () /mkdir :*:text_cache: /
 			syscall () () /mkdir :*:text_cache:\/texts /
 			syscall () () /mkdir :*:text_cache:\/prob_good /
-			syscall () () /mkdir :*:text_cache:\/prob_spam / [0.1]
-			syscall () () /mkdir :*:text_cache:\/known_good / [0.1]
-			syscall () () /mkdir :*:text_cache:\/known_spam / [0.1]
-			syscall () () /mkdir :*:text_cache:\/empty / [0.1]
+			syscall () () /mkdir :*:text_cache:\/prob_spam /
+			syscall () () /mkdir :*:text_cache:\/known_good /
+			syscall () () /mkdir :*:text_cache:\/known_spam /
+			syscall () () /mkdir :*:text_cache:\/empty /
         }
 		call /:verbosity:/ [reavercache_init: subtree created]
     }
@@ -503,7 +503,7 @@ return
 	{
 		match [:_hosttype:] /Windows-MS/
 		call /:verbosity:/ [reavercache_store: date determine for Win32]
-		syscall () (:system_time:) /date \/T && time \/T / [2.0 0.1]  # Win32: GROT GROT GROT!
+		syscall () (:system_time:) /date \/T && time \/T / [2.0]  # Win32: GROT GROT GROT!
 		call /:verbosity:/ [reavercache_store: date determined @ ':*:system_time:']
 		match [:system_time:] ( :: :cacheid: :cacheid2nd: ) /([[:graph:]]+)[^[:graph:]]*([[:graph:]]*)/
 		call /:verbosity:/ [reavercache_store: of which remains: ':*:cacheid:' + ':*:cacheid2nd:' ]

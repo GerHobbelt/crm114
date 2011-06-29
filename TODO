@@ -126,7 +126,7 @@ Stefan Seyfried
 
 - megatest.sh should work out of the box, _after_ installation.
   I'd be nice to have a ``make test'' run this, _before_ installation.
-  
+
   (DONE: GerH -- split up megatest into particles in tests/ + make check; there's
    also make megatest / make megatest_ng for those that love the old ways.)
 
@@ -135,7 +135,7 @@ Stefan Seyfried
   #ifdef HAVE_CONFIG_H
   #include "config.h"
   #endif
-  
+
   (DONE: GerH)
 
 - document how to have both a /usr/bin/crm114-tre and a /usr/bin/crm114-rx

@@ -515,7 +515,7 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen)
         fprintf(stderr, "  setting temp-area variable %s to value %s\n",
             varname, value);
 
-    if (!crm_nextword(varname, strlen(varname), 0, &vnidx, &vnlen))
+    if (!crm_nextword(varname, (int)strlen(varname), 0, &vnidx, &vnlen))
     {
         nonfatalerror("Somehow, you are assigning a value to a variable with "
                       "an unprintable name.  I'll permit it for now, but "

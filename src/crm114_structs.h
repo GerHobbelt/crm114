@@ -125,7 +125,9 @@ typedef struct mythical_vht_cell
 //      in till we have to, then we cache the result.
 //
 
-
+#if FULL_PARSE_AT_COMPILE_TIME			
+// TODO: make these p[n] / p[n], b[n] and s[n] ARRAYS for easier use and expansion
+#endif
 typedef struct mythical_argparse_block
 {
     char      *a1start;  // '<>' angle delimited field: options
@@ -154,7 +156,11 @@ typedef struct mythical_argparse_block
 typedef struct mythical_mct_cell
 {
     char           *hosttxt;    // text buffer this statement lives in.
+#if FULL_PARSE_AT_COMPILE_TIME			
+    ARGPARSE_BLOCK  apb;        // the argparse block for this statement
+#else
     ARGPARSE_BLOCK *apb;        // the argparse block for this statement
+#endif
     int             start;      // zero-base index of start of statement (inclusive)
     int             fchar;      // zero-base index of non-blank stmt (for prettyprint)
     int             achar;      // zero-base index of start of args;
@@ -445,7 +451,10 @@ typedef struct mythical_stmt_type
     char    *stmt_name;
     int      stmt_code;
     int      namelen;
-    int      is_executable;
+	unsigned is_executable: 1;
+	unsigned has_non_standard_flags: 1;
+    int      minangles;
+    int      maxangles;
     int      minslashes;
     int      maxslashes;
     int      minparens;

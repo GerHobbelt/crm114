@@ -462,6 +462,13 @@
 #define DEBUGGER_DISABLED_FOREVER			-3
 
 
+//
+// Set this to non-zero to turn on the new 'full compiler' support: arguments are parsed at an early stage,
+// reduced JITting and IMPROVED error checking!
+//
+#define FULL_PARSE_AT_COMPILE_TIME			1
+
+
 
 #endif /* __CRM114_CONFIG_H__ */
 

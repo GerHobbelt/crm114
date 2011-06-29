@@ -14,17 +14,19 @@ STDOUT TEST OUTPUT:
  
  --- the next thing you see SHOULD be an error "unable to read-open"--- 
  Caught the error  - fault text was 
-./crm114: *ERROR* 
- For some reason, I was unable to read-open the file named  zoob.zipulrlfjf
- Sorry, but this program is very sick and probably should be killed off.
-This happened at line 19 of file fataltraptest.crm
-(runtime system location: crm_expr_file_io.c(151) in routine: crm_expr_input)
+crm114: *ERROR*
+For some reason, I was unable to read-open the file named 'zoob.zipulrlfjf' (expanded from 'zoob.zipulrlfjf'): error = 2(No such file or directory)
+Sorry, but this program is very sick and probably should be killed off.
+This happened at line 19 of file fataltraptest.crm:
+    input [zoob.zipulrlfjf] (:hi:)
+(runtime system location: crm_expr_file_io.c(207) in routine: crm_expr_input)
   --- and again, the next thing you see SHOULD be an error "unable to write-open"--- 
  Caught the error  - fault text was 
-./crm114: *ERROR* 
+crm114: *ERROR*
  For some reason, I was unable to write-open the file named /No/Such/Directory/frotz.mumble
- Sorry, but this program is very sick and probably should be killed off.
-This happened at line 29 of file fataltraptest.crm
-(runtime system location: crm_expr_file_io.c(345) in routine: crm_expr_output)
+Sorry, but this program is very sick and probably should be killed off.
+This happened at line 30 of file fataltraptest.crm:
+    output [/No/Such/Directory/frotz.mumble] /:hi:/  # This is correct code; should give the I/O error as expected
+(runtime system location: crm_expr_file_io.c(579) in routine: crm_expr_output)
  
 

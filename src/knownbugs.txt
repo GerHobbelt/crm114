@@ -27,17 +27,17 @@ not have this problem either.
    (FIXED - default library is now TRE 0.7.4)
 
 
-3++)  The GNU regex engine considers /./ to match not only the 
+3++)  The GNU regex engine considers /./ to match not only the
 string "a", but also the empty string "".  This is in contrast
 to /../ which does match "aa" but not "a".
 
    (FIXED - default library is now TRE 0.7.4)
 
 
-4) Thinking bug...  If you ALTER one variable that contains another 
+4) Thinking bug...  If you ALTER one variable that contains another
 variable, the second variable moves as though you inserted/deleted
-charactes at the START of the first variable, and then overtyped
-all of the evenly matched characters.  This can lead to 
+characters at the START of the first variable, and then overtyped
+all of the evenly matched characters.  This can lead to
 counterintuitive results; the fix is to ISOLATE any variable that
 has to hold value across an ALTER operation.
 
@@ -49,24 +49,24 @@ bind a var, then ISOLATE that var, then MATCH it again, the old
 ISOLATEd usage is _not_ recovered.  If you do this enough, you will
 run out of buffer space and get a FATAL ERROR.
 
-The quick workaround is to use two variables- for example, :a: and 
+The quick workaround is to use two variables- for example, :a: and
 :isolated_a: as shown here:
 
      match :a:
-     isolate (:isolated_a:) /:*:a:/ 
-     match (:a:) 
-     isolate (:isolated_a:) /:*:a:/ 
+     isolate (:isolated_a:) /:*:a:/
+     match (:a:)
+     isolate (:isolated_a:) /:*:a:/
 
 ad infinitum, which will _not_ leak memory.
 
-   (REAL FIX in by 20060629 - off by one error in line 920 
+   (REAL FIX in by 20060629 - off by one error in line 920
    of crm_var_hash_table.c)
 
 6) If you do math, and the output is bigger than a trillion or less than
 1 trillionth, the output comes out in E-notation.
 
-This is fine -except that you can't _re_use that, because the numerical
-parser doesn't understand E-notation.  
+This is fine - except that you can't _re_use that, because the numerical
+parser doesn't understand E-notation.
 
 Be warned.  Or send me a patch!
 
@@ -93,4 +93,4 @@ Patches appreciated on this one too.
 
     Let me know if you find any others!
 
-	-Bill Y.
+    -Bill Y.

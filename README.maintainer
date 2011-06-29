@@ -58,7 +58,7 @@ to see the available distro packaging methods):
         make distribution
 
 where the latter creates them all and then some: a separate 'diff only'
-archive is also produced 
+archive is also produced
 
 (diff archive will 'work', assuming you have both the 'old/original'
 CRM114 source code and your own tree in the apropriate directories:
@@ -108,8 +108,8 @@ When you've synced sources or otherwise with BillY's ./src/ wget distro
 After merging your ./src/ with the wget copy, run
 
         make BillY-sync
-        
-to update all the files in 
+
+to update all the files in
 
         ./tests/
         ./docs/

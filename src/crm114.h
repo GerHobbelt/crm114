@@ -549,6 +549,7 @@ int crm_expr_mutate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 //     the generic parser.
 int crm_statement_parse(char           *in,
         int                            slen,
+		MCT_CELL *mct, 
         ARGPARSE_BLOCK                 *apb);
 
 

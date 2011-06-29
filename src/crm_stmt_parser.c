@@ -28,7 +28,7 @@
 //     DON'T FORGET TO ALSO MODIFY THIS IN crm114_structs.h !!
 
 
-const FLAG_DEF crm_flags[] =
+static const FLAG_DEF crm_flags[] =
 {
     { "fromstart", CRM_FROMSTART }, /* bit 0 */
     { "fromnext", CRM_FROMNEXT },
@@ -286,7 +286,7 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
 
             //    find sch in our table, squalk a nonfatal/fatal if necessary.
             recog_flag = 0;
-            for (j = 0; crm_flags[j].string != NULL; j++) /* [i_a] loop until we've hit the sentinel at the end of the table */
+            for (j = 0; j < WIDTHOF(crm_flags); j++)
             {
                 // fprintf(stderr, " Trying %s (%d) at pos = %d\n", crm_flags[j].string, crm_flags[j].value, j );
 
@@ -318,11 +318,15 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
             //   check to see if we need to squalk an error condition
 			if (recog_flag == 0)
             {
+				if (stmt_definition && !stmt_definition->has_non_standard_flags)
+				{
                 char foo[129];
                 strncpy(foo, wtext, CRM_MIN(wlen, 128));
                 foo[CRM_MIN(wlen, 128)] = 0;
                 nonfatalerror("Darn...  unrecognized flag: ", foo);
-            }
+				}
+					// else: ignore non-standard flag: the method handler itself must cope with this.
+			}
 
 			//   check to see if we need to squalk an error condition for unsupported options:
 			if (outcode & (stmt_definition ? ~stmt_definition->flags_allowed_mask : 0))
@@ -386,12 +390,58 @@ int crm_nextword(const char *input,
 
 
 
+#if FULL_PARSE_AT_COMPILE_TIME	
+static void check_arg_counts(int actual_value, int absolute_maximum_allowed, 
+							 int minimum, int maximum,
+							 const char *typedescription,
+							 int lineno, const char *srcfile, const char *funcname)
+{
+	if (actual_value < minimum)
+	{
+		fatalerror_ex(lineno, srcfile, funcname, 
+			"Too %s %s arguments were specified for this command: "
+			"we see you specified %d args while the %s required is %d.",
+			"few",
+			typedescription,
+		actual_value, 
+		"minimum",
+		minimum);
+	}
+	if (actual_value > maximum)
+	{
+		fatalerror_ex(lineno, srcfile, funcname, 
+			"Too %s %s arguments were specified for this command: "
+			"we see you specified %d args while the %s required is %d.",
+			"many",
+			typedescription,
+		actual_value, 
+		"maximum",
+		maximum);
+	}
+	// extra check for CRM114 'C' programmer errors - they existed so better make sure
+	// it don't happen ever again.
+	if (absolute_maximum_allowed < maximum)
+	{
+		fatalerror_ex(lineno, srcfile, funcname, 
+			"The compiler definition for the maximum number of "
+			"%s arguments is screwed (not your fault!): "
+			"the absolute maximum supported by the compiler is %d, while the definition "
+			"number from the table is %d.",
+			typedescription,
+		absolute_maximum_allowed, 
+		maximum);
+	}
+}
+#endif
 
+
+//
 //      parse a CRM114 statement; this is mostly a setup routine for
 //     the generic parser.
-
+//
 int crm_statement_parse(char           *in,
         int                            slen,
+		MCT_CELL *mct, 
         ARGPARSE_BLOCK                 *apb)
 {
 #define CRM_STATEMENT_PARSE_MAXARG 10
@@ -400,6 +450,15 @@ int crm_statement_parse(char           *in,
     int ftype[CRM_STATEMENT_PARSE_MAXARG];
     int fstart[CRM_STATEMENT_PARSE_MAXARG];
     int flen[CRM_STATEMENT_PARSE_MAXARG];
+#if FULL_PARSE_AT_COMPILE_TIME	
+	const STMT_TABLE_TYPE *stmt_def;
+	STMT_TABLE_TYPE actual_arg_counts = {0};
+#endif
+
+	CRM_ASSERT(mct);
+#if FULL_PARSE_AT_COMPILE_TIME	
+	stmt_def = mct->stmt_def;
+#endif
 
     //     we call the generic parser with the right args to slice and
     //     dice the incoming statement into declension-delimited parts
@@ -415,6 +474,7 @@ int crm_statement_parse(char           *in,
 
 
     //   start out with empties on each possible chunk
+#if 0
     apb->a1start = NULL;
     apb->a1len = 0;
     apb->p1start = NULL;
@@ -429,8 +489,20 @@ int crm_statement_parse(char           *in,
     apb->s1len = 0;
     apb->s2start = NULL;
     apb->s2len = 0;
+#else
+	memset(apb, 0, sizeof(*apb));
+#endif
+#if FULL_PARSE_AT_COMPILE_TIME	
+	actual_arg_counts.maxangles = 1;
+					actual_arg_counts.maxparens = 3;
+					actual_arg_counts.maxboxes = 1;
+					actual_arg_counts.maxslashes = 2;
+#endif
 
     //   Scan through the incoming chunks
+	//
+	// Validate the max argument counts according to the command definition while
+	// we're at it... We'll check min counts once we're done.
     for (i = 0; i < k; i++)
     {
         switch (ftype[i])
@@ -442,12 +514,15 @@ int crm_statement_parse(char           *in,
                 {
                     apb->a1start = &in[fstart[i]];
                     apb->a1len = flen[i];
-                }
+#if FULL_PARSE_AT_COMPILE_TIME	
+					actual_arg_counts.minangles = 1;
+#endif
+				}
                 else
                 {
                     nonfatalerror(
                             "There are multiple flag sets on this line.",
-                            " ignoring all but the first");
+                            "Ignoring all but the first.");
                 }
             }
             break;
@@ -459,22 +534,31 @@ int crm_statement_parse(char           *in,
                 {
                     apb->p1start = &in[fstart[i]];
                     apb->p1len = flen[i];
-                }
+#if FULL_PARSE_AT_COMPILE_TIME	
+					actual_arg_counts.minparens = 1;
+#endif
+				}
                 else if (apb->p2start == NULL)
                 {
                     apb->p2start = &in[fstart[i]];
                     apb->p2len = flen[i];
-                }
+#if FULL_PARSE_AT_COMPILE_TIME	
+					actual_arg_counts.minparens = 2;
+#endif
+				}
                 else if (apb->p3start == NULL)
                 {
                     apb->p3start = &in[fstart[i]];
                     apb->p3len = flen[i];
-                }
+#if FULL_PARSE_AT_COMPILE_TIME	
+					actual_arg_counts.minparens = 3;
+#endif
+				}
                 else
                 {
                     nonfatalerror(
                             "Too many parenthesized varlists.",
-                            "ignoring the excess varlists.");
+                            "Ignoring the excess varlists.");
                 }
             }
             break;
@@ -486,12 +570,15 @@ int crm_statement_parse(char           *in,
                 {
                     apb->b1start = &in[fstart[i]];
                     apb->b1len = flen[i];
-                }
+#if FULL_PARSE_AT_COMPILE_TIME	
+					actual_arg_counts.minboxes = 1;
+#endif
+				}
                 else
                 {
                     nonfatalerror(
                             "There are multiple domain limits on this line.",
-                            " ignoring all but the first");
+                            "Ignoring all but the first.");
                 }
             }
             break;
@@ -503,17 +590,23 @@ int crm_statement_parse(char           *in,
                 {
                     apb->s1start = &in[fstart[i]];
                     apb->s1len = flen[i];
-                }
+#if FULL_PARSE_AT_COMPILE_TIME	
+					actual_arg_counts.minslashes = 1;
+#endif
+				}
                 else if (apb->s2start == NULL)
                 {
                     apb->s2start = &in[fstart[i]];
                     apb->s2len = flen[i];
-                }
+#if FULL_PARSE_AT_COMPILE_TIME	
+					actual_arg_counts.minslashes = 2;
+#endif
+				}
                 else
                 {
                     nonfatalerror(
                             "There are too many regex sets in this statement,",
-                            " ignoring all but the first.");
+                            "Ignoring all but the first and second.");
                 }
             }
             break;
@@ -526,6 +619,38 @@ int crm_statement_parse(char           *in,
             break;
         }
     }
+
+#if FULL_PARSE_AT_COMPILE_TIME	
+	// now we got some checkin' to do... hold on.
+	check_arg_counts(actual_arg_counts.minangles,
+		actual_arg_counts.maxangles,
+		stmt_def->minangles,
+stmt_def->maxangles,
+"angled '<>'",
+SRC_LOC());
+
+	check_arg_counts(actual_arg_counts.minboxes,
+		actual_arg_counts.maxboxes,
+		stmt_def->minboxes,
+stmt_def->maxboxes,
+"boxed '[]'",
+SRC_LOC());
+
+	check_arg_counts(actual_arg_counts.minparens,
+		actual_arg_counts.maxparens,
+		stmt_def->minparens,
+		stmt_def->maxparens,
+"parens '()'",
+SRC_LOC());
+
+	check_arg_counts(actual_arg_counts.minslashes,
+		actual_arg_counts.maxslashes,
+		stmt_def->minslashes,
+		stmt_def->maxslashes,
+"slashes '//'",
+SRC_LOC());
+#endif
+
     return k;    // return value is how many declensional arguments we found.
 }
 

@@ -144,9 +144,11 @@ void free_stack_item(CSL_CELL *csl)
 
             if (cp != NULL)
             {
+#if !FULL_PARSE_AT_COMPILE_TIME			
                 free(cp->apb);
                 cp->apb = NULL;
-                // free(cp->hosttxt);
+#endif
+				// free(cp->hosttxt);
                 free(cp);
                 csl->mct[i] = NULL;
             }
@@ -191,7 +193,6 @@ void free_stack(CSL_CELL *csl)
  *    so tread carefully here: do not assume all these pointers are filled.
  */
 static void crm_final_cleanup(void)
-
 {
     // GROT GROT GROT
     //
@@ -794,7 +795,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_BIT_ENTROPY)
             snprintf(dst, len, "  Bit-Entropy\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -804,7 +805,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_CORRELATE)
             snprintf(dst, len, "  Correlate\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -814,7 +815,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_FSCM)
             snprintf(dst, len, "  FSCM\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -824,7 +825,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_MARKOV)
             snprintf(dst, len, "  Markov\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -834,7 +835,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_NEURAL_NET)
             snprintf(dst, len, "  Neural-Net\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -844,7 +845,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_OSBF)
             snprintf(dst, len, "  OSBF\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -854,7 +855,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_OSB_BAYES)
             snprintf(dst, len, "  OSB-Bayes\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -864,7 +865,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_OSB_HYPERSPACE)
             snprintf(dst, len, "  OSB-Hyperspace\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -874,7 +875,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_OSB_WINNOW)
             snprintf(dst, len, "  OSB-Winnow\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -884,7 +885,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_SKS)
             snprintf(dst, len, "  SKS\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -894,7 +895,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_SVM)
             snprintf(dst, len, "  SVM\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -904,7 +905,7 @@ int main(int argc, char **argv)
 #if !defined (CRM_WITHOUT_CLUMP)
             snprintf(dst, len, "  CLUMP\n");
             dst[len - 1] = 0;
-            partlen = strlen(dst);
+            partlen = (int)strlen(dst);
             dst += partlen;
             len -= partlen;
 #else
@@ -1366,7 +1367,7 @@ int main(int argc, char **argv)
         //     the [1] below gets rid of the leading - sign
         snprintf(csl->filetext, max_pgmsize, "\n%s\n\n", &(argv[openbracket][1]));
         csl->filetext[max_pgmsize - 1] = 0;   /* make sure the string is terminated; some environments don't do this when the boundary was hit */
-        csl->nchars = strlen(csl->filetext);
+        csl->nchars = (int)strlen(csl->filetext);
         csl->hash = strnhash(csl->filetext, csl->nchars);
         if (user_trace)
         {
@@ -1466,7 +1467,7 @@ int main(int argc, char **argv)
             int rs;
             rs = i + readsize < data_window_size - 1 ?
                  readsize : data_window_size - i - 1;
-            i += fread(cdw->filetext + i, 1, rs, stdin);
+            i += (int)fread(cdw->filetext + i, 1, rs, stdin);
             if (feof(stdin))
             {
                 break;
@@ -1546,7 +1547,7 @@ int main(int argc, char **argv)
     {
         int isoname;
         int isolen;
-        isolen = strlen(":_iso:");
+        isolen = (int)strlen(":_iso:");
         isoname = tdw->nchars;
         //strcat (tdw->filetext, ":_dw:");
         memmove(&tdw->filetext[isoname], ":_iso:", isolen);

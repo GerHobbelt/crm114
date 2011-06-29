@@ -1,9 +1,25 @@
-This file contain know bugs and limitations of CRM114 program.
-If you find any other, please write a short description to any of the
-active developers.
+This file contain know bugs and limitations of CRM114 program. If you
+find any other, please write a short description to any of the active
+developers.
 
-	TODO
-
+    TODO
 
 
 See docs/knownbugs.txt for more.
+
+----------------------------------------------------------------------
+
+bad code that got accepted before:
+
+        alter (:cacheid:) /:*:cacheid::@:_:*:cacheid2nd:/
+
+--> (missing : terminator for the :@: math expression, that really
+    isn't, as _ is not a math operator; copy&paste failure) VERBOSE:
+    reavercache_store: before correction: '2008-03-31:@:_10:21'
+
+
+        output /hello/ [stderr
+
+No closing brace but still no error? :-still
+
+

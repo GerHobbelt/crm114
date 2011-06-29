@@ -3,7 +3,7 @@ window
 {
 	isolate (:lsout:)
 	output /\n ----- executing an ls -----\n/
-	syscall ( ) (:lsout:) /ls *.c/ /[Windows-MS]dir *.c /
+	syscall ( ) (:lsout:) /ls *.c/            # [Windows-MS] /dir *.c /
 	output /:*:lsout:/
 	output /\n ----- executing s1 script -----\n/
 	syscall ( ) (:lsout:) /exectest_s1.sh/
@@ -17,10 +17,10 @@ window
 	output /:*:calcout:/
 	isolate (:lslaout:)
 	output /\n ----- executing another ls -----\n/
-	syscall ( ) (:lsout:) /ls *.c/ /[Windows-MS]dir \/b *.c /
+	syscall ( ) (:lsout:) /ls *.c/              # [Windows-MS] /dir \/b *.c /
 	output /:*:lsout:/
 	output /\n ----- executing an ls -la -----\n/
-	syscall ( ) (:lslaout:) /ls -la *.c/ /[Windows-MS]dir \/s *.c /
+	syscall ( ) (:lslaout:) /ls -la *.c/        # [Windows-MS] /dir \/s *.c /
 	output /:*:lslaout:/
 	isolate (:catout:)
 	output /\n ----- outputting to a file using cat -----\n/
@@ -43,7 +43,7 @@ window
 	output /\n ----- testing keep reads from proc -----\n/
 	isolate (:lslaout:) / /
 #	syscall < keep > ( ) (:lslaout:) (:proc:) /ls -la \/dev /
-	syscall < keep > ( ) (:lslaout:) (:proc:) /ls -la *.c/ /[Windows-MS]dir \/s *.c /
+	syscall < keep > ( ) (:lslaout:) (:proc:) /ls -la *.c/        # [Windows-MS] /dir \/s *.c /
 	output /--- got immediate : \n:*:lslaout: \n ---end-----/
     :async_test_sleeploop:
 	syscall <keep > () (:lslaout:) (:proc:) //	
@@ -126,7 +126,7 @@ window
 	output /Testing fire-and-forget asynch \n/
 	output /proc = :*:proc:\n/
 #	syscall < async > () (:lslaout:) (:proc:) /ls -la \/dev /
-	syscall < async > () (:lslaout:) (:proc:) /ls -la *.c / /[Windows-MS]dir \/s *.c /
+	syscall < async > () (:lslaout:) (:proc:) /ls -la *.c /         # [Windows-MS] /dir \/s *.c /
 	output /fire and forget ls got: :*:lslaout: \n/
 	output /proc = :*:proc:\n/
 	syscall < async > ( ) (:lslaout:) (:proc:) /.\/exectest_s1.sh /

@@ -1,8 +1,3 @@
-Read README.1st for instructions on how to build and 
-install CRM114.
+Read README.1st for instructions on how to build and install CRM114.
 
-
-
---------------------------------------------------------
-Code maintained by Paolo.  Pending Bill's blessing.
-
+See README.Win32 for Win32/Windows related build and usage information.

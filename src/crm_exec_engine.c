@@ -137,6 +137,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
         //         if we've already generated the argparse block (apb) for this
         //         statement, we use it, otherwise, we create one.
         //
+#if !FULL_PARSE_AT_COMPILE_TIME			
         if (!csl->mct[csl->cstmt]->apb)
         {
             csl->mct[csl->cstmt]->apb = calloc(1, sizeof(csl->mct[csl->cstmt]->apb[0]));
@@ -152,6 +153,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             i = crm_statement_parse(
                     &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
                     slen,
+					csl->mct[csl->cstmt],
                     apb);
         }
         else
@@ -161,7 +163,10 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 fprintf(stderr, "JIT parse reusing line %d\n", csl->cstmt);
             apb = csl->mct[csl->cstmt]->apb;
         }
-        //    Either way, the flags might have changed, so we run the
+#else
+            apb = &csl->mct[csl->cstmt]->apb;
+#endif
+		//    Either way, the flags might have changed, so we run the
         //    standard flag parser against the flags found (if any)
         {
             char flagz[MAX_PATTERN];
@@ -230,9 +235,11 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
     case CRM_LABEL:
         {
             if (user_trace)
-                fprintf(stderr, "Statement %d is non-executable, continuing.\n",
+			{
+				fprintf(stderr, "Statement %d is non-executable, continuing.\n",
                         csl->cstmt);
-        }
+			}
+		}
         break;
 
     case CRM_OPENBRACKET:
@@ -240,17 +247,21 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //  the nest_level+1 is because the statements in front are at +1 depth
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level + 1] = 1;
             if (user_trace)
-                fprintf(stderr, "Statement %d is an openbracket. depth now %d.\n",
+			{
+				fprintf(stderr, "Statement %d is an openbracket. depth now %d.\n",
                         csl->cstmt, 1 + csl->mct[csl->cstmt]->nest_level);
-        }
+			}
+		}
         break;
 
     case CRM_CLOSEBRACKET:
         {
             if (user_trace)
+			{
                 fprintf(stderr, "Statement %d is a closebracket. depth now %d.\n",
                         csl->cstmt, csl->mct[csl->cstmt]->nest_level);
-        }
+			}
+		}
         break;
 
     case CRM_BOGUS:
@@ -289,9 +300,11 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Exiting at statement %d with value %d\n",
+			{
+				fprintf(stderr, "Exiting at statement %d with value %d\n",
                         csl->cstmt, retval);
-            //if (profile_execution)
+			}
+			//if (profile_execution)
             //  crm_output_profile (csl);
             //      exit (retval);
             status = retval;
@@ -441,6 +454,8 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                                 csl->cstmt, k);
 					}
                     csl->cstmt = k - 1; // this gets autoincremented, so we must --
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
                     //  and going here didn't fail...
                     csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
                 }
@@ -466,7 +481,11 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //                and let the increment happen.
             if (user_trace)
                 fprintf(stderr, "Executing hard-FAIL at line %d\n", csl->cstmt);
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
 
             //   and mark that we "failed", so an ALIUS will take this as a
             //   failing statement block
@@ -483,7 +502,11 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //               liaf_index -1 and let the incrment happen)
             if (user_trace)
                 fprintf(stderr, "Executing hard-LIAF at line %d\n", csl->cstmt);
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->cstmt = csl->mct[csl->cstmt]->liaf_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
         }
         break;
 
@@ -494,11 +517,15 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //   then ALIUS itself is a FAIL
             if (user_trace)
                 fprintf(stderr, "Executing ALIUS at line %d\n", csl->cstmt);
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             if (csl->aliusstk[csl->mct[csl->cstmt]->nest_level + 1] == 1)
             {
                 if (user_trace)
                     fprintf(stderr, "prior group exit OK, ALIUS fails forward.\n");
                 csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             }
         }
         break;
@@ -601,15 +628,15 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 				{
 					nonfatalerror_ex(SRC_LOC(), "ACCEPT: all data (len = %d) could not be written to the output: "
                         "errno = %d(%s)\n",
-vht[varidx]->vlen,
+						vht[varidx]->vlen,
                         errno,
                         errno_descr(errno));
 				}
-        // [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster
-        if (isatty(fileno(stdout)))
-        {
-            fflush(stdout);
-        }
+				// [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster
+				if (isatty(fileno(stdout)))
+				{
+					fflush(stdout);
+				}
             }
             //    WE USED TO DO CHARACTER I/O.  OUCH!!!
             //      for (i = 0; i < cdw->nchars ; i++)
@@ -680,7 +707,7 @@ vht[varidx]->vlen,
             if (newstrlen == 0)
             {
                 strcpy(tempbuf, ":*:_dw:");
-                newstrlen = strlen(tempbuf);
+                newstrlen = (int)strlen(tempbuf);
             }
             newstrlen = crm_nexpandvar(tempbuf, newstrlen, data_window_size);
 
@@ -834,6 +861,8 @@ vht[varidx]->vlen,
             newcsl->caller = csl;
             newcsl->calldepth = csl->calldepth + 1;
             //     put in the target statement number - this is a label!
+            CRM_ASSERT(k >= 0);
+            CRM_ASSERT(k <= csl->nstmts);
             newcsl->cstmt = k;
             newcsl->return_vht_cell = -1;
             //     whack the alius stack so we are not in a "fail" situation
@@ -846,7 +875,7 @@ vht[varidx]->vlen,
             //    routine (which should be a :var:, if it doesn't exist or
             //    isn't isolated, it is created and isolated).  The
             //    routine can use this string in any way desired.  It can
-            //    be parsed, searched, MATCHEd etc.  This allows
+            //    be parsed, searched, MATCHed etc.  This allows
             //    call-by-anything to be implemented.
             //
             //    On return, a similar process is performed - the return value
@@ -943,6 +972,7 @@ vht[varidx]->vlen,
 
                 //  maybe run some JIT parsing on the called statement?
                 //
+#if !FULL_PARSE_AT_COMPILE_TIME			
                 if (!csl->mct[csl->cstmt]->apb)
                 {
                     csl->mct[csl->cstmt]->apb = calloc(1, sizeof(csl->mct[csl->cstmt]->apb[0]));
@@ -959,12 +989,16 @@ vht[varidx]->vlen,
                         i = crm_statement_parse(
                                 &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
                                 slen,
+								csl->mct[csl->cstmt],
                                 csl->mct[csl->cstmt]->apb);
                     }
                 }
                 //    and start using the JITted apb
                 apb = csl->mct[csl->cstmt]->apb;
-                //
+#else
+                apb = &csl->mct[csl->cstmt]->apb;
+#endif
+				//
                 //     We don't have flags, so we don't bother fixing the
                 //     flag variables.
                 //
@@ -976,12 +1010,12 @@ vht[varidx]->vlen,
                 //      get the generalized argument name (first varname)
                 if (crm_nextword(outbuf, argnamelen, 0, &vns, &vnl))
 				{
-		if (vnl >= WIDTHOF(outbuf))
+		if (vnl >= data_window_size)
 		{
 			nonfatalerror_ex(SRC_LOC(), "CALL statement comes with a label reference which is too long (len = %d) "
 				"while the maximum allowed size is %d.",
-					j,
-(int)(WIDTHOF(outbuf)-1));
+					vnl,
+data_window_size-1);
 			vnl = WIDTHOF(outbuf) - 1;
 		}
                 memmove(outbuf, &outbuf[vns], vnl);

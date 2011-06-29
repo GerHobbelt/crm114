@@ -468,11 +468,11 @@ static void agglomerative_averaging_cluster(CLUMPER_STATE_STRUCT *s, int goal)
 
     if (!clusters)
     {
-        untrappableerror("Cannot allocate cluster block", "Stick a fork in us; we're _done_.");
+        untrappableerror("Cannot allocate cluster block (A)", "Stick a fork in us; we're _done_.");
     }
     if (!M)
     {
-        untrappableerror("Cannot allocate distance matrix M[]", "Stick a fork in us; we're _done_.");
+        untrappableerror("Cannot allocate distance matrix M[] (A)", "Stick a fork in us; we're _done_.");
     }
 
     for (i = 1; i < n - 1; i++)
@@ -658,11 +658,11 @@ static void agglomerative_nearest_cluster(CLUMPER_STATE_STRUCT *s, int goal)
 
     if (!clusters)
     {
-        untrappableerror("Cannot allocate cluster block", "");
+        untrappableerror("Cannot allocate cluster block (B)", "Stick a fork in us; we're _done_.");
     }
     if (!M)
     {
-        untrappableerror("Cannot allocate distance matrix M[]", "");
+        untrappableerror("Cannot allocate distance matrix M[] (B)", "Stick a fork in us; we're _done_.");
     }
 
     for (i = 1; i < n - 1; i++)
@@ -775,11 +775,11 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
 
     if (!clusters)
     {
-        untrappableerror("Cannot allocate cluster block", "");
+        untrappableerror("Cannot allocate cluster block (C)", "Stick a fork in us; we're _done_.");
     }
     if (!M)
     {
-        untrappableerror("Cannot allocate distance matrix M[]", "");
+        untrappableerror("Cannot allocate distance matrix M[] (C)", "Stick a fork in us; we're _done_.");
     }
 
     for (i = 1; i < n - 1; i++)
@@ -1086,6 +1086,8 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -1500,6 +1502,8 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -1709,6 +1713,8 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 fprintf(stderr, "CLUMP was a FAIL, skipping forward.\n");
             //    and do what we do for a FAIL here
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         outbuf[out_len] = 0;

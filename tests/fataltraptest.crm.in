@@ -26,7 +26,8 @@ output / --- the next thing you see SHOULD be an error "unable to read-open"--- 
 output / --- and again, the next thing you see SHOULD be an error "unable to write-open"--- :*:_nl:/
 {
 	{
-		output [/No/Such/Directory/frotz.mumble] (:hi:)
+		# output [/No/Such/Directory/frotz.mumble] (:hi:)  # GerH builds > 2257 will catch this programming mistake
+		output [/No/Such/Directory/frotz.mumble] /:hi:/  # This is correct code; should give the I/O error as expected
 	}
 	trap (:my_fault:) /.*/
 	{

@@ -86,7 +86,7 @@
 
 window
 
-match [:load_cf_file:] /./ 
+# match [:load_cf_file:] /./    -- gives a buit of a cryptic error but that's ok, crm114 should fail when you feed it stuff like this.
 
 isolate <default> (:load_cf_file:) /bugger/
 isolate (:load_cf_file:) /bomb/

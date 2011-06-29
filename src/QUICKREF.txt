@@ -1,4 +1,4 @@
-     The CRM114 Quick Reference Card.  Updated 20080324
+     The CRM114 Quick Reference Card.  Updated 20080505
 
      Copyright W.S. Yerazunis, 2002-2008.  All rights reserved.
      This software is released under V2.1 of the Gnu Public License.
@@ -213,8 +213,9 @@ Builtin variables:
           :_dw:                - the current data window contents (usually the default arg)
           :_iso:               - the current isolated data block (change at your own peril!)
 
-          :_?:                 - watchable variable: last (trappable) failure report message; ONLY AVAILABLE
-                                 when the debugger will be used (-d commandline switch / 'debug'
+          :_?:                 - watchable variable: last (trappable) failure
+                                 report message; ONLY AVAILABLE when the debugger
+                                 will be used (-d commandline switch / 'debug'
                                  statement in script)
 
 ----  VARIABLE EXPANSION  ----
@@ -389,7 +390,7 @@ call /:entrypoint_label:/ [:arg1: :arg2:... ] (:ret_arg:)
 
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
-classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ // /svm-specific controls/
+classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /svm-specific controls/
                                   - compare the statistics of the current data
                                     window buffer with classfiles c1...cN .
                                     In general, class statistics files are
@@ -702,6 +703,33 @@ hash (:result:) /input/           - compute a fast 32-bit hash of the
                                     the data window :_dw: )
 
 
+input <flags> [:filename:]
+input <flags> (:result:) [:filename:]
+input <flags> (:result:) [:filename: offset len]
+                                  - read in the content of filename
+                                    if no filename, then read stdin
+    <byline>                      - read one line only
+    <readline>                    - read one line only, using the history-aware
+                                    readline library
+     (:result:)                   - var that gets the input value
+                                    (surgical overwrite).
+                                    When no :result: variable has been specified,
+                                    the default :_dw: input window is assumed.
+      [:filename:]                - the file to read.  The first
+                                    blank-delimited word is taken and
+                                    var-expanded; the result is the filename,
+                                    even if it includes embedded spaces.
+                                    Default is to read stdin.
+       [:filename: offset len]    - optionally, move to offset in the
+                                    file, and read len bytes.
+                                    Offset and len are individually
+                                    blank-delimited, and
+                                    var-expanded with mathematics
+                                    enabled.  If len is unspecified,
+                                    the read extends to EOF or buffer
+                                    limit.
+
+
 intersect (:out:) [:var1: :var2: ...]
                                   - makes :out: contain the part
                                     of the data window that is the
@@ -735,36 +763,12 @@ isolate (:var1: :var2: ... :varN:)
                                     retained/copied.
 
 
-input <flags> [:filename:]
-input <flags> (:result:) [:filename:]
-input <flags> (:result:) [:filename: offset len]
-                                  - read in the content of filename
-                                    if no filename, then read stdin
-    <byline>                      - read one line only
-    <readline>                    - read one line only, using the history-aware
-                                    readline library
-     (:result:)                   - var that gets the input value
-                                    (surgical overwrite).
-                                    When no :result: variable has been specified,
-                                    the default :_dw: input window is assumed.
-      [:filename:]                - the file to read.  The first
-                                    blank-delimited word is taken and
-                                    var-expanded; the result is the filename,
-                                    even if it includes embedded spaces.
-                                    Default is to read stdin.
-       [:filename: offset len]    - optionally, move to offset in the
-                                    file, and read len bytes.
-                                    Offset and len are individually
-                                    blank-delimited, and
-                                    var-expanded with mathematics
-                                    enabled.  If len is unspecified,
-                                    the read extends to EOF or buffer
-                                    limit.
+lazy                              - WARNING: reserved for future use
 
 
 learn <flags> (:class:) [:in:] /word-pat/
 learn <flags> (:class:) [:in:] /word-pat/ /entropy_fuzz/
-learn <flags> (:class:) [:in:] /word-pat/ // /svm-specific controls/
+learn <flags> (:class:) [:in:] /word-pat/ /svm-specific controls/
                                   - learn the statistics of the :in:
                                     var (or the input window if no var)
                                     as an example of class :class:
@@ -933,6 +937,10 @@ match <flags> (:var1: ...) [:in: /inregex/] /regex/
               KNOWN_BUGS file for a detailed listing.
 
 
+mutate <flags> (:dest:) [:src:] /from args/ /to args/
+                                  - WARNING: reserved for future use
+
+
 output <flags> [filename] /output-text/
                                   - output an arbitrary string
                                     with captured values expanded.
@@ -979,6 +987,9 @@ return /returnval/                - return from a CALL.  Note that since
 
 
 routine                           - WARNING: reserved for future use
+
+
+sort                              - WARNING: reserved for future use
 
 
 syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
@@ -1041,6 +1052,10 @@ syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
                                     word is not a :label:, then the entire
                                     string is handed off to the shell to
                                     be executed as a shell command.
+                                    This argument is optional: when you have
+                                    specified <keep> and are performing a
+                                    second/subsequent syscall, you can optionally
+                                    dispense with the // arg.
 
 
 translate <flags> (:dest:) [:src:] /from_charset/ /to_charset/
@@ -2163,9 +2178,4 @@ The parts of a CRM114 statement are:
                                by the action.  These may contain "adjectival
                                phrases - var restrictions, either by subscript
                                or by regex or both.
-
-
-
-
-
 

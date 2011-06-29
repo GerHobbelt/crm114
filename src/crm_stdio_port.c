@@ -110,6 +110,7 @@ int fwrite4stdio(const char *str, size_t len, FILE *out)
 		{
 			count_written += ret;
 			len -= ret;
+			str += ret;
 		}
 		else
 		{

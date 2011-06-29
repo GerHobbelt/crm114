@@ -11,7 +11,7 @@ window
 	match <> (:1:) /abcde/
 	match <> (:2:) /cde+fg/
 	match <> (:3:) /fghij/
-	alter <> (:z:) /:*:2:/
+	alter (:z:) /:*:2:/
 	output /:*:_nl: 1: :*:1:, 2: :*:2:, 3: :*:3: z: :*:z: :*:_nl:/
 	output / ---altering the z copy ----- :*:_nl:/
 	alter (:z:) /CDEEEFG/

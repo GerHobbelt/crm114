@@ -47,6 +47,7 @@ process_crm         tests                escapetest.crm                    .in
 process_crm         tests                eval_infiniteloop.crm             .in
 process_crm         tests                exectest.crm                      .in
 process_crm         tests                fataltraptest.crm                 .in
+process_crm         tests                fataltrapprogramerr.crm           .in
 process_crm         tests                inserttest_a.crm                  .in
 process_crm         tests                inserttest_b.crm                  .in
 process_crm         tests                inserttest_c.crm                  .in

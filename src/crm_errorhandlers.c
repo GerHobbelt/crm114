@@ -997,8 +997,8 @@ int crm_trigger_fault(const char *reason)
             reason);
     }
 
-    if (debug_countdown > DEBUGGER_DISABLED_FOREVER) // pop up the debugger when in 'break-op-exception' mode
-{
+    if (debug_countdown > DEBUGGER_DISABLED_FOREVER) // also pop up the debugger when in 'continue' or 'counted' run
+	{
 	if (!inside_debugger)
 	{
 		// make sure we're not causing a recursion here; while inside the debugger,
@@ -1009,20 +1009,11 @@ int crm_trigger_fault(const char *reason)
 		// the current statement position, etc...) ;-)
 		//
 		i = crm_debugger(csl, CRM_DBG_REASON_EXCEPTION_HANDLING, reason);
-        if (i == -1)
-        {
-            if (engine_exit_base != 0)
-            {
-                exit(engine_exit_base + 6);
-            }
-            else
-            {
-                exit(EXIT_SUCCESS);
-            }
-        }
 	}
-}
+	}
 
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
 	original_statement = csl->cstmt;
     trapline = csl->cstmt;
 
@@ -1057,6 +1048,7 @@ int crm_trigger_fault(const char *reason)
         i = crm_statement_parse(
             &(csl->filetext[csl->mct[trapline]->fchar]),
             slen,
+			csl->mct[trapline],
             &apb);
         if (user_trace)
         {
@@ -1137,6 +1129,8 @@ int crm_trigger_fault(const char *reason)
             // causing the traphandler line to move forward multiple times. So reassign the traphandler and
             // go from there:
             csl->cstmt = trapline;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
             //
             //     If there's a trap variable, modify it.

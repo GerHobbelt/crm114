@@ -684,6 +684,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (user_trace)
             fprintf(stderr, "  CUT match failed so we're going to fail.\n");
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
 

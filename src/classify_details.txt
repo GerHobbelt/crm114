@@ -702,7 +702,7 @@ Markov chain is representable by a toroid, of some reasonable shape,
 with the interconnections done in a reasonable way.  The default
 in CRM114 as of 20070101 is to form an array of 256 rows and 256 columns
 of nodes (total 64,000 nodes), and connect them into a toroid by a 
-"perfect shuffle"- that is, the next state for a zero bit is the next
+"perfect shuffle" - that is, the next state for a zero bit is the next
 column, row index 
 
 
@@ -737,7 +737,7 @@ performance, you want to keep the chains short.  But that wastes a lot
 of space.  90-95 per cent utilization is a good compromise.
 
 Note that the time-to-find a slot (or find it's not there) goes with
-the length of the overflow chains- so long chains are _very_ bad for
+the length of the overflow chains - so long chains are _very_ bad for
 performance.  I usually set a limit of 256 or even 128 on chains.
 
 Once you go past that limit, you need to start expiring old data out
@@ -759,7 +759,7 @@ data we lose in a microgroom (face it, database grooming/expiring is
 brain surgery with a butter knife... microgrooming is just using
 the serrations on the edge to minimize how much we scrape away).
 
-Note that this works pretty well- most of the slots ever used in a
+Note that this works pretty well - most of the slots ever used in a
 .css/.cow file contain only a single occurrence, so reclaiming a small
 fraction of them (currently 1 in 16, scattered randomly) is a good
 compromise.  It also will eventually expire out even the largest
@@ -776,7 +776,7 @@ end-of-chain).
 This is "repacking" the chain.  And the code that did it had a bug
 that repacked only the first part of the chain and then stopped.
 This meant that the tail of the chain (avg 50% or so) could NOT
-be found- the data there was lost!
+be found - the data there was lost!
 
 This bug has now been (hopefully) stomped.
 

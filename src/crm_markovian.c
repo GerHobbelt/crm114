@@ -2361,6 +2361,8 @@ classify_end_regex_loop:
                 fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
             //    and do what we do for a FAIL here
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
             return 0;
         }

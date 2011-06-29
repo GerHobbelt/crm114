@@ -72,6 +72,8 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -188,6 +190,8 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -299,6 +303,8 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -412,6 +418,8 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -523,6 +531,8 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -633,6 +643,8 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -744,6 +756,8 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -855,6 +869,8 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;
@@ -966,6 +982,8 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return fev;

@@ -1,6 +1,6 @@
 crm114-win32 is a command line driven program. Please refer to the manual
 page from the source distribution (available in the ./man/ directory) and
-check the commandline syntax for a list of generally available command-line 
+check the commandline syntax for a list of generally available command-line
 options (depending on your build, some may not be available to you; run
 
   crm114 -v
@@ -9,7 +9,7 @@ to inspect the included feature set available).
 
 Specific technical documentation is also available in the ./docs/ directory.
 
-This Win32 port of crm114 is a full featured version. It currently only lacks 
+This Win32 port of crm114 is a full featured version. It currently only lacks
 syscall /:label:/ support (i.e. cannot fork a crm114 script). Running external applications/tools
 using 'syscall' is supported though.
 
@@ -51,6 +51,4 @@ For the latest information always check the crm114 homepage at URL:
 and the crm114 Win32 port at
 
   http://www.hebbut.net/ --> 'Public Offerings' --> CRM114
-or
-  http://crm114.hebbut.net/
 

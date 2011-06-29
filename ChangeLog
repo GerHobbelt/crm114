@@ -1,3 +1,99 @@
+2008-05-05 Ger Hobbelt
+
+    * Of course I had to screw up again. Apparently I did never hit any
+      error reports larger than ~ 256 characters going, as when I was
+      taking the next step towards a single-scan compiler, a bug in
+      fwrite4stdio() caught me behind the ear: error messages and other
+      displays would repeat after 256 chars instead of printing the
+      _complete_ message. FIXED.
+
+    * Compiler now comes with full argument parsing and argument count
+      validation using the table in crm_compiler.c. Of course, one may
+      expect trouble then and several troubles have already been
+      addressed in the table and the validation code.
+
+      Basically, JIT is dead and gone now.
+
+      The things left TODO:
+
+      - get rid of the preprocessor
+
+      - make the mct[] array a single allocated array instead of a
+        series of blocks - no use having that
+
+      - refactor the code, such that calls like crm_statement_parse() do
+        not needlessly rescan the command too, or rather have it's state
+        machine parse the complete command for us as it does that
+        already basically: this functionality is duplicated in several
+        ways in both the preprocessor and the compiler core.
+
+    * Fixed a few bugs in the latest boundary checking and error
+      reporting code. This was not catched by 'make check' and I just
+      found out when trying to run mailreaver.crm - oops. :-((
+      Definitely in need of a more sophisticated test set to prevent
+      this sort of boogers.
+
+    * Further preparation for the css* commands in the CRM114 compiler:
+      the compiler should now be able to cope with 'non standard flags',
+      i.e. ignore them when the statement definition table
+      (crm_compiler.c) says we should expect them for this particular
+      command.
+
+    * Programming bugs in the vianlla test scripts:
+
+        fataltraptest.crm --> an extra fataltrapprogramerr.crm test case
+                              has been created to test this situation,
+                              while fataltraptest.crm has been fixed to
+                              perform the intended tests.
+
+        +Too many angled '<>' arguments were specified for this command: we see you specified 1 args while the maximum required is 0.
+        +Sorry, but this program is very sick and probably should be killed off.
+        +This happened at line 14 of file overalterisolatedtest.crm:
+        +    alter <> (:z:) /:*:2:/
+        +(runtime system location: crm_stmt_parser.c(630) in routine: crm_statement_parse)
+
+        --> overalterisolatedtest.crm has been fixed to adhere.
+
+        +crm114: *ERROR*
+        +Too many slashes '//' arguments were specified for this command: we see you specified 2 args while the maximum required is 1.
+        +Sorry, but this program is very sick and probably should be killed off.
+        +This happened at line 6 of file exectest.crm:
+        +    syscall ( ) (:lsout:) /ls *.c/ /[Windows-MS]dir *.c /
+        +(runtime system location: crm_stmt_parser.c(651) in routine: crm_statement_parse)
+
+        --> exectest.crm has been fixed too: this was my own mistake as
+            I hadn't removed the old Win32 syscall hack in there. :-(
+
+            This code does not run (anymore when ever it did) on Win32
+            as it is; I should code an extra bit code in there to check
+            that hosttype and make it Win32 compatible the /proper/ way.
+
+        +crm114: *ERROR*
+        +Too many slashes '//' arguments were specified for this command: we see you specified 2 args while the maximum required is 1.
+        +Sorry, but this program is very sick and probably should be killed off.
+        +This happened at line 10 of file randomiotest.crm:
+        +    syscall /rm -f randtst.txt/  /[Windows-MS]del randtst.txt/
+        +(runtime system location: crm_stmt_parser.c(651) in routine: crm_statement_parse)
+
+        --> one more of my own legacy boogers. I *LIKE* the new compiler
+            already. :-) Yes, I do!
+
+        +crm114: *ERROR*
+        +Too few angled '<>' arguments were specified for this command: we see you specified 0 args while the minimum required is 1.
+        +Sorry, but this program is very sick and probably should be killed off.
+        +This happened at line 2 of file (from command line):
+        +    learn (q_test.css) /[[:graph:]]+/
+        +(runtime system location: crm_stmt_parser.c(630) in routine: crm_statement_parse)
+
+        --> heck, this was legal in the old days, right? The new CRM114
+            has a dummy 'autodetect' call in there, which does not do
+            any autodetecting at all but just point to the old default.
+            Which is another way of saying it's a work in progress,
+            that. Nevertheless, this should stay, so the compiler
+            definitions will be fixed for this. Fixed in the compiler table.
+
+
+
 2008-05-01 Ger Hobbelt
 
     * BillY-equivalent src makefile is now renamed to

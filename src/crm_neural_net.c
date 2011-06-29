@@ -1413,24 +1413,24 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				// an easy optimization anyhow.
 				//
 
-                retv += fwrite(&val, sizeof(val), 1, f);    //  in-class(0) or out-of-class(1)
+                retv += (int)fwrite(&val, sizeof(val), 1, f);    //  in-class(0) or out-of-class(1)
 
                 //  Offset 1 - Write the number of passes without a
                 //  retrain on this one
                 i = 0;                                      //number of times we went without training this guy
                 val = i;
-                retv += fwrite(&val, sizeof(val), 1, f);    // number of times notrain
+                retv += (int)fwrite(&val, sizeof(val), 1, f);    // number of times notrain
 
                 //  Offset 2 - Write the sum of the document feature hashes.
 				val = sum;
-                retv += fwrite(&val, sizeof(val), 1, f);    // hash of whole doc- for fastfind
+                retv += (int)fwrite(&val, sizeof(val), 1, f);    // hash of whole doc- for fastfind
 
                 //       ALERT ALERT ALERT
                 //    CHANGED to save the bag, _not_ the projection!
                 //    This means we must project during training, however
                 //    it also means we don't bust the CPU cache nearly as
                 //    badly!
-                retv += fwrite(bag, sizeof(bag[0]), n_features, f); // the actual data
+                retv += (int)fwrite(bag, sizeof(bag[0]), n_features, f); // the actual data
                 if (internal_trace)
                 {
                     fprintf(stderr,
@@ -2438,6 +2438,8 @@ int crm_neural_net_classify(
     if (suc_p <= 0.5)
     {
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
     return 0;

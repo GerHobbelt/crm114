@@ -521,7 +521,8 @@ MAX_FILE_NAME_LEN-1);
 	}
 	}
 
-	// [i_a] GROT GROT GROT  and of course here too, there's no check what-so-ever to see if there's any cruft in the parameter beyond the third item above.
+	// [i_a] GROT GROT GROT  and of course here too, there's no check what-so-ever to see 
+	// if there's any cruft in the parameter beyond the third item above.
 
 	outf = stdout;
     file_was_fopened = 0;

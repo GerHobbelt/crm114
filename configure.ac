@@ -1001,6 +1001,7 @@ AC_CONFIG_FILES([Makefile
                  tests/eval_infiniteloop.crm
                  tests/exectest.crm
                  tests/fataltraptest.crm
+                 tests/fataltrapprogramerr.crm
                  tests/inserttest_a.crm
                  tests/inserttest_b.crm
                  tests/inserttest_c.crm

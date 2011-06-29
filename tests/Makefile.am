@@ -225,6 +225,7 @@ TEST_REFERENCE_FILES =                            \
         $(refdir)/Unigram_Hyperspace_test1.step4.refoutput \
         $(refdir)/String_Kernel_SVM_test1.step1.refoutput \
         $(refdir)/fataltraptest.crm.refoutput \
+        $(refdir)/fataltrapprogramerr.crm.refoutput \
         $(refdir)/Neural_Network_test1.step1.refoutput \
         $(refdir)/paolo_ov5.crm.refoutput \
         $(refdir)/String_Unigram_Hyperspace_test1.step4.refoutput \
@@ -284,6 +285,7 @@ test_SCRIPTS = \
 	escapetest.crm argtest.crm beeptest.crm skudtest.crm aliustest.crm \
 	nestaliustest.crm eval_infiniteloop.crm \
 	traptest.crm fataltraptest.crm uncaughttraptest.crm \
+	fataltrapprogramerr.crm \
 	inserttest_a.crm inserttest_b.crm inserttest_c.crm \
 	backwardstest.crm approxtest.crm \
 	mathalgtest.crm mathrpntest.crm \
@@ -540,6 +542,7 @@ initial_tests1:              \
 		alius_w_comment_test \
 		escapetest_test \
 		fataltraptest_test \
+		fataltrapprogramerr_test \
 		inserttest_a_test \
 		matchtest_test \
 		backwardstest_test1 \
@@ -674,6 +677,10 @@ escapetest_test: $(TEST_PREREQUISITES) escapetest.crm
 fataltraptest_test: $(TEST_PREREQUISITES) fataltraptest.crm
 	$(SILENT)\
 	./testscript.sh fataltraptest.crm "" - "$(builddir)/crm114_error_report.filter.sh"
+
+fataltrapprogramerr_test: $(TEST_PREREQUISITES) fataltrapprogramerr.crm
+	$(SILENT)\
+	./testscript.sh fataltrapprogramerr.crm "" - "$(builddir)/crm114_error_report.filter.sh"
 
 inserttest_a_test: $(TEST_PREREQUISITES) inserttest_a.crm
 	$(SILENT)\

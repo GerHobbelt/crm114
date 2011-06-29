@@ -1,4 +1,4 @@
-     The CRM114 Quick Reference Card.  Updated 20080324
+     The CRM114 Quick Reference Card.  Updated 20080505
 
      Copyright W.S. Yerazunis, 2002-2008.  All rights reserved.
      This software is released under V2.1 of the Gnu Public License.
@@ -213,6 +213,11 @@ Builtin variables:
           :_dw:                - the current data window contents (usually the default arg)
           :_iso:               - the current isolated data block (change at your own peril!)
 
+          :_?:                 - watchable variable: last (trappable) failure
+                                 report message; ONLY AVAILABLE when the debugger
+                                 will be used (-d commandline switch / 'debug'
+                                 statement in script)
+
 ----  VARIABLE EXPANSION  ----
 
 You can use the standard C char constant '\' characters, such as "\n"
@@ -385,7 +390,7 @@ call /:entrypoint_label:/ [:arg1: :arg2:... ] (:ret_arg:)
 
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
-classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ // /svm-specific controls/
+classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /svm-specific controls/
                                   - compare the statistics of the current data
                                     window buffer with classfiles c1...cN .
                                     In general, class statistics files are
@@ -698,6 +703,33 @@ hash (:result:) /input/           - compute a fast 32-bit hash of the
                                     the data window :_dw: )
 
 
+input <flags> [:filename:]
+input <flags> (:result:) [:filename:]
+input <flags> (:result:) [:filename: offset len]
+                                  - read in the content of filename
+                                    if no filename, then read stdin
+    <byline>                      - read one line only
+    <readline>                    - read one line only, using the history-aware
+                                    readline library
+     (:result:)                   - var that gets the input value
+                                    (surgical overwrite).
+                                    When no :result: variable has been specified,
+                                    the default :_dw: input window is assumed.
+      [:filename:]                - the file to read.  The first
+                                    blank-delimited word is taken and
+                                    var-expanded; the result is the filename,
+                                    even if it includes embedded spaces.
+                                    Default is to read stdin.
+       [:filename: offset len]    - optionally, move to offset in the
+                                    file, and read len bytes.
+                                    Offset and len are individually
+                                    blank-delimited, and
+                                    var-expanded with mathematics
+                                    enabled.  If len is unspecified,
+                                    the read extends to EOF or buffer
+                                    limit.
+
+
 intersect (:out:) [:var1: :var2: ...]
                                   - makes :out: contain the part
                                     of the data window that is the
@@ -731,36 +763,12 @@ isolate (:var1: :var2: ... :varN:)
                                     retained/copied.
 
 
-input <flags> [:filename:]
-input <flags> (:result:) [:filename:]
-input <flags> (:result:) [:filename: offset len]
-                                  - read in the content of filename
-                                    if no filename, then read stdin
-    <byline>                      - read one line only
-    <readline>                    - read one line only, using the history-aware
-                                    readline library
-     (:result:)                   - var that gets the input value
-                                    (surgical overwrite).
-                                    When no :result: variable has been specified,
-                                    the default :_dw: input window is assumed.
-      [:filename:]                - the file to read.  The first
-                                    blank-delimited word is taken and
-                                    var-expanded; the result is the filename,
-                                    even if it includes embedded spaces.
-                                    Default is to read stdin.
-       [:filename: offset len]    - optionally, move to offset in the
-                                    file, and read len bytes.
-                                    Offset and len are individually
-                                    blank-delimited, and
-                                    var-expanded with mathematics
-                                    enabled.  If len is unspecified,
-                                    the read extends to EOF or buffer
-                                    limit.
+lazy                              - WARNING: reserved for future use
 
 
 learn <flags> (:class:) [:in:] /word-pat/
 learn <flags> (:class:) [:in:] /word-pat/ /entropy_fuzz/
-learn <flags> (:class:) [:in:] /word-pat/ // /svm-specific controls/
+learn <flags> (:class:) [:in:] /word-pat/ /svm-specific controls/
                                   - learn the statistics of the :in:
                                     var (or the input window if no var)
                                     as an example of class :class:
@@ -929,6 +937,10 @@ match <flags> (:var1: ...) [:in: /inregex/] /regex/
               KNOWN_BUGS file for a detailed listing.
 
 
+mutate <flags> (:dest:) [:src:] /from args/ /to args/
+                                  - WARNING: reserved for future use
+
+
 output <flags> [filename] /output-text/
                                   - output an arbitrary string
                                     with captured values expanded.
@@ -975,6 +987,9 @@ return /returnval/                - return from a CALL.  Note that since
 
 
 routine                           - WARNING: reserved for future use
+
+
+sort                              - WARNING: reserved for future use
 
 
 syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
@@ -1037,6 +1052,10 @@ syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
                                     word is not a :label:, then the entire
                                     string is handed off to the shell to
                                     be executed as a shell command.
+                                    This argument is optional: when you have
+                                    specified <keep> and are performing a
+                                    second/subsequent syscall, you can optionally
+                                    dispense with the // arg.
 
 
 translate <flags> (:dest:) [:src:] /from_charset/ /to_charset/
@@ -1586,12 +1605,12 @@ b <n>              - toggle breakpoint on line <n>
 
 b <label>          - toggle breakpoint on <label>
 
-c                  - continue execution till breakpoint or end or ...
-                     Note that this depends on the 'm' settings; for
-                     instance 'm ie' will make 'c' singlestep too.
+b                  - show all existing breakpoints and their sscript
+                     source code line
 
-           !!!       This may be considered a bug, as we've got 'n' for
-                     that...
+c                  - continue execution till breakpoint or end or ...
+                     Note that this depends on the 'm' settings (see
+                     below at 'c <m>' for a list).
 
 c <n>              - execute <number> more statements
 
@@ -1619,8 +1638,16 @@ c <m>              - execute next statement while setting executing
 
                        e        - break only at executable statements
 
-                     Note: 'a'/'e' can be combined with any one of
-                     'i'/'s'/'o'/'f'.
+                       x        - break at exceptions: when an
+                                  [non]fatal error or fault is
+                                  triggered, the debugger will pop up
+                                  just prior to the moment where CRM114
+                                  will select a suitable trap
+                                  catcher/handler.
+
+                     Note: 'a'/'e'/'x' can be combined with any one of
+                     'i'/'s'/'o'/'f'. 'a' and 'e' are mutualy exclusive,
+                     'x' stands on it's own.
 
 c <m> <n>          - the above combined: set mode + step <n> statements
 
@@ -1897,6 +1924,12 @@ v <n>.<m>            - view source code statement <n> till <m>.
 .                    - repeat the previous commandline which did not
                        start with the '.' command.
 
+                       'previous commandline' in this particular
+                       circumstance is any commandline that contains AT
+                       LEAST one of the 'executing' debugger statements
+                       'n', 'c', 'j', 'f' or 'l', as repeating other
+                       'display' debugger commands is rather useless.
+
                        NOTE: when you want to be nasty, you could
                              specify commandlines like these to cause an
                              'infinite loop' in the debugger:
@@ -2011,6 +2044,18 @@ Note that you do not need to separate debugger commands and their first
 
           c o
 
+Also note that whitespace is not necessary - though it helps you, the user, to better
+see what you are doing. The command sequence
+
+  n ie ; v > 5
+
+can therefore also be written without any whitespace like this
+
+  nie;v>5
+
+which might put a shudder or a smile on folks who remember editors like
+TECO, as this is getting close to line noise too.
+
 
 The debugger prompt: how to 'read' it
 -------------------------------------
@@ -2063,13 +2108,18 @@ and contains a wealth of information within the [] square brackets:
                       commandline was, for example, 'n ; v > 5' or some
                       other execution stepping combo.
 
-  3: -/B/b/$   - 'B' when the debugger prompt showed up due to a 'debug'
+  3: -/B/b/X/$ - 'B' when the debugger prompt showed up due to a 'debug'
                  statement being hit in the script.
 
                  'b' when a configured breakpoint was triggered. This
                  can also happen when executing downcounting commands
                  like, for example, 'n 10', which will single-step 10
                  executable commands when running in mode 'm ie'.
+
+                 'X' when the debugger just popped up while an error in
+                 the script caused a trappable fault. Note that the
+                 debugger will show the failure notice (message) when
+                 popping up.
 
                  '$' when the script has completed running. Note that in
                  this situation, you cannot use any jump debugger
@@ -2128,9 +2178,4 @@ The parts of a CRM114 statement are:
                                by the action.  These may contain "adjectival
                                phrases - var restrictions, either by subscript
                                or by regex or both.
-
-
-
-
-
 

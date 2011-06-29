@@ -21274,7 +21274,7 @@ INSTALLFLAGS="-m 755"
 
 
 
-ac_config_files="$ac_config_files Makefile crm114.lsm docs/Makefile examples/Makefile mailfilter/Makefile man/Makefile man/include.zmm src/Makefile src/diff_em.sh src/indent.sh tests/Makefile tests/megatest.sh tests/megatest_ng.sh tests/aliustest.crm tests/approxtest.crm tests/argtest.crm tests/backwardstest.crm tests/beeptest.crm tests/bracktest.crm tests/classifytest.crm tests/escapetest.crm tests/eval_infiniteloop.crm tests/exectest.crm tests/fataltraptest.crm tests/inserttest_a.crm tests/inserttest_b.crm tests/inserttest_c.crm tests/learntest.crm tests/match_isolate_test.crm tests/matchtest.crm tests/mathalgtest.crm tests/mathrpntest.crm tests/nestaliustest.crm tests/overalterisolatedtest.crm tests/paolo_overvars.crm tests/paolo_ov2.crm tests/paolo_ov3.crm tests/paolo_ov4.crm tests/paolo_ov5.crm tests/randomiotest.crm tests/rewritetest.crm tests/skudtest.crm tests/statustest.crm tests/traptest.crm tests/uncaughttraptest.crm tests/unionintersecttest.crm tests/userdirtest.crm tests/windowtest.crm tests/windowtest_fromvar.crm tests/tenfold_validate.crm tests/tokendelimiterbugtest.crm tests/bracesbugtest.crm tests/blowuptrapbugtest.crm tests/indirecttest.crm tests/isolate_reclaim_test.crm tests/match_isolate_reclaim.crm tests/slashbugtest.crm tests/trapseqbugtest.crm tests/translate_tr.crm tests/call_return_test.crm tests/alternating_example_neural.crm tests/alius_w_comment.crm tests/zz_translate_test.crm tests/quine.crm tests/defaulttest.crm tests/print_binary2decimal_int32.crm tests/testscript.sh tests/crm114_statustest.filter.sh tests/crm114_error_report.filter.sh tests/crm114_versiontest.filter.sh tests/crm114_classify.filter.sh tests/crm114_isolate_test.filter.sh examples/pad.crm examples/shroud.crm mailfilter/classifymail.crm mailfilter/mailfilter.crm mailfilter/maillib.crm mailfilter/mailreaver.crm mailfilter/mailtrainer.crm examples/rewriteutil.crm"
+ac_config_files="$ac_config_files Makefile crm114.lsm docs/Makefile examples/Makefile mailfilter/Makefile man/Makefile man/include.zmm src/Makefile src/diff_em.sh src/indent.sh tests/Makefile tests/megatest.sh tests/megatest_ng.sh tests/aliustest.crm tests/approxtest.crm tests/argtest.crm tests/backwardstest.crm tests/beeptest.crm tests/bracktest.crm tests/classifytest.crm tests/escapetest.crm tests/eval_infiniteloop.crm tests/exectest.crm tests/fataltraptest.crm tests/fataltrapprogramerr.crm tests/inserttest_a.crm tests/inserttest_b.crm tests/inserttest_c.crm tests/learntest.crm tests/match_isolate_test.crm tests/matchtest.crm tests/mathalgtest.crm tests/mathrpntest.crm tests/nestaliustest.crm tests/overalterisolatedtest.crm tests/paolo_overvars.crm tests/paolo_ov2.crm tests/paolo_ov3.crm tests/paolo_ov4.crm tests/paolo_ov5.crm tests/randomiotest.crm tests/rewritetest.crm tests/skudtest.crm tests/statustest.crm tests/traptest.crm tests/uncaughttraptest.crm tests/unionintersecttest.crm tests/userdirtest.crm tests/windowtest.crm tests/windowtest_fromvar.crm tests/tenfold_validate.crm tests/tokendelimiterbugtest.crm tests/bracesbugtest.crm tests/blowuptrapbugtest.crm tests/indirecttest.crm tests/isolate_reclaim_test.crm tests/match_isolate_reclaim.crm tests/slashbugtest.crm tests/trapseqbugtest.crm tests/translate_tr.crm tests/call_return_test.crm tests/alternating_example_neural.crm tests/alius_w_comment.crm tests/zz_translate_test.crm tests/quine.crm tests/defaulttest.crm tests/print_binary2decimal_int32.crm tests/testscript.sh tests/crm114_statustest.filter.sh tests/crm114_error_report.filter.sh tests/crm114_versiontest.filter.sh tests/crm114_classify.filter.sh tests/crm114_isolate_test.filter.sh examples/pad.crm examples/shroud.crm mailfilter/classifymail.crm mailfilter/mailfilter.crm mailfilter/maillib.crm mailfilter/mailreaver.crm mailfilter/mailtrainer.crm examples/rewriteutil.crm"
 
 
 cat >confcache <<\_ACEOF
@@ -22017,6 +22017,7 @@ do
     "tests/eval_infiniteloop.crm") CONFIG_FILES="$CONFIG_FILES tests/eval_infiniteloop.crm" ;;
     "tests/exectest.crm") CONFIG_FILES="$CONFIG_FILES tests/exectest.crm" ;;
     "tests/fataltraptest.crm") CONFIG_FILES="$CONFIG_FILES tests/fataltraptest.crm" ;;
+    "tests/fataltrapprogramerr.crm") CONFIG_FILES="$CONFIG_FILES tests/fataltrapprogramerr.crm" ;;
     "tests/inserttest_a.crm") CONFIG_FILES="$CONFIG_FILES tests/inserttest_a.crm" ;;
     "tests/inserttest_b.crm") CONFIG_FILES="$CONFIG_FILES tests/inserttest_b.crm" ;;
     "tests/inserttest_c.crm") CONFIG_FILES="$CONFIG_FILES tests/inserttest_c.crm" ;;
@@ -23081,6 +23082,16 @@ done
 	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/fataltraptest.crm":F)
+	#
+	# and when we finally have produced the files, make sure the generated shell scripts are executable:
+	#
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
+ ;;
+    "tests/fataltrapprogramerr.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#

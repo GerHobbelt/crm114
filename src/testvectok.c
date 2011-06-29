@@ -239,9 +239,11 @@ void free_stack_item(CSL_CELL *csl)
 
             if (cp != NULL)
             {
+#if !FULL_PARSE_AT_COMPILE_TIME			
                 free(cp->apb);
                 cp->apb = NULL;
-                // free(cp->hosttxt);
+#endif
+				// free(cp->hosttxt);
                 free(cp);
                 csl->mct[i] = NULL;
             }

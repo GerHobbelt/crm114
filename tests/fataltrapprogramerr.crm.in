@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! @abs_top_builddir@/src/crm114
 #   test the trap statement
 window
 output / :*:_nl: CRM114  testing FAULT\/TRAP... :*:_nl: /
@@ -26,7 +26,23 @@ output / --- the next thing you see SHOULD be an error "unable to read-open"--- 
 output / --- and again, the next thing you see SHOULD be an error "unable to write-open"--- :*:_nl:/
 {
 	{
-		# output [/No/Such/Directory/frotz.mumble] (:hi:)  # GerH builds > 2257 will catch this programming mistake
+		output [/No/Such/Directory/frotz.mumble] (:hi:)  # GerH builds > 2257 will catch this programming mistake
+	}
+	trap (:my_fault:) /Too many parens/
+	{
+		output / HA! The coding error above (using parens in an 'output' statement) is not catchable \
+as this failure is already detected at compile-time so it will be flying about when the script hasn't \
+even started yet. This trap is therefore completely and utterly useless. Besides, you should fix your \
+script, shouldn't you?/
+	}
+	trap (:my_fault:) /.*/
+	{
+		output / BAD! BAD! This CRM version does NOT catch the programming mistake there! Instead,\
+ it only sees the I/O error in the same line - fault text was :*:my_fault: / 
+	}
+}
+{
+	{
 		output [/No/Such/Directory/frotz.mumble] /:hi:/  # This is correct code; should give the I/O error as expected
 	}
 	trap (:my_fault:) /.*/

@@ -550,6 +550,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
             // 'current_crm_command' points at the statement line we're going to grab stuff from. Now determine WHAT EXACTLY we want to grab.
 
             // prepare the statement so we can easily grab those args:
+#if !FULL_PARSE_AT_COMPILE_TIME			
             if (!current_crm_command->apb)
             {
                 fprintf(stderr, "Indirection error:\n"
@@ -561,6 +562,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                                 "\n");
                 return -1;
             }
+#endif
 
             dbg_arg++;
             dbg_arg += strspn(dbg_arg, " \t");           // skip optional whitespace
@@ -588,24 +590,32 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
             start_idx = NULL;
             len = -1;
 
-            switch (*dbg_arg)
+			{
+			    ARGPARSE_BLOCK *apb;
+
+#if !FULL_PARSE_AT_COMPILE_TIME	
+				apb = current_crm_command->apb;
+#else
+				apb = &current_crm_command->apb;
+#endif
+			switch (*dbg_arg)
             {
             case '(':
                 switch (idx)
                 {
                 case 1:
-                    start_idx = current_crm_command->apb->p1start;
-                    len = current_crm_command->apb->p1len;
+                    start_idx = apb->p1start;
+                    len = apb->p1len;
                     break;
 
                 case 2:
-                    start_idx = current_crm_command->apb->p2start;
-                    len = current_crm_command->apb->p2len;
+                    start_idx = apb->p2start;
+                    len = apb->p2len;
                     break;
 
                 case 3:
-                    start_idx = current_crm_command->apb->p3start;
-                    len = current_crm_command->apb->p3len;
+                    start_idx = apb->p3start;
+                    len = apb->p3len;
                     break;
                 }
                 break;
@@ -614,13 +624,13 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                 switch (idx)
                 {
                 case 1:
-                    start_idx = current_crm_command->apb->s1start;
-                    len = current_crm_command->apb->s1len;
+                    start_idx = apb->s1start;
+                    len = apb->s1len;
                     break;
 
                 case 2:
-                    start_idx = current_crm_command->apb->s2start;
-                    len = current_crm_command->apb->s2len;
+                    start_idx = apb->s2start;
+                    len = apb->s2len;
                     break;
                 }
                 break;
@@ -629,8 +639,8 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                 switch (idx)
                 {
                 case 1:
-                    start_idx = current_crm_command->apb->b1start;
-                    len = current_crm_command->apb->b1len;
+                    start_idx = apb->b1start;
+                    len = apb->b1len;
                     break;
                 }
                 break;
@@ -639,8 +649,8 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                 switch (idx)
                 {
                 case 1:
-                    start_idx = current_crm_command->apb->a1start;
-                    len = current_crm_command->apb->a1len;
+                    start_idx = apb->a1start;
+                    len = apb->a1len;
                     break;
                 }
                 break;
@@ -651,6 +661,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                         dbg_arg);
                 return -1;
             }
+			}
 
             if (start_idx == NULL || len < 0)
             {
@@ -800,8 +811,6 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
         if (!(dbg_step_mode & SM_BREAK_ON_EXCEPTION))
         {
             inside_debugger = 0;
-
-	    return 0;
         }
         dbg_step_mode &= ~SM_PENDING;
     }
@@ -923,13 +932,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
     CRM_ASSERT(dbg_outbuf != NULL);
     CRM_ASSERT(dbg_last_command != NULL);
 
-    // print a 'banner/header' and reset the commandline when necessary
-    fprintf(stderr, "========== THE DEBUGGER! YOUR BUGS WILL BE ROADKILL IN A SEC'! ==========\n");
-    if (reason_for_the_call == CRM_DBG_REASON_BREAKPOINT || current_crm_command->stmt_break)
+    if (current_crm_command->stmt_break)
     {
         fprintf(stderr, "Breakpoint tripped at statement %d\n", csl->cstmt);
-
-	reason_for_the_call = CRM_DBG_REASON_BREAKPOINT;
 
         // when this is a breakpoint, stop and repetitive '.' debug macro run in its tracks!
         dbg_inbuf[0] = 0;
@@ -947,16 +952,6 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
         // when this is a breakpoint, stop and repetitive '.' debug macro run in its tracks!
         dbg_inbuf[0] = 0;
     }
-    else if (reason_for_the_call == CRM_DBG_REASON_DEBUG_STATEMENT)
-    {
-        fprintf(stderr, "Programmed breakpoint detected ('debug' statement)\n");
-    }
-    else if (reason_for_the_call == CRM_DBG_REASON_DEBUG_END_OF_PROGRAM)
-    {
-        fprintf(stderr, "End of script detected: you can still have a look at things NOW,\n"
-"because this is very last time you will get a chance!\n");
-    }
-        fprintf(stderr, "\n");
 
 
     for ( ; !parsing_done;)

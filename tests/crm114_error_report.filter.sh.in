@@ -73,6 +73,12 @@ fi
 @DIFF@ -u @DIFF_FLAGS@ "${targetname}.refout" "${targetname}.tstout" > "${difffile}"
 retcode=$?
 
+if [ ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ]; then
+  echo "------------------------------------------------------"
+  cat "${difffile}"
+  echo "------------------------------------------------------"
+fi
+
 exit ${retcode}
 
 

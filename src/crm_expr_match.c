@@ -220,6 +220,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         goto nonfatal_route_outwards;
@@ -251,6 +253,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         goto nonfatal_route_outwards;
@@ -279,6 +283,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (curstmt == csl->cstmt)
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         goto nonfatal_route_outwards;
@@ -444,6 +450,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (user_trace && absentp)
             fprintf(stderr, "Regex matched but with absent flag, failing.\n");
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+            CRM_ASSERT(csl->cstmt >= 0);
+            CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
     else
