@@ -263,7 +263,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-248
+TAR_FILENAME_POSTFIX = Ger-250
 TRE_CONFIG = no
 
 #
@@ -1124,7 +1124,7 @@ megatest:
 	-( if [ ! -e ./INTRO.txt             ] ; then cp $(srcdir)/INTRO.txt ./       ; fi )
 	-( if [ ! -e ./COLOPHON.txt          ] ; then cp $(srcdir)/COLOPHON.txt ./    ; fi )
 	-( if [ ! -e ./FAQ.txt               ] ; then cp $(srcdir)/FAQ.txt ./         ; fi )
-	$(srcdir)/megatest.sh | sed -e 's/ 1\.00e+00/ 1.00e-00/g' > megatest_test.log 2>&1
+	$(srcdir)/megatest.sh > megatest_test.log 2>&1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="

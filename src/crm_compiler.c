@@ -31,7 +31,7 @@ static STMT_TABLE_TYPE stmt_table[] =
     //
     { "\n",          CRM_NOOP,   0,  0,      0,   0,  0,  0,  0,  0,  0 },
     { "#",          CRM_NOOP,   1,  0,      0,   0,  0,  0,  0,  0,  0 },
-    { "insert=",    CRM_NOOP,   7,  0,      0,   0,  0,  0,  0,  0,  0 },
+    { "insertx",    CRM_NOOP,   7,  0,      0,   0,  0,  0,  0,  0,  0 },
     { "noop",       CRM_NOOP,   0,  0,      0,   0,  0,  0,  0,  0,  0 },
     { "exit",       CRM_EXIT,   0,  1,      0,   0,  0,  1,  0,  0,  0 },
     { "{",   CRM_OPENBRACKET,   0,  0,      0,   0,  0,  0,  0,  0,  0 },
@@ -542,6 +542,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             crm_setvar(NULL, -1, pgmtext, nbindex, k + 2,
                        NULL, 0, 0,  stmtnum);
         }
+#if 0
         else if (strncasecmp(&pgmtext[nbindex], "insert=", 7) == 0)
         {
             //                 INSERTs get special handling (NOOPed..)
@@ -549,6 +550,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             //stab_done = 1;
             stab_stmtcode = CRM_NOOP;
         }
+#endif
         else
         {
             /* i = -1; */
@@ -585,6 +587,10 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             // comments are treated as opcodes so that means it's LR(k) or LL(k)
             // after all. (--> not YACC/LEX but use PCCTS or ANTLR instead. Trouble
             // there is that ANTLR is very nice but doesn't have a 'C' target yet, IIRC
+			//
+			// update: nope, crm is at least LR(2) due to the ':#:' string length 
+			//         expansion, which collides with the '#' comment operator at
+			//         lookahead < 2 characters.
             if (stab_stmtcode == CRM_ALIUS)
             {
                 // make sure a {} precedes this opcode

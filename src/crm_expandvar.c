@@ -298,11 +298,13 @@ long crm_zexpandvar(char *buf,
                     }
                     break;
 
-                                case '>':
+#if 0
+				case '>':
                 case ')':
                 case ']':
+#endif
                 case '/':
-                                case ';':
+				case ';':
                 case '{':
                 case '}':
                 case '#':
@@ -1203,7 +1205,7 @@ long crm_restrictvar(char *boxstring,
             {
             //      yes, it's a start of regex.  copy it into the scan buf,
             //      while looking for the closing '/', and keeping
-            //      any \/ as / (everything eles is verbatim).
+            //      any \/ as / (everything else is verbatim).
 
                                 regex_start = nw_start + 1;   // regex starts +1 past start of str
                 nw_len = 0;                   // nw_len is next open char idx.
@@ -1229,8 +1231,8 @@ long crm_restrictvar(char *boxstring,
 
                 //
                 //    Compile up that regex
-                j = crm_regcomp(&preg, scanbuf, nw_len, REG_EXTENDED);
-                if (j > 0)
+                i = crm_regcomp(&preg, scanbuf, nw_len, REG_EXTENDED);
+                if (i > 0)
                 {
                     long curstmt;
                     curstmt = csl->cstmt;

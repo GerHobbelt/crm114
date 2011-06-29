@@ -195,17 +195,24 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         errstr);
 
     if (internal_trace)
+	{
         fprintf(stderr,
                 "restricted: vmidx: %ld  mdw: %p   start: %ld  len: %ld\n",
                 vmidx, mdwptr, source_start, source_len);
+	}
     if (i < 0)
     {
         long curstmt;
         curstmt = csl->cstmt;
         if (i == -1)
+		{
             nonfatalerror(errstr, "");
-        if (i == -2)
+		}
+        else if (i == -2)
+		{
             fatalerror(errstr, "");
+		}
+
         //
         //     did the FAULT handler change the next statement to execute?
         //     If so, continue from there, otherwise, we FAIL.

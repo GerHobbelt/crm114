@@ -398,6 +398,12 @@ typedef struct
 #define CRM_PARENS 1
 #define CRM_BOXES  2
 #define CRM_SLASHES 3
+// additional #define's in this range which are used internally by crm_generic_parse_line()
+// NOTE: these _must_ be negative numbers!
+#define CRM_FIND_ACTION      (-1)
+#define CRM_PARSE_ACTION     (-2)
+#define CRM_PARSE_LABEL      (-3)
+#define CRM_FIND_ARG_SECTION (-4)
 
 
 

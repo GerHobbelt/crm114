@@ -352,17 +352,14 @@ int crm_statement_parse(char           *in,
 
 
 //    and a generic parser routine for parsing a line according
-//    to the type of qoting done.
+//    to the type of quoting done.
 int crm_generic_parse_line(
     char *txt,                       //   the start of the program line
-    long len,                        //   how long is the line
-    char *schars,                    //   characters that can "start" an arg
-    char *fchars,                    //   characters that "finish" an arg
-    char *echars,                    //   characters that escape in an arg
-    long maxargs,                    //   howm many things to search for (max)
-    long *ftype,                     //   type of thing found (index by schars)
-    long *fstart,                    //   starting location of found arg
-    long *flen                       //   length of found arg
+    int len,                        //   how long is the line
+    int maxargs,                    //   howm many things to search for (max)
+    int *ftype,                     //   type of thing found (index by schars)
+    int *fstart,                    //   starting location of found arg
+    int *flen                       //   length of found arg
 );
 
 //    and to avoid all the mumbo-jumbo, an easy way to get a copy of
