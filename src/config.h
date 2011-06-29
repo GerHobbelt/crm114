@@ -322,6 +322,9 @@
 /* Define to 1 if you have the `strstr' function. */
 #define HAVE_STRSTR 1
 
+/* Define to 1 if you have the `sysconf' function. */
+#define HAVE_SYSCONF 1
+
 /* Define to 1 if you have the `system' function. */
 #define HAVE_SYSTEM 1
 
@@ -489,7 +492,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-114"
+#define TAR_FILENAME_POSTFIX "Ger-120"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

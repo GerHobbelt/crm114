@@ -181,12 +181,15 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         f = fopen(learnfilename, "wb");
         if (!f)
         {
-            nonfatalerror_ex(SRC_LOC(),
+            fev = fatalerror_ex(SRC_LOC(),
                              "\n Couldn't open your new CSS file %s for writing; errno=%d(%s)\n",
                              learnfilename,
                              errno,
                              errno_descr(errno)
             );
+		free(learnfilename);
+		return fev;
+/*
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 19);
@@ -195,6 +198,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 exit(EXIT_FAILURE);
             }
+*/
         }
         //       do we have a user-specified file size?
         if (sparse_spectrum_file_length == 0)
@@ -205,12 +209,16 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (f)
         {
             //       put in sparse_spectrum_file_length entries of NULL
-            for (j = 0;
-                 j < sparse_spectrum_file_length
-                 * sizeof(FEATUREBUCKET_TYPE);
-                 j++)
-                fputc(0, f);
-            //        fprintf (f,"%c", '\000');
+                if (file_memset(f, 0, 
+	sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+        {
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't write to file %s; errno=%d(%s)\n",
+                    learnfilename, errno, errno_descr(errno));
+		fclose(f);
+		free(learnfilename);
+		return fev;
+        }
 
             fclose(f);
         }

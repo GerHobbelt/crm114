@@ -161,19 +161,22 @@ int main(int argc, char **argv)
         f = fopen(argv[optind], "wb");
         if (!f)
         {
-            fprintf(stderr,
-                    "\n Couldn't open file %s for writing; errno=%d .\n",
-                    argv[optind], errno);
-            exit(EXIT_FAILURE);
+            untrappableerror_ex(SRC_LOC(),
+                    "\n Couldn't open file %s for writing; errno=%d(%s)\n",
+                    argv[optind], errno, errno_descr(errno));
         }
         else
         {
             //       put in  bytes of NULL
-            for (j = 0; j < sparse_spectrum_file_length
-                 * sizeof(FEATUREBUCKET_TYPE); j++)
-            {
-                fputc(0, f);/* [i_a] fprintf(f, "%c", '\0'); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
-            }
+
+			// fputc(0, f);/* [i_a] fprintf(f, "%c", '\0'); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
+                if (file_memset(f, 0, 
+	sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+        {
+            untrappableerror_ex(SRC_LOC(),
+                    "\n Couldn't write to file %s; errno=%d(%s)\n",
+                    argv[optind], errno, errno_descr(errno));
+        }
             fclose(f);
         }
         //    and reset the statbuf to be correct

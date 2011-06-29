@@ -156,7 +156,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
         }
 
-        //      fputc ('\001', f); don't do any output at all.
+        //      file_memset(f, 0, count count); don't do any output at all.
         made_new_file = 1;
         //
         if (f)

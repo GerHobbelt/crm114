@@ -756,7 +756,7 @@ static double slot_2_fir(long slot, long firlatlen)
      *
      *            outval = (slot + 0.5) / firlatlen;
      *
-     * to arrive at an even distribution of fir values for the complete range of slot values,
+     *     to arrive at an even distribution of fir values for the complete range of slot values,
      *     where each fir value returned is the one right smack in the middle of the ir range
      *     which is assigned to that same slot (fir_2_slot()).
      *
@@ -764,7 +764,7 @@ static double slot_2_fir(long slot, long firlatlen)
      *     firlatlen slots.
      *     That means the 'middle' FIR value for a slot S is the fir value ((S + 0.5) / firlatlen).
      */
-#if 10
+#if 1
     outval = (slot + 0.5) / firlatlen;
 #else
     outval = (slot + 0.5) / (firlatlen - 1);
@@ -1444,12 +1444,15 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         f = fopen(learnfilename, "wb");
         if (!f)
         {
-            fev = nonfatalerror_ex(SRC_LOC(),
+            fev = fatalerror_ex(SRC_LOC(),
                                    "\n Couldn't open your new BEN file %s for writing; errno=%d(%s)\n",
                                    learnfilename,
                                    errno,
                                    errno_descr(errno)
                   );
+		free(learnfilename);
+		return fev;
+/*
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 23);
@@ -1458,6 +1461,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 exit(EXIT_FAILURE);
             }
+*/
         }
 
         //       did we get a value for sparse_spectrum_file_length?
@@ -1502,12 +1506,18 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (f)
         {
             //       Write them bytes, all NULs.  (the 1024 is just some padding)
-            //
-            for (j = 0; j < (1024 + firlatbytes + nodebytes +
-                             (ENTROPY_RESERVED_HEADER_LEN * sizeof(long))); j++)
-            {
-                fputc(0, f);
-            }
+
+                if (file_memset(f, 0, 
+	(1024 + firlatbytes + nodebytes 
+		+ ENTROPY_RESERVED_HEADER_LEN * sizeof(long))))
+        {
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't write to file %s; errno=%d(%s)\n",
+                    learnfilename, errno, errno_descr(errno));
+		fclose(f);
+		free(learnfilename);
+		return fev;
+        }
 
             made_new_file = 1;
             fclose(f);
@@ -1527,11 +1537,11 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                  PROT_READ | PROT_WRITE,
                                  MAP_SHARED,
                                  NULL);
-
     if (fmap == MAP_FAILED)
     {
         fev = fatalerror("Couldn't get to the bit-entropic file named: ",
                          learnfilename);
+	free(learnfilename);
         return fev;
     }
 
@@ -1550,6 +1560,10 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //
         headers->firlatstart = ENTROPY_RESERVED_HEADER_LEN; //Start of the FIRlat
         //
+	// [i_a] GROT GROT GROT this 'reserved header size' business using 
+	// ENTROPY_RESERVED_HEADER_LEN * sizeof(long) (sic!) is non-portable across
+	// 32/64-bit systems!
+	//                        GROT GROT GROT
         firlat = (long *)&fmap[headers->firlatstart];
         //
         headers->firlatlen = firlatlen;
@@ -2068,12 +2082,14 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //   Enforce sanity on further_node before crosslink
                 if (further_node < 1)
                 {
-                    if (further_node < 1)
+	            if (internal_trace)
                         fprintf(stderr,
                                 "Bogus crosslink %ld!  Branching back to node 1.\n",
                                 further_node);
                     further_node = 1;
+#ifdef BEN_GRAPHIC
                     fprintf(stderr, "?");
+#endif
                 }
                 //   Put furnode in as the next node for this alph
                 nodes[curnode].abet[thisalph].nextcell = further_node;
@@ -2109,10 +2125,12 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 (nodes, nodeslen, firlat, firlatlen, further_node);
             }
             if (internal_trace)
+{
                 fprintf(stderr,
                         "Now moving from node %ld to %ld (nfir %f, pfir %f)\n",
                         curnode, further_node,
                         nodes[further_node].fir_prior, localfir);
+}
             curnode = further_node;
         }
     }

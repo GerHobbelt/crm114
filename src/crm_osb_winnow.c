@@ -183,12 +183,15 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         f = fopen(learnfilename, "wb");
         if (!f)
         {
-            nonfatalerror_ex(SRC_LOC(),
+            fev = fatalerror_ex(SRC_LOC(),
                              "\n Couldn't open your new COW file %s for writing; errno=%d(%s)\n",
                              learnfilename,
                              errno,
                              errno_descr(errno)
             );
+	free(learnfilename);
+return fev;
+/*
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 21);
@@ -197,6 +200,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 exit(EXIT_FAILURE);
             }
+*/
         }
         //       do we have a user-specified file size?
         if (sparse_spectrum_file_length == 0)
@@ -208,11 +212,16 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (f)
         {
             //       put in sparse_spectrum_file_length entries of NULL
-            for (j = 0;
-                 j < sparse_spectrum_file_length
-                 * sizeof(WINNOW_FEATUREBUCKET_STRUCT);
-                 j++)
-                fputc('\000', f);
+              if (file_memset(f, 0, 
+sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
+        {
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't write to file %s; errno=%d(%s)\n",
+                    learnfilename, errno, errno_descr(errno));
+		fclose(f);
+	free(learnfilename);
+		return fev;
+        }
             made_new_file = 1;
             //
             fclose(f);
@@ -225,8 +234,10 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     hfsize = statbuf.st_size;
     if (user_trace)
+{
         fprintf(stderr, "Sparse spectra file %s has length %ld bins\n",
                 learnfilename, hfsize / sizeof(WINNOW_FEATUREBUCKET_STRUCT));
+}
 
     //
     //         open the .cow hash file into memory so we can bitwhack it
@@ -260,6 +271,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (hashes[0].hash != 1
         || hashes[0].key  != 0)
     {
+    if (internal_trace)
         fprintf(stderr, "Hash was: %ld, key was %ld\n", hashes[0].hash, hashes[0].key);
         fev = fatalerror("The .cow file is the wrong type!  We're expecting "
                          "a Osb_Winnow-spectrum file.  The filename is: ",
@@ -591,7 +603,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     }
                 }
 
-                //              fprintf (stderr, "Hash index: %ld  value: %f \n", hindex, hashes[hindex].value);
+                // fprintf (stderr, "Hash index: %ld  value: %f \n", hindex, hashes[hindex].value);
             }
         }
     }

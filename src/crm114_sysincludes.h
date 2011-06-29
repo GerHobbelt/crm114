@@ -281,6 +281,49 @@
 #endif
 
 
+/*
+   mmap/munmap related getpagesize(): used to check our file header offset.
+   
+   This mess was adapted from the GNU getpagesize.h.  
+*/
+#if !HAVE_GETPAGESIZE
+#if defined(WIN32)
+int getpagesize(void); /* see crm_port_win32.c */
+#else
+# if defined(_SC_PAGESIZE) && HAVE_SYSCONF
+#  define getpagesize() sysconf(_SC_PAGESIZE)
+# else /* no _SC_PAGESIZE */
+#  if HAVE_SYS_PARAM_H
+/* #   include <sys/param.h> -- already done before in this file */
+#   ifdef EXEC_PAGESIZE
+#    define getpagesize() EXEC_PAGESIZE
+#   else /* no EXEC_PAGESIZE */
+#    ifdef NBPG
+#     define getpagesize() NBPG * CLSIZE
+#     ifndef CLSIZE
+#      define CLSIZE 1
+#     endif /* no CLSIZE */
+#    else /* no NBPG */
+#     ifdef NBPC
+#      define getpagesize() NBPC
+#     else /* no NBPC */
+#      ifdef PAGESIZE
+#       define getpagesize() PAGESIZE
+#      endif /* PAGESIZE */
+#     endif /* no NBPC */
+#    endif /* no NBPG */
+#   endif /* no EXEC_PAGESIZE */
+#  else /* no HAVE_SYS_PARAM_H */
+#   define getpagesize() 8192	/* punt totally */
+/* #error "please provide an implementation of getpagesize() for your platform" */
+#  endif /* no HAVE_SYS_PARAM_H */
+# endif /* no _SC_PAGESIZE / HAVE_SYSCONF */
+#endif
+#endif /* no HAVE_GETPAGESIZE */
+
+
+
+
 #if defined (PREFER_PORTABLE_MEMMOVE) || !defined (HAVE_MEMMOVE)
 void *crm_memmove(void *dst, const void *src, size_t len);
 #undef memmove

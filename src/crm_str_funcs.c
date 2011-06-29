@@ -1518,12 +1518,34 @@ static CRM_MMAP_CELL *cache = NULL;
 //
 void crm_unmap_file_internal(CRM_MMAP_CELL *map)
 {
-#if defined (HAVE_MSYNC) && defined (HAVE_MUNMAP)
-    long munmap_status;
+#if defined(HAVE_MSYNC) || defined(HAVE_MUNMAP)
+    int munmap_status;
 
+#if defined(HAVE_MSYNC) 
     if (map->prot & PROT_WRITE)
-        msync(map->addr, map->actual_len, MS_ASYNC | MS_INVALIDATE);
+	{
+        munmap_status = msync(map->addr, map->actual_len, MS_SYNC | MS_INVALIDATE);
+	if (munmap_status != 0)
+	{
+		nonfatalerror_ex(SRC_LOC(),
+			"mmapped file sync failed for file '%s': error %d(%s)",
+			map->name,
+			errno,
+			errno_descr(errno)
+		);
+	}
+	}
+#endif
     munmap_status = munmap(map->addr, map->actual_len);
+	if (munmap_status != 0)
+	{
+		fatalerror_ex(SRC_LOC(),
+			"Failed to release (unmap) the mmapped file '%s': error %d(%s)",
+			map->name,
+			errno,
+			errno_descr(errno)
+		);
+	}
     //  fprintf (stderr, "Munmap_status is %ld\n", munmap_status);
 
 #if 0
@@ -1553,14 +1575,23 @@ void crm_unmap_file_internal(CRM_MMAP_CELL *map)
     close(map->fd);
     //  fprintf (stderr, "U");
 
+    //    Because mmap/munmap doesn't set atime, nor set the "modified"
+    //    flag, some network filesystems will fail to mark the file as
+    //    modified and so their cacheing will make a mistake.
     CRM_ASSERT(map->name != NULL);
     crm_touch(map->name);
 
-#elif defined (WIN32)
+#elif defined(WIN32)
     FlushViewOfFile(map->addr, 0);
     UnmapViewOfFile(map->addr);
     CloseHandle(map->mapping);
     CloseHandle(map->fd);
+
+    //    Because mmap/munmap doesn't set atime, nor set the "modified"
+    //    flag, some network filesystems will fail to mark the file as
+    //    modified and so their cacheing will make a mistake.
+    CRM_ASSERT(map->name != NULL);
+    crm_touch(map->name);
 #else
 #error "please provide an munmap implementation for your platform"
 #endif
@@ -1702,15 +1733,30 @@ void crm_munmap_file(void *addr)
         if (p->prot & PROT_WRITE)
         {
 #if defined (HAVE_MSYNC)
-            msync(p->addr, p->actual_len, MS_ASYNC | MS_INVALIDATE);
+            int ret = msync(p->addr, p->actual_len, MS_SYNC | MS_INVALIDATE);
+	if (ret != 0)
+	{
+		nonfatalerror_ex(SRC_LOC(),
+			"mmapped file sync failed for file '%s': error %d(%s)",
+			p->name,
+			errno,
+			errno_descr(errno)
+		);
+	}
+
 #elif defined (WIN32)
-            //unmap our view of the file, which will lazily write any
+            //unmap our view of the file, which will immediately write any
             //changes back to the file
+    FlushViewOfFile(p->addr, 0);
             UnmapViewOfFile(p->addr);
             //and remap so we still have it open
-            p->addr = MapViewOfFile(p->mapping, (p->mode &
-                                                 MAP_PRIVATE) ? FILE_MAP_COPY : ((p->prot &
-                                                                                  PROT_WRITE) ? FILE_MAP_WRITE : FILE_MAP_READ), 0, 0, 0);
+            p->addr = MapViewOfFile(p->mapping, 
+				((p->mode & MAP_PRIVATE) 
+		? FILE_MAP_COPY 
+		: ((p->prot & PROT_WRITE) 
+		? FILE_MAP_WRITE 
+		: FILE_MAP_READ)),
+			 0, 0, 0);
             //if the remap failed for some reason, just free everything
             //  and get rid of this cached mmap entry.
             if (p->addr == NULL)
@@ -1739,7 +1785,7 @@ void crm_munmap_file(void *addr)
                 free(p);
             }
 #else
-#error "please provide a msync() alternative here"
+#error "please provide a msync() alternative here (some systems do not have msync but perform this action in munmap itself --> you'll have to augment configure/sysincludes then."
 #endif
         }
     }
@@ -1773,8 +1819,7 @@ void *crm_mmap_file(char *filename,
 {
     CRM_MMAP_CELL *p;
     long pagesize = 0;
-    struct stat statbuf = {
-        0 };
+    struct stat statbuf = { 0 };
 
 #if defined (HAVE_MMAP)
     mode_t open_flags;
@@ -1784,7 +1829,18 @@ void *crm_mmap_file(char *filename,
     DWORD openmap_flags = 0;
 #endif
 
-    pagesize = 0;
+    pagesize = getpagesize();  // see sysincludes for the actual 'mess' ;-)
+
+	if ((start % pagesize) != 0 || start < 0)
+{
+	untrappableerror_ex(SRC_LOC(),
+		"The system cannot memory map (mmap) any file when "
+	        "the requested offset %ld is not on a system page "
+		"boundary.   Tough luck for file '%s'.",
+		filename
+		);
+}
+
     //    Search for the file - if it's already mmaped, just return it.
     for (p = cache; p != NULL; p = p->next)
     {
@@ -1978,12 +2034,6 @@ void *crm_mmap_file(char *filename,
         free(p->name);
         free(p);
         return MAP_FAILED;
-    }
-
-    {
-        SYSTEM_INFO info;
-        GetSystemInfo(&info);
-        pagesize = info.dwPageSize;
     }
 
     //  Jaspan-san says force-loading every page is a good thing

@@ -473,6 +473,7 @@ AC_CHECK_FUNCS(isalnum isalpha isascii isblank iscntrl isdigit isgraph islower i
 AC_CHECK_FUNCS(setlocale)
 AC_CHECK_FUNCS(getopt getopt_long)
 AC_CHECK_FUNCS(__debugbreak)
+AC_CHECK_FUNCS(sysconf)
 
 
 

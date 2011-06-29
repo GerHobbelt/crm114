@@ -40,9 +40,8 @@ int crm_invoke(void)
 
     //     timer1, timer2, and tstmt are for time profiling.
     //
-    struct tms timer1 = {
-        0 }, timer2 = {
-        0 };
+    struct tms timer1 = { 0 };
+    struct tms timer2 = { 0 };
     long tstmt;
 
     tstmt = 0;

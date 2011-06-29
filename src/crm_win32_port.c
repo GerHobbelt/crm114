@@ -176,5 +176,17 @@ void crm_report_mem_analysis(void)
 #endif
 
 
+
+int getpagesize(void)
+    {
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+        pagesize = info.dwPageSize;
+
+return pagesize;
+    }
+
+
+
 #endif /* WIN32 */
 

@@ -183,6 +183,8 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
 {
     struct stat statbuf;
 
+    s->header = NULL;
+
     if (stat(filename, &statbuf))
     {
         long i, filesize;
@@ -202,12 +204,18 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         {
             fatalerror("For some reason, I was unable to write-open the file named ",
                        filename);
+		return;
         }
         else
         {
-            i = filesize + 1024;
-            while (i--)
-                fputc('\0', f);
+              if (file_memset(f, 0, filesize + 1024))
+        {
+            fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't write to file %s; errno=%d(%s)\n",
+                    filename, errno, errno_descr(errno));
+		fclose(f);
+		return;
+        }
             fclose(f);
         }
         space = crm_mmap_file
@@ -215,7 +223,6 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         if (!space)
         {
             nonfatalerror("failed to do mmap of freshly created file", filename);
-            s->header = NULL;
             return;
         }
         make_scm_state(s, space);
@@ -242,7 +249,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         s->hash_root = (long *)&o[h->hash_root_offset];
         s->hashee = (HASH_STRUCT *)&o[h->hash_offset];
         s->prefix = (PREFIX_STRUCT *)&o[h->prefix_offset];
-        s->text =   (char *)&o[h->text_offset];
+        s->text = (char *)&o[h->text_offset];
         s->indeces = (long *)&o[h->indeces_offset];
     }
     s->learnfilename = filename;

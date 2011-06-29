@@ -167,12 +167,15 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         f = fopen(learnfilename, "wb");
         if (!f)
         {
-            nonfatalerror_ex(SRC_LOC(),
+            fev = fatalerror_ex(SRC_LOC(),
                              "\n Couldn't open your new CSS file %s for writing; errno=%d(%s)\n",
                              learnfilename,
                              errno,
                              errno_descr(errno)
             );
+		free(learnfilename);
+		return fev;
+/*
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 20);
@@ -181,6 +184,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 exit(EXIT_FAILURE);
             }
+*/
         }
         //       did we get a value for sparse_spectrum_file_length?
         if (sparse_spectrum_file_length == 0)
@@ -192,11 +196,17 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (f)
         {
             //       put in sparse_spectrum_file_length entries of NULL
-            for (j = 0;
-                 j < sparse_spectrum_file_length
-                 * sizeof(FEATUREBUCKET_TYPE);
-                 j++)
-                fputc('\000', f);
+                if (file_memset(f, 0, 
+	sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+        {
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't write to file %s; errno=%d(%s)\n",
+                    learnfilename, errno, errno_descr(errno));
+		fclose(f);
+		free(learnfilename);
+		return fev;
+        }
+
             made_new_file = 1;
             //
             fclose(f);
@@ -208,8 +218,10 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     hfsize = statbuf.st_size;
     if (user_trace)
+{
         fprintf(stderr, "Sparse spectra file %s has length %ld bins\n",
                 learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
+}
 
     //
     //      map the .css file into memory
@@ -320,8 +332,10 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         hashes[h1].value = 0;
                 }
                 if (user_trace)
+{
                     fprintf(stderr, "This file has had %ld documents learned!\n",
                             hashes[h1].value);
+}
             }
         }
         hcode = strnhash(fitf, strlen(fitf));
@@ -351,8 +365,10 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 features_index = h1;
                 if (user_trace)
-                    fprintf(stderr, "This file has had %ld features learned!\n",
+ {
+                   fprintf(stderr, "This file has had %ld features learned!\n",
                             hashes[h1].value);
+}
             }
         }
     }
@@ -1416,11 +1432,15 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //     NOT because
                 //     it improves accuracy.
                 {
-                    static const int fw[10] = {
-                        0, 24, 14, 7, 4, 2, 1, 0 };
+                    static const int fw[10] = 
+{
+                        0, 24, 14, 7, 4, 2, 1, 0 
+};
                     // cubic weights seems to work well for chi^2...- Fidelis
-                    static const long chi_feature_weight[] = {
-                        0, 125, 64, 27, 8, 1, 0 };
+                    static const long chi_feature_weight[] = 
+{
+                        0, 125, 64, 27, 8, 1, 0 
+};
                     feature_weight = fw[j];
                     if (use_chisquared)
                     {

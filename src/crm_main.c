@@ -231,7 +231,7 @@ int main(int argc, char **argv)
     int openparen = -1;         //  if there's a list of acceptable arguments
     int user_cmd_line_vars = 0; // did the user specify --vars on cmdline?
 
-#if defined (WIN32) && defined (_DEBUG)
+#if defined(WIN32) && defined(_DEBUG)
     void *bogus_ptr;
 
     /*

@@ -653,5 +653,15 @@ void free_stack(CSL_CELL *csl);
 
 
 
+/*
+   Extra support routines.
+ */
+
+// write count bytes of val val to file dst
+int file_memset(FILE *dst, unsigned char val, size_t count);
+
+
+
+
 #endif /* __CRM114_H__ */
 
