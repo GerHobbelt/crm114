@@ -332,7 +332,8 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if ( i > 0)
     {
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
+      nonfatalerror5 
+	("Regular Expression Compilation Problem:", tempbuf, CRM_ENGINE_HERE);
       goto regcomp_failed;
     };
   
@@ -418,8 +419,10 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  };
 	if (match[0].rm_eo == 0)
 	  {
-	    nonfatalerror ( "The LEARN pattern matched zero length! ",
-			    "\n Forcing an increment to avoid an infinite loop.");
+	    nonfatalerror5 
+	      ( "The LEARN pattern matched zero length! ",
+		"\n Forcing an increment to avoid an infinite loop.",
+		CRM_ENGINE_HERE);
 	    match[0].rm_eo = 1;
 	  };
 
@@ -604,9 +607,10 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  //              does the file really exist?
 	  if (k != 0) 
 	    { 
-	      nonfatalerror ("Refuting from nonexistent data cannot be done!"
-			 " More specifically, this data file doesn't exist: ",
-			   hashfilename);
+	      nonfatalerror5 
+		("Refuting from nonexistent data cannot be done!"
+		 " More specifically, this data file doesn't exist: ",
+		 hashfilename, CRM_ENGINE_HERE);
 	      return (0);
 	    }
 	  else
@@ -990,7 +994,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if ( i > 0)
     {
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
+      nonfatalerror5 
+	("Regular Expression Compilation Problem:", tempbuf, CRM_ENGINE_HERE);
       goto regcomp_failed;
     };
 
@@ -1033,8 +1038,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    {
 	      if (vbar_seen)
 		{
-		  nonfatalerror ("Only one ' | ' allowed in a CLASSIFY. \n" ,
-				 "We'll ignore it for now.");
+		  nonfatalerror5 
+		    ("Only one ' | ' allowed in a CLASSIFY. \n" ,
+		     "We'll ignore it for now.", CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -1050,8 +1056,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      //             quick check- does the file even exist?
 	      if (k != 0)
 		{
-		  nonfatalerror ("Nonexistent Classify table named: ",
-				 fname);
+		  nonfatalerror5 
+		    ("Nonexistent Classify table named: ",
+		     fname, CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -1069,8 +1076,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 		  if (hashes[maxhash] == MAP_FAILED )
 		    {
-		      nonfatalerror ("Couldn't memory-map the table file :",
-				     fname);
+		      nonfatalerror5 
+			("Couldn't memory-map the table file :",
+			 fname, CRM_ENGINE_HERE);
 		    }
 		  else
 		    {
@@ -1112,8 +1120,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		};
 	    };
 	  if (maxhash > MAX_CLASSIFIERS-1)
-	    nonfatalerror ("Too many classifier files.",
-			   "Some may have been disregarded");
+	    nonfatalerror5 ("Too many classifier files.",
+			    "Some may have been disregarded", CRM_ENGINE_HERE);
 	};
     };
 
@@ -1131,7 +1139,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //	do we have at least 1 valid .css files?
   if (maxhash == 0)
     {
-      nonfatalerror ("Couldn't open at least 1 .css files for classify().", "");
+      nonfatalerror5 
+	("Couldn't open at least 1 .css files for classify().", 
+	 "", CRM_ENGINE_HERE);
     };
   //	do we have at least 1 valid .css file at both sides of '|'?
   // if (!vbar_seen || succhash < 0 || (maxhash < succhash + 2))
@@ -1221,8 +1231,10 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	};
       if (match[0].rm_eo == 0)
 	{
-	  nonfatalerror ( "The CLASSIFY pattern matched zero length! ",
-			  "\n Forcing an increment to avoid an infinite loop.");
+	  nonfatalerror5 
+	    ( "The CLASSIFY pattern matched zero length! ",
+	      "\n Forcing an increment to avoid an infinite loop.", 
+	      CRM_ENGINE_HERE);
 	  match[0].rm_eo = 1;
 	};
       //  slide previous hashes up 1
@@ -1868,10 +1880,10 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       // whining on stderr
       if (strcmp(&(stext[strlen(stext)-strlen(buf)]), buf) != 0)
         {
-          nonfatalerror( "WARNING: not enough room in the buffer to create "
+          nonfatalerror5( "WARNING: not enough room in the buffer to create "
 			 "the statistics text.  Perhaps you could try bigger "
 			 "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-			 " ");
+			 " ", CRM_ENGINE_HERE);
 	};
       crm_destructive_alter_nvariable (svrbl, svlen, 
 				       stext, strlen (stext));

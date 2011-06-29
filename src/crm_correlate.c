@@ -178,8 +178,8 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   hfd = open (&(htext[i]), O_RDWR);
   if (hfd < 0) 
     {
-      fev = fatalerror ("Couldn't open the correlation file named: ",
-			&htext[i]);
+      fev = fatalerror5 ("Couldn't open the correlation file named: ",
+			 &htext[i], CRM_ENGINE_HERE);
       return (fev);
     };
 
@@ -202,8 +202,8 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (vht[vhtindex] == NULL)
     {
       long q;
-      q = fatalerror (" Attempt to LEARN from a nonexistent variable ",
-		  ltext);
+      q = fatalerror5 (" Attempt to LEARN from a nonexistent variable ",
+		       ltext, CRM_ENGINE_HERE);
       return (q);
     };
   mdw = NULL;
@@ -214,7 +214,8 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (mdw == NULL)
     {
       long q;
-      q = fatalerror (" Bogus text block containing variable ", ltext);  
+      q = fatalerror5 (" Bogus text block containing variable ", 
+		       ltext, CRM_ENGINE_HERE);  
       return (q);
     }
   textoffset = vht[vhtindex]->vstart;
@@ -353,20 +354,6 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       eflags = 1;
     };
 
-  //   compile the word regex
-/* unused code
-  if ( internal_trace)
-    fprintf (stderr, "\nWordmatch pattern is %s", ptext);
-  i = crm_regcomp (&regcb, ptext, plen, cflags);
-  if ( i > 0)
-    {
-      crm_regerror ( i, &regcb, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
-      goto regcomp_failed;
-    };
-*/
-  
-
   
   //       Now, the loop to open the files.  
   bestseen = 0;
@@ -421,8 +408,9 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    {
 	      if (vbar_seen)
 		{
-		  nonfatalerror ("Only one ' | ' allowed in a CLASSIFY. \n" ,
-				 "We'll ignore it for now.");
+		  nonfatalerror5 ("Only one ' | ' allowed in a CLASSIFY. \n" ,
+				  "We'll ignore it for now.",
+				  CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -438,8 +426,8 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      //             quick check- does the file even exist?
 	      if (k != 0)
 		{
-		  nonfatalerror ("Nonexistent Classify table named: ",
-				 fname);
+		  nonfatalerror5 ("Nonexistent Classify table named: ",
+				 fname, CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -454,8 +442,8 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				     NULL);
 		  if (hashes[maxhash] == MAP_FAILED )
 			{
-			  nonfatalerror ("Couldn't memory-map the table file",
-					 fname);
+			  nonfatalerror5 ("Couldn't memory-map the table file",
+					  fname, CRM_ENGINE_HERE);
 			}
 		      else
 			{
@@ -469,8 +457,8 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			    //(hashes[maxhash][0].hash != 1 ||
 			    //  hashes[maxhash][0].key  != 0) 
 			    {
-			      fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
-					       &htext[i]);
+			      fev =fatalerror5 ("The .css file is the wrong version!  Filename is: ",
+						&htext[i], CRM_ENGINE_HERE);
 			      return (fev);
 			    };
 
@@ -479,8 +467,10 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			  //
 			  hashname[maxhash] = (char *) malloc (fnlen+10);
 			  if (!hashname[maxhash])
-			    untrappableerror(
-			      "Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.");
+			    untrappableerror5
+			      ("Couldn't malloc hashname[maxhash]\n",
+			       "We need that part later, so we're stuck. "
+			       "Sorry.", CRM_ENGINE_HERE);
 			  strncpy(hashname[maxhash],fname,fnlen);
 			  hashname[maxhash][fnlen]='\000';
 			  maxhash++;
@@ -488,8 +478,9 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		};
 	    };
 	  if (maxhash > MAX_CLASSIFIERS-1)
-	    nonfatalerror ("Too many classifier files.",
-			   "Some may have been disregarded");
+	    nonfatalerror5 ("Too many classifier files.",
+			    "Some may have been disregarded",
+			    CRM_ENGINE_HERE);
 	};
     };
 
@@ -511,7 +502,8 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //	do we have at least 1 valid .css files?
   if (maxhash == 0)
     {
-      fatalerror ("Couldn't open at least 1 .css files for classify().", "");
+      fatalerror5 ("Couldn't open at least 1 .css files for classify().", 
+		   "", CRM_ENGINE_HERE);
     };
   //	do we have at least 1 valid .css file at both sides of '|'?
   //if (!vbar_seen || succhash < 0 || (maxhash < succhash + 2))
@@ -804,10 +796,10 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       // whining on stderr
       if (strcmp(&(stext[strlen(stext)-strlen(buf)]), buf) != 0)
         {
-          nonfatalerror( "WARNING: not enough room in the buffer to create "
+          nonfatalerror5( "WARNING: not enough room in the buffer to create "
 			 "the statistics text.  Perhaps you could try bigger "
 			 "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-			 " ");
+			  " ", CRM_ENGINE_HERE);
 	};
       crm_destructive_alter_nvariable (svrbl, svlen, 
 				       stext, strlen (stext));

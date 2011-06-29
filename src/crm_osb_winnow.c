@@ -238,8 +238,8 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		   NULL);
   if (hashes == MAP_FAILED)
     {
-      fev = fatalerror ("Couldn't memory-map the .cow file named: ",
-			fname);
+      fev = fatalerror5 ("Couldn't memory-map the .cow file named: ",
+			 fname, CRM_ENGINE_HERE);
       return (fev);
     };
 
@@ -260,7 +260,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       fprintf (stderr, "Hash was: %ld, key was %ld\n", hashes[0].hash, hashes[0].key);
       fev =fatalerror ("The .cow file is the wrong type!  We're expecting "
 		       "a Osb_Winnow-spectrum file.  The filename is: ",
-		       fname);
+		       fname, CRM_ENGINE_HERE);
       return (fev);
     };
 #endif
@@ -282,9 +282,9 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //
   xhashes = calloc ( hfsize, (sizeof (unsigned char)) );
   if ( !xhashes )
-    untrappableerror(
+    untrappableerror5(
 		     "Couldn't malloc xhashes\n",
-		     "We need that part.  Sorry.\n");
+		     "We need that part.  Sorry.\n", CRM_ENGINE_HERE);
 
   //   compile the word regex
   //
@@ -294,7 +294,8 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if ( i > 0)
     {
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
+      nonfatalerror5 ("Regular Expression Compilation Problem:", 
+		      tempbuf, CRM_ENGINE_HERE);
       goto regcomp_failed;
     };
   
@@ -319,8 +320,8 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (vht[vhtindex] == NULL)
     {
       long q;
-      q = fatalerror (" Attempt to LEARN from a nonexistent variable ",
-		  ltext);
+      q = fatalerror5 (" Attempt to LEARN from a nonexistent variable ",
+		       ltext, CRM_ENGINE_HERE);
       return (q);
     };
   mdw = NULL;
@@ -331,7 +332,8 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (mdw == NULL)
     {
       long q;
-      q = fatalerror (" Bogus text block containing variable ", ltext);  
+      q = fatalerror5 (" Bogus text block containing variable ", 
+		       ltext, CRM_ENGINE_HERE);  
       return (q);
     }
   textoffset = vht[vhtindex]->vstart;
@@ -409,8 +411,10 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  };
 	if (match[0].rm_eo == 0)
 	  {
-	    nonfatalerror ( "The LEARN pattern matched zero length! ",
-			    "\n Forcing an increment to avoid an infinite loop.");
+	    nonfatalerror5 
+	      ( "The LEARN pattern matched zero length! ",
+		"\n Forcing an increment to avoid an infinite loop.",
+		CRM_ENGINE_HERE);
 	    match[0].rm_eo = 1;
 	  };
 
@@ -532,13 +536,13 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    //      can hold no more features (this is unrecoverable)
 		    if (incrs > hfsize - 3)
 		      {
-			nonfatalerror ("Your program is stuffing too many "
+			nonfatalerror5 ("Your program is stuffing too many "
 				       "features into this size .cow file.  "
 				       "Adding any more features is "
 				       "impossible in this file.",
 				       "You are advised to build a larger "
 				       ".cow file and merge your data into "
-				       "it.");
+					"it.", CRM_ENGINE_HERE);
 			goto learn_end_regex_loop;
 		      };
 		    //
@@ -769,7 +773,8 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if ( i > 0)
     {
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
+      nonfatalerror5 ("Regular Expression Compilation Problem:", 
+		      tempbuf, CRM_ENGINE_HERE);
       goto regcomp_failed;
     };
   
@@ -851,8 +856,8 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    {
 	      if (vbar_seen)
 		{
-		  nonfatalerror ("Only one ' | ' allowed in a CLASSIFY. \n" ,
-				 "We'll ignore it for now.");
+		  nonfatalerror5 ("Only one ' | ' allowed in a CLASSIFY. \n" ,
+				  "We'll ignore it for now.", CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -868,8 +873,8 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      //             quick check- does the file even exist?
 	      if (k != 0)
 		{
-		  nonfatalerror ("Nonexistent Classify table named: ",
-				 fname);
+		  nonfatalerror5 ("Nonexistent Classify table named: ",
+				  fname, CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -886,8 +891,8 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 		  if (hashes[maxhash] == MAP_FAILED )
 		    {
-		      nonfatalerror ("Couldn't memory-map the table file",
-				     fname);
+		      nonfatalerror5 ("Couldn't memory-map the table file",
+				      fname, CRM_ENGINE_HERE);
 		    }
 		  else
 		    {
@@ -899,9 +904,10 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      if (hashes[maxhash][0].hash != 1 ||
 			  hashes[maxhash][0].key  != 0) 
 			{
-			  fev =fatalerror ("The .css file is the wrong type!  We're expecting "
-					   "a Osb_Winnow-spectrum file.  The filename is: ",
-					   &htext[i]);
+			  fev =fatalerror5 
+			    ("The .css file is the wrong type!  We're expecting "
+			     "a Osb_Winnow-spectrum file.  The filename is: ",
+			     &htext[i], CRM_ENGINE_HERE);
 			  return (fev);
 			};
 #endif
@@ -915,8 +921,8 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      hashlens[maxhash] = hashlens[maxhash] / sizeof (WINNOW_FEATUREBUCKET_STRUCT);
 		      hashname[maxhash] = (char *) malloc (fnlen+10);
 		      if (!hashname[maxhash])
-			untrappableerror(
-					 "Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.");
+			untrappableerror5 (
+					   "Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.", CRM_ENGINE_HERE);
 		      strncpy(hashname[maxhash],fname,fnlen);
 		      hashname[maxhash][fnlen]='\000';
 		      
@@ -926,17 +932,19 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      xhashes[maxhash] = calloc (hashlens[maxhash], 
 						 sizeof (unsigned char));
 		      if (!xhashes[maxhash])
-			untrappableerror(
+			untrappableerror5(
 					 "Couldn't malloc xhashes[maxhash]\n",
-					 "We need that part.  Sorry.\n");
+					 "We need that part.  Sorry.\n",
+					  CRM_ENGINE_HERE);
 		      
 		      maxhash++;
 		    };
 		};
 	    };
 	  if (maxhash > MAX_CLASSIFIERS-1)
-	    nonfatalerror ("Too many classifier files.",
-			   "Some may have been disregarded");
+	    nonfatalerror5 ("Too many classifier files.",
+			    "Some may have been disregarded",
+			    CRM_ENGINE_HERE);
 	};
     };
   
@@ -958,7 +966,8 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //	do we have at least 1 valid .css files?
   if (maxhash == 0)
     {
-      fatalerror ("Couldn't open at least 1 .cow files for classify().", "");
+      fatalerror5 ("Couldn't open at least 1 .cow files for classify().", 
+		   "", CRM_ENGINE_HERE);
     };
   //	do we have at least 1 valid .cow file at both sides of '|'?
   //if (!vbar_seen || succhash < 0 || (maxhash < succhash + 2))
@@ -1012,8 +1021,8 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
   if (vht[vhtindex] == NULL)
     {
-      return (fatalerror (" Attempt to CLASSIFY from a nonexistent variable ",
-			  ltext));
+      return (fatalerror5 (" Attempt to CLASSIFY from a nonexistent variable ",
+			   ltext, CRM_ENGINE_HERE));
     };
   mdw = NULL;
   if (tdw->filetext == vht[vhtindex]->valtxt)
@@ -1021,7 +1030,8 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (cdw->filetext == vht[vhtindex]->valtxt)
     mdw = cdw;
   if (mdw == NULL)
-    return ( fatalerror (" Bogus text block containing variable ", ltext));  
+    return ( fatalerror5 (" Bogus text block containing variable ", 
+			 ltext, CRM_ENGINE_HERE));  
   textoffset = vht[vhtindex]->vstart;
   textmaxoffset = textoffset + vht[vhtindex]->vlen;
 
@@ -1100,8 +1110,10 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	};
       if (match[0].rm_eo == 0)
 	{
-	  nonfatalerror ( "The CLASSIFY pattern matched zero length! ",
-			  "\n Forcing an increment to avoid an infinite loop.");
+	  nonfatalerror5 
+	    ( "The CLASSIFY pattern matched zero length! ",
+	      "\n Forcing an increment to avoid an infinite loop.",
+	      CRM_ENGINE_HERE);
 	  match[0].rm_eo = 1;
 	};
       //  slide previous hashes up 1
@@ -1374,10 +1386,11 @@ int crm_expr_osb_winnow_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       // whining on stderr
       if (strcmp(&(stext[strlen(stext)-strlen(buf)]), buf) != 0)
         {
-          nonfatalerror( "WARNING: not enough room in the buffer to create "
-			 "the statistics text.  Perhaps you could try bigger "
-			 "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-			 " ");
+          nonfatalerror5 
+	    ( "WARNING: not enough room in the buffer to create "
+	      "the statistics text.  Perhaps you could try bigger "
+	      "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+	      " ", CRM_ENGINE_HERE);
 	};
       if (svlen > 0)
 	crm_destructive_alter_nvariable (svrbl, svlen, 

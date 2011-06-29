@@ -241,7 +241,8 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if ( i > 0)
     {
       crm_regerror ( i, &preg, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
+      nonfatalerror5 ("Regular Expression Compilation Problem:", 
+		      tempbuf, CRM_ENGINE_HERE);
       goto invoke_bailout;
     };
   
@@ -261,8 +262,8 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			  strlen (wvname));
   if (vht[vmidx] == NULL)
     {
-      nonfatalerror ("We seem to be windowing a nonexistent variable.",
-		     "How very bizarre.");
+      nonfatalerror5 ("We seem to be windowing a nonexistent variable.",
+		     "How very bizarre.", CRM_ENGINE_HERE);
       goto invoke_bailout;
     }
   
@@ -271,8 +272,9 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (vht[vmidx]->valtxt == tdw->filetext) mdw = tdw;
   if (mdw == NULL)
     {
-      nonfatalerror ("We seem to have lost the windowed var buffer",
-		     "This is just plain sick.");
+      nonfatalerror5 ("We seem to have lost the windowed var buffer",
+		     "This is just plain sick.",
+		     CRM_ENGINE_HERE);
       goto invoke_bailout;
     }
 
@@ -340,7 +342,8 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if ( i > 0)
     {
       crm_regerror ( i, &preg, tempbuf, data_window_size);
-	    nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
+	    nonfatalerror5 ("Regular Expression Compilation Problem:", 
+			   tempbuf, CRM_ENGINE_HERE);
 	    goto invoke_bailout;
     };
   
@@ -411,9 +414,10 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    srcidx = crm_vht_lookup (vht, inputsrcname, inputsrclen);
 	    if (vht[srcidx] == NULL) 
 	      {
-		nonfatalerror ("Trying to take WINDOW input from"
+		nonfatalerror5 ("Trying to take WINDOW input from"
 			       "nonexistent variables doesn't work,"
-			       "in this case, from :", inputsrcname);
+				"in this case, from :", 
+				inputsrcname, CRM_ENGINE_HERE);
 		goto invoke_bailout;
 	      };
 	    //
@@ -424,8 +428,8 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	      malloc (sizeof (char) * (32 + newbuflen ));
 	    if (savedinputtxt == NULL)
 	      {
-		fatalerror ("Malloc in WINDOW failed.  Aw, crud.", 
-			    "Can't WINDOW this way");
+		fatalerror5 ("Malloc in WINDOW failed.  Aw, crud.", 
+			     "Can't WINDOW this way", CRM_ENGINE_HERE);
 		goto invoke_bailout;
 	      };
 	    
@@ -489,9 +493,9 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		  {
 		  case BYLINE:
 		    {
-		      fatalerror (" Sorry, but BYLINE input is not supported;",
+		      fatalerror5 (" Sorry, but BYLINE input is not supported;",
 				  " we recommend using '\\n' in your match "
-				  "pattern");
+				   "pattern", CRM_ENGINE_HERE);
 		    }
 		    break;
 		  case BYEOF:
@@ -551,9 +555,9 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    //              icount < 0 means an error occurred
 	    if (icount < 0)
 	      {
-		nonfatalerror (" Something went wrong in WINDOW "
+		nonfatalerror5 (" Something went wrong in WINDOW "
 			       "while trying to read",
-			       "I will keep trying. ");
+				"I will keep trying. ", CRM_ENGINE_HERE);
 	      };
 	    if (feof (stdin))
 	      saweof = 1;

@@ -237,7 +237,7 @@ void untrappableerror5 (char *text1, char *text2,
   //
   //   Create our reason string.
   snprintf (reason, MAX_PATTERN, 
-	    "\n%s: *UNTRAPPABLE ERROR* \n %s %s\nSorry, but I can't recover from that.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u), function %s)\n", 
+	    "\n%s: *UNTRAPPABLE ERROR* \n %s %s\nSorry, but I can't recover from that.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u), in routine: %s)\n", 
 	    prog_argv[0], text1, text2, csl->cstmt, csl->filename, filename, lineno, function);
   fprintf (stderr, "%s", reason);
 
@@ -284,10 +284,10 @@ long fatalerror5 ( char *text1, char *text2,
   //   long, so we put out only the first 1024 characters
   //
   if (strlen (text2) < 1023)
-    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) function %s)\n", 
+    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) in routine: %s)\n", 
 	     prog_argv[0], text1, text2, csl->cstmt, csl->filename, filename, lineno, function);
   else
-    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s(...truncated)\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) function %s)\n", 
+    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s(...truncated)\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) in routine: %s)\n", 
 	     prog_argv[0], text1, text2, csl->cstmt, csl->filename, filename, lineno, function);
 
   //     Check to see - is there a trap available or is this a non-trap 
@@ -355,7 +355,7 @@ long nonfatalerror5 ( char *text1, char *text2, char *filename, char *function, 
   //   long, so we put out only the first 1024 characters
   //
   if (strlen (text2) < 1023)
-    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s\nI'll try to keep working.\nThis happened at line %ld of file %s\n(runtime system location %s(%u) function %s)\n", 
+    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s\nI'll try to keep working.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) in routine: %s)\n", 
 	     prog_argv[0], text1, text2, csl->cstmt, csl->filename, filename, lineno, function);
   else
     sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s(...truncated)\nI'll try to keep working.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) function %s)\n", 

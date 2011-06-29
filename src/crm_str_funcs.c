@@ -136,8 +136,6 @@ unsigned long strnhash (char *str, long len)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////
 //
 //    Cached mmap stuff.  Adapted from Win32 compatibility code from
 //    Barry Jaspan.  Altered to not reveal the difference between a
@@ -171,6 +169,7 @@ typedef struct prototype_crm_mmap_cell
   long start;
   long requested_len;
   long actual_len;
+  time_t modification_time;  // st_mtime - time last modified
   void *addr;
   long prot;            //    prot flags to be used, in the mmap() form
                           //    that is, PROT_*, rather than O_*
@@ -189,7 +188,7 @@ typedef struct prototype_crm_mmap_cell
 
 //  We want these to hang around but not be visible outside this file.
 
-static CRM_MMAP_CELL *cache = NULL;
+static CRM_MMAP_CELL *cache = NULL;  // "volatile" for W32 compile bug
 
 
 //////////////////////////////////////
@@ -261,6 +260,7 @@ void crm_force_munmap_filename (char *filename)
         {
 	  //   found it... force an munmap.
 	  crm_force_munmap_addr (p->addr);
+	  // break;     //  because p may be clobbered during unmap.
         }
     }
 }
@@ -285,9 +285,9 @@ void crm_force_munmap_addr (void *addr)
 
   if ( ! p )
     {
-      nonfatalerror ("Internal fault - this code has tried to force unmap memory "
+      nonfatalerror5 ("Internal fault - this code has tried to force unmap memory "
 		     "that it never mapped in the first place.  ",
-		     "Please file a bug report. ");
+		      "Please file a bug report. ", CRM_ENGINE_HERE);
       return;
     }
     
@@ -320,9 +320,9 @@ void crm_munmap_file (void *addr)
 
   if ( ! p )
     {
-      nonfatalerror ("Internal fault - this code has tried to unmap memory "
+      nonfatalerror5 ("Internal fault - this code has tried to unmap memory "
 		     "that it never mapped in the first place.  ",
-		     "Please file a bug report. ");
+		      "Please file a bug report. ", CRM_ENGINE_HERE);
       return;
     }
     
@@ -386,10 +386,11 @@ void crm_munmap_file (void *addr)
 //           Force an Unmap on every mmapped memory area we know about
 void crm_munmap_all()
 {
-  while (cache != NULL) {
-    cache->unmap_count = UNMAP_COUNT_MAX + 1;
-    crm_munmap_file (cache->addr);
-  }
+  while (cache != NULL) 
+    {
+      cache->unmap_count = UNMAP_COUNT_MAX + 1;
+      crm_munmap_file (cache->addr);
+    }
 }
 
 
@@ -427,9 +428,25 @@ void *crm_mmap_file (char *filename,
 	  && p->start == start
 	  && p->requested_len == requested_len) 
 	{
-	  if (actual_len)
-	    *actual_len = p->actual_len;
-	  return (p->addr);
+	  // check the mtime; if this differs between cache and stat
+	  // val, then someone outside our process has played with the
+	  // file and we need to unmap it and remap it again.
+	  int k;
+	  struct stat statbuf;
+	  k = stat (filename, &statbuf);
+	  if (k != 0 
+	      || p->modification_time != statbuf.st_mtime)
+	    {
+	      // yep, someone played with it. unmap and remap
+	      crm_force_munmap_filename (filename);
+	    }
+	  else
+	    {
+	      //  nope, it looks clean.  We'll reuse it.
+	      if (actual_len)
+		*actual_len = p->actual_len;
+	      return (p->addr);
+	    }
 	}
     }
   
@@ -439,8 +456,8 @@ void *crm_mmap_file (char *filename,
   p = (void *) malloc( sizeof ( CRM_MMAP_CELL) );
   if (p == NULL)
     {
-      untrappableerror(" Unable to malloc enough memory for mmap cache.  ",
-		       " This is unrecoverable.  Sorry.");
+      untrappableerror5(" Unable to malloc enough memory for mmap cache.  ",
+			" This is unrecoverable.  Sorry.", CRM_ENGINE_HERE);
       return MAP_FAILED;
     }
   p->name = strdup(filename);
@@ -492,7 +509,8 @@ void *crm_mmap_file (char *filename,
   if (p->actual_len < 0)
     p->actual_len = statbuf.st_size - p->start;
 
-  //    
+  //  and put in the mtime as well
+  p->modification_time = statbuf.st_mtime;
 
   //  fprintf (stderr, "m");
   p->addr = mmap (NULL, 
@@ -703,8 +721,9 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
   //  error out if there's a problem with MALLOC
   if (!outstr)
     {
-      untrappableerror(
-	  "Can't allocate memory to invert strings for strstrn", "");
+      untrappableerror5
+	("Can't allocate memory to invert strings for strstrn", "",
+	 CRM_ENGINE_HERE);
     }
 
   //  The string of all characters is the inverse of "" (the empty
@@ -790,8 +809,9 @@ unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
   r = malloc ( 1 + *rlen);	/* 1 + to avoid empty problems */
   if (!r) 
     {
-      untrappableerror(
-	  "Can't allocate memory to expand hyphens for strstrn", "");
+      untrappableerror5(
+	  "Can't allocate memory to expand hyphens for strstrn", 
+	  "", CRM_ENGINE_HERE);
     }
 
   //   Now expand the string, from "str" into "r"
@@ -945,7 +965,7 @@ long strntrn (
   //
   if (CRM_UNIQUE & flags) 
     {
-      unsigned char unique_map [257];
+      unsigned char unique_map [256];
 
       //                        build the map of the uniqueable characters
       //
@@ -980,7 +1000,7 @@ long strntrn (
       //
       for (j= 0; j < 256; j++) 
 	{
-	  map[j]= j;
+	  map[j]= (unsigned char)j;
 	}
 
       //   go through and mod each character in the from-string to

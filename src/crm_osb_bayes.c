@@ -220,8 +220,8 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 						 NULL);
   if (hashes == MAP_FAILED)
     {
-      fev = fatalerror ("Couldn't get to the statistic file named: ",
-			&htext[i]);
+      fev = fatalerror5 ("Couldn't get to the statistic file named: ",
+			 &htext[i], CRM_ENGINE_HERE);
       return (fev);
     };
 
@@ -239,9 +239,9 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //  hashes[0].key  != 0 )
   //{
   //  fprintf (stderr, "Hash was: %ld, key was %ld\n", hashes[0].hash, hashes[0].key);
-  //  fev = fatalerror ("The .css file is the wrong type!  We're expecting "
+  //  fev = fatalerror5 ("The .css file is the wrong type!  We're expecting "
   //	       "a Osb_Bayes-spectrum file.  The filename is: ",
-  //	       &htext[i]);
+  //	       &htext[i], CRM_ENGINE_HERE);
   //
   //  return (fev);
   //};
@@ -268,8 +268,9 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //     Note that we _calloc_, not malloc, to zero the memory first.
       seen_features = calloc (hfsize, 1);
       if ( seen_features == NULL )
-	untrappableerror (" Couldn't allocate enough memory to keep track",
-			  "of nonunique features.  This is deadly");
+	untrappableerror5 (" Couldn't allocate enough memory to keep track",
+			   "of nonunique features.  This is deadly", 
+			   CRM_ENGINE_HERE);
       
     };
   
@@ -298,8 +299,9 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  }
 	else
 	  { 
-	    fatalerror (" This file should have learncounts, but doesn't!",
-			" The slot is busy, too.  It's hosed.  Time to die.");
+	    fatalerror5 (" This file should have learncounts, but doesn't!",
+			 " The slot is busy, too.  It's hosed.  Time to die.",
+			 CRM_ENGINE_HERE);
 	    goto regcomp_failed;
 	  };
       }
@@ -338,8 +340,9 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  }
 	else
 	  { 
-	    fatalerror (" This file should have learncounts, but doesn't!",
-			" The slot is busy, too.  It's hosed.  Time to die.");
+	    fatalerror5 (" This file should have learncounts, but doesn't!",
+			 " The slot is busy, too.  It's hosed.  Time to die.",
+			 CRM_ENGINE_HERE);
 	    goto regcomp_failed ;
 	  };
       }
@@ -367,7 +370,8 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if ( i > 0)
     {
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
+      nonfatalerror5 ("Regular Expression Compilation Problem:", 
+		      tempbuf, CRM_ENGINE_HERE);
       goto regcomp_failed;
     };
   
@@ -378,39 +382,6 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   k = 0;
   j = 0;
   i = 0;
-
-#ifdef OLD_STUPID_VAR_RESTRICTION
-
-  if (llen > 0)
-    {
-      vhtindex = crm_vht_lookup (vht, ltext, llen);
-    }
-  else
-    {
-      vhtindex = crm_vht_lookup (vht, ":_dw:", 5);
-    };
-  
-  if (vht[vhtindex] == NULL)
-    {
-      long q;
-      q = fatalerror (" Attempt to LEARN from a nonexistent variable ",
-		  ltext);
-      return (q);
-    };
-  mdw = NULL;
-  if (tdw->filetext == vht[vhtindex]->valtxt)
-    mdw = tdw;
-  if (cdw->filetext == vht[vhtindex]->valtxt)
-    mdw = cdw;
-  if (mdw == NULL)
-    {
-      long q;
-      q = fatalerror (" Bogus text block containing variable ", ltext);  
-      return (q);
-    }
-  textoffset = vht[vhtindex]->vstart;
-  textmaxoffset = textoffset + vht[vhtindex]->vlen;
-#endif  
   
   //   No need to do any parsing of a box restriction.
   //   We got txtptr, txtstart, and txtlen from the caller!
@@ -484,8 +455,10 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  };
 	if (match[0].rm_eo == 0)
 	  {
-	    nonfatalerror ( "The LEARN pattern matched zero length! ",
-			    "\n Forcing an increment to avoid an infinite loop.");
+	    nonfatalerror5 
+	      ( "The LEARN pattern matched zero length! ",
+		"\n Forcing an increment to avoid an infinite loop.",
+		CRM_ENGINE_HERE);
 	    match[0].rm_eo = 1;
 	  };
 
@@ -535,12 +508,24 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		 j++)
 	      {
 		h1 = hashpipe[0]*hctable[0] + hashpipe[j] * hctable[j<<1];
+// #define PRINT_HASHES
+#ifdef PRINT_HASHES
+	       		fprintf (stderr, 
+			 "HCT 0: %x HP: %x  J: %x HCTJ: %x HPJ: %x  H1: %x\n",
+			 hctable[0],
+			 hashpipe[0],
+			 j,
+			 hctable[j<<1],
+			 hashpipe[j],
+			 h1);
+#endif
 		if (h1 < spectra_start) h1 = spectra_start;
 		// If you need backward compatibility with older 
 		//  Markov .css files, define OLD_MARKOV_COMPATIBILITY
 #ifdef OLD_MARKOV_COMPATIBILITY
 		h2 = hashpipe[0]*hctable[1] + hashpipe[j] * hctable[(j<<1)+1];
 #else
+		//    Historical accident.  Bill is stupid.   --Bill
 		h2 = hashpipe[0]*hctable[1] + hashpipe[j] * hctable[(j<<1)-1];
 #endif
 		if (h2 == 0) h2 = 0xdeadbeef;
@@ -614,13 +599,13 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    //      can hold no more features (this is unrecoverable)
 		    if (incrs > hfsize - 3)
 		      {
-			nonfatalerror ("Your program is stuffing too many "
+			nonfatalerror5 ("Your program is stuffing too many "
 				       "features into this size .css file.  "
 				       "Adding any more features is "
 				       "impossible in this file.",
 				       "You are advised to build a larger "
 				       ".css file and merge your data into "
-				       "it.");
+					"it.", CRM_ENGINE_HERE);
 			goto learn_end_regex_loop;
 		      };
 		    hindex++;
@@ -903,7 +888,8 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if ( i > 0)
     {
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
+      nonfatalerror5 ("Regular Expression Compilation Problem:", 
+		      tempbuf, CRM_ENGINE_HERE);
       goto regcomp_failed;
     };
 
@@ -1028,8 +1014,8 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    {
 	      if (vbar_seen)
 		{
-		  nonfatalerror ("Only one ' | ' allowed in a CLASSIFY. \n" ,
-				 "We'll ignore it for now.");
+		  nonfatalerror5 ("Only one ' | ' allowed in a CLASSIFY. \n" ,
+				  "We'll ignore it for now.", CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -1045,8 +1031,8 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      //             quick check- does the file even exist?
 	      if (k != 0)
 		{
-		  nonfatalerror ("Nonexistent Classify table named: ",
-				 fname);
+		  nonfatalerror5 ("Nonexistent Classify table named: ",
+				  fname, CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -1063,8 +1049,8 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				    NULL);
 		  if (hashes[maxhash] == MAP_FAILED )
 		    {
-		      nonfatalerror ("Couldn't memory-map the table file",
-				     fname);
+		      nonfatalerror5 ("Couldn't memory-map the table file",
+				      fname, CRM_ENGINE_HERE);
 		    }
 		  else
 		    {
@@ -1090,8 +1076,8 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      hashlens[maxhash] = hashlens[maxhash] / sizeof (FEATUREBUCKET_TYPE);
 		      hashname[maxhash] = (char *) malloc (fnlen+10);
 		      if (!hashname[maxhash])
-			untrappableerror(
-					 "Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.");
+			untrappableerror5
+			  ("Couldn't malloc hashname[maxhash]\n","We need that part later, so we're stuck.  Sorry.", CRM_ENGINE_HERE);
 		      strncpy(hashname[maxhash],fname,fnlen);
 		      hashname[maxhash][fnlen]='\000';
 		      maxhash++;
@@ -1099,8 +1085,8 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		};
 	    };
 	  if (maxhash > MAX_CLASSIFIERS-1)
-	    nonfatalerror ("Too many classifier files.",
-			   "Some may have been disregarded");
+	    nonfatalerror5 ("Too many classifier files.",
+			    "Some may have been disregarded", CRM_ENGINE_HERE);
 	};
     };
   
@@ -1122,7 +1108,8 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //	do we have at least 1 valid .css files?
   if (maxhash == 0)
     {
-      fatalerror ("Couldn't open at least 2 .css files for classify().", "");
+      fatalerror5 ("Couldn't open at least 1 .css file for classify().", 
+		  "", CRM_ENGINE_HERE);
     };
   //	do we have at least 1 valid .css file at both sides of '|'?
   //if (!vbar_seen || succhash < 0 || (maxhash < succhash + 2))
@@ -1172,9 +1159,10 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		}
 	      else
 		{
-		  fatalerror (" This file should have learncounts, but doesn't,"
-			      " and the learncount slot is busy.  It's hosed. ",
-			      " Time to die.");
+		  fatalerror5 
+		    (" This file should have learncounts, but doesn't,"
+		     " and the learncount slot is busy.  It's hosed. ",
+		     " Time to die.", CRM_ENGINE_HERE);
 		  goto regcomp_failed;
 		}
 	    }
@@ -1203,9 +1191,10 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		}
 	      else
 		{
-		  fatalerror ("This file should have featurecounts, but doesn't,"
-			      "and the featurecount slot is busy.  It's hosed. ",
-			      " Time to die.");
+		  fatalerror5 
+		    ("This file should have featurecounts, but doesn't,"
+		     "and the featurecount slot is busy.  It's hosed. ",
+		     " Time to die.", CRM_ENGINE_HERE);
 		  goto regcomp_failed;
 		}
 	    }
@@ -1264,8 +1253,9 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  //     Note that we _calloc_, not malloc, to zero the memory first.
             seen_features[ifile] = calloc (hashlens[ifile]+1, 1);
 	  if ( seen_features[ifile] == NULL )
-	    untrappableerror (" Couldn't allocate enough memory to keep track",
-			      "of nonunique features.  This is deadly");
+	    untrappableerror5 
+	      (" Couldn't allocate enough memory to keep track",
+	       "of nonunique features.  This is deadly", CRM_ENGINE_HERE);
 	}
       else
         seen_features[ifile] = NULL;
@@ -1348,8 +1338,9 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	};
       if (match[0].rm_eo == 0)
 	{
-	  nonfatalerror("The CLASSIFY pattern matched zero length! ",
-			"\n Forcing an increment to avoid an infinite loop.");
+	  nonfatalerror5("The CLASSIFY pattern matched zero length! ",
+			 "\n Forcing an increment to avoid an infinite loop.",
+			 CRM_ENGINE_HERE);
 	  match[0].rm_eo = 1;
 	};
 
@@ -1855,10 +1846,11 @@ int crm_expr_osb_bayes_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       // whining on stderr
       if (strcmp(&(stext[strlen(stext)-strlen(buf)]), buf) != 0)
         {
-          nonfatalerror( "WARNING: not enough room in the buffer to create "
-			 "the statistics text.  Perhaps you could try bigger "
-			 "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-			 " ");
+          nonfatalerror5
+	    ( "WARNING: not enough room in the buffer to create "
+	      "the statistics text.  Perhaps you could try bigger "
+	      "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+	      " ", CRM_ENGINE_HERE);
 	};
       crm_destructive_alter_nvariable (svrbl, svlen, 
 				       stext, strlen (stext));

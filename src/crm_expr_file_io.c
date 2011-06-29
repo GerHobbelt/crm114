@@ -339,8 +339,10 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //
   if ( outf == 0 ) 
     { 
-      fatalerror ("For some reason, I was unable to write-open the file named",
-		  fnam);
+      fatalerror5 
+	("For some reason, I was unable to write-open the file named",
+	 fnam,
+	 CRM_ENGINE_HERE);
     }
   else
     {

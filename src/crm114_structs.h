@@ -64,7 +64,7 @@ long q_expansion_mode;
 //  available table entry, wrapping around.  It's easy to change in any case.
 //  
 typedef struct mythical_vht_cell {
-  char *filename;        // file where defined (or NULL)
+  char *filename;       // file where defined (or NULL)
   int filedesc;         // filedesc of defining file (or NULL)
   char *nametxt;        // block of text that hosts the variable name
   long nstart;          // index into nametxt to start of varname
@@ -81,6 +81,7 @@ typedef struct mythical_vht_cell {
                         //   plus mstart is where you could put a NULL if you
                         //    wanted to.
   long linenumber;      // linenumber of this variable (if known, else -1)
+  long lazy_redirects;  // how many lazy redirects are allowed (0 by default);
 } VHT_CELL;
 
 //   The argparse block is filled in at run time, though at least in
@@ -199,6 +200,7 @@ typedef struct mythical_entropy_cell {
 } ENTROPY_FEATUREBUCKET_STRUCT;
 
 
+//   TMS struct - used for measurng process time.
 typedef struct mythical_tms_struct {
   clock_t tms_utime;  // user time
   clock_t tms_stime;  // system time 
@@ -242,7 +244,8 @@ typedef struct mythical_tms_struct {
 #define CRM_DEBUG 30
 #define CRM_CLUMP 31         // make clusters out of tokens
 #define CRM_PMULC 32         // pmulc translates tokens to cluster names
-#define CRM_UNIMPLEMENTED 33
+#define CRM_LAZY 33          // makes a "lazy" variable.
+#define CRM_UNIMPLEMENTED 34
 
 
 //      FLAGS FLAGS FLAGS
@@ -269,6 +272,7 @@ typedef struct mythical_tms_struct {
 //         input/output/window flags
 #define CRM_BYLINE        (1 << 10)      //  Should be merged with nomultiline
 #define CRM_BYCHAR        (1 << 11)
+#define CRM_STRING        CRM_BYCHAR     // string is bychar.  I think...
 #define CRM_BYCHUNK       (1 << 12)
 #define CRM_BYEOF         (1 << 13)
 #define CRM_EOFACCEPTS    (1 << 14)
@@ -306,6 +310,8 @@ typedef struct mythical_tms_struct {
 #define CRM_SVM           (1LL << 35)
 //           FSCM classifier
 #define CRM_FSCM          (1LL << 36)
+//           Neural Net classifier
+#define CRM_NEURAL_NET    (1LL << 37)
 //  
 //     and a struct to put them in.
 typedef struct 

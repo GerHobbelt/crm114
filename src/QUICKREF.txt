@@ -328,13 +328,24 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
                                   compressibility of the unknown given the 
                                   prior learned text as a perfect compressor
                                   model.  No tokenization happens- this 
-                                  classifier works one bit at a time.  
+                                  classifier works one bit at a time, always.  
                                   EXPERIMENTAL !!!
       <svm>                     - use the SVM classifier.  This uses SVM 
                                   (support vector machine) techniques.  NB:
                                   for now VERY EXPERIMENTAL; OSB or unigram
                                   features (default OSB features), 
                                   2-class only, generates A_vs_B files.
+      <sks>                     - use the String Kernel SVM.  String kernels
+                                  take one character at a time as token 
+                                  features, but don't use omitted subsections
+                                  like the OSB feature set.  VERY EXPERIMENTAL.
+                                  2-class only, generates A_vs_B files.
+      <neural>                  - use a three-layer neural network with 
+                                  stochastic back-propagation training.  
+                                  Use <fromstart> to reinitialize the network
+                                  neurons to a small random state in case it
+                                  gets stuck in a (rare) local minimum.
+				  VERY EXPERIMENTAL!!!
       <correlate>               - use the full correlative matcher.  Very
                                   slow, but capable of matching stemmed words
                                   in any language and of matching binary files
@@ -370,21 +381,38 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
 					  you specify. If given, the pR in
 					  'stats' will be printed in the form
 					  pR/pR_offset. 
-                          /svm-specific controls/ - a vector of seven parameters
-                                          for SVM-classifiers
+                          /svm-specific controls/ - a vector of seven 
+                                          parameters for SVM-classifiers
 
-clump [:text:] (clumpfile) /regex/ - does incremental parametric
-                                   clumping of tokens to generate
-                                   local (ascii numeric) synonyms.
-                                   Algorithm and parameters are
-                                   variable, the stored clumps go into
-                                   clumpfile, and can be looked up
-                                   with pmulc.
+clump [:text:] (clumpfile) (stat) <flags> /regex/ /params/ - does incremental
+                                   parametric clustering of documents to
+                                   generate document groups.  No
+                                   pre-judged corpus is required.
       [:text:]             -       input text; var-restriction allowed
-      (clumpfile)          -       name of file to hold the clumps
+      (clumpfile)          -       name of file to hold the clumps (all docs
+                                   go into the same clumpfile)
+      (status)             -       Status output, for the result of the clump.
+                                   Clumping the null input text will give
+                                   a status dump of all the documents in
+                                   the entire clumpfile.
+      <flags>              -       special control flags; unigram, unique,
+                                   and refute are supported, with the same 
+                                   meanings as in LEARN and CLASSIFY.  Default
+                                   clustering is by document-to-document
+                                   nearest-neighbor hyperspatial distance.
+				   If you add the bychunk flag, then the
+                                   distance is to the cluster's centroid.
       /regex/              -       optional tokenization regex; default is 
                                    /[[:graph:]]+/
-      /params/             -       control parameters
+      /params/             -       control parameters: "tag=somename" label
+                                   to later refer to this document. 
+                                   "clump=somename" forces a name onto a 
+                                   cluster.  "n_clusters=N" says how many 
+                                   doc clusters you want; if N=0 then it
+                                   will simply store the document and wait
+                                   for more (much faster computationally).
+                                   If N < 0 the number of clusters is 
+                                   determined automatically.
 
 
 debug                      -       drop immediately into the interactive
@@ -661,13 +689,18 @@ output <flags> [filename] /output-text/ - output an arbitrary string
 				    expansion of /output-text/
               /output-text/       - string to output (var-expanded)
 
-pmulc (clumpfile) [:text:] /regex/  - use the clumpfile as a lookup 
-                                    to translate tokens into their 
-                                    equivalence classes.
-      [:text:]              -       input text; var-restriction allowed
+pmulc (clumpfile) [:text:] <flags> /regex/  - use the clumpfile as a lookup 
+                                    to translate documents to their 
+                                    appropriate clusters.  The text does
+                                    not get added into the clumpfile.
+      [:text:]              -       input text; var-restriction allowed.  
       (clumpfile)           -       name of file to holding the clumps
       /regex/               -       optional tokenization regex; default is
                                     /[[:graph:]]+/
+      <flags>               -       The optional flags are bychunk, unique,
+                                    and unigram, with the same functions
+                                    as under clump.
+
 
 
 

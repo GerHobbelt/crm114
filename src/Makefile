@@ -24,8 +24,15 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION = 20070810-BlameTheSegfault
-PREV_VERSION = 20070505-BlameIdiocy
+VERSION=20071126-BlameGerHobbelt
+PREV_VERSION=20070917-BlameGerHobbelt
+#VERSION=20070830-BlameGerHobbelt
+#PREV_VERSION=20070828-BlameGerHobbelt
+#PREV_VERSION=20070827-BlameGerHobbelt
+#PREV_VERSION=20070826-BlameGerHobbelt
+#PREV_VERSION = 20070815-BlameBadData
+#PREV_VERSION = 20070810-BlameTheSegfault
+#PREV_VERSION = 20070505-BlameIdiocy
 #PREV_VERSION = 20061103-BlameDalkey
 #PREV_VERSION = 20061010-BlameBratko
 #PREV_VERSION = 20060920-BlameNico
@@ -36,7 +43,7 @@ PREV_VERSION = 20070505-BlameIdiocy
 #PREV_VERSION = 20060606-VersionOfTheBeast
 #PREV_VERSION = 20060429-ReaverReturn
 #PREV_VERSION = 20060118-BlameTheReavers
-#PREV_VERSION = 20051231a-BlameBarryAndPaoloa
+#PREV_VERSION = 20051231a-BlameBarryAndPaolo
 #PREV_VERSION = 20051001-BlameRaulMiller
 #PREV_VERSION = crm114-20050721-BlameNeilArmstrong
 # VERSION += [$(TRE_TARFILE)]
@@ -45,7 +52,11 @@ PREV_VERSION = 20070505-BlameIdiocy
 #      Are we compiling on a POSIX system or a Windows system?  NOTE:
 #       WINDOWS IS UNSUPPORTED BY THE AUTHOR.  THE AUTHOR WILL
 #	ACCEPT REASONABLE-LOOKING PATCHES BUT WINDOWS-ONLY 
-#       BUG REPORTS THAT DO NOT REPRODUCE UNDER LINUX ET AL _CANNOT_ BE WORKED.
+#       BUG REPORTS THAT DO NOT REPRODUCE UNDER LINUX ET AL 
+#       SIMPLY _CANNOT_ BE WORKED AS I HAVE NO WINDOWS MACHINES.  
+#       SO, IF YOU FIND A WINDOWS-ONLY BUG, PLEASE PUT IT ON THE 
+#       MAILING LIST SO WINDOWS PEOPLE CAN WORK THE BUG.
+#
 SYSTEMTYPE = POSIX
 #SYSTEMTYPE = WIN32
 #
@@ -54,20 +65,24 @@ SYSTEMTYPE = POSIX
 #  and warn on all warnable things "-Wall".  Someday add -Wextra for
 #  really picayune stuff.
 #  
+#  Our default is with debugging, full optimization, and lots of warnings:
 CFLAGS += -g -O3 -Wall
-#     turn this one on for no optimization debugging.
-#CFLAGS += -g -O0 -Wall 
-#     turn this one on for really picayune debugging.
-#CFLAGS += -Wextra
+#     turn this one on for no optimization, but debugging and time profiling:
+#CFLAGS += -g -O0 -Wall -pg -CB
+#     turn this one on for really picayune debugging:
+# CFLAGS += -Wextra
 #
 #   Choose between static and dynamic linking (we recommend static linking)
 #   Comment this out if you want dynamic linking
 #
 #    BSD users - do NOT use -static-libgcc!!!
-LDFLAGS += -static -static-libgcc
+LDFLAGS += -static -static-libgcc 
+#    use this one if you want program profiling.
+#LDFLAGS += -static -static-libgcc -pg
 #
 #   Any standard install flags?  We nominally use protection 755
 INSTALLFLAGS += -m 755
+#
 #        uncomment the next line if you want to "strip" the debugger info 
 #        from the binaries when installing.  This speeds up load, but 
 #        you won't be able to submit meaningful CRM114 engine bug reports.
@@ -83,20 +98,35 @@ TRE_TARFILE = tre-0.7.5
 #    Simson Garfinkel suggests that you
 #    uncomment the following to get a BSD-sane environment.  Leave them
 #    untouched (commented out) for Linux builds.
-# Add for FreeBSD
+# Add for FreeBSD:
 #CFLAGS += -I/usr/local/include
 #LDFLAGS += -L/usr/local/lib
 #LIBS += -lintl -liconv
 #LDFLAGS += -dynamic-libgcc
 #
-#             Jeff Rice suggests the following for FreeBSD:
+#    Jeff Rice suggests the following for FreeBSD:
 #CFLAGS += -I/usr/local/include -I${HOME}/include
 #LDFLAGS += -L/usr/local/lib -L${HOME}/lib
 #LIBS += -lintl -liconv
-#
-#
-#
 # ------------------ end of *BSD stuff
+#
+# ------------------For Mac OSX, try this---------------
+#
+#    Yimin Wu (of the SVMx classifiers) suggests that to get
+#    a good compile on the Mac OSX machines, try:
+#
+#   COMMENT OUT all the above "LDFLAGS += -static -static-libgcc -pg"
+#
+#    and add
+#
+#CFLAGS += -I/usr/local/include
+#LDFLAGS += -l/usr/local/lib
+#
+#  and change final options on the main link line from:
+#
+#   "-lm -ltre -o crm114" to "-ltre -o crm114"
+#
+# --------------End of Mac OSX stuff -----------------------
 #
 #
 #    End of user-configurable options... if you modify anything below
@@ -113,6 +143,7 @@ CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
 	crm_markovian.c crm_osb_bayes.c crm_osb_hyperspace.c \
 	crm_correlate.c crm_osb_winnow.c crm_winnow_maintenance.c \
 	crm_osbf_bayes.c crm_osbf_maintenance.c crm_bit_entropy.c \
+	crm_neural_net.c crm_expr_clump.c \
 	crm_expr_window.c crm_expr_isolate.c crm_expr_file_io.c \
 	crm_expr_syscall.c crm_expr_classify.c crm_expr_translate.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
@@ -130,6 +161,7 @@ OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_markovian.o crm_osb_bayes.o crm_osb_hyperspace.o \
 	crm_correlate.o crm_osb_winnow.o crm_winnow_maintenance.o \
 	crm_osbf_bayes.o crm_osbf_maintenance.o crm_bit_entropy.o \
+	crm_neural_net.o crm_expr_clump.o \
 	crm_expr_window.o crm_expr_isolate.o crm_expr_file_io.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
@@ -205,8 +237,8 @@ help: FORCE
 	#    make megatest            - runs the full test suite ( takes
 	#                               about ~1 minute, TRE version _ONLY_! )
 	#    make clean               - deletes all .o and executables.  
-	#                               Don't do this on a binary kit!
-        #    make cssfiles            - builds a set of .css files from data
+	#                               Don't do this on a binary kit!	
+	#    make cssfiles            - builds a set of .css files from data
 	#                               in ./good.dir/* and ./spam.dir/*
 	#    make distribtion         - builds the .gzballs for distribution
         #                               of with your mods built in.
@@ -214,7 +246,7 @@ help: FORCE
 crm114_gnu: $(OFILES) crmregex_gnu.o 
 	#
 	#   Note:  You've chosen to make a GNU regex library CRM114.  
-        #       Although CRM114 will work mostly correctly when
+	#       Although CRM114 will work mostly correctly when
 	#	linked against the GNU regex library, a lot of functionality
 	#       won't be available, and "make megatest" will fail.
 	#
@@ -228,8 +260,8 @@ crm114: $(OFILES) crmregex_tre.o
 	#   Now building the TRE regex version of CRM114.  If you don't have
 	#   TRE already, you will need to fetch it from the website and
 	#   then ./configure --enable-static to get the static TRE libs,
-	#   then build it, add /usr/local/lib to /etc/ld.so.conf, then 
-	#   to set the library up.
+	#   then build TRE, add /usr/local/lib to /etc/ld.so.conf, then 
+	#   to set the library up.  Then you can build CRM114 itself.
 	#
 	$(CC) $(LDFLAGS) $(LIBS) $(OFILES) \
 	  crmregex_tre.o \
@@ -354,13 +386,17 @@ crm_expr_fscm.o: crm_expr_fscm.c \
 	$(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_fscm.c -o crm_expr_fscm.o
 
+crm_expr_clump.o: crm_expr_clump.c \
+	$(HFILES)
+	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_clump.c -o crm_expr_clump.o
+
 crm_stats.o: crm_stats.c \
 	$(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_stats.c -o crm_stats.o
 
-#crm_osb_neural.o: crm_osb_neural.c \
-#	$(HFILES)
-#	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_osb_neural.c -o crm_osb_neural.o
+crm_neural_net.o: crm_neural_net.c \
+	$(HFILES)
+	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_neural_net.c -o crm_neural_net.o
 
 crm_bit_entropy.o: crm_bit_entropy.c \
 	$(HFILES)

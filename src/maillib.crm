@@ -221,8 +221,9 @@ isolate (:i_text:) /:*:m_text:/
        #    First, do the line-spanning regexes.
        match <fromend nomultiline> (:ch: :fr1: :to:) [:rewrites:] /(.+)>-->(.*)/
        #    see if the "fr" regex matches anywhere
+       match [:m_text:] //
        {
-	   match [:m_text:] (:place:) /:*:fr1:/
+	   match [:m_text:] <fromend> (:place:) /:*:fr1:/
 	   #  Yep, it matched... alter it and do it again
 	   #
 	   alter (:place:) /:*:to:/
@@ -309,8 +310,8 @@ return /:*:m_text:/
         alter (:kill_this_line:) //
         liaf
     }
-    return
 }
+return
 
 #          delete all current headers of this type, insert ours instead.
 #
@@ -424,6 +425,7 @@ return
 }
 return
 
+
 #
 #        Mark a piece of mail with Reaver IDs.   Hopefully one or the
 #        other of these will survive your local mailer.
@@ -484,14 +486,19 @@ return
 }
 return
 
+#
+#     And the mother of all traps...
+#
+#
+
 trap (:broken_program_message:) /.*/
 {
         accept
-        output /:*:_nl: Aw, crud.  maillib.crm broke.  Here's the error: :*:\_nl:/
+        output /:*:_nl: Aw, crud.  maillib.crm broke.  Here's the error: :*:_nl:/
         output /:*:broken_program_message:/
         output [stderr] /:*:_nl: ERROR: maillib.crm broke.  Here's the error\: :*:_nl:/
         output [stderr] /ERROR: :*:broken_program_message:/
-    }
+}
 exit /:*:program_fault_exit_code:/
 
 

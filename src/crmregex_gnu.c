@@ -56,8 +56,8 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
     {
       if (null_errored == 0)
 	{
-	  fatalerror ("The regex contains a NUL inside the stated length,",
-		  "but your GNU regex library can't handle embedded NULs.  Therefore, treat all results WITH GREAT SUSPICION.");
+	  fatalerror5 ("The regex contains a NUL inside the stated length,",
+		       "but your GNU regex library can't handle embedded NULs.  Therefore, treat all results WITH GREAT SUSPICION.", CRM_REGEX_HERE);
 	  null_errored = 1;
 	};
     };
@@ -100,8 +100,8 @@ int crm_regexec ( regex_t *preg, char *string, long string_len,
 	{
 	  fprintf (stderr, "\nRegexec  strlen: %d, stated_len: %ld \n",
 		   strlen (string), string_len);
-	  nonfatalerror ("Your data window contained a NUL inside the stated length,",
-		      "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");
+	  nonfatalerror5 ("Your data window contained a NUL inside the stated length,",
+			  "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.", CRM_REGEX_HERE);
 	  null_errored = 1;
 	}
     };

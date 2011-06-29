@@ -323,5 +323,28 @@
 #define FEATUREBUCKET_HISTOGRAM_MAX 4096
 //#define FEATUREBUCKET_TYPE unsigned short
 
+
+//     Neural Net parameters
+//
+#define NN_RETINA_SIZE 65536
+#define NN_FIRST_LAYER_SIZE 64
+#define NN_HIDDEN_LAYER_SIZE 64
+
+//     Neural Net training setups
+//   Threshold for back propagation
+#define NN_INTERNAL_TRAINING_THRESHOLD 0.3
+//  Just use 1 neuron excitation per token coming in. 
+#define NN_N_PUMPS 1
+//  How many training cycles before we punt out 
+#define NN_MAX_TRAINING_CYCLES 100
+//  When doing a "nuke and retry", allow this many training cycles.
+#define NN_MAX_TRAINING_CYCLES_FROMSTART 2000
+//  After how many "not needed" cycles do we microgroom this doc away?
+#define NN_MICROGROOM_THRESHOLD 10      
+//  use the sparse retina design?  No, it's not good.
+#define NN_SPARSE_RETINA 0 
+
 //    End of configurable parameters.
-#define HERE (runtime system location: __FILE__ ( __LINE__ ) function __FUNCTION__ ) 
+
+
+

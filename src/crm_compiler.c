@@ -38,7 +38,7 @@ extern char *tempbuf;
 
 //     Here's the real statement description table.
 //
-STMT_TABLE_TYPE stmt_table[39] =
+STMT_TABLE_TYPE stmt_table[] =
   {
     //
 
@@ -115,10 +115,12 @@ int crm_load_csl (CSL_CELL *csl)
   if (csl->filedes < 0)
     {
       if (csl->filedes == ENAMETOOLONG)
-        untrappableerror ("Couldn't open the file, ","filename too long.");
+        untrappableerror5 ("Couldn't open the source code file because the ",
+			   "filename is too long.",
+			   CRM_ENGINE_HERE);
       else
-        untrappableerror ("Couldn't open the file: ",
-			  csl->filename );
+        untrappableerror5 ("Couldn't open the file: ",
+			   csl->filename, CRM_ENGINE_HERE );
     };
   
   if (internal_trace > 0)
@@ -130,13 +132,14 @@ int crm_load_csl (CSL_CELL *csl)
   if (internal_trace > 0)
     fprintf (stderr, "file is %ld bytes\n", csl->nchars);
   if (csl->nchars + 2048 > max_pgmsize)
-    untrappableerror ("Your program is too big.  ",
-		      " You need to use smaller programs or the -P flag, ");
+    untrappableerror5 ("Your program is too big.  ",
+		      " You need to use smaller programs or the -P flag, ",
+		      CRM_ENGINE_HERE);
 
   //   and read in the source file
   csl->filetext = (char *) malloc ( max_pgmsize * sizeof (char));
   if (csl->filetext == NULL) 
-    untrappableerror ("malloc of the file text failed","" );
+    untrappableerror5 ("malloc of the file text failed","", CRM_ENGINE_HERE );
   if (internal_trace > 0)
     fprintf (stderr, "File text malloc'd at %lX \n", (long int) csl->filetext);
 
@@ -271,9 +274,10 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
   
   csl->mct = (MCT_CELL **) malloc (sizeof (MCT_CELL * ) * (csl->nstmts + 10) );
   if (!csl->mct)
-    untrappableerror("Couldn't malloc MCT table.\n"
+    untrappableerror5 ("Couldn't malloc MCT table.\n"
 		     "This is where your compilation results go, "
-                     "so if we can't compile, we can't run.  Sorry.","");
+		      "so if we can't compile, we can't run.  Sorry.","",
+		      CRM_ENGINE_HERE);
   
   if (internal_trace > 0)
     fprintf (stderr, "microcompile table at %lX\n", (long) csl->mct);
@@ -283,8 +287,9 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
     {
       csl->mct[i] = (MCT_CELL *) malloc (sizeof (MCT_CELL));
       if (!csl->mct[i])
-	untrappableerror(
-		"Couldn't malloc MCT cell. This is very bad.\n","");
+	untrappableerror5 (
+			   "Couldn't malloc MCT cell. This is very bad.\n","",
+			   CRM_ENGINE_HERE);
     };
 
   // ***  Microcompile phase 2 - set statement types
@@ -406,7 +411,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 	  stab_stmtcode = CRM_LABEL;
 	  k = strcspn (&pgmtext[nbindex+1], ":");
 	  crm_setvar ( NULL, -1, pgmtext, nbindex, k+2, 
-		       NULL, 0, 0,  stmtnum);
+		       NULL, 0, 0,  stmtnum, 0);
 	};
 
       //                 INSERTs get special handling (NOOPed..)
@@ -484,8 +489,8 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 
       //    check for bracket level underflow....
       if (bracketlevel < 0)
-	fatalerror (" Your program seems to achieve a negative nesting",
-		       "level, which is quite likely bogus.");
+	fatalerror5 (" Your program seems to achieve a negative nesting",
+		     "level, which is quite likely bogus.", CRM_ENGINE_HERE);
 	  
       // move on to the next statement - +1 to get past the \n
       sindex = sindex + slength + 1;
@@ -498,8 +503,8 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
   //  check to be sure that the brackets close!
   
   if (bracketlevel != 0) 
-    nonfatalerror ("\nDang!  The curly braces don't match up!\n",
-      "Check your source code. ");
+    nonfatalerror5 ("\nDang!  The curly braces don't match up!\n",
+		    "Check your source code. ", CRM_ENGINE_HERE);
   
   
   //  Phase 3 of microcompiler- set FAIL and LIAF targets for each line

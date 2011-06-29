@@ -123,9 +123,9 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       long curstmt;
       curstmt = csl->cstmt;
       if (i == -1)
-	nonfatalerror (errstr, "");
+	nonfatalerror5 (errstr, "", CRM_ENGINE_HERE);
       if (i == -2)
-	fatalerror (errstr, "");
+	fatalerror5 (errstr, "", CRM_ENGINE_HERE);
       //
       //     did the FAULT handler change the next statement to execute?
       //     If so, continue from there, otherwise, we FAIL.
@@ -180,8 +180,9 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   if (retlen < 0)
     {
-      nonfatalerror ("Messy problem in TRANSLATE.",
-		     "Try again with -t tracing maybe?");
+      nonfatalerror5 ("Messy problem in TRANSLATE.",
+		      "Try again with -t tracing maybe?",
+		      CRM_ENGINE_HERE);
       goto nonfatal_route_outwards;
     };
 

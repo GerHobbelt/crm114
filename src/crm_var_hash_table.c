@@ -41,7 +41,7 @@ extern char *tempbuf;
 void crm_vht_init (int argc, char **argv)
 {
   long i, j, k;
-  long uvstart = 0;
+  long uvstart = 0;   // uvstart is the arg that the user sees (post "--")
   long uvlist = 0;
   char uvset[MAX_VARNAME];
   extern char **environ;
@@ -51,8 +51,9 @@ void crm_vht_init (int argc, char **argv)
  //   create the variable hash table (one big one, shared )
   vht = (VHT_CELL **) malloc (sizeof (VHT_CELL *) * vht_size);
   if (!vht)
-    untrappableerror("Couldn't malloc VHT cell.\n",
-		     "No VHT cells, no variables, so no can run.  Sorry.");
+    untrappableerror5("Couldn't malloc VHT cell.\n",
+		      "No VHT cells, no variables, so no can run.  Sorry.",
+		      CRM_ENGINE_HERE);
   for (i = 0; i < vht_size; i++)
     vht[i] = NULL;
 
@@ -60,17 +61,18 @@ void crm_vht_init (int argc, char **argv)
   //    initialize the temporary (non-data-window) area...
   tdw = malloc (sizeof (CSL_CELL));
   if (!tdw)
-    untrappableerror("Couldn't malloc tdw.\n"  
+    untrappableerror5 ("Couldn't malloc tdw.\n"  
 		     "We need the TDW for isolated variables."  
-		     "Can't continue.  Sorry.\n","");
+		       "Can't continue.  Sorry.\n","", CRM_ENGINE_HERE);
   tdw->filename = NULL;
   tdw->rdwr = 1;
   tdw->filedes = -1;
   tdw->filetext = malloc (sizeof (char) * data_window_size);
   if (!tdw->filetext)
-      untrappableerror("Couldn't malloc tdw->filetext.\n"
+      untrappableerror5("Couldn't malloc tdw->filetext.\n"
 		       "Without this space, you can't have any isolated "
-		       "variables,\n and we're stuck.  Sorry.","");
+			"variables,\n and we're stuck.  Sorry.","",
+			CRM_ENGINE_HERE);
   tdw->filetext[0] = '\000';
   tdw->nchars = 0;
   tdw->hash = 0;
@@ -103,34 +105,45 @@ void crm_vht_init (int argc, char **argv)
   //  
   //    install the argc and argv values; restart argv values from [2]
   //    if a "--" metaflag is seen.
-  //    
-  //    GROT GROT GROT  Possible Bug: if you go up to arg [N] before the
-  //    the -- flag, and only arg [N-1] after it, the arg [N] "leaks" over.
-  //    FIX THIS
+  //
+  //    argv[0] and argv[1] are not overrideable by "--".
+  crm_set_temp_var ( ":_arg0:", argv[0] );
+  crm_set_temp_var ( ":_arg1:", argv[1] );
+
+  //     Check to see if there's a "--" arg.  If so, mark uvstart
+  //   (that is, "user var start" at that point)... but only the first "--".
+  {
+    long i, j;
+    uvstart = 2;
+    i = 0; j = 0;
+    for (i = 2; argc > i; i++)
+      {
+	//   Check for the "--" metaflag
+	if (strlen (argv[i]) == 2 
+	    && strncmp (argv[i], "--", 2) == 0
+	    && uvstart == 2)
+	  {
+	    if (internal_trace)
+	      fprintf (stderr, "Resetting uvstart counter to 2\n");
+	    uvstart = i+1;
+	  };
+      }
+  };
+
+  //       The user variables start at argv[uvstart]
   {
     long i, j;
     char anamebuf [255];
-    i = 0; j = 0; 
-    for ( i = 0; argc > i; i++ )
+    j = 2;
+    for ( i = uvstart; argc > i; i++ )
       {
-	//   check for the "--" metaflag
-	if (strlen ( argv[i] ) == 2 && strncmp (argv[i], "--", 2) == 0)
-	  {
-	    if (internal_trace) 
-	      fprintf (stderr, "Resetting _arg counter to 2\n");
-	    j = 2;
-	    if (uvstart == 0) uvstart = i;
-	  }
-	else
-	  {
-	    sprintf (anamebuf, ":_arg%ld:", j);
-	    crm_set_temp_var ( anamebuf, argv[i] );
-	    j++;
-	  };
+	sprintf (anamebuf, ":_arg%ld:", j);
+	crm_set_temp_var ( anamebuf, argv[i] );
+	j++;
       };
     //
     //    and put the "user-visible" argc into a var as well.
-    sprintf (anamebuf, "%ld", j);
+    sprintf (anamebuf, "%ld", j );
     crm_set_temp_var (":_argc:", anamebuf);
     //
     //   Go through argv, and place positional arguments (that is,
@@ -169,6 +182,10 @@ void crm_vht_init (int argc, char **argv)
     //   set the current line number to a set of zeroes...
     crm_set_temp_var (":_cs:", "00000000");
     //
+    //   Set the "lazy" intermediate variable to just a space.
+    //   This will get rebound to point to the active lazy var.
+    crm_set_temp_var (":_lazy:", " ");
+
     //    set the current pid and parent pid.
     {
       char pidstr [32];
@@ -203,16 +220,16 @@ void crm_vht_init (int argc, char **argv)
 	    strcat (tempbuf, "\n");
 	  }
 	else
-	  untrappableerror ("The ENVIRONMENT variables don't fit into the "
+	  untrappableerror5 ("The ENVIRONMENT variables don't fit into the "
 			     "available space. \nThis is very broken.  Try "
 			     "a larger data window (with flag -w NNNNN), \nor "
 			     "drop the environment vars with "
-			     "the (with flag -e)", "");
+			     "the (with flag -e)", "", CRM_ENGINE_HERE);
 	while (environ[i][j] != '=') j++;
 	name = (char *) malloc ((sizeof (char)) * (j+200));
         if (!name)
-          untrappableerror("Couldn't malloc :_env_ space."  
-			   "Can't continue.\n","");
+          untrappableerror5("Couldn't malloc :_env_ space."  
+			   "Can't continue.\n","", CRM_ENGINE_HERE);
 	strcpy (name, ":_env_");
 	memmove (&(name[strlen(name)]), &(environ[i][0]), j);
 	name[j+6] = '\000';
@@ -362,17 +379,17 @@ void crm_set_temp_nvar (char *varname, char *value, long vallen)
   i = crm_nextword (varname,strlen (varname), 0, &vnidx, &vnlen);
   if ( i == 0)
     {
-      nonfatalerror ("Somehow, you are assigning a value to a variable with",
+      nonfatalerror5 ("Somehow, you are assigning a value to a variable with",
 		     "an unprintable name.  I'll permit it for now, but"
-		     "your program is probably broken.");
+		      "your program is probably broken.", CRM_ENGINE_HERE);
     };
   
   if ( (strlen (varname) + vallen + tdw->nchars + 64) > data_window_size)
     {
-      fatalerror ("This program has overflowed the ISOLATEd data "
+      fatalerror5 ("This program has overflowed the ISOLATEd data "
 		  "area with a variable that's just too big.  "
 		  "The bad variable was named: ",
-		  varname);
+		   varname, CRM_ENGINE_HERE);
       if (engine_exit_base != 0)
 	{
 	  exit (engine_exit_base + 22);
@@ -421,7 +438,7 @@ void crm_set_temp_nvar (char *varname, char *value, long vallen)
       crm_setvar (NULL, 0, 
 		  tdw->filetext, namestart, namelen,
 		  tdw->filetext, valstart, vallen, 
-		  0);
+		  0, 0);
       //     that's it.
 
     }
@@ -506,7 +523,7 @@ void crm_set_windowed_nvar ( char *varname,
       crm_setvar (NULL, 0, 
 		  tdw->filetext, namestart, namelen,
 		  valtext, start, len, 
-		  stmtnum);
+		  stmtnum, 0);
       //     that's it.
     }
   else
@@ -527,7 +544,7 @@ void crm_set_windowed_nvar ( char *varname,
 	crm_setvar (NULL, 0,
 		    vht[i]->nametxt, vht[i]->nstart, vht[i]->nlen,
 		    valtext, start, len,
-		    stmtnum);
+		    stmtnum, 0);
 	
 	//       Do we need to repair the leaked memory?  Only necessary if the
 	//       old text was in the tdw area; this is harmless if the area
@@ -627,8 +644,8 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
 
   if (oldtext != tdw->filetext) 
     {
-      fatalerror (" Request to compress non-TDW data.  This is bogus. ",
-		     " Please file a bug report");
+      fatalerror5 (" Request to compress non-TDW data.  This is bogus. ",
+		  " Please file a bug report", CRM_ENGINE_HERE);
       return ( 0 );
     };
 
@@ -922,8 +939,8 @@ long crm_compress_tdw_section (char *oldtext, long oldstart, long oldend)
     // cutlen is supposed to be negative for compress
     cutlen = oldstart - oldend - 1;
     if (cutlen > 0)
-      fatalerror ("Internal cut-length error in isolated var reclamation.",
-		     "  Please file a bug report");
+      fatalerror5 ("Internal cut-length error in isolated var reclamation.",
+		  "  Please file a bug report", CRM_ENGINE_HERE);
 
     //    Future Enhancement - dead zones of some small size should be
     //    allowed to stay.  This would speed up WINDOW a lot. (but we
@@ -969,10 +986,10 @@ void crm_destructive_alter_nvariable (char *varname, long varlen,
   if (vht[vhtindex] == NULL)
     {
       // IGNORE FOR NOW
-      nonfatalerror(" Attempt to alter the value of a nonexistent "
+      nonfatalerror5 (" Attempt to alter the value of a nonexistent "
       		    "variable, so I'm creating an ISOLATED variable.  "
       		    "I hope that's OK.  The nonexistent variable is: ",
-      		    &(varname[i]));
+      		    &(varname[i]), CRM_ENGINE_HERE);
       crm_set_temp_var (&varname[i], "");
     };
   
@@ -984,11 +1001,15 @@ void crm_destructive_alter_nvariable (char *varname, long varlen,
     mdw = tdw;
   if (cdw->filetext == vht[vhtindex]->valtxt)
     mdw = cdw;
+
+  //   GROT GROT GROT  get rid of this if we go to MAPped file vars.
   if (mdw == NULL)
     {
-      fatalerror (" Bogus text bloc containing variable : ", varname);  
+      fatalerror5 (" Bogus text bloc containing variable : ", 
+		   varname, CRM_ENGINE_HERE);  
       goto bailout;
     };
+
   //
   if (user_trace)  // major debug
     {
@@ -1048,8 +1069,9 @@ void crm_slice_and_splice_window ( CSL_CELL *mdw, long where, long delta)
 
   if (delta + mdw->nchars > data_window_size - 10)
     {
-      fatalerror (" Data window trying to get too long.", 
-		" Try increasing the data window maximum size.");
+      fatalerror5 (" Data window trying to get too long.", 
+		   " Try increasing the data window maximum size.",
+		   CRM_ENGINE_HERE);
       goto bailout;
     };
 
@@ -1121,11 +1143,12 @@ void crm_slice_and_splice_window ( CSL_CELL *mdw, long where, long delta)
       long odws, i;
       odws = data_window_size;
       data_window_size = 4 * data_window_size;
-      nonfatalerror (" Data window trying to get too long.", 
-  		   " increasing data window... ");
+      nonfatalerror5 (" Data window trying to get too long.", 
+		     " increasing data window... ", CRM_ENGINE_HERE);
       ndw = (char *) malloc ( data_window_size);
       if (!ndw)
-          untrappableerror("Couldn't malloc ndw.  This is bad too.\n","");
+	untrappableerror5("Couldn't malloc ndw.  This is bad too.\n","",
+			  CRM_ENGINE_HERE);
 
       //  now copy the old data window into the new one
       memmove (ndw, mdw->filetext, odws);
@@ -1315,9 +1338,9 @@ long crm_vht_lookup (VHT_CELL **vht, char *vname, long vlen)
 		     vht[index]->vstart, vht[index]->vlen);
 		; }
 	  };
-	  fatalerror (" Variable hash table overflow while looking "
+	  fatalerror5 (" Variable hash table overflow while looking "
 		      "for variable: " ,
-		      badvarname);
+		       badvarname, CRM_ENGINE_HERE);
 	  done = 1;
 	  return (0);
 	};
@@ -1342,7 +1365,8 @@ void crm_setvar (
 		 char *valtxt,  
 		 long vstart,   
 		 long vlen,     
-		 long linenumber
+		 long linenumber,
+		 long lazy_redirects
 		 )
 {
   int i, j;     // some indices to bang on
@@ -1359,7 +1383,7 @@ void crm_setvar (
       //  allocate a fresh, empty VHT cell
       vht[i] = (VHT_CELL *) malloc (sizeof (VHT_CELL));
       if (!vht[i])
-	untrappableerror("Couldn't malloc space for VHT cell.  We need VHT cells for variables.  We can't continue.","");
+	untrappableerror5("Couldn't malloc space for VHT cell.  We need VHT cells for variables.  We can't continue.","", CRM_ENGINE_HERE);
       
       //  fill in the name info data
       vht[i]->filename = filename;
@@ -1368,7 +1392,9 @@ void crm_setvar (
       vht[i]->nstart = nstart;
       vht[i]->nlen = nlen;
       vht[i]->vstart = 0 ;
-      vht[i]->vlen = 0;
+      vht[i]->vlen = 0;\
+      vht[i]->lazy_redirects = lazy_redirects;
+
       //  and now that the slot has proper initial information,
       //  we can use the same code as is used in an update to do 
       //  the initial setting of values.  This is good because 
@@ -1387,6 +1413,7 @@ void crm_setvar (
   vht[i]->mstart = vstart;
   vht[i]->mlen = 0;
   vht[i]->linenumber = linenumber;
+  vht[i]->lazy_redirects = lazy_redirects;
 
   if(internal_trace)
     {
@@ -1406,6 +1433,8 @@ void crm_setvar (
       
       fprintf (stderr, "- (start %ld, length %ld)", 
 	       vht[i]->vstart, vht[i]->vlen); 
+      
+      fprintf (stderr, "and %ld lazy redirects", vht[i]->lazy_redirects);
 
       fprintf (stderr, "\n");
     };

@@ -21,4 +21,19 @@ long untrappableerror ( char *str1, char *str2)
   fprintf (stderr, "ERROR: %s%s \n", str1, str2);
   exit (-1);
 }
+long fatalerror5 ( char *str1, char *str2)
+{
+  fprintf (stderr, "ERROR: %s%s \n", str1, str2);
+  exit (-1);
+}
+long nonfatalerror5 ( char *str1, char *str2)
+{
+  fprintf (stderr, "ERROR: %s%s \n", str1, str2);
+  exit (-1);
+}
+long untrappableerror5 ( char *str1, char *str2)
+{
+  fprintf (stderr, "ERROR: %s%s \n", str1, str2);
+  exit (-1);
+}
 

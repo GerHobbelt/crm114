@@ -102,7 +102,8 @@ void crm_setvar (
 		 char *valtxt,         // text block hosts the captured value
 		 long vstart,          // index of start of cap. value
 		 long vlen,            // length of captured value
-		 long linenumber      // linenumber (if pgm, else -1)
+		 long linenumber,      // linenumber (if pgm, else -1)
+		 long lazy_redirects   // if nonzero, this is a lazy redirect
 		 );
 
 //   put a variable and a value into the temporary area
@@ -132,12 +133,6 @@ void crm_setpgmlabel ( long start, long end, long stmtnum );
 int crm_preprocessor (CSL_CELL *csl, int flags);
 
 void crm_break_statements (long ini, long nchars, CSL_CELL *csl);
-
-
-//     suck on a stream and put it into a buffer.
-
-char * crm_mapstream ( FILE *instream); // read from instream till
-                              // it goes dry, putting result into a buffer.
 
 //     actually execute a compiled CRM file
 int crm_invoke ();
@@ -278,6 +273,8 @@ int crm_expr_sks_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				    char *txt, long start, long len);
 int crm_expr_fscm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
 				    char *txt, long start, long len);
+int crm_neural_net_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				    char *txt, long start, long len);
 
 
 
@@ -305,7 +302,8 @@ int crm_expr_sks_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				       char *txt, long start, long len);
 int crm_expr_fscm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
 				       char *txt, long start, long len);
-
+int crm_neural_net_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				       char *txt, long start, long len);
 
 //  surgically alter a variable
 int crm_expr_alter (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -334,6 +332,10 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 //  TRANSLATE - translate character sets
 int crm_expr_translate ( CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+
+//  CLUMP and PMULC
+int crm_expr_clump (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+int crm_expr_pmulc (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 
 //      parse a CRM114 statement; this is mostly a setup routine for 
@@ -452,7 +454,6 @@ char * crm_regversion ();
 //        Portable mmap/munmap
 //
 
-
 void *crm_mmap_file (char *filename,
 		     long start,
 		     long len,
@@ -472,4 +473,4 @@ double crm_norm_cdf(double x);
 double crm_log(double x);
 double norm_pdf(double x);
 double normalized_gauss(double x, double s);
-
+double crm_frand ();

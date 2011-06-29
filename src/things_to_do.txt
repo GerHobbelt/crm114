@@ -306,6 +306,9 @@ double lookups.
 66) add a marker that the flags have been parsed & didn't contain a
     variable & so reuse old flag values (JIT improvement).
 
+66a) add flags (plural) so that each lump that's parsed and didn't contain a
+     variable doesn't get reparsed.
+
 68) rewrite Markovian & OSB classifiers into uniform framework
 
 71) Refactor/rewrite mailfilter.crm

@@ -72,14 +72,14 @@ int main (int argc, char **argv)
   engine_exit_base = 0;
   q_expansion_mode = 0;
 
-
   //    allcate and initialize the initial root csl (control stack
   //    level) cell.  We do this first, before command-line parsing,
   //    because the command line parse fills in a lot of the first level csl.
   
   csl = (CSL_CELL *) malloc (sizeof (CSL_CELL));
   if (!csl)
-    untrappableerror ("Couldn't malloc the csl.  Big problem!\n","");
+    untrappableerror5 ("Couldn't malloc the csl.  Big problem!\n",
+		       "", CRM_ENGINE_HERE);
   csl -> filename = NULL;
   csl -> filedes = -1; 
   csl -> rdwr = 0;   //  0 means readonly, 1 means read/write
@@ -98,7 +98,8 @@ int main (int argc, char **argv)
   //   and allocate the argparse block
   apb = (ARGPARSE_BLOCK *) malloc (sizeof (ARGPARSE_BLOCK));
   if (!apb)
-    untrappableerror ("Couldn't malloc apb.  This is very bad.\n","");
+    untrappableerror5 ("Couldn't malloc apb.  This is very bad.\n",
+		       "", CRM_ENGINE_HERE);
 
   //   Parse the input command arguments
   
@@ -482,7 +483,8 @@ int main (int argc, char **argv)
       if (csl->filename == NULL)
 	{
           if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
-	    untrappableerror ("Invalid filename, ", "filename too long.");
+	    untrappableerror5 ("Invalid filename, ", 
+			       "filename too long.", CRM_ENGINE_HERE);
 	  csl->filename = argv[i];
 	  if (user_trace > 0)
 	    fprintf (stderr, "Using program file %s\n", csl->filename);
@@ -493,6 +495,7 @@ int main (int argc, char **argv)
 		 i);
     }
   
+  //  main2 ();
   
   //
   //     Did we get a program filename?  If not, look for one.
@@ -506,8 +509,8 @@ int main (int argc, char **argv)
 	if (argv[i][0] != '-')
 	  {
            if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
-	     untrappableerror ("Couldn't open the file, ",
-			       "filename too long.");
+	     untrappableerror5 ("Couldn't open the file, ",
+				"filename too long.", CRM_ENGINE_HERE);
 	   csl->filename = argv[i];
 	   i = argc;
 	  }
@@ -558,12 +561,15 @@ int main (int argc, char **argv)
       //   if we got here, then it's a command-line program, and
       //   we should just assemble the proggie from the argv [openbracket] 
       if (strlen (&(argv[openbracket][1])) + 2048 > max_pgmsize)
-	untrappableerror ("The command line program is too big. \n",
-			  "Try increasing the max program size with -P. \n");
+	untrappableerror5 ("The command line program is too big. \n",
+			   "Try increasing the max program size with -P. \n",
+			   CRM_ENGINE_HERE);
       csl->filename = "(from command line)";
       csl->filetext = (char *) malloc (sizeof (char) * max_pgmsize);
       if (!csl->filetext)
-	untrappableerror ("Couldn't malloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.","");
+	untrappableerror5 
+	  ("Couldn't malloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.",
+	   "", CRM_ENGINE_HERE);
       strcpy (csl->filetext, "\n");
       //     the [1] below gets rid of the leading - sign
       strcat (csl->filetext, &(argv[openbracket][1]));
@@ -583,13 +589,14 @@ int main (int argc, char **argv)
   
   cdw = malloc (sizeof (CSL_CELL));
   if (!cdw)
-    untrappableerror ("Couldn't malloc cdw.\nThis is very bad.","");
+    untrappableerror5 ("Couldn't malloc cdw.\nThis is very bad.","", 
+		       CRM_ENGINE_HERE);
   cdw->filename = NULL;
   cdw->rdwr = 1;
   cdw->filedes = -1;
   cdw->filetext = malloc (sizeof (char) * data_window_size);
   if (!cdw->filetext)
-    untrappableerror ("Couldn't malloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.","");
+    untrappableerror5 ("Couldn't malloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.","", CRM_ENGINE_HERE);
   //      also allocate storage for the windowed data input
   newinputbuf = malloc (sizeof (char) * data_window_size);
   
@@ -600,11 +607,11 @@ int main (int argc, char **argv)
   outbuf = malloc (sizeof (char) * data_window_size);
   tempbuf = malloc (sizeof (char) * data_window_size);
   if (!tempbuf || !outbuf || !inbuf || !newinputbuf)
-    untrappableerror (
+    untrappableerror5 (
 		      "Couldn't malloc one or more of"
 		      "newinputbuf,inbuf,outbuf,tempbuf.\n"
 		      "These are all necessary for operation."
-                      "We can't run.","");
+                      "We can't run.","", CRM_ENGINE_HERE);
 
   //     Initialize the VHT, add in a few predefined variables
   //
@@ -718,7 +725,8 @@ int main (int argc, char **argv)
 		 cdw->filetext,
 		 0,
 		 cdw->nchars,
-		 -1);
+		 -1,
+		 0);
   };
   //
   //    We also set up the :_iso: to hold the isolated variables.
@@ -749,7 +757,8 @@ int main (int argc, char **argv)
 		 tdw->filetext,
 		 0,
 		 0,
-		 -1);
+		 -1,
+		 0);
   };
 #endif
   //    Now we're here, we can actually run!

@@ -212,9 +212,9 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       long curstmt;
       curstmt = csl->cstmt;
       if (i == -1)
-	nonfatalerror (errstr, "");
+	nonfatalerror5 (errstr, "", CRM_ENGINE_HERE);
       if (i == -2)
-	fatalerror (errstr, "");
+	fatalerror5 (errstr, "", CRM_ENGINE_HERE);
       //
       //     did the FAULT handler change the next statement to execute?
       //     If so, continue from there, otherwise, we FAIL.
@@ -243,7 +243,8 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       long curstmt;
       curstmt = csl->cstmt;
       crm_regerror ( i, &preg, tempbuf, data_window_size);
-      fatalerror ("Regular Expression Compilation Problem:", tempbuf);
+      fatalerror5 ("Regular Expression Compilation Problem:", 
+		   tempbuf, CRM_ENGINE_HERE);
       //
       //     did the FAULT handler change the next statement to execute?
       //     If so, continue from there, otherwise, we FAIL.
@@ -270,8 +271,8 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       //
       long curstmt;
       curstmt = csl->cstmt;
-      nonfatalerror (" Attempt to match inside nonexistent variable ( always fails!) ",
-		     svname);
+      nonfatalerror5 (" Attempt to match inside nonexistent variable ( always fails!) ",
+		      svname, CRM_ENGINE_HERE);
       //
       //     did the FAULT handler change the next statement to execute?
       //     If so, continue from there, otherwise, we FAIL.
@@ -294,8 +295,8 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       && vht[vmidx]->valtxt != cdw->filetext)
     {
       long q;
-      q = fatalerror ("Bogus text block (neither cdw nor tdw) on var ",
-		box_text);
+      q = fatalerror5 ("Bogus text block (neither cdw nor tdw) on var ",
+		       box_text, CRM_ENGINE_HERE);
       if (q != 0)
 	{
 	  if (engine_exit_base != 0)
@@ -471,10 +472,11 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       vht[vmidx]-> mlen = matches[0].rm_eo - matches[0].rm_so;
 
       if (bindable_vars_len > 0 && absentp )
-	nonfatalerror ("This program specifies an 'absent' match, and also "
+	nonfatalerror5 ("This program specifies an 'absent' match, and also "
 		       "tries to bind variables that, by the above, aren't "
 		       "matched!  ",
-		       "We'll ignore these variable bindings for now.");
+			"We'll ignore these variable bindings for now.",
+			CRM_ENGINE_HERE);
       
       if ( bindable_vars_len > 0 && !absentp )
 	{
@@ -547,7 +549,9 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		    if (!vn)
 		      vn = (char *) malloc (MAX_VARNAME+16);
 		    if (!vn)
-		      untrappableerror("Couldn't malloc vn.\n Can't fix that.","");
+		      untrappableerror5
+			("Couldn't malloc vn.\n Can't fix that.",
+			 "", CRM_ENGINE_HERE);
 		    strncpy (vn, &(bindable_vars[vstart]), vlen);
 		    vn[vlen] = '\000';
 		    if (strcmp (vn, ":_dw:") != 0)
@@ -584,11 +588,11 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		      }
 		    else
 		      {
-			nonfatalerror ("This program tried to re-define the "
+			nonfatalerror5 ("This program tried to re-define the "
 				       "data window!  That's very deep and "
 				       "profound, but not acceptable.  ", 
 				       "Therefore, I'm ignoring this "
-				       "re-definition.");
+					"re-definition.", CRM_ENGINE_HERE);
 		      };
 		    // free (vn);
 		  };
@@ -596,9 +600,10 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		  vstart = vnext;
 		  mc++;
 		  if (mc >= MAX_SUBREGEX)
-		    nonfatalerror (
-				   "Exceeded MAX_SUBREGEX limit-too many parens in match",
-				   " Looks like you blew the gaskets on 'er.\n"); 
+		    nonfatalerror5 
+		      ( "Exceeded MAX_SUBREGEX limit-too many parens in match",
+			" Looks like you blew the gaskets on 'er.\n",
+			CRM_ENGINE_HERE); 
 		  
 		};
 	    };

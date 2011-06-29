@@ -49,8 +49,8 @@ long strmath (char *buf, long inlen, long maxlen, long *retstat)
   
   if (inlen < 0)
     {
-      fatalerror ("Bug in caller to strmath() - it makes no sense to",
-		  " have a negative length string!  \n");
+      fatalerror5 ("Bug in caller to strmath() - it makes no sense to",
+		   " have a negative length string!  \n", CRM_ENGINE_HERE);
       internal_trace = old_internal_trace;
       return (0);
     };
@@ -130,16 +130,16 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 
       if (sp < 0) 
 	{
-	  errstat = nonfatalerror ("Stack Underflow in math evaluation",
-			 "");
+	  errstat = nonfatalerror5 ("Stack Underflow in math evaluation",
+				    "", CRM_ENGINE_HERE);
 	  return (0);
 	};
 
       if (sp >= DEFAULT_MATHSTK_LIMIT)
 	{
-	  errstat=nonfatalerror ("Stack Overflow in math evaluation.\n "
+	  errstat=nonfatalerror5 ("Stack Overflow in math evaluation.\n "
 				 "CRM114 Barbie says 'This math is too hard'.",
-				 buf);
+				  buf, CRM_ENGINE_HERE);
 	  return (0);
 	};
 
@@ -464,8 +464,9 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	case ')':
 	  //         why are you using parenthesis in RPN code??
 	  {
-	    nonfatalerror ("It's just silly to use parenthesis in RPN!",
-			   " Perhaps you should check your setups?");
+	    nonfatalerror5 ("It's just silly to use parenthesis in RPN!",
+			    " Perhaps you should check your setups?", 
+			    CRM_ENGINE_HERE);
 	    sinc = 1;
 	  };
 	  break;
@@ -475,8 +476,8 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	    char bogus[4];
 	    bogus[0] = buf[ip];
 	    bogus[1] = '\000';
-	    nonfatalerror (" Sorry, but I can't do RPN math on the un-mathy "
-			   "character found: ", bogus); 
+	    nonfatalerror5 (" Sorry, but I can't do RPN math on this un-mathy "
+			    "character: ", bogus, CRM_ENGINE_HERE); 
 	    sinc = 1;
 	  };
 	  break;
@@ -646,8 +647,9 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
       
       if (sp >= DEFAULT_MATHSTK_LIMIT)
         {
-          errstat = nonfatalerror ("Stack Overflow in math evaluation. ",
-			    "CRM114 Barbie says 'This math is too hard'.");
+          errstat = nonfatalerror5 ("Stack Overflow in math evaluation. ",
+			      "CRM114 Barbie says 'This math is too hard'.",
+				    CRM_ENGINE_HERE);
 	  if (retstat) *retstat = 0;
           return (0);
         };
@@ -703,8 +705,9 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	    case ' ':
 	      break;
 	    default:
-	      errstat = nonfatalerror ("Math expression makes no sense",
-				       " (need to have a number here).");
+	      errstat = nonfatalerror5 ("Math expression makes no sense",
+					" (need to have a number here).",
+					CRM_ENGINE_HERE);
 	      if (retstat) *retstat = 0;
 	      return (0);
 	      break;	
@@ -775,8 +778,8 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	    case ' ':
 	      break;
 	    default:
-	      errstat = nonfatalerror ("Math needs an operator in: ",
-				       buf);
+	      errstat = nonfatalerror5 ("Math needs an operator in: ",
+					buf, CRM_ENGINE_HERE);
 	      if (retstat) *retstat = 0;
 	      return (0);
 	      break;
@@ -827,8 +830,8 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	    case ' ':
 	      break;
 	    default:
-	      errstat = nonfatalerror ("Math is missing a number in: ",
-				       buf);
+	      errstat = nonfatalerror5 ("Math is missing a number in: ",
+					buf, CRM_ENGINE_HERE);
 	      if (retstat) *retstat = 0;
 	      return (0);
 	      break;
@@ -994,8 +997,8 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	      };
 	      break;
 	    default:	      	      
-              errstat = nonfatalerror ("Math operator makes no sense in: ",
-                                       buf);
+              errstat = nonfatalerror5 ("Math operator makes no sense in: ",
+					buf, CRM_ENGINE_HERE);
 	      if (retstat) *retstat = 0;
 	      return (0);
 	      break;
@@ -1006,8 +1009,9 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
       //   Check to see that the stack is still valid.
       if (sp < 0)
         {
-          errstat = nonfatalerror ("Too many close parenthesis in this math: ",
-				   buf);
+          errstat = nonfatalerror5 
+	    ( "Too many close parenthesis in this math: ",
+	      buf, CRM_ENGINE_HERE);
 	  if (retstat) *retstat = 0;
           return (0);
         };
@@ -1022,8 +1026,9 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
   //      Check that we made it all the way down the stack  
   if (sp != 0)
     {
-      errstat = nonfatalerror ("Not enough close parenthesis in this math: ",
-			       buf);
+      errstat = nonfatalerror5 
+	("Not enough close parenthesis in this math: ",
+	 buf, CRM_ENGINE_HERE);
       if (retstat) *retstat = 0;
       return (0);
     }

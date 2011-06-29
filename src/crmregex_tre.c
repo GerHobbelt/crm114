@@ -153,8 +153,9 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 	  fprintf (stderr, "Compiling %s (len %ld).\n", regex_temp, rlen_temp);
 	ppreg_temp = (regex_t *) malloc (rtsize);
 	if (ppreg_temp == NULL) 
-	  fatalerror ("Unable to allocate a pattern register buffer header.  ",
-		      "This is hopeless.  ");
+	  fatalerror5 
+	    ("Unable to allocate a pattern register buffer header.  ",
+	     "This is hopeless.  ", CRM_ENGINE_HERE);
 	status_temp =
 	  regncomp (ppreg_temp, regex_temp, rlen_temp, cflags_temp);
 	
@@ -260,8 +261,8 @@ int crm_regexec ( regex_t *preg, char *string, long string_len,
 {
   if (!string)
     {
-      nonfatalerror("crm_regexec - Regular Expression Execution Problem:\n",
-		    "NULL pointer to the string to match .");
+      nonfatalerror5("crm_regexec - Regular Expression Execution Problem:\n",
+		     "NULL pointer to the string to match .", CRM_ENGINE_HERE);
       return (REG_NOMATCH);
     };
   if (aux_string == NULL

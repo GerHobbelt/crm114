@@ -147,9 +147,9 @@ long crm_zexpandvar (char *buf,
   //  GROT GROT GROT must fix this for 8-bit safe error messages
   if (inlen > maxlen)
     {
-      q = fatalerror (
-		      "You have blown the gaskets while building a string.  Orig string was: ",
-		      buf);
+      q = fatalerror5 
+	( "You have blown the gaskets while building a string.  Orig string was: ",
+	  buf, CRM_ENGINE_HERE);
       if (q == 0 )
 	return (inlen);
       goto bailout;
@@ -372,8 +372,9 @@ long crm_zexpandvar (char *buf,
 
   if (tbuf == NULL || vname == NULL)
     {
-      q = fatalerror ("Couldn't allocate memory for Q-variable expansion!",
-		      "Try making the window set smaller with the -w option");
+      q = fatalerror5 ("Couldn't allocate memory for Q-variable expansion!",
+		      "Try making the window set smaller with the -w option",
+		      CRM_ENGINE_HERE);
       if (q == 0)
 	return (inlen);
     };
@@ -836,8 +837,9 @@ long crm_zexpandvar (char *buf,
 		}
 	      else
 		{
-		  nonfatalerror ("This math eval didn't end with a ':' which is",
-				 " often an error...  check it sometime? ");
+		  nonfatalerror5 ("This math eval didn't end with a ':' which is",
+				  " often an error...  check it sometime? ",
+				  CRM_ENGINE_HERE);
 		};
 	      vname [vlen] = '\000';
 	      
@@ -866,8 +868,9 @@ long crm_zexpandvar (char *buf,
 			  fprintf (stderr, "Out-Mathtext is -'%s'-\n", mathtext);
 			if (retstat && *retstat < 0)
 			  {
-			    q = fatalerror ("Problem during math evaluation of ",
-					    mathtext);
+			    q = fatalerror5 
+			      ("Problem during math evaluation of ",
+			       mathtext, CRM_ENGINE_HERE);
 			    if (q == 0)
 			      return (inlen);
 			    goto bailout;
@@ -912,8 +915,9 @@ long crm_zexpandvar (char *buf,
 			m = strmath (mathtext, vlen-2, MAX_VARNAME, retstat );
 			if (retstat && *retstat < 0)
 			  {
-			    q = fatalerror ("Problem during math evaluation of ",
-					    mathtext);
+			    q = fatalerror5 
+			      ("Problem during math evaluation of ",
+			       mathtext, CRM_ENGINE_HERE);
 			    if (q == 0)
 			      return (inlen);
 			    goto bailout;

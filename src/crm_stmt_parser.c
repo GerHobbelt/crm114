@@ -38,7 +38,7 @@ extern char *tempbuf;
 //       the actual textual representations of the flags, with their values
 //     DON'T FORGET TO ALSO MODIFY THIS IN crm114_structs.h !!
 
-FLAG_DEF crm_flags[41] =
+FLAG_DEF crm_flags[45] =
   {
     {"fromstart", CRM_FROMSTART},
     {"fromnext", CRM_FROMNEXT},
@@ -53,6 +53,7 @@ FLAG_DEF crm_flags[41] =
     {"nomultiline", CRM_BYLINE},
     {"byline", CRM_BYLINE},
     {"bychar", CRM_BYCHAR},
+    {"string", CRM_BYCHAR},
     {"bychunk", CRM_BYCHUNK},
     {"byeof", CRM_BYEOF},
     {"eofaccepts", CRM_EOFACCEPTS},
@@ -63,6 +64,7 @@ FLAG_DEF crm_flags[41] =
     {"refute", CRM_REFUTE},
     {"microgroom", CRM_MICROGROOM},
     {"markovian", CRM_MARKOVIAN},
+    {"markov", CRM_MARKOVIAN},
     {"osb", CRM_OSB_BAYES},
     {"correlate", CRM_CORRELATE},
     {"winnow", CRM_OSB_WINNOW},
@@ -79,10 +81,12 @@ FLAG_DEF crm_flags[41] =
     {"sks", CRM_SKS},
     {"svm", CRM_SVM},
     {"fscm", CRM_FSCM},
+    {"neural", CRM_NEURAL_NET},
+    {"", 0},
     {"", 0}
   };
     
-#define CRM_MAXFLAGS 39
+#define CRM_MAXFLAGS 42
     
 
 
@@ -171,7 +175,8 @@ unsigned long long crm_flagparse (char *input, long inlen)  //  the user input
 	      char foo[1024];
 	      strncpy (foo, wtext, 128);
 	      foo[wlen] = '\000';
-	      q = nonfatalerror ("Darn...  unrecognized flag :", foo);
+	      q = nonfatalerror5 ("Darn...  unrecognized flag :", 
+				  foo, CRM_ENGINE_HERE);
 	    };
 	  
 	  
@@ -291,9 +296,9 @@ int crm_statement_parse ( char *in,
 		apb->a1start = &in[fstart[i]];
 		apb->a1len = flen [i];
 	      }
-	    else nonfatalerror 
+	    else nonfatalerror5 
 		   ("There are multiple flag sets on this line.",
-		    " ignoring all but the first");
+		    " ignoring all but the first", CRM_ENGINE_HERE);
 	  }
 	  break;
 	case CRM_PARENS:
@@ -317,9 +322,9 @@ int crm_statement_parse ( char *in,
 		    apb->p3len = flen [i];
 		  }
 		else
-		  nonfatalerror 
+		  nonfatalerror5 
 		    ("Too many parenthesized varlists.",
-		     "ignoring the excess varlists.");
+		     "ignoring the excess varlists.", CRM_ENGINE_HERE);
 	  }
 	  break;
 	case CRM_BOXES:
@@ -330,9 +335,9 @@ int crm_statement_parse ( char *in,
 		apb->b1start = &in[fstart[i]];
 		apb->b1len = flen [i];
 	      }
-	    else nonfatalerror 
+	    else nonfatalerror5 
 		   ("There are multiple domain limits on this line.",
-		    " ignoring all but the first");
+		    " ignoring all but the first", CRM_ENGINE_HERE);
 	  }
 	  break;
 	case CRM_SLASHES:
@@ -350,14 +355,15 @@ int crm_statement_parse ( char *in,
 		  apb->s2len = flen [i];
 		}
 	      else
-		nonfatalerror (
+		nonfatalerror5 (
 		       "There are too many regex sets in this statement,",
-	          " ignoring all but the first.");
+		       " ignoring all but the first.", CRM_ENGINE_HERE);
 	  }
 	  break;
 	default:
-	  fatalerror( "Declensional parser returned an undefined typecode!",
-		      "What the HECK did you do to cause this?");
+	  fatalerror5( "Declensional parser returned an undefined typecode!",
+		       "What the HECK did you do to cause this?",
+		       CRM_ENGINE_HERE);
 	};
     }
   return (k);    // return value is how many declensional arguments we found.
@@ -506,8 +512,8 @@ int crm_generic_parse_line (
       if (flen[argc] < 0) flen[argc] = 0;
       strncpy ( errstmt, &txt[fstart[argc]], 
 		flen[argc] );
-      nonfatalerror (" This operand doesn't seem to end.  Bug?  \n -->  ",
-		     errstmt);
+      nonfatalerror5 (" This operand doesn't seem to end.  Bug?  \n -->  ",
+		      errstmt, CRM_ENGINE_HERE);
       argc++;
     };
   return (argc);

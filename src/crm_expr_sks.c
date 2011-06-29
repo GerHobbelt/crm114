@@ -300,11 +300,11 @@ static int get_data(CACHE *svmcache,
 static double dot(void const *a, void const *b)
 {
   HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
-  pa = (HYPERSPACE_FEATUREBUCKET_STRUCT *) a;
-  pb = (HYPERSPACE_FEATUREBUCKET_STRUCT *) b;
   int j = 0;
   int i = 0;
   double sum = 0;
+  pa = (HYPERSPACE_FEATUREBUCKET_STRUCT *) a;
+  pb = (HYPERSPACE_FEATUREBUCKET_STRUCT *) b;
   while(pa[i].hash != 0 && pb[j].hash != 0)
   {
     if(pa[i].hash == pb[j].hash && pa[i].hash != 0)
@@ -324,7 +324,7 @@ static double dot(void const *a, void const *b)
   return sum;
 }
 
-// Hide fixed-length substrings 
+// Hide fixed-length substrings into the statistics file for later use.
 //
 static void simple_string_hide (char *s, 
 				HYPERSPACE_FEATUREBUCKET_STRUCT *hs, 
@@ -394,7 +394,7 @@ static void Q_init()
 }
 
 //   Now, select a working set.  This is based on the paper:
-// "An SMO algorithm in Fan et al., JMLR 6(2005), p. 1889--1918"
+// "An SMO algorithm" in Fan et al., JMLR 6(2005), p. 1889--1918"
 // Solves:
 //
 //	min 0.5(\alpha^T Q \alpha) + p^T \alpha
@@ -807,6 +807,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   time_t start_timer;
   time_t end_timer;
   double run_time;
+  char *file_string ;
 
   i = 0;
   j = 0;
@@ -908,8 +909,9 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, 
 		   sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT));
-  char *file_string = calloc((txtlen+10), sizeof(char)); 
+  file_string = calloc((txtlen+10), sizeof(char)); 
   file_string[0] = '\000';
+
   textoffset = txtstart;
   textmaxoffset = txtstart + txtlen;
   i = 0;
@@ -1296,14 +1298,22 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    {
 	      //initialize the svm_prob.x, svm_prob.y
 	      
+	      int *y = NULL;
+	      double b;
+	      double *deci_array = NULL;
+	      double AB[2];
+	      HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
+
 	      svm_prob.l = k1 + k2;
-	      int y[svm_prob.l];
+	      //	      int y[svm_prob.l];
+	      y = calloc (svm_prob.l, sizeof (y[0]));
+	      x = calloc (svm_prob.l, sizeof (x[0]));
 	      for(i = 0; i < k1; i++)
 		y[i] = 1;
 	      for(i = k1; i < svm_prob.l; i++)
 		y[i] = -1;
 	      svm_prob.y = y;
-	      HYPERSPACE_FEATUREBUCKET_STRUCT *x[svm_prob.l];
+	      //  HYPERSPACE_FEATUREBUCKET_STRUCT *x[svm_prob.l];
 	      x[0] =  &(file1_hashes[0]);
 	      k = 1;
 	      for(i = 1; i < file1_lens - 1; i++)
@@ -1321,15 +1331,14 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      svm_prob.x = x;
 	      Q_init();
 	      solve(); //result is in solver
-	      double b = calc_b();
+	      b = calc_b();
 	      
 	      //compute decision values for all training documents 
-	      double *deci_array =(double*)malloc(svm_prob.l * sizeof(double));
+	      deci_array = (double *) malloc (svm_prob.l * sizeof(double));
 	      for(i = 0; i < svm_prob.l; i++)
 		{
 		  deci_array[i] = calc_decision(svm_prob.x[i],solver.alpha, b);
 		}
-	      double AB[2];
 	      calc_AB(AB,deci_array, k1,k2);
 	      end_timer = time(NULL);
 	      run_time = difftime(end_timer, start_timer);
@@ -1365,6 +1374,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      free(solver.G);
 	      free(DiagQ);
 	      free(solver.alpha);
+	      free (x);
+	      free (y);
 	      if(user_trace)
 		fprintf(stderr, 	       
               "Finish calculating SVM hyperplane, store the solution to %s!\n",
@@ -1421,6 +1432,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long totalfeatures = 0;   //  total features
   long bestseen;
   double ptc[MAX_CLASSIFIERS]; // current running probability of this class
+  char *file_string;
 
   //            extract the optional "match statistics" variable
   //
@@ -1469,7 +1481,9 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	fprintf (stderr, " enabling uniqueifying features.\n");
     };
   
-  //           extract parameters for svm 
+  //           extract parameters for svm, and fill in the
+  //      magic parameter block.  Note that the block is
+  //       a catchall for all sorts of things.
   crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
   plen = apb->s2len;
   plen = crm_nexpandvar (ptext, plen, MAX_PATTERN);
@@ -1514,7 +1528,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     };
   #endif
 
-  char *file_string = calloc((txtlen + 10), sizeof(char)); 
+  file_string = calloc((txtlen + 10), sizeof(char)); 
   file_string[0] = '\000';
   textoffset = txtstart;
   textmaxoffset = txtstart + txtlen;
@@ -1606,6 +1620,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		   flen, 5, match, 0, NULL);
   if( k==0 )
     {
+      long file1_lens;
+      long file2_lens;
+      int k1, k2, k3;
+      HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
+      HYPERSPACE_FEATUREBUCKET_STRUCT *file2_hashes;
+      
       //get three input files.
       memmove(file1,&ftext[match[1].rm_so],(match[1].rm_eo-match[1].rm_so));
       file1[match[1].rm_eo-match[1].rm_so]='\000';
@@ -1618,11 +1638,6 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       
       //open all files,
       //first check whether file3 is the current version solution.
-      long file1_lens;
-      HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
-      long file2_lens;
-      HYPERSPACE_FEATUREBUCKET_STRUCT *file2_hashes;
-      int k1, k2, k3;
       k1 = stat (file1, &statbuf1);
       k2 = stat (file2, &statbuf2);
       k3 = stat (file3, &statbuf3);
@@ -1641,6 +1656,9 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	}
       else
 	{
+	  int temp_k1 = 0, temp_k2 = 0;
+	  int *y = NULL;
+	  HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 	  k1 = 0;
 	  k2 = 0;
 	  
@@ -1701,7 +1719,6 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    fprintf (stderr, 
 		     "\nThe total number of documents in file2 is %d\n", k2);
 	  stringf = fopen ( file3 , "r+");
-	  int temp_k1 = 0, temp_k2 = 0;
 	  if(k3 == 0)
 	    { 
 	      fread(&temp_k1, sizeof(int), 1, stringf);
@@ -1713,13 +1730,13 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  doc_num[1] = k2;
 	  //assign svm_prob.x, svm_prob.y
 	  svm_prob.l = k1 + k2;
-	  int y[svm_prob.l];
+	  x = calloc (svm_prob.l, sizeof (x[0]));
+	  y = calloc (svm_prob.l, sizeof (y[0]));
 	  for(i = 0; i < k1; i++)
 	    y[i] = 1;
 	  for(i = k1; i < svm_prob.l; i++)
 	    y[i] = -1;
 	  svm_prob.y = y;
-	  HYPERSPACE_FEATUREBUCKET_STRUCT *x[svm_prob.l];
 	  x[0] = &(file1_hashes[0]);
 	  k = 1;
 	  for(i = 1;i< file1_lens - 1;i++)
@@ -1738,10 +1755,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		}
 	    }
 	  svm_prob.x = x;
-	  alpha = (double *)malloc((k1 + k2) * sizeof(double));
-	  
-	  
-	  
+	  alpha = (double *)malloc( svm_prob.l * sizeof(double));
 	  
 	  if((k3 != 0) || (temp_k1 != k1) || (temp_k2 != k2))
 	    {
@@ -1751,6 +1765,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      //recalculate the svm solution
 	      if((k1 > 0) && (k2 >0))
 		{
+		  double *deci_array = NULL;
 		  Q_init();
 		  solve(); //result is in solver
 		  b = calc_b();
@@ -1762,8 +1777,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    alpha[i] = solver.alpha[i];
 		  
 		  //compute A,B for sigmoid prediction
-		  double *deci_array = (double*) malloc(svm_prob.l 
-							* sizeof(double));
+		  deci_array = (double*) malloc(svm_prob.l * sizeof(double));
 		  for(i = 0; i < svm_prob.l; i++)
 		    {
 		      deci_array[i] = calc_decision(svm_prob.x[i], alpha, b);
@@ -1798,11 +1812,16 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      fread(&AB[1], sizeof(double), 1, stringf);
 	      fclose(stringf);
 	    }
-	  
+	
+
 	  decision = calc_decision(hashes,alpha,b);
 	  
 	  decision = sigmoid_predict(decision, AB[0], AB[1]);
+
 	  free(alpha);
+	  free(x);
+	  free(y);
+
 	  crm_force_munmap_filename (file1);
 	  crm_force_munmap_filename (file2);
 	  crm_force_munmap_filename (file3);
@@ -1818,10 +1837,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if(svlen > 0)
     {
       char buf [4096];
+      double pr;
+      char fname[MAX_FILE_NAME_LEN];
+
       buf [0] = '\000';
       
       //   put in standard CRM114 result standard header:
-      double pr;
       ptc[0] = decision;
       ptc[1] = 1 - decision;
       if(decision >= 0.5)
@@ -1845,8 +1866,6 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       
       //   Second line of the status report is the "best match" line:
       //
-      
-      char fname[MAX_FILE_NAME_LEN];
       if(bestseen)
 	strcpy(fname, file2);
       else

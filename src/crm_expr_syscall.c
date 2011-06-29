@@ -172,10 +172,10 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //
   if (keep_proc && async_mode)
     {
-      nonfatalerror ("This syscall uses both async and keep, but async is "
+      nonfatalerror5 ("This syscall uses both async and keep, but async is "
 		     "incompatible with keep.  Since keep is safer"
 		     "we will use that.\n",
-		     "You need to fix this program.");
+		      "You need to fix this program.", CRM_ENGINE_HERE);
       async_mode = 0;
     };
 
@@ -253,16 +253,18 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       status2 = pipe (from_minion);
       if (status1 > 0 || status2 > 0)
 	{
-	  nonfatalerror ("Problem setting up the to/from pipes to a minion. ",
-			 "Perhaps the system file descriptor table is full?");
+	  nonfatalerror5 ("Problem setting up the to/from pipes to a minion. ",
+			  "Perhaps the system file descriptor table is full?",
+			  CRM_ENGINE_HERE);
 	  return (1);
 	};
       minion = fork();
 
       if (minion < 0)
 	{
-	  nonfatalerror ("Tried to fork your minion, but it failed.",
-		      "Your system may have run out of process slots");
+	  nonfatalerror5 ("Tried to fork your minion, but it failed.",
+			  "Your system may have run out of process slots",
+			  CRM_ENGINE_HERE);
 	  return (1);
 	};
 
@@ -374,9 +376,9 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		  sprintf (errstr, 
 			   "The command was >%s< and returned exit code %d .",
 			   sys_cmd, WEXITSTATUS (retcode));
-		  nonfatalerror ("This program tried a shell command that "
+		  nonfatalerror5 ("This program tried a shell command that "
 				 "didn't run correctly. ",
-				 errstr);
+				  errstr, CRM_ENGINE_HERE);
 		  if (engine_exit_base != 0)
 		    {
 		      exit (engine_exit_base + 11);
@@ -593,7 +595,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       varline = crm_lookupvarline (vht, sys_cmd, vstart, vlen);
       if (varline > 0)
         {
-            fatalerror (" Sorry, syscall to a label isn't implemented in this version", "");
+	  fatalerror5 (" Sorry, syscall to a label isn't implemented in this version", "", CRM_ENGINE_HERE);
         }
       else
         {
@@ -633,9 +635,9 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
               char errstr [4096];
               sprintf (errstr, "The command was >>%s<< and returned exit code %d .",
                        sys_cmd, retcode);
-              fatalerror ("This program tried a shell command that "
-                          "didn't run correctly. ",
-                       errstr);
+              fatalerror5 ("This program tried a shell command that "
+			   "didn't run correctly. ",
+			   errstr, CRM_ENGINE_HERE);
 	      { if (engine_exit_base != 0)
 		  {
 		    exit (engine_exit_base + 13);
@@ -660,7 +662,8 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fprintf (stderr, "  reusing old minion PID: %d\n", minion);
       hminion = OpenProcess(PROCESS_ALL_ACCESS, 0, minion);
       if (hminion == NULL)
-        fatalerror("Couldn't open the existing minion process", "");
+        fatalerror5 ("Couldn't open the existing minion process", 
+		     "", CRM_ENGINE_HERE);
     };
   //      Now, we're out of the minion for sure.
   //    so we close the pipe ends we know we won't be using.

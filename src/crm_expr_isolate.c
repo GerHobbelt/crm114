@@ -62,8 +62,9 @@ int crm_expr_isolate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   tvlen = crm_nexpandvar (temp_vars, apb->p1len, MAX_VARNAME);
   if (tvlen == 0)
     {
-      nonfatalerror( "This statement is missing the variable to isolate"
-		     " so I'll just ignore the whole statement.", "");
+      nonfatalerror5( "This statement is missing the variable to isolate"
+		      " so I'll just ignore the whole statement.", "",
+		      CRM_ENGINE_HERE);
     }
 
   if (internal_trace)
@@ -95,15 +96,17 @@ int crm_expr_isolate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  vname [vlen] = '\000';
 	  if (vlen < 3)
 	    {
-	      nonfatalerror ("The variable you're asking me to ISOLATE "
+	      nonfatalerror5 ("The variable you're asking me to ISOLATE "
 			     " has an utterly bogus name.  I'll ignore"
-			     " the rest of the statement", " ");
+			      " the rest of the statement", " ",
+			      CRM_ENGINE_HERE);
 	      break;
 	    };
 	  if (strcmp (vname, ":_dw:") == 0)
 	    {
-	      nonfatalerror ("You can't ISOLATE the :_dw: data window! ",
-			     "We'll just ignore that for now");
+	      nonfatalerror5 ("You can't ISOLATE the :_dw: data window! ",
+			      "We'll just ignore that for now",
+			      CRM_ENGINE_HERE);
 	    }
 	  else    //  OK- isolate this variable
 	    {
@@ -309,8 +312,8 @@ int crm_isolate_this (long *vptr,
       strncpy (vname, &nametext[namestart], 
 	       ( (128 < namelen) ? 128 : namelen));
       vname[129] = 0;
-      fatalerror ("You have blown the memory-storage gaskets while trying"
-		  "to store the ISOLATEd variable ", vname);
+      fatalerror5 ("You have blown the memory-storage gaskets while trying"
+		   "to store the ISOLATEd variable ", vname, CRM_ENGINE_HERE);
       return (1);
     }
   //   If we get to here, there's more than enough space; so we're good to 
@@ -349,7 +352,7 @@ int crm_isolate_this (long *vptr,
       crm_setvar (NULL, 0,
                   tdw->filetext, nstart, namelen,
                   tdw->filetext, vstart, valuelen,
-                  csl->cstmt);
+                  csl->cstmt, 0);
       //     that's it.    It's now in the TDW and in the VHT
       return (0);
     }

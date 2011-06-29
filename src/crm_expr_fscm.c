@@ -129,15 +129,13 @@ typedef struct mythical_scm_state
 } SCM_STATE_STRUCT;
 
 
-//this is the one global that can be passed in from crm.
-//it determines the amount of previous text we remember
-//1 megabyte gives good accuracy and enough speed for TREC
-//512K is twice as fast but ever so slightly less accurate
-long n_bytes = 1048576;
-
 // this is also switched on by internal_trace at both entry points so it is
 // safe to keep
 int do_struct_audit = 0;
+
+//  and the globalized n_bytes
+static long n_bytes;
+
 
 //fill in a fresh classifier state assuming that the space is already allocated
 // and mapped
@@ -624,6 +622,7 @@ static double power2(long i)
   //it was thought that 2.0 would be most justifiable.
   //1.0 would be almost identical to seeing how much we could compress a text
   //with LZ77, lacking only huffman coding.
+  //    (verified against TREC 05 corpus, at least)
   if(i >= 256)
     return pow((double)i, pow2);
   if(pow_table2_init)
@@ -701,6 +700,21 @@ int crm_expr_fscm_learn
   while (htext[j] >= 0x021) j++;
   htext[j] = '\000';
   strcpy (filename, &htext[i]);
+
+  //   Check to see if user specified the file length
+  //    This is the one global that can be passed in from crm.
+  //     It determines the amount of previous text we remember
+  //      1 megabyte gives good accuracy and enough speed for TREC
+  //       512K is twice as fast but ever so slightly less accurate
+  
+  if (sparse_spectrum_file_length == 0)
+    {
+      n_bytes = 1048576;
+    }
+  else
+    {
+      n_bytes = sparse_spectrum_file_length;
+    };
 
   //map it
   map_file(s, filename);

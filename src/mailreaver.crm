@@ -41,6 +41,8 @@
 #	stats_only	- output ONLY the status.  Nothing else.  
 #			Since this means there's no output of the 
 #                       CacheIDs, we don't store the text for later training.
+#       report_only     - output ONLY the headers that would have 
+#                       been added, not the entire text.
 #	outbound	- this is an "outbound" message and hence can
 #			assumed to be nonspam.  Train if necessary.
 #	undo		- the message was mis-trained as type X.  Undo that.
@@ -116,6 +118,7 @@ isolate (:fail_classify_mail_to:) //
 isolate (:fail_blacklist_mail_to:) //
 isolate (:fail_SSM_mail_to:)  //
 isolate (:log_rejections:) //
+isolate <default> (:report_only:) //
 #
 #
 #        load the config file
@@ -665,6 +668,21 @@ goto /:finish_up:/
 
 :finish_up:
 {
+    {
+	#   If :report_only: is SET then delete everything that's 
+	#    not a X-CRM114 header
+	match [:report_only:] /SET/
+	match [:_dw:] //
+	{	
+		match [:_dw:] <fromend> /.*?\n/ (:z:)
+                {     
+		      match [:z:] <absent> /^X-CRM114/
+		      # output /Deleting :*:z:\n/
+                      alter (:z:) //
+		}
+		liaf
+        }
+    }
     accept
 }
 exit /:*:our_exit_code:/

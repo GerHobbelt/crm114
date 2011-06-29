@@ -59,8 +59,9 @@ int crm_invoke ()
   //    Sanity check - don't try to execute a file before compilation
   if (csl->mct == NULL)
     {
-      untrappableerror ( "Can't execute a file without compiling first.\n",
-		   "This means that CRM114 is somehow broken.");
+      untrappableerror5 ( "Can't execute a file without compiling first.\n",
+			  "This means that CRM114 is somehow broken.", 
+			  CRM_ENGINE_HERE);
     };
 
   //    empty out the alius stack (nothing FAILed yet.)
@@ -245,7 +246,7 @@ int crm_invoke ()
 		csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
 	bogusstmt [csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start]
 	  = '\000';
-        fatalerror (bogusbuffer, bogusstmt);
+        fatalerror5 (bogusbuffer, bogusstmt, CRM_ENGINE_HERE);
 	goto invoke_bailout;
       }
       break;
@@ -358,9 +359,10 @@ int crm_invoke ()
 
 	crm_get_pgm_arg ( target, MAX_VARNAME, apb->s1start, apb->s1len);
 	if (apb->s1len < 2)
-	  nonfatalerror 
+	  nonfatalerror5 
 	    ("This program has a GOTO without a place to 'go' to.",
-	     " By any chance, did you leave off the '/' delimiters? ");
+	     " By any chance, did you leave off the '/' delimiters? ",
+	     CRM_ENGINE_HERE);
 	tarlen = apb->s1len;
 	if (internal_trace) 
 	  fprintf (stderr, "\n    untranslated label %s , ", 
@@ -399,8 +401,9 @@ int crm_invoke ()
 	      {
 		//  this is recoverable if we have a trap... so we continue
 		//   execution right to the BREAK.
-		fatalerror (" Can't GOTO the nonexistent label/line: ", 
-			    target);
+		fatalerror5 (" Can't GOTO the nonexistent label/line: ", 
+			     target,
+			     CRM_ENGINE_HERE);
 		goto invoke_bailout;
 	      };
 	  };
@@ -500,8 +503,9 @@ int crm_invoke ()
 	fresult = crm_trigger_fault (reason);
 	if (fresult != 0)
 	  {
-	    fatalerror("Your program has no TRAP for the user defined fault:",
-			reason);
+	    fatalerror5 
+	      ("Your program has no TRAP for the user defined fault:",
+	       reason, CRM_ENGINE_HERE);
 	    goto invoke_bailout;
 	  };
       }
@@ -525,8 +529,9 @@ int crm_invoke ()
 	if (varidx == 0
 	    || vht[varidx] == NULL)
 	  {
-	    fatalerror ("This is very strange... there is no data window!",
-			"As such, death is our only option.");
+	    fatalerror5 ("This is very strange... there is no data window!",
+			 "As such, death is our only option.",
+			 CRM_ENGINE_HERE );
 	    goto invoke_bailout;
 	  }
 	else
@@ -704,7 +709,8 @@ int crm_invoke ()
 	  {
 	    //    aw, crud.  No such label known.  But it _is_ continuable
 	    //    if there is a trap for it.
-	    fatalerror (" Can't CALL the nonexistent label: ", target);
+	    fatalerror5 (" Can't CALL the nonexistent label: ", target,
+			 CRM_ENGINE_HERE);
 	    goto invoke_bailout;
 	  }
 	newcsl = (CSL_CELL *) malloc (sizeof (CSL_CELL));
@@ -954,8 +960,10 @@ int crm_invoke ()
 		    char varname[MAX_VARNAME];
 		    strncpy (varname, &temp_vars[vstart], vlen);
 		    varname[vlen] = '\000';
-		    nonfatalerror ( "can't intersection a nonexistent variable.",
-				    varname);
+		    nonfatalerror5 
+		      ( "can't intersection a nonexistent variable.",
+			varname,
+			CRM_ENGINE_HERE);
 		    goto invoke_bailout;
 		  }
 		else
@@ -967,8 +975,8 @@ int crm_invoke ()
 			char varname[MAX_VARNAME];
 			strncpy (varname, &temp_vars[vstart], vlen);
 			varname[vlen] = '\000';
-			nonfatalerror ( "can't intersect isolated variable.",
-					varname);
+			nonfatalerror5 ( "can't intersect isolated variable.",
+					 varname, CRM_ENGINE_HERE);
 			goto invoke_bailout;
 
 		      }
@@ -1064,8 +1072,8 @@ int crm_invoke ()
 		    char varname[MAX_VARNAME];
 		    strncpy (varname, &temp_vars[vstart], vlen);
 		    varname[vlen] = '\000';
-		    nonfatalerror ( "can't intersect a nonexistent variable.",
-				    varname);
+		    nonfatalerror5 ( "can't intersect a nonexistent variable.",
+				     varname, CRM_ENGINE_HERE);
 		    goto invoke_bailout;
 
 		  }
@@ -1078,8 +1086,8 @@ int crm_invoke ()
 			char varname[MAX_VARNAME];
 			strncpy (varname, &temp_vars[vstart], vlen);
 			varname[vlen] = '\000';
-			nonfatalerror ( "can't intersect isolated variable.",
-					varname);
+			nonfatalerror5 ( "can't intersect isolated variable.",
+					 varname, CRM_ENGINE_HERE);
 			goto invoke_bailout;
 		      }
 		    else
@@ -1118,6 +1126,18 @@ int crm_invoke ()
       }
       break;
 
+    case CRM_CLUMP:
+      {
+	crm_expr_clump (csl, apb);
+      };
+      break;
+
+    case CRM_PMULC:
+      {
+	crm_expr_pmulc (csl, apb);
+      };
+      break;
+
     case CRM_UNIMPLEMENTED:
       {
         char bogusbuffer[1024];
@@ -1130,7 +1150,7 @@ int crm_invoke ()
 		csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
 	bogusstmt [csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start]
 	  = '\000';
-        fatalerror (bogusbuffer, bogusstmt);
+        fatalerror5 (bogusbuffer, bogusstmt, CRM_ENGINE_HERE);
 	goto invoke_bailout;
 
       };
@@ -1148,7 +1168,7 @@ int crm_invoke ()
 		csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
 	bogusstmt [csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start]
 	  = '\000';
-        fatalerror (bogusbuffer, bogusstmt);
+        fatalerror5 (bogusbuffer, bogusstmt, CRM_ENGINE_HERE);
 	goto invoke_bailout;
       };
     }

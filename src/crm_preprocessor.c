@@ -88,9 +88,9 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
   if ( i != 0)
     {
       crm_regerror ( i, &preg, tempbuf, data_window_size);
-      untrappableerror (
+      untrappableerror5 (
 	 "Regular Expression Compilation Problem during INSERT processing:", 
-	 tempbuf);
+	 tempbuf, CRM_ENGINE_HERE);
     };
 
   //
@@ -155,8 +155,9 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 	  //   gaskets on the filesystem or not:
 	  //
 	  if (filenamelen > MAX_FILE_NAME_LEN-1)
-	    untrappableerror ("INSERT Filename was too long!  Here's the"
-			      "first part of it: ", insertfilename);
+	    untrappableerror5 ("INSERT Filename was too long!  Here's the"
+			       "first part of it: ", insertfilename,
+			       CRM_ENGINE_HERE);
 
 	  //   To keep the matcher from looping, we change the string
 	  //   'insert' to 'insert=' .  Cool, eh?  
@@ -188,15 +189,17 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 	      ecsl = (CSL_CELL *) malloc (sizeof (CSL_CELL));
 	      insert_buf = malloc (sizeof (char) * max_pgmsize);
 	      if (!insert_buf || !ecsl)
-		untrappableerror ("Couldn't malloc enough memory to do"
-				  " the insert of file ", insertfilename);
+		untrappableerror5 ("Couldn't malloc enough memory to do"
+				   " the insert of file ", insertfilename,
+				   CRM_ENGINE_HERE);
 
 	      //   Loop prevention check - too many inserts?
 	      //
 	      numinserts++;
 	      if (numinserts > maxinserts)
-		untrappableerror ("Too many inserts!  Limit exceeded with"
-				  "filename : ", insertfilename);
+		untrappableerror5 ("Too many inserts!  Limit exceeded with"
+				   "filename : ", insertfilename,
+				   CRM_ENGINE_HERE);
 	      
 	      ecsl->filetext = insert_buf;
 	      ecsl->nchars = 0;
@@ -224,8 +227,9 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 		//
 		if ( (csl->nchars + ecsl->nchars + 64) 
 		     > (sizeof (char) * max_pgmsize))
-		  untrappableerror ( " Program file buffer overflow when "
-				     " INSERTing file ", insertfilename);
+		  untrappableerror5 ( " Program file buffer overflow when "
+				      " INSERTing file ", insertfilename,
+				      CRM_ENGINE_HERE);
 
 		//   Does the result end with a newline?  If not, fix it.
 		if (ecsl->filetext[ecsl->nchars-1] != '\n')
@@ -420,9 +424,10 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 	      if (neednewline) 
 		{
 		  if ((csl->nchars+1) > (sizeof(char) * max_pgmsize))
-		    untrappableerror ( "Program file buffer overflow - "
+		    untrappableerror5 ( "Program file buffer overflow - "
 				       "post-inserting newline to: ",
-				       &(csl->filetext[i]));
+					&(csl->filetext[i]),
+					CRM_ENGINE_HERE);
 		  //    we need a newline and are looking at a printingchar
 		  //    so we need to insert a newline.  
 		  memmove ( &(csl->filetext[i+1]), 
@@ -495,9 +500,10 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
 			if ( !seennewline )
 			  {
 			    if ((csl->nchars+1) > sizeof(char)*max_pgmsize)
-			      untrappableerror ( "Program buffer overflow when"
+			      untrappableerror5 ("Program buffer overflow when"
 						 "post-inserting newline on:",
-						 &csl->filetext[i]);
+						 &csl->filetext[i],
+						 CRM_ENGINE_HERE);
 			    if (internal_trace)
 			      fprintf (stderr, " preinserting a newline.\n");
 			    memmove ( &(csl->filetext[i+1]), 

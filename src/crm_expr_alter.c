@@ -82,9 +82,10 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       varnamelen = crm_nexpandvar (varname, apb->p1len, MAX_VARNAME);
       if (varnamelen < 3) 
 	{
-	  nonfatalerror (
-			 "The variable you're asking me to alter has an utterly bogus name\n",
-			 "so I'll pretend it has no output variable.");
+	  nonfatalerror5 
+	    ( "The variable you're asking me to alter has an utterly bogus name\n",
+	      "so I'll pretend it has no output variable.",
+	      CRM_ENGINE_HERE);
 	  has_output_var = 0;
 	};
     };
@@ -134,19 +135,19 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
    
   if (itercount == MAX_EVAL_ITERATIONS )
     {
-      nonfatalerror ("The variable you're attempting to EVAL seems to eval "
+      nonfatalerror5 ("The variable you're attempting to EVAL seems to eval "
 		     "infinitely, and hence I cannot compute it.  I did try "
 		     "a lot, though.  I got this far before I gave up: ", 
-		     tempbuf);
+		      tempbuf, CRM_ENGINE_HERE);
       return (0);
     }
   if (loop_abort == 2)
     {
-      nonfatalerror ("The variable you're attempting to EVAL seemes to return "
+      nonfatalerror5 ("The variable you're attempting to EVAL seemes to return "
 		     "to the same value after a number of iterations, "
 		     "so it is probably an "
 		     "infinite loop.  I think I should give up.  I got this "
-		     "far: ", tempbuf);
+		      "far: ", tempbuf, CRM_ENGINE_HERE);
       return (0);
     };
   
@@ -192,20 +193,25 @@ int crm_expr_alter (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
        	crm_get_pgm_arg (varname, MAX_VARNAME, apb->p1start, apb->p1len);
 	if (apb->p1len < 3) 
 	  {
-	    nonfatalerror (
+	    nonfatalerror5 (
 		     "This statement is missing the variable to alter,\n",
-			   "so I'll ignore the whole statement.");
+		     "so I'll ignore the whole statement.",
+		     CRM_ENGINE_HERE);
 	    return (0);
 	  };
 	
 	//      do variable substitution on the variable name
 	varnamelen = crm_nexpandvar (varname, apb->p1len, MAX_VARNAME);
+
+	//   this next part goes away for LAZY variables
 	crm_nextword (varname, varnamelen, 0, &varnamestart, &varnamelen);
 	if (varnamelen - varnamestart < 3) 
 	  {
-	    nonfatalerror (
-	  "The variable you're asking me to alter has an utterly bogus name\n",
-		"so I'll ignore the whole statement.");
+	    nonfatalerror5 
+	      ( "The variable you're asking me to alter has an utterly bogus name\n",
+		"so I'll ignore the whole statement.",
+		CRM_ENGINE_HERE);
+
 	    return (0);
 	  };
 
