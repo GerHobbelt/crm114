@@ -286,7 +286,7 @@
    
    This mess was adapted from the GNU getpagesize.h.  
 */
-#if !HAVE_GETPAGESIZE
+#if !defined(HAVE_GETPAGESIZE)
 #if defined(WIN32)
 int getpagesize(void); /* see crm_port_win32.c */
 #else

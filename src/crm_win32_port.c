@@ -180,6 +180,7 @@ void crm_report_mem_analysis(void)
 int getpagesize(void)
     {
         SYSTEM_INFO info;
+		int pagesize;
         GetSystemInfo(&info);
         pagesize = info.dwPageSize;
 

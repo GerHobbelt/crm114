@@ -80,7 +80,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     regmatch_t match[5];    //  we only care about the outermost match
     long textoffset;
     long textmaxoffset;
-    float sense;
+    double sense;
     long microgroom;
     long use_unigrams;
     long fev;

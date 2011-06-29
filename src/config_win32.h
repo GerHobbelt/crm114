@@ -74,7 +74,7 @@
 #undef HAVE_GETOPT_LONG
 
 /* Define to 1 if you have the `getpagesize' function. */
-#define HAVE_GETPAGESIZE 1
+#undef HAVE_GETPAGESIZE
 
 /* Define to 1 if you have the `getpid' function. */
 #define HAVE_GETPID 1
@@ -322,6 +322,9 @@
 /* Define to 1 if you have the `strstr' function. */
 #define HAVE_STRSTR 1
 
+/* Define to 1 if you have the `sysconf' function. */
+#undef HAVE_SYSCONF 
+
 /* Define to 1 if you have the `system' function. */
 #define HAVE_SYSTEM 1
 
@@ -337,7 +340,7 @@
 #undef HAVE_SYS_NDIR_H
 
 /* Define to 1 if you have the <sys/param.h> header file. */
-#define HAVE_SYS_PARAM_H 1
+#undef HAVE_SYS_PARAM_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -489,7 +492,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-112"
+#define TAR_FILENAME_POSTFIX "Ger-121"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME

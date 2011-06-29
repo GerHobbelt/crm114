@@ -202,8 +202,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 1797 from-pipe: 5 to-pipe: 4
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 1797 from-pipe: 5 to-pipe: 4
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 17145 from-pipe: 5 to-pipe: 4
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 17145 from-pipe: 5 to-pipe: 4
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -539,37 +539,37 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2072561
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2072563
 Bytes used per pass: 2070606
 Passes done: 100 
 Total flux through isolation:  414121200
-OK_IF_SIZE_CHANGES: Final isolation size: 2072578 
+OK_IF_SIZE_CHANGES: Final isolation size: 2072580 
 OK_IF_LESS_THAN_100: Total growth: 17
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2075049
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2075051
 Bytes used per pass: 2070606
 Passes done: 10 
 Total flux through isolation:  41412120
-OK_IF_SIZE_CHANGES: Final isolation size: 2075064 
+OK_IF_SIZE_CHANGES: Final isolation size: 2075066 
 OK_IF_LESS_THAN_10: Total growth: 15
 Bytes used per pass: 2070606
 Passes done: 20 
 Total flux through isolation:  82824240
-OK_IF_SIZE_CHANGES: Final isolation size: 2075070 
+OK_IF_SIZE_CHANGES: Final isolation size: 2075072 
 OK_IF_LESS_THAN_20: Total growth: 21
 Bytes used per pass: 2070606
 Passes done: 30 
 Total flux through isolation:  124236360
-OK_IF_SIZE_CHANGES: Final isolation size: 2075071 
+OK_IF_SIZE_CHANGES: Final isolation size: 2075073 
 OK_IF_LESS_THAN_30: Total growth: 22
 Bytes used per pass: 2070606
 Passes done: 40 
 Total flux through isolation:  165648480
-OK_IF_SIZE_CHANGES: Final isolation size: 2075071 
+OK_IF_SIZE_CHANGES: Final isolation size: 2075073 
 OK_IF_LESS_THAN_40: Total growth: 22
 Starting 
 
