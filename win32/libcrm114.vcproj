@@ -1288,6 +1288,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\crm114.spec.in"
+					>
+				</File>
+				<File
 					RelativePath="..\distribute_files_from_src_dir.sh"
 					>
 				</File>

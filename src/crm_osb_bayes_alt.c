@@ -832,7 +832,7 @@ int crm_expr_alt_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
-            memmove(svrbl, &svrbl[vstart], vlen);
+            crm_memmove(svrbl, &svrbl[vstart], vlen);
             svlen = vlen;
             svrbl[vlen] = 0;
         }
@@ -1849,7 +1849,7 @@ int crm_expr_alt_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 snprintf(stext_ptr, stext_maxlen,
                         "CLASSIFY succeeds; (alt.osb) success probability: "
-                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        "%6.4f  pR: %6.4f / %6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else
@@ -1866,7 +1866,7 @@ int crm_expr_alt_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 snprintf(stext_ptr, stext_maxlen,
                         "CLASSIFY fails; (alt.osb) success probability: "
-                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        "%6.4f  pR: %6.4f / %6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else

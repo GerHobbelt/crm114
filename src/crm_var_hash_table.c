@@ -280,7 +280,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
                                  "Can't continue.\n", "Stick a fork in us; we're _done_.");
             }
             s = strmov(name, ":_env_");
-            memmove(s, environ[i], j);
+            crm_memmove(s, environ[i], j);
             s += j;
             strcpy(s, ":");
             if (environ[i][j] != 0)
@@ -614,7 +614,7 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int c
         tdw->nchars++;
         namestart = tdw->nchars;
         namelen = vnlen;
-        memmove(&(tdw->filetext[tdw->nchars]), &(varname[vnidx]), namelen);
+        crm_memmove(&(tdw->filetext[tdw->nchars]), &(varname[vnidx]), namelen);
         tdw->nchars = tdw->nchars + namelen;
         //
         //        and add a separator to prevent the varname from sharing
@@ -624,7 +624,7 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int c
         //
         //       and the value second
         valstart = tdw->nchars;
-        memmove(&tdw->filetext[tdw->nchars], value, vallen);
+        crm_memmove(&tdw->filetext[tdw->nchars], value, vallen);
         tdw->nchars = tdw->nchars + vallen;
         //
         //       add a separator again, so we don't get strings with overlapped
@@ -717,7 +717,7 @@ void crm_set_windowed_nvar(char *varname,
         tdw->nchars++;
         namestart = tdw->nchars;
         namelen = varlen;
-        memmove(&tdw->filetext[namestart], varname, varlen);
+        crm_memmove(&tdw->filetext[namestart], varname, varlen);
         tdw->nchars = tdw->nchars + namelen;
         //
         //     put in an "&" separator
@@ -1254,7 +1254,7 @@ void crm_destructive_alter_nvariable(const char *varname, int varlen,
     //
     //     now we have space, and we can put in the characters from
     //     the new pattern
-    memmove(&(mdw->filetext[vht[vhtindex]->vstart]),
+    crm_memmove(&(mdw->filetext[vht[vhtindex]->vstart]),
             newstr,
             newlen);
 }
@@ -1326,7 +1326,7 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
 
     //     and move the actual data
     if (taillen + 1 > 0)
-        memmove(taildest, tailsrc, taillen + 1);
+        crm_memmove(taildest, tailsrc, taillen + 1);
 
     //     update the length of the window as well.
     mdw->nchars = mdw->nchars + delta;
@@ -1359,7 +1359,7 @@ while (delta + mdw->nchars > data_window_size - 1)
     }
 
     //  now copy the old data window into the new one
-    memmove(ndw, mdw->filetext, odws);
+    crm_memmove(ndw, mdw->filetext, odws);
 
     //   and update the outstanding pointers, like the ones in the
     //   vht...

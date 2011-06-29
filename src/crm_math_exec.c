@@ -44,7 +44,7 @@ int strmath(char *buf, int inlen, int maxlen, int *retstat)
     //   Check for first-character control of Algebraic v. RPN
     if (buf[0] == 'A')
     {
-        memmove(buf, &buf[1], inlen - 1);
+        crm_memmove(buf, &buf[1], inlen - 1);
         buf[inlen - 1] = 0;
         status = stralmath(buf, inlen - 1, maxlen, retstat);
         return status;
@@ -52,7 +52,7 @@ int strmath(char *buf, int inlen, int maxlen, int *retstat)
     if (buf[0] == 'R')
     {
         //      Do we want to do selective tracing?
-        memmove(buf, &buf[1], inlen - 1);
+        crm_memmove(buf, &buf[1], inlen - 1);
         buf[inlen - 1] = 0;
         status = strpnmath(buf, inlen - 1, maxlen, retstat);
         return status;
@@ -191,7 +191,7 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                 if (sp > 0)
                 {
                     sp--;
-                    stack[sp] = stack[sp] *stack[sp + 1];
+                    stack[sp] = stack[sp] * stack[sp + 1];
                     sinc = 1;
                 }
             }

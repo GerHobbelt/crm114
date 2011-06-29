@@ -1,5 +1,5 @@
 TEST SCRIPT + COMMANDLINE:
--{learn < neural append > (i_test.css) /[[:graph:]]+/} -s 32768
+-{learn < neural append > (i_test.css) /[[:graph:]]+/} -s 32768 -RT
 
 RETURN CODE:
 0

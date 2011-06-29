@@ -103,7 +103,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     filesectlen = crm_get_pgm_arg(filename_plus_args, WIDTHOF(filename_plus_args), apb->b1start, apb->b1len);
     if (crm_nextword(filename_plus_args, filesectlen, 0, &i, &j) && j > 0)
     {
-        memmove(ifn, &filename_plus_args[i], j);
+        crm_memmove(ifn, &filename_plus_args[i], j);
         ifn[j] = 0;
         fnlen = crm_nexpandvar(ifn, j, MAX_PATTERN, vht, tdw);
         CRM_ASSERT(fnlen < MAX_PATTERN);
@@ -132,7 +132,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     offset = 0;
     if (crm_nextword(filename_plus_args, filesectlen, i + j, &i, &j) && j > 0)
     {
-        memmove(fileoffset, &filename_plus_args[i], j);
+        crm_memmove(fileoffset, &filename_plus_args[i], j);
         fileoffset[j] = 0;
         fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_PATTERN, NULL, vht, tdw);
         fileoffset[fileoffsetlen] = 0;
@@ -156,7 +156,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     iolen = 0;
     if (crm_nextword(filename_plus_args, filesectlen, i + j, &i, &j) && j > 0)
     {
-        memmove(fileiolen, &filename_plus_args[i], j);
+        crm_memmove(fileiolen, &filename_plus_args[i], j);
         fileiolen[j] = 0;
         fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_PATTERN, NULL, vht, tdw);
         fileiolen[fileiolenlen] = 0;
@@ -274,7 +274,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         char vname[MAX_VARNAME];
         int ichar = 0;
         CRM_ASSERT(tvlen < MAX_VARNAME);
-        memmove(vname, &(temp_vars[tvstart]), tvlen);
+        crm_memmove(vname, &(temp_vars[tvstart]), tvlen);
         vname[tvlen] = 0;
 
         //        If we have a seek requested, do an fseek.
@@ -510,7 +510,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     MAX_FILE_NAME_LEN - 1);
             return -1;
         }
-        memmove(fnam, &filename[i], j);
+        crm_memmove(fnam, &filename[i], j);
         fnam[j] = 0;
         fnlen = crm_nexpandvar(fnam, j, MAX_FILE_NAME_LEN, vht, tdw);
         CRM_ASSERT(fnlen < MAX_FILE_NAME_LEN);
@@ -530,7 +530,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         MAX_FILE_NAME_LEN - 1);
                 return -1;
             }
-            memmove(fileoffset, &filename[i], j);
+            crm_memmove(fileoffset, &filename[i], j);
             fileoffset[j] = 0;
             fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
             fileoffset[fileoffsetlen] = 0;
@@ -557,7 +557,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             MAX_FILE_NAME_LEN - 1);
                     return -1;
                 }
-                memmove(fileiolen, &filename[i], j);
+                crm_memmove(fileiolen, &filename[i], j);
                 fileiolen[j] = 0;
                 fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
                 fileiolen[fileiolenlen] = 0;

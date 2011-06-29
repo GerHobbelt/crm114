@@ -563,6 +563,9 @@ int main(int argc, char **argv)
                             "         for stderr. This implies that '-err 1' is essentially\n"
                             "         identical to the UNIX shell '2>&1' redirection.\n");
             fprintf(stderr, " -Bill   makes us act like BillY vanilla crm114\n");
+	fprintf(stderr, " -RT     ensure tests are as reproducible across platforms as possible.\n"
+                            "         One of the implications is that the random generator will be\n"
+                            "         seeded with a fixed value so random values are deterministic.\n");
 #ifndef CRM_DONT_ASSERT
             fprintf(stderr, " -Cdbg   direct developer support: trigger the C/IDE debugger when an\n"
                             "         internal error is hit.\n");
@@ -787,7 +790,7 @@ int main(int argc, char **argv)
             i++; // move to the next arg
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%d", &data_window_size))
+                if (1 != sscanf(argv[i], "%u", &data_window_size))
                 {
                     untrappableerror("Failed to decode the numeric -w argument [data windows size]: ", argv[i]);
                 }
@@ -1466,6 +1469,13 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Enabling BillY/vanilla mode.\n");
             goto end_command_line_parse_loop;
         }
+        if (strcmp(argv[i], "-RT") == 0)
+        {
+        	crm_rand_init(666);
+            if (user_trace)
+                fprintf(stderr, "Enabling 'test reproducibility' mode.\n");
+            goto end_command_line_parse_loop;
+        }
 
 #ifndef CRM_DONT_ASSERT
         if (strcmp(argv[i], "-Cdbg") == 0)
@@ -1801,10 +1811,10 @@ end_command_line_parse_loop:
         dwlen = (int)strlen(":_dw:");
         dwname = tdw->nchars;
         //strcat (tdw->filetext, ":_dw:");
-        memmove(&tdw->filetext[dwname], ":_dw:", dwlen);
+        crm_memmove(&tdw->filetext[dwname], ":_dw:", dwlen);
         tdw->nchars = tdw->nchars + dwlen;
         //    strcat (tdw->filetext, "\n");
-        memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
+        crm_memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
         tdw->nchars++;
         crm_setvar(NULL,
                 0,
@@ -1834,10 +1844,10 @@ end_command_line_parse_loop:
         isolen = (int)strlen(":_iso:");
         isoname = tdw->nchars;
         //strcat (tdw->filetext, ":_dw:");
-        memmove(&tdw->filetext[isoname], ":_iso:", isolen);
+        crm_memmove(&tdw->filetext[isoname], ":_iso:", isolen);
         tdw->nchars = tdw->nchars + isolen;
         //    strcat (tdw->filetext, "\n");
-        memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
+        crm_memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
         tdw->nchars++;
         crm_setvar(NULL,
                 0,

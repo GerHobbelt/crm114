@@ -763,7 +763,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             newhashlen = file_hashlens - (bestend + 1 - beststart);
             newhashlenbytes = newhashlen * sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
 
-            memmove(&file_hashes[beststart],
+            crm_memmove(&file_hashes[beststart],
                     &file_hashes[bestend + 1],
                     sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT)
                     * (file_hashlens - bestend));
@@ -1018,7 +1018,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
-            memmove(svrbl, &svrbl[vstart], vlen);
+            crm_memmove(svrbl, &svrbl[vstart], vlen);
             svlen = vlen;
             svrbl[vlen] = 0;
         }
@@ -1835,7 +1835,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 sprintf(buf,
                         "CLASSIFY succeeds; (hyperspace) success probability: "
-                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        "%6.4f  pR: %6.4f / %6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else
@@ -1852,7 +1852,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 sprintf(buf,
                         "CLASSIFY fails; (hyperspace) success probability: "
-                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        "%6.4f  pR: %6.4f / %6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else

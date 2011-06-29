@@ -32,7 +32,7 @@
 *  This implementation uses 64-bit integers for intermediate             *
 *  calculations. Works only on compilers that support 64-bit integers.   *
 *                                                                        *
-* © 1999 - 2007 A. Fog.                                                  *
+* ï¿½ 1999 - 2007 A. Fog.                                                  *
 * GNU General Public License www.gnu.org/copyleft/gpl.html               *
 *************************************************************************/
 
@@ -286,7 +286,7 @@ double normalized_gauss(double x, double s)
 *  This implementation uses 64-bit integers for intermediate             *
 *  calculations. Works only on compilers that support 64-bit integers.   *
 *                                                                        *
-* © 1999 - 2007 A. Fog.                                                  *
+* ï¿½ 1999 - 2007 A. Fog.                                                  *
 * GNU General Public License www.gnu.org/copyleft/gpl.html               *
 *************************************************************************/
 static uint32_t rand_store[5] = { 0 };
@@ -336,7 +336,7 @@ double crm_frand(void)
 {
     if (!rand_init_done)
     {
-        crm_rand_init(42);
+        crm_rand_init((uint32_t)time(NULL));
     }
     return (double)crm_rand32() * (1. / (65536. * 65536.));
 }

@@ -9,10 +9,6 @@
 #
 # Process this file with autoconf to produce a configure script.
 
-
-
-
-
 AC_INIT([CRM114], [20081111-BlameBarack], [crm114-general@lists.sourceforge.net])
 
 # Must come before AM_INIT_AUTOMAKE.
@@ -55,6 +51,15 @@ AC_SUBST(REVISION)
 VER_SUFFIX=
 AC_DEFINE_UNQUOTED(VER_SUFFIX, "$VER_SUFFIX", [version suffix code of the software])
 AC_SUBST(VER_SUFFIX)
+
+VERSION_TIMESTAMP=`echo $PACKAGE_VERSION | sed -e 's/-.*//'`
+VERSION_TAG=`echo $PACKAGE_VERSION | sed -e 's/.*-//'`
+
+AC_DEFINE_UNQUOTED(VERSION_TIMESTAMP, "$VERSION_TIMESTAMP", [version timestamp (YYYYMMDD) of the software])
+AC_SUBST(VERSION_TIMESTAMP)
+
+AC_DEFINE_UNQUOTED(VERSION_TAG, "$VERSION_TAG", [version tag (BlameSomebody) of the software])
+AC_SUBST(VERSION_TAG)
 
 
 
@@ -304,8 +309,6 @@ AM_CONDITIONAL([OS_HAS_BZIP2], [test -n "$BZIP2"])
 AM_CONDITIONAL([OS_HAS_GNU_TIME], [test -n "$GNU_TIME"])
 
 
-# extra Makefile checks for test cases:
-AM_CONDITIONAL([OS_HAS_USDWORDS], [test -e "/usr/share/dict/words"])
 
 
 
@@ -963,6 +966,7 @@ LDFLAGS="$LDFLAGS $ac_profiling_cc_flags"
 
 AC_CONFIG_FILES([Makefile
                  crm114.lsm
+                 crm114.spec
                  docs/Makefile
                  examples/Makefile
                  mailfilter/Makefile

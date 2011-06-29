@@ -703,7 +703,7 @@
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
 /* revision number of software */
-#define REVISION "4560"
+#define REVISION "4631"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4
@@ -721,13 +721,19 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-4560"
+#define TAR_FILENAME_POSTFIX "Ger-4631"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
 #define VERSION "20081111-BlameBarack"
+
+/* version tag (BlameSomebody) of the software */
+#define VERSION_TAG "BlameBarack"
+
+/* version timestamp (YYYYMMDD) of the software */
+#define VERSION_TIMESTAMP "20081111"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

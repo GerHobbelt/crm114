@@ -91,6 +91,7 @@ EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st \
 	uncrustify.cfg \
 	cleanup.bat autogen.sh CREDITS README.win32 BUGS \
 	README.maintainer MAILINGLIST \
+	crm114.spec \
 	$(MSVC_PRJ_FILES)
 
 WIN32_BIN_EXTRA = \
@@ -464,8 +465,26 @@ OSBF_classifier_tests:
 OSB_classifier_tests:
 	(cd tests && $(MAKE) $(AM_MAKEFLAGS) OSB_classifier_tests);
 
+WINNOW_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) WINNOW_classifier_tests);
+
 Hyperspace_classifier_tests:
 	(cd tests && $(MAKE) $(AM_MAKEFLAGS) Hyperspace_classifier_tests);
+
+ALT_markovian_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) ALT_markovian_classifier_tests);
+
+ALT_OSBF_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) ALT_OSBF_classifier_tests);
+
+ALT_OSB_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) ALT_OSB_classifier_tests);
+
+ALT_WINNOW_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) ALT_WINNOW_classifier_tests);
+
+ALT_Hyperspace_classifier_tests:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) ALT_Hyperspace_classifier_tests);
 
 Bit_Entropy_classifier_tests:
 	(cd tests && $(MAKE) $(AM_MAKEFLAGS) Bit_Entropy_classifier_tests);

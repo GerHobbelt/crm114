@@ -38,12 +38,12 @@ function tol(val, tolerance, offset)
 
 BEGIN {
 	#-v entropy=50 -v jumps=2 -v prob=2.0 pR=2.0
-	printf("TOLERANCES: documents=%f, features=%f, file_features=%f, hits=%f, entropy=%f, jumps=%f prob=%e pR=%e chcs=%e\n", documents, features, file_features, hits, entropy, jumps, prob, pR, chcs);
-	printf("OFFSETS: o_documents=%f, o_features=%f, o_file_features=%f, o_hits=%f, o_entropy=%f, o_jumps=%f o_prob=%e o_pR=%e o_chcs=%e\n", o_documents, o_features, o_file_features, o_hits, o_entropy, o_jumps, o_prob, o_pR, o_chcs);
+	printf("TOLERANCES: documents=%f, features=%f, file_features=%f, hits=%f, entropy=%f, jumps=%f prob=%e pR=%e chcs=%e icnr=%e ocnr=%e\n", documents, features, file_features, hits, entropy, jumps, prob, pR, chcs, icnr, ocnr);
+	printf("OFFSETS: o_documents=%f, o_features=%f, o_file_features=%f, o_hits=%f, o_entropy=%f, o_jumps=%f o_prob=%e o_pR=%e o_chcs=%e o_icnr=%e o_ocnr=%e\n", o_documents, o_features, o_file_features, o_hits, o_entropy, o_jumps, o_prob, o_pR, o_chcs, o_icnr, o_ocnr);
 }
 
-/CLASSIFY.*; success probability: .* pR:/	{
-	printf("CVT: CLASSIFY %s success probability: %f  pR: %f\n", $2, tol($5, prob, o_prob), tol($7, pR, o_pR)); 
+/CLASSIFY.*; \(.*\) success probability: .* pR:/	{
+	printf("CVT: CLASSIFY %s success probability: %f  pR: %f\n", $2, tol($6, prob, o_prob), tol($8, pR, o_pR));
 	next;
 }
 
@@ -123,6 +123,17 @@ BEGIN {
 	sub(/\..*/, "", s);
 	sub(/\(/, "", s);
 	printf("%s =%s=: prob: %e, pR: %e\n", $1, s, tol($4, prob, o_prob), tol($6, pR, o_pR));
+	next;
+}
+
+# #0 (i_test.css): icnr: 0.87 ocnr: 0.13 prob: 8.70e-01, pR:  74.11
+/#[0-9] \([^\)]*\): icnr: .* ocnr: .* prob: .* pR: .*/	{
+	# make sure old and new filenames match by stripping off a lot:
+	s = $2;
+	gsub(/.*\//, "", s);
+	sub(/\..*/, "", s);
+	sub(/\(/, "", s);
+	printf("%s =%s=: icnr: %e ocnr: %e prob: %e, pR: %e\n", $1, s, tol($4, icnr, o_icnr), tol($6, ocnr, o_ocnr), tol($8, prob, o_prob), tol($10, pR, o_pR));
 	next;
 }
 

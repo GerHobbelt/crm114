@@ -90,7 +90,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         MAX_VARNAME - 1);
                 vlen = MAX_VARNAME - 1;
             }
-            memmove(vname, &temp_vars[vstart], vlen);
+            crm_memmove(vname, &temp_vars[vstart], vlen);
             vname[vlen] = 0;
             if (vlen < 3)
             {
@@ -349,8 +349,10 @@ int crm_isolate_this(int *vptr,
         strncpy(vname, &nametext[namestart],
                 ((128 < namelen) ? 128 : namelen));
         vname[128] = 0; /* [i_a] boundary bug */
-        fatalerror("You have blown the memory-storage gaskets while trying"
-                   "to store the ISOLATEd variable ", vname);
+        fatalerror_ex(SRC_LOC(), "You have blown the memory-storage gaskets while trying "
+                   "to store the ISOLATEd variable '%s': memory storage window size "
+			"is set at %u, call 'crm114 -w' to spacify a larger store instead.\n", 
+vname, data_window_size);
         return 1;
     }
     //   If we get to here, there's more than enough space; so we're good to
@@ -373,14 +375,14 @@ int crm_isolate_this(int *vptr,
         tdw->filetext[tdw->nchars] = '\n';
         tdw->nchars++;
         nstart = tdw->nchars;
-        memmove(&tdw->filetext[nstart], &nametext[namestart], namelen);
+        crm_memmove(&tdw->filetext[nstart], &nametext[namestart], namelen);
         tdw->nchars = tdw->nchars + namelen;
         tdw->filetext[tdw->nchars] = '=';
         tdw->nchars++;
 
         //      and put in the value in now
         vstart = tdw->nchars;
-        memmove(&tdw->filetext[vstart], &valuetext[valuestart], valuelen);
+        crm_memmove(&tdw->filetext[vstart], &valuetext[valuestart], valuelen);
         tdw->nchars = tdw->nchars + valuelen;
         tdw->filetext[tdw->nchars] = '\n';
         tdw->nchars++;
@@ -428,7 +430,7 @@ int crm_isolate_this(int *vptr,
     vht[vmidx]->vlen   = valuelen;
     if (internal_trace)
         fprintf(stderr, "Memmoving the value in.\n");
-    memmove(&(tdw->filetext[tdw->nchars]),
+    crm_memmove(&(tdw->filetext[tdw->nchars]),
             tempbuf,
             valuelen);
     tdw->nchars = tdw->nchars + valuelen;

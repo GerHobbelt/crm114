@@ -728,6 +728,12 @@
 /* Version number of package */
 #undef VERSION
 
+/* version tag (BlameSomebody) of the software */
+#undef VERSION_TAG
+
+/* version timestamp (YYYYMMDD) of the software */
+#undef VERSION_TIMESTAMP
+
 /* version suffix code of the software */
 #undef VER_SUFFIX
 

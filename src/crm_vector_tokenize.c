@@ -205,7 +205,7 @@ int crm_vector_tokenize
             //
             // for (i = UNIFIED_WINDOW_LEN; i > 0; i--)  // GerH points out that
             //  hashpipe [i] = hashpipe[i-1];            //  this smashes stack
-            memmove(&hashpipe[1], hashpipe,
+            crm_memmove(&hashpipe[1], hashpipe,
                     sizeof(hashpipe) - sizeof(hashpipe[0]));
 
             hashpipe[0] = strnhash(&text[tokenizer->match[0].rm_so + text_offset],
@@ -219,7 +219,7 @@ int crm_vector_tokenize
                 ihash = 0;
                 for (icol = 0; icol < our_coeff->pipe_len; icol++)
                     ihash = ihash +
-                            hashpipe[icol] *our_coeff->coeff_array[(our_coeff->pipe_len * irow) + icol];
+                            hashpipe[icol] * our_coeff->coeff_array[(our_coeff->pipe_len * irow) + icol];
 
                 //    Stuff the final ihash value into reatures array
                 features[*features_out] = ihash;
@@ -349,7 +349,21 @@ typedef struct
 {
     crmhash_t h1;
     crmhash_t h2;
-} dual_crmhash_t;
+} DUAL_CRMHASH_T;
+
+typedef struct 
+{
+	crmhash_t feature;
+	int weight;
+	int order_no;
+} CRM_SORT_ELEM;
+
+typedef struct 
+{
+	crmhash_t feature[2];
+	int weight[2];
+	int order_no[2];
+} CRM_SORT_ELEM2;
 
 #if defined (CRM_WITHOUT_MJT_INLINED_QSORT)
 
@@ -368,12 +382,33 @@ static int hash_compare_1(void const *a, void const *b)
     return 0;
 }
 
+static int indirect_hash_compare_1(void const *a, void const *b)
+{
+    CRM_SORT_ELEM *pa, *pb;
+	int rv;
+
+    pa = (CRM_SORT_ELEM *)a;
+    pb = (CRM_SORT_ELEM *)b;
+    if (pa->feature < pb->feature)
+        return -1;
+
+    if (pa->feature > pb->feature)
+        return 1;
+
+    rv = (pb->order_no - pa->order_no);
+	if (rv)
+        return rv;
+
+    rv = (pb->weight - pa->weight);
+    return rv;
+}
+
 static int hash_compare_2(void const *a, void const *b)
 {
-    dual_crmhash_t *pa, *pb;
+    DUAL_CRMHASH_T *pa, *pb;
 
-    pa = (dual_crmhash_t *)a;
-    pb = (dual_crmhash_t *)b;
+    pa = (DUAL_CRMHASH_T *)a;
+    pb = (DUAL_CRMHASH_T *)b;
     if (pa->h1 < pb->h1)
         return -1;
 
@@ -389,14 +424,63 @@ static int hash_compare_2(void const *a, void const *b)
     return 0;
 }
 
+static int indirect_hash_compare_2(void const *a, void const *b)
+{
+    CRM_SORT_ELEM2 *pa, *pb;
+	int rv;
+
+    pa = (CRM_SORT_ELEM2 *)a;
+    pb = (CRM_SORT_ELEM2 *)b;
+    if (pa->feature[0] < pb->feature[0])
+        return -1;
+
+    if (pa->feature[0] > pb->feature[0])
+        return 1;
+
+    if (pa->feature[1] < pb->feature[1])
+        return -1;
+
+    if (pa->feature[1] > pb->feature[1])
+        return 1;
+
+    rv = (pb->order_no[0] - pa->order_no[0]);
+	if (rv)
+        return rv;
+
+    rv = (pb->order_no[1] - pa->order_no[1]);
+	if (rv)
+        return rv;
+
+    rv = (pb->weight[0] - pa->weight[0]);
+	if (rv)
+        return rv;
+
+    rv = (pb->weight[1] - pa->weight[1]);
+    return rv;
+}
+
 #else
 
 #define hash_compare_1(a, b) \
     (*(a) < *(b))
 
+#define indirect_hash_compare_1(a, b) \
+    ((a)->feature < (b)->feature \
+	|| ((a)->feature == (b)->feature && ((a)->order_no < (b)->order_no \
+		|| ((a)->order_no == (b)->order_no && (a)->weight < (b)->weight))))
+
 #define hash_compare_2(a, b) \
     ((a)->h1 < (b)->h1 || ((a)->h1 == (b)->h1 && (a)->h2 < (b)->h2))
 /*  ((a)->h1 < (b)->h1 ? TRUE : (a)->h1 == (b)->h1 ? (a)->h2 < (b)->h2 : FALSE) */
+
+#define indirect_hash_compare_2(a, b) \
+    ((a)->feature[0] < (b)->feature[0] \
+	|| ((a)->feature[0] == (b)->feature[0] && ((a)->feature[1] < (b)->feature[1] \
+		|| ((a)->feature[1] == (b)->feature[1] && ((a)->order_no[0] < (b)->order_no[0] \
+			|| ((a)->order_no[0] == (b)->order_no[0] && ((a)->order_no[1] < (b)->order_no[1] \
+				|| ((a)->order_no[1] == (b)->order_no[1] && ((a)->weight[0] < (b)->weight[0] \
+					|| ((a)->weight[0] == (b)->weight[0] && (a)->weight[1] < (b)->weight[1] \
+					))))))))))
 
 #endif
 
@@ -739,7 +823,8 @@ int crm_vector_tokenize
                     if (internal_trace || user_trace)
                     {
 						fprintf(stderr, "New Feature: %08lX (weight: %d) at %d / row: %d / matrix: %d\n",
-                                (unsigned long int)ihash, feature_weights[feature_pos],
+                                (unsigned long int)ihash, 
+			(feature_weights ? feature_weights[feature_pos] : feature_weight_table[irow]),
                                 feature_pos, irow, matrix);
                     }
                     feature_pos += pipe_matrices;
@@ -759,7 +844,7 @@ int crm_vector_tokenize
 		// move the last pipe_len-1 hashes to the front of the pipe: those will 'prefix' the
 		// next burst, thus insuring the next round will continue where it left off and have
 		// no trouble accessing 'historic' hashes while applying the VT matrix.
-		memmove(hashpipe, &hp[-pipe_len], (pipe_len - 1)* sizeof(hashpipe[0]));
+		crm_memmove(hashpipe, &hp[-pipe_len], (pipe_len - 1)* sizeof(hashpipe[0]));
 		hashpipe_offset = pipe_len - 1;
     }
 
@@ -778,7 +863,6 @@ int crm_vector_tokenize
         {
             fprintf(stderr, " enabling uniqueifying features.\n");
         }
-
 
         if (internal_trace)
         {
@@ -842,6 +926,8 @@ int crm_vector_tokenize
             return -1;
 
         case 1:
+			if (!feature_weights && !order_no)
+			{
             QSORT(crmhash_t, features_buffer, feature_pos, hash_compare_1);
 
             if (our_coeff->flags.unique)
@@ -852,31 +938,179 @@ int crm_vector_tokenize
                 {
                     if (features_buffer[i] != features_buffer[j])
                     {
-                        features_buffer[++j] = features_buffer[i];
+						if (++j != i)
+						{
+                        features_buffer[j] = features_buffer[i];
+						}
                     }
                 }
                 feature_pos = j + 1;
             }
+			}
+			else
+			{
+				int j;
+				CRM_SORT_ELEM *indirect = calloc(feature_pos, sizeof(indirect[0]));
+
+				        if (!indirect)
+        {
+            untrappableerror("Cannot allocate VT tokenizer indirection array for sorting / unique-ing", "Stick a fork in us; we're _done_.");
+        }
+						for (j = 0; j < feature_pos; j++)
+						{
+							indirect[j].feature = features_buffer[j];
+						}
+						if (feature_weights)
+						{
+						for (j = 0; j < feature_pos; j++)
+						{
+							indirect[j].weight = feature_weights[j];
+						}
+						}
+						if (order_no)
+						{
+						for (j = 0; j < feature_pos; j++)
+						{
+							indirect[j].order_no = order_no[j];
+						}
+						}
+            QSORT(CRM_SORT_ELEM, indirect, feature_pos, indirect_hash_compare_1);
+
+            if (our_coeff->flags.unique)
+            {
+                for (i = 1, j = 0; i < feature_pos; i++)
+                {
+					if (indirect[i].feature != indirect[j].feature)
+                    {
+						if (++j != i)
+						{
+                        indirect[j] = indirect[i];
+						}
+                    }
+                }
+                feature_pos = j + 1;
+            }
+			// now copy back the data to the target arrays
+						for (j = 0; j < feature_pos; j++)
+						{
+							features_buffer[j] = indirect[j].feature;
+						}
+						if (feature_weights)
+						{
+						for (j = 0; j < feature_pos; j++)
+						{
+							feature_weights[j] = indirect[j].weight;
+						}
+						}
+						if (order_no)
+						{
+						for (j = 0; j < feature_pos; j++)
+						{
+							order_no[j] = indirect[j].order_no;
+						}
+						}
+			}
             break;
 
         case 2:
-            QSORT(dual_crmhash_t, (dual_crmhash_t *)features_buffer, feature_pos / 2, hash_compare_2);
+			if (!feature_weights && !order_no)
+			{
+				int len = feature_pos / 2;
+				DUAL_CRMHASH_T *buf = (DUAL_CRMHASH_T *)features_buffer;
+
+            QSORT(DUAL_CRMHASH_T, buf, len, hash_compare_2);
 
             if (our_coeff->flags.unique)
             {
                 int j;
 
-                for (i = 2, j = 0; i < feature_pos; i += 2)
+                for (i = 1, j = 0; i < len; i++)
                 {
-                    if (features_buffer[i] != features_buffer[j] || features_buffer[i + 1] != features_buffer[j + 1])
+					if (buf[i].h1 != buf[j].h1 || buf[i].h2 != buf[j].h2)
                     {
-						j += 2;
-                        features_buffer[j] = features_buffer[i];
-                        features_buffer[j + 1] = features_buffer[i + 1];
+						if (++j != i)
+						{
+                        buf[j] = buf[i];
+						}
                     }
                 }
-                feature_pos = j + 2;
+                len = j + 1;
             }
+			feature_pos = len * 2;
+			}
+			else
+			{
+				int j;
+				int len = feature_pos / 2;
+				CRM_SORT_ELEM2 *indirect = calloc(len, sizeof(indirect[0]));
+
+				        if (!indirect)
+        {
+            untrappableerror("Cannot allocate VT tokenizer indirection array for sorting / unique-ing", "Stick a fork in us; we're _done_.");
+        }
+						for (j = 0; j < len; j++)
+						{
+							indirect[j].feature[0] = features_buffer[j * 2];
+							indirect[j].feature[1] = features_buffer[j * 2 + 1];
+						}
+						if (feature_weights)
+						{
+						for (j = 0; j < len; j++)
+						{
+							indirect[j].weight[0] = feature_weights[j * 2];
+							indirect[j].weight[1] = feature_weights[j * 2 + 1];
+						}
+						}
+						if (order_no)
+						{
+						for (j = 0; j < len; j++)
+						{
+							indirect[j].order_no[0] = order_no[j * 2];
+							indirect[j].order_no[1] = order_no[j * 2 + 1];
+						}
+						}
+            QSORT(CRM_SORT_ELEM2, indirect, len, indirect_hash_compare_2);
+
+            if (our_coeff->flags.unique)
+            {
+                for (i = 1, j = 0; i < len; i++)
+                {
+					if (indirect[i].feature[0] != indirect[j].feature[0]
+					|| indirect[i].feature[1] != indirect[j].feature[1])
+                    {
+						if (++j != i)
+						{
+                        indirect[j] = indirect[i];
+						}
+                    }
+                }
+                len = j + 1;
+            }
+			feature_pos = len * 2;
+
+			// now copy back the data to the target arrays
+						for (j = 0; j < len; j++)
+						{
+							features_buffer[j * 2] = indirect[j].feature[0];
+							features_buffer[j * 2 + 1] = indirect[j].feature[1];
+						}
+						if (feature_weights)
+						{
+						for (j = 0; j < len; j++)
+						{
+							feature_weights[j * 2] = indirect[j].weight[0];
+							feature_weights[j * 2 + 1] = indirect[j].weight[1];
+						}
+						}
+						if (order_no)
+						{
+						for (j = 0; j < len; j++)
+						{
+							order_no[j * 2] = indirect[j].order_no[0];
+							order_no[j * 2 + 1] = indirect[j].order_no[1];
+						}
+						}
+			}
             break;
         }
 		}
@@ -1770,7 +2004,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
 
     if (obj->input_next_offset >= obj->input_textlen)
     {
-        if (user_trace)
+        if (internal_trace)
         {
             fprintf(stderr,
                     "WARNING: VT: exiting tokenizer @ %d -- obj->input_next_offset = %d,  obj->input_textlen = %d!\n",
@@ -1791,7 +2025,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
     if (obj->eos_reached)
     {
         // you'll have no more tokens until you reset 'eos_reached'...
-        if (user_trace)
+        if (internal_trace)
         {
             fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
         }
@@ -1929,7 +2163,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
             {
                 nonfatalerror("Sanity check failed while starting up the VT (Vector Tokenizer).",
                         "Why have the VT tokenizer regex flags not been set up? Developer asleep at the keyboard again?");
-                if (user_trace)
+                if (internal_trace)
                 {
                     fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
                 }
@@ -1944,7 +2178,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
                 crm_regerror(regcomp_status, &obj->regcb, errortext, WIDTHOF(errortext));
                 nonfatalerror("Regular Expression Compilation Problem for VT (Vector Tokenizer): ",
                         errortext);
-                if (user_trace)
+                if (internal_trace)
                 {
                     fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
                 }
@@ -2137,7 +2371,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
 	}
 	}
 
-    if (user_trace)
+    if (internal_trace)
     {
         fprintf(stderr, "WARNING: VT: exiting tokenizer @ %d!\n", __LINE__);
     }
@@ -2667,12 +2901,7 @@ static void print_matrices(const VT_USERDEF_COEFF_MATRIX *our_coeff,
 
 
 
-static int fetch_value(int *value_ref,
-        const char        **src_ref,
-        int                *srclen_ref,
-        int                 lower_limit,
-        int                 upper_limit,
-        const char         *description)
+static int fetch_value(int *value_ref, const char **src_ref, int *srclen_ref, int lower_limit, int upper_limit, const char *description)
 {
     int i;
     const char *src = *src_ref;
@@ -3522,8 +3751,8 @@ int config_vt_coeff_matrix_and_tokenizer
         // a string kernel, but only for the indexing.
         if (classifier_flags & (CRM_STRING | CRM_FSCM))
         {
-            memmove(default_coeff.cm.coeff_array, string1_coeff, sizeof(string1_coeff));
-            memmove(default_coeff.cm.coeff_array + UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT, string2_coeff, sizeof(string2_coeff));
+            crm_memmove(default_coeff.cm.coeff_array, string1_coeff, sizeof(string1_coeff));
+            crm_memmove(default_coeff.cm.coeff_array + UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT, string2_coeff, sizeof(string2_coeff));
 
             default_coeff.cm.pipe_len = (classifier_flags & CRM_FSCM ? FSCM_DEFAULT_CODE_PREFIX_LEN : 5);                // was 5
             default_coeff.cm.pipe_iters = 1;
@@ -3638,12 +3867,12 @@ int config_vt_coeff_matrix_and_tokenizer
                 if (coeff_matrix.cm.pipe_len != 0 && coeff_matrix.cm.pipe_iters != 0 && coeff_matrix.cm.output_stride != 0
                     && coeff_matrix.cm.coeff_array[0] != 0 /* do we have a valid matrix fill? */)
                 {
-                    memmove(&our_coeff->cm, &coeff_matrix.cm, sizeof(coeff_matrix.cm));
+                    crm_memmove(&our_coeff->cm, &coeff_matrix.cm, sizeof(coeff_matrix.cm));
                 }
                 else
                 {
                     // no custom spec in second slash arg? too bad, use our defaults instead
-                    memmove(&our_coeff->cm, &default_coeff.cm, sizeof(default_coeff.cm));
+                    crm_memmove(&our_coeff->cm, &default_coeff.cm, sizeof(default_coeff.cm));
 
                     if (coeff_matrix.cm.pipe_len != 0 && coeff_matrix.cm.pipe_iters != 0 && coeff_matrix.cm.output_stride != 0
                         && coeff_matrix.cm.coeff_array[0] == 0 /* is this 'clipping info only' in there? */)
@@ -3660,12 +3889,12 @@ int config_vt_coeff_matrix_and_tokenizer
                 if (coeff_matrix.fw.column_count != 0 && coeff_matrix.fw.row_count != 0
                     && coeff_matrix.fw.feature_weight[0] != 0 /* do we have a valid matrix fill? */)
                 {
-                    memmove(&our_coeff->fw, &coeff_matrix.fw, sizeof(coeff_matrix.fw));
+                    crm_memmove(&our_coeff->fw, &coeff_matrix.fw, sizeof(coeff_matrix.fw));
                 }
                 else
                 {
                     // no custom spec in second slash arg? too bad, use our defaults instead
-                    memmove(&our_coeff->fw, &default_coeff.fw, sizeof(default_coeff.fw));
+                    crm_memmove(&our_coeff->fw, &default_coeff.fw, sizeof(default_coeff.fw));
 
                     if (coeff_matrix.fw.column_count != 0 && coeff_matrix.fw.row_count != 0
                         && coeff_matrix.fw.feature_weight[0] == 0 /* is this 'clipping info only' in there? */)

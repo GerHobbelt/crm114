@@ -1238,13 +1238,13 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             unmap_file(&s);
             return 0;
         }
-        memmove(s.file_origin + s.document_offsets[i],
+        crm_memmove(s.file_origin + s.document_offsets[i],
                 s.file_origin + s.document_offsets[i + 1],
                 (s.header->file_length - s.document_offsets[i + 1]));
-        memmove(&s.document_tags[i],
+        crm_memmove(&s.document_tags[i],
                 &s.document_tags[i + 1],
                 sizeof(char) * DOCUMENT_TAG_LEN * (s.header->n_documents - i - 1));
-        memmove(&s.cluster_labels[i],
+        crm_memmove(&s.cluster_labels[i],
                 &s.cluster_labels[i + 1],
                 sizeof(char) * CLUSTER_LABEL_LEN * (s.header->n_documents - i - 1));
         s.header->n_documents--;

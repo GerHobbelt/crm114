@@ -460,7 +460,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         if (internal_trace)
         {
-            memmove(tempbuf, ts.ptok, ts.toklen);
+            crm_memmove(tempbuf, ts.ptok, ts.toklen);
             tempbuf[ts.toklen] = 0;
             fprintf(stderr,
                     "  Learn #%d t.o. %d strt %d end %d len %d is -%s-\n",
@@ -508,9 +508,9 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             CRM_ASSERT(2 * OSB_BAYES_WINDOW_LEN <= WIDTHOF(hctable));
             for (j = 1; j < OSB_BAYES_WINDOW_LEN; j++)
             {
-                h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
+                h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
                 h2 =
-                    hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
+                    hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
 
                 hindex = h1 % header->buckets;
 
@@ -768,7 +768,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
-            memmove(svrbl, &svrbl[vstart], vlen);
+            crm_memmove(svrbl, &svrbl[vstart], vlen);
             svlen = vlen;
             svrbl[vlen] = 0;
         }
@@ -1126,7 +1126,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         if (internal_trace)
         {
-            memmove(tempbuf, ts.ptok, ts.toklen);
+            crm_memmove(tempbuf, ts.ptok, ts.toklen);
             tempbuf[ts.toklen] = 0;
             fprintf(stderr,
                     "  Classify #%d t.o. %d strt %d end %d len %d is -%s-\n",
@@ -1177,9 +1177,9 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //
             for (j = 1; j < OSB_BAYES_WINDOW_LEN; j++)
             {
-                h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
+                h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
                 h2 =
-                    hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
+                    hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
                 hindex = h1;
 
                 if (internal_trace)
@@ -1469,7 +1469,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     // P(F|C) = hits[k]/learnings[k], adjusted with a
                     // confidence factor, to reduce the influence
                     // of features common to all classes
-                    ptc[k] = ptc[k] *(0.5 + confidence_factor *
+                    ptc[k] = ptc[k] * (0.5 + confidence_factor *
                                       (hits[k] / learnings[k] - 0.5));
 
                     //   if we have underflow (any probability == 0.0 ) then
@@ -1573,7 +1573,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 sprintf(buf,
                         "CLASSIFY succeeds; (osbf) success probability: "
-                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        "%6.4f  pR: %6.4f / %6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else
@@ -1590,7 +1590,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 sprintf(buf,
                         "CLASSIFY fails; (osbf) success probability: "
-                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        "%6.4f  pR: %6.4f / %6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else

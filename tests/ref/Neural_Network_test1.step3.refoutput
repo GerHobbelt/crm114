@@ -1,5 +1,5 @@
 TEST SCRIPT + COMMANDLINE:
--{learn < neural refute fromstart > (q_test.css) /[[:graph:]]+/} 
+-{learn < neural refute fromstart > (q_test.css) /[[:graph:]]+/} -RT
 
 RETURN CODE:
 0

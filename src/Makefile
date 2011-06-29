@@ -170,7 +170,7 @@ BIN_PATH = /usr/local/bin
 BZIP2 = /usr/bin/bzip2
 CC = gcc -std=gnu99
 CCDEPMODE = depmode=gcc3
-CFLAGS =    -O0 -g3 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
+CFLAGS = -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
 COL = /usr/bin/col
 COMPRESS = 
 CONFIG_STATUS_DEPENDENCIES = $(top_srcdir)/src/config_vanilla_UNIX_sys_defaults.h.in $(top_srcdir)/win32/config_win32.h.in
@@ -179,7 +179,7 @@ CPPFLAGS =
 CVS2CL = 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS =    -O0 -g3 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
+CXXFLAGS = -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
 CYGPATH_W = echo
 DB2X_MANXML = /usr/local/bin/db2x_manxml
 DB2X_TEXIXML = /usr/local/bin/db2x_texixml
@@ -278,7 +278,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-ISODATE = 2009-02-15
+ISODATE = 2009-02-23
 LDFLAGS =  
 LIBOBJS = 
 LIBS = -ltre -lrt -lm  -lreadline
@@ -300,7 +300,7 @@ PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 4560
+REVISION = 4631
 RMAN = /usr/bin/rman
 SED = /usr/bin/sed
 SET_MAKE = 
@@ -310,12 +310,14 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-4560
+TAR_FILENAME_POSTFIX = Ger-4631
 TIME = /usr/bin/time
 TRE_CONFIG = no
 TROFF = /usr/bin/groff
 UNCRUSTIFY = /usr/local/bin/uncrustify
 VERSION = 20081111-BlameBarack
+VERSION_TAG = BlameBarack
+VERSION_TIMESTAMP = 20081111
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
 #
@@ -379,7 +381,7 @@ top_srcdir = ..
 DISTCLEANFILES = diff/
 CLEANFILES = *.o *~ *.bak
 TAR_CMDLINE = ${TAR} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20081111-BlameBarack-Ger-4560
+ARCHIVE_BASE_NAME = crm114-20081111-BlameBarack-Ger-4631
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #

@@ -32,10 +32,12 @@ fi
 # the numbers can and MAY be different every time:
 #
 
-sed -e 's/[0-9][0-9][0-9][0-9][0-9][0-9]\+/0123456789/g' \
+sed -e 's/[0-9][0-9][0-9]\+/0123456789/g' \
+    -e 's/Total growth:.*/GROWTH/' \
     < "${reffile}" \
     > "${targetname}.refout"
-sed -e 's/[0-9][0-9][0-9][0-9][0-9][0-9]\+/0123456789/g' \
+sed -e 's/[0-9][0-9][0-9]\+/0123456789/g' \
+    -e 's/Total growth:.*/GROWTH/' \
     < "${testfile}" \
     > "${targetname}.tstout"
 

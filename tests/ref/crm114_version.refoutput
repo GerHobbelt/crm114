@@ -7,7 +7,7 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
- This is CRM114, version 20081111-BlameBarack, rev 4560 (TRE 0.7.5 (LGPL, APPROX, WCHAR, MULTIBYTE)) (OS: linux-gnu)
+ This is CRM114, version 20081111-BlameBarack, rev 4629 (TRE 0.7.5 (LGPL, APPROX, WCHAR, MULTIBYTE)) (OS: linux-gnu)
  Copyright 2001-2009 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -75,11 +75,11 @@ input      <nomultiline byline lineedit> (optional) [optional]
 intersect  (...) [...] 
 isolate    <default> (...) /optional/ 
 lazy       <default> (...) /optional/ 
-learn      <fromstart nocase basic literal nomultiline byline bychar string 
-        bychunk append refute microgroom markovian markov osb correlate winnow 
-        chi2 unique entropy entropic osbf hyperspace unigram crosslink sks svm 
-        fscm neural alt.markovian alt.markov alt.osb alt.winnow alt.osbf 
-        alt.hyperspace> (...) [optional] /optional/ /optional/ 
+learn      <fromstart nocase absent basic literal nomultiline byline bychar 
+        string bychunk append refute microgroom markovian markov osb correlate 
+        winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
+        sks svm fscm neural alt.markovian alt.markov alt.osb alt.winnow 
+        alt.osbf alt.hyperspace> (...) [optional] /optional/ /optional/ 
 classify   <nocase basic literal nomultiline byline bychar string bychunk 
         microgroom markovian markov osb correlate winnow chi2 unique entropy 
         entropic osbf hyperspace unigram crosslink sks svm fscm neural 

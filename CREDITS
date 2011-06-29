@@ -1,11 +1,29 @@
 Many thanks to all who send any fix or suggestions or bug reports.
 If we forgot to add your name, fell free to send a note.
 
+
 Current Maintainers:
 
-    TODO
+    Ger Hobbelt	<ger@hobbelt.com>
+
 
 Developers of current version:
 
-    TODO
+    Bill Yerazunis (vanilla CRM114)
+    Ger Hobbelt (the GerH UNIX+Win 32/64 port / branch)
 
+
+Great Help:
+
+	Jimmy Tang (rpm .spec file)
+	Jason White (testing on various boxes)
+	Eric S. Johansson (testing on some surprisingly tough VMs)
+	
+NOTE: if you're not listed here while you helped me out, it only 
+      means I'm my usual geriatric self again. Remind 
+        ger@hobbelt.com 
+      if I appear to remain in that regrettable state.
+
+	
+	
+	

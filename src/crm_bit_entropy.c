@@ -814,10 +814,10 @@ static void firlat_sanity_scan(int32_t *firlat, int firlatlen,
     }
     for (i = 0; i < nodeslen; i++)
     {
-        if (nodes[i].fir_smaller<-1
-                                 || nodes[i].fir_larger<-1
-                                                        || nodes[i].fir_smaller> nodeslen
-                                 || nodes[i].fir_larger> nodeslen)
+        if (nodes[i].fir_smaller < -1
+            || nodes[i].fir_larger < -1
+            || nodes[i].fir_smaller > nodeslen
+            || nodes[i].fir_larger > nodeslen)
         {
             fprintf(stderr,
                     "Internal FIRchain error at node %d (%f) smaller: %d larger %d\n",
@@ -1280,7 +1280,7 @@ static void dump_bit_entropy_data(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
 
     fprintf(stderr,
             "  node    A0    c    A1    c    PFIR   FIR<   FIR>\n");
-    for (i = 0; i<nodeslen && nodes[i].fir_prior> -1.0; i++)
+    for (i = 0; i < nodeslen && nodes[i].fir_prior > -1.0; i++)
     {
         fprintf(stderr,
                 "%5d %5d %5d %5d %5d %5.3f %5d %5d\n",
@@ -2528,7 +2528,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
-            memmove(svrbl, &svrbl[vstart], vlen);
+            crm_memmove(svrbl, &svrbl[vstart], vlen);
             svlen = vlen;
             svrbl[vlen] = 0;
         }

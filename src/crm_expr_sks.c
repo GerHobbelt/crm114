@@ -384,7 +384,7 @@ static void simple_string_hide(char     *s,
     /* *hashcounts = 0; */
     for (i = 0; i <= (len - param.k) && i < HYPERSPACE_MAX_FEATURE_COUNT; i++)
     {
-        memmove(tempbuf, &(s[i]), param.k);
+        crm_memmove(tempbuf, &(s[i]), param.k);
         tempbuf[param.k] = 0;
         if (internal_trace)
         {
@@ -498,8 +498,8 @@ static Qitem_t *get_rowQ(int i, int length)
                 //   multiply by the +1/-1 labels (in the .y structures) to
                 //   face the kernel result in the right direction.
                 rowQ[temp] = (Qitem_t)(svm_prob.y[i]
-                        *svm_prob.y[temp]
-                        *kernel(svm_prob.x[i], svm_prob.x[temp]));
+                                       * svm_prob.y[temp]
+                                       * kernel(svm_prob.x[i], svm_prob.x[temp]));
             else if (param.svm_type == ONE_CLASS)
                 rowQ[temp] = (Qitem_t)kernel(svm_prob.x[i], svm_prob.x[temp]);
         }
@@ -583,10 +583,10 @@ static void selectB(int workset[], int *select_times)
              || ((svm_prob.y[t] == -1) && (solver.alpha[t] > 0)))
             && select_times[t] < 10)
         {
-            if (-svm_prob.y[t] *solver.G[t] >= G_max)
+            if (-svm_prob.y[t] * solver.G[t] >= G_max)
             {
                 i = t;
-                G_max = -svm_prob.y[t] *solver.G[t];
+                G_max = -svm_prob.y[t] * solver.G[t];
             }
         }
     }
@@ -601,15 +601,15 @@ static void selectB(int workset[], int *select_times)
              || ((svm_prob.y[t] == 1) && (solver.alpha[t] > 0)))
             && select_times[t] < 10)
         {
-            b = G_max + svm_prob.y[t] *solver.G[t];
-            if (-svm_prob.y[t] *solver.G[t] <= G_min)
-                G_min = -svm_prob.y[t] *solver.G[t];
+            b = G_max + svm_prob.y[t] * solver.G[t];
+            if (-svm_prob.y[t] * solver.G[t] <= G_min)
+                G_min = -svm_prob.y[t] * solver.G[t];
             if (b > 0)
             {
                 if (i != -1)
                 {
                     Qi = get_rowQ(i, svm_prob.l);
-                    a = Qi[i] + DiagQ[t] - 2 * svm_prob.y[i] *svm_prob.y[t] *Qi[t];
+                    a = Qi[i] + DiagQ[t] - 2 * svm_prob.y[i] * svm_prob.y[t] * Qi[t];
                     if (a <= 0)
                         a = TAU;
                     if (-(b * b) / a <= obj_min)
@@ -715,38 +715,38 @@ static void solve(void)
         Qj = get_rowQ(j, svm_prob.l);
 
         //  Calculate the incremental step forward.
-        a = Qi[i] + DiagQ[j] - 2 * svm_prob.y[i] *svm_prob.y[j] *Qi[j];
+        a = Qi[i] + DiagQ[j] - 2 * svm_prob.y[i] * svm_prob.y[j] * Qi[j];
         if (a <= 0)
             a = TAU;
-        b = -svm_prob.y[i] *solver.G[i] + svm_prob.y[j] *solver.G[j];
+        b = -svm_prob.y[i] * solver.G[i] + svm_prob.y[j] * solver.G[j];
 
         //  update alpha (weight vector)
         oldi = solver.alpha[i];
         oldj = solver.alpha[j];
-        solver.alpha[i] += svm_prob.y[i] *b / a;
-        solver.alpha[j] -= svm_prob.y[j] *b / a;
+        solver.alpha[i] += svm_prob.y[i] * b / a;
+        solver.alpha[j] -= svm_prob.y[j] * b / a;
 
         //  Project alpha back to the feasible region(that is, where
         //  where 0 <= alpha <= C )
-        sum = svm_prob.y[i] *oldi + svm_prob.y[j] *oldj;
+        sum = svm_prob.y[i] * oldi + svm_prob.y[j] * oldj;
         if (solver.alpha[i] > param.C)
             solver.alpha[i] = param.C;
         if (solver.alpha[i] < 0)
             solver.alpha[i] = 0;
         solver.alpha[j] = svm_prob.y[j]
-                          *(sum - svm_prob.y[i] *(solver.alpha[i]));
+                          * (sum - svm_prob.y[i] * (solver.alpha[i]));
         if (solver.alpha[j] > param.C)
             solver.alpha[j] = param.C;
         if (solver.alpha[j] < 0)
             solver.alpha[j] = 0;
         solver.alpha[i] = svm_prob.y[i]
-                          *(sum - svm_prob.y[j] *(solver.alpha[j]));
+                          * (sum - svm_prob.y[j] * (solver.alpha[j]));
 
         //update gradient array
         for (t = 0; t < svm_prob.l; t++)
         {
-            solver.G[t] += Qi[t] *(solver.alpha[i] - oldi)
-                           + Qj[t] *(solver.alpha[j] - oldj);
+            solver.G[t] += Qi[t] * (solver.alpha[i] - oldi)
+                           + Qj[t] * (solver.alpha[j] - oldj);
         }
     }
 
@@ -833,7 +833,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
         for (i = 0; i < svm_prob.l; i++)
         {
             if (alpha[i] != 0)
-                sum += svm_prob.y[i] *alpha[i] *kernel(x, svm_prob.x[i]);
+                sum += svm_prob.y[i] * alpha[i] * kernel(x, svm_prob.x[i]);
         }
         sum += b;
     }
@@ -842,7 +842,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
         for (i = 0; i < svm_prob.l; i++)
         {
             if (alpha[i] != 0)
-                sum += alpha[i] *kernel(x, svm_prob.x[i]);
+                sum += alpha[i] * kernel(x, svm_prob.x[i]);
         }
         sum -= b;
     }
@@ -884,9 +884,9 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
     AB[1] = log((negn + 1.0) / (posn + 1.0));
     for (i = 0; i < svm_prob.l; i++)
     {
-        fApB = deci_array[i] *AB[0] + AB[1];
+        fApB = deci_array[i] * AB[0] + AB[1];
         if (fApB >= 0)
-            fval += t[i] *fApB + log(1 + exp(-fApB));
+            fval += t[i] * fApB + log(1 + exp(-fApB));
         else
             fval += (t[i] - 1) * fApB + log(1 + exp(fApB));
     }
@@ -897,7 +897,7 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
         h21 = g1 = g2 = 0.0;
         for (i = 0; i < svm_prob.l; i++)
         {
-            fApB = deci_array[i] *AB[0] + AB[1];
+            fApB = deci_array[i] * AB[0] + AB[1];
             if (fApB >= 0)
             {
                 p = exp(-fApB) / (1.0 + exp(-fApB));
@@ -909,11 +909,11 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
                 q = exp(fApB) / (1.0 + exp(fApB));
             }
             d2 = p * q;
-            h11 += deci_array[i] *deci_array[i] *d2;
+            h11 += deci_array[i] * deci_array[i] * d2;
             h22 += d2;
-            h21 += deci_array[i] *d2;
+            h21 += deci_array[i] * d2;
             d1 = t[i] - p;
-            g1 += deci_array[i] *d1;
+            g1 += deci_array[i] * d1;
             g2 += d1;
         }
         // Stopping Criterion
@@ -934,9 +934,9 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
             newf = 0.0;
             for (i = 0; i < svm_prob.l; i++)
             {
-                fApB = deci_array[i] *newA + newB;
+                fApB = deci_array[i] * newA + newB;
                 if (fApB >= 0)
-                    newf += t[i] *fApB + log(1 + exp(-fApB));
+                    newf += t[i] * fApB + log(1 + exp(-fApB));
                 else
                     newf += (t[i] - 1) * fApB + log(1 + exp(fApB));
             }
@@ -995,7 +995,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char ptext[MAX_PATTERN]; //the regrex pattern
     int plen;
     int i, j, k;
-    regex_t regcb = { 0 };
+	regex_t regcb = {0};
     regmatch_t match[5];
     int textoffset;
     int textmaxoffset;
@@ -1083,11 +1083,11 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (k == 0)
     {
         //get three input files.
-        memmove(file1, &ftext[match[1].rm_so], (match[1].rm_eo - match[1].rm_so));
+        crm_memmove(file1, &ftext[match[1].rm_so], (match[1].rm_eo - match[1].rm_so));
         file1[match[1].rm_eo - match[1].rm_so] = 0;
-        memmove(file2, &ftext[match[2].rm_so], (match[2].rm_eo - match[2].rm_so));
+        crm_memmove(file2, &ftext[match[2].rm_so], (match[2].rm_eo - match[2].rm_so));
         file2[match[2].rm_eo - match[2].rm_so] = 0;
-        memmove(file3, &ftext[match[3].rm_so], (match[3].rm_eo - match[3].rm_so));
+        crm_memmove(file3, &ftext[match[3].rm_so], (match[3].rm_eo - match[3].rm_so));
         file3[match[3].rm_eo - match[3].rm_so] = 0;
         if (internal_trace)
             fprintf(stderr, "file1=%s\tfile2=%s\tfile3=%s\n", file1, file2, file3);
@@ -1437,7 +1437,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     newhashlen = file_hashlens - (bestend + 1 - beststart);
                     newhashlenbytes = newhashlen
                                       * sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
-                    memmove(&file_hashes[beststart],
+                    crm_memmove(&file_hashes[beststart],
                             &file_hashes[bestend + 1],
                             sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT)
                             * (file_hashlens - bestend));
@@ -1905,7 +1905,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         int vstart, vlen;
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
-            memmove(svrbl, &svrbl[vstart], vlen);
+            crm_memmove(svrbl, &svrbl[vstart], vlen);
             svlen = vlen;
             svrbl[vlen] = 0;
         }
@@ -2133,11 +2133,11 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
         HYPERSPACE_FEATUREBUCKET_STRUCT *file2_hashes;
         //get three input files.
-        memmove(file1, &ftext[match[1].rm_so], (match[1].rm_eo - match[1].rm_so));
+        crm_memmove(file1, &ftext[match[1].rm_so], (match[1].rm_eo - match[1].rm_so));
         file1[match[1].rm_eo - match[1].rm_so] = 0;
-        memmove(file2, &ftext[match[2].rm_so], (match[2].rm_eo - match[2].rm_so));
+        crm_memmove(file2, &ftext[match[2].rm_so], (match[2].rm_eo - match[2].rm_so));
         file2[match[2].rm_eo - match[2].rm_so] = 0;
-        memmove(file3, &ftext[match[3].rm_so], (match[3].rm_eo - match[3].rm_so));
+        crm_memmove(file3, &ftext[match[3].rm_so], (match[3].rm_eo - match[3].rm_so));
         file3[match[3].rm_eo - match[3].rm_so] = 0;
         if (user_trace)
             fprintf(stderr, "file1=%s\tfile2=%s\tfile3=%s\n", file1, file2, file3);

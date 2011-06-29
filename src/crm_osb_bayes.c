@@ -704,7 +704,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             goto learn_end_regex_loop;
 
         wlen = match[0].rm_eo - match[0].rm_so;
-        memmove(tempbuf,
+        crm_memmove(tempbuf,
                 &(txtptr[textoffset + match[0].rm_so]),
                 wlen);
         tempbuf[wlen] = 0;
@@ -772,7 +772,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                  j < how_many_terms;
                  j++)
             {
-                h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
+                h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
                 // #define PRINT_HASHES
 #ifdef PRINT_HASHES
                 fprintf(stderr,
@@ -794,10 +794,10 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 // If you need backward compatibility with older
                 //  Markov .css files, define OLD_MARKOV_COMPATIBILITY
 #ifdef OLD_MARKOV_COMPATIBILITY
-                h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) + 1];
+                h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) + 1];
 #else
                 //    Historical accident.  Bill is stupid.   --Bill
-                h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
+                h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
 #endif
                 if (h2 == 0)
                     h2 = 0xdeadbeef;
@@ -1212,7 +1212,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
-            memmove(svrbl, &svrbl[vstart], vlen);
+            crm_memmove(svrbl, &svrbl[vstart], vlen);
             svlen = vlen;
             svrbl[vlen] = 0;
         }
@@ -1909,7 +1909,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             goto classify_end_regex_loop;
 
         wlen = match[0].rm_eo - match[0].rm_so;
-        memmove(tempbuf,
+        crm_memmove(tempbuf,
                 &(txtptr[textoffset + match[0].rm_so]),
                 wlen);
         tempbuf[wlen] = 0;
@@ -1969,7 +1969,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                  j < how_many_terms;
                  j++)
             {
-                h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
+                h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
 #if defined (REDICULOUS_CODE) /* [i_a] */
                 if (h1 < spectra_start)
                     h1 = spectra_start;
@@ -1980,9 +1980,9 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 // If you need backward compatibility with older
                 //  Markov .css files, define OLD_MARKOV_COMPATIBILITY
 #ifdef OLD_MARKOV_COMPATIBILITY
-                h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) + 1];
+                h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) + 1];
 #else
-                h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
+                h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
 #endif
                 if (h2 == 0)
                     h2 = 0xdeadbeef;
@@ -2258,12 +2258,12 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         renorm = 0.0;
                         for (k = 0; k < maxhash; k++)
                         {
-                            renorm += (ptc[k] *pltc[k]);
+                            renorm += (ptc[k] * pltc[k]);
                         }
 
                         for (k = 0; k < maxhash; k++)
                         {
-                            ptc[k] = (ptc[k] *pltc[k]) / renorm;
+                            ptc[k] = (ptc[k] * pltc[k]) / renorm;
                         }
 
                         //   if we have underflow (any probability == 0.0 ) then
@@ -2550,7 +2550,7 @@ classify_end_regex_loop:
             {
                 snprintf(stext_ptr, stext_maxlen,
                         "CLASSIFY succeeds; (osb) success probability: "
-                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        "%6.4f  pR: %6.4f / %6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else
@@ -2567,7 +2567,7 @@ classify_end_regex_loop:
             {
                 snprintf(stext_ptr, stext_maxlen,
                         "CLASSIFY fails; (osb) success probability: "
-                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        "%6.4f  pR: %6.4f / %6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else

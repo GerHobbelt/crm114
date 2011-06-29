@@ -151,7 +151,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                         MAX_FILE_NAME_LEN - 1);
             }
             CRM_ASSERT(filenamelen < MAX_FILE_NAME_LEN);
-            memmove(insertfilename, &csl->filetext[matches[2].rm_so], filenamelen);
+            crm_memmove(insertfilename, &csl->filetext[matches[2].rm_so], filenamelen);
             insertfilename[filenamelen] = 0;
 
             //   Check to see if this was a "delimited" insertfile name
@@ -167,7 +167,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 }
                 //  Get rid of the enclosing [ and ]
                 filenamelen -= 2;
-                memmove(insertfilename, insertfilename + 1, filenamelen);
+                crm_memmove(insertfilename, insertfilename + 1, filenamelen);
                 insertfilename[filenamelen] = 0;
                 filenamelen = crm_nexpandvar(insertfilename,
                         filenamelen,
@@ -390,13 +390,13 @@ return -1;
                 //    off from the end of matches[0] so as to not smash
                 //    trailing stuff on the line.
                 //
-                memmove(&(csl->filetext[matches[0].rm_eo + ecsl->nchars]),
+                crm_memmove(&(csl->filetext[matches[0].rm_eo + ecsl->nchars]),
                         &(csl->filetext[matches[0].rm_eo]),
                         csl->nchars - matches[0].rm_eo + 1);                 // +1 for 0!
                 //
                 //   and put the new text into that hole
                 //
-                memmove(&(csl->filetext[matches[0].rm_eo]),
+                crm_memmove(&(csl->filetext[matches[0].rm_eo]),
                         ecsl->filetext,
                         ecsl->nchars);
 
@@ -464,13 +464,13 @@ return -1;
                 //
                 //       make a hole to put the fault string into.
                 //
-                memmove(&csl->filetext[matches[0].rm_eo + textlen],
+                crm_memmove(&csl->filetext[matches[0].rm_eo + textlen],
                         &csl->filetext[matches[0].rm_eo],
                         csl->nchars - matches[0].rm_eo);
                 //
                 //   and put the new text into that hole
                 //
-                memmove(&csl->filetext[matches[0].rm_eo],
+                crm_memmove(&csl->filetext[matches[0].rm_eo],
                         faulttext,
                         textlen);
                 //   Mark the new length of the csl text.
@@ -617,7 +617,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                                 &(csl->filetext[i]));
                     //    we need a newline and are looking at a printingchar
                     //    so we need to insert a newline.
-                    memmove(&(csl->filetext[i + 1]),
+                    crm_memmove(&(csl->filetext[i + 1]),
                             &(csl->filetext[i]),
                             strlen(&csl->filetext[i]) + 1);
                     csl->filetext[i] = '\n';
@@ -655,7 +655,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                                     crlf_mode_descr[crlf_mode]
                                    );
                         // (2 | crlf_mode) --> 2 for UNIX/MAC, 3 for MSDOS   :-)
-                        memmove(&(csl->filetext[i]),
+                        crm_memmove(&(csl->filetext[i]),
                                 &(csl->filetext[i + (2 | crlf_mode)]),
                                 strlen(&csl->filetext[i + (2 | crlf_mode)]) + 1);
                         csl->nchars -= (2 | crlf_mode);
@@ -702,7 +702,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                                         &csl->filetext[i]);
                             if (internal_trace)
                                 fprintf(stderr, " preinserting a newline.\n");
-                            memmove(&(csl->filetext[i + 1]),
+                            crm_memmove(&(csl->filetext[i + 1]),
                                     &(csl->filetext[i]),
                                     strlen(&csl->filetext[i]) + 1);
                             csl->filetext[i] = '\n';
@@ -733,7 +733,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                             if (internal_trace)
                                 fprintf(stderr,
                                         "superfluous semicolon, *poof*.\n");
-                            memmove(&(csl->filetext[i]),
+                            crm_memmove(&(csl->filetext[i]),
                                     &(csl->filetext[i + 1]),
                                     strlen(&csl->filetext[i]) + 1);
                             csl->nchars--;
@@ -926,7 +926,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                                             &csl->filetext[i]);
                                 if (internal_trace)
                                     fprintf(stderr, " preinserting a newline.\n");
-                                memmove(&(csl->filetext[i + 1]),
+                                crm_memmove(&(csl->filetext[i + 1]),
                                         &(csl->filetext[i]),
                                         strlen(&csl->filetext[i]) + 1);
                                 csl->filetext[i] = '\n';

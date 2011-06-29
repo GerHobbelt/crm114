@@ -392,7 +392,7 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
     }
 
     // now 's' points as start of compressed path; it also is a pointer >= dst, so move content down to 'dst':
-    memmove(dst, s + 1, strlen(s + 1) + 1);
+    crm_memmove(dst, s + 1, strlen(s + 1) + 1);
 #else
 #error "Please provide a suitable mk_absolute_path() implementation for your platform"
 #endif

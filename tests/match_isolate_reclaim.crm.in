@@ -11,9 +11,10 @@
 
 	alter (:_dw:) /foo/
 	isolate (:bytes: :s:) 
-	syscall () (:bytes:) /cat \/usr\/share\/dict\/words/
-	eval (:s:) /:#:bytes:/
-	isolate (:startbytes:) //
+	# syscall () (:bytes:) /cat \/usr\/share\/dict\/words/
+	# [i_a] not all (UNIX) systems have a dict/words! Use this script itself as a text source instead:
+	input (:bytes:) [:*:_pos1:]
+	isolate (:startbytes:) /1023000/
 	isolate (:endbytes:) //
 	isolate (:passes:) /0/
 	isolate (:flux:) /0/
@@ -21,7 +22,16 @@
 	isolate (:b2: :b3:)
 	isolate (:ihead:) /X/
 
+	# construct a text that's big enough:
+	{
+		eval /:@: :#:bytes: < :*:startbytes::/
+		alter (:bytes:) /:*:bytes: :*:bytes:/
+		liaf
+	}
+
+	eval (:s:) /:#:bytes:/
 	eval (:startbytes:)  /:#:_iso:/
+
 	output /OK_IF_SIZE_CHANGES: Size of isolation at start: :*:startbytes:\n/ 
 
 	{

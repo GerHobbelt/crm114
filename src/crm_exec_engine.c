@@ -1398,7 +1398,7 @@ invoke_top:
                                 data_window_size - 1);
                         vnl = data_window_size - 1;
                     }
-                    memmove(outbuf, &outbuf[vns], vnl);
+                    crm_memmove(outbuf, &outbuf[vns], vnl);
                     outbuf[vnl] = 0;
                     if (vnl > 0)
                     {

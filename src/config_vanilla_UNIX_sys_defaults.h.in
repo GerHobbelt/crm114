@@ -698,10 +698,10 @@
 #define PACKAGE_VERSION "@PACKAGE_VERSION@"
 
 /* enable replacement memmem if system memmem is broken or missing */
-/* #undef PREFER_PORTABLE_MEMMEM */
+#define PREFER_PORTABLE_MEMMEM 1
 
 /* "enable replacement memmove if system memmove is broken or missing" */
-/* #undef PREFER_PORTABLE_MEMMOVE */
+#define PREFER_PORTABLE_MEMMOVE 1
 
 /* "enable replacement (v)snprintf if system (v)snprintf is broken" */
 /* #undef PREFER_PORTABLE_SNPRINTF */
@@ -732,6 +732,12 @@
 
 /* Version number of package */
 #define VERSION "@VERSION@"
+
+/* version tag (BlameSomebody) of the software */
+#define VERSION_TAG "@VERSION_TAG@"
+
+/* version timestamp (YYYYMMDD) of the software */
+#define VERSION_TIMESTAMP "@VERSION_TIMESTAMP@"
 
 /* version suffix code of the software */
 #define VER_SUFFIX "@VER_SUFFIX@"

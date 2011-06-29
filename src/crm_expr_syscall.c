@@ -467,7 +467,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     done = 0;
     if (crm_nextword(from_var, outlen, 0, &vstart, &vlen))
     {
-        memmove(from_var, &from_var[vstart], vlen);
+        crm_memmove(from_var, &from_var[vstart], vlen);
         from_var[vlen] = 0;
         if (user_trace)
         {
@@ -544,7 +544,7 @@ sys_cmd[0] = 0;
         CRM_ASSERT(WIDTHOF(exp_keep_buf) >= MAX_PATTERN + 2 /* space for ":*" */);
         CRM_ASSERT(WIDTHOF(exp_keep_buf) > keep_len + 2);
         strcpy(exp_keep_buf, ":*");
-        memmove(exp_keep_buf + 2, keep_buf, keep_len);
+        crm_memmove(exp_keep_buf + 2, keep_buf, keep_len);
         exp_keep_buf[2 + keep_len] = 0;
         exp_keep_len = crm_nexpandvar(exp_keep_buf, keep_len + 2, MAX_PATTERN, vht, tdw);
         CRM_ASSERT(exp_keep_len < MAX_PATTERN);

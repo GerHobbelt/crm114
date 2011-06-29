@@ -290,7 +290,7 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
 
     if (inlen >= MAX_PATTERN)
         inlen = MAX_PATTERN - 1;
-    memmove(flagtext, input, inlen);
+    crm_memmove(flagtext, input, inlen);
     flagtext[inlen] = 0;
 
     if (internal_trace)
@@ -1134,7 +1134,7 @@ int crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen)
     else
     {
         len = CRM_MIN(tolen - 1, fromlen);
-        memmove(to, from, len);
+        crm_memmove(to, from, len);
         to[len] = 0;
         return len;
     }

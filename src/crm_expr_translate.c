@@ -144,8 +144,8 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         goto nonfatal_route_outwards;
     }
 
-    //    No problems then.  We can just memmove the result into tempbuf
-    memmove(tempbuf, &mdwptr[offset], len);
+    //    No problems then.  We can just crm_memmove the result into tempbuf
+    crm_memmove(tempbuf, &mdwptr[offset], len);
 
     //    get the FROM charset out of the first // slashes
     fromset_len = crm_get_pgm_arg(fromset, MAX_PATTERN, apb->s1start, apb->s1len);

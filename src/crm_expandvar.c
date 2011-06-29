@@ -1242,7 +1242,7 @@ int crm_restrictvar(char *boxstring,
                 }
                 nw_len -= regex_start;
                 CRM_ASSERT(nw_len >= 0);
-                memmove(scanbuf, datastring + regex_start, nw_len);
+                crm_memmove(scanbuf, datastring + regex_start, nw_len);
 #else
                 regex_start = nw_start + 1;                   // regex starts +1 past start of str
                 nw_len = 0;                                   // nw_len is next open char idx.

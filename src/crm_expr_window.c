@@ -638,7 +638,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //     copy the pertinent part of inputtxt into the space
     //     we just made.
-    memmove(&vht[vmidx]->valtxt[vht[vmidx]->vstart
+    crm_memmove(&vht[vmidx]->valtxt[vht[vmidx]->vstart
                                 + vht[vmidx]->vlen
                                 - matches[0].rm_eo],
             inputtxt,
@@ -647,7 +647,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     and get rid of the same characters out of inputtxt
     if (inputtxtlen > 0)
     {
-        memmove(inputtxt,
+        crm_memmove(inputtxt,
                 &inputtxt[matches[0].rm_eo],
                 inputtxtlen - matches[0].rm_eo + 1);
     }

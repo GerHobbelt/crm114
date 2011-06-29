@@ -674,7 +674,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
             }
 
             len = CRM_MIN(len, WIDTHOF(buf) - 1);
-            memmove(buf, start_idx, len);
+            crm_memmove(buf, start_idx, len);
             buf[len] = 0;
 
             dbg_arg = end;
@@ -688,7 +688,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
         len = (int)strcspn(dbg_arg, "\r\n");
 
         len = CRM_MIN(len, WIDTHOF(buf) - 1);
-        memmove(buf, dbg_arg, len);
+        crm_memmove(buf, dbg_arg, len);
         buf[len] = 0;
 
         dbg_arg += len;
@@ -1912,7 +1912,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         if (crm_nextword(dbg_arg, (int)strlen(dbg_arg), 0,
                                     &tstart, &tlen))
                         {
-                            memmove(dbg_inbuf, &dbg_arg[tstart], tlen);
+                            crm_memmove(dbg_inbuf, &dbg_arg[tstart], tlen);
                             dbg_inbuf[tlen] = 0;
                             vindex = crm_vht_lookup(vht, dbg_inbuf, tlen, -1);
                             if (vht[vindex] == NULL)
@@ -2016,7 +2016,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                                     &tstart, &tlen))
                         {
                             tlen = CRM_MIN(tlen, WIDTHOF(dbg_inbuf) - 1);
-                            memmove(dbg_inbuf, &dbg_arg[tstart], tlen);
+                            crm_memmove(dbg_inbuf, &dbg_arg[tstart], tlen);
                             dbg_inbuf[tlen] = 0;
                             vindex = crm_vht_lookup(vht, dbg_inbuf, tlen, -1);
                             fprintf(stderr, "vindex = %d\n", vindex);
@@ -2110,7 +2110,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                                 &vstart, &vlen))
                     {
                         vlen = CRM_MIN(vlen, WIDTHOF(dbg_inbuf) - 1);
-                        memmove(dbg_inbuf, &dbg_arg[vstart], vlen);
+                        crm_memmove(dbg_inbuf, &dbg_arg[vstart], vlen);
                         dbg_inbuf[vlen] = 0;
                         vindex = crm_vht_lookup(vht, dbg_inbuf, vlen, csl->calldepth);
                         if (vht[vindex] == NULL)
@@ -2135,7 +2135,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         cmd_done_len = oend + 1;                 // skip terminating '/'
 
                         CRM_ASSERT(oend - ostart < dbg_iobuf_size - 1);
-                        memmove(dbg_outbuf,
+                        crm_memmove(dbg_outbuf,
                                 &dbg_inbuf[ostart],
                                 oend - ostart);
                         dbg_outbuf[oend - ostart] = 0;
@@ -2456,7 +2456,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
             cmd_done_len += len;
             len = CRM_MIN(strlen(dbg_inbuf + cmd_done_len), WIDTHOF(dbg_inbuf) - 1);
-            memmove(dbg_inbuf, dbg_inbuf + cmd_done_len, strlen(dbg_inbuf + cmd_done_len));
+            crm_memmove(dbg_inbuf, dbg_inbuf + cmd_done_len, strlen(dbg_inbuf + cmd_done_len));
             dbg_inbuf[len] = 0;
         }
     }

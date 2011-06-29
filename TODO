@@ -146,17 +146,28 @@ Stefan Seyfried
 
 - add link to http://camram.sourceforge.net/ .
 
-- migrate malloc/calloc/free/strdup/etc. to crm_malloc(..., error_reason_message)
-  (basic routines have been set up in crm_str_funcs.c) and make sure no intern
-  can ever use malloc/realloc/etc. ever again -- this to ensure each allocation
-  is checked and duely reported.
+- migrate malloc/calloc/free/strdup/etc. to crm_malloc(...,
+  error_reason_message) (basic routines have been set up in crm_str_funcs.c)
+  and make sure no inte can ever use malloc/realloc/etc. ever again --
+  this to ensure each allocation is checked and duely reported.
 
-- make the AX_* M4 macros work again - currently optimizations are disabled on UNIX
-  do to one of these.
+- make the AX_* M4 macros work again - currently optimizations are disabled
+  on UNIX do to one of these.
 
-- See if we can find a better solution for the crm_free() void** casting and the
-  GCC 3.x resulting warning in -O3 mode about type-punning. :-(
+- See if we can find a better solution for the crm_free() void** casting and
+  the GCC 3.x resulting warning in -O3 mode about type-punning. :-(
 
-- make VT <unique> / oridering cooperate with feature_weight/order_no fetching
-  classifiers & Arne's optimization: right now, those extra values are *SHOT*
-  when <unique> is specified.
+- Make VT <unique> / ordering cooperate with feature_weight/order_no
+  fetching classifiers & Arne's optimization: right now, those extra values
+  are *SHO when <unique> is specified.
+
+  (DONE: GerH)
+
+  A better approach might be to insert the feature hashes in an ordered
+  manner at creation time...
+
+- Fix the 'scoped variables' script language feature so that scoped
+  variables are discarded when the interpreter exits the call depth == scope
+  level at which the variables were created. (Currently, CRM doesn't
+  support *deleting* variables in crm script!)
+

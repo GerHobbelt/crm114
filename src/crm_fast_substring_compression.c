@@ -1570,7 +1570,7 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         int vstart, vlen;
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
-            memmove(svrbl, &svrbl[vstart], vlen);
+            crm_memmove(svrbl, &svrbl[vstart], vlen);
             svlen = vlen;
             svrbl[vlen] = 0;
         }

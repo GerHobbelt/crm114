@@ -733,6 +733,12 @@
 /* Version number of package */
 #define VERSION "@VERSION@"
 
+/* version tag (BlameSomebody) of the software */
+#define VERSION_TAG "@VERSION_TAG@"
+
+/* version timestamp (YYYYMMDD) of the software */
+#define VERSION_TIMESTAMP "@VERSION_TIMESTAMP@"
+
 /* version suffix code of the software */
 #define VER_SUFFIX "@VER_SUFFIX@"
 
