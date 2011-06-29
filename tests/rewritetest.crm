@@ -1,0 +1,56 @@
+#! :|crm
+#   do rewriting, based on rewrite rules in rewrites.mfp
+#
+#   Start with some data in the :_dw:
+window
+output /:*:_nl: --- CRM114 testing string rewrites :*:_nl: :*:_nl:/
+
+output /------------------------:*:_nl:/
+alter (:_dw:) /abc:*:_nl:frobnitz_singleline this should trigger :*:_nl:def:*:_nl:frobnitz_multiline zebra:*:_nl:giraffe:*:_nl:and so should this.:*:_nl:testpattern:*:_nl:mno:*:_nl:/
+accept
+output /------------------------:*:_nl:/
+{
+	isolate (:rewrites:)
+	input (:rewrites:) [test_rewrites.mfp]
+	#    reset matching on rewrites to start of string
+	match [:rewrites:] //
+}
+#
+#     
+{
+    #    Grab the next regexturn the one-per-line patterns into a regex
+    #    First, do the line-spanning regexes.
+    match <fromend nomultiline> (:ch: :fr: :to:) [:rewrites:]  /(.+)>-->(.*)/
+    #    see if the "fr" regex matches anywhere
+    {
+	match (:place:) /:*:fr:/
+	#  Yep, it matched... alter it and do it again
+	#
+	alter (:place:) /:*:to:/
+	liaf
+    }
+    #   Nope, didn't match... grab the next regex and try again,
+    liaf
+}
+#
+#     reset back to the start of the rewrites.
+#
+match [:rewrites:] //
+#
+#      and do it again for non-line-spanners
+{
+    #    Go through and do it again, except this time do it for
+    #    the non-line-spanning regexes.
+    match <fromend nomultiline> (:ch: :fr: :to:) [:rewrites:]  /(.+)>->(.*)/
+    #    see if the "fr" regex matches anywhere
+    {
+	match <nomultiline> (:place:) /:*:fr:/
+	#  Yep, it matched... alter it and do it again
+	#
+	alter (:place:) /:*:to:/
+	liaf
+    }
+    #   Nope, didn't match... grab the next regex and try again,
+    liaf
+}
+accept

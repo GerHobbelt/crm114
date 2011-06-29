@@ -207,7 +207,7 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
-	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
+          CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
   //
   hfsize = statbuf.st_size;

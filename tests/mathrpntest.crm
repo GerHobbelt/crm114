@@ -1,0 +1,31 @@
+#!/usr/bin/crm
+#
+#	Test demo program for extended eval (can do string lengths,
+#       RPN math, and inequalities. 
+window
+output /\n     Testing RPN mode math \n/
+{ 
+	isolate (:z:) 
+	isolate (:x:) /12345/
+	isolate (:pi:) /3.14159/
+	output / string value of x is :*:x:, string value of pi is :*:pi:\n/
+	eval (:z:) / length of x is :#::*:x:: , length of pi is :#::*:pi::\n/
+	output /:*:z:/
+	{
+		{
+			eval (:z:) /:@: :#::*:x:: :#::*:pi:: > :/
+			output / string rep of X is longer than pi\n/
+		}
+		alius
+		{
+			output / string rep of X is shorter than pi\n/
+		}
+	}
+	eval (:z:) / matheval of x + pi is :@: :*:x: :*:pi: +:\n/
+	output /:*:z:/
+	eval (:z:) /:@:2 3 * 4 5 * +:/
+	output / RPN matheval of (2*3)+(4*5) is :*:z: \n/
+	eval (:z:) /  and adding 3.14159 to that is :@: :*:z: 3.14159 +:\n/
+	output /:*:z:/
+}
+

@@ -13,7 +13,7 @@
 #        N worst errors.  In the limit, this is the single worst error.
 #        This is slow but yields very "tight" and accurate files.
 #
-#    Copyright (C) 2002-2006 William S. Yerazunis; licensed under the 
+#    Copyright (C) 2002-2007 William S. Yerazunis; licensed under the 
 #    GNU Public License (GPL) version 2.  A copy of this license is included 
 #    in the distribution media, or obtain one from www.fsf.org .
 #

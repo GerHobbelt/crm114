@@ -121,7 +121,7 @@ int crm_load_csl (CSL_CELL *csl)
   // and stat the file descriptor
   if (fstat(csl->filedes, &statbuf))
   {
-	  untrappableerror_ex(SRC_LOC(), "Cannot stat file %s, error: %d(%s)", csl->filename, errno, errno_descr(errno));
+          untrappableerror_ex(SRC_LOC(), "Cannot stat file %s, error: %d(%s)", csl->filename, errno, errno_descr(errno));
   }
   else
   {
@@ -191,8 +191,8 @@ int crm_load_csl (CSL_CELL *csl)
 
   csl->hash = strnhash (csl->filetext, csl->nchars);
   if (user_trace)
-	  fprintf (stderr, "Hash of program: %lX, length %ld bytes: (%s)\n-->\n%s",
-	  csl->hash, csl->nchars, csl->filename, csl->filetext);
+          fprintf (stderr, "Hash of program: %lX, length %ld bytes: (%s)\n-->\n%s",
+          csl->hash, csl->nchars, csl->filename, csl->filetext);
   }
 
   return 0;

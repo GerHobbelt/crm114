@@ -131,21 +131,21 @@ int main(int argc, char **argv)
 #if defined(WIN32) && defined(_DEBUG)
   void *bogus_ptr;
 
-   /* 
+   /*
     * Hook in our client-defined reporting function.
     * Every time a _CrtDbgReport is called to generate
     * a debug report, our function will get called first.
     */
    _CrtSetReportHook(crm_dbg_report_function);
 
-   /* 
+   /*
     * Define the report destination(s) for each type of report
     * we are going to generate.  In this case, we are going to
     * generate a report for every report type: _CRT_WARN,
     * _CRT_ERROR, and _CRT_ASSERT.
     * The destination(s) is defined by specifying the report mode(s)
     * and report file for each report type.
-    */                                             
+    */
    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
    _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
@@ -158,26 +158,26 @@ int main(int argc, char **argv)
 
    atexit(crm_report_mem_analysis);
 
-	// Get the current bits
-	i = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+        // Get the current bits
+        i = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
 
    // Set the debug-heap flag so that freed blocks are kept on the
    // linked list, to catch any inadvertent use of freed memory
 #if 0
-	i |= _CRTDBG_DELAY_FREE_MEM_DF;
+        i |= _CRTDBG_DELAY_FREE_MEM_DF;
 #endif
 
    // Set the debug-heap flag so that memory leaks are reported when
    // the process terminates. Then, exit.
    //i |= _CRTDBG_LEAK_CHECK_DF;
 
-	// Clear the upper 16 bits and OR in the desired freqency
-	i = (i & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_16_DF;
+        // Clear the upper 16 bits and OR in the desired freqency
+        i = (i & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_16_DF;
 
-	// Set the new bits
-	_CrtSetDbgFlag(i);
+        // Set the new bits
+        _CrtSetDbgFlag(i);
 
-	// set a malloc marker we can use it in the leak dump at the end of the program:
+        // set a malloc marker we can use it in the leak dump at the end of the program:
     bogus_ptr = _calloc_dbg( 1, 1, _CLIENT_BLOCK, __FILE__, __LINE__ );
 #endif
 
@@ -288,10 +288,10 @@ int main(int argc, char **argv)
           fprintf (stderr, " --foo   creates var :foo: with value 'SET'\n");
           fprintf (stderr, " --x=y   creates var :x: with value 'y'\n");
           fprintf (stderr, " -in file   use file instead of stdin for input\n");
-		  fprintf (stderr, " -dbg    direct developer support: trigger the debugger when an internal\n"
-			               "         error is hit.\n");
-		  fprintf (stderr, " -memdump\n"
-			               "         direct developer support: dump all detected memory leaks\n");
+                  fprintf (stderr, " -dbg    direct developer support: trigger the debugger when an internal\n"
+                                       "         error is hit.\n");
+                  fprintf (stderr, " -memdump\n"
+                                       "         direct developer support: dump all detected memory leaks\n");
 
           if (openparen > 0)
             {
@@ -586,9 +586,9 @@ int main(int argc, char **argv)
               exit (engine_exit_base + 16);
             }
           else
-		  {
+                  {
             exit( EXIT_SUCCESS );
-		  }
+                  }
         }
 
       if (strncmp (argv[i], "-{", 2) == 0)  //  don't care about the "}"
@@ -684,11 +684,11 @@ int main(int argc, char **argv)
           if (i < argc)
             {
               crm_stdin = fopen(argv[i], "rb"); // open in BINARY mode!
-			  if (crm_stdin == NULL)
+                          if (crm_stdin == NULL)
                   {
-					  untrappableerror("Failed to open stdin input replacement file:", argv[i]);
+                                          untrappableerror("Failed to open stdin input replacement file:", argv[i]);
                   }
-		  }
+                  }
           if (user_trace)
             fprintf (stderr, "Setting stdin replacement file '%s'\n",
                      argv[i]);
@@ -697,23 +697,23 @@ int main(int argc, char **argv)
       if (strncmp (argv[i], "-dbg", 4) == 0 && strlen(argv[i]) == 4)
         {
 #ifndef CRM_DONT_ASSERT
-		  trigger_debugger = 1;
-		  if (user_trace)
+                  trigger_debugger = 1;
+                  if (user_trace)
             fprintf (stderr, "Debugger trigger turned ON.\n");
 #else
-		  untrappableerror("Debugger support is not included in this binary. "
-			  "Please rebuild with debugger support if you require such.", "");
+                  nonfatalerror_ex(SRC_LOC(), "Debugger support is not included in this binary. "
+                          "Please rebuild with debugger support if you require such.");
 #endif
           goto end_command_line_parse_loop;
         }
       if (strncmp (argv[i], "-memdump", 8) == 0 && strlen(argv[i]) == 8)
         {
 #if defined(WIN32) && defined(_DEBUG)
-		  trigger_memdump = 1;
-		  if (user_trace)
+                  trigger_memdump = 1;
+                  if (user_trace)
             fprintf (stderr, "memory leak dump turned ON.\n");
 #else
-		  untrappableerror_ex(SRC_LOC(), "Memory leak dump support is not included in this binary.");
+                  untrappableerror_ex(SRC_LOC(), "Memory leak dump support is not included in this binary.");
 #endif
           goto end_command_line_parse_loop;
         }
@@ -819,8 +819,8 @@ int main(int argc, char **argv)
       csl->nchars = strlen (csl->filetext);
       csl->hash = strnhash (csl->filetext, csl->nchars);
       if (user_trace)
-		  fprintf (stderr, "Hash of program: %lX, length is %ld bytes: %s\n-->\n%s",
-		  csl->hash, csl->nchars, csl->filename, csl->filetext);
+                  fprintf (stderr, "Hash of program: %lX, length is %ld bytes: %s\n-->\n%s",
+                  csl->hash, csl->nchars, csl->filename, csl->filetext);
     }
 
   //  We get another csl-like data structure,
@@ -898,7 +898,7 @@ int main(int argc, char **argv)
       //          POSIX-style massive block transfers.
       int readsize = data_window_size - 1;
 #if defined(WIN32)
-	  readsize = CRM_MIN(16384, readsize); // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
+          readsize = CRM_MIN(16384, readsize); // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
 #endif
       while (! feof (stdin) && i < data_window_size - 1)
         {

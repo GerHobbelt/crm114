@@ -6,21 +6,21 @@
 ## Copyright (C) 2003, 2004 Joost van Baal
 
 PACKAGE = @PACKAGE_TARNAME@
-examplesdir = $(datadir)/doc/$(PACKAGE)/examples
-
+VER_SUFFIX = @VER_SUFFIX@ 
+VERSION = @VERSION@
 SILENT = @SILENT@
+
+examplesdir = $(datadir)/doc/$(PACKAGE)/examples
+crmdir = $(examplesdir)/crmfilter
 
 
 examples_DATA = \
- megatest_knowngood.log \
- megatest.sh \
  pad.dat
 
 examples_SCRIPTS = \
  pad.crm \
  shroud.crm
 
-crmdir = $(examplesdir)/crmfilter
 
 crm_DATA = \
  blacklist.mfp \
@@ -30,7 +30,11 @@ crm_DATA = \
  whitelist.mfp \
  whitelist.mfp.example
 
-EXTRA_DIST = $(examples_DATA) $(crm_DATA)
+
+
+EXTRA_DIST = $(examples_DATA) $(examples_SCRIPTS) \
+	$(crm_DATA)
+
 
 
 DISTCLEANFILES = 

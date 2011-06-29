@@ -1,0 +1,36 @@
+#! :|crm
+#   test the alius statement 
+{
+	{
+		{	
+			output /checking for a foo.../
+			match /foo/
+			output /Found a foo :*:_nl:/
+		}
+		alius
+		{
+			output /no foo... checking for bar.../
+			match /bar/
+			output /Found a bar.  :*:_nl:/
+		}
+		alius
+		{
+			output /found neither... continuing  :*:_nl:/
+		}
+	}
+	{
+		{
+			output /checking for a baz.../
+			match /baz/
+			output /Found a baz :*:_nl:/
+		}
+		alius
+		{
+			output /no baz... checking for wugga.../
+			match /wugga/
+			output /Found a wugga.  :*:_nl:/
+		}
+		alius 
+		output /found neither :*:_nl:/
+	}
+}

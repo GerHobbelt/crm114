@@ -309,14 +309,14 @@ typedef struct mythical_entropy_cell {
 //           input
 #define CRM_READLINE      (1LL << 32)
 //           isolate flags
-#define CRM_DEFAULT       (1LL << 33) 
+#define CRM_DEFAULT       (1LL << 33)
 //           SKS classifier
 #define CRM_SKS          (1LL << 34)
 //           SVM classifier
 #define CRM_SVM           (1LL << 35)
 //           FSCM classifier
 #define CRM_FSCM          (1LL << 36)
-//  
+//
 //     and a struct to put them in.
 typedef struct
 {

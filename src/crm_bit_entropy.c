@@ -1496,7 +1496,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
           //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
-	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
+          CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
   //
   hfsize = statbuf.st_size;
@@ -2811,7 +2811,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //
 
 
-  for (i = 0; i < maxhash; i++) 
+  for (i = 0; i < maxhash; i++)
   {
     ///////////////////////////////////////
     //    ! XXX SPAMNIX HACK!

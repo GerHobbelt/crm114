@@ -326,10 +326,10 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 char pidstr [32];
                 long pid;
 #if defined(HAVE_GETPID)
-				pid = (long) getpid();
+                                pid = (long) getpid();
                 sprintf (pidstr, "%ld", pid);
                 crm_set_temp_var (":_pid:", pidstr);
-				if (user_trace)
+                                if (user_trace)
                   fprintf (stderr, "My new PID is %s\n", pidstr);
 #endif
 #if defined(HAVE_GETPPID)
@@ -337,7 +337,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 sprintf (pidstr, "%ld", pid);
                 crm_set_temp_var (":_ppid:", pidstr);
 #endif
-			  }
+                          }
               //   See if we have redirection of stdin and stdout
               while (crm_nextword (sys_cmd, strlen (sys_cmd), vstart+vlen,
                                    &vstart, &vlen))
@@ -406,12 +406,12 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
               //
               if (retcode == -1 )
                 {
-                  nonfatalerror_ex(SRC_LOC(), 
+                  nonfatalerror_ex(SRC_LOC(),
                            "This program tried a shell command that "
                            "didn't run correctly.\n"
                            "The command was >%s< and returned exit code %d.\n"
                            "errno = %d(%s)",
-                           sys_cmd, 
+                           sys_cmd,
                            WEXITSTATUS(retcode),
                            errno,
                            errno_descr(errno));
@@ -733,12 +733,12 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                   // use the undamaged sys_cmd entry for error reporting...
                                   fatalerror_ex(SRC_LOC(), "This program tried a shell command that "
                                                           "didn't run correctly.\n"
-														  "command >>%s<< - CreateProcess returned %ld($%lx:%s)\n",
+                                                                                                                  "command >>%s<< - CreateProcess returned %ld($%lx:%s)\n",
                                                    sys_cmd_2nd,
-												   (long)error,
-												   (long)error,
-												   errmsg);
-						  
+                                                                                                   (long)error,
+                                                                                                   (long)error,
+                                                                                                   errmsg);
+
                            if (engine_exit_base != 0)
                           {
                                 exit(engine_exit_base + 13);
@@ -819,10 +819,10 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
           if (!_beginthreadex(NULL, 0, pusher_proc, &pp, 0, &hThread))
           {
                   fatalerror_ex(SRC_LOC(),
-			"Failed to start the pusher thread: "
-			"error code %d (%s)", 
-			errno, 
-			errno_descr(errno));
+                        "Failed to start the pusher thread: "
+                        "error code %d (%s)",
+                        errno,
+                        errno_descr(errno));
           }
     }
 
@@ -891,10 +891,10 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (!_beginthreadex(NULL, 0, sucker_proc, &sp, 0, &hThread))
                   {
                   fatalerror_ex(SRC_LOC(),
-			"Failed to start the sucker thread: "
-			"error code %d (%s)", 
-			errno, 
-			errno_descr(errno));
+                        "Failed to start the sucker thread: "
+                        "error code %d (%s)",
+                        errno,
+                        errno_descr(errno));
                   }
           }
 

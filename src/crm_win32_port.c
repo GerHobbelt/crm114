@@ -114,7 +114,7 @@ int crm_dbg_report_function(int report_type, char *usermsg, int *retval)
     * retVal to one.
     */
    *retval = !!trigger_debugger;
-	
+        
    /*
     * When the report type is for an ASSERT,
     * we'll report some information, but we also
@@ -132,14 +132,14 @@ int crm_dbg_report_function(int report_type, char *usermsg, int *retval)
    case _CRT_WARN:
    case _CRT_ERROR:
    case _CRT_ERRCNT:
-	   fputs(usermsg, stderr);
+           fputs(usermsg, stderr);
       fflush(stderr);
-	   return FALSE;
+           return FALSE;
 
    case _CRT_ASSERT:
-	   fputs(usermsg, stderr);
+           fputs(usermsg, stderr);
       fflush(stderr);
-		break;
+                break;
    }
    return TRUE;
 }
@@ -149,12 +149,12 @@ void crm_report_mem_analysis(void)
 {
         _CrtMemState msNow;
 
-		if (!_CrtCheckMemory())
-	{
-		fprintf(stderr, ">>>Failed to validate memory heap<<<\n");
-	}
+                if (!_CrtCheckMemory())
+        {
+                fprintf(stderr, ">>>Failed to validate memory heap<<<\n");
+        }
 
-		/* only dump leaks when there are in fact leaks */
+                /* only dump leaks when there are in fact leaks */
         _CrtMemCheckpoint(&msNow);
 
         if (msNow.lCounts[_CLIENT_BLOCK] != 0 ||
@@ -167,7 +167,7 @@ void crm_report_mem_analysis(void)
             _RPT0(_CRT_WARN, "============== Detected memory leaks! ====================\n");
 
             _CrtMemDumpAllObjectsSince(&crm_memdbg_state_snapshot1);
-			_CrtMemDumpStatistics(&crm_memdbg_state_snapshot1);
+                        _CrtMemDumpStatistics(&crm_memdbg_state_snapshot1);
         }
 }
 

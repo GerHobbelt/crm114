@@ -1,6 +1,6 @@
 #!/usr/bin/crm  
 #
-#     Copyright 2006 William S. Yerazunis.  Released under the GPL version 2.
+#     Copyright 2006 - 2007 William S. Yerazunis.  Released under the GPL version 2.
 #
 #    Program to shuffle lines in a file.   NOTE- ths program should be updated
 #    to use Barabash's much-faster shuffle, which uses urandom and sort, rather

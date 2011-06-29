@@ -254,7 +254,7 @@ void crm_force_munmap_filename (char *filename)
         {
           //   found it... force an munmap.
           crm_force_munmap_addr (p->addr);
-	  break;     //  because p may be clobbered during unmap.
+          break;     //  because p may be clobbered during unmap.
         }
     }
 }
@@ -331,23 +331,23 @@ void crm_munmap_file(void *addr)
       //    list as well.
       //
       if (p->prev != NULL)
-	  {
+          {
         p->prev->next = p->next;
-	  }
+          }
       else
-	  {
-	    CRM_ASSERT(cache == p);
+          {
+            CRM_ASSERT(cache == p);
         cache = p->next;
-	  }
+          }
       if (p->next != NULL)
-	  {
+          {
         p->next->prev = p->prev;
-	  }
-	  else
-	  {
-		  CRM_ASSERT(p->prev ? p->prev->next == NULL : 1);
-		  CRM_ASSERT(!p->prev ? cache == NULL : 1);
-	  }
+          }
+          else
+          {
+                  CRM_ASSERT(p->prev ? p->prev->next == NULL : 1);
+                  CRM_ASSERT(!p->prev ? cache == NULL : 1);
+          }
       free(p->name);
       free(p);
     }
@@ -371,24 +371,24 @@ void crm_munmap_file(void *addr)
            {
              CloseHandle(p->mapping);
              CloseHandle(p->fd);
-			  if (p->prev != NULL)
-			  {
-				p->prev->next = p->next;
-			  }
-			  else
-			  {
-				CRM_ASSERT(cache == p);
-				cache = p->next;
-			  }
-			  if (p->next != NULL)
-			  {
-				p->next->prev = p->prev;
-			  }
-			  else
-			  {
-				  CRM_ASSERT(p->prev ? p->prev->next == NULL : 1);
-				  CRM_ASSERT(!p->prev ? cache == NULL : 1);
-			  }
+                          if (p->prev != NULL)
+                          {
+                                p->prev->next = p->next;
+                          }
+                          else
+                          {
+                                CRM_ASSERT(cache == p);
+                                cache = p->next;
+                          }
+                          if (p->next != NULL)
+                          {
+                                p->next->prev = p->prev;
+                          }
+                          else
+                          {
+                                  CRM_ASSERT(p->prev ? p->prev->next == NULL : 1);
+                                  CRM_ASSERT(!p->prev ? cache == NULL : 1);
+                          }
              free(p->name);
              free(p);
            }
@@ -405,7 +405,7 @@ void crm_munmap_file(void *addr)
 //           Force an Unmap on every mmapped memory area we know about
 void crm_munmap_all(void)
 {
-  while (cache != NULL) 
+  while (cache != NULL)
   {
     cache->unmap_count = UNMAP_COUNT_MAX + 1;
     crm_munmap_file(cache->addr);

@@ -278,7 +278,7 @@ main (int argc, char **argv)
             (cssfile, sparse_spectrum_file_length, 0, 0, 0) != EXIT_SUCCESS)
           exit (EXIT_FAILURE);
         k = stat (cssfile, &statbuf);
-  	    CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
+            CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
         hfsize = statbuf.st_size;
       }
     //

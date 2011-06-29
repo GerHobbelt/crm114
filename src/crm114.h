@@ -274,10 +274,10 @@ int crm_expr_alt_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     char *txt, long start, long len);
 int crm_expr_svm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     char *txt, long start, long len);
-int crm_expr_sks_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				    char *txt, long start, long len);
-int crm_expr_fscm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				    char *txt, long start, long len);
+int crm_expr_sks_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+                                    char *txt, long start, long len);
+int crm_expr_fscm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+                                    char *txt, long start, long len);
 
 
 
@@ -301,10 +301,10 @@ int crm_expr_alt_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                        char *txt, long start, long len);
 int crm_expr_svm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                        char *txt, long start, long len);
-int crm_expr_sks_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				       char *txt, long start, long len);
-int crm_expr_fscm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				       char *txt, long start, long len);
+int crm_expr_sks_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+                                       char *txt, long start, long len);
+int crm_expr_fscm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+                                       char *txt, long start, long len);
 
 
 //  surgically alter a variable
@@ -477,36 +477,36 @@ double normalized_gauss(double x, double s);
 
 
 /* for use with vxxxxerror_ex et al */
-#define SRC_LOC()		__LINE__, __FILE__
+#define SRC_LOC()               __LINE__, __FILE__
 
 #ifdef HAVE_STRINGIZE
-#define CRM_STRINGIFY(e)	#e
+#define CRM_STRINGIFY(e)        #e
 #else
 #error "Comment this error line out if you are sure your system does not support the # preprocessor stringize operator. My Gawd, what system _is_ this?"
-#define CRM_STRINGIFY(e)	"---\?\?\?---" /* \?\? to prevent trigraph warnings by GCC 4 et al */
+#define CRM_STRINGIFY(e)        "---\?\?\?---" /* \?\? to prevent trigraph warnings by GCC 4 et al */
 #endif
 
 
 
 //  helper routine for untrappable errors
-#define untrappableerror(msg1, msg2)	\
-		untrappableerror_std(__LINE__, __FILE__, msg1, msg2)
+#define untrappableerror(msg1, msg2)    \
+                untrappableerror_std(__LINE__, __FILE__, msg1, msg2)
 
 void untrappableerror_std(int lineno, const char *srcfile, const char *msg1, const char *msg2);
 void untrappableerror_ex(int lineno, const char *srcfile, const char *msg, ...);
 void untrappableerror_va(int lineno, const char *srcfile, const char *msg, va_list args);
 
 //  helper routine for fatal errors
-#define fatalerror(msg1, msg2)	\
-		fatalerror_std(__LINE__, __FILE__, msg1, msg2)
+#define fatalerror(msg1, msg2)  \
+                fatalerror_std(__LINE__, __FILE__, msg1, msg2)
 
 long fatalerror_std(int lineno, const char *srcfile, const char *msg1, const char *msg2);
 long fatalerror_ex(int lineno, const char *srcfile, const char *msg, ...);
 long fatalerror_va(int lineno, const char *srcfile, const char *msg, va_list args);
 
 //  helper routine for nonfatal errors
-#define nonfatalerror(msg1, msg2)	\
-		nonfatalerror_std(__LINE__, __FILE__, msg1, msg2)
+#define nonfatalerror(msg1, msg2)       \
+                nonfatalerror_std(__LINE__, __FILE__, msg1, msg2)
 
 long nonfatalerror_std(int lineno, const char *srcfile, const char *msg1, const char *msg2);
 long nonfatalerror_ex(int lineno, const char *srcfile, const char *msg, ...);
@@ -553,7 +553,7 @@ void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *msg, co
 #else
 
 #define CRM_ASSERT(expr)       /* do nothing */
-#define CRM_ASSERT_EX(expr, msg)   /* do nothing */                             
+#define CRM_ASSERT_EX(expr, msg)   /* do nothing */
 
 #define CRM_VERIFY(expr)           (void)(expr)
 
@@ -579,7 +579,7 @@ const char *syserr_descr(int errno_number);
    One could make it at least threadsafe by moving the static storage
    to thread localstore, but that is rather system specific.
 
-   I thought about the alternative, i.e. using and returning a 
+   I thought about the alternative, i.e. using and returning a
    malloc/strdup-ed string, but then you'd suffer mem leakage when
    using it like this:
 
@@ -591,33 +591,33 @@ const char *syserr_descr(int errno_number);
 const char *Win32_syserr_descr(DWORD errorcode);
 
 
-#define fatalerror_Win32(msg)											\
-	fatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
+#define fatalerror_Win32(msg)                                                                                   \
+        fatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
 
 static inline void fatalerror_Win32_(int lineno, const char *file, const char *msg)
 {
-    DWORD error = GetLastError();				
-	const char *errmsg = Win32_syserr_descr(error);
-												
-	fatalerror_ex(lineno, file, msg, 			
-		(long)error, 													
-		(long)error, 													
-		errmsg);														
+    DWORD error = GetLastError();
+        const char *errmsg = Win32_syserr_descr(error);
+
+        fatalerror_ex(lineno, file, msg,
+                (long)error,
+                (long)error,
+                errmsg);
 }
 
 
-#define nonfatalerror_Win32(msg)											\
-	nonfatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
+#define nonfatalerror_Win32(msg)                                                                                        \
+        nonfatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
 
 static inline void nonfatalerror_Win32_(int lineno, const char *file, const char *msg)
 {
-    DWORD error = GetLastError();				
-	const char *errmsg = Win32_syserr_descr(error);
-												
-	nonfatalerror_ex(lineno, file, msg, 			
-		(long)error, 													
-		(long)error, 													
-		errmsg);														
+    DWORD error = GetLastError();
+        const char *errmsg = Win32_syserr_descr(error);
+
+        nonfatalerror_ex(lineno, file, msg,
+                (long)error,
+                (long)error,
+                errmsg);
 }
 
 

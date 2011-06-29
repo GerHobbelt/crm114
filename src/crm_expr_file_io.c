@@ -159,7 +159,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
       //
       char vname[MAX_VARNAME];
       long ichar = 0;
-	  CRM_ASSERT(vlen < MAX_VARNAME);
+          CRM_ASSERT(vlen < MAX_VARNAME);
       memmove (vname, &(temp_vars[vstart]), vlen);
       vname [vlen] = '\000';
 
@@ -174,19 +174,19 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
       else
         if (offset != 0)
           if (0 != fseek (fp, offset, SEEK_SET))
-		  {
-		    if (errno == EBADF)
-			{
+                  {
+                    if (errno == EBADF)
+                        {
               nonfatalerror ("Dang, seems that this file isn't fseek()able: ",
                              filename);
-			}
-		    else
-			{
-				/* [i_a] GROT GROT GROT    fix this by having the errno+errno-string reported too! */
+                        }
+                    else
+                        {
+                                /* [i_a] GROT GROT GROT    fix this by having the errno+errno-string reported too! */
               nonfatalerror ("Dang, seems that this file isn't fseek()able: ",
                              filename);
-			}
-		  }
+                        }
+                  }
 
       //    are we supposed to use readline?
 #ifdef HAVE_LIBREADLINE
@@ -194,11 +194,11 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
         {
           char *chartemp;
           chartemp = readline ("");
-		    if (strlen(chartemp) > data_window_size - 1)
-			{
-				nonfatalerror ("Dang, this line of text is way too long: ",
+                    if (strlen(chartemp) > data_window_size - 1)
+                        {
+                                nonfatalerror ("Dang, this line of text is way too long: ",
                              chartemp);
-			}
+                        }
           strncpy (inbuf, chartemp, data_window_size);
           inbuf[data_window_size - 1] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
           free (chartemp);
@@ -220,7 +220,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
                 ichar++;
               }
             if (ichar > 0 && inbuf[ichar] == '\n') ichar-- ; //   get rid of any present newline
-			// [i_a] GROT GROT GROT: how about MAC and PC (CR and CRLF instead of LF as line terminators) */
+                        // [i_a] GROT GROT GROT: how about MAC and PC (CR and CRLF instead of LF as line terminators) */
             inbuf[ichar] = '\000';   // and put a null on the end of it.
           }
         else

@@ -1,0 +1,18 @@
+#! :|crm
+window
+output /:*:_nl: CRM114 testing outcall and status codes :*:_nl:/
+{
+	isolate (:c1: :proc:)
+	output /:*:_nl: ----- keeping a process around ----  :*:_nl:/
+	output /:*:_nl: preparing... :*:proc:/
+	syscall <keep> ( a one :*:_nl: ) ( ) (:proc:) /cat > e2.out/
+	output /:*:_nl: OK_IF_PID_CHANGES: one... :*:proc:/
+	syscall <keep> ( and a two :*:_nl: ) () (:proc:) //
+	output /:*:_nl: OK_IF_PID_SAME_AS_ABOVE: again... :*:proc:/
+	syscall ( and a three :*:_nl:) () (:proc:) //
+	output /:*:_nl: and done ...:*:proc: :*:_nl:/
+}
+{
+	syscall () () (:proc:) /exit 123/
+	output /exit value test got :*:proc:/
+}

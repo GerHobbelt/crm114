@@ -1,10 +1,13 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* untrappable ASSERT/VERIFY checks */
+#undef CRM_ASSERT_IS_UNTRAPPABLE
+
+/* DISable ASSERT/VERIFY checks */
+#undef CRM_DONT_ASSERT
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
-
-/* Define to 1 if you have the <assert.h> header file. */
-#undef HAVE_ASSERT_H
 
 /* Define to 1 if you have the `bcopy' function. */
 #undef HAVE_BCOPY
@@ -463,6 +466,9 @@
 
 /* The size of `long int', as computed by sizeof. */
 #undef SIZEOF_LONG_INT
+
+/* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
+#undef STAT_MACROS_BROKEN
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

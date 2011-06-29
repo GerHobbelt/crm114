@@ -21,7 +21,7 @@
    Boston, MA 02111-1307, USA.  */
 
 #ifndef __GETOPT_C_H__
-#define __GETOPT_C_H__ 
+#define __GETOPT_C_H__
 
 #include "getopt_ex.h"
 

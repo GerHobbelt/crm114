@@ -52,6 +52,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ac_c_long_long.m4 \
 	$(top_srcdir)/m4/ac_func_snprintf.m4 \
 	$(top_srcdir)/m4/ax_cflags_gcc_option.m4 \
 	$(top_srcdir)/m4/ax_cflags_warn_all.m4 \
+	$(top_srcdir)/m4/ax_diff_option.m4 \
 	$(top_srcdir)/m4/vl_lib_readline.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -161,142 +162,13 @@ AWK = gawk
 BIN_PATH = /usr/local/bin
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2 -O3
+CFLAGS = -g -O3
 CPP = gcc -E
 CPPFLAGS = 
+CRM = :|crm
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
-ECHO_C = 
-ECHO_N = -n
-ECHO_T = 
-EGREP = /usr/bin/grep -E
-EXEEXT = 
-GREP = /usr/bin/grep
-#
-#   Any standard install flags?  We nominally use protection 755
-INSTALLFLAGS =  -m 755
-INSTALL_DATA = ${INSTALL} -m 644
-INSTALL_PROGRAM = ${INSTALL}
-INSTALL_SCRIPT = ${INSTALL}
-INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2007-08-05
-LDFLAGS = 
-LIBOBJS = 
-LIBS = -lm  -ltre -lreadline
-LN_S = ln -s
-LTLIBOBJS = 
-MAINT = #
-MAINTAINER_MODE_FALSE = 
-MAINTAINER_MODE_TRUE = #
-MAKEINFO = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run makeinfo
-OBJEXT = o
-PACKAGE = crm114
-PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
-PACKAGE_NAME = CRM114
-PACKAGE_STRING = CRM114 20070731-BlameTheInterns
-PACKAGE_TARNAME = crm114
-PACKAGE_VERSION = 20070731-BlameTheInterns
-PATH_SEPARATOR = :
-PCRE_CONFIG = 
-POW_LIB = 
-RANLIB = ranlib
-SED = /usr/bin/sed
-SET_MAKE = 
-SHELL = /bin/sh
-#PREV_VERSION = 20070505-BlameIdiocy
-#PREV_VERSION = 20070428-BlameSpamConf
-#PREV_VERSION = 20061103-BlameDalkey
-#PREV_VERSION = 20061010-BlameBratko
-#PREV_VERSION = 20060920-BlameNico
-#PREV_VERSION = 20060704a-BlameRobert
-#PREV_VERSION = 20060619-MargarineBeast
-#PREV_VERSION = 20060611-ButterBeast
-#PREV_VERSION = 20060611-SomewhatTamedBeast
-#PREV_VERSION = 20060606-VersionOfTheBeast
-#PREV_VERSION = 20060429-ReaverReturn
-#PREV_VERSION = 20060118-BlameTheReavers
-#PREV_VERSION = 20051231a-BlameBarryAndPaoloa
-#PREV_VERSION = 20051001-BlameRaulMiller
-#PREV_VERSION = crm114-20050721-BlameNeilArmstrong
-# VERSION += [$(TRE_TARFILE)]
-SILENT = @
-STRIP = 
-TAR_FILENAME_POSTFIX = Ger-87
-TRE_CONFIG = no
-
-#
-#      The following forces the compiler to be GCC.  If you have trouble
-#      with your default compiler, and you want to force GCC, uncomment it.
-# CC=gcc
-#
-#     What version is this software (PLEASE don't change this just 
-#     to mess with my brain. - wsy)
-#
-VERSION = 20070731-BlameTheInterns
-
-# VER_SUFFIX defines a version suffix for our installed executables, 
-# handy when you want many versions of CRM114 coexisting.
-#
-# e.g.: VER_SUFFIX=27B-6, then if you make install, you get crm-27b-6
-# 
-VER_SUFFIX =  
-ac_ct_CC = gcc
-am__fastdepCC_FALSE = #
-am__fastdepCC_TRUE = 
-am__include = include
-am__leading_dot = .
-am__quote = 
-am__tar = ${AMTAR} chof - "$$tardir"
-am__untar = ${AMTAR} xf -
-bindir = ${exec_prefix}/bin
-build = x86_64-suse-linux-gnu
-build_alias = 
-build_cpu = x86_64
-build_os = linux-gnu
-build_vendor = suse
-cvs2cl = 
-datadir = ${datarootdir}
-datarootdir = ${prefix}/share
-docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
-dvidir = ${docdir}
-exec_prefix = ${prefix}
-host = x86_64-suse-linux-gnu
-host_alias = 
-host_cpu = x86_64
-host_os = linux-gnu
-host_vendor = suse
-htmldir = ${docdir}
-includedir = ${prefix}/include
-infodir = ${datarootdir}/info
-install_sh = /home/ger/prj/3actual/crm114/m4/install-sh
-libdir = ${exec_prefix}/lib
-libexecdir = ${exec_prefix}/libexec
-localedir = ${datarootdir}/locale
-localstatedir = ${prefix}/var
-mandir = ${datarootdir}/man
-mkdir_p = mkdir -p --
-oldincludedir = /usr/include
-pdfdir = ${docdir}
-prefix = /usr/local
-program_transform_name = s,x,x,
-psdir = ${docdir}
-sbindir = ${exec_prefix}/sbin
-sharedstatedir = ${prefix}/com
-sysconfdir = ${prefix}/etc
-target_alias = 
-DISTCLEANFILES = 
-CLEANFILES = *.o *~ *.bak
-ARCHIVE_BASE_NAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-$(TAR_FILENAME_POSTFIX)
-#        uncomment the next line if you want to "strip" the debugger info 
-#        from the binaries when installing.  This speeds up load, but 
-#        you won't be able to submit meaningful CRM114 engine bug reports.
-#        Default is don't strip.
-# INSTALLFLAGS += -s
-#
-#   Define the TRE directory (used only for building distributions- note that
-#   this must be HAND-UPDATED when new versions of TRE come out  )
-TRE_TARFILE = tre-0.7.5
 #
 # ---------   If you're compiling under *BSD, check these out:
 #
@@ -324,6 +196,144 @@ TRE_TARFILE = tre-0.7.5
 #    this line, you risk early insanity and blindness.
 #
 #
+DIFF_FLAGS =  -E -b -w -B -d --strip-trailing-cr
+ECHO_C = 
+ECHO_N = -n
+ECHO_T = 
+EGREP = /usr/bin/grep -E
+EXEEXT = 
+GREP = /usr/bin/grep
+#
+#   Any standard install flags?  We nominally use protection 755
+INSTALLFLAGS =  -m 755
+INSTALL_DATA = ${INSTALL} -m 644
+INSTALL_PROGRAM = ${INSTALL}
+INSTALL_SCRIPT = ${INSTALL}
+INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
+ISODATE = 2007-08-07
+LDFLAGS = 
+LIBOBJS = 
+LIBS = -lm  -ltre -lreadline
+LN_S = ln -s
+LTLIBOBJS = 
+MAINT = #
+MAINTAINER_MODE_FALSE = 
+MAINTAINER_MODE_TRUE = #
+MAKEINFO = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run makeinfo
+OBJEXT = o
+PACKAGE = crm114
+PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
+PACKAGE_NAME = CRM114
+PACKAGE_STRING = CRM114 20070805-BlameTheInterns
+PACKAGE_TARNAME = crm114
+PACKAGE_VERSION = 20070805-BlameTheInterns
+PATH_SEPARATOR = :
+PCRE_CONFIG = 
+POW_LIB = 
+RANLIB = ranlib
+SED = /usr/bin/sed
+SET_MAKE = 
+SHELL = /bin/sh
+#PREV_VERSION = 20070505-BlameIdiocy
+#PREV_VERSION = 20070428-BlameSpamConf
+#PREV_VERSION = 20061103-BlameDalkey
+#PREV_VERSION = 20061010-BlameBratko
+#PREV_VERSION = 20060920-BlameNico
+#PREV_VERSION = 20060704a-BlameRobert
+#PREV_VERSION = 20060619-MargarineBeast
+#PREV_VERSION = 20060611-ButterBeast
+#PREV_VERSION = 20060611-SomewhatTamedBeast
+#PREV_VERSION = 20060606-VersionOfTheBeast
+#PREV_VERSION = 20060429-ReaverReturn
+#PREV_VERSION = 20060118-BlameTheReavers
+#PREV_VERSION = 20051231a-BlameBarryAndPaoloa
+#PREV_VERSION = 20051001-BlameRaulMiller
+#PREV_VERSION = crm114-20050721-BlameNeilArmstrong
+# VERSION += [$(TRE_TARFILE)]
+SILENT = @
+STRIP = 
+TAR_FILENAME_POSTFIX = Ger-98
+TRE_CONFIG = no
+
+#
+#      The following forces the compiler to be GCC.  If you have trouble
+#      with your default compiler, and you want to force GCC, uncomment it.
+# CC=gcc
+#
+#     What version is this software (PLEASE don't change this just 
+#     to mess with my brain. - wsy)
+#
+VERSION = 20070805-BlameTheInterns
+
+# VER_SUFFIX defines a version suffix for our installed executables, 
+# handy when you want many versions of CRM114 coexisting.
+#
+# e.g.: VER_SUFFIX=27B-6, then if you make install, you get crm-27b-6
+# 
+VER_SUFFIX =  
+ac_ct_CC = gcc
+am__fastdepCC_FALSE = #
+am__fastdepCC_TRUE = 
+am__include = include
+am__leading_dot = .
+am__quote = 
+am__tar = ${AMTAR} chof - "$$tardir"
+am__untar = ${AMTAR} xf -
+bindir = ${exec_prefix}/bin
+build = x86_64-suse-linux-gnu
+build_alias = 
+build_cpu = x86_64
+build_os = linux-gnu
+build_vendor = suse
+cvs2cl = 
+datadir = ${datarootdir}
+datarootdir = ${prefix}/share
+diff = /usr/bin/diff
+docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
+dvidir = ${docdir}
+exec_prefix = ${prefix}
+host = x86_64-suse-linux-gnu
+host_alias = 
+host_cpu = x86_64
+host_os = linux-gnu
+host_vendor = suse
+htmldir = ${docdir}
+includedir = ${prefix}/include
+infodir = ${datarootdir}/info
+install_sh = /home/ger/prj/3actual/crm114/m4/install-sh
+libdir = ${exec_prefix}/lib
+libexecdir = ${exec_prefix}/libexec
+localedir = ${datarootdir}/locale
+localstatedir = ${prefix}/var
+mandir = ${datarootdir}/man
+mkdir_p = mkdir -p --
+oldincludedir = /usr/include
+pdfdir = ${docdir}
+prefix = /usr/local
+program_transform_name = s,x,x,
+psdir = ${docdir}
+sbindir = ${exec_prefix}/sbin
+sevenzip = /usr/bin/7z
+sharedstatedir = ${prefix}/com
+sysconfdir = ${prefix}/etc
+tar = /bin/tar
+target_alias = 
+uncrustify = /usr/local/bin/uncrustify
+zip = /usr/bin/zip
+DISTCLEANFILES = 
+CLEANFILES = *.o *~ *.bak
+ARCHIVE_BASE_NAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-$(TAR_FILENAME_POSTFIX)
+#        uncomment the next line if you want to "strip" the debugger info 
+#        from the binaries when installing.  This speeds up load, but 
+#        you won't be able to submit meaningful CRM114 engine bug reports.
+#        Default is don't strip.
+# INSTALLFLAGS += -s
+#
+#   Define the TRE directory (used only for building distributions- note that
+#   this must be HAND-UPDATED when new versions of TRE come out  )
+TRE_TARFILE = tre-0.7.5
+ECHO = echo
+E = $(SILENT) $(ECHO)
 
 #
 #
@@ -734,35 +744,33 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 #
 #
 
-all: crm114 cssutil cssdiff cssmerge osbfutil
-
-#
-#    Done.  
-#  
-#    ***  Type "make help" to see what else you can make.
-#
+done_all: 
+	$(E) ""
+	$(E) "   Done."
+	$(E) ""
+	$(E) "   ***  Type \"make help\" to see what else you can make."
+	$(E) ""
 
 help: FORCE
-
-#
-#    You can make the following things:
-#
-#    make   -or-   make all   - builds the binaries.  This uses the
-#                               TRE regex library
-#    make crm114_gnu          - builds version with GNU regex instead
-#                               of the TRE library.
-#    make install             - builds and installs the binaries.  
-#                               You must be root to do this.
-#    make uninstall           - uninstalls the binaries.  You must
-#                               be root to do this.
-#    make megatest            - runs the full test suite ( takes
-#                               about ~1 minute, TRE version _ONLY_! )
-#    make clean               - deletes all .o and executables.  
-#                               Don't do this on a binary kit!
-#    make cssfiles            - builds a set of .css files from data
-#                               in ./good.dir/* and ./spam.dir/*
-#    make distribution        - builds the .gzballs for distribution
-#                               of with your mods built in.
+	$(E) ""
+	$(E) "    You can make the following things:"
+	$(E) ""
+	$(E) "    make   -or-   make all   - builds the binaries.  This uses the"
+	$(E) "                               TRE regex library"
+	$(E) "    make crm114_gnu          - builds version with GNU regex instead"
+	$(E) "                               of the TRE library."
+	$(E) "    make install             - builds and installs the binaries."
+	$(E) "                               You must be root to do this."
+	$(E) "    make uninstall           - uninstalls the binaries.  You must"
+	$(E) "                               be root to do this."
+	$(E) "    make megatest            - runs the full test suite ( takes"
+	$(E) "                               about ~1 minute, TRE version _ONLY_! )"
+	$(E) "    make clean               - deletes all .o and executables."
+	$(E) "                               Don't do this on a binary kit!"
+	$(E) "    make cssfiles            - builds a set of .css files from data"
+	$(E) "                               in ./good.dir/* and ./spam.dir/*"
+	$(E) "    make distribution        - builds the .gzballs for distribution"
+	$(E) "                               of with your mods built in."
 
 #
 #   Note:  You've chosen to make a GNU regex library CRM114.  
@@ -771,6 +779,12 @@ help: FORCE
 #       won't be available, and "make megatest" will fail.
 #
 crm114_gnu: $(OFILES) crmregex_gnu.o crm_main.o
+	$(E) ""
+	$(E) "   Note:  You've chosen to make a GNU regex library CRM114."
+	$(E) "       Although CRM114 will work mostly correctly when"
+	$(E) "	linked against the GNU regex library, a lot of functionality"
+	$(E) "       won't be available, and "make megatest" will fail."
+	$(E) ""
 	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
 	  crmregex_gnu.o \
 	  -o crm114_gnu
@@ -783,12 +797,19 @@ crm114_gnu: $(OFILES) crmregex_gnu.o crm_main.o
 #   to set the library up.
 #
 crm114: $(OFILES) crmregex_tre.o crm_main.o
+	$(E) ""
+	$(E) "  Now building the TRE regex version of CRM114.  If you don't have"
+	$(E) "  TRE already, you will need to fetch it from the website and"
+	$(E) "  then ./configure --enable-static to get the static TRE libs,"
+	$(E) "  then build it, add /usr/local/lib to /etc/ld.so.conf, then"
+	$(E) "  to set the library up."
+	$(E) ""
 	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
 	  crmregex_tre.o \
 	  -o crm114
-#
-#    Done.  Type "make help" to see what else you can make.
-#
+	$(E) ""
+	$(E) "   Done.  Type "make help" to see what else you can make."
+	$(E) ""
 
 #
 #     Note To The Reader:  I'd really _love_ to have all of these
@@ -964,38 +985,39 @@ clean:
 	-rm -f crm114_gnu
 	-rm -f crm114_tre
 	-rm -f *.o
-#   if the next line doesn't work in your version of make, 
-#    don't worry.  cd down into the TRE directory and 'make clean' manually
+	$(E) "   if the next line doesn't work in your version of make,"
+	$(E) "    don't worry.  cd down into the TRE directory and 'make clean' manually"
 	-( [ "$(TRE_TARFILE)" ] && cd $(TRE_TARFILE) && make clean )
 
 install: FORCE
 	$(MAKE) install_engine install_utils
-
-#
-#    Done.  Type "make help" to see what else you can make.
-#
+	$(E) ""
+	$(E) "    Done.  Type "make help" to see what else you can make."
+	$(E) ""
 
 #
 #    Installing Utilities
 #	
 install_utils:
+	$(E) ""
+	$(E) "    Installing Utilities"
+	$(E) ""
 	$(MAKE) cssmerge cssutil cssdiff osbfutil
 	install $(INSTALLFLAGS) cssdiff $(bindir)/cssdiff$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssmerge $(bindir)/cssmerge$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssutil $(bindir)/cssutil$(VER_SUFFIX)
 	install $(INSTALLFLAGS) osbfutil $(bindir)/osbfutil$(VER_SUFFIX)
+	$(E) "   if you don't have EMACS installed in the default place, you"
+	$(E) "   won't get the crm114-mode.el automatically."
 	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
-
-#   ^^^ if you don't have EMACS installed in the default place, you
-#   won't get the crm114-mode.el automatically.
 
 # use different name so we can keep it around along with default one
 # and same VER_SUFFIX postfix 
 
-#
-#    Installing engine
-#
 install_engine: crm114
+	$(E) ""
+	$(E) "    Installing engine"
+	$(E) ""
 	install $(INSTALLFLAGS) crm114 $(bindir)/crm$(VER_SUFFIX)
 
 install_binary_only: FORCE
@@ -1037,6 +1059,19 @@ uninstall: FORCE
 #       install is broken (or you've found a bug).
 #
 megatest: FORCE
+	$(E) ""
+	$(E) "        This runs a moderately interesting set of base tests"
+	$(E) "        to exercise much of CRM114 under TRE.  This takes about"
+	$(E) "        1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
+	$(E) "        be patient; you (hopefully) won't see anything till the"
+	$(E) "        full set of tests complete.  If you didn't use TRE, all"
+	$(E) "        bets are off."
+	$(E) ""
+	$(E) "       Lines of output that start with OK_IF_mumble are allowed"
+	$(E) "       to change values.  No other lines should.  If other lines"
+	$(E) "       do change, either your kit isn't quite right or your"
+	$(E) "       install is broken (or you've found a bug)."
+	$(E) ""
 	-cp $(srcdir)/*.crm ./           2> /dev/null
 	-cp $(srcdir)/*.mfp ./           2> /dev/null
 	-cp $(srcdir)/*.example ./       2> /dev/null
@@ -1045,48 +1080,47 @@ megatest: FORCE
 	-cp $(srcdir)/COLOPHON.txt ./    2> /dev/null
 	-cp $(srcdir)/FAQ.txt ./         2> /dev/null
 	$(srcdir)/megatest.sh > megatest_test.log 2>&1
-	diff -EbwBd $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+	$(E) "=========================================================================="
+	$(diff) -U3 $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+	$(E) "=========================================================================="
+	$(diff) -U3 $(DIFF_FLAGS) $(srcdir)/megatest_test.original.log megatest_test.log & sleep 1
 
-#
-#   This may take a LONG TIME to run, up to 10 minutes per megabyte
-#   of text.  Please adjust your expectations accordingly.
-#
-#    Also, be advised that relearning the same text more than once
-#    can be ill-advised.  Remove the .css files first if you are
-#    relearning your entire corpus (new .css files will be created
-#    if they don't already exist)
-#
-#   If your text corpi are very large, you may need to rebuild 
-#   crm114 with a larger default window size - or alter the commands
-#   below to use a bigger -w than your default
-#
-#   If you have NOT yet set up your mailfilter.cf and mailfilter.mfp
-#   files, hit ^C NOW.  REALLY!!!  Fix that, and rerun.
 cssfiles: spam.dir good.dir
+	$(E) ""
+	$(E) "   This may take a LONG TIME to run, up to 10 minutes per megabyte"
+	$(E) "   of text.  Please adjust your expectations accordingly."
+	$(E) ""
+	$(E) "    Also, be advised that relearning the same text more than once"
+	$(E) "    can be ill-advised.  Remove the .css files first if you are"
+	$(E) "    relearning your entire corpus (new .css files will be created"
+	$(E) "    if they don't already exist)"
+	$(E) ""
+	$(E) "   If your text corpi are very large, you may need to rebuild"
+	$(E) "   crm114 with a larger default window size - or alter the commands"
+	$(E) "   below to use a bigger -w than your default"
+	$(E) ""
+	$(E) "   If you have NOT yet set up your mailfilter.cf and mailfilter.mfp"
+	$(E) "   files, hit ^C NOW.  REALLY!!!  Fix that, and rerun."
 	sleep 5
+	$(E) "   Here we go..."
+	$(E) ""
 	export DATE $(date +%Y_%m_%d_%H_%M_%S)
+	$(E) "  MUCH STUFF DEPRECATED!!!  Use mailtrainer.crm instead..."
 	cssutil -b -r spam.css
 	cssutil -b -r nonspam.css
 	cp spam.css spam__$(DATE).txt
 	cp nonspam.css nonspam__$(DATE).txt
+	$(E) ""
+	$(E) "    run mailtrainer.crm on the spam.dir and good.dir directories."
 	mailtrainer.crm \
 		--good=./good.dir/ \
 		--spam=./spam.dir/ \
 		--repeat=5 \
 		--random
-
-#    ^^^ run mailtrainer.crm on the spam.dir and good.dir directories.
-#
-#  MUCH STUFF DEPRECATED!!!  Use mailtrainer.crm instead...
-#  cp spamtext.txt saved_spamtext__$(DATE).txt
-#  cp nonspamtext.txt saved_nonspamtext__$(DATE).txt
-#  ./crm114 mailfilter.crm --learnspam --force < saved_spamtext__$(DATE).txt
-#  ./crm114 mailfilter.crm --learnnonspam --force < saved_nonspamtext__$(DATE).txt
-
-#    If all went well with the above, you will have backup copies of
-#    your spam and nonspam .css files.
-#    You may now delete these files with impunity, or you may 
-#    choose to keep them around as backup.
+	$(E) "    If all went well with the above, you will have backup copies of"
+	$(E) "    your spam and nonspam .css files."
+	$(E) "    You may now delete these files with impunity, or you may "
+	$(E) "    choose to keep them around as backup."
 
 tarfile: all
 	rm -rf crm114-$(VERSION).src
@@ -1122,7 +1156,7 @@ i386_tarfile: all
 	crm114-mode.el \
 	GPL-License.txt \
 	crm114-$(VERSION).i386
-	tar -cvf crm114-$(VERSION).i386.tar crm114-$(VERSION).i386
+	$(tar) -cvf crm114-$(VERSION).i386.tar crm114-$(VERSION).i386
 	rm -rf crm114-$(VERSION).i386
 
 i386_gzip: i386_tarfile
@@ -1134,42 +1168,43 @@ css_tarfile: spam.css nonspam.css
 	mkdir crm114-$(VERSION).css
 	cp spam.css nonspam.css \
 	crm114-$(VERSION).css
-	tar -cvf crm114-$(VERSION).css.tar crm114-$(VERSION).css
+	$(tar) -cvf crm114-$(VERSION).css.tar crm114-$(VERSION).css
 	rm -rf crm114-$(VERSION).css
 
 css_gzip: css_tarfile
 	rm -rf crm114-$(VERSION).css.tar.gz
 	gzip crm114-$(VERSION).css.tar
 
-distribution: install src_gzip i386_gzip css_gzip
-	md5sum crm114-$(VERSION).*.tar.gz
+#distribution: install src_gzip i386_gzip css_gzip
+#	md5sum crm114-$(VERSION).*.tar.gz
 
 rsync:  FORCE
 	rsync -zrltDv \
-	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES)\
+	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) \
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
 
 diff: FORCE
 	-(sh diff_em.sh );
 
 dist-diff: diff
-	7z a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).diff.7z diff/
-	tar -c diff/ | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.gz
-	tar -c diff/ | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.bz2
+	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).diff.7z diff/ )
+	( test "X$(tar)" != "X" && $(tar) -c diff/ | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.gz )
+	( test "X$(tar)" != "X" && $(tar) -c diff/ | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.bz2 )
 	-rm -f $(ARCHIVE_BASE_NAME).diff.zip
-	zip -rq $(ARCHIVE_BASE_NAME).diff.zip diff/
+	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).diff.zip diff/ )
 	mv $(ARCHIVE_BASE_NAME).diff.* ../
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
+# indent -bad -bap -bl -bli0 -bls -cbi4 -cdw -cli0 -di8 -hnl -i4 -l80 -lp -nbc -nce -ncs -npcs -nprs -npsl -nsaf -nsai -nsaw -nsob -nut -pi4 -sc -ss -T index_t -T hitcount_t -T regex_t -T regmatch_t -T regamatch_t -T regaparams_t -T Qitem_t -T regoff_t -T tre_char_t -T COOCCURRENCE_SCORE_TYPE *.c *.h
 reindent:
-	indent -bad -bap -bl -bli0 -bls -cbi4 -cdw -cli0 -di8 -hnl -i4 -l80 -lp -nbc -nce -ncs -npcs -nprs -npsl -nsaf -nsai -nsaw -nsob -nut -pi4 -sc -ss -T index_t -T hitcount_t -T regex_t -T regmatch_t -T regamatch_t -T regaparams_t -T Qitem_t -T regoff_t -T tre_char_t -T COOCCURRENCE_SCORE_TYPE *.c *.h
+	-( test "X$(UNCRUSTIFY)" != "X" && $(UNCRUSTIFY) -c $(top_srcdir)/uncrustify.cfg --replace -F *.c *.h )
 
 .c.o:
 	$(COMPILE) -c $< -o $@
 
 FORCE:
 
-.PHONY: FORCE reindent depend diff rsync
+.PHONY: FORCE reindent depend diff rsync done_all
 
 depend:
 	makedepend -- $(CFLAGS) -- *.[ch]

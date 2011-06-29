@@ -316,7 +316,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
-	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
+          CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
 
   //
@@ -1453,10 +1453,10 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   for (k = 0; k < maxhash; k++)
     {
       //  let go of the file, but allow caches to be retained
-      if (header[k]) 
-	{
-	  crm_munmap_file ((void *) header[k]);
-	}
+      if (header[k])
+        {
+          crm_munmap_file ((void *) header[k]);
+        }
       free (seen_features[k]);
     }
 

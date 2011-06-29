@@ -81,15 +81,15 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //            are the ones that specify _which_ algorithm to use.
 
   classifier_flags = apb->sflags;
-  
+
   //     Joe thinks that this should be a table or a loop.
   classifier_flags = classifier_flags &
-    ( CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF 
+    ( CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM );
-  
+
   if (classifier_flags & CRM_OSB_BAYES)
     {
-      retval = crm_expr_osb_bayes_learn (csl, apb, txt, start, len); 
+      retval = crm_expr_osb_bayes_learn (csl, apb, txt, start, len);
     }
   else
   if (classifier_flags & CRM_CORRELATE)
@@ -132,7 +132,7 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       retval = crm_expr_fscm_learn(csl, apb, txt, start, len);
     }
   else
-    { 
+    {
       retval = crm_expr_markov_learn (csl, apb, txt, start, len);
     }
 
@@ -192,7 +192,7 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   classifier_flags = apb->sflags;
 
   classifier_flags = classifier_flags &
-    ( CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF 
+    ( CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM );
 
   if (classifier_flags & CRM_OSB_BAYES)

@@ -27,7 +27,7 @@
   closing NUL) to dst, and returns a pointer to the new closing NUL in
   dst.
 
-  strmov() will generate undefined results when used with overlapping 
+  strmov() will generate undefined results when used with overlapping
   strings.
 */
 
@@ -50,8 +50,8 @@ char *strmov(char *dst, const char *src)
 void *crm_memmove(void *dst, const void *src, size_t len)
 {
 #if defined(HAVE_BCOPY)
-	bcopy(src, dst, len);
-	return dst;
+        bcopy(src, dst, len);
+        return dst;
 #else
 #error "provide a proper memmove() implementation, please"
 #endif
@@ -66,7 +66,7 @@ void *crm_memmove(void *dst, const void *src, size_t len)
   Because mmap/munmap doesn't set atime, nor set the "modified"
   flag, some network filesystems will fail to mark the file as
   modified and so their cacheing will make a mistake.
-  
+
   The fix is to call this function on the .css ile, to force
   the filesystem to repropagate it's caches.
 
@@ -74,18 +74,18 @@ void *crm_memmove(void *dst, const void *src, size_t len)
 */
 void crm_touch(const char *filename)
 {
-#if defined(HAVE_UTIME) || defined(HAVE__UTIME) 
+#if defined(HAVE_UTIME) || defined(HAVE__UTIME)
       /* Pass NULL to utime so it will not fail if we just have
-	 write access to the file, but don't own it.  */
+         write access to the file, but don't own it.  */
       if (utime (filename, NULL))
-	{
+        {
       fatalerror_ex(SRC_LOC(), "Unable to touch file %s\n", filename);
-	}
+        }
 #else
-	/*  
-		The fix is to do a trivial read/write on the .css ile, to force
-		the filesystem to repropagate it's caches.
-	*/
+        /*
+                The fix is to do a trivial read/write on the .css ile, to force
+                the filesystem to repropagate it's caches.
+        */
     int hfd;                  //  hashfile fd
     unsigned char foo[1];
 

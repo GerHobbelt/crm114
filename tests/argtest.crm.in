@@ -1,4 +1,4 @@
-#! /usr/bin/crm -( agent=smith target=neo target=trinity ) --
+#! @CRM@ -( agent=smith target=neo target=trinity ) --
 window
 { 
 	output /:*:_nl: :_argc: =:*:_argc:= / 

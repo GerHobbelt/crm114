@@ -1,0 +1,12 @@
+#! :|crm
+{
+	match (:data:) /.*/
+	isolate (:stats:)
+	output /classifying between files :*:_arg2: and :*:_arg3: :*:_nl:/
+	{
+	     classify [:data:] (:*:_arg2: | :*:_arg3:) (:stats:) /[[:graph:]]+/
+	     output / file :*:_arg2: matches better :*:_nl: :*:_nl: :*:stats::*:_nl:/
+	     exit
+	}
+	output / file :*:_arg3: matches better :*:_nl::*:_nl::*:stats::*:_nl:/
+}

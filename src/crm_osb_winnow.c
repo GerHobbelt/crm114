@@ -210,7 +210,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
-	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
+          CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
   //
   hfsize = statbuf.st_size;
@@ -260,7 +260,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //
   //         In this format, bucket 0.value contains the start of the spectra.
   //
-  spectra_start = 1; 
+  spectra_start = 1;
   hashes[0].value = 1;
 
   //

@@ -1,0 +1,51 @@
+#! :|crm
+#   test the alius statement 
+{
+	{
+		{	
+			output /checking for a foo.../
+			match /foo/
+			output /Found a foo :*:_nl:/
+		}
+		alius
+		{
+			output /no foo... checking for bar.../
+			match /bar/
+			output /Found a bar.  :*:_nl:/
+		}
+		alius
+		{
+			output /found neither... continuing  :*:_nl:/
+			fault / plutonium /
+		}
+		trap (:my_fault:) /nuts/
+		{
+			output / dammit! /
+		}
+	}
+	{
+		{
+			output /checking for a baz.../
+			match /baz/
+			output /Found a baz :*:_nl:/
+			#   the next line intentionally doesn't trap!
+			trap
+			{
+				output / YOU SHOULD NEVER SEE THIS /
+			}
+		}
+		alius
+		{
+			output /no baz... checking for wugga.../
+			match /wugga/
+			output /Found a wugga.  :*:_nl:/
+		}
+		alius 
+		fault / cork /
+		output /found neither baz nor wugga :*:_nl:/
+	}
+	trap /.*/ (:my_fault:)
+	{
+		output / thrice damned  - fault was :*:my_fault: :*:_nl: / 
+	}
+}

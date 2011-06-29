@@ -9,7 +9,7 @@
 
 
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT(CRM114, 20070731-BlameTheInterns, crm114-general@lists.sourceforge.net)
+AC_INIT(CRM114, 20070805-BlameTheInterns, crm114-general@lists.sourceforge.net)
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR(m4)
@@ -32,7 +32,7 @@ VER_SUFFIX=
 AC_DEFINE_UNQUOTED(VER_SUFFIX, "$VER_SUFFIX", [version suffix code of the software])
 AC_SUBST(VER_SUFFIX)
 
-# one build every three hours is the fastest I can do... I guess ;-) 
+# one build every three hours is the fastest I can do... I guess ;-)
 # At least this'll give me at least 3 years of build numbering before I run out of
 # the 4 digit set. And then who cares when a fifth digit is required, eh?
 
@@ -69,21 +69,8 @@ AC_GNU_SOURCE
 AC_AIX
 AC_MINIX
 AC_C_PROTOTYPES
-#
-# since AC_PROG_CC sets '-O2' in CFLAGS by default, while _we_'d like
-# to have '-O3', we override the operation (for gcc only) right here.
-# Of course, this is rather hackish, so if anyone knows about a cleaner
-# solution, I'm all for it!
-#                                               Ger Hobbelt
-AX_CFLAGS_GCC_OPTION(-O3)
 
 
-AC_ARG_ENABLE(extended-compile-checks,
-  [  --disable-extended-compile-checks    turn maximum warnings level off])
-if eval "test x$enable_extended_compile_checks != xno"; then
-  AX_CFLAGS_WARN_ALL(AM_CFLAGS)
-# AX_CFLAGS_WARN_ALL_ANSI(AM_CFLAGS)
-fi
 
 AC_PROG_AWK
 AC_PROG_SED
@@ -96,7 +83,67 @@ AC_PROG_CPP_WERROR
 AC_PROG_LD_GNU
 AC_PROG_LD
 AC_PROG_NM
-AC_CHECK_PROGS(cvs2cl)
+AC_PATH_PROG([cvs2cl], [cvs2cl])
+AC_PATH_PROG([uncrustify], [uncrustify])
+AC_PATH_PROG([diff], [diff])
+AC_PATH_PROG([sevenzip], [7z])
+AC_PATH_PROG([zip], [zip])
+AC_PATH_PROG([tar], [tar])
+
+AX_DIFF_OPTION([Z])
+AX_DIFF_OPTION([E])
+AX_DIFF_OPTION([b])
+AX_DIFF_OPTION([w])
+AX_DIFF_OPTION([B])
+AX_DIFF_OPTION([d])
+AX_DIFF_OPTION([-strip-trailing-cr])
+
+
+#
+# since AC_PROG_CC sets '-O2' in CFLAGS by default, while _we_'d like
+# to have '-O3', we override the operation (for gcc only) right here.
+# Of course, this is rather hackish, so if anyone knows about a cleaner
+# solution, I'm all for it!
+#                                               Ger Hobbelt
+if test ! -z "$SED"; then
+  CFLAGS=`echo $CFLAGS | $SED -e 's/ -O2//'`
+fi
+AC_ARG_ENABLE([debug], AC_HELP_STRING([--disable-debug],
+  [Specify to create a so-called 'production' or 'release build'.
+You can explicitly specify '--enable-debug' to create a standard
+CRM (debuggable) build. (default: debugging turned ON)]),
+  [AX_CFLAGS_GCC_OPTION([-O0])],
+  [AX_CFLAGS_GCC_OPTION([-O3])]
+  )
+
+AC_ARG_ENABLE([extended-compile-warnings],
+  AC_HELP_STRING([--disable-extended-compile-warnings],
+    [turn maximum compiler/linker warnings level off
+(default: turn on all warnings)]),
+  [],
+  [AX_CFLAGS_WARN_ALL(AM_CFLAGS)
+dnl  AX_CFLAGS_WARN_ALL_ANSI(AM_CFLAGS)
+  ])
+
+AC_ARG_ENABLE([assertions],
+  AC_HELP_STRING([--disable-assertions],
+    [turn assertion checks off.
+This will produce a faster running executable but such at the cost
+of lacking a specific type of 'developer' checks. These SHOULD not
+get triggered EVER, so you MAY assume specifying this option is
+a 'free speedup'. (default: assertions are ENABLED)]),
+  AC_DEFINE_UNQUOTED(CRM_DONT_ASSERT, 1, [DISable ASSERT/VERIFY checks])
+  )
+
+AC_ARG_ENABLE([untrappable-asserts],
+  AC_HELP_STRING([--enable-untrappable-assertions],
+    [assertion checks are untrappable (instead of merely being a
+trappable error report). This means any triggered assertion checks
+will NOT show up in your CRM trap handlers. (default: assertions are 'trappable')]),
+  AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 1, [untrappable ASSERT/VERIFY checks])
+  )
+
+
 
 
 AC_CANONICAL_HOST
@@ -338,13 +385,14 @@ AC_HEADER_STDC
 
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
+# AC_HEADER_ASSERT
+AC_HEADER_STAT
 AC_CHECK_HEADERS(fcntl.h float.h stdlib.h string.h unistd.h)
 AC_CHECK_HEADERS(stdio.h ctype.h errno.h sys/types.h sys/wait.h)
 AC_CHECK_HEADERS(dirent.h unistd.h sys/mman.h sys/stat.h math.h)
 AC_CHECK_HEADERS(locale.h sys/times.h signal.h time.h sys/time.h)
 AC_CHECK_HEADERS(inttypes.h arpa/inet.h netinet/in.h)
 AC_CHECK_HEADERS(stdarg.h varargs.h float.h limits.h)
-AC_CHECK_HEADERS(assert.h)
 AC_CHECK_HEADERS(libintl.h sys/utime.h utime.h wchar.h)
 AC_CHECK_HEADERS(crtdbg.h signal.h io.h direct.h process.h lmcons.h)
 AC_CHECK_HEADERS(getopt.h getopt_ex.h)
@@ -437,19 +485,18 @@ AC_SUBST(AM_CFLAGS)
 AC_SUBST(AM_CPPFLAGS)
 AC_SUBST(AM_LDFLAGS)
 AC_SUBST(INSTALLFLAGS)
+AC_SUBST(DIFF_FLAGS)
+
+
+CRM=":|crm"
+AC_SUBST(CRM)
 
 
 AC_CONFIG_FILES([Makefile
                  crm114.lsm
                  docs/Makefile
                  examples/Makefile
-                 examples/pad.crm
-                 examples/shroud.crm
                  mailfilter/Makefile
-                 mailfilter/classifymail.crm
-                 mailfilter/mailfilter.crm
-                 mailfilter/rewriteutil.crm
-                 mailfilter/unionintersecttest.crm
                  man/Makefile
                  man/include.zmm
                  src/Makefile
@@ -486,6 +533,11 @@ AC_CONFIG_FILES([Makefile
                  tests/userdirtest.crm
                  tests/windowtest.crm
                  tests/windowtest_fromvar.crm
+                 examples/pad.crm
+                 examples/shroud.crm
+                 mailfilter/classifymail.crm
+                 mailfilter/mailfilter.crm
+                 mailfilter/rewriteutil.crm
 ])
 
 AC_OUTPUT
@@ -497,7 +549,7 @@ Congratulations, your $PACKAGE_NAME $PACKAGE_VERSION is configured now.
 You can now build and install $PACKAGE_NAME using the Makefile, by calling
 
   $ make
-  # make install
+  $ make install
 
 You may wish to test the newly build binary by running
 

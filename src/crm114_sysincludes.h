@@ -18,7 +18,7 @@
 #include <windows.h>
 #else
 /*
-   [i_a] GROT GROT GROT - cleanup the crm114 source to properly 'say' what this 
+   [i_a] GROT GROT GROT - cleanup the crm114 source to properly 'say' what this
    is all about, because it has NOTHING to do with any POSIXness whatsoever!
  */
 // #define POSIX
@@ -252,7 +252,7 @@
 #endif
 
 #if defined(HAVE__SNPRINTF) && !defined(HAVE_SNPRINTF)
-#undef snprintf 
+#undef snprintf
 #define snprintf _snprintf
 #endif
 #if defined(HAVE__STAT) && !defined(HAVE_STAT)
@@ -276,7 +276,7 @@
 #if defined(PREFER_PORTABLE_MEMMOVE) || !defined(HAVE_MEMMOVE)
 void *crm_memmove(void *dst, const void *src, size_t len);
 #undef memmove
-#define memmove(dst, src, len)	crm_memmove(dst, src, len)
+#define memmove(dst, src, len)  crm_memmove(dst, src, len)
 #endif
 
 
@@ -296,7 +296,7 @@ static inline int crm_stat(const char *path, struct stat *buf)
   return stat(path, buf);
 }
 #undef stat
-#define stat(path, buf)		crm_stat(path, buf)
+#define stat(path, buf)         crm_stat(path, buf)
 #endif
 
 
@@ -347,7 +347,7 @@ int truncate(const char *filepath, long filesize); /* [i_a] Win32 doesn't come w
 /*
    see also:
 
-     http://autoconf-archive.cryp.to/vl_lib_readline.html 
+     http://autoconf-archive.cryp.to/vl_lib_readline.html
 */
 #ifdef HAVE_LIBREADLINE
 #  if defined(HAVE_READLINE_READLINE_H)
@@ -439,13 +439,13 @@ static inline int crm_isalpha(unsigned char c) { return isalpha(c); }
 
 #ifdef HAVE_ISASCII
 static inline int crm_isascii(unsigned char c) { return isascii(c); }
-#else 
+#else
 static inline int crm_isascii(unsigned char c) { return !(c >> 7); }
 #endif
 
 #ifdef HAVE_ISBLANK
 static inline int crm_isblank(unsigned char c) { return isblank(c); }
-#else 
+#else
 static inline int crm_isblank(unsigned char c) { return ((c == ' ') || (c == '\t')); }
 #endif
 
@@ -475,41 +475,41 @@ static inline int crm_isxdigit(unsigned char c) { return isxdigit(c); }
 #undef isupper
 #undef isxdigit
 
-#define isalnum(c)		error_you_must_use_the_crm_isalnum_equivalent_call!
-#define isalpha(c)		error_you_must_use_the_crm_isalpha_equivalent_call!
-#define isascii(c)		error_you_must_use_the_crm_isascii_equivalent_call!
-#define isblank(c)		error_you_must_use_the_crm_isblank_equivalent_call!
-#define iscntrl(c)		error_you_must_use_the_crm_iscntrl_equivalent_call!
-#define isdigit(c)		error_you_must_use_the_crm_isdigit_equivalent_call!
-#define isgraph(c)		error_you_must_use_the_crm_isgraph_equivalent_call!
-#define islower(c)		error_you_must_use_the_crm_islower_equivalent_call!
-#define isprint(c)		error_you_must_use_the_crm_isprint_equivalent_call!
-#define ispunct(c)		error_you_must_use_the_crm_ispunct_equivalent_call!
-#define isspace(c)		error_you_must_use_the_crm_isspace_equivalent_call!
-#define isupper(c)		error_you_must_use_the_crm_isupper_equivalent_call!
-#define isxdigit(c)		error_you_must_use_the_crm_isxdigit_equivalent_call!
+#define isalnum(c)              error_you_must_use_the_crm_isalnum_equivalent_call!
+#define isalpha(c)              error_you_must_use_the_crm_isalpha_equivalent_call!
+#define isascii(c)              error_you_must_use_the_crm_isascii_equivalent_call!
+#define isblank(c)              error_you_must_use_the_crm_isblank_equivalent_call!
+#define iscntrl(c)              error_you_must_use_the_crm_iscntrl_equivalent_call!
+#define isdigit(c)              error_you_must_use_the_crm_isdigit_equivalent_call!
+#define isgraph(c)              error_you_must_use_the_crm_isgraph_equivalent_call!
+#define islower(c)              error_you_must_use_the_crm_islower_equivalent_call!
+#define isprint(c)              error_you_must_use_the_crm_isprint_equivalent_call!
+#define ispunct(c)              error_you_must_use_the_crm_ispunct_equivalent_call!
+#define isspace(c)              error_you_must_use_the_crm_isspace_equivalent_call!
+#define isupper(c)              error_you_must_use_the_crm_isupper_equivalent_call!
+#define isxdigit(c)             error_you_must_use_the_crm_isxdigit_equivalent_call!
 
 
 /* log(2) */
-#define CRM_LN_2		0.69314718055994530941723212145818
+#define CRM_LN_2                0.69314718055994530941723212145818
 /* log(10) */
-#define CRM_LN_10		2.3025850929940456840179914546844
+#define CRM_LN_10               2.3025850929940456840179914546844
 
 /* log10(2) */
-#define CRM_LOG10_2		0.30102999566398119521373889472449
+#define CRM_LOG10_2             0.30102999566398119521373889472449
 
 
 
 #if !defined(HAVE_LOGL) && defined(HAVE_LOG)
-#define logl(val)	log(val)
+#define logl(val)       log(val)
 #endif
 
 #if !defined(HAVE_LOG2) && defined(HAVE_LOG)
-#define log2(val)	(log(val) / CRM_LN_2)
+#define log2(val)       (log(val) / CRM_LN_2)
 #endif
 
 #if !defined(HAVE_LOG10) && defined(HAVE_LOG)
-#define log10(val)	(log(val) / CRM_LN_10)
+#define log10(val)      (log(val) / CRM_LN_10)
 #endif
 
 
@@ -519,12 +519,12 @@ extern char **environ;
 #elif defined(HAVE___ENVIRON)
 extern char **__environ;
 
-#define environ		__environ
+#define environ         __environ
 #elif defined(HAVE_CRT_EXTERNS_H)
 /* derived from http://www.gnu-pascal.de/crystal/gpc/en/mail11031.html */
 #define environ (*_NSGetEnviron())
 #elif defined(WIN32)
-#define environ		_environ
+#define environ         _environ
 #endif
 
 

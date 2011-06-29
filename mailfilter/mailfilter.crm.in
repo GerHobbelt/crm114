@@ -1,10 +1,10 @@
-#! /usr/bin/crm
+#! @CRM@
 #    -- bangline args removed for system portability --
 # -( learnspam learnnonspam learnfile stats_only config spamcss nonspamcss fileprefix force unlearn cache )
 #
 #        A statistical mail sorter with mail-to-yourself commanding
 #
-#    Copyright (C) 2002-2006 William S. Yerazunis; licensed under the 
+#    Copyright (C) 2002-2007 William S. Yerazunis; licensed under the 
 #    GNU Public License (GPL) version 2.  A copy of this license is included 
 #    in the distribution media, or obtain one from www.fsf.org .
 #

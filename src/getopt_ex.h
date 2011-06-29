@@ -21,7 +21,7 @@
    Boston, MA 02111-1307, USA.  */
 
 #ifndef __GETOPT_EX_C_H__
-#define __GETOPT_EX_C_H__ 
+#define __GETOPT_EX_C_H__
 
 #ifdef __cplusplus
 extern "C"
@@ -61,7 +61,7 @@ extern int optind;
 extern int opterr;
 
 /*!
-   Set to an option character which was unrecognized.  
+   Set to an option character which was unrecognized.
 */
 extern int optopt;
 
@@ -72,7 +72,7 @@ extern int optopt;
    zero.
 
    The field `has_arg' is:
-   
+
    \arg no_argument          (or 0) if the option does not take an argument,
    \arg required_argument    (or 1) if the option requires an argument,
    \arg optional_argument    (or 2) if the option takes an optional argument.
@@ -93,7 +93,7 @@ struct option
         const char *name;
         /*!
           has_arg can't be an enum because some compilers complain about
-      type mismatches in all the code that assumes it is an int.  
+      type mismatches in all the code that assumes it is an int.
         */
         int has_arg;
         int *flag;

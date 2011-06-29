@@ -885,11 +885,15 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
               leftarg[sp] = leftarg[sp] / rightarg;
               break;
             case '%':
+#if 10              
               leftarg[sp] = fmod(leftarg[sp], rightarg); // ((long long) leftarg[sp]) % ((long long) rightarg);
+#else
+	      leftarg[sp] = (long long) leftarg[sp] % (long long) rightarg;
+#endif
               break;
             case '^':
               //    since we don't do complex numbers (yet) handle as NaN
-              if (leftarg[sp] < 0.0 
+              if (leftarg[sp] < 0.0
                   && ((long long) (rightarg))/1 != rightarg)
                 { leftarg[sp] = leftarg[sp] / 0.0;}
               else

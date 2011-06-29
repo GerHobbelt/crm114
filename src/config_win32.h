@@ -2,7 +2,7 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
-#undef HAVE_ARPA_INET_H 
+#undef HAVE_ARPA_INET_H
 
 /* Define to 1 if you have the <assert.h> header file. */
 #define HAVE_ASSERT_H 1
@@ -29,7 +29,7 @@
 #define HAVE_DIRECT_H 1
 
 /* Define to 1 if you have the <dirent.h> header file. */
-#undef HAVE_DIRENT_H 
+#undef HAVE_DIRENT_H
 
 /* Define to 1 if you have the `dup2' function. */
 #define HAVE_DUP2 1
@@ -53,19 +53,19 @@
 #define HAVE_FLOOR 1
 
 /* Define to 1 if you have the `fork' function. */
-#undef HAVE_FORK 
+#undef HAVE_FORK
 
 /* Define to 1 if you have the `getopt' function. */
-#undef HAVE_GETOPT 
+#undef HAVE_GETOPT
 
 /* Define to 1 if you have the <getopt_ex.h> header file. */
 /* #undef HAVE_GETOPT_EX_H */
 
 /* Define to 1 if you have the <getopt.h> header file. */
-#undef HAVE_GETOPT_H 
+#undef HAVE_GETOPT_H
 
 /* Define to 1 if you have the `getopt_long' function. */
-#undef HAVE_GETOPT_LONG 
+#undef HAVE_GETOPT_LONG
 
 /* Define to 1 if you have the `getpagesize' function. */
 #define HAVE_GETPAGESIZE 1
@@ -74,16 +74,16 @@
 #define HAVE_GETPID 1
 
 /* Define to 1 if you have the `getppid' function. */
-#undef HAVE_GETPPID 
+#undef HAVE_GETPPID
 
 /* GNU REs */
 /* #undef HAVE_GNU_REGEX */
 
 /* Define to 1 if you have the <history.h> header file. */
-#undef HAVE_HISTORY_H 
+#undef HAVE_HISTORY_H
 
 /* Define to 1 if you have the <inttypes.h> header file. */
-#undef HAVE_INTTYPES_H 
+#undef HAVE_INTTYPES_H
 
 /* Define to 1 if you have the <io.h> header file. */
 #define HAVE_IO_H 1
@@ -98,7 +98,7 @@
 #define HAVE_ISASCII 1
 
 /* Define to 1 if you have the `isblank' function. */
-#undef HAVE_ISBLANK 
+#undef HAVE_ISBLANK
 
 /* Define to 1 if you have the `iscntrl' function. */
 #define HAVE_ISCNTRL 1
@@ -128,13 +128,13 @@
 #define HAVE_ISXDIGIT 1
 
 /* Define to 1 if you have the <libintl.h> header file. */
-#undef HAVE_LIBINTL_H 
+#undef HAVE_LIBINTL_H
 
 /* Define to 1 if you have the `m' library (-lm). */
-#undef HAVE_LIBM 
+#undef HAVE_LIBM
 
 /* Define if you have a readline compatible library */
-#undef HAVE_LIBREADLINE 
+#undef HAVE_LIBREADLINE
 
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
@@ -152,7 +152,7 @@
 #define HAVE_LOG10 1
 
 /* Define to 1 if you have the `log2' function. */
-#undef HAVE_LOG2 
+#undef HAVE_LOG2
 
 /* Define to 1 if you have the `logl' function. */
 #define HAVE_LOGL 1
@@ -180,22 +180,22 @@
 #define HAVE_MEMSET 1
 
 /* Define to 1 if you have a working `mmap' system call. */
-#undef HAVE_MMAP  
+#undef HAVE_MMAP
 
 /* Define to 1 if the system has the type `mode_t'. */
 #define HAVE_MODE_T 1
 
 /* Define to 1 if you have the `msync' function. */
-#undef HAVE_MSYNC 
+#undef HAVE_MSYNC
 
 /* Define to 1 if you have the `munmap' function. */
-#undef HAVE_MUNMAP 
+#undef HAVE_MUNMAP
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
-#undef HAVE_NDIR_H 
+#undef HAVE_NDIR_H
 
 /* Define to 1 if you have the <netinet/in.h> header file. */
-#undef HAVE_NETINET_IN_H 
+#undef HAVE_NETINET_IN_H
 
 /* PCRE REs */
 /* #undef HAVE_PCRE_REGEX */
@@ -204,7 +204,7 @@
 #define HAVE_PID_T 1
 
 /* Define to 1 if you have the `pipe' function. */
-#undef HAVE_PIPE 
+#undef HAVE_PIPE
 
 /* POSIX REs */
 /* #undef HAVE_POSIX_REGEX */
@@ -219,13 +219,13 @@
 /* #undef HAVE_READLINE_H */
 
 /* Define if your readline library has \`add_history' */
-#undef HAVE_READLINE_HISTORY 
+#undef HAVE_READLINE_HISTORY
 
 /* Define to 1 if you have the <readline/history.h> header file. */
-#undef HAVE_READLINE_HISTORY_H 
+#undef HAVE_READLINE_HISTORY_H
 
 /* Define to 1 if you have the <readline/readline.h> header file. */
-#undef HAVE_READLINE_READLINE_H 
+#undef HAVE_READLINE_READLINE_H
 
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
@@ -244,7 +244,7 @@
 #define HAVE_SIGNAL_H 1
 
 /* Define to 1 if you have the `snprintf' function. */
-#undef HAVE_SNPRINTF 
+#undef HAVE_SNPRINTF
 
 /* Define to 1 if you have the `sqrt' function. */
 #define HAVE_SQRT 1
@@ -260,10 +260,10 @@
 #define HAVE_STDARG_H 1
 
 /* Define to 1 if stdbool.h conforms to C99. */
-#undef HAVE_STDBOOL_H 
+#undef HAVE_STDBOOL_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#undef HAVE_STDINT_H 
+#undef HAVE_STDINT_H
 
 /* Define to 1 if you have the <stdio.h> header file. */
 #define HAVE_STDIO_H 1
@@ -272,7 +272,7 @@
 #define HAVE_STDLIB_H 1
 
 /* Define to 1 if you have the `strcasecmp' function. */
-#undef HAVE_STRCASECMP 
+#undef HAVE_STRCASECMP
 
 /* Define to 1 if you have the `strchr' function. */
 #define HAVE_STRCHR 1
@@ -296,7 +296,7 @@
 #define HAVE_STRINGIZE 1
 
 /* Define to 1 if you have the <strings.h> header file. */
-#undef HAVE_STRINGS_H 
+#undef HAVE_STRINGS_H
 
 /* Define to 1 if you have the <string.h> header file. */
 #define HAVE_STRING_H 1
@@ -305,7 +305,7 @@
 /* #undef HAVE_STRMOV */
 
 /* Define to 1 if you have the `strncasecmp' function. */
-#undef HAVE_STRNCASECMP 
+#undef HAVE_STRNCASECMP
 
 /* Define to 1 if you have the `strncpy' function. */
 #define HAVE_STRNCPY 1
@@ -321,20 +321,20 @@
 
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
    */
-#undef HAVE_SYS_DIR_H 
+#undef HAVE_SYS_DIR_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
-#undef HAVE_SYS_MMAN_H 
+#undef HAVE_SYS_MMAN_H
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
    */
-#undef HAVE_SYS_NDIR_H 
+#undef HAVE_SYS_NDIR_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
 
 /* Define to 1 if you have the <sys/times.h> header file. */
-#undef HAVE_SYS_TIMES_H 
+#undef HAVE_SYS_TIMES_H
 
 /* Define to 1 if you have the <sys/time.h> header file. */
 #undef HAVE_SYS_TIME_H
@@ -346,10 +346,10 @@
 #define HAVE_SYS_UTIME_H 1
 
 /* Define to 1 if you have the <sys/wait.h> header file. */
-#undef HAVE_SYS_WAIT_H 
+#undef HAVE_SYS_WAIT_H
 
 /* Define to 1 if you have the `times' function. */
-#undef HAVE_TIMES 
+#undef HAVE_TIMES
 
 /* Define to 1 if you have the <time.h> header file. */
 #define HAVE_TIME_H 1
@@ -358,13 +358,13 @@
 #define HAVE_TRE_REGEX 1
 
 /* Define to 1 if you have the <tre/regex.h> header file. */
-#undef HAVE_TRE_REGEX_H 
+#undef HAVE_TRE_REGEX_H
 
 /* Define to 1 if you have the `truncate' function. */
-#undef HAVE_TRUNCATE 
+#undef HAVE_TRUNCATE
 
 /* Define to 1 if you have the <unistd.h> header file. */
-#undef HAVE_UNISTD_H 
+#undef HAVE_UNISTD_H
 
 /* Define to 1 if you have the `utime' function. */
 #undef HAVE_UTIME
@@ -382,10 +382,10 @@
 /* #undef HAVE_VARARGS_H */
 
 /* Define to 1 if you have the `vfork' function. */
-#undef HAVE_VFORK 
+#undef HAVE_VFORK
 
 /* Define to 1 if you have the <vfork.h> header file. */
-#undef HAVE_VFORK_H 
+#undef HAVE_VFORK_H
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #define HAVE_VSNPRINTF 1
@@ -397,10 +397,10 @@
 #define HAVE_WCHAR_H 1
 
 /* Define to 1 if `fork' works. */
-#undef HAVE_WORKING_FORK 
+#undef HAVE_WORKING_FORK
 
 /* Define to 1 if `vfork' works. */
-#undef HAVE_WORKING_VFORK 
+#undef HAVE_WORKING_VFORK
 
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
@@ -421,14 +421,14 @@
 #define HAVE___DEBUGBREAK 1
 
 /* Define if you have the '__environ' global environment variable */
-#undef HAVE___ENVIRON 
+#undef HAVE___ENVIRON
 
 /* Set host type */
 #define HOSTTYPE "windows-MS"
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */
-#undef LSTAT_FOLLOWS_SLASHED_SYMLINK 
+#undef LSTAT_FOLLOWS_SLASHED_SYMLINK
 
 /* Name of package */
 #define PACKAGE "crm114"
@@ -493,7 +493,7 @@
 
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
-# undef _GNU_SOURCE 
+# undef _GNU_SOURCE
 #endif
 
 /* Define to 1 if on MINIX. */

@@ -480,7 +480,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
         CRM_ASSERT(hashcounts >= 0);
-		CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+                CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
       //mark the end of a feature vector
       hashes[hashcounts].hash = 0;
 
@@ -503,9 +503,9 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         CRM_ASSERT(hashcounts >= 0);
         CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-		  CRM_ASSERT(hashes[hashcounts].hash == 0);
+                  CRM_ASSERT(hashes[hashcounts].hash == 0);
 
-		  while ( i < hashcounts )
+                  while ( i < hashcounts )
       {
         if (hashes[i].hash != hashes[i+1].hash)
           {
@@ -516,13 +516,13 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       }
       hashcounts = j;
 
-	  //mark the end of a feature vector
-	  hashes[hashcounts].hash = 0;
+          //mark the end of a feature vector
+          hashes[hashcounts].hash = 0;
     }
-      
+
         CRM_ASSERT(hashcounts >= 0);
         CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-		  CRM_ASSERT(hashes[hashcounts].hash == 0);
+                  CRM_ASSERT(hashes[hashcounts].hash == 0);
 
   if (user_trace)
     fprintf (stderr, "Unique hashes generated: %ld\n", hashcounts);
@@ -553,19 +553,19 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
           else
                 {
-					int ret;
+                                        int ret;
 
       if (user_trace)
         fprintf (stderr, "Writing to hash file %s\n", hashfilename);
       //    and write the sorted hashes out.
       ret = fwrite (hashes, sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT),
-		  hashcounts, /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
+                  hashcounts, /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
               hashf);
-	  if (ret != hashcounts)
-	  {
+          if (ret != hashcounts)
+          {
                   fatalerror ("For some reason, I was unable to append a hash series to the file named ",
                           hashfilename);
-	  }
+          }
       fclose (hashf);
           }
 
@@ -1307,8 +1307,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     we can do fast comparisons against each document's hashes in
   //     the hyperspace vector files.
 
-	CRM_ASSERT(unk_hashcount >= 0);
-		CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
+        CRM_ASSERT(unk_hashcount >= 0);
+                CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
       //mark the end of a feature vector
       unk_hashes[unk_hashcount].hash = 0;
 
@@ -1328,7 +1328,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         CRM_ASSERT(unk_hashcount >= 0);
         CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
-		  CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
+                  CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
       while (i < unk_hashcount)
         {
           if (unk_hashes[i].hash != unk_hashes[i+1].hash)
@@ -1340,13 +1340,13 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
       unk_hashcount = j;
 
-	  //mark the end of a feature vector
-	  unk_hashes[unk_hashcount].hash = 0;
+          //mark the end of a feature vector
+          unk_hashes[unk_hashcount].hash = 0;
     }
 
         CRM_ASSERT(unk_hashcount >= 0);
         CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
-		  CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
+                  CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
 
   if (user_trace)
     fprintf (stderr, "unique hashes generated: %ld\n", unk_hashcount);

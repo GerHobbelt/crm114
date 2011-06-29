@@ -6,16 +6,16 @@
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
 //  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
+//  www.fsf.org, and a copy is included in this distribution.
 //
-//  Other licenses may be negotiated; contact Bill for details.  
+//  Other licenses may be negotiated; contact Bill for details.
 //
 /////////////////////////////////////////////////////////////////////
 //
 //     crm_fscm.c - //fast substring compression matcher
-//    
+//
 //     Original spec by Bill Yerazunis, original code by Joe Langeway,
-//     recode for CRM114 use by Bill Yerazunis. 
+//     recode for CRM114 use by Bill Yerazunis.
 //
 //     This code section (crm_scm and subsidiary routines) is
 //     dual-licensed to both William S. Yerazunis and Joe Langeway,
@@ -69,8 +69,8 @@ it is (length - 2)^1.5 points per match. That seems optimal.
 
 typedef struct mythical_scm_header
 {
-  long n_bytes;             /* this is the length of rememebred text, the number
-                               of hashbuckets, and the size of the hash root */
+  long n_bytes;             //this is the length of rememebred text, the number
+                            //of hashbuckets, and the size of the hash root
   long n_trains;            //how many times have we had to train this guy
   long n_features;          //number of bytes we've eaten up to n_bytes
   long free_hash_nodes;     //index of first in free chain
@@ -89,7 +89,7 @@ typedef struct mythical_hash
   char prefix_text[4];  //we make it 4 bytes so thing align nicely
   unsigned long key;    //hash key of the three charactor prefix
   long next;            //in hash chain
-  long prev;      
+  long prev;
   long first;           //first prefix node
 } HASH_STRUCT;
 
@@ -97,7 +97,7 @@ typedef struct mythical_hash
 typedef struct mythical_prefix
 {
   long offset;
-  long prev;      
+  long prev;
   long next;
 } PREFIX_STRUCT;
 
@@ -107,7 +107,7 @@ typedef struct mythical_scm_state
 {
   SCM_HEADER_STRUCT *header;
   //we dup some stuff from the header to shorten things up
-  long *text_pos, n_bytes, *free_hash_nodes, *free_prefix_nodes; 
+  long *text_pos, n_bytes, *free_hash_nodes, *free_prefix_nodes;
   //s->hash_root[key % n_bytes] is the first hash_node in the chain that key
   //would be in
   long *hash_root;
@@ -139,6 +139,7 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
   h->n_bytes = n_bytes;
   h->n_trains = 0;
   h->n_features = 0;
+  h->free_prefix_nodes = 0;
   h->free_hash_nodes = 0;
   h->hash_root_offset = sizeof(SCM_HEADER_STRUCT);
   h->hash_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes * sizeof(long);
@@ -161,7 +162,7 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
   s->prefix = (PREFIX_STRUCT *) &o[h->prefix_offset];
   s->text =   (char *)        &o[h->text_offset];
   s->indeces = (long *)       &o[h->indeces_offset];
-  
+
   for(i = 0; i < n_bytes; i++)
   {
     s->hash_root[i] = NULL_INDEX;
@@ -217,14 +218,14 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
       return;
     }
     make_scm_state(s, space);
-  } 
+  }
   else
   {
     char *o;
         SCM_HEADER_STRUCT *h;
 
     s->header = crm_mmap_file
-          (filename, 0, statbuf.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, 
+          (filename, 0, statbuf.st_size, PROT_READ | PROT_WRITE, MAP_SHARED,
               NULL);
     if(!s->header)
     {
@@ -413,7 +414,7 @@ static long add_prefix(SCM_STATE_STRUCT *s, long t)
     if( s->hash_root[j] != NULL_INDEX )
       s->hashee[ s->hash_root[j] ].prev = i;
     s->hash_root[j] = i;
-    
+
     //fill  in key and prefix
     s->hashee[i].key = key;
     copy_prefix(s, t, s->hashee[i].prefix_text);
@@ -513,7 +514,7 @@ static void find_longest_match
   }
 
   //get a hashcode and find the hashchain for the three characters that start
-  // the string we're matching 
+  // the string we're matching
   key = strnhash(text, 3);
   i = s->hash_root[key % s->n_bytes];
 
@@ -555,19 +556,19 @@ static void find_longest_match
 // stored text which do not overlap, giving preference to longest first, put
 // the corresponding matches indeces from the stored text in *starts, from *t
 // into *locals and the lengths of those matches into *lens, return the number
-// of matches 
+// of matches
 //
 static int deflate(SCM_STATE_STRUCT *s, char *t, long len, long *starts, long
 *locals, long *lens, long max_n)
 {
   //at each place in *t remember the best match found so far, bmi[...] is a
   // prefix node index, bml[...] is a length, open[..] is whether or not we can
-  // still make a match at this spot 
+  // still make a match at this spot
   long *bmi = (long *)inbuf;
   long *bml = (long *)outbuf;
   int *open = (int *) tempbuf;
   long i, j, k, n;
-  //fill arrays 
+  //fill arrays
   for(i = 0; i < len; i++)
   {
     find_longest_match(s, t + i, len - i, &bmi[i], &bml[i]);
@@ -594,7 +595,7 @@ static int deflate(SCM_STATE_STRUCT *s, char *t, long len, long *starts, long
     *starts++ = s->prefix[bmi[j]].offset;
     *locals++ = j;
     *lens++ = k;
-    //increment count and bail if we're full 
+    //increment count and bail if we're full
     if(++n >= max_n)
       break;
     //close all positions we just matched over
@@ -626,14 +627,14 @@ static double power2(long i)
   {
     long j;
 
-	pow_table2_init = 0;
+        pow_table2_init = 0;
     for(j = 0; j < 256; j++)
       pow_table2[j] = pow((double)j, pow2);
   };
   return pow_table2[i];
 }
 
-//this is the number of substring matches we can make, 
+//this is the number of substring matches we can make,
 // > one third of max length of input is useless since each match must be of at
 // least three characters, less just means less accurate
 #define MAX_N 1065
@@ -683,12 +684,12 @@ int crm_expr_fscm_learn
 
   if(internal_trace)
     fprintf(stderr, "entered crm_expr_fscm_learn (learn)\n");
-  
+
   //parse out .fscm file name
   crm_get_pgm_arg (htext, MAX_PATTERN, apb->p1start, apb->p1len);
   htext_len = apb->p1len;
   htext_len = crm_nexpandvar (htext, htext_len, MAX_PATTERN);
-  
+
   i = 0;
   while (htext[i] < 0x021) i++;
   j = i;
@@ -711,9 +712,9 @@ int crm_expr_fscm_learn
   }
 
   txtptr += txtstart;
-  
+
   doc_start = *s->text_pos;
-  
+
   if(apb->sflags & CRM_REFUTE)
   {
     refute_document(s, txtptr, txtlen);
@@ -723,7 +724,7 @@ int crm_expr_fscm_learn
   {
   //remember how many documents we've eaten
     s->header->n_trains++;
-  
+
     //cat it to our other text
     for(i = 0; i < txtlen; i++)
     {
@@ -731,17 +732,17 @@ int crm_expr_fscm_learn
       if(s->indeces[*s->text_pos] != NULL_INDEX)
         delete_prefix(s, s->indeces[*s->text_pos]);
       s->indeces[*s->text_pos] = NULL_INDEX;
-  
+
       s->text[(*s->text_pos)++] = txtptr[i];
       if(*s->text_pos >= s->n_bytes)
         *s->text_pos -= s->n_bytes;
     }
-  
+
   if(internal_trace && audit_structs(s))
   {
     return 0;
   }
-  
+
     //cache all the three character prefixes
     for(i = doc_start, j = txtlen; j > 2; i++, j--)
     {
@@ -757,6 +758,7 @@ int crm_expr_fscm_learn
     return 0;
   }
   unmap_file(s);
+  crm_force_munmap_filename (s->learnfilename);
   return 0;
 }
 
@@ -775,31 +777,31 @@ int crm_expr_fscm_classify
     char *txtptr, long txtstart, long txtlen   )
 {
   SCM_STATE_STRUCT S, *s = &S;
-  
+
   char filenames_field[MAX_PATTERN];
   long filenames_field_len;
   char filenames[MAX_CLASSIFIERS][MAX_FILE_NAME_LEN];
-  
+
   char out_var[MAX_PATTERN];
   long out_var_len;
-  
+
   char params[MAX_PATTERN];
   long params_len;
-  
+
   regex_t regee; //for extracting params
   regmatch_t pp[2];
-  
+
   long i, j, k, n_classifiers;
-  
+
   long fail_on = MAX_CLASSIFIERS; //depending on where the vbar is
-  
+
   double  scores[MAX_CLASSIFIERS],
           probs[MAX_CLASSIFIERS],
           norms[MAX_CLASSIFIERS],
           bn, pR[MAX_CLASSIFIERS];
   long n_features[MAX_CLASSIFIERS];
   long out_pos;
-  
+
   double tot_score = 0.0, suc_prob = 0.0, suc_pR;
   long max_scorer, min_scorer;
 
@@ -808,12 +810,12 @@ int crm_expr_fscm_classify
   filenames_field_len = apb->p1len;
   filenames_field_len =
       crm_nexpandvar(filenames_field, filenames_field_len, MAX_PATTERN);
-  
+
   //grab output variable name
   crm_get_pgm_arg (out_var, MAX_PATTERN, apb->p2start, apb->p2len);
   out_var_len = apb->p2len;
   out_var_len = crm_nexpandvar (out_var, out_var_len, MAX_PATTERN);
-  
+
   //check second slashed group for parameters
   crm_get_pgm_arg (params, MAX_PATTERN, apb->s2start, apb->s2len);
   params_len = apb->s2len;
@@ -830,18 +832,18 @@ int crm_expr_fscm_classify
     params[ pp[1].rm_eo ] = '\0';
     n_bytes = atol(params + pp[1].rm_so);
   };
-  
+
   //a tiny automata for your troubles to grab the names of our classifier files
     // and figure out what side of the "|" they're on
   for(i = 0, j = 0, k = 0; i < filenames_field_len && j < MAX_CLASSIFIERS; i++)
     if(filenames_field[i] == '\\') //allow escaped in case filename is wierd
       filenames[j][k++] = filenames_field[++i];
-    else if(crm_isspace(filenames_field[i]) && k > 0) 
+    else if(crm_isspace(filenames_field[i]) && k > 0)
     {//white space terminates filenames
       filenames[j][k] = '\0';
       k = 0;
       j++;
-    } 
+    }
     else if(filenames_field[i] == '|')
     { //found the bar, terminate filename if we're in one
       if(k > 0)
@@ -853,17 +855,17 @@ int crm_expr_fscm_classify
     }
     else if(crm_isgraph(filenames_field[i])) //just copy char otherwise
       filenames[j][k++] = filenames_field[i];
-  
+
   if(j < MAX_CLASSIFIERS)
     filenames[j][k] = '\0';
   if(k > 0)
     n_classifiers = j + 1;
   else
     n_classifiers = j;
-  
+
   if(internal_trace)
   {
-    fprintf(stderr, "fail_on = %ld\n", fail_on); 
+    fprintf(stderr, "fail_on = %ld\n", fail_on);
     for(i = 0; i < n_classifiers; i++)
       fprintf(stderr, "filenames[%ld] = %s\n", i, filenames[i]);
   };
@@ -894,8 +896,8 @@ int crm_expr_fscm_classify
     for(i = 0; i < n_classifiers; i++)
       fprintf(stderr, "scores[%ld] = %f\n", i, scores[i]);
   }
-  
-   
+
+
   max_scorer = 0;
   for(j = 1; j < n_classifiers; j++)
     if(scores[j] > scores[max_scorer])
@@ -907,13 +909,13 @@ int crm_expr_fscm_classify
   //subtract 80% of lowest score from everybody to remove features having to
   //do with medium
   bn = scores[min_scorer] * 0.8;
-      
+
   out_pos = 0;
-  
+
   tot_score = 0.0;
   for(j = 0; j < n_classifiers; j++)
     probs[j] = scores[j] - bn;
- 
+
   for(j = 0; j < n_classifiers; j++)
     tot_score += probs[j];
   if(tot_score > 0.0)
@@ -928,15 +930,15 @@ int crm_expr_fscm_classify
   suc_pR = calc_pR(suc_prob);
   for(j = 0; j < n_classifiers; j++)
     pR[j] = calc_pR(probs[j]);
-  
+
   if(internal_trace)
   {
-    fprintf(stderr, "suc_prob = %f\n", suc_prob); 
-    fprintf(stderr, "tot_score = %f\n", tot_score); 
+    fprintf(stderr, "suc_prob = %f\n", suc_prob);
+    fprintf(stderr, "tot_score = %f\n", tot_score);
     for(i = 0; i < n_classifiers; i++)
       fprintf(stderr, "scores[%ld] = %f\n", i, scores[i]);
   }
-  
+
   if(suc_prob > 0.5 ) //test for nan as well
     out_pos += sprintf
           ( outbuf + out_pos,
@@ -955,12 +957,12 @@ int crm_expr_fscm_classify
             max_scorer,
             filenames[max_scorer],
             probs[max_scorer], pR[max_scorer]);
-  
+
   out_pos += sprintf
                 ( outbuf + out_pos,
                   "Total features in input file: %ld\n",
                   txtlen  );
-  
+
   for(i = 0; i < n_classifiers; i++)
   {
   /* [i_a] GROT GROT GROT: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
@@ -972,14 +974,14 @@ int crm_expr_fscm_classify
                   n_features[i], scores[i],
                   probs[i], pR[i] );
   }
-  
+
   if(out_var_len)
     crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_pos);
-  
+
   if (suc_prob <= 0.5)
   {
     csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
     csl->aliusstk [csl->mct[csl->cstmt]->nest_level] = -1;
-  }  
+  }
   return 0;
 }

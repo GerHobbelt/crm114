@@ -9,7 +9,7 @@ find . -type f -name 'setversion' -exec chmod a+x {} \;
 find . -type f -name 'bootstrap' -exec chmod a+x {} \;
 ./autogen.sh
 ./configure
-make dist-maint
+make distribution
 
 
 

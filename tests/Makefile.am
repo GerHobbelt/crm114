@@ -7,20 +7,21 @@
 
 ## Copyright (C) 2003, 2004 Joost van Baal
 
+PACKAGE = @PACKAGE_TARNAME@
+VER_SUFFIX = @VER_SUFFIX@ 
+VERSION = @VERSION@
+SILENT = @SILENT@
 
 
-cdir = $(datadir)/doc/$(PACKAGE)/examples/tests
+testdir = $(datadir)/doc/$(PACKAGE)/examples/tests
 
 
 DISTCLEANFILES = 
 CLEANFILES = *~ *.bak
 
 
-SILENT = @SILENT@
 
-
-
-c_SCRIPTS = \
+test_SCRIPTS = \
  aliustest.crm \
  approxtest.crm \
  argtest.crm \
@@ -55,8 +56,16 @@ c_SCRIPTS = \
  windowtest_fromvar.crm
 
 
+test_UBERSCRIPTS = megatest.sh \
+	testscript.sh
 
-megatest: FORCE
+EXTRA_DIST = megatest_knowngood.log \
+	$(test_SCRIPTS) $(test_UBERSCRIPTS)
+ 
+
+
+
+megatest: $(test_SCRIPTS) megatest_knowngood.log megatest.sh
 	$(SILENT) echo ""        
 	$(SILENT) echo "    This runs a moderately interesting set of base tests"
 	$(SILENT) echo "    to exercise much of CRM114 under TRE.  This takes about"
@@ -70,5 +79,9 @@ megatest: FORCE
 	$(SILENT) echo "    do change, either your kit isn't quite right or your"
 	$(SILENT) echo "    install is broken (or you've found a bug)."
 	$(SILENT) echo ""
-	$(srcdir)/megatest.sh > megatest_test.log 2>&1
-	diff -EbwBd megatest_knowngood.log megatest_test.log & sleep 1
+	megatest.sh > megatest_test.log 2>&1
+	$(diff) -ubwBd megatest_knowngood.log megatest_test.log & sleep 1
+
+
+.PHONY: 
+

@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! @CRM@
  {                 
         {
                 match   < fromend >  ( :word: )   /[[:graph:]]+/

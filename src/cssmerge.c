@@ -176,7 +176,7 @@ int main(int argc, char **argv)
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (argv[optind], &statbuf);
-	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
+          CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
   //
   hfsize1 = statbuf.st_size;

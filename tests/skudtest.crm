@@ -1,0 +1,17 @@
+#! :|crm 
+#!    this little regression test by Jskud verifies match start/length works
+window
+output /:*:_nl: CRM114 testing that start \/ length works in matches :*:_nl: :*:_nl:/
+isolate (:whitelist:)
+input (:whitelist:) [whitelist.mfp.example]
+output /DEBUG: whitelist==<<:*:whitelist:>>:*:_nl:/
+# match (:waste:) [:whitelist:] /^/ ; # force match so <fromend> will work
+{
+        # Grab the next regex -- turn the one-per-line patterns into a regex
+        match <fromend nomultiline> (:waste: :whregex:) [:whitelist:]  /(.+)/
+        {
+                output /DEBUG: matched==<<:*:whregex:>>:*:_nl:/
+        }
+        liaf
+}
+output /DEBUG: [TheEnd]:*:_nl:/

@@ -1,0 +1,184 @@
+#!/usr/bin/crm -(help file delete)
+#    
+#    Program for Associative Data - PAD
+#
+#    this is meant to be used as a handy notepad for phone numbers, addresses,
+#    things like that; data that's in some way ephemeral but may also need 
+#    to be durable.
+#
+window
+#
+#
+#        Step 0 - check to see if we have any args at all.  If not,
+#        we insert --help into our argument stream.
+#
+{
+	{
+		match [:_pos2:] /./
+	}
+	trap /Attempt/
+	{
+		isolate (:_pos2:)
+		alter (:_pos2:) /--help/
+	}
+}
+#
+#          Step 1 - are we being asked for help?  If so, print out help and
+#		cleanly exit.
+#
+{
+	match [:_pos2:] /(-h)|(--help)/
+	output / pad - Program for Associative Data \n/
+	output /       This is a general-purpose, persistent-data notepad.\n/
+	output /     pad --help          - this text \n/
+	output /     pad + data data...  - remember the data \n/
+	output /     pad --delete data   - forget any line containing the data \n/
+	output /     pad data            - find all references containing the data\n/
+	output /     pad @ data          - best match to data, extra @'s mean more matches\n/
+	output /     pad --file=filename - use filename instead of pad.dat for data\n/
+	exit /0/
+}
+#
+#
+#            Step 2 - check to see if we were given a filename; if not,
+#                    we default to "pad.dat"
+#
+{   
+	#     Get the data file name if one is supplied
+	#
+	isolate (:file:)
+	{
+		match <absent> [:file:] /./
+		alter (:file:) /pad.dat/
+	}		
+	{
+		input [:*:file:] (:data:)
+	}
+	trap /couldn't open file/
+	{
+		output /Couldn't find the file ":*:file:", I'll create it.\n/
+		output [:*:file:] //
+		isolate (:data:) //
+	}
+}
+#
+#            Step 3 - now we have a context-sensitive situation - sometimes
+#                our control arg is markered (i.e. --delete == "SET"), 
+#		sometimes it's positional (i.e. '+', which shows up as 
+#		the variable :_pos3:).  So we splice together pos4 onward,
+#		and independently check to see if we need to frontsplice
+#		the pos3 argument
+#
+#
+{  
+	#  start with an empty :cmdlineargs:
+	#
+	isolate (:cmdlineargs:) /:*:_pos_str:/
+	#
+	#   and give me the part that is after the args (since we specify
+	#   a -(helpset) this is starting at the third token, so we
+	#   explicitly match away the first two [[:graph:]]+ tokens in
+	#   the :_pos_str: array.
+	#
+	match [:cmdlineargs:] (:z: :cmdlineargs:) /[[:graph:]]+ [[:graph:]]+ (.*)/
+	#        output /CMA = >>:*:cmdlineargs:<</
+}
+#
+#		We now have the command line args, and now we can carry out
+#		actions as needed based on that.
+#  
+#		First case - a '+' as the leading argument- we are
+# 		supposed to "remember" the rest of the args.  Easily
+#		done, just append to the :file:
+#
+{
+
+	match [:cmdlineargs:] (:z: :vals:) <nomultiline> /^\\+ (.*)$/
+	{
+		match <literal> [:data:] /:*:vals:/
+		output /Sorry, but I already know :*:vals: :*:_nl:/
+		exit /0/
+	}
+	output <append> [:*:file:] /:*:vals::*:_nl:/
+	exit /0/
+}
+#
+#		Do we want to --delete (that is, forget) something?
+#
+#		Remember, we need to make a backup copy as well, in
+#		case the user decides not to forget it (or makes a mistake).
+#
+{
+	#  if there is a --delete, we find all lines
+	#  with :cmdlineargs: and remove them 
+	match [:delete:] <nocase nomultiline> /SET/
+	{
+	    match <nomultiline> [:data:] (:dead:) /^.*:*:cmdlineargs:.*$/
+	    alter (:dead:) //
+	    # get rid of the following newline as well
+	    match <fromcurrent> [:data:] (:tn:) /:*:_nl:/
+	    alter (:tn:) //
+	    liaf
+	}
+	#    save back versions (with date tag)
+	isolate (:date:) //
+	syscall () (:date:) /date +%Y%m%d%H%M%S/
+	syscall /cp :*:file: :*:file:-:*:date:/
+	#    and write out the changed version
+	output [:*:file:] /:*:data:/
+	exit /0/
+	trap /.*/
+}
+#
+#		Are we supposed to do an approximate match, to find
+#		data that doesn't necessarily fit perfectly but is
+#		pretty close?
+#
+#		Note the cute trick of looping on the presence of the 
+#		'@' sign and deleting them one at a time; that way, the
+#		user can specify the top N closest matches desired by 
+#		how many @ signs they type.
+#
+{
+	match [:cmdlineargs:] (:the_atsign:) /@/
+	{
+		#  approximate match, anyone?
+		match [:cmdlineargs:] (:z: :the_atsign: :vars:) /(@)@* (.*)/
+		match <nocase nomultiline> [:data:] (:res: :q:) /^.*(:*:vars:){~}.*$/
+		output /:*:vars: >> :*:q: >> :*:res:\n/ 
+		#output /:*:res:\n/ 
+		alter (:res:) //
+		alter (:the_atsign:) //
+		liaf
+	}
+	exit /0/
+}
+#
+#		Well, we didn't find any other keywords or commands, so
+#		we're doing the most common thing - looking up a string
+#		in the pad.dat file.  
+#		
+#		Note the LIAF-loop; we loop so that we get _each_ copy of
+#		the target string present.
+#
+#		We also have to put "pos3" onto the front of the command
+#		line args.
+#
+{
+	match [:data:] //
+	# output /check exact on -:*:cmdlineargs:- \n/
+	{
+		match <nocase fromend nomultiline> [:data:] (:res: :q:) /^.*(:*:cmdlineargs:).*$/ 
+		output /:*:res:\n/ 
+		liaf
+	}
+	exit /0/
+}
+
+
+
+
+
+
+
+

@@ -1,0 +1,27 @@
+#! :|crm
+window
+{
+	output /:*:_nl: CRM114: testing windowing on windows and variables :*:_nl: :*:_nl:/
+	output /:*:_nl: test one- input by chars, delimited by 'A' /
+	window /A/ /A/
+	match <> (:big:) /.*/
+	output /:*:_nl: Got: :*:_nl: :*:big:/
+	output /:*:_nl: test two- input by EOFs, delimited by 'A' /
+	window <byeof> /A/ /A/
+	match <> (:big:) /.*/
+	output /:*:_nl: Got: :*:_nl: :*:big:/
+	output /:*:_nl: test three- window an isolated var by chars, delimited by 'A' /
+	isolate (:frib:) / *** this is the initial value *** /
+	window <> (:frib:) /A/ /A/
+	match <> [:frib:] (:big:) /.*/
+	output /:*:_nl: Got: :*:_nl: :*:big:/
+	output /:*:_nl: test four- isolated var, input by EOFs, delimited by 'A' /
+	window <byeof> (:frib:) /A/ /A/
+	match <> [:frib:] (:big:) /.*/
+	output /:*:_nl: Got: :*:_nl: :*:big:/
+	output /:*:_nl: and lastly- did the data window stay constant? :*:_nl:/
+	accept
+	output /:*:_nl:/
+}
+
+

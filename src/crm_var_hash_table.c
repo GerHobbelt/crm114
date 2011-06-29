@@ -183,7 +183,7 @@ void crm_vht_init (int argc, char **argv)
 #define FAKE_PWD 0x0001
 #define FAKE_USER 0x0002
 
-	  int got_to_fake_em = FAKE_PWD | FAKE_USER;
+          int got_to_fake_em = FAKE_PWD | FAKE_USER;
 #endif
 
     while (environ [i])
@@ -207,16 +207,16 @@ void crm_vht_init (int argc, char **argv)
         }
         j = strcspn(environ[i], "="); /* this also takes care of any line _without_ an '=': treat it as a var with a null value */
 
-		/* [i_a] GROT GROT GROT: patch Win32 specific 'faked' env. vars in here: USER, PWD, ... */
+                /* [i_a] GROT GROT GROT: patch Win32 specific 'faked' env. vars in here: USER, PWD, ... */
 #if defined(WIN32)
-		if (strncmp(environ[i], "PWD=", 4) == 0)
-		{
-			got_to_fake_em &= ~FAKE_PWD;
-		}
-		else if (strncmp(environ[i], "USER", 5) == 0)
-		{
-			got_to_fake_em &= ~FAKE_USER;
-		}
+                if (strncmp(environ[i], "PWD=", 4) == 0)
+                {
+                        got_to_fake_em &= ~FAKE_PWD;
+                }
+                else if (strncmp(environ[i], "USER", 5) == 0)
+                {
+                        got_to_fake_em &= ~FAKE_USER;
+                }
 #endif
 
         name = (char *) calloc ((j+200), sizeof (name[0]));
@@ -227,7 +227,7 @@ void crm_vht_init (int argc, char **argv)
                 }
         s = strmov(name, ":_env_");
         memmove (s, environ[i], j);
-		s += j;
+                s += j;
         strcpy(s, ":");
         if (environ[i][j] != 0)
                 j++;                  //  step past the equals sign.
@@ -238,87 +238,87 @@ void crm_vht_init (int argc, char **argv)
         i++;  //   and do the next environment variable
       }
 
-		/* [i_a] GROT GROT GROT: patch Win32 specific 'faked' env. vars in here: USER, PWD, ... */
+                /* [i_a] GROT GROT GROT: patch Win32 specific 'faked' env. vars in here: USER, PWD, ... */
 #if defined(WIN32)
-		if (got_to_fake_em & FAKE_PWD)
-		{
-		  char dirbuf[CRM_MAX(MAX_VARNAME, MAX_PATH) + 1];
-		  char fulldirbuf[CRM_MAX(MAX_VARNAME, MAX_PATH) + 1];
-		  DWORD dirbufsize = CRM_MAX(MAX_VARNAME, MAX_PATH) + 1;
-			
-			if (!GetCurrentDirectoryA(dirbufsize, dirbuf))
-			{
-				fatalerror_Win32("Cannot fetch the current directory (PWD)");
-			}
-			else
-			{
-				/*
-					From the MS docs:
+                if (got_to_fake_em & FAKE_PWD)
+                {
+                  char dirbuf[CRM_MAX(MAX_VARNAME, MAX_PATH) + 1];
+                  char fulldirbuf[CRM_MAX(MAX_VARNAME, MAX_PATH) + 1];
+                  DWORD dirbufsize = CRM_MAX(MAX_VARNAME, MAX_PATH) + 1;
 
-					In certain rare cases, if the specified directory is on the 
-					current drive, the function might omit the drive letter and 
-					colon from the path. Therefore, the size that is returned 
-					by the function might be two characters less than the size 
-					of the specified string, not including the terminating null 
-					character. This behavior might occur in edge situations 
-					such as in a services application. If you need the drive 
-					letter, make a subsequent call to GetFullPathName to 
-					retrieve the drive letter.
-				*/
-				if (!GetFullPathName(dirbuf, CRM_MAX(MAX_VARNAME, MAX_PATH) + 1, fulldirbuf, NULL))
-				{
-					fatalerror_ex(SRC_LOC(), 
-						"Cannot fetch the expanded current directory (PWD) for directory '%s'", 
-						dirbuf);
-				}
-				else
-				{
-				    crm_set_temp_var (":_env_PWD:", dirbuf);
-					if (strlen (dirbuf) + WIDTHOF("PWD=") < (data_window_size - 1000))
-					  {
-						strcat(tempbuf, "PWD=");
-						strcat(tempbuf, dirbuf);
-						strcat(tempbuf, "\n");
-					  }
-					else
-					{
-					  untrappableerror ("The ENVIRONMENT variables don't fit into the "
-										 "available space. \nThis is very broken.  Try "
-										 "a larger data window (with flag -w NNNNN), \nor "
-										 "drop the environment vars with "
-										 "the (with flag -e)", "");
-					}
-				}
-			}
-		}
-		else if (got_to_fake_em & FAKE_USER)
-		{
-		  char userbuf[UNLEN + 1];
-		  DWORD userbufsize = UNLEN + 1;
-			
-			if (!GetUserNameA(userbuf, &userbufsize))
-			{
-				nonfatalerror_Win32("Cannot fetch the USER name.");
-			}
-			else
-			{
-			  crm_set_temp_var (":_env_USER:", userbuf);
-				if (strlen (userbuf) + WIDTHOF("USER=") < (data_window_size - 1000))
-				  {
-					strcat(tempbuf, "USER=");
-					strcat(tempbuf, userbuf);
-					strcat(tempbuf, "\n");
-				  }
-				else
-				{
-				  untrappableerror ("The ENVIRONMENT variables don't fit into the "
-									 "available space. \nThis is very broken.  Try "
-									 "a larger data window (with flag -w NNNNN), \nor "
-									 "drop the environment vars with "
-									 "the (with flag -e)", "");
-				}
-			}
-		}
+                        if (!GetCurrentDirectoryA(dirbufsize, dirbuf))
+                        {
+                                fatalerror_Win32("Cannot fetch the current directory (PWD)");
+                        }
+                        else
+                        {
+                                /*
+                                        From the MS docs:
+
+                                        In certain rare cases, if the specified directory is on the 
+                                        current drive, the function might omit the drive letter and 
+                                        colon from the path. Therefore, the size that is returned 
+                                        by the function might be two characters less than the size 
+                                        of the specified string, not including the terminating null 
+                                        character. This behavior might occur in edge situations 
+                                        such as in a services application. If you need the drive 
+                                        letter, make a subsequent call to GetFullPathName to 
+                                        retrieve the drive letter.
+                                */
+                                if (!GetFullPathName(dirbuf, CRM_MAX(MAX_VARNAME, MAX_PATH) + 1, fulldirbuf, NULL))
+                                {
+                                        fatalerror_ex(SRC_LOC(),
+                                                "Cannot fetch the expanded current directory (PWD) for directory '%s'",
+                                                dirbuf);
+                                }
+                                else
+                                {
+                                    crm_set_temp_var (":_env_PWD:", dirbuf);
+                                        if (strlen (dirbuf) + WIDTHOF("PWD=") < (data_window_size - 1000))
+                                          {
+                                                strcat(tempbuf, "PWD=");
+                                                strcat(tempbuf, dirbuf);
+                                                strcat(tempbuf, "\n");
+                                          }
+                                        else
+                                        {
+                                          untrappableerror ("The ENVIRONMENT variables don't fit into the "
+                                                                                 "available space. \nThis is very broken.  Try "
+                                                                                 "a larger data window (with flag -w NNNNN), \nor "
+                                                                                 "drop the environment vars with "
+                                                                                 "the (with flag -e)", "");
+                                        }
+                                }
+                        }
+                }
+                else if (got_to_fake_em & FAKE_USER)
+                {
+                  char userbuf[UNLEN + 1];
+                  DWORD userbufsize = UNLEN + 1;
+
+                        if (!GetUserNameA(userbuf, &userbufsize))
+                        {
+                                nonfatalerror_Win32("Cannot fetch the USER name.");
+                        }
+                        else
+                        {
+                          crm_set_temp_var (":_env_USER:", userbuf);
+                                if (strlen (userbuf) + WIDTHOF("USER=") < (data_window_size - 1000))
+                                  {
+                                        strcat(tempbuf, "USER=");
+                                        strcat(tempbuf, userbuf);
+                                        strcat(tempbuf, "\n");
+                                  }
+                                else
+                                {
+                                  untrappableerror ("The ENVIRONMENT variables don't fit into the "
+                                                                         "available space. \nThis is very broken.  Try "
+                                                                         "a larger data window (with flag -w NNNNN), \nor "
+                                                                         "drop the environment vars with "
+                                                                         "the (with flag -e)", "");
+                                }
+                        }
+                }
 #endif
 
     }

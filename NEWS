@@ -3,6 +3,25 @@ Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
 
+Version 20070805-BlameTheInterns
+
+* merged changes/fixes by Paolo
+
+* added sourcefile+line reporting for all error and warning messages.
+
+* Moved assert() usage to CRM_ASSERT usage so we can determine when and if to shot
+  down those checks. Bill (and probably others) think these should remian in there
+  forever. I (Ger) think of them more along the lines of 'only for testing now' but
+  I see the point.
+
+* the POSIX #define use is now gone from the code: everything now properly
+  checks if the relevant functions, etc. are available using the HAVE_XXX
+  defines produced by ./configure
+
+* added crm_touch() as a centralized fix for mmap not touching the files when data
+  was written. Previously all systems read/write a few bogus bytes and that code
+  was littered throughout. Code has been inspected and cleaned up.
+ 
 Version 20070731-BlameTheInterns
 
 * revived the autoconfiscation of crm114: once again, you can run 
