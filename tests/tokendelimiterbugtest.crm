@@ -1,0 +1,19 @@
+#! :|crm
+#   test the tokenizer: previous version were extremely dependent
+#   on the 'right kind of whitespace' everywhere.
+#
+#   How about we STRIP a lot of unnecessary white, eh?
+{{{output/checking for a foo.../
+ 			match /foo/
+			output /Found a foo :*:_nl:/
+		}alius{
+			output /no foo... checking for bar.../
+			match /bar/
+			output /Found a bar.  :*:_nl:/
+			# -- expect an error report on the next line/alius
+		}alius{
+			output/found neither... continuing  :*:_nl:/
+			fault / plutonium /
+		}trap(:my_fault:)/nuts/{output/ dammit! /}
+	}trap/.*/(:my_fault:){output/damned  - fault was :*:my_fault::*:_nl:/}
+}
