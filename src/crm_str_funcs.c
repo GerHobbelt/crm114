@@ -103,7 +103,7 @@ unsigned long strnhash (char *str, long len)
 {
   long i;
   // unsigned long hval;
-  long hval;
+  int32_t hval;
   unsigned long tmp;
 
   // initialize hval

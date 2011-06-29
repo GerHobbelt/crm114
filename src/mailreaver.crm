@@ -89,8 +89,7 @@
 #
 #    --- These vars must have a value, or else we'll get errors ----
 #
-#     the default directory. 
-isolate (:fileprefix:) //
+isolate <default> (:fileprefix:) //
 #
 isolate (:classifier_reason:) /no reason yet/
 #
@@ -120,9 +119,8 @@ isolate (:log_rejections:) //
 #
 #
 #        load the config file
-isolate <default> (:fileprefix:) //
-isolate <default> (:config:) /mailfilter.cf/
-call /:load_cf_file:/ [:*:fileprefix::*:config:]
+isolate <default> (:config:) /:*:fileprefix:mailfilter.cf/
+call /:load_cf_file:/ [:*:config:]
 
 #######################################################################
 #     

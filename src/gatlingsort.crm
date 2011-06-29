@@ -29,7 +29,8 @@
 #
 #     In order to speed this up, Gatlingsort runs the classifiers in the
 #     order specified, and as soon as any class gets enough votes to go
-#     over the :gatling_limit: value, the rest of the classifiers don't
+#     over the :gatling_limit: value and more votes by :gatling_margin:
+#     over the next best class, the rest of the classifiers don't
 #     get run.  This is strictly a speed-over-accuracy tradeoff.
 #
 #     Note that the class weights can be used not just to express
@@ -42,6 +43,14 @@
 #     the difference) - that is, assuming we had equal levels of
 #     confidence in the Markovian and entropy classifiers.
 #
+
+########################################################################
+#
+#      CLASSIFY versus LEARN
+#
+#        If the user specified "--class=someclass" on the command line,
+#        then we are supposed to LEARN this text.  If there's no "--class"
+#	 on the command line, then it's a CLASSIFY operation.
 
 isolate <default> (:class:) //
 {
@@ -94,6 +103,11 @@ isolate <default> (:classifiers:) / \
    < entropy unique crosslink >  0.9       5.0      .benu   \
    < osb unigram microgroom >    1.0       1.0      .bay    \
    /
+
+#     To take a classifier offline, cut and paste it's line here.
+#     These classifiers are ignored.  The reason to cut and paste 
+#     the line here, rather than just deleting the line, is that way
+#     it's easy to undo your changes.
 isolate <default> (:unused_classifiers:) /\
    /
 
@@ -106,20 +120,24 @@ isolate <default> (:unused_classifiers:) /\
 #   any file extension (we add the file extensions from the classifiers
 #   list to form statistics filenames), then the subject title tag to 
 #   add, the decimal exit code to exit with (usually zero), the initial
-#   bias for this class (again, usually zero, and finally
-#   the (optional) address to forward the email to.
+#   bias for this class (again, usually zero).
 
 isolate <default> (:classes:) / \
    ( good      OK:     0  0.1 ) \n \
    ( spam      ADV:    0  0.0 ) \n \
    /
+
+#     To take a class 'offline', you can just move it's line here, 
+#     into :unused_classes: .  These classes are totally ignored, 
+#     but by keeping them here, you can cut and paste them up into
+#     :classes: or back down here easily.
 isolate <default> (:unused_classes:) / \
    ( ham       OK:     0  0.0 ) \n \
    ( rants     RANT:   0  0.0 ) \n \
    ( parties   PLAY:   0  0.0 ) \n \
    ( talk      TALK:   0  0.0 ) \n \
    ( business  WORK:   0  0.0 ) \n \
-   ( emergency MAYDAY: 0  0.0 ) \n
+   ( emergency MAYDAY: 0  0.0 ) \n \
    /
    
 #    What's our limit beyond which we don't run any other classifiers?

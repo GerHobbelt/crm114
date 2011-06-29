@@ -558,7 +558,7 @@ int main (int argc, char **argv)
       //   if we got here, then it's a command-line program, and
       //   we should just assemble the proggie from the argv [openbracket] 
       if (strlen (&(argv[openbracket][1])) + 2048 > max_pgmsize)
-	untrappableerror ("The command line programis too big. \n",
+	untrappableerror ("The command line program is too big. \n",
 			  "Try increasing the max program size with -P. \n");
       csl->filename = "(from command line)";
       csl->filetext = (char *) malloc (sizeof (char) * max_pgmsize);
@@ -611,7 +611,7 @@ int main (int argc, char **argv)
   crm_vht_init(argc, argv);
   
   //    Call the pre-processor on the program
-  
+  //
   status = crm_preprocessor (csl, 0);
 
   //    Now, call the microcompiler on the program file.

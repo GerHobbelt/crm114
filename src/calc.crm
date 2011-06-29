@@ -1,0 +1,13 @@
+#! /usr/bin/crm
+#   crm114 program to be a desk calculator
+#       wsy@merl.com - free to use for any purpose.
+window
+output /Enter expressions.  Hit return to evaluate, empty line to exit\n      /
+{
+	isolate (:y:)
+	input <byline> (:x:)
+	match [:x:] /./ 
+	eval (:y:) /:@::*:x::/
+	output /:*:y:\n      /
+	liaf
+}

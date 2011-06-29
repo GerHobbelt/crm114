@@ -151,6 +151,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	case '8':
 	case '9':
 	case '-':
+	case '+':
 	  {
 	    char *frejected;
 	    //    handle the case of a minus sign that isn't a unary -.
@@ -164,8 +165,19 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 		  }
 		break;
 	      };
+	    if (buf[ip] == '+' && !( isdigit (buf[ip+1])))
+	      {
+		if (sp > 0)
+		  {
+		    sp--;
+		    stack[sp] = stack[sp] + stack[sp+1];
+		    sinc = 1;
+		  }
+		break;
+	      };
 	    
-	    //   use atof to convert the string we're looking at.
+	    //   Neither unary +/-  so we use strtod to convert 
+	    //   the string we're looking at to floating point.
 	    sp++;
 	    stack[sp] = strtod ( &buf[ip], &frejected);
 	    if (user_trace)
@@ -178,18 +190,8 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 	  }
 	  break;
 	  //
-	  //         and some basic math ops...
+	  //   and now the standard math operators (except for - and + above)
 	  //
-	case '+':
-	  {
-	    if (sp > 0)
-	      {
-		sp--;
-		stack[sp] = stack[sp] + stack[sp+1];
-		sinc = 1;
-	      }
-	  };
-	  break;
 	case '*':
 	  {
 	    if (sp > 0)
@@ -527,6 +529,8 @@ int math_formatter ( double value, char *format, char *buf)
  formatdone:
   return (strlen (buf));
 }
+#define OLD_STRALMATH
+#ifdef OLD_STRALMATH
 
 //
 //      stralnmath - evaluate a mathematical expression in algebraic
@@ -534,9 +538,9 @@ int math_formatter ( double value, char *format, char *buf)
 //
 //      The algorithm is this:
 //    see an open parenthesis - push an empty level
-//    see a close parethesis -  try to "reduce", then pop over the empty 
 //    see an operator - push it onto opstack, sp++
 //    see a number - push it, then try to "reduce" if there's a valid op.
+//    see a close parethesis -  try to "reduce", then pop over the empty 
 //
 //    reduce: 
 //         while sp > 0 
@@ -560,9 +564,10 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
   long sp;               //  stack pointer - points to next (vacant) space
   long sinc;             //  stack incrmenter - do we push on next digit in?
   long errstat;          //  error status
-
   char outformat[64];   // output format (if needed)
 
+  //  internal_trace = 1;
+  //user_trace = 1;
   //    start off by initializing things
   ip = 0;    //  in pointer is zero
   op = 0;    // output pointer is zero
@@ -587,7 +592,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
     {
       if (internal_trace)
 	fprintf (stderr, "ip = %ld, sp = %ld, valstack[sp] = %f," 
-		 "opstack = '%c', h='%c'\n",
+		 " opstack = '%c', buf ='%c'\n",
 		 ip, sp, valstack[sp], (short) opstack[sp], buf[ip]);
 
       if (sp < 0) 
@@ -648,7 +653,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	    else
 	      {
 		
-		//   use atof to convert the string we're looking at.
+		//   use strtod to convert the string we're looking at.
 		sp++;
 		opstack[sp] = '\000';
 		valstack[sp] = strtod ( &buf[ip], &frejected);
@@ -695,7 +700,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	  break;
 	  //   
 	  //      The se dyadic operators just put themselves on the
-	  //      stack uunless there's a prior dyadic operator, that
+	  //      stack unless there's a prior dyadic operator, that
 	  //      operator runs first.
 	  //
 	  //	case '-': (this is handled up above, as part of unary '-'
@@ -779,7 +784,8 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
   if (internal_trace)
     {
       fprintf (stderr, 
-	     "Final qexpand state:  ip = %ld, sp = %ld, valstack[sp] = %f, ch='%c'\n", 
+	       "Final qexpand state:  ip = %ld, sp = %ld,"
+	       " valstack[sp] = %f, buff='%c'\n", 
 	       ip, sp, valstack[sp], buf[ip]);
       if (retstat) 
 	fprintf (stderr, "retstat = %ld\n", *retstat);
@@ -788,7 +794,10 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
   //      now the top of stack contains the result of the calculation.
   //      fprintf it into the output buffer, and we're done.
 
+  //internal_trace = 0;
+  //user_trace = 0;
   return (math_formatter (valstack[sp], outformat, buf));
+
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -797,6 +806,11 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 //            retval is 0 for "successful EQ's", and 1 for unsuccessful,
 //            and -1 for "no change".
 //
+//            stralmath_reduce keeps applying the operator from the 
+//            top of the opstack against the top two things in the
+//            valstack, until it hits a "null level" (that is, an op of \000)
+//            which is a flag to stop for now.
+//
 long stralmath_reduce (double *valstack, long *opstack, long *sp, char *outformat)
 {
   long retval;
@@ -804,17 +818,20 @@ long stralmath_reduce (double *valstack, long *opstack, long *sp, char *outforma
   if (internal_trace)
     fprintf (stderr, "  start: *sp = %3ld, "
 	     "vs[*sp] = %6.3f, vs[*sp+1] = %6.3f, "
-	     "op[*sp] = '%c'\n", 
-	     *sp, valstack[*sp], valstack[*sp+1], (short) opstack[*sp]);
+	     "op[*sp] = 0x%lX('%c')\n", 
+	     *sp, valstack[*sp], valstack[*sp+1], 
+	     (unsigned long) opstack[*sp],
+	     (short) opstack[*sp]);
   
   while (*sp >= 0 && opstack[*sp] != '\000')
     {
       if (internal_trace)
 	fprintf (stderr, "running: *sp = %3ld, "
 		 "vs[*sp] = %6.3f, vs[*sp+1] = %6.3f, "
-		 "op[*sp] = '0x%lX'\n", 
+		 "op[*sp] = 0x%lX('%c')\n", 
 		 *sp, valstack[*sp], valstack[*sp+1], 
-		 (unsigned long)opstack[*sp]);
+		 (unsigned long)opstack[*sp],
+		 (short)opstack[*sp]);
       switch (opstack[*sp])
 	{
 	case '+':
@@ -982,8 +999,271 @@ long stralmath_reduce (double *valstack, long *opstack, long *sp, char *outforma
   if (internal_trace)
     fprintf (stderr, " finish: *sp = %3ld, "
 	     "vs[*sp] = %6.3f, vs[*sp+1] = %6.3f, "
-	     "op[*sp] = '0x%lX'\n", 
+	     "op[*sp] = 0x%lX('%c')\n", 
 	     *sp, valstack[*sp], valstack[*sp+1], 
-	     (unsigned long) opstack[*sp]);
+	     (unsigned long) opstack[*sp],
+	     (short) opstack[*sp]) ;
   return (retval);
 }
+
+#endif
+
+//#define NEW_STRALMATH
+#ifdef NEW_STRALMATH
+////////////////////////////////////////////////////////////////////
+//
+//   Alternative implementation of the uglyness that is string math.
+//    
+//   This version uses two stacks (left arg, op) and a single scalar
+//   rightarg.  Partial computations are kept on the leftarg and op 
+//   stack.  The current stack status is held in validstack, and is 
+//   the OR of LEFTVALID, OPVALID, and RIGHTVALID.    
+//
+#define LEFTVALID 0x1;
+#define OPVALID 0x2;
+#define RIGHTVALID 0x4;
+
+long stralmath (char *buf, long inlen, long maxlen, long *retstat)
+{
+  double valstack [DEFAULT_MATHSTK_LIMIT] ;   // left float arg 
+  long opstack [DEFAULT_MATHSTK_LIMIT];       // operand
+  double rightarg;                            // right float arg
+  long validstack [DEFAULT_MATHSTK_LIMIT];    // validity markers
+  long sp;                                    // stack pointer
+  long ip, op;                                // input and output pointer
+  long errstat;                              //  error status
+  long retstat;                              //  return status ( a == b stuff)
+  char *frejected;                           //  done loc. for a strtod. 
+  char outformat;                            //  how to format our result 
+
+  //   Start off by initializing things
+  ip = 0;
+  op = 0;
+  sp = 0; 
+  outformat = '\0';
+  retstat = 0;
+
+  //     Set up the stacks
+  // 
+  leftstack [0] = 0.0;
+  rightarg = 0.0;
+  opstack [0] = '\0';
+  validstack [0] = 0;
+
+  //  initialization done... begin the work.
+  if (internal_trace)
+    fprintf (stderr, "Starting Algebraic Math on '%s' (len %ld)\n"
+	     buf, inlen);
+
+  for (ip = 0; ip < inlen; ip++)
+    {
+
+      //   Debugging trace
+      if (internal_trace)
+	fprintf (stderr, "ip = %ld, sp = %ld, L=%f, O=%c, R=%f, V=%x next='%c'\n"
+		 ip, sp, 
+		 leftstack[sp], opstack[sp], rightstack[sp], validstack[sp],
+		 buf[ip]);
+      
+      //    Top of the loop- we're a state machine driven by the top of
+      //    the stack's validity.
+
+      switch (validstack[sp])
+	{
+	case (0):
+	  //  empty top of stack; can accept either number or monadic operator
+	  switch (buf[ip])
+	    {
+	      //   Monadic operators and numbers
+	    case '-':
+	    case '+':
+	    case '0':
+	    case '1':
+	    case '2':
+	    case '3':
+	    case '4':
+	    case '5':
+	    case '6':
+	    case '7':
+	    case '8':
+	    case '9':
+	    case '.':
+	    case ',':     // for those locales that use , not . as decimal
+	      {
+		leftarg[sp] = strtod (&buf[ip], &frejected);
+		if (user_trace) 
+		  fprintf (stderr, " Got left arg %e\n", leftarg[sp]);
+		ip = ((unsigned long) frejected) - ((unsigned long) buf) - 1;
+		validstack[sp] = LEFTVALID;
+	      };
+	      break;
+	    case ' ':
+	      break;
+	    }  
+	    break;
+
+	  //  if left arg is valid; next thing must be an operator;
+	  //   however op then op is also valid and should form composite
+	  //    operators like '>=' and '!=' (see below).
+	case (LEFTVALID):
+	  switch (buf[ip])
+	    {
+	    case '-':
+	    case '+':
+	    case '*':
+	    case '/':
+	    case '%':
+	    case '>':
+	    case '<':
+	    case '=':
+	      opstack[sp] = ( buf[ip] & 0xFF);	
+	      validstack[sp] = LEFTVALID | OPVALID;
+	      break;
+	    case ')':
+	      //   close paren pops the stack, and returns the left arg
+	      //   to "whereever", which might be leftarg stack, or rightarg
+	      sp--;
+	      if (validstack == 0)
+		{
+		  leftarg[sp] = leftarg [sp+1];
+		  validstack = LEFTVALID;
+		};
+	      if (validstack == LEFTVALID | OPVALID)
+		{
+		  rightarg = leftarg [sp+1];
+		  validstack = LEFTVALID | OPVALID | RIGHTVALID;
+		};
+	      break;
+	    case ' ':
+	      break;
+	    }
+	  break;
+	 
+	case (LEFTVALID | OPVALID):
+	  //  left arg and op are both valid; right now we can have
+	  //   an enhanced operator (next char is also an op)
+	  switch (buf[ip])
+	    {
+	    case '-':
+	    case '+':
+	    case '*':
+	    case '/':
+	    case '%':
+	    case '>':
+	    case '<':
+	    case '=':
+	    case '!':
+	      opstack[sp] = opstack[sp] << 8 | ( buf[ip] & 0xFF);	
+	      validstack[sp] = LEFTVALID | OPVALID;
+	      break;
+	  break;
+	    case '(':
+	      {
+		sp++;
+		leftarg[sp] = 0.0;
+		rightarg = 0.0;
+		opstack[sp] = 0;
+		validstack[sp] = 0;
+	      }
+
+	      //      deal with a possible strtod situation
+	    case '-':
+	    case '+':
+	    case '0':
+	    case '1':
+	    case '2':
+	    case '3':
+	    case '4':
+	    case '5':
+	    case '6':
+	    case '7':
+	    case '8':
+	    case '9':
+	      {
+		rightarg = strtod (&buf[ip], &frejected);
+		if (user_trace) 
+		  fprintf (stderr, " Got left arg %e\n", leftarg[sp]);
+		ip = ((unsigned long) frejected) - ((unsigned long) buf) - 1;
+	      };
+	      //////////////////////////////////////////////////
+	      //
+	      //   Now we have a left-op-right situation, and can 
+	      //    execute the operator right here and now.
+	      //
+	      switch (opstack[sp])
+		{
+		case '+':
+		  leftarg[sp] = leftarg[sp] + rightarg;
+		  break;
+		case '-':
+		  leftarg[sp] = leftarg[sp] - rightarg;
+		  break;
+		case '*':
+		  leftarg[sp] = leftarg[sp] * rightarg;
+		  break;
+		case '/':
+		  leftarg[sp] = leftarg[sp] / rightarg;
+		  break;
+		case '%':
+		  leftarg[sp] = leftarg[sp] % rightarg;
+		  break;
+		case '<':
+		  if (leftarg[sp] < rightarg)
+		    { leftarg[sp] = 1;}
+		  else
+		    { leftarg[sp] = 0;};
+		  break;
+		case '>':
+		  if (leftarg[sp] > rightarg)
+		    { leftarg[sp] = 1;}
+		  else
+		    { leftarg[sp] = 0;};
+		  break;
+		case '=':
+		  if (leftarg[sp] = rightarg)
+		    { leftarg[sp] = 1;}
+		  else
+		    { leftarg[sp] = 0;};
+		  break;
+		case ('<' << 8 + '='):
+		  if (leftarg[sp] <= rightarg)
+		    { leftarg[sp] = 1;}
+		  else
+		    { leftarg[sp] = 0;};
+		  break;
+		case ('>' << 8 + '='):
+		  if (leftarg[sp] >= rightarg)
+		    { leftarg[sp] = 1;}
+		  else
+		    { leftarg[sp] = 0;};
+		  break;
+		case ( '!' << 8 + '='):
+		  if (leftarg[sp] != rightarg)
+		    { leftarg[sp] = 1;}
+		  else
+		    { leftarg[sp] = 0;};
+		  break;
+
+		case '':
+		  leftarg[sp] = leftarg[sp] * rightarg;
+		  break;
+		case '*':
+		  leftarg[sp] = leftarg[sp] * rightarg;
+		  break;
+		case '*':
+		  leftarg[sp] = leftarg[sp] * rightarg;
+		  break;
+		case '*':
+		  leftarg[sp] = leftarg[sp] * rightarg;
+		  break;
+		case '*':
+		  leftarg[sp] = leftarg[sp] * rightarg;
+		  break;
+
+
+
+	      break;
+	  
+
+       
+#endif

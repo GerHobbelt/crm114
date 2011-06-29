@@ -2,7 +2,7 @@
 window
 output /\nStart of insert processor testing \n/
 output / start here .../
-insert inserttest_b.crm
+insert [:*:_env_PWD:/inserttest_b.crm]
 output / and the last bit of normal text \n/
 output /now we test nonexistent file overrides \n/
 output /this should not cause a FATAL ERROR, because we trap it.\n/

@@ -544,13 +544,13 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       if (internal_trace)
 	fprintf (stderr, "No keep, no async, so not keeping minion, closing everything.\n");
 
-      //   no, we're not keeping it around, so close the pipe.
+      //    de-zombify any dead minions;
+      waitpid ( minion, &minion_exit_status, 0);
+
+      //   we're not keeping it around, so close the pipe.
       //
       close (from_minion [0]);
 
-      //    and de-zombify any dead minions;
-      //
-      waitpid ( minion, &minion_exit_status, 0);
       if ( crm_vht_lookup (vht, keep_buf, strlen (keep_buf)))
 	{
 	  char exit_value_string[MAX_VARNAME];

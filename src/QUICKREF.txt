@@ -205,6 +205,10 @@ insert filename                   - inserts the file verbatim at this
 				    to catch this fault if you want to
                                     allow program execution to continue 
                                     without the missing INSERT file.
+       filename			     - the local (-u applied) file to insert
+       [expanded_filename]           - the filename is first expanded against 
+                                       command-line and environment variables.
+
 
   ;                               - semicolon is a statement separator - 
                                     unless it's inside delimiters

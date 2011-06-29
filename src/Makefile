@@ -24,7 +24,7 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION = 20070406-BlameSpamConf
+VERSION = 20070428-BlameSpamConf
 PREV_VERSION = 20061103-BlameDalkey
 #PREV_VERSION = 20061010-BlameBratko
 #PREV_VERSION = 20060920-BlameNico
@@ -158,7 +158,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	paolo_ov2.crm paolo_ov3.crm paolo_ov4.crm paolo_ov5.crm \
-	pad.crm \
+	pad.crm calc.crm \
 	gatlingsort.crm \
 	classifymail.crm 
 

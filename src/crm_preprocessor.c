@@ -68,8 +68,8 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
   //    either get a newline or a semicolon.  
 
   char *insert_regex = 
-    //    "\n[[:blank:]]*(insert)[[:blank:]]+([[:graph:]]+)[[:blank:]]*\n";
     "\n[[:blank:]]*(insert)[[:blank:]]+([[:graph:]]+)[[:blank:]]*[\n;]";
+  //    "\n[[:blank:]]*(insert)[[:blank:]]+([[:graph:]]+)[[:blank:]]*[\n;]";
   //
   //
   if (internal_trace )
@@ -106,6 +106,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
   
   while (!done)
     {
+      long filenamelen;
       j  = crm_regexec ( &preg, csl->filetext, csl->nchars,
 			 		3, matches, lflag, NULL);
       if ( j != 0) 
@@ -119,17 +120,41 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
 	  char insertfilename [MAX_FILE_NAME_LEN];
 	  struct stat statbuf;
 
+	  filenamelen = matches[2].rm_eo - matches[2].rm_so ;
+
 	  for (j = 0; 
-	       j < matches[2].rm_eo - matches[2].rm_so 
+	       j < filenamelen
 		 && j < MAX_FILE_NAME_LEN; 
 	       j++)
 	    insertfilename[j] = csl->filetext[matches[2].rm_so + j];
 	  insertfilename[j] = '\000';
 
-	  //   OK, we have a filename; check to see if it will blow the
+	  //   Check to see if this was a "delimited" insertfile name
+	  //   that is, wrapped in [filename] rather than plaintext -
+	  //   if it is, then do a variable expansion on it.
+	  if (insertfilename[0] == '['
+	      && insertfilename[filenamelen-1] == ']')
+	    {
+	      if (user_trace)
+		fprintf (stderr, "INSERT filename expand: '%s'",
+			 insertfilename);
+	      //  Get rid of the enclosing [ and ]
+	      filenamelen = filenamelen - 2;
+	      for (j = 0; j < filenamelen; j++)
+		insertfilename[j] = insertfilename[j + 1];
+	      insertfilename[filenamelen] = '\000';
+	      filenamelen = crm_nexpandvar (insertfilename, 
+					      filenamelen,
+					      MAX_FILE_NAME_LEN);
+	      if (user_trace)
+		fprintf (stderr, " to '%s' \n", insertfilename);
+	    }
+	  insertfilename[filenamelen] = '\000';
+
+	  //   We have a filename; check to see if it will blow the
 	  //   gaskets on the filesystem or not:
 	  //
-	  if (matches[2].rm_eo - matches[2].rm_so > MAX_FILE_NAME_LEN-1)
+	  if (filenamelen > MAX_FILE_NAME_LEN-1)
 	    untrappableerror ("INSERT Filename was too long!  Here's the"
 			      "first part of it: ", insertfilename);
 
