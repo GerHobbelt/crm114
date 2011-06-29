@@ -1231,7 +1231,19 @@
 				Name="Test Reference Output"
 				>
 				<File
+					RelativePath="..\tests\ref\alius_w_comment.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\alternating_example_neural.crm.refoutput"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\ref\approxtest.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\backwardstest.crm.2.refoutput"
 					>
 				</File>
 				<File
@@ -1243,7 +1255,79 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\ref\Bit_Entropy_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Bit_Entropy_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Bit_Entropy_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Bit_Entropy_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Bit_Entropy_Toroid_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Bit_Entropy_Toroid_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Bit_Entropy_Toroid_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Bit_Entropy_Toroid_test1.step4.refoutput"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\ref\bracktest.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Bytewise_Correlation_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Bytewise_Correlation_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\call_return_test.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Clump_Pmulc_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Clump_Pmulc_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Clump_Pmulc_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Clump_Pmulc_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Clump_Pmulc_test1.step5.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\crm114_version.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\defaulttest.crm.2.refoutput"
 					>
 				</File>
 				<File
@@ -1259,11 +1343,43 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\ref\exectest.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Fast_Substring_Compression_Match_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Fast_Substring_Compression_Match_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Fast_Substring_Compression_Match_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Fast_Substring_Compression_Match_test1.step4.refoutput"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\ref\fataltraptest.crm.refoutput"
 					>
 				</File>
 				<File
+					RelativePath="..\tests\ref\indirecttest.crm.refoutput"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\ref\inserttest_a.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\match_isolate_reclaim.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\match_isolate_test.crm.refoutput"
 					>
 				</File>
 				<File
@@ -1276,6 +1392,166 @@
 				</File>
 				<File
 					RelativePath="..\tests\ref\mathrpntest.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Neural_Network_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Neural_Network_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Neural_Network_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Neural_Network_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Neural_Network_test1.step5.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Neural_Network_test1.step6.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_3_letter_Hyperspace_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_3_letter_Hyperspace_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_3_letter_Hyperspace_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_3_letter_Hyperspace_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Hyperspace_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Hyperspace_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Hyperspace_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Hyperspace_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markov_Chisquared_Unique_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markov_Chisquared_Unique_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markov_Chisquared_Unique_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markov_Chisquared_Unique_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markov_Unique_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markov_Unique_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markov_Unique_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markov_Unique_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markovian_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markovian_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markovian_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Markovian_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step10.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step5.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step6.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step7.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step8.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSB_Winnow_test1.step9.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSBF_Local_Confidence_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSBF_Local_Confidence_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSBF_Local_Confidence_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\OSBF_Local_Confidence_test1.step4.refoutput"
 					>
 				</File>
 				<File
@@ -1303,11 +1579,31 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\ref\quine.crm.refoutput"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\ref\randomiotest.crm.refoutput"
 					>
 				</File>
 				<File
 					RelativePath="..\tests\ref\rewritetest.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\SBPH_Markovian_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\SBPH_Markovian_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\SBPH_Markovian_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\SBPH_Markovian_test1.step4.refoutput"
 					>
 				</File>
 				<File
@@ -1319,7 +1615,207 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\ref\String_Hyperspace_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Hyperspace_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Hyperspace_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Hyperspace_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_test1.step5.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_Unique_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_Unique_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_Unique_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_Unique_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Kernel_SVM_Unique_test1.step5.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Unigram_Hyperspace_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Unigram_Hyperspace_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Unigram_Hyperspace_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\String_Unigram_Hyperspace_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_test1.step5.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_Unigram_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_Unigram_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_Unigram_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_Unigram_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Support_Vector_Machine_Unigram_test1.step5.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\syscall123_test.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\syscall_exit_test.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\syscall_jibber_test.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\translate_tr.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Bayesian_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Bayesian_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Bayesian_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Bayesian_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Hyperspace_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Hyperspace_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Hyperspace_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Hyperspace_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Winnow_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Winnow_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Winnow_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Winnow_test1.step4.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Winnow_test1.step5.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Unigram_Winnow_test1.step6.refoutput"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\ref\unionintersecttest.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Vector_3_word_bag_Hyperspace_test1.step1.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Vector_3_word_bag_Hyperspace_test1.step2.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Vector_3_word_bag_Hyperspace_test1.step3.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\Vector_3_word_bag_Hyperspace_test1.step4.refoutput"
 					>
 				</File>
 				<File
@@ -1328,6 +1824,10 @@
 				</File>
 				<File
 					RelativePath="..\tests\ref\windowtest_fromvar.crm.refoutput"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\ref\zz_translate_test.crm.refoutput"
 					>
 				</File>
 			</Filter>

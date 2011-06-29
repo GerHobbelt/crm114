@@ -1616,7 +1616,7 @@ void crm_setvar(
 #if 0
         //for (j = 0; j < vht[i]->nlen; j++)
         //        fprintf(stderr, "%c", vht[i]->nametxt[vht[i]->nstart+j]);
-        fwrite(&(vht[i]->nametxt[vht[i]->nstart]), 1, vht[i]->nlen, stderr);
+        fwrite4stdio(&(vht[i]->nametxt[vht[i]->nstart]), vht[i]->nlen, stderr);
 #else
         fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
@@ -1627,7 +1627,7 @@ void crm_setvar(
 #if 0
         //      for (j = 0; j < vht[i]->vlen; j++)
         //        fprintf(stderr, "%c", vht[i]->valtxt[vht[i]->vstart+j]);
-        fwrite(&(vht[i]->valtxt[vht[i]->vstart]), 1, vht[i]->vlen, stderr);
+        fwrite4stdio(&(vht[i]->valtxt[vht[i]->vstart]), vht[i]->vlen, stderr);
 #else
         fwrite_ASCII_Cfied(stderr, vht[i]->valtxt + vht[i]->vstart, vht[i]->vlen);
 #endif

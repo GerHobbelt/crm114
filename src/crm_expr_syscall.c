@@ -560,6 +560,11 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 "Perhaps the system file descriptor table is full?");
             return 1;
         }
+
+#if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
+    fflush(stdout);
+    fflush(stderr);
+#endif
         minion = fork();
 
         if (minion < 0)
@@ -590,8 +595,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //
             close(to_minion[1]);
             close(from_minion[0]);
-            dup2(to_minion[0], fileno(stdin));
-            dup2(from_minion[1], fileno(stdout));
+            dup2(to_minion[0], fileno(os_stdin()));
+            dup2(from_minion[1], fileno(os_stdout()));
 
             //     Are we a syscall to a :label:, or should we invoke the
             //     shell on an external command?
@@ -734,6 +739,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     if (strlen(inbuf) > 0)
     {
+#if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
+    fflush(stdout);
+    fflush(stderr);
+#endif
         pusher = fork();
         //    we're in the "input pusher" process if we got here.
         //    shove the input buffer out to the minion
@@ -819,6 +828,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             || (outlen >= ((data_window_size >> SYSCALL_WINDOW_RATIO) - 2)
                 && keep_proc == 0))
         {
+#if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
+    fflush(stdout);
+    fflush(stderr);
+#endif
             sucker = fork();
             if (sucker == 0)
             {
@@ -881,16 +894,21 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf)))
         {
             char exit_value_string[MAX_VARNAME];
+
             if (internal_trace)
-                fprintf(stderr, "minion waitpid result :%d; whacking %s\n",
+ {
+               fprintf(stderr, "minion waitpid result :%d; whacking %s\n",
                     minion_exit_status,
                     keep_buf);
+}
             sprintf(exit_value_string, "DEAD MINION, EXIT CODE: %d",
                 WEXITSTATUS(minion_exit_status));
             if (keep_len > 0)
+{
                 crm_destructive_alter_nvariable(keep_buf, keep_len,
                     exit_value_string,
                     strlen(exit_value_string));
+}
         }
     }
 #elif defined (WIN32)

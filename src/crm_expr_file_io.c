@@ -79,7 +79,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (tvlen == 0)
     {
         strcpy(temp_vars, ":_dw:");
-        tvlen = strlen(":_dw:");
+        tvlen = (int)strlen(":_dw:");
     }
 
     if (internal_trace)
@@ -259,7 +259,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             {
                 if (errno == EBADF)
                 {
-                    nonfatalerror("Dang, seems that this file isn't fseek()able: ",
+                    nonfatalerror_ex(SRC_LOC(), "Dang, seems that this file '%s' isn't fseek()able!",
                         filename);
                 }
                 else
@@ -331,7 +331,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 ichar = 0;
                 if (feof(fp))
                     clearerr(fp);                   // reset any EOF
-                ichar = fread(inbuf, 1, iolen, fp); // do a block I/O
+                ichar = (int)fread(inbuf, 1, iolen, fp); // do a block I/O
 				if (ferror(fp))
 				{
 					//     and close the input file if it's not stdin.
@@ -339,6 +339,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 					{
 						fclose(fp);
 						fp = NULL;
+						file_was_fopened = 0;
 					}
 
 					fatalerror_ex(SRC_LOC(),
@@ -550,13 +551,16 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //
         if (outtextlen > 0)
         {
-            int ret = fwrite(outbuf, 1, outtextlen, outf);
+            int ret = fwrite4stdio(outbuf, outtextlen, outf);
             if (ret != outtextlen)
             {
                 fatalerror_ex(SRC_LOC(),
-                    "Could not write %d bytes to file %s\n",
+					"Could not write %d bytes to file '%s': "
+                        "errno = %d(%s)\n",
                     outtextlen,
-                    fnam);
+                    fnam,
+                        errno,
+                        errno_descr(errno));
             }
         }
         // [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster

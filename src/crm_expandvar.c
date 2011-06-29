@@ -69,6 +69,7 @@ int crm_nexpandvar(char *buf, int inlen, int maxlen)
         CRM_EVAL_ANSI
         | CRM_EVAL_STRINGVAR
         | CRM_EVAL_REDIRECT
+        | CRM_EVAL_STRINGLEN   // [i_a] VERY handy to have :#: available in 'output' statements and the like
         );
 }
 

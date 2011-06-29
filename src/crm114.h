@@ -1087,6 +1087,8 @@ FILE *os_stderr(void);
 int is_stdin_or_null(FILE *f);
 int is_stdout_err_or_null(FILE *f);
 
+int fwrite4stdio(const char *str, size_t len, FILE *out);
+
 
 
 /*

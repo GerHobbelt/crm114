@@ -229,6 +229,10 @@ static void crm_final_cleanup(void)
     cleanup_stdin_out_err_as_os_handles();
 }
 
+#if 0
+char stdout_buf[65536];
+char stderr_buf[65536];
+#endif
 
 
 int main(int argc, char **argv)
@@ -244,6 +248,10 @@ int main(int argc, char **argv)
     char *stderr_filename = "stderr (default)";
 
     init_stdin_out_err_as_os_handles();
+#if 0
+	setvbuf(stdout, stdout_buf, _IOFBF, sizeof(stdout_buf));
+    setvbuf(stderr, stderr_buf, _IOFBF, sizeof(stderr_buf));
+#endif
 
 #if defined (WIN32) && defined (_DEBUG)
     /*

@@ -2783,7 +2783,8 @@ int strntrn(
         uint64_t flags)
 {
     int len = *datastrlen;
-    int flen, tlen;
+    int flen = 0;
+	int tlen = 0;
     unsigned char map[256];
     unsigned char *from = NULL;
     unsigned char *to = NULL;
@@ -2904,7 +2905,7 @@ int strntrn(
         for (j = 0; j < flen; j++)
             unique_map[from[j]] = 0; //  but some need to be uniqued.
 
-        //                          If the character has a 0 the unique map,
+        //                          If the character has a 0 in the unique map,
         //                          and it's the same as the prior character,
         //                          don't copy it.  Just move along.
 

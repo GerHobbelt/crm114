@@ -18,6 +18,11 @@
       (though is fewer, rather obscure conditions, yet a boundary bug is
       one too many anyhow).
 
+    * Checked all malloc/calloc/realloc/strdup class and added 
+      untrappableerror) statements for those spots which did not check 
+      for NULL returns - which would otherwise lead to 
+      crashes/coredumps.
+      
     * expandvar() code cleanup - at least a bit.
 
       KNOWN BUG: ":@: :@: 1 + 1 ::" is not handled properly by
@@ -32,14 +37,28 @@
     * debugger: 'c' restored to its proper glory: 'c' without any arg
       should just GO. We've got 'n' for single stepping, don't we?
 
+    * UNIX syscall: KNOWN BUG: some weirdness is now occurring when 
+                               crm114 scripts execute syscall and their 
+                               own output is redirected to file (such as 
+                               for the 'make check' testcases): it looks 
+                               like the crm114 output buffer gets 
+                               rewritten to stdout completely, every 
+                               time a syscall is executed. :-S
+                               
     * makefiles/configure: upgraded to the latest autoconf/automake/etc.
 
       KNOWN BUGS: some of the AX_... macros use undocumented
                   AC_RUN_LOG() which does not exist anymore in the
                   latest release.
 
-                  This must be fixed (diff commandline flag checks and a
+                  This must be fixed (diff commandline flag checks and a 
                   few others suffer from this)
+
+    * makefiles: 'make dist' will not work from a VPATH-style setup (see 
+      automake/autoconf manuals for what VPATH is).
+      
+      'make distcheck' does not fail on this, but you can see it happen 
+      when running this check.
 
     * makefiles: 'make check' target now does something VERY useful: it
       runs all the megatest tests (except Neural Net) as separate tests.
@@ -142,6 +161,22 @@
 
       The other custom scripts (tests/ref/*.filter.sh) serve particular
       purposes and don't require parameterization.
+      
+      Want to re-generate the master 'known good' files?
+      ..................................................
+      
+      Simple. 
+      
+        cd tests && rm -rf ref/
+        
+      and you got rid of them all. Next, run
+      
+        make check
+      
+      as usual and you'll get a warning for every missing reference 
+      file, which will be automatically generated. Though, of course, 
+      I'd rather see you just 'rm -f'-d only those ref/ files that need 
+      updating...
 
     * TODO: tests/Makefile.am cleanup: now some of those lines are
             _extremely_ large; these may be broken into readable bits.
@@ -152,17 +187,7 @@
     * COLOPHON.txt fixed (Debian bug #471554: typo in COLOPHON.txt)
 
     * Vector Tokenizer changes to allow full custom 3D vector matrices;
-      also included additional return value for use with the v2.0
-      classifier diagnostics code.
-
-      DIAG v2.0 is not published yet; this stuff is related to the
-      'cssanalyze' command and is thus able to report which strings were
-      used to produced what hashes; the VT diag feedback is required to
-      allow cssanalyze to report which tokens (character sequences) were
-      merged together (and how) to create the recorded 'feature' (==
-      derived hash). This allows one to VERY closely inspect which
-      'original words' were used to produce the pR classification in the
-      end.
+      also refactored to permit the use of custom tokenizer functions, etc.
 
 
 2008-03-31 Ger Hobbelt
@@ -409,7 +434,7 @@
           **** unigram Winnow classifier
 
           **** OSB Hyperspace classifier                  <-- matches better when you define
-                    #define USE_FIXED_UNIQUE_MODE     0  /* zero! trurn OFF to match Bill's! */
+                    #define USE_FIXED_UNIQUE_MODE     0  /* zero! turn OFF to match Bill's! */
 
                 WARNING: there's a VT bug in the 20080324 wget copy of
                          CRM114, which reflects on the knowngood: it is

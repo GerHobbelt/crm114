@@ -582,11 +582,22 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             }
             else
             {
-                fwrite(&(vht[varidx]->valtxt[vht[varidx]->vstart]),
-                        vht[varidx]->vlen,
-                        1,
+                int len_written = fwrite4stdio(&(vht[varidx]->valtxt[vht[varidx]->vstart]),
+						vht[varidx]->vlen,
                         stdout);
-                fflush(stdout);
+				if (len_written != vht[varidx]->vlen)
+				{
+					nonfatalerror_ex(SRC_LOC(), "ACCEPT: all data (len = %d) could not be written to the output: "
+                        "errno = %d(%s)\n",
+vht[varidx]->vlen,
+                        errno,
+                        errno_descr(errno));
+				}
+        // [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster
+        if (isatty(fileno(stdout)))
+        {
+            fflush(stdout);
+        }
             }
             //    WE USED TO DO CHARACTER I/O.  OUCH!!!
             //      for (i = 0; i < cdw->nchars ; i++)
@@ -677,7 +688,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 
             //    and stuff the new value in.
             crm_destructive_alter_nvariable(&varname[vns], vnl,
-                    newstr, strlen(newstr));
+                    newstr, (int)strlen(newstr));
         }
         break;
 

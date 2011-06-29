@@ -299,7 +299,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (user_trace)
         {
             fprintf(stderr, "learning the text (len %d) :", textlen);
-            fwrite(&(mdw->filetext[textoffset]), 1,
+            fwrite4stdio(&(mdw->filetext[textoffset]), 
                     ((textlen < 128) ? textlen : 128), stderr);
             fprintf(stderr, "\n");
         }

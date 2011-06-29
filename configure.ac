@@ -455,7 +455,7 @@ fi
 
 # ##################################################################
 #
-# any pecial build features?
+# any special build features?
 #
 
 

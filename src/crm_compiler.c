@@ -653,7 +653,7 @@ pgmtext + csl->mct[stmtnum]->start,
                     stmtnum,
                     nblength);
             fprintf(stderr, "String was >>>");
-            fwrite(&pgmtext[nbindex], 1, nblength, stderr);
+			fwrite4stdio(&pgmtext[nbindex], nblength, stderr);
             fprintf(stderr, "<<<\n\n");
         }
 #endif

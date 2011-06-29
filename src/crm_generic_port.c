@@ -225,7 +225,7 @@ break;
  // biggest chunk to be dumped per char is the HEX escape @ 4 chars
 if (j > WIDTHOF(buf) - 4)
 {
-	if (1 != fwrite(buf, 1, j, dst))
+	if (j != fwrite4stdio(buf, j, dst))
 	{
 		// error!
 		return -1;
@@ -237,7 +237,7 @@ j = 0;
  // dump remainder of buffer to dst
 if (j > 0)
 {
-	if (1 != fwrite(buf, 1, j, dst))
+	if (j != fwrite4stdio(buf, j, dst))
 	{
 		// error!
 		return -1;
