@@ -1,0 +1,24 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: \n:*:s:\n/} alius { output / Unsure result \n:*:s:\n/ } } 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+Likely result: 
+PMULC succeeds; success probabilty: 1.0000 pR: 59.1777
+Best match to clump #2 (clump_#2) prob: 1.0000  pR: 59.1777
+Closest document: #1 (document_#1) affinity: 0.7596
+Total features in input file: 223
+1: (clump_#1): documents: 4  affinity: 0.1356  prob: 0.0000  pR: -70.0000
+2: (clump_#2): documents: 2  affinity: 0.4753  prob: 1.0000  pR: 59.1777
+3: (clump_#3): documents: 49  affinity: 0.1422  prob: 0.0000  pR: -70.0000
+4: (clump_#4): documents: 3  affinity: 0.1230  prob: 0.0000  pR: -70.0000
+5: (clump_#5): documents: 1  affinity: 0.1208  prob: 0.0000  pR: -70.0000
+6: (clump_#6): documents: 1  affinity: 0.1421  prob: 0.0000  pR: -70.0000
+7: (clump_#7): documents: 1  affinity: 0.1173  prob: 0.0000  pR: -70.0000
+8: (clump_#8): documents: 2  affinity: 0.0928  prob: 0.0000  pR: -70.0000
+
+

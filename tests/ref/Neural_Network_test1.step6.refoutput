@@ -1,0 +1,16 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type I 
+CLASSIFY succeeds; success probability: 0.889200  pR: 189.2001
+Best match to file #0 (i_test.css) prob: 0.8892  pR: 189.2001  
+Total features in input file: 372
+#0 (i_test.css): prob: 8.89e-01, pR: 189.20
+#1 (q_test.css): prob: 1.11e-01, pR: -189.20
+

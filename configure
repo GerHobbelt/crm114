@@ -22853,791 +22853,791 @@ done
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "crm114.lsm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "docs/Makefile":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "examples/Makefile":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "mailfilter/Makefile":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "man/Makefile":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "man/include.zmm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "src/Makefile":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "src/diff_em.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "src/indent.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/Makefile":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/megatest.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/megatest_ng.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/aliustest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/approxtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/argtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/backwardstest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/beeptest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/bracktest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/classifytest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/escapetest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/eval_infiniteloop.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/exectest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/fataltraptest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/inserttest_a.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/inserttest_b.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/inserttest_c.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/learntest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/match_isolate_test.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/matchtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/mathalgtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/mathrpntest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/nestaliustest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/overalterisolatedtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/paolo_overvars.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/paolo_ov2.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/paolo_ov3.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/paolo_ov4.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/paolo_ov5.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/randomiotest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/rewritetest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/skudtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/statustest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/traptest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/uncaughttraptest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/unionintersecttest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/userdirtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/windowtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/windowtest_fromvar.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/tenfold_validate.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/tokendelimiterbugtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/bracesbugtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/blowuptrapbugtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/indirecttest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/isolate_reclaim_test.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/match_isolate_reclaim.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/slashbugtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/trapseqbugtest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/translate_tr.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/call_return_test.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/alternating_example_neural.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/alius_w_comment.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/zz_translate_test.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/quine.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/defaulttest.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/print_binary2decimal_int32.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/testscript.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/statustest.filter.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/crm114_error_report.filter.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/crm114_versiontest.filter.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "tests/crm114_classify.filter.sh":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "examples/pad.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "examples/shroud.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "mailfilter/classifymail.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "mailfilter/mailfilter.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "mailfilter/maillib.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "mailfilter/mailreaver.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "mailfilter/mailtrainer.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
     "examples/rewriteutil.crm":F)
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
  ;;
 
   esac

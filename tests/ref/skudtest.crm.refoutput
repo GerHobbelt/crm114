@@ -1,0 +1,30 @@
+TEST SCRIPT + COMMANDLINE:
+skudtest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+ CRM114 testing that start / length works in matches 
+ 
+DEBUG: whitelist==<<CRM114
+crm114
+harvard.edu
+tufts.edu
+dartmouth.edu
+mit.edu
+rpi.edu
+
+>>
+DEBUG: matched==<<CRM114>>
+DEBUG: matched==<<crm114>>
+DEBUG: matched==<<harvard.edu>>
+DEBUG: matched==<<tufts.edu>>
+DEBUG: matched==<<dartmouth.edu>>
+DEBUG: matched==<<mit.edu>>
+DEBUG: matched==<<rpi.edu>>
+DEBUG: [TheEnd]
+

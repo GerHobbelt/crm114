@@ -20,7 +20,9 @@
 #
 
 CRM_BIN="@abs_top_builddir@/src/crm114"
-
+BUILDDIR=@builddir@
+SRCDIR=@srcdir@
+REFDIR="${SRCDIR}/ref"
 
 report_error()
 {
@@ -86,7 +88,7 @@ fi
 if [ ! -z "${expected}" ]; then
   if [ "x${expected}" = "x-" ]; then
     if [ ${literalscript} = 0 ]; then
-      expected="ref/${scriptfile}.refoutput"
+      expected="${REFDIR}/${scriptfile}.refoutput"
       debug_msg "going to use expected outfile file '${expected}'..."
     else
       report_error "expected outfile file '${expected}' does not exist and cannot be 'generated' from the script filename as you specified a literal script!"
@@ -140,6 +142,7 @@ else
   else
     debug_msg ": echo '${inputdata}' | crm114 ${scriptfile} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
     echo "${inputdata}" | ${CRM_BIN} "${scriptfile}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" 2> "${tmperr}" > "${tmpout}"
+    retcode=$?
   fi
 fi
 
@@ -172,7 +175,9 @@ fi
 # and compare that chk file with the reference file:
 retcode=65536
 if [ ! -z "${diffscript}" ]; then
-  "${diffscript}" "${expected}" "${tmpchk}" "${filtout}"
+  targetname="${BUILDDIR}/`basename ${diffscript}`.temp"
+  echo "targetname = ${targetname}"
+  "${diffscript}" "${expected}" "${tmpchk}" "${filtout}" "${targetname}"
   retcode=$?
   # because the diffscript will certainly postprocess the data, we should
   # produce a 'true' (original) diff output for display when we FAIL:

@@ -1,0 +1,11 @@
+TEST SCRIPT + COMMANDLINE:
+indirecttest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+result -->you hit the jackpot<--->and that's good<--->:frobotz:<--- 
+

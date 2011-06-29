@@ -1061,11 +1061,11 @@ AC_CONFIG_FILES([Makefile
 	#
 	# and when we finally have produced the files, make sure the generated shell scripts are executable:
 	#
-	chmod a+x src/*.sh
-	chmod a+x tests/*.sh
-	chmod a+x tests/*.crm
-	chmod a+x examples/*.crm
-	chmod a+x mailfilter/*.crm
+	chmod a+x src/*.sh          2> /dev/null
+	chmod a+x tests/*.sh        2> /dev/null
+	chmod a+x tests/*.crm       2> /dev/null
+	chmod a+x examples/*.crm    2> /dev/null
+	chmod a+x mailfilter/*.crm  2> /dev/null
 ])
 
 AC_OUTPUT

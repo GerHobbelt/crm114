@@ -1139,7 +1139,7 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         /* [i_a] GROT GROT GROT: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
         out_pos += sprintf(outbuf + out_pos,
-                "#%d (%s): features: %d, score:%3.2e, prob: %3.2e,"
+                "#%d (%s): features: %d, score: %3.2e, prob: %3.2e,"
                 "pR: %6.2f\n",
                 i, filenames[i],
                 n_features[i], scores[i],

@@ -1,0 +1,50 @@
+TEST SCRIPT + COMMANDLINE:
+windowtest_fromvar.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+ CRM114: testing windowing on windows from a variable 
+ 
+ Input stuff is : This is the test one result A this is the test two result A this is the test three result A this is the test four result A this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+
+ testing delimited by 'A'
+  Data Window: data window test text  
+ Windowed value = This is the test one result A 
+ Remaining stuff =  this is the test two result A this is the test three result A this is the test four result A this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test two result A 
+ Remaining stuff =  this is the test three result A this is the test four result A this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test three result A 
+ Remaining stuff =  this is the test four result A this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test four result A 
+ Remaining stuff =  this is the test 5 result A this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test 5 result A 
+ Remaining stuff =  this is the test six result A this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+ Data Window: data window test text  
+ Windowed value =  this is the test six result A 
+ Remaining stuff =  this is extra stuff and should trigger exit from the loop since it doesn't have the proper delimiter.
+ 
+ 
+  Bounced out of the WINDOW loop -- no further stuff
+ End of window-from-variable testing 
+

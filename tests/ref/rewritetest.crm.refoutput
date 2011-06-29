@@ -1,0 +1,28 @@
+TEST SCRIPT + COMMANDLINE:
+rewritetest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+ --- CRM114 testing string rewrites 
+ 
+------------------------
+abc
+frobnitz_singleline this should trigger 
+def
+frobnitz_multiline zebra
+giraffe
+and so should this.
+testpattern
+mno
+------------------------
+abc
+single-line rewrite ran OK.
+def
+multi-line rewrite ran OK.
+mno
+

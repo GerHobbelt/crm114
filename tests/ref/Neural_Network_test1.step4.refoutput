@@ -1,0 +1,9 @@
+TEST SCRIPT + COMMANDLINE:
+-{learn < neural refute fromstart > (i_test.css) /[[:graph:]]+/} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:

@@ -1,0 +1,12 @@
+TEST SCRIPT + COMMANDLINE:
+beeptest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+ CRM114: test syscall 'echo beep' 
+

@@ -1,0 +1,49 @@
+TEST SCRIPT + COMMANDLINE:
+overalterisolatedtest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+   CRM114 testing ALTERation and copying 
+
+----- Whole file -----
+01abcdefghijkl89----------------------
+ 1: abcde, 2: cdefg, 3: fghij z: cdefg 
+ ---altering the z copy ----- 
+
+ 1: abcde, 2: cdefg, 3: fghij z: CDEEEFG 
+----- Whole file -----
+01abcdefghijkl89 ---altering the original ----- 
+
+ 1: abCDEEE, 2: CDEEEFG, 3: FGhij z: CDEEEFG 
+----- Whole file -----
+01abCDEEEFGhijkl89 ---altering the original again----- 
+
+ 1: abCD, 2: CDFG, 3: FGhij z: CDEEEFG 
+----- Whole file -----
+01abCDFGhijkl89----------------------
+----- Rematched Whole file -----
+01abCDFGhijkl89
+----------------------
+------putting things back-----
+----- Whole file -----
+01abcdefghijkl89
+----------------------
+
+----------------------
+ :q: = cdefg 
+  ISOLATEing :q: - this should copy 
+ :q: = cdefg 
+  ALTERing :q: to ZZZZZ
+ :q: = ZZZZZ 
+----- Whole file -----
+01abcdefghijkl89
+----------------------
+
+ Checking initialization of isolation 
+     AAAAA 
+

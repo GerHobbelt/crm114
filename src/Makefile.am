@@ -738,12 +738,12 @@ install_engine: crm114$(EXEEXT)
 	$(E) "    Installing engine"
 	$(E) ""
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	install $(INSTALLFLAGS) crm114$(EXEEXT) $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) crm114$(EXEEXT) $(DESTDIR)$(bindir)/crm114$(VER_SUFFIX)$(EXEEXT)
 
 
 install_binary_only: crm114$(EXEEXT) cssdiff$(EXEEXT) cssmerge$(EXEEXT) cssutil$(EXEEXT) osbf-util$(EXEEXT)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	install $(INSTALLFLAGS) crm114$(EXEEXT)    $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) crm114$(EXEEXT)    $(DESTDIR)$(bindir)/crm114$(VER_SUFFIX)$(EXEEXT)
 	install $(INSTALLFLAGS) cssdiff$(EXEEXT)   $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)$(EXEEXT)
 	install $(INSTALLFLAGS) cssmerge$(EXEEXT)  $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)$(EXEEXT)
 	install $(INSTALLFLAGS) cssutil$(EXEEXT)   $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)$(EXEEXT)
@@ -757,19 +757,17 @@ install-exec-hook: crm114$(EXEEXT)
 
 
 uninstall-hook:
-	rm $(DESTDIR)$(bindir)/crm
+	-rm -f $(DESTDIR)$(bindir)/crm
 
 
 uninstall-local:
-	-rm -rf $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/crmg$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/crma$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/crm114$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)$(EXEEXT)
 
-#	-rm -rf $(DESTDIR)$(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
+#	-rm -f $(DESTDIR)$(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 
 #

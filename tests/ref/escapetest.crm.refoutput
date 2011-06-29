@@ -1,0 +1,16 @@
+TEST SCRIPT + COMMANDLINE:
+escapetest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ 
+  CRM114 testing backslash 
+ 
+/-;-{-abcd-}-;-/    =/==\= 
+ This text started out on three lines but it should appear on just one.
+ testing part-line comments
+

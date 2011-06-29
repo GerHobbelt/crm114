@@ -1,0 +1,18 @@
+TEST SCRIPT + COMMANDLINE:
+zz_translate_test.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+version: 20080326-BlameSentansoken ( TRE 0.7.5 (LGPL) )
+
+noSpaces before: Are The Russian Involved ?
+noSpaces after : AreTheRussianInvolved?
+
+withSpaces before: Nuclear Combat Toe To Toe With The Rooskies !
+withSpaces after : NuclearCombatToeToToeWithTheRooskies!
+
+

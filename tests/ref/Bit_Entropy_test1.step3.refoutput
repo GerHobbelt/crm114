@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); {classify < entropy unique crosslink> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } } 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type Q 
+CLASSIFY fails; success probability: 0.0000  pR: -6.5985
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 6.5985  
+Total features in input file: 552
+#0 (i_test.css): features: 425488 (5%), entropy: 384.969632, jumps: 23, prob: 2.52e-07, pR:  -6.60 
+#1 (q_test.css): features: 552504 (5%), entropy: 225.556532, jumps: 7, prob: 1.00e+00, pR:   6.60 
+
+

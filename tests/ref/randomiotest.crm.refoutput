@@ -1,0 +1,18 @@
+TEST SCRIPT + COMMANDLINE:
+randomiotest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+Original:    The quick brown fox jumped over the lazy dog's back
+delete file then append:     alpha bravo charlie 
+prior file, no append:    The quick brown fox jumped over the lazy dog's back
+prior file, and append:    The quick brown fox jumped over the lazy dog's back alpha bravo charlie 
+Grab chars 10 thru 25: brown fox jumpe
+Grab chars 17 and length 12:  ox jumped ov
+Now, change the fox to cat: uick brown cat jumped over the
+Final check- did it really get written? The quick brown cat jumped over the lazy dog's back alpha bravo charlie 
+

@@ -1,0 +1,11 @@
+TEST SCRIPT + COMMANDLINE:
+-{window; isolate (:s:); syscall () () (:s:) /jibberjabber 2>&1 /; output / Status: :*:s: \n/} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ Status: DEAD MINION, EXIT CODE: 127 
+

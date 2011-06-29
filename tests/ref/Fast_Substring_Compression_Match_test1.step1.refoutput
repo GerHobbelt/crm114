@@ -1,0 +1,10 @@
+TEST SCRIPT + COMMANDLINE:
+-{learn < fscm > (q_test.css) /[[:graph:]]+/} -s 200000
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+

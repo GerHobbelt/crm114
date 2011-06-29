@@ -1,0 +1,30 @@
+TEST SCRIPT + COMMANDLINE:
+fataltraptest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ 
+ CRM114  testing FAULT/TRAP... 
+  --- you should not see an error yet --- 
+ you should see this --><--and this, with nothing in between. 
+ 
+ --- the next thing you see SHOULD be an error "unable to read-open"--- 
+ Caught the error  - fault text was 
+./crm114: *ERROR* 
+ For some reason, I was unable to read-open the file named  zoob.zipulrlfjf
+ Sorry, but this program is very sick and probably should be killed off.
+This happened at line 19 of file fataltraptest.crm
+(runtime system location: crm_expr_file_io.c(151) in routine: crm_expr_input)
+  --- and again, the next thing you see SHOULD be an error "unable to write-open"--- 
+ Caught the error  - fault text was 
+./crm114: *ERROR* 
+ For some reason, I was unable to write-open the file named /No/Such/Directory/frotz.mumble
+ Sorry, but this program is very sick and probably should be killed off.
+This happened at line 29 of file fataltraptest.crm
+(runtime system location: crm_expr_file_io.c(345) in routine: crm_expr_output)
+ 
+

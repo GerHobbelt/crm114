@@ -1,0 +1,20 @@
+TEST SCRIPT + COMMANDLINE:
+paolo_ov2.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Content-Type: image/gif;
+ name="clonic.GIF"
+Content-Transfer-Encoding: base64
+Content-ID: <part1.07010905.07040200@mpbnmpsjffb@hotmail.com>
+Content-Disposition: inline;
+ filename="clonic.GIF"
+
+

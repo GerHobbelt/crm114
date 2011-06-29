@@ -1,0 +1,26 @@
+TEST SCRIPT + COMMANDLINE:
+translate_tr.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+TRANSLATE basic functionality test 
+
+original: foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e
+rot13:    sbb one mnccn 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX n-r
+again:    foo bar zappa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e
+invrange: ull yzi azkkz 9876543210.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX z-v
+unique:   fo bar zapa 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX a-e
+invrange: ull yzi azkkz 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX z-v
+literal:  foo bzr azppz 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX z-e
+lit+uniq: foo bzr azppz 0123456789.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX z-e
+deletion:    02468.,?`~!@#$%^&*()_-+= XYZZY QUICK BROWN FOX -
+del-inv:  foobarzappa13579ae
+del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
+srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
+src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
+

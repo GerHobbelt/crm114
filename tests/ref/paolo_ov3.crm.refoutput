@@ -1,0 +1,23 @@
+TEST SCRIPT + COMMANDLINE:
+paolo_ov3.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+:boundary:=------------000708090009050006030006
+:c:=1
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+:c:=2
+Content-Type: image/gif;
+ name="clonic.GIF"
+Content-Transfer-Encoding: base64
+Content-ID: <iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii>
+Content-Disposition: inline;
+ filename="clonic.GIF"
+
+

@@ -1,0 +1,14 @@
+TEST SCRIPT + COMMANDLINE:
+-{} -v
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ This is CRM114, version 20080326-BlameSentansoken (TRE 0.7.5 (LGPL))
+ Copyright 2001-2006 William S. Yerazunis
+ This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
+
+

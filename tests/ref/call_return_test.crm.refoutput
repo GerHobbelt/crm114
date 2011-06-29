@@ -1,0 +1,80 @@
+TEST SCRIPT + COMMANDLINE:
+call_return_test.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+Starting 
+
+
+Testing local and forking call and returns. (level 0) 
+The foo (level 1)
+Middle (level 0)
+The bar was > a b c d e < (level 1)
+Got back >z y x w v<
+End (level 0)
+ Doing factorial with a mutating argument 
+ arglist return factorial call entry, args =  5 1  (level 1)
+ arglist return factorial call entry, args =  4 5  (level 2)
+ arglist return factorial call entry, args =  3 20  (level 3)
+ arglist return factorial call entry, args =  2 60  (level 4)
+ arglist return factorial call entry, args =  1 120  (level 5)
+ Recursion bottomed out, returning :out: = 120 
+ Call return, :out: = 120 ( level 4) 
+ Call return, :out: = 120 ( level 3) 
+ Call return, :out: = 120 ( level 2) 
+ Call return, :out: = 120 ( level 1) 
+ 5 factorial is 120 (level 0)
+
+ Doing factorial with inplace args. 
+ downward recurse call entry, args =  5 1  (level 1)
+ downward recurse call entry, args =  4 5  (level 2)
+ downward recurse call entry, args =  3 20  (level 3)
+ downward recurse call entry, args =  2 60  (level 4)
+ downward recurse call entry, args =  1 120  (level 5)
+ Recursion bottomed out, returning :out: = 120 
+ Call return, :out: = 120 (level 4)
+ Call return, :out: = 120 (level 3)
+ Call return, :out: = 120 (level 2)
+ Call return, :out: = 120 (level 1)
+ 5 factorial_inplace is 120 (level 0) 
+
+ Doing factorial with return args 
+ Call factorial_returnarg entry, arg =  5  (level 1)
+ N is 5 NM1 is 4 
+ Call factorial_returnarg entry, arg =  4  5  (level 2)
+ N is 4 NM1 is 3 
+ Call factorial_returnarg entry, arg =  3  4  5  (level 3)
+ N is 3 NM1 is 2 
+ Call factorial_returnarg entry, arg =  2  3  4  5  (level 4)
+ N is 2 NM1 is 1 
+ Call factorial_returnarg entry, arg =  1  2  3  4  5  (level 5)
+  Calling bottomed out with N-1 <= 0.00 (level 5)
+ Call returned, return value was  1  2  3  4  5  (level 4)
+  p1: 1, p2: 2, rest:  3  4  5  
+  multiply p1 and p2, put that on the front, and return :out: = 2  3  4  5  (level 4)
+ Call returned, return value was 2  3  4  5  (level 3)
+  p1: 2, p2: 3, rest:  4  5  
+  multiply p1 and p2, put that on the front, and return :out: = 6  4  5  (level 3)
+ Call returned, return value was 6  4  5  (level 2)
+  p1: 6, p2: 4, rest:  5  
+  multiply p1 and p2, put that on the front, and return :out: = 24  5  (level 2)
+ Call returned, return value was 24  5  (level 1)
+  p1: 24, p2: 5, rest:  
+  multiply p1 and p2, put that on the front, and return :out: = 120  (level 1)
+ 5 factorial_returnarg is 120  (level 0)
+
+ 
+and now do some fully isolated forking calls 
+Returned output = In the fork... data window is This is the original data window.  It shouldn't change (level 0)
+Inputted; now the data window is:  this string is your input 
+Changing the data window in this fork. 
+Now the data window is: This is a _changed_ data window, local to this SYSCALLed fork.
+ (level 0)
+Returned status:  
+DEAD MINION, EXIT CODE: 123
+And the data window is now: This is the original data window.  It shouldn't change
+

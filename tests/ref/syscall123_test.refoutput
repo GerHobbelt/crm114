@@ -1,0 +1,11 @@
+TEST SCRIPT + COMMANDLINE:
+-{window; isolate (:s:); syscall () (:s:) /echo one two three/; output /:*:s:/} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+one two three
+

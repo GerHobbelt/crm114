@@ -1,0 +1,18 @@
+TEST SCRIPT + COMMANDLINE:
+mathalgtest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ 
+  Algebraic math test 
+ string value of x is 12345, string value of pi is 3.14159
+ length of x is 5 , length of pi is 7
+ string rep of X is shorter than pi
+ matheval of x + pi is 12348.14159
+ Algebraic matheval of (2*3)+(4*5) is 26 
+  and adding 3.14159 to that is 29.14159
+

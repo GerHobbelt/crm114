@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+quine.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+{
+ window
+ output /:*:_pgm_text:/
+}
+
+
+

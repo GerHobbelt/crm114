@@ -1,0 +1,11 @@
+TEST SCRIPT + COMMANDLINE:
+backwardstest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ searching for a foo...found a foo, searching for bar.ooo... no bar.ooo in front of the foo. 
+

@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type I 
+CLASSIFY succeeds; success probability: 1.0000  pR: 6.0927
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 6.0927  
+Total features in input file: 408
+#0 (i_test.css): features: 425488 (100%), entropy: 231.058285, jumps: 7, prob: 1.00e+00, pR:   6.09 
+#1 (q_test.css): features: 552504 (100%), entropy: 378.250899, jumps: 21, prob: 8.08e-07, pR:  -6.09 
+
+

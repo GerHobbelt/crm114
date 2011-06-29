@@ -1,0 +1,10 @@
+TEST SCRIPT + COMMANDLINE:
+-{learn <osb> (i_test.css) /[[:graph:]]+/} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+

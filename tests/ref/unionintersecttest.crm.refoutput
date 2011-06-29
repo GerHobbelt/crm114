@@ -1,0 +1,18 @@
+TEST SCRIPT + COMMANDLINE:
+unionintersecttest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+ CRM114: Testing union and intersection 
+ 
+We start with this: ' a b c d e f g h i j k l m n o p q r s t u v w x y z ' 
+intersection of abc and cde is t1: 'c' 
+union of l thru s is t2: 'l m n o p q r s' 
+intersection of abc and t2 is t3: '' 
+union of zulu and t1 is t4: 'c d e f g h i j k l m n o p q r s t u v w x y z' 
+

@@ -1,0 +1,21 @@
+TEST SCRIPT + COMMANDLINE:
+paolo_ov4.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+:boundary:=--0123456789
+:c:=1
+Content-Type: text
+Content-Transfer-Encoding: 7bit
+
+:c:=2
+Content-Type: image
+ name="clonic.GIF"
+Content-Transfer-Encoding: base64
+iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+
+

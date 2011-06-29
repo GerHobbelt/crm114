@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); {classify < svm unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type I 
+CLASSIFY succeeds; success probability: 0.9678  pR: 14.7738
+Best match to file #0 (i_test.css) prob: 0.9678  pR: 14.7738  
+Total features in input file: 40
+#0 (i_test.css): documents: 300, features: 34780,  prob: 9.68e-01, pR:  14.77 
+#1 (q_test.css): documents: 175, features: 32300,  prob: 3.22e-02, pR: -14.77 
+
+

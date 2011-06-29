@@ -1,0 +1,15 @@
+TEST SCRIPT + COMMANDLINE:
+defaulttest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ 
+
+CRM114: testing default command line args 
+blah 1 = :blah:
+blah 2 = new value
+

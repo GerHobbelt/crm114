@@ -1,0 +1,28 @@
+TEST SCRIPT + COMMANDLINE:
+windowtest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+ CRM114: testing windowing on windows and variables 
+ 
+
+ test one- input by chars, delimited by 'A' 
+ Got: 
+ This is the test one result A
+ test two- input by EOFs, delimited by 'A' 
+ Got: 
+  this is the test two result A
+ test three- window an isolated var by chars, delimited by 'A' 
+ Got: 
+  this is the test three result A
+ test four- isolated var, input by EOFs, delimited by 'A' 
+ Got: 
+  this is the test four result A
+ and lastly- did the data window stay constant? 
+ this is the test two result A
+

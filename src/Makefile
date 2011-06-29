@@ -277,7 +277,7 @@ PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 2241
+REVISION = 2242
 SED = /usr/bin/sed
 SET_MAKE = 
 SEVEN_ZIP = /usr/bin/7z
@@ -286,7 +286,7 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-2241
+TAR_FILENAME_POSTFIX = Ger-2242
 TRE_CONFIG = no
 UNCRUSTIFY = /usr/local/bin/uncrustify
 VERSION = 20080326-BlameSentansoken
@@ -363,7 +363,7 @@ UNCRUSTIFY_BIN = /usr/local/bin/uncrustify
 DIFF_BIN = /usr/bin/diff
 HTMLTIDY_BIN = /usr/bin/tidy
 TAR_CMDLINE = ${TAR_BIN} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20080326-BlameSentansoken-Ger-2241
+ARCHIVE_BASE_NAME = crm114-20080326-BlameSentansoken-Ger-2242
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #
@@ -1431,11 +1431,11 @@ install_engine: crm114$(EXEEXT)
 	$(E) "    Installing engine"
 	$(E) ""
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	install $(INSTALLFLAGS) crm114$(EXEEXT) $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) crm114$(EXEEXT) $(DESTDIR)$(bindir)/crm114$(VER_SUFFIX)$(EXEEXT)
 
 install_binary_only: crm114$(EXEEXT) cssdiff$(EXEEXT) cssmerge$(EXEEXT) cssutil$(EXEEXT) osbf-util$(EXEEXT)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	install $(INSTALLFLAGS) crm114$(EXEEXT)    $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) crm114$(EXEEXT)    $(DESTDIR)$(bindir)/crm114$(VER_SUFFIX)$(EXEEXT)
 	install $(INSTALLFLAGS) cssdiff$(EXEEXT)   $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)$(EXEEXT)
 	install $(INSTALLFLAGS) cssmerge$(EXEEXT)  $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)$(EXEEXT)
 	install $(INSTALLFLAGS) cssutil$(EXEEXT)   $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)$(EXEEXT)
@@ -1447,18 +1447,16 @@ install-exec-hook: crm114$(EXEEXT)
 	cd $(DESTDIR)$(bindir) && $(LN_S) crm114$(VER_SUFFIX)$(EXEEXT) crm
 
 uninstall-hook:
-	rm $(DESTDIR)$(bindir)/crm
+	-rm -f $(DESTDIR)$(bindir)/crm
 
 uninstall-local:
-	-rm -rf $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/crmg$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/crma$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)$(EXEEXT)
-	-rm -rf $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/crm114$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)$(EXEEXT)
+	-rm -f $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)$(EXEEXT)
 
-#	-rm -rf $(DESTDIR)$(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
+#	-rm -f $(DESTDIR)$(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 #
 #        This runs a moderately interesting set of base tests 

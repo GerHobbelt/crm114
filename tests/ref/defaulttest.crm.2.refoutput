@@ -1,0 +1,15 @@
+TEST SCRIPT + COMMANDLINE:
+defaulttest.crm --blah=command override
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ 
+
+CRM114: testing default command line args 
+blah 1 = command override
+blah 2 = command override
+

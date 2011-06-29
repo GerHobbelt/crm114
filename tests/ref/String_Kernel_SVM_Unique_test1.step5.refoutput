@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); translate /.,!?@#^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type I 
+CLASSIFY succeeds; success probability: 0.9848  pR: 18.1080
+Best match to file #0 (i_test.css) prob: 0.9848  pR: 18.1080  
+Total features in input file: 49
+#0 (i_test.css):documents: 300, features: 42397,  prob: 9.85e-01, pR:  18.11 
+#1 (q_test.css):documents: 175, features: 37599,  prob: 1.52e-02, pR: -18.11 
+
+

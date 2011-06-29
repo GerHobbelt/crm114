@@ -1,0 +1,15 @@
+TEST SCRIPT + COMMANDLINE:
+bracktest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+ CRM114 testing brackets, escapes and #'s 
+
+ If you don't see any compiler error messages, that means the test passed. 
+
+

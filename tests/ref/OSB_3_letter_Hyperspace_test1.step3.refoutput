@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:) /.../ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } } 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type Q 
+CLASSIFY fails; success probability: 0.1569  pR: -7.3023
+Best match to file #1 (q_test.css) prob: 0.8431  pR: 7.3023  
+Total features in input file: 91
+#0 (i_test.css): features: 60824, hits: 9, radiance: 1.33e-03, prob: 1.57e-01, pR:  -7.30 
+#1 (q_test.css): features: 61656, hits: 21, radiance: 7.15e-03, prob: 8.43e-01, pR:   7.30 
+
+

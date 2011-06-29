@@ -284,7 +284,9 @@ buf[inlen] = hack_c;
                         conv_count = 0;
                         value = 0;
                         if (is + 2 < inlen)  // watch out for end-of-string
+						{
                             conv_count = sscanf(&buf[is + 1], "%2X", &value);
+						}
                         if (conv_count == 1)
                         {
                             buf[id] = value;
@@ -310,7 +312,9 @@ buf[inlen] = hack_c;
                         conv_count = 0;
                         value = 0;
                         if (is + 3 < inlen)  // watch out for end-of-string
+						{
                             conv_count = sscanf(&buf[is + 1], "%3o", &value);
+						}
                         if (conv_count == 1)
                         {
                             buf[id] = value;

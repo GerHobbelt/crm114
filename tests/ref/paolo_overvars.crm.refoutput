@@ -1,0 +1,32 @@
+TEST SCRIPT + COMMANDLINE:
+paolo_overvars.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+isolate :a: as 'hdgdgb aaa hdgdb', match b as /aaa/
+a=hdgdgb aaa hdgdb - b=aaa
+alter :a: as 'x'
+a=x - b=
+
+re-isolate :a: as 'hdgdgb bbb hdgdb'
+a=hdgdgb bbb hdgdb - b=
+
+now match :b: to :a:'s 'bbb' section
+a=hdgdgb bbb hdgdb - b=bbb
+
+now alter :a: to 'x' again
+a=x - b=
+
+re-re-isolate :a: as 'hdgdgb ccc hdgdb'
+a=hdgdgb ccc hdgdb - b=
+
+now match :b: to :a:'s 'ccc' section
+a=hdgdgb ccc hdgdb - b=ccc
+
+now alter :a: to 'x' again
+a=x - b=
+

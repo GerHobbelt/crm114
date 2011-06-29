@@ -1,0 +1,22 @@
+TEST SCRIPT + COMMANDLINE:
+alternating_example_neural.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type Q 
+CLASSIFY fails; success probability: 0.017262  pR: -282.7380
+Best match to file #1 (q_test.css) prob: 0.9827  pR: 282.7380  
+Total features in input file: 195
+#0 (i_test.css): prob: 1.73e-02, pR: -282.74
+#1 (q_test.css): prob: 9.83e-01, pR: 282.74
+
+ type I 
+CLASSIFY succeeds; success probability: 0.971915  pR: 271.9152
+Best match to file #0 (i_test.css) prob: 0.9719  pR: 271.9152  
+Total features in input file: 177
+#0 (i_test.css): prob: 9.72e-01, pR: 271.92
+#1 (q_test.css): prob: 2.81e-02, pR: -271.92

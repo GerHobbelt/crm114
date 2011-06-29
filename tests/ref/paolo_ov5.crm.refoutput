@@ -1,0 +1,21 @@
+TEST SCRIPT + COMMANDLINE:
+paolo_ov5.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+:boundary:=--0123
+:c:=1
+C-T: txt
+C-T-E: 7
+
+:c:=2
+C-T: img
+ name="clonic.GIF"
+C-T-E: b64
+iiii
+
+

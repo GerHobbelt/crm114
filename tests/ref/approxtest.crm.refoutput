@@ -1,0 +1,159 @@
+TEST SCRIPT + COMMANDLINE:
+approxtest.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ Start of approximate match testing. 
+
+Input string to match against: "molasses anaconda foo bar baz agentsmith mranderson "
+
+(foo) {1} ---> foo 
+(fou){~} ---> foo
+(foo) {1} ---> foo 
+(fou){~0} <no match> 
+(foo) {1} ---> foo 
+(fou){~1} ---> foo
+(foo) {1} ---> foo 
+(fou){~2} ---> foo
+(fou){~3} ---> foo
+(fuu){~} ---> foo
+(fuu){~0} <no match> 
+(fuu){~1} <no match> 
+(fuu){~2} ---> foo
+(fuu){~3} ---> foo
+(fou){#} ---> foo
+(fou){#0} <no match> 
+(fou){#1} ---> foo
+(fou){#2} ---> foo
+(fou){#3} ---> foo
+(fou){# ~1} ---> foo
+(fou){#0 ~1} <no match> 
+(fou){#1 ~1} ---> foo
+(fou){#2 ~1} ---> foo
+(fou){#3 ~1} ---> foo
+(fuu){#} ---> foo
+(fuu){#0} <no match> 
+(fuu){#1} <no match> 
+(fuu){#2} ---> foo
+(fuu){#3} ---> foo
+(fuu){# ~1} <no match> 
+(fuu){#0 ~1} <no match> 
+(fuu){#1 ~1} <no match> 
+(fuu){#2 ~1} <no match> 
+(fuu){#3 ~1} <no match> 
+(fuu){# ~2} ---> foo
+(fuu){#0 ~2} <no match> 
+(fuu){#1 ~2} <no match> 
+(fuu){#2 ~2} ---> foo
+(fuu){#3 ~2} ---> foo
+(fuu){# ~3} ---> foo
+(fuu){#0 ~3} <no match> 
+(fuu){#1 ~3} <no match> 
+(fuu){#2 ~3} ---> foo
+(fuu){#3 ~3} ---> foo
+(fuu){# ~} ---> foo
+(fuu){#0 ~} <no match> 
+(fuu){#1 ~} <no match> 
+(fuu){#2 ~} ---> foo
+(fuu){#3 ~} ---> foo
+(fou){#} ---> foo
+(fou){#0} <no match> 
+(fou){+1 -1} ---> fo
+(fou){+2 -2} ---> fo
+(fou){+3 -3} ---> fo
+(fou){# ~1} ---> foo
+(fou){#0 ~1} <no match> 
+(fou){+1 -1 ~1} ---> fo
+(fou){+2 -2 ~1} ---> fo
+(fou){+3 -3 ~1} ---> fo
+(fou){# ~2} ---> foo
+(fou){#0 ~2} <no match> 
+(fou){+1 -1 ~2} ---> fo
+(fou){+2 -2 ~2} ---> fo
+(fou){+3 -3 ~2} ---> fo
+(fou){# ~3} ---> foo
+(fou){#0 ~3} <no match> 
+(fou){+1 -1 ~3} ---> fo
+(fou){+2 -2 ~3} ---> fo
+(fou){+3 -3 ~3} ---> fo
+(fou){# ~} ---> foo
+(fou){#0 ~} <no match> 
+(fou){+1 -1 ~} ---> fo
+(fou){+2 -2 ~} ---> fo
+(fou){+3 -3 ~} ---> fo
+(fuu){#} ---> foo
+(fuu){#0} <no match> 
+(fuu){+1 -1} <no match> 
+(fuu){+2 -2} ---> f
+(fuu){+3 -3} ---> f
+(fuu){# ~1} <no match> 
+(fuu){#0 ~1} <no match> 
+(fuu){+1 -1 ~1} <no match> 
+(fuu){+2 -2 ~1} <no match> 
+(fuu){+3 -3 ~1} <no match> 
+(fuu){# ~2} ---> foo
+(fuu){#0 ~2} <no match> 
+(fuu){+1 -1 ~2} <no match> 
+(fuu){+2 -2 ~2} ---> f
+(fuu){+3 -3 ~2} ---> f
+(fuu){# ~3} ---> foo
+(fuu){#0 ~3} <no match> 
+(fuu){+1 -1 ~3} <no match> 
+(fuu){+2 -2 ~3} ---> f
+(fuu){+3 -3 ~3} ---> f
+(fuu){# ~} ---> foo
+(fuu){#0 ~} <no match> 
+(fuu){+1 -1 ~} <no match> 
+(fuu){+2 -2 ~} ---> f
+(fuu){+3 -3 ~} ---> f
+(anaconda){~} ---> anaconda
+(anaonda){ 1i + 1d < 1 } <no match> 
+(anaonda){ 1i + 1d < 2 } ---> anaconda
+(ananda){ 1i + 1d < 1 } <no match> 
+(ananda){ 1i + 1d < 2 } <no match> 
+(ananda){ 1i + 1d < 3 } ---> anaconda
+(ana123conda){ 1i + 1d < 2 } <no match> 
+(ana123conda){ 1i + 1d < 3 } <no match> 
+(ana123conda){ 1i + 1d < 4 } ---> anaconda
+(ana123cona){ 1i + 1d < 4 } <no match> 
+(ana123cona){ 1i + 1d < 5 } ---> anaconda
+(ana123coa){ 1i + 1d < 4 } <no match> 
+(ana123coa){ 1i + 1d < 5 } ---> anaco
+(ana123coa){ 1i + 1d < 6 } ---> anaco
+(ana123ca){ 1i + 1d < 4 } <no match> 
+(ana123a){ 1i + 1d < 4 } <no match> 
+(ana123a){ 1i + 1d < 3 } <no match> 
+(anukeonda){~} ---> anaconda
+(anaconda){ 1i + 1d < 1} ---> anaconda
+(anaconda){ 1i + 1d < 1, #1} ---> anaconda
+(anaconda){ 1i + 1d < 1 #1 ~10 } ---> anaconda
+(anaconda){ #1, ~1, 1i + 1d < 1 } ---> anaconda
+(anaconda){ #1 ~1 1i + 1d < 1 } ---> anaconda
+(anacnda){ #1 ~1 1i + 1d < 1 } <no match> 
+(agentsmith){~} ---> agentsmith
+(annndersen){~} ---> anderson
+(anentemstn){~} ---> agentsmith
+(anacda){~} ---> anaconda
+(anacda){ #1 ~1 1i + 1d < 1 } <no match> 
+(znacnda){ #1 ~1 1i + 1d < 1 } <no match> 
+(znacnda){ #1 ~2 1i + 1d < 1 } <no match> 
+(znacnda){ #1 ~3 1i + 1d < 1 } <no match> 
+(znacnda){ #1 ~3 1i + 1d < 2 } ---> anaconda
+(anac){~1}(onda){~1} ---> anaconda
+(aac){~1}(onda){~1} ---> naconda
+(ac){~1}(onda){~1} ---> aconda
+(anac){~1}(oda){~1} ---> anaconda
+(aac){~1}(oa){~1} ---> nacon
+(ac){~1}(oa){~1} ---> acon
+(anac){~1}(onda){~1} ---> anaconda
+(anZac){~1}(onZda){~1} ---> anaconda
+(anZZac){~1}(onZda){~1} <no match> 
+(anZac){~1}(onZZda){~1} <no match> 
+([a-n]){3,100} ---> anac
+([a-n]){3,100}? ---> ana
+ end of approximate match testing. 
+
