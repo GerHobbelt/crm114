@@ -1,4 +1,4 @@
-//	crm_svm.c - Support Vector Machine
+//	crm_svm.h - Support Vector Machine
 
 ////////////////////////////////////////////////////////////////////////
 //    This code is originally copyright and owned by William

@@ -298,44 +298,84 @@
 // the nitty details of the SVM are here.  For nitty detail
 // defines, see crm_svm_matrix_util.h, crm_svm_quad_prog.h,
 // crm_svm_matrix.h, and crm_svm_lib_fncts.h
-#define MAX_SVM_FEATURES 100000    //per example
-#define SVM_INTERNAL_TRACE_LEVEL 3 //the debug level when internal_trace is on
-#define SVM_ACCURACY 1e-3          //The accuracy to which to run the solver
-                                   //This is the average margin violation NOT
-                                   //accounted for by the slack variable.
-#define SV_TOLERANCE 0.01          //An example is a support vector if 
-                                   //theta*y*x <= 1 + SV_TOLERANCE.
-                                   //The smaller SV_TOLERANCE, the fewer 
-                                   //examples will be tagged as support 
-                                   //vectors.  This will make it faster to 
-                                   //learn new examples, but possibly less 
-                                   //accurate.
-#define SVM_ADD_CONSTANT 1         //Define this to be 1 if you want a
-                                   //constant offset in the classification
-                                   //ie h(x) = theta*x + b where b is
-                                   //the offset.  If you don't want
-                                   //a constant offset (just h(x) = theta*x),
-                                   //define this to be 0.
-#define SVM_HOLE_FRAC 0.25         //Size of the "hole" left at the end of
+#define MAX_SVM_FEATURES 100000       //per example
+#define SVM_INTERNAL_TRACE_LEVEL 3    //the debug level when internal_trace is 
+                                      //on
+#define SVM_ACCURACY 1e-3             //The accuracy to which to run the solver
+                                      //This is the average margin violation NOT
+                                      //accounted for by the slack variable.
+#define SV_TOLERANCE 0.01             //An example is a support vector if 
+                                      //theta*y*x <= 1 + SV_TOLERANCE.
+                                      //The smaller SV_TOLERANCE, the fewer 
+                                      //examples will be tagged as support 
+                                      //vectors.  This will make it faster to 
+                                      //learn new examples, but possibly less 
+                                      //accurate.
+#define SVM_ADD_CONSTANT 1            //Define this to be 1 if you want a
+                                      //constant offset in the classification
+                                      //ie h(x) = theta*x + b where b is
+                                      //the offset.  If you don't want
+                                      //a constant offset (just h(x) = theta*x),
+                                      //define this to be 0.
+#define SVM_HOLE_FRAC 0.25            //Size of the "hole" left at the end of
+                                      //the file to allow for quick appends
+                                      //without having to forcibly unmap the
+                                      //file.  This is as a fraction of the 
+                                      //size of the file without the hole.  So 
+                                      //setting it to 1 doubles the file size.
+                                      //If you don't want a hole left, set 
+                                      //this to 0.
+#define SVM_MAX_SOLVER_ITERATIONS 200 //absolute maximum number of loops the
+                                      //solver is allowed
+#define SVM_CHECK 100                 //every SVM_CHECK we look to see if
+                                      //the accuracy is better than
+                                      //SVM_CHECK_FACTOR*SVM_ACCURACY.
+                                      //If it is, we exit the solver loop.
+#define SVM_CHECK_FACTOR 2            //every SVM_CHECK we look to see if
+                                      //the accuracy is better than
+                                      //SVM_CHECK_FACTOR*SVM_ACCURACY.
+                                      //If it is, we exit the solver loop.
+//defines for SVM microgrooming
+#define SVM_GROOM_OLD 10000           //we groom only if there are this many
+                                      //examples (or more) not being used in
+                                      //solving
+#define SVM_GROOM_FRAC 0.9            //we keep this fraction of examples after 
+                                      //grooming
+//defines for svm_smart_mode
+#define SVM_BASE_EXAMPLES 1000        //the number of examples we need to see
+                                      //before we train
+#define SVM_INCR_FRAC 0.1             //if more than this fraction of examples
+                                      //are appended, we do a fromstart rather
+                                      //than use the incremental method.
+// Defines for the PCA classifier
+// All defines you should want to use without getting into
+// the nitty details of the PCA are here.  For nitty detail
+// defines, see crm_svm_matrix_util.h and crm_pca_lib_fncts.h
+#define MAX_PCA_FEATURES 100000    //per example
+#define PCA_INTERNAL_TRACE_LEVEL 3 //the debug level when internal_trace is on
+#define PCA_ACCURACY 1e-8          //accuracy to which to run the solver       
+#define MAX_PCA_ITERATIONS 1000    //maximum number of solver iterations
+#define PCA_CLASS_MAG 50           //the starting class magnitudes.  if this
+                                   //is too small, the solver will double it
+                                   //and resolve.  if it is too large, the
+                                   //solver will be less accurate.
+#define PCA_REDO_FRAC 0.001        //if we get this fraction of training
+                                   //examples wrong with class mag enabled, we
+                                   //retrain with class mag doubled.
+#define PCA_MAX_REDOS 20           //The maximum number of redos allowed when
+                                   //trying to find the correct class mag.
+#define PCA_HOLE_FRAC 0.25         //Size of the "hole" left at the end of
                                    //the file to allow for quick appends
                                    //without having to forcibly unmap the file.
                                    //This is as a fraction of the size of the
                                    //file without the hole.  So setting it to
                                    //1 doubles the file size.  If you don't
                                    //want a hole left, set this to 0.
-//defines for SVM microgrooming
-#define SVM_GROOM_OLD 10000        //we groom only if there are this many
-                                   //examples (or more) not being used in
-                                   //solving
-#define SVM_GROOM_FRAC 0.9         //we keep this fraction of examples after 
+//defines for PCA microgrooming
+#define PCA_GROOM_OLD 10000        //we groom only if there are this many
+                                   //examples (or more) present
+#define PCA_GROOM_FRAC 0.9         //we keep this fraction of examples after 
                                    //grooming
-//defines for svm_smart_mode
-#define SVM_BASE_EXAMPLES 1000     //the number of examples we need to see
-                                   //before we train
-#define SVM_INCR_FRAC 0.1          //if more than this fraction of examples
-                                   //are appended, we do a fromstart rather
-                                   //than use the incremental method.
-
 //    define the maximum length of a filename
 // #define MAX_FILE_NAME_LEN 255
 
@@ -362,9 +402,32 @@
 //    try 1 millisecond for now
 #define INPUT_WINDOW_SLEEP_USEC 1000
 
+//   DANGER DANGER DANGER DANGER DANGER
+//   CHANGE THESE AT YOUR PERIL- YOUR .CSS FILES WILL NOT BE
+//   FORWARD COMPATIBLE WITH ANYONE ELSES IF YOU CHANGE THESE.
+//
 //     Maximum number of different .CSS files in a CLASSIFY
 #define MAX_CLASSIFIERS 128
 
+//     Maximum length of a stored regex (ugly!  But we need a max length
+//     in the mapping.  GROT GROT GROT )
+#define MAX_REGEX 4096
+
+//     Maximum number of coeffs for a particular pipeline. (ugly!  But we
+//     need a max length for easy mapping.  GROT GROT GROT )
+#define MAX_PIPECOEFFS 512
+
+#define MAX_CLASSIFIER_PARAMS 128
+
+//     Define the type of a token.  This should be either 32-bit or
+//     64-bit.  Note that some (for now, all!) classifiers will ignore this.
+typedef int CRM114_TOKEN;
+// typedef double CRM114_TOKEN;
+//
+///    END OF DANGER DANGER DANGER DANGER
+/////////////////////////////////////////////////////////////////////
+
+ 
 //     Maximum number of nonfatal errors we'll allow before tossing our
 //     cookies on a fatal error
 #define MAX_NONFATAL_ERRORS 100

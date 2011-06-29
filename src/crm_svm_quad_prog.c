@@ -130,7 +130,9 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
   //*currA = matr_make(0,0);
   VectorIterator vit;
 
-  if (SVM_DEBUG_MODE >= QP_DEBUG) {
+  MATR_DEBUG_MODE = QP_DEBUG_MODE;  //debug mode
+
+  if (QP_DEBUG_MODE >= QP_DEBUG) {
     //print out the arguments
     fprintf(stderr, "Arguments are\nn = %d, m = %d\nG = \n", n, m);
     matr_print(G);
@@ -168,7 +170,7 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
   //optimization problem
 
   if (vector_iszero(x)) {
-    if (SVM_DEBUG_MODE >= QP_DEBUG) {
+    if (QP_DEBUG_MODE >= QP_DEBUG) {
       fprintf(stderr, "No inital guess.  Using default guess.\n");
     }
     //otherwise x is an initial starting point
@@ -204,7 +206,7 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
       length = 0;
     }
     
-    if (SVM_DEBUG_MODE >= QP_DEBUG_LOOP) {
+    if (QP_DEBUG_MODE >= QP_DEBUG_LOOP) {
       fprintf(stderr, "x = ");
       vector_print(x);
       if (tk < n) {
@@ -241,7 +243,7 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
 	  row = matr_get_row(A, i);
 	  //part of p in direction of constraint
 	  dotp = dot(row, p); //sparse times sparse
-	  if (SVM_DEBUG_MODE >= QP_LINEAR_SOLVER) {
+	  if (QP_DEBUG_MODE >= QP_LINEAR_SOLVER) {
 	    fprintf(stderr, "dotp = %.10f\n", dotp);
 	  }
 	  if (dotp < -QP_LINEAR_ACCURACY) {
@@ -252,7 +254,7 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
 	    }
 	    //step size for this constraint
 	    r = (bval - dot(row, x))/dotp; //sparse times sparse
-	    if (SVM_DEBUG_MODE >= QP_LINEAR_SOLVER) {
+	    if (QP_DEBUG_MODE >= QP_LINEAR_SOLVER) {
 	      fprintf(stderr, "bval = %f r = %f dot(row, x) = %.10f\n", 
 		      bval, r, dot(row, x));
 	    }
@@ -299,7 +301,7 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
 	//we must move less than ||p|| because we hit a constraint
 	//move as far as we can and add the constraint
 	vector_multiply(p, alpha, p); //sparse
-	if (SVM_DEBUG_MODE >= QP_LINEAR_SOLVER) {
+	if (QP_DEBUG_MODE >= QP_LINEAR_SOLVER) {
 	  fprintf(stderr, "alpha = %f\n", alpha);
 	}
       }
@@ -307,7 +309,7 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
     }
     oldtk = tk;
     if (toadd >= 0) {
-      if (SVM_DEBUG_MODE >= QP_DEBUG_LOOP) {
+      if (QP_DEBUG_MODE >= QP_DEBUG_LOOP) {
 	fprintf(stderr, "Adding constraint %d\n", toadd);
       }
       //add constraint
@@ -317,7 +319,7 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
       tk++;
     }
     if (toremove >= 0) {
-      if (SVM_DEBUG_MODE >= QP_DEBUG_LOOP) {
+      if (QP_DEBUG_MODE >= QP_DEBUG_LOOP) {
 	fprintf(stderr, "Removing constraint %d to remove = %d\n", 
 		constr[toremove], toremove);
       }
@@ -333,11 +335,11 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
     loop_it++;
   }
 
-  if (SVM_DEBUG_MODE && loop_it >= QP_MAX_ITERATIONS) {
+  if (QP_DEBUG_MODE && loop_it >= QP_MAX_ITERATIONS) {
     fprintf(stderr, "QP didn't converge. Returning.\n");
   }
 
-  if (SVM_DEBUG_MODE >= QP_DEBUG) {
+  if (QP_DEBUG_MODE >= QP_DEBUG) {
     fprintf(stderr, "Max iterations was %d\n", loop_it);
   }
   matr_free(Q);
@@ -365,6 +367,8 @@ void run_qp(Matrix *G, Matrix *A, Vector *c, Vector *b, Vector *x) {
  *"Computation of plane unitary rotations transforming a general matrix 
  *to triangular form". 
  *J. SIAM 6(1) (1958), pp. 26–50.
+ *If you are just trying to understand them, though, I would recommend the
+ *Wikipedia article.
  *
  *To make R upper triangular will require n-(k+1) rotations of the form
  *   | I_{i-1, i-1}  0    0       0_{n-i-1}   |
@@ -409,7 +413,7 @@ void add_constraint(int toadd, Matrix *A, Matrix *Q, Matrix *R,
   double r2, c_i, s_i, r, uval, gamma;
   VectorIterator vit;
 
-  if (SVM_DEBUG_MODE >= QP_CONSTRAINTS) {
+  if (QP_DEBUG_MODE >= QP_CONSTRAINTS) {
     fprintf(stderr, "Before adding constraint %d.\n", toadd);
     fprintf(stderr, "Q = \n");
     matr_print(Q);
@@ -498,16 +502,16 @@ void add_constraint(int toadd, Matrix *A, Matrix *Q, Matrix *R,
       if (r > SVM_EPSILON) { //we still need this in case of full matrices
 	c_i /= r;
 	s_i /= r;
+
 	//this affects two rows of Q
 	//the i^th row and the one above it
 	//this is done this way so it works for both
 	//sparse and full matrices
 	vector_multiply(matr_get_row(Q, i-1), c_i, trow);
-	vector_multiply(matr_get_row(Q, i), s_i, brow);
-	vector_add(trow, brow, trow);
-	vector_multiply(matr_get_row(Q, i-1), -1.0*s_i, brow);
+	vector_add_multiple(trow, matr_get_row(Q, i), s_i, trow);
 	vector_multiply(matr_get_row(Q, i), c_i, matr_get_row(Q, i));
-	vector_add(matr_get_row(Q, i), brow, matr_get_row(Q, i));
+	vector_add_multiple(matr_get_row(Q, i), matr_get_row(Q, i-1),
+			    -1.0*s_i, matr_get_row(Q, i));
 	matr_set_row(Q, i-1, trow);
       } else {
 	r2 = 0; //avoid floating pt errors
@@ -531,7 +535,7 @@ void add_constraint(int toadd, Matrix *A, Matrix *Q, Matrix *R,
     matr_set_col(Z, j, matr_get_row(Q, n - j - 1));
   }
   
-  if (SVM_DEBUG_MODE >= QP_CONSTRAINTS) {
+  if (QP_DEBUG_MODE >= QP_CONSTRAINTS) {
     fprintf(stderr, "After adding constraint %d\n", toadd);
     fprintf(stderr, "Q = \n");
     matr_print(Q);
@@ -564,6 +568,8 @@ void add_constraint(int toadd, Matrix *A, Matrix *Q, Matrix *R,
  *"Computation of plane unitary rotations transforming a general matrix 
  *to triangular form". 
  *J. SIAM 6(1) (1958), pp. 26–50.
+ *If you are just trying to understand them, though, I would recommend the
+ *Wikipedia article.
  *
  *When we remove a column c from A', the matrix K = Q^kA^{k-1}
  *has n-c subdiagonal non-zero elements at K_{j+1, j} for j >= c
@@ -611,7 +617,7 @@ void delete_constraint(int todel, Matrix *A, Matrix *Q, Matrix *R,
     *brrow = vector_make_size(R->cols+1, R->type, MATR_PRECISE, R->size);
   double r, c_j, s_j, tmp1, tmp2;
 
-  if (SVM_DEBUG_MODE >= QP_CONSTRAINTS) {
+  if (QP_DEBUG_MODE >= QP_CONSTRAINTS) {
     fprintf(stderr, "Before deleting row %d\n", todel);
     fprintf(stderr, "Q = \n");
     matr_print(Q);
@@ -642,19 +648,18 @@ void delete_constraint(int todel, Matrix *A, Matrix *Q, Matrix *R,
     s_j = tmp1/r;
     //this affects the j and j+1 rows of Q
     vector_multiply(matr_get_row(Q, j), c_j, trow);
-    vector_multiply(matr_get_row(Q, j+1), s_j, brow);
-    vector_add(trow, brow, trow);
-    vector_multiply(matr_get_row(Q, j), -1.0*s_j, brow);
+    vector_add_multiple(trow, matr_get_row(Q, j+1), s_j, trow);
     vector_multiply(matr_get_row(Q, j+1), c_j, matr_get_row(Q, j+1));
-    vector_add(matr_get_row(Q, j+1), brow, matr_get_row(Q, j+1));
+    vector_add_multiple(matr_get_row(Q,j+1), matr_get_row(Q, j),
+			-1.0*s_j, matr_get_row(Q, j+1));
     matr_set_row(Q, j, trow);
+
     //and the j and j+1 rows of R
     vector_multiply(matr_get_row(R, j), c_j, trrow);
-    vector_multiply(matr_get_row(R, j+1), s_j, brrow);
-    vector_add(trrow, brrow, trrow);
-    vector_multiply(matr_get_row(R, j), -1.0*s_j, brrow);
+    vector_add_multiple(trrow, matr_get_row(R, j+1), s_j, trrow);
     vector_multiply(matr_get_row(R, j+1), c_j, matr_get_row(R, j+1));
-    vector_add(matr_get_row(R, j+1), brrow, matr_get_row(R, j+1));
+    vector_add_multiple(matr_get_row(R, j+1), matr_get_row(R, j),
+			-1.0*s_j, matr_get_row(R, j+1));
     matr_set_row(R, j, trrow);
   }
     
@@ -671,7 +676,7 @@ void delete_constraint(int todel, Matrix *A, Matrix *Q, Matrix *R,
   matr_set_col(Z, Z->cols-1, matr_get_row(Q, R->cols)); //setting the last col
                                                         //is fast
 
-  if (SVM_DEBUG_MODE >= QP_CONSTRAINTS) {
+  if (QP_DEBUG_MODE >= QP_CONSTRAINTS) {
     fprintf(stderr, "Q = \n");
     matr_print(Q);
     fprintf(stderr, "After R = \n");
@@ -719,7 +724,7 @@ int compute_lambda(Matrix *R, Matrix *Q, Vector *g) {
   back_sub(R, c, lambda); //R is upper triangular so this is very fast
   vector_free(c);
   
-  if (SVM_DEBUG_MODE >= QP_DEBUG_LOOP) {
+  if (QP_DEBUG_MODE >= QP_DEBUG_LOOP) {
       fprintf(stderr, "lambda = ");
       vector_print(lambda);
   }
@@ -744,7 +749,8 @@ int compute_lambda(Matrix *R, Matrix *Q, Vector *g) {
  * U*x = b
  *where U is kxk upper triangular.
  *I don't know who originated this method, but it's in textbooks from the 
- *1950s and I suspect it is much older than that.
+ *1950s and I suspect it is much older than that.  If you just want a feel
+ *for the method, I would recommend the Wikipedia page.
  *
  *The basic idea is that we can solve for the bottom element easily:
  *U_{kk}*x_k = b_k => x_k = b_k/U_kk
@@ -774,7 +780,7 @@ void back_sub(Matrix *U, Vector *b, Vector *ret) {
   vectorit_set_at_end(&bit, b);
   vectorit_set_at_end(&rit, ret);
 
-  if (SVM_DEBUG_MODE >= QP_CONSTRAINTS) {
+  if (QP_DEBUG_MODE >= QP_CONSTRAINTS) {
     fprintf(stderr, "U = \n");
     matr_print(U);
     fprintf(stderr, "b = ");
@@ -832,7 +838,7 @@ double find_direction(Matrix *Z, Matrix *G, Vector *g, Vector *p) {
   Vector *pa, *ga;
   double length;
 
-  if (SVM_DEBUG_MODE >= QP_DEBUG_LOOP) {
+  if (QP_DEBUG_MODE >= QP_DEBUG_LOOP) {
     fprintf(stderr, "g = ");
     vector_print(g);
   }
@@ -939,7 +945,7 @@ void conjugate_gradient(Matrix **A, int nmatrices, int maxrows,
   double a = 0, beta = 0, lr, last_lr;
   int i;
 
-  if (SVM_DEBUG_MODE >= QP_LINEAR_SOLVER) {
+  if (QP_DEBUG_MODE >= QP_LINEAR_SOLVER) {
     fprintf(stderr, "Arguments to conjugate gradient are:\n");
     for (i = 0; i < nmatrices; i++) {
       fprintf(stderr, "A[%d] = \n", i);
@@ -966,7 +972,7 @@ void conjugate_gradient(Matrix **A, int nmatrices, int maxrows,
 	&& i < x->dim) {
     matr_vector_seq(A, nmatrices, maxrows, p, z); //Ap_i (used a lot)
     a = dot(r, r)/dot(p, z); //a_i
-    if (SVM_DEBUG_MODE >= QP_LINEAR_SOLVER) {
+    if (QP_DEBUG_MODE >= QP_LINEAR_SOLVER) {
       fprintf(stderr, "Iteration %d: a = %f, beta = %f norm2(r) = %.11lf\n",
 	     i, a, beta, lr); 
       fprintf(stderr, "x = ");
@@ -978,11 +984,10 @@ void conjugate_gradient(Matrix **A, int nmatrices, int maxrows,
       fprintf(stderr, "A*p = ");
       vector_print(z);
     }
-    vector_multiply(p, a, ap); //a_ip_i
+
     vector_copy(x, last_x);
-    vector_add(x, ap, x); //x_{i+1}
-    vector_multiply(z, -1.0*a, ap); //-a_iAp_i
-    vector_add(r, ap, r); //r_{i+1}
+    vector_add_multiple(x, p, a, x);
+    vector_add_multiple(r, z, -1.0*a, r);
     last_lr = lr;
     lr = norm2(r);
     beta = lr/last_lr; //beta_{i+1}
@@ -991,7 +996,7 @@ void conjugate_gradient(Matrix **A, int nmatrices, int maxrows,
     i++;
   }
 
-  if (SVM_DEBUG_MODE >= QP_LINEAR_SOLVER) {
+  if (QP_DEBUG_MODE >= QP_LINEAR_SOLVER) {
     fprintf(stderr, "Iteration %d: a = %f, beta = %f norm2(r) = %.11lf\nx = ",
 	   i, a, beta, lr); 
     vector_print(x); 
@@ -1001,7 +1006,7 @@ void conjugate_gradient(Matrix **A, int nmatrices, int maxrows,
     //A was positive semi-definite
     //return with the correct things going to infinity
     //and it will all work out :)
-    if (SVM_DEBUG_MODE >= QP_DEBUG) {
+    if (QP_DEBUG_MODE >= QP_DEBUG) {
       fprintf(stderr, "Singular matrix detected.\n");
     }
     if (i > 1) {
@@ -1009,7 +1014,7 @@ void conjugate_gradient(Matrix **A, int nmatrices, int maxrows,
     }
   }
   
-  if (SVM_DEBUG_MODE >= QP_LINEAR_SOLVER) {
+  if (QP_DEBUG_MODE >= QP_LINEAR_SOLVER) {
     fprintf(stderr, "Solution is x = ");
     vector_print(x);
   }
@@ -1058,7 +1063,7 @@ void gradient_descent(Matrix **A, int nmatrices, int maxrows,
 
   vector_copy(b, r);
 
-  if (SVM_DEBUG_MODE >= QP_LINEAR_SOLVER) {
+  if (QP_DEBUG_MODE >= QP_LINEAR_SOLVER) {
     fprintf(stderr, "A = ");
     matr_print(A[0]);
     fprintf(stderr, "b = ");
@@ -1066,7 +1071,7 @@ void gradient_descent(Matrix **A, int nmatrices, int maxrows,
   }
 
   while (norm2(r) > SVM_EPSILON) {
-    if (SVM_DEBUG_MODE >= QP_LINEAR_SOLVER) {
+    if (QP_DEBUG_MODE >= QP_LINEAR_SOLVER) {
       fprintf(stderr, "norm2(r) = %f, r = ", norm2(r));
       vector_print(r);
       fprintf(stderr, "x = ");

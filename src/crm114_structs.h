@@ -344,6 +344,8 @@ typedef struct mythical_tms_struct {
 #define CRM_NEURAL_NET    (1LLU << 37)
 //
 #define CRM_ERASE         (1LLU << 38)
+//PCA classifier
+#define CRM_PCA           (1LLU << 39)
 //     and a struct to put them in.
 typedef struct
 {

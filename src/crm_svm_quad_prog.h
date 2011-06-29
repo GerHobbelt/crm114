@@ -17,8 +17,26 @@
 #include "crm_svm_matrix_util.h"
 #include "crm_svm_matrix.h"
 
-extern int SVM_DEBUG_MODE;     //debugging mode. see crm_svm_matrix_util.h for
+extern int MATR_DEBUG_MODE;     //debugging mode. see crm_svm_matrix_util.h for
                                //possible values.
+
+int QP_DEBUG_MODE;
+
+#define QP_DEBUG 2              //basic information about the qp solver
+
+#define QP_DEBUG_LOOP 3         //prints some information during each qp loop
+                                //useful if the svm is getting stuck during a QP
+                                //problem
+
+#define QP_LINEAR_SOLVER 4      //prints some information during each cg loop
+                                //useful to discover if the run goes on forever
+                                //because the cg isn't converging 
+                                //(usually indicates a bug in the add or remove
+                                //constraint functions!)
+
+#define QP_CONSTRAINTS 5        //prints out information about adding and 
+                                //removing constraints during the qp solver
+                             
 
 //the accuracy to which we run conjugate_gradient
 //this should be a pretty small number!!!

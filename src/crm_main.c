@@ -385,7 +385,7 @@ int main (int argc, char **argv)
 		   " This is CRM114, version %s (%s)\n",
 		   VERSION,
 		   crm_regversion());
-	  fprintf (stdout, " Copyright 2001-2006 William S. Yerazunis\n");
+	  fprintf (stdout, " Copyright 2001-2009 William S. Yerazunis\n");
 	  fprintf (stdout, " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
 	  if (engine_exit_base != 0)
 	    {

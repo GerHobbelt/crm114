@@ -324,13 +324,12 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
                                   4-billion-dimensional hyperspace, and the
                                   set of sources that shines most brightly onto
                                   the unknown document's hyperspatial location
-                                  is the matching class.  EXPERIMENTAL!!!
+                                  is the matching class. 
       <entropy>                 - use the bit-entropy classifier.  This uses
                                   compressibility of the unknown given the
                                   prior learned text as a perfect compressor
                                   model.  No tokenization happens- this
                                   classifier works one bit at a time, always.
-                                  EXPERIMENTAL !!!
       <fscm>                    - use the fast substring compression matcher.
                                   This measures the compressibility of an
                                   unknown text using the known texts as a
@@ -342,12 +341,15 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
                                   (support vector machine) techniques.  NB:
                                   for now VERY EXPERIMENTAL; OSB or unigram
                                   features (default OSB features),
-                                  2-class only, generates A_vs_B files.
-      <sks>                     - use the String Kernel SVM.  String kernels
-                                  take one character at a time as token
-                                  features, but don't use omitted subsections
-                                  like the OSB feature set.  VERY EXPERIMENTAL.
-                                  2-class only, generates A_vs_B files.
+                                  2-class only, uses a single statistics file
+                                  and REFUTE for negative examples.
+      <pca>                     - use the PCA classifier.  This classifier
+                                  is two-class only, uses a single statistics
+                                  file, and uses REFUTE to learn negative
+                                  examples.  EXPERIMENTAL.
+      <sks>                     - use the String Kernel SVM.  THIS FILTER
+                                  IS STRONGLY DEPRECATED.  Use <svm string>
+                                  instead.
       <neural>                  - use a three-layer neural network with
                                   stochastic back-propagation training.
                                   Use <fromstart> to reinitialize the network
@@ -968,7 +970,7 @@ guess they'd do from their names.
   [[:alnum:]]   <-- a-z, A-Z and 0-9
   [[:alpha:]]   <-- a-z and A-Z
   [[:blank:]]   <-- space and tab only
-  [[:space:]]   <-- "whitespace" (space, tab, vertical tab (^K), \n, \r, ..)
+  [[:space:]]   <-- whitespace: moves printhead, doesn't put ink / light pixel
   [[:cntrl:]]   <-- control characters
   [[:digit:]]   <-- 0-9
   [[:lower:]]   <-- lower-case letters a-z
@@ -990,7 +992,7 @@ guess they'd do from their names.
 
   \N        - where N is 1 through 9 - matches the N'th parenthesized
 	      previous subexpression.  You don't have to backslash-escape
-	      the backslash (e.g. write this as \1 or as \\1, either will
+	      the backslash (e.g. write this as \2 or as \\2, either will
 	      work)
 
   \Q        - start verbatim quoting - all following characters represent
@@ -1281,26 +1283,68 @@ The <correlate> filter should be considered perpetually an experimental
 feature, and it is not as well characterized as the Markovian or OSB filters.
 The correlative filter is not recommended for general production work.
 
-A semi-experimental filter is the Hyperspace filter; this uses a
+A nonlinear filter is the Hyperspace filter; this uses a
 variation on the K-Nearest-Neighbor method.  It's usually not quite
 as accurate as OSB, but it can filter againts very high levels of
 intentional obfuscation.  Hyperspace uses a different (and self-growing)
 file format.  Hyperspace usually trains best with a small thick-threshold
 training, similar to Winnow; as of 20061101 the factors have been
-renormalized so that Hyperspace values within +/- 10 pR units give a
+renormalized so that Hyperspace values within +/- 0.1 pR units give a
 good thick-threshold for training.
 
 The bit-entropy filter is a different *kind* of filter; instead of
-using tokens, it constructs an optimal compression system out
-of the known texts, then it tries to compress the unknown text
-as much as possible, using the known texts as prior probabilities.
-Better compression implies closer match.  The amazing thing about this
-is that it works at all- and it actually works very well.  Because
-there's no tokenizer, the entropy filter can work against languages
-that don't use spaces to delimit words, such as some Asian languages.
-It works quite well against spam.  This filter is still experimental
-and noncompatible upgrades may occur - keep your training data if you
-use this filter!
+using tokens, it constructs an optimized compression system out of the
+known texts at the bit by bit level (yes, bits!  This filter doesn't
+even care about byte alignment).  It then tries to predict the unknown
+text as much as possible, using the known texts as prior
+probabilities.  Better prediction implies closer match.  The amazing
+thing about this is that it works at all- and it actually works very
+well.  Because there's no tokenizer, the entropy filter can work
+against languages that don't use spaces to delimit words, such as some
+Asian languages.  It works quite well against spam.  Because this
+filter works at the bit-at-a-time level, the tokenizing regex is
+ignored.  This filter is still experimental and noncompatible upgrades
+may occur - keep your training data if you use this filter!
+
+The FSCM filter is a realization of an infinite-window LZ-77
+classifier.  The known-example texts are used as a position+runlength
+dictionary and used to compress the unknown.  The better the
+compression, the better the match (unlike plain LZ77, there is an
+additional bonus for very long run matches).  By default, the quantum
+of match in FSCM is one byte, and the "minimum match length" is three
+bytes, but you can change this with the tokenizing regex.  Note that a
+minumum match length much smaller than three bytes will cause this
+filter to run _very_ slowly as the number of possible dictionary
+checks needed grows very quickly.
+
+The SVM support vector machine (as of 200909) is one of the "new
+breed" of CRM114 filter - it uses only ONE statistics file rather than
+two or more.  Like Winnow, the SVM needs both positive and negative
+examples; the SVM tries to find the maximum error margin decision
+weighting between the two classes, as a linear weighting.  Positive
+examples are trained as usual; negative examples are trained with the
+REFUTE flag.  Erasures are done with the ERASE flag.  By default, the
+SVM does a complete retraining using Thorsten Joachim's public
+algorithm; if you are going to train a large set of examples (very
+fast, but still takes linear time), use the APPEND flag to prevent
+training on individual cases.  Training happens only when something is
+LEARNed but APPEND is not set (it's OK to train a NULL text to trigger
+the solver).  The solver will take about 30 seconds per megabyte of
+example text.  This algorithm is not capable of handling more than two
+simultaneous classes.  The SVM is one of the few classifiers that
+works well in a TEFT (Train Every Thing) training environment.
+
+The PCA principal component analysis classifier is like the SVM
+classifier - it uses only one statistics file, and requires both
+positive and negative examples, with negative examples set with REFUTE
+and removals set with ERASE flag.  The PCA classifier uses the Von
+Mises (1929) algorithm to solve for the first eigenvector - that is,
+the linear weighting vector that best describes the variation across
+all of the known inputs, with a heavy weight placed on known class
+membership.  The dividing threshold is then optimally placed.  The PCA
+algorithm is much faster than the SVM algorithm, but not quite as
+accurate.  The PCA works equally well in TEFT and TOE (train on error)
+situations.
 
 
      ------------ Overall Language Notes ------------

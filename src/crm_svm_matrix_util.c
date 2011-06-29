@@ -37,7 +37,7 @@ ExpandingArray *make_expanding_array(int init_size, int compact) {
   ExpandingArray *A = (ExpandingArray *)malloc(sizeof(ExpandingArray));
 
   if (!A) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Could not create expanding array.\n");
     }
     return NULL;
@@ -88,7 +88,7 @@ ExpandingArray *make_expanding_array(int init_size, int compact) {
 
 void expanding_array_insert(ExpandingType d, ExpandingArray *A) {
   if (!A) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_insert: null array.\n");
     }
     return;
@@ -101,7 +101,7 @@ void expanding_array_insert(ExpandingType d, ExpandingArray *A) {
     }
     expand(A, 2*A->length);
     if (!(A->length)) {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf
 	  (stderr, 
 	   "expanding_array_insert: unable to expand array enough to do insert.\n");
@@ -145,7 +145,7 @@ void expanding_array_set(ExpandingType d, int c, ExpandingArray *A) {
   int newsize, offset, mid, i;
 
   if (!A) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_set: null array.\n");
     }
     return;
@@ -171,7 +171,7 @@ void expanding_array_set(ExpandingType d, int c, ExpandingArray *A) {
     }
     expand(A, newsize);
     if (!(A->length)) {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf
 	  (stderr, 
 	   "expanding_array_insert: unable to expand array enough to do insert.\n");
@@ -218,13 +218,13 @@ static void expand(ExpandingArray *A, int newsize) {
   int i;
 
   if (!A) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expand: null array.\n");
     }
     return;
   }
 
-  if (SVM_DEBUG_MODE >= MATR_OPS) {
+  if (MATR_DEBUG_MODE >= MATR_OPS) {
     fprintf(stderr, "Expanding array to size %d\n", newsize);
   }
 
@@ -296,7 +296,7 @@ static void expand(ExpandingArray *A, int newsize) {
 void expanding_array_trim(ExpandingArray *A) {
  
   if (!A) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_trim: null array.\n");
     }
     return;
@@ -328,7 +328,7 @@ void expanding_array_trim(ExpandingArray *A) {
 ExpandingType expanding_array_get(int c, ExpandingArray *A) {
   ExpandingType et;
   if (!A || !(A->length)) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_get: null array.\n");
     }
     et.precise = NULL;
@@ -371,17 +371,16 @@ ExpandingType expanding_array_get(int c, ExpandingArray *A) {
  ***************************************************************************/
 
 int expanding_array_search(unsigned int c, int init, ExpandingArray *A) {
-  int i, last_i, front, back, num_it = 0;
+  int i, front, back, num_it = 0;
 
   if (!A) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_search: null array.\n");
     }
     return -1;
   }
 
   i = init+A->first_elt; 
-  last_i = A->first_elt-1; 
   front = A->first_elt; 
   back = A->last_elt;
 
@@ -399,7 +398,7 @@ int expanding_array_search(unsigned int c, int init, ExpandingArray *A) {
 
   if ((A->compact && !(A->data.compact)) ||
       (!(A->compact) && !(A->data.precise))) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_search: null array.\n");
     }
     return -1;
@@ -437,119 +436,28 @@ int expanding_array_search(unsigned int c, int init, ExpandingArray *A) {
        (!A->compact && c <= A->data.precise[i+1].s.col))) {
     return i+1-A->first_elt;
   }
-
-  while (i != last_i) {
-    last_i = i;
+  
+  while (((A->compact && A->data.compact[i].s.col != c) ||
+	  (!(A->compact) && A->data.precise[i].s.col != c)) &&
+	 front <= back) {
+    i = (front + back)/2;
     if ((A->compact && A->data.compact[i].s.col < c) ||
 	(!A->compact && A->data.precise[i].s.col < c)) {
-      front = i;
-      i = (i+back)/2;
+      front = i+1;
     } else if ((A->compact && A->data.compact[i].s.col > c) ||
 	       (!A->compact && A->data.precise[i].s.col > c)) {
-      back = i;
-      i = (front+i)/2;
+      back = i-1;
     }
     num_it++;
   }
 
-  if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+  if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
     fprintf(stderr, "After full search (%d iterations) returned %d, init = %d, last_elt = %d, first_elt = %d\n", 
 	   num_it, i, init+A->first_elt, A->last_elt, A->first_elt);
   }
   return i - A->first_elt;
 }
 
-//The same search as above except assuming the elements of A are ints.
-//Yes, this is sort of ugly.  You can write more general access functions
-//for A if you want.
-int expanding_array_int_search(unsigned int c, int init, ExpandingArray *A) {
-  int i, last_i, front, back, num_it = 0;
-
-  if (!A) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "expanding_array_search: null array.\n");
-    }
-    return -1;
-  }
-  
-  i = init+A->first_elt; 
-  last_i = A->first_elt-1; 
-  front = A->first_elt; 
-  back = A->last_elt;
-
-  if (back < front) {
-    return -1;
-  }
-
-  if (i < front) {
-    i = front;
-  }
-
-  if (i > back) {
-    i = back;
-  }
-
-  if ((A->compact && !(A->data.compact)) ||
-      (!(A->compact) && !(A->data.precise))) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "expanding_array_search: null array.\n");
-    }
-    return -1;
-  }
-  
-  //check i itself
-  if (i >= A->first_elt && i <= A->last_elt && 
-      ((A->compact && c == A->data.compact[i].i) ||
-       (!A->compact && c == A->data.precise[i].i))) {
-    return i - A->first_elt;
-  }
-
-  //check the beginning and the end
-  if ((A->compact && c >= A->data.compact[A->last_elt].i) || 
-      (!A->compact && c >= A->data.precise[A->last_elt].i)) {
-    return A->last_elt-A->first_elt;
-  }
-  if ((A->compact && c <= A->data.compact[A->first_elt].i) ||
-      (!A->compact && c <= A->data.precise[A->first_elt].i)) {
-    return 0;
-  }
-
-  //check before and after the current element
-  if (i > A->first_elt && i <= A->last_elt &&
-      ((A->compact && c < A->data.compact[i].i) ||
-       (!A->compact && c < A->data.precise[i].i)) && 
-      ((A->compact && c >= A->data.compact[i-1].i) ||
-       (!A->compact && c >= A->data.precise[i-1].i))) {
-    return i-1-A->first_elt;
-  }
-  if (i >= A->first_elt && i < A->last_elt &&
-      ((A->compact && c > A->data.compact[i].i) ||
-       (!A->compact && c > A->data.precise[i].i)) && 
-      ((A->compact && c <= A->data.compact[i+1].i) ||
-       (!A->compact && c <= A->data.precise[i+1].i))) {
-    return i+1-A->first_elt;
-  }
-
-  while (i != last_i) {
-    last_i = i;
-    if ((A->compact && A->data.compact[i].i < c) ||
-	(!A->compact && A->data.precise[i].i < c)) {
-      front = i;
-      i = (i+back)/2;
-    } else if ((A->compact && A->data.compact[i].i > c) ||
-	       (!A->compact && A->data.precise[i].i > c)) {
-      back = i;
-      i = (front+i)/2;
-    }
-    num_it++;
-  }
-
-  if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
-    fprintf(stderr, "After full search (%d iterations) returned %d, init = %d, last_elt = %d, first_elt = %d\n", 
-	   num_it, i, init+A->first_elt, A->last_elt, A->first_elt);
-  }
-  return i - A->first_elt;
-}
 
 /***************************************************************************
  *Insert an element into the array.  This function does the least amount
@@ -579,7 +487,7 @@ int expanding_array_insert_before(ExpandingType ne, int before,
   PreciseExpandingType pet;
 
   if (!A) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_insert_before: null array.\n");
     }
     return -1;
@@ -677,7 +585,7 @@ void expanding_array_remove_elt(int elt, ExpandingArray *A) {
   int i;
 
   if (!A) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_remove_elt: null array.\n");
     }
     return;
@@ -710,7 +618,7 @@ void expanding_array_remove_elt(int elt, ExpandingArray *A) {
 
 void expanding_array_clear(ExpandingArray *A) {
   if (!A) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_clear: null array.\n");
     }
     return;
@@ -738,7 +646,7 @@ size_t expanding_array_write(ExpandingArray *A, FILE *fp) {
   size_t size;
 
   if (!A || !fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_write: null arguments.\n");
     }
     return 0;
@@ -779,7 +687,7 @@ void expanding_array_read(ExpandingArray *A, FILE *fp) {
   size_t amount_read;
 
   if (!A || !fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_read: null arguments.\n");
     }
     return;
@@ -793,7 +701,7 @@ void expanding_array_read(ExpandingArray *A, FILE *fp) {
   amount_read = fread(A, sizeof(ExpandingArray), 1, fp);
   A->was_mapped = 0;
   if (!amount_read) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_read: bad file.\n");
     }
     return;
@@ -812,12 +720,12 @@ void expanding_array_read(ExpandingArray *A, FILE *fp) {
       amount_read = fread(&(A->data.precise[A->first_elt]), 
 			  sizeof(PreciseExpandingType), A->n_elts, fp);
     }
-    if (amount_read < A->n_elts && SVM_DEBUG_MODE) {
+    if (amount_read < A->n_elts && MATR_DEBUG_MODE) {
       fprintf(stderr, 
 	      "expanding_array_read: fewer elts read in than expected.\n");
     }
   } else {
-    if (SVM_DEBUG_MODE && A->n_elts) {
+    if (MATR_DEBUG_MODE && A->n_elts) {
       fprintf(stderr, "expanding_array_read: A cannot contain all of its elements.  This is likely a corrupted file.\n");
     }
     A->length = 0;
@@ -862,7 +770,7 @@ ExpandingArray *expanding_array_map(void **addr, void *last_addr) {
   ExpandingArray *A;
 
   if (!addr || !*addr || !last_addr || *addr >= last_addr) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_map: null arguments.\n");
     }
     return NULL;
@@ -870,7 +778,7 @@ ExpandingArray *expanding_array_map(void **addr, void *last_addr) {
 
   if (*addr + sizeof(ExpandingArray) > last_addr) {
     //bad
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "expanding_array_map: not enough memory for array.\n");
     }
     return NULL;
@@ -896,7 +804,7 @@ ExpandingArray *expanding_array_map(void **addr, void *last_addr) {
       *addr += A->n_elts*sizeof(PreciseExpandingType);
     }
   } else {
-    if (SVM_DEBUG_MODE && A->n_elts) {
+    if (MATR_DEBUG_MODE && A->n_elts) {
       fprintf(stderr, "expanding_array_map: array cannot contain all of its elements. This is likely a corrupted file.\n");
     }
     A->length = 0;
@@ -966,7 +874,7 @@ static inline SparseNode node_map(int is_compact, void **addr, void *last_addr);
 SparseElementList *make_list(int compact) {
   SparseElementList *l = (SparseElementList *)malloc(sizeof(SparseElementList));
   if (!l) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Could not create a sparse element list.\n");
     }
     return NULL;
@@ -1003,7 +911,7 @@ SparseNode list_search(unsigned int c, SparseNode init, SparseElementList *l)
   SparseNode curr = init;
   
   if (!l) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_search: null list.\n");
     }
     return make_null_node(l->compact);
@@ -1049,7 +957,7 @@ SparseNode list_insert_before(SparseElement newelt, SparseNode before,
   SparseNode n;
 
   if (!l) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_insert_before: null list.\n");
     }
     return make_null_node(l->compact);
@@ -1118,7 +1026,7 @@ SparseNode list_insert_after(SparseElement ne, SparseNode after,
   SparseNode n;
 
   if (!l) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_insert_after: null list.\n");
     }
     return make_null_node(l->compact);
@@ -1181,7 +1089,7 @@ void list_clear(SparseElementList *l) {
   int i;
 
   if (!l) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_clear: null list.\n");
     }
     return;
@@ -1222,7 +1130,7 @@ void list_clear(SparseElementList *l) {
 void list_remove_elt(SparseElementList *l, SparseNode toremove) {
 
   if (!l) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_remove_elt: null list.\n");
     }
     return;
@@ -1302,7 +1210,7 @@ size_t list_write(SparseElementList *l, FILE *fp) {
   size_t size;
   
   if (!l || !fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_write: null arguments.\n");
     }
     return 0;
@@ -1340,7 +1248,7 @@ int list_read(SparseElementList *l, FILE *fp, int n_elts) {
   size_t unused;
 
   if (!l || !fp || n_elts < 0) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_write: null arguments.\n");
     }
     return 0;
@@ -1383,7 +1291,7 @@ int list_read(SparseElementList *l, FILE *fp, int n_elts) {
 	pn.precise->next = NULL;
       }
     }
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_read: Couldn't read in enough elements.\n");
     }
   }
@@ -1431,7 +1339,7 @@ SparseElementList *list_map(void **addr, void *last_addr, int *n_elts_ptr) {
   int n_elts = *n_elts_ptr, i;
 
   if (!addr || !*addr || !last_addr || n_elts < 0 || *addr >= last_addr) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_map: null arguments.\n");
     }
     *n_elts_ptr = 0;
@@ -1439,7 +1347,7 @@ SparseElementList *list_map(void **addr, void *last_addr, int *n_elts_ptr) {
   }
 
   if (*addr + sizeof(SparseElementList) > last_addr) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_map: not enough memory for list.\n");
     }
     *n_elts_ptr = 0;
@@ -1476,7 +1384,7 @@ SparseElementList *list_map(void **addr, void *last_addr, int *n_elts_ptr) {
       }
     }
     *n_elts_ptr = i;
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_map: Couldn't read in enough elements.\n");
     }
   }
@@ -1522,7 +1430,7 @@ void *list_memmove(void *to, SparseElementList *from) {
   int i;
 
   if (!from || !to) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "list_memmove: null arguments.\n");
     }
     return to;
@@ -1580,162 +1488,11 @@ void *list_memmove(void *to, SparseElementList *from) {
   return curr;
 }
 
-/***********************Sparse Node Functions***************************/
-
-//return a node with the correct compactness and
-//the appropriate pointer null
-SparseNode make_null_node(int compact)
-{
-  SparseNode n;
-  
-  n.is_compact = compact;
-  n.compact = NULL;
-  n.precise = NULL;
-
-  if (compact) {
-    n.compact = NULL;
-  } else {
-    n.precise = NULL;
-  }
-
-  return n;
-}
-
-//returns 1 if the pointer with the correct compactness
-//is null
-int null_node(SparseNode n)
-{  
-  if (n.is_compact) {
-    return (n.compact == NULL);
-  }
-  return (n.precise == NULL);
-}
-
-//returns the data associated with n
-double node_data(SparseNode n) 
-{
-  if (null_node(n)) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "node_data: null node.\n");
-    }
-    return -RAND_MAX;
-  }
-
-  if (n.is_compact) {
-    return (double)n.compact->data.data;
-  }
-  return n.precise->data.data;
-}
-
-//returns the column number associated with n
-unsigned int node_col(SparseNode n)
-{
-  if (null_node(n)) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "node_col: null node.\n");
-    }
-    return MAX_INT_VAL;
-  }
-
-  if (n.is_compact && n.compact) {
-    return n.compact->data.col;
-  }
-
-  return n.precise->data.col;
-}
-
-//returns a pointer to the node after
-//the one n points to
-SparseNode next_node(SparseNode n)
-{
-  SparseNode ret;
-
-  ret.is_compact = n.is_compact;
-  ret.compact = NULL;
-  ret.precise = NULL;
-
-  if (null_node(n)) {
-    return make_null_node(n.is_compact);
-  }
-  if (n.is_compact) {
-    ret.compact = n.compact->next;
-  } else {
-    ret.precise = n.precise->next;
-  }
-  return ret;
-}
-
-//returns a pointer to the node before
-//the one n points to
-SparseNode prev_node(SparseNode n)
-{
-  SparseNode ret;
-
-  ret.is_compact = n.is_compact;
-  ret.compact = NULL;
-  ret.precise = NULL;
-
-  if (null_node(n)) {
-    return make_null_node(n.is_compact);
-  }
-
-  if (n.is_compact) {
-    ret.compact = n.compact->prev;
-  } else {
-    ret.precise = n.precise->prev;
-  }
-  return ret;
-}
-
-//sets the data associated with node n to be d
-void node_set_data(SparseNode n, double d)
-{
-  if (null_node(n)) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "node_set_data: null node.\n");
-    }
-    return;
-  }
-  if (n.is_compact) {
-    n.compact->data.data = (int)d;
-  } else {
-    n.precise->data.data = d;
-  }
-}
-
-//sets the column associated with node n to be c
-void node_set_col(SparseNode n, unsigned int c)
-{
-  if (null_node(n)) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "node_set_col: null node.\n");
-    }
-    return;
-  }
-  if (n.is_compact) {
-    n.compact->data.col = c;
-  } else {
-    n.precise->data.col = c;
-  }
-}
-
-//frees the pointer that n has
-//taking into account compactness
-void node_free(SparseNode n) {
-  if (null_node(n)) {
-    return;
-  }
-  if (n.is_compact) {
-    free(n.compact);
-  } else {
-    free(n.precise);
-  }
-}
 
 //writes a node to a file
 static inline size_t node_write(SparseNode n, FILE *fp) {
   if (null_node(n) || !fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "node_write: null arguments.\n");
     }
   }
@@ -1754,7 +1511,7 @@ static inline SparseNode node_read(int is_compact, FILE *fp) {
   size_t nr;
   
   if (!fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "node_read: bad file pointer.\n");
     }
     return n;
@@ -1793,7 +1550,7 @@ static inline SparseNode node_map(int is_compact, void **addr, void *last_addr){
   SparseNode n = make_null_node(is_compact);
   
   if (*addr >= last_addr) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "node_map: no memory.\n");
     }
     return n;

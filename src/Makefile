@@ -27,8 +27,10 @@ CC=gcc
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20090807-BlameThorstenAndJenny
-PREV_VERSION=20090806-LastOldSVM
+VERSION=20091209-BlameMichelson
+PREV_VERSION=20090914-BlameThorstenAndJenny
+#PREV_VERSION=20090806-LastOldSVM
+#PREV_VERSION=20090423-BlameSteveJobs
 #PREV_VERSION=20090120-BlameSteveJobs
 #PREV_VERSION=20081111-BlameBarack
 #PREV_VERSION=20081023-BlameMaxwell
@@ -97,8 +99,11 @@ CFLAGS += -DVERSION='"$(VERSION)"'
 #  and warn on all warnable things "-Wall".  Someday add -Wextra for
 #  really picayune stuff.
 #
-#  Our default is with debugging, full optimization, and lots of warnings:
-CFLAGS += -O3 -Wall
+#  Our default is with full optimization, lots of warnings, and forcing
+#  certain functions to be inline (I added that to force gcc to inline functions
+#  under high optimization but not under low so that debugging is possible - 
+#  that's why DO_INLINES is defined at O3 but not O0 - JB):
+CFLAGS += -O3 -Wall -DDO_INLINES
 #     turn this one on for no optimization, but debugging
 #CFLAGS += -g -O0 -Wall
 #
@@ -111,6 +116,8 @@ CFLAGS += -O3 -Wall
 #   Comment this out if you want dynamic linking
 #
 #    BSD users - do NOT use -static-libgcc!!!
+#    Also note that this keeps valgrind from running correctly so comment
+#    it out for debugging.
 LDFLAGS += -static -static-libgcc
 #    use this one if you want program profiling.
 #LDFLAGS += -static -static-libgcc -pg
@@ -196,11 +203,13 @@ CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
 	crm_preprocessor.c crmregex_tre.c \
 	crm_stats.c crm_expr_sks.c\
 	crm_svm_matrix_util.c crm_svm_quad_prog.c crm_svm_matrix.c\
-	crm_svm_lib_fncts.c crm_svm.c crm_fast_substring_compression.c
+	crm_svm_lib_fncts.c crm_svm.c crm_pca_lib_fncts.c crm_pca.c\
+	crm_fast_substring_compression.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h crm_svm_matrix_util.h crm_svm_quad_prog.h\
-	crm_svm_matrix.h crm_svm_lib_fncts.h crm_svm.h
+	crm_svm_matrix.h crm_svm_lib_fncts.h crm_svm.h crm_pca_lib_fncts.h\
+	crm_pca.h
 
 OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
@@ -216,7 +225,7 @@ OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_preprocessor.o crmregex_tre.c \
 	crm_expr_sks.o crm_stats.o \
 	crm_svm_matrix_util.o crm_svm_quad_prog.o crm_svm_matrix.o\
-	crm_svm_lib_fncts.o crm_svm.o \
+	crm_svm_lib_fncts.o crm_svm.o crm_pca_lib_fncts.o crm_pca.o\
 	crm_fast_substring_compression.o
 
 UTILFILES = osbf-util.c cssutil.c  cssdiff.c cssmerge.c crm_util_errorhandlers.c
@@ -405,7 +414,9 @@ megatest: FORCE
 	./megatest.sh >>megatest_test.log 2>>megatest_test.log
 	# ./megatest.sh >megatest_test.log 2>&1
 	#./megatest.sh 2>&1 | tee megatest_test.log
+	#diff -U 5 megatest_knowngood.log megatest_test.log & sleep 1
 	diff megatest_knowngood.log megatest_test.log & sleep 1
+
 
 neurotest: FORCE
 	./nn_segfault_test.sh

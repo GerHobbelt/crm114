@@ -37,6 +37,7 @@ isolate <default> (:show_partitions:) //
 isolate <default> (:decision_length:) /2048/
 isolate <default> (:results:) /results/
 isolate <default> (:input_filter:) //
+isolate <default> (:show_pr:) //
 #
 isolate <default> (:initial_text:) /The quick brown fox jumped over the lazy dog's back 012345679/
 #
@@ -344,7 +345,10 @@ match [:file_list:] //
 					output /(pR: :*:pr:) learning into :*:cnam:.stat  /
 				}
 				alius
-				output / :*:cnam: :*:pr: /
+				{
+				    match [:show_pr:] /./
+				    output / :*:cnam: :*:pr: /
+				}
 			}
 			learn <:*:clf:> [:ftext:] /:*:regex:/ (:*:cnam:.stat)
 			{

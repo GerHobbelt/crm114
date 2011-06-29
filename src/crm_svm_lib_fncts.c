@@ -54,7 +54,7 @@ static SVM_Solution *svm_solve_init_sol(Matrix *Xy, Vector *st_theta,
  *       f_c = -1/n*||c||_1 (1 x k)
  *       A is k+1xk with the top row all -1's (corresponding to sum_{c} alpha_c)
  *         and the bottom kxk matrix the kxk identity matrix times -1
- *       b is the vector 1xk+1 vector with the first entry SVM_MAX_X_VAL
+ *       b is the vector 1xk+1 vector with the first entry -SVM_MAX_X_VAL
  *         and the last k entries 0
  *
  *Clearly this form of the problem has an exponential number of contraints.
@@ -84,7 +84,10 @@ static SVM_Solution *svm_solve_init_sol(Matrix *Xy, Vector *st_theta,
  *INPUT: This method takes as input the data matrix X where
  * X_i = y_i*x_i
  * Here X_i is the ith row of X, y_i is the label (+/-1) of the ith
- *  example and x_i is the ith example.
+ *  example and x_i is the ith example.  Ie, if x_i is an example belonging to
+ *  class -1, the ith row of X would be x_i multiplied by -1.  (In the case where
+ *  x_i contains only positive entries, then the ith row of X would contain only
+ *  negative entries.)
  *
  *OUTPUT: The function returns a solution struct.  This struct contains the
  * vector theta, which is the decision boundary: The classification of
@@ -335,6 +338,8 @@ static SVM_Solution *svm_solve_init_sol(Matrix *Xy, Vector *st_theta,
   int nz, loop_it = 0, sv[Xy->rows], offset;
   SVM_Solution *sol;
 
+  MATR_DEBUG_MODE = SVM_DEBUG_MODE;
+
   if (!alpha || !theta || !f || !l1norms || !b || !H || !A || !XC) {
     if (SVM_DEBUG_MODE) {
       fprintf(stderr, "Error initializing svm solver.\n");
@@ -376,7 +381,11 @@ static SVM_Solution *svm_solve_init_sol(Matrix *Xy, Vector *st_theta,
     weight = 1.0/n;
   }
 
-  while (delta > SVM_ACCURACY) {
+  while (delta > SVM_ACCURACY && loop_it < SVM_MAX_SOLVER_ITERATIONS) {
+    if (!(loop_it % SVM_CHECK) && delta <= SVM_CHECK_FACTOR*SVM_ACCURACY) {
+      //close enough
+      break;
+    }
 
     //run the QP problem
     if (H->rows > 0) {
@@ -404,10 +413,12 @@ static SVM_Solution *svm_solve_init_sol(Matrix *Xy, Vector *st_theta,
       if (!row) {
 	continue;
       }
-      for (i = 0; i < XC->cols; i++) {
-	theta->data.nsarray.precise[i] += 
-	  weight*(vit.pcurr->data.data)*(row->data.nsarray.compact[i]);
-      }
+      vector_add_multiple(theta, row, weight*vectorit_curr_val(vit, alpha), 
+			  theta);
+      //for (i = 0; i < XC->cols; i++) {
+      //theta->data.nsarray.precise[i] += 
+      //  weight*(vit.pcurr->data.data)*(row->data.nsarray.compact[i]);
+      //}
       vectorit_next(&vit, alpha);
     }
 
@@ -415,7 +426,6 @@ static SVM_Solution *svm_solve_init_sol(Matrix *Xy, Vector *st_theta,
     //with a high enough margin
     //this gives us our new x_c and also the average margin
     //deviation over ALL the examples (the variable dev)
-
     matr_add_row(XC);
     xc = matr_get_row(XC, XC->rows-1); //will hold our x_c
     if (!xc) {
@@ -432,23 +442,8 @@ static SVM_Solution *svm_solve_init_sol(Matrix *Xy, Vector *st_theta,
       if (!row) {
 	continue;
       }
-      if (row->type == SPARSE_ARRAY && row->data.sparray &&
-	  row->compact && row->data.sparray->data.compact) {
-	//do things fast
-	vectorit_set_at_beg(&vit, row);
-	while (!vectorit_past_end(vit, row) && 
-	       vit.nscurr >= row->data.sparray->first_elt &&
-	       vit.nscurr <= row->data.sparray->last_elt) {
-	  if (row->data.sparray->data.compact[vit.nscurr].s.col < theta->dim) {
-	    d += row->data.sparray->data.compact[vit.nscurr].s.data*
-	      theta->data.nsarray.precise
-	      [row->data.sparray->data.compact[vit.nscurr].s.col];
-	  }
-	  vectorit_next(&vit, row);
-	}
-      } else {
-	d = dot(theta, row);
-      }
+      
+      d = dot(theta, row);
       if (d < 1) {
 	//we violate the margin
 	s += d; //add it to our average deviation
@@ -488,6 +483,11 @@ static SVM_Solution *svm_solve_init_sol(Matrix *Xy, Vector *st_theta,
       if (!row) {
 	continue;
       }
+      //it's more efficient to do both of these together
+      //enough to have an impact on the running time
+      //since xc, row, and theta are all initialized in this
+      //function, we know what vector type they are
+      //and can access the data directly
       for (j = 0; j < XC->cols; j++) {
 	d += xc->data.nsarray.compact[j]*
 	  row->data.nsarray.compact[j];
@@ -588,12 +588,19 @@ static SVM_Solution *svm_solve_init_sol(Matrix *Xy, Vector *st_theta,
       vector_print(xc);
       fprintf(stderr, "alpha = ");
       vector_print(alpha);
+      fprintf(stderr, "zeta = %.10lf dev = %lf nz = %d, weight = %lf\n", 
+	      zeta, dev, nz, weight);
     }
     
     if (SVM_DEBUG_MODE >= SVM_SOLVER_DEBUG) {
       fprintf(stderr, "%d: delta = %.10lf\n", loop_it, delta);
     }
     loop_it++;
+  }
+
+  if (delta > SVM_ACCURACY + SVM_EPSILON && SVM_DEBUG_MODE) {
+    fprintf(stderr, "Warning: SVM solver did not converge all the way.  Full convergence would have solved to an accuracy of %lf - we solved only to an accuracy of %lf.  If this is not accurate enough, increase SVM_MAX_SOLVER_ITERATIONS, decrease SVM_CHECK_FACTOR, or change your training method.\n", SVM_ACCURACY,
+	    delta);
   }
 
   //free everything!
@@ -715,7 +722,11 @@ ExpandingArray *svm_preprocess(Matrix *X, Vector *old_theta) {
  *   will just redo that work.
  *4) On return Xy = *Xy_ptr will contain only those examples (perhaps 
  *   including old support vectors from *sol_ptr) that are NOT
- *   support vectors.  Note that Xy WILL CHANGE and MAY BE NULL.
+ *   support vectors.  The solution struct will contain the support vectors.
+ *   Note that Xy WILL CHANGE and MAY BE NULL.  Note that sol WILL CHANGE.
+ *   Examples will migrate between Xy_ptr and sol_ptr... don't expect them
+ *   to _not_ move.
+ *
  ****************************************************************************/
 
 void svm_solve(Matrix **Xy_ptr, SVM_Solution **sol_ptr) {
@@ -726,6 +737,8 @@ void svm_solve(Matrix **Xy_ptr, SVM_Solution **sol_ptr) {
   Vector *theta, *row;
   Matrix *Xy;
   double weight;
+
+  MATR_DEBUG_MODE = SVM_DEBUG_MODE;
 
   if (!sol_ptr) {
     if (SVM_DEBUG_MODE) {
@@ -810,6 +823,10 @@ void svm_solve(Matrix **Xy_ptr, SVM_Solution **sol_ptr) {
   }
 
   //more debugging information...
+  if (SVM_DEBUG_MODE >= SVM_SOLVER_DEBUG) {
+    fprintf(stderr, "After preprocess Xy is %d by %u\n", Xy->rows, Xy->cols);
+  }
+
   if (SVM_DEBUG_MODE >= SVM_SOLVER_DEBUG_LOOP) {
     fprintf(stderr, "Xy = \n");
     matr_print(Xy);

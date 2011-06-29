@@ -28,10 +28,10 @@
                                       //unless otherwise specified
 #define MATR_COMPACT 1
 #define MATR_PRECISE 0
-#define QSORT_COUNTING_CUTOFF 8e7 //with this many non-zero elts or above 
+#define QSORT_COUNTING_CUTOFF 7e7 //with this many non-zero elts or above 
                                   //we use counting sort, not q-sort
 
-extern int SVM_DEBUG_MODE;        //debug setting.  see crm_svm_matrix_util.h
+extern int MATR_DEBUG_MODE;        //debug setting.  see crm_svm_matrix_util.h
                                   //for possible modes
 
 //Possible vector types.
@@ -48,20 +48,12 @@ typedef enum {
 } SortingAlgorithms;
 
 
-//yes, it would make more sense to have
-//a sparse node as the iterator along a
-//sparse list
-//BUT for reasons i have yet to figure out
-//that prevents some functions from being properly
-//inline'd while the way the code is currently
-//written does not
-typedef struct {
-  PreciseSparseNode *pcurr; //iterator along precise sparse lists
-  CompactSparseNode *ccurr; //iterator along compact sparse lists
-  int nscurr, //iterator along arrays
-    pastend, //flag if the iterator is past the end of a vector
-    pastbeg; //flag if the iterator is past the beginning of a vector
+typedef union {
+  PreciseSparseNode *pcurr;
+  CompactSparseNode *ccurr;
+  long nscurr;
 } VectorIterator;
+
 
 //data for non-sparse
 //can be either doubles or ints
@@ -106,12 +98,6 @@ Matrix *matr_make(unsigned int rows, unsigned int cols, VectorType type,
 		  int compact);
 Matrix *matr_make_size(unsigned int rows, unsigned int cols, VectorType type, 
 		       int compact, int init_size);
-void matr_set(Matrix *M, unsigned int r, unsigned int c, double d);
-double matr_get(Matrix *M, unsigned int r, unsigned int c);
-Vector *matr_get_row(Matrix *A, unsigned int r);
-extern inline Vector *matr_get_row(Matrix *A, unsigned int r) {
-  return A->data[r];
-}
 void matr_set_row(Matrix *A, unsigned int r, Vector *v);
 void matr_shallow_row_copy(Matrix *M, unsigned int r, Vector *v);
 void matr_set_col(Matrix *A, unsigned int c, Vector *v);
@@ -142,6 +128,14 @@ Matrix *matr_read_bin_fp(FILE *fp);
 Matrix *matr_map(void **addr, void *last_addr);
 void matr_free(Matrix *M);
 
+//inlined matrix functions defined in this file
+//(inlining is compiler discretion)
+static inline void matr_set(Matrix *M, unsigned int r, unsigned int c, 
+			    double d);
+static inline double matr_get(Matrix *M, unsigned int r, unsigned int c);
+static inline Vector *matr_get_row(Matrix *M, unsigned int r);
+
+
 //Vector functions
 Vector *vector_make(unsigned int dim, VectorType type, int compact);
 Vector *vector_make_size(unsigned int dim, VectorType type, int compact, 
@@ -149,21 +143,18 @@ Vector *vector_make_size(unsigned int dim, VectorType type, int compact,
 void vector_copy(Vector *from, Vector *to);
 inline void vector_set(Vector *v, unsigned int i, double d);
 inline double vector_get(Vector *v, unsigned int i);
-unsigned int vector_dim(Vector *v);
-int vector_num_elts(Vector *v);
-void vector_zero(Vector *v);
-void vector_add(Vector *v1, Vector *v2, Vector *ret);
-void vector_multiply(Vector *v, double s, Vector *ret);
-double dot(Vector *v1, Vector *v2);
-double norm2(Vector *v);
-double norm(Vector *v);
-double vector_dist2(Vector *v1, Vector *v2);
-double vector_dist(Vector *v1, Vector *v2);
 void vector_add_col(Vector *v);
 void vector_add_ncols(Vector *v, unsigned int n);
 void vector_remove_col(Vector *v, unsigned int c);
-int vector_iszero(Vector *V);
+inline int vector_iszero(Vector *V);
 int vector_equals(Vector *v1, Vector *v2);
+inline void vector_zero(Vector *v);
+void vector_add(Vector *v1, Vector *v2, Vector *ret);
+void vector_multiply(Vector *v, double s, Vector *ret);
+double dot(Vector *v1, Vector *v2);
+void vector_add_multiple(Vector *base, Vector *toadd, 
+			 double factor, Vector *ret);
+double vector_dist2(Vector *v1, Vector *v2);
 void vector_convert_nonsparse_to_sparray(Vector *v, ExpandingArray *colMap);
 void vector_print(Vector *v);
 void vector_write(Vector *v, char *filename);
@@ -179,26 +170,712 @@ void *vector_memmove(void *to, Vector *from);
 size_t vector_size(Vector *v);
 void vector_free(Vector *v);
 
+//inline'd functions defined in this file
+//(inlining is compiler discretion)
+static inline unsigned int vector_dim(Vector *v);
+static inline int vector_num_elts(Vector *v);
+static inline double norm2(Vector *v);
+static inline double norm(Vector *v);
+static inline double vector_dist(Vector *v1, Vector *v2) ;
+
 //Vector iterator functions
-inline void vectorit_set_at_beg(VectorIterator *vit, Vector *v);
-inline void vectorit_set_at_end(VectorIterator *vit, Vector *v);
-inline double vectorit_curr_val(VectorIterator vit, Vector *v);
-inline unsigned int vectorit_curr_col(VectorIterator vit, Vector *v);
-inline void vectorit_next(VectorIterator *vit, Vector *v);
-inline void vectorit_prev(VectorIterator *vit, Vector *v);
-inline void vectorit_set_col(VectorIterator vit, unsigned int c, Vector *v);
 void vectorit_zero_elt(VectorIterator *vit, Vector *v);
-int vectorit_past_end(VectorIterator vit, Vector *v);
-extern inline int vectorit_past_end(VectorIterator vit, Vector *v) {
-  return vit.pastend;
+void vectorit_insert(VectorIterator *vit, unsigned int c, double d, Vector *v);
+void vectorit_find(VectorIterator *vit, unsigned int c, Vector *v);
+inline void vectorit_set_col(VectorIterator vit, unsigned int c, Vector *v);
+
+//defined in this file - forced to be inline'd at high optimization
+MY_INLINE void vectorit_set_at_beg(VectorIterator *vit, Vector *v);
+MY_INLINE void vectorit_set_at_end(VectorIterator *vit, Vector *v);
+MY_INLINE double vectorit_curr_val(VectorIterator vit, Vector *v);
+MY_INLINE unsigned int vectorit_curr_col(VectorIterator vit, Vector *v);
+MY_INLINE void vectorit_prev(VectorIterator *vit, Vector *v);
+MY_INLINE void vectorit_next(VectorIterator *vit, Vector *v);
+MY_INLINE int vectorit_past_end(VectorIterator vit, Vector *v);
+MY_INLINE int vectorit_past_beg(VectorIterator vit, Vector *v);
+MY_INLINE void vectorit_copy(VectorIterator from, VectorIterator *to);
+
+
+/*************INLINE FUNCTION DEFINITIONS***********************************/
+
+
+//Matrix
+/*************************************************************************
+ *Gets a pointer to a row of a matrix.
+ *
+ *INPUT: A: matrix from which to get a row.
+ * r: row to get.
+ *
+ *OUTPUT: A pointer to row r of matrix M.
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/
+
+static inline Vector *matr_get_row(Matrix *A, unsigned int r) {
+  //yay, easy :)
+  if (A && A->data && r >= 0 && r < A->rows) {
+    return A->data[r];
+  }
+  if (MATR_DEBUG_MODE) {
+    fprintf(stderr, "matr_get_row: bad arguments.\n");
+  }
+  return NULL;
+} 
+
+/*************************************************************************
+ *Sets an entry of a matrix.
+ *
+ *INPUT: M: matrix in which to set an entry.
+ * r: row of the entry.
+ * c: column of the entry.
+ * d: value to set the entry to.
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: d is non-zero = ammortized O(lg(S/R)), d = 0 = O(S/R)
+ * SPARSE_LIST: O(S/R)
+ *************************************************************************/
+
+static inline void matr_set(Matrix *M, unsigned int r, unsigned int c, 
+			    double d) {
+  int nz;
+  if (!M || !M->data || r < 0 || r >= M->rows || !M->data[r]) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "matr_set: bad arguments.\n");
+    }
+    return;
+  }
+  nz = M->data[r]->nz;
+  vector_set(M->data[r], c, d);
+  M->nz += M->data[r]->nz - nz;
 }
 
-int vectorit_past_beg(VectorIterator vit, Vector *v);
-extern inline int vectorit_past_beg(VectorIterator vit, Vector *v) {
-  return vit.pastbeg;
+/*************************************************************************
+ *Gets an entry of a matrix.
+ *
+ *INPUT: M: matrix from which to get an entry.
+ * r: row of the entry.
+ * c: column of the entry.
+ *
+ *OUTPUT: the value at r,c of matrix M
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(lg(S/R))
+ * SPARSE_LIST: O(S/R)
+ *************************************************************************/
+
+static inline double matr_get(Matrix *M, unsigned int r, unsigned int c) {
+  if (!M || !M->data || r < 0 || r >= M->rows || !M->data[r]) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "matr_set: bad arguments.\n");
+    }
+    return 0;
+  }
+  return vector_get(M->data[r], c);
 }
-void vectorit_insert(VectorIterator *vit, unsigned int c, double d, Vector *v);
-void vectorit_copy(VectorIterator from, VectorIterator *to);
-inline void vectorit_find(VectorIterator *vit, unsigned int c, Vector *v);
+
+//Vector
+
+
+
+
+/*************************************************************************
+ *Dimension of a vector.
+ *
+ *INPUT: v: vector
+ *
+ *OUTPUT: The dimension (ie number of rows/columns) of v
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/
+
+static inline unsigned int vector_dim(Vector *v) {
+  if (!v) {
+    return 0;
+  }
+  return v->dim;
+}
+
+/*************************************************************************
+ *Number of elements of a vector.
+ *
+ *INPUT: v: vector
+ *
+ *OUTPUT: The dimension (ie number of rows/columns) of v if v is NON_SPARSE
+ * or the number of non-zero elements of v if v is SPARSE
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/
+
+static inline int vector_num_elts(Vector *v) {
+  if (!v) {
+    return 0;
+  }
+  return v->nz;
+}
+
+
+/*************************************************************************
+ *Squared norm.  Note that finding square roots can be time consuming so
+ *use this function to avoid that when possible.
+ *
+ *INPUT: v: vector to find the norm of
+ *
+ *OUTPUT: ||v||^2
+ *
+ *TIME:
+ * NON_SPARSE: O(c)
+ * SPARSE_ARRAY: O(s)
+ * SPARSE_LIST: O(s)
+ *************************************************************************/
+
+static inline double norm2(Vector *v) {
+  return dot(v, v);
+}
+
+/*************************************************************************
+ *Norm of a vector.
+ *
+ *INPUT: v: vector to find the norm of
+ *
+ *OUTPUT: ||v||
+ *
+ *TIME:
+ * NON_SPARSE: O(c)
+ * SPARSE_ARRAY: O(s)
+ * SPARSE_LIST: O(s)
+ *************************************************************************/
+
+static inline double norm(Vector *v) {
+  return (sqrt(dot(v,v)));
+}
+
+
+/*************************************************************************
+ *Distance between two vectors.
+ *
+ *INPUT: v1: first vector
+ * v2: second vector
+ *
+ *OUTPUT: ||v1 - v2||
+ *
+ *TIME:
+ * Both NON_SPARSE: O(c)
+ * One NON_SPARSE, one SPARSE: O(s) + O(c)
+ * Both SPARSE: O(s_1) + O(s_2)
+ *************************************************************************/
+
+static inline double vector_dist(Vector *v1, Vector *v2) {
+  double d = vector_dist2(v1, v2);
+  
+  if (d > 0) {
+    return sqrt(d);
+  }
+
+  return -1;
+}
+
+
+//Vector Iterator functions
+
+/*************************************************************************
+ *Set the iterator to the beginning of a vector.
+ *
+ *INPUT: v: vector to traverse from the beginning
+ *
+ *OUTPUT: vit is set to the beginning of vector v
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/  
+
+MY_INLINE void vectorit_set_at_beg(VectorIterator *vit, Vector *v) {
+
+  if (!v || !vit) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vectorit_set_at_beg: null arguments.\n");
+    }
+    if (vit) {
+      vit->nscurr = -1;
+    }
+    return;
+  }
+
+  switch (v->type) {
+  case NON_SPARSE:
+    {
+      vit->nscurr = 0;
+      return;
+    }
+  case SPARSE_ARRAY:
+    {
+      //nscurr needs to be the actual index
+      //in order that zero-ing an element in vector_add etc
+      //doesn't mess things up
+      if (!v->data.sparray) {
+	vit->nscurr = 0;
+      } else {
+	vit->nscurr = v->data.sparray->first_elt;
+      }
+      return;
+    }
+  case SPARSE_LIST:
+    {
+      if (v->compact) {
+	if (v->data.splist) {
+	  vit->ccurr = (v->data.splist->head.compact);
+	} else {
+	  vit->ccurr = NULL;
+	}
+      } else {
+	if (v->data.splist) {
+	  vit->pcurr = (v->data.splist->head.precise);
+	} else {
+	  vit->pcurr = NULL;
+	}
+      }
+      return;
+    }
+  default:
+    {
+      vit->nscurr = -1;
+      return;
+    }
+  }
+}
+
+
+/*************************************************************************
+ *Set the iterator to the end of a vector.
+ *
+ *INPUT: v: vector to traverse from the end
+ *
+ *OUTPUT: vit is set to the end of vector v
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/  
+
+MY_INLINE void vectorit_set_at_end(VectorIterator *vit, Vector *v) {
+
+  if (!v || !vit) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vectorit_set_at_end: null arguments.\n");
+    }
+    if (vit) {
+      vit->nscurr = -1;
+    }
+    return;
+  }
+
+  switch (v->type) {
+  case NON_SPARSE:
+    {
+      vit->nscurr = v->dim-1;
+      break;
+    }
+  case SPARSE_ARRAY:
+    {
+      if (!v->data.sparray) {
+	vit->nscurr = 0;
+      } else {
+	vit->nscurr = v->data.sparray->last_elt;
+      }
+      break;
+    }
+  case SPARSE_LIST:
+    { 
+      if (v->compact) {
+	if (!v->data.splist) {
+	  vit->ccurr = NULL;
+	} else {
+	  vit->ccurr = v->data.splist->tail.compact;
+	}
+      } else {
+	if (!v->data.splist) {
+	  vit->pcurr = NULL;
+	} else {
+	  vit->pcurr = v->data.splist->tail.precise;
+	}
+      }
+      break;
+    }
+  default:
+    {
+      vit->nscurr = -1;
+      if (MATR_DEBUG_MODE) {
+	fprintf(stderr, "vectorit_set_at_end: unrecognized type.\n");
+      }
+      return;
+    }
+  }
+}
+
+/*************************************************************************
+ *Get the value (data) of the element that the iterator is pointing to.
+ *
+ *INPUT: vit: the vector iterator, pointing to some element in v
+ * v: the vector vit is traversing
+ *
+ *OUTPUT: The data associated with the element vit is pointing to or
+ * -RAND_MAX if vit is not traversing v.
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/  
+
+MY_INLINE double vectorit_curr_val(VectorIterator vit, Vector *v) {
+
+  if (!v) {
+    //if (MATR_DEBUG_MODE) {
+    //fprintf(stderr, "vectorit_curr_col: null vector.\n");
+    //}
+    return -RAND_MAX;
+  }
+
+  switch (v->type) {
+  case SPARSE_ARRAY:  
+    if (v->data.sparray &&
+	vit.nscurr >= v->data.sparray->first_elt &&
+	vit.nscurr <= v->data.sparray->last_elt) {
+      if (v->compact && v->data.sparray->data.compact) {
+	return (double)v->data.sparray->data.compact[vit.nscurr].s.data;
+      }
+      if (!(v->compact) && (v->data.sparray->data.precise)) {
+	return v->data.sparray->data.precise[vit.nscurr].s.data;
+      }
+    }
+    return -RAND_MAX;
+  case SPARSE_LIST:
+    {
+      if (v->compact && vit.ccurr) {
+	return (double)vit.ccurr->data.data;
+      }
+      if (!(v->compact) && vit.pcurr) {
+	return vit.pcurr->data.data;
+      }
+      return -RAND_MAX;
+    }
+  case NON_SPARSE:
+    {
+      if (vit.nscurr >= 0 && vit.nscurr < v->dim) {
+	if (v->compact && v->data.nsarray.compact) {
+	  return (double)v->data.nsarray.compact[vit.nscurr];
+	}
+	if (!(v->compact) && v->data.nsarray.precise) {
+	  return v->data.nsarray.precise[vit.nscurr];
+	}
+      }
+      return -RAND_MAX;
+    }
+  default:
+    {
+      return -RAND_MAX;
+    }
+  }
+
+  return -RAND_MAX;
+
+}
+
+/*************************************************************************
+ *Get the column of the element that the iterator is pointing to.
+ *
+ *INPUT: vit: the vector iterator, pointing to some element in v
+ * v: the vector vit is traversing
+ *
+ *OUTPUT: The column associated with the element vit is pointing to or v->dim
+ * if vit is past the beginning or end of v.
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *
+ *WARNINGS:
+ *1) This returns v->dim even if vit is past the BEGINNING of v.  This is
+ *   because column numbers need to be unsigned.  Therefore, you need
+ *   to explicitly check if an iterator is past the beginning of a vector 
+ *   - you can't count on this returning a negative value if the iterator
+ *   is past the beginning.
+ *************************************************************************/  
+
+MY_INLINE unsigned int vectorit_curr_col(VectorIterator vit, Vector *v) {
+
+  if (!v) {
+    if (MATR_DEBUG_MODE) {
+    fprintf(stderr, "vectorit_curr_col: null vector.\n");
+    }
+    return MAX_INT_VAL;
+  }
+
+  switch (v->type) {
+  case SPARSE_ARRAY:
+    if (v->data.sparray && v->data.sparray->data.compact &&
+	vit.nscurr >= v->data.sparray->first_elt &&
+	vit.nscurr <= v->data.sparray->last_elt) {
+      if (v->compact && v->data.sparray->data.compact) {
+	return v->data.sparray->data.compact[vit.nscurr].s.col;
+      }
+      if (!(v->compact) && (v->data.sparray->data.precise)) {
+	return v->data.sparray->data.precise[vit.nscurr].s.col;
+      }
+    }
+    return v->dim;
+  case SPARSE_LIST:
+    {
+      if (v->compact && vit.ccurr) {
+	return vit.ccurr->data.col;
+      }
+      if (!(v->compact) && vit.pcurr) {
+	return vit.pcurr->data.col;
+      }
+      return v->dim;
+    }
+  case NON_SPARSE:
+    {
+      return vit.nscurr;
+    }
+  default:
+    {
+      return v->dim;
+    }
+  }
+
+  return v->dim;
+
+}
+
+
+/*************************************************************************
+ *Move to the previous element in the vector.  Sets past_beg and unsets
+ *past_end if appropriate.
+ *
+ *INPUT: v: the vector vit is traversing
+ *
+ *OUTPUT: vit points to the previous element in the vector or is past_beg.
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/  
+
+MY_INLINE void vectorit_prev(VectorIterator *vit, Vector *v) {
+  
+  if (!v || !vit) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vectorit_prev: null arguments.\n");
+    }
+    if (vit) {
+      vit->nscurr = -1;
+    }
+    return;
+  }
+
+  switch (v->type) {
+  case NON_SPARSE:
+  case SPARSE_ARRAY:
+    vit->nscurr--;
+    return;
+  case SPARSE_LIST:
+    if ((v->compact)) {
+      if (vit->ccurr) {
+	vit->ccurr = vit->ccurr->prev;
+      } else {
+	vit->ccurr = v->data.splist->tail.compact;
+      }
+    } else {
+      if (vit->pcurr) {
+	vit->pcurr = vit->pcurr->prev;
+      } else {
+	vit->pcurr = v->data.splist->tail.precise;
+      }
+      
+    }
+  default:
+    return;
+  }
+}
+
+/*************************************************************************
+ *Move to the next element in the vector.
+ *
+ *INPUT: v: the vector vit is traversing
+ *
+ *OUTPUT: vit points to the next element in the vector or is past_end.
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/  
+
+MY_INLINE void vectorit_next(VectorIterator *vit, Vector *v) {
+  if (!v || !vit) {
+    //if (MATR_DEBUG_MODE) {
+    //fprintf(stderr, "vectorit_next: null arguments.\n");
+    //}
+    return;
+  }
+  
+  switch (v->type) {
+  case NON_SPARSE:
+  case SPARSE_ARRAY:
+    vit->nscurr++;
+    return;
+  case SPARSE_LIST:
+    if ((v->compact)) {
+      if (vit->ccurr) {
+	vit->ccurr = vit->ccurr->next;
+      } else {
+	vit->ccurr = v->data.splist->head.compact;
+      }
+    } else {
+      if (vit->pcurr) {
+	vit->pcurr = vit->pcurr->next;
+      } else {
+	vit->pcurr = v->data.splist->head.precise;
+      }
+      
+    }
+  default:
+    return;
+  }
+}
+
+
+/*************************************************************************
+ *Checks if an iterator is past the end of the vector.
+ *
+ *INPUT: vit: the iterator
+ * v: the vector vit is traversing
+ *
+ *OUTPUT: 1 if vit is past the end of v, 0 else
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/  
+
+MY_INLINE int vectorit_past_end(VectorIterator vit, Vector *v) {
+  if (!v) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vectorit_past_end: null arguments.\n");
+    }
+    return 1;
+  }
+
+  switch (v->type) {
+  case SPARSE_ARRAY:
+    if (!v->data.sparray || vit.nscurr > v->data.sparray->last_elt ||
+	v->data.sparray->first_elt > v->data.sparray->last_elt) {
+      return 1;
+    }
+    return 0;
+  case SPARSE_LIST:
+    if (v->compact && !vit.ccurr) {
+      return 1;
+    }
+    if (!(v->compact) && !vit.pcurr) {
+      return 1;
+    }
+    return 0;
+  case NON_SPARSE:
+    if (vit.nscurr >= v->dim) {
+      return 1;
+    }
+    return 0;
+  default:
+    return 1;
+  }
+}
+
+/*************************************************************************
+ *Checks if an iterator is past the beginning of the vector.
+ *
+ *INPUT: vit: the iterator
+ * v: the vector vit is traversing
+ *
+ *OUTPUT: 1 if vit is past the beginning of v, 0 else
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/  
+
+MY_INLINE int vectorit_past_beg(VectorIterator vit, Vector *v) {
+  if (!v) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vectorit_past_end: null arguments.\n");
+    }
+    return 1;
+  }
+
+  switch (v->type) {
+  case SPARSE_ARRAY:
+    if (!(v->data.sparray) || vit.nscurr < v->data.sparray->first_elt
+	|| v->data.sparray->first_elt > v->data.sparray->last_elt) {
+      return 1;
+    }
+    return 0;
+  case SPARSE_LIST:
+    if (v->compact && !vit.ccurr) {
+      return 1;
+    }
+    if (!(v->compact) && !vit.pcurr) {
+      return 1;
+    }
+    return 0;
+  case NON_SPARSE:
+    if (vit.nscurr < 0) {
+      return 1;
+    }
+    return 0;
+  default:
+    return 1;
+  }
+}
+
+/*************************************************************************
+ *Copy one vector iterator to another.
+ *
+ *INPUT: from: vector iterator to copy from
+ *
+ *OUTPUT: to = from.
+ *
+ *TIME:
+ * NON_SPARSE: O(1)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/  
+
+MY_INLINE void vectorit_copy(VectorIterator from, VectorIterator *to) {
+  if (!to) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vectorit_copy: null to vector.\n");
+    }
+    return;
+  }
+  to->nscurr = from.nscurr;
+}
 
 #endif //crm_svm_matrix.h

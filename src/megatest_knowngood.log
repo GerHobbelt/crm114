@@ -1,5 +1,5 @@
- This is CRM114, version 20090807-BlameThorstenAndJenny (TRE 0.7.5 (LGPL))
- Copyright 2001-2006 William S. Yerazunis
+ This is CRM114, version 20091209-BlameMichelson (TRE 0.7.5 (LGPL))
+ Copyright 2001-2009 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
  CRM114 testing brackets, escapes and #'s 
@@ -204,8 +204,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 2342 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 2342 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 11279 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 11279 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -542,37 +542,37 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 933514
+OK_IF_SIZE_CHANGES: Size of isolation at start: 933509
 Bytes used per pass: 931467
 Passes done: 100 
 Total flux through isolation:  186293400
-OK_IF_SIZE_CHANGES: Final isolation size: 933530 
+OK_IF_SIZE_CHANGES: Final isolation size: 933525 
 OK_IF_LESS_THAN_100: Total growth: 16
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 935939
+OK_IF_SIZE_CHANGES: Size of isolation at start: 935934
 Bytes used per pass: 931467
 Passes done: 10 
 Total flux through isolation:  18629340
-OK_IF_SIZE_CHANGES: Final isolation size: 935953 
+OK_IF_SIZE_CHANGES: Final isolation size: 935948 
 OK_IF_LESS_THAN_10: Total growth: 14
 Bytes used per pass: 931467
 Passes done: 20 
 Total flux through isolation:  37258680
-OK_IF_SIZE_CHANGES: Final isolation size: 935958 
+OK_IF_SIZE_CHANGES: Final isolation size: 935953 
 OK_IF_LESS_THAN_20: Total growth: 19
 Bytes used per pass: 931467
 Passes done: 30 
 Total flux through isolation:  55888020
-OK_IF_SIZE_CHANGES: Final isolation size: 935958 
+OK_IF_SIZE_CHANGES: Final isolation size: 935953 
 OK_IF_LESS_THAN_30: Total growth: 19
 Bytes used per pass: 931467
 Passes done: 40 
 Total flux through isolation:  74517360
-OK_IF_SIZE_CHANGES: Final isolation size: 935958 
+OK_IF_SIZE_CHANGES: Final isolation size: 935953 
 OK_IF_LESS_THAN_40: Total growth: 19
 Starting 
 
@@ -660,7 +660,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20090807-BlameThorstenAndJenny ( TRE 0.7.5 (LGPL) )
+version: 20091209-BlameMichelson ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?
@@ -1034,18 +1034,18 @@ Total features in input file: 9
 
 **** Support Vector Machine (SVM) classifier 
  type M 
-CLASSIFY succeeds success probability: 0.676671 pR: 1.4240
-Best match to class #0 prob: 0.6767 pR: 1.4240   
+CLASSIFY succeeds success probability: 0.677904 pR: 1.4405
+Best match to class #0 prob: 0.6779 pR: 1.4405   
 Total features in input file: 48
-#0 (label +1): documents: 193, features: 15809, prob: 6.77e-01, pR:   1.42
-#1 (label -1): documents: 57, features: 16604, prob: 3.23e-01, pR:  -1.42
+#0 (label +1): documents: 193, features: 15809, prob: 6.78e-01, pR:   1.44
+#1 (label -1): documents: 57, features: 16604, prob: 3.22e-01, pR:  -1.44
 
  type M 
-CLASSIFY succeeds success probability: 0.800969 pR: 4.3088
-Best match to class #0 prob: 0.8010 pR: 4.3088   
+CLASSIFY succeeds success probability: 0.801854 pR: 4.3443
+Best match to class #0 prob: 0.8019 pR: 4.3443   
 Total features in input file: 40
-#0 (label +1): documents: 193, features: 15809, prob: 8.01e-01, pR:   4.31
-#1 (label -1): documents: 57, features: 16604, prob: 1.99e-01, pR:  -4.31
+#0 (label +1): documents: 193, features: 15809, prob: 8.02e-01, pR:   4.34
+#1 (label -1): documents: 57, features: 16604, prob: 1.98e-01, pR:  -4.34
 
 **** Alternating Example SVM Network Classifier TRAINING
 
@@ -1222,4 +1222,53 @@ Likely result:
 44 (document_#44) clump: 24 (clump_#24) affinity: 0.2248
 45 (document_#45) clump: 24 (clump_#24) affinity: 0.2493
 46 (document_#46) clump: 24 (clump_#24) affinity: 0.2191
+
+
+**** Principal Component Analysis (PCA) unigram classifier 
+ type A 
+CLASSIFY fails success probability: 0.499846 pR: -0.3073
+Best match to class #1 prob: 0.5002 pR: 0.3073   
+Total features in input file: 11
+#0 (label +1): documents: 193, features: 3567, prob: 5.00e-01, pR:  -0.31
+#1 (label -1): documents: 57, features: 3174, prob: 5.00e-01, pR:   0.31
+
+ type M 
+CLASSIFY succeeds success probability: 0.506965 pR: 13.9301
+Best match to class #0 prob: 0.5070 pR: 13.9301   
+Total features in input file: 8
+#0 (label +1): documents: 193, features: 3567, prob: 5.07e-01, pR:  13.93
+#1 (label -1): documents: 57, features: 3174, prob: 4.93e-01, pR: -13.93
+
+
+**** Principal Component Analysis (PCA) classifier 
+ type A 
+CLASSIFY fails success probability: 0.497977 pR: -4.0453
+Best match to class #1 prob: 0.5020 pR: 4.0453   
+Total features in input file: 47
+#0 (label +1): documents: 193, features: 15809, prob: 4.98e-01, pR:  -4.05
+#1 (label -1): documents: 57, features: 16604, prob: 5.02e-01, pR:   4.05
+
+ type M 
+CLASSIFY succeeds success probability: 0.502855 pR: 5.7103
+Best match to class #0 prob: 0.5029 pR: 5.7103   
+Total features in input file: 39
+#0 (label +1): documents: 193, features: 15809, prob: 5.03e-01, pR:   5.71
+#1 (label -1): documents: 57, features: 16604, prob: 4.97e-01, pR:  -5.71
+
+**** Alternating Example PCA Network Classifier TRAINING
+
+**** Alternating Example PCA Network Classifier RUNNING TEST
+ type A 
+CLASSIFY fails success probability: 0.171492 pR: -787.5435
+Best match to class #1 prob: 0.8285 pR: 787.5435   
+Total features in input file: 149
+#0 (label +1): documents: 16, features: 2025, prob: 1.71e-01, pR: -787.54
+#1 (label -1): documents: 15, features: 2026, prob: 8.29e-01, pR: 787.54
+
+ type M 
+CLASSIFY succeeds success probability: 0.779493 pR: 631.3570
+Best match to class #0 prob: 0.7795 pR: 631.3570   
+Total features in input file: 142
+#0 (label +1): documents: 16, features: 2025, prob: 7.79e-01, pR: 631.36
+#1 (label -1): documents: 15, features: 2026, prob: 2.21e-01, pR: -631.36
 

@@ -43,7 +43,7 @@ window
 	liaf
     }
     #   Now run one fromstart loop on each of the files
-    learn [:_nl:] <SVM fromstart bychunk> (m_test.css | a_test.css | ma_test.css)
+    learn [:_nl:] <SVM fromstart bychunk> (m_test.css )
     # learn [:_nl:] <SVM fromstart bychunk> (a_test.css)
 }
 
@@ -56,7 +56,7 @@ isolate (:filetxt:) //
     input (:filetxt:) [ Alice_In_Wonderland_Chap_1_And_2.txt 16000 4096 ]
     match (:t1:) [:filetxt:] /(....){255}.*?\n\n/
     {
-	classify < SVM unigram > ( m_test.css | a_test.css | ma_test.css) (:s:)/[[:graph:]]+/ [:t1:]
+	classify < SVM unigram > ( m_test.css ) (:s:)/[[:graph:]]+/ [:t1:]
 	output / type M \n:*:s:\n/
     }
     alius
@@ -69,7 +69,7 @@ isolate (:filetxt:) //
     match (:t2:) [:filetxt:] /(....){255}.*?\n/
     
     {
-	classify < SVM unigram > ( m_test.css | a_test.css | ma_test.css ) (:s:) /[[:graph:]]+/ [:t2:]
+	classify < SVM unigram > ( m_test.css ) (:s:) /[[:graph:]]+/ [:t2:]
 	output / type M \n:*:s:\n/
     }
     alius

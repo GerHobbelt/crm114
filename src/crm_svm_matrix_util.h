@@ -43,39 +43,26 @@
 //these are cummulative so that level QP_DEBUG prints everything
 //from level SOLVER_DEBUG and QP_DEBUG
 
-#define SVM_SOLVER_DEBUG 1      //basic information about the solver.  possible
-                                //to use even on runs that need to be fast.
-                                //gives a general progress overview
+#define MATR_DEBUG 1      
 
-#define QP_DEBUG 2              //basic information about the qp solver
 
-#define QP_DEBUG_LOOP 3         //prints some information during each qp loop
-                                //useful if the svm is getting stuck during a QP
-                                //problem
-
-#define QP_LINEAR_SOLVER 4      //prints some information during each cg loop
-                                //useful to discover if the run goes on forever
-                                //because the cg isn't converging 
-                                //(usually indicates a bug in the add or remove
-                                //constraint functions!)
-
-#define QP_CONSTRAINTS 5        //prints out information about adding and 
-                                //removing constraints during the qp solver
-                             
 #define MATR_OPS 6              //information about the matrix operations
 
 #define MATR_OPS_MORE 7         //even more information about the matrix 
                                 //operations (ie printing out intermediate 
                                 //results for vector_add and dot, etc)
 
-#define SVM_SOLVER_DEBUG_LOOP 8 //prints the matrices associated with the solver
-                                //unless you're doing a small run, this isn't
-                                //a feasible setting since the print operations
-                                //put all the zeros in!
+#ifdef DO_INLINES
+#define MY_INLINE __attribute__((always_inline)) static inline
+#else
+#define MY_INLINE static inline
+#endif
 
-int SVM_DEBUG_MODE;            //the debug value
-                               //if internal trace is on SVM_DEBUG_MODE = 
-                               //SVM_INTERNAL_TRACE_LEVEL
+int MATR_DEBUG_MODE;            //the debug value
+                               //for SVM, if internal trace is on 
+                               //MATR_DEBUG_MODE = SVM_INTERNAL_TRACE_LEVEL
+                               //for PCA, if internal trace is on
+                               //MATR_DEBUG_MODE = PCA_INTERNAL_TRACE_LEVEL
 
 //Sparse elements
 typedef struct {
@@ -155,7 +142,6 @@ void expanding_array_set(ExpandingType d, int c, ExpandingArray *A);
 ExpandingType expanding_array_get(int c, ExpandingArray *A);
 void expanding_array_trim(ExpandingArray *A);
 int expanding_array_search(unsigned int c, int init, ExpandingArray *A);
-int expanding_array_int_search(unsigned int c, int init, ExpandingArray *A);
 int expanding_array_insert_before(ExpandingType ne, int before,
 				   ExpandingArray *A);
 int expanding_array_insert_after(ExpandingType ne, int after,
@@ -183,24 +169,34 @@ int list_read(SparseElementList *l, FILE *fp, int n_elts);
 SparseElementList *list_map(void **addr, void *last_addr, int *n_elts_ptr);
 void *list_memmove(void *to, SparseElementList *from);
 
-//Macros to deal with nodes
+//Sparse Nodes
+MY_INLINE SparseNode make_null_node(int compact);
+MY_INLINE int null_node(SparseNode n);
+MY_INLINE double node_data(SparseNode n);
+MY_INLINE unsigned int node_col(SparseNode n);
+MY_INLINE SparseNode next_node(SparseNode n);
+MY_INLINE SparseNode prev_node(SparseNode n);
+MY_INLINE void node_set_data(SparseNode n, double d);
+MY_INLINE void node_set_col(SparseNode n, unsigned int c);
+MY_INLINE void node_free(SparseNode n);
 
-SparseNode make_null_node(int compact);
-int null_node(SparseNode n);
-double node_data(SparseNode n);
-unsigned int node_col(SparseNode n);
-SparseNode next_node(SparseNode n);
-SparseNode prev_node(SparseNode n);
-void node_set_data(SparseNode n, double d);
-void node_set_col(SparseNode n, unsigned int c);
-void node_free(SparseNode n);
+//Comparator functions for QSort
+int compact_expanding_type_int_compare(const void *a, const void *b);
+int precise_sparse_element_val_compare(const void *a, const void *b);
+int precise_sparse_element_col_compare(const void *a, const void *b);
 
-//Having these be inline makes a huge difference in running time!
-extern inline SparseNode make_null_node(int compact)
+
+/***********************Sparse Node Functions***************************/
+
+//return a node with the correct compactness and
+//the appropriate pointer null
+MY_INLINE SparseNode make_null_node(int compact)
 {
   SparseNode n;
   
   n.is_compact = compact;
+  n.compact = NULL;
+  n.precise = NULL;
 
   if (compact) {
     n.compact = NULL;
@@ -211,34 +207,58 @@ extern inline SparseNode make_null_node(int compact)
   return n;
 }
 
-extern inline int null_node(SparseNode n)
-{  if (n.is_compact) {
+//returns 1 if the pointer with the correct compactness
+//is null
+MY_INLINE int null_node(SparseNode n)
+{  
+  if (n.is_compact) {
     return (n.compact == NULL);
   }
   return (n.precise == NULL);
 }
 
-extern inline double node_data(SparseNode n) 
+//returns the data associated with n
+MY_INLINE double node_data(SparseNode n) 
 {
+  if (null_node(n)) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "node_data: null node.\n");
+    }
+    return -RAND_MAX;
+  }
+
   if (n.is_compact) {
     return (double)n.compact->data.data;
   }
   return n.precise->data.data;
 }
 
-extern inline unsigned int node_col(SparseNode n)
+//returns the column number associated with n
+MY_INLINE unsigned int node_col(SparseNode n)
 {
-  if (n.is_compact) {
+  if ((n.is_compact && !(n.compact)) || (!(n.is_compact) && !(n.precise))) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "node_col: null node.\n");
+    }
+    return MAX_INT_VAL;
+  }
+
+  if (n.is_compact && n.compact) {
     return n.compact->data.col;
   }
+
   return n.precise->data.col;
 }
 
-extern inline SparseNode next_node(SparseNode n)
+//returns a pointer to the node after
+//the one n points to
+MY_INLINE SparseNode next_node(SparseNode n)
 {
   SparseNode ret;
-  
+
   ret.is_compact = n.is_compact;
+  ret.compact = NULL;
+  ret.precise = NULL;
 
   if (null_node(n)) {
     return make_null_node(n.is_compact);
@@ -251,11 +271,15 @@ extern inline SparseNode next_node(SparseNode n)
   return ret;
 }
 
-extern inline SparseNode prev_node(SparseNode n)
+//returns a pointer to the node before
+//the one n points to
+MY_INLINE SparseNode prev_node(SparseNode n)
 {
   SparseNode ret;
 
   ret.is_compact = n.is_compact;
+  ret.compact = NULL;
+  ret.precise = NULL;
 
   if (null_node(n)) {
     return make_null_node(n.is_compact);
@@ -269,9 +293,13 @@ extern inline SparseNode prev_node(SparseNode n)
   return ret;
 }
 
-extern inline void node_set_data(SparseNode n, double d)
+//sets the data associated with node n to be d
+MY_INLINE void node_set_data(SparseNode n, double d)
 {
   if (null_node(n)) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "node_set_data: null node.\n");
+    }
     return;
   }
   if (n.is_compact) {
@@ -281,9 +309,13 @@ extern inline void node_set_data(SparseNode n, double d)
   }
 }
 
-extern inline void node_set_col(SparseNode n, unsigned int c)
+//sets the column associated with node n to be c
+MY_INLINE void node_set_col(SparseNode n, unsigned int c)
 {
   if (null_node(n)) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "node_set_col: null node.\n");
+    }
     return;
   }
   if (n.is_compact) {
@@ -293,17 +325,17 @@ extern inline void node_set_col(SparseNode n, unsigned int c)
   }
 }
 
-extern inline void node_free(SparseNode n) {
+//frees the pointer that n has
+//taking into account compactness
+MY_INLINE void node_free(SparseNode n) {
+  if (null_node(n)) {
+    return;
+  }
   if (n.is_compact) {
     free(n.compact);
   } else {
     free(n.precise);
   }
 }
-
-//Comparator functions for QSort
-int compact_expanding_type_int_compare(const void *a, const void *b);
-int precise_sparse_element_val_compare(const void *a, const void *b);
-int precise_sparse_element_col_compare(const void *a, const void *b);
 
 #endif //crm_svm_matrix_util.h

@@ -645,3 +645,41 @@ EOF
 
 rm -f m_test.css
 rm -f a_test.css
+
+./crm114 '-{window; output /\n**** Principal Component Analysis (PCA) unigram classifier \n/}'
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < pca unigram unique > (m_test.css) /[[:graph:]]+/; liaf}' < Macbeth_Act_IV.txt
+
+
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < pca unigram refute unique > (m_test.css) /[[:graph:]]+/; liaf }' < Alice_In_Wonderland_Chap_1_And_2.txt
+
+./crm114 '-{ isolate (:s:); {classify < pca unigram unique > ( m_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:]   ; output / type M \n:*:s:\n/} alius { output / type A \n:*:s:\n/ } }' <<-EOF
+when suddenly a White Rabbit with pink eyes ran close to her.
+EOF
+
+./crm114 '-{ isolate (:s:); {classify < pca unigram unique > ( m_test.css | a_test.css | m_vs_a_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:] ; output / type M \n:*:s:\n/} alius { output / type A \n:*:s:\n/ }}' <<-EOF
+    Double, double toil and trouble;
+    Fire burn, and cauldron bubble.
+EOF
+
+rm -f m_test.css
+
+./crm114 '-{window; output /\n**** Principal Component Analysis (PCA) classifier \n/}'
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < pca unique > (m_test.css) /[[:graph:]]+/; liaf}' < Macbeth_Act_IV.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < pca unique refute > (m_test.css) /[[:graph:]]+/; liaf }' < Alice_In_Wonderland_Chap_1_And_2.txt
+
+./crm114 '-{ isolate (:s:); {classify < pca unique > ( m_test.css | a_test.css | m_vs_a_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:]   ; output / type M \n:*:s:\n/} alius { output / type A \n:*:s:\n/ } }' <<-EOF
+when suddenly a White Rabbit with pink eyes ran close to her.
+EOF
+
+./crm114 '-{ isolate (:s:); {classify < pca unique > ( m_test.css | a_test.css | m_vs_a_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:] ; output / type M \n:*:s:\n/} alius { output / type A \n:*:s:\n/ }}' <<-EOF
+    Double, double toil and trouble;
+    Fire burn, and cauldron bubble.
+EOF
+
+rm -f m_test.css
+rm -f a_test.css
+
+./crm114 alternating_example_pca.crm
+
+rm -f m_test.css
+rm -f a_test.css

@@ -38,7 +38,16 @@
                                    //this value.  playing with it will affect
                                    //both running time and accuracy.
 
-extern int SVM_DEBUG_MODE;         //There are a number of modes.
+#define SVM_SOLVER_DEBUG 1      //basic information about the solver.  possible
+                                //to use even on runs that need to be fast.
+                                //gives a general progress overview
+
+#define SVM_SOLVER_DEBUG_LOOP 8 //prints the matrices associated with the solver
+                                //unless you're doing a small run, this isn't
+                                //a feasible setting since the print operations
+                                //put all the zeros in!
+
+int SVM_DEBUG_MODE;         //There are a number of modes.
                                    //See crm_svm_matrix_util.h for them.
 //the SVM solution struct
 typedef struct {

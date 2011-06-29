@@ -1,6 +1,3 @@
-#include "crm_svm_matrix.h"
-#include "crm_svm_matrix_util.h"
-
 //	crm_svm_matrix.c - Support Vector Machine
 
 ////////////////////////////////////////////////////////////////////////
@@ -14,6 +11,8 @@
 // Copyright 2009 William S. Yerazunis.
 // This file is under GPLv3, as described in COPYING.
 
+#include "crm_svm_matrix.h"
+#include "crm_svm_matrix_util.h"
 
 /*****************************************************************************
  *This is a matrix/vector library.
@@ -151,7 +150,7 @@ Matrix *matr_make_size(unsigned int rows, unsigned int cols, VectorType type,
 
   M = (Matrix *)malloc(sizeof(Matrix));
   if (!M) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Unable to allocate memory for matrix.\n");
     }
     return NULL;
@@ -173,7 +172,7 @@ Matrix *matr_make_size(unsigned int rows, unsigned int cols, VectorType type,
     M->nz = 0;
     break;
   default:
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_make: unrecognized type.\n");
     }
     free(M);
@@ -207,83 +206,6 @@ Matrix *matr_make_size(unsigned int rows, unsigned int cols, VectorType type,
 }
 
 /*************************************************************************
- *Sets an entry of a matrix.
- *
- *INPUT: M: matrix in which to set an entry.
- * r: row of the entry.
- * c: column of the entry.
- * d: value to set the entry to.
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: d is non-zero = ammortized O(lg(S/R)), d = 0 = O(S/R)
- * SPARSE_LIST: O(S/R)
- *************************************************************************/
-
-void matr_set(Matrix *M, unsigned int r, unsigned int c, double d) {
-  int nz;
-  if (!M || !M->data || r < 0 || r >= M->rows || !M->data[r]) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "matr_set: bad arguments.\n");
-    }
-    return;
-  }
-  nz = M->data[r]->nz;
-  vector_set(M->data[r], c, d);
-  M->nz += M->data[r]->nz - nz;
-}
-
-/*************************************************************************
- *Gets an entry of a matrix.
- *
- *INPUT: M: matrix from which to get an entry.
- * r: row of the entry.
- * c: column of the entry.
- *
- *OUTPUT: the value at r,c of matrix M
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(lg(S/R))
- * SPARSE_LIST: O(S/R)
- *************************************************************************/
-
-double matr_get(Matrix *M, unsigned int r, unsigned int c) {
-  if (!M || !M->data || r < 0 || r >= M->rows || !M->data[r]) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "matr_set: bad arguments.\n");
-    }
-    return 0;
-  }
-  return vector_get(M->data[r], c);
-}
-
-/*************************************************************************
- *Gets a pointer to a row of a matrix.
- *
- *INPUT: A: matrix from which to get a row.
- * r: row to get.
- *
- *OUTPUT: A pointer to row r of matrix M.
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/
-
-Vector *matr_get_row(Matrix *A, unsigned int r) {
-  //yay, easy :)
-  if (A && A->data && r >= 0 && r < A->rows) {
-    return A->data[r];
-  }
-  if (SVM_DEBUG_MODE) {
-    fprintf(stderr, "matr_get_row: bad arguments.\n");
-  }
-  return NULL;
-} 
-
-/*************************************************************************
  *Sets a row of the matrix.
  *
  *INPUT: A: matrix in which to set a row.
@@ -304,7 +226,7 @@ void matr_set_row(Matrix *A, unsigned int r, Vector *v) {
   int oldnz;
   
   if (!A || !A->data || r < 0 || r >= A->rows || !A->data[r]) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_set_row: bad arguments.\n");
     }
     return;
@@ -337,7 +259,7 @@ void matr_set_row(Matrix *A, unsigned int r, Vector *v) {
 void matr_shallow_row_copy(Matrix *M, unsigned int r, Vector *v) {
   int oldrows, i;
   if (!v || !M || r < 0) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_shallow_row_copy: bad arguments.\n");
     }
     return;
@@ -346,7 +268,7 @@ void matr_shallow_row_copy(Matrix *M, unsigned int r, Vector *v) {
   if (v->type != M->type) {
     //this can be bad if v is sparse and M is non-sparse
     //since we try to set M->cols = v->dim and v->dim might be HUGE
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf
 	(stderr, 
 	 "Attempt to do shallow row copy between different vector types.\n");
@@ -361,7 +283,7 @@ void matr_shallow_row_copy(Matrix *M, unsigned int r, Vector *v) {
     M->data = (Vector **)realloc(M->data, sizeof(Vector *)*(r+1));
     if (!M->data) {
       //oh, oh something is really wrong
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "Unable to grow M in shallow_row_copy.\n");
       }
       M->rows = 0;
@@ -409,20 +331,20 @@ void matr_set_col(Matrix *A, unsigned int c, Vector *v) {
   VectorIterator vit;
 
   if (!v || !A || !A->data || c < 0 || c >= A->cols) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_set_col: bad arguments.\n");
     }
     return;
   }
 
   if (v->dim != A->rows) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_set_col: dimension mismatch.\n");
     }
     return;
   }
 
-  if (SVM_DEBUG_MODE >= MATR_OPS) {
+  if (MATR_DEBUG_MODE >= MATR_OPS) {
     fprintf(stderr, "setting column %d of \n", c);
     matr_print(A);
     fprintf(stderr, "to be\n");
@@ -464,7 +386,7 @@ void matr_set_col(Matrix *A, unsigned int c, Vector *v) {
 void matr_add_row(Matrix *M) {
 
   if (!M) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_add_row: null matrix.\n");
     }
     return;
@@ -473,7 +395,7 @@ void matr_add_row(Matrix *M) {
   //reallocate the memory for M
   M->data = (Vector **)realloc(M->data, sizeof(Vector *)*(M->rows+1));
   if (!M->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Unable to add more rows to matrix.\n");
     }
     M->rows = 0;
@@ -500,7 +422,7 @@ void matr_add_nrows(Matrix *M, unsigned int n) {
   unsigned int i;
 
   if (!M || n <= 0) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_add_nrows: bad arguments.\n");
     }
     return;
@@ -508,7 +430,7 @@ void matr_add_nrows(Matrix *M, unsigned int n) {
 
   M->data = (Vector **)realloc(M->data, sizeof(Vector *)*(M->rows+n));
   if (!M->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Unable to add more rows to matrix.\n");
     }
     M->rows = 0;
@@ -536,7 +458,7 @@ void matr_add_col(Matrix *M) {
   unsigned int i, j;
 
   if (!M) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_add_col: null matrix.\n");
     }
     return;
@@ -546,7 +468,7 @@ void matr_add_col(Matrix *M) {
     for (i = 0; i < M->rows; i++) {
       vector_add_col(M->data[i]);
       if (!M->data[i]) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "Unable to add more columns to matrix.\n");
 	}
 	for (j = 0; j < i; j++) {
@@ -582,16 +504,9 @@ void matr_add_col(Matrix *M) {
 void matr_add_ncols(Matrix *M, unsigned int n) {
   unsigned int i, j;
 
-  if (!M) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "matr_add_ncols: null matrix.\n");
-    }
-    return;
-  }
-
-  if (!n) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "Warning: Request to add 0 columns.  Returning without doing anything.\n");
+  if (!M || n <= 0) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "matr_add_ncols: bad arguments.\n");
     }
     return;
   }
@@ -600,7 +515,7 @@ void matr_add_ncols(Matrix *M, unsigned int n) {
     for (i = 0; i < M->rows; i++) {
       vector_add_ncols(M->data[i], n);
       if (!M->data[i]) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "Unable to add more columns to matrix.\n");
 	}
 	for (j = 0; j < i; j++) {
@@ -659,14 +574,14 @@ static void matr_decrease_rows(Matrix *M, unsigned int r, int free_row) {
   unsigned int i;
 
   if (!M || !M->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_decrease_rows: null matrix.\n");
     }
     return;
   }
 
   if (r >= M->rows || r < 0) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, 
 	      "matr_decrease_rows: attempt to remove non-existant row.\n");
     }
@@ -700,7 +615,7 @@ static void matr_decrease_rows(Matrix *M, unsigned int r, int free_row) {
   }
   M->data = (Vector **)realloc(M->data, sizeof(Vector *)*(M->rows-1));
   if (!M->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Unable to reduce rows of matrix.\n");
     }
     M->rows = 0;
@@ -736,14 +651,14 @@ void matr_remove_col(Matrix *M, unsigned int c) {
   int oldnz;
 
   if (!M || !M->data || M->cols == 0) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_remove_col: null matrix.\n");
     }
     return;
   }
 
   if (c >= M->cols) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, 
 	      "matr_remove_col: attempt to remove non-existent column.\n");
     }
@@ -762,7 +677,7 @@ void matr_remove_col(Matrix *M, unsigned int c) {
     oldnz = M->data[i]->nz;
     vector_remove_col(M->data[i], c);
     if (!M->data[i]) {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "Unable to remove columns from matrix.\n");
       }
       for (j = 0; j < i; j++) {
@@ -802,7 +717,7 @@ ExpandingArray *matr_remove_zero_rows(Matrix *X) {
   Vector *r;
 
   if (!X || !X->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_remoev_zero_rows: null matrix.\n");
     }
     return NULL;
@@ -871,8 +786,15 @@ ExpandingArray *matr_remove_zero_rows(Matrix *X) {
 
 ExpandingArray *matr_remove_zero_cols(Matrix *X) {
   if (!X || !X->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_remove_zero_cols: null matrix.\n");
+    }
+    return NULL;
+  }
+
+  if (!(X->cols) || !(X->nz)) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "matr_remove_zero_cols: X has nothing to sort.\n");
     }
     return NULL;
   }
@@ -894,16 +816,18 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
   Vector *row;
   CompactExpandingType cet;
   ExpandingType et;
+  int front, back;
+  
 
   if (!X || !X->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_remove_zero_cols: null matrix.\n");
     }
     return NULL;
   }
 
   if (X->type == NON_SPARSE) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf
 	(stderr, 
 	 "Called matr_remove_zero_cols on non-sparse matrix.  Returning.\n");
@@ -936,7 +860,7 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
       }
       colMap = make_expanding_array(MATR_DEFAULT_VECTOR_SIZE, MATR_COMPACT); 
       if (!colMap) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf
 	    (stderr, 
 	     "Unable to allocate memory for counting sort.  Giving up.\n");
@@ -944,7 +868,7 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
 	return NULL;
       }
       iterations = (int)((X->cols-1)/(double)size+1);
-      if (SVM_DEBUG_MODE >= SVM_SOLVER_DEBUG) {
+      if (MATR_DEBUG_MODE >= MATR_DEBUG) {
 	fprintf(stderr, "Removing zero columns will take %d iterations, each of length %d.\n", iterations, size);
       }
       coliszero = (int *)malloc(sizeof(int)*size);
@@ -956,7 +880,7 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
 	  startcol = (j-1)*size;
 	  break;
 	}
-	if (SVM_DEBUG_MODE >= SVM_SOLVER_DEBUG) {
+	if (MATR_DEBUG_MODE >= MATR_DEBUG) {
 	  fprintf(stderr, "startcol = %u\n", startcol);
 	}
 	for (i = 0; i < size; i++) {
@@ -1025,7 +949,7 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
 	X->data[i]->dim -= coliszero[index];
       }
       
-      if (SVM_DEBUG_MODE >= SVM_SOLVER_DEBUG) {
+      if (MATR_DEBUG_MODE >= MATR_DEBUG) {
 	fprintf(stderr, "There were %u zero columns.\n", coliszero[index]);
       }
 
@@ -1034,7 +958,7 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
     }
   case MERGE:
     {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, 
 		"Merge sort not yet implemented.  Using counting sort.\n");
       }
@@ -1044,12 +968,12 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
     {
       //ok, let's hope we can fit two versions of X into memory!
       //put everything into colMap
-      if (SVM_DEBUG_MODE >= SVM_SOLVER_DEBUG) {
+      if (MATR_DEBUG_MODE >= MATR_DEBUG) {
 	fprintf(stderr, "Allocating %d elements for sort.\n", X->nz);
       }
       colMap = make_expanding_array(X->nz, MATR_COMPACT);
       if (!colMap) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "Unable to allocate enough space for qsort.  Using counting sort.\n");
 	}
 	return matr_remove_zero_cols_sort(X, COUNTING);
@@ -1071,7 +995,7 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
       qsort(&(colMap->data.compact[colMap->first_elt]),
 	    colMap->n_elts, sizeof(CompactExpandingType),
 	    compact_expanding_type_int_compare);
-      if (SVM_DEBUG_MODE >= SVM_SOLVER_DEBUG) {
+      if (MATR_DEBUG_MODE >= MATR_DEBUG) {
 	fprintf(stderr, "Finished qsort.\n");
       }
 
@@ -1084,7 +1008,7 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
 	  offset++;
 	} else {
 	  lastcol = et.compact->i;
-	  if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+	  if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
 	    fprintf(stderr, "Replacing column %d (%u) with column %d (%u)\n", 
 		   i - offset, expanding_array_get(i-offset, colMap).compact->i,
 		   i, expanding_array_get(i, colMap).compact->i);
@@ -1096,7 +1020,7 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
       colMap->n_elts -= offset;
       colMap->last_elt -= offset;
       expanding_array_trim(colMap);
-      if (SVM_DEBUG_MODE >= SVM_SOLVER_DEBUG) {
+      if (MATR_DEBUG_MODE >= MATR_DEBUG) {
 	fprintf(stderr, "Renumbering columns.  Total columns = %d last_elt = %d\n", colMap->n_elts, colMap->last_elt);
       }
       //renumber the columns of X
@@ -1108,9 +1032,20 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
        vectorit_set_at_beg(&vit, row);
        index = 0;
        while (!vectorit_past_end(vit, row)) {
-	 index = expanding_array_int_search(vectorit_curr_col(vit, row),
-					    index, colMap);
-	 if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+	 front = colMap->first_elt;
+	 back = colMap->last_elt;
+	 col = vectorit_curr_col(vit, row);
+	 index = (front + back)/2;
+	 while (colMap->data.compact[index].i != col) {
+	   if (colMap->data.compact[index].i < col) {
+	     front = index+1;
+	   } else if (colMap->data.compact[index].i > col) {
+	     back = index-1;	   
+	   }
+	   index = (front + back)/2;
+	 }
+	 index -= colMap->first_elt;
+	 if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
 	   fprintf(stderr, "index = %d, colMap[index] = %u, actual col = %u\n",
 		  index,
 		  expanding_array_get(index, colMap).compact->i,
@@ -1120,7 +1055,6 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
 	 vectorit_next(&vit, row);
        }
      }
-
      
      //tell X it has fewer columns
      X->cols = colMap->n_elts;
@@ -1133,7 +1067,7 @@ static ExpandingArray *matr_remove_zero_cols_sort(Matrix *X,
     }
   default:
     {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "Invalid sorting type.\n");
       }
       return NULL;
@@ -1167,7 +1101,7 @@ void matr_append_matr(Matrix **to_ptr, Matrix *from) {
   Vector *row;
 
   if (!to_ptr) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, 
 	      "matr_append_matr: pointer to 'to' matrix unitialized.\n");
     }
@@ -1187,7 +1121,7 @@ void matr_append_matr(Matrix **to_ptr, Matrix *from) {
     }
     if (!to || (from->rows && !(to->data))) {
       //something is wrong
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "matr_append_matr: error in creating new matrix.  your from matrix appears corrupted.\n");
       }
       if (to) {
@@ -1237,7 +1171,7 @@ void matr_vector(Matrix *M, Vector *v, Vector *ret) {
   double d;
 
   if (!M || !M->data || !v || !ret) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_vector: null arguments.\n");
     }
     return;
@@ -1245,7 +1179,7 @@ void matr_vector(Matrix *M, Vector *v, Vector *ret) {
 
   rows = ret->dim;
   
-  if (SVM_DEBUG_MODE >= MATR_OPS) {
+  if (MATR_DEBUG_MODE >= MATR_OPS) {
     fprintf(stderr, "matr_vector: multiplying\n");
     matr_print(M);
     fprintf(stderr, "by\n");
@@ -1274,7 +1208,7 @@ void matr_vector(Matrix *M, Vector *v, Vector *ret) {
     }    
     vectorit_insert(&vit, i, d, ret);
     vectorit_next(&vit, ret);
-    if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+    if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
       fprintf(stderr, "ret = ");
       vector_print(ret);
     }
@@ -1303,7 +1237,7 @@ void matr_vector_seq(Matrix **A, int nmatrices, unsigned int maxrows,
   Vector *tmp1, *tmp2, *ctmp;
 
   if (!A || !w || !z) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_vector_seq: null arguments.\n");
     }
     return;
@@ -1365,14 +1299,14 @@ void matr_transpose(Matrix *A, Matrix *T) {
   VectorIterator vit, trit;
   
   if (!A || !T || !A->data || !T->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_transpose: null matrix.\n");
     }
     return;
   }
 
   if (A->rows != T->cols || A->cols != T->rows) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_transpose: transposed matrix incorrect size.\n");
     }
     return;
@@ -1415,7 +1349,7 @@ int matr_iszero(Matrix *M) {
   unsigned int i;
 
   if (!M || !M->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_iszero: null matrix.\n");
     }
     return 1;
@@ -1450,14 +1384,14 @@ void matr_convert_nonsparse_to_sparray(Matrix *M, ExpandingArray *colMap) {
   Vector *row;
 
   if (!M || !colMap) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_convert: null arguments.\n");
     }
     return;
   }
 
   if (M->type != NON_SPARSE) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, 
 	      "Attempt to convert an already sparse matrix to sparse.\n");
     }
@@ -1497,7 +1431,7 @@ void matr_print(Matrix *M) {
   Vector *row;
 
   if (!M) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_print: null matrix.\n");
     }
     return;
@@ -1534,7 +1468,7 @@ void matr_write(Matrix *M, char *filename) {
   FILE *out = fopen(filename, "w");
 
   if (!out) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Bad file name in matr_write: %s\n", filename);
     }
     return;
@@ -1561,7 +1495,7 @@ void matr_write(Matrix *M, char *filename) {
 void matr_write_fp(Matrix *M, FILE *out) {
 
   if (!M || !out) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_write: null arguments.\n");
     }
     return;
@@ -1580,7 +1514,7 @@ static void matr_write_sp(Matrix *M, FILE *out) {
   VectorIterator vit;
 
   if (!M || !out || !M->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_write: null arguments.\n");
     }
     return;
@@ -1600,7 +1534,7 @@ static void matr_write_ns(Matrix *M, FILE *out) {
   unsigned int i;
 
   if (!M || !out || !M->data) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_write: null arguments.\n");
     }
     return;
@@ -1628,7 +1562,7 @@ size_t matr_write_bin(Matrix *M, char *filename) {
   size_t size;
   FILE *fp = fopen(filename, "wb");
   if (!fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_write_bin: bad filename %s", filename);
     }
     return 0;
@@ -1656,7 +1590,7 @@ size_t matr_write_bin_fp(Matrix *M, FILE *fp) {
   Vector *row;
 
   if (!M || !fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_write: null arguments.\n");
     }
     return 0;
@@ -1695,7 +1629,7 @@ Matrix *matr_read_bin(char *filename) {
 
   FILE *fp = fopen(filename, "rb");
   if (!fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_read_bin: bad filename %s", filename);
     }
     return NULL;
@@ -1729,7 +1663,7 @@ Matrix *matr_read_bin_fp(FILE *fp) {
   size_t amount_read, st;
 
   if (!fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_read: bad file pointer.\n");
     }
     free(M);
@@ -1748,7 +1682,7 @@ Matrix *matr_read_bin_fp(FILE *fp) {
 
   M->data = (Vector **)malloc(sizeof(Vector *)*M->rows);
   if (!M->data && M->rows > 0) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_read: Unable to malloc space for matrix.\n");
     }
     M->rows = 0;
@@ -1760,12 +1694,12 @@ Matrix *matr_read_bin_fp(FILE *fp) {
     M->data[i] = vector_read_bin_fp(fp);
     if (!M->data[i]) {
       //oh oh bad file
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "matr_read: Bad file.\n");
       }
       break;
     }
-    if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+    if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
       fprintf(stderr, "read row %u feof = %d dim = %d nz = %d\n", i, feof(fp),
 	     M->data[i]->dim, M->data[i]->nz);
       vector_write_sp_fp(matr_get_row(M, i), stderr);
@@ -1814,7 +1748,7 @@ Matrix *matr_map(void **addr, void *last_addr) {
   unsigned int i;
   
   if (!addr || !*addr || !last_addr) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_map: null arguments.\n");
     }
     return NULL;
@@ -1830,7 +1764,7 @@ Matrix *matr_map(void **addr, void *last_addr) {
 
   M->data = (Vector **)malloc(sizeof(Vector *)*M->rows);
   if (!M->data && M->rows > 0) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "matr_map: unable to allocate space for matrix.\n");
     }
     M->rows = 0;
@@ -1840,7 +1774,7 @@ Matrix *matr_map(void **addr, void *last_addr) {
   for (i = 0; i < M->rows; i++) {
     M->data[i] = vector_map(addr, last_addr);
     if (!M->data[i]) {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "matr_map: bad file.\n");
       }
       break;
@@ -1899,13 +1833,16 @@ void matr_free(Matrix *M) {
 static void vector_make_nsarray_data(Vector *v, int compact);
 static void vector_make_sparray_data(Vector *v, int compact, int init_size);
 static void vector_make_splist_data(Vector *v, int compact);
-static void vector_add_fast(Vector *sp, Vector *ns, Vector *ret);
-static inline double dot_fast(Vector *sp, Vector *ns);
-static inline double dot_log(Vector *sp, Vector *ns);
 static void vector_add_col_ns(Vector *v);
 static void vector_add_ncols_ns(Vector *v, unsigned int n);
+static inline void vector_add_fast(Vector *sp, Vector *ns, Vector *ret);
+static inline double dot_log(Vector *sp, Vector *ns);
+static inline double dot_fast(Vector *sp, Vector *ns);
+static inline void vector_add_multiple_fast(Vector *base, Vector *toadd,
+					    double factor);
 static size_t vector_write_bin_ns(Vector *v, FILE *fp);
 static void vector_read_bin_ns(Vector *v, FILE *fp);
+
 
 /*************************************************************************
  *Makes a zero vector.
@@ -1970,7 +1907,7 @@ Vector *vector_make_size(unsigned int dim, VectorType type, int compact,
     vector_make_splist_data(v, compact);
     break;
   default:
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_make: unrecognized type.\n");
     }
     free(v);
@@ -1994,7 +1931,7 @@ static void vector_make_nsarray_data(Vector *v, int compact) {
     if (compact) {
       v->data.nsarray.compact = (int *)malloc(sizeof(int)*v->dim);
       if (!v->data.nsarray.compact) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "Unable to malloc data for non-sparse vector.\n");
 	}
 	return;
@@ -2002,7 +1939,7 @@ static void vector_make_nsarray_data(Vector *v, int compact) {
     } else {
       v->data.nsarray.precise = (double *)malloc(sizeof(double)*v->dim);
       if (!v->data.nsarray.precise) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "Unable to malloc data for non-sparse vector.\n");
 	}
 	return;
@@ -2029,7 +1966,7 @@ static void vector_make_sparray_data(Vector *v, int compact, int size) {
 
   v->nz = 0;
   v->data.sparray = make_expanding_array(size, compact);
-  if (!v->data.sparray && SVM_DEBUG_MODE) {
+  if (!v->data.sparray && MATR_DEBUG_MODE) {
     fprintf(stderr, "warning: no space malloc'd for sparse array vector.\n");
   }
 }
@@ -2042,7 +1979,7 @@ static void vector_make_splist_data(Vector *v, int compact) {
 
   v->nz = 0;
   v->data.splist = make_list(compact);
-  if (!v->data.splist && SVM_DEBUG_MODE) {
+  if (!v->data.splist && MATR_DEBUG_MODE) {
     fprintf(stderr, "warning: no space malloc'd for sparse list vector.\n");
   }
 }
@@ -2068,7 +2005,7 @@ void vector_copy(Vector *from, Vector *to) {
   VectorIterator fit, toit;
 
   if (!to || !from) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_copy: null arguments.\n");
     }
     return;
@@ -2117,19 +2054,18 @@ void vector_copy(Vector *from, Vector *to) {
  *  Generally: O(s)
  *  First/Last element: O(1)
  *************************************************************************/
-
-void vector_set(Vector *v, unsigned int i, double d) {
+inline void vector_set(Vector *v, unsigned int i, double d) {
   VectorIterator vit;
   
   if (!v) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_set: null vector.\n");
     }
     return;
   }
 
   if (i >= v->dim) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_set: out of range column %u.\n", i);
     }
     return;
@@ -2139,13 +2075,13 @@ void vector_set(Vector *v, unsigned int i, double d) {
     if (v->compact) {
       if (v->data.nsarray.compact) {
 	v->data.nsarray.compact[i] = (int)d;
-      } else if (SVM_DEBUG_MODE) {
+      } else if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vector_set: null vector.\n");
       }
     } else {
       if (v->data.nsarray.precise) {
 	v->data.nsarray.precise[i] = d;
-      } else if (SVM_DEBUG_MODE) {
+      } else if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vector_set: null vector.\n");
       }
     }
@@ -2175,19 +2111,18 @@ void vector_set(Vector *v, unsigned int i, double d) {
  *  First/Last element: O(1)
  *************************************************************************/
   
-double vector_get(Vector *v, unsigned int i) {
+inline double vector_get(Vector *v, unsigned int i) {
   VectorIterator vit;
 
-
   if (!v) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_get: null vector.\n");
     }
     return 0;
   }
 
   if (i >= v->dim) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_get: out of range column %u.\n", i);
     }
     return 0;
@@ -2198,7 +2133,7 @@ double vector_get(Vector *v, unsigned int i) {
       if (v->data.nsarray.compact) {
 	return v->data.nsarray.compact[i];
       } else {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vector_get: null vector.\n");
 	}
 	return 0;
@@ -2207,7 +2142,7 @@ double vector_get(Vector *v, unsigned int i) {
       if (v->data.nsarray.precise) {
 	return v->data.nsarray.precise[i];
       } else {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vector_get: null vector.\n");
 	}
 	return 0;
@@ -2226,47 +2161,6 @@ double vector_get(Vector *v, unsigned int i) {
 }
 
 /*************************************************************************
- *Dimension of a vector.
- *
- *INPUT: v: vector
- *
- *OUTPUT: The dimension (ie number of rows/columns) of v
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/
-
-unsigned int vector_dim(Vector *v) {
-  if (!v) {
-    return 0;
-  }
-  return v->dim;
-}
-
-/*************************************************************************
- *Number of elements of a vector.
- *
- *INPUT: v: vector
- *
- *OUTPUT: The dimension (ie number of rows/columns) of v if v is NON_SPARSE
- * or the number of non-zero elements of v if v is SPARSE
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/
-
-int vector_num_elts(Vector *v) {
-  if (!v) {
-    return 0;
-  }
-  return v->nz;
-}
-
-/*************************************************************************
  *Zero out a vector.
  *
  *INPUT: v: vector to zero
@@ -2277,11 +2171,11 @@ int vector_num_elts(Vector *v) {
  * SPARSE_LIST: O(s)
  *************************************************************************/
 
-void vector_zero(Vector *v) {
+inline void vector_zero(Vector *v) {
   unsigned int i;
 
   if (!v) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_zero: null vector.\n");
     }
     return;
@@ -2292,7 +2186,7 @@ void vector_zero(Vector *v) {
     {
       if (!(v->data.nsarray.compact) &&
 	  !(v->data.nsarray.precise)) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vector_zero: null vector.\n");
 	}
 	return;
@@ -2309,7 +2203,7 @@ void vector_zero(Vector *v) {
   case SPARSE_ARRAY:
     {
       if (!v->data.sparray) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vector_zero: null vector.\n");
 	}
 	return;
@@ -2321,7 +2215,7 @@ void vector_zero(Vector *v) {
   case SPARSE_LIST:
     {
       if (!v->data.splist) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vector_zero: null vector.\n");
 	}
 	return;
@@ -2333,7 +2227,7 @@ void vector_zero(Vector *v) {
     }
   default:
     {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vector_zero: unrecognized type.\n");
       }
     }
@@ -2360,7 +2254,7 @@ void vector_add(Vector *v1, Vector *v2, Vector *ret) {
   double d;
 
   if (!v1 || !v2 || !ret) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_add: null arguments.\n");
     }
     return;
@@ -2376,7 +2270,7 @@ void vector_add(Vector *v1, Vector *v2, Vector *ret) {
     return;
   }
   
-  if (SVM_DEBUG_MODE >= MATR_OPS) {
+  if (MATR_DEBUG_MODE >= MATR_OPS) {
     fprintf(stderr, "Adding\n\t");
     vector_print(v1);
     fprintf(stderr, "and\n\t");
@@ -2412,10 +2306,11 @@ void vector_add(Vector *v1, Vector *v2, Vector *ret) {
     col1 = vectorit_curr_col(vit1, v1);
     col2 = vectorit_curr_col(vit2, v2);
     colr = vectorit_curr_col(*vitr, ret);
-    if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+    if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
       fprintf(stderr, "col1 = %d, col2 = %d, colr = %d\n", col1, col2, colr);
     }
-    if ((colr < col1 || col1 >= v1->dim) && (colr < col2 || col2 >= v2->dim)) {
+    if ((colr < col1 || col1 >= v1->dim) && 
+	(colr < col2 || col2 >= v2->dim)) {
       vectorit_zero_elt(vitr, ret);
       continue;
     }
@@ -2456,34 +2351,6 @@ void vector_add(Vector *v1, Vector *v2, Vector *ret) {
   }
 } 
 
-//"private" function for adding a sparse and a non-sparse
-//vector quickly
-static void vector_add_fast(Vector *sp, Vector *ns, Vector *ret) {
-  VectorIterator vit;
-  unsigned int col;
-
-  if (!sp || !ns || !ret) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vector_add: null arguments.\n");
-    }
-    return;
-  }
-
-  if (ret != ns || sp->type == NON_SPARSE || ns->type != NON_SPARSE) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vector_add_fast: Wrong sparseness.\n");
-    } 
-    vector_add(sp, ns, ret);
-    return;
-  }
-
-  vectorit_set_at_beg(&vit, sp);
-  while (!vectorit_past_end(vit, sp)) {
-    col = vectorit_curr_col(vit, sp);
-    vector_set(ret, col, vectorit_curr_val(vit, sp) + vector_get(ns, col));
-    vectorit_next(&vit, sp);
-  }
-}
 
 /*************************************************************************
  *Multiply a vector by a scalar.
@@ -2504,13 +2371,13 @@ void vector_multiply(Vector *v, double s, Vector *ret) {
   unsigned int col, colr;
 
   if (!v || !ret) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_multiply: null arguments.\n");
     }
     return;
   }
 
-  if (SVM_DEBUG_MODE >= MATR_OPS) {
+  if (MATR_DEBUG_MODE >= MATR_OPS) {
     fprintf(stderr, "multiplying\n\t");
     vector_print(v);
     fprintf(stderr, "by %lf, putting in\n\t", s);
@@ -2519,7 +2386,7 @@ void vector_multiply(Vector *v, double s, Vector *ret) {
   
   if (fabs(s) < SVM_EPSILON || vector_iszero(v)) {
     //zero out vector
-    if (SVM_DEBUG_MODE >= MATR_OPS) {
+    if (MATR_DEBUG_MODE >= MATR_OPS) {
       fprintf(stderr, "zeroing ret.\n");
     }
     vector_zero(ret);
@@ -2545,7 +2412,7 @@ void vector_multiply(Vector *v, double s, Vector *ret) {
     col = vectorit_curr_col(vit, v);
     colr = vectorit_curr_col(*vitr, ret);
 
-    if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+    if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
       fprintf(stderr, "col = %d, colr = %d ret = ", col, colr);
       vector_print(ret);
     }
@@ -2555,17 +2422,9 @@ void vector_multiply(Vector *v, double s, Vector *ret) {
     }
 
     vectorit_insert(vitr, col, s*vectorit_curr_val(vit, v), ret);
-    if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
-      fprintf(stderr, "before calling next: pastbeg = %d, curr col = %u pastend = %d\n",
-	      vitr->pastbeg, vectorit_curr_col(*vitr, ret), vitr->pastend);
-    }
     vectorit_next(&vit, v);
     while (vectorit_curr_col(*vitr, ret) <= col) {
       vectorit_next(vitr, ret);
-    }
-    if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
-      fprintf(stderr, "after calling next: pastbeg = %d, curr col = %u pastend = vitr->pastend = %d\n",
-	      vitr->pastbeg, vectorit_curr_col(*vitr, ret), vitr->pastend);
     }
   }
 
@@ -2594,7 +2453,7 @@ double dot(Vector *v1, Vector *v2) {
   double ret = 0;
 
   if (!v1 || !v2) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "dot: null arguments.\n");
     }
     return 0;
@@ -2637,489 +2496,111 @@ double dot(Vector *v1, Vector *v2) {
   return ret;
 }
 
-//"private" function for dotting a sparse and a non-sparse vector
-//quickly
-static double dot_fast(Vector *sp, Vector *ns) {
-  VectorIterator vit;
-  double ret = 0;
+void vector_add_multiple(Vector *base, Vector *toadd, 
+			 double factor, Vector *ret) {
 
-  if (!sp || !ns) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "dot: null arguments.\n");
-    }
-    return 0;
-  }
-
-  if (sp->type == NON_SPARSE || ns->type != NON_SPARSE) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "Called dot_fast with incorrect sparseness.\n");
-    }
-    return dot(sp, ns);
-  }
-
-  vectorit_set_at_beg(&vit, sp);
-  while (!vectorit_past_end(vit, sp)) {
-    ret += vectorit_curr_val(vit, sp)*vector_get(ns, 
-						 vectorit_curr_col(vit, sp));
-    if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
-      fprintf(stderr, "multiplied %.10lf and %.10lf got %.10lf, ret = %.10lf\n", 
-	      vectorit_curr_val(vit, sp), vector_get(ns, vectorit_curr_col(vit, sp)),
-	      vectorit_curr_val(vit, sp)*vector_get(ns, vectorit_curr_col(vit, sp)), ret);
-    }
-    vectorit_next(&vit, sp);
-  }
-
-  return ret;
-}
-
-//private function for dotting a sparse array and another much sparser
-//vector quickly using a binary search in the sparse array.
-static double dot_log(Vector *sp, Vector *ns) {
-  VectorIterator vit, nit;
-  double ret = 0;
-
-  if (!sp || !ns) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "dot: null arguments.\n");
-    }
-    return 0;
-  }
-
-  if (ns->type != SPARSE_ARRAY) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "Called dot_log with incorrect sparseness.\n");
-    }
-    return dot(sp, ns);
-  }
-
-  if (sp->type == NON_SPARSE) {
-    //this is faster
-    return dot_fast(ns, sp);
-  }
-
-  vectorit_set_at_beg(&vit, sp);
-  vectorit_set_at_beg(&nit, ns);
-  while (!vectorit_past_end(vit, sp)) {
-    vectorit_find(&nit, vectorit_curr_col(vit, sp), ns);
-    if (vectorit_curr_col(nit, ns) == vectorit_curr_col(vit, sp)) {
-      ret += vectorit_curr_val(vit, sp)*vectorit_curr_val(nit, ns);
-    }
-    vectorit_next(&vit, sp);
-  }
-
-  return ret;
-}
-/*************************************************************************
- *Squared norm.  Note that finding square roots can be time consuming so
- *use this function to avoid that when possible.
- *
- *INPUT: v: vector to find the norm of
- *
- *OUTPUT: ||v||^2
- *
- *TIME:
- * NON_SPARSE: O(c)
- * SPARSE_ARRAY: O(s)
- * SPARSE_LIST: O(s)
- *************************************************************************/
-
-double norm2(Vector *v) {
-  return dot(v, v);
-}
-
-/*************************************************************************
- *Norm of a vector.
- *
- *INPUT: v: vector to find the norm of
- *
- *OUTPUT: ||v||
- *
- *TIME:
- * NON_SPARSE: O(c)
- * SPARSE_ARRAY: O(s)
- * SPARSE_LIST: O(s)
- *************************************************************************/
-
-double norm(Vector *v) {
-  return (sqrt(dot(v,v)));
-}
-
-/*************************************************************************
- *Squared distance between two vectors.
- *
- *INPUT: v1: first vector
- * v2: second vector
- *
- *OUTPUT: ||v1 - v2||^2
- *
- *TIME:
- * Both NON_SPARSE: O(c)
- * One NON_SPARSE, one SPARSE: O(s) + O(c)
- * Both SPARSE: O(s_1) + O(s_2)
- *************************************************************************/
-
-double vector_dist2(Vector *v1, Vector *v2) {
-  VectorIterator vit1, vit2;
-  unsigned int col1, col2;
-  double ret = 0, d;
-  
-
-  if (!v1 || !v2) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vector_dist2: null arguments.\n");
-    }
-    return -1;
-  }
-
-  if (v1->dim != v2->dim) {
-    //uh oh
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vector_dist2: dimension mismatch\n");
-    }
-    return -1;
-  }
-
-  vectorit_set_at_beg(&vit1, v1);
-  vectorit_set_at_beg(&vit2, v2);
-
-  while (!vectorit_past_end(vit1, v1) || !vectorit_past_end(vit2, v2)) {
-
-    col1 = vectorit_curr_col(vit1, v1);
-    col2 = vectorit_curr_col(vit2, v2);
-
-    if (col1 == col2) {
-      d = vectorit_curr_val(vit1, v1) - vectorit_curr_val(vit2, v2);
-      vectorit_next(&vit1, v1);
-      vectorit_next(&vit2, v2);
-    } else if (col1 < col2) {
-      d = vectorit_curr_val(vit1, v1);
-      vectorit_next(&vit1, v1);
-    } else {
-      d = vectorit_curr_val(vit2, v2);
-      vectorit_next(&vit2, v2);
-    }
-    ret += d*d;
-  }   
-  return ret;
-} 
-
-/*************************************************************************
- *Distance between two vectors.
- *
- *INPUT: v1: first vector
- * v2: second vector
- *
- *OUTPUT: ||v1 - v2||
- *
- *TIME:
- * Both NON_SPARSE: O(c)
- * One NON_SPARSE, one SPARSE: O(s) + O(c)
- * Both SPARSE: O(s_1) + O(s_2)
- *************************************************************************/
-
-double vector_dist(Vector *v1, Vector *v2) {
-  double d = vector_dist2(v1, v2);
-  
-  if (d > 0) {
-    return sqrt(d);
-  }
-
-  return -1;
-}
-
-/*************************************************************************
- *Add a column to the end of the vector.
- *
- *INPUT: v: vector to add a column to
- *
- *TIME:
- * NON_SPARSE: O(1) (realloc succeeds) O(c) (realloc fails)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/
-
-void vector_add_col(Vector *v) {
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vector_add_col: null vector.\n");
-    }
-    return;
-  }
-
-  if (v->type != NON_SPARSE) {
-    v->dim++;
-    //well, this is easy
-    return;
-  }
-  vector_add_col_ns(v);
-}
-
-//"private" function to add a column to
-//a non-sparse vector
-static void vector_add_col_ns(Vector *v) {
-  NSData tmpdata;
-
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vector_add_col: null vector.\n");
-    }
-    return;
-  }
-
-  if (v->compact) {
-    if (!(v->was_mapped) || 
-	(v->was_mapped && 
-	 (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.compact))) {
-      v->data.nsarray.compact = (int *)realloc(v->data.nsarray.compact, 
-					       sizeof(int)*(v->dim+1));
-    } else {
-      tmpdata.compact = v->data.nsarray.compact;
-      v->data.nsarray.compact = (int *)malloc(sizeof(int)*(v->dim+1));
-      if (v->data.nsarray.compact) {
-	memcpy(v->data.nsarray.compact, tmpdata.compact, sizeof(int)*v->dim);
-      }
-    }
-    if (!v->data.nsarray.compact) {
-      if (SVM_DEBUG_MODE) {
-	fprintf(stderr, "Error adding a column to non-sparse vector.\n");
-      }
-      v->dim = 0;
-      v->nz = 0;
-      return;
-    }
-  } else {
-    if (!(v->was_mapped) || 
-	(v->was_mapped && 
-	 (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.precise))) {
-      v->data.nsarray.precise = (double *)realloc(v->data.nsarray.precise, 
-						  sizeof(double)*(v->dim+1));
-    } else {
-      tmpdata.precise = v->data.nsarray.precise;
-      v->data.nsarray.precise = (double *)malloc(sizeof(double)*(v->dim+1));
-      if (v->data.nsarray.precise) {
-	memcpy(v->data.nsarray.precise, tmpdata.precise, sizeof(double)*v->dim);
-      }
-    }
-    if (!v->data.nsarray.precise) {
-      if (SVM_DEBUG_MODE) {
-	fprintf(stderr, "Error adding a column to non-sparse vector.\n");
-      }
-      v->dim = 0;
-      v->nz = 0;
-      return;
-    }
-  }
-  v->dim++;
-  vector_set(v, v->dim-1, 0);
-}
-
-/*************************************************************************
- *Add n columns to the end of the vector.
- *
- *INPUT: v: vector to add columns to
- *
- *TIME:
- * NON_SPARSE: O(1) (realloc succeeds) O(c) (realloc fails)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/
-
-void vector_add_ncols(Vector *v, unsigned int n) {
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vector_add_ncols: null vector.\n");
-    }
-    return;
-  }
-
-  if (n <= 0) {
-    return;
-  }
-
-  if (v->type != NON_SPARSE) {
-    v->dim += n;
-  } else {
-    vector_add_ncols_ns(v, n);
-  }
-}
-
-//"private" function to add n columns to a non-sparse vector
-static void vector_add_ncols_ns(Vector *v, unsigned int n) {
-  unsigned int i;
-  NSData tmpdata;
-
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vector_add_ncols: null vector.\n");
-    }
-    return;
-  }
-
-  if (n <= 0){
-    return;
-  }
-
-  if (v->compact) {
-    if (!(v->was_mapped) || 
-	(v->was_mapped && 
-	 (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.compact))) {
-      v->data.nsarray.compact = (int *)realloc(v->data.nsarray.compact, 
-					       sizeof(int)*(v->dim+n));
-    } else {
-      tmpdata.compact = v->data.nsarray.compact;
-      v->data.nsarray.compact = (int *)malloc(sizeof(int)*(v->dim+n));
-      if (v->data.nsarray.compact) {
-	memcpy(v->data.nsarray.compact, tmpdata.compact, sizeof(int)*v->dim);
-      }
-    }
-    if (!v->data.nsarray.compact) {
-      if (SVM_DEBUG_MODE) {
-	fprintf(stderr, "Error adding a column to non-sparse vector.\n");
-      }
-      v->dim = 0;
-      v->nz = 0;
-      return;
-    }
-  } else {
-    if (!(v->was_mapped) || 
-	(v->was_mapped && 
-	 (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.precise))) {
-      v->data.nsarray.precise = (double *)realloc(v->data.nsarray.precise, 
-						  sizeof(double)*(v->dim+n));
-    } else {
-      tmpdata.precise = v->data.nsarray.precise;
-      v->data.nsarray.precise = (double *)malloc(sizeof(double)*(v->dim+n));
-      if (v->data.nsarray.precise) {
-	memcpy(v->data.nsarray.precise, tmpdata.precise, sizeof(double)*v->dim);
-      }
-    }
-    if (!v->data.nsarray.precise) {
-      if (SVM_DEBUG_MODE) {
-	fprintf(stderr, "Error adding a column to non-sparse vector.\n");
-      }
-      v->dim = 0;
-      v->nz = 0;
-      return;
-    }
-  }
-  v->dim += n;
-  for (i = v->dim-n; i < v->dim; i++) {
-    vector_set(v, i, 0);
-  }
-}
-
-/*************************************************************************
- *Remove a column from a vector.
- *
- *INPUT: v: vector from which to remove a column
- * c: column to remove
- *
- *TIME:
- * NON_SPARSE: O(c)
- * SPARSE_ARRAY: O(s)
- * SPARSE_LIST: O(s)
- *************************************************************************/
-
-void vector_remove_col(Vector *v, unsigned int c) {
-  VectorIterator vit;
-  int remove = 0, i;
+  VectorIterator vit1, vit2, *vitr;
+  unsigned int col1, col2, colr, col;
   double d;
 
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vector_remove_col: null vector.\n");
+  if (!base || !toadd || !ret) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_add_multiple: null arguments.\n");
     }
     return;
   }
 
-  if (c >= v->dim) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, 
-	      "vector_remove_col: attempt to remove nonexistant column.\n");
+  if (fabs(factor) < SVM_EPSILON) {
+    if (ret != base) {
+      vector_copy(base, ret);
     }
     return;
   }
 
-  vectorit_set_at_beg(&vit, v);
-  vectorit_find(&vit, c, v);
-  if (vectorit_curr_col(vit, v) == c) {
-    remove = 1;
-  }
-  //just make sure we're pointing after or at c
-  while (vectorit_curr_col(vit, v) < c) {
-    vectorit_next(&vit, v);
+  if (base->type == NON_SPARSE && ret == base) {
+    vector_add_multiple_fast(base, toadd, factor);
+    return;
   }
 
-  if (v->type == NON_SPARSE) {
-    if (v->dim == 1) {
-      if (v->compact && v->data.nsarray.compact) {
-	free(v->data.nsarray.compact);
-      } else if (v->data.nsarray.precise) {
-	free(v->data.nsarray.precise);
-      }
-      v->data.nsarray.precise = NULL;
-      v->dim = 0;
-      return;
+  if (MATR_DEBUG_MODE >= MATR_OPS) {
+    fprintf(stderr, "Adding to \n\t");
+    vector_print(base);
+    fprintf(stderr, "Multiplying\n\t");
+    vector_print(toadd);
+    fprintf(stderr, "by %lf and putting in\n\t", factor);
+    vector_print(ret);
+  }
+
+  if (ret->type == SPARSE_ARRAY && ret != base && ret != toadd) {
+    //zero out ret
+    vector_zero(ret);
+  }
+
+  vectorit_set_at_beg(&vit1, base);
+  vectorit_set_at_beg(&vit2, toadd);
+  if (base == ret) {
+    vitr = &vit1;
+  }
+  if (toadd == ret) {
+    vitr = &vit2;
+  }
+  if (base != ret && toadd != ret) {
+    vitr = (VectorIterator *)malloc(sizeof(VectorIterator));
+    vectorit_set_at_beg(vitr, ret);
+  }
+  
+  while (!vectorit_past_end(*vitr, ret) || 
+	 (!vectorit_past_end(vit1, base) && 
+	  vectorit_curr_col(vit1, base) < ret->dim) || 
+	 (!vectorit_past_end(vit2, toadd) &&
+	  (vectorit_curr_col(vit2, toadd) < ret->dim))) {
+    
+    col1 = vectorit_curr_col(vit1, base);
+    col2 = vectorit_curr_col(vit2, toadd);
+    colr = vectorit_curr_col(*vitr, ret);
+    if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
+      fprintf(stderr, "col1 = %d, col2 = %d, colr = %d\n", col1, col2, colr);
     }
-    d = vector_get(v, v->dim-1);
-    if (v->compact) {
-      if (!(v->was_mapped) ||	
-	  (v->was_mapped && 
-	   (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.compact))) {
-	v->data.nsarray.compact = (int *)realloc(v->data.nsarray.compact, 
-						 sizeof(int)*(v->dim-1));
-      } else if (v->dim-1 <= 0) {
-	//otherwise v->data is mapped in memory and all is good
-	v->data.nsarray.compact = NULL;
+    if ((colr < col1 || col1 >= base->dim) && 
+	(colr < col2 || col2 >= toadd->dim)) {
+      vectorit_zero_elt(vitr, ret);
+      continue;
+    }
+
+    if (col1 == col2 && col1 < base->dim && col2 < toadd->dim) {
+      d = vectorit_curr_val(vit1, base) + factor*vectorit_curr_val(vit2, toadd);
+      col = col1;
+      if (base != ret) {
+	vectorit_next(&vit1, base);
       }
-      if (!v->data.nsarray.compact && v->dim > 0) {
-	if (SVM_DEBUG_MODE) {
-	  fprintf(stderr, "Error removing a column from non-sparse vector.\n");
-	}
-	v->dim = 0;
-	v->nz = 0;
-	return;
+      if (toadd != ret) {
+	vectorit_next(&vit2, toadd);
+      }
+    } else if (col1 < col2 || col2 == toadd->dim) {
+      col = col1;
+      d = vectorit_curr_val(vit1, base);
+      if (base != ret) {
+	vectorit_next(&vit1, base);
       }
     } else {
-      if (!(v->was_mapped) ||	
-	  (v->was_mapped && 
-	   (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.compact))) {
-	v->data.nsarray.precise = (double *)realloc(v->data.nsarray.precise, 
-						    sizeof(double)*(v->dim-1));
-      } else if (v->dim-1 <= 0) {
-	v->data.nsarray.precise = NULL;
-      }
-      if (!v->data.nsarray.precise && v->dim > 0) {
-	if (SVM_DEBUG_MODE) {
-	  fprintf(stderr, "Error removing a column from non-sparse vector.\n");
-	}
-	v->dim = 0;
-	v->nz = 0;
-	return;
+      col = col2;
+      d = factor*vectorit_curr_val(vit2, toadd);
+      if (toadd != ret) {
+	vectorit_next(&vit2, toadd);
       }
     }
-    if (v->dim >= 2) {
-      for (i = c; i < v->dim-2; i++) {
-	vector_set(v, i, vector_get(v, i+1));
-      }
+
+    if (fabs(d) < SVM_EPSILON) {
+      vectorit_zero_elt(vitr, ret);
+    } else {
+      vectorit_insert(vitr, col, d, ret);
+      vectorit_next(vitr, ret);
     }
-    if ((v->dim >= 1 && c < v->dim-1)) {
-      vector_set(v, v->dim-2, d);
-    }
-    v->dim--;
-    return;
-  }
-  
-  if (remove) {
-    vectorit_zero_elt(&vit, v);
-  }
-  
-  while (!vectorit_past_end(vit, v)) {
-    vectorit_set_col(vit, vectorit_curr_col(vit, v) - 1, v);
-    vectorit_next(&vit, v);
   }
 
-  v->dim--;
+  if (base != ret && toadd != ret) {
+    free(vitr);
+  }
 }
 
 /*************************************************************************
@@ -3135,11 +2616,11 @@ void vector_remove_col(Vector *v, unsigned int c) {
  * SPARSE_LIST: O(1)
  *************************************************************************/
 
-int vector_iszero(Vector *v) {
+inline int vector_iszero(Vector *v) {
   unsigned int i;
 
   if (!v) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_iszero: null vector.\n");
     }
     return 1;
@@ -3158,7 +2639,7 @@ int vector_iszero(Vector *v) {
   case SPARSE_ARRAY:
     {
       if (!v->data.sparray) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vector_iszero: null vector.\n");
 	}
 	return 1;
@@ -3168,7 +2649,7 @@ int vector_iszero(Vector *v) {
   case SPARSE_LIST:
     {
       if (!v->data.splist) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vector_iszero: null vector.\n");
 	}
 	return 1;
@@ -3176,7 +2657,7 @@ int vector_iszero(Vector *v) {
       return list_is_empty(v->data.splist);
     }
   default:
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_iszero: unrecognized type.\n");
     }
     return 1;
@@ -3204,7 +2685,7 @@ int vector_equals(Vector *v1, Vector *v2) {
   }
 
   if (!v1 || !v2) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_equals: null arguments.\n");
     }
     return 0;
@@ -3244,6 +2725,517 @@ int vector_equals(Vector *v1, Vector *v2) {
   return 1;
 }
 
+
+
+//"private" function for adding a sparse and a non-sparse
+//vector quickly
+static inline void vector_add_fast(Vector *sp, Vector *ns, Vector *ret) {
+  VectorIterator vit;
+  unsigned int col;
+
+  if (!sp || !ns || !ret) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_add: null arguments.\n");
+    }
+    return;
+  }
+
+  if (ret != ns || sp->type == NON_SPARSE || ns->type != NON_SPARSE) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_add_fast: Wrong sparseness.\n");
+    } 
+    vector_add(sp, ns, ret);
+    return;
+  }
+
+  vectorit_set_at_beg(&vit, sp);
+  while (!vectorit_past_end(vit, sp)) {
+    col = vectorit_curr_col(vit, sp);
+    vector_set(ret, col, vectorit_curr_val(vit, sp) + vector_get(ns, col));
+    vectorit_next(&vit, sp);
+  }
+}
+
+static inline void vector_add_multiple_fast(Vector *base, Vector *toadd,
+					    double factor) {
+  VectorIterator vit;
+  int j;
+
+  if (!base || !toadd) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "add multiple: null arguments.\n");
+    }
+    return;
+  }
+
+  if (base->type != NON_SPARSE) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, 
+	      "Warning: Called add_multiple_fast with wrong sparseness.\n");
+    }
+  }
+  if (fabs(factor) < SVM_EPSILON) {
+    return;
+  }
+
+  //a common combination that we want to be screaming fast
+  if (toadd->type == SPARSE_ARRAY && toadd->compact && !(base->compact) &&
+      toadd->data.sparray && base->type == NON_SPARSE && 
+      base->data.nsarray.precise) {
+    for (j = toadd->data.sparray->first_elt; j <= toadd->data.sparray->last_elt;
+	 j++) {
+      base->data.nsarray.precise[toadd->data.sparray->data.compact[j].s.col] +=
+	factor*toadd->data.sparray->data.compact[j].s.data;
+    }
+    return;
+  }
+  
+  vectorit_set_at_beg(&vit, toadd);
+  while (!vectorit_past_end(vit, toadd)) {
+    vector_set(base, vectorit_curr_col(vit, toadd),
+	       vector_get(base, vectorit_curr_col(vit, toadd)) +
+	       factor*vectorit_curr_val(vit, toadd));
+    vectorit_next(&vit, toadd);
+  }
+}
+  
+//"private" function for dotting a sparse and a non-sparse vector
+//quickly
+static inline double dot_fast(Vector *sp, Vector *ns) {
+  VectorIterator vit;
+  double ret = 0;
+  int j;
+  
+  if (!sp || !ns) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "dot: null arguments.\n");
+    }
+    return 0;
+  }
+
+  if (ns->type != NON_SPARSE) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "Warning: Called dot_fast with incorrect sparseness.\n");
+    }
+  }
+
+  //this particular combination of types comes up often
+  //we want it to be as fast as possible
+  //so use ugly code
+  if (sp->type == SPARSE_ARRAY && sp->compact && !(ns->compact) &&
+      sp->data.sparray && ns->type == NON_SPARSE && ns->data.nsarray.precise) {
+    for (j = sp->data.sparray->first_elt; j <= sp->data.sparray->last_elt; j++){
+      ret += sp->data.sparray->data.compact[j].s.data*
+	ns->data.nsarray.precise[sp->data.sparray->data.compact[j].s.col];
+    }
+    return ret;
+  }
+  
+  //this is still fairly fast for all other cases
+  //and much prettier =D
+  vectorit_set_at_beg(&vit, sp);
+  while (!vectorit_past_end(vit, sp)) {
+    ret += vectorit_curr_val(vit, sp)*
+      vector_get(ns, vectorit_curr_col(vit, sp));
+    vectorit_next(&vit, sp);
+  }
+  return ret;
+}
+
+//private function for dotting a sparse array and another much sparser
+//vector quickly using a binary search in the sparse array.
+static inline double dot_log(Vector *sp, Vector *ns) {
+  VectorIterator vit, nit;
+  double ret = 0;
+
+  if (!sp || !ns) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "dot: null arguments.\n");
+    }
+    return 0;
+  }
+
+  if (ns->type != SPARSE_ARRAY) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "Warning: Called dot_log with incorrect sparseness.\n");
+    }
+    //return dot(sp, ns);
+  }
+
+  if (sp->type == NON_SPARSE) {
+    //this is faster
+    return dot_fast(ns, sp);
+  }
+
+  vectorit_set_at_beg(&vit, sp);
+  vectorit_set_at_beg(&nit, ns);
+  while (!vectorit_past_end(vit, sp)) {
+    vectorit_find(&nit, vectorit_curr_col(vit, sp), ns);
+    if (vectorit_curr_col(nit, ns) == vectorit_curr_col(vit, sp)) {
+      ret += vectorit_curr_val(vit, sp)*vectorit_curr_val(nit, ns);
+    }
+    vectorit_next(&vit, sp);
+  }
+
+  return ret;
+}
+
+
+
+/*************************************************************************
+ *Add a column to the end of the vector.
+ *
+ *INPUT: v: vector to add a column to
+ *
+ *TIME:
+ * NON_SPARSE: O(1) (realloc succeeds) O(c) (realloc fails)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/
+
+void vector_add_col(Vector *v) {
+  if (!v) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_add_col: null vector.\n");
+    }
+    return;
+  }
+
+  if (v->type != NON_SPARSE) {
+    v->dim++;
+    //well, this is easy
+    return;
+  }
+  vector_add_col_ns(v);
+}
+
+//"private" function to add a column to
+//a non-sparse vector
+static void vector_add_col_ns(Vector *v) {
+  NSData tmpdata;
+
+  if (!v) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_add_col: null vector.\n");
+    }
+    return;
+  }
+
+  if (v->compact) {
+    if (!(v->was_mapped) || 
+	(v->was_mapped && 
+	 (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.compact))) {
+      v->data.nsarray.compact = (int *)realloc(v->data.nsarray.compact, 
+					       sizeof(int)*(v->dim+1));
+    } else {
+      tmpdata.compact = v->data.nsarray.compact;
+      v->data.nsarray.compact = (int *)malloc(sizeof(int)*(v->dim+1));
+      if (v->data.nsarray.compact) {
+	memcpy(v->data.nsarray.compact, tmpdata.compact, sizeof(int)*v->dim);
+      }
+    }
+    if (!v->data.nsarray.compact) {
+      if (MATR_DEBUG_MODE) {
+	fprintf(stderr, "Error adding a column to non-sparse vector.\n");
+      }
+      v->dim = 0;
+      v->nz = 0;
+      return;
+    }
+  } else {
+    if (!(v->was_mapped) || 
+	(v->was_mapped && 
+	 (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.precise))) {
+      v->data.nsarray.precise = (double *)realloc(v->data.nsarray.precise, 
+						  sizeof(double)*(v->dim+1));
+    } else {
+      tmpdata.precise = v->data.nsarray.precise;
+      v->data.nsarray.precise = (double *)malloc(sizeof(double)*(v->dim+1));
+      if (v->data.nsarray.precise) {
+	memcpy(v->data.nsarray.precise, tmpdata.precise, sizeof(double)*v->dim);
+      }
+    }
+    if (!v->data.nsarray.precise) {
+      if (MATR_DEBUG_MODE) {
+	fprintf(stderr, "Error adding a column to non-sparse vector.\n");
+      }
+      v->dim = 0;
+      v->nz = 0;
+      return;
+    }
+  }
+  v->dim++;
+  vector_set(v, v->dim-1, 0);
+}
+
+/*************************************************************************
+ *Add n columns to the end of the vector.
+ *
+ *INPUT: v: vector to add columns to
+ *
+ *TIME:
+ * NON_SPARSE: O(1) (realloc succeeds) O(c) (realloc fails)
+ * SPARSE_ARRAY: O(1)
+ * SPARSE_LIST: O(1)
+ *************************************************************************/
+
+void vector_add_ncols(Vector *v, unsigned int n) {
+  if (!v) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_add_ncols: null vector.\n");
+    }
+    return;
+  }
+
+  if (n <= 0) {
+    return;
+  }
+
+  if (v->type != NON_SPARSE) {
+    v->dim += n;
+  } else {
+    vector_add_ncols_ns(v, n);
+  }
+}
+
+//"private" function to add n columns to a non-sparse vector
+static void vector_add_ncols_ns(Vector *v, unsigned int n) {
+  unsigned int i;
+  NSData tmpdata;
+
+  if (!v) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_add_ncols: null vector.\n");
+    }
+    return;
+  }
+
+  if (n <= 0){
+    return;
+  }
+
+  if (v->compact) {
+    if (!(v->was_mapped) || 
+	(v->was_mapped && 
+	 (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.compact))) {
+      v->data.nsarray.compact = (int *)realloc(v->data.nsarray.compact, 
+					       sizeof(int)*(v->dim+n));
+    } else {
+      tmpdata.compact = v->data.nsarray.compact;
+      v->data.nsarray.compact = (int *)malloc(sizeof(int)*(v->dim+n));
+      if (v->data.nsarray.compact) {
+	memcpy(v->data.nsarray.compact, tmpdata.compact, sizeof(int)*v->dim);
+      }
+    }
+    if (!v->data.nsarray.compact) {
+      if (MATR_DEBUG_MODE) {
+	fprintf(stderr, "Error adding a column to non-sparse vector.\n");
+      }
+      v->dim = 0;
+      v->nz = 0;
+      return;
+    }
+  } else {
+    if (!(v->was_mapped) || 
+	(v->was_mapped && 
+	 (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.precise))) {
+      v->data.nsarray.precise = (double *)realloc(v->data.nsarray.precise, 
+						  sizeof(double)*(v->dim+n));
+    } else {
+      tmpdata.precise = v->data.nsarray.precise;
+      v->data.nsarray.precise = (double *)malloc(sizeof(double)*(v->dim+n));
+      if (v->data.nsarray.precise) {
+	memcpy(v->data.nsarray.precise, tmpdata.precise, sizeof(double)*v->dim);
+      }
+    }
+    if (!v->data.nsarray.precise) {
+      if (MATR_DEBUG_MODE) {
+	fprintf(stderr, "Error adding a column to non-sparse vector.\n");
+      }
+      v->dim = 0;
+      v->nz = 0;
+      return;
+    }
+  }
+  v->dim += n;
+  for (i = v->dim-n; i < v->dim; i++) {
+    vector_set(v, i, 0);
+  }
+}
+
+/*************************************************************************
+ *Remove a column from a vector.
+ *
+ *INPUT: v: vector from which to remove a column
+ * c: column to remove
+ *
+ *TIME:
+ * NON_SPARSE: O(c)
+ * SPARSE_ARRAY: O(s)
+ * SPARSE_LIST: O(s)
+ *************************************************************************/
+
+void vector_remove_col(Vector *v, unsigned int c) {
+  VectorIterator vit;
+  int remove = 0, i;
+  double d;
+
+  if (!v) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_remove_col: null vector.\n");
+    }
+    return;
+  }
+
+  if (c >= v->dim) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, 
+	      "vector_remove_col: attempt to remove nonexistant column.\n");
+    }
+    return;
+  }
+
+  vectorit_set_at_beg(&vit, v);
+  vectorit_find(&vit, c, v);
+  if (vectorit_curr_col(vit, v) == c) {
+    remove = 1;
+  }
+  //just make sure we're pointing after or at c
+  while (vectorit_curr_col(vit, v) < c) {
+    vectorit_next(&vit, v);
+  }
+
+  if (v->type == NON_SPARSE) {
+    if (v->dim == 1) {
+      if (v->compact && v->data.nsarray.compact) {
+	free(v->data.nsarray.compact);
+      } else if (v->data.nsarray.precise) {
+	free(v->data.nsarray.precise);
+      }
+      v->data.nsarray.precise = NULL;
+      v->dim = 0;
+      return;
+    }
+    d = vector_get(v, v->dim-1);
+    if (v->compact) {
+      if (!(v->was_mapped) ||	
+	  (v->was_mapped && 
+	   (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.compact))) {
+	v->data.nsarray.compact = (int *)realloc(v->data.nsarray.compact, 
+						 sizeof(int)*(v->dim-1));
+      } else if (v->dim-1 <= 0) {
+	//otherwise v->data is mapped in memory and all is good
+	v->data.nsarray.compact = NULL;
+      }
+      if (!v->data.nsarray.compact && v->dim > 0) {
+	if (MATR_DEBUG_MODE) {
+	  fprintf(stderr, "Error removing a column from non-sparse vector.\n");
+	}
+	v->dim = 0;
+	v->nz = 0;
+	return;
+      }
+    } else {
+      if (!(v->was_mapped) ||	
+	  (v->was_mapped && 
+	   (void *)v + sizeof(Vector) != (void *)(v->data.nsarray.compact))) {
+	v->data.nsarray.precise = (double *)realloc(v->data.nsarray.precise, 
+						    sizeof(double)*(v->dim-1));
+      } else if (v->dim-1 <= 0) {
+	v->data.nsarray.precise = NULL;
+      }
+      if (!v->data.nsarray.precise && v->dim > 0) {
+	if (MATR_DEBUG_MODE) {
+	  fprintf(stderr, "Error removing a column from non-sparse vector.\n");
+	}
+	v->dim = 0;
+	v->nz = 0;
+	return;
+      }
+    }
+    if (v->dim >= 2) {
+      for (i = c; i < v->dim-2; i++) {
+	vector_set(v, i, vector_get(v, i+1));
+      }
+    }
+    if ((v->dim >= 1 && c < v->dim-1)) {
+      vector_set(v, v->dim-2, d);
+    }
+    v->dim--;
+    return;
+  }
+  
+  if (remove) {
+    vectorit_zero_elt(&vit, v);
+  }
+  
+  while (!vectorit_past_end(vit, v)) {
+    vectorit_set_col(vit, vectorit_curr_col(vit, v) - 1, v);
+    vectorit_next(&vit, v);
+  }
+
+  v->dim--;
+}
+
+/*************************************************************************
+ *Squared distance between two vectors.
+ *
+ *INPUT: v1: first vector
+ * v2: second vector
+ *
+ *OUTPUT: ||v1 - v2||^2
+ *
+ *TIME:
+ * Both NON_SPARSE: O(c)
+ * One NON_SPARSE, one SPARSE: O(s) + O(c)
+ * Both SPARSE: O(s_1) + O(s_2)
+ *************************************************************************/
+
+double vector_dist2(Vector *v1, Vector *v2) {
+  VectorIterator vit1, vit2;
+  unsigned int col1, col2;
+  double ret = 0, d;
+  
+
+  if (!v1 || !v2) {
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_dist2: null arguments.\n");
+    }
+    return -1;
+  }
+
+  if (v1->dim != v2->dim) {
+    //uh oh
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vector_dist2: dimension mismatch\n");
+    }
+    return -1;
+  }
+
+  vectorit_set_at_beg(&vit1, v1);
+  vectorit_set_at_beg(&vit2, v2);
+
+  while (!vectorit_past_end(vit1, v1) || !vectorit_past_end(vit2, v2)) {
+
+    col1 = vectorit_curr_col(vit1, v1);
+    col2 = vectorit_curr_col(vit2, v2);
+
+    if (col1 == col2) {
+      d = vectorit_curr_val(vit1, v1) - vectorit_curr_val(vit2, v2);
+      vectorit_next(&vit1, v1);
+      vectorit_next(&vit2, v2);
+    } else if (col1 < col2) {
+      d = vectorit_curr_val(vit1, v1);
+      vectorit_next(&vit1, v1);
+    } else {
+      d = vectorit_curr_val(vit2, v2);
+      vectorit_next(&vit2, v2);
+    }
+    ret += d*d;
+  }   
+  return ret;
+} 
+
  
 /*************************************************************************
  *Converts a NON_SPARSE vector to a sparse array using colMap.
@@ -3266,14 +3258,14 @@ void vector_convert_nonsparse_to_sparray(Vector *v, ExpandingArray *colMap) {
   ExpandingType et;
 
   if (!v || !colMap) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_convert: null arguments.\n");
     }
     return;
   }
 
   if (v->type != NON_SPARSE) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Attempt to convert already sparse vector to sparse.\n");
     }
     return;
@@ -3281,7 +3273,7 @@ void vector_convert_nonsparse_to_sparray(Vector *v, ExpandingArray *colMap) {
 
   et = expanding_array_get(v->dim-1, colMap);
   if (!et.precise || !et.compact) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_convert: colMap doesn't have enough entries.\n");
     }
     return;
@@ -3301,7 +3293,7 @@ void vector_convert_nonsparse_to_sparray(Vector *v, ExpandingArray *colMap) {
 
   if (!v->data.sparray || (v->compact && !v->data.sparray->data.compact) ||
       (!(v->compact) && !v->data.sparray->data.precise)) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf
 	(stderr, 
 	 "vector_convert: unable to convert vector.  It appears corrupted.\n");
@@ -3317,7 +3309,7 @@ void vector_convert_nonsparse_to_sparray(Vector *v, ExpandingArray *colMap) {
   for (i = 0; i < tmpv.dim; i++) {
     et = expanding_array_get(i, colMap);
     if (!et.precise || !et.compact) {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, 
 		"vector_convert: colMap doesn't have enough entries.\n");
       }
@@ -3357,7 +3349,7 @@ void vector_print(Vector *v) {
   int lastcol = -1, i, col;
 
   if (!v) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_print: null vector.\n");
     }
     return;
@@ -3398,7 +3390,7 @@ void vector_write(Vector *v, char *filename) {
   FILE *out = fopen(filename, "w");
   
   if (!out) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_write: Bad file name %s\n", filename);
     }
     return;
@@ -3426,7 +3418,7 @@ void vector_write_fp(Vector *v, FILE *out) {
   VectorIterator vit;
 
   if (!v || !out) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_write: null arguments.\n");
     }
     return;
@@ -3465,7 +3457,7 @@ void vector_write_sp(Vector *v, char *filename) {
   
   out = fopen(filename, "w");
   if (!out) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_write_sp: bad output filename %s\n", filename);
     }
     return;
@@ -3492,7 +3484,7 @@ void vector_write_sp_fp(Vector *v, FILE *out) {
   VectorIterator vit;
 
   if (!v || !out) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_write: null arguments.\n");
     }
     return;
@@ -3525,7 +3517,7 @@ size_t vector_write_bin(Vector *v, char *filename) {
 
   FILE *fp = fopen(filename, "wb");
   if (!fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_write_bin: Bad file name %s.\n", filename);
     }
     return 0;
@@ -3553,7 +3545,7 @@ size_t vector_write_bin_fp(Vector *v, FILE *fp) {
   size_t size = sizeof(Vector)*fwrite(v, sizeof(Vector), 1, fp);
 
   if (!v || !fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_write: null arguments.\n");
     }
     return 0;
@@ -3577,7 +3569,7 @@ size_t vector_write_bin_fp(Vector *v, FILE *fp) {
     }
   default:
     {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vector_write_bin_fp: unrecognized type\n");
       }
       return size;
@@ -3588,7 +3580,7 @@ size_t vector_write_bin_fp(Vector *v, FILE *fp) {
 //"private" function to write non-sparse vector to file in binary
 static size_t vector_write_bin_ns(Vector *v, FILE *fp) {
   if (!v || !fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_write: null arguments.\n");
     }
     return 0;
@@ -3628,7 +3620,7 @@ Vector *vector_read_bin(char *filename) {
   FILE *fp = fopen(filename, "rb");
   
   if (!fp) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_write_bin: Bad file name %s.\n", filename);
     }
     return NULL;
@@ -3680,7 +3672,7 @@ Vector *vector_read_bin_fp(FILE *fp) {
   case SPARSE_ARRAY:
     {
       if (v->nz && !v->data.sparray) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf
 	    (stderr, 
 	     "warning: no space allocated for non-zero sparse array vector.\n");
@@ -3694,7 +3686,7 @@ Vector *vector_read_bin_fp(FILE *fp) {
   case SPARSE_LIST:
     {
       if (v->nz && !(v->data.splist)) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf
 	    (stderr, 
 	     "warning: no space allocated for non-zero sparse list vector.\n");
@@ -3707,7 +3699,7 @@ Vector *vector_read_bin_fp(FILE *fp) {
     }
   default:
     {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vector_read_bin_fp: unrecognized type.\n");
       }
       return v;
@@ -3720,7 +3712,7 @@ static void vector_read_bin_ns(Vector *v, FILE *fp) {
   size_t amount_read = 0;
 
   if (v->type != NON_SPARSE) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Called vector_read_bin_ns on non-sparse vector.\n");
     }
     return;
@@ -3736,7 +3728,7 @@ static void vector_read_bin_ns(Vector *v, FILE *fp) {
     }
   }
   if (v->dim && !amount_read) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "Warning: nothing was read into non-sparse vector.\n");
     }
     v->dim = 0;
@@ -3780,7 +3772,7 @@ Vector *vector_map(void **addr, void *last_addr) {
   Vector *v;
 
   if (!addr || !*addr || !last_addr || *addr >= last_addr) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_map: null arguments.\n");
     }
     return NULL;
@@ -3803,7 +3795,7 @@ Vector *vector_map(void **addr, void *last_addr) {
 	  v->data.nsarray.compact = (int *)(*addr);
 	  addr += sizeof(int)*v->dim;
 	} else {
-	  if (v->dim && SVM_DEBUG_MODE) {
+	  if (v->dim && MATR_DEBUG_MODE) {
 	    fprintf
 	      (stderr, 
 	       "warning: no space allocated for non-sparse vector data.\n");
@@ -3816,7 +3808,7 @@ Vector *vector_map(void **addr, void *last_addr) {
 	  v->data.nsarray.precise = (double *)(*addr);
 	  addr += sizeof(double)*v->dim;
 	} else {
-	  if (v->dim && SVM_DEBUG_MODE) {
+	  if (v->dim && MATR_DEBUG_MODE) {
 	    fprintf
 	      (stderr, 
 	       "warning: no space allocated for non-sparse vector data.\n");
@@ -3831,7 +3823,7 @@ Vector *vector_map(void **addr, void *last_addr) {
      
       v->data.sparray = expanding_array_map(addr, last_addr);
       if (v->nz && !v->data.sparray) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf
 	    (stderr, 
 	     "warning: no space allocated for non-zero sparse array vector.\n");
@@ -3843,7 +3835,7 @@ Vector *vector_map(void **addr, void *last_addr) {
   case SPARSE_LIST:
     {
       v->data.splist = list_map(addr, last_addr, &(v->nz));
-      if (!v->data.splist && SVM_DEBUG_MODE) {
+      if (!v->data.splist && MATR_DEBUG_MODE) {
 	fprintf
 	  (stderr,
 	   "warning: no space allocated for non-zero sparse list vector.\n");
@@ -3851,7 +3843,7 @@ Vector *vector_map(void **addr, void *last_addr) {
       return v;
     }
   default:
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vector_map: unrecognized type.\n");
     }
     return v;
@@ -3951,7 +3943,7 @@ void *vector_memmove(void *to, Vector *from) {
     }
   default:
     {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vector_memmove: unrecognized type.\n");
       }
       return NULL;
@@ -3973,7 +3965,7 @@ void *vector_memmove(void *to, Vector *from) {
 size_t vector_size(Vector *v) {
   
   if (!v) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "warning: null vector in vector_size.\n");
     }
     return 0;
@@ -4019,7 +4011,7 @@ size_t vector_size(Vector *v) {
     }
   default:
     {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vector_size: unrecognized type.\n");
       }
       return 0;
@@ -4081,7 +4073,7 @@ void vector_free(Vector *v) {
     }
   default:
     {
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vector_free: unrecognized type.\n");
       }
       break;
@@ -4108,500 +4100,6 @@ static void vectorit_insert_before(VectorIterator *vit, unsigned int c,
 static void vectorit_insert_after(VectorIterator *vit, unsigned int c, 
 				  double d, Vector *v);
 
-/*************************************************************************
- *Set the iterator to the beginning of a vector.
- *
- *INPUT: v: vector to traverse from the beginning
- *
- *OUTPUT: vit is set to the beginning of vector v
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/  
-
-void vectorit_set_at_beg(VectorIterator *vit, Vector *v) {
-  SparseNode n;
-
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_set_at_beg: null vector.\n");
-    }
-    vit->pastend = 1;
-    vit->pastbeg = 1;
-    vit->nscurr = -1;
-    vit->pcurr = NULL;
-    vit->ccurr = NULL;
-    return;
-  }
-
-  if (v->dim > 0) {
-    vit->pastend = 0;
-    vit->pastbeg = 0;
-  } else {
-    vit->pastend = 1;
-    vit->pastbeg = 0;
-  }
-
-  if (v->type != NON_SPARSE && !(v->nz)) {
-    vit->pastend = 1;
-    vit->pastbeg = 0;
-  }
-
-  switch (v->type) {
-  case NON_SPARSE:
-    {
-      vit->nscurr = 0;
-      vit->ccurr = NULL;
-      vit->pcurr = NULL;
-      break;
-    }
-  case SPARSE_ARRAY:
-    {
-      //nscurr needs to be the actual index
-      //in order that zero-ing an element in vector_add etc
-      //doesn't mess things up
-      if (!v->data.sparray) {
-	vit->nscurr = 0;
-	vit->pastend = 1;
-	vit->pastbeg = 0;
-      } else {
-	vit->nscurr = v->data.sparray->first_elt;
-	if (vit->nscurr > v->data.sparray->last_elt) {
-	  vit->pastend = 1;
-	  vit->pastbeg = 0;
-	}
-      }
-      vit->ccurr = NULL;
-      vit->pcurr = NULL;
-      break;
-    }
-  case SPARSE_LIST:
-    {
-      n.is_compact = v->compact;
-      if (v->compact) {
-	if (v->data.splist) {
-	  vit->ccurr = (v->data.splist->head.compact);
-	} else {
-	  vit->ccurr = NULL;
-	}
-	vit->pcurr = NULL;
-      } else {
-	if (v->data.splist) {
-	  vit->pcurr = (v->data.splist->head.precise);
-	} else {
-	  vit->pcurr = NULL;
-	}
-	vit->ccurr = NULL;
-      }
-      n.compact = vit->ccurr;
-      n.precise = vit->pcurr;
-      vit->nscurr = -1;
-      if (null_node(n)) {
-	vit->pastend = 1;
-	vit->pastbeg = 0;
-      }
-      break;
-    }
-  default:
-    {
-      vit->nscurr = -1;
-      vit->pcurr = NULL;
-      vit->ccurr = NULL;
-      vit->pastend = 1;
-      vit->pastbeg = 1;
-      if (SVM_DEBUG_MODE) {
-	fprintf(stderr, "vectorit_set_at_beg: unrecognized type.\n");
-      }
-      return;
-    }
-  }
-}
-
-/*************************************************************************
- *Set the iterator to the end of a vector.
- *
- *INPUT: v: vector to traverse from the end
- *
- *OUTPUT: vit is set to the end of vector v
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/  
-
-void vectorit_set_at_end(VectorIterator *vit, Vector *v) {
-  SparseNode n;
-
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_set_at_end: null vector.\n");
-    }
-    vit->pastend = 1;
-    vit->pastbeg = 1;
-    vit->nscurr = -1;
-    vit->pcurr = NULL;
-    vit->ccurr = NULL;
-    return;
-  }
-
-  if (v->dim > 0) {
-    vit->pastend = 0;
-    vit->pastbeg = 0;
-  } else {
-    vit->pastend = 0;
-    vit->pastbeg = 1;
-  }
-
-  if (v->type != NON_SPARSE && !(v->nz)) {
-    vit->pastend = 0;
-    vit->pastbeg = 1;
-  }
-
-  switch (v->type) {
-  case NON_SPARSE:
-    {
-      vit->nscurr = v->dim-1;
-      vit->pcurr = NULL;
-      vit->ccurr = NULL;
-      break;
-    }
-  case SPARSE_ARRAY:
-    {
-      if (!v->data.sparray) {
-	vit->nscurr = 0;
-	vit->pastend = 1;
-	vit->pastbeg = 0;
-      } else {
-	vit->nscurr = v->data.sparray->last_elt;
-	if (vit->nscurr < v->data.sparray->first_elt ||
-	    vit->nscurr < 0) {
-	  vit->pastend = 0;
-	  vit->pastbeg = 1;
-	}
-      }
-      vit->pcurr = NULL;
-      vit->ccurr = NULL;
-      break;
-    }
-  case SPARSE_LIST:
-    { 
-      n.is_compact = v->compact;
-      if (!v->data.splist) {
-	vit->ccurr = NULL;
-	vit->pcurr = NULL;
-      } else {
-	if (v->compact) {
-	  vit->ccurr = (v->data.splist->tail.compact);
-	  vit->pcurr = NULL;
-	} else {
-	  vit->pcurr = (v->data.splist->tail.precise);
-	  vit->ccurr = NULL;
-	}
-      }
-      n.precise = vit->pcurr;
-      n.compact = vit->ccurr;
-      vit->nscurr = -1;
-      if (null_node(n)) {
-	vit->pastend = 0;
-	vit->pastbeg = 1;
-      }
-      break;
-    }
-  default:
-    {
-      vit->nscurr = -1;
-      vit->pcurr = NULL;
-      vit->ccurr = NULL;
-      vit->pastend = 1;
-      vit->pastbeg = 1;
-      if (SVM_DEBUG_MODE) {
-	fprintf(stderr, "vectorit_set_at_end: unrecognized type.\n");
-      }
-      return;
-    }
-  }
-}
-
-/*************************************************************************
- *Get the value (data) of the element that the iterator is pointing to.
- *
- *INPUT: vit: the vector iterator, pointing to some element in v
- * v: the vector vit is traversing
- *
- *OUTPUT: The data associated with the element vit is pointing to or
- * -RAND_MAX if vit is not traversing v.
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/  
-
-double vectorit_curr_val(VectorIterator vit, Vector *v) {
-  SparseNode n;
-
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_curr_val: null vector.\n");
-    }
-    return -RAND_MAX;
-  }
-
-  switch(v->type) {
-  case SPARSE_LIST:
-    {
-      n.is_compact = v->compact;
-      n.compact = vit.ccurr;
-      n.precise = vit.pcurr;
-      if (!null_node(n)) {
-	return node_data(n);
-      }
-      break;
-    }
-  case SPARSE_ARRAY:
-    {
-      if (v->data.sparray && 
-	  vit.nscurr >= v->data.sparray->first_elt &&
-	  vit.nscurr <= v->data.sparray->last_elt) {
-	if (v->compact && v->data.sparray->data.compact) {
-	    return (double)v->data.sparray->data.compact[vit.nscurr].s.data;
-	}
-	if (!(v->compact) && v->data.sparray->data.precise) {
-	  return (double)v->data.sparray->data.precise[vit.nscurr].s.data;
-	}
-      }
-      break;
-    }
-  case NON_SPARSE:
-    {
-      if (vit.nscurr >= 0 && vit.nscurr < v->dim) {
-	if (v->compact && v->data.nsarray.compact) {
-	  return (double)v->data.nsarray.compact[vit.nscurr];
-	}
-	if (!(v->compact) && v->data.nsarray.precise) {
-	  return (double)v->data.nsarray.precise[vit.nscurr];
-	}
-      } 
-      break;
-    }
-  default:
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_curr_val: unrecognized type.\n");
-    }
-    break;
-  }
-
-  return -RAND_MAX;
-}
-
-/*************************************************************************
- *Get the column of the element that the iterator is pointing to.
- *
- *INPUT: vit: the vector iterator, pointing to some element in v
- * v: the vector vit is traversing
- *
- *OUTPUT: The column associated with the element vit is pointing to or v->dim
- * if vit is past the beginning or end of v.
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *
- *WARNINGS:
- *1) This returns v->dim even if vit is past the BEGINNING of v.  This is
- *   because column numbers need to be unsigned.  Therefore, you need
- *   to explicitly check if an iterator is past the beginning of a vector 
- *   - you can't count on this returning a negative value if the iterator
- *   is past the beginning.
- *************************************************************************/  
-
-unsigned int vectorit_curr_col(VectorIterator vit, Vector *v) {
-  SparseNode n;
-
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_curr_col: null vector.\n");
-    }
-    return MAX_INT_VAL;
-  }
-
-  switch (v->type) {
-  case SPARSE_LIST:
-    {
-      n.is_compact = v->compact;
-      n.precise = vit.pcurr;
-      n.compact = vit.ccurr;
-      if (!null_node(n)) {
-	return node_col(n);
-      }
-      break;
-    }
-  case SPARSE_ARRAY:
-    {
-      if (v->data.sparray &&
-	  vit.nscurr >= v->data.sparray->first_elt &&
-	  vit.nscurr <= v->data.sparray->last_elt) {
-	if (v->compact) {
-	  if (v->data.sparray->data.compact) {
-	    return v->data.sparray->data.compact[vit.nscurr].s.col;
-	  }
-	} else {
-	  if (v->data.sparray->data.precise) {
-	    return v->data.sparray->data.precise[vit.nscurr].s.col;
-	  }
-	}
-      }
-      return v->dim;
-    }
-  case NON_SPARSE:
-    {
-      return vit.nscurr;
-    }
-  default:
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_curr_col: unrecognized type.\n");
-    }
-    break;
-  }
-
-  return v->dim;
-
-}
-
-/*************************************************************************
- *Move to the next element in the vector.  Sets past_end and unsets past_beg
- *if appropriate.
- *
- *INPUT: v: the vector vit is traversing
- *
- *OUTPUT: vit points to the next element in the vector or is past_end.
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/  
-
-void vectorit_next(VectorIterator *vit, Vector *v) {
-  SparseNode n;
-
-  if (!v || !vit) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_next: null arguments.\n");
-    }
-    if (vit) {
-      vit->pastend = 1;
-      vit->pastbeg = 1;
-    }
-    return;
-  }
-
-  if (v->type == SPARSE_LIST) {
-    n.is_compact = v->compact;
-    n.precise = vit->pcurr;
-    n.compact = vit->ccurr;
-    if (!null_node(n)) {
-      n = next_node(n);
-    } else if (vit->pastbeg && v->data.splist) {
-      n = (v->data.splist->head);
-    }
-    if (!null_node(n)) {
-      vit->pastbeg = 0;
-    }
-    if (null_node(n)) {
-      vit->pastend = 1;
-    }
-    vit->ccurr = n.compact;
-    vit->pcurr = n.precise;
-  } else {
-    vit->nscurr++;
-    if ((v->type == NON_SPARSE && vit->nscurr >= 0) ||
-	(v->type == SPARSE_ARRAY && v->data.sparray &&
-	 vit->nscurr >= v->data.sparray->first_elt)) {
-      vit->pastbeg = 0;
-    }
-    
-    if ((v->type == NON_SPARSE && vit->nscurr >= v->dim) ||
-	(v->type == SPARSE_ARRAY && 
-	 (!(v->data.sparray) || vit->nscurr > v->data.sparray->last_elt))) {
-      vit->pastend = 1;
-    }
-    if (SVM_DEBUG_MODE >= MATR_OPS_MORE && v->type == SPARSE_ARRAY && 
-	v->data.sparray) {
-      fprintf(stderr, "After call to next nscurr = %d, pastend = %d, last_elt = %d\n", vit->nscurr, vit->pastend, v->data.sparray->last_elt);
-    }
-  }
-}
-
-/*************************************************************************
- *Move to the previous element in the vector.  Sets past_beg and unsets
- *past_end if appropriate.
- *
- *INPUT: v: the vector vit is traversing
- *
- *OUTPUT: vit points to the previous element in the vector or is past_beg.
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/  
-
-void vectorit_prev(VectorIterator *vit, Vector *v) {
-  
-  SparseNode n;
-
-  if (!v || !vit) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_prev: null arguments.\n");
-    }
-    if (vit) {
-      vit->pastend = 1;
-      vit->pastbeg = 1;
-    }
-    return;
-  }
-
-  if (v->type == SPARSE_LIST) {
-    n.is_compact = v->compact;
-    n.precise = vit->pcurr;
-    n.compact = vit->ccurr;
-    if (!null_node(n)) {
-      n = prev_node(n);
-    } else if (vit->pastend && v->data.splist) {
-      n = (v->data.splist->tail);
-    }
-    if (!null_node(n)) {
-      vit->pastend = 0;
-    }
-    if (null_node(n)) {
-      vit->pastbeg = 1;
-    }
-    vit->ccurr = n.compact;
-    vit->pcurr = n.precise;
-  } else {
-    vit->nscurr--;
-    if ((v->type == NON_SPARSE && vit->nscurr < v->dim) ||
-	(v->type == SPARSE_ARRAY && v->data.sparray &&
-	 vit->nscurr <= v->data.sparray->last_elt)) {
-      vit->pastend = 0;
-    } else {
-      vit->pastend = 1;
-    }
-    if ((v->type == NON_SPARSE && vit->nscurr < 0) ||
-	(v->type == SPARSE_ARRAY &&
-	 (!(v->data.sparray) || vit->nscurr < v->data.sparray->first_elt))) {
-      vit->pastbeg = 1;
-    } else {
-      vit->pastbeg = 0;
-    }
-  }
-}
-
 //"private" function to set an element of a vector using an iterator
 //this is private because where the iterator will point if d = 0 is
 //data structure dependent.  to set an element of a vector, you should
@@ -4610,7 +4108,7 @@ static void vectorit_set(VectorIterator vit, double d, Vector *v) {
   SparseNode n;
 
   if (!v) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_insert: null vector.\n");
     }
     return;
@@ -4620,7 +4118,7 @@ static void vectorit_set(VectorIterator vit, double d, Vector *v) {
   case SPARSE_LIST:
     {
       if (!v->data.splist) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vectorit_insert: null vector.\n");
 	}
 	return;
@@ -4641,7 +4139,7 @@ static void vectorit_set(VectorIterator vit, double d, Vector *v) {
   case SPARSE_ARRAY:
     {
       if (!v->data.sparray) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vectorit_insert: null vector.\n");
 	}
 	return;
@@ -4653,7 +4151,7 @@ static void vectorit_set(VectorIterator vit, double d, Vector *v) {
 	} else if (!(v->compact) && v->data.sparray->data.precise) {
 	  v->data.sparray->data.precise[vit.nscurr].s.data = d;
 	} else {
-	  if (SVM_DEBUG_MODE) {
+	  if (MATR_DEBUG_MODE) {
 	    fprintf(stderr, "vectorit_insert: null vector.\n");
 	  }
 	  return;
@@ -4671,7 +4169,7 @@ static void vectorit_set(VectorIterator vit, double d, Vector *v) {
       if (vit.nscurr >= 0 && vit.nscurr < v->dim) {
 	if (v->compact) {
 	  if (!(v->data.nsarray.compact)) {
-	    if (SVM_DEBUG_MODE) {
+	    if (MATR_DEBUG_MODE) {
 	      fprintf(stderr, "vectorit_insert: null vector.\n");
 	    }
 	    return;
@@ -4679,7 +4177,7 @@ static void vectorit_set(VectorIterator vit, double d, Vector *v) {
 	  v->data.nsarray.compact[vit.nscurr] = (int)d;
 	} else {
 	  if (!(v->data.nsarray.precise)) {
-	    if (SVM_DEBUG_MODE) {
+	    if (MATR_DEBUG_MODE) {
 	      fprintf(stderr, "vectorit_insert: null vector.\n");
 	    }
 	    return;
@@ -4690,127 +4188,14 @@ static void vectorit_set(VectorIterator vit, double d, Vector *v) {
       break;
     }
   default:
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_set: unrecognized type.\n");
     }
     return;
   }
 }
 
-/*************************************************************************
- *Set the column of the element vit points to.  NOT IMPLEMENTED for
- *NON_SPARSE vectors.
- *
- *INPUT: vit: the iterator
- * c: the new column value
- * v: the vector vit is traversing
- *
- *TIME:
- * NON_SPARSE: NOT IMPLEMENTED
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *
- *WARNINGS:
- *1) This does NOT move elements in v around.  If changing the column
- *   number would mess up the order of the elements, then this prints
- *   an error message and DOES NOT DO IT.  So check first.
- *************************************************************************/  
 
-void vectorit_set_col(VectorIterator vit, unsigned int c, Vector *v) {
-  SparseNode n;
-
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_set_col: null vector.\n");
-    }
-    return;
-  }
-
-  switch (v->type) {
-  case NON_SPARSE:
-    {
-      if (SVM_DEBUG_MODE) {
-	fprintf(stderr, 
-		"vectorit_set_col: not implemented for non-sparse matrices.\n");
-      }
-      return;
-    }
-  case SPARSE_LIST:
-    {
-      n.is_compact = v->compact;
-      n.precise = vit.pcurr;
-      n.compact = vit.ccurr;
-      if (null_node(n)) {
-	if (SVM_DEBUG_MODE) {
-	  fprintf(stderr,
-		  "vectorit_set_col: Attempt to set uninitiated iterator.\n");
-	}
-	return;
-      }
-      if (!null_node(prev_node(n)) && node_col(prev_node(n)) >= c) {
-	if (SVM_DEBUG_MODE) {
-	  fprintf(stderr, "vectorit_set_col: invalid column number in list.\n");
-	}
-	return;
-      }
-      
-      if (!null_node(next_node(n)) && node_col(next_node(n)) <= c) {
-	if (SVM_DEBUG_MODE) {
-	  fprintf(stderr, "vectorit_set_col: invalid column number in list.\n");
-	}
-	return;
-      }
-      
-      node_set_col(n, c);
-      break;
-    }
-  case SPARSE_ARRAY:
-    {
-      if (!v->data.sparray || (v->compact && !(v->data.sparray->data.compact)) 
-	  || (!(v->compact) && !(v->data.sparray->data.precise))) {
-	if (SVM_DEBUG_MODE) {
-	  fprintf(stderr, "vectorit_set_col: null vector.\n");
-	}
-	return;
-      }
-      if (vit.nscurr < v->data.sparray->first_elt || 
-	  vit.nscurr > v->data.sparray->last_elt) {
-	if (SVM_DEBUG_MODE) {
-	  fprintf(stderr, 
-		  "vectorit_set_col: Attempt to set uninitiated iterator.\n");
-	}
-	return;
-      }
-      if ((vit.nscurr-1 >= v->data.sparray->first_elt && 
-	   ((v->compact && 
-	     v->data.sparray->data.compact[vit.nscurr-1].s.col >= c) ||
-	    (!v->compact && 
-	     v->data.sparray->data.precise[vit.nscurr-1].s.col >= c))) ||
-	  (vit.nscurr+1 <= v->data.sparray->last_elt &&
-	   ((v->compact &&
-	     v->data.sparray->data.compact[vit.nscurr+1].s.col <= c) ||
-	    (!v->compact &&
-	     v->data.sparray->data.precise[vit.nscurr+1].s.col <= c)))) {
-	if (SVM_DEBUG_MODE) {
-	  fprintf(stderr, 
-		  "vectorit_set_col: invalid column number in array.\n");
-	}
-	return;
-      }
-      if (v->compact) {
-	v->data.sparray->data.compact[vit.nscurr].s.col = c;
-      } else {
-	v->data.sparray->data.precise[vit.nscurr].s.col = c;
-      }
-      break;
-    }
-  default:
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_set_col: unrecognized type.\n");
-    }
-    return;
-  }
-}
 
 /*************************************************************************
  *Set the element vit points to to zero.  vit will then point to the
@@ -4835,12 +4220,11 @@ void vectorit_zero_elt(VectorIterator *vit, Vector *v) {
   unsigned int currcol = vectorit_curr_col(*vit, v);
 
   if (!v || !vit) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_zero_elt: null arguments.\n");
     }
     if (vit) {
-      vit->pastend = 1;
-      vit->pastbeg = 1;
+      vit->nscurr = -1;
     }
     return;
   }
@@ -4862,54 +4246,147 @@ void vectorit_zero_elt(VectorIterator *vit, Vector *v) {
   }
 }
 
-
 /*************************************************************************
- *Checks if an iterator is past the end of the vector.
+ *Set the column of the element vit points to.  NOT IMPLEMENTED for
+ *NON_SPARSE vectors.
  *
  *INPUT: vit: the iterator
+ * c: the new column value
  * v: the vector vit is traversing
  *
- *OUTPUT: 1 if vit is past the end of v, 0 else
- *
  *TIME:
- * NON_SPARSE: O(1)
+ * NON_SPARSE: NOT IMPLEMENTED
  * SPARSE_ARRAY: O(1)
  * SPARSE_LIST: O(1)
+ *
+ *WARNINGS:
+ *1) This does NOT move elements in v around.  If changing the column
+ *   number would mess up the order of the elements, then this prints
+ *   an error message and DOES NOT DO IT.  So check first.
  *************************************************************************/  
 
-int vectorit_past_end(VectorIterator vit, Vector *v) {
+inline void vectorit_set_col(VectorIterator vit, unsigned int c, 
+				Vector *v) {
+  SparseNode n;
+
   if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_past_end: null vector.\n");
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vectorit_set_col: null vector.\n");
     }
-    return 1;
+    return;
   }
-  return vit.pastend;
+
+  switch (v->type) {
+  case NON_SPARSE:
+    {
+      if (MATR_DEBUG_MODE) {
+	fprintf(stderr, 
+		"vectorit_set_col: not implemented for non-sparse matrices.\n");
+      }
+      return;
+    }
+  case SPARSE_LIST:
+    {
+      n.is_compact = v->compact;
+      n.precise = vit.pcurr;
+      n.compact = vit.ccurr;
+      if (null_node(n)) {
+	if (MATR_DEBUG_MODE) {
+	  fprintf(stderr,
+		  "vectorit_set_col: Attempt to set uninitiated iterator.\n");
+	}
+	return;
+      }
+      if (!null_node(prev_node(n)) && node_col(prev_node(n)) >= c) {
+	if (MATR_DEBUG_MODE) {
+	  fprintf(stderr, "vectorit_set_col: invalid column number in list.\n");
+	}
+	return;
+      }
+      
+      if (!null_node(next_node(n)) && node_col(next_node(n)) <= c) {
+	if (MATR_DEBUG_MODE) {
+	  fprintf(stderr, "vectorit_set_col: invalid column number in list.\n");
+	}
+	return;
+      }
+      
+      node_set_col(n, c);
+      break;
+    }
+  case SPARSE_ARRAY:
+    {
+      if (!v->data.sparray || (v->compact && !(v->data.sparray->data.compact)) 
+	  || (!(v->compact) && !(v->data.sparray->data.precise))) {
+	if (MATR_DEBUG_MODE) {
+	  fprintf(stderr, "vectorit_set_col: null vector.\n");
+	}
+	return;
+      }
+      if (vit.nscurr < v->data.sparray->first_elt || 
+	  vit.nscurr > v->data.sparray->last_elt) {
+	if (MATR_DEBUG_MODE) {
+	  fprintf(stderr, 
+		  "vectorit_set_col: Attempt to set uninitiated iterator.\n");
+	}
+	return;
+      }
+      if ((vit.nscurr-1 >= v->data.sparray->first_elt && 
+	   ((v->compact && 
+	     v->data.sparray->data.compact[vit.nscurr-1].s.col >= c) ||
+	    (!v->compact && 
+	     v->data.sparray->data.precise[vit.nscurr-1].s.col >= c))) ||
+	  (vit.nscurr+1 <= v->data.sparray->last_elt &&
+	   ((v->compact &&
+	     v->data.sparray->data.compact[vit.nscurr+1].s.col <= c) ||
+	    (!v->compact &&
+	     v->data.sparray->data.precise[vit.nscurr+1].s.col <= c)))) {
+	if (MATR_DEBUG_MODE) {
+	  fprintf(stderr, 
+		  "vectorit_set_col: invalid column number in array at space %ld column number is %u and it is ", vit.nscurr, c);
+	  if (vit.nscurr - 1 >= v->data.sparray->first_elt) {
+	    if ((v->compact && 
+		 v->data.sparray->data.compact[vit.nscurr-1].s.col >= c)) {
+	      fprintf(stderr, " less than space %ld with the column number %u before it.\n",
+		      vit.nscurr-1, v->data.sparray->data.compact[vit.nscurr-1] .s.col);
+	    }
+	    if (!(v->compact) && 
+		v->data.sparray->data.precise[vit.nscurr-1].s.col >= c) {
+	      fprintf(stderr, " less than space %ld with the column number %u before it.\n",
+		      vit.nscurr-1, v->data.sparray->data.precise[vit.nscurr-1].s.col);
+	    }
+	  }
+	  if (vit.nscurr + 1 <= v->data.sparray->last_elt) {
+	    if ((v->compact && 
+		 v->data.sparray->data.compact[vit.nscurr+1].s.col <= c)) {
+	      fprintf(stderr, " less than the column number %u before it.\n",
+		      v->data.sparray->data.compact[vit.nscurr+1].s.col);
+	    }
+	    if (!(v->compact) && 
+		v->data.sparray->data.precise[vit.nscurr+1].s.col <= c) {
+	      fprintf(stderr, " greater than the column number %u before it.\n",
+		      v->data.sparray->data.precise[vit.nscurr+1].s.col);
+	    }
+	  }
+	}
+	return;
+      }
+      if (v->compact) {
+	v->data.sparray->data.compact[vit.nscurr].s.col = c;
+      } else {
+	v->data.sparray->data.precise[vit.nscurr].s.col = c;
+      }
+      break;
+    }
+  default:
+    if (MATR_DEBUG_MODE) {
+      fprintf(stderr, "vectorit_set_col: unrecognized type.\n");
+    }
+    return;
+  }
 }
 
-/*************************************************************************
- *Checks if an iterator is past the beginning of the vector.
- *
- *INPUT: vit: the iterator
- * v: the vector vit is traversing
- *
- *OUTPUT: 1 if vit is past the beginning of v, 0 else
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/  
 
-int vectorit_past_beg(VectorIterator vit, Vector *v) {
-  if (!v) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_past_beg: null vector.\n");
-    }
-    return 1;
-  }
-  return vit.pastbeg;
-}
 
 /*************************************************************************
  *Insert a new value or set an old value of v using the iterator.
@@ -4947,18 +4424,17 @@ int vectorit_past_beg(VectorIterator vit, Vector *v) {
 void vectorit_insert(VectorIterator *vit, unsigned int c, double d, Vector *v) {
 
   if (!v || !vit) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_insert: null arguments.\n");
     }
     if (vit) {
-      vit->pastend = 1;
-      vit->pastbeg = 1;
+      vit->nscurr = -1;
     }
     return;
   }
 
   if (c < 0 || c >= v->dim) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_insert: invalid column number %u.\n", c);
     }
     return;
@@ -4968,7 +4444,7 @@ void vectorit_insert(VectorIterator *vit, unsigned int c, double d, Vector *v) {
     //we have constant time access to elements
     if (v->compact) {
       if (!(v->data.nsarray.compact)) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vectorit_insert: null vector.\n");
 	}
 	return;
@@ -4976,7 +4452,7 @@ void vectorit_insert(VectorIterator *vit, unsigned int c, double d, Vector *v) {
       v->data.nsarray.compact[c] = d;
     } else {
       if (!(v->data.nsarray.precise)) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vectorit_insert: null vector.\n");
 	}
 	return;
@@ -4989,14 +4465,10 @@ void vectorit_insert(VectorIterator *vit, unsigned int c, double d, Vector *v) {
 
   vectorit_find(vit, c, v);
 
-  if (SVM_DEBUG_MODE >= MATR_OPS_MORE && vit->pastbeg) {
-    fprintf(stderr, "After find, pastbeg is set.\n");
-  }
-
   if (!vectorit_past_end(*vit, v) && !vectorit_past_beg(*vit, v) &&
       (vectorit_curr_col(*vit, v) == c)) {
     if (fabs(d) < SVM_EPSILON && vectorit_curr_col(*vit, v) == c) {
-      if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+      if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
 	fprintf(stderr, "zeroing column %u type = %d\n", 
 		vectorit_curr_col(*vit, v), v->type);
       }
@@ -5005,14 +4477,14 @@ void vectorit_insert(VectorIterator *vit, unsigned int c, double d, Vector *v) {
     }
   }
   if (vectorit_curr_col(*vit, v) == c) {
-    if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+    if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
       fprintf(stderr, "setting column %u to be %f type = %d\n", 
 	     vectorit_curr_col(*vit, v), d, v->type);
     }
     vectorit_set(*vit, d, v);
   } else if (fabs(d) > SVM_EPSILON) {
     if (vectorit_past_beg(*vit, v) || vectorit_curr_col(*vit, v) < c) {
-      if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+      if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
 	if (vectorit_past_beg(*vit, v)) {
 	  fprintf(stderr, "inserting %lf in first position.\n", d);
 	} else {
@@ -5022,7 +4494,7 @@ void vectorit_insert(VectorIterator *vit, unsigned int c, double d, Vector *v) {
       }
       vectorit_insert_after(vit, c, d, v);
     } else {
-      if (SVM_DEBUG_MODE >= MATR_OPS_MORE) {
+      if (MATR_DEBUG_MODE >= MATR_OPS_MORE) {
 	fprintf(stderr, "inserting %lf before column %u type = %d\n", 
 	       d, vectorit_curr_col(*vit, v), v->type);
       }
@@ -5061,20 +4533,15 @@ void vectorit_find(VectorIterator *vit, unsigned int c, Vector *v) {
   SparseNode n;
 
   if (!v || !vit) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_find: null arguments.\n");
     }
     if (vit) {
-      vit->pastend = 1;
-      vit->pastbeg = 1;
+      vit->nscurr = -1;
     }
     return;
   }
 
-  if (c >= v->dim) {
-    vit->pastend = 1;
-  }
-  
   switch (v->type) {
   case NON_SPARSE:
     {
@@ -5084,7 +4551,7 @@ void vectorit_find(VectorIterator *vit, unsigned int c, Vector *v) {
   case SPARSE_ARRAY:
     {
       if (!v->data.sparray) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vectorit_find: null vector.\n");
 	}
 	return;
@@ -5094,20 +4561,12 @@ void vectorit_find(VectorIterator *vit, unsigned int c, Vector *v) {
 					   v->data.sparray->first_elt, 
 					   v->data.sparray)
 	+ v->data.sparray->first_elt;
-      if (vit->nscurr < v->data.sparray->first_elt) {
-	vit->pastbeg = 1;
-      } else if (vit->nscurr > v->data.sparray->last_elt) {
-	vit->pastend = 1;
-      } else {
-	vit->pastbeg = 0;
-	vit->pastend = 0;
-      }
       break;
     }
   case SPARSE_LIST:
     {
       if (!v->data.splist) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vectorit_find: null vector.\n");
 	}
 	return;
@@ -5119,58 +4578,27 @@ void vectorit_find(VectorIterator *vit, unsigned int c, Vector *v) {
       if (null_node(n)) {
 	if (null_node((v->data.splist->head)) || 
 	    c < node_col((v->data.splist->head))) {
-	  vit->pastbeg = 1;
+	  n = v->data.splist->head;
 	} else {
-	  vit->pastend = 1;
+	  n = v->data.splist->tail;
 	}
-      } else {
-	vit->pastbeg = 0;
-	vit->pastend = 0;
       }
-      vit->ccurr = n.compact;
-      vit->pcurr = n.precise;
+      if (v->compact) {
+	vit->ccurr = n.compact;
+      } else {
+	vit->pcurr = n.precise;
+      }
       break;
     }
   default:
     {
       vit->nscurr = -1;
-      vit->pcurr = NULL;
-      vit->ccurr = NULL;
-      vit->pastend = 1;
-      vit->pastbeg = 1;
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vectorit_find: unrecognized type.\n");
       }
       return;
     }
   }
-}
-
-/*************************************************************************
- *Copy one vector iterator to another.
- *
- *INPUT: from: vector iterator to copy from
- *
- *OUTPUT: to = from.
- *
- *TIME:
- * NON_SPARSE: O(1)
- * SPARSE_ARRAY: O(1)
- * SPARSE_LIST: O(1)
- *************************************************************************/  
-
-void vectorit_copy(VectorIterator from, VectorIterator *to) {
-  if (!to) {
-    if (SVM_DEBUG_MODE) {
-      fprintf(stderr, "vectorit_copy: null to vector.\n");
-    }
-    return;
-  }
-  to->ccurr = from.ccurr;
-  to->pcurr = from.pcurr;
-  to->nscurr = from.nscurr;
-  to->pastend = from.pastend;
-  to->pastbeg = from.pastbeg;
 }
 
 //always call vectorit_insert NOT these!
@@ -5191,12 +4619,11 @@ static void vectorit_insert_before(VectorIterator *vit, unsigned int c,
   SparseNode n;
 
   if (!v || !vit) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_insert: null arguments.\n");
     }
     if (vit) {
-      vit->pastend = 1;
-      vit->pastbeg = 1;
+      vit->nscurr = -1;
     }
     return;
   }
@@ -5216,7 +4643,7 @@ static void vectorit_insert_before(VectorIterator *vit, unsigned int c,
   }
 
   if (c >= v->dim || c < 0) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_insert_before: bad index.\n");
     }
     return;
@@ -5228,7 +4655,7 @@ static void vectorit_insert_before(VectorIterator *vit, unsigned int c,
       vit->nscurr = c;
       if (v->compact) {
 	if (!(v->data.nsarray.compact)) {
-	  if (SVM_DEBUG_MODE) {
+	  if (MATR_DEBUG_MODE) {
 	    fprintf(stderr, "vectorit_insert: null vector.\n");
 	  }
 	  return;
@@ -5236,7 +4663,7 @@ static void vectorit_insert_before(VectorIterator *vit, unsigned int c,
 	v->data.nsarray.compact[c] = (int)d;
       } else {
 	if (!(v->data.nsarray.precise)) {
-	  if (SVM_DEBUG_MODE) {
+	  if (MATR_DEBUG_MODE) {
 	    fprintf(stderr, "vectorit_insert: null vector.\n");
 	  }
 	  return;
@@ -5248,7 +4675,7 @@ static void vectorit_insert_before(VectorIterator *vit, unsigned int c,
   case SPARSE_ARRAY:
     {
       if (!v->data.sparray) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vectorit_insert: null vector.\n");
 	}
 	return;
@@ -5267,12 +4694,13 @@ static void vectorit_insert_before(VectorIterator *vit, unsigned int c,
   case SPARSE_LIST:
     {
       if (!v->data.splist) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vectorit_insert: null vector.\n");
 	}
 	return;
       }
-      if (vit->pastend && !list_is_empty(v->data.splist)) {
+      if (!list_is_empty(v->data.splist) && 
+	  c > node_col(v->data.splist->tail)) {
 	//this is easier
 	vectorit_set_at_end(vit, v);
 	vectorit_insert_after(vit, c, d, v);
@@ -5281,22 +4709,21 @@ static void vectorit_insert_before(VectorIterator *vit, unsigned int c,
       n.is_compact = v->compact;
       n.compact = vit->ccurr;
       n.precise = vit->pcurr;
-      if (vit->pastbeg) {
+      if (null_node(n)) {
 	n = (v->data.splist->head);
       }
       n = list_insert_before(newelt, n, v->data.splist);
-      vit->ccurr = n.compact;
-      vit->pcurr = n.precise;
+      if (v->compact) {
+	vit->ccurr = n.compact;
+      } else {
+	vit->pcurr = n.precise;
+      }
       v->nz++;
       break;
     }
   default:
-    vit->ccurr = NULL;
-    vit->pcurr = NULL;
     vit->nscurr = -1;
-    vit->pastend = 1;
-    vit->pastbeg = 1;
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_insert_before: unrecognized type.\n");
     }
     break;
@@ -5315,12 +4742,11 @@ static void vectorit_insert_after(VectorIterator *vit, unsigned int c,
   SparseNode n;
 
   if (!v || !vit) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_insert: null arguments.\n");
     }
     if (vit) {
-      vit->pastend = 1;
-      vit->pastbeg = 1;
+      vit->nscurr = -1;
     }
     return;
   }
@@ -5340,7 +4766,7 @@ static void vectorit_insert_after(VectorIterator *vit, unsigned int c,
   }
 
   if (c >= v->dim || c < 0) {
-    if (SVM_DEBUG_MODE) {
+    if (MATR_DEBUG_MODE) {
       fprintf(stderr, "vectorit_insert_after: bad index.\n");
     }
     return;
@@ -5352,7 +4778,7 @@ static void vectorit_insert_after(VectorIterator *vit, unsigned int c,
       vit->nscurr = c;
       if (v->compact) {
 	if (!(v->data.nsarray.compact)) {
-	  if (SVM_DEBUG_MODE) {
+	  if (MATR_DEBUG_MODE) {
 	    fprintf(stderr, "vectorit_insert: null vector.\n");
 	  }
 	  return;
@@ -5360,7 +4786,7 @@ static void vectorit_insert_after(VectorIterator *vit, unsigned int c,
 	v->data.nsarray.compact[c] = (int)d;
       } else {
 	if (!(v->data.nsarray.precise)) {
-	  if (SVM_DEBUG_MODE) {
+	  if (MATR_DEBUG_MODE) {
 	    fprintf(stderr, "vectorit_insert: null vector.\n");
 	  }
 	  return;
@@ -5372,7 +4798,7 @@ static void vectorit_insert_after(VectorIterator *vit, unsigned int c,
   case SPARSE_ARRAY:
     {
       if (!v->data.sparray) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	  fprintf(stderr, "vectorit_insert: null vector.\n");
 	}
 	return;
@@ -5392,12 +4818,13 @@ static void vectorit_insert_after(VectorIterator *vit, unsigned int c,
   case SPARSE_LIST:
     {
       if (!v->data.splist) {
-	if (SVM_DEBUG_MODE) {
+	if (MATR_DEBUG_MODE) {
 	    fprintf(stderr, "vectorit_insert: null vector.\n");
 	}
 	return;
       }
-      if (vit->pastbeg && !list_is_empty(v->data.splist)) {
+      if (!list_is_empty(v->data.splist) && 
+	  c < node_col(v->data.splist->head)) {
 	//this is easier
 	vectorit_set_at_beg(vit, v);
 	vectorit_insert_before(vit, c, d, v);
@@ -5406,26 +4833,22 @@ static void vectorit_insert_after(VectorIterator *vit, unsigned int c,
       n.is_compact = v->compact;
       n.compact = vit->ccurr;
       n.precise = vit->pcurr;
-      if (vit->pastbeg) {
-	n = (v->data.splist->head);
-      }
-      if (vit->pastend) {
+      if (null_node(n)) {
 	n = (v->data.splist->tail);
       }
       n = list_insert_after(newelt, n, v->data.splist);
-      vit->ccurr = n.compact;
-      vit->pcurr = n.precise;
+      if (v->compact) {
+	vit->ccurr = n.compact;
+      } else {
+	vit->pcurr = n.precise;
+      }
       v->nz++;
       break;
     }
   default:
     {
-      vit->ccurr = NULL;
-      vit->pcurr = NULL;
       vit->nscurr = -1;
-      vit->pastend = 1;
-      vit->pastbeg = 1;
-      if (SVM_DEBUG_MODE) {
+      if (MATR_DEBUG_MODE) {
 	fprintf(stderr, "vectorit_insert_after: unrecognized type.\n");
       }
       return;

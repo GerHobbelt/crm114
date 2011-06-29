@@ -64,6 +64,7 @@ FLAG_DEF crm_flags[46] =
     {"fscm", CRM_FSCM},
     {"neural", CRM_NEURAL_NET},
     {"erase", CRM_ERASE},
+    {"pca", CRM_PCA},
     {"", 0},
     {"", 0}
   };

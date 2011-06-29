@@ -908,7 +908,7 @@ static void *map_svm_file(crm_svm_block *blck, char *filename) {
   fclose(fp);
   
   if (ret) {
-    return (void *)(filename); //just return something non-null
+    return (void *)filename;
   } else {
     return NULL;
   }
@@ -1413,6 +1413,7 @@ static size_t write_svm_file(crm_svm_block *blck, char *filename) {
   return size;
 }
 
+
 //writes an svm block to a file in binary format
 //returns the number of bytes written
 //doesn't munmap the file since it doesn't have a file name!!
@@ -1566,7 +1567,7 @@ static size_t write_svm_file_fp(crm_svm_block *blck, FILE *fp) {
   }
 #endif
 
-  free(M);
+  matr_free(M);
   crm_svm_block_free_data(*blck);
   crm_svm_block_init(blck);
   return size;
@@ -1613,7 +1614,7 @@ static size_t svm_write_theta(Vector *theta, FILE *fp) {
   }
   return size;
 }
-      
+
 //appends a vector to the svm file to be learned on later without
 //reading in the whole file
 //frees the vector
@@ -1930,9 +1931,13 @@ static size_t crm_svm_save_changes(crm_svm_block *blck, void *addr,
     //keep the filler!
     curr += theta_room + sizeof(int);
     //write in the solution constants
-    *((int *)curr) = blck->sol->num_examples;
+    if (blck->has_solution && blck->sol) {
+      *((int *)curr) = blck->sol->num_examples;
+    }
     curr += sizeof(int);
-    *((int *)curr) = blck->sol->max_train_val;
+    if (blck->has_solution && blck->sol) {
+      *((int *)curr) = blck->sol->max_train_val;
+    }
     curr += sizeof(int);
 
     if (blck->sol->SV) {
@@ -2093,7 +2098,8 @@ static void crm_svm_learn_new_examples(crm_svm_block *blck, int microgroom) {
   }
 
   if (svm_trace) {
-    fprintf(stderr, "Reclassifying all old examples to find extra support vectors.\n");
+    fprintf(stderr, 
+	    "Reclassifying all old examples to find extra support vectors.\n");
   }
 
   if (blck->oldXy) {
@@ -2284,7 +2290,6 @@ int crm_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
   Vector *nex, *row;
   int read_file = 0, do_learn = 1, lim = 0;
   void *addr = NULL;
-  size_t size;
 
   if (user_trace) {
     svm_trace = 1;
@@ -2414,7 +2419,7 @@ int crm_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
       vector_free(nex);
     } else {
       //add the vector to the new matrix
-      size = append_vector_to_svm_file(nex, filename);
+      append_vector_to_svm_file(nex, filename);
     }
   }
 
@@ -2449,7 +2454,7 @@ int crm_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
   if (!(apb->sflags & CRM_APPEND) && do_learn) {
     if (!read_file) {
       if (!(addr = map_svm_file(&blck, filename))) {
-	nonfatalerror("An error occurred trying to map in the file.  Either it is corrupted or the only string you have learned on so far is the empty string.  Note that the SVM needs at least one non-empty example to initialize its file.Whatever is going on, your learn will have no effect.  The file is", filename);
+	nonfatalerror("An error occurred trying to map in the file.  Either it is corrupted or the only string you have learned on so far is the empty string.  Note that the SVM needs at least one non-empty example to initialize its file.  Whatever is going on, your learn will have no effect.  The file is", filename);
 	do_learn = 0;
       } else {
 	read_file = 1;
@@ -2628,7 +2633,7 @@ int crm_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
     //also doing a learn when you can't benefit from it is stupid
     //so we don't do that in smart mode
     if (!svm_smart_mode && read_svm_file(&blck, filename)) {
-      crm_svm_learn_new_examples(&blck, apb->sflags & CRM_MICROGROOM);
+      crm_svm_learn_new_examples(&blck, 0);
     }
     if (blck.sol) {
       theta = blck.sol->theta;
@@ -2676,6 +2681,11 @@ int crm_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
   } else {
     class = 0;
     sgn = 1;
+  }
+
+  if (fabs(dottheta) > 6/log10(11)) {
+    nonfatalerror("The pR values here are HUGE.  One fix for this is to redo things with the unique flag set.  This is especially true if you are also using the string flag.", "");
+    dottheta = sgn*6/log10(11);
   }
 
   if (apb->p2start) {

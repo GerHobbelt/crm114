@@ -39,7 +39,7 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   classifier_flags = classifier_flags &
     ( CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET);
+      | CRM_NEURAL_NET | CRM_PCA);
 
   if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -93,6 +93,11 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       retval = crm_neural_net_learn (csl, apb, txt, start, len);
     }
   else
+    if (classifier_flags & CRM_PCA)
+      {
+	retval = crm_pca_learn(csl, apb, txt, start, len);
+      }
+  else
 #endif	// !PRODUCTION_CLASSIFIERS_ONLY
     {
       //    Default with no classifier specified is Markov
@@ -123,7 +128,7 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   classifier_flags = classifier_flags &
     ( CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET );
+      | CRM_NEURAL_NET | CRM_PCA);
 
   if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -175,6 +180,11 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (classifier_flags & CRM_NEURAL_NET)
     {
       retval = crm_neural_net_classify (csl, apb, txt, start, len);
+    }
+  else
+  if (classifier_flags & CRM_PCA)
+    {
+      retval = crm_pca_classify(csl, apb, txt, start, len);
     }
   else
 #endif	// !PRODUCTION_CLASSIFIERS_ONLY
