@@ -238,7 +238,7 @@ static int match_prefix_char_ptr(SCM_STATE_STRUCT *s, long a, char *b)
 //removes all prefixes which have had their text written over and all hash nodes which are left empty afterwards
 static void macro_groom(SCM_STATE_STRUCT *s)
 {
-    // printf("macrogrooming!\n");
+    // fprintf(crm_stdout, "macrogrooming!\n");
     long i, j, *k, l, *m;
 
     for (i = 0; i < s->n_bytes; i++)
@@ -355,7 +355,7 @@ static PREFIX_STRUCT *add_new_string(SCM_STATE_STRUCT *s, long t)
 //remove the longest string associated with this guy from the prefix hash
 static void refute_string(SCM_STATE_STRUCT *s, char *t, long max_len)
 {
-    //printf("refuting!\n");
+    //fprintf(crm_stdout, "refuting!\n");
     unsigned long key = strnhash(t, 3);
     long k, *l, m, n, longest_prefix = NULL_INDEX, longest_len = 0;
     long i = s->hash_root[key % s->n_bytes], *j =
@@ -405,7 +405,7 @@ static void refute_string(SCM_STATE_STRUCT *s, char *t, long max_len)
     while (k != NULL_INDEX)
         if (k == longest_prefix)
         {
-            //printf("refute works!\n");
+            //fprintf(crm_stdout, "refute works!\n");
             *l = s->prefix[k].next;
             s->prefix[k].next = *s->free_prefix_nodes;
             *s->free_prefix_nodes = k;
@@ -484,7 +484,7 @@ static double score_string(SCM_STATE_STRUCT *s, char *t, long max_len)
         }
         else
         {
-            //printf("%c%c%c!=%c%c%c\n", s->text[s->prefix[k].offset], s->text[s->prefix[k].offset+1], s->text[s->prefix[k].offset+2], t[0], t[1], t[2]);
+            //fprintf(crm_stdout, "%c%c%c!=%c%c%c\n", s->text[s->prefix[k].offset], s->text[s->prefix[k].offset+1], s->text[s->prefix[k].offset+2], t[0], t[1], t[2]);
             // *(int *)0 = 0; //sgfault to get to debugger
             *l = s->prefix[k].next;
             s->prefix[k].next = *s->free_prefix_nodes;
@@ -513,7 +513,7 @@ static double score_document(SCM_STATE_STRUCT *s, char *doc, long len)
     //len -= 1; //to prevent probabilities greater than one
     //len = len * (len + 1) / 2;
     if (joe_trace)
-        fprintf(stderr, "assigning score %f to document of length %ld\n", score,
+        fprintf(crm_stderr, "assigning score %f to document of length %ld\n", score,
                 len);
     return score;               // / (double)len;
 }
@@ -533,7 +533,7 @@ int crm_expr_scm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
         joe_trace = 1;
 
     if (joe_trace)
-        fprintf(stderr, "entered crm_expr_scm_learn (learn)\n");
+        fprintf(crm_stderr, "entered crm_expr_scm_learn (learn)\n");
 
     //parse out .scm file name
     crm_get_pgm_arg(filename, MAX_PATTERN, apb->p1start, apb->p1len);
@@ -573,7 +573,7 @@ int crm_expr_scm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
         }
     }
     if (joe_trace)
-        fprintf(stderr, "leaving crm_expr_scm_learn (learn)\n");
+        fprintf(crm_stderr, "leaving crm_expr_scm_learn (learn)\n");
     return 0;
 }
 
@@ -637,9 +637,9 @@ int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
 
     if (joe_trace)
     {
-        fprintf(stderr, "fail_on = %ld\n", fail_on);
+        fprintf(crm_stderr, "fail_on = %ld\n", fail_on);
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "filenames[%ld] = %s\n", i, filenames[i]);
+            fprintf(crm_stderr, "filenames[%ld] = %s\n", i, filenames[i]);
     }
 
     for (i = 0; i < n_classifiers; i++)
@@ -654,10 +654,10 @@ int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
 
     if (joe_trace)
     {
-        fprintf(stderr, "suc_prob = %f\n", suc_prob);
-        fprintf(stderr, "tot_score = %f\n", tot_score);
+        fprintf(crm_stderr, "suc_prob = %f\n", suc_prob);
+        fprintf(crm_stderr, "tot_score = %f\n", tot_score);
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "scores[%ld] = %f\n", i, scores[i]);
+            fprintf(crm_stderr, "scores[%ld] = %f\n", i, scores[i]);
     }
 
 
@@ -691,10 +691,10 @@ int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
 
     if (joe_trace)
     {
-        fprintf(stderr, "suc_prob = %f\n", suc_prob);
-        fprintf(stderr, "tot_score = %f\n", tot_score);
+        fprintf(crm_stderr, "suc_prob = %f\n", suc_prob);
+        fprintf(crm_stderr, "tot_score = %f\n", tot_score);
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "scores[%ld] = %f\n", i, scores[i]);
+            fprintf(crm_stderr, "scores[%ld] = %f\n", i, scores[i]);
     }
 
     if (suc_prob > 0.5 && suc_prob <= 1.0)  //test for nan as well

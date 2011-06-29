@@ -166,7 +166,7 @@ long crm_vector_stringhash
       //
       //if (user_trace)
 	{
-	  fprintf (stderr, "Match T.O: %d len %d (%d %d on >",
+	  fprintf(crm_stderr, "Match T.O: %d len %d (%d %d on >",
 		   (int)text_offset,
 		   match[0].rm_eo - match[0].rm_so,
 		   match[0].rm_so,
@@ -174,8 +174,8 @@ long crm_vector_stringhash
 	  for (k = match[0].rm_so+text_offset; 
 	       k < match[0].rm_eo+text_offset; 
 	       k++)
-	    fprintf (stderr, "%c", text[k]);
-	  fprintf (stderr, "<\n");
+	    fprintf(crm_stderr, "%c", text[k]);
+	  fprintf(crm_stderr, "<\n");
 	};
 
       //   Now slide the hashpipe up one slit, and stuff this new token
@@ -196,7 +196,7 @@ long crm_vector_stringhash
 	  
 	  //    Stuff the final ihash value into reatures array
 	  features[*features_out] = ihash;
-	  fprintf (stderr, "New Feature: %lx at %ld\n",ihash, *features_out);
+	  fprintf(crm_stderr, "New Feature: %lx at %ld\n",ihash, *features_out);
 	  *features_out = *features_out + 1 ;
 	};
       
@@ -231,7 +231,7 @@ int main2()
                    1, 0, 0, 0, 23 } ;
 
   strcpy (my_regex, "[[:alpha:]]+");
-  printf ("Enter a test string: ");
+  fprintf(crm_stdout, "Enter a test string: ");
   scanf ("%128c", &input[0]);
   crm_vector_stringhash (
 			 input,
@@ -247,7 +247,7 @@ int main2()
 			 & j,
 			 & i);
 
-  printf ("... and i is %ld\n", i);
+  fprintf(crm_stdout, "... and i is %ld\n", i);
   exit(0);
 }
 

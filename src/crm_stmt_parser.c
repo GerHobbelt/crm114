@@ -87,7 +87,7 @@ const FLAG_DEF crm_flags[] =
 //    Note that since flags (like variables) are always ASCII, we don't
 //    need to worry about 8-bit-safety.
 //
-unsigned long long crm_flagparse(char *input, long inlen)  //  the user input
+uint64_t crm_flagparse(char *input, long inlen)  //  the user input
 {
     char flagtext[MAX_PATTERN];
     char *remtext;
@@ -96,7 +96,7 @@ unsigned long long crm_flagparse(char *input, long inlen)  //  the user input
     long flagsearch_start_here;
     long wstart;
     long wlen;
-    unsigned long long outcode;
+    uint64_t outcode;
 
     int done;
     int i;
@@ -110,7 +110,7 @@ unsigned long long crm_flagparse(char *input, long inlen)  //  the user input
     flagtext[inlen] = '\000';
 
     if (internal_trace)
-        fprintf(stderr, "Flag string: %s\n", flagtext);
+        fprintf(crm_stderr, "Flag string: %s\n", flagtext);
 
     //  now loop on thru the nextwords,
     remtext = flagtext;
@@ -129,16 +129,16 @@ unsigned long long crm_flagparse(char *input, long inlen)  //  the user input
             wtext = &(remtext[wstart]);
             if (internal_trace)
             {
-                fprintf(stderr, "found flag, len %ld: ", wlen);
-                for (j = 0; j < wlen; j++) fprintf(stderr, "%c", wtext[j]);
-                fprintf(stderr, "\n");
+                fprintf(crm_stderr, "found flag, len %ld: ", wlen);
+                for (j = 0; j < wlen; j++) fprintf(crm_stderr, "%c", wtext[j]);
+                fprintf(crm_stderr, "\n");
             }
 
             //    find sch in our table, squalk a nonfatal/fatal if necessary.
             recog_flag = 0;
             for (j = 0; crm_flags[j].string != NULL; j++)/* [i_a] loop until we've hit the sentinel at the end of the table */
             {
-                // fprintf (stderr, " Trying %s (%ld) at pos = %d\n", crm_flags[j].string, crm_flags[j].value, j );
+                // fprintf(crm_stderr, " Trying %s (%ld) at pos = %d\n", crm_flags[j].string, crm_flags[j].value, j );
 
                 // make sure the flags are ordered properly; must match with crm114_structs.h defs, but that's kinda hard to check
                 CRM_ASSERT(crm_flags[j].value > 0);
@@ -153,10 +153,10 @@ unsigned long long crm_flagparse(char *input, long inlen)  //  the user input
                     //    mark this flag as valid so we don't squalk an error
                     recog_flag = 1;
                     //     and OR this into our outcode
-                    outcode = outcode | crm_flags[j].value;
+                    outcode |= crm_flags[j].value;
                     if (user_trace)
                     {
-                        fprintf(stderr, "Mode #%d, '%s' turned on. \n",
+                        fprintf(crm_stderr, "Mode #%d, '%s' turned on. \n",
                                 j,
                                 crm_flags[j].string);
                     }
@@ -182,7 +182,7 @@ unsigned long long crm_flagparse(char *input, long inlen)  //  the user input
     }
 
     if (internal_trace)
-        fprintf(stderr, "Flag code is : %llx\n", outcode);
+        fprintf(crm_stderr, "Flag code is : %llx\n", (unsigned long long)outcode);
 
     return outcode;
 }
@@ -434,10 +434,10 @@ int crm_generic_parse_line(
 
     if (internal_trace)
     {
-        fprintf(stderr, " declensional parsing for %ld chars on: ", len);
+        fprintf(crm_stderr, " declensional parsing for %ld chars on: ", len);
         for (i = 0; i < len; i++)
-            fprintf(stderr, "%c", txt[i]);
-        fprintf(stderr, "\n");
+            fprintf(crm_stderr, "%c", txt[i]);
+        fprintf(crm_stderr, "\n");
     }
 
     while (chidx < len && argc <= maxargs)
@@ -452,7 +452,7 @@ int crm_generic_parse_line(
                 if (curchar == schars[i])
                 {
                     if (internal_trace)
-                        fprintf(stderr, "   found opener %c at %ld,", curchar, chidx);
+                        fprintf(crm_stderr, "   found opener %c at %ld,", curchar, chidx);
                     itype = i;
                     fstart[argc] = chidx + 1;
                     ftype[argc] = itype;
@@ -477,10 +477,10 @@ int crm_generic_parse_line(
                     if (internal_trace)
                     {
                         int q;
-                        fprintf(stderr, " close %c at %ld --", curchar, chidx);
+                        fprintf(crm_stderr, " close %c at %ld --", curchar, chidx);
                         for (q = fstart[argc]; q < fstart[argc] + flen[argc]; q++)
-                            fprintf(stderr, "%c", txt[q]);
-                        fprintf(stderr, "-- len %ld\n", flen[argc]);
+                            fprintf(crm_stderr, "%c", txt[q]);
+                        fprintf(crm_stderr, "-- len %ld\n", flen[argc]);
                     }
                     itype = -1;
                     argc++;

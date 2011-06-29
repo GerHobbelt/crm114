@@ -89,7 +89,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char *learnfilename;
 
     if (internal_trace)
-        fprintf(stderr, "executing a LEARN\n");
+        fprintf(crm_stderr, "executing a LEARN\n");
 
     //   Keep the gcc compiler from complaining about unused variables
     //i = hctable[0];
@@ -122,18 +122,18 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         cflags = cflags | REG_ICASE;
         eflags = 1;
         if (user_trace)
-            fprintf(stderr, "turning oncase-insensitive match\n");
+            fprintf(crm_stderr, "turning oncase-insensitive match\n");
     }
     if (apb->sflags & CRM_REFUTE)
     {
         sense = -sense;
         if (user_trace)
-            fprintf(stderr, " refuting learning\n");
+            fprintf(crm_stderr, " refuting learning\n");
     }
     if (apb->sflags & CRM_UNIQUE)
     {
         if (user_trace)
-            fprintf(stderr, " turning on UNIQUE features only.\n");
+            fprintf(crm_stderr, " turning on UNIQUE features only.\n");
         unique_mode = 1;
     }
 
@@ -142,7 +142,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         microgroom = 1;
         if (user_trace)
-            fprintf(stderr, " enabling microgrooming.\n");
+            fprintf(crm_stderr, " enabling microgrooming.\n");
     }
 
     //     How many features in a Markovian?  Here's the answer:
@@ -151,7 +151,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         max_feature_terms = 1;
         if (user_trace)
-            fprintf(stderr, " enabling unigram-only (Bayesian) features.\n");
+            fprintf(crm_stderr, " enabling unigram-only (Bayesian) features.\n");
     }
     //
     //             grab the filename, and stat the file
@@ -177,7 +177,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //      file didn't exist... create it
         FILE *f;
         if (user_trace)
-            fprintf(stderr, "\nHad to create new CSS file %s\n", learnfilename);
+            fprintf(crm_stderr, "\nHad to create new CSS file %s\n", learnfilename);
         f = fopen(learnfilename, "wb");
         if (!f)
         {
@@ -229,7 +229,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     hfsize = statbuf.st_size;
     if (user_trace)
 	{
-        fprintf(stderr, "Sparse spectra file %s has length %ld bins\n",
+        fprintf(crm_stderr, "Sparse spectra file %s has length %ld bins\n",
                 learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
 	}
 
@@ -317,7 +317,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
                 if (user_trace)
 				{
-                    fprintf(stderr, "This file has had %lu documents learned!\n",
+                    fprintf(crm_stderr, "This file has had %lu documents learned!\n",
                             hashes[h1].value);
 				}
             }
@@ -350,7 +350,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 features_index = h1;
                 if (user_trace)
 				{
-                    fprintf(stderr, "This file has had %lu features learned!\n",
+                    fprintf(crm_stderr, "This file has had %lu features learned!\n",
                             hashes[h1].value);
 				}
             }
@@ -374,7 +374,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   compile the word regex
     //
     if (internal_trace)
-        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
+        fprintf(crm_stderr, "\nWordmatch pattern is %s", ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i > 0)
     {
@@ -483,7 +483,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
             if (internal_trace)
             {
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "  Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
                         i,
                         textoffset,
@@ -513,10 +513,10 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
             if (internal_trace)
             {
-                fprintf(stderr, "  Hashpipe contents: ");
+                fprintf(crm_stderr, "  Hashpipe contents: ");
                 for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
-                    fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
-                fprintf(stderr, "\n");
+                    fprintf(crm_stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
+                fprintf(crm_stderr, "\n");
             }
 
 
@@ -682,7 +682,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #endif
                     if (internal_trace)
 					{
-                        fprintf(stderr, "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
+                        fprintf(crm_stderr, "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
                                 j, (unsigned long)h1, (unsigned long)h2);
 					}
 
@@ -742,11 +742,11 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         if (hashes[hindex].value == 0)
                         {
-                            fprintf(stderr, "New feature at %ld\n", (long)hindex);
+                            fprintf(crm_stderr, "New feature at %ld\n", (long)hindex);
                         }
                         else
                         {
-                            fprintf(stderr, "Old feature at %ld\n", (long)hindex);
+                            fprintf(crm_stderr, "Old feature at %ld\n", (long)hindex);
                         }
                     }
                     //      always rewrite hash and key, as they may be incorrect
@@ -908,7 +908,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     unsigned char *seen_features[MAX_CLASSIFIERS];
 
     if (internal_trace)
-        fprintf(stderr, "executing a CLASSIFY\n");
+        fprintf(crm_stderr, "executing a CLASSIFY\n");
 
     //          We get the variable block, start, and len from caller
     //
@@ -952,7 +952,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (apb->sflags & CRM_NOCASE)
     {
         if (user_trace)
-            fprintf(stderr, " setting NOCASE for tokenization\n");
+            fprintf(crm_stderr, " setting NOCASE for tokenization\n");
         cflags += REG_ICASE;
         eflags = 1;
     }
@@ -962,7 +962,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         not_microgroom = 0;
         if (user_trace)
-            fprintf(stderr, " disabling fast-skip optimization.\n");
+            fprintf(crm_stderr, " disabling fast-skip optimization.\n");
     }
 
     max_feature_terms = (1 << (MARKOVIAN_WINDOW_LEN - 1));
@@ -970,21 +970,21 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         max_feature_terms = 1;
         if (user_trace)
-            fprintf(stderr, " enabling unigram-only (Bayesian) features.\n");
+            fprintf(crm_stderr, " enabling unigram-only (Bayesian) features.\n");
     }
 
     unique_mode = 0;
     if (apb->sflags & CRM_UNIQUE)
     {
         if (user_trace)
-            fprintf(stderr, " setting UNIQUE feature filtering.\n");
+            fprintf(crm_stderr, " setting UNIQUE feature filtering.\n");
         unique_mode = 1;
     }
 
 
     //   compile the word regex
     if (internal_trace)
-        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
+        fprintf(crm_stderr, "\nWordmatch pattern is %s", ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i > 0)
     {
@@ -1092,7 +1092,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   GROT GROT GROT  this isn't NULL-clean on filenames.  But then
     //    again, stdio.h itself isn't NULL-clean on filenames.
     if (user_trace)
-        fprintf(stderr, "Classify list: -%s- \n", htext);
+        fprintf(crm_stderr, "Classify list: -%s- \n", htext);
     fn_start_here = 0;
     fnlen = 1;
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
@@ -1104,10 +1104,10 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = '\000';
-            //      fprintf (stderr, "fname is '%s' len %ld\n", fname, fnlen);
+            //      fprintf(crm_stderr, "fname is '%s' len %ld\n", fname, fnlen);
             fn_start_here = fnstart + fnlen + 1;
             if (user_trace)
-                fprintf(stderr, "Classifying with file -%s- " \
+                fprintf(crm_stderr, "Classifying with file -%s- " \
                                 "succhash=%ld, maxhash=%ld\n",
                         fname, succhash, maxhash);
             if (fname[0] == '|' && fname[1] == '\000')
@@ -1157,7 +1157,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     }
                     else
                     {
-                        //  fprintf (stderr, "MMap got %lx\n", hashes);
+                        //  fprintf(crm_stderr, "MMap got %lx\n", hashes);
                         //
                         //     Check to see if this file is the right version
                         //
@@ -1211,7 +1211,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //    now, set up the normalization factor fcount[]
     if (user_trace)
-        fprintf(stderr, "Running with %ld files for success out of %ld files\n",
+        fprintf(crm_stderr, "Running with %ld files for success out of %ld files\n",
                 succhash, maxhash);
     // sanity checks...  Uncomment for super-strict CLASSIFY.
     //
@@ -1385,7 +1385,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
             if (internal_trace)
             {
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "  Classify #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
                         i,
                         textoffset,
@@ -1407,10 +1407,10 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
             if (0)
             {
-                fprintf(stderr, "  Hashpipe contents: ");
+                fprintf(crm_stderr, "  Hashpipe contents: ");
                 for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
-                    fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
-                fprintf(stderr, "\n");
+                    fprintf(crm_stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
+                fprintf(crm_stderr, "\n");
             }
 
             //   account for the text we used up...
@@ -2067,8 +2067,8 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         {
                             for (k = 0; k < maxhash; k++)
                             {
-                                // fprintf (stderr, "ZZZ\n");
-                                fprintf(stderr,
+                                // fprintf(crm_stderr, "ZZZ\n");
+                                fprintf(crm_stderr,
                                         " poly: %d  filenum: %ld, HTF: %7ld, hits: %7ld, Pl: %6.4e, Pc: %6.4e\n",
                                         j, k, (long)htf, (long)hits[k], pltc[k], ptc[k]);
                             }
@@ -2114,7 +2114,7 @@ classify_end_regex_loop:
         if (user_trace)
         {
             for (k = 0; k < maxhash; k++)
-                fprintf(stderr, "Probability of match for file %ld: %f\n", k, ptc[k]);
+                fprintf(crm_stderr, "Probability of match for file %ld: %f\n", k, ptc[k]);
         }
         //
         tprob = 0.0;
@@ -2201,7 +2201,7 @@ classify_end_regex_loop:
             }
             // check here if we got enough room in stext to stuff everything
             // perhaps we'd better rise a nonfatalerror, instead of just
-            // whining on stderr
+            // whining on crm_stderr
             if (strcmp(&(stext[strlen(stext) - strlen(buf)]), buf) != 0)
             {
                 nonfatalerror("WARNING: not enough room in the buffer to create "
@@ -2221,7 +2221,7 @@ classify_end_regex_loop:
         if (tprob <= 0.5000)
         {
             if (user_trace)
-                fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
+                fprintf(crm_stderr, "CLASSIFY was a FAIL, skipping forward.\n");
             //    and do what we do for a FAIL here
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -2232,7 +2232,7 @@ classify_end_regex_loop:
     //
     //   all done... if we got here, we should just continue execution
     if (user_trace)
-        fprintf(stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
+        fprintf(crm_stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
 regcomp_failed:
     return 0;
 }

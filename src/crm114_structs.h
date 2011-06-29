@@ -132,7 +132,7 @@ typedef struct mythical_argparse_block
     long       s1len;
     char      *s2start;
     long       s2len;
-    long long  sflags;
+    uint64_t   sflags;
 } ARGPARSE_BLOCK;
 
 
@@ -220,26 +220,26 @@ typedef struct
 #define ENTROPY_RESERVED_HEADER_LEN 1024
 typedef struct
 {
-    long      firlatstart;
-    long      firlatlen;
-    long      nodestart;
-    long      nodeslen;
-    long long totalbits;
+    int32_t /* long */ firlatstart;
+    int32_t /* long */ firlatlen;
+    int32_t /* long */ nodestart;
+    int32_t /* long */ nodeslen;
+    int64_t /* long long */ totalbits;
 } ENTROPY_HEADER_STRUCT;
 
 typedef struct mythical_entropy_alphabet_slot
 {
-    long count;
-    long nextcell;
+    int32_t /* long */ count;
+    int32_t /* long */ nextcell;
 } ENTROPY_ALPHABET_SLOT;
 
 //  28 byte header, 24 bytes alph (52 tot).  Pare: 16 header, 16 alph (36 tot)
 typedef struct mythical_entropy_cell
 {
     double fir_prior;
-    long   fir_larger;
-    long   fir_smaller;
-    long   firlat_slot;
+    int32_t /* long */ fir_larger;
+    int32_t /* long */ fir_smaller;
+    int32_t /* long */ firlat_slot;
     //  long total_count;
     ENTROPY_ALPHABET_SLOT abet[ENTROPY_ALPHABET_SIZE];
 } ENTROPY_FEATUREBUCKET_STRUCT;
@@ -385,7 +385,7 @@ typedef struct
     int   maxparens;
     int   minboxes;
     int   maxboxes;
-    int   flags_allowed_mask;
+    uint64_t   flags_allowed_mask;
 } STMT_TABLE_TYPE;
 
 

@@ -435,6 +435,9 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
 
+/* Define to 1 if you have the `_set_output_format' function. */
+/* #undef HAVE__SET_OUTPUT_FORMAT */
+
 /* Define to 1 if you have the `_snprintf' function. */
 /* #undef HAVE__SNPRINTF */
 
@@ -522,7 +525,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-170"
+#define TAR_FILENAME_POSTFIX "Ger-194"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

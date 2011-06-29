@@ -92,12 +92,12 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     failout = 0;
 
     if (user_trace)
-        fprintf(stderr, "Executing a 'window' operation\n");
+        fprintf(crm_stderr, "Executing a 'window' operation\n");
 
     //       there's the choice of input from a
-    //       variable, or input from stdin.  This is controlled strictly
+    //       variable, or input from crm_stdin.  This is controlled strictly
     //       by whether there's a [] in the statement (someday it may
-    //       allow other files than stdin, but not yet.)  So right now, it's-
+    //       allow other files than crm_stdin, but not yet.)  So right now, it's-
     //          1) read from the variable [:foo:] if supplied, else
     //          2) read from STDIN (default)
     //                these are inputsrc=FROM_VAR vs FROM_STDIN
@@ -108,7 +108,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //       Second, there's how much to read "preemptively", that is,
     //       to read ahead, but with the possibility of reading ahead too
     //       much (and thereby messing up a script or other typeahead that
-    //       another program sharing stdin was meant to actually read.
+    //       another program sharing crm_stdin was meant to actually read.
     //       The three choices we support are:
     //          1) read everything available (BYEOF), else
     //          3) read one character at a time (BYCHAR) (default)
@@ -152,52 +152,52 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (apb->sflags & CRM_BYCHAR)
     {
         if (user_trace)
-            fprintf(stderr, "  window input by character\n");
+            fprintf(crm_stderr, "  window input by character\n");
         inputsize = BYCHAR;
     }
     if (apb->sflags & CRM_BYCHUNK)
     {
         if (user_trace)
-            fprintf(stderr, "  window input by chunks\n");
+            fprintf(crm_stderr, "  window input by chunks\n");
         inputsize = BYCHUNK;
     }
     if (apb->sflags & CRM_BYEOF)
     {
         if (user_trace)
-            fprintf(stderr, "  window input by EOFs\n");
+            fprintf(crm_stderr, "  window input by EOFs\n");
         inputsize = BYEOF;
     }
     inputEOFaccept = EOFFAILS;
     if (apb->sflags & CRM_EOFACCEPTS)
     {
         if (user_trace)
-            fprintf(stderr, "  window input EOF is always accepted\n");
+            fprintf(crm_stderr, "  window input EOF is always accepted\n");
         inputEOFaccept = EOFACCEPTS;
     }
     inputretryEOF = EOFSTAYS;
     if (apb->sflags & CRM_EOFRETRY)
     {
         if (user_trace)
-            fprintf(stderr, "  window input EOF is retried\n");
+            fprintf(crm_stderr, "  window input EOF is retried\n");
         inputretryEOF = EOFRETRY;
     }
     regexflags = REG_EXTENDED;
     if (apb->sflags & CRM_NOCASE)
     {
         if (user_trace)
-            fprintf(stderr, "  no case matching turned on\n ");
+            fprintf(crm_stderr, "  no case matching turned on\n ");
         regexflags = regexflags | REG_ICASE;
     }
     if (apb->sflags & CRM_NOCASE)
     {
         if (user_trace)
-            fprintf(stderr, "  no case matching turned on\n ");
+            fprintf(crm_stderr, "  no case matching turned on\n ");
         regexflags = regexflags | REG_ICASE;
     }
     if (apb->sflags & CRM_LITERAL)
     {
         if (user_trace)
-            fprintf(stderr, "  no case matching turned on\n ");
+            fprintf(crm_stderr, "  no case matching turned on\n ");
         regexflags = regexflags | REG_LITERAL;
     }
 
@@ -211,7 +211,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     null window check - if no cut or paste patterns, then we
     //     just skip to the end of the WINDOW statement code
     //     which is how a WINDOW statement can be used to have a
-    //     program "come out running" before reading stdin.
+    //     program "come out running" before reading crm_stdin.
     if (apb->s1len == 0 && apb->s2len == 0)
         goto crm_window_no_changes_made;
 
@@ -221,7 +221,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     matching.
 
     if (internal_trace)
-        fprintf(stderr, " window cut pattern ---%s---\n", pch);
+        fprintf(crm_stderr, " window cut pattern ---%s---\n", pch);
     flen = apb->s1len;
 
     //       expand the match pattern
@@ -300,7 +300,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     if (user_trace)
-        fprintf(stderr, "  cut completed, variable length after cut is %ld\n",
+        fprintf(crm_stderr, "  cut completed, variable length after cut is %ld\n",
                 vht[vmidx]->vlen);
 
     //**************************************************************
@@ -312,18 +312,18 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //        Now we get the "put" half of the regex.
 
     if (user_trace)
-        fprintf(stderr, " now finding new section to add to end.\n");
+        fprintf(crm_stderr, " now finding new section to add to end.\n");
 
     crm_get_pgm_arg(pch, MAX_PATTERN, apb->s2start, apb->s2len);
     flen = apb->s2len;
     if (user_trace)
-        fprintf(stderr, "adding input with terminator of --%s--,", pch);
+        fprintf(crm_stderr, "adding input with terminator of --%s--,", pch);
 
     //       expand the match pattern
     flen = crm_nexpandvar(pch, flen, MAX_PATTERN);
 
     if (user_trace)
-        fprintf(stderr, " which expands to --%s--", pch);
+        fprintf(crm_stderr, " which expands to --%s--", pch);
 
     //
     //       compile the paste match regex
@@ -335,7 +335,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         goto invoke_bailout;
     }
 
-    //    decide - do we suck input from stdin, or from
+    //    decide - do we suck input from crm_stdin, or from
     //    a variable that's already here?
     //
     //     Get the input source, if one is supplied (2nd set of parens is
@@ -349,7 +349,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     from this input variable.
         inputsrc = FROM_VAR;
         if (user_trace)
-            fprintf(stderr, "  getting input from var %s\n", inputsrcname);
+            fprintf(crm_stderr, "  getting input from var %s\n", inputsrcname);
     }
 
     //
@@ -391,9 +391,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //   diagnostic - what was in the newinputbuf before this stmt?
                 if (user_trace)
                 {
-                    fprintf(stderr, " Using input source from variable %s\n",
+                    fprintf(crm_stderr, " Using input source from variable %s\n",
                             inputsrcname);
-                    fprintf(stderr, "   prior newinput buf --%s--\n",
+                    fprintf(crm_stderr, "   prior newinput buf --%s--\n",
                             newinputbuf);
                 }
 
@@ -449,7 +449,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         case FROM_VAR_DONE:
             {
                 if (user_trace)
-                    fprintf(stderr, "  got to FROM_VAR_DONE - this should"
+                    fprintf(crm_stderr, "  got to FROM_VAR_DONE - this should"
                                     " NEVER happen.  You've found a bug.");
                 saweof = 1;
             }
@@ -465,7 +465,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //      buffer, and we should use that data up first.
                 if (!firsttime)
                 {
-                    //  If we're reading from stdin, then we have three options:
+                    //  If we're reading from crm_stdin, then we have three options:
                     //   read a character, read up to (and including) the newline,
                     //   or read till EOF.  After each one, we set
                     if (feof(crm_stdin))
@@ -474,11 +474,11 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         && (feof(crm_stdin) || ferror(crm_stdin)))
                     {
                         if (user_trace)
-                            fprintf(stderr, "  resetting the stdin stream\n");
+                            fprintf(crm_stderr, "  resetting the crm_stdin stream\n");
                         clearerr(crm_stdin);
                     }
                     if (user_trace)
-                        fprintf(stderr, "  getting window input from STDIN\n");
+                        fprintf(crm_stderr, "  getting window input from STDIN\n");
                     switch (inputsize)
                     {
                     case BYLINE:
@@ -495,7 +495,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //    If that's less than the full buffer, we declare
                             //    that we got an EOF as well.
                             if (user_trace)
-                                fprintf(stderr, "  bigchunk BYEOF read starting \n");
+                                fprintf(crm_stderr, "  bigchunk BYEOF read starting \n");
                             //
                             //        fread doesn't stop on pipe empty, while
                             icount = fread(&(newinputbuf[newbuflen]), 1,
@@ -512,9 +512,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //    Since we read everything available, we always
                             //    declare we saw EOF.  Use EOFRETRY to run again.
                             if (user_trace)
-                                fprintf(stderr, "  bigchunk BYEOF read starting \n");
+                                fprintf(crm_stderr, "  bigchunk BYEOF read starting \n");
                             //
-                            //        fread (stdin) doesn't return on pipe
+                            //        fread (crm_stdin) doesn't return on pipe
                             //        empty, while read on STDIN_FILENO does.
                             //        So, for reading by chunks, we use read(STDIN)
                             icount = read(fileno(crm_stdin),
@@ -531,7 +531,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //          icount = read (0, &(newinputbuf[newbuflen]), 1);
                             //
                             if (user_trace)
-                                fprintf(stderr, "   single character BYCHAR read\n");
+                                fprintf(crm_stderr, "   single character BYCHAR read\n");
                             icount = fread(&(newinputbuf[newbuflen]), 1, 1, crm_stdin);
                         }
                         break;
@@ -582,7 +582,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //
             done = 1;
             if (user_trace)
-                fprintf(stderr, "  Found the paste pattern\n");
+                fprintf(crm_stderr, "  Found the paste pattern\n");
             //   (and the cut/paste is already set up correctly in
             //   matches[0]; we don't have to do anything.
         }
@@ -595,7 +595,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 done = 1;
                 failout = 1;
                 if (user_trace)
-                    fprintf(stderr, " saw EOF, EOFAccept= %d\n", inputEOFaccept);
+                    fprintf(crm_stderr, " saw EOF, EOFAccept= %d\n", inputEOFaccept);
                 switch (inputEOFaccept)
                 {
                 case EOFACCEPTS:
@@ -642,7 +642,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_regfree(&preg);
 
     if (internal_trace)
-        fprintf(stderr, "   now newinput buf --%s--\n", newinputbuf);
+        fprintf(crm_stderr, "   now newinput buf --%s--\n", newinputbuf);
 
     //     Once we get to here, we have the new input in newinputbuf, and
     //     matches[0].rm_eo is the length.  So, we copy the new data onto
@@ -678,7 +678,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (failout == 1)
     {
         if (user_trace)
-            fprintf(stderr, "  CUT match failed so we're going to fail.\n");
+            fprintf(crm_stderr, "  CUT match failed so we're going to fail.\n");
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
@@ -695,7 +695,7 @@ invoke_bailout:
     //    the var's contents into newinputbuf.
     //
     //    This cleanup is two parts - stuffing the remains of inputsrcname
-    //    back into inputsrcname, and then restoring the old stdin buffer
+    //    back into inputsrcname, and then restoring the old crm_stdin buffer
     //    contents from savedinputtxt and freeing the temporary
     //    space,
     if (inputsrc == FROM_VAR || inputsrc == FROM_VAR_DONE)
@@ -703,13 +703,13 @@ invoke_bailout:
         //     stuff the remaining characters back into the src var
 
         if (user_trace)
-            fprintf(stderr, " restoring remains of input src variable.\n");
+            fprintf(crm_stderr, " restoring remains of input src variable.\n");
 
         crm_destructive_alter_nvariable(inputsrcname, inputsrclen,
                                         newinputbuf,
                                         newbuflen);
 
-        //      and restore the old stdin buffer
+        //      and restore the old crm_stdin buffer
         strncpy(newinputbuf,
                 savedinputtxt,
                 savedinputtxtlen);           /* [i_a] we'll add the NUL below, son */

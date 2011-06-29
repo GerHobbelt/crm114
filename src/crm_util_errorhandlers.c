@@ -395,7 +395,7 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
         NULL,
         fmt,
         args);
-    fputs(reason, stderr);
+    fputs(reason, crm_stderr);
 
     if (engine_exit_base != 0)
     {
@@ -408,7 +408,7 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
 }
 
 
-//     fatalerror - print a fatal error on stdout, trap if we can, else exit
+//     fatalerror - print a fatal error on crm_stdout, trap if we can, else exit
 long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     //
@@ -450,7 +450,7 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
         args    );
 
 
-    fputs(reason, stderr);
+    fputs(reason, crm_stderr);
 
     if (engine_exit_base != 0)
     {
@@ -500,7 +500,7 @@ funcname,
         fmt,
         args    );
 
-    fputs(reason, stderr);
+    fputs(reason, crm_stderr);
 
     nonfatalerrorcount++;
 

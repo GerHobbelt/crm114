@@ -106,7 +106,7 @@ void crm_vht_init(int argc, char **argv)
         if (strlen(argv[i]) == 2 && strncmp(argv[i], "--", 2) == 0)
         {
             if (internal_trace)
-                fprintf(stderr, "Resetting _arg counter to 2\n");
+                fprintf(crm_stderr, "Resetting _arg counter to 2\n");
             j = 2;
             if (uvstart == 0) uvstart = i;
         }
@@ -346,7 +346,7 @@ void crm_vht_init(int argc, char **argv)
             closepos++;
         uvset[closepos] = 0;
         strcat(uvset, " ");
-        if (user_trace) fprintf(stderr, "UVset: =%s=\n", uvset);
+        if (user_trace) fprintf(crm_stderr, "UVset: =%s=\n", uvset);
     }
     //
     //
@@ -394,7 +394,7 @@ void crm_vht_init(int argc, char **argv)
                 if (isok)
                 {
                     if (internal_trace)
-                        fprintf(stderr, "setting cmdline string %s", argv[i]);
+                        fprintf(crm_stderr, "setting cmdline string %s", argv[i]);
                     strcpy(avalbuf, "SET");
                     j = 2; k = 0;
                     //  copy the varname into anamebuf
@@ -422,17 +422,17 @@ void crm_vht_init(int argc, char **argv)
                         avalbuf[k] = '\000';
                     }
                     if (user_trace)
-                        fprintf(stderr, "\n Setting cmdline var '%s' to '%s'\n",
+                        fprintf(crm_stderr, "\n Setting cmdline var '%s' to '%s'\n",
                                 anamebuf, avalbuf);
                     crm_set_temp_var(anamebuf, avalbuf);
                 }
                 else
                 {
-                    fprintf(stderr,
+                    fprintf(crm_stderr,
                             "\n ***Warning*** "
                             "This program does not accept the "
                             "flag '%s' , \n", anamebuf);
-                    fprintf(stderr,
+                    fprintf(crm_stderr,
                             " so we'll just ignore it for now. \n");
                 }
             }
@@ -455,7 +455,7 @@ void crm_set_temp_nvar(char *varname, char *value, long vallen)
 
     //       do the internal_trace thing
     if (internal_trace)
-        fprintf(stderr, "  setting temp-area variable %s to value %s\n",
+        fprintf(crm_stderr, "  setting temp-area variable %s to value %s\n",
                 varname, value);
 
     i = crm_nextword(varname, strlen(varname), 0, &vnidx, &vnlen);
@@ -573,11 +573,11 @@ void crm_set_windowed_nvar(char *varname,
     if (internal_trace)
     {
         long i;
-        fprintf(stderr, "  setting data-window variable %s to value ",
+        fprintf(crm_stderr, "  setting data-window variable %s to value ",
                 varname);
         for (i = start; i < start + len; i++)
-            fprintf(stderr, "%c", valtext[i]);
-        fprintf(stderr, "\n");
+            fprintf(crm_stderr, "%c", valtext[i]);
+        fprintf(crm_stderr, "\n");
     }
 
     //    check and see if the variable is already in the VHT
@@ -587,7 +587,7 @@ void crm_set_windowed_nvar(char *varname,
         //  nope, never seen this var before, add it into the VHT
         //       namestart is where we are now.
         if (internal_trace)
-            fprintf(stderr, "... new var\n");
+            fprintf(crm_stderr, "... new var\n");
         //
         //      Put the name into the tdw memory area, add a & after it.
         //
@@ -623,7 +623,7 @@ void crm_set_windowed_nvar(char *varname,
             //     value.
             //
             if (internal_trace)
-                fprintf(stderr, "... old var\n");
+                fprintf(crm_stderr, "... old var\n");
             crm_setvar(NULL, 0,
                        vht[i]->nametxt, vht[i]->nstart, vht[i]->nlen,
                        valtext, start, len,
@@ -709,7 +709,7 @@ long crm_compress_tdw_section(char *oldtext, long oldstart, long oldend)
 
     j = newstart = newend = reclaimed = 0;
     if (internal_trace)
-        fprintf(stderr, " [ Compressing isolated data.  Length %ld chars, "
+        fprintf(crm_stderr, " [ Compressing isolated data.  Length %ld chars, "
                         "start %ld, len %ld ]\n",
                 tdw->nchars,
                 oldstart,
@@ -720,7 +720,7 @@ long crm_compress_tdw_section(char *oldtext, long oldstart, long oldend)
     if (oldstart >= oldend)
     {
         if (internal_trace)
-            fprintf(stderr, " [ Zero-length compression string... don't do this! ]\n");
+            fprintf(crm_stderr, " [ Zero-length compression string... don't do this! ]\n");
         return 0;
     }
 
@@ -794,7 +794,7 @@ long crm_compress_tdw_section(char *oldtext, long oldstart, long oldend)
                 //   the dead zone is inside a non-dead var, so
                 //   we can terminate our search right now.
                 if (internal_trace)
-                    fprintf(stderr, " [ Compression not needed after all. ]\n");
+                    fprintf(crm_stderr, " [ Compression not needed after all. ]\n");
                 return 0;
             }
 
@@ -810,7 +810,7 @@ long crm_compress_tdw_section(char *oldtext, long oldstart, long oldend)
                 //   also new variable.  So, we clip out the part
                 //   that's still active.
                 if (internal_trace)
-                    fprintf(stderr, " [ Trimming tail off of compression. ]\n");
+                    fprintf(crm_stderr, " [ Trimming tail off of compression. ]\n");
                 //
                 //     newstart is a "good" char, but since oldend is
                 //     noninclusive, this is right.
@@ -827,7 +827,7 @@ long crm_compress_tdw_section(char *oldtext, long oldstart, long oldend)
             if (newstart <= oldstart && newend <= oldend)
             {
                 if (internal_trace)
-                    fprintf(stderr, " [ Trimming head off of compression. ]\n");
+                    fprintf(crm_stderr, " [ Trimming head off of compression. ]\n");
                 //
                 //     Newend is the first char that ISN'T in the var, so this
                 //     is correct.
@@ -845,10 +845,10 @@ long crm_compress_tdw_section(char *oldtext, long oldstart, long oldend)
             {
                 if (internal_trace)
                 {
-                    fprintf(stderr, " [ Compression split ]\n");
-                    fprintf(stderr, " [ First part will be %ld to %ld .]\n",
+                    fprintf(crm_stderr, " [ Compression split ]\n");
+                    fprintf(crm_stderr, " [ First part will be %ld to %ld .]\n",
                             oldstart, newstart);
-                    fprintf(stderr, " [ Second part will be %ld to %ld .]\n",
+                    fprintf(crm_stderr, " [ Second part will be %ld to %ld .]\n",
                             newend, oldend);
                 }
                 //
@@ -927,7 +927,7 @@ end_of_vstring_tests:
                 //   the dead zone is inside a non-dead var, so
                 //   we can terminate our search right now.
                 if (internal_trace)
-                    fprintf(stderr, " [ Compression not needed after all. ]\n");
+                    fprintf(crm_stderr, " [ Compression not needed after all. ]\n");
                 return 0;
             }
 
@@ -943,7 +943,7 @@ end_of_vstring_tests:
                 //   also new variable.  So, we clip out the part
                 //   that's still active.
                 if (internal_trace)
-                    fprintf(stderr, " [ Trimming tail off of compression. ]\n");
+                    fprintf(crm_stderr, " [ Trimming tail off of compression. ]\n");
                 //
                 //     newstart is a "good" char, but since oldend is
                 //     noninclusive, this is right.
@@ -960,7 +960,7 @@ end_of_vstring_tests:
             if (newstart <= oldstart && newend <= oldend)
             {
                 if (internal_trace)
-                    fprintf(stderr, " [ Trimming head off of compression. ]\n");
+                    fprintf(crm_stderr, " [ Trimming head off of compression. ]\n");
                 //
                 //     Newend is the first char that ISN'T in the var, so this
                 //     is correct.
@@ -978,10 +978,10 @@ end_of_vstring_tests:
             {
                 if (internal_trace)
                 {
-                    fprintf(stderr, " [ Compression split ]\n");
-                    fprintf(stderr, " [ First part will be %ld to %ld .]\n",
+                    fprintf(crm_stderr, " [ Compression split ]\n");
+                    fprintf(crm_stderr, " [ First part will be %ld to %ld .]\n",
                             oldstart, newstart);
-                    fprintf(stderr, " [ Second part will be %ld to %ld .]\n",
+                    fprintf(crm_stderr, " [ Second part will be %ld to %ld .]\n",
                             newend, oldend);
                 }
                 //
@@ -1034,13 +1034,13 @@ end_of_nstring_tests:
         {
             if (internal_trace)
             {
-                fprintf(stderr, " [ compression slice-splice at %ld for %ld chars. ]\n",
+                fprintf(crm_stderr, " [ compression slice-splice at %ld for %ld chars. ]\n",
                         oldstart, cutlen);
             }
             crm_slice_and_splice_window(tdw, oldstart, cutlen);
             if (internal_trace)
             {
-                fprintf(stderr, " [ new isolated area will be %ld bytes. ]\n",
+                fprintf(crm_stderr, " [ new isolated area will be %ld bytes. ]\n",
                         tdw->nchars);
             }
         }
@@ -1092,16 +1092,16 @@ void crm_destructive_alter_nvariable(char *varname, long varlen,
     if (user_trace) // major debug
     {
         long i;
-        // fprintf (stderr, "\n     surgery on the var %s\n ", varname);
-        fprintf(stderr, " surgery on the var >");
+        // fprintf(crm_stderr, "\n     surgery on the var %s\n ", varname);
+        fprintf(crm_stderr, " surgery on the var >");
         for (i = 0; i < varlen; i++)
-            fprintf(stderr, "%c", varname[i]);
-        fprintf(stderr, "<\n");
-        //fprintf (stderr, "new value is: \n***%s***\n", newstr);
-        fprintf(stderr, " new value is ***>");
+            fprintf(crm_stderr, "%c", varname[i]);
+        fprintf(crm_stderr, "<\n");
+        //fprintf(crm_stderr, "new value is: \n***%s***\n", newstr);
+        fprintf(crm_stderr, " new value is ***>");
         for (i = 0; i < newlen; i++)
-            fprintf(stderr, "%c", newstr[i]);
-        fprintf(stderr, "<***\n");
+            fprintf(crm_stderr, "%c", newstr[i]);
+        fprintf(crm_stderr, "<***\n");
     }
     //     slice and splice the mdw text area, to make the right amount of
     //     space...
@@ -1156,7 +1156,7 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, long where, long delta)
     {
         if (internal_trace)
         {
-            fprintf(stderr, " zero delta, no buffer hackery required\n");
+            fprintf(crm_stderr, " zero delta, no buffer hackery required\n");
         }
         return;
     }
@@ -1164,9 +1164,9 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, long where, long delta)
     // bump chars in input window delta places
     if (internal_trace)
     {
-        fprintf(stderr, "moving text in window %p,", mdw->filetext);
-        fprintf(stderr, " starting at %ld, ", where);
-        fprintf(stderr, "delta length is %ld\n", delta);
+        fprintf(crm_stderr, "moving text in window %p,", mdw->filetext);
+        fprintf(crm_stderr, " starting at %ld, ", where);
+        fprintf(crm_stderr, "delta length is %ld\n", delta);
     }
 
     if (delta > 0)
@@ -1185,7 +1185,7 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, long where, long delta)
         //      taillen = mdw->nchars + 1 - where;
     }
     if (internal_trace)
-        fprintf(stderr,
+        fprintf(crm_stderr,
                 "buffer sliding, tailsrc: %p, taildest: %p, length: %ld\n",
                 tailsrc, taildest, taillen);
 
@@ -1267,27 +1267,27 @@ long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
         {
             corrupted = 0;
             if (vht[i] != NULL && vht[i]->nlen < 2)
-                fprintf(stderr, "Short length %ld ", i);
+                fprintf(crm_stderr, "Short length %ld ", i);
             if (vht[i] != NULL && vht[i]->nlen > 1)
             {
                 if (vht[i]->nametxt[vht[i]->nstart] != ':')
                 {
-                    fprintf(stderr, "Ztart corrupted ");
+                    fprintf(crm_stderr, "Ztart corrupted ");
                     corrupted = 1;
                 }
                 if (vht[i]->nametxt[vht[i]->nstart + vht[i]->nlen - 1] != ':')
                 {
-                    fprintf(stderr, "Zend corrupted ");
+                    fprintf(crm_stderr, "Zend corrupted ");
                     corrupted = 1;
                 }
                 if (corrupted)
                 {
-                    fprintf(stderr, " i %ld len %ld name = -",
+                    fprintf(crm_stderr, " i %ld len %ld name = -",
                             i, vht[i]->nlen);
                     for (j = 0; j < vht[i]->nlen; j++)
-                        fprintf(stderr, "%c",
+                        fprintf(crm_stderr, "%c",
                                 vht[i]->nametxt[vht[i]->nstart + j]);
-                    fprintf(stderr, "- ");
+                    fprintf(crm_stderr, "- ");
                 }
             }
         }
@@ -1297,11 +1297,11 @@ long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
     crm_nextword(vname, vlen, 0, &vsidx, &vslen);
     if (internal_trace)
     {
-        fprintf(stderr, " variable len %ld, name is -", vslen);
+        fprintf(crm_stderr, " variable len %ld, name is -", vslen);
         for (k = vsidx; k < vsidx + vslen; k++)
-            fprintf(stderr, "%c", vname[k]);
+            fprintf(crm_stderr, "%c", vname[k]);
 
-        fprintf(stderr, "- .\n");
+        fprintf(crm_stderr, "- .\n");
     }
 
     hc = strnhash(&vname[vsidx], vslen) % vht_size;
@@ -1327,11 +1327,11 @@ long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
             if (internal_trace)
             {
                 int ic;
-                fprintf(stderr, "  var ");
+                fprintf(crm_stderr, "  var ");
                 for (ic = 0; ic < vlen; ic++)
-                    fprintf(stderr, "%c", vname[ic]);
-                fprintf(stderr, "(len %ld) not at %ld (empty)\n", vlen, i);
-                fprintf(stderr, "Returning the index where it belonged.\n");
+                    fprintf(crm_stderr, "%c", vname[ic]);
+                fprintf(crm_stderr, "(len %ld) not at %ld (empty)\n", vlen, i);
+                fprintf(crm_stderr, "Returning the index where it belonged.\n");
             }
             return i;
         }
@@ -1346,20 +1346,20 @@ long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
             if (internal_trace)
             {
                 int ic;
-                fprintf(stderr, "  var '");
+                fprintf(crm_stderr, "  var '");
                 for (ic = 0; ic < vht[i]->nlen; ic++)
-                    fprintf(stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
-                fprintf(stderr, " (len %ld) found at %ld (",
+                    fprintf(crm_stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
+                fprintf(crm_stderr, " (len %ld) found at %ld (",
                         vlen, i);
                 if (vht[i]->valtxt == cdw->filetext)
                 {
-                    fprintf(stderr, "(main)");
+                    fprintf(crm_stderr, "(main)");
                 }
                 else
                 {
-                    fprintf(stderr, "(isol)");
+                    fprintf(crm_stderr, "(isol)");
                 }
-                fprintf(stderr, " s: %ld, l:%ld)\n",
+                fprintf(crm_stderr, " s: %ld, l:%ld)\n",
                         vht[i]->vstart, vht[i]->vlen);
             }
             return i;
@@ -1369,12 +1369,12 @@ long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
             if (internal_trace)
             {
                 int ic;
-                fprintf(stderr, "\n Hash clash (at %ld): wanted %s (len %ld)",
+                fprintf(crm_stderr, "\n Hash clash (at %ld): wanted %s (len %ld)",
                         i, vname, vlen);
-                fprintf(stderr, " but found '");
+                fprintf(crm_stderr, " but found '");
                 for (ic = 0; ic < vht[i]->nlen; ic++)
-                    fprintf(stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
-                fprintf(stderr, "' instead.");
+                    fprintf(crm_stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
+                fprintf(crm_stderr, "' instead.");
             }
         }
 
@@ -1395,25 +1395,25 @@ long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
             badvarname[(vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1)] = 0;
             {
                 long index;
-                fprintf(stderr, "Variable Hash Table Dump\n");
+                fprintf(crm_stderr, "Variable Hash Table Dump\n");
                 for (index = 0; index < vht_size; index++)
                 {
                     int ic;
-                    fprintf(stderr, "  var '");
+                    fprintf(crm_stderr, "  var '");
                     for (ic = 0; ic < vht[index]->nlen; ic++)
-                        fprintf(stderr, "%c",
+                        fprintf(crm_stderr, "%c",
                                 (vht[index]->nametxt)[ic + vht[index]->nstart]);
-                    fprintf(stderr, "'[%ld] found at %ld (",
+                    fprintf(crm_stderr, "'[%ld] found at %ld (",
                             vht[index]->nlen,  index);
                     if (vht[index]->valtxt == cdw->filetext)
                     {
-                        fprintf(stderr, "(main)");
+                        fprintf(crm_stderr, "(main)");
                     }
                     else
                     {
-                        fprintf(stderr, "(isol)");
+                        fprintf(crm_stderr, "(isol)");
                     }
-                    fprintf(stderr, " s: %ld, l:%ld)\n",
+                    fprintf(crm_stderr, " s: %ld, l:%ld)\n",
                             vht[index]->vstart, vht[index]->vlen);
                     ;
                 }
@@ -1494,23 +1494,23 @@ void crm_setvar(
     if (internal_trace)
     {
         j = 0;
-        fprintf(stderr, "  Successful set value of ");
+        fprintf(crm_stderr, "  Successful set value of ");
 
         //for (j = 0; j < vht[i]->nlen; j++)
-        //        fprintf (stderr, "%c", vht[i]->nametxt[vht[i]->nstart+j]);
-        fwrite(&(vht[i]->nametxt[vht[i]->nstart]), 1, vht[i]->nlen, stderr);
+        //        fprintf(crm_stderr, "%c", vht[i]->nametxt[vht[i]->nstart+j]);
+        fwrite(&(vht[i]->nametxt[vht[i]->nstart]), 1, vht[i]->nlen, crm_stderr);
 
-        fprintf(stderr, " at vht entry %d ", i);
+        fprintf(crm_stderr, " at vht entry %d ", i);
 
-        fprintf(stderr, " with value -");
+        fprintf(crm_stderr, " with value -");
         //      for (j = 0; j < vht[i]->vlen; j++)
-        //        fprintf (stderr, "%c", vht[i]->valtxt[vht[i]->vstart+j]);
-        fwrite(&(vht[i]->valtxt[vht[i]->vstart]), 1, vht[i]->vlen, stderr);
+        //        fprintf(crm_stderr, "%c", vht[i]->valtxt[vht[i]->vstart+j]);
+        fwrite(&(vht[i]->valtxt[vht[i]->vstart]), 1, vht[i]->vlen, crm_stderr);
 
-        fprintf(stderr, "- (start %ld, length %ld)",
+        fprintf(crm_stderr, "- (start %ld, length %ld)",
                 vht[i]->vstart, vht[i]->vlen);
 
-        fprintf(stderr, "\n");
+        fprintf(crm_stderr, "\n");
     }
 }
 
@@ -1530,7 +1530,7 @@ long crm_lookupvarline(VHT_CELL **vht, char *text, long start, long len)
     {
         // Yes, we found it.  Return the line number
         if (internal_trace)
-            fprintf(stderr, "  looked up ... line number %ld\n",
+            fprintf(crm_stderr, "  looked up ... line number %ld\n",
                     vht[i]->linenumber);
         return vht[i]->linenumber;
     }
@@ -1573,7 +1573,7 @@ void crm_updatecaptures(char *text, long loc, long delta)
     long nstart = 0, nend = 0;
 
     if (internal_trace)
-        fprintf(stderr, "\n    updating captured values start %ld len %ld \n",
+        fprintf(crm_stderr, "\n    updating captured values start %ld len %ld \n",
                 loc, delta);
 
     //        check each VHT entry for a need to relocate
@@ -1588,12 +1588,12 @@ void crm_updatecaptures(char *text, long loc, long delta)
                 // value text area
                 if (internal_trace)
                 {
-                    fprintf(stderr, "\n  checking var ");
+                    fprintf(crm_stderr, "\n  checking var ");
                     for (i = 0; i < vht[vht_index]->nlen; i++)
-                        fprintf(stderr, "%c",
+                        fprintf(crm_stderr, "%c",
                                 vht[vht_index]->nametxt[vht[vht_index]->nstart + i]);
-                    fprintf(stderr, " ");
-                    fprintf(stderr, " s: %ld, l:%ld, e:%ld n:%ld ~ %ld ...",
+                    fprintf(crm_stderr, " ");
+                    fprintf(crm_stderr, " s: %ld, l:%ld, e:%ld n:%ld ~ %ld ...",
                             vht[vht_index]->vstart,
                             vht[vht_index]->vlen,
                             vht[vht_index]->vstart + vht[vht_index]->vlen,
@@ -1606,13 +1606,13 @@ void crm_updatecaptures(char *text, long loc, long delta)
                 nstart = crm_mangle_offset(ostart, loc, delta, 0);
                 nend = crm_mangle_offset(oend, loc, delta, 1);
                 if (internal_trace)
-                    fprintf(stderr, "\n   index %ld vstart/vlen upd: %ld, %ld  ",
+                    fprintf(crm_stderr, "\n   index %ld vstart/vlen upd: %ld, %ld  ",
                             vht_index,
                             vht[vht_index]->vstart, vht[vht_index]->vlen);
                 vht[vht_index]->vstart = nstart;
                 vht[vht_index]->vlen = nend - nstart;
                 if (internal_trace)
-                    fprintf(stderr, "to %ld, %ld.\n",
+                    fprintf(crm_stderr, "to %ld, %ld.\n",
                             vht[vht_index]->vstart,
                             vht[vht_index]->vlen);
                 //
@@ -1622,13 +1622,13 @@ void crm_updatecaptures(char *text, long loc, long delta)
                 nstart = crm_mangle_offset(ostart, loc, delta, 0);
                 nend = crm_mangle_offset(oend, loc, delta, 1);
                 if (internal_trace)
-                    fprintf(stderr, "\n index %ld mstart/mlen upd: %ld, %ld  ",
+                    fprintf(crm_stderr, "\n index %ld mstart/mlen upd: %ld, %ld  ",
                             vht_index,
                             vht[vht_index]->mstart, vht[vht_index]->mlen);
                 vht[vht_index]->mstart = nstart;
                 vht[vht_index]->mlen = nend - nstart;
                 if (internal_trace)
-                    fprintf(stderr, "to %ld, %ld.\n",
+                    fprintf(crm_stderr, "to %ld, %ld.\n",
                             vht[vht_index]->mstart,
                             vht[vht_index]->mlen);
             }
@@ -1643,31 +1643,31 @@ void crm_updatecaptures(char *text, long loc, long delta)
                 ostart = nstart = vht[vht_index]->nstart;
                 orig_len = vht[vht_index]->nlen;
                 oend = nend = ostart + orig_len;
-                if (orig_len == 0) fprintf(stderr, "CRUD on %ld", vht_index);
+                if (orig_len == 0) fprintf(crm_stderr, "CRUD on %ld", vht_index);
                 nstart = crm_mangle_offset(ostart, loc, delta, 0);
                 nend = crm_mangle_offset(oend, loc, delta, 1);
                 if (oend - ostart != orig_len)
-                    fprintf(stderr, "Length change on %ld!  Was %ld, now %ld ",
+                    fprintf(crm_stderr, "Length change on %ld!  Was %ld, now %ld ",
                             vht_index,
                             orig_len,
                             oend - ostart);
 
                 if (internal_trace)
-                    fprintf(stderr,
+                    fprintf(crm_stderr,
                             "\n      index %ld nstart/nlen upd: %ld, %ld  ",
                             vht_index,
                             vht[vht_index]->nstart, vht[vht_index]->nlen);
                 vht[vht_index]->nstart = nstart;
                 vht[vht_index]->nlen = nend - nstart;
                 if (internal_trace)
-                    fprintf(stderr, "to %ld, %ld.\n",
+                    fprintf(crm_stderr, "to %ld, %ld.\n",
                             vht[vht_index]->nstart,
                             vht[vht_index]->nlen);
             }
         }
     }
     if (internal_trace)
-        fprintf(stderr, "\n    end of updates\n");
+        fprintf(crm_stderr, "\n    end of updates\n");
 }
 
 //
@@ -1777,7 +1777,7 @@ long crm_mangle_offset(long mark, long dot, long delta, long sl)
 
 int crm_buffer_gc(CSL_CELL *zdw)
 {
-    fprintf(stderr, "Sorry, GC is not yet implemented");
+    fprintf(crm_stderr, "Sorry, GC is not yet implemented");
     exit(EXIT_FAILURE);
     return 0;
 }

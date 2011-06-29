@@ -73,8 +73,8 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
     if (user_trace)
     {
         if (microgroom_count == 1)
-            fprintf(stderr, "CSS Winnow file too full: microgrooming chain: ");
-        fprintf(stderr, " %ld ",
+            fprintf(crm_stderr, "CSS Winnow file too full: microgrooming chain: ");
+        fprintf(crm_stderr, " %ld ",
                 microgroom_count);
     }
 
@@ -113,7 +113,7 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
         i--;
         if (i < 1) i = hs - 1;
         if (i == j) break;       // don't hang if we have a 100% full .css file
-        // fprintf (stderr, "-");
+        // fprintf(crm_stderr, "-");
     }
 
     //     now, move our index to point to the first bucket in this chain.
@@ -125,7 +125,7 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
     force_rescale = 0;
     while (h[i].value != 0)
     {
-        //      fprintf (stderr, "=");
+        //      fprintf(crm_stderr, "=");
         randy = rand() + microgroom_count;
         if (
             (h[i].key != 0)   // hash keys == 0 are SPECIALS like #learns,
@@ -161,7 +161,7 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
         i--;
         if (i < 1) i = hs - 1;
         if (i == j) break;       // don't hang if we have a 100% full .css file
-        // fprintf (stderr, "-");
+        // fprintf(crm_stderr, "-");
     }
 
     //     now, move our index to point to the first _used_ bucket in
@@ -221,12 +221,12 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
     //
     if (packstart < packend)
     {
-        //      fprintf (stderr, "z");
+        //      fprintf(crm_stderr, "z");
         actually_zeroed = crm_zap_winnow_css(h, hs, packstart, packend);
     }
     else
     {
-        //fprintf (stderr, "Z");
+        //fprintf(crm_stderr, "Z");
         actually_zeroed = crm_zap_winnow_css(h, hs, packstart, hs - 1);
         actually_zeroed = actually_zeroed
                           + crm_zap_winnow_css(h, hs, 1,   (packlen - (hs - packstart)));
@@ -282,17 +282,17 @@ static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
     vcmin = 1000000.0;
     vcut = 1.0;
     packlen = end - start;
-    //  fprintf (stderr, " S: %ld, E: %ld, L: %ld ", start, end, packlen );
+    //  fprintf(crm_stderr, " S: %ld, E: %ld, L: %ld ", start, end, packlen );
     zcountdown = packlen / 32; //   get rid of about 3% of the data
     actually_zeroed = 0;
     while (zcountdown > 0)
     {
-        //  fprintf (stderr, " %f ", vcut);
+        //  fprintf(crm_stderr, " %f ", vcut);
         for (k = start; k <= end;  k++)
         {
             if (h[k].key != 0)      // key == 0 means "special- don't zero!"
             {
-                //      fprintf (stderr, "a");
+                //      fprintf(crm_stderr, "a");
                 if (h[k].value > 0.0) //  can't zero it if it's already zeroed
                 {
                     //  valmag is the magnitude of the value versus neutral
@@ -300,18 +300,18 @@ static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
                     double valmag;
                     valmag = h[k].value;
                     if (valmag < 1.0) valmag = 1.0 / valmag;
-                    //  fprintf (stderr, "b");
+                    //  fprintf(crm_stderr, "b");
                     if ((VWEIGHT * valmag) +
                         (VWEIGHT2 * valmag * valmag) +
                         (DWEIGHT * (k - h[k].hash % hs)) +
                         (DWEIGHT2 * (k - h[k].hash % hs) * (k - h[k].hash % hs))
                         <= vcut)
                     {
-                        //  fprintf (stderr, "*");
+                        //  fprintf(crm_stderr, "*");
                         h[k].value = 0.0;
                         zcountdown--;
                         actually_zeroed++;
-                        // fprintf (stderr, "m");
+                        // fprintf(crm_stderr, "m");
                     }
                     //   keep track of minimum value found so far.
                     if (vcmin > valmag) vcmin = valmag;
@@ -344,10 +344,10 @@ void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
     //    back up past us (since the file must contain at least one empty)
     //    and so it's still below us in the file.
 
-    //fprintf (stderr, "Packing %ld len %ld total %ld",
+    //fprintf(crm_stderr, "Packing %ld len %ld total %ld",
     //       packstart, packlen, packstart+packlen);
     //  if (packstart+packlen >= hs)
-    //  fprintf (stderr, " BLORTTTTTT ");
+    //  fprintf(crm_stderr, " BLORTTTTTT ");
     if (packstart + packlen <= hs) //  no wraparound in this case
     {
         crm_pack_winnow_seg(h, seen_features, hs, packstart, packlen);
@@ -372,7 +372,7 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
     //  is non-null, but the compiler isn't smart enough to know that.
     tseen = 0;
 
-    if (internal_trace) fprintf(stderr, " < %ld %ld >", packstart, packlen);
+    if (internal_trace) fprintf(crm_stderr, " < %ld %ld >", packstart, packlen);
 
     for (ifrom = packstart; ifrom < packstart + packlen; ifrom++)
     {
@@ -382,7 +382,7 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
         if (h[ifrom].value < 1.0E-6)
         {
             //    Empty bucket - turn it from marker to empty
-            if (internal_trace) fprintf(stderr, "x");
+            if (internal_trace) fprintf(crm_stderr, "x");
             h[ifrom].key = 0;
             h[ifrom].hash = 0;
             h[ifrom].value = 0.0;
@@ -391,7 +391,7 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
         }
         else
         {
-            if (internal_trace) fprintf(stderr, "-");
+            if (internal_trace) fprintf(crm_stderr, "-");
         }
     }
 
@@ -413,13 +413,13 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
 
         if (tvalue == 0.0)
         {
-            if (internal_trace) fprintf(stderr, "X");
+            if (internal_trace) fprintf(crm_stderr, "X");
         }
         else
         {
             ito = thash % hs;
             if (ito == 0) ito = 1;
-            // fprintf (stderr, "a %ld", ito);
+            // fprintf(crm_stderr, "a %ld", ito);
 
             while (!((h[ito].value == 0.0)
                      || (h[ito].hash == thash
@@ -427,7 +427,7 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
             {
                 ito++;
                 if (ito >= hs) ito = 1;
-                // fprintf (stderr, "a %ld", ito);
+                // fprintf(crm_stderr, "a %ld", ito);
             }
 
             //
@@ -436,9 +436,9 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
 
             if (internal_trace)
             {
-                if (ifrom == ito) fprintf(stderr, "=");
-                if (ito < ifrom) fprintf(stderr, "<");
-                if (ito > ifrom) fprintf(stderr, ">");
+                if (ifrom == ito) fprintf(crm_stderr, "=");
+                if (ito < ifrom) fprintf(crm_stderr, "<");
+                if (ito > ifrom) fprintf(crm_stderr, ">");
             }
 
             h[ifrom].hash  = 0;
@@ -465,11 +465,11 @@ int crm_create_winnow_cssfile(char *cssfile, long buckets,
         0 };
 
     if (user_trace)
-        fprintf(stderr, "Opening file %s for writing\n", cssfile);
+        fprintf(crm_stderr, "Opening file %s for writing\n", cssfile);
     f = fopen(cssfile, "wb");
     if (!f)
     {
-        fprintf(stderr, "\n Couldn't open file %s for writing; errno=%d .\n",
+        fprintf(crm_stderr, "\n Couldn't open file %s for writing; errno=%d .\n",
                 cssfile, errno);
         return EXIT_FAILURE;
     }
@@ -483,7 +483,7 @@ int crm_create_winnow_cssfile(char *cssfile, long buckets,
     {
         if (fwrite(&feature, sizeof(feature), 1, f) != 1)
         {
-            fprintf(stderr, "\n Couldn't initialize Winnow .CSS file %s, "
+            fprintf(crm_stderr, "\n Couldn't initialize Winnow .CSS file %s, "
                             "errno=%d.\n",
                     cssfile,
                     errno);

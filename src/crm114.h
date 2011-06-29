@@ -50,6 +50,8 @@ extern char *outbuf;
 extern char *tempbuf;
 
 extern FILE *crm_stdin;
+extern FILE *crm_stdout;
+extern FILE *crm_stderr;
 
 
 
@@ -247,7 +249,7 @@ long crm_argslice(char *input, int *argc, char **argv);
 //
 //      Note that this is a long long- which limits us to no more than
 //      64 discrete flags.
-unsigned long long crm_flagparse(char *input, long inlen); //  the user input
+uint64_t crm_flagparse(char *input, long inlen); //  the user input
 
 
 //     get the next word in the input.  (note- the regex stops only when

@@ -713,7 +713,7 @@ int crm_expr_fscm_learn
     long doc_start;
 
     if (internal_trace)
-        fprintf(stderr, "entered crm_expr_fscm_learn (learn)\n");
+        fprintf(crm_stderr, "entered crm_expr_fscm_learn (learn)\n");
 
     //parse out .fscm file name
     crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
@@ -782,7 +782,7 @@ int crm_expr_fscm_learn
         }
     }
     if (internal_trace)
-        fprintf(stderr, "leaving crm_expr_fscm_learn (learn)\n");
+        fprintf(crm_stderr, "leaving crm_expr_fscm_learn (learn)\n");
     if (internal_trace && audit_structs(s))
     {
         return 0;
@@ -856,7 +856,7 @@ int crm_expr_fscm_classify
                     40, REG_EXTENDED))
     {
         //This should never ever happen
-        fprintf(stderr, "regex compilation problem! I'm about to segfault!\n");
+        fprintf(crm_stderr, "regex compilation problem! I'm about to segfault!\n");
     }
     else if (!crm_regexec(&regee, params, params_len, 2, pp, 0, NULL))
     {
@@ -899,9 +899,9 @@ int crm_expr_fscm_classify
 
     if (internal_trace)
     {
-        fprintf(stderr, "fail_on = %ld\n", fail_on);
+        fprintf(crm_stderr, "fail_on = %ld\n", fail_on);
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "filenames[%ld] = %s\n", i, filenames[i]);
+            fprintf(crm_stderr, "filenames[%ld] = %s\n", i, filenames[i]);
     }
     ;
 
@@ -931,7 +931,7 @@ int crm_expr_fscm_classify
     if (internal_trace)
     {
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "scores[%ld] = %f\n", i, scores[i]);
+            fprintf(crm_stderr, "scores[%ld] = %f\n", i, scores[i]);
     }
 
 
@@ -970,10 +970,10 @@ int crm_expr_fscm_classify
 
     if (internal_trace)
     {
-        fprintf(stderr, "suc_prob = %f\n", suc_prob);
-        fprintf(stderr, "tot_score = %f\n", tot_score);
+        fprintf(crm_stderr, "suc_prob = %f\n", suc_prob);
+        fprintf(crm_stderr, "tot_score = %f\n", tot_score);
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "scores[%ld] = %f\n", i, scores[i]);
+            fprintf(crm_stderr, "scores[%ld] = %f\n", i, scores[i]);
     }
 
     if (suc_prob > 0.5)  //test for nan as well

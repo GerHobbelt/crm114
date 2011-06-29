@@ -69,13 +69,13 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
     if (internal_trace)
     {
         int i;
-        fprintf(stderr, "\ncompiling regex '%s', len %ld, in hex: ",
+        fprintf(crm_stderr, "\ncompiling regex '%s', len %ld, in hex: ",
                 regex, regex_len);
         for (i = 0; i < regex_len; i++)
         {
-            fprintf(stderr, "%2X", regex[i]);
+            fprintf(crm_stderr, "%2X", regex[i]);
         }
-        fprintf(stderr, "\n");
+        fprintf(crm_stderr, "\n");
     }
 
     return regncomp(preg, regex, regex_len, cflags);
@@ -93,7 +93,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
         int cflags_temp = 0;
         int status_temp = 0;
 
-        if (internal_trace) fprintf(stderr, "Checking the regex cache for %s\n",
+        if (internal_trace) fprintf(crm_stderr, "Checking the regex cache for %s\n",
                                     regex);
         j = 0;
 #if defined(REGEX_CACHE_LINEAR_SEARCH)
@@ -111,7 +111,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
                 && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
             {
                 //  We Found It!   Put it into the _temp vars...
-                if (internal_trace) fprintf(stderr, "found it.\n");
+                if (internal_trace) fprintf(crm_stderr, "found it.\n");
                 ppreg_temp  = regex_cache[i].preg;
                 regex_temp  = regex_cache[i].regex;
                 rlen_temp   = regex_len;
@@ -132,7 +132,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
             && strncmp(regex_cache[i].regex, regex, regex_len) == 0)
         {
             //  We Found It!   Put it into the _temp vars...
-            if (internal_trace) fprintf(stderr, "found it.\n");
+            if (internal_trace) fprintf(crm_stderr, "found it.\n");
             ppreg_temp  = regex_cache[i].preg;
             regex_temp  = regex_cache[i].regex;
             rlen_temp   = regex_len;
@@ -151,13 +151,13 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
         {
             //  We didn't find it.  Do the compilation instead, putting
             //   the results into the _temp vars.
-            if (internal_trace) fprintf(stderr, "couldn't find it\n");
+            if (internal_trace) fprintf(crm_stderr, "couldn't find it\n");
             regex_temp = (char *)calloc((regex_len + 1), sizeof(regex_temp[0]));
             memcpy(regex_temp, regex, regex_len);
             rlen_temp = regex_len;
             cflags_temp = cflags;
             if (internal_trace)
-                fprintf(stderr, "Compiling %s (len %ld).\n", regex_temp, rlen_temp);
+                fprintf(crm_stderr, "Compiling %s (len %ld).\n", regex_temp, rlen_temp);
             ppreg_temp = (regex_t *)calloc(rtsize, sizeof(ppreg_temp[0]));
             if (ppreg_temp == NULL)
                 fatalerror("Unable to allocate a pattern register buffer header.  ",
@@ -253,7 +253,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
 
         //  Just about done.  Set up the return preg..
         if (internal_trace)
-            fprintf(stderr, " About to return\n");
+            fprintf(crm_stderr, " About to return\n");
         memcpy(preg, ppreg_temp, rtsize);
         return regex_cache[i].status;
     }
@@ -299,7 +299,7 @@ int crm_regexec(regex_t *preg, char *string, long string_len,
             fatalerror("Failed to decode 4 numeric cost parameters for approximate matching ", aux_string);
         }
         if (user_trace)
-            fprintf(stderr,
+            fprintf(crm_stderr,
                     "Using approximate match.  Costs: Subst %d Ins %d Max %d Del %d\n",
                     pblock.cost_subst,
                     pblock.cost_ins,
@@ -309,7 +309,7 @@ int crm_regexec(regex_t *preg, char *string, long string_len,
         //  now we can run the actual match
         i = reganexec(preg, string, string_len, &mblock, pblock, eflags);
         if (user_trace)
-            fprintf(stderr, "approximate Regex match returned %d .\n", i);
+            fprintf(crm_stderr, "approximate Regex match returned %d .\n", i);
         return i;
     }
 }

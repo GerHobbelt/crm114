@@ -134,13 +134,13 @@ int crm_dbg_report_function(int report_type, char *usermsg, int *retval)
     case _CRT_WARN:
     case _CRT_ERROR:
     case _CRT_ERRCNT:
-        fputs(usermsg, stderr);
-        fflush(stderr);
+        fputs(usermsg, crm_stderr);
+        fflush(crm_stderr);
         return FALSE;
 
     case _CRT_ASSERT:
-        fputs(usermsg, stderr);
-        fflush(stderr);
+        fputs(usermsg, crm_stderr);
+        fflush(crm_stderr);
         break;
     }
     return TRUE;
@@ -153,7 +153,7 @@ void crm_report_mem_analysis(void)
 
     if (!_CrtCheckMemory())
     {
-        fprintf(stderr, ">>>Failed to validate memory heap<<<\n");
+        fprintf(crm_stderr, ">>>Failed to validate memory heap<<<\n");
     }
 
     /* only dump leaks when there are in fact leaks */

@@ -482,7 +482,7 @@ AC_CHECK_FUNCS(floor fabs pow log logl log10 sqrt log2)
 AC_CHECK_FUNCS(isalnum isalpha isascii isblank iscntrl isdigit isgraph islower isprint ispunct isspace isupper isxdigit)
 AC_CHECK_FUNCS(setlocale)
 AC_CHECK_FUNCS(getopt getopt_long)
-AC_CHECK_FUNCS(__debugbreak)
+AC_CHECK_FUNCS(__debugbreak _set_output_format)
 AC_CHECK_FUNCS(sysconf)
 
 

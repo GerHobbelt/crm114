@@ -46,6 +46,13 @@ int prog_argc = 0;
 char **prog_argv = NULL;
 
 
+FILE *crm_stdin = NULL;
+FILE *crm_stderr = NULL;
+FILE *crm_stdout = NULL;
+
+
+
+
 
 
 static char version[] = "1.1";
@@ -53,12 +60,12 @@ static char version[] = "1.1";
 void helptext(void)
 {
     /* GCC warning: warning: string length ‘xxx’ is greater than the length ‘509’ ISO C89 compilers are required to support */
-    fprintf(stdout,
+    fprintf(crm_stdout,
             "osbf-util version %s - generic osbf file utility.\n"
             "Usage: osbfutil [options]... css-filename\n"
             "\n",
             VERSION);
-    fprintf(stdout,
+    fprintf(crm_stdout,
             "            -b   - brief; print only summary\n"
             "            -h   - print this help\n"
             "            -q   - quite mode; no warning messages\n"
@@ -68,7 +75,7 @@ void helptext(void)
             "            -S css-size  - same as -s, but round up to next\n"
             "                           2^n + 1 boundary.\n"
             "            -v   - print version and exit\n"
-            "            -D   - dump css file to stdout in CSV format.\n"
+            "            -D   - dump css file to crm_stdout in CSV format.\n"
             "            -R csv-file  - create and restore css from CSV.\n"
             "                           Options -s and -S are ignored when"
             " restoring.\n"
@@ -106,6 +113,10 @@ int main(int argc, char **argv)
     //    the following for crm114.h's happiness
 
     char *newinputbuf;
+
+	    crm_stdin = stdin;
+	    crm_stdout = stdout;
+	    crm_stderr = stderr;
 
     //   copy argc and argv into global statics...
     prog_argc = argc;
@@ -148,7 +159,7 @@ int main(int argc, char **argv)
 
                     // count lines to determine the number of buckets and check CSV format
                     if (user_trace)
-                        fprintf(stderr, "Opening OSBF file %s for read\n", optarg);
+                        fprintf(crm_stderr, "Opening OSBF file %s for read\n", optarg);
                     if ((f = fopen(optarg, "rb")) != NULL)
                     {
                         // try to find the header reading first 2 "buckets"
@@ -156,14 +167,14 @@ int main(int argc, char **argv)
                             (f, "%lu;%lu;%lu\n", (unsigned long *)h.version,
                              &(h.flags), &(h.buckets_start)) != 3)
                         {
-                            fprintf(stderr,
+                            fprintf(crm_stderr,
                                     "\n %s is not in the right CSV format.\n",
                                     optarg);
                             exit(EXIT_FAILURE);
                         }
                         if (*((unsigned long *)h.version) != OSBF_VERSION)
                         {
-                            fprintf(stderr,
+                            fprintf(crm_stderr,
                                     "\n %s is not an OSBF CSV file.\n", optarg);
                             fclose(f);
                             exit(EXIT_FAILURE);
@@ -171,7 +182,7 @@ int main(int argc, char **argv)
                         if (fscanf(f, "%lu;%lu;%lu\n", &(h.buckets), &hash, &value)
                             != 3)
                         {
-                            fprintf(stderr,
+                            fprintf(crm_stderr,
                                     "\n %s is not in the right CSV format.\n",
                                     optarg);
                             exit(EXIT_FAILURE);
@@ -185,7 +196,7 @@ int main(int argc, char **argv)
                                 sparse_spectrum_file_length++;
                             else
                             {
-                                fprintf(stderr,
+                                fprintf(crm_stderr,
                                         "\n %s is not in the right CSV format.\n",
                                         optarg);
                                 exit(EXIT_FAILURE);
@@ -195,7 +206,7 @@ int main(int argc, char **argv)
                         // check the number of buckets
                         if (sparse_spectrum_file_length != h.buckets)
                         {
-                            fprintf(stderr,
+                            fprintf(crm_stderr,
                                     "\n Wrong number of buckets! %s is not in the right CSV format.\n",
                                     optarg);
                             exit(EXIT_FAILURE);
@@ -204,7 +215,7 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        fprintf(stderr,
+                        fprintf(crm_stderr,
                                 "\n Couldn't open csv file %s; errno=%d.\n",
                                 optarg, errno);
                         exit(EXIT_FAILURE);
@@ -221,21 +232,21 @@ int main(int argc, char **argv)
             case 'S':          // same as above but round up to next 2^n+1
                 if (restore)
                 {
-                    fprintf(stderr,
+                    fprintf(crm_stderr,
                             "\nOptions -s, -S ignored when restoring.\n");
                     break;
                 }
                 if (sscanf(optarg, "%ld", &sparse_spectrum_file_length))
                 {
                     if (!quiet)
-                        fprintf(stderr,
+                        fprintf(crm_stderr,
                                 "\nOverride css creation length to %ld\n",
                                 sparse_spectrum_file_length);
                     user_set_css_length = 1;
                 }
                 else
                 {
-                    fprintf(stderr,
+                    fprintf(crm_stderr,
                             "On -%c flag: Missing or incomprehensible number of buckets.\n",
                             opt);
                     exit(EXIT_FAILURE);
@@ -256,12 +267,12 @@ int main(int argc, char **argv)
                 if (user_trace == 0)
                 {
                     user_trace = 1;
-                    fprintf(stderr, "User tracing on");
+                    fprintf(crm_stderr, "User tracing on");
                 }
                 else
                 {
                     user_trace = 0;
-                    fprintf(stderr, "User tracing off");
+                    fprintf(crm_stderr, "User tracing off");
                 }
                 break;
 
@@ -269,19 +280,19 @@ int main(int argc, char **argv)
                 if (internal_trace == 0)
                 {
                     internal_trace = 1;
-                    fprintf(stderr, "Internal tracing on");
+                    fprintf(crm_stderr, "Internal tracing on");
                 }
                 else
                 {
                     internal_trace = 0;
-                    fprintf(stderr, "Internal tracing off");
+                    fprintf(crm_stderr, "Internal tracing off");
                 }
                 break;
 
             case 'v':
-                fprintf(stderr, " This is osbf-util, version %s\n", version);
-                fprintf(stderr, " Copyright 2004-2007 William S. Yerazunis.\n");
-                fprintf(stderr,
+                fprintf(crm_stderr, " This is osbf-util, version %s\n", version);
+                fprintf(crm_stderr, " Copyright 2004-2007 William S. Yerazunis.\n");
+                fprintf(crm_stderr,
                         " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
                 exit(EXIT_SUCCESS);
 
@@ -311,14 +322,14 @@ int main(int argc, char **argv)
         {
             if (restore)
             {
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "\n.CSS file %s exists! Restore operation aborted.\n",
                         cssfile);
                 exit(EXIT_FAILURE);
             }
             hfsize = statbuf.st_size;
             if (!quiet && user_set_css_length)
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "\n.CSS file %s exists; -s, -S options ignored.\n",
                         cssfile);
         }
@@ -326,7 +337,7 @@ int main(int argc, char **argv)
         {
             //      file didn't exist... create it
             if (!quiet && !restore)
-                fprintf(stdout, "\nHad to create .CSS file %s with %lu buckets\n",
+                fprintf(crm_stdout, "\nHad to create .CSS file %s with %lu buckets\n",
                         cssfile, sparse_spectrum_file_length);
             if (crm_osbf_create_cssfile
                 (cssfile, sparse_spectrum_file_length, OSBF_VERSION, 0,
@@ -345,14 +356,14 @@ int main(int argc, char **argv)
                                NULL);
         if (header == MAP_FAILED)
         {
-            fprintf(stderr,
+            fprintf(crm_stderr,
                     "\n Couldn't mmap file %s into memory; errno=%d(%s).\n",
                     cssfile, errno, errno_descr(errno));
             exit(EXIT_FAILURE);
         }
         if (*((unsigned long *)(header->version)) != OSBF_VERSION)
         {
-            fprintf(stderr,
+            fprintf(crm_stderr,
                     "\n %s is the wrong version. We're expecting a %s css file.\n",
                     cssfile, CSS_version_name[OSBF_VERSION]);
             crm_munmap_file((void *)header);
@@ -362,7 +373,7 @@ int main(int argc, char **argv)
         hashes = (OSBF_FEATUREBUCKET_STRUCT *)header + header->buckets_start;
         if (hashes == MAP_FAILED)
         {
-            fprintf(stderr,
+            fprintf(crm_stderr,
                     "\n Couldn't open RW file %s; errno=%d(%s).\n", cssfile, errno, errno_descr(errno));
             exit(EXIT_FAILURE);
         }
@@ -379,7 +390,7 @@ int main(int argc, char **argv)
             for (i = 0; i < hfsize; i++)
             {
                 p = (unsigned long *)&bucket[i];
-                printf("%lu;%lu;%lu\n", p[0], p[1], p[2]);
+                fprintf(crm_stdout, "%lu;%lu;%lu\n", p[0], p[1], p[2]);
             }
         }
 
@@ -394,7 +405,7 @@ int main(int argc, char **argv)
             //
             if ((f = fopen(csvfile, "rb")) == NULL)
             {
-                fprintf(stderr, "\n Couldn't open csv file %s; errno=%d(%s).\n",
+                fprintf(crm_stderr, "\n Couldn't open csv file %s; errno=%d(%s).\n",
                         csvfile, errno, errno_descr(errno));
                 exit(EXIT_FAILURE);
             }
@@ -448,31 +459,31 @@ int main(int argc, char **argv)
             version_index = *((unsigned long *)header->version);
             if (version_index < 0 || version_index > UNKNOWN_VERSION)
                 version_index = UNKNOWN_VERSION;
-            fprintf(stdout, "\n Sparse spectra file %s statistics:\n", cssfile);
-            fprintf(stdout, "\n CSS file version                 : %12s",
+            fprintf(crm_stdout, "\n Sparse spectra file %s statistics:\n", cssfile);
+            fprintf(crm_stdout, "\n CSS file version                 : %12s",
                     CSS_version_name[version_index]);
-            fprintf(stdout, "\n Header size (bytes)              : %12ld",
+            fprintf(crm_stdout, "\n Header size (bytes)              : %12ld",
                     header->buckets_start * sizeof(OSBF_FEATUREBUCKET_STRUCT));
-            fprintf(stdout, "\n Bucket size (bytes)              : %12ld",
+            fprintf(crm_stdout, "\n Bucket size (bytes)              : %12ld",
                     (long)sizeof(OSBF_FEATUREBUCKET_STRUCT));
-            fprintf(stdout, "\n Total available buckets          : %12ld",
+            fprintf(crm_stdout, "\n Total available buckets          : %12ld",
                     header->buckets);
-            fprintf(stdout, "\n Total buckets in use             : %12ld",
+            fprintf(crm_stdout, "\n Total buckets in use             : %12ld",
                     fbuckets);
-            fprintf(stdout, "\n Number of trainings              : %12lu",
+            fprintf(crm_stdout, "\n Number of trainings              : %12lu",
                     header->learnings);
-            fprintf(stdout, "\n Total buckets with value >= max  : %12ld",
+            fprintf(crm_stdout, "\n Total buckets with value >= max  : %12ld",
                     ofbins);
-            fprintf(stdout, "\n Total hashed datums in file      : %12lld", sum);
-            fprintf(stdout, "\n Average datums per bucket        : %12.2f",
+            fprintf(crm_stdout, "\n Total hashed datums in file      : %12lld", sum);
+            fprintf(crm_stdout, "\n Average datums per bucket        : %12.2f",
                     (fbuckets > 0) ? (sum * 1.0) / (fbuckets * 1.0) : 0.0);
-            fprintf(stdout, "\n Number of chains                 : %12ld",
+            fprintf(crm_stdout, "\n Number of chains                 : %12ld",
                     nchains);
-            fprintf(stdout, "\n Maximum length of overflow chain : %12ld",
+            fprintf(crm_stdout, "\n Maximum length of overflow chain : %12ld",
                     maxchain);
-            fprintf(stdout, "\n Average length of overflow chain : %12.2f",
+            fprintf(crm_stdout, "\n Average length of overflow chain : %12.2f",
                     nchains > 0 ? (totchain * 1.0) / (nchains * 1.0) : 0.0);
-            fprintf(stdout, "\n Average packing density          : %12.2f\n",
+            fprintf(crm_stdout, "\n Average packing density          : %12.2f\n",
                     (fbuckets * 1.0) / (header->buckets * 1.0));
             for (i = 0; i < OSBF_FEATUREBUCKET_VALUE_MAX; i++)
                 bcounts[i] = 0;
@@ -488,33 +499,33 @@ int main(int argc, char **argv)
                 {
                     if (bcounts[i] > 0)
                     {
-                        fprintf(stdout, "\n bin value %8ld found %9ld times",
+                        fprintf(crm_stdout, "\n bin value %8ld found %9ld times",
                                 i, bcounts[i]);
                     }
                 }
             }
 
-            fprintf(stdout, "\n");
+            fprintf(crm_stdout, "\n");
             cmdloop = 1;
             while (!report_only && cmdloop)
             {
                 // clear command buffer
                 cmdchr[0] = '\0';
-                fprintf(stdout, "Options:\n");
-                fprintf(stdout, "   Z n - zero bins at or below a value\n");
-                fprintf(stdout, "   S n - subtract a constant from all bins\n");
-                fprintf(stdout, "   D n - divide all bins by a constant\n");
-                fprintf(stdout, "   R - rescan\n");
-                fprintf(stdout, "   P - pack\n");
-                fprintf(stdout, "   Q - quit\n");
-                fprintf(stdout, ">>> ");
-                clearerr(stdin);
-                fscanf(stdin, "%[^\n]", cmdstr);
-                fscanf(stdin, "%c", crapchr);
+                fprintf(crm_stdout, "Options:\n");
+                fprintf(crm_stdout, "   Z n - zero bins at or below a value\n");
+                fprintf(crm_stdout, "   S n - subtract a constant from all bins\n");
+                fprintf(crm_stdout, "   D n - divide all bins by a constant\n");
+                fprintf(crm_stdout, "   R - rescan\n");
+                fprintf(crm_stdout, "   P - pack\n");
+                fprintf(crm_stdout, "   Q - quit\n");
+                fprintf(crm_stdout, ">>> ");
+                clearerr(crm_stdin);
+                fscanf(crm_stdin, "%[^\n]", cmdstr);
+                fscanf(crm_stdin, "%c", crapchr);
                 fields = sscanf(cmdstr, "%s %lf", cmdchr, &cmdval);
                 if (strlen((char *)cmdchr) != 1)
                 {
-                    fprintf(stdout, "Unknown command: %s\n", cmdchr);
+                    fprintf(crm_stdout, "Unknown command: %s\n", cmdchr);
                     continue;
                 }
                 switch (tolower((int)cmdchr[0]))
@@ -522,12 +533,12 @@ int main(int argc, char **argv)
                 case 'z':
                     if (fields != 2)
                     {
-                        fprintf(stdout,
+                        fprintf(crm_stdout,
                                 "Z command requires a numeric argument!\n");
                     }
                     else
                     {
-                        fprintf(stdout, "Working...");
+                        fprintf(crm_stdout, "Working...");
                         for (i = 0; i < header->buckets; i++)
                         {
                             if (GET_BUCKET_VALUE(hashes[i]) <= cmdval)
@@ -535,20 +546,20 @@ int main(int argc, char **argv)
                                 BUCKET_RAW_VALUE(hashes[i]) = 0;
                             }
                         }
-                        fprintf(stdout, "done.\n");
+                        fprintf(crm_stdout, "done.\n");
                     }
                     break;
 
                 case 's':
                     if (fields != 2)
                     {
-                        fprintf(stdout,
+                        fprintf(crm_stdout,
                                 "S command requires a numeric argument!\n");
                     }
                     else
                     {
                         long val = (long)cmdval;
-                        fprintf(stdout, "Working...");
+                        fprintf(crm_stdout, "Working...");
                         for (i = 0; i < header->buckets; i++)
                         {
                             if (GET_BUCKET_VALUE(hashes[i]) > val)
@@ -561,7 +572,7 @@ int main(int argc, char **argv)
                                 BUCKET_RAW_VALUE(hashes[i]) = 0;
                             }
                         }
-                        fprintf(stdout, "done.\n");
+                        fprintf(crm_stdout, "done.\n");
                     }
                     break;
 
@@ -570,22 +581,22 @@ int main(int argc, char **argv)
                         long val = (long)cmdval;
                         if (fields != 2)
                         {
-                            fprintf(stdout,
+                            fprintf(crm_stdout,
                                     "D command requires a numeric argument!\n");
                         }
                         else if (val == 0)
                         {
-                            fprintf(stdout, "You can't divide by zero, nimrod!\n");
+                            fprintf(crm_stdout, "You can't divide by zero, nimrod!\n");
                         }
                         else
                         {
-                            fprintf(stdout, "Working...");
+                            fprintf(crm_stdout, "Working...");
                             for (i = 0; i < header->buckets; i++)
                             {
                                 BUCKET_RAW_VALUE(hashes[i]) =
                                     GET_BUCKET_VALUE(hashes[i]) / val;
                             }
-                            fprintf(stdout, "done.\n");
+                            fprintf(crm_stdout, "done.\n");
                         }
                     }
                     break;
@@ -596,19 +607,19 @@ int main(int argc, char **argv)
                     break;
 
                 case 'p':
-                    fprintf(stdout, "Working...");
+                    fprintf(crm_stdout, "Working...");
                     crm_osbf_packcss(header, 0, header->buckets - 1);
                     zloop = 1;
                     cmdloop = 0;
                     break;
 
                 case 'q':
-                    fprintf(stdout, "Bye! \n");
+                    fprintf(crm_stdout, "Bye! \n");
                     cmdloop = 0;
                     break;
 
                 default:
-                    fprintf(stdout, "Unknown command: %c\n", cmdchr[0]);
+                    fprintf(crm_stdout, "Unknown command: %c\n", cmdchr[0]);
                     break;
                 }
             }

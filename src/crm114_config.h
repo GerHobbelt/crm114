@@ -227,7 +227,7 @@
 
 //    define the "block ratio" of how of a memory data window we're
 //    willing to suck in from a minion process before we block on
-//    sucking; the un-sucked part just waits in the minion's stdout
+//    sucking; the un-sucked part just waits in the minion's crm_stdout
 //    buffer (and causes the minion to block on output).  Normally a
 //    factor of 2 (1/4th of the size of a full memory window, or 2
 //    megabytes in the default configuraton) is sufficient.

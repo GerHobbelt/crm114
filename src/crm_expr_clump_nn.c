@@ -369,7 +369,7 @@ static void audit_nns(CLUSTEROR_STATE_STRUCT *s)
     if (f)
     {
         for (i = 0; i < s->header->n_cor_tokens; i++)
-            fprintf(stderr, "nn(%ld) = %ld\n",
+            fprintf(crm_stderr, "nn(%ld) = %ld\n",
                     i, s->cor_tokens[i].nearest_neihbor);
         fatalerror("We're pooped!","");
     }
@@ -420,7 +420,7 @@ static void add_cooc(CLUSTEROR_STATE_STRUCT *s,
             > score_cooccurance(s, j,
 	  s->cor_tokens[ s->cor_tokens[cj].nearest_neihbor ].token)	)
         {
-            //  if(internal_trace) fprintf(stderr, "%ld is %ld's new nearest neighbor!\n", ci, cj);
+            //  if(internal_trace) fprintf(crm_stderr, "%ld is %ld's new nearest neighbor!\n", ci, cj);
             if (s->old_nearest_neihbors[cj] == NULL_INDEX)
                 s->old_nearest_neihbors[cj] = s->cor_tokens[cj].nearest_neihbor;
             s->cor_tokens[cj].nearest_neihbor = ci;
@@ -559,14 +559,14 @@ static void delete_from_hash(CLUSTEROR_STATE_STRUCT *s, index_t token,
         if (i == NULL_INDEX)
         {
             fprintf(
-                stderr,
+                crm_stderr,
                 "NNCluster: tried to delete non-existent hash code. Token: %ld, Hash: %lu\n",
                 s->header->least_recent_token,
                 key);
-            fprintf(stderr, "Pursued this chain:\n");
+            fprintf(crm_stderr, "Pursued this chain:\n");
             for (i = ((unsigned long)key) % first_hash_level_size;
                  i != NULL_INDEX; i = s->hash_table[i].next_in_hash_chain)
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "   i = %ld, hash = %lu, token = %ld, next = %ld\n", i,
                         s->hash_table[i].key, s->hash_table[i].token,
                         s->hash_table[i].next_in_hash_chain);
@@ -582,16 +582,16 @@ static void delete_from_hash(CLUSTEROR_STATE_STRUCT *s, index_t token,
                 //  by the size of the first level, the behavior has no
                 //  explanation
                 fprintf(
-                    stderr,
+                    crm_stderr,
                     "Couldn't find proper hash key to delete, but we found the write token number, gonna try and press on, Token: %ld, Hash: %lu\n",
                     s->header->least_recent_token,
                     key);
-                fprintf(stderr, "Pursued this chain:\n");
+                fprintf(crm_stderr, "Pursued this chain:\n");
                 for (k = ((unsigned long)key) % first_hash_level_size;
                      k != NULL_INDEX; 
                      k = s->hash_table[k].next_in_hash_chain)
                     fprintf(
-                        stderr,
+                        crm_stderr,
                         "       i = %ld, hash = %lu, token = %ld, next = %ld\n",
                         k,
                         s->hash_table[k].key,
@@ -718,7 +718,7 @@ static void audit_frequency_list(CLUSTEROR_STATE_STRUCT *s)
 {
     long i, j, a, b;
 
-    //fprintf(stderr, "auditing frequency list...\n");
+    //fprintf(crm_stderr, "auditing frequency list...\n");
     for (a = s->header->least_frequent_token, i = 0; 
     a != NULL_INDEX;
          a = s->tokens[a].more_common, i++)
@@ -726,7 +726,7 @@ static void audit_frequency_list(CLUSTEROR_STATE_STRUCT *s)
         if (s->tokens[a].more_common != NULL_INDEX
             && s->tokens[s->tokens[a].more_common].count < s->tokens[a].count)
         {
-            fprintf(stderr, "The frequency list is out of order!\n");
+            fprintf(crm_stderr, "The frequency list is out of order!\n");
             print_header(s);
         fatalerror("We're pooped!","");
         }
@@ -737,7 +737,7 @@ static void audit_frequency_list(CLUSTEROR_STATE_STRUCT *s)
         if (j < i)
         {
             fprintf(
-                stderr,
+                crm_stderr,
                 "There's a token in the frequency list twice, which means a loop!\n");
             print_header(s);
         fatalerror("We're pooped!","");
@@ -748,7 +748,7 @@ static void audit_frequency_list(CLUSTEROR_STATE_STRUCT *s)
              ;
         if (j <= i)
         {
-            fprintf(stderr,
+            fprintf(crm_stderr,
                     "There's a break going backwards in the frequency list!\n");
             print_header(s);
         fatalerror("We're pooped!","");
@@ -756,7 +756,7 @@ static void audit_frequency_list(CLUSTEROR_STATE_STRUCT *s)
         if (b != NULL_INDEX)
         {
             fprintf(
-                stderr,
+                crm_stderr,
                 "There's a backwards inconsistancy in the frequency list!\n");
             print_header(s);
         fatalerror("We're pooped!","");
@@ -764,7 +764,7 @@ static void audit_frequency_list(CLUSTEROR_STATE_STRUCT *s)
     }
     if (i < s->header->n_tokens)
     {
-        fprintf(stderr, "Not all tokens are in the frequency list!\n");
+        fprintf(crm_stderr, "Not all tokens are in the frequency list!\n");
         print_header(s);
         fatalerror("We're pooped!","");
     }
@@ -777,9 +777,9 @@ static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t,
     long a, b;
     COOCCURRENCE_SCORE_TYPE count = (s->tokens[t].count += c);
 
-    //  if(internal_trace) fprintf(stderr, "entered add_token_count\n");
+    //  if(internal_trace) fprintf(crm_stderr, "entered add_token_count\n");
     //  one line for loops are fun!
-    //  fprintf(stderr,"1\n");
+    //  fprintf(crm_stderr,"1\n");
     //  audit_frequency_list(s);
 
     for (b = t;
@@ -842,7 +842,7 @@ static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t,
 
                 s->cor_tokens[s->tokens[t].cor_index].token = t;
                 wipe_cooccurences(s, s->tokens[t].cor_index);
-                //                        if(internal_trace) fprintf(stderr, "gave token %ld cor_index %ld\n", t, s->tokens[t].cor_index);
+                //                        if(internal_trace) fprintf(crm_stderr, "gave token %ld cor_index %ld\n", t, s->tokens[t].cor_index);
             }
         }
         else                    //we're still filling cor token slots
@@ -856,7 +856,7 @@ static void add_token_count(CLUSTEROR_STATE_STRUCT *s, index_t t,
             s->cor_tokens[a].nearest_neihbor = NULL_INDEX;
             s->cor_tokens[a].cluster = NULL_INDEX;
             s->cor_tokens[a].edges = NULL_INDEX;
-            //            if(internal_trace) fprintf(stderr, "gave token %ld cor_index %ld\n", t, a);
+            //            if(internal_trace) fprintf(crm_stderr, "gave token %ld cor_index %ld\n", t, a);
         }
     }
 }
@@ -904,7 +904,7 @@ static void hash_insert(CLUSTEROR_STATE_STRUCT *s, long hash_key,
     i = s->header->first_unused_hash_slot;
     if (i == NULL_INDEX)
     {
-        fprintf(stderr, "Ran out of hash slots!\n");
+        fprintf(crm_stderr, "Ran out of hash slots!\n");
         diagnose_hash_table(s);
         fatalerror("We're pooped!","");
     }
@@ -958,7 +958,7 @@ static void diagnose_hash_table(CLUSTEROR_STATE_STRUCT *s)
     i != NULL_INDEX;
          i = s->hash_table[i].next_in_hash_chain)
         if (i < s->header->max_tokens / 2)
-            fprintf(stderr, "poop!\n");
+            fprintf(crm_stderr, "poop!\n");
         else
         {
             c++;
@@ -966,7 +966,7 @@ static void diagnose_hash_table(CLUSTEROR_STATE_STRUCT *s)
         }
 
     fprintf(
-        stderr,
+        crm_stderr,
         "%ld hash slot accounted for, %ld in free list, %ld root nodes in use, s->header->first_unused_hash_slot = %ld, longest_chain = %ld\n",
         c,
         f,
@@ -994,12 +994,12 @@ static void learning_tokenize(CLUSTEROR_STATE_STRUCT *s,
         l = match.rm_eo - match.rm_so;
         if (0 && internal_trace)
         {
-            fprintf(stderr, "about to look up:");
+            fprintf(crm_stderr, "about to look up:");
             for (i = match.rm_so; i < match.rm_eo; i++)
-                fprintf(stderr, "%c", text[i]);
-            fprintf(stderr, ", the hash of which is 0x%08lX",
+                fprintf(crm_stderr, "%c", text[i]);
+            fprintf(crm_stderr, ", the hash of which is 0x%08lX",
                     (unsigned long)strnhash(&text[match.rm_so], l));
-            fprintf(stderr, ", the mod %ld of which is %lu\n",
+            fprintf(crm_stderr, ", the mod %ld of which is %lu\n",
                     s->header->max_tokens, 
 			(unsigned long)(strnhash(&text[match.rm_so], l) % s->header->max_tokens));
         }
@@ -1018,11 +1018,11 @@ static void learning_tokenize(CLUSTEROR_STATE_STRUCT *s,
         }
         if (0 && internal_trace)
         {
-            fprintf(stderr, "tokenized:");
+            fprintf(crm_stderr, "tokenized:");
             for (i = match.rm_so; i < match.rm_eo; i++)
-                fprintf(stderr, "%c", text[i]);
+                fprintf(crm_stderr, "%c", text[i]);
             fprintf(
-                stderr,
+                crm_stderr,
                 ", hash: 0x%08lX, token:%ld, stored_hash: %ld, second hashlookup: %ld\n",
                 (unsigned long)strnhash(&text[match.rm_so], l),
                 *(t - 1),
@@ -1034,51 +1034,51 @@ static void learning_tokenize(CLUSTEROR_STATE_STRUCT *s,
         text += match.rm_eo;
         len -= match.rm_eo;
     }
-    fprintf(stderr,
+    fprintf(crm_stderr,
             "NNCluster: Not enough space given to tokenizer! Truncated text.\n");
 }
 
 static void print_header(CLUSTEROR_STATE_STRUCT *s)
 {
-    fprintf(stderr, "   s->header->hash_slots_offset = %ld\n",
+    fprintf(crm_stderr, "   s->header->hash_slots_offset = %ld\n",
             s->header->hash_slots_offset);
-    fprintf(stderr, "   s->header->tokens_offset = %ld\n",
+    fprintf(crm_stderr, "   s->header->tokens_offset = %ld\n",
             s->header->tokens_offset);
-    fprintf(stderr, "   s->header->cor_tokens_offset = %ld\n",
+    fprintf(crm_stderr, "   s->header->cor_tokens_offset = %ld\n",
             s->header->cor_tokens_offset);
-    fprintf(stderr, "   s->header->cooccurences_offset = %ld\n",
+    fprintf(crm_stderr, "   s->header->cooccurences_offset = %ld\n",
             s->header->cooccurences_offset);
-    fprintf(stderr, "   s->header->graph_offset = %ld\n",
+    fprintf(crm_stderr, "   s->header->graph_offset = %ld\n",
             s->header->graph_offset);
-    fprintf(stderr, "   s->header->clusters_offset = %ld\n",
+    fprintf(crm_stderr, "   s->header->clusters_offset = %ld\n",
             s->header->clusters_offset);
-    fprintf(stderr, "   s->clusters[0].next_free = %ld\n",
+    fprintf(crm_stderr, "   s->clusters[0].next_free = %ld\n",
             s->clusters[0].next_free);
-    fprintf(stderr, "   s->hash_table[199999].next_in_hash_chain = %ld\n",
+    fprintf(crm_stderr, "   s->hash_table[199999].next_in_hash_chain = %ld\n",
             s->hash_table[199999].next_in_hash_chain);
-    fprintf(stderr, "   s->header->n_tokens = %ld\n", s->header->n_tokens);
-    fprintf(stderr, "   s->header->n_cor_tokens = %ld\n",
+    fprintf(crm_stderr, "   s->header->n_tokens = %ld\n", s->header->n_tokens);
+    fprintf(crm_stderr, "   s->header->n_cor_tokens = %ld\n",
             s->header->n_cor_tokens);
-    fprintf(stderr, "   s->header->n_clusters = %ld\n", s->header->n_clusters);
-    fprintf(stderr, "   next_free_cor_token = %ld\n",
+    fprintf(crm_stderr, "   s->header->n_clusters = %ld\n", s->header->n_clusters);
+    fprintf(crm_stderr, "   next_free_cor_token = %ld\n",
             s->header->next_free_cor_token);
-    fprintf(stderr, "   first_unused_token_slot = %ld\n",
+    fprintf(crm_stderr, "   first_unused_token_slot = %ld\n",
             s->header->first_unused_token_slot);
-    fprintf(stderr, "   first_unused_hash_slot = %ld\n",
+    fprintf(crm_stderr, "   first_unused_hash_slot = %ld\n",
             s->header->first_unused_hash_slot);
-    fprintf(stderr, "   first_unused_cluster_slot = %ld\n",
+    fprintf(crm_stderr, "   first_unused_cluster_slot = %ld\n",
             s->header->first_unused_cluster_slot);
-    fprintf(stderr, "   last_unused_cluster_slot = %ld\n",
+    fprintf(crm_stderr, "   last_unused_cluster_slot = %ld\n",
             s->header->last_unused_cluster_slot);
-    fprintf(stderr, "   most_recent_token = %ld\n",
+    fprintf(crm_stderr, "   most_recent_token = %ld\n",
             s->header->most_recent_token);
-    fprintf(stderr, "   least_recent_token = %ld\n",
+    fprintf(crm_stderr, "   least_recent_token = %ld\n",
             s->header->least_recent_token);
-    fprintf(stderr, "   least_frequent_token = %ld\n",
+    fprintf(crm_stderr, "   least_frequent_token = %ld\n",
             s->header->least_frequent_token);
-    fprintf(stderr, "   least_frequent_cor_token = %ld\n",
+    fprintf(crm_stderr, "   least_frequent_cor_token = %ld\n",
             s->header->least_frequent_cor_token);
-    fprintf(stderr, "   first_unused_edge = %ld\n",
+    fprintf(crm_stderr, "   first_unused_edge = %ld\n",
             s->header->first_unused_edge);
 
     if (s->hash_table[199999].next_in_hash_chain != NULL_INDEX)
@@ -1217,26 +1217,26 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 
         //  account for token hash
         if (internal_trace)
-            fprintf(stderr, "hash offset ought to be %ld bytes\n", file_size);
+            fprintf(crm_stderr, "hash offset ought to be %ld bytes\n", file_size);
         file_size += 2 * n_tokens * sizeof(HASH_NODE_STRUCT);
         file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
 
         //  accoutn for tokens
         if (internal_trace)
-            fprintf(stderr, "token offset ought to be %ld bytes\n", file_size);
+            fprintf(crm_stderr, "token offset ought to be %ld bytes\n", file_size);
         file_size += n_tokens * sizeof(TOKEN_STRUCT);
         file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
 
         //  accoutn for cor_tokens
         if (internal_trace)
-            fprintf(stderr, "corellated token offset ought to be %ld bytes\n",
+            fprintf(crm_stderr, "corellated token offset ought to be %ld bytes\n",
                     file_size);
         file_size += n_cor_tokens * sizeof(COR_TOKEN_STRUCT);
         file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
 
         //  account for cooccurance scores
         if (internal_trace)
-            fprintf(stderr, "cooccurence offset ought to be %ld bytes\n",
+            fprintf(crm_stderr, "cooccurence offset ought to be %ld bytes\n",
                     file_size);
         file_size +=
             n_cor_tokens * (n_cor_tokens +
@@ -1245,18 +1245,18 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 
         //  account for graph
         if (internal_trace)
-            fprintf(stderr, "graph offset ought to be %ld bytes\n", file_size);
+            fprintf(crm_stderr, "graph offset ought to be %ld bytes\n", file_size);
         file_size += 4 + (3 * n_cor_tokens + 2) * sizeof(EDGE_STRUCT);
         file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
         //account for clusters
         if (internal_trace)
-            fprintf(stderr, "cluster offset ought to be %ld bytes\n",
+            fprintf(crm_stderr, "cluster offset ought to be %ld bytes\n",
                     file_size);
         file_size += MAX_CLUSTERS * sizeof(CLUSTER_STRUCT);
         file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
 
         if (internal_trace)
-            fprintf(stderr, "new file size is %ld bytes\n", file_size);
+            fprintf(crm_stderr, "new file size is %ld bytes\n", file_size);
 
         f = fopen(filename, "wb");
         if (f != NULL)
@@ -1272,7 +1272,7 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
         }
 
         if (internal_trace)
-            fprintf(stderr, "\ndone writing file, about to mmap\n");
+            fprintf(crm_stderr, "\ndone writing file, about to mmap\n");
         s->header =
             crm_mmap_file(filename, 0, file_size, PROT_READ | PROT_WRITE,
                           MAP_SHARED, NULL /*&actual_file_size */);
@@ -1304,7 +1304,7 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
         s->header->max_cor_tokens = n_cor_tokens;
         if (internal_trace)
             fprintf(
-                stderr,
+                crm_stderr,
                 "about to make a new cluster state allowing for %ld tokens\n",
                 s->header->max_tokens);
         make_new_clusteror_state(s);
@@ -1361,7 +1361,7 @@ static void unmap_file_for_learn(CLUSTEROR_STATE_STRUCT *s)
 {
     if (internal_trace)
     {
-        fprintf(stderr, "unmapping\n");
+        fprintf(crm_stderr, "unmapping\n");
         //print_header(s);
     }
     tempbuf -= 4 * ((s->header->n_cor_tokens + 31) / 32);
@@ -1498,7 +1498,7 @@ static void score_document_flat(CLUSTEROR_STATE_STRUCT *s, index_t *doc,
             seen_set[seen_set_len++] = doc[i];
         }
     if (internal_trace)
-        fprintf(stderr, "saw %ld unique tokens\n", seen_set_len);
+        fprintf(crm_stderr, "saw %ld unique tokens\n", seen_set_len);
     add_N(s, sense);
     for (i = 0; i < seen_set_len; i++)
         add_occ(s, seen_set[i], sense);
@@ -1514,7 +1514,7 @@ static int check_if_connected(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
     index_t a, b;
 
     if (internal_trace)
-        fputc('c', stderr);
+        fputc('c', crm_stderr);
 
     *stack_ptr++ = i;
     while (stack_ptr > stack)
@@ -1542,7 +1542,7 @@ static int check_if_connected(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 static void change_cluster(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t c)
 {
     if (c >= MAX_CLUSTERS)
-        fprintf(stderr,
+        fprintf(crm_stderr,
                 "asked to make a wonkee cluster assignment! i = %ld, c = %ld\n",
                 i, c);
 
@@ -1563,7 +1563,7 @@ static long cluster_audit(CLUSTEROR_STATE_STRUCT *s)
     long   *cluster_closed = (long *)inbuf;
     index_t a, b;
 
-    fprintf(stderr, "Auditing clusters ...\n");
+    fprintf(crm_stderr, "Auditing clusters ...\n");
 
     b = (MAX_CLUSTERS + 31) / 32;
     for (a = 0; a < b; a++)
@@ -1574,7 +1574,7 @@ static long cluster_audit(CLUSTEROR_STATE_STRUCT *s)
             s->cor_tokens[s->cor_tokens[a].nearest_neihbor].cluster)
             b++;
     fprintf(
-        stderr,
+        crm_stderr,
         "Found %ld tokens which were not in the same cluser as their nearest neighbors.\n",
         b);
 
@@ -1582,7 +1582,7 @@ static long cluster_audit(CLUSTEROR_STATE_STRUCT *s)
     for (a = 0; a < s->header->n_cor_tokens; a++)
         if (s->cor_tokens[a].cluster == NULL_INDEX)
             b++;
-    fprintf(stderr, "Found %ld tokens without cluster assignments.\n", b);
+    fprintf(crm_stderr, "Found %ld tokens without cluster assignments.\n", b);
 
     for (a = 0; a < s->header->n_cor_tokens; a++)
         if (s->cor_tokens[a].cluster != NULL_INDEX)
@@ -1591,15 +1591,15 @@ static long cluster_audit(CLUSTEROR_STATE_STRUCT *s)
     for (a = 0; a < MAX_CLUSTERS; a++)
         if (get_bit(cluster_closed, a))
             b++;
-    fprintf(stderr, "Found %ld unique cluster assignments.\n", b);
+    fprintf(crm_stderr, "Found %ld unique cluster assignments.\n", b);
     return b;
 }
 
 static void give_back_cluster(CLUSTEROR_STATE_STRUCT *s, index_t c)
 {
     if (internal_trace)
-        fputc('b', stderr);
-    //if(internal_trace) fprintf(stderr, "\ngiving back cluster %ld\n", c);
+        fputc('b', crm_stderr);
+    //if(internal_trace) fprintf(crm_stderr, "\ngiving back cluster %ld\n", c);
     if (c >= MAX_CLUSTERS)
     {
         fatalerror_ex(SRC_LOC(),
@@ -1650,16 +1650,16 @@ static index_t get_fresh_cluster(CLUSTEROR_STATE_STRUCT *s)
     index_t c = s->header->first_unused_cluster_slot;
 
     if (internal_trace)
-        fputc('g', stderr);
+        fputc('g', crm_stderr);
 
     if (c == MAX_CLUSTERS)
     {
         fprintf(
-            stderr,
+            crm_stderr,
             "\nWe've run out of cluster slots. This is thoroughly impossible.\n We've given out a total of %d and goten back %d\n",
             given,
             goten);
-        fprintf(stderr, "s->header->n_clusters = %ld\n", s->header->n_clusters);
+        fprintf(crm_stderr, "s->header->n_clusters = %ld\n", s->header->n_clusters);
         cluster_audit(s);
         fatalerror("We're pooped!","");
     }
@@ -1681,11 +1681,11 @@ static index_t get_fresh_cluster(CLUSTEROR_STATE_STRUCT *s)
 static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
 {
     if (internal_trace)
-        fputc('j', stderr);
+        fputc('j', crm_stderr);
 
     if (i < 0 || i >= s->header->n_cor_tokens || j < 0
         || j > s->header->n_cor_tokens)
-        fprintf(stderr,
+        fprintf(crm_stderr,
                 "\nmade to join wonkee token numbers!\n i = %ld, j = %ld\n", i,
                 j);
     if (s->cor_tokens[i].cluster < 0
@@ -1695,7 +1695,7 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
         || (s->cor_tokens[j].cluster >= MAX_CLUSTERS
             && s->cor_tokens[j].cluster != NULL_INDEX))
         fprintf(
-            stderr,
+            crm_stderr,
             "\nmade to join wonkee cluster numbers!\n cluster(i) = %ld, cluster(j) = %ld\n",
             s->cor_tokens[i].cluster,
             s->cor_tokens[j].cluster);
@@ -1707,7 +1707,7 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
         index_t q;
 
         fprintf(
-            stderr,
+            crm_stderr,
             "\nmade to join a cluster in the free list!\n cluster(%ld) = %ld, cluster(%ld) = %ld, next(%ld) = %ld, next(%ld) = %ld\n",
             i,
             s->cor_tokens[i].cluster,
@@ -1717,13 +1717,13 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
             s->clusters[s->cor_tokens[i].cluster].next_free,
             s->cor_tokens[j].cluster,
             s->clusters[s->cor_tokens[j].cluster].next_free);
-        fprintf(stderr, "adjacent to %ld:\n", i);
+        fprintf(crm_stderr, "adjacent to %ld:\n", i);
         for (q = s->cor_tokens[i].edges; q != NULL_INDEX; q = s->graph[q].next)
-            fprintf(stderr, "\tcluster(%ld) = %ld\n", s->graph[q].edge_to,
+            fprintf(crm_stderr, "\tcluster(%ld) = %ld\n", s->graph[q].edge_to,
                     s->cor_tokens[s->graph[q].edge_to].cluster);
-        fprintf(stderr, "adjacent to %ld:\n", j);
+        fprintf(crm_stderr, "adjacent to %ld:\n", j);
         for (q = s->cor_tokens[j].edges; q != NULL_INDEX; q = s->graph[q].next)
-            fprintf(stderr, "\tcluster(%ld) = %ld\n", s->graph[q].edge_to,
+            fprintf(crm_stderr, "\tcluster(%ld) = %ld\n", s->graph[q].edge_to,
                     s->cor_tokens[s->graph[q].edge_to].cluster);
         fatalerror("We're pooped!","");
     }
@@ -1737,21 +1737,21 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
     if (0 && internal_trace)
     {
         fprintf(
-            stderr,
+            crm_stderr,
             "\nWe're going to join nodes/tokens %ld and %ld, they have respective cluster numbers %ld and %ld",
             i,
             j,
             s->cor_tokens[i].cluster,
             s->cor_tokens[j].cluster);
         if (s->cor_tokens[i].cluster < NULL_INDEX)
-            fprintf(stderr, ", cluster %ld's occurence is %f",
+            fprintf(crm_stderr, ", cluster %ld's occurence is %f",
                     s->cor_tokens[i].cluster,
                     s->clusters[s->cor_tokens[i].cluster].occurrences);
         if (s->cor_tokens[j].cluster < NULL_INDEX)
-            fprintf(stderr, ", cluster %ld's occurence is %f",
+            fprintf(crm_stderr, ", cluster %ld's occurence is %f",
                     s->cor_tokens[j].cluster,
                     s->clusters[s->cor_tokens[j].cluster].occurrences);
-        fprintf(stderr, "\n");
+        fprintf(crm_stderr, "\n");
     }
 
 
@@ -1759,7 +1759,7 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
         && s->cor_tokens[i].cluster != NULL_INDEX)
     {
         if (internal_trace)
-            fputc('I', stderr);
+            fputc('I', crm_stderr);
         return;                 //this can happen if i and j were already joined transitively
     }
 
@@ -1787,7 +1787,7 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
                         *stack_ptr++ = s->graph[b].edge_to;
             }
             if (internal_trace)
-                fputc('N', stderr);
+                fputc('N', crm_stderr);
             //  because and i and j are connected that previous traversal
             //  should have painted both groups
             return;
@@ -1824,7 +1824,7 @@ static void join_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i, index_t j)
                     *stack_ptr++ = s->graph[b].edge_to;
         }
         if (internal_trace && old_cluster == NULL_INDEX)
-            fputc('Q', stderr);
+            fputc('Q', crm_stderr);
 
         if (old_cluster != NULL_INDEX)
             give_back_cluster(s, old_cluster);
@@ -1846,7 +1846,7 @@ static void speculative_split_clusters(CLUSTEROR_STATE_STRUCT *s, index_t i,
     COOCCURRENCE_SCORE_TYPE occI = 0.0, occJ = 0.0;
 
     if (internal_trace)
-        fputc('S', stderr);
+        fputc('S', crm_stderr);
 
     *stack_ptr++ = i;
     while (stack_ptr > stack)
@@ -1910,7 +1910,7 @@ static void update_graph_and_clusters(CLUSTEROR_STATE_STRUCT *s)
 
     if (internal_trace)
     {
-        fprintf(stderr, "s->header->n_clusters = %ld\n", s->header->n_clusters);
+        fprintf(crm_stderr, "s->header->n_clusters = %ld\n", s->header->n_clusters);
         if (cluster_audit(s) != s->header->n_clusters)
         {
         fatalerror_ex(SRC_LOC(),
@@ -1957,7 +1957,7 @@ static void update_graph_and_clusters(CLUSTEROR_STATE_STRUCT *s)
 
     if (internal_trace)
     {
-        fprintf(stderr,
+        fprintf(crm_stderr,
                 "s->header->n_clusters = %ld\ndid %ld cuts, and %ld joins\n",
                 s->header->n_clusters, n_cuts, n_joins);
         if (cluster_audit(s) != s->header->n_clusters)
@@ -1983,7 +1983,7 @@ static int verify_graph(CLUSTEROR_STATE_STRUCT *s)
                 c++;
     if (internal_trace)
         fprintf(
-            stderr,
+            crm_stderr,
             "the graph has %ld edges, there are %ld possible. There are %ld correlated tokens\n",
             c,
             d,
@@ -2025,7 +2025,7 @@ static long copy_and_escape(char *out, const char *in, const char *escape_these)
     char   *o = out;
 
     if (internal_trace)
-        fprintf(stderr, "escaping string: %s\n", in);
+        fprintf(crm_stderr, "escaping string: %s\n", in);
 
     while (*i)
     {
@@ -2041,7 +2041,7 @@ static long copy_and_escape(char *out, const char *in, const char *escape_these)
     *o++ = '\0';
 
     if (internal_trace)
-        fprintf(stderr, "produced string: %s\n", out);
+        fprintf(crm_stderr, "produced string: %s\n", out);
 
     return o - out;
 }
@@ -2068,7 +2068,7 @@ static void parse_monster(char *text, long len, const char **keys,
     while (*keys)
     {
         if (internal_trace)
-            fprintf(stderr, "parsing for key: %s\n", *keys);
+            fprintf(crm_stderr, "parsing for key: %s\n", *keys);
         regee_text_len = copy_and_escape(regee_text, *keys, ".()[]{}^*+-?");
         regee_text_len--;       //to eat null charactor
         regee_text_len =
@@ -2076,7 +2076,7 @@ static void parse_monster(char *text, long len, const char **keys,
                    "[[:space:]]*=[[:space:]]*(-?[0-9.]+)") - regee_text;
         if (internal_trace)
         {
-            fprintf(stderr, "compiling regex: %.*s\n", (int)regee_text_len,
+            fprintf(crm_stderr, "compiling regex: %.*s\n", (int)regee_text_len,
                     regee_text);
         }
         if (crm_regcomp(&regee, regee_text, regee_text_len, REG_EXTENDED))
@@ -2084,7 +2084,7 @@ static void parse_monster(char *text, long len, const char **keys,
             if (internal_trace)
 			{
                 fprintf(
-                    stderr,
+                    crm_stderr,
                     "some jerk gave us a wonkey key to parse in parse_monster! : %s\n",
                     *keys);
 			}
@@ -2156,9 +2156,9 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         internal_trace = 1;
 
     if (internal_trace)
-        fprintf(stderr, "entered crm_expr_clump (learn)\n");
+        fprintf(crm_stderr, "entered crm_expr_clump (learn)\n");
     if (internal_trace && !test_bit_vectors())
-        fprintf(stderr, "bit vectors don't work!");
+        fprintf(crm_stderr, "bit vectors don't work!");
 
 
     //  parse out .css file name and flags and token regex
@@ -2191,9 +2191,9 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         const char **ki = keys;
         const double *vi = values;
 
-        fprintf(stderr, "parameters:\n");
+        fprintf(crm_stderr, "parameters:\n");
         while (*ki)
-            fprintf(stderr, "\t%s = %0.3f\n", *ki++, *vi++);
+            fprintf(crm_stderr, "\t%s = %0.3f\n", *ki++, *vi++);
     }
 
     crm_get_pgm_arg(regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
@@ -2207,7 +2207,7 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
     //  THIS IS WHERE REGEX FLAGS GO FOR THINGS LIKE CASE INSENSITIVITY
     if (internal_trace)
-        fprintf(stderr, "about to compile token regex: \"%s\"\n", regex_text);
+        fprintf(crm_stderr, "about to compile token regex: \"%s\"\n", regex_text);
     if (crm_regcomp(&regee, regex_text, regex_text_len, REG_EXTENDED))
     {
         fatalerror_ex(SRC_LOC(),
@@ -2224,7 +2224,7 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     if (internal_trace)
-        fprintf(stderr, "about to call map_file_for_learn on %s\n", filename);
+        fprintf(crm_stderr, "about to call map_file_for_learn on %s\n", filename);
 
     map_file_for_learn(&s, filename);
 
@@ -2243,7 +2243,7 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (internal_trace)
 		{
             fprintf(
-                stderr,
+                crm_stderr,
                 "about to tokenize %ld characters with regex %s, there are %ld unique tokens in hash already\n",
                 text_len,
                 regex_text,
@@ -2257,7 +2257,7 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (internal_trace)
 		{
 			fprintf(
-                stderr,
+                crm_stderr,
                 "the document was %d tokens long, there are now %ld tokens in hash\n",
                 tokenized_text_len,
                 s.header->n_tokens);
@@ -2269,7 +2269,7 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             s.old_nearest_neihbors[i] = NULL_INDEX;
 
         if (internal_trace)
-            fprintf(stderr, "about to score with %s\n",
+            fprintf(crm_stderr, "about to score with %s\n",
                     go_flat ? "score_document_flat" : "score_document_fuzzy");
         if (go_flat)
             score_document_flat(&s, tokenized_text, tokenized_text_len, sense);
@@ -2282,11 +2282,11 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         update_seen_tokens(&s);
 
         if (internal_trace)
-            fprintf(stderr, "activating graph monster!\n");
+            fprintf(crm_stderr, "activating graph monster!\n");
         update_graph_and_clusters(&s);
 
         if (internal_trace && !verify_graph(&s))
-            fprintf(stderr, "wonkee graph!\n");
+            fprintf(crm_stderr, "wonkee graph!\n");
 
         outbuf -= text_len;
         outbuf -= (s.header->n_tokens * sizeof(index_t));
@@ -2320,7 +2320,7 @@ static void nolearning_tokenize(
     {
         //remember to inc/dec text and len
         if (0 && internal_trace)
-            fprintf(stderr, "calling crm_regexec...");
+            fprintf(crm_stderr, "calling crm_regexec...");
         m = crm_regexec(regee, text, len, 1, &match, 0, NULL);
         if (m == REG_NOMATCH)
             return;
@@ -2328,7 +2328,7 @@ static void nolearning_tokenize(
         if (m != REG_OK)
         {
             fprintf(
-                stderr,
+                crm_stderr,
                 "problem number %ld with regex match in non-learning tokenizer.\n",
                 m);
             return;
@@ -2336,21 +2336,21 @@ static void nolearning_tokenize(
         l = match.rm_eo - match.rm_so;
         if (0 && internal_trace)
         {
-            fprintf(stderr, "matched token: ");
+            fprintf(crm_stderr, "matched token: ");
             for (i = match.rm_so; i < match.rm_eo; i++)
-                fprintf(stderr, "%c", text[i]);
-            fprintf(stderr, ". The hashcode of which is 0x%08lX\n",
+                fprintf(crm_stderr, "%c", text[i]);
+            fprintf(crm_stderr, ". The hashcode of which is 0x%08lX\n",
                     (unsigned long)strnhash(&text[match.rm_so], l));
         }
 
         if (0 && internal_trace)
-            fprintf(stderr, "calling no_learning_get_token_from_hash...\n");
+            fprintf(crm_stderr, "calling no_learning_get_token_from_hash...\n");
 
         *t++ = simple_hash_lookup(s, strnhash(&text[match.rm_so], l));
 
         if (0 && internal_trace)
             if (internal_trace)
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "no_learning_get_token_from_hash returned %ld\n",
                         *(t - 1));
 
@@ -2358,7 +2358,7 @@ static void nolearning_tokenize(
         text += match.rm_eo;
         len -= match.rm_eo;
     }
-    fprintf(stderr,
+    fprintf(crm_stderr,
             "NNCluster: Not enough space given to tokenizer! Truncated text.\n");
 }
 
@@ -2445,14 +2445,14 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (internal_trace)
     {
         fprintf(
-            stderr,
+            crm_stderr,
             "In theory we've mapped %s, and it has %ld tokens and %ld clusters",
             filename,
             s.header->n_tokens,
             s.header->n_clusters);
 
         /*                for(i = s.header->most_recent_token; i < NULL_INDEX; i = s.tokens[i].less_recent)
-         * fprintf(stderr, "token:%ld, recorded hash %ld, lookup returns: %ld, incluster: %ld\n", i, s.tokens[i].hash_code, no_learning_get_token_from_hash(&s, s.tokens[i].hash_code), s.tokens[i].cluster );
+         * fprintf(crm_stderr, "token:%ld, recorded hash %ld, lookup returns: %ld, incluster: %ld\n", i, s.tokens[i].hash_code, no_learning_get_token_from_hash(&s, s.tokens[i].hash_code), s.tokens[i].cluster );
          */
     }
 
@@ -2461,13 +2461,13 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     tokenized_text = (index_t *)inbuf;
 
     if (internal_trace)
-        fprintf(stderr, "about to tokenize with regex_text: %s\n", regex_text);
+        fprintf(crm_stderr, "about to tokenize with regex_text: %s\n", regex_text);
 
     nolearning_tokenize(&s, tokenized_text, &tokenized_text_len,
                         text_len / 2 + 1, text + text_start, text_len, &regee);
 
     if (internal_trace)
-        fprintf(stderr, "tokenized\n");
+        fprintf(crm_stderr, "tokenized\n");
 
     out_pos = 0;
     outbuf[out_pos] = 0;
@@ -2501,8 +2501,8 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
     double min = 1000000.0, max = -1000000.0, a, b, bb;
     long i, j, k, bins[N_BINS];
 
-    printf("s->header->n_tokens = %ld\n", s->header->n_tokens);
-    printf("s->header->n_clusters = %ld\n", s->header->n_clusters);
+    fprintf(crm_stdout, "s->header->n_tokens = %ld\n", s->header->n_tokens);
+    fprintf(crm_stdout, "s->header->n_clusters = %ld\n", s->header->n_clusters);
 
     for (i = 0; i < s->header->n_cor_tokens; i++)
         for (j = i + 1; j < s->header->n_cor_tokens; j++)
@@ -2532,9 +2532,9 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
             if (k == N_BINS)
                 bins[N_BINS - 1]++;
         }
-    printf("Cooccurences:\n\tmin: %0.3f\tmax:%0.3f\n", min, max);
+    fprintf(crm_stdout, "Cooccurences:\n\tmin: %0.3f\tmax:%0.3f\n", min, max);
     for (k = 0, b = min; k < N_BINS; k++, b += bb)
-        printf("\t(%0.4f, %0.4f):\t%ld\n", b, b + bb, bins[k]);
+        fprintf(crm_stdout, "\t(%0.4f, %0.4f):\t%ld\n", b, b + bb, bins[k]);
     for (i = 0; i < N_BINS; i++)
         bins[i] = 0;
     bb = (max - min) / N_BINS;
@@ -2552,9 +2552,9 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
         if (k == N_BINS)
             bins[N_BINS - 1]++;
     }
-    printf("Nearest neighbor cooccurences:\n");
+    fprintf(crm_stdout, "Nearest neighbor cooccurences:\n");
     for (k = 0, b = min; k < N_BINS; k++, b += bb)
-        printf("\t(%0.4f, %0.4f):\t%ld\n", b, b + bb, bins[k]);
+        fprintf(crm_stdout, "\t(%0.4f, %0.4f):\t%ld\n", b, b + bb, bins[k]);
 
     min = 1000000.0;
     max = -1000000.0;
@@ -2581,9 +2581,9 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
         if (k == N_BINS)
             bins[N_BINS - 1]++;
     }
-    printf("Occurences:\n\tmin: %0.3f\tmax:%0.3f\n", min, max);
+    fprintf(crm_stdout, "Occurences:\n\tmin: %0.3f\tmax:%0.3f\n", min, max);
     for (k = 0, b = min; k < N_BINS; k++, b += bb)
-        printf("\t(%0.3f, %0.3f):\t%ld\n", b, b + bb, bins[k]);
+        fprintf(crm_stdout, "\t(%0.3f, %0.3f):\t%ld\n", b, b + bb, bins[k]);
 
     min = 1000000.0;
     max = -1000000.0;
@@ -2610,9 +2610,9 @@ static void poke_around(CLUSTEROR_STATE_STRUCT *s)
         if (k == N_BINS)
             bins[N_BINS - 1]++;
     }
-    printf("cor_token Occurences:\n\tmin: %0.3f\tmax:%0.3f\n", min, max);
+    fprintf(crm_stdout, "cor_token Occurences:\n\tmin: %0.3f\tmax:%0.3f\n", min, max);
     for (k = 0, b = min; k < N_BINS; k++, b += bb)
-        printf("\t(%0.3f, %0.3f):\t%ld\n", b, b + bb, bins[k]);
+        fprintf(crm_stdout, "\t(%0.3f, %0.3f):\t%ld\n", b, b + bb, bins[k]);
 }
 
 

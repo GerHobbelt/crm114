@@ -36,7 +36,7 @@ int crm_invoke(void)
     long slen;
     //    a pointer to the current statement argparse block.  This gets whacked
     //    on every new statement.
-    ARGPARSE_BLOCK *apb;
+    ARGPARSE_BLOCK *apb = NULL;
 
     //     timer1, timer2, and tstmt are for time profiling.
     //
@@ -72,7 +72,7 @@ int crm_invoke(void)
     }
 
     if (user_trace)
-        fprintf(stderr, "Starting to execute %s at line %ld\n",
+        fprintf(crm_stderr, "Starting to execute %s at line %ld\n",
                 csl->filename, csl->cstmt);
 
 invoke_top:
@@ -89,7 +89,7 @@ invoke_top:
         //  OK, we're at the end of the program.  When this happens,
         //  we know we can exit this invocation of the invoker
         if (user_trace)
-            fprintf(stderr, "Finished the program %s.\n", csl->filename);
+            fprintf(crm_stderr, "Finished the program %s.\n", csl->filename);
         done = 1;
         status = 0;
         goto invoke_done;
@@ -99,12 +99,12 @@ invoke_top:
 
     if (user_trace)
     {
-        fprintf(stderr, "\nParsing line %ld :\n", csl->cstmt);
-        fprintf(stderr, " -->  ");
+        fprintf(crm_stderr, "\nParsing line %ld :\n", csl->cstmt);
+        fprintf(crm_stderr, " -->  ");
         for (i = 0; i < slen; i++)
-            fprintf(stderr, "%c",
+            fprintf(crm_stderr, "%c",
                     csl->filetext[csl->mct[csl->cstmt]->fchar + i]);
-        fprintf(stderr, "\n");
+        fprintf(crm_stderr, "\n");
     }
 
 
@@ -151,8 +151,8 @@ invoke_top:
         {
             //    The CSL->MCT->APB was valid, we can just reuse the old apb.
             if (internal_trace)
-                fprintf(stderr, "JIT parse reusing line %ld\n", csl->cstmt);
-            apb =  csl->mct[csl->cstmt]->apb;
+                fprintf(crm_stderr, "JIT parse reusing line %ld\n", csl->cstmt);
+            apb = csl->mct[csl->cstmt]->apb;
         }
         //    Either way, the flags might have changed, so we run the
         //    standard flag parser against the flags found (if any)
@@ -164,7 +164,7 @@ invoke_top:
             fl = MAX_PATTERN;
             crm_get_pgm_arg(flagz, fl, apb->a1start, apb->a1len);
             fl = crm_nexpandvar(flagz, apb->a1len, MAX_PATTERN);
-            //    fprintf (stderr,
+            //    fprintf(crm_stderr,
             //           "flagz --%s-- len %d\n", flagz, strlen(flagz));
             apb->sflags = crm_flagparse(flagz, fl);
         }
@@ -193,7 +193,7 @@ invoke_top:
 
     if (user_trace)
     {
-        fprintf(stderr, "\nExecuting line %ld :\n", csl->cstmt);
+        fprintf(crm_stderr, "\nExecuting line %ld :\n", csl->cstmt);
     }
 
 
@@ -210,7 +210,7 @@ invoke_top:
     case CRM_LABEL:
         {
             if (user_trace)
-                fprintf(stderr, "Statement %ld is non-executable, continuing.\n",
+                fprintf(crm_stderr, "Statement %ld is non-executable, continuing.\n",
                         csl->cstmt);
         }
         break;
@@ -220,7 +220,7 @@ invoke_top:
             //  the nest_level+1 is because the statements in front are at +1 depth
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level + 1] = 1;
             if (user_trace)
-                fprintf(stderr, "Statement %ld is an openbracket. depth now %d.\n",
+                fprintf(crm_stderr, "Statement %ld is an openbracket. depth now %d.\n",
                         csl->cstmt, 1 + csl->mct[csl->cstmt]->nest_level);
         }
         break;
@@ -228,7 +228,7 @@ invoke_top:
     case CRM_CLOSEBRACKET:
         {
             if (user_trace)
-                fprintf(stderr, "Statement %ld is a closebracket. depth now %d.\n",
+                fprintf(crm_stderr, "Statement %ld is a closebracket. depth now %d.\n",
                         csl->cstmt, csl->mct[csl->cstmt]->nest_level);
         }
         break;
@@ -267,7 +267,7 @@ invoke_top:
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Exiting at statement %ld with value %d\n",
+                fprintf(crm_stderr, "Exiting at statement %ld with value %d\n",
                         csl->cstmt, retval);
             //if (profile_execution)
             //  crm_output_profile (csl);
@@ -285,7 +285,7 @@ invoke_top:
             char *namestart;
             unsigned long namelen;
             if (user_trace)
-                fprintf(stderr, "Returning to caller at statement %ld\n",
+                fprintf(crm_stderr, "Returning to caller at statement %ld\n",
                         csl->cstmt);
             //
             //    Is this the toplevel csl call frame?  If so, return!
@@ -295,7 +295,7 @@ invoke_top:
             //    Nope!  We can now pop back up to the previous context
             //    just by popping the most recent csl off.
             if (internal_trace)
-                fprintf(stderr, "Return - popping CSL back to %p\n",
+                fprintf(crm_stderr, "Return - popping CSL back to %p\n",
                         csl->caller);
 
             //     Do the argument transfer here.
@@ -315,24 +315,24 @@ invoke_top:
                 if (idx < 0)
                 {
                     if (user_trace)
-                        fprintf(stderr, "Returning, no return argument given\n");
+                        fprintf(crm_stderr, "Returning, no return argument given\n");
                 }
                 else
                 {
                     long i;
-                    //fprintf (stderr, "idx: %lu  vht[idx]: %lu", idx, vht[idx] );
+                    //fprintf(crm_stderr, "idx: %lu  vht[idx]: %lu", idx, vht[idx] );
                     noffset = vht[idx]->nstart;
-                    //fprintf (stderr, " idx: %lu noffset: %lu\n/", idx, noffset);
+                    //fprintf(crm_stderr, " idx: %lu noffset: %lu\n/", idx, noffset);
                     namestart
                     = &(vht[idx]->nametxt[noffset]);
                     namelen = vht[idx]->nlen;
 
                     if (user_trace)
                     {
-                        fprintf(stderr, " setting return value of >");
+                        fprintf(crm_stderr, " setting return value of >");
                         for (i = 0; i < namelen; i++)
-                            fprintf(stderr, "%c", namestart[i]);
-                        fprintf(stderr, "<\n");
+                            fprintf(crm_stderr, "%c", namestart[i]);
+                        fprintf(crm_stderr, "<\n");
                     }
                     //     stuff the return value into that variable.
                     //
@@ -374,20 +374,20 @@ invoke_top:
                  " By any chance, did you leave off the '/' delimiters? ");
             tarlen = apb->s1len;
             if (internal_trace)
-                fprintf(stderr, "\n    untranslated label %s , ",
+                fprintf(crm_stderr, "\n    untranslated label %s , ",
                         target);
 
             //   do indirection if needed.
             tarlen = crm_qexpandvar(target, tarlen, MAX_VARNAME, NULL);
             if (internal_trace)
-                fprintf(stderr, " translates to %s .", target);
+                fprintf(crm_stderr, " translates to %s .", target);
 
             k = crm_lookupvarline(vht, target, 0, tarlen);
 
             if (k > 0)
             {
                 if (user_trace)
-                    fprintf(stderr, "GOTO from line %ld to line %ld\n",
+                    fprintf(crm_stderr, "GOTO from line %ld to line %ld\n",
                             csl->cstmt,  k);
                 csl->cstmt = k; // this gets autoincremented
                 //  and going here didn't fail...
@@ -400,7 +400,7 @@ invoke_top:
                 if (conv_count == 1)
                 {
                     if (user_trace)
-                        fprintf(stderr, "GOTO from line %ld to line %ld\n",
+                        fprintf(crm_stderr, "GOTO from line %ld to line %ld\n",
                                 csl->cstmt, k);
                     csl->cstmt = k - 1; // this gets autoincremented, so we must --
                     //  and going here didn't fail...
@@ -426,7 +426,7 @@ invoke_top:
             //              note we cheat - we branch to "fail_index - 1"
             //                and let the increment happen.
             if (user_trace)
-                fprintf(stderr, "Executing hard-FAIL at line %ld\n", csl->cstmt);
+                fprintf(crm_stderr, "Executing hard-FAIL at line %ld\n", csl->cstmt);
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 
             //   and mark that we "failed", so an ALIUS will take this as a
@@ -443,7 +443,7 @@ invoke_top:
             //               (note the "liaf-index - 1" cheat - we branch to
             //               liaf_index -1 and let the incrment happen)
             if (user_trace)
-                fprintf(stderr, "Executing hard-LIAF at line %ld\n", csl->cstmt);
+                fprintf(crm_stderr, "Executing hard-LIAF at line %ld\n", csl->cstmt);
             csl->cstmt = csl->mct[csl->cstmt]->liaf_index - 1;
         }
         break;
@@ -454,11 +454,11 @@ invoke_top:
             //   was a FAIL-to, then ALIUS is a no-op.  If it was NOT a fail-to,
             //   then ALIUS itself is a FAIL
             if (user_trace)
-                fprintf(stderr, "Executing ALIUS at line %ld\n", csl->cstmt);
+                fprintf(crm_stderr, "Executing ALIUS at line %ld\n", csl->cstmt);
             if (csl->aliusstk[csl->mct[csl->cstmt]->nest_level + 1] == 1)
             {
                 if (user_trace)
-                    fprintf(stderr, "prior group exit OK, ALIUS fails forward.\n");
+                    fprintf(crm_stderr, "prior group exit OK, ALIUS fails forward.\n");
                 csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
             }
         }
@@ -476,8 +476,8 @@ invoke_top:
 
             if (user_trace)
             {
-                fprintf(stderr, "Executing a TRAP statement...");
-                fprintf(stderr, " this is a NOOP unless you have a live FAULT\n");
+                fprintf(crm_stderr, "Executing a TRAP statement...");
+                fprintf(crm_stderr, " this is a NOOP unless you have a live FAULT\n");
             }
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
         }
@@ -494,7 +494,7 @@ invoke_top:
             //   statement that can skip downward a large number of blocks.
             //
             if (user_trace)
-                fprintf(stderr, "Forcing a FAULT at line %ld\n", csl->cstmt);
+                fprintf(crm_stderr, "Forcing a FAULT at line %ld\n", csl->cstmt);
             CRM_ASSERT(apb != NULL);
             crm_get_pgm_arg(rbuf, MAX_PATTERN, apb->s1start, apb->s1len);
             rlen = crm_nexpandvar(rbuf, apb->s1len, MAX_PATTERN);
@@ -533,7 +533,7 @@ invoke_top:
             //
             //
             if (user_trace)
-                fprintf(stderr, "Executing an ACCEPT\n");
+                fprintf(crm_stderr, "Executing an ACCEPT\n");
             //
             //
             varname[0] = '\0';
@@ -551,12 +551,12 @@ invoke_top:
                 fwrite(&(vht[varidx]->valtxt[vht[varidx]->vstart]),
                        vht[varidx]->vlen,
                        1,
-                       stdout);
-                fflush(stdout);
+                       crm_stdout);
+                fflush(crm_stdout);
             }
             //    WE USED TO DO CHARACTER I/O.  OUCH!!!
             //      for (i = 0; i < cdw->nchars ; i++)
-            //        fprintf (stdout, "%c", cdw->filetext[i]);
+            //        fprintf (crm_stdout, "%c", cdw->filetext[i]);
         }
         break;
 
@@ -600,7 +600,7 @@ invoke_top:
             crmhash_t hval;     //   hash value
 
             if (user_trace)
-                fprintf(stderr, "Executing a HASHing\n");
+                fprintf(crm_stderr, "Executing a HASHing\n");
 
             //     get the variable name
             CRM_ASSERT(apb != NULL);
@@ -634,7 +634,7 @@ invoke_top:
 
             if (internal_trace)
             {
-                fprintf(stderr, "String: '%s'\n hashed to: %08lX\n",
+                fprintf(crm_stderr, "String: '%s'\n hashed to: %08lX\n",
                         tempbuf,
                         (unsigned long)hval);
             }
@@ -694,7 +694,7 @@ invoke_top:
             CSL_CELL *newcsl;
 
             if (user_trace)
-                fprintf(stderr, "Executing a user CALL statement\n");
+                fprintf(crm_stderr, "Executing a user CALL statement\n");
             //  look up the variable name in the vht.  If it's not there, or
             //  not in our file, call a fatal error.
 
@@ -702,13 +702,13 @@ invoke_top:
             crm_get_pgm_arg(target, MAX_VARNAME, apb->s1start, apb->s1len);
             tarlen = apb->s1len;
             if (internal_trace)
-                fprintf(stderr, "\n    untranslated label %s , ",
+                fprintf(crm_stderr, "\n    untranslated label %s , ",
                         target);
 
             //   do indirection if needed.
             tarlen = crm_nexpandvar(target, tarlen, MAX_VARNAME);
             if (internal_trace)
-                fprintf(stderr, " translates to %s .", target);
+                fprintf(crm_stderr, " translates to %s .", target);
 
             k = crm_lookupvarline(vht, target, 0, tarlen);
 
@@ -800,14 +800,14 @@ invoke_top:
                         //"isolated one.  Hope that's OK. Varname was",
                         //             outbuf);
                         if (user_trace)
-                            fprintf(stderr,
+                            fprintf(crm_stderr,
                                     "No such return value var, creating var %s\n",
                                     outbuf);
                         crm_set_temp_var(outbuf, "");
                     }
                     ret_idx = crm_vht_lookup(vht, outbuf, retnamelen);
                     if (user_trace)
-                        fprintf(stderr, " Setting return value to VHT cell %lu",
+                        fprintf(crm_stderr, " Setting return value to VHT cell %lu",
                                 ret_idx);
                     newcsl->return_vht_cell = ret_idx;
                 }
@@ -923,7 +923,7 @@ invoke_top:
             long done;
 
             if (user_trace)
-                fprintf(stderr, "executing an INTERSECT statement");
+                fprintf(crm_stderr, "executing an INTERSECT statement");
 
             //    get the output variable (the one we're gonna whack)
             //
@@ -941,8 +941,8 @@ invoke_top:
             CRM_ASSERT(tvlen < MAX_VARNAME);
             if (internal_trace)
             {
-                fprintf(stderr, "  Intersecting vars: ***%s***\n", temp_vars);
-                fprintf(stderr, "   with result in ***%s***\n", out_var);
+                fprintf(crm_stderr, "  Intersecting vars: ***%s***\n", temp_vars);
+                fprintf(crm_stderr, "   with result in ***%s***\n", out_var);
             }
             done = 0;
             mc = 0;
@@ -1038,7 +1038,7 @@ invoke_top:
             long done;
 
             if (user_trace)
-                fprintf(stderr, "executing a UNION statement");
+                fprintf(crm_stderr, "executing a UNION statement");
 
             //    get the output variable (the one we're gonna whack)
             //
@@ -1054,7 +1054,7 @@ invoke_top:
             crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->b1start, apb->b1len);
             tvlen = crm_nexpandvar(temp_vars, apb->b1len, MAX_VARNAME);
             if (internal_trace)
-                fprintf(stderr, "  Uniting vars: ***%s***\n", temp_vars);
+                fprintf(crm_stderr, "  Uniting vars: ***%s***\n", temp_vars);
 
             done = 0;
             mc = 0;
@@ -1137,7 +1137,7 @@ invoke_top:
         {
             // turn on the debugger - NOW!
             if (user_trace)
-                fprintf(stderr, "executing a DEBUG statement - drop to debug\n");
+                fprintf(crm_stderr, "executing a DEBUG statement - drop to debug\n");
             debug_countdown = 0;
         }
         break;

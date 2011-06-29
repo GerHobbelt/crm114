@@ -220,7 +220,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     fev = 0;
 
     if (internal_trace)
-        fprintf(stderr, "executing a Hyperspace LEARN\n");
+        fprintf(crm_stderr, "executing a Hyperspace LEARN\n");
 
     //   Keep the gcc compiler from complaining about unused variables
     //  i = hctable[0];
@@ -246,7 +246,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         cflags = cflags | REG_ICASE;
         eflags = 1;
         if (user_trace)
-            fprintf(stderr, "turning oncase-insensitive match\n");
+            fprintf(crm_stderr, "turning oncase-insensitive match\n");
     }
     if (apb->sflags & CRM_REFUTE)
     {
@@ -254,24 +254,24 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         /////////////////////////////////////
         //    Take this out when we finally support refutation
         ////////////////////////////////////
-        //      fprintf (stderr, "Hyperspace Refute is NOT SUPPORTED YET\n");
+        //      fprintf(crm_stderr, "Hyperspace Refute is NOT SUPPORTED YET\n");
         //return (0);
         if (user_trace)
-            fprintf(stderr, " refuting learning\n");
+            fprintf(crm_stderr, " refuting learning\n");
     }
     microgroom = 0;
     if (apb->sflags & CRM_MICROGROOM)
     {
         microgroom = 1;
         if (user_trace)
-            fprintf(stderr, " enabling microgrooming.\n");
+            fprintf(crm_stderr, " enabling microgrooming.\n");
     }
     unique = 0;
     if (apb->sflags & CRM_UNIQUE)
     {
         unique = 1;
         if (user_trace)
-            fprintf(stderr, " enabling uniqueifying features.\n");
+            fprintf(crm_stderr, " enabling uniqueifying features.\n");
     }
 
     use_unigram_features = 0;
@@ -279,7 +279,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         use_unigram_features = 1;
         if (user_trace)
-            fprintf(stderr, " using only unigram features.\n");
+            fprintf(crm_stderr, " using only unigram features.\n");
     }
 
     //
@@ -309,7 +309,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   compile the word regex
     //
     if (internal_trace)
-        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
+        fprintf(crm_stderr, "\nWordmatch pattern is %s", ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i > 0)
     {
@@ -388,7 +388,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
             if (internal_trace)
             {
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "  Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
                         i,
                         textoffset,
@@ -418,10 +418,10 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
             if (internal_trace)
             {
-                fprintf(stderr, "  Hashpipe contents: ");
+                fprintf(crm_stderr, "  Hashpipe contents: ");
                 for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                    fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
-                fprintf(stderr, "\n");
+                    fprintf(crm_stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
+                fprintf(crm_stderr, "\n");
             }
 
 
@@ -450,7 +450,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (h1 == 0) h1 = 0xdeadbeef;
                     h2 = 0xdeadbeef;
                     if (internal_trace)
-                        fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned long)h1);
+                        fprintf(crm_stderr, "Singleton feature : 0x%08lX\n", (unsigned long)h1);
                     hashes[hashcounts].hash = h1;
                     hashcounts++;
                 }
@@ -466,7 +466,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //if (h2 == 0) h2 = 0xdeadbeef;
                         h2 = 0xdeadbeef;
                         if (internal_trace)
-                            fprintf(stderr, "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
+                            fprintf(crm_stderr, "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
                                     j, (unsigned long)h1, (unsigned long)h2);
 
                         hashes[hashcounts].hash = h1;
@@ -496,7 +496,7 @@ regcomp_failed:
           &hash_compare);
 
     if (user_trace)
-        fprintf(stderr, "Total hashes generated: %ld\n", hashcounts);
+        fprintf(crm_stderr, "Total hashes generated: %ld\n", hashcounts);
 
     //   And uniqueify the hashes array
     //
@@ -538,7 +538,7 @@ regcomp_failed:
 
   hashcounts--;
   if (user_trace)
-    fprintf (stderr, "Total hashes generated: %ld\n", hashcounts);
+    fprintf(crm_stderr, "Total hashes generated: %ld\n", hashcounts);
 
   //   And uniqueify the hashes array
   //
@@ -563,7 +563,7 @@ regcomp_failed:
     }
 #endif
     if (user_trace)
-        fprintf(stderr, "Unique hashes generated: %ld\n", hashcounts);
+        fprintf(crm_stderr, "Unique hashes generated: %ld\n", hashcounts);
     //    store hash count of this document in the first bucket's .key slot
     //  hashes[hashcounts].key = hashcounts;
 
@@ -581,7 +581,7 @@ regcomp_failed:
         crm_force_munmap_filename(hashfilename);
 
         if (user_trace)
-            fprintf(stderr, "Opening hyperspace file %s for append.\n",
+            fprintf(crm_stderr, "Opening hyperspace file %s for append.\n",
                     hashfilename);
         hashf = fopen(hashfilename, "ab+");
         if (hashf == 0)
@@ -594,7 +594,7 @@ regcomp_failed:
             int ret;
 
             if (user_trace)
-                fprintf(stderr, "Writing to hash file %s\n", hashfilename);
+                fprintf(crm_stderr, "Writing to hash file %s\n", hashfilename);
             //    and write the sorted hashes out.
             ret = fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
                          hashcounts, /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
@@ -684,7 +684,7 @@ regcomp_failed:
             u = 0;
             thisstart = k;
             if (internal_trace)
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "At featstart, looking at %ld (next bucket value is %ld)\n",
                         file_hashes[thisstart].hash,
                         file_hashes[thisstart + 1].hash);
@@ -749,7 +749,7 @@ regcomp_failed:
             thisend = k - 2;
             thislen = thisend - thisstart;
             if (internal_trace)
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "At featend, looking at %ld (next bucket value is %ld)\n",
                         file_hashes[thisend].hash,
                         file_hashes[thisend + 1].hash);
@@ -773,7 +773,7 @@ regcomp_failed:
             //radiance = radiance * kandu;
 
             if (user_trace)
-                fprintf(stderr, "Feature Radiance %f at %ld to %ld\n",
+                fprintf(crm_stderr, "Feature Radiance %f at %ld to %ld\n",
                         radiance, thisstart, thisend);
             if (radiance >= bestrad)
             {
@@ -786,7 +786,7 @@ regcomp_failed:
         //  file between beststart and bestend.
 
         //      if (user_trace)
-        fprintf(stderr,
+        fprintf(crm_stderr,
                 "Deleting feature from %ld to %ld (rad %f) of file %s\n",
                 beststart, bestend, bestrad, hashfilename);
 
@@ -808,12 +808,12 @@ regcomp_failed:
             crm_force_munmap_filename(hashfilename);
 
             if (internal_trace)
-                fprintf(stderr, "Truncating file to %ld cells ( %ld bytes)\n",
+                fprintf(crm_stderr, "Truncating file to %ld cells ( %ld bytes)\n",
                         newhashlen,
                         newhashlenbytes);
             k = truncate(hashfilename,
                          newhashlenbytes);
-            //      fprintf (stderr, "Return from truncate is %ld\n", k);
+            //      fprintf(crm_stderr, "Return from truncate is %ld\n", k);
         }
     }
     // end of deletion path.
@@ -998,7 +998,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //float topn[MAX_CLASSIFIERS][TOP_N];
 
     if (internal_trace)
-        fprintf(stderr, "executing a CLASSIFY\n");
+        fprintf(crm_stderr, "executing a CLASSIFY\n");
 
     //        make the space for the unknown text's hashes
     unk_hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
@@ -1037,7 +1037,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         svrbl[vlen] = '\000';
     }
     if (user_trace)
-        fprintf(stderr, "Status out var %s (len %ld)\n",
+        fprintf(crm_stderr, "Status out var %s (len %ld)\n",
                 svrbl, svlen);
 
     //     status variable's text (used for output stats)
@@ -1061,7 +1061,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         not_microgroom = 0;
         if (user_trace)
-            fprintf(stderr, " disabling fast-skip optimization.\n");
+            fprintf(crm_stderr, " disabling fast-skip optimization.\n");
     }
 
     use_unique = 0;
@@ -1069,7 +1069,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         use_unique = 1;
         if (user_trace)
-            fprintf(stderr, " unique engaged - repeated features are ignored \n");
+            fprintf(crm_stderr, " unique engaged - repeated features are ignored \n");
     }
 
     use_unigram_features = 0;
@@ -1077,12 +1077,12 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         use_unigram_features = 1;
         if (user_trace)
-            fprintf(stderr, " using only unigram features. \n");
+            fprintf(crm_stderr, " using only unigram features. \n");
     }
 
     //   compile the word regex
     if (internal_trace)
-        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
+        fprintf(crm_stderr, "\nWordmatch pattern is %s", ptext);
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i > 0)
     {
@@ -1108,7 +1108,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   GROT GROT GROT  this isn't NULL-clean on filenames.  But then
     //    again, stdio.h itself isn't NULL-clean on filenames.
     if (user_trace)
-        fprintf(stderr, "Classify list: -%s- \n", htext);
+        fprintf(crm_stderr, "Classify list: -%s- \n", htext);
     fn_start_here = 0;
     fnlen = 1;
 
@@ -1123,7 +1123,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fn_start_here = fnstart + fnlen + 1;
             fname[fnlen] = '\000';
             if (user_trace)
-                fprintf(stderr, "Classifying with file -%s- " \
+                fprintf(crm_stderr, "Classifying with file -%s- " \
                                 "succhash=%ld, maxhash=%ld\n",
                         fname, succhash, maxhash);
             if (fname[0] == '|' && fname[1] == '\000')
@@ -1188,7 +1188,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         {
                             FILE *hashf;
                             if (user_trace)
-                                fprintf(stderr, "Read-opening file %s\n", fname);
+                                fprintf(crm_stderr, "Read-opening file %s\n", fname);
                             hashf = fopen(fname, "rb");
                             if (hashf == 0)
                             {
@@ -1228,7 +1228,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         succhash = maxhash;
 
     if (user_trace)
-        fprintf(stderr, "Running with %ld files for success out of %ld files\n",
+        fprintf(crm_stderr, "Running with %ld files for success out of %ld files\n",
                 succhash, maxhash);
 
     // sanity checks...  Uncomment for super-strict CLASSIFY.
@@ -1314,7 +1314,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (internal_trace)
         {
-            fprintf(stderr,
+            fprintf(crm_stderr,
                     "  Classify #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
                     i,
                     textoffset,
@@ -1341,10 +1341,10 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (0)
         {
-            fprintf(stderr, "  Hashpipe contents: ");
+            fprintf(crm_stderr, "  Hashpipe contents: ");
             for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
-            fprintf(stderr, "\n");
+                fprintf(crm_stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
+            fprintf(crm_stderr, "\n");
         }
 
         //   account for the text we used up...
@@ -1366,7 +1366,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 h1 = hashpipe[0];
                 if (h1 == 0) h1 = 0xdeadbeef;
                 if  (internal_trace)
-                    fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned long)h1);
+                    fprintf(crm_stderr, "Singleton feature : 0x%08lX\n", (unsigned long)h1);
                 unk_hashes[unk_hashcount].hash = h1;
                 unk_hashcount++;
             }
@@ -1383,7 +1383,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     hindex = h1;
 
                     if (internal_trace)
-                        fprintf(stderr, "Polynomial %d has h1:0x%08lX\n",
+                        fprintf(crm_stderr, "Polynomial %d has h1:0x%08lX\n",
                                 j, (unsigned long)h1);
 
                     unk_hashes[unk_hashcount].hash = h1;
@@ -1411,7 +1411,7 @@ classify_end_regex_loop:
           &hash_compare);
 
     if (user_trace)
-        fprintf(stderr, "Total hashes in the unknown text: %ld\n", unk_hashcount);
+        fprintf(crm_stderr, "Total hashes in the unknown text: %ld\n", unk_hashcount);
 
 
     //       uniqueify the hashes array.
@@ -1447,7 +1447,7 @@ classify_end_regex_loop:
 
   unk_hashcount--;
   if (user_trace)
-    fprintf (stderr, "Total hashes in the unknown text: %ld\n", unk_hashcount);
+    fprintf(crm_stderr, "Total hashes in the unknown text: %ld\n", unk_hashcount);
 
 
 
@@ -1473,7 +1473,7 @@ classify_end_regex_loop:
 #endif
 
     if (user_trace)
-        fprintf(stderr, "unique hashes generated: %ld\n", unk_hashcount);
+        fprintf(crm_stderr, "unique hashes generated: %ld\n", unk_hashcount);
 
     totalfeatures = unk_hashcount;
 
@@ -1515,7 +1515,7 @@ classify_end_regex_loop:
 #endif
 
         if (internal_trace)
-            fprintf(stderr, "About to run classify loop with %ld files\n",
+            fprintf(crm_stderr, "About to run classify loop with %ld files\n",
                     maxhash);
 
         //    Now run through each of the classifier maps
@@ -1528,7 +1528,7 @@ classify_end_regex_loop:
             k = 0;
             u = 0;
             wrapup = 0;
-            //      fprintf (stderr, "Header: %ld %lx %lx %lx %lx %lx %lx\n",
+            //      fprintf(crm_stderr, "Header: %ld %lx %lx %lx %lx %lx %lx\n",
             //       cls,
             //       hashes[cls][0].hash,
             //       hashes[cls][0].key,
@@ -1539,8 +1539,8 @@ classify_end_regex_loop:
 
             if (user_trace)
             {
-                fprintf(stderr, "now processing file %ld\n", cls);
-                fprintf(stderr, "Hashlens = %ld\n", hashlens[cls]);
+                fprintf(crm_stderr, "now processing file %ld\n", cls);
+                fprintf(crm_stderr, "Hashlens = %ld\n", hashlens[cls]);
             }
 
             while (k < hashlens[cls] && hashes[cls][k].hash == 0)
@@ -1789,9 +1789,9 @@ classify_end_regex_loop:
                     //    this gives 25 errors in 1st 3 passes... skipping
                     // radiance = 1.0 / ( dist + 10.0);
 
-                    //              fprintf (stderr, "%1ld %10ld %10ld %10ld  ",
+                    //              fprintf(crm_stderr, "%1ld %10ld %10ld %10ld  ",
                     // cls, kandu, unotk, knotu);
-                    //fprintf (stderr, "%15.5f %15.5lf\n", dist, radiance);
+                    //fprintf(crm_stderr, "%15.5f %15.5lf\n", dist, radiance);
                     class_radiance[cls] += radiance;
                     class_radiance_normalized[cls] += radiance / nfeats;
 
@@ -1833,7 +1833,7 @@ classify_end_regex_loop:
 #endif
                 }
             } //  end per-document stuff
-            // fprintf (stderr, "exit K = %ld\n", k);
+            // fprintf(crm_stderr, "exit K = %ld\n", k);
         }
 
         //    TURN THIS ON IF YOU WANT TO SEE ALL OF THE HUMILIATING DEAD
@@ -1843,7 +1843,7 @@ classify_end_regex_loop:
             //if (1)
             for (i = 0; i < maxhash; i++)
             {
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "f: %ld  dist %f %f\n"
                         "dom: %f %f  equ: %f %f sub: %f %f\n"
                         "DES: %f %f\nrad: %f %f  flux: %f %f\n\n",
@@ -1910,7 +1910,7 @@ classify_end_regex_loop:
         {
             for (k = 0; k < maxhash; k++)
             {
-                fprintf(stderr, "Match for file %ld:  radiance: %f  prob: %f\n",
+                fprintf(crm_stderr, "Match for file %ld:  radiance: %f  prob: %f\n",
                         k, class_radiance[k], ptc[k]);
             }
         }
@@ -2037,7 +2037,7 @@ classify_end_regex_loop:
         }
         // check here if we got enough room in stext to stuff everything
         // perhaps we'd better rise a nonfatalerror, instead of just
-        // whining on stderr
+        // whining on crm_stderr
         if (strcmp(&(stext[strlen(stext) - strlen(buf)]), buf) != 0)
         {
             nonfatalerror("WARNING: not enough room in the buffer to create "
@@ -2097,12 +2097,12 @@ classify_end_regex_loop:
     {
         //   all done... if we got here, we should just continue execution
         if (user_trace)
-            fprintf(stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
+            fprintf(crm_stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
     }
     else
     {
         if (user_trace)
-            fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
+            fprintf(crm_stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         //    and do what we do for a FAIL here
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;

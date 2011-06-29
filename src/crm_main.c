@@ -119,6 +119,8 @@ char *tempbuf = NULL;
 
 
 FILE *crm_stdin = NULL;
+FILE *crm_stderr = NULL;
+FILE *crm_stdout = NULL;
 
 
 
@@ -225,6 +227,22 @@ static void crm_final_cleanup(void)
     outbuf = NULL;
     free(tempbuf);
     tempbuf = NULL;
+
+	if (crm_stdin != stdin && crm_stdin != NULL)
+	{
+		fclose(crm_stdin);
+		crm_stdin = NULL;
+	}
+	if (crm_stdout != stdout && crm_stdout != stderr && crm_stdout != NULL)
+	{
+		fclose(crm_stdout);
+		crm_stdout = NULL;
+	}
+	if (crm_stderr != stderr && crm_stderr != stdout && crm_stderr != NULL)
+	{
+		fclose(crm_stderr);
+		crm_stderr = NULL;
+	}
 }
 
 
@@ -236,9 +254,15 @@ int main(int argc, char **argv)
     int openparen = -1;         //  if there's a list of acceptable arguments
     int user_cmd_line_vars = 0; // did the user specify --vars on cmdline?
 
-#if defined(WIN32) && defined(_DEBUG)
-    void *bogus_ptr;
+	char *stdin_filename = "crm_stdin (default)";
+	char *stdout_filename = "crm_stdout (default)";
+	char *stderr_filename = "crm_stderr (default)";
 
+	    crm_stdin = stdin;
+	    crm_stdout = stdout;
+	    crm_stderr = stderr;
+
+#if defined(WIN32) && defined(_DEBUG)
     /*
      * Hook in our client-defined reporting function.
      * Every time a _CrtDbgReport is called to generate
@@ -288,15 +312,18 @@ int main(int argc, char **argv)
     _CrtSetDbgFlag(i);
 
 //    // set a malloc marker we can use it in the leak dump at the end of the program:
-//    bogus_ptr = _calloc_dbg(1, 1, _CLIENT_BLOCK, __FILE__, __LINE__);
+//    (void)_calloc_dbg(1, 1, _CLIENT_BLOCK, __FILE__, __LINE__);
 #endif
 
-    //  printf (" args: %d \n", argc);
+    //  fprintf(crm_stderr, " args: %d \n", argc);
     //  for (i = 0; i < argc; i++)
-    //    fprintf (stderr, " argi: %d, argv: %s \n", i, argv[i]);
+    //    fprintf(crm_stderr, " argi: %d, argv: %s \n", i, argv[i]);
 
     atexit(crm_final_cleanup);
-    crm_stdin = stdin;
+
+#if defined(HAVE__SET_OUTPUT_FORMAT)
+	_set_output_format(_TWO_DIGIT_EXPONENT); // force MSVC (& others?) to produce floating point %f with 2 digits for power component instead of 3 for easier comparison with 'knowngood'.
+#endif
 
     //   copy argc and argv into global statics...
     prog_argc = argc;
@@ -358,56 +385,64 @@ int main(int argc, char **argv)
 
     for (i = 1; i < argc; i++)
     {
-        // fprintf (stderr, "Arg %d = '%s' \n", i, argv[i]);
+        // fprintf(crm_stderr, "Arg %d = '%s' \n", i, argv[i]);
         //   is this a plea for help?
         if (
             (strncmp(argv[i], "-?", 2) == 0)
             || (strncmp(argv[i], "-h", 2) == 0)
             || (argc == 1))
         {
-            fprintf(stderr, " CRM114 version %s (regex engine: %s)\n ",
+            fprintf(crm_stderr, " CRM114 version %s (regex engine: %s)\n ",
                     VERSION,
                     crm_regversion());
-            fprintf(stderr, " Copyright 2001-2006 William S. Yerazunis\n");
-            fprintf(stderr, " This software is licensed under the GPL "
+            fprintf(crm_stderr, " Copyright 2001-2006 William S. Yerazunis\n");
+            fprintf(crm_stderr, " This software is licensed under the GPL "
                             "with ABSOLUTELY NO WARRANTY\n");
-            fprintf(stderr, "     For language help, RTFRM.\n");
-            fprintf(stderr, "     Command Line Options:\n");
-            fprintf(stderr, " -{statements}   executes statements\n");
-            fprintf(stderr, " -b nn   sets a breakpoint on stmt nn\n");
-            fprintf(stderr, " -d nn   run nn statements, then drop to debug\n");
-            fprintf(stderr, " -e      ignore environment variables\n");
-            fprintf(stderr, " -E      set base for engine exit values\n");
-            fprintf(stderr, " -h      this help\n");
-            fprintf(stderr, " -l n    listing (detail level 1 through 5)\n");
-            fprintf(stderr, " -m nn   max number of microgroomed buckets in a chain\n");
-            fprintf(stderr, " -M nn   max chain length - triggers microgrooming if enabled\n");
-            fprintf(stderr, " -p      profile statement times\n");
-            fprintf(stderr, " -P nn   max program lines @ 128 chars/line\n");
-            fprintf(stderr, " -q m    mathmode (0,1 alg/RPN in EVAL,"
+            fprintf(crm_stderr, "     For language help, RTFRM.\n");
+            fprintf(crm_stderr, "     Command Line Options:\n");
+            fprintf(crm_stderr, " -{statements}   executes statements\n");
+            fprintf(crm_stderr, " -b nn   sets a breakpoint on stmt nn\n");
+            fprintf(crm_stderr, " -d nn   run nn statements, then drop to debug\n");
+            fprintf(crm_stderr, " -e      ignore environment variables\n");
+            fprintf(crm_stderr, " -E      set base for engine exit values\n");
+            fprintf(crm_stderr, " -h      this help\n");
+            fprintf(crm_stderr, " -l n    listing (detail level 1 through 5)\n");
+            fprintf(crm_stderr, " -m nn   max number of microgroomed buckets in a chain\n");
+            fprintf(crm_stderr, " -M nn   max chain length - triggers microgrooming if enabled\n");
+            fprintf(crm_stderr, " -p      profile statement times\n");
+            fprintf(crm_stderr, " -P nn   max program lines @ 128 chars/line\n");
+            fprintf(crm_stderr, " -q m    mathmode (0,1 alg/RPN in EVAL,"
                             "2,3 alg/RPN everywhere)\n");
-            fprintf(stderr, " -r nn   set OSBF min pmax/pmin ratio (default=9)\n");
-            fprintf(stderr, " -s nn   sparse spectra (.css) featureslots\n");
-            fprintf(stderr, " -S nn   round up to 2^N+1 .css featureslots\n");
-            fprintf(stderr, " -C      use env. locale (default POSIX)\n");
-            fprintf(stderr, " -t      user trace mode on\n");
-            fprintf(stderr, " -T      implementors trace mode on\n");
-            fprintf(stderr, " -u dir  chdir to directory before starting\n");
-            fprintf(stderr, " -v      print version ID and exit\n");
-            fprintf(stderr, " -w nn   max data window size ( bytes )\n");
-            fprintf(stderr, " --      end of CRM114 flags; start of user args\n");
-            fprintf(stderr, " --foo   creates var :foo: with value 'SET'\n");
-            fprintf(stderr, " --x=y   creates var :x: with value 'y'\n");
-            fprintf(stderr, " -in file   use file instead of stdin for input\n");
-            fprintf(stderr, " -dbg    direct developer support: trigger the debugger when an internal\n"
+            fprintf(crm_stderr, " -r nn   set OSBF min pmax/pmin ratio (default=9)\n");
+            fprintf(crm_stderr, " -s nn   sparse spectra (.css) featureslots\n");
+            fprintf(crm_stderr, " -S nn   round up to 2^N+1 .css featureslots\n");
+            fprintf(crm_stderr, " -C      use env. locale (default POSIX)\n");
+            fprintf(crm_stderr, " -t      user trace mode on\n");
+            fprintf(crm_stderr, " -T      implementors trace mode on\n");
+            fprintf(crm_stderr, " -u dir  chdir to directory before starting\n");
+            fprintf(crm_stderr, " -v      print version ID and exit\n");
+            fprintf(crm_stderr, " -w nn   max data window size ( bytes )\n");
+            fprintf(crm_stderr, " --      end of CRM114 flags; start of user args\n");
+            fprintf(crm_stderr, " --foo   creates var :foo: with value 'SET'\n");
+            fprintf(crm_stderr, " --x=y   creates var :x: with value 'y'\n");
+            fprintf(crm_stderr, " -in file\n"
+				            "         use file instead of crm_stdin for input\n");
+            fprintf(crm_stderr, " -out file\n"
+				            "         use file instead of crm_stdout for output\n");
+            fprintf(crm_stderr, " -err file\n"
+				            "         use file instead of crm_stderr for output. Note that '-out' may use the same\n"
+							"         file as '-err'. Note also that '-out' and '-err' may specify the standard\n"
+							"         handle values '1' for crm_stdout and '2' for crm_stderr. This implies that '-out 1'\n"
+							"         is essentially identical to the UNIX shell '2>&1' redirection.\n");
+            fprintf(crm_stderr, " -dbg    direct developer support: trigger the debugger when an internal\n"
                             "         error is hit.\n");
-            fprintf(stderr, " -memdump\n"
+            fprintf(crm_stderr, " -memdump\n"
                             "         direct developer support: dump all detected memory leaks\n");
 
             if (openparen > 0)
             {
-                fprintf(stderr, "\n This program also claims to accept these command line args:");
-                fprintf(stderr, "\n  %s\n", &argv[openparen][1]);
+                fprintf(crm_stderr, "\n This program also claims to accept these command line args:");
+                fprintf(crm_stderr, "\n  %s\n", &argv[openparen][1]);
             }
             if (engine_exit_base != 0)
             {
@@ -422,14 +457,14 @@ int main(int argc, char **argv)
         if (strncmp(argv[i], "--", 2) == 0  && strlen(argv[i]) == 2)
         {
             if (user_trace)
-                fprintf(stderr, "system flag processing ended at arg %d .\n", i);
+                fprintf(crm_stderr, "system flag processing ended at arg %d .\n", i);
             i = argc;
             goto end_command_line_parse_loop;
         }
         if (strncmp(argv[i], "--", 2) == 0 && strlen(argv[i]) > 2)
         {
             if (user_trace)
-                fprintf(stderr, "Commandline set of user variable at %d '%s'.\n",
+                fprintf(crm_stderr, "Commandline set of user variable at %d '%s'.\n",
                         i, argv[i]);
             if (user_cmd_line_vars == 0) user_cmd_line_vars = i;
             goto end_command_line_parse_loop;
@@ -440,12 +475,12 @@ int main(int argc, char **argv)
             if (user_trace == 0)
             {
                 user_trace = 1;
-                fprintf(stderr, "User tracing on");
+                fprintf(crm_stderr, "User tracing on");
             }
             else
             {
                 user_trace = 0;
-                fprintf(stderr, "User tracing off");
+                fprintf(crm_stderr, "User tracing off");
             }
             goto end_command_line_parse_loop;
         }
@@ -455,12 +490,12 @@ int main(int argc, char **argv)
             if (internal_trace == 0)
             {
                 internal_trace = 1;
-                fprintf(stderr, "Internal tracing on");
+                fprintf(crm_stderr, "Internal tracing on");
             }
             else
             {
                 internal_trace = 0;
-                fprintf(stderr, "Internal tracing off");
+                fprintf(crm_stderr, "Internal tracing off");
             }
             goto end_command_line_parse_loop;
         }
@@ -469,7 +504,7 @@ int main(int argc, char **argv)
         {
             profile_execution = 1;
             if (user_trace)
-                fprintf(stderr, "Setting profile_execution to 1");
+                fprintf(crm_stderr, "Setting profile_execution to 1");
             goto end_command_line_parse_loop;
         }
 
@@ -486,7 +521,7 @@ int main(int argc, char **argv)
                 max_pgmsize = 128 * max_pgmlines;
             }
             if (user_trace)
-                fprintf(stderr, "Setting max prog lines to %ld (%ld bytes)\n",
+                fprintf(crm_stderr, "Setting max prog lines to %ld (%ld bytes)\n",
                         max_pgmlines, sizeof(char) * max_pgmsize);
             goto end_command_line_parse_loop;
         }
@@ -503,7 +538,7 @@ int main(int argc, char **argv)
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Setting listing level to %ld\n",
+                fprintf(crm_stderr, "Setting listing level to %ld\n",
                         prettyprint_listing);
             goto end_command_line_parse_loop;
         }
@@ -512,7 +547,7 @@ int main(int argc, char **argv)
         if (strncmp(argv[i], "-C", 2) == 0 && strlen(argv[i]) == 2)
         {
             if (user_trace)
-                fprintf(stderr, "Setting locale to local\n");
+                fprintf(crm_stderr, "Setting locale to local\n");
             setlocale(LC_ALL, "");
             goto end_command_line_parse_loop;
         }
@@ -531,15 +566,15 @@ int main(int argc, char **argv)
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting math mode to %ld ", q_expansion_mode);
+                fprintf(crm_stderr, "Setting math mode to %ld ", q_expansion_mode);
                 if (q_expansion_mode == 0)
-                    fprintf(stderr, "(algebraic, only in EVAL\n");
+                    fprintf(crm_stderr, "(algebraic, only in EVAL\n");
                 if (q_expansion_mode == 1)
-                    fprintf(stderr, "(RPN, only in EVAL\n");
+                    fprintf(crm_stderr, "(RPN, only in EVAL\n");
                 if (q_expansion_mode == 2)
-                    fprintf(stderr, "(algebraic, in all expressions)\n");
+                    fprintf(crm_stderr, "(algebraic, in all expressions)\n");
                 if (q_expansion_mode == 3)
-                    fprintf(stderr, "(RPN, in all expressions)\n");
+                    fprintf(crm_stderr, "(RPN, in all expressions)\n");
             }
             goto end_command_line_parse_loop;
         }
@@ -557,11 +592,11 @@ int main(int argc, char **argv)
             }
             if (data_window_size < 8192)
             {
-                fprintf(stderr, "Sorry, but the min data window is 8192 bytes");
+                fprintf(crm_stderr, "Sorry, but the min data window is 8192 bytes");
                 data_window_size = 8192;
             }
             if (user_trace)
-                fprintf(stderr, "Setting max data window to %ld chars\n",
+                fprintf(crm_stderr, "Setting max data window to %ld chars\n",
                         data_window_size);
             goto end_command_line_parse_loop;
         }
@@ -587,7 +622,7 @@ int main(int argc, char **argv)
             }
             else
             {
-                fprintf(stderr, "On -s flag: Missing or incomprehensible"
+                fprintf(crm_stderr, "On -s flag: Missing or incomprehensible"
                                 ".CSS file length.\n");
                 if (engine_exit_base != 0)
                 {
@@ -598,7 +633,7 @@ int main(int argc, char **argv)
             }
 
             if (user_trace)
-                fprintf(stderr, "Setting sparse spectrum length to %ld bins\n",
+                fprintf(crm_stderr, "Setting sparse spectrum length to %ld bins\n",
                         sparse_spectrum_file_length);
             goto end_command_line_parse_loop;
         }
@@ -615,7 +650,7 @@ int main(int argc, char **argv)
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Setting the command-line break to line %ld\n",
+                fprintf(crm_stderr, "Setting the command-line break to line %ld\n",
                         cmdline_break);
             goto end_command_line_parse_loop;
         }
@@ -632,7 +667,7 @@ int main(int argc, char **argv)
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Setting the engine exit base value to %ld\n",
+                fprintf(crm_stderr, "Setting the engine exit base value to %ld\n",
                         engine_exit_base);
             goto end_command_line_parse_loop;
         }
@@ -650,7 +685,7 @@ int main(int argc, char **argv)
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Setting debug countdown to %ld statements\n",
+                fprintf(crm_stderr, "Setting debug countdown to %ld statements\n",
                         debug_countdown);
             if (debug_countdown == 0)  //  if next arg wasn't numeric, back up
                 i--;
@@ -662,7 +697,7 @@ int main(int argc, char **argv)
         {
             ignore_environment_vars++;
             if (user_trace)
-                fprintf(stderr, "Ignoring environment variables\n");
+                fprintf(crm_stderr, "Ignoring environment variables\n");
             goto end_command_line_parse_loop;
         }
 
@@ -671,27 +706,27 @@ int main(int argc, char **argv)
         {
             i++;  // move to the next arg
             if (user_trace)
-                fprintf(stderr, "Setting WD to %s\n", argv[i]);
+                fprintf(crm_stderr, "Setting WD to %s\n", argv[i]);
             if (i >= argc)
             {
-                fprintf(stderr, "The -u working-directory change needs an arg");
+                fprintf(crm_stderr, "The -u working-directory change needs an arg");
                 goto end_command_line_parse_loop;
             }
             if (chdir(argv[i]))
             {
-                fprintf(stderr, "Sorry, couldn't chdir to %s\n", argv[i]);
+                fprintf(crm_stderr, "Sorry, couldn't chdir to %s\n", argv[i]);
             }
             goto end_command_line_parse_loop;
         }
 
         if (strncmp(argv[i], "-v", 2) == 0 && strlen(argv[i]) == 2)
         {
-            //   NOTE - version info goes to stdout, not stderr, just like GCC does
-            fprintf(stdout, " This is CRM114, version %s (%s)\n",
+            //   NOTE - version info goes to crm_stdout, not crm_stderr, just like GCC does
+            fprintf(crm_stdout, " This is CRM114, version %s (%s)\n",
                     VERSION,
                     crm_regversion());
-            fprintf(stdout, " Copyright 2001-2007 William S. Yerazunis\n");
-            fprintf(stdout, " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
+            fprintf(crm_stdout, " Copyright 2001-2007 William S. Yerazunis\n");
+            fprintf(crm_stdout, " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 16);
@@ -705,7 +740,7 @@ int main(int argc, char **argv)
         if (strncmp(argv[i], "-{", 2) == 0) //  don't care about the "}"
         {
             if (user_trace)
-                fprintf(stderr, "Command line program at arg %d\n", i);
+                fprintf(crm_stderr, "Command line program at arg %d\n", i);
             openbracket = i;
             goto end_command_line_parse_loop;
         }
@@ -715,7 +750,7 @@ int main(int argc, char **argv)
         if (strncmp(argv[i], "-(", 2) == 0)
         {
             if (user_trace)
-                fprintf(stderr, "Allowed command line arg list at arg %d\n", i);
+                fprintf(crm_stderr, "Allowed command line arg list at arg %d\n", i);
             openparen = i;
             //
             //      If there's a -- at the end of the arg, lock out system
@@ -726,7 +761,7 @@ int main(int argc, char **argv)
             if (strncmp("--", &argv[i][strlen(argv[i]) - 2], 2) == 0)
             {
                 if (user_trace)
-                    fprintf(stderr, "cmdline arglist also locks out sysflags.\n");
+                    fprintf(crm_stderr, "cmdline arglist also locks out sysflags.\n");
                 i = argc;
             }
             goto end_command_line_parse_loop;
@@ -744,7 +779,7 @@ int main(int argc, char **argv)
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Setting microgroom_stop_after to %ld\n",
+                fprintf(crm_stderr, "Setting microgroom_stop_after to %ld\n",
                         microgroom_stop_after);
             if (microgroom_stop_after <= 0)  //  if value <= 0 set it to default
                 microgroom_stop_after = MICROGROOM_STOP_AFTER;
@@ -763,7 +798,7 @@ int main(int argc, char **argv)
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Setting microgroom_chain_length to %ld\n",
+                fprintf(crm_stderr, "Setting microgroom_chain_length to %ld\n",
                         microgroom_chain_length);
             if (microgroom_chain_length < 5)  //  if value <= 5 set it to default
                 microgroom_chain_length = MICROGROOM_CHAIN_LENGTH;
@@ -782,7 +817,7 @@ int main(int argc, char **argv)
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Setting min pmax/pmin of a feature to %f\n",
+                fprintf(crm_stderr, "Setting min pmax/pmin of a feature to %f\n",
                         min_pmax_pmin_ratio);
             if (min_pmax_pmin_ratio < 0)  //  if value < 0 set it to 0
                 min_pmax_pmin_ratio = OSBF_MIN_PMAX_PMIN_RATIO;
@@ -794,25 +829,162 @@ int main(int argc, char **argv)
             i++;  // move to the next arg
             if (i < argc)
             {
-                crm_stdin = fopen(argv[i], "rb"); // open in BINARY mode!
+				// support '0' as crm_stdin handle:
+				if (strcmp(argv[i], "0") == 0
+					|| strcmp(argv[i], "-") == 0
+					|| strcmp(argv[i], "stdin") == 0
+					|| strcmp(argv[i], "/dev/stdin") == 0
+					|| strcmp(argv[i], "con:") == 0
+					|| strcmp(argv[i], "/dev/tty") == 0)
+				{
+					crm_stdin = stdin;
+					stdin_filename = "stdin (default)";
+				}
+				else if (strcmp(argv[i], "1") == 0
+				|| strcmp(argv[i], "2") == 0)
+				{
+					untrappableerror("'-in' cannot use the crm_stdout/crm_stderr handles 1/2! This argument is therefor illegal: ", argv[i]);
+				}
+				else
+				{
+					stdin_filename = argv[i];
+                crm_stdin = fopen(stdin_filename, "rb"); // open in BINARY mode!
                 if (crm_stdin == NULL)
                 {
-                    untrappableerror("Failed to open stdin input replacement file: ", argv[i]);
+                    untrappableerror("Failed to open stdin input replacement file: ", stdin_filename);
                 }
+				}
             }
             if (user_trace)
 			{
-                fprintf(stderr, "Setting stdin replacement file '%s'\n",
-                        argv[i]);
+                fprintf(crm_stderr, "Setting stdin replacement file '%s'\n",
+                        stdin_filename);
 			}
             goto end_command_line_parse_loop;
         }
-        if (strncmp(argv[i], "-dbg", 4) == 0 && strlen(argv[i]) == 4)
+        if (strncmp(argv[i], "-out", 4) == 0 && strlen(argv[i]) == 4)
+        {
+            i++;  // move to the next arg
+            if (i < argc)
+            {
+				// support '1' as stdout handle:
+				if (strcmp(argv[i], "1") == 0
+					|| strcmp(argv[i], "-") == 0
+					|| strcmp(argv[i], "stdout") == 0
+					|| strcmp(argv[i], "/dev/stdout") == 0
+					|| strcmp(argv[i], "con:") == 0
+					|| strcmp(argv[i], "/dev/tty") == 0)
+				{
+					crm_stdout = stdout;
+					stdout_filename = "stdout (default)";
+				}
+				else if (strcmp(argv[i], "2") == 0
+					|| strcmp(argv[i], "stderr") == 0
+					|| strcmp(argv[i], "/dev/stderr") == 0)
+				{
+									// support '2' as stderr handle:
+					crm_stdout = stderr;
+					stdout_filename = "crm_stderr";
+				}
+				else if (strcmp(argv[i], "0") == 0)
+				{
+					untrappableerror("'-out' cannot use the stdin handle 0! This argument is therefor illegal: ", argv[i]);
+				}
+				else
+				{
+					stdout_filename = argv[i];
+					if (strcmp(stdout_filename, stderr_filename) == 0)
+					{
+						// same file for both.
+						//
+						// GROT GROT GROT: Win32 is case insensitive; besides, you could screw up by using different
+						// relative and/or absolute paths for both.
+						// For now, the user won't be protected against his own 'smartness' here.
+						//
+                crm_stdout = fopen(stdout_filename, "rb"); // open in BINARY mode!
+                if (crm_stdout == NULL)
+                {
+                    untrappableerror("Failed to open stdout input replacement file: ", stdout_filename);
+                }
+					}
+					else
+					{
+						crm_stdout = crm_stderr;
+					}
+				}
+            }
+            if (user_trace)
+			{
+                fprintf(crm_stderr, "Setting stdout replacement file '%s'\n",
+                        stdout_filename);
+			}
+            goto end_command_line_parse_loop;
+        }
+        if (strncmp(argv[i], "-err", 4) == 0 && strlen(argv[i]) == 4)
+        {
+            i++;  // move to the next arg
+            if (i < argc)
+            {
+				// support '2' as stderr handle:
+				if (strcmp(argv[i], "2") == 0
+					|| strcmp(argv[i], "-") == 0
+					|| strcmp(argv[i], "stderr") == 0
+					|| strcmp(argv[i], "/dev/stderr") == 0
+					|| strcmp(argv[i], "con:") == 0
+					|| strcmp(argv[i], "/dev/tty") == 0)
+				{
+					crm_stderr = stderr;
+					stderr_filename = "stderr (default)";
+				}
+				else if (strcmp(argv[i], "1") == 0
+					|| strcmp(argv[i], "stdout") == 0
+					|| strcmp(argv[i], "/dev/stdout") == 0)
+				{
+									// support '1' as stdout handle:
+					crm_stderr = stdout;
+					stderr_filename = "stdout";
+				}
+				else if (strcmp(argv[i], "0") == 0)
+				{
+					untrappableerror("'-err' cannot use the stdin handle 0! This argument is therefor illegal: ", argv[i]);
+				}
+				else
+				{
+					stderr_filename = argv[i];
+					if (strcmp(stdout_filename, stderr_filename) == 0)
+					{
+						// same file for both.
+						//
+						// GROT GROT GROT: Win32 is case insensitive; besides, you could screw up by using different
+						// relative and/or absolute paths for both.
+						// For now, the user won't be protected against his own 'smartness' here.
+						//
+                crm_stderr = fopen(stderr_filename, "rb"); // open in BINARY mode!
+                if (crm_stderr == NULL)
+                {
+                    untrappableerror("Failed to open stderr input replacement file: ", stderr_filename);
+                }
+					}
+					else
+					{
+						crm_stderr = crm_stdout;
+					}
+				}
+            }
+            if (user_trace)
+			{
+                fprintf(crm_stderr, "Setting stderr replacement file '%s'\n",
+                        stderr_filename);
+			}
+            goto end_command_line_parse_loop;
+        }
+
+		if (strncmp(argv[i], "-dbg", 4) == 0 && strlen(argv[i]) == 4)
         {
 #ifndef CRM_DONT_ASSERT
             trigger_debugger = 1;
             if (user_trace)
-                fprintf(stderr, "Debugger trigger turned ON.\n");
+                fprintf(crm_stderr, "Debugger trigger turned ON.\n");
 #else
             nonfatalerror_ex(SRC_LOC(), "Debugger support is not included in this binary. "
                                         "Please rebuild with debugger support if you require such.");
@@ -824,7 +996,7 @@ int main(int argc, char **argv)
 #if defined (WIN32) && defined (_DEBUG)
             trigger_memdump = 1;
             if (user_trace)
-                fprintf(stderr, "memory leak dump turned ON.\n");
+                fprintf(crm_stderr, "memory leak dump turned ON.\n");
 #else
             untrappableerror_ex(SRC_LOC(), "Memory leak dump support is not included in this binary.");
 #endif
@@ -843,11 +1015,11 @@ int main(int argc, char **argv)
             csl->filename = argv[i];
             csl->filename_allocated = 0;
             if (user_trace)
-                fprintf(stderr, "Using program file %s\n", csl->filename);
+                fprintf(crm_stderr, "Using program file %s\n", csl->filename);
         }
 end_command_line_parse_loop:
         if (internal_trace)
-            fprintf(stderr, "End of pass %d through cmdline parse loop\n",
+            fprintf(crm_stderr, "End of pass %d through cmdline parse loop\n",
                     i);
     }
 
@@ -859,7 +1031,7 @@ end_command_line_parse_loop:
     if (csl->filename == NULL && openbracket < 1)
     {
         if (internal_trace)
-            fprintf(stderr, "Looking for _some_ program to run...\n");
+            fprintf(crm_stderr, "Looking for _some_ program to run...\n");
         for (i = 1; i < argc; i++)
             if (argv[i][0] != '-')
             {
@@ -871,13 +1043,13 @@ end_command_line_parse_loop:
                 i = argc;
             }
         if (user_trace)
-            fprintf(stderr, "Using program file %s\n", csl->filename);
+            fprintf(crm_stderr, "Using program file %s\n", csl->filename);
     }
     //      If we still don't have a program, we're done.  Squalk an
     //      error.
     if (csl->filename == NULL && openbracket < 0)
     {
-        fprintf(stderr, "\nCan't find a file to run,"
+        fprintf(crm_stderr, "\nCan't find a file to run,"
                         "or a command-line to execute.\n"
                         "I give up... (exiting)\n");
         if (engine_exit_base != 0)
@@ -895,8 +1067,8 @@ end_command_line_parse_loop:
     {
         if (argc <= 1)
         {
-            fprintf(stderr, "CRM114 version %s\n", VERSION);
-            fprintf(stderr, "Try 'crm <progname>', or 'crm -h' for help\n");
+            fprintf(crm_stderr, "CRM114 version %s\n", VERSION);
+            fprintf(crm_stderr, "Try 'crm <progname>', or 'crm -h' for help\n");
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 18);
@@ -909,7 +1081,7 @@ end_command_line_parse_loop:
         else
         {
             if (user_trace)
-                fprintf(stderr, "Loading program from file %s\n",
+                fprintf(crm_stderr, "Loading program from file %s\n",
                         csl->filename);
             crm_load_csl(csl);
         }
@@ -937,14 +1109,14 @@ end_command_line_parse_loop:
         csl->nchars = strlen(csl->filetext);
         csl->hash = strnhash(csl->filetext, csl->nchars);
         if (user_trace)
-            fprintf(stderr, "Hash of program: 0x%08lX, length is %ld bytes: %s\n-->\n%s",
+            fprintf(crm_stderr, "Hash of program: 0x%08lX, length is %ld bytes: %s\n-->\n%s",
                     (unsigned long)csl->hash, csl->nchars, csl->filename, csl->filetext);
     }
 
     //  We get another csl-like data structure,
     //  which we'll call the cdw, which has all the fields we need, and
     //  simply allocate the data window of "adequate size" and read
-    //  stuff in on stdin.
+    //  stuff in on crm_stdin.
 
     cdw = calloc(1, sizeof(cdw[0]));
     if (!cdw)
@@ -994,15 +1166,15 @@ end_command_line_parse_loop:
     //  If the windowflag == 0, we should preload the data window.  Now,
     //  let's get some data in.
 
-    //    and preload the data window with stdin until we hit EOF
+    //    and preload the data window with crm_stdin until we hit EOF
     i = 0;
     if (csl->preload_window)
     {
         //     GROT GROT GROT  This is slow
         //
-        //while (!feof (stdin) && i < data_window_size - 1)
+        //while (!feof (crm_stdin) && i < data_window_size - 1)
         //        {
-        //          cdw->filetext[i] = fgetc (stdin);
+        //          cdw->filetext[i] = fgetc (crm_stdin);
         //          i++;
         //        }
         //i-- ;  //     get rid of the extra ++ on i from the loop; this is the
@@ -1011,7 +1183,7 @@ end_command_line_parse_loop:
         //
         //         This is the much faster way.
         //
-        //      i = fread (cdw->filetext, 1, data_window_size - 1, stdin);
+        //      i = fread (cdw->filetext, 1, data_window_size - 1, crm_stdin);
         //
         //          JesusFreke suggests this instead- retry with successively
         //          smaller readsizes on systems that can't handle full
@@ -1022,7 +1194,7 @@ end_command_line_parse_loop:
 #endif
         while (!feof(crm_stdin) && i < data_window_size - 1)
         {
-            //i += fread (cdw->filetext + i, 1, readsize-1, stdin);
+            //i += fread (cdw->filetext + i, 1, readsize-1, crm_stdin);
             int rs;
             rs = i + readsize < data_window_size - 1 ?
                  readsize : data_window_size - i - 1;
@@ -1040,7 +1212,7 @@ end_command_line_parse_loop:
                 }
                 else
                 {
-                    fprintf(stderr, "Error while trying to get startup input.  "
+                    fprintf(crm_stderr, "Error while trying to get startup input.  "
                                     "This is usually pretty much hopeless, but "
                                     "I'll try to keep running anyway.  ");
                     break;

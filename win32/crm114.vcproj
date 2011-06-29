@@ -57,6 +57,7 @@
 				WarningLevel="4"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4127;4018;4389;6244;6262;6011"
 				EnablePREfast="true"
 			/>
 			<Tool
@@ -150,6 +151,7 @@
 				WarningLevel="4"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4127;4018;4389;6244;6262;6011"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -434,10 +436,6 @@
 				RelativePath="..\src\crm_expr_clump_nn.h"
 				>
 			</File>
-			<File
-				RelativePath=".\resource.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -450,6 +448,10 @@
 			</File>
 			<File
 				RelativePath=".\crm114rc.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\resource.h"
 				>
 			</File>
 		</Filter>
@@ -501,83 +503,135 @@
 			Name="Extra Files"
 			>
 			<File
-				RelativePath="..\src\blacklist.mfp"
+				RelativePath="..\AUTHORS"
 				>
 			</File>
 			<File
-				RelativePath="..\src\blacklist.mfp.example"
+				RelativePath="..\autogen.sh"
 				>
 			</File>
 			<File
-				RelativePath="..\src\classify_details.txt"
+				RelativePath="..\bootstrap"
 				>
 			</File>
 			<File
-				RelativePath="..\src\crm114-mode.el"
+				RelativePath="..\BUGS"
 				>
 			</File>
 			<File
-				RelativePath="..\src\inoc_passwd.txt"
+				RelativePath="..\ChangeLog"
 				>
 			</File>
 			<File
-				RelativePath="..\src\mailfilter.cf"
+				RelativePath="..\configure"
 				>
 			</File>
 			<File
-				RelativePath="..\src\Makefile.am"
+				RelativePath="..\configure.ac"
 				>
 			</File>
 			<File
-				RelativePath="..\src\megatest.bat"
+				RelativePath="..\COPYING"
 				>
 			</File>
 			<File
-				RelativePath="..\src\megatest.sh"
+				RelativePath="..\CREDITS"
 				>
 			</File>
 			<File
-				RelativePath="..\src\megatest_knowngood.log"
+				RelativePath="..\crm114.kdevelop"
 				>
 			</File>
 			<File
-				RelativePath="..\src\pad.dat"
+				RelativePath="..\crm114.kdevelop.filelist"
 				>
 			</File>
 			<File
-				RelativePath="..\src\priolist.mfp"
+				RelativePath="..\crm114.kdevses"
 				>
 			</File>
 			<File
-				RelativePath="..\src\priolist.mfp.example"
+				RelativePath="..\crm114.lsm"
 				>
 			</File>
 			<File
-				RelativePath="..\src\procmailrc.recipe"
+				RelativePath="..\crm114.lsm.in"
 				>
 			</File>
 			<File
-				RelativePath="..\src\rename-gz"
+				RelativePath="..\distribute_files_from_src_dir.sh"
 				>
 			</File>
 			<File
-				RelativePath="..\src\reto_procmail_recipe.recipe"
+				RelativePath="..\Doxyfile"
 				>
 			</File>
 			<File
-				RelativePath="..\src\rewrites.mfp"
+				RelativePath="..\fix_crlf.sh"
 				>
 			</File>
 			<File
-				RelativePath="..\src\test_rewrites.mfp"
+				RelativePath="..\HACKING"
 				>
 			</File>
 			<File
-				RelativePath="..\src\whitelist.mfp"
+				RelativePath="..\INSTALL"
 				>
 			</File>
 			<File
-				RelativePath="..\src\whitelist.mfp.example"
+				RelativePath="..\MAILINGLIST"
+				>
+			</File>
+			<File
+				RelativePath="..\Makefile.am"
+				>
+			</File>
+			<File
+				RelativePath="..\Makefile.in"
+				>
+			</File>
+			<File
+				RelativePath="..\mk_distros.sh"
+				>
+			</File>
+			<File
+				RelativePath="..\NEWS"
+				>
+			</File>
+			<File
+				RelativePath="..\README"
+				>
+			</File>
+			<File
+				RelativePath="..\README.1st"
+				>
+			</File>
+			<File
+				RelativePath="..\README.maintainer"
+				>
+			</File>
+			<File
+				RelativePath="..\README.win32"
+				>
+			</File>
+			<File
+				RelativePath="..\setversion"
+				>
+			</File>
+			<File
+				RelativePath="..\stamp.day"
+				>
+			</File>
+			<File
+				RelativePath="..\stamp.month"
+				>
+			</File>
+			<File
+				RelativePath="..\stamp.year"
+				>
+			</File>
+			<File
+				RelativePath="..\TODO"
 				>
 			</File>
 			<Filter
@@ -605,144 +659,12 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="rootdir"
-				>
-				<File
-					RelativePath="..\AUTHORS"
-					>
-				</File>
-				<File
-					RelativePath="..\autogen.sh"
-					>
-				</File>
-				<File
-					RelativePath="..\bootstrap"
-					>
-				</File>
-				<File
-					RelativePath="..\BUGS"
-					>
-				</File>
-				<File
-					RelativePath="..\ChangeLog"
-					>
-				</File>
-				<File
-					RelativePath="..\configure"
-					>
-				</File>
-				<File
-					RelativePath="..\configure.ac"
-					>
-				</File>
-				<File
-					RelativePath="..\COPYING"
-					>
-				</File>
-				<File
-					RelativePath="..\CREDITS"
-					>
-				</File>
-				<File
-					RelativePath="..\crm114.kdevelop"
-					>
-				</File>
-				<File
-					RelativePath="..\crm114.kdevelop.filelist"
-					>
-				</File>
-				<File
-					RelativePath="..\crm114.kdevses"
-					>
-				</File>
-				<File
-					RelativePath="..\crm114.lsm"
-					>
-				</File>
-				<File
-					RelativePath="..\crm114.lsm.in"
-					>
-				</File>
-				<File
-					RelativePath="..\distribute_files_from_src_dir.sh"
-					>
-				</File>
-				<File
-					RelativePath="..\Doxyfile"
-					>
-				</File>
-				<File
-					RelativePath="..\fix_crlf.sh"
-					>
-				</File>
-				<File
-					RelativePath="..\HACKING"
-					>
-				</File>
-				<File
-					RelativePath="..\INSTALL"
-					>
-				</File>
-				<File
-					RelativePath="..\MAILINGLIST"
-					>
-				</File>
-				<File
-					RelativePath="..\Makefile.am"
-					>
-				</File>
-				<File
-					RelativePath="..\Makefile.in"
-					>
-				</File>
-				<File
-					RelativePath="..\mk_distros.sh"
-					>
-				</File>
-				<File
-					RelativePath="..\NEWS"
-					>
-				</File>
-				<File
-					RelativePath="..\README"
-					>
-				</File>
-				<File
-					RelativePath="..\README.1st"
-					>
-				</File>
-				<File
-					RelativePath="..\README.maintainer"
-					>
-				</File>
-				<File
-					RelativePath="..\README.win32"
-					>
-				</File>
-				<File
-					RelativePath="..\setversion"
-					>
-				</File>
-				<File
-					RelativePath="..\stamp.day"
-					>
-				</File>
-				<File
-					RelativePath="..\stamp.month"
-					>
-				</File>
-				<File
-					RelativePath="..\stamp.year"
-					>
-				</File>
-				<File
-					RelativePath="..\TODO"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="M4"
 				>
+				<File
+					RelativePath="..\m4\ac___function___c99_vpredef_vars.m4"
+					>
+				</File>
 				<File
 					RelativePath="..\m4\ac_c_long_long.m4"
 					>
@@ -760,6 +682,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\m4\ac_nsec_stat_fields.m4"
+					>
+				</File>
+				<File
 					RelativePath="..\m4\ax_cflags_gcc_option.m4"
 					>
 				</File>
@@ -772,9 +698,125 @@
 					>
 				</File>
 				<File
+					RelativePath="..\m4\ax_diff_option.m4"
+					>
+				</File>
+				<File
 					RelativePath="..\m4\vl_lib_readline.m4"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="src"
+				>
+				<File
+					RelativePath="..\src\bitentropybug.bat"
+					>
+				</File>
+				<File
+					RelativePath="..\src\bitentropybug2.bat"
+					>
+				</File>
+				<File
+					RelativePath="..\src\blacklist.mfp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\blacklist.mfp.example"
+					>
+				</File>
+				<File
+					RelativePath="..\src\bugtest3-t.bat"
+					>
+				</File>
+				<File
+					RelativePath="..\src\bugtest3.bat"
+					>
+				</File>
+				<File
+					RelativePath="..\src\classify_details.txt"
+					>
+				</File>
+				<File
+					RelativePath="..\src\crm114-mode.el"
+					>
+				</File>
+				<File
+					RelativePath="..\src\hyperspace_bug.bat"
+					>
+				</File>
+				<File
+					RelativePath="..\src\inoc_passwd.txt"
+					>
+				</File>
+				<File
+					RelativePath="..\src\mailfilter.cf"
+					>
+				</File>
+				<File
+					RelativePath="..\src\Makefile.am"
+					>
+				</File>
+				<File
+					RelativePath="..\src\megatest.bat"
+					>
+				</File>
+				<File
+					RelativePath="..\src\megatest.sh"
+					>
+				</File>
+				<File
+					RelativePath="..\src\megatest_knowngood.log"
+					>
+				</File>
+				<File
+					RelativePath="..\src\pad.dat"
+					>
+				</File>
+				<File
+					RelativePath="..\src\priolist.mfp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\priolist.mfp.example"
+					>
+				</File>
+				<File
+					RelativePath="..\src\procmailrc.recipe"
+					>
+				</File>
+				<File
+					RelativePath="..\src\rename-gz"
+					>
+				</File>
+				<File
+					RelativePath="..\src\reto_procmail_recipe.recipe"
+					>
+				</File>
+				<File
+					RelativePath="..\src\rewrites.mfp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\svm_crash.bat"
+					>
+				</File>
+				<File
+					RelativePath="..\src\test_rewrites.mfp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\whitelist.mfp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\whitelist.mfp.example"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="win32"
+				>
 			</Filter>
 		</Filter>
 		<Filter

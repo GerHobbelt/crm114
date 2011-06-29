@@ -64,7 +64,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     //
     //
     if (internal_trace)
-        fprintf(stderr, " preprocessor - #insert processing...\n");
+        fprintf(crm_stderr, " preprocessor - #insert processing...\n");
 
     lflag = 0;
     i = 0;
@@ -90,7 +90,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     crm_break_statements(0, csl->nchars, csl);
 
     if (internal_trace)
-        fprintf(stderr,
+        fprintf(crm_stderr,
                 "After first pass, breaking statements we have -->>%s<<--\nlength %ld\n",
                 csl->filetext, csl->nchars);
 
@@ -103,7 +103,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
         if (j != 0)
         {
             if (internal_trace)
-                fprintf(stderr, "No insert files left to do.\n");
+                fprintf(crm_stderr, "No insert files left to do.\n");
             done = 1;
         }
         else
@@ -127,7 +127,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 && insertfilename[filenamelen - 1] == ']')
             {
                 if (user_trace)
-                    fprintf(stderr, "INSERT filename expand: '%s'",
+                    fprintf(crm_stderr, "INSERT filename expand: '%s'",
                             insertfilename);
                 //  Get rid of the enclosing [ and ]
                 filenamelen = filenamelen - 2;
@@ -138,7 +138,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                                              filenamelen,
                                              MAX_FILE_NAME_LEN);
                 if (user_trace)
-                    fprintf(stderr, " to '%s' \n", insertfilename);
+                    fprintf(crm_stderr, " to '%s' \n", insertfilename);
             }
             insertfilename[filenamelen] = '\000';
 
@@ -176,7 +176,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 char *insert_buf;
                 if (user_trace)
                 {
-                    fprintf(stderr, "Inserting file '%s'.\n", insertfilename);
+                    fprintf(crm_stderr, "Inserting file '%s'.\n", insertfilename);
                 }
 
                 //   Loop prevention check - too many inserts?
@@ -293,10 +293,10 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
 
                 //   Mark the new length of the csl text.
                 if (internal_trace)
-                    fprintf(stderr, "Old length: %ld, ", csl->nchars);
+                    fprintf(crm_stderr, "Old length: %ld, ", csl->nchars);
                 csl->nchars += ecsl->nchars;
                 if (internal_trace)
-                    fprintf(stderr, "new length: %ld\n ", csl->nchars);
+                    fprintf(crm_stderr, "new length: %ld\n ", csl->nchars);
 
                 //    Now we clean up (de-malloc all that memory)
                 free_stack_item(ecsl);
@@ -326,7 +326,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
 
                 if (user_trace)
                 {
-                    fprintf(stderr, "Can't find '%s' to insert.\n"
+                    fprintf(crm_stderr, "Can't find '%s' to insert.\n"
                                     "Inserting a FAULT instead\n",
                             insertfilename);
                 }
@@ -357,14 +357,14 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                         textlen);
                 //   Mark the new length of the csl text.
                 if (internal_trace)
-                    fprintf(stderr, "Added %ld chars to crmprogram\n",
+                    fprintf(crm_stderr, "Added %ld chars to crmprogram\n",
                             textlen);
                 csl->nchars += textlen;
             }
             i = matches[1].rm_so + 1;
         }
         if (internal_trace)
-            fprintf(stderr,
+            fprintf(crm_stderr,
                     "----------Result after preprocessing-----\n"
                     "%s"
                     "\n-------------end preprocessing------\n",
@@ -383,7 +383,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     ///   GROT GROT GROT  for some reason, Gnu Regex segfaults if it
     //    tries to free this register.
     //  crm_regfree (&preg);
-    //fprintf (stderr, "returning\n");
+    //fprintf(crm_stderr, "returning\n");
     return 0;
 }
 
@@ -414,7 +414,7 @@ void crm_break_statements(long ini, long nchars, CSL_CELL *csl)
     paren_nest = slash_nest = angle_nest = box_nest = 0;
 
     if (internal_trace)
-        fprintf(stderr, "  preprocessor - breaking statements...\n");
+        fprintf(crm_stderr, "  preprocessor - breaking statements...\n");
     for (i = ini; i < ini + nchars; i++)
     {
         //    now, no matter what, we're looking at a non-quoted character.
@@ -426,7 +426,7 @@ void crm_break_statements(long ini, long nchars, CSL_CELL *csl)
             {
                 //    get rid of extraneous newlines.
                 //if (internal_trace)
-                //  fprintf (stderr, "  newline .");
+                //  fprintf(crm_stderr, "  newline .");
                 seennewline = 1;
                 neednewline = 0;
                 in_comment = 0;
@@ -496,7 +496,7 @@ void crm_break_statements(long ini, long nchars, CSL_CELL *csl)
                                             );
 
                             if (internal_trace)
-                                fprintf(stderr, " backquoted %sEOL - splicing.\n",
+                                fprintf(crm_stderr, " backquoted %sEOL - splicing.\n",
                                         crlf_mode_descr[crlf_mode]
                                 );
                             // (2 | crlf_mode) --> 2 for UNIX/MAC, 3 for MSDOS   :-)
@@ -548,7 +548,7 @@ void crm_break_statements(long ini, long nchars, CSL_CELL *csl)
                                                      "post-inserting newline on:",
                                                      &csl->filetext[i]);
                                 if (internal_trace)
-                                    fprintf(stderr, " preinserting a newline.\n");
+                                    fprintf(crm_stderr, " preinserting a newline.\n");
                                 memmove(&(csl->filetext[i + 1]),
                                         &(csl->filetext[i]),
                                         strlen(&csl->filetext[i]) + 1);
@@ -579,7 +579,7 @@ void crm_break_statements(long ini, long nchars, CSL_CELL *csl)
                                 //  was preceded by a newline so just get rid
                                 //  of the ;
                                 if (internal_trace)
-                                    fprintf(stderr,
+                                    fprintf(crm_stderr,
                                             "superfluous semicolon, *poof*.\n");
                                 memmove(&(csl->filetext[i]),
                                         &(csl->filetext[i + 1]),
@@ -596,7 +596,7 @@ void crm_break_statements(long ini, long nchars, CSL_CELL *csl)
                                 //  so we just replace the semicolon with a
                                 //  newline before any printed characters
                                 if (internal_trace)
-                                    fprintf(stderr, " statement break semi.\n"
+                                    fprintf(crm_stderr, " statement break semi.\n"
                                                     "--> \\n \n");
                                 csl->filetext[i] = '\n';
                                 neednewline = 0;

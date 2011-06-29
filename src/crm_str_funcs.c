@@ -1106,7 +1106,7 @@ void driver1()
         h = hashlittle(&buf[0], 1, h);
     }
     time(&z);
-    if (z - a > 0) printf("time %d %.8x\n", z - a, h);
+    if (z - a > 0) fprintf(crm_stdout, "time %d %.8x\n", z - a, h);
 }
 
 /* check that every input bit changes every output bit half the time */
@@ -1122,7 +1122,7 @@ void driver2()
     uint32_t x[HASHSTATE], y[HASHSTATE];
     uint32_t hlen;
 
-    printf("No more than %d trials should ever be needed \n", MAXPAIR / 2);
+    fprintf(crm_stdout, "No more than %d trials should ever be needed \n", MAXPAIR / 2);
     for (hlen = 0; hlen < MAXLEN; ++hlen)
     {
         z = 0;
@@ -1166,10 +1166,10 @@ void driver2()
                     if (k > z) z = k;
                     if (k == MAXPAIR)
                     {
-                        printf("Some bit didn't change: ");
-                        printf("%.8x %.8x %.8x %.8x %.8x %.8x  ",
+                        fprintf(crm_stdout, "Some bit didn't change: ");
+                        fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x  ",
                                e[0], f[0], g[0], h[0], x[0], y[0]);
-                        printf("i %d j %d m %d len %d\n", i, j, m, hlen);
+                        fprintf(crm_stdout, "i %d j %d m %d len %d\n", i, j, m, hlen);
                     }
                     if (z == MAXPAIR) goto done;
                 }
@@ -1178,11 +1178,11 @@ void driver2()
 done:
         if (z < MAXPAIR)
         {
-            printf("Mix success  %2d bytes  %2d initvals  ", i, m);
-            printf("required  %d  trials\n", z / 2);
+            fprintf(crm_stdout, "Mix success  %2d bytes  %2d initvals  ", i, m);
+            fprintf(crm_stdout, "required  %d  trials\n", z / 2);
         }
     }
-    printf("\n");
+    fprintf(crm_stdout, "\n");
 }
 
 /* Check for reading beyond the end of the buffer and alignment problems */
@@ -1200,13 +1200,13 @@ void driver3()
     uint32_t ref, x, y;
     uint8_t *p;
 
-    printf("Endianness.  These lines should all be the same (for values filled in):\n");
-    printf("%.8x                            %.8x                            %.8x\n",
+    fprintf(crm_stdout, "Endianness.  These lines should all be the same (for values filled in):\n");
+    fprintf(crm_stdout, "%.8x                            %.8x                            %.8x\n",
            hashword((const uint32_t *)q, (sizeof(q) - 1) / 4, 13),
            hashword((const uint32_t *)q, (sizeof(q) - 5) / 4, 13),
            hashword((const uint32_t *)q, (sizeof(q) - 9) / 4, 13));
     p = q;
-    printf("%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+    fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
@@ -1214,7 +1214,7 @@ void driver3()
            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     p = &qq[1];
-    printf("%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+    fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
@@ -1222,7 +1222,7 @@ void driver3()
            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     p = &qqq[2];
-    printf("%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+    fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
@@ -1230,27 +1230,27 @@ void driver3()
            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     p = &qqqq[3];
-    printf("%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+    fprintf(crm_stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
            hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13),
            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
-    printf("\n");
+    fprintf(crm_stdout, "\n");
 
     /* check that hashlittle2 and hashlittle produce the same results */
     i = 47; j = 0;
     hashlittle2(q, sizeof(q), &i, &j);
     if (hashlittle(q, sizeof(q), 47) != i)
-        printf("hashlittle2 and hashlittle mismatch\n");
+        fprintf(crm_stdout, "hashlittle2 and hashlittle mismatch\n");
 
     /* check that hashword2 and hashword produce the same results */
     len = 0xdeadbeef;
     i = 47, j = 0;
     hashword2(&len, 1, &i, &j);
     if (hashword(&len, 1, 47) != i)
-        printf("hashword2 and hashword mismatch %x %x\n",
+        fprintf(crm_stdout, "hashword2 and hashword mismatch %x %x\n",
                i, hashword(&len, 1, 47));
 
     /* check hashlittle doesn't read before or after the ends of the string */
@@ -1269,7 +1269,7 @@ void driver3()
             y = hashlittle(b, len, (uint32_t)1);
             if ((ref != x) || (ref != y))
             {
-                printf("alignment error: %.8x %.8x %.8x %d %d\n", ref, x, y,
+                fprintf(crm_stdout, "alignment error: %.8x %.8x %.8x %d %d\n", ref, x, y,
                        h, i);
             }
         }
@@ -1285,11 +1285,11 @@ void driver4()
 
     buf[0] = ~0;
     for (i = 0; i < HASHSTATE; ++i) state[i] = 1;
-    printf("These should all be different\n");
+    fprintf(crm_stdout, "These should all be different\n");
     for (i = 0, h = 0; i < 8; ++i)
     {
         h = hashlittle(buf, 0, h);
-        printf("%2ld  0-byte strings, hash is  %.8x\n", i, h);
+        fprintf(crm_stdout, "%2ld  0-byte strings, hash is  %.8x\n", i, h);
     }
 }
 
@@ -1628,7 +1628,7 @@ static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
   {
 	  if (internal_trace)
 	  {
-		fprintf(stderr, 
+		fprintf(crm_stderr, 
 			"The file found by calc_file_mtime_hash() is '%s'\n", 
             fdata.cFileName);
 	  }
@@ -1681,7 +1681,7 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
 			errno_descr(errno)
 		);
 	}
-    //  fprintf (stderr, "Munmap_status is %ld\n", munmap_status);
+    //  fprintf(crm_stderr, "Munmap_status is %ld\n", munmap_status);
 
 #if 0
     //    Because mmap/munmap doesn't set atime, nor set the "modified"
@@ -1708,7 +1708,7 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
     //     broken behavior.  So, we close here instead.
     //
     close(map->fd);
-    //  fprintf (stderr, "U");
+    //  fprintf(crm_stderr, "U");
 
     //    Because mmap/munmap doesn't set atime, nor set the "modified"
     //    flag, some network filesystems will fail to mark the file as
@@ -2027,7 +2027,7 @@ void *crm_mmap_file(char *filename,
         open_flags = O_WRONLY;
     open_flags |= O_BINARY;
     if (internal_trace)
-        fprintf(stderr, "MMAP file open mode: %ld\n", (long)open_flags);
+        fprintf(crm_stderr, "MMAP file open mode: %ld\n", (long)open_flags);
 
 	CRM_ASSERT(strcmp(p->name, filename) == 0);
 
@@ -2050,7 +2050,7 @@ void *crm_mmap_file(char *filename,
   p->modification_time_hash = calc_file_mtime_hash(&statbuf, filename);
 
     if (user_trace)
-        fprintf(stderr, "MMAPping file %s for direct memory access.\n", filename);
+        fprintf(crm_stderr, "MMAPping file %s for direct memory access.\n", filename);
     p->fd = open(filename, open_flags);
     if (p->fd < 0)
     {
@@ -2066,14 +2066,14 @@ void *crm_mmap_file(char *filename,
     if (p->actual_len < 0)
         p->actual_len = statbuf.st_size - p->start;
 
-    //  fprintf (stderr, "m");
+    //  fprintf(crm_stderr, "m");
     p->addr = mmap(NULL,
                    p->actual_len,
                    p->prot,
                    p->mode,
                    p->fd,
                    p->start);
-    //fprintf (stderr, "M");
+    //fprintf(crm_stderr, "M");
 
     //     we can't close the fd now (the docs say yes, testing says no,
     //     we need to wait till we're really done with the mmap.)
@@ -2115,7 +2115,7 @@ void *crm_mmap_file(char *filename,
         }
     }
     if (internal_trace)
-        fprintf(stderr, "MMAP file open mode: %ld\n", (long)open_flags);
+        fprintf(crm_stderr, "MMAP file open mode: %ld\n", (long)open_flags);
 
 	CRM_ASSERT(strcmp(p->name, filename) == 0);
 
@@ -2138,7 +2138,7 @@ void *crm_mmap_file(char *filename,
   p->modification_time_hash = calc_file_mtime_hash(&statbuf, filename);
 
     if (user_trace)
-        fprintf(stderr, "MMAPping file %s for direct memory access.\n", filename);
+        fprintf(crm_stderr, "MMAPping file %s for direct memory access.\n", filename);
 
     p->fd = CreateFile(filename, open_flags, 0,
                        NULL, OPEN_EXISTING, 0, NULL);
@@ -2314,7 +2314,7 @@ unsigned char *crm_strntrn_invert_string(unsigned char *str,
     //    The final string length is j characters long, in outstr.
     //    Don't forget to free() it later.  :-)
 
-    //  printf ("Inversion: '%s' RLEN: %d\n", outstr, *rlen);
+    //  fprintf(crm_stdout, "Inversion: '%s' RLEN: %d\n", outstr, *rlen);
     *rlen = j;
     return outstr;
 }
@@ -2397,7 +2397,7 @@ unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
         }
     }
 
-    //  fprintf (stderr, "Resulting range string: %s \n", r);
+    //  fprintf(crm_stderr, "Resulting range string: %s \n", r);
     //  return the char *string.
     return r;
 }
@@ -2445,7 +2445,7 @@ long strntrn(
     //
     if (tostrlen == 0 && fromstrlen == 0)
     {
-        // fprintf (stderr, "Fast exit from strntrn  \n");
+        // fprintf(crm_stderr, "Fast exit from strntrn  \n");
         *datastrlen = len;
         return len;
     }

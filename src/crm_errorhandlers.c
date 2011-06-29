@@ -46,7 +46,7 @@ static void dump_error_script_line(CSL_CELL *csl, int iline)
     {
         int maxchar;
 
-        fprintf(stderr, "The line was:\n--> ");
+        fprintf(crm_stderr, "The line was:\n--> ");
         maxchar = csl->mct[iline + 1]->fchar;
         // maxchar == 0: this may happen when there's a fatalerror in the compiler
         if (maxchar < csl->mct[iline]->fchar)
@@ -85,33 +85,33 @@ static void dump_error_script_line(CSL_CELL *csl, int iline)
                 int c = ((unsigned char *)csl->filetext)[ichar];
                 if (crm_isprint(c))
                 {
-                    fprintf(stderr, "%c", c);
+                    fprintf(crm_stderr, "%c", c);
                 }
                 else
                 {
                     has_nonprintable_chars_on_board = 1;
-                    fputc('.', stderr);
+                    fputc('.', crm_stderr);
                 }
             }
-            fprintf(stderr, "\n");
+            fprintf(crm_stderr, "\n");
 
             if (has_nonprintable_chars_on_board)
             {
-                fprintf(stderr, "The line was (in HEX bytes):\n-->");
+                fprintf(crm_stderr, "The line was (in HEX bytes):\n-->");
                 for (ichar = csl->mct[iline]->fchar;
                      ichar < maxchar;
                      ichar++)
                 {
                     int c = ((unsigned char *)csl->filetext)[ichar];
-                    fprintf(stderr, " %02x", c);
+                    fprintf(crm_stderr, " %02x", c);
                 }
             }
-            fprintf(stderr, "\n");
+            fprintf(crm_stderr, "\n");
         }
     }
     else
     {
-        fprintf(stderr, "\n<<< no compiled statements yet >>>\n");
+        fprintf(crm_stderr, "\n<<< no compiled statements yet >>>\n");
     }
 }
 
@@ -355,7 +355,7 @@ static long check_for_trap_handler(CSL_CELL *csl, const char *reason)
         char *rbuf = strdup(reason);
         if (!rbuf)
         {
-            fprintf(stderr,
+            fprintf(crm_stderr,
                     "Couldn't malloc rbuf in 'fatalerror()'!\nIt's really bad when the error fixup routine gets an error!\n");
             if (engine_exit_base != 0)
             {
@@ -521,7 +521,7 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
         NULL,
         fmt,
         args);
-    fputs(reason, stderr);
+    fputs(reason, crm_stderr);
 	dump_error_script_line(csl, csl->cstmt);
 
     if (engine_exit_base != 0)
@@ -535,7 +535,7 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
 }
 
 
-//     fatalerror - print a fatal error on stdout, trap if we can, else exit
+//     fatalerror - print a fatal error on crm_stdout, trap if we can, else exit
 long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     //
@@ -585,7 +585,7 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
         return 0;
     }
 
-    fputs(reason, stderr);
+    fputs(reason, crm_stderr);
     dump_error_script_line(csl, original_statement_line);
 
     if (engine_exit_base != 0)
@@ -645,7 +645,7 @@ funcname,
         return 0;
     }
 
-    fputs(reason, stderr);
+    fputs(reason, crm_stderr);
     dump_error_script_line(csl, original_statement_line);
 
     nonfatalerrorcount++;
@@ -678,20 +678,20 @@ void crm_output_profile(CSL_CELL *csl)
 {
     long i;
 
-    fprintf(stderr,
+    fprintf(crm_stderr,
             "\n         Execution Profile Results\n");
-    fprintf(stderr,
+    fprintf(crm_stderr,
             "\n  Memory usage at completion: %10ld window, %10ld isolated\n",
             cdw->nchars, tdw->nchars);
-    fprintf(stderr,
+    fprintf(crm_stderr,
             "\n  Statement Execution Time Profiling (0 times suppressed)");
-    fprintf(stderr,
+    fprintf(crm_stderr,
             "\n  line:      usertime   systemtime    totaltime\n");
     for (i = 0; i < csl->nstmts; i++)
     {
         if (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime > 0)
         {
-            fprintf(stderr, " %5ld:   %10ld   %10ld   %10ld\n",
+            fprintf(crm_stderr, " %5ld:   %10ld   %10ld   %10ld\n",
                     i,
                     csl->mct[i]->stmt_utime,
                     csl->mct[i]->stmt_stime,
@@ -742,9 +742,9 @@ long crm_trigger_fault(char *reason)
     //  Non null fault_text rstring -we'll take the trap
     if (user_trace)
     {
-        fprintf(stderr, "Catching FAULT generated on line %ld\n",
+        fprintf(crm_stderr, "Catching FAULT generated on line %ld\n",
                 csl->cstmt);
-        fprintf(stderr, "FAULT reason:\n%s\n",
+        fprintf(crm_stderr, "FAULT reason:\n%s\n",
                 reason);
     }
 
@@ -760,7 +760,7 @@ long crm_trigger_fault(char *reason)
         {
             if (user_trace)
             {
-                fprintf(stderr, "     ... no applicable TRAP.\n");
+                fprintf(crm_stderr, "     ... no applicable TRAP.\n");
             }
             return 1;
         }
@@ -785,14 +785,14 @@ long crm_trigger_fault(char *reason)
             &apb);
         if (user_trace)
         {
-            fprintf(stderr, "Trying trap at line %ld:\n", trapline);
+            fprintf(crm_stderr, "Trying trap at line %ld:\n", trapline);
             for (j =  (csl->mct[trapline]->fchar);
                  j < (csl->mct[trapline + 1]->fchar);
                  j++)
             {
-                fprintf(stderr, "%c", csl->filetext[j]);
+                fprintf(crm_stderr, "%c", csl->filetext[j]);
             }
-            fprintf(stderr, "\n");
+            fprintf(crm_stderr, "\n");
         }
 
         //  Get the trap pattern and  see if we match.
@@ -805,7 +805,7 @@ long crm_trigger_fault(char *reason)
         //
         if (user_trace)
         {
-            fprintf(stderr, "This TRAP will trap anything matching =%s= .\n",
+            fprintf(crm_stderr, "This TRAP will trap anything matching =%s= .\n",
                     trap_pat);
         }
         //       compile the regex
@@ -840,8 +840,8 @@ long crm_trigger_fault(char *reason)
         {
             if (user_trace)
             {
-                fprintf(stderr, "TRAP matched.\n");
-                fprintf(stderr, "Next statement will be %ld\n",
+                fprintf(crm_stderr, "TRAP matched.\n");
+                fprintf(crm_stderr, "Next statement will be %ld\n",
                         trapline);
             }
             //
@@ -878,7 +878,7 @@ long crm_trigger_fault(char *reason)
             //   the surrounding trap (if it exists)
             if (user_trace)
             {
-                fprintf(stderr,
+                fprintf(crm_stderr,
                         "TRAP didn't match - trying next trap in line.\n");
             }
         }

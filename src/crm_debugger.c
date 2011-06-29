@@ -40,12 +40,12 @@ long crm_debugger(void)
 
     if (firsttime)
     {
-        fprintf(stderr, "CRM114 Debugger - type \"h\" for help.  ");
-        fprintf(stderr, "User trace turned on.\n");
+        fprintf(crm_stderr, "CRM114 Debugger - type \"h\" for help.  ");
+        fprintf(crm_stderr, "User trace turned on.\n");
         user_trace = 1;
         firsttime = 0;
         if (user_trace)
-            fprintf(stderr, "Opening the user terminal for debugging I/O\n");
+            fprintf(crm_stderr, "Opening the user terminal for debugging I/O\n");
 #if defined (WIN32)
         mytty = fopen("CON", "rb");
 #else
@@ -55,11 +55,11 @@ long crm_debugger(void)
     }
 
     if (csl->mct[csl->cstmt]->stmt_break > 0)
-        fprintf(stderr, "Breakpoint tripped at statement %ld\n", csl->cstmt);
+        fprintf(crm_stderr, "Breakpoint tripped at statement %ld\n", csl->cstmt);
 debug_top:
     //    let the user know they're in the debugger
     //
-    fprintf(stderr, "\ncrm-dbg> ");
+    fprintf(crm_stderr, "\ncrm-dbg> ");
 
     //    find out what they want to do
     //
@@ -76,7 +76,7 @@ debug_top:
 
     if (feof(mytty))
     {
-        fprintf(stderr, "Quitting\n");
+        fprintf(crm_stderr, "Quitting\n");
         if (engine_exit_base != 0)
         {
             exit(engine_exit_base + 8);
@@ -94,7 +94,7 @@ debug_top:
     case 'Q':
         {
             if (user_trace)
-                fprintf(stderr, "Quitting.\n");
+                fprintf(crm_stderr, "Quitting.\n");
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 9);
@@ -118,18 +118,18 @@ debug_top:
             debug_countdown = 0;
             if (1 != sscanf(&inbuf[1], "%ld", &debug_countdown))
             {
-                fprintf(stderr, "Failed to decode the debug 'C' "
+                fprintf(crm_stderr, "Failed to decode the debug 'C' "
                                 "command countdown number '%s'. "
                                 "Assume 0: 'continue'.\n", &inbuf[1]);
             }
             if (debug_countdown <= 0)
             {
                 debug_countdown = -1;
-                fprintf(stderr, "continuing execution...\n");
+                fprintf(crm_stderr, "continuing execution...\n");
             }
             else
             {
-                fprintf(stderr, "continuing %ld cycles...\n", debug_countdown);
+                fprintf(crm_stderr, "continuing %ld cycles...\n", debug_countdown);
             }
             return 0;
         }
@@ -139,12 +139,12 @@ debug_top:
         if (user_trace == 0)
         {
             user_trace = 1;
-            fprintf(stderr, "User tracing on");
+            fprintf(crm_stderr, "User tracing on");
         }
         else
         {
             user_trace = 0;
-            fprintf(stderr, "User tracing off");
+            fprintf(crm_stderr, "User tracing off");
         }
         break;
 
@@ -152,28 +152,28 @@ debug_top:
         if (internal_trace == 0)
         {
             internal_trace = 1;
-            fprintf(stderr, "Internal tracing on");
+            fprintf(crm_stderr, "Internal tracing on");
         }
         else
         {
             internal_trace = 0;
-            fprintf(stderr, "Internal tracing off");
+            fprintf(crm_stderr, "Internal tracing off");
         }
         break;
 
     case 'e':
         {
-            fprintf(stderr, "expanding:\n");
+            fprintf(crm_stderr, "expanding:\n");
             memmove(inbuf, &inbuf[1], strlen(inbuf) - 1);
             crm_nexpandvar(inbuf, strlen(inbuf) - 1, data_window_size);
-            fprintf(stderr, "%s", inbuf);
+            fprintf(crm_stderr, "%s", inbuf);
         }
         break;
 
     case 'i':
         {
-            fprintf(stderr, "Isolating %s", &inbuf[1]);
-            fprintf(stderr, "NOT YET IMPLEMENTED!  Sorry.\n");
+            fprintf(crm_stderr, "Isolating %s", &inbuf[1]);
+            fprintf(crm_stderr, "NOT YET IMPLEMENTED!  Sorry.\n");
         }
         break;
 
@@ -184,10 +184,10 @@ debug_top:
             i = sscanf(&inbuf[1], "%ld", &stmtnum);
             if (i > 0)
             {
-                fprintf(stderr, "statement %ld: ", stmtnum);
+                fprintf(crm_stderr, "statement %ld: ", stmtnum);
                 if (stmtnum < 0 || stmtnum > csl->nstmts)
                 {
-                    fprintf(stderr, "... does not exist!\n");
+                    fprintf(crm_stderr, "... does not exist!\n");
                 }
                 else
                 {
@@ -195,13 +195,13 @@ debug_top:
                          j < csl->mct[stmtnum + 1]->start;
                          j++)
                     {
-                        fprintf(stderr, "%c", csl->filetext[j]);
+                        fprintf(crm_stderr, "%c", csl->filetext[j]);
                     }
                 }
             }
             else
             {
-                fprintf(stderr, "What statement do you want to view?\n");
+                fprintf(crm_stderr, "What statement do you want to view?\n");
             }
         }
         break;
@@ -224,8 +224,8 @@ debug_top:
                 vindex = crm_vht_lookup(vht, inbuf, tlen);
                 if (vht[vindex] == NULL)
                 {
-                    fprintf(stderr, "No label '%s' in this program.  ", inbuf);
-                    fprintf(stderr, "Staying at line %ld\n", csl->cstmt);
+                    fprintf(crm_stderr, "No label '%s' in this program.  ", inbuf);
+                    fprintf(crm_stderr, "Staying at line %ld\n", csl->cstmt);
                     nextstmt = csl->cstmt;
                 }
                 else
@@ -240,11 +240,11 @@ debug_top:
             if (nextstmt >= csl->nstmts)
             {
                 nextstmt = csl->nstmts;
-                fprintf(stderr, "last statement is %ld, assume you meant that.\n",
+                fprintf(crm_stderr, "last statement is %ld, assume you meant that.\n",
                         csl->nstmts);
             }
             if (csl->cstmt != nextstmt)
-                fprintf(stderr, "Next statement is statement %ld\n", nextstmt);
+                fprintf(crm_stderr, "Next statement is statement %ld\n", nextstmt);
             csl->cstmt = nextstmt;
         }
         return 1;
@@ -269,11 +269,11 @@ debug_top:
                 memmove(inbuf, &inbuf[1 + tstart], tlen);
                 inbuf[tlen] = '\000';
                 vindex = crm_vht_lookup(vht, inbuf, tlen);
-                fprintf(stderr, "vindex = %ld\n", vindex);
+                fprintf(crm_stderr, "vindex = %ld\n", vindex);
                 if (vht[vindex] == NULL)
                 {
-                    fprintf(stderr, "No label '%s' in this program.  ", inbuf);
-                    fprintf(stderr, "No breakpoint change made.\n");
+                    fprintf(crm_stderr, "No label '%s' in this program.  ", inbuf);
+                    fprintf(crm_stderr, "No breakpoint change made.\n");
                 }
                 else
                 {
@@ -287,18 +287,18 @@ debug_top:
             if (breakstmt >= csl->nstmts)
             {
                 breakstmt = csl->nstmts;
-                fprintf(stderr, "last statement is %ld, assume you meant that.\n",
+                fprintf(crm_stderr, "last statement is %ld, assume you meant that.\n",
                         csl->nstmts);
             }
             csl->mct[breakstmt]->stmt_break = 1 - csl->mct[breakstmt]->stmt_break;
             if (csl->mct[breakstmt]->stmt_break == 1)
             {
-                fprintf(stderr, "Setting breakpoint at statement %ld\n",
+                fprintf(crm_stderr, "Setting breakpoint at statement %ld\n",
                         breakstmt);
             }
             else
             {
-                fprintf(stderr, "Clearing breakpoint at statement %ld\n",
+                fprintf(crm_stderr, "Clearing breakpoint at statement %ld\n",
                         breakstmt);
             }
         }
@@ -320,7 +320,7 @@ debug_top:
             vindex = crm_vht_lookup(vht, inbuf, vlen);
             if (vht[vindex] == NULL)
             {
-                fprintf(stderr, "No variable '%s' in this program.  ", inbuf);
+                fprintf(crm_stderr, "No variable '%s' in this program.  ", inbuf);
             }
 
             //     now grab what's left of the input as the value to set
@@ -344,7 +344,7 @@ debug_top:
     case 'f':
         {
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-            fprintf(stderr, "Forward to }, next statement : %ld\n", csl->cstmt);
+            fprintf(crm_stderr, "Forward to }, next statement : %ld\n", csl->cstmt);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         }
         return 1;
@@ -354,7 +354,7 @@ debug_top:
     case 'l':
         {
             csl->cstmt = csl->mct[csl->cstmt]->liaf_index;
-            fprintf(stderr, "Backward to {, next statement : %ld\n", csl->cstmt);
+            fprintf(crm_stderr, "Backward to {, next statement : %ld\n", csl->cstmt);
         }
         return 1;
 
@@ -362,27 +362,27 @@ debug_top:
 
     case 'h':
         {
-            fprintf(stderr, "a :var: /value/ - alter :var: to /value/\n");
-            fprintf(stderr, "b <n> - toggle breakpoint on line <n>\n");
-            fprintf(stderr, "b <label> - toggle breakpoint on <label>\n");
-            fprintf(stderr, "c - continue execution till breakpoint or end\n");
-            fprintf(stderr, "c <n> - execute <number> more statements\n");
-            fprintf(stderr, "e - expand an expression\n");
-            fprintf(stderr, "f - fail forward to block-closing '}'\n");
-            fprintf(stderr, "j <n> - jump to statement <number>\n");
-            fprintf(stderr, "j <label> - jump to statement <label>\n");
-            fprintf(stderr, "l - liaf backward to block-opening '{'\n");
-            fprintf(stderr, "n - execute next statement (same as 'c 1')\n");
-            fprintf(stderr, "q - quit the program and exit\n");
-            fprintf(stderr, "t - toggle user-level tracing\n");
-            fprintf(stderr, "T - toggle system-level tracing\n");
-            fprintf(stderr, "v <n> - view source code statement <n>\n");
+            fprintf(crm_stderr, "a :var: /value/ - alter :var: to /value/\n");
+            fprintf(crm_stderr, "b <n> - toggle breakpoint on line <n>\n");
+            fprintf(crm_stderr, "b <label> - toggle breakpoint on <label>\n");
+            fprintf(crm_stderr, "c - continue execution till breakpoint or end\n");
+            fprintf(crm_stderr, "c <n> - execute <number> more statements\n");
+            fprintf(crm_stderr, "e - expand an expression\n");
+            fprintf(crm_stderr, "f - fail forward to block-closing '}'\n");
+            fprintf(crm_stderr, "j <n> - jump to statement <number>\n");
+            fprintf(crm_stderr, "j <label> - jump to statement <label>\n");
+            fprintf(crm_stderr, "l - liaf backward to block-opening '{'\n");
+            fprintf(crm_stderr, "n - execute next statement (same as 'c 1')\n");
+            fprintf(crm_stderr, "q - quit the program and exit\n");
+            fprintf(crm_stderr, "t - toggle user-level tracing\n");
+            fprintf(crm_stderr, "T - toggle system-level tracing\n");
+            fprintf(crm_stderr, "v <n> - view source code statement <n>\n");
         }
         break;
 
     default:
         {
-            fprintf(stderr, "Command unrecognized - type \"h\" for help.\n");
+            fprintf(crm_stderr, "Command unrecognized - type \"h\" for help.\n");
         }
     }
     goto debug_top;

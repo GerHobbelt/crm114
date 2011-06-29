@@ -77,7 +77,7 @@ int crm_regexec(regex_t *preg, char *string, long string_len,
     string[string_len + 1] = '\000';
     if (internal_trace)
     {
-        fprintf(stderr, "    crocking in a NULL for the %c\n",
+        fprintf(crm_stderr, "    crocking in a NULL for the %c\n",
                 savedcrockchar);
     }
 
@@ -85,7 +85,7 @@ int crm_regexec(regex_t *preg, char *string, long string_len,
     {
         if (null_errored == 0)
         {
-            fprintf(stderr, "\nRegexec  strlen: %d, stated_len: %ld \n",
+            fprintf(crm_stderr, "\nRegexec  strlen: %d, stated_len: %ld \n",
                     strlen(string), string_len);
             nonfatalerror("Your data window contained a NUL inside the stated length,",
                           "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");
