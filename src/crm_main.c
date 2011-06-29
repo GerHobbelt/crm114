@@ -11,7 +11,6 @@
 //
 //  include some standard files
 #include "crm114_sysincludes.h"
-
 //  include any local crm114 configuration file
 #include "crm114_config.h"
 
@@ -389,7 +388,8 @@ int main (int argc, char **argv)
       if (strncmp (argv[i], "-v", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  //   NOTE - version info goes to stdout, not stderr, just like GCC does
-	  fprintf (stdout, " This is CRM114, version %s (%s)\n", 
+	  fprintf (stdout, 
+		   " This is CRM114, version %s (%s)\n", 
 		   VERSION, 
 		   crm_regversion());
 	  fprintf (stdout, " Copyright 2001-2006 William S. Yerazunis\n");

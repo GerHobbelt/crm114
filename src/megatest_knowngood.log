@@ -1,4 +1,4 @@
- This is CRM114, version 20070731-BlameTheInterns (TRE 0.7.5 (LGPL))
+ This is CRM114, version 20070807-BlameTheInterns (TRE 0.7.5 (LGPL))
  Copyright 2001-2006 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -23,6 +23,7 @@
  For some reason, I was unable to read-open the file named  zoob.zipulrlfjf
  Sorry, but this program is very sick and probably should be killed off.
 This happened at line 19 of file fataltraptest.crm
+(runtime system location: crm_expr_file_io.c(151) function crm_expr_input)
   --- and again, the next thing you see SHOULD be an error "unable to write-open"--- 
  Caught the error  - fault text was 
 ./crm114: *ERROR* 
@@ -202,8 +203,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 31871 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 31871 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 1616 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 1616 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -539,37 +540,37 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2099107
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2099105
 Bytes used per pass: 2097150
 Passes done: 100 
 Total flux through isolation:  419430000
-OK_IF_SIZE_CHANGES: Final isolation size: 2099124 
+OK_IF_SIZE_CHANGES: Final isolation size: 2099122 
 OK_IF_LESS_THAN_100: Total growth: 17
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2101595
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2101593
 Bytes used per pass: 2097150
 Passes done: 10 
 Total flux through isolation:  41943000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101610 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101608 
 OK_IF_LESS_THAN_10: Total growth: 15
 Bytes used per pass: 2097150
 Passes done: 20 
 Total flux through isolation:  83886000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101616 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101614 
 OK_IF_LESS_THAN_20: Total growth: 21
 Bytes used per pass: 2097150
 Passes done: 30 
 Total flux through isolation:  125829000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101617 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101615 
 OK_IF_LESS_THAN_30: Total growth: 22
 Bytes used per pass: 2097150
 Passes done: 40 
 Total flux through isolation:  167772000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101617 
+OK_IF_SIZE_CHANGES: Final isolation size: 2101615 
 OK_IF_LESS_THAN_40: Total growth: 22
 Starting 
 
@@ -656,7 +657,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20070731-BlameTheInterns ( TRE 0.7.5 (LGPL) )
+version: 20070807-BlameTheInterns ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?
@@ -897,15 +898,15 @@ Total features in input file: 408
 CLASSIFY fails; success probability: 0.049565  pR: -147.9304
 Best match to file #1 (q_test.css) prob: 0.9504  pR: 147.9304  
 Total features in input file: 69
-#0 (i_test.css): features: 53184, score:1.18e+02, prob: 4.96e-02,pR: -147.93
-#1 (q_test.css): features: 66688, score:5.48e+02, prob: 9.50e-01,pR: 147.93
+#0 (i_test.css): features: 53184, score: 1.18e+02, prob: 4.96e-02, pR: -147.93
+#1 (q_test.css): features: 66688, score: 5.48e+02, prob: 9.50e-01, pR: 147.93
 
  type I 
 CLASSIFY succeeds; success probability: 0.949211  pR: 146.6004
 Best match to file #0 (i_test.css) prob: 0.9492  pR: 146.6004  
 Total features in input file: 51
-#0 (i_test.css): features: 53184, score:3.33e+02, prob: 9.49e-01,pR: 146.60
-#1 (q_test.css): features: 66688, score:7.33e+01, prob: 5.08e-02,pR: -146.60
+#0 (i_test.css): features: 53184, score: 3.33e+02, prob: 9.49e-01, pR: 146.60
+#1 (q_test.css): features: 66688, score: 7.33e+01, prob: 5.08e-02, pR: -146.60
 
 
 **** Support Vector Machine (SVM) unigram classifier 

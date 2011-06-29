@@ -938,10 +938,10 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
 	    case 'x':
 	    case 'X':
 	      {
+		char tempstring [2048];
 		if (internal_trace)
 		  fprintf (stderr, "Formatting operator %c \n", 
 			   (short)opstack[sp]);
-		char tempstring [2048];
 		//     Do we have a float or an int format?
 		if (opstack[sp] == 'x' || opstack[sp] == 'X')
 		  {

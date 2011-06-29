@@ -59,7 +59,6 @@ it is (length - 2)^1.5 points per match. That seems optimal.
 
 //  include the crm114 data structures file
 #include "crm114_structs.h"
-
 //  and include the routine declarations file
 #include "crm114.h"
 
@@ -145,9 +144,12 @@ int do_struct_audit = 0;
 static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
 {
   SCM_HEADER_STRUCT *h = space;
+  char *o = space;
+  long i;
   h->n_bytes = n_bytes;
   h->n_trains = 0;
   h->n_features = 0;
+  h->free_prefix_nodes = 0;
   h->free_hash_nodes = 0;
   h->hash_root_offset = sizeof(SCM_HEADER_STRUCT);
   h->hash_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes * sizeof(long);
@@ -160,7 +162,6 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
   h->indeces_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes *
                                    (sizeof(long) + sizeof(HASH_STRUCT)
                                       + sizeof(PREFIX_STRUCT) + sizeof(char));
-  char *o = space;
   s->header = h;
   s->text_pos = &h->text_pos;
   s->n_bytes = h->n_bytes;
@@ -172,7 +173,6 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
   s->text =   (char *)        &o[h->text_offset];
   s->indeces = (long *)       &o[h->indeces_offset];
   
-  long i;
   for(i = 0; i < n_bytes; i++)
   {
     s->hash_root[i] = NULL_INDEX;
@@ -196,6 +196,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
   {
     long i, filesize;
     FILE *f;
+    void *space;
     filesize = sizeof(SCM_HEADER_STRUCT) +
                 n_bytes *
                 ( sizeof(long) +
@@ -209,7 +210,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
     while(i--)
       fputc('\0', f);
     fclose(f);
-    void *space = crm_mmap_file
+    space = crm_mmap_file
           (filename, 0, filesize, PROT_READ | PROT_WRITE, MAP_SHARED, NULL);
     if(!space)
     {
@@ -220,6 +221,8 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
     make_scm_state(s, space);
   } else
   {
+    char *o;
+    SCM_HEADER_STRUCT *h;
     s->header = crm_mmap_file
           (filename, 0, statbuf.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, 
               NULL);
@@ -228,8 +231,8 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
       nonfatalerror("failed to do mmap of existing file", filename);
       return;
     }
-    char *o = (char*)s->header;
-    SCM_HEADER_STRUCT *h = s->header;
+    o = (char*)s->header;
+    h = s->header;
     s->text_pos = &h->text_pos;
     s->n_bytes = h->n_bytes;
     s->free_hash_nodes = &h->free_hash_nodes;
@@ -312,7 +315,7 @@ static void copy_prefix(SCM_STATE_STRUCT *s, long a, char *b)
 //check every global structure for consistency, if there's a bug, this will
 // find it! We just go into a loop on error here because the only apropriate
 // action to be taken is to attach the debugger
-static void audit_structs(SCM_STATE_STRUCT *s)
+static int audit_structs(SCM_STATE_STRUCT *s)
 {
   long i, j, k;
   long n_p = 0, n_h = 0;
@@ -321,37 +324,42 @@ static void audit_structs(SCM_STATE_STRUCT *s)
     {
       if(s->hashee[ s->hash_root[i] ].prev != -i - 1)
       {
-        fprintf(stderr, "FSCM: INCONSISTENT STATE!\n");
-        while(1);
-      };
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
       for(j = s->hash_root[i]; j != NULL_INDEX; j = s->hashee[j].next)
       {
         n_h++;
         if(s->hashee[j].next != NULL_INDEX &&
             s->hashee[ s->hashee[j].next ].prev != j)
-        {
-          fprintf(stderr, "FSCM: INCONSISTENT STATE!\n");
-          while(1);
-        };
+      {
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
         if(s->prefix[ s->hashee[j].first ].prev != -j - 1)
-        {
-          fprintf(stderr, "FSCM: INCONSISTENT STATE!\n");
-          while(1);
-        };
+      {
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
         for(k = s->hashee[j].first; k != NULL_INDEX; k = s->prefix[k].next)
         {
           n_p++;
           if(s->prefix[k].next != NULL_INDEX &&
               s->prefix[ s->prefix[k].next].prev != k)
-          {
-            fprintf(stderr, "FSCM: INCONSISTENT STATE!\n");
-            while(1);
-          };
+      {
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
           if(!match_prefix(s, s->prefix[k].offset, s->hashee[j].prefix_text))
-          {
-            fprintf(stderr, "FSCM: INCONSISTENT STATE!\n");
-            while(1);
-          };
+      {
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
         }
       }
     };
@@ -360,19 +368,22 @@ static void audit_structs(SCM_STATE_STRUCT *s)
         i = s->hashee[i].next )
     n_h++;
   if(n_h != s->n_bytes)
-  {
-    fprintf(stderr, "FSCM: INCONSISTENT STATE!\n");
-    while(1);
-  };
+      {
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
   for(  i = *s->free_prefix_nodes;
         i != NULL_INDEX && n_p < s->n_bytes + 1;
         i = s->prefix[i].next )
     n_p++;
   if(n_p != s->n_bytes)
-  {
-    fprintf(stderr, "FSCM: INCONSISTENT STATE!\n");
-    while(1);
-  };
+      {
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
+  return 0;
 }
 
 //insert the three character prefix starting at postion t into the tables for
@@ -496,6 +507,9 @@ static void find_longest_match
         long *prefix,
         long *len   )
 {
+  unsigned long key;
+  long i, j, k;
+  
   if(max_len < 3)
   { //then we don't have enough text to lookup a three character prefix
     *prefix = NULL_INDEX;
@@ -505,8 +519,8 @@ static void find_longest_match
 
   //get a hashcode and find the hashchain for the three characters that start
   // the string we're matching 
-  unsigned long key = strnhash(text, 3);
-  long i = s->hash_root[key % s->n_bytes], j, k;
+  key = strnhash(text, 3);
+  i = s->hash_root[key % s->n_bytes];
 
   //find the right hashnode or set i to NULL_INDEX
   while(! ( i == NULL_INDEX
@@ -614,8 +628,8 @@ static double power2(long i)
     return pow((double)i, pow2);
   if(pow_table2_init)
   {
-    pow_table2_init = 0;
     long j;
+    pow_table2_init = 0;
     for(j = 0; j < 256; j++)
       pow_table2[j] = pow((double)j, pow2);
   };
@@ -662,11 +676,13 @@ int crm_expr_fscm_learn
         char *txtptr, long txtstart, long txtlen   )
 {
   char filename[MAX_PATTERN];
-  long filename_len;
-
+  char htext[MAX_PATTERN];
+  long htext_len;
+  
   SCM_STATE_STRUCT S, *s = &S;
 
   long i, j;
+  long doc_start;
 
   if(internal_trace)
     do_struct_audit = 1;
@@ -674,10 +690,17 @@ int crm_expr_fscm_learn
   if(internal_trace)
     fprintf(stderr, "entered crm_expr_fscm_learn (learn)\n");
   
-  //parse out .scm file name
-  crm_get_pgm_arg (filename, MAX_PATTERN, apb->p1start, apb->p1len);
-  filename_len = apb->p1len;
-  filename_len = crm_nexpandvar (filename, filename_len, MAX_PATTERN);
+  //parse out .fscm file name
+  crm_get_pgm_arg (htext, MAX_PATTERN, apb->p1start, apb->p1len);
+  htext_len = apb->p1len;
+  htext_len = crm_nexpandvar (htext, htext_len, MAX_PATTERN);
+  
+  i = 0;
+  while (htext[i] < 0x021) i++;
+  j = i;
+  while (htext[j] >= 0x021) j++;
+  htext[j] = '\000';
+  strcpy (filename, &htext[i]);
 
   //map it
   map_file(s, filename);
@@ -685,12 +708,12 @@ int crm_expr_fscm_learn
   //then we couldn't map the file and already wined about it
     return 0;
   
-  if(do_struct_audit)
-    audit_structs(s);
+  if(do_struct_audit && audit_structs(s))
+    return 0;
   
   txtptr += txtstart;
   
-  long doc_start = *s->text_pos;
+  doc_start = *s->text_pos;
   
   if(apb->sflags & CRM_REFUTE)
   {
@@ -715,8 +738,8 @@ int crm_expr_fscm_learn
         *s->text_pos -= s->n_bytes;
     }
   
-    if(do_struct_audit)
-      audit_structs(s);
+  if(do_struct_audit && audit_structs(s))
+    return 0;
   
     //cache all the three character prefixes
     for(i = doc_start, j = txtlen; j > 2; i++, j--)
@@ -728,9 +751,10 @@ int crm_expr_fscm_learn
   }
   if(internal_trace)
     fprintf(stderr, "leaving crm_expr_fscm_learn (learn)\n");
-  if(do_struct_audit)
-    audit_structs(s);
+  if(do_struct_audit && audit_structs(s))
+    return 0;
   unmap_file(s);
+  crm_force_munmap_filename (s->learnfilename);
   return 0;
 }
 
@@ -811,7 +835,6 @@ int crm_expr_fscm_classify
   for(i = 0, j = 0, k = 0; i < filenames_field_len && j < MAX_CLASSIFIERS; i++)
     if(filenames_field[i] == '\\') //allow escaped in case filename is wierd
       filenames[j][k++] = filenames_field[++i];
-    
     else if(isspace(filenames_field[i]) && k > 0) 
     {//white space terminates filenames
       filenames[j][k] = '\0';
@@ -837,7 +860,7 @@ int crm_expr_fscm_classify
   else
     n_classifiers = j;
   
-  if(do_struct_audit)
+  if(internal_trace)
   {
     fprintf(stderr, "fail_on = %ld\n", fail_on); 
     for(i = 0; i < n_classifiers; i++)
@@ -858,12 +881,12 @@ int crm_expr_fscm_classify
     n_features[i] = s->header->n_features;
     norms[i] = (double)s->header->n_trains;
     scores[i] = score_document(s, txtptr + txtstart, txtlen);
-    if(do_struct_audit)
-      audit_structs(s);
+  if(do_struct_audit && audit_structs(s))
+    return 0;
     unmap_file(s);
   }
 
-  if(do_struct_audit)
+  if(internal_trace)
     for(i = 0; i < n_classifiers; i++)
       fprintf(stderr, "scores[%ld] = %f\n", i, scores[i]);
   
@@ -901,7 +924,7 @@ int crm_expr_fscm_classify
   for(j = 0; j < n_classifiers; j++)
     pR[j] = calc_pR(probs[j]);
   
-  if(do_struct_audit)
+  if(internal_trace)
   {
     fprintf(stderr, "suc_prob = %f\n", suc_prob); 
     fprintf(stderr, "tot_score = %f\n", tot_score); 
@@ -935,7 +958,7 @@ int crm_expr_fscm_classify
   for(i = 0; i < n_classifiers; i++)
     out_pos += sprintf
                 ( outbuf + out_pos,
-                  "#%ld (%s): features: %ld, score:%3.2e, prob: %3.2e,"
+                  "#%ld (%s): features: %ld, score: %3.2e, prob: %3.2e, "
                   "pR: %6.2f\n",
                   i, filenames[i],
                   n_features[i], scores[i],

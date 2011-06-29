@@ -22,11 +22,12 @@ const double norm_cdf_lookup[] = { 9.865876e-10, 1.086112e-09, 1.195391e-09, 1.3
 //there is currently no inerpolation
 double crm_norm_cdf(double x)
 {
+	long i = 0;
 	if(x < -6.0)
 		return 0.0;
 	if(x >= 6.0)
 		return 1.0;
-	long i = (long)((x + 6.0) * 32.0);
+	i = (long)((x + 6.0) * 32.0);
 	return norm_cdf_lookup[i];
 }
 

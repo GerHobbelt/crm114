@@ -758,7 +758,8 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   
   //  and remember to let go of all the mmaps (full flush) 
-  crm_munmap_all ();
+  //  crm_munmap_all ();
+  crm_force_munmap_addr (hashes);
 
   //   and let go of the seen_features array
   if (seen_features) free (seen_features);

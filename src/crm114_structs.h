@@ -199,7 +199,7 @@ typedef struct mythical_entropy_cell {
 } ENTROPY_FEATUREBUCKET_STRUCT;
 
 
-typedef struct {
+typedef struct mythical_tms_struct {
   clock_t tms_utime;  // user time
   clock_t tms_stime;  // system time 
   clock_t tms_cutime; // user time of children

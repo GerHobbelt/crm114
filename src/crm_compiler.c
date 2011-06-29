@@ -498,7 +498,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
   //  check to be sure that the brackets close!
   
   if (bracketlevel != 0) 
-    nonfatalerror ("\nDang!  The brackets don't match up!\n",
+    nonfatalerror ("\nDang!  The curly braces don't match up!\n",
       "Check your source code. ");
   
   

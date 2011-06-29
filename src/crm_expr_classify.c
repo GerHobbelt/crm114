@@ -49,6 +49,7 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   long len;
   int retval;
   long saved_ssfl;
+  long long classifier_flags = 0;
 
   //            get start/length of the text we're going to learn:
   //
@@ -89,9 +90,8 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   //            get our flags... the only ones we're interested in here
   //            are the ones that specify _which_ algorithm to use.
+  classifier_flags = apb->sflags;
 
-  long long classifier_flags = apb->sflags;
-  
   //     Joe thinks that this should be a table or a loop.
   classifier_flags = classifier_flags &
     ( CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF 
@@ -162,6 +162,7 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   long start;
   long len;
   long retval;
+  long long classifier_flags = 0;
 
   //            get start/length of the text we're going to classify:
   //
@@ -198,8 +199,8 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   
   //            get our flags... the only ones we're interested in here
   //            are the ones that specify _which_ algorithm to use.
-  long long classifier_flags = apb->sflags;
-
+  classifier_flags = apb->sflags;
+  
   classifier_flags = classifier_flags &
     ( CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF 
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM );

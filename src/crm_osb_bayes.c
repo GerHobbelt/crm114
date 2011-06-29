@@ -695,7 +695,9 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
  regcomp_failed:
 
   //  and remember to let go of the mmap and the pattern bufffer
-  crm_munmap_file ((void *) hashes);
+  //  (we force the munmap, because otherwise we still have a link
+  //  to the file which stays around until program exit)
+  crm_force_munmap_addr ((void *) hashes);
 
   //  
   //     If we had the seen_features array, we let go of it.

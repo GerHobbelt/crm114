@@ -140,7 +140,9 @@
 //
 #define UNIFIED_BAYES_WINDOW_LEN 5
 //
-//   
+//      Unified tokenization pipeline length.
+#define UNIFIED_WINDOW_LEN 32
+////   
 //         Winnow algorithm parameters here...  
 //
 #define OSB_WINNOW_WINDOW_LEN 5
@@ -322,4 +324,4 @@
 //#define FEATUREBUCKET_TYPE unsigned short
 
 //    End of configurable parameters.
-
+#define HERE (runtime system location: __FILE__ ( __LINE__ ) function __FUNCTION__ ) 

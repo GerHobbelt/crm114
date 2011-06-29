@@ -762,10 +762,11 @@ static double stats_2_entropy (long count, long total)
 
 
 //  Helper functions for dealing with the FIRlat
+//    Given a FIR value, what slot would this reside in?
 static long fir_2_slot (double fir, long firlatlen)
 {
   long ifir;
-  ifir = (fir * (firlatlen - 1));
+  ifir = (fir * (firlatlen - 1.00));
   if (ifir < 0) ifir = 0;
   if (ifir >= firlatlen) ifir = firlatlen - 1;
   return (ifir);
@@ -896,13 +897,20 @@ static long firlat_find_smallest_larger
   long step_count;
 
   //  Start out with FIRlat option.  
+  if (my_fir < 0.00 || my_fir >= 1.00 || firlatlen < 10 || firlatlen > 200000)
+    fprintf (stderr, "My FIR is outrageous (value: %e, firlatlen %ld)\n", 
+	     my_fir,
+	     firlatlen);
   firlat_entry = fir_2_slot ( my_fir, firlatlen);
   if (internal_trace)
     fprintf (stderr, "FFSL: Searching for FIR: %f slot %ld \n",  
 	     my_fir, firlat_entry);
 
-  if (firlat_entry < 0 || firlat_entry >= firlatlen)
-    fprintf (stderr, "FIRLAT is very hosed!\n");
+  if ((firlat_entry < 0) || (firlat_entry >= firlatlen))
+    fprintf (stderr, 
+	     "FIRLAT is very hosed (myfir: %e, entry number %ld)!\n",
+	     my_fir,
+	     firlat_entry);
   if (internal_trace)
     fprintf 
       (stderr, 
@@ -1342,7 +1350,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long *firlat;               //  the FIR prior lookaside table
   ENTROPY_HEADER_STRUCT *headers;     //  the what-is-where headers.
   long *fmap;                 // catcher for where the file gets mapped.
-  long firlatlen = 0;             //  how long is the FIR lookaside table?
+  long firlatlen = -1;             //  how long is the FIR lookaside table?
   long firlatbytes;           //  how many bytes of firlat
   long long *totalbits;      //  How many total feature bits in this file
   double localfir;            //  the FIR value we've accumulated on this path
@@ -1422,7 +1430,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   learnfilename = strdup ( &(htext[i] ));
 
   //             and stat it to get it's length
-  k = stat (&htext[i], &statbuf);
+  k = stat (learnfilename, &statbuf);
 
   made_new_file = 0;
 
@@ -1499,7 +1507,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       made_new_file = 1;
       fclose (f);
       //    and reset the statbuf to be correct
-      k = stat (&htext[i], &statbuf);
+      k = stat (learnfilename, &statbuf);
     };
   //    
   hfsize = statbuf.st_size;
@@ -1514,8 +1522,8 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   
   if (fmap == MAP_FAILED)
     {
-      fev = fatalerror ("Couldn't get to the bit-entropic file named: ",
-			&htext[i]);
+      fev = fatalerror5 ("Couldn't get to the bit-entropic file named: ",
+			 &htext[i], CRM_ENGINE_HERE);
       return (fev);
     };
 
@@ -1663,14 +1671,10 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
   
   //    If this isn't a new file, grab stuff out of the header:
-  //firlat = & headers[headers[0]];
-  firlat = & fmap [headers->firlatstart];
-  //firlatlen = headers[1];
+  firlat = (long *) & (fmap [headers->firlatstart]);
   firlatlen = headers->firlatlen;
   firlatbytes = firlatlen * (sizeof (long));
-  //nodes = (ENTROPY_FEATUREBUCKET_STRUCT *) & (headers[headers[2]]);
   nodes = (ENTROPY_FEATUREBUCKET_STRUCT *) & (fmap[headers->nodestart]);
-  //nodeslen = headers[3];
   nodeslen = headers->nodeslen;
   nodebytes = nodeslen * (sizeof (ENTROPY_FEATUREBUCKET_STRUCT));
 
@@ -2110,7 +2114,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //    Time to clean up and go home.
 
   //  and remember to let go of the mmap and the pattern bufffer
-  crm_munmap_file ((void *) headers);
+  crm_force_munmap_addr ((void *) fmap);
 
 #ifdef POSIX
   //    Because mmap/munmap doesn't set atime, nor set the "modified"
@@ -2305,8 +2309,8 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    {
 	      if (vbar_seen)
 		{
-		  nonfatalerror ("Only one ' | ' allowed in a CLASSIFY. \n" ,
-				 "We'll ignore it for now.");
+		  nonfatalerror5 ("Only one ' | ' allowed in a CLASSIFY. \n" ,
+				  "We'll ignore it for now.", CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -2322,8 +2326,8 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      //             quick check- does the file even exist?
 	      if (k != 0)
 		{
-		  nonfatalerror ("Nonexistent Classify table named: ",
-				 fname);
+		  nonfatalerror5 ("Nonexistent Classify table named: ",
+				  fname, CRM_ENGINE_HERE);
 		}
 	      else
 		{
@@ -2343,8 +2347,8 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 		  if (headers[maxhash] == MAP_FAILED )
 		    {
-		      nonfatalerror ("Couldn't memory-map the table file",
-				     fname);
+		      nonfatalerror5 ("Couldn't memory-map the table file",
+				      fname, CRM_ENGINE_HERE);
 		    }
 		  else
 		    {
@@ -2399,8 +2403,9 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		};
 	    };
 	  if (maxhash > MAX_CLASSIFIERS-1)
-	    nonfatalerror ("Too many classifier files.",
-			   "Some may have been disregarded");
+	    nonfatalerror5 ("Too many classifier files.",
+			    "Some may have been disregarded",
+			   CRM_ENGINE_HERE);
 	};
     };
 
@@ -2419,7 +2424,8 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //	do we have at least 1 valid .css files?
   if (maxhash == 0)
     {
-      fatalerror ("Couldn't open at least 2 .css files for classify().", "");
+      fatalerror5 ("Couldn't open at least 2 .css files for classify().", "",
+		  CRM_ENGINE_HERE);
     };
   //	do we have at least 1 valid .css file at both sides of '|'?
   //if (!vbar_seen || succhash < 0 || (maxhash < succhash + 2))
@@ -2795,10 +2801,10 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	// whining on stderr
 	if (strcmp(&(stext[strlen(stext)-strlen(buf)]), buf) != 0)
 	  {
-	    nonfatalerror( "WARNING: not enough room in the buffer to create "
+	    nonfatalerror5( "WARNING: not enough room in the buffer to create "
 			   "the statistics text.  Perhaps you could try bigger "
 			   "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-			   " ");
+			    " ", CRM_ENGINE_HERE);
 	  };
 	crm_destructive_alter_nvariable (svrbl, svlen, 
 					 stext, strlen (stext));

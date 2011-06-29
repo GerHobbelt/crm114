@@ -146,9 +146,9 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
       fp = fopen (ifn, "rb");
       if (fp == NULL)
 	{
-	  fatalerror (
+	  fatalerror5 (
 	       "For some reason, I was unable to read-open the file named ",
-	       filename);
+	       filename, CRM_ENGINE_HERE );
 	  goto input_no_open_bailout;
 	};
     };
@@ -177,14 +177,15 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
       //        silently _ignored_.  Who knew? 
       if (fp == stdin && offset != 0 )
 	{
-	  nonfatalerror ("Hmmm, a file offset on stdin won't do much. ",
-			 "I'll ignore it for now. ");
+	  nonfatalerror5 ("Hmmm, a file offset on stdin won't do much. ",
+			  "I'll ignore it for now. ",
+			  CRM_ENGINE_HERE );
 	}
       else
 	if (offset != 0)
 	  if (EBADF == fseek (fp, offset, SEEK_SET))
-	    nonfatalerror ("Dang, seems that this file isn't fseek()able: ",
-			   filename);
+	    nonfatalerror5 ("Dang, seems that this file isn't fseek()able: ",
+			    filename, CRM_ENGINE_HERE);
       
       //    are we supposed to use readline?
 #ifdef HAVE_READLINE

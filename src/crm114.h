@@ -35,14 +35,27 @@ ARGPARSE_BLOCK *apb;
 int crm_microcompiler (CSL_CELL *csl,
 			       VHT_CELL **vht);
 
+#define CRM_ENGINE_HERE (char*)__FILE__, (char *)__FUNCTION__, (unsigned)__LINE__ 
 //  helper routine for untrappable errors
 void untrappableerror (char *msg1, char *msg2); 
+void untrappableerror5 (char *msg1, char *msg2, 
+			char *filename, 
+			char *function,
+			unsigned lineno); 
 
 //  helper routine for fatal errors
 long fatalerror (char *msg1, char *msg2); 
+long fatalerror5 (char *msg1, char *msg2, 
+		  char *filename, 
+		  char *function,
+		  unsigned lineno); 
 
 //  helper routine for nonfatal errors
 long nonfatalerror (char *msg1, char *msg2); 
+long nonfatalerror5 (char *msg1, char *msg2, 
+		     char *filename, 
+		     char *function, 
+		     unsigned lineno ); 
 
 
 //  hash function for variable tables

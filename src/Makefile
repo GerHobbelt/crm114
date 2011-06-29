@@ -24,7 +24,7 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION = 20070731-BlameTheInterns
+VERSION = 20070810-BlameTheSegfault
 PREV_VERSION = 20070505-BlameIdiocy
 #PREV_VERSION = 20061103-BlameDalkey
 #PREV_VERSION = 20061010-BlameBratko
@@ -108,7 +108,7 @@ TRE_TARFILE = tre-0.7.5
 #
 CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
 	crm_math_exec.c crm_var_hash_table.c crm_expandvar.c \
-	crm_stmt_parser.c \
+	crm_stmt_parser.c crm_vector_tokenize.c \
 	crm_expr_alter.c crm_expr_match.c crm_css_maintenance.c \
 	crm_markovian.c crm_osb_bayes.c crm_osb_hyperspace.c \
 	crm_correlate.c crm_osb_winnow.c crm_winnow_maintenance.c \
@@ -125,7 +125,7 @@ HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
 
 OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
-	crm_stmt_parser.o \
+	crm_stmt_parser.o crm_vector_tokenize.o \
 	crm_expr_alter.o crm_expr_match.o crm_css_maintenance.o \
 	crm_markovian.o crm_osb_bayes.o crm_osb_hyperspace.o \
 	crm_correlate.o crm_osb_winnow.o crm_winnow_maintenance.o \
@@ -162,7 +162,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	paolo_ov2.crm paolo_ov3.crm paolo_ov4.crm paolo_ov5.crm \
 	pad.crm calc.crm \
-	gatlingsort.crm \
+	gatlingsort.crm tenfold_validate.crm\
 	test_svm.crm \
 	classifymail.crm 
 
@@ -381,6 +381,10 @@ crm_debugger.o: crm_debugger.c \
 crm_str_funcs.o: crm_str_funcs.c \
 	$(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_str_funcs.c -o crm_str_funcs.o
+
+crm_vector_tokenize.o: crm_vector_tokenize.c \
+	$(HFILES)
+	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_vector_tokenize.c -o crm_vector_tokenize.o
 
 crmregex_tre.o: crmregex_tre.c \
 	$(HFILES)
