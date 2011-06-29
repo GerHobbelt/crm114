@@ -201,6 +201,8 @@ static SOLVER solver = { 0 };
 //     are not strict requirements.
 //
 
+#if defined(CRM_WITHOUT_MJT_INLINED_QSORT)
+
 static int hash_compare(void const *a, void const *b)
 {
   HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
@@ -215,6 +217,13 @@ static int hash_compare(void const *a, void const *b)
 
   return 0;
 }
+
+#else
+
+#define hash_compare(a, b)						\
+  ((a)->hash < (b)->hash)
+
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1199,9 +1208,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
       //   Now sort the hashes array.
       //
-      qsort(hashes, hashcounts,
-            sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-            &hash_compare);
+      QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
+            hash_compare);
 
       if (user_trace)
       {
@@ -1348,6 +1356,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                       file_hashlens,
                                       PROT_READ | PROT_WRITE,
                                       MAP_SHARED,
+					CRM_MADV_RANDOM,
                                       &file_hashlens);
           file_hashlens = file_hashlens
                           / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
@@ -1579,6 +1588,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                    file1_hashlens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
+					CRM_MADV_RANDOM,
                                    &file1_hashlens);
 
       file1_hashlens = file1_hashlens
@@ -1669,6 +1679,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                    file1_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
+					CRM_MADV_RANDOM,
                                    &file1_lens);
       file1_lens = file1_lens
                    / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
@@ -1678,6 +1689,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                    file2_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
+					CRM_MADV_RANDOM,
                                    &file2_lens);
       file2_lens = file2_lens
                    / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
@@ -2117,9 +2129,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //mark the end of a feature vector
     hashes[hashcounts].hash = 0;
 
-    qsort(hashes, hashcounts,
-          sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-                 &hash_compare);
+    QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
+                 hash_compare);
     if (user_trace)
     {
       fprintf(stderr, "sorted hashes:\n");
@@ -2237,6 +2248,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                    file1_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
+					CRM_MADV_RANDOM,
                                    &file1_lens);
       file1_lens = file1_lens
                    / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
@@ -2253,6 +2265,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                    file2_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
+					CRM_MADV_RANDOM,
                                    &file2_lens);
       file2_lens = file2_lens
                    / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);

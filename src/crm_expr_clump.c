@@ -186,6 +186,7 @@ static int map_file(CLUMPER_STATE_STRUCT *s, char *filename)
                                  statbuf.st_size,
                                  PROT_READ | PROT_WRITE,
                                  MAP_SHARED,
+					CRM_MADV_RANDOM,
                                  NULL);
   if (s->file_origin == MAP_FAILED)
   {
@@ -270,6 +271,8 @@ static float get_document_affinity(crmhash_t *doc1, crmhash_t *doc2)
   return pow((1.0 + u * u) / (1.0 + l1 * l2), 0.2);
 }
 
+#if defined(CRM_WITHOUT_MJT_INLINED_QSORT)
+
 static int compare_features(const void *a, const void *b)
 {
   if (*(crmhash_t *)a < *(crmhash_t *)b)
@@ -280,6 +283,14 @@ static int compare_features(const void *a, const void *b)
 
   return 0;
 }
+
+#else
+
+#define compare_features(a, b)						\
+  (*(crmhash_t *)(a) < *(crmhash_t *)(b))
+
+#endif
+
 
 static int eat_document(ARGPARSE_BLOCK *apb,
                         char *text, long text_len, long *ate,
@@ -352,7 +363,8 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     }
   }
   CRM_ASSERT(n_features < max_features);
-  qsort(feature_space, n_features, sizeof(feature_space[0]), compare_features);
+  CRM_ASSERT(sizeof(feature_space[0]) == sizeof(crmhash_t));
+  QSORT(crmhash_t, feature_space, n_features, compare_features);
 
   if (unique)
   {
@@ -609,6 +621,8 @@ static void index_to_pair(long t, long *i, long *j)
   *j = t - (*i * (*i + 1) / 2);
 }
 
+#if defined(CRM_WITHOUT_MJT_INLINED_QSORT)
+
 static int compare_float_ptrs(const void *a, const void *b)
 {
   if (**(float **)a > **(float **)b)
@@ -619,6 +633,13 @@ static int compare_float_ptrs(const void *a, const void *b)
 
   return 0;
 }
+
+#else
+
+#define compare_float_ptrs(a, b)						\
+  (**(float **)(a) > **(float **)(b))
+
+#endif
 
 static void agglomerative_nearest_cluster(CLUMPER_STATE_STRUCT *s, long goal)
 {
@@ -670,7 +691,9 @@ static void agglomerative_nearest_cluster(CLUMPER_STATE_STRUCT *s, long goal)
 
   for (i = 0; i < m_size; i++)
     M[i] = &s->distance_matrix[i];
-  qsort(M, m_size, sizeof(M[0]), compare_float_ptrs);
+  CRM_ASSERT(sizeof(M[0]) == sizeof(float *));
+  CRM_ASSERT(sizeof(M[0][0]) == sizeof(float));
+  QSORT(float *, M, m_size, compare_float_ptrs);
 
   for (a = first_head_ptr.next_head; a; a = a->next_head)
   {

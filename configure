@@ -1373,6 +1373,9 @@ Optional Features:
                           produce a smaller executable, which will report an
                           error when your scripts attempt to use this
                           classifier. (default: CLUMP classifier is build-in)
+  --disable-inline-qsort  do not use the custom inline qsort by Michael
+                          Tokarev but use the slower qsort() C standard
+                          library routine instead. (default: qsort is inlined)
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
   --disable-debug         Specify to create a so-called 'production' or
@@ -2825,6 +2828,36 @@ _ACEOF
      { echo "$as_me:$LINENO: result: au contraire, mon ami, we want it!" >&5
 echo "${ECHO_T}au contraire, mon ami, we want it!" >&6; }
    fi
+
+fi
+
+
+#
+# special build features
+#
+
+{ echo "$as_me:$LINENO: checking if we don't want to use the custom inline qsort by Michael Tokarev" >&5
+echo $ECHO_N "checking if we don't want to use the custom inline qsort by Michael Tokarev... $ECHO_C" >&6; }
+# Check whether --enable-inline-qsort was given.
+if test "${enable_inline_qsort+set}" = set; then
+  enableval=$enable_inline_qsort;
+   if eval "test x$enable_inline_qsort = xno"; then
+     { echo "$as_me:$LINENO: result: no, we don't" >&5
+echo "${ECHO_T}no, we don't" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define CRM_WITHOUT_MJT_INLINED_QSORT 1
+_ACEOF
+
+   else
+     { echo "$as_me:$LINENO: result: au contraire, mon ami, we want it!" >&5
+echo "${ECHO_T}au contraire, mon ami, we want it!" >&6; }
+   fi
+
+else
+
+   { echo "$as_me:$LINENO: result: au contraire, mon ami, we want it!" >&5
+echo "${ECHO_T}au contraire, mon ami, we want it!" >&6; }
 
 fi
 

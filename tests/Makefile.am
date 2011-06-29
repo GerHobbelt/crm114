@@ -69,7 +69,7 @@ EXTRA_DIST = megatest_knowngood.log \
 
 
 megatest: $(test_SCRIPTS) megatest_knowngood.log megatest.sh
-	$(SILENT) echo ""        
+	$(SILENT) echo ""
 	$(SILENT) echo "    This runs a moderately interesting set of base tests"
 	$(SILENT) echo "    to exercise much of CRM114 under TRE.  This takes about"
 	$(SILENT) echo "    1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"

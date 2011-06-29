@@ -1804,6 +1804,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                        statbuf.st_size,
                        PROT_READ | PROT_WRITE,
                        MAP_SHARED,
+					CRM_MADV_RANDOM,
                        NULL);
   if (fmap == MAP_FAILED)
   {
@@ -2618,6 +2619,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                          statbuf.st_size,
                                          PROT_READ | PROT_WRITE,
                                          MAP_SHARED,
+					CRM_MADV_RANDOM,
                                          NULL);
           headers[maxhash] = (ENTROPY_HEADER_STRUCT *)fmaps[maxhash];
 

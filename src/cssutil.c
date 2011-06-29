@@ -47,7 +47,7 @@ static char version[] = "1.2";
 
 void helptext(void)
 {
-  /* GCC warning: cssutil.c:53: warning: string length ‘516’ is greater than the length ‘509’ ISO C89 compilers are required to support */
+  /* GCC warning: cssutil.c:53: warning: string length <516> is greater than the length <509> ISO C89 compilers are required to support */
   fprintf(stdout,
           "cssutil version %s - generic css file utility.\n"
           "Usage: cssutil [options]... css-file\n"
@@ -302,6 +302,7 @@ int main(int argc, char **argv)
                                                  hfsize,
                                                  PROT_READ | PROT_WRITE,
                                                  MAP_SHARED,
+					CRM_MADV_RANDOM,
                                                   &hfsize);
     if (hashes == MAP_FAILED)
     {

@@ -1,3 +1,50 @@
+2008-01-28 Ger Hobbelt
+
+	* Added VT (Vector Tokenization) to the Hyperspace classifier. The others
+	  will follow its lead in this. (BillY)
+	
+	* Included qsort implementation by Michael Tokarev 
+	  (http://www.corpit.ru/mjt/qsort.html) for a bit of improved performance as
+	  suggested by Paolo.
+	
+	* Fixed Makefile.am so standard ./bootstrap script works as expected, including
+	  'make distcheck': that one doesn't fail anymore.
+	
+	* Included the original BillY makefile in src/: it is minimally patched to make
+	  it behave as expected with the new GNU/autoconf enabled code in here.
+	
+	  For those who like to compile this thing the old fashioned way on compatible
+	  systems, please run
+	
+	    cd src
+	    ./make_BillY.sh
+	    ./make_BillY.sh megatest
+	
+	  as a replacement for the old BillY make action:
+	
+	    cd src
+	    make
+	    make megatest
+	
+	  i.e. replace 'make' in Bill's documents with make_BillY.sh if you want to go 
+	  down that road (you'll miss out on all the ./configure goodness though ;-) ).
+	
+	  Note that a special configuration headerfile (src/config_BillY.h) is
+	  provided to help make_BillY compile on compatible UNIX systems. This headerfile
+	  includes a toned down UNIX build configuration. Tested on SuSE Linux, but 
+	  should (hopefully) build on other UNIXes as well. If any compile time errors
+	  occur here, please edit the src/config_BillY.h headerfile according and please
+	  post the diffs/changes to the crm developer mailing list.
+	
+	  WARNING: src/make_BillY.sh et al are provided as a 'backwards compatible build
+	   	   fix' ONLY and are NOT meant to replace the available ./configure-driven
+		   build/install available in this or future GerXXXX crm distro/builds!
+	
+	* KNOWN BUG for clump/pmulc still applies! :-(
+	
+	
+Version 20071015-BlameGerHobbelt
+
 2007-08-03 Ger Hobbelt
 
 	* revived the autoconfiscated crm114 build setup

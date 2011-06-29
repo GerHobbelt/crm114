@@ -653,6 +653,12 @@ int crm_invoke(void)
     crm_expr_translate(csl, apb);
     break;
 
+  case CRM_REDUCE:
+#if 0
+    crm_expr_reduce(csl, apb);
+#endif
+    break;
+
   case CRM_LEARN:
     crm_expr_learn(csl, apb);
     break;

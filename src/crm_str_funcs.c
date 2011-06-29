@@ -1433,7 +1433,7 @@ int hash_selftest(void)
 
 /*****    OLD VERSION NOT 64-BIT PORTABLE DON'T USE ME *********/
 #if 0
-long strnhash (char *str, long len)
+long strnhash (const char *str, long len)
 {
   long i;
   long hval;
@@ -1765,6 +1765,10 @@ static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
 //     Watch out tho - this takes a CRM_MMAP_CELL, not a *ptr, so don't
 //     call it from anywhere except inside this file.
 //
+//     NOTE: this call will invalidate the memory area pointed at by map->addr
+//           and will close the related file (handle). The file (on disc)
+//           will be 'touched' to update the last-access timestamp on disc.
+//
 static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
 {
 #if defined (HAVE_MSYNC) || defined (HAVE_MUNMAP)
@@ -1773,7 +1777,7 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
 #if defined (HAVE_MSYNC)
   if (map->prot & PROT_WRITE)
   {
-    munmap_status = msync(map->addr, map->actual_len, MS_SYNC | MS_INVALIDATE);
+    munmap_status = msync(map->addr, map->actual_len, MS_SYNC /* | MS_INVALIDATE */ );
     if (munmap_status != 0)
     {
       nonfatalerror_ex(SRC_LOC(),
@@ -1981,7 +1985,7 @@ void crm_munmap_file(void *addr)
     if (p->prot & PROT_WRITE)
     {
 #if defined (HAVE_MSYNC)
-      int ret = msync(p->addr, p->actual_len, MS_SYNC | MS_INVALIDATE);
+      int ret = msync(p->addr, p->actual_len, MS_SYNC /* | MS_INVALIDATE */ );
       if (ret != 0)
       {
         nonfatalerror_ex(SRC_LOC(),
@@ -2062,7 +2066,7 @@ void crm_munmap_all(void)
 //     prot flags are in the mmap() format - that is, PROT_, not O_ like open.
 //      (it would be nice if length could be self-generated...)
 
-void *crm_mmap_file(char *filename, long start, long requested_len, long prot, long mode, long *actual_len)
+void *crm_mmap_file(char *filename, long start, long requested_len, long prot, long mode, int advise, long *actual_len)
 {
   CRM_MMAP_CELL *p;
   long pagesize = 0;
@@ -2213,6 +2217,30 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
       *actual_len = 0;
     return MAP_FAILED;
   }
+
+#if defined(HAVE_MADVISE)
+  if (advise != 0 && 0 != madvise(p->addr, p->actual_len, advise))
+  {
+    munmap(p->addr, p->actual_len);
+    close(p->fd);
+    free(p->name);
+    free(p);
+    if (actual_len)
+      *actual_len = 0;
+    return MAP_FAILED;
+  }
+#elif defined(HAVE_POSIX_MADVISE)
+  if (advise != 0 && 0 != posix_madvise(p->addr, p->actual_len, advise))
+  {
+    munmap(p->addr, p->actual_len);
+    close(p->fd);
+    free(p->name);
+    free(p);
+    if (actual_len)
+      *actual_len = 0;
+    return MAP_FAILED;
+  }
+#endif
 
   p->user_addr = p->addr;
   p->user_actual_len = p->actual_len;

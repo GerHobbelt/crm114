@@ -9,6 +9,8 @@
 #include "config.h"
 #elif defined (WIN32)
 #include "config_win32.h"
+#elif defined (ORIGINAL_BILL_Y_MAKEFILE)
+#include "config_BillY.h"
 #else
 #error \
   "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."
@@ -359,6 +361,58 @@ typedef struct
 #define utime(filename, timestruct)      _utime(filename, timestruct)
 #endif
 
+
+
+/*
+crm_mmap() advise arg values for use by madvise/posix_madvise() in there:
+
+CRM_MADV_NORMAL
+
+	Specifies that the application has no advice to give on its  behavior  with  respect  to  the  specified
+	range. It is the default characteristic if no advice is given for a range of memory.
+
+CRM_MADV_SEQUENTIAL
+
+	Specifies  that  the application expects to access the specified range sequentially from lower addresses
+	to higher addresses.
+
+CRM_MADV_RANDOM
+
+	Specifies that the application expects to access the specified range in a random order.
+
+CRM_MADV_WILLNEED
+
+	Specifies that the application expects to access the specified range in the near future.
+
+CRM_MADV_DONTNEED
+
+	Specifies that the application expects that it will not access the specified range in the near future.
+*/
+#if defined(HAVE_MADVISE)
+
+#define CRM_MADV_NORMAL          MADV_NORMAL
+#define CRM_MADV_SEQUENTIAL      MADV_SEQUENTIAL
+#define CRM_MADV_RANDOM          MADV_RANDOM
+#define CRM_MADV_WILLNEED        MADV_WILLNEED
+#define CRM_MADV_DONTNEED        MADV_DONTNEED
+
+#elif defined(HAVE_POSIX_MADVISE)
+
+#define CRM_MADV_NORMAL          POSIX_MADV_NORMAL
+#define CRM_MADV_SEQUENTIAL      POSIX_MADV_SEQUENTIAL
+#define CRM_MADV_RANDOM          POSIX_MADV_RANDOM
+#define CRM_MADV_WILLNEED        POSIX_MADV_WILLNEED
+#define CRM_MADV_DONTNEED        POSIX_MADV_DONTNEED
+
+#else
+
+#define CRM_MADV_NORMAL          0
+#define CRM_MADV_SEQUENTIAL      0
+#define CRM_MADV_RANDOM          0
+#define CRM_MADV_WILLNEED        0
+#define CRM_MADV_DONTNEED        0
+
+#endif
 
 /*
  * mmap/munmap related getpagesize(): used to check our file header offset.
@@ -777,6 +831,17 @@ extern FILE *crm_stderr;
 #define stdin   crm_stdin
 #define stdout  crm_stdout
 #define stderr  crm_stderr
+#endif
+
+
+
+
+
+// include qsort implementation by Michael Tokarev (http://www.corpit.ru/mjt/qsort.html)
+#if !defined(CRM_WITHOUT_MJT_INLINED_QSORT)
+#include "crm_mjt_qsort.h"
+#else
+#define QSORT(type, base, count, func)		qsort(base, count, sizeof(type), func)
 #endif
 
 

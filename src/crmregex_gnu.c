@@ -280,9 +280,9 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
 //
 //       How to do a regex execution from the compiled register
 //
-int crm_regexec(regex_t *preg, char *string, long string_len,
+int crm_regexec(regex_t *preg, const char *string, int string_len,
                 size_t nmatch, regmatch_t pmatch[], int eflags,
-                char *aux_string)
+                const char *aux_string)
 {
   static int null_errored = 0;
   int savedcrockchar;

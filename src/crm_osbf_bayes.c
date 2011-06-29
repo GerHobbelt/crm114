@@ -56,7 +56,7 @@ static const long hctable[] =
 };
 
 //          Where does the nominative data start?
-static unsigned long spectra_start;
+// static unsigned long spectra_start;
 
 /* structure for token searching */
 struct token_search
@@ -154,7 +154,7 @@ static unsigned long get_next_hash(struct token_search *pts)
   {
     count_long_tokens++;
     /* XOR new hash with previous one */
-    hash_acc ^= strnhash((char *)pts->ptok, pts->toklen);
+    hash_acc ^= strnhash((const char *)pts->ptok, pts->toklen);
     /* fprintf(stderr, " %0lX +\n ", hash_acc);  */
     /* advance the pointer and get next token */
     pts->ptok += pts->toklen;
@@ -165,7 +165,7 @@ static unsigned long get_next_hash(struct token_search *pts)
   {
     if (pts->toklen > 0 || count_long_tokens > 0)
     {
-      hash_acc ^= strnhash((char *)pts->ptok, pts->toklen);
+      hash_acc ^= strnhash((const char *)pts->ptok, pts->toklen);
       /* fprintf(stderr, " %0lX %lu\n", hash_acc, pts->toklen); */
       pts->hash = hash_acc;
     }
@@ -332,6 +332,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                          statbuf.st_size,
                          PROT_READ | PROT_WRITE,
                          MAP_SHARED,
+					CRM_MADV_RANDOM,
                          NULL);
 
   if (header == MAP_FAILED)
@@ -370,7 +371,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //
   //
-  spectra_start = header->buckets_start;
+  // spectra_start = header->buckets_start;
 
   //   compile the word regex
   //
@@ -930,6 +931,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                           hashlens[maxhash],
                                           PROT_READ | PROT_WRITE,
                                           MAP_SHARED,
+					CRM_MADV_RANDOM,
                                           &hashlens[maxhash]);
           if (header[maxhash] == MAP_FAILED)
           {
@@ -958,7 +960,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashes[maxhash] =
               (OSBF_FEATUREBUCKET_STRUCT *)
               header[maxhash] + header[maxhash]->buckets_start;
-            spectra_start = header[maxhash]->buckets_start;
+            // spectra_start = header[maxhash]->buckets_start;
             learnings[maxhash] = header[maxhash]->learnings;
             //
             //   increment learnings to avoid division by 0

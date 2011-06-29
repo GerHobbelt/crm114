@@ -10,6 +10,9 @@
 /* do not include the Bit-Entropy classifier in the build */
 /* #undef CRM_WITHOUT_BIT_ENTROPY */
 
+/* do not include the CLUMP classifier in the build */
+/* #undef CRM_WITHOUT_CLUMP */
+
 /* do not include the Correlate classifier in the build */
 /* #undef CRM_WITHOUT_CORRELATE */
 
@@ -496,7 +499,7 @@
 #undef HAVE___ENVIRON
 
 /* Define if compiler implements __FUNCTION__. */
-#define HAVE___FUNCTION__ 1
+#undef HAVE___FUNCTION__ 
 
 /* Define if compiler implements __func__. */
 #undef HAVE___FUNC__
@@ -526,13 +529,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20070830-BlameGerHobbelt"
+#define PACKAGE_STRING "CRM114 20071201-BlameLittleStevie_VT"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20070830-BlameGerHobbelt"
+#define PACKAGE_VERSION "20071201-BlameLittleStevie_VT"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -564,13 +567,13 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-352"
+#define TAR_FILENAME_POSTFIX "Ger-1493"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
-#define VERSION "20070830-BlameGerHobbelt"
+#define VERSION "20071201-BlameLittleStevie_VT"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

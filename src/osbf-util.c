@@ -55,7 +55,7 @@ static char version[] = "1.1";
 
 void helptext(void)
 {
-  /* GCC warning: warning: string length ‘xxx’ is greater than the length ‘509’ ISO C89 compilers are required to support */
+  /* GCC warning: warning: string length <xxx> is greater than the length <509> ISO C89 compilers are required to support */
   fprintf(stdout,
           "osbf-util version %s - generic osbf file utility.\n"
           "Usage: osbfutil [options]... css-filename\n"
@@ -350,6 +350,7 @@ int main(int argc, char **argv)
                            hfsize,
                            PROT_READ | PROT_WRITE,
                            MAP_SHARED,
+					CRM_MADV_RANDOM,
                            &hfsize);
     if (header == MAP_FAILED)
     {

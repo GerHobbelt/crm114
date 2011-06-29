@@ -258,6 +258,7 @@ static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
                                   filesize_on_disk,
                                   PROT_READ | PROT_WRITE,
                                   MAP_SHARED,
+					CRM_MADV_RANDOM,
                                   &filesize_on_disk);
   if (nn->file_origin == MAP_FAILED)
   {
@@ -743,6 +744,8 @@ static void nuke(NEURAL_NET_STRUCT *nn)
 }
 
 
+#if defined(CRM_WITHOUT_MJT_INLINED_QSORT)
+
 static int compare_hash_vals(const void *a, const void *b)
 {
   if (*(crmhash_t *)a < *(crmhash_t *)b)
@@ -753,6 +756,13 @@ static int compare_hash_vals(const void *a, const void *b)
 
   return 0;
 }
+
+#else
+
+#define compare_hash_vals(a, b)					\
+  (*(crmhash_t *)(a) < *(crmhash_t *)(b))
+
+#endif
 
 //         GROT GROT GROT
 //      This is the feature extractor.  In goes text, out comes a
@@ -833,7 +843,8 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     }
   }
   // We sort the features so we get sequential memory access hereafter.
-  qsort(feature_space, n_features, sizeof(feature_space[0]), compare_hash_vals);
+  CRM_ASSERT(sizeof(feature_space[0]) == sizeof(crmhash_t));
+  QSORT(crmhash_t, feature_space, n_features, compare_hash_vals);
 
   for (i = 0; i < n_features && feature_space[i] == 0; i++)
     feature_space[i] = 1;
@@ -883,7 +894,8 @@ int project_features(crmhash_t *feat, int nf, crmhash_t *ret, int max)
       a /= soft_max;
     }
   }
-  qsort(ret, j, sizeof(ret[0]), compare_hash_vals);
+  CRM_ASSERT(sizeof(ret[0]) == sizeof(crmhash_t));
+  QSORT(crmhash_t, ret, j, compare_hash_vals);
   for (k = 0; k < j && ret[k] == 0; k++)
     ret[k] = 1;
   ret[j++] = 0;

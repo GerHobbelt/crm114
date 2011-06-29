@@ -51,7 +51,7 @@ static REGEX_CACHE_BLOCK regex_cache[CRM_REGEX_CACHESIZE] = { { NULL, NULL, 0, 0
 //
 //      How to do a register compilation
 //
-int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
+int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
 {
   //       compile it with the TRE regex compiler
   //
@@ -68,11 +68,11 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
   if (internal_trace)
   {
     int i;
-    fprintf(stderr, "\ncompiling regex '%s', len %ld, in hex: ",
+    fprintf(stderr, "\ncompiling regex '%s', len %d, in hex: ",
             regex, regex_len);
     for (i = 0; i < regex_len; i++)
     {
-      fprintf(stderr, "%2X", regex[i]);
+      fprintf(stderr, "%02X", (unsigned char)regex[i]);
     }
     fprintf(stderr, "\n");
   }
@@ -85,10 +85,10 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
   //   of this regex.  Note that a length of 0 means "empty bucket".
   {
     int i, j, found_it;
-    long rtsize = sizeof(regex_t);
+    int rtsize = sizeof(regex_t);
     regex_t *ppreg_temp = NULL;
     char *regex_temp = NULL;
-    long rlen_temp = 0;
+    int rlen_temp = 0;
     int cflags_temp = 0;
     int status_temp = 0;
 
@@ -266,9 +266,9 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
 //
 //       How to do a regex execution from the compiled register
 //
-int crm_regexec(regex_t *preg, char *string, long string_len,
+int crm_regexec(regex_t *preg, const char *string, int string_len,
                 size_t nmatch, regmatch_t pmatch[], int eflags,
-                char *aux_string)
+                const char *aux_string)
 {
   if (!string)
   {

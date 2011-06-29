@@ -246,6 +246,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
                           statbuf.st_size,
                           PROT_READ | PROT_WRITE,
                           MAP_SHARED,
+					CRM_MADV_RANDOM,
                           &filesize);
     if (space == MAP_FAILED)
     {
@@ -264,6 +265,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
                               statbuf.st_size,
                               PROT_READ | PROT_WRITE,
                               MAP_SHARED,
+					CRM_MADV_RANDOM,
                               NULL);
     if (s->header == MAP_FAILED)
     {

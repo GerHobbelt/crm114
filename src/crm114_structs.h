@@ -283,8 +283,9 @@ typedef struct mythical_entropy_cell
 #define CRM_DEBUG 30
 #define CRM_CLUMP 31         // make clusters out of tokens
 #define CRM_PMULC 32         // pmulc translates tokens to cluster names
-#define CRM_LAZY 33          // makes a "lazy" variable.
-#define CRM_UNIMPLEMENTED 34
+#define CRM_LAZY 33          // makes a "lazy" variable.  // [i_a] NOT IMPLEMENTED
+#define CRM_REDUCE 34
+#define CRM_UNIMPLEMENTED 35
 
 
 //      FLAGS FLAGS FLAGS

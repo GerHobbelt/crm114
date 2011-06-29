@@ -75,9 +75,9 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long cflags, eflags;
   struct stat statbuf;      //  for statting the hash file
   long hfsize;              //  size of the hash file
-  char *learnfilename;
-  WINNOW_FEATUREBUCKET_STRUCT *hashes;   //  the text of the hash file
-  unsigned char *xhashes;                //  and the mask of what we've seen
+  char *learnfilename = NULL;
+  WINNOW_FEATUREBUCKET_STRUCT *hashes = MAP_FAILED;   //  the text of the hash file
+  unsigned char *xhashes = NULL;                //  and the mask of what we've seen
   crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
   //
   regex_t regcb;
@@ -87,7 +87,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   double sense;
   long microgroom;
   long use_unigrams;
-  long fev;
+  int fev = 0;
   long made_new_file;
 
 
@@ -196,8 +196,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           learnfilename,
                           errno,
                           errno_descr(errno));
-      free(learnfilename);
-      return fev;
+      goto fail_dramatically;
     }
     //       do we have a user-specified file size?
     if (sparse_spectrum_file_length == 0)
@@ -214,8 +213,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           "\n Couldn't write header to file %s; errno=%d(%s)\n",
                           learnfilename, errno, errno_descr(errno));
       fclose(f);
-      free(learnfilename);
-      return fev;
+      goto fail_dramatically;
     }
 
     //       put in sparse_spectrum_file_length entries of NULL
@@ -226,8 +224,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           "\n Couldn't write to file %s; errno=%d(%s)\n",
                           learnfilename, errno, errno_descr(errno));
       fclose(f);
-      free(learnfilename);
-      return fev;
+      goto fail_dramatically;
     }
     made_new_file = 1;
     //
@@ -248,13 +245,13 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                          hfsize,
                          PROT_READ | PROT_WRITE,
                          MAP_SHARED,
+					CRM_MADV_RANDOM,
                          &hfsize);
   if (hashes == MAP_FAILED)
   {
     fev = fatalerror("Couldn't memory-map the .cow file named: ",
                      learnfilename);
-    free(learnfilename);
-    return fev;
+    goto fail_dramatically;
   }
 
   if (user_trace)
@@ -282,8 +279,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     fev = fatalerror("The .cow file is the wrong type!  We're expecting "
                      "a Osb_Winnow-spectrum file.  The filename is: ",
                      learnfilename);
-    free(learnfilename);
-    return fev;
+    goto fail_dramatically;
   }
 #endif
 
@@ -345,11 +341,9 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   if (vht[vhtindex] == NULL)
   {
-    long q;
-    q = fatalerror(" Attempt to LEARN from a nonexistent variable ",
+    fev = fatalerror(" Attempt to LEARN from a nonexistent variable ",
                    ltext);
-    free(learnfilename);
-    return q;
+    goto fail_dramatically;
   }
   mdw = NULL;
   if (tdw->filetext == vht[vhtindex]->valtxt)
@@ -358,10 +352,8 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     mdw = cdw;
   if (mdw == NULL)
   {
-    long q;
-    q = fatalerror(" Bogus text block containing variable ", ltext);
-    free(learnfilename);
-    return q;
+    fev = fatalerror(" Bogus text block containing variable ", ltext);
+    goto fail_dramatically;
   }
   textoffset = vht[vhtindex]->vstart;
   textmaxoffset = textoffset + vht[vhtindex]->vlen;
@@ -616,13 +608,15 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   }
   //   end the while k==0
 
-  learn_end_regex_loop:
-  regcomp_failed:
+learn_end_regex_loop:
+regcomp_failed:
+fail_dramatically:
 
   //  and remember to let go of the mmap and the pattern bufffer
   // (and force a cache purge)
   // crm_munmap_all ();
-  crm_munmap_file((void *)hashes);
+  if (hashes != MAP_FAILED)
+    crm_munmap_file((void *)hashes);
 
   free(xhashes);
 
@@ -920,6 +914,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                           hashlens[maxhash],
                                           PROT_READ,
                                           MAP_SHARED,
+					CRM_MADV_RANDOM,
                                           &hashlens[maxhash]);
 
           if (hashes[maxhash] == MAP_FAILED)

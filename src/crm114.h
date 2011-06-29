@@ -381,22 +381,41 @@ void crm_get_pgm_arg(char *to, long tolen, char *from, long fromlen);
 //     The vector tokenizer - used to turn text into hash vectors.
 //
 
-long crm_vector_tokenize_selector
+int crm_vector_tokenize_selector
 (
- ARGPARSE_BLOCK *apb,     // The args for this line of code
- char *text,             // input string (null-safe!) 
- int textlen,           //   how many bytes of input. 
- int start_offset,      //     start tokenizing at this byte.
- char *regex,            // the parsing regex (might be ignored)   
- int regexlen,          //   length of the parsing regex  
- long *coeff_array,      // the pipeline coefficient control array 
- int pipe_len,          //  how long a pipeline (== coeff_array row length)
- int pipe_iters,        //  how many rows are there in coeff_array 
- unsigned long *features,         // where the output features go   
- int featureslen,       //   how many output features (max)
- long *features_out,     // how many longs did we actually use up
- long *next_offset       // next invocation should start at this offset
- );
+  ARGPARSE_BLOCK *apb,            // The args for this line of code
+  const char           *text,           // input string (null-safe!)
+  int            textlen,        //   how many bytes of input.
+  int            start_offset,   //     start tokenizing at this byte.
+  const char           *regex,          // the parsing regex (might be ignored)
+  int            regexlen,       //   length of the parsing regex
+  const crmhash_t     *coeff_array,    // the pipeline coefficient control array
+  int            pipe_len,       //  how long a pipeline (== coeff_array row length)
+  int            pipe_iters,     //  how many rows are there in coeff_array
+  crmhash_t     *features,       // where the output features go
+  int            featureslen,    //   how many output features (max)
+  int           *features_out,   // how many longs did we actually use up
+  int           *next_offset     // next invocation should start at this offset
+);
+
+// this interface method is provided only for those that 'know what they're doing',
+// i.e. (unit) test code such as testtocvek:
+int crm_vector_tokenize
+(
+  const char          *text,              // input string (null-safe!)
+  int           textlen,           //   how many bytes of input.
+  int           start_offset,      //     start tokenizing at this byte.
+  const char          *regex,             // the parsing regex (might be ignored)
+  int           regexlen,          //   length of the parsing regex
+  const crmhash_t    *coeff_array,       // the pipeline coefficient control array
+  int           pipe_len,          //  how long a pipeline (== coeff_array col height)
+  int           pipe_iters,        //  how many rows are there in coeff_array
+  crmhash_t *features,          // where the output features go
+  int           featureslen,       //   how many output features (max)
+  int           features_stride,   //   Spacing (in words) between features
+  int          *features_out,      // how many longs did we actually use up
+  int          *next_offset        // next invocation should start at this offset
+);
 
 
 //     crm execution-time debugging environment - an interpreter unto itself
@@ -471,11 +490,11 @@ long crm_restrictvar(char  *boxstring,
 
 //      crm114-specific regex compilation
 
-int crm_regcomp(regex_t *preg, char *regex, long regex1_len, int cflags);
+int crm_regcomp(regex_t *preg, const char *regex, int regex1_len, int cflags);
 
-int crm_regexec(regex_t *preg, char *string, long string_len,
+int crm_regexec(regex_t *preg, const char *string, int string_len,
                 size_t nmatch, regmatch_t pmatch[], int eflags,
-                char *aux_string);
+                const char *aux_string);
 
 size_t crm_regerror(int errocode, regex_t *preg, char *errbuf,
                     size_t errbuf_size);
@@ -489,7 +508,7 @@ char *crm_regversion(void);
 //
 
 
-void *crm_mmap_file(char *filename, long start, long len, long prot, long mode, long *actual_len);
+void *crm_mmap_file(char *filename, long start, long len, long prot, long mode, int advise, long *actual_len);
 
 void crm_munmap_file(void *where);
 void crm_munmap_file_internal(void *map);

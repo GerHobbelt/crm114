@@ -67,6 +67,7 @@ static STMT_TABLE_TYPE stmt_table[] =
   { "debug",     CRM_DEBUG,         0,  0,     0,  0,    0,  0,  0,  0,   0 },
   { "clump",     CRM_CLUMP,         0,  1,     0,  1,    1,  1,  0,  1, CRM_FLAT | CRM_REFUTE },
   { "pmulc",     CRM_PMULC,         0,  1,     0,  1,    0,  0,  0,  1, CRM_FLAT | CRM_REFUTE },
+  { "reduce",    CRM_REDUCE,        0,  1,     0,  1,    0,  1,  0,  1, CRM_NOCASE | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT },
   { NULL }   /* [i_a] sentinel */
 };
 

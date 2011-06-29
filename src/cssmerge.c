@@ -147,6 +147,7 @@ int main(int argc, char **argv)
                      hfsize2,
                      PROT_READ | PROT_WRITE,
                      MAP_SHARED,
+					CRM_MADV_RANDOM,
                      &hfsize2);
   if (h2 == MAP_FAILED)
   {
@@ -232,6 +233,7 @@ int main(int argc, char **argv)
                      hfsize1,
                      PROT_READ | PROT_WRITE,
                      MAP_SHARED,
+					CRM_MADV_RANDOM,
                      &hfsize1);
   if (h1 == MAP_FAILED)
   {

@@ -201,6 +201,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
                           filesize,
                           PROT_READ | PROT_WRITE,
                           MAP_SHARED,
+					CRM_MADV_RANDOM,
                           &filesize);
     make_scm_state(s, space);
   }
@@ -214,6 +215,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
                               statbuf.st_size,
                               PROT_READ | PROT_WRITE,
                               MAP_SHARED,
+					CRM_MADV_RANDOM,
                               NULL);
     o = (char *)s->header;
 

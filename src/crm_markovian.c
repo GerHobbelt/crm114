@@ -246,6 +246,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                          hfsize,
                          PROT_READ | PROT_WRITE,
                          MAP_SHARED,
+					CRM_MADV_RANDOM,
                          &hfsize);
   if (hashes == MAP_FAILED)
   {
@@ -1185,6 +1186,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                           hashlens[maxhash],
                                           PROT_READ | PROT_WRITE,
                                           MAP_SHARED,
+					CRM_MADV_RANDOM,
                                           &hashlens[maxhash]);
 
           if (hashes[maxhash] == MAP_FAILED)

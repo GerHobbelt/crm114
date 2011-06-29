@@ -371,6 +371,28 @@ when your scripts attempt to use this classifier.
    fi
   ])
 
+#
+# special build features
+#
+
+AC_MSG_CHECKING([if we don't want to use the custom inline qsort by Michael Tokarev])
+AC_ARG_ENABLE([inline-qsort],
+  AC_HELP_STRING([--disable-inline-qsort],
+    [do not use the custom inline qsort by Michael Tokarev but use
+the slower qsort() C standard library routine instead.
+(default: qsort is inlined)]),
+  [
+   if eval "test x$enable_inline_qsort = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_MJT_INLINED_QSORT, 1, [do not use the custom inline qsort by Michael Tokarev])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
+
 # ##################################################################
 #
 # Checks for programs.
@@ -846,6 +868,7 @@ AC_CHECK_FUNCS(setlocale)
 AC_CHECK_FUNCS(getopt getopt_long)
 AC_CHECK_FUNCS(__debugbreak _set_output_format)
 AC_CHECK_FUNCS(sysconf)
+AC_CHECK_FUNCS(madvise posix_madvise)
 
 
 

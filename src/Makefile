@@ -41,7 +41,7 @@ POST_UNINSTALL = :
 build_triplet = x86_64-suse-linux-gnu
 host_triplet = x86_64-suse-linux-gnu
 bin_PROGRAMS = crm114$(EXEEXT) cssutil$(EXEEXT) osbf-util$(EXEEXT) \
-	cssdiff$(EXEEXT) cssmerge$(EXEEXT)
+	cssdiff$(EXEEXT) cssmerge$(EXEEXT) testvectok$(EXEEXT)
 subdir = src
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in $(srcdir)/diff_em.sh.in \
@@ -118,6 +118,10 @@ am_osbf_util_OBJECTS = osbf-util.$(OBJEXT) \
 	crm_versioning.$(OBJEXT) $(am__objects_2)
 osbf_util_OBJECTS = $(am_osbf_util_OBJECTS)
 osbf_util_LDADD = $(LDADD)
+am_testvectok_OBJECTS = $(am__objects_1) $(am__objects_2) \
+	testvectok.$(OBJEXT)
+testvectok_OBJECTS = $(am_testvectok_OBJECTS)
+testvectok_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/m4/depcomp
 am__depfiles_maybe = depfiles
@@ -126,9 +130,10 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(crm114_SOURCES) $(cssdiff_SOURCES) $(cssmerge_SOURCES) \
-	$(cssutil_SOURCES) $(osbf_util_SOURCES)
+	$(cssutil_SOURCES) $(osbf_util_SOURCES) $(testvectok_SOURCES)
 DIST_SOURCES = $(crm114_SOURCES) $(cssdiff_SOURCES) \
-	$(cssmerge_SOURCES) $(cssutil_SOURCES) $(osbf_util_SOURCES)
+	$(cssmerge_SOURCES) $(cssutil_SOURCES) $(osbf_util_SOURCES) \
+	$(testvectok_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -228,7 +233,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2008-01-27
+ISODATE = 2008-01-28
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -277,7 +282,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-1483
+TAR_FILENAME_POSTFIX = Ger-1495
 TRE_CONFIG = no
 
 #
@@ -386,7 +391,8 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_versioning.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
-	crm114.h crm114_osbf.h crm_expr_clump_nn.h config.h 
+	crm114.h crm114_osbf.h crm_expr_clump_nn.h config.h \
+	config_BillY.h crm_mjt_qsort.h
 
 OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
@@ -405,7 +411,9 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_generic_port.o crm_stdio_port.o \
 	crm_versioning.o
 
-UTILFILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c 
+UTILFILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c \
+	testvectok.c
+
 CRMFILES = mailfilter.crm mailfilter.cf \
 	mailreaver.crm mailtrainer.crm \
 	maillib.crm shuffle.crm \
@@ -422,7 +430,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	rewritetest.crm test_rewrites.mfp \
 	randomiotest.crm isolate_reclaim_test.crm \
 	match_isolate_test.crm match_isolate_reclaim.crm \
-	call_return_test.crm defaulttest.crm\
+	call_return_test.crm defaulttest.crm \
 	shroud.crm quine.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
@@ -444,16 +452,15 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	inoc_passwd.txt \
 	GPL-License.txt \
 	rename-gz \
-	megatest.sh megatest_knowngood.log megatest_knowngood.orginal.log 
+	megatest.sh megatest_knowngood.log megatest_knowngood.orginal.log \
+	make_BillY.sh Makefile.BillY
 
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(UTILFILES) \
 	$(CRMFILES) \
 	$(TEXTFILES)
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt \
-	merge-results-29-oct-2007.txt
-
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c \
@@ -474,6 +481,7 @@ cssmerge_SOURCES = cssmerge.c \
 	crm_versioning.c \
 	$(HFILES)
 
+testvectok_SOURCES = $(CFILES) $(HFILES) testvectok.c
 .SUFFIXES = .c .o
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -608,6 +616,7 @@ include ./$(DEPDIR)/cssdiff.Po
 include ./$(DEPDIR)/cssmerge.Po
 include ./$(DEPDIR)/cssutil.Po
 include ./$(DEPDIR)/osbf-util.Po
+include ./$(DEPDIR)/testvectok.Po
 
 .c.obj:
 	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
@@ -1002,6 +1011,9 @@ cssdiff.o: cssdiff.c  \
 cssmerge.o: cssmerge.c  \
 	$(HFILES)
 
+testvectok.o: testvectok.c  \
+	$(HFILES)
+
 crm_generic_port.o: crm_generic_port.c \
 	$(HFILES)
 
@@ -1061,6 +1073,15 @@ cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
+testvectok: testvectok.o $(OFILES) crmregex_tre.o
+	$(CC) $(LDFLAGS) $(LIBS) testvectok.o \
+		$(OFILES) \
+		crmregex_tre.o \
+		-o testvectok
+	$(E) ""
+	$(E) "   Done.  Type \"make help\" to see what else you can make."
+	$(E) ""
+
 clean:
 	-rm -f crm114
 	-rm -f cssutil
@@ -1068,6 +1089,7 @@ clean:
 	-rm -f osbfutil
 	-rm -f cssdiff
 	-rm -f cssmerge
+	-rm -f testvectok
 	-rm -f crm114
 	-rm -f crm114_gnu
 	-rm -f crm114_tre
@@ -1076,8 +1098,7 @@ clean:
 	$(E) "   don't worry.  cd down into the TRE directory and 'make clean' manually"
 	-( [ "$(TRE_TARFILE)" ] && cd $(TRE_TARFILE) && make clean )
 
-install:
-	$(MAKE) install_engine install_utils
+install: install_engine install_utils
 	$(E) ""
 	$(E) "    Done.  Type "make help" to see what else you can make."
 	$(E) ""
@@ -1089,10 +1110,11 @@ install_utils: cssmerge cssutil cssdiff osbf-util
 	$(E) ""
 	$(E) "    Installing Utilities"
 	$(E) ""
-	install $(INSTALLFLAGS) cssdiff $(bindir)/cssdiff$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssmerge $(bindir)/cssmerge$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssutil $(bindir)/cssutil$(VER_SUFFIX)
-	install $(INSTALLFLAGS) osbf-util $(bindir)/osbf-util$(VER_SUFFIX)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	install $(INSTALLFLAGS) cssdiff $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssmerge $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssutil $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)
+	install $(INSTALLFLAGS) osbf-util $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)
 	$(E) "   if you don't have EMACS installed in the default place, you"
 	$(E) "   won't get the crm114-mode.el automatically."
 	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
@@ -1104,14 +1126,16 @@ install_engine: crm114
 	$(E) ""
 	$(E) "    Installing engine"
 	$(E) ""
-	install $(INSTALLFLAGS) crm114 $(bindir)/crm$(VER_SUFFIX)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	install $(INSTALLFLAGS) crm114 $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)
 
 install_binary_only: crm114 cssdiff cssmerge cssutil osbf-util
-	install $(INSTALLFLAGS) crm114 $(bindir)/crm$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssdiff $(bindir)/cssdiff$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssmerge $(bindir)/cssmerge$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssutil $(bindir)/cssutil$(VER_SUFFIX)	
-	install $(INSTALLFLAGS) osbf-util $(bindir)/osbf-util$(VER_SUFFIX)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	install $(INSTALLFLAGS) crm114 $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssdiff $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssmerge $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssutil $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)	
+	install $(INSTALLFLAGS) osbf-util $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)
 	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 install-exec-hook: crm114
@@ -1121,17 +1145,17 @@ uninstall-hook:
 	rm $(DESTDIR)$(bindir)/crm
 
 uninstall:
-	-rm -rf $(bindir)/crm$(VER_SUFFIX)
-	-rm -rf $(bindir)/crmg$(VER_SUFFIX)
-	-rm -rf $(bindir)/crma$(VER_SUFFIX)
-	-rm -rf $(bindir)/cssdiff$(VER_SUFFIX)
-	-rm -rf $(bindir)/cssmerge$(VER_SUFFIX)
-	-rm -rf $(bindir)/cssutil$(VER_SUFFIX)
-	-rm -rf $(bindir)/osbf-util$(VER_SUFFIX)
-	-rm -rf $(bindir)/osbfutil$(VER_SUFFIX)
-	-rm -rf $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(bindir)/crmg$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(bindir)/crma$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(bindir)/osbfutil$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
-#        
+#
 #        This runs a moderately interesting set of base tests 
 #        to exercise much of CRM114 under TRE.  This takes about
 #        1 minute to run on a 1.6 GHz Pentium-M laptop.  Please
@@ -1144,7 +1168,7 @@ uninstall:
 #       do change, either your kit isn't quite right or your
 #       install is broken (or you've found a bug).
 #
-megatest:
+megatest: crm114
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
 	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
@@ -1165,7 +1189,7 @@ megatest:
 	-( if [ ! -e ./INTRO.txt             ] ; then cp $(srcdir)/INTRO.txt ./       ; fi )
 	-( if [ ! -e ./COLOPHON.txt          ] ; then cp $(srcdir)/COLOPHON.txt ./    ; fi )
 	-( if [ ! -e ./FAQ.txt               ] ; then cp $(srcdir)/FAQ.txt ./         ; fi )
-	$(srcdir)/megatest.sh > megatest_test.log 2>&1
+	$(srcdir)/megatest.sh 2 > megatest_test.log 2>&1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="

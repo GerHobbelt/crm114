@@ -23,9 +23,8 @@
 
 
 
-#if !defined (CRM_WITHOUT_OSB_HYPERSPACE)
 
-
+#if !defined(CRM_WITHOUT_OSB_HYPERSPACE)
 
 //////////////////////////////////////////////////////////////////
 //
@@ -144,7 +143,7 @@
 
 typedef struct mythical_hyperspace_cell
 {
-  unsigned long hash;
+  crmhash_t hash;
 } HYPERSPACE_FEATUREBUCKET_STRUCT;
 
 
@@ -155,7 +154,8 @@ typedef struct mythical_hyperspace_cell
 //     are not strict requirements.
 //
 
-#define VECTOR_TOKENIZER
+#define VECTOR_TOKENIZER 1
+
 #ifndef VECTOR_TOKENIZER
 
 static const long hctable[] =
@@ -171,14 +171,16 @@ static const long hctable[] =
   397, 1637,
   797, 3277
 };
-      
+
 #endif
 
 
 
 
 
-int hash_compare(void const *a, void const *b)
+#if defined(CRM_WITHOUT_MJT_INLINED_QSORT)
+
+static int hash_compare(void const *a, void const *b)
 {
   HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
 
@@ -192,6 +194,16 @@ int hash_compare(void const *a, void const *b)
 
   return 0;
 }
+
+#else
+
+#define hash_compare(a, b)				\
+  ((a)->hash < (b)->hash)
+
+#endif
+
+
+
 //
 //    How to learn Osb_Hyperspacestyle - in this case, we'll include
 //    the single word terms that may not strictly be necessary.
@@ -215,7 +227,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long cflags, eflags;
   struct stat statbuf;                       //  for statting the hash file
   HYPERSPACE_FEATUREBUCKET_STRUCT *hashes;   //  the hashes we'll sort
-  long hashcounts;
+  int hashcounts;
   crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
   //
 
@@ -231,7 +243,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long use_unigram_features;
   long fev;
 
-  long next_offset;        //  UNUSED in the current code
+  int next_offset;        //  UNUSED in the current code
 
   //  long made_new_file;
   //
@@ -463,14 +475,14 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       crmhash_t h1;
       crmhash_t h2;
-      long th = 0;               // a counter used for TSS tokenizing
-      long j;
+      // long th = 0;               // a counter used for TSS tokenizing
+      int j;
       //
       //     old Hash polynomial: h0 + 3h1 + 5h2 +11h3 +23h4
       //     (coefficients chosen by requiring superincreasing,
       //     as well as prime)
       //
-      th = 0;
+      // th = 0;
       //
       if (use_unigram_features == 1)
       {
@@ -494,7 +506,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //if (h2 == 0) h2 = 0xdeadbeef;
           h2 = 0xdeadbeef;
           if (internal_trace)
-            fprintf(stderr, "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
+            fprintf(stderr, "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n",
                     j, (unsigned long)h1, (unsigned long)h2);
 
           hashes[hashcounts].hash = h1;
@@ -516,20 +528,20 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 #ifdef NotInAMillionYears
 
-   First, get any optional
+  First, get any optional
   //   tokenizer pipeline setups (defined by the keyword "pipeline",
   //   followed by the number of pipeline vectors, followed by the length
   //   of the pipeline vectors, followed by the pipeline weight (must
   //   be integers)  one pipeline worth at a time.
   {
     char s2text[MAX_PATTERN];
-    long s2len;
-    long coeff_array[UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];
-    long *ca;
-    long pipelen;
-    long pipe_iters;
+    int s2len;
+    crmhash_t coeff_array[UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];
+    crmhash_t *ca;
+    int pipelen;
+    int pipe_iters;
     char *vt_weight_regex = "vector: ([ 0-9]*)";
-    long regex_status;
+    int regex_status;
     regmatch_t match[5];   //  We'll only care about the second match
 
     ca = NULL;
@@ -560,19 +572,19 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (0)
       {
 	char *conv_ptr;
-	long i;
+	int i;
 	//  Yes, it matched.  Set up the pipeline coeffs specially.
 	//   The first parameter is the pipe length
 	conv_ptr = & s2text[match[1].rm_so];
 	pipelen = strtol (conv_ptr, &conv_ptr, 0);
-	fprintf (stderr, "pipelen = %ld\n", pipelen);
+	fprintf (stderr, "pipelen = %d\n", pipelen);
 	//   The second parameter is the number of repeats
 	pipe_iters = strtol (conv_ptr, &conv_ptr, 0);
-	fprintf (stderr, "pipe_iters = %ld\n", pipe_iters);
+	fprintf (stderr, "pipe_iters = %d\n", pipe_iters);
 	for (i = 0; i < pipelen * pipe_iters; i++)
 	  coeff_array[i] = strtol (conv_ptr, &conv_ptr, 0);		  
 	ca = coeff_array;
-      };
+      }
 	
     crm_vector_tokenize_selector
       (apb,                   // the APB
@@ -584,13 +596,14 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
        ca,                     // tokenizer coeff array
        pipelen,                // tokenizer pipeline len
        pipe_iters,             // tokenizer pipeline iterations
-       (unsigned long *) hashes,     // where to put the hashed results
+       (crmhash_t *)hashes,     // where to put the hashed results
        HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
        &hashcounts,             // how many hashes we actually got
        &next_offset);           // where to start again for more hashes
     
   }
 #endif
+
   //   keep the compiler happy...
   match[0].rm_so = 0;
   hashpipe[0] = 0;
@@ -608,7 +621,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       NULL,                   // tokenizer coeff array
       0,                      // tokenizer pipeline len
       0,                      // tokenizer pipeline iterations
-      (unsigned long *) hashes,     // where to put the hashed results
+      (crmhash_t *)hashes,                 // where to put the hashed results
       HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
       &hashcounts,             // how many hashes we actually got
       &next_offset);           // where to start again for more hashes
@@ -624,12 +637,11 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //   Now sort the hashes array.
   //
-  qsort(hashes, hashcounts,
-        sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-        &hash_compare);
+  QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
+        hash_compare);
 
   if (user_trace)
-    fprintf(stderr, "Total hashes generated: %ld\n", hashcounts);
+    fprintf(stderr, "Total hashes generated: %d\n", hashcounts);
 
   //   And uniqueify the hashes array
   //
@@ -665,13 +677,12 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //   Now sort the hashes array.
   //
-  qsort(hashes, hashcounts,
-        sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-        &hash_compare);
+  QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
+        hash_compare);
 
   hashcounts--;
   if (user_trace)
-    fprintf(stderr, "Total hashes generated: %ld\n", hashcounts);
+    fprintf(stderr, "Total hashes generated: %d\n", hashcounts);
 
   //   And uniqueify the hashes array
   //
@@ -697,7 +708,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #endif
 
   if (user_trace)
-    fprintf(stderr, "Unique hashes generated: %ld\n", hashcounts);
+    fprintf(stderr, "Unique hashes generated: %d\n", hashcounts);
   //    store hash count of this document in the first bucket's .key slot
   //  hashes[hashcounts].key = hashcounts;
 
@@ -814,6 +825,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                     file_hashlens,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED,
+					CRM_MADV_RANDOM,
                                     &file_hashlens);
         file_hashlens = file_hashlens
                         / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
@@ -837,8 +849,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       if (internal_trace)
         fprintf(stderr,
                 "At featstart, looking at %ld (next bucket value is %ld)\n",
-                file_hashes[thisstart].hash,
-                file_hashes[thisstart + 1].hash);
+                (long)file_hashes[thisstart].hash,
+                (long)file_hashes[thisstart + 1].hash);
       while (wrapup == 0)
       {
         //    it's an in-class feature.
@@ -902,8 +914,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       if (internal_trace)
         fprintf(stderr,
                 "At featend, looking at %ld (next bucket value is %ld)\n",
-                file_hashes[thisend].hash,
-                file_hashes[thisend + 1].hash);
+                (long)file_hashes[thisend].hash,
+                (long)file_hashes[thisend + 1].hash);
 
       //  end of a document- process accumulations
 
@@ -1010,9 +1022,9 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //  The hashes we'll generate from the unknown text - where and how many.
   HYPERSPACE_FEATUREBUCKET_STRUCT *unk_hashes;
-  long unk_hashcount;
+  int unk_hashcount;
 
-  long next_offset;  // UNUSED for now!
+  int next_offset;  // UNUSED for now!
 
   struct stat statbuf;      //  for statting the hash file
   crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
@@ -1317,6 +1329,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                           hashlens[maxhash],
                                           PROT_READ,
                                           MAP_SHARED,
+					CRM_MADV_RANDOM,
                                           &hashlens[maxhash]);
 
           if (hashes[maxhash] == MAP_FAILED)
@@ -1402,7 +1415,6 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (succhash == 0)
     succhash = maxhash;
 
-  //    now, set up the normalization factor fcount[]
   if (user_trace)
     fprintf(stderr, "Running with %ld files for success out of %ld files\n",
             succhash, maxhash);
@@ -1540,11 +1552,11 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (1)     //  we init with 0xDEADBEEF, so the pipe is always full (i >=5)
     {
       int j;
-      unsigned th = 0;            //  a counter used only in TSS hashing
+      //unsigned th = 0;            //  a counter used only in TSS hashing
       crmhash_t hindex;
       crmhash_t h1;
       //
-      th = 0;
+      //th = 0;
       //
       if (use_unigram_features == 1)
       {
@@ -1599,7 +1611,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
      NULL,                   // tokenizer coeff array
      0,                      // tokenizer pipeline len
      0,                      // tokenizer pipeline iterations
-     (unsigned long *) unk_hashes,     // where to put the hashed results
+     (crmhash_t *)unk_hashes,     // where to put the hashed results
      HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
      &unk_hashcount,             // how many hashes we actually got
      &next_offset);           // where to start again for more hashes
@@ -1620,8 +1632,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   unk_hashes[unk_hashcount].hash = 0;
 
 
-  qsort(unk_hashes, unk_hashcount, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-        &hash_compare);
+  QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, unk_hashes, unk_hashcount,
+        hash_compare);
 
   if (user_trace)
     fprintf(stderr, "Total hashes in the unknown text: %ld\n", unk_hashcount);
@@ -1655,12 +1667,12 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
   CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
 #else
-  qsort(unk_hashes, unk_hashcount, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-        &hash_compare);
+  QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, unk_hashes, unk_hashcount,
+        hash_compare);
 
   unk_hashcount--;
   if (user_trace)
-    fprintf(stderr, "Total hashes in the unknown text: %ld\n", unk_hashcount);
+    fprintf(stderr, "Total hashes in the unknown text: %d\n", unk_hashcount);
 
 
 
@@ -1686,7 +1698,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #endif
 
   if (user_trace)
-    fprintf(stderr, "unique hashes generated: %ld\n", unk_hashcount);
+    fprintf(stderr, "unique hashes generated: %d\n", unk_hashcount);
 
   totalfeatures = unk_hashcount;
 

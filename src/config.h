@@ -25,6 +25,9 @@
 /* do not include the Markov classifier in the build */
 /* #undef CRM_WITHOUT_MARKOV */
 
+/* do not use the custom inline qsort by Michael Tokarev */
+/* #undef CRM_WITHOUT_MJT_INLINED_QSORT */
+
 /* do not include the Neural-Net classifier in the build */
 /* #undef CRM_WITHOUT_NEURAL_NET */
 
@@ -567,7 +570,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1483"
+#define TAR_FILENAME_POSTFIX "Ger-1495"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

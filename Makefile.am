@@ -25,6 +25,7 @@ DIFF_FLAGS = @DIFF_FLAGS@
 
 SUBDIRS = docs examples mailfilter man src tests
 
+
 # docdir = $(datadir)/doc/$(PACKAGE)
 doc_DATA = AUTHORS COPYING ChangeLog HACKING README TODO NEWS README.1st
 

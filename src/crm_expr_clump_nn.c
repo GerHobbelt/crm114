@@ -1303,6 +1303,7 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
                               file_size,
                               PROT_READ | PROT_WRITE,
                               MAP_SHARED,
+					CRM_MADV_RANDOM,
                               &file_size /*&actual_file_size */);
 
     if (internal_trace)
@@ -1344,6 +1345,7 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
                               statbuf.st_size,
                               PROT_READ | PROT_WRITE,
                               MAP_SHARED,
+					CRM_MADV_RANDOM,
                               NULL /*&actual_file_size */);
     if (s->header == MAP_FAILED)
     {
@@ -2557,6 +2559,7 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                            statbuf.st_size,
                            PROT_READ | PROT_WRITE,
                            MAP_SHARED,
+					CRM_MADV_RANDOM,
                            NULL);
 
   s.hash_table = (HASH_NODE_STRUCT *)((char *)(s.header) + s.header->hash_slots_offset);
