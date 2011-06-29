@@ -24,6 +24,7 @@ typedef double hitcount_t;
 
 /* the 32 bit unsigned hash values as used by CRM114 */
 typedef uint32_t crmhash_t;
+typedef uint64_t crmhash64_t;
 
 
 /* [i_a] no variable instantiation in a common header file */

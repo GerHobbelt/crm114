@@ -197,7 +197,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
                   }
 
               ecsl->filetext = insert_buf;
-			  ecsl->filetext_allocated = 1;
+                          ecsl->filetext_allocated = 1;
               ecsl->nchars = 0;
               //   OK, we now have a buffer.  Read the file in...
 
@@ -233,7 +233,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
                 ecsl->nchars = rlen; /* [i_a] not: statbuf.st_size; -- as the MSVC documentation says:
                                      read returns the number of bytes read, which might be less than count
                                      if there are fewer than count bytes left in the file or if the file
-                                     was opened in text mode, in which case each carriage return–line feed (CR-LF) pair
+                                     was opened in text mode, in which case each carriage returnï¿½line feed (CR-LF) pair
                                      is replaced with a single linefeed character. Only the single
                                      linefeed character is counted in the return value.
                                      */
@@ -243,7 +243,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
                 CRM_ASSERT(ecsl->nchars < max_pgmsize);
                 ecsl->filetext[ecsl->nchars] = 0;
                 ecsl->filename = strdup(insertfilename); // [i_a] insertfilename will get out of scope soon and we need to keep this around till the end
-				ecsl->filename_allocated = 1;
+                                ecsl->filename_allocated = 1;
 
                 //
                 //   now do the statement-break thing on this file
@@ -260,8 +260,10 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
                 //   Does the result end with a newline?  If not, fix it.
                 if (ecsl->filetext[ecsl->nchars-1] != '\n')
                   {
-                    ecsl->filetext [ecsl->nchars ] = '\n';
+                    ecsl->filetext[ecsl->nchars] = '\n';
                     ecsl->nchars++;
+                                        CRM_ASSERT(ecsl->nchars < max_pgmsize);
+                                        ecsl->filetext[ecsl->nchars] = 0;
                   }
 
                 //   Does the result end with two newlines?  Fix
@@ -296,7 +298,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
                   fprintf (stderr, "new length: %ld\n ", csl->nchars);
 
                 //    Now we clean up (de-malloc all that memory)
-				free_stack_item(ecsl);
+                                free_stack_item(ecsl);
                 //free (ecsl->filetext);
                 //free (ecsl);
             }
@@ -372,7 +374,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
   //
   {
     char myhash[32];
-    sprintf (myhash, "%08lX", strnhash (csl->filetext, csl->nchars));
+    sprintf (myhash, "%08lX", (unsigned long)strnhash (csl->filetext, csl->nchars));
     myhash[8] = '\0';
     crm_set_temp_var (":_pgm_hash:", myhash);
   }
@@ -410,7 +412,7 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
   paren_nest = slash_nest = angle_nest = box_nest = 0;
 
   if ( internal_trace )
-    fprintf (stderr, "  preprocessor - breaking statmeents... \n");
+    fprintf (stderr, "  preprocessor - breaking statements...\n");
   for (i = ini; i < ini + nchars; i++)
     {
       //    now, no matter what, we're looking at a non-quoted character.
@@ -480,17 +482,26 @@ void crm_break_statements (long ini, long nchars, CSL_CELL *csl)
                     //     one big line out of it.
                     //
                     //     We do this whether or not we're in a nesting.
-                    if (  csl->filetext[i+1] == '\n' )
+                    if (  csl->filetext[i+1] == '\n' || csl->filetext[i+1] == '\r' )
                       {
+                                                  const char *crlf_mode_descr[] = { "UNIX", NULL, "MAC", "MSDOS" };
+                                                  int crlf_mode = (csl->filetext[i+1] == '\n'
+                                                        ? 0 /* UNIX */
+                                                        : (csl->filetext[i+1] == '\r' && csl->filetext[i+2] == '\n')
+                                                        ? 3 /* MSDOS */
+                                                        : 2 /* MAC */
+                                                        );
+
                         if (internal_trace)
-                          fprintf (stderr, " backquoted EOL - splicing.\n");
+                          fprintf (stderr, " backquoted %sEOL - splicing.\n",
+                                                                crlf_mode_descr[crlf_mode]
+                                                           );
+                                            // (2 | crlf_mode) --> 2 for UNIX/MAC, 3 for MSDOS   :-)
                         memmove ( &(csl->filetext[i]),
-                                  &(csl->filetext[i+2]),
-                                  strlen (&csl->filetext[i+2])+1);
-                        csl->nchars--;
-                        csl->nchars--;
-                        nchars--;
-                        nchars--;
+                                  &(csl->filetext[i+(2 | crlf_mode)]),
+                                  strlen (&csl->filetext[i+(2 | crlf_mode)])+1);
+                        csl->nchars -= (2 | crlf_mode);
+                        nchars -= (2 | crlf_mode);
                         i--;
                       }
                     else

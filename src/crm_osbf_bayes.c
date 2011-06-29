@@ -310,11 +310,11 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
         {
           fev = fatalerror_ex(SRC_LOC(),
                    "\n Couldn't create file %s; errno=%d(%s)\n",
-                   learnfilename, 
-				   errno,
-				   errno_descr(errno)
-				   );
-		  // return fev;
+                   learnfilename,
+                                   errno,
+                                   errno_descr(errno)
+                                   );
+                  // return fev;
           exit (EXIT_FAILURE);
         }
 

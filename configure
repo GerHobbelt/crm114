@@ -10955,11 +10955,16 @@ case $ac_cv_c_bigendian in
   yes)
 
 cat >>confdefs.h <<\_ACEOF
-#define WORDS_BIGENDIAN 1
+#define MACHINE_IS_BIG_ENDIAN 1
 _ACEOF
  ;;
   no)
-     ;;
+
+cat >>confdefs.h <<\_ACEOF
+#define MACHINE_IS_LITTLE_ENDIAN 1
+_ACEOF
+
+   ;;
   *)
     { { echo "$as_me:$LINENO: error: unknown endianness
 presetting ac_cv_c_bigendian=no (or yes) will help" >&5

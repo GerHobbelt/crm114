@@ -85,81 +85,81 @@ static STMT_TABLE_TYPE stmt_table[] =
 
 int skip_blanks(const char *buf, int start, int bufsize)
 {
-	CRM_ASSERT(buf != NULL);
-	CRM_ASSERT(start >= 0);
-	CRM_ASSERT(bufsize >= 0);
+        CRM_ASSERT(buf != NULL);
+        CRM_ASSERT(start >= 0);
+        CRM_ASSERT(bufsize >= 0);
 
-	for ( ; start < bufsize && buf[start]; start++)
-	{
-		if (!crm_iscntrl(buf[start])
-			&& !crm_isblank(buf[start])
-			&& !crm_isspace(buf[start]))
-		{
-				break;
-		}
-	}
-	return start;
+        for ( ; start < bufsize && buf[start]; start++)
+        {
+                if (!crm_iscntrl(buf[start])
+                        && !crm_isblank(buf[start])
+                        && !crm_isspace(buf[start]))
+                {
+                                break;
+                }
+        }
+        return start;
 }
 
 int skip_command_token(const char *buf, int start, int bufsize)
 {
-	CRM_ASSERT(buf != NULL);
-	CRM_ASSERT(start >= 0);
-	CRM_ASSERT(bufsize >= 0);
+        CRM_ASSERT(buf != NULL);
+        CRM_ASSERT(start >= 0);
+        CRM_ASSERT(bufsize >= 0);
 
-	// commands must start with a letter:
-	if (start < bufsize)
-	{
-		if (crm_isalpha(buf[start]) || buf[start] == '_')
-	{
-		start++;
-	for ( ; start < bufsize && buf[start]; start++)
-	{
-		if (!crm_isalnum(buf[start]) 
-			&& buf[start] != '_')
-		{
-				break;
-		}
-	}
-		}
-		else
-		{
-			switch (buf[start])
-			{
-			case '{':
-			case '}':
-				return start + 1;
+        // commands must start with a letter:
+        if (start < bufsize)
+        {
+                if (crm_isalpha(buf[start]) || buf[start] == '_')
+        {
+                start++;
+        for ( ; start < bufsize && buf[start]; start++)
+        {
+                if (!crm_isalnum(buf[start])
+                        && buf[start] != '_')
+                {
+                                break;
+                }
+        }
+                }
+                else
+                {
+                        switch (buf[start])
+                        {
+                        case '{':
+                        case '}':
+                                return start + 1;
 
-			case '#':
-				return start + 1;
+                        case '#':
+                                return start + 1;
 
-			case ':':
-				// probably a label - scan till next ':'
-	for (start++; start < bufsize && buf[start]; start++)
-	{
-		if (buf[start] == ':') 
-		{
-			return start + 1;
-		}
-	}
-	break;
+                        case ':':
+                                // probably a label - scan till next ':'
+        for (start++; start < bufsize && buf[start]; start++)
+        {
+                if (buf[start] == ':')
+                {
+                        return start + 1;
+                }
+        }
+        break;
 
-			default:
-				// panic! just return till whitespace comes. This is bad anyway
-				for (start++; start < bufsize && buf[start]; start++)
-				{
-					if (crm_iscntrl(buf[start])
-						|| crm_isblank(buf[start])
-						|| crm_isspace(buf[start]))
-					{
-						return start;
-					}
-				}
-				break;
-			}
-		}
-	}
-	return start;
+                        default:
+                                // panic! just return till whitespace comes. This is bad anyway
+                                for (start++; start < bufsize && buf[start]; start++)
+                                {
+                                        if (crm_iscntrl(buf[start])
+                                                || crm_isblank(buf[start])
+                                                || crm_isspace(buf[start]))
+                                        {
+                                                return start;
+                                        }
+                                }
+                                break;
+                        }
+                }
+        }
+        return start;
 }
 
 
@@ -276,7 +276,7 @@ int crm_load_csl (CSL_CELL *csl)
   CRM_ASSERT(i < max_pgmsize);
   csl->nchars = i;
 
-  csl->hash = strnhash (csl->filetext, csl->nchars);
+  csl->hash = strnhash(csl->filetext, csl->nchars);
   if (user_trace)
           fprintf (stderr, "Hash of program: %lX, length %ld bytes: (%s)\n-->\n%s",
           csl->hash, csl->nchars, csl->filename, csl->filetext);
@@ -478,8 +478,8 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
       //  GROT GROT GROT  portability, but it's what we have.
       nbindex = sindex;
 #if 0
-	  while (pgmtext[nbindex] < 0x021 && nbindex < slength + sindex)
-		  nbindex++;
+          while (pgmtext[nbindex] < 0x021 && nbindex < slength + sindex)
+                  nbindex++;
 
       //  save up the first nonblank char:
       csl->mct[stmtnum]->fchar = nbindex;
@@ -495,7 +495,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
       while (pgmtext[aindex] < 0x021 && aindex < slength + sindex )
         aindex++;
 #else
-	  nbindex = skip_blanks(pgmtext, nbindex, slength + sindex);
+          nbindex = skip_blanks(pgmtext, nbindex, slength + sindex);
 
       //  save up the first nonblank char:
       csl->mct[stmtnum]->fchar = nbindex;
@@ -503,10 +503,10 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
       // and set up the start of arguments as well, they start at the first
       // nonblank after the first blank after the command...
 
-	  aindex = skip_command_token(pgmtext, nbindex, slength + sindex);
+          aindex = skip_command_token(pgmtext, nbindex, slength + sindex);
       nblength = aindex - nbindex;
 
-	  aindex = skip_blanks(pgmtext, aindex, slength + sindex);
+          aindex = skip_blanks(pgmtext, aindex, slength + sindex);
 #endif
 
       csl->mct[stmtnum]->achar = aindex;
@@ -521,14 +521,14 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
         {
       //                    Empty lines are noops.
 
-			//stab_done = 1;
+                        //stab_done = 1;
           stab_stmtcode = CRM_NOOP;
         }
       else if ( pgmtext[nbindex] == '#')
         {
       //                            Comment lines are also NOOPS
 
-			//stab_done = 1;
+                        //stab_done = 1;
           stab_stmtcode = CRM_NOOP;
         }
       else if ( pgmtext[nbindex] == ':'
@@ -536,7 +536,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
         {
       //                             :LABEL: lines get special treatment
 
-			//stab_done = 1;
+                        //stab_done = 1;
           stab_stmtcode = CRM_LABEL;
           k = strcspn (&pgmtext[nbindex+1], ":");
           crm_setvar ( NULL, -1, pgmtext, nbindex, k+2,
@@ -546,15 +546,15 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
         {
       //                 INSERTs get special handling (NOOPed..)
 
-			//stab_done = 1;
+                        //stab_done = 1;
           stab_stmtcode = CRM_NOOP;
         }
-	  else
-	  {
+          else
+          {
       /* i = -1; */
 
-		  // make sure we can detect/fail if we hit some unidentified/unsupported command
-		  stab_stmtcode = CRM_UNIMPLEMENTED; 
+                  // make sure we can detect/fail if we hit some unidentified/unsupported command
+                  stab_stmtcode = CRM_UNIMPLEMENTED;
 
       //                      Now a last big loop for the rest of the stmts.
       for (i = 0; stmt_table[i].stmt_name != NULL; i++)
@@ -571,73 +571,73 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
                 csl->preload_window = 0;
               //   and mark off the executable statements
               if (stmt_table[i].is_executable) seenaction = 1;
-			  break;
+                          break;
             }
           //if (i >= stab_max)
           //  stab_done = 1;
         }
 
-	    // GROT GROT GROT [i_a] this parser should really be adapted so it
-	    // can better check for syntax errors at the location where such happen.
-	    //
-	    // Here's an example which could use some additional checks.
-	    // I wonder if CRM really is an LR(1) language -- don't think so as
-	    // comments are treated as opcodes so that means it's LR(k) or LL(k)
-	    // after all. (--> not YACC/LEX but use PCCTS or ANTLR instead. Trouble 
-	    // there is that ANTLR is very nice but doesn't have a 'C' target yet, IIRC
-		if (stab_stmtcode == CRM_ALIUS)
-		{
-			// make sure a {} precedes this opcode
-			int previdx;
-			int hit_closing_brace = 0;
-			
-			for (previdx = stmtnum - 1; previdx >= 0; previdx--)
-			{
-				// accept any preceding comments before we've got to hit the mandatory closing brace before this statement
-				switch (csl->mct[previdx]->stmt_type)
-				{
-				case CRM_CLOSEBRACKET:
-					hit_closing_brace = 1;
-					break;
+            // GROT GROT GROT [i_a] this parser should really be adapted so it
+            // can better check for syntax errors at the location where such happen.
+            //
+            // Here's an example which could use some additional checks.
+            // I wonder if CRM really is an LR(1) language -- don't think so as
+            // comments are treated as opcodes so that means it's LR(k) or LL(k)
+            // after all. (--> not YACC/LEX but use PCCTS or ANTLR instead. Trouble
+            // there is that ANTLR is very nice but doesn't have a 'C' target yet, IIRC
+                if (stab_stmtcode == CRM_ALIUS)
+                {
+                        // make sure a {} precedes this opcode
+                        int previdx;
+                        int hit_closing_brace = 0;
 
-				default:
-					// do NOT accept any other opcodes, except a very few special ones...
-					break;
+                        for (previdx = stmtnum - 1; previdx >= 0; previdx--)
+                        {
+                                // accept any preceding comments before we've got to hit the mandatory closing brace before this statement
+                                switch (csl->mct[previdx]->stmt_type)
+                                {
+                                case CRM_CLOSEBRACKET:
+                                        hit_closing_brace = 1;
+                                        break;
 
-				case CRM_NOOP:
-					// comment: that's OK
-					continue;
+                                default:
+                                        // do NOT accept any other opcodes, except a very few special ones...
+                                        break;
 
-				// case CRM_LABEL:  -- would that be acceptable too? I don't think so.
-				}
-				break;
-			}
+                                case CRM_NOOP:
+                                        // comment: that's OK
+                                        continue;
 
-			if (!hit_closing_brace)
-			{
-				fatalerror_ex(SRC_LOC(),
-					"Your program doesn't have a { } bracket-group preceding the '%s' command. "
-					"Check your source code.",
-					stmt_table[i].stmt_name
-					);
-			}
-		}
-	  }
+                                // case CRM_LABEL:  -- would that be acceptable too? I don't think so.
+                                }
+                                break;
+                        }
 
-	  // check for errors, don't wait until running the exec_engine to catch them!
-	  if (stab_stmtcode == CRM_UNIMPLEMENTED)
+                        if (!hit_closing_brace)
+                        {
+                                fatalerror_ex(SRC_LOC(),
+                                        "Your program doesn't have a { } bracket-group preceding the '%s' command. "
+                                        "Check your source code.",
+                                        stmt_table[i].stmt_name
+                                        );
+                        }
+                }
+          }
+
+          // check for errors, don't wait until running the exec_engine to catch them!
+          if (stab_stmtcode == CRM_UNIMPLEMENTED)
       {
         int width = CRM_MIN(1024, nblength);
-        
-		fatalerror_ex(SRC_LOC(), 
-			     "Statement %ld NOT YET IMPLEMENTED !!! Check your source code. "
+
+                fatalerror_ex(SRC_LOC(),
+                             "Statement %ld NOT YET IMPLEMENTED !!! Check your source code. "
                  "Here's the text:\n%.*s%s",
                  csl->cstmt,
-				 width,
+                                 width,
                 &pgmtext[nbindex],
-				(nblength > width
-				? "(...truncated)"
-				: "")
+                                (nblength > width
+                                ? "(...truncated)"
+                                : "")
                 );
       }
 
@@ -646,9 +646,9 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
       //
       csl->mct[stmtnum]->stmt_type = stab_stmtcode;
       if (stab_stmtcode == CRM_OPENBRACKET)
-	  {
+          {
         bracketlevel++;
-	  }
+          }
       else if (stab_stmtcode == CRM_CLOSEBRACKET)
         {
           bracketlevel--;

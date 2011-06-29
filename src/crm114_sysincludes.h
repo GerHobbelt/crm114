@@ -385,10 +385,10 @@ int truncate(const char *filepath, long filesize); /* [i_a] Win32 doesn't come w
 /*
    Machine Endianess
  */
-// #if !defined(WORDS_BIGENDIAN)
+// #if !defined(MACHINE_IS_LITTLE_ENDIAN / MACHINE_IS_BIG_ENDIAN)
 
 // #if (defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && __BYTE_ORDER == __LITTLE_ENDIAN))
-//    (defined(i386) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) 
+//    (defined(i386) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
 
 // #elif (defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && __BYTE_ORDER == __BIG_ENDIAN)
 

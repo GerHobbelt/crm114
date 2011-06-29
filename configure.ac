@@ -406,7 +406,14 @@ AC_CHECK_HEADERS(crt_externs.h)
 AC_C_CONST
 AC_C_INLINE
 AC_C_VOLATILE
-AC_C_BIGENDIAN
+AC_C_BIGENDIAN(
+  [AC_DEFINE([MACHINE_IS_BIG_ENDIAN], 1,
+	[Define to 1 if your processor stores words with the most significant
+	 byte first (like Motorola and SPARC, unlike Intel and VAX).])],
+  [AC_DEFINE([MACHINE_IS_LITTLE_ENDIAN], 1,
+	[Define to 1 if your processor stores words with the least significant
+	 byte first (like Intel and VAX).])]
+  )
 AC_C_CHAR_UNSIGNED
 AC_C_LONG_LONG
 AC_C_STRINGIZE

@@ -6,8 +6,8 @@ mkdir diff
 for f in *.[ch] megatest.sh *.crm *.mfp ; do
 	if [ -e ../../../1original/crm114/src/crm114.sourceforge.net/src/$f ] 
 	then
-		rm -f diff/$f.`date +%Y%m%d`.context.diff 2&>1
-		rm -f diff/$f.`date +%Y%m%d`.unified.diff 2&>1
+		rm -f diff/$f.`date +%Y%m%d`.context.diff 2>&1
+		rm -f diff/$f.`date +%Y%m%d`.unified.diff 2>&1
 		diff @DIFF_FLAGS@ ../../../1original/crm114/src/crm114.sourceforge.net/src/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.normal.diff
 		# don't keep empty diffs around, that's clutter
 		if [ -s diff/$f.`date +%Y%m%d`.normal.diff ]

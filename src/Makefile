@@ -211,7 +211,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2007-08-08
+ISODATE = 2007-08-09
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -253,7 +253,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-110
+TAR_FILENAME_POSTFIX = Ger-112
 TRE_CONFIG = no
 
 #
@@ -412,7 +412,7 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	inoc_passwd.txt \
 	GPL-License.txt \
 	rename-gz \
-	megatest.sh megatest_knowngood.log 
+	megatest.sh megatest_knowngood.log megatest_knowngood.orginal.log 
 
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	config_win32.h crm114.sln crm114.vcproj cssdiff.vcproj osbf-util.vcproj \
@@ -1089,13 +1089,13 @@ megatest:
 	$(E) "   do change, either your kit isn't quite right or your"
 	$(E) "   install is broken (or you've found a bug)."
 	$(E) ""
-	-cp $(srcdir)/*.crm ./           2> /dev/null
-	-cp $(srcdir)/*.mfp ./           2> /dev/null
-	-cp $(srcdir)/*.example ./       2> /dev/null
-	-cp $(srcdir)/QUICKREF.txt ./    2> /dev/null
-	-cp $(srcdir)/INTRO.txt ./       2> /dev/null
-	-cp $(srcdir)/COLOPHON.txt ./    2> /dev/null
-	-cp $(srcdir)/FAQ.txt ./         2> /dev/null
+	-( if [ ! -e ./inserttest_a.crm      ] ; then cp $(srcdir)/*.crm ./           ; fi )
+	-( if [ ! -e ./rewrites.mfp          ] ; then cp $(srcdir)/*.mfp ./           ; fi )
+	-( if [ ! -e ./blacklist.mfp.example ] ; then cp $(srcdir)/*.example ./       ; fi )
+	-( if [ ! -e ./QUICKREF.txt          ] ; then cp $(srcdir)/QUICKREF.txt ./    ; fi )
+	-( if [ ! -e ./INTRO.txt             ] ; then cp $(srcdir)/INTRO.txt ./       ; fi )
+	-( if [ ! -e ./COLOPHON.txt          ] ; then cp $(srcdir)/COLOPHON.txt ./    ; fi )
+	-( if [ ! -e ./FAQ.txt               ] ; then cp $(srcdir)/FAQ.txt ./         ; fi )
 	$(srcdir)/megatest.sh | sed -e 's/ 1\.00e+00/ 1.00e-00/g' > megatest_test.log 2>&1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="

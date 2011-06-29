@@ -71,15 +71,15 @@ static const char *skip_path(const char *srcfile)
         (TODO: may even support multiple formats for easy debugging/code jumping)
 */
 static void generate_err_reason_msg(
-				char *reason,
-				int reason_bufsize,
-				int lineno,
-				const char *srcfile_full,
-				const char *errortype_str,
-				const char *encouraging_msg,
-				const char *fmt,
-				va_list args
-				)
+                                char *reason,
+                                int reason_bufsize,
+                                int lineno,
+                                const char *srcfile_full,
+                                const char *errortype_str,
+                                const char *encouraging_msg,
+                                const char *fmt,
+                                va_list args
+                                )
 {
           int widthleft = reason_bufsize;
           int has_newline;

@@ -1,5 +1,5 @@
  This is CRM114, version 20070807-BlameTheInterns (TRE 0.7.5 (LGPL))
- Copyright 2001-2006 William S. Yerazunis
+ Copyright 2001-2007 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
  CRM114 testing brackets, escapes and #'s 
@@ -19,15 +19,15 @@
  
  --- the next thing you see SHOULD be an error "unable to read-open"--- 
  Caught the error  - fault text was 
-./crm114: *ERROR* 
+crm114:crm_expr_file_io.c:142: *ERROR*
  For some reason, I was unable to read-open the file named  zoob.zipulrlfjf
- Sorry, but this program is very sick and probably should be killed off.
+Sorry, but this program is very sick and probably should be killed off.
 This happened at line 19 of file fataltraptest.crm
   --- and again, the next thing you see SHOULD be an error "unable to write-open"--- 
  Caught the error  - fault text was 
-./crm114: *ERROR* 
+crm114:crm_expr_file_io.c:361: *ERROR*
  For some reason, I was unable to write-open the file named /No/Such/Directory/frotz.mumble
- Sorry, but this program is very sick and probably should be killed off.
+Sorry, but this program is very sick and probably should be killed off.
 This happened at line 29 of file fataltraptest.crm
  
 
@@ -37,7 +37,7 @@ now we test nonexistent file overrides
 this should not cause a FATAL ERROR, because we trap it.
 We caught the nonexistent file fault here.  Message was:
  <<start of msg>>
-Couldn't insert the file named 'there_is_no_such_file_as_this.txt' that you asked for.  This is probably a bad thing.
+ Couldn't insert the file named 'there_is_no_such_file_as_this.txt' that you asked for.  This is probably a bad thing.
  <<end of msg>> 
 via the TRAP
 End of insert testing. 
@@ -110,7 +110,7 @@ testing <absent> versus binding  (the '67' bug)
   The next stmt --- SHOULD--- get an error message! 
  Caught the error, fault text was: 
 
-./crm114: *WARNING* 
+crm114:crm_expr_match.c:467: *WARNING*
  This program specifies an 'absent' match, and also tries to bind variables that, by the above, aren't matched!   We'll ignore these variable bindings for now.
 I'll try to keep working.
 This happened at line 292 of file matchtest.crm
@@ -202,8 +202,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 27565 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 27565 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 27884 from-pipe: 5 to-pipe: 4
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 27884 from-pipe: 5 to-pipe: 4
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -455,7 +455,7 @@ Input string to match against: "molasses anaconda foo bar baz agentsmith mrander
    with a large string of Z's. 
 We should get an error here, due to the (intentional!) loop
 
-./crm114: *WARNING* 
+crm114:crm_expr_alter.c:145: *WARNING*
  The variable you're attempting to EVAL seems to eval infinitely, and hence I cannot compute it.  I did try a lot, though.  I got this far before I gave up:  :*:a:ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ(...truncated)
 I'll try to keep working.
 This happened at line 15 of file eval_infiniteloop.crm
@@ -539,37 +539,37 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2099107
-Bytes used per pass: 2097150
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2072563
+Bytes used per pass: 2070606
 Passes done: 100 
-Total flux through isolation:  419430000
-OK_IF_SIZE_CHANGES: Final isolation size: 2099124 
+Total flux through isolation:  414121200
+OK_IF_SIZE_CHANGES: Final isolation size: 2072580 
 OK_IF_LESS_THAN_100: Total growth: 17
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2101595
-Bytes used per pass: 2097150
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2075051
+Bytes used per pass: 2070606
 Passes done: 10 
-Total flux through isolation:  41943000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101610 
+Total flux through isolation:  41412120
+OK_IF_SIZE_CHANGES: Final isolation size: 2075066 
 OK_IF_LESS_THAN_10: Total growth: 15
-Bytes used per pass: 2097150
+Bytes used per pass: 2070606
 Passes done: 20 
-Total flux through isolation:  83886000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101616 
+Total flux through isolation:  82824240
+OK_IF_SIZE_CHANGES: Final isolation size: 2075072 
 OK_IF_LESS_THAN_20: Total growth: 21
-Bytes used per pass: 2097150
+Bytes used per pass: 2070606
 Passes done: 30 
-Total flux through isolation:  125829000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101617 
+Total flux through isolation:  124236360
+OK_IF_SIZE_CHANGES: Final isolation size: 2075073 
 OK_IF_LESS_THAN_30: Total growth: 22
-Bytes used per pass: 2097150
+Bytes used per pass: 2070606
 Passes done: 40 
-Total flux through isolation:  167772000
-OK_IF_SIZE_CHANGES: Final isolation size: 2101617 
+Total flux through isolation:  165648480
+OK_IF_SIZE_CHANGES: Final isolation size: 2075073 
 OK_IF_LESS_THAN_40: Total growth: 22
 Starting 
 
@@ -685,15 +685,15 @@ result -->you hit the jackpot<--->and that's good<--->:frobotz:<---
 CLASSIFY fails; success probability: 0.0000  pR: -10.6456
 Best match to file #1 (q_test.css) prob: 1.0000  pR: 10.6456  
 Total features in input file: 176
-#0 (i_test.css): features: 140946, hits: 693, prob: 2.26e-11, pR: -10.65 
-#1 (q_test.css): features: 130178, hits: 5010, prob: 1.00e+00, pR:  10.65 
+#0 (i_test.css): features: 140946, hits: 693, prob: 2.26e-11, pR: -10.65
+#1 (q_test.css): features: 130178, hits: 5010, prob: 1.00e-00, pR:  10.65
 
  type I 
 CLASSIFY succeeds; success probability: 1.0000  pR: 10.4048
 Best match to file #0 (i_test.css) prob: 1.0000  pR: 10.4048  
 Total features in input file: 160
-#0 (i_test.css): features: 140946, hits: 4571, prob: 1.00e+00, pR:  10.40 
-#1 (q_test.css): features: 130178, hits: 528, prob: 3.94e-11, pR: -10.40 
+#0 (i_test.css): features: 140946, hits: 4571, prob: 1.00e-00, pR:  10.40
+#1 (q_test.css): features: 130178, hits: 528, prob: 3.94e-11, pR: -10.40
 
 
 **** OSB Markovian classifier 
@@ -701,15 +701,15 @@ Total features in input file: 160
 CLASSIFY fails; success probability: 0.0023  pR: -2.6334
 Best match to file #1 (q_test.css) prob: 0.9977  pR: 2.6334  
 Total features in input file: 44
-#0 (i_test.css): features: 35237, hits: 211, prob: 2.32e-03, pR:  -2.63 
-#1 (q_test.css): features: 32545, hits: 608, prob: 9.98e-01, pR:   2.63 
+#0 (i_test.css): features: 35237, hits: 211, prob: 2.32e-03, pR:  -2.63
+#1 (q_test.css): features: 32545, hits: 608, prob: 9.98e-01, pR:   2.63
 
  type I 
 CLASSIFY succeeds; success probability: 0.9984  pR: 2.7999
 Best match to file #0 (i_test.css) prob: 0.9984  pR: 2.7999  
 Total features in input file: 40
-#0 (i_test.css): features: 35237, hits: 601, prob: 9.98e-01, pR:   2.80 
-#1 (q_test.css): features: 32545, hits: 86, prob: 1.58e-03, pR:  -2.80 
+#0 (i_test.css): features: 35237, hits: 601, prob: 9.98e-01, pR:   2.80
+#1 (q_test.css): features: 32545, hits: 86, prob: 1.58e-03, pR:  -2.80
 
 
 **** OSB Markov Unique classifier 
@@ -717,15 +717,15 @@ Total features in input file: 40
 CLASSIFY fails; success probability: 0.0021  pR: -2.6697
 Best match to file #1 (q_test.css) prob: 0.9979  pR: 2.6697  
 Total features in input file: 44
-#0 (i_test.css): features: 29641, hits: 67, prob: 2.13e-03, pR:  -2.67 
-#1 (q_test.css): features: 26746, hits: 450, prob: 9.98e-01, pR:   2.67 
+#0 (i_test.css): features: 29641, hits: 67, prob: 2.13e-03, pR:  -2.67
+#1 (q_test.css): features: 26746, hits: 450, prob: 9.98e-01, pR:   2.67
 
  type I 
 CLASSIFY succeeds; success probability: 0.9977  pR: 2.6363
 Best match to file #0 (i_test.css) prob: 0.9977  pR: 2.6363  
 Total features in input file: 40
-#0 (i_test.css): features: 29641, hits: 401, prob: 9.98e-01, pR:   2.64 
-#1 (q_test.css): features: 26746, hits: 62, prob: 2.31e-03, pR:  -2.64 
+#0 (i_test.css): features: 29641, hits: 401, prob: 9.98e-01, pR:   2.64
+#1 (q_test.css): features: 26746, hits: 62, prob: 2.31e-03, pR:  -2.64
 
 
 **** OSB Markov Chisquared Unique classifier 
@@ -747,30 +747,30 @@ Total features in input file: 40
 **** OSBF Local Confidence (Fidelis) classifier 
  type Q 
 CLASSIFY fails; success probability: 0.0752  pR: -1.0897
-Best match to file #1 (q_test.css) prob: 0.9248  pR: 1.0897  
+Best match to file #1 (q_test.css) prob: 0.9248  pR: 1.0897
 Total features in input file: 44
-#0 (i_test.css): hits: 7, ufeats: 7, prob: 7.52e-02, pR:  -1.09 
-#1 (q_test.css): hits: 34, ufeats: 34, prob: 9.25e-01, pR:   1.09 
+#0 (i_test.css): hits: 7, ufeats: 7, prob: 7.52e-02, pR:  -1.09
+#1 (q_test.css): hits: 34, ufeats: 34, prob: 9.25e-01, pR:   1.09
 
  type I 
 CLASSIFY succeeds; success probability: 0.9158  pR: 1.0364
-Best match to file #0 (i_test.css) prob: 0.9158  pR: 1.0364  
+Best match to file #0 (i_test.css) prob: 0.9158  pR: 1.0364
 Total features in input file: 40
-#0 (i_test.css): hits: 30, ufeats: 30, prob: 9.16e-01, pR:   1.04 
-#1 (q_test.css): hits: 3, ufeats: 3, prob: 8.42e-02, pR:  -1.04 
+#0 (i_test.css): hits: 30, ufeats: 30, prob: 9.16e-01, pR:   1.04
+#1 (q_test.css): hits: 3, ufeats: 3, prob: 8.42e-02, pR:  -1.04
 
  
 **** OSB Winnow classifier 
  type Q 
 CLASSIFY fails; success probability: 0.4401  pR: -1.0456
-Best match to file #1 (q_test.css) weight: 50.4736  pR: 1.3486  
+Best match to file #1 (q_test.css) weight: 50.4736  pR: 1.3486
 Total features in input file: 44
 #0 (i_test.css): features: 56330.04, unseen: 7.00e+00, weight: 3.97e+01, pR:   0.30 
 #1 (q_test.css): features: 55172.04, unseen: 7.00e+00, weight: 5.05e+01, pR:   1.35 
 
  type I 
 CLASSIFY succeeds; success probability: 0.5661  pR: 1.1543
-Best match to file #0 (i_test.css) weight: 46.2727  pR: 1.8820  
+Best match to file #0 (i_test.css) weight: 46.2727  pR: 1.8820
 Total features in input file: 40
 #0 (i_test.css): features: 56330.04, unseen: 1.00e+01, weight: 4.63e+01, pR:   1.88 
 #1 (q_test.css): features: 55172.04, unseen: 1.00e+01, weight: 3.55e+01, pR:   0.73 
@@ -780,7 +780,7 @@ Total features in input file: 40
 **** Now verify that winnow learns affect only the named file (i_test.css)
  type I 
 CLASSIFY succeeds; success probability: 0.5661  pR: 1.1543
-Best match to file #0 (i_test.css) weight: 46.2727  pR: 1.8820  
+Best match to file #0 (i_test.css) weight: 46.2727  pR: 1.8820
 Total features in input file: 40
 #0 (i_test.css): features: 57887.39, unseen: 1.00e+01, weight: 4.63e+01, pR:   1.88 
 #1 (q_test.css): features: 55172.04, unseen: 1.00e+01, weight: 3.55e+01, pR:   0.73 
@@ -790,7 +790,7 @@ Total features in input file: 40
  and now refute-learn into q_test.css
  type I 
 CLASSIFY succeeds; success probability: 0.5682  pR: 1.1930
-Best match to file #0 (i_test.css) weight: 46.2727  pR: 1.8820  
+Best match to file #0 (i_test.css) weight: 46.2727  pR: 1.8820
 Total features in input file: 40
 #0 (i_test.css): features: 57887.39, unseen: 1.00e+01, weight: 4.63e+01, pR:   1.88 
 #1 (q_test.css): features: 68948.64, unseen: 1.00e+01, weight: 3.52e+01, pR:   0.69 
@@ -801,28 +801,28 @@ Total features in input file: 40
 CLASSIFY fails; success probability: 0.4289  pR: -0.1244
 Best match to file #1 (q_test.css) prob: 0.5711  pR: 0.1244  
 Total features in input file: 11
-#0 (i_test.css): features: 8811, hits: 529, prob: 4.29e-01, pR:  -0.12 
-#1 (q_test.css): features: 8138, hits: 462, prob: 5.71e-01, pR:   0.12 
+#0 (i_test.css): features: 8811, hits: 529, prob: 4.29e-01, pR:  -0.12
+#1 (q_test.css): features: 8138, hits: 462, prob: 5.71e-01, pR:   0.12
 
  type I 
 CLASSIFY succeeds; success probability: 0.7343  pR: 0.4415
 Best match to file #0 (i_test.css) prob: 0.7343  pR: 0.4415  
 Total features in input file: 10
-#0 (i_test.css): features: 8811, hits: 635, prob: 7.34e-01, pR:   0.44 
-#1 (q_test.css): features: 8138, hits: 512, prob: 2.66e-01, pR:  -0.44 
+#0 (i_test.css): features: 8811, hits: 635, prob: 7.34e-01, pR:   0.44
+#1 (q_test.css): features: 8138, hits: 512, prob: 2.66e-01, pR:  -0.44
 
  
 **** unigram Winnow classifier 
  type Q 
 CLASSIFY fails; success probability: 0.4734  pR: -0.4634
-Best match to file #1 (q_test.css) weight: 11.8572  pR: 0.3259  
+Best match to file #1 (q_test.css) weight: 11.8572  pR: 0.3259
 Total features in input file: 11
 #0 (i_test.css): features: 4451.43, unseen: 0.00e+00, weight: 1.07e+01, pR:  -0.14 
 #1 (q_test.css): features: 4420.23, unseen: 0.00e+00, weight: 1.19e+01, pR:   0.33 
 
  type I 
 CLASSIFY succeeds; success probability: 0.5293  pR: 0.5097
-Best match to file #0 (i_test.css) weight: 10.8363  pR: 0.3488  
+Best match to file #0 (i_test.css) weight: 10.8363  pR: 0.3488
 Total features in input file: 10
 #0 (i_test.css): features: 4451.43, unseen: 0.00e+00, weight: 1.08e+01, pR:   0.35 
 #1 (q_test.css): features: 4420.23, unseen: 0.00e+00, weight: 9.64e+00, pR:  -0.16 
@@ -830,160 +830,160 @@ Total features in input file: 10
 
 **** OSB Hyperspace classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0307  pR: -14.9943
-Best match to file #1 (q_test.css) prob: 0.9693  pR: 14.9943  
+CLASSIFY fails; success probability: 0.0389  pR: -13.9226
+Best match to file #1 (q_test.css) prob: 0.9611  pR: 13.9226  
 Total features in input file: 44
-#0 (i_test.css): features: 29641, hits: 6, radiance: 1.21e-03, prob: 3.07e-02, pR: -14.99 
-#1 (q_test.css): features: 26746, hits: 32, radiance: 3.83e-02, prob: 9.69e-01, pR:  14.99 
+#0 (i_test.css): features: 29641, hits: 7, radiance: 1.65e-03, prob: 3.89e-02, pR: -13.92
+#1 (q_test.css): features: 26746, hits: 33, radiance: 4.08e-02, prob: 9.61e-01, pR:  13.92
 
  type I 
 CLASSIFY succeeds; success probability: 0.9883  pR: 19.2673
 Best match to file #0 (i_test.css) prob: 0.9883  pR: 19.2673  
 Total features in input file: 40
-#0 (i_test.css): features: 29641, hits: 29, radiance: 2.84e-02, prob: 9.88e-01, pR:  19.27 
-#1 (q_test.css): features: 26746, hits: 3, radiance: 3.36e-04, prob: 1.17e-02, pR: -19.27 
+#0 (i_test.css): features: 29641, hits: 29, radiance: 2.84e-02, prob: 9.88e-01, pR:  19.27
+#1 (q_test.css): features: 26746, hits: 3, radiance: 3.36e-04, prob: 1.17e-02, pR: -19.27
 
 
 **** Unigram Hyperspace classifier 
  type Q 
-CLASSIFY fails; success probability: 0.3008  pR: -3.6638
-Best match to file #1 (q_test.css) prob: 0.6992  pR: 3.6638  
+CLASSIFY fails; success probability: 0.3217  pR: -3.2401
+Best match to file #1 (q_test.css) prob: 0.6783  pR: 3.2401  
 Total features in input file: 11
-#0 (i_test.css): features: 2614, hits: 6, radiance: 1.38e-02, prob: 3.01e-01, pR:  -3.66 
-#1 (q_test.css): features: 2536, hits: 9, radiance: 3.20e-02, prob: 6.99e-01, pR:   3.66 
+#0 (i_test.css): features: 2614, hits: 7, radiance: 1.88e-02, prob: 3.22e-01, pR:  -3.24
+#1 (q_test.css): features: 2536, hits: 10, radiance: 3.96e-02, prob: 6.78e-01, pR:   3.24
 
  type I 
-CLASSIFY succeeds; success probability: 0.6333  pR: 2.3737
-Best match to file #0 (i_test.css) prob: 0.6333  pR: 2.3737  
+CLASSIFY succeeds; success probability: 0.6863  pR: 3.4001
+Best match to file #0 (i_test.css) prob: 0.6863  pR: 3.4001  
 Total features in input file: 10
-#0 (i_test.css): features: 2614, hits: 8, radiance: 2.45e-02, prob: 6.33e-01, pR:   2.37 
-#1 (q_test.css): features: 2536, hits: 6, radiance: 1.42e-02, prob: 3.67e-01, pR:  -2.37 
+#0 (i_test.css): features: 2614, hits: 9, radiance: 3.11e-02, prob: 6.86e-01, pR:   3.40
+#1 (q_test.css): features: 2536, hits: 6, radiance: 1.42e-02, prob: 3.14e-01, pR:  -3.40
 
 
 **** Bit-Entropy classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -5.9890
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 5.9890  
+CLASSIFY fails; success probability: 0.0000  pR: -6.0157
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 6.0157  
 Total features in input file: 552
-#0 (i_test.css): features: 425488 (6%), entropy: 374.103126, jumps: 20, prob: 1.03e-06, pR:  -5.99 
-#1 (q_test.css): features: 533520 (6%), entropy: 229.415086, jumps: 7, prob: 1.00e+00, pR:   5.99 
+#0 (i_test.css): features: 425488 (6%), entropy: 374.085459, jumps: 20, prob: 9.65e-07, pR:  -6.02
+#1 (q_test.css): features: 533520 (6%), entropy: 228.753527, jumps: 7, prob: 1.00e-00, pR:   6.02
 
  type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 4.8355
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 4.8355  
+CLASSIFY succeeds; success probability: 1.0000  pR: 4.8441
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 4.8441  
 Total features in input file: 408
-#0 (i_test.css): features: 425488 (6%), entropy: 141.372546, jumps: 4, prob: 1.00e+00, pR:   4.84 
-#1 (q_test.css): features: 533520 (6%), entropy: 258.192788, jumps: 14, prob: 1.46e-05, pR:  -4.84 
+#0 (i_test.css): features: 425488 (6%), entropy: 141.372547, jumps: 4, prob: 1.00e-00, pR:   4.84
+#1 (q_test.css): features: 533520 (6%), entropy: 258.401522, jumps: 14, prob: 1.43e-05, pR:  -4.84
 
 
 **** Bit-Entropy Toroid classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -6.3888
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 6.3888  
+CLASSIFY fails; success probability: 0.0000  pR: -6.7599
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 6.7599  
 Total features in input file: 552
-#0 (i_test.css): features: 425488 (100%), entropy: 459.942001, jumps: 26, prob: 4.08e-07, pR:  -6.39 
-#1 (q_test.css): features: 533520 (100%), entropy: 305.595264, jumps: 9, prob: 1.00e+00, pR:   6.39 
+#0 (i_test.css): features: 425488 (100%), entropy: 459.942007, jumps: 26, prob: 1.74e-07, pR:  -6.76
+#1 (q_test.css): features: 533520 (100%), entropy: 296.629481, jumps: 8, prob: 1.00e-00, pR:   6.76
 
  type I 
 CLASSIFY succeeds; success probability: 1.0000  pR: 6.5097
 Best match to file #0 (i_test.css) prob: 1.0000  pR: 6.5097  
 Total features in input file: 408
-#0 (i_test.css): features: 425488 (100%), entropy: 231.058285, jumps: 7, prob: 1.00e+00, pR:   6.51 
-#1 (q_test.css): features: 533520 (100%), entropy: 388.325192, jumps: 22, prob: 3.09e-07, pR:  -6.51 
+#0 (i_test.css): features: 425488 (100%), entropy: 231.058286, jumps: 7, prob: 1.00e-00, pR:   6.51
+#1 (q_test.css): features: 533520 (100%), entropy: 388.325197, jumps: 22, prob: 3.09e-07, pR:  -6.51
 
 
 **** Fast Substring Compression Match Classifier 
  type Q 
 CLASSIFY fails; success probability: 0.049565  pR: -147.9304
-Best match to file #1 (q_test.css) prob: 0.9504  pR: 147.9304  
+Best match to file #1 (q_test.css) prob: 0.9504  pR: 147.9304
 Total features in input file: 69
-#0 (i_test.css): features: 53184, score: 1.18e+02, prob: 4.96e-02, pR: -147.93
-#1 (q_test.css): features: 66688, score: 5.48e+02, prob: 9.50e-01, pR: 147.93
+#0 (i_test.css): features: 53184, score:1.18e+02, prob: 4.96e-02,pR: -147.93
+#1 (q_test.css): features: 66688, score:5.48e+02, prob: 9.50e-01,pR: 147.93
 
  type I 
 CLASSIFY succeeds; success probability: 0.949211  pR: 146.6004
-Best match to file #0 (i_test.css) prob: 0.9492  pR: 146.6004  
+Best match to file #0 (i_test.css) prob: 0.9492  pR: 146.6004
 Total features in input file: 51
-#0 (i_test.css): features: 53184, score: 3.33e+02, prob: 9.49e-01, pR: 146.60
-#1 (q_test.css): features: 66688, score: 7.33e+01, prob: 5.08e-02, pR: -146.60
+#0 (i_test.css): features: 53184, score:3.33e+02, prob: 9.49e-01,pR: 146.60
+#1 (q_test.css): features: 66688, score:7.33e+01, prob: 5.08e-02,pR: -146.60
 
 
 **** Support Vector Machine (SVM) unigram classifier 
  type I 
-CLASSIFY succeeds; success probability: 0.8868  pR: 8.9402
-Best match to file #0 (i_test.css) prob: 0.8868  pR: 8.9402  
+CLASSIFY succeeds; success probability: 0.8842  pR: 8.8301
+Best match to file #0 (i_test.css) prob: 0.8842  pR: 8.8301
 Total features in input file: 11
-#0 (i_test.css): documents: 300, features: 7464,  prob: 8.87e-01, pR:   8.94 
-#1 (q_test.css): documents: 175, features: 6095,  prob: 1.13e-01, pR:  -8.94 
+#0 (i_test.css): documents: 300, features: 7464,  prob: 8.84e-01, pR:   8.83
+#1 (q_test.css): documents: 175, features: 6095,  prob: 1.16e-01, pR:  -8.83
 
  type I 
-CLASSIFY succeeds; success probability: 0.9951  pR: 23.0417
-Best match to file #0 (i_test.css) prob: 0.9951  pR: 23.0417  
+CLASSIFY succeeds; success probability: 0.9951  pR: 23.0955
+Best match to file #0 (i_test.css) prob: 0.9951  pR: 23.0955
 Total features in input file: 10
-#0 (i_test.css): documents: 300, features: 7464,  prob: 9.95e-01, pR:  23.04 
-#1 (q_test.css): documents: 175, features: 6095,  prob: 4.94e-03, pR: -23.04 
+#0 (i_test.css): documents: 300, features: 7464,  prob: 9.95e-01, pR:  23.10
+#1 (q_test.css): documents: 175, features: 6095,  prob: 4.88e-03, pR: -23.10
 
 
 **** Support Vector Machine (SVM) classifier 
  type I 
-CLASSIFY succeeds; success probability: 0.8724  pR: 8.3472
-Best match to file #0 (i_test.css) prob: 0.8724  pR: 8.3472  
+CLASSIFY succeeds; success probability: 0.8725  pR: 8.3526
+Best match to file #0 (i_test.css) prob: 0.8725  pR: 8.3526
 Total features in input file: 44
-#0 (i_test.css): documents: 300, features: 34780,  prob: 8.72e-01, pR:   8.35 
-#1 (q_test.css): documents: 175, features: 31487,  prob: 1.28e-01, pR:  -8.35 
+#0 (i_test.css): documents: 300, features: 34780,  prob: 8.73e-01, pR:   8.35
+#1 (q_test.css): documents: 175, features: 31487,  prob: 1.27e-01, pR:  -8.35
 
  type I 
-CLASSIFY succeeds; success probability: 0.9675  pR: 14.7373
-Best match to file #0 (i_test.css) prob: 0.9675  pR: 14.7373  
+CLASSIFY succeeds; success probability: 0.9675  pR: 14.7366
+Best match to file #0 (i_test.css) prob: 0.9675  pR: 14.7366
 Total features in input file: 40
-#0 (i_test.css): documents: 300, features: 34780,  prob: 9.67e-01, pR:  14.74 
-#1 (q_test.css): documents: 175, features: 31487,  prob: 3.25e-02, pR: -14.74 
+#0 (i_test.css): documents: 300, features: 34780,  prob: 9.67e-01, pR:  14.74
+#1 (q_test.css): documents: 175, features: 31487,  prob: 3.25e-02, pR: -14.74
 
 
 **** String Kernel SVM (SKS) classifier 
  type I 
 CLASSIFY succeeds; success probability: 0.8756  pR: 8.4731
-Best match to file #0 (i_test.css) prob: 0.8756  pR: 8.4731  
+Best match to file #0 (i_test.css) prob: 0.8756  pR: 8.4731
 Total features in input file: 69
-#0 (i_test.css):documents: 300, features: 52237,  prob: 8.76e-01, pR:   8.47 
-#1 (q_test.css):documents: 175, features: 65832,  prob: 1.24e-01, pR:  -8.47 
+#0 (i_test.css): documents: 300, features: 52237,  prob: 8.76e-01, pR:   8.47
+#1 (q_test.css): documents: 175, features: 65832,  prob: 1.24e-01, pR:  -8.47
 
  type I 
 CLASSIFY succeeds; success probability: 0.9836  pR: 17.7819
-Best match to file #0 (i_test.css) prob: 0.9836  pR: 17.7819  
+Best match to file #0 (i_test.css) prob: 0.9836  pR: 17.7819
 Total features in input file: 51
-#0 (i_test.css):documents: 300, features: 52237,  prob: 9.84e-01, pR:  17.78 
-#1 (q_test.css):documents: 175, features: 65832,  prob: 1.64e-02, pR: -17.78 
+#0 (i_test.css): documents: 300, features: 52237,  prob: 9.84e-01, pR:  17.78
+#1 (q_test.css): documents: 175, features: 65832,  prob: 1.64e-02, pR: -17.78
 
 
 **** String Kernel SVM (SKS) Unique classifier 
  type I 
-CLASSIFY succeeds; success probability: 0.8873  pR: 8.9604
-Best match to file #0 (i_test.css) prob: 0.8873  pR: 8.9604  
+CLASSIFY succeeds; success probability: 0.8876  pR: 8.9746
+Best match to file #0 (i_test.css) prob: 0.8876  pR: 8.9746
 Total features in input file: 68
-#0 (i_test.css):documents: 300, features: 42397,  prob: 8.87e-01, pR:   8.96 
-#1 (q_test.css):documents: 175, features: 36769,  prob: 1.13e-01, pR:  -8.96 
+#0 (i_test.css): documents: 300, features: 42397,  prob: 8.88e-01, pR:   8.97
+#1 (q_test.css): documents: 175, features: 36769,  prob: 1.12e-01, pR:  -8.97
 
  type I 
-CLASSIFY succeeds; success probability: 0.9859  pR: 18.4550
-Best match to file #0 (i_test.css) prob: 0.9859  pR: 18.4550  
+CLASSIFY succeeds; success probability: 0.9859  pR: 18.4489
+Best match to file #0 (i_test.css) prob: 0.9859  pR: 18.4489
 Total features in input file: 49
-#0 (i_test.css):documents: 300, features: 42397,  prob: 9.86e-01, pR:  18.46 
-#1 (q_test.css):documents: 175, features: 36769,  prob: 1.41e-02, pR: -18.46 
+#0 (i_test.css): documents: 300, features: 42397,  prob: 9.86e-01, pR:  18.45
+#1 (q_test.css): documents: 175, features: 36769,  prob: 1.41e-02, pR: -18.45
 
 
 **** Bytewise Correlation classifier 
  type Q 
 CLASSIFY fails; success probability: 0.0090  pR: -2.0433
-Best match to file #1 (QUICKREF.txt) prob: 0.9910  pR: 2.0433  
+Best match to file #1 (QUICKREF.txt) prob: 0.9910  pR: 2.0433
 Total features in input file: 66690
-#0 (INTRO.txt): features: 53186, L1: 219063 L2: 325594 L3: 585264, l4: 1747198 prob: 8.97e-03, pR:  -2.04 
-#1 (QUICKREF.txt): features: 66690, L1: 370314 L2: 582081 L3: 6557297, l4: 326284941 prob: 9.91e-01, pR:   2.04 
+#0 (INTRO.txt): features: 53186, L1: 219063 L2: 325594 L3: 585264, L4: 1747198 prob: 8.97e-03, pR:  -2.04
+#1 (QUICKREF.txt): features: 66690, L1: 370314 L2: 582081 L3: 6557297, L4: 326284941 prob: 9.91e-01, pR:   2.04
 
  type I 
 CLASSIFY succeeds; success probability: 1.0000  pR: 4.3385
-Best match to file #0 (INTRO.txt) prob: 1.0000  pR: 4.3385  
+Best match to file #0 (INTRO.txt) prob: 1.0000  pR: 4.3385
 Total features in input file: 53186
-#0 (INTRO.txt): features: 53186, L1: 593131 L2: 3238253 L3: 344785845, l4: 52869796589 prob: 1.00e+00, pR:   4.34 
-#1 (QUICKREF.txt): features: 66690, L1: 1017458 L2: 1306846 L3: 1921976, l4: 4159966 prob: 4.59e-05, pR:  -4.34 
+#0 (INTRO.txt): features: 53186, L1: 593131 L2: 3238253 L3: 344785845, L4: 52869796589 prob: 1.00e-00, pR:   4.34
+#1 (QUICKREF.txt): features: 66690, L1: 1017458 L2: 1306846 L3: 1921976, L4: 4159966 prob: 4.59e-05, pR:  -4.34
 

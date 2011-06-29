@@ -49,26 +49,26 @@ static void dump_error_script_line(CSL_CELL *csl)
       fprintf (stderr, "The line was:\n--> ");
       iline = csl->cstmt;
       maxchar = csl->mct[iline+1]->fchar;
-	  // maxchar == 0: this may happen when there's a fatalerror in the compiler
+          // maxchar == 0: this may happen when there's a fatalerror in the compiler
       if (maxchar < csl->mct[iline]->fchar)
           {
-			  // find EOL
+                          // find EOL
                 for (maxchar = csl->mct[iline]->fchar; maxchar < csl->nchars; maxchar++)
-				{
-					switch (csl->filetext[maxchar])
-					{
-					case 0:
-					case '\r':
-					case '\n':
-						break;
+                                {
+                                        switch (csl->filetext[maxchar])
+                                        {
+                                        case 0:
+                                        case '\r':
+                                        case '\n':
+                                                break;
 
-					default:
-						continue;
-					}
-					break;
-				}
-				// now maxchar points to EOL or EOS
-	  }
+                                        default:
+                                                continue;
+                                        }
+                                        break;
+                                }
+                                // now maxchar points to EOL or EOS
+          }
 
       if (maxchar > csl->mct[iline]->fchar + 255)
           {
@@ -742,9 +742,9 @@ long crm_trigger_fault(char *reason)
           for (j =  (csl->mct[trapline ]->fchar);
                j < (csl->mct[trapline+1]->fchar);
                j++)
-		  {
+                  {
             fprintf (stderr, "%c", csl->filetext[j]);
-		  }
+                  }
           fprintf (stderr, "\n");
         }
 

@@ -21,6 +21,10 @@ Version 20070807-BlameTheInterns
   #define's, that's probably why, but no time to find out how to revert that.)
   --> update: fixed. #undef GET_RID_OF_PUNCTUATION
 
+* added a new hash function which should be portable across machines (same 32-bit
+  output with a good distribution), which can also produce 64-bit hashes (encapsulated
+  by the strnhash64() function)
+
 
 Version 20070805-BlameTheInterns
 

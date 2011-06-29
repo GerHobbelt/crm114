@@ -167,10 +167,10 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
           nonfatalerror_ex(SRC_LOC(),
                 "\n Couldn't open your new CSS file %s for writing; errno=%d(%s)\n",
-                 learnfilename, 
-				 errno,
-				 errno_descr(errno)
-				 );
+                 learnfilename,
+                                 errno,
+                                 errno_descr(errno)
+                                 );
           if (engine_exit_base != 0)
             {
               exit (engine_exit_base + 20);
@@ -186,8 +186,8 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           DEFAULT_OSB_BAYES_SPARSE_SPECTRUM_FILE_LENGTH;
       }
 
-	  if (f)
-	  {
+          if (f)
+          {
       //       put in sparse_spectrum_file_length entries of NULL
       for (j = 0;
            j < sparse_spectrum_file_length
@@ -197,7 +197,7 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       made_new_file = 1;
       //
       fclose (f);
-	  }
+          }
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
           CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");

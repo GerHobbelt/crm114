@@ -258,14 +258,14 @@ void crm_vht_init (int argc, char **argv)
                                 /*
                                         From the MS docs:
 
-                                        In certain rare cases, if the specified directory is on the 
-                                        current drive, the function might omit the drive letter and 
-                                        colon from the path. Therefore, the size that is returned 
-                                        by the function might be two characters less than the size 
-                                        of the specified string, not including the terminating null 
-                                        character. This behavior might occur in edge situations 
-                                        such as in a services application. If you need the drive 
-                                        letter, make a subsequent call to GetFullPathName to 
+                                        In certain rare cases, if the specified directory is on the
+                                        current drive, the function might omit the drive letter and
+                                        colon from the path. Therefore, the size that is returned
+                                        by the function might be two characters less than the size
+                                        of the specified string, not including the terminating null
+                                        character. This behavior might occur in edge situations
+                                        such as in a services application. If you need the drive
+                                        letter, make a subsequent call to GetFullPathName to
                                         retrieve the drive letter.
                                 */
                                 if (!GetFullPathName(dirbuf, CRM_MAX(MAX_VARNAME, MAX_PATH) + 1, fulldirbuf, NULL))
@@ -1775,18 +1775,18 @@ int crm_buffer_gc ( CSL_CELL *zdw)
 
 void free_hash_table(VHT_CELL **vht, size_t vht_size)
 {
-	size_t i;
+        size_t i;
 
-	if (!vht)
-		return;
+        if (!vht)
+                return;
 
-	for (i = 0; i < vht_size; i++)
-	{
-		if (vht[i] == NULL)
-			continue;
+        for (i = 0; i < vht_size; i++)
+        {
+                if (vht[i] == NULL)
+                        continue;
 
-		free(vht[i]->filename);
-		free(vht[i]);
-	}
-	free(vht);
+                free(vht[i]->filename);
+                free(vht[i]);
+        }
+        free(vht);
 }

@@ -359,7 +359,7 @@ int crm_isolate_this (long *vptr,
   //
   //
   //   If we have a zero-length string, followed by a
-  //   non-zero-lenth string, next to each other, with
+  //   non-zero-length string, next to each other, with
   //   no intervening allocations, both strings will
   //   have the _same_ start point.  This messes things
   //   up badly on subsequent alters.  Thus, we

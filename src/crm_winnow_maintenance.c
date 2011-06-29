@@ -483,7 +483,7 @@ int crm_create_winnow_cssfile(char *cssfile, long buckets,
                    errno);
           return (EXIT_FAILURE);
         }
-	memset(&feature, 0, sizeof(feature));
+        memset(&feature, 0, sizeof(feature));
     }
   fclose (f);
   return (EXIT_SUCCESS);

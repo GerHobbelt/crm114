@@ -38,7 +38,7 @@ man_MANS =
 
 # EXTRA_DIST = $(azms) $(typetargets) $(man_MANS)
 # [i_a] quick hack as I haven't got time to find and try this zoem tool...
-EXTRA_DIST = 
+EXTRA_DIST = $(azms)
 DISTCLEANFILES = $(tmpfiles)
 CLEANFILES = *~ *.bak
 MAINTAINERCLEANFILES = $(typetargets) $(man_MANS)

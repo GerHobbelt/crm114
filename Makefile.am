@@ -37,7 +37,9 @@ EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
 	m4/ax_cflags_warn_all.m4 m4/vl_lib_readline.m4 \
 	m4/ax_cflags_gcc_option.m4 m4/ax_diff_option.m4 \
 	mk_distros.sh \
-	uncrustify.cfg
+	uncrustify.cfg \
+	cleanup.bat autogen.sh CREDITS README.win32 BUGS \
+	README.maintainer MAILINGLIST 
 
 
 if MAINTAINER_MODE

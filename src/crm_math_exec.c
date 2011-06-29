@@ -214,7 +214,11 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
             if (sp > 0)
               {
                 sp--;
+#ifdef CRM_SUPPORT_FMOD
+                stack[sp] = fmod(stack[sp], stack[sp+1]);
+#else
                 stack[sp] = ((long long) stack[sp]) % ((long long)stack[sp+1]);
+#endif
                 sinc = 1;
               }
           }
@@ -225,10 +229,16 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
             {
               sp--;
               if (stack[sp] < 0.0
-                  && ((long long)(stack[sp+1]))/1 != stack[sp+1])
-                { stack[sp] = stack[sp] / 0.0; }
+                                  /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
+                  && ((long long)(stack[sp+1])) > stack[sp+1] - FLT_EPSILON
+                                  && ((long long)(stack[sp+1])) < stack[sp+1] + FLT_EPSILON)
+                {
+                                        stack[sp] = stack[sp] / 0.0;
+                          }
               else
+                          {
                 stack[sp] = pow (stack[sp], stack[sp+1]);
+                          }
               if (internal_trace)
                 fprintf (stderr, "exp out: %f\n", stack[sp]);
               sinc = 1;
@@ -255,12 +265,12 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
                 if (stack[sp] == stack[sp+1])
                   {
                     if (retstat) *retstat = 0;
-                    stack[sp] = 1;
+                    stack[sp] = 1.0;
                   }
                 else
                   {
                     if (retstat) *retstat = 1;
-                    stack[sp] = 0;
+                    stack[sp] = 0.0;
                   }
                 sinc = 1;
               }
@@ -276,12 +286,12 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
                 if (stack[sp] != stack[sp+1])
                   {
                     if (retstat) *retstat = 0;
-                    stack[sp] = 1;
+                    stack[sp] = 1.0;
                   }
                 else
                   {
                     if (retstat) *retstat = 1;
-                    stack[sp] = 0;
+                    stack[sp] = 0.0;
                   }
                 sinc = 1;
               }
@@ -299,12 +309,12 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
                     if (stack[sp] >= stack[sp+1])
                       {
                         if (retstat) *retstat = 0;
-                        stack[sp] = 1;
+                        stack[sp] = 1.0;
                       }
                     else
                       {
                         if (retstat) *retstat = 1;
-                        stack[sp] = 0;
+                        stack[sp] = 0.0;
                       }
                     sinc = 1;
                   }
@@ -443,6 +453,7 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
           }
           break;
         case ' ':
+        case '\r':
         case '\n':
         case '\t':
           //
@@ -885,25 +896,31 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
               leftarg[sp] = leftarg[sp] / rightarg;
               break;
             case '%':
-#if 10              
-              leftarg[sp] = fmod(leftarg[sp], rightarg); // ((long long) leftarg[sp]) % ((long long) rightarg);
+#ifdef CRM_SUPPORT_FMOD
+              leftarg[sp] = fmod(leftarg[sp], rightarg);
 #else
-	      leftarg[sp] = (long long) leftarg[sp] % (long long) rightarg;
+              leftarg[sp] = (long long) leftarg[sp] % (long long) rightarg;
 #endif
               break;
             case '^':
               //    since we don't do complex numbers (yet) handle as NaN
               if (leftarg[sp] < 0.0
-                  && ((long long) (rightarg))/1 != rightarg)
-                { leftarg[sp] = leftarg[sp] / 0.0;}
+                                  /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
+                  && ((long long)(leftarg[sp])) > leftarg[sp] - FLT_EPSILON
+                                  && ((long long)(leftarg[sp])) < leftarg[sp] + FLT_EPSILON)
+                {
+                                        leftarg[sp] = leftarg[sp] / 0.0;
+                          }
               else
+                          {
                 leftarg[sp] = pow (leftarg[sp], rightarg);
+                          }
               if (internal_trace)
                 fprintf (stderr, "exp out: %f\n", leftarg[sp]);
               break;
             case 'v': //   Logarithm  BASE v ARG
               //      Negative bases on logarithms?  Not for us!  force NaN
-              if (leftarg[sp] <= 0)
+              if (leftarg[sp] <= 0.0)
                 { leftarg[sp] = leftarg[sp] / 0.0;}
               else
                 leftarg[sp] = log (rightarg) / log (leftarg[sp]);
@@ -911,7 +928,7 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
               //      Relational operators
             case '<':
               if (leftarg[sp] < rightarg)
-                { leftarg[sp] = 1;
+                { leftarg[sp] = 1.0;
                   state = 0;}
               else
                 { leftarg[sp] = 0;

@@ -100,7 +100,7 @@ int trigger_memdump = 0;
 
 
 
-/* 
+/*
  * Define our own reporting function.
  * We'll hook it into the debug reporting
  * process later using _CrtSetReportHook.
@@ -114,16 +114,16 @@ int crm_dbg_report_function(int report_type, char *usermsg, int *retval)
     * retVal to one.
     */
    *retval = !!trigger_debugger;
-        
+
    /*
     * When the report type is for an ASSERT,
     * we'll report some information, but we also
-    * want _CrtDbgReport to get called - 
+    * want _CrtDbgReport to get called -
     * so we'll return TRUE.
     *
     * When the report type is a WARNing or ERROR,
     * we'll take care of all of the reporting. We don't
-    * want _CrtDbgReport to get called - 
+    * want _CrtDbgReport to get called -
     * so we'll return FALSE.
     */
    switch (report_type)

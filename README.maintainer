@@ -1,0 +1,111 @@
+Maintainer Notes
+================
+
+Prerequisites
+-------------
+
+You'll need these packages installed at least:
+
+        automake
+        autoconf
+
+For processing any Win32 ported files you'll also need this on your UNIX
+box:
+
+        dos2unix
+        expand                  (man expand(1): convert TABS to spaces)
+
+For processing the documentation, you'll need this too:
+
+        zoem                    (? TODO )
+
+
+
+Rebuild from scratch / After editing the .am/.in files
+------------------------------------------------------
+
+To regenerate the configure script, proper Makefile.in, et al, execute the
+sequence:
+
+        ./autogen.sh
+
+To generate the man and html documentation follow up with these:
+
+        make man                (? TODO - does not work?)
+
+and to produce a new distro archive choose one of these (or
+        grep -e 'dist-' Makefile
+to see the available distro packaging methods):
+
+        make dist
+        make dist-bzip2
+        make dist-all
+        make dist-7z
+
+
+
+Clean up source files after editing [on a Win32 or other non-UNIX box]
+----------------------------------------------------------------------
+
+run the
+
+        ./fix_crlf.sh
+
+shell script to clean up the code: it does more that just clean up those
+CRLF line terminations (using dos2unix) but also expands any TAB characters
+found in any text/source files and trims trailing whitespace to boot.
+
+If you *really* feel like a spring sale is coming up, you might also want to
+run
+
+        make reindent
+
+for some finegrained distro dust busting.
+
+
+CAVEATS: you may wish to run ./fix_crlf.sh at the end again, just to make
+absolutely sure. More important though is running this:
+
+        make clean
+
+or:
+
+        make distclean
+
+as any previous compiler output (binaries, object files, that sort of thing)
+residing in this directory tree will surely have been destroyed by
+./fix_crlf.sh !
+
+
+
+
+Notes / Misc
+------------
+
+Note to self: handy commands for Sourceforge CVS access (these commands
+assume that the local directory tree exactly mirrors the remote repository
+as obtained through 'cvs checkout'):
+
+- view diff between local file and remote repository's version:
+
+  cvs -d:ext:i_a@crm114.cvs.sourceforge.net:/cvsroot/crm114 -z3 diff -bBcw README.win32
+
+- add a new directory (e.g. 'doc/') to the remote repository:
+
+  cd ./crm114/   <-- parent of directory to create
+  cvs -d:ext:i_a@crm114.cvs.sourceforge.net:/cvsroot/crm114 -z3 add -m "new files that come with the Win32 port of crm114" doc
+
+- add a new file to the remote repository:
+
+  cvs -d:ext:i_a@crm114.cvs.sourceforge.net:/cvsroot/crm114 -z3 add -m "new files that come with the Win32 port of crm114" doc/Makefile.am
+
+- Big Bang: checkin all changed files in the current directory (NO
+  recursion!):
+
+   cvs -d:ext:i_a@crm114.cvs.sourceforge.net:/cvsroot/crm114 -z3 ci -F ../../cvs-entry.txt ` find -maxdepth 1 -type f `
+
+
+
+
+
+

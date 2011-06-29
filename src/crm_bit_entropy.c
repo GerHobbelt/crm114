@@ -889,19 +889,19 @@ static long firlat_find_smallest_larger
 
   //  Start out with FIRlat option.
   if (my_fir < 0.00 || my_fir >= 1.00 || firlatlen < 10 || firlatlen > 200000)
-    fprintf (stderr, "My FIR is outrageous (value: %e, firlatlen %ld)\n", 
-	     my_fir,
-	     firlatlen);
+    fprintf (stderr, "My FIR is outrageous (value: %e, firlatlen %ld)\n",
+             my_fir,
+             firlatlen);
   firlat_entry = fir_2_slot ( my_fir, firlatlen);
   if (internal_trace)
     fprintf (stderr, "FFSL: Searching for FIR: %f slot %ld\n",
              my_fir, firlat_entry);
 
   if ((firlat_entry < 0) || (firlat_entry >= firlatlen))
-    fprintf (stderr, 
-	     "FIRLAT is very hosed (myfir: %e, entry number %ld)!\n",
-	     my_fir,
-	     firlat_entry);
+    fprintf (stderr,
+             "FIRLAT is very hosed (myfir: %e, entry number %ld)!\n",
+             my_fir,
+             firlat_entry);
   if (internal_trace)
     fprintf
       (stderr,
@@ -1437,25 +1437,25 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           fprintf (stderr, "Opening %s for BEN file creation\n", learnfilename);
         }
 
-	  f = fopen(learnfilename, "wb");
+          f = fopen(learnfilename, "wb");
       if (!f)
         {
           fev = nonfatalerror_ex(SRC_LOC(),
                    "\n Couldn't open your new BEN file %s for writing; errno=%d(%s)\n",
-                   learnfilename, 
-				   errno,
-				   errno_descr(errno)
-				   );
+                   learnfilename,
+                                   errno,
+                                   errno_descr(errno)
+                                   );
           if (engine_exit_base != 0)
           {
             exit(engine_exit_base + 23);
           }
           else
-		  {
+                  {
             exit(EXIT_FAILURE);
-		  }
+                  }
         }
-          
+
       //       did we get a value for sparse_spectrum_file_length?
       //      (yes, even though we aren't using "sparse spectra", we'll
       //      use the same -S or -s  parameter.  If we're in unique_states
@@ -1501,9 +1501,9 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //
       for (j = 0; j < (1024 + firlatbytes + nodebytes +
                        (ENTROPY_RESERVED_HEADER_LEN * sizeof (long))); j++)
-	  {
+          {
         fputc(0, f);
-	  }
+          }
 
       made_new_file = 1;
       fclose (f);

@@ -183,10 +183,10 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
           nonfatalerror_ex(SRC_LOC(),
                 "\n Couldn't open your new COW file %s for writing; errno=%d(%s)\n",
-                 learnfilename, 
-				 errno,
-				 errno_descr(errno)
-				 );
+                 learnfilename,
+                                 errno,
+                                 errno_descr(errno)
+                                 );
           if (engine_exit_base != 0)
             {
               exit (engine_exit_base + 21);
@@ -202,8 +202,8 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH;
       }
 
-	  if (f)
-	  {
+          if (f)
+          {
       //       put in sparse_spectrum_file_length entries of NULL
       for (j = 0;
            j < sparse_spectrum_file_length
@@ -213,7 +213,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       made_new_file = 1;
       //
       fclose (f);
-	  }
+          }
 
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);

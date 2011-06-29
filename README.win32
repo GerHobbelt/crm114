@@ -1,0 +1,48 @@
+crm114-gnu-win32 is a command line driven program. Please refer to the manual
+page from the source distribution (available in the ./man/ directory) and
+check the commandline syntax for a list of generally available command-line 
+options (depending on your build, some may not be available to you; run
+
+  crm114 -h
+
+to inspect the included feature set available).
+
+Specific technical documentation is also available in the ./docs/ directory.
+
+This Win32 port of crm114 is a full featured version. It currently only lacks 
+syscall support (i.e. cannot run external applications/tools).
+
+
+!!!! WARNING !!!!
+
+This version of crm114 was compiled with the Microsoft Visual Studio 2005 SP1
+compiler. The executable will require the corresponding Microsoft runtime
+libraries to be installed on your system.
+
+Please refer to
+
+  http://en.wikipedia.org/wiki/Visual_C_Plus_Plus
+
+and
+
+  http://www.microsoft.com/downloads/details.aspx?displaylang=en&FamilyID=200b2fd9-ae1a-4a14-984d-389c36f85647
+
+for information how to download and install the appropriate Microsoft
+runtime libraries on your system if you so require.
+
+The crm114 source code distribution includes the necessary MSVC2005 solution
+and project files in the ./src/ directory.
+
+-----------------
+
+The crm114 source code distribution does NOT include cygwin/MingW support.
+
+
+
+
+!!!! WARNING !!!!
+
+
+For the latest information always check the pavuk homepage at URL:
+
+  http://crm114.sourceforge.net/

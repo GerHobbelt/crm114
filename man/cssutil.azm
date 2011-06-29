@@ -1,0 +1,176 @@
+\: vim:syntax=tex
+\: $Id: cssutil.azm,v 1.6 2004/08/21 10:32:13 vanbaal Exp $
+
+\: this is a manpage in zoem format.  see http://micans.org/zoem/ and man_zmm(7)
+
+\def{"man::synstyle"}{long}
+\: \def{"man::synstyle"}{short}
+\def{"man::defstyle"}{short}
+\import{man.zmm}
+
+\import{./include.zmm}
+
+\def{fileopt#1}{\1}
+\def{synoptopt#1}{[\1]}
+
+\set{"man::name"}{cssutil}
+\set{"man::html-title"}{cssutil}
+\set{"man::section"}{1}
+
+\"man::preamble"
+\${html}{\"man::maketoc"}
+
+\sec{name}{NAME}
+\NAME{\cssutil}{utility to measure and manipulate CRM114 statistics files.}
+
+\sec{synopsis}{SYNOPSIS}
+  \par
+  \cssutil
+   \fileopt{[.css file]}
+   \synoptopt{OPTIONS}
+
+
+\sec{description}{DESCRIPTION}
+
+\cssutil is a general utility to manipulate and measure the .css format
+statistics files used by CRM114's Markovian and OSB classifiers. The biggest
+uses are to check the available space remaining in a .css file, to selectively
+groom a .css file, and to port architecture-dependent .css files to and from an
+ASCII CSV format, which is architecture independent.
+
+The \cssutil program can be used to create information-less
+.css files:
+
+\verbatim{\
+     cssutil -b -r spam.css
+     cssutil -b -r nonspam.css}
+
+.  This creates the full-size files ./spam.css and ./nonspam.css,
+holding no information.
+
+The \cssutil program can be used check that the .css files are reasonable.
+Invoke \cssutil as:
+
+\verbatim{\
+    cssutil -b -r spam.css
+    cssutil -b -r nonspam.css}
+
+You should get back a report something like this:
+
+\verbatim{\
+     Sparse spectra file spam.css statistics:
+
+     Total available buckets          :      1048576
+     Total buckets in use             :       506987
+     Total hashed datums in file      :      1605968
+     Average datums per bucket        :         3.17
+     Maximum length of overflow chain :           39
+     Average length of overflow chain :         1.84
+     Average packing density          :         0.48}
+
+Note that the packing density is 0.48; this means that this .css file is about
+half full of features.  Once the packing density gets above about 0.9, you will
+notice that CRM114 will take longer to process text.  The penalty is small
+below packing densities below about 0.95 and only about a factor of 2 at 0.97 .
+Best is to keep it below .7 to .8.
+
+\sec{options}{OPTIONS}
+
+\begin{itemize}
+
+\item{\defopt{-h}{}}  print basic help
+
+\item{\defopt{-b}{}}  brief - print only a summary of the statistics of the
+.css file  (otherwise, prints a full list of how many bins are in each counter
+state)
+
+\item{\defopt{-q}{}}  quiet mode; no warning messages
+
+\item{\defopt{-r}{}}  report then exit (no menu).  The default if -r is not
+specified is to drop into a command-menu based system.
+
+\item{\defopt{-s}{css-size}} if no css file found, create new one with this
+many buckets.  Default is 1 million + 1 buckets
+
+\item{\defopt{-S}{css-size}} same as -s, but round up to next 2^n + 1 boundary.
+
+\item{\defopt{-v}{css-size}} print version and exit
+
+\item{\defopt{-D}{}} dump css file to stdout in the architecture-independent
+CSV format, suitable for reloading with -R into an architecture-dependent .css
+file.  (note that .css files are in a hardware-architecture dependent format)
+
+\item{\defopt{-R}{csv-file}} create and restore css from the
+hardware-architecture independent CSV format file (reads from stdin if csv-file
+is not supplied.
+
+\end{itemize}
+
+\sec{commandmenu}{THE COMMAND MENU}
+
+If -r is not supplied, a menu appears with the following options.  Note that
+all of these operations are "in place" and surgical- there is NO undo
+functionality.  Wise users will make a backup copy of all .css files before
+using cssutil to alter values.
+
+\begin{itemize}
+
+\item{\defopt{Z nnn}{}} zero all bins at or below a value.  This is useful for
+deleting all small-count features from the .css statistics files leaving
+higher-count features untouched.
+
+\item{\defopt{S nnn}{}} subtract a constant from all bins - this rolls all
+features back a constant amount.
+
+\item{\defopt{D nnn}{}} divide all bins by a constant - this rolls features
+back linearly, rather than in scalar fashion.
+
+\item{\defopt{R}{}} rescan - regenerate the statistics output that was
+initially printed.
+
+\item{\defopt{P}{}} pack - re-slot features to optimize access time.
+
+\item{\defopt{Q}{}} - gracefully exit, saving changes. (note that since these
+operations are in-place and surgical, there is no option to exit without saving
+changes.)
+
+\end{itemize}
+
+\sec{shortcomings}{SHORTCOMINGS}
+
+Note that \cssutil as of version 20040816 is NOT capable of dealing with the
+CRM114 Winnow classifier's floating-point .cow files.  Worse, \cssutil is
+unaware of this shortcoming, and will try anyway.  The only user recourse is to
+be aware of this issue and not use \cssutil on a Winnow classifier floating
+point .cow format file.
+
+\sec{homepage}{HOMEPAGE AND REPORTING BUGS}
+
+The CRM114 homepage is at \httpref{http://crm114.sourceforge.net/}.
+
+\sec{version}{VERSION}
+
+This manpage: $Id: cssutil.azm,v 1.6 2004/08/21 10:32:13 vanbaal Exp $
+
+This manpage describes cssutil as shipped with crm114 version
+20040816.BlameClockworkOrange.
+
+\sec{author}{AUTHOR}
+
+\"man::author"
+
+\sec{copyright}{COPYRIGHT}
+
+Copyright (C) 2001, 2002, 2003, 2004  William S. Yerazunis. This is free
+software, copyrighted under the FSF's GPL. There is NO warranty; not even for
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file COPYING for
+more details.
+
+\sec{see also}{SEE ALSO}
+
+\sibref{cssmerge}{cssmerge(1)}, \sibref{cssdiff}{cssdiff(1)},
+\sibref{crm}{crm(1)}, \sibref{crm114}{crm114(1)}
+
+\"man::postamble"
+
+

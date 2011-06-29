@@ -220,7 +220,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
                 inbuf[ichar] = fgetc (fp);
                 ichar++;
               }
-            if (ichar > 0 && inbuf[ichar] == '\n') ichar-- ; //   get rid of any present newline
+            if (ichar > 0 && inbuf[ichar] == '\n') ichar--; //   get rid of any present newline
                         // [i_a] GROT GROT GROT: how about MAC and PC (CR and CRLF instead of LF as line terminators) */
             inbuf[ichar] = '\000';   // and put a null on the end of it.
           }

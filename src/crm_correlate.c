@@ -141,28 +141,28 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
           fev = nonfatalerror_ex(SRC_LOC(),
                 "\n Couldn't open your new correlate file %s for writing; errno=%d(%s)\n",
-                 learnfilename, 
-				 errno,
-				 errno_descr(errno)
-				 );
+                 learnfilename,
+                                 errno,
+                                 errno_descr(errno)
+                                 );
 
           if (engine_exit_base != 0)
           {
             exit (engine_exit_base + 1);
           }
           else
-		  {
+                  {
             exit (EXIT_FAILURE);
-		  }
+                  }
         }
-	    
+
       //      fputc ('\001', f); don't do any output at all.
       made_new_file = 1;
       //
-	    if (f)
-		{
+            if (f)
+                {
       fclose (f);
-		}
+                }
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
           CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");

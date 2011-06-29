@@ -217,7 +217,7 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	inoc_passwd.txt \
 	GPL-License.txt \
 	rename-gz \
-	megatest.sh megatest_knowngood.log 
+	megatest.sh megatest_knowngood.log megatest_knowngood.orginal.log 
 
 
 
@@ -615,13 +615,13 @@ megatest:
 	$(E) "   do change, either your kit isn't quite right or your"
 	$(E) "   install is broken (or you've found a bug)."
 	$(E) ""
-	-cp $(srcdir)/*.crm ./           2> /dev/null
-	-cp $(srcdir)/*.mfp ./           2> /dev/null
-	-cp $(srcdir)/*.example ./       2> /dev/null
-	-cp $(srcdir)/QUICKREF.txt ./    2> /dev/null
-	-cp $(srcdir)/INTRO.txt ./       2> /dev/null
-	-cp $(srcdir)/COLOPHON.txt ./    2> /dev/null
-	-cp $(srcdir)/FAQ.txt ./         2> /dev/null
+	-( if [ ! -e ./inserttest_a.crm      ] ; then cp $(srcdir)/*.crm ./           ; fi )
+	-( if [ ! -e ./rewrites.mfp          ] ; then cp $(srcdir)/*.mfp ./           ; fi )
+	-( if [ ! -e ./blacklist.mfp.example ] ; then cp $(srcdir)/*.example ./       ; fi )
+	-( if [ ! -e ./QUICKREF.txt          ] ; then cp $(srcdir)/QUICKREF.txt ./    ; fi )
+	-( if [ ! -e ./INTRO.txt             ] ; then cp $(srcdir)/INTRO.txt ./       ; fi )
+	-( if [ ! -e ./COLOPHON.txt          ] ; then cp $(srcdir)/COLOPHON.txt ./    ; fi )
+	-( if [ ! -e ./FAQ.txt               ] ; then cp $(srcdir)/FAQ.txt ./         ; fi )
 	$(srcdir)/megatest.sh | sed -e 's/ 1\.00e+00/ 1.00e-00/g' > megatest_test.log 2>&1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="

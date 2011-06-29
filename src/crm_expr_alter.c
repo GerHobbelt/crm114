@@ -39,11 +39,9 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   char varname[MAX_VARNAME];
   long varnamelen = 0;
   long newvallen;
-  unsigned long long ihash;
-  unsigned long long ahash[MAX_EVAL_ITERATIONS];
+  crmhash64_t ahash[MAX_EVAL_ITERATIONS];
   long ahindex;
-  long itercount;
-  long loop_abort;
+  int itercount;
   long qex_stat;
   long has_output_var;
   // should use tempbuf for this instead.
@@ -81,52 +79,62 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //     get the new pattern, and expand it.
   crm_get_pgm_arg (tempbuf, data_window_size, apb->s1start, apb->s1len);
 
-  ihash = 0;
-  itercount = 0;
-  for (ahindex = 0; ahindex < MAX_EVAL_ITERATIONS; ahindex++)
-    ahash[ahindex] = 0;
+//  ihash = 0;
+//  itercount = 0;
+//  for (ahindex = 0; ahindex < MAX_EVAL_ITERATIONS; ahindex++)
+//    ahash[ahindex] = 0;
   ahindex = 0;
-  loop_abort = 0;
+//  loop_abort = 0;
   //
   //     Now, a loop - while it continues to change, keep looping.
   //     But to try and detect infinite loops, we keep track of the
   //     previous values (actually, their hashes) and if one of those
   //     values recur, we stop evaluating and throw an error.
   //
+  // Note also take into account the condition where the _calculated_
+  // hash may be zero: since all possible values of the crmhash64_t
+  // type can be produced (at lerast theoretically) by the hash function,
+  // we must check against the actual, i.e. current hash value, no
+  // matter what it's value is.
+  //
   newvallen = apb->s1len;
-  while (itercount < MAX_EVAL_ITERATIONS
-         && ! (loop_abort))
+  for (itercount = 0; itercount < MAX_EVAL_ITERATIONS; itercount++)
     {
       int i;
-      itercount++;
-      ihash = strnhash (tempbuf, newvallen);
-      //
-      //     build a 64-bit hash by changing the initial conditions and
-      //     by using all but two of the characters and by overlapping
-      //     the results by two bits.  This is intentionally evil and
-      //     tangled.  Hopefully it will work.
-      //
-      if (newvallen > 3)
-        ihash = (ihash << 30) + strnhash (&tempbuf[1], newvallen - 2);
-      if (internal_trace)
-        fprintf (stderr, "Eval ihash = %lld\n", ihash);
-    for (i = 0;  i < itercount; i++)
+
+          crmhash64_t ihash = strnhash64(tempbuf, newvallen);
+      ahash[itercount] = ihash;
+          if (internal_trace)
+        fprintf (stderr, "Eval ihash = %llu\n", (uint64_t)ihash);
+
+                // scan down to see if we see any change: faster than up.
+            //
+            // note that the old 'value may have returned to same' code is
+            // still in here; when we can do without it, there's no need
+            // for a hash array, only a 'previous hash' value to have tag along.
+    for (i = itercount; --i >= 0; )
           {
           CRM_ASSERT(i < MAX_EVAL_ITERATIONS);
         if (ahash[i] == ihash)
           {
-            loop_abort = 1;
-            if ( i != itercount - 1)
-              loop_abort = 2;
-          }
-          }
-          /* CRM_ASSERT(i < MAX_EVAL_ITERATIONS); ** [i_a] this one was triggered during the infiniteloop test */
-          if (i < MAX_EVAL_ITERATIONS)
-        {
-      ahash[i] = ihash;
+            if (i != itercount - 1)
+    {
+      nonfatalerror ("The variable you're attempting to EVAL seemes to return "
+                     "to the same value after a number of iterations, "
+                     "so it is probably an "
+                     "infinite loop.  I think I should give up.  I got this "
+                     "far: ", tempbuf);
+      return (0);
+    }
+                        // indentical hash, so no more expansions.
+                        break;
+                }
         }
+        if (i >= 0)
+                break;
+
       newvallen = crm_qexpandvar (tempbuf, newvallen,
-                                  data_window_size, &qex_stat );
+                                  data_window_size, &qex_stat);
     }
 
   if (itercount == MAX_EVAL_ITERATIONS)
@@ -135,15 +143,6 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                      "infinitely, and hence I cannot compute it.  I did try "
                      "a lot, though.  I got this far before I gave up: ",
                      tempbuf);
-      return (0);
-    }
-  if (loop_abort == 2)
-    {
-      nonfatalerror ("The variable you're attempting to EVAL seemes to return "
-                     "to the same value after a number of iterations, "
-                     "so it is probably an "
-                     "infinite loop.  I think I should give up.  I got this "
-                     "far: ", tempbuf);
       return (0);
     }
 

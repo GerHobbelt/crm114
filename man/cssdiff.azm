@@ -1,0 +1,116 @@
+\: vim:syntax=tex
+\: $Id: cssdiff.azm,v 1.7 2004/08/21 10:26:59 vanbaal Exp $
+
+\: this is a manpage in zoem format.  see http://micans.org/zoem/ and man_zmm(7)
+
+\def{"man::synstyle"}{long}
+\: \def{"man::synstyle"}{short}
+\def{"man::defstyle"}{short}
+\import{man.zmm}
+
+\import{./include.zmm}
+
+\def{fileopt#1}{\1}
+\def{synoptopt#1}{[\1]}
+
+\set{"man::name"}{cssdiff}
+\set{"man::html-title"}{cssdiff}
+\set{"man::section"}{1}
+
+\"man::preamble"
+\${html}{\"man::maketoc"}
+
+\sec{name}{NAME}
+\NAME{\cssdiff}{generate a difference summary of two .css files}
+
+\sec{synopsis}{SYNOPSIS}
+  \par
+  \cssdiff
+   \fileopt{[cssfile 1]}
+   \fileopt{[cssfile 2]}
+
+\sec{description}{DESCRIPTION}
+\cssdiff is a special-purpose utility to measure the distance
+between the classes represented by CRM114 .cssfiles cssfile1 and cssfile2.
+\par
+The summary result output tells how many features were in each of the .css
+files, how many features appeared in both (balanced overlap), how many features
+appeared more often in one file than the other file (unbalanced overlaps), and
+how often the feature set of one .css file strictly dominated the feature set
+of another .css file.
+\par
+This set of metrics provides an intuitive way to determine the 
+similarity (or dissimilarity) of two classes represented as 
+.css files.
+
+\par
+
+When using the CRM114 spamfilter, it can be used to find out how easy it will
+be for CRM114 to differentiate spam from nonspam with your .css files.
+
+\par
+
+\cssdiff prints a report like e.g.
+
+\verbatim{\
+   Sparse spectra file spam.css has 1048577 bins total
+   Sparse spectra file nonspam.css has 1048577 bins total
+
+   File 1 total features            :      1605968
+   File 2 total features            :      1045152
+
+   Similarities between files       :       142039
+   Differences between files        :      1279964
+
+   File 1 dominates file 2          :      1463929
+   File 2 dominates file 1          :       903113}
+
+Note that in this case there's a big difference between the two files; in this
+case there are about 10 times as many differences between the two files as
+there are similarities.
+
+
+\sec{options}{OPTIONS}
+There are no options to cssdiff.
+
+\sec{shortcomings}{SHORTCOMINGS}
+Note that \cssdiff as of version 20040816 is NOT capable of dealing
+with the CRM114 Winnow classifier's floating-point .cow files.  Worse,
+\cssdiff is unaware of this shortcoming, and will try anyway.  The only
+user recourse is to be aware of this issue and not use \cssdiff on  Winnow
+classifier floating point .cow format files.
+
+\sec{homepage}{HOMEPAGE AND REPORTING BUGS}
+
+The CRM114 homepage is at \httpref{http://crm114.sourceforge.net/}.
+
+\sec{version}{VERSION}
+
+This manpage: $Id: cssdiff.azm,v 1.7 2004/08/21 10:26:59 vanbaal Exp $
+
+This manpage describes cssdiff as shipped with crm114 version
+20040816.BlameClockworkOrange.
+
+\sec{author}{AUTHOR}
+
+\"man::author"
+
+\sec{copyright}{COPYRIGHT}
+
+Copyright (C) 2001-04  William S. Yerazunis.
+
+\par
+
+This is free software, copyrighted under the FSF's GPL.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A 
+PARTICULAR PURPOSE.  See the file COPYING for more details.
+
+\sec{see also}{SEE ALSO}
+
+\sibref{cssutil}{cssutil(1)}, \sibref{cssmerge}{cssmerge(1)},
+\sibref{crm}{crm(1)}, \sibref{crm114}{crm114(1)},
+\sibref{cssmerge}{cssmerge(1)}
+
+\"man::postamble"
+
+

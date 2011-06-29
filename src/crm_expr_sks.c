@@ -133,10 +133,10 @@ typedef struct mythical_svm_param {
   double C;                     // parameter in C_SVC
   double nu;                  // parameter for One-class SVM
   double max_run_time;          // time control for microgroom (in second).
-                                // If computing time exceeds max_run_time, 
-                                // then start microgrooming to delete the 
-                                // documents far away from the hyperplane. 
-  int k;                        // fixed length of substrings 
+                                // If computing time exceeds max_run_time,
+                                // then start microgrooming to delete the
+                                // documents far away from the hyperplane.
+  int k;                        // fixed length of substrings
                                 // parameter for simple string kernel
 } SVM_PARAM;
 
@@ -146,7 +146,7 @@ typedef struct mythical_svm_param {
 typedef struct mythical_svm_problem {
   int l;                // number of documents
   int *y;               // label of documents -1/+1
-  HYPERSPACE_FEATUREBUCKET_STRUCT **x;   // x[i] is the ith document's 
+  HYPERSPACE_FEATUREBUCKET_STRUCT **x;   // x[i] is the ith document's
                                          // feature vector
 } SVM_PROBLEM;
 
@@ -1658,14 +1658,14 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
                        "\nThe total number of documents in file2 is %d\n", k2);
             }
 
-	  if(!(k1 > 0 && k2 > 0))
-	    {
-	      if (user_trace)
-		fprintf(stderr, 
-		       "There hasn't enough documents to calculate a string kernel svm hyperplane!\n");
-	    }
-	  else
-	    {
+          if(!(k1 > 0 && k2 > 0))
+            {
+              if (user_trace)
+                fprintf(stderr,
+                       "There hasn't enough documents to calculate a string kernel svm hyperplane!\n");
+            }
+          else
+            {
               //initialize the svm_prob.x, svm_prob.y
               int *y = NULL;
               double b;
@@ -1705,7 +1705,7 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
               b = calc_b();
 
               //compute decision values for all training documents
-	      deci_array =(double*)malloc(svm_prob.l * sizeof(deci_array[0]));
+              deci_array =(double*)malloc(svm_prob.l * sizeof(deci_array[0]));
               for(i = 0; i < svm_prob.l; i++)
                 {
                   deci_array[i] = calc_decision(svm_prob.x[i],solver.alpha, b);
@@ -1766,8 +1766,8 @@ DiagQ = NULL;
                 fprintf(stderr,
               "Finish calculating SVM hyperplane, store the solution to %s!\n",
                         file3);
-	    }//end if two sks files are not empty
-	  
+            }//end if two sks files are not empty
+
           crm_force_munmap_filename (file1);
           crm_force_munmap_filename (file2);
           crm_force_munmap_filename (file3);
@@ -2260,7 +2260,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
             }
           svm_prob.x = x;
-	  alpha = (double *)malloc(svm_prob.l * sizeof(alpha[0]));
+          alpha = (double *)malloc(svm_prob.l * sizeof(alpha[0]));
 
           if((k3 != 0) || (temp_k1 != k1) || (temp_k2 != k2))
             {
@@ -2476,7 +2476,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                    doc_num[k],
                    stringlens[k],
                  ptc[k],
-	    10 * (log10 (ptc[k] + 1e-300) - log10 (1.0 - ptc[k] + 1e-300) )  );
+            10 * (log10 (ptc[k] + 1e-300) - log10 (1.0 - ptc[k] + 1e-300) )  );
           buf[WIDTHOF(buf) - 1] = 0;
 
           if (strlen(stext)+strlen(buf) <= stext_maxlen)
