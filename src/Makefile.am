@@ -632,7 +632,7 @@ megatest:
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
-	$(diff) $(DIFF_FLAGS) $(srcdir)/megatest_test.original.log megatest_test.log & sleep 1
+	$(diff) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 
 
 cssfiles: spam.dir good.dir
@@ -753,8 +753,8 @@ dist-diff: diff
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
 # indent -bad -bap -bl -bli0 -bls -cbi4 -cdw -cli0 -di8 -hnl -i4 -l80 -lp -nbc -nce -ncs -npcs -nprs -npsl -nsaf -nsai -nsaw -nsob -nut -pi4 -sc -ss -T index_t -T hitcount_t -T regex_t -T regmatch_t -T regamatch_t -T regaparams_t -T Qitem_t -T regoff_t -T tre_char_t -T COOCCURRENCE_SCORE_TYPE *.c *.h
-reindent:
-	-( test "X$(uncrustify)" != "X" && sh ./indent.sh )
+reindent: indent.sh
+	-( sh ./indent.sh )
 
 
 .SUFFIXES = .c .o

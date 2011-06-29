@@ -202,8 +202,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 8507 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 8507 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 27565 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 27565 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -539,37 +539,37 @@ Match-Isolate reclamation test 1. If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2072561
-Bytes used per pass: 2070606
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2099107
+Bytes used per pass: 2097150
 Passes done: 100 
-Total flux through isolation:  414121200
-OK_IF_SIZE_CHANGES: Final isolation size: 2072578 
+Total flux through isolation:  419430000
+OK_IF_SIZE_CHANGES: Final isolation size: 2099124 
 OK_IF_LESS_THAN_100: Total growth: 17
 
 Match-Isolate reclamation test.  If this program doesn't 
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2075049
-Bytes used per pass: 2070606
+OK_IF_SIZE_CHANGES: Size of isolation at start: 2101595
+Bytes used per pass: 2097150
 Passes done: 10 
-Total flux through isolation:  41412120
-OK_IF_SIZE_CHANGES: Final isolation size: 2075064 
+Total flux through isolation:  41943000
+OK_IF_SIZE_CHANGES: Final isolation size: 2101610 
 OK_IF_LESS_THAN_10: Total growth: 15
-Bytes used per pass: 2070606
+Bytes used per pass: 2097150
 Passes done: 20 
-Total flux through isolation:  82824240
-OK_IF_SIZE_CHANGES: Final isolation size: 2075070 
+Total flux through isolation:  83886000
+OK_IF_SIZE_CHANGES: Final isolation size: 2101616 
 OK_IF_LESS_THAN_20: Total growth: 21
-Bytes used per pass: 2070606
+Bytes used per pass: 2097150
 Passes done: 30 
-Total flux through isolation:  124236360
-OK_IF_SIZE_CHANGES: Final isolation size: 2075071 
+Total flux through isolation:  125829000
+OK_IF_SIZE_CHANGES: Final isolation size: 2101617 
 OK_IF_LESS_THAN_30: Total growth: 22
-Bytes used per pass: 2070606
+Bytes used per pass: 2097150
 Passes done: 40 
-Total flux through isolation:  165648480
-OK_IF_SIZE_CHANGES: Final isolation size: 2075071 
+Total flux through isolation:  167772000
+OK_IF_SIZE_CHANGES: Final isolation size: 2101617 
 OK_IF_LESS_THAN_40: Total growth: 22
 Starting 
 
@@ -686,13 +686,13 @@ CLASSIFY fails; success probability: 0.0000  pR: -10.6456
 Best match to file #1 (q_test.css) prob: 1.0000  pR: 10.6456  
 Total features in input file: 176
 #0 (i_test.css): features: 140946, hits: 693, prob: 2.26e-11, pR: -10.65 
-#1 (q_test.css): features: 130178, hits: 5010, prob: 1.00e-00, pR:  10.65 
+#1 (q_test.css): features: 130178, hits: 5010, prob: 1.00e+00, pR:  10.65 
 
  type I 
 CLASSIFY succeeds; success probability: 1.0000  pR: 10.4048
 Best match to file #0 (i_test.css) prob: 1.0000  pR: 10.4048  
 Total features in input file: 160
-#0 (i_test.css): features: 140946, hits: 4571, prob: 1.00e-00, pR:  10.40 
+#0 (i_test.css): features: 140946, hits: 4571, prob: 1.00e+00, pR:  10.40 
 #1 (q_test.css): features: 130178, hits: 528, prob: 3.94e-11, pR: -10.40 
 
 
@@ -830,18 +830,18 @@ Total features in input file: 10
 
 **** OSB Hyperspace classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0413  pR: -13.6550
-Best match to file #1 (q_test.css) prob: 0.9587  pR: 13.6550  
+CLASSIFY fails; success probability: 0.0307  pR: -14.9943
+Best match to file #1 (q_test.css) prob: 0.9693  pR: 14.9943  
 Total features in input file: 44
-#0 (i_test.css): features: 29641, hits: 7, radiance: 1.65e-03, prob: 4.13e-02, pR: -13.66 
-#1 (q_test.css): features: 26746, hits: 32, radiance: 3.83e-02, prob: 9.59e-01, pR:  13.66 
+#0 (i_test.css): features: 29641, hits: 6, radiance: 1.21e-03, prob: 3.07e-02, pR: -14.99 
+#1 (q_test.css): features: 26746, hits: 32, radiance: 3.83e-02, prob: 9.69e-01, pR:  14.99 
 
  type I 
-CLASSIFY succeeds; success probability: 0.9944  pR: 22.4844
-Best match to file #0 (i_test.css) prob: 0.9944  pR: 22.4844  
+CLASSIFY succeeds; success probability: 0.9883  pR: 19.2673
+Best match to file #0 (i_test.css) prob: 0.9883  pR: 19.2673  
 Total features in input file: 40
-#0 (i_test.css): features: 29641, hits: 28, radiance: 2.65e-02, prob: 9.94e-01, pR:  22.48 
-#1 (q_test.css): features: 26746, hits: 2, radiance: 1.49e-04, prob: 5.61e-03, pR: -22.48 
+#0 (i_test.css): features: 29641, hits: 29, radiance: 2.84e-02, prob: 9.88e-01, pR:  19.27 
+#1 (q_test.css): features: 26746, hits: 3, radiance: 3.36e-04, prob: 1.17e-02, pR: -19.27 
 
 
 **** Unigram Hyperspace classifier 
@@ -862,33 +862,33 @@ Total features in input file: 10
 
 **** Bit-Entropy classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -6.0157
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 6.0157  
+CLASSIFY fails; success probability: 0.0000  pR: -5.9890
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 5.9890  
 Total features in input file: 552
-#0 (i_test.css): features: 425488 (6%), entropy: 374.085454, jumps: 20, prob: 9.65e-07, pR:  -6.02 
-#1 (q_test.css): features: 533520 (6%), entropy: 228.753525, jumps: 7, prob: 1.00e-00, pR:   6.02 
+#0 (i_test.css): features: 425488 (6%), entropy: 374.103126, jumps: 20, prob: 1.03e-06, pR:  -5.99 
+#1 (q_test.css): features: 533520 (6%), entropy: 229.415086, jumps: 7, prob: 1.00e+00, pR:   5.99 
 
  type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 4.8441
-Best match to file #0 (i_test.css) prob: 1.0000  pR: 4.8441  
+CLASSIFY succeeds; success probability: 1.0000  pR: 4.8355
+Best match to file #0 (i_test.css) prob: 1.0000  pR: 4.8355  
 Total features in input file: 408
-#0 (i_test.css): features: 425488 (6%), entropy: 141.372546, jumps: 4, prob: 1.00e-00, pR:   4.84 
-#1 (q_test.css): features: 533520 (6%), entropy: 258.401520, jumps: 14, prob: 1.43e-05, pR:  -4.84 
+#0 (i_test.css): features: 425488 (6%), entropy: 141.372546, jumps: 4, prob: 1.00e+00, pR:   4.84 
+#1 (q_test.css): features: 533520 (6%), entropy: 258.192788, jumps: 14, prob: 1.46e-05, pR:  -4.84 
 
 
 **** Bit-Entropy Toroid classifier 
  type Q 
-CLASSIFY fails; success probability: 0.0000  pR: -6.3474
-Best match to file #1 (q_test.css) prob: 1.0000  pR: 6.3474  
+CLASSIFY fails; success probability: 0.0000  pR: -6.3888
+Best match to file #1 (q_test.css) prob: 1.0000  pR: 6.3888  
 Total features in input file: 552
-#0 (i_test.css): features: 425488 (100%), entropy: 459.942001, jumps: 26, prob: 4.49e-07, pR:  -6.35 
-#1 (q_test.css): features: 533520 (100%), entropy: 306.595264, jumps: 9, prob: 1.00e-00, pR:   6.35 
+#0 (i_test.css): features: 425488 (100%), entropy: 459.942001, jumps: 26, prob: 4.08e-07, pR:  -6.39 
+#1 (q_test.css): features: 533520 (100%), entropy: 305.595264, jumps: 9, prob: 1.00e+00, pR:   6.39 
 
  type I 
 CLASSIFY succeeds; success probability: 1.0000  pR: 6.5097
 Best match to file #0 (i_test.css) prob: 1.0000  pR: 6.5097  
 Total features in input file: 408
-#0 (i_test.css): features: 425488 (100%), entropy: 231.058285, jumps: 7, prob: 1.00e-00, pR:   6.51 
+#0 (i_test.css): features: 425488 (100%), entropy: 231.058285, jumps: 7, prob: 1.00e+00, pR:   6.51 
 #1 (q_test.css): features: 533520 (100%), entropy: 388.325192, jumps: 22, prob: 3.09e-07, pR:  -6.51 
 
 
@@ -910,31 +910,31 @@ Total features in input file: 51
 
 **** Support Vector Machine (SVM) unigram classifier 
  type I 
-CLASSIFY succeeds; success probability: 0.8842  pR: 8.8301
-Best match to file #0 (i_test.css) prob: 0.8842  pR: 8.8301  
+CLASSIFY succeeds; success probability: 0.8868  pR: 8.9402
+Best match to file #0 (i_test.css) prob: 0.8868  pR: 8.9402  
 Total features in input file: 11
-#0 (i_test.css): documents: 300, features: 7464,  prob: 8.84e-01, pR:   8.83 
-#1 (q_test.css): documents: 175, features: 6095,  prob: 1.16e-01, pR:  -8.83 
+#0 (i_test.css): documents: 300, features: 7464,  prob: 8.87e-01, pR:   8.94 
+#1 (q_test.css): documents: 175, features: 6095,  prob: 1.13e-01, pR:  -8.94 
 
  type I 
-CLASSIFY succeeds; success probability: 0.9951  pR: 23.0955
-Best match to file #0 (i_test.css) prob: 0.9951  pR: 23.0955  
+CLASSIFY succeeds; success probability: 0.9951  pR: 23.0417
+Best match to file #0 (i_test.css) prob: 0.9951  pR: 23.0417  
 Total features in input file: 10
-#0 (i_test.css): documents: 300, features: 7464,  prob: 9.95e-01, pR:  23.10 
-#1 (q_test.css): documents: 175, features: 6095,  prob: 4.88e-03, pR: -23.10 
+#0 (i_test.css): documents: 300, features: 7464,  prob: 9.95e-01, pR:  23.04 
+#1 (q_test.css): documents: 175, features: 6095,  prob: 4.94e-03, pR: -23.04 
 
 
 **** Support Vector Machine (SVM) classifier 
  type I 
-CLASSIFY succeeds; success probability: 0.8725  pR: 8.3526
-Best match to file #0 (i_test.css) prob: 0.8725  pR: 8.3526  
+CLASSIFY succeeds; success probability: 0.8724  pR: 8.3472
+Best match to file #0 (i_test.css) prob: 0.8724  pR: 8.3472  
 Total features in input file: 44
-#0 (i_test.css): documents: 300, features: 34780,  prob: 8.73e-01, pR:   8.35 
-#1 (q_test.css): documents: 175, features: 31487,  prob: 1.27e-01, pR:  -8.35 
+#0 (i_test.css): documents: 300, features: 34780,  prob: 8.72e-01, pR:   8.35 
+#1 (q_test.css): documents: 175, features: 31487,  prob: 1.28e-01, pR:  -8.35 
 
  type I 
-CLASSIFY succeeds; success probability: 0.9675  pR: 14.7366
-Best match to file #0 (i_test.css) prob: 0.9675  pR: 14.7366  
+CLASSIFY succeeds; success probability: 0.9675  pR: 14.7373
+Best match to file #0 (i_test.css) prob: 0.9675  pR: 14.7373  
 Total features in input file: 40
 #0 (i_test.css): documents: 300, features: 34780,  prob: 9.67e-01, pR:  14.74 
 #1 (q_test.css): documents: 175, features: 31487,  prob: 3.25e-02, pR: -14.74 
@@ -958,18 +958,18 @@ Total features in input file: 51
 
 **** String Kernel SVM (SKS) Unique classifier 
  type I 
-CLASSIFY succeeds; success probability: 0.8876  pR: 8.9746
-Best match to file #0 (i_test.css) prob: 0.8876  pR: 8.9746  
+CLASSIFY succeeds; success probability: 0.8873  pR: 8.9604
+Best match to file #0 (i_test.css) prob: 0.8873  pR: 8.9604  
 Total features in input file: 68
-#0 (i_test.css):documents: 300, features: 42397,  prob: 8.88e-01, pR:   8.97 
-#1 (q_test.css):documents: 175, features: 36769,  prob: 1.12e-01, pR:  -8.97 
+#0 (i_test.css):documents: 300, features: 42397,  prob: 8.87e-01, pR:   8.96 
+#1 (q_test.css):documents: 175, features: 36769,  prob: 1.13e-01, pR:  -8.96 
 
  type I 
-CLASSIFY succeeds; success probability: 0.9859  pR: 18.4489
-Best match to file #0 (i_test.css) prob: 0.9859  pR: 18.4489  
+CLASSIFY succeeds; success probability: 0.9859  pR: 18.4550
+Best match to file #0 (i_test.css) prob: 0.9859  pR: 18.4550  
 Total features in input file: 49
-#0 (i_test.css):documents: 300, features: 42397,  prob: 9.86e-01, pR:  18.45 
-#1 (q_test.css):documents: 175, features: 36769,  prob: 1.41e-02, pR: -18.45 
+#0 (i_test.css):documents: 300, features: 42397,  prob: 9.86e-01, pR:  18.46 
+#1 (q_test.css):documents: 175, features: 36769,  prob: 1.41e-02, pR: -18.46 
 
 
 **** Bytewise Correlation classifier 
@@ -984,6 +984,6 @@ Total features in input file: 66690
 CLASSIFY succeeds; success probability: 1.0000  pR: 4.3385
 Best match to file #0 (INTRO.txt) prob: 1.0000  pR: 4.3385  
 Total features in input file: 53186
-#0 (INTRO.txt): features: 53186, L1: 593131 L2: 3238253 L3: 344785845, l4: 52869796589 prob: 1.00e-00, pR:   4.34 
+#0 (INTRO.txt): features: 53186, L1: 593131 L2: 3238253 L3: 344785845, l4: 52869796589 prob: 1.00e+00, pR:   4.34 
 #1 (QUICKREF.txt): features: 66690, L1: 1017458 L2: 1306846 L3: 1921976, l4: 4159966 prob: 4.59e-05, pR:  -4.34 
 
