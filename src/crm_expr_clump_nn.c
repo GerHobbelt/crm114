@@ -1213,11 +1213,12 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 {
   long i, file_size;
   struct stat statbuf;
-  FILE   *f;
 
   if (stat(filename, &statbuf))          //if the file didn't exist already
   {
     long n_tokens = max_tokens, n_cor_tokens = max_cor_tokens;
+    FILE   *f;
+    CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
     file_size = sizeof(NNCLUSTEROR_HEADER_STRUCT);
     file_size += BYTE_ALIGN - file_size % BYTE_ALIGN;
@@ -1269,9 +1270,25 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
     f = fopen(filename, "wb");
     if (f != NULL)
     {
-      i = file_size + 1024;
-      while (i--)
-        fputc(0, f);
+      classifier_info.classifier_bits = CRM_PMULC;
+
+      if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
+      {
+        fatalerror_ex(SRC_LOC(),
+                      "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                      filename, errno, errno_descr(errno));
+        fclose(f);
+        return;
+      }
+
+      if (file_memset(f, 0, file_size + 1024))
+      {
+        fatalerror_ex(SRC_LOC(),
+                      "\n Couldn't write filler to file %s; errno=%d(%s)\n",
+                      filename, errno, errno_descr(errno));
+        fclose(f);
+        return;
+      }
       fclose(f);
     }
     else
@@ -1281,12 +1298,12 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 
     if (internal_trace)
       fprintf(stderr, "\ndone writing file, about to mmap\n");
-    s->header = crm_mmap_file(filename, 
-		0, 
-		file_size, 
-		PROT_READ | PROT_WRITE,
-                    MAP_SHARED, 
-					NULL /*&actual_file_size */);
+    s->header = crm_mmap_file(filename,
+                              0,
+                              file_size,
+                              PROT_READ | PROT_WRITE,
+                              MAP_SHARED,
+                              &file_size /*&actual_file_size */);
 
     if (internal_trace)
     {
@@ -1322,12 +1339,12 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
   }
   else
   {
-    s->header = crm_mmap_file(filename, 
-		0, 
-		statbuf.st_size, 
-		PROT_READ | PROT_WRITE,
-                    MAP_SHARED, 
-					NULL /*&actual_file_size */);
+    s->header = crm_mmap_file(filename,
+                              0,
+                              statbuf.st_size,
+                              PROT_READ | PROT_WRITE,
+                              MAP_SHARED,
+                              NULL /*&actual_file_size */);
     if (s->header == MAP_FAILED)
     {
       fatalerror_ex(SRC_LOC(),
@@ -2141,7 +2158,7 @@ static long copy_and_escape(char *out, const char *in, const char *escape_these)
         break;
     }
 
-    if (*m)      //is not the null charecter, zero
+    if (*m)  //is not the null charecter, zero
       *o++ = '\\';
     *o++ = *i++;
   }
@@ -2491,8 +2508,6 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   struct stat statbuf;
 
-  index_t t;
-
   CLUSTEROR_STATE_STRUCT s;
 
 
@@ -2537,12 +2552,12 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                   "Unable to open cluster file %s\n", filename);
   }
 
-  s.header = crm_mmap_file(filename, 
-	  0, 
-	  statbuf.st_size, 
-	  PROT_READ | PROT_WRITE, 
-	  MAP_SHARED, 
-	  NULL);
+  s.header = crm_mmap_file(filename,
+                           0,
+                           statbuf.st_size,
+                           PROT_READ | PROT_WRITE,
+                           MAP_SHARED,
+                           NULL);
 
   s.hash_table = (HASH_NODE_STRUCT *)((char *)(s.header) + s.header->hash_slots_offset);
   s.tokens = (TOKEN_STRUCT *)((char *)(s.header) + s.header->tokens_offset);
@@ -2555,12 +2570,12 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             s.header->n_tokens,
             s.header->n_clusters);
 
-    /*                for(i = s.header->most_recent_token; i < NULL_INDEX; i = s.tokens[i].less_recent)
-     * fprintf(stderr, "token:%ld, recorded hash %ld, lookup returns: %ld, incluster: %ld\n", i, s.tokens[i].hash_code, no_learning_get_token_from_hash(&s, s.tokens[i].hash_code), s.tokens[i].cluster );
-     */
+#if 0
+    for (i = s.header->most_recent_token; i < NULL_INDEX; i = s.tokens[i].less_recent)
+      fprintf(stderr, "token:%ld, recorded hash %ld, lookup returns: %ld, incluster: %ld\n", i, s.tokens[i].hash_code,
+              no_learning_get_token_from_hash(&s, s.tokens[i].hash_code), s.tokens[i].cluster);
+#endif
   }
-
-
 
   tokenized_text = (index_t *)inbuf;
 
@@ -2578,6 +2593,8 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   /* index_t t; ** [i_a] it is C code, not C++ */
   for (i = 0; i < tokenized_text_len; i++)
   {
+    index_t t;
+
     t = tokenized_text[i];
     if (t == NULL_INDEX)
     {

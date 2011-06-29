@@ -1,5 +1,5 @@
 //  crm_osb_bayes.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006 William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007 William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -178,17 +178,6 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           errno_descr(errno));
       free(learnfilename);
       return fev;
-
-#if 0
-      if (engine_exit_base != 0)
-      {
-        exit(engine_exit_base + 20);
-      }
-      else
-      {
-        exit(EXIT_FAILURE);
-      }
-#endif
     }
     //       did we get a value for sparse_spectrum_file_length?
     if (sparse_spectrum_file_length == 0)
@@ -199,6 +188,20 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     if (f)
     {
+      CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+      classifier_info.classifier_bits = CRM_OSB_BAYES;
+
+      if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
+      {
+        fev = fatalerror_ex(SRC_LOC(),
+                            "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                            learnfilename, errno, errno_descr(errno));
+        fclose(f);
+        free(learnfilename);
+        return fev;
+      }
+
       //       put in sparse_spectrum_file_length entries of NULL
       if (file_memset(f, 0,
                       sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
@@ -221,27 +224,28 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   }
   //
   hfsize = statbuf.st_size;
-  if (user_trace)
-  {
-    fprintf(stderr, "Sparse spectra file %s has length %ld bins\n",
-            learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
-  }
 
   //
   //      map the .css file into memory
   //
-  hashes = (FEATUREBUCKET_TYPE *)crm_mmap_file(learnfilename,
-                                               0, 
-											   hfsize,
-                                               PROT_READ | PROT_WRITE,
-                                               MAP_SHARED,
-                                               NULL);
+  hashes = crm_mmap_file(learnfilename,
+                         0,
+                         hfsize,
+                         PROT_READ | PROT_WRITE,
+                         MAP_SHARED,
+                         &hfsize);
   if (hashes == MAP_FAILED)
   {
     fev = fatalerror("Couldn't get to the statistic file named: ",
                      learnfilename);
     free(learnfilename);
     return fev;
+  }
+
+  if (user_trace)
+  {
+    fprintf(stderr, "Sparse spectra file %s has length %ld bins\n",
+            learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
   }
 
   //          if this is a new file, set the proper version number.
@@ -1068,13 +1072,12 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           hashlens[maxhash] = statbuf.st_size;
           //  mmap the hash file into memory so we can bitwhack it
 
-          hashes[maxhash] = (FEATUREBUCKET_TYPE *)
-                            crm_mmap_file(fname,
-                                          0, 
-										  hashlens[maxhash],
+          hashes[maxhash] = crm_mmap_file(fname,
+                                          0,
+                                          hashlens[maxhash],
                                           PROT_READ | PROT_WRITE,
                                           MAP_SHARED,
-                                          NULL);
+                                          &hashlens[maxhash]);
           if (hashes[maxhash] == MAP_FAILED)
           {
             nonfatalerror("Couldn't memory-map the table file",

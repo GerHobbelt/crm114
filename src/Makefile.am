@@ -37,7 +37,8 @@ VER_SUFFIX = @VER_SUFFIX@
 #     to mess with my brain. - wsy)
 #
 VERSION = @VERSION@
-PREV_VERSION=20070830-BlameGerHobbelt
+PREV_VERSION=20070917-BlameGerHobbelt
+#PREV_VERSION=20070830-BlameGerHobbelt
 #PREV_VERSION=20070828-BlameGerHobbelt
 #PREV_VERSION=20070827-BlameGerHobbelt
 #PREV_VERSION=20070826-BlameGerHobbelt
@@ -68,7 +69,11 @@ SILENT = @SILENT@
 #      Are we compiling on a POSIX system or a Windows system?  NOTE:
 #       WINDOWS IS UNSUPPORTED BY THE AUTHOR.  THE AUTHOR WILL
 #	ACCEPT REASONABLE-LOOKING PATCHES BUT WINDOWS-ONLY 
-#       BUG REPORTS THAT DO NOT REPRODUCE UNDER LINUX ET AL _CANNOT_ BE WORKED.
+#       BUG REPORTS THAT DO NOT REPRODUCE UNDER LINUX ET AL 
+#       SIMPLY _CANNOT_ BE WORKED AS I HAVE NO WINDOWS MACHINES.  
+#       SO, IF YOU FIND A WINDOWS-ONLY BUG, PLEASE PUT IT ON THE 
+#       MAILING LIST SO WINDOWS PEOPLE CAN WORK THE BUG.
+#
 #SYSTEMTYPE = POSIX
 #SYSTEMTYPE = WIN32
 #
@@ -80,7 +85,7 @@ SILENT = @SILENT@
 AM_CFLAGS = @AM_CFLAGS@
 # AM_CFLAGS += -g -O3
 #     turn this one on for no optimization, but debugging and time profiling.
-#AM_CFLAGS += -g -O0 -Wall -pg
+#AM_CFLAGS += -g -O0 -Wall -pg -CB
 #     turn this one on for really picayune debugging.
 
 AM_CPPFLAGS = @AM_CPPFLAGS@
@@ -94,11 +99,13 @@ AM_CPPFLAGS = @AM_CPPFLAGS@
 #
 #    BSD users - do NOT use -static-libgcc!!!
 AM_LDFLAGS = @AM_LDFLAGS@
+#    use this one if you want program profiling.
 #AM_LDFLAGS += -static -static-libgcc -pg
 #
 #   Any standard install flags?  We nominally use protection 755
 INSTALLFLAGS = @INSTALLFLAGS@
 INSTALLFLAGS += -m 755
+#
 #        uncomment the next line if you want to "strip" the debugger info 
 #        from the binaries when installing.  This speeds up load, but 
 #        you won't be able to submit meaningful CRM114 engine bug reports.
@@ -164,7 +171,8 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
 	crm_expr_svm.c crm_expr_fscm.c \
 	crm_strcompress.c crm_expr_clump_nn.c \
-	crm_generic_port.c crm_stdio_port.c
+	crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h crm_expr_clump_nn.h config.h 
@@ -183,7 +191,8 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_preprocessor.o \
 	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
 	crm_strcompress.o crm_expr_clump_nn.o \
-	crm_generic_port.o crm_stdio_port.o
+	crm_generic_port.o crm_stdio_port.o \
+	crm_versioning.o
 
 
 
@@ -243,22 +252,27 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge
 
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt \
+	merge-results-29-oct-2007.txt
 
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c \
 	$(HFILES)
 
 osbf_util_SOURCES = osbf-util.c \
 	crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c \
 	$(HFILES)
 
 cssdiff_SOURCES = cssdiff.c \
 	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c \
 	$(HFILES)
 
 cssmerge_SOURCES = cssmerge.c \
 	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c \
 	$(HFILES)
 
 
@@ -481,54 +495,61 @@ cssdiff.o: cssdiff.c  \
 cssmerge.o: cssmerge.c  \
 	$(HFILES)
 
-crm_generic_port.o: crm_generic_port.c  \
+crm_generic_port.o: crm_generic_port.c \
 	$(HFILES)
 
 crm_stdio_port.o: crm_stdio_port.c \
 	$(HFILES)
 
+crm_versioning.o: crm_versioning.c \
+	$(HFILES)
 
-cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
+
+cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
 		crm_css_maintenance.o \
 		crm_util_errorhandlers.o \
 		crm_str_funcs.o \
 		crm_generic_port.o \
 		crm_stdio_port.o \
+		crm_versioning.o \
 		-o cssutil
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-osbf-util: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
+osbf-util: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
 		crm_osbf_maintenance.o \
 		crm_generic_port.o \
 		crm_stdio_port.o \
+		crm_versioning.o \
 		-o osbf-util
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
+cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
 		crm_util_errorhandlers.o \
 		crm_str_funcs.o \
 		crm_generic_port.o \
 		crm_stdio_port.o \
+		crm_versioning.o \
 		-o cssdiff
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
+cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
 		crm_generic_port.o \
 		crm_stdio_port.o \
+		crm_versioning.o \
 		-o cssmerge
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
@@ -757,7 +778,7 @@ css_gzip: css_tarfile
 distribution: install src_gzip i386_gzip css_gzip
 	md5sum crm114-$(VERSION).*.tar.gz
 
-rsync:
+rsync:  FORCE
 	rsync -zrltDv \
 	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) \
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
@@ -898,3 +919,5 @@ cssmerge.o: crm114_sysincludes.h crm114_config.h crm114_structs.h crm114.h
 cssutil.o: crm114_sysincludes.h crm114_config.h crm114_structs.h crm114.h
 osbf-util.o: crm114_sysincludes.h crm114_config.h crm114_structs.h crm114.h
 osbf-util.o: crm114_osbf.h
+crm_versioning.o: crm114_sysincludes.h crm114_config.h crm114_structs.h crm114.h
+crm_versioning.o: crm114_osbf.h

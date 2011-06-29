@@ -1,5 +1,5 @@
 //  crm_exec_engine.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -951,7 +951,7 @@ int crm_invoke(void)
       while (!done)
       {
         while (temp_vars[vstart] < 0x021
-               && vstart < tvlen)          //  was temp_vars[vstart] != 0)
+               && vstart < tvlen)  //  was temp_vars[vstart] != 0)
           vstart++;
         vlen = 0;
         while (temp_vars[vstart + vlen] >= 0x021
@@ -1063,7 +1063,7 @@ int crm_invoke(void)
       while (!done)
       {
         while (temp_vars[vstart] < 0x021
-               && vstart < tvlen)          //  was temp_vars[vstart] != 0)
+               && vstart < tvlen)  //  was temp_vars[vstart] != 0)
           vstart++;
         vlen = 0;
         while (temp_vars[vstart + vlen] >= 0x021
@@ -1138,13 +1138,12 @@ int crm_invoke(void)
     }
     break;
 
-
   case CRM_CLUMP:
-	crm_expr_clump (csl, apb);
+    crm_expr_clump(csl, apb);
     break;
 
   case CRM_PMULC:
-	crm_expr_pmulc (csl, apb);
+    crm_expr_pmulc(csl, apb);
     break;
 
   case CRM_UNIMPLEMENTED:

@@ -1,5 +1,5 @@
 //  crm_win32_port.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -37,55 +37,55 @@ FILE *crm_stdout = NULL;
 
 FILE *os_stdin(void)
 {
-        return stdin;
+  return stdin;
 }
 
 FILE *os_stdout(void)
 {
-        return stdout;
+  return stdout;
 }
 
 FILE *os_stderr(void)
 {
-        return stderr;
+  return stderr;
 }
 
 
 void init_stdin_out_err_as_os_handles(void)
 {
-    crm_stdin = os_stdin();
-    crm_stdout = os_stdout();
-    crm_stderr = os_stderr();
+  crm_stdin = os_stdin();
+  crm_stdout = os_stdout();
+  crm_stderr = os_stderr();
 }
 
 
 void cleanup_stdin_out_err_as_os_handles(void)
 {
-        if (crm_stdin != NULL && crm_stdin != os_stdin())
-        {
-                fclose(crm_stdin);
-                crm_stdin = NULL;
-        }
-        if (crm_stdout != NULL && crm_stdout != os_stdout() && crm_stdout != os_stderr() && crm_stdout != crm_stderr)
-        {
-                fclose(crm_stdout);
-                crm_stdout = NULL;
-        }
-        if (crm_stderr != NULL && crm_stderr != os_stdout() && crm_stderr != os_stderr())
-        {
-                fclose(crm_stderr);
-                crm_stderr = NULL;
-        }
+  if (crm_stdin != NULL && crm_stdin != os_stdin())
+  {
+    fclose(crm_stdin);
+    crm_stdin = NULL;
+  }
+  if (crm_stdout != NULL && crm_stdout != os_stdout() && crm_stdout != os_stderr() && crm_stdout != crm_stderr)
+  {
+    fclose(crm_stdout);
+    crm_stdout = NULL;
+  }
+  if (crm_stderr != NULL && crm_stderr != os_stdout() && crm_stderr != os_stderr())
+  {
+    fclose(crm_stderr);
+    crm_stderr = NULL;
+  }
 }
 
 
 int is_stdin_or_null(FILE *f)
 {
-        return (f == NULL) || (f == os_stdin());
+  return (f == NULL) || (f == os_stdin());
 }
 
 int is_stdout_err_or_null(FILE *f)
 {
-        return (f == NULL) || (f == os_stdout()) || (f == os_stderr());
+  return (f == NULL) || (f == os_stdout()) || (f == os_stderr());
 }
 

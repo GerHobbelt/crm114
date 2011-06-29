@@ -1,5 +1,5 @@
 //  crm_str_funcs.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -1653,6 +1653,8 @@ typedef struct prototype_crm_mmap_cell
 #else
   int fd;
 #endif
+  long        user_actual_len;
+  void       *user_addr;
 } CRM_MMAP_CELL;
 
 
@@ -1758,7 +1760,7 @@ static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
 //////////////////////////////////////
 //
 //     Force an unmap (don't look at the unmap_count, just do it)
-//     Watch out tho- this takes a CRM_MMAP_CELL, not a *ptr, so don't
+//     Watch out tho - this takes a CRM_MMAP_CELL, not a *ptr, so don't
 //     call it from anywhere except inside this file.
 //
 static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
@@ -1860,7 +1862,7 @@ void crm_force_munmap_filename(char *filename)
     if (strcmp(p->name, filename) == 0)
     {
       //   found it... force an munmap.
-      crm_force_munmap_addr(p->addr);
+      crm_force_munmap_addr(p->user_addr);
       break;         //  because p WILL be clobbered during unmap.
     }
   }
@@ -1872,7 +1874,7 @@ void crm_force_munmap_filename(char *filename)
     if (strcmp(p->name, filename) == 0)
     {
       //   found it... force an munmap.
-      crm_force_munmap_addr(p->addr);
+      crm_force_munmap_addr(p->user_addr);
       // because p WILL be clobbered during unmap:
       // when you get here, anything pointed at by p is damaged: free()d memory in function call above.
     }
@@ -1896,7 +1898,7 @@ void crm_force_munmap_addr(void *addr)
   //     mmapped
   //
   p = cache;
-  while (p != NULL && p->addr != addr)
+  while (p != NULL && p->user_addr != addr)
     p = p->next;
 
   if (!p)
@@ -1930,7 +1932,7 @@ void crm_munmap_file(void *addr)
   //     mmapped
   //
   p = cache;
-  while (p != NULL && p->addr != addr)
+  while (p != NULL && p->user_addr != addr)
     p = p->next;
 
   if (!p)
@@ -2029,7 +2031,8 @@ void crm_munmap_file(void *addr)
         free(p);
       }
 #else
-#error "please provide a msync() alternative here (some systems do not have msync but perform this action in munmap itself --> you'll have to augment configure/sysincludes then."
+#error \
+  "please provide a msync() alternative here (some systems do not have msync but perform this action in munmap itself --> you'll have to augment configure/sysincludes then."
 #endif
     }
   }
@@ -2044,7 +2047,7 @@ void crm_munmap_all(void)
   while (cache != NULL)
   {
     cache->unmap_count = UNMAP_COUNT_MAX + 1;
-    crm_munmap_file(cache->addr);
+    crm_munmap_file(cache->user_addr);
   }
 }
 
@@ -2106,8 +2109,8 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
       {
         //  nope, it looks clean.  We'll reuse it.
         if (actual_len)
-          *actual_len = p->actual_len;
-        return p->addr;
+          *actual_len = p->user_actual_len;
+        return p->user_addr;
       }
     }
   }
@@ -2302,11 +2305,6 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
 #error "please provide a mmap() equivalent"
 #endif
 
-  //   If the caller asked for the length to be passed back, pass it.
-  if (actual_len)
-    *actual_len = p->actual_len;
-
-
   //   Now, insert this fresh mmap into the cache list
   //
   p->unmap_count = 0;
@@ -2317,9 +2315,38 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
     cache->prev = p;
   }
   cache = p;
-  return p->addr;
+
+  p->user_addr = p->addr;
+  p->user_actual_len = p->actual_len;
+  crm_correct_for_version_header(&p->user_addr, &p->user_actual_len);
+
+  //   If the caller asked for the length to be passed back, pass it.
+  if (actual_len)
+    *actual_len = p->user_actual_len;
+
+  return p->user_addr;
 }
 
+
+
+/*
+ * Return pointer to CRM versioning header in mmap()ed memory, if such is available.
+ *
+ * Otherwise, return NULL.
+ */
+void *crm_get_header_for_mmap_file(void *addr)
+{
+  CRM_MMAP_CELL *p;
+
+  p = cache;
+  while (p != NULL && p->user_addr != addr)
+    p = p->next;
+
+  if (!p)
+    return NULL;
+
+  return p->addr;
+}
 
 
 /* [i_a] moved times() call to porting section */
@@ -2633,9 +2660,9 @@ long strntrn(
     //                        build the map of the uniqueable characters
     //
     for (j = 0; j < 256; j++)
-      unique_map[j] = 1;             // all characters are keepers at first...
+      unique_map[j] = 1; // all characters are keepers at first...
     for (j = 0; j < flen; j++)
-      unique_map[from[j]] = 0;       //  but some need to be uniqued.
+      unique_map[from[j]] = 0; //  but some need to be uniqued.
 
     //                          If the character has a 0 the unique map,
     //                          and it's the same as the prior character,

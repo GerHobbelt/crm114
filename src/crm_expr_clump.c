@@ -95,9 +95,10 @@ typedef struct mythical_clumper_state
 
 static int make_new_clumper_backing_file(char *filename, int max_docs)
 {
-  CLUMPER_HEADER_STRUCT h = {0};
+  CLUMPER_HEADER_STRUCT h = { 0 };
   FILE *f;
   long i;
+  CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
   h.max_documents = max_docs;
   h.n_documents = 0;
@@ -118,21 +119,34 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
   f = fopen(filename, "wb");
   if (!f)
   {
-    int fev = fatalerror_ex(SRC_LOC(),
-                            "\n Couldn't open your clumper backing file %s for writing; errno=%d(%s)\n",
-                            filename,
-                            errno,
-                            errno_descr(errno));
+    fatalerror_ex(SRC_LOC(),
+                  "\n Couldn't open your clumper backing file %s for writing; errno=%d(%s)\n",
+                  filename,
+                  errno,
+                  errno_descr(errno));
     return 0;
   }
-  if (1 != fwrite(&h, sizeof(h), 1, f))
+
+  classifier_info.classifier_bits = CRM_CLUMP;
+
+  if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
   {
-    int fev = fatalerror_ex(SRC_LOC(),
-                            "\n Couldn't write header to file %s; errno=%d(%s)\n",
-                            filename, errno, errno_descr(errno));
+    fatalerror_ex(SRC_LOC(),
+                  "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                  filename, errno, errno_descr(errno));
     fclose(f);
     return 0;
   }
+
+  if (1 != fwrite(&h, sizeof(h), 1, f))
+  {
+    fatalerror_ex(SRC_LOC(),
+                  "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                  filename, errno, errno_descr(errno));
+    fclose(f);
+    return 0;
+  }
+
   i = h.file_length - sizeof(h);
   if (internal_trace)
   {
@@ -140,12 +154,13 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
   }
   if (file_memset(f, 0, i))
   {
-    int fev = fatalerror_ex(SRC_LOC(),
-                            "\n Couldn't write filler to file %s; errno=%d(%s)\n",
-                            filename, errno, errno_descr(errno));
+    fatalerror_ex(SRC_LOC(),
+                  "\n Couldn't write filler to file %s; errno=%d(%s)\n",
+                  filename, errno, errno_descr(errno));
     fclose(f);
     return 0;
   }
+
   fclose(f);
   if (internal_trace)
   {
@@ -167,11 +182,11 @@ static int map_file(CLUMPER_STATE_STRUCT *s, char *filename)
   }
 
   s->file_origin = crm_mmap_file(filename,
-                    0, 
-					statbuf.st_size,
-                    PROT_READ | PROT_WRITE,
-                    MAP_SHARED,
-                    NULL);
+                                 0,
+                                 statbuf.st_size,
+                                 PROT_READ | PROT_WRITE,
+                                 MAP_SHARED,
+                                 NULL);
   if (s->file_origin == MAP_FAILED)
   {
     nonfatalerror("Couldn't mmap file!", filename);
@@ -214,7 +229,7 @@ static float get_document_affinity(crmhash_t *doc1, crmhash_t *doc2)
 {
   int u = 0, l1 = 0, l2 = 0;
 
-  for (;;)
+  for ( ; ;)
   {
     if (doc1[l1] == 0)
     {
@@ -326,13 +341,13 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     }
     else
     {
-      for (i = 1; i < OSB_BAYES_WINDOW_LEN 
-		  && hash_pipe[i] != 0xdeadbeef 
-		  && n_features < max_features - 1; i++)
+      for (i = 1; i < OSB_BAYES_WINDOW_LEN
+           && hash_pipe[i] != 0xdeadbeef
+           && n_features < max_features - 1; i++)
       {
         feature_space[n_features++] =
           hash_pipe[0] + hash_pipe[i] * hash_coefs[i];
-		CRM_ASSERT(n_features < max_features - 1);
+        CRM_ASSERT(n_features < max_features - 1);
       }
     }
   }
@@ -429,7 +444,7 @@ static void agglomerative_averaging_cluster(CLUMPER_STATE_STRUCT *s, long goal)
   long n = s->header->n_documents;
   CLUSTER_HEAD_STRUCT *clusters = calloc(n, sizeof(clusters[0]));
   CLUSTER_HEAD_STRUCT *a, *b, *c;
-  CLUSTER_HEAD_STRUCT first_head_ptr = {0};
+  CLUSTER_HEAD_STRUCT first_head_ptr = { 0 };
   int m_size = (n * (n + 1) / 2 - 1);
   float *M = calloc(m_size, sizeof(M[0]));
   float d, e;
@@ -611,7 +626,7 @@ static void agglomerative_nearest_cluster(CLUMPER_STATE_STRUCT *s, long goal)
   long n = s->header->n_documents;
   CLUSTER_HEAD_STRUCT *clusters = calloc(n, sizeof(clusters[0]));
   CLUSTER_HEAD_STRUCT *a, *b;
-  CLUSTER_HEAD_STRUCT first_head_ptr = {0};
+  CLUSTER_HEAD_STRUCT first_head_ptr = { 0 };
   int m_size = (n * (n + 1) / 2 - 1);
   float **M = calloc(m_size, sizeof(M[0]));
 
@@ -720,7 +735,7 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
   long n = s->header->n_documents;
   CLUSTER_HEAD_STRUCT *clusters = calloc(n, sizeof(clusters[0]));
   CLUSTER_HEAD_STRUCT *a, *b, *c;
-  CLUSTER_HEAD_STRUCT first_head_ptr = {0};
+  CLUSTER_HEAD_STRUCT first_head_ptr = { 0 };
   long H[H_BUCKETS];
   long C[H_BUCKETS];
   float A[H_BUCKETS];
@@ -780,7 +795,6 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
   // NOPE! Discussed this on the ML and Joe told me the other one is the correct count [i_a]
 #endif
   CRM_ASSERT(j <= m_size);
-  CRM_ASSERT(j <= WIDTHOF(M));
   min = 1000000000.0;
   max = -1000000000.0;
 
@@ -794,7 +808,7 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
   scale = (max - min) / (H_BUCKETS - 0.1);
 #if 0 /* [i_a] quick and dirty hack to prevent crash below, but this doesn't help, as now things further down below go bump in the night :-( */
   if (scale <= FLT_EPSILON && scale >= -FLT_EPSILON)
-	scale = 1;
+    scale = 1;
 #endif
   CRM_ASSERT(!(scale <= FLT_EPSILON && scale >= -FLT_EPSILON));
   t = -1.0;
@@ -882,7 +896,7 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
     }
   }
 
-  for (;;)
+  for ( ; ;)
   {
     l = 0;
     k = 0;
@@ -1001,7 +1015,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   struct stat statbuf;
 
-  CLUMPER_STATE_STRUCT s = {0};
+  CLUMPER_STATE_STRUCT s = { 0 };
 
   regex_t regee;
   regmatch_t matchee[2];
@@ -1094,7 +1108,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   {
     param_text[matchee[1].rm_eo] = 0;
     strncpy(tag, &param_text[matchee[1].rm_so], sizeof(tag));
-	tag[sizeof(tag) - 1] = 0;
+    tag[sizeof(tag) - 1] = 0;
   }
   else
   {
@@ -1110,7 +1124,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   {
     param_text[matchee[1].rm_eo] = 0;
     strncpy(classv, &param_text[matchee[1].rm_so], sizeof(classv));
-	classv[sizeof(classv) - 1] = 0;
+    classv[sizeof(classv) - 1] = 0;
   }
   else
   {
@@ -1242,8 +1256,8 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
           //we already nonfatalerrored
           return 0;
         }
-		// GROT GROT GROT
-        for (i = s.header->n_documents - 1; i >= 0; i++ /* [i_a] should this REALLY be 'i++' instead of 'i--' ??? */ )
+        // GROT GROT GROT
+        for (i = s.header->n_documents - 1; i >= 0; i++ /* [i_a] should this REALLY be 'i++' instead of 'i--' ??? */)
         {
           if (0 == strcmp(tag, s.document_tags[i]))
             break;
@@ -1260,8 +1274,10 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                      &regee,
                      feature_space, WIDTHOF(feature_space),
                      apb->sflags);
+
     crm_force_munmap_filename(filename);
-    f = fopen(filename, "ab+");
+
+    f = fopen(filename, "ab");
     if (!f)
     {
       int fev = fatalerror_ex(SRC_LOC(),
@@ -1271,6 +1287,26 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                               errno_descr(errno));
       return fev;
     }
+
+    //     And make sure the file pointer is at EOF.
+    (void)fseek(f, 0, SEEK_END);
+
+    if (ftell(f) == 0)
+    {
+      CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+      classifier_info.classifier_bits = CRM_CLUMP;
+
+      if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
+      {
+        fatalerror_ex(SRC_LOC(),
+                      "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                      filename, errno, errno_descr(errno));
+        fclose(f);
+        return 0;
+      }
+    }
+
     if (n != fwrite(feature_space, sizeof(feature_space[0]), n, f))
     {
       fatalerror("Cannot write feature space to the clump backing file", filename);
@@ -1278,6 +1314,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       return 0;
     }
     fclose(f);
+
     if (map_file(&s, filename))
     {
       //we already nonfatalerrored
@@ -1373,7 +1410,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   long out_len = 0;
 
-  CLUMPER_STATE_STRUCT s = {0};
+  CLUMPER_STATE_STRUCT s = { 0 };
 
   regex_t regee;
 
@@ -1563,7 +1600,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       {
         CRM_ASSERT(!(A[i] <= FLT_EPSILON && A[i] >= -FLT_EPSILON));
         p[i] = normalized_gauss(1.0 / A[i] - 1.0, 0.5);
-      //p[i] = A[i];
+        //p[i] = A[i];
       }
       T += p[i];
     }

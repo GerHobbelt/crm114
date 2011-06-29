@@ -16,18 +16,18 @@
 
 typedef struct
 {
-    crmhash_t hash;
-    crmhash_t key;
-    unsigned long value;
+  crmhash_t     hash;
+  crmhash_t     key;
+  unsigned long value;
 } OSBF_FEATUREBUCKET_STRUCT;
 
 typedef struct
 {
-    unsigned char version[4];
-    unsigned long flags;
-    unsigned long buckets_start; /* offset to first bucket, in bucket size units */
-    unsigned long buckets;       /* number of buckets in the file */
-    unsigned long learnings;     /* number of trainings executed */
+  unsigned char version[4];
+  unsigned long flags;
+  unsigned long buckets_start;   /* offset to first bucket, in bucket size units */
+  unsigned long buckets;         /* number of buckets in the file */
+  unsigned long learnings;       /* number of trainings executed */
 } OSBF_FEATURE_HEADER_STRUCT;
 
 /* define header size to be a multiple of bucket size with aprox. 4 Kbytes */
@@ -36,10 +36,10 @@ typedef struct
 /* complete header */
 typedef union
 {
-    OSBF_FEATURE_HEADER_STRUCT header;
-    /*   buckets in header - not really buckets, but the header size is */
-    /*   a multiple of bucket size */
-    OSBF_FEATUREBUCKET_STRUCT bih[OSBF_CSS_SPECTRA_START];
+  OSBF_FEATURE_HEADER_STRUCT header;
+  /*   buckets in header - not really buckets, but the header size is */
+  /*   a multiple of bucket size */
+  OSBF_FEATUREBUCKET_STRUCT bih[OSBF_CSS_SPECTRA_START];
 } OSBF_HEADER_UNION;
 
 #define BUCKET_VALUE_MASK 0x0000FFFFLU
@@ -100,15 +100,15 @@ extern int crm_expr_osbf_bayes_classify(CSL_CELL *csl,
                                         char *txtptr, long txtoffset, long txtlen);
 extern void crm_osbf_set_microgroom(int value);
 extern void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *h,
-                                unsigned long              hindex);
+                                unsigned long               hindex);
 extern void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *h,
                              unsigned long packstart, unsigned long packlen);
 extern void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *h,
                              unsigned long packstart, unsigned long packlen);
 extern unsigned long crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
-                                          unsigned long              index);
+                                          unsigned long               index);
 extern unsigned long crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
-                                          unsigned long              index);
+                                          unsigned long               index);
 extern unsigned long crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
                                           unsigned long hash, unsigned long key);
 extern void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header,

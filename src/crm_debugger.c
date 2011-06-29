@@ -1,5 +1,5 @@
 //  crm114_.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -99,7 +99,7 @@ long crm_debugger(void)
   if (csl->mct[csl->cstmt]->stmt_break > 0)
     fprintf(stderr, "Breakpoint tripped at statement %ld\n", csl->cstmt);
 
-  for (;;)
+  for ( ; ;)
   {
     // show watched expressions:
     int watch;

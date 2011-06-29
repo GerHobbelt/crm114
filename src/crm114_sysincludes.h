@@ -10,7 +10,8 @@
 #elif defined (WIN32)
 #include "config_win32.h"
 #else
-#error "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."
+#error \
+  "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."
 #endif
 
 #ifdef WIN32
@@ -218,14 +219,15 @@
 
 #ifdef HAVE_GETOPT_EX_H
 #include <getopt_ex.h>
-#elif defined(WIN32)
+#elif defined (WIN32)
 #include "getopt_ex.h"
 #endif
 
 
 /* REs support */
 #ifndef HAVE_REGEX
-#error "crm114 MUST be compiled with regex support. It's a regex mutilator, remember? Try to run './configure --disable-extended-compile-checks --with-regex=tre' and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+#error \
+  "crm114 MUST be compiled with regex support. It's a regex mutilator, remember? Try to run './configure --disable-extended-compile-checks --with-regex=tre' and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 #if defined (HAVE_TRE_REGEX)
@@ -235,24 +237,25 @@
 #elif defined (HAVE_REGEX_H)
 #include <regex.h>
 #else
-#error "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+#error \
+  "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 typedef struct
 {
   regex_t preg;
-  char *pattern;
+  char   *pattern;
 } re_entry;
 
-#elif defined(HAVE_POSIX_REGEX)
+#elif defined (HAVE_POSIX_REGEX)
 
 typedef struct
 {
   regex_t preg;
-  char *pattern;
+  char   *pattern;
 } re_entry;
 
-#elif defined(HAVE_V8_REGEX)
+#elif defined (HAVE_V8_REGEX)
 
 #ifndef NSUBEXP
 #include <regexp.h>
@@ -261,17 +264,17 @@ typedef struct
 typedef struct
 {
   regexp *preg;
-  char *pattern;
+  char   *pattern;
 } re_entry;
 
-#elif defined(HAVE_BSD_REGEX)
+#elif defined (HAVE_BSD_REGEX)
 
 typedef struct
 {
   char *pattern;
 } re_entry;
 
-#elif defined(HAVE_GNU_REGEX)
+#elif defined (HAVE_GNU_REGEX)
 
 typedef struct
 {
@@ -279,15 +282,15 @@ typedef struct
   char *pattern;
 } re_entry;
 
-#elif defined(HAVE_PCRE_REGEX)
+#elif defined (HAVE_PCRE_REGEX)
 
 #include <pcre.h>
 
 typedef struct
 {
-  pcre *preg;
+  pcre       *preg;
   pcre_extra *preg_extra;
-  char *pattern;
+  char       *pattern;
 } re_entry;
 
 #else
@@ -295,7 +298,8 @@ typedef struct
 #if defined (HAVE_REGEX_H)
 #include <regex.h>
 #else
-#error "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+#error \
+  "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 #endif
@@ -305,12 +309,12 @@ typedef struct
 
 /* This feature is available in gcc versions 2.5 and later.  */
 #ifndef __attribute__
-#if defined(__GNUC__)
+#if defined (__GNUC__)
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 5) || __STRICT_ANSI__
 #define __attribute__(spec) /* empty */
 #endif
 /* The __-protected variants of `format' and `printf' attributes
-   are accepted by gcc versions 2.6.4 (effectively 2.7) and later.  */
+ * are accepted by gcc versions 2.6.4 (effectively 2.7) and later.  */
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 #define __format__    format
 #define __printf__    printf
@@ -318,8 +322,8 @@ typedef struct
 #endif
 #else
 #define __attribute__(spec) /* empty */
-#endif /*  defined(__GNUC__) */
-#endif /* __attribute__ */
+#endif                      /*  defined(__GNUC__) */
+#endif                      /* __attribute__ */
 
 
 
@@ -357,42 +361,42 @@ typedef struct
 
 
 /*
-   mmap/munmap related getpagesize(): used to check our file header offset.
-
-   This mess was adapted from the GNU getpagesize.h.
-*/
-#if !defined(HAVE_GETPAGESIZE)
-#if defined(WIN32)
+ * mmap/munmap related getpagesize(): used to check our file header offset.
+ *
+ * This mess was adapted from the GNU getpagesize.h.
+ */
+#if !defined (HAVE_GETPAGESIZE)
+#if defined (WIN32)
 int getpagesize(void); /* see crm_port_win32.c */
 #else
-# if defined(_SC_PAGESIZE) && HAVE_SYSCONF
-#  define getpagesize() sysconf(_SC_PAGESIZE)
-# else /* no _SC_PAGESIZE */
-#  if HAVE_SYS_PARAM_H
+#if defined (_SC_PAGESIZE) && HAVE_SYSCONF
+#define getpagesize() sysconf(_SC_PAGESIZE)
+#else /* no _SC_PAGESIZE */
+#if HAVE_SYS_PARAM_H
 /* #   include <sys/param.h> -- already done before in this file */
-#   ifdef EXEC_PAGESIZE
-#    define getpagesize() EXEC_PAGESIZE
-#   else /* no EXEC_PAGESIZE */
-#    ifdef NBPG
-#     define getpagesize() NBPG * CLSIZE
-#     ifndef CLSIZE
-#      define CLSIZE 1
-#     endif /* no CLSIZE */
-#    else /* no NBPG */
-#     ifdef NBPC
-#      define getpagesize() NBPC
-#     else /* no NBPC */
-#      ifdef PAGESIZE
-#       define getpagesize() PAGESIZE
-#      endif /* PAGESIZE */
-#     endif /* no NBPC */
-#    endif /* no NBPG */
-#   endif /* no EXEC_PAGESIZE */
-#  else /* no HAVE_SYS_PARAM_H */
-#   define getpagesize() 8192   /* punt totally */
+#ifdef EXEC_PAGESIZE
+#define getpagesize() EXEC_PAGESIZE
+#else /* no EXEC_PAGESIZE */
+#ifdef NBPG
+#define getpagesize() NBPG * CLSIZE
+#ifndef CLSIZE
+#define CLSIZE 1
+#endif /* no CLSIZE */
+#else  /* no NBPG */
+#ifdef NBPC
+#define getpagesize() NBPC
+#else /* no NBPC */
+#ifdef PAGESIZE
+#define getpagesize() PAGESIZE
+#endif                       /* PAGESIZE */
+#endif                       /* no NBPC */
+#endif                       /* no NBPG */
+#endif                       /* no EXEC_PAGESIZE */
+#else                        /* no HAVE_SYS_PARAM_H */
+#define getpagesize() 8192   /* punt totally */
 /* #error "please provide an implementation of getpagesize() for your platform" */
-#  endif /* no HAVE_SYS_PARAM_H */
-# endif /* no _SC_PAGESIZE / HAVE_SYSCONF */
+#endif /* no HAVE_SYS_PARAM_H */
+#endif /* no _SC_PAGESIZE / HAVE_SYSCONF */
 #endif
 #endif /* no HAVE_GETPAGESIZE */
 
@@ -414,12 +418,12 @@ void *crm_memmove(void *dst, const void *src, size_t len);
 #if defined (HAVE_STAT_EMPTY_STRING_BUG)
 static inline int crm_stat(const char *path, struct stat *buf)
 {
-    if (!path || ! * path || !buf)
-    {
-        errno = EINVAL;
-        return -1;
-    }
-    return stat(path, buf);
+  if (!path || ! * path || !buf)
+  {
+    errno = EINVAL;
+    return -1;
+  }
+  return stat(path, buf);
 }
 #undef stat
 #define stat(path, buf)         crm_stat(path, buf)
@@ -434,10 +438,10 @@ typedef long int clock_t;
 #ifndef HAVE_TIMES
 struct tms
 {
-    clock_t tms_utime;  // user time
-    clock_t tms_stime;  // system time
-    clock_t tms_cutime; // user time of children
-    clock_t tms_cstime; // system time of children
+  clock_t tms_utime;    // user time
+  clock_t tms_stime;    // system time
+  clock_t tms_cutime;   // user time of children
+  clock_t tms_cstime;   // system time of children
 };
 #endif
 
@@ -537,6 +541,16 @@ int truncate(const char *filepath, long filesize); /* [i_a] Win32 doesn't come w
 #define CRM_MAX(a, b)                   ((a) >= (b) ? (a) : (b))
 
 
+
+#if !defined(TRUE) || !defined(FALSE)
+#undef FALSE
+#undef TRUE
+#define FALSE 0
+#define TRUE (!FALSE)
+#endif
+
+
+
 #ifndef HAVE_STRMOV
 char *strmov(char *dst, const char *src);
 #endif
@@ -550,12 +564,12 @@ char *strmov(char *dst, const char *src);
 
 static union
 {
-    char int8_t_incorrect[sizeof(int8_t) == 1];
-    char uint8_t_incorrect[sizeof(uint8_t) == 1];
-    char int16_t_incorrect[sizeof(int16_t) == 2];
-    char uint16_t_incorrect[sizeof(uint16_t) == 2];
-    char int32_t_incorrect[sizeof(int32_t) == 4];
-    char uint32_t_incorrect[sizeof(uint32_t) == 4];
+  char int8_t_incorrect[sizeof(int8_t) == 1];
+  char uint8_t_incorrect[sizeof(uint8_t) == 1];
+  char int16_t_incorrect[sizeof(int16_t) == 2];
+  char uint16_t_incorrect[sizeof(uint16_t) == 2];
+  char int32_t_incorrect[sizeof(int32_t) == 4];
+  char uint32_t_incorrect[sizeof(uint32_t) == 4];
 };
 #endif
 
@@ -576,72 +590,72 @@ static union
 
 static inline int crm_isalnum(unsigned char c)
 {
-    return isalnum(c);
+  return isalnum(c);
 }
 static inline int crm_isalpha(unsigned char c)
 {
-    return isalpha(c);
+  return isalpha(c);
 }
 
 #ifdef HAVE_ISASCII
 static inline int crm_isascii(unsigned char c)
 {
-    return isascii(c);
+  return isascii(c);
 }
 #else
 static inline int crm_isascii(unsigned char c)
 {
-    return !(c >> 7);
+  return !(c >> 7);
 }
 #endif
 
 #ifdef HAVE_ISBLANK
 static inline int crm_isblank(unsigned char c)
 {
-    return isblank(c);
+  return isblank(c);
 }
 #else
 static inline int crm_isblank(unsigned char c)
 {
-    return (c == ' ') || (c == '\t');
+  return (c == ' ') || (c == '\t');
 }
 #endif
 
 static inline int crm_iscntrl(unsigned char c)
 {
-    return iscntrl(c);
+  return iscntrl(c);
 }
 static inline int crm_isdigit(unsigned char c)
 {
-    return isdigit(c);
+  return isdigit(c);
 }
 static inline int crm_isgraph(unsigned char c)
 {
-    return isgraph(c);
+  return isgraph(c);
 }
 static inline int crm_islower(unsigned char c)
 {
-    return islower(c);
+  return islower(c);
 }
 static inline int crm_isprint(unsigned char c)
 {
-    return isprint(c);
+  return isprint(c);
 }
 static inline int crm_ispunct(unsigned char c)
 {
-    return ispunct(c);
+  return ispunct(c);
 }
 static inline int crm_isspace(unsigned char c)
 {
-    return isspace(c);
+  return isspace(c);
 }
 static inline int crm_isupper(unsigned char c)
 {
-    return isupper(c);
+  return isupper(c);
 }
 static inline int crm_isxdigit(unsigned char c)
 {
-    return isxdigit(c);
+  return isxdigit(c);
 }
 
 // and to make sure no-one will use the system funcs:
@@ -726,26 +740,26 @@ void crm_touch(const char *filename);
 
 
 /*
-   Special trick to keep software diff at a minimum while supporting
-   stdin/out/err redirection using the -in/-out/-err crm114 commandline
-   options:
-
-   This section redirects stdin/stdout/stderr to our crm-defined FILE*
-   handles, which may be pointing at the usual stdin/out/err respectively,
-   OR point at fopen()ed files instead.
-
-   In order to make the trick work, we'll need ONE spot where this redef
-   is NOT applied to allow the os_stdin/out/err() functions to produce
-   the RTL defined stdin/out/err handles as is.
-   This is done this way to allow for OS/compiler combo's which #define
-   stdin/out/err themselves. Simply doing this wouldn't work for those:
-
-   #undef stdin
-   FILE *os_Stdin(void)
-   {
-     return stdin;
-   }
-*/
+ * Special trick to keep software diff at a minimum while supporting
+ * stdin/out/err redirection using the -in/-out/-err crm114 commandline
+ * options:
+ *
+ * This section redirects stdin/stdout/stderr to our crm-defined FILE*
+ * handles, which may be pointing at the usual stdin/out/err respectively,
+ * OR point at fopen()ed files instead.
+ *
+ * In order to make the trick work, we'll need ONE spot where this redef
+ * is NOT applied to allow the os_stdin/out/err() functions to produce
+ * the RTL defined stdin/out/err handles as is.
+ * This is done this way to allow for OS/compiler combo's which #define
+ * stdin/out/err themselves. Simply doing this wouldn't work for those:
+ *
+ * #undef stdin
+ * FILE *os_Stdin(void)
+ * {
+ *   return stdin;
+ * }
+ */
 extern FILE *crm_stdin;
 extern FILE *crm_stdout;
 extern FILE *crm_stderr;

@@ -1,5 +1,5 @@
 //  crm114_config.h  - Controllable Regex Mutilator base config, version X0.1
-//  Copyright 2001-2006 William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007 William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -296,13 +296,13 @@
 
 // defaults to system's, if any
 #ifdef NAME_MAX
-  #define MAX_FILE_NAME_LEN (NAME_MAX + 1)
+#define MAX_FILE_NAME_LEN (NAME_MAX + 1)
 #else
-  #ifdef FILENAME_MAX
-    #define MAX_FILE_NAME_LEN (FILENAME_MAX + 1)
-  #else
-    #define MAX_FILE_NAME_LEN 256
-  #endif
+#ifdef FILENAME_MAX
+#define MAX_FILE_NAME_LEN (FILENAME_MAX + 1)
+#else
+#define MAX_FILE_NAME_LEN 256
+#endif
 #endif
 
 //    define how many microseconds to sleep waiting for a minion process
@@ -342,23 +342,31 @@
 //     Neural Net training setups
 //   Threshold for back propagation
 #define NN_INTERNAL_TRAINING_THRESHOLD 0.3
-//  Just use 1 neuron excitation per token coming in. 
+//  Just use 1 neuron excitation per token coming in.
 #define NN_N_PUMPS 1
-//  How many training cycles before we punt out 
+//  How many training cycles before we punt out
 #define NN_MAX_TRAINING_CYCLES 100
 //  When doing a "nuke and retry", allow this many training cycles.
 #define NN_MAX_TRAINING_CYCLES_FROMSTART 2000
 //  After how many "not needed" cycles do we microgroom this doc away?
-#define NN_MICROGROOM_THRESHOLD 10      
+#define NN_MICROGROOM_THRESHOLD 10
 //  use the sparse retina design?  No, it's not good.
-#define NN_SPARSE_RETINA 0 
+#define NN_SPARSE_RETINA 0
 
 //    End of configurable parameters.
 
+
+
+
 #define CRM_WITH_OLD_HASH_FUNCTION 1
 
+#define CRM114_TEXT_HEADERBLOCK_SIZE       (4 * 1024)
+#define CRM114_MACHINE_HEADERBLOCK_SIZE    (4 * 1024)
+#define CRM114_HEADERBLOCK_SIZE            (CRM114_TEXT_HEADERBLOCK_SIZE + CRM114_MACHINE_HEADERBLOCK_SIZE)
+
+
 // which classifiers are 'experimental' for this release?
-#if defined(CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS)
+#if defined (CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS)
 
 #undef CRM_WITHOUT_NEURAL_NET
 #define CRM_WITHOUT_NEURAL_NET 1

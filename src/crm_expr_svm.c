@@ -1,6 +1,6 @@
 //  crm_svm.c  - version v1.0
 //
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -261,8 +261,8 @@ static void cache_init(int len, long size, CACHE *svmcache)
   size /= sizeof(Qitem_t);
   size -= len * (sizeof(CACHE_NODE) / sizeof(Qitem_t));
   if (size < (2 * len))
-    size = 2 * len;       //   cache size must at least
-                          //   as large as two columns of Qmatrix
+    size = 2 * len; //   cache size must at least
+                   //   as large as two columns of Qmatrix
 #endif
   (svmcache->lru_headnode).prev
   = (svmcache->lru_headnode).next
@@ -316,7 +316,7 @@ static int get_data(CACHE      *svmcache,
 
   CRM_ASSERT(doc_index >= 0);
   CRM_ASSERT(doc_index < svmcache->l);
-  if (doc->len) lru_delete(doc);   //least-recent-use strategy
+  if (doc->len) lru_delete(doc); //least-recent-use strategy
 
   //need to allocate more space
   if (length > (doc->len))
@@ -845,6 +845,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
 //                    svm.prob
 //                    posn = number of positive examples
 //                    negn = number of negative examples
+
 //  Outputs: parameters of sigmoid function-- A and B  (AB[0] = A, AB[1] = B)
 static void calc_AB(double *AB, double *deci_array, int posn, int negn)
 {
@@ -1327,9 +1328,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //  file, we need to force an unmap-by-name which will allow a remap
       //  with the new file length later on.
       crm_force_munmap_filename(file1);
+
       if (user_trace)
         fprintf(stderr, "Opening a svm file %s for append.\n", file1);
-      hashf = fopen(file1, "ab+");
+      hashf = fopen(file1, "ab");
       if (hashf == NULL)
       {
         fatalerror("For some reason, I was unable to append-open the svm file named ",
@@ -1345,13 +1347,30 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           fprintf(stderr, "Writing to a svm file %s\n", file1);
         }
 
+        //     And make sure the file pointer is at EOF.
+        (void)fseek(hashf, 0, SEEK_END);
+
+        ret = 0;
+        if (ftell(hashf) == 0)
+        {
+          CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+          classifier_info.classifier_bits = CRM_SVM;
+
+          if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
+          {
+            fatalerror("For some reason, I was unable to write the header to the svm file named ",
+                       file1);
+          }
+        }
+
         //    and write the sorted hashes out.
         ret = fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
                      hashcounts + 1,
                      hashf);
         if (ret != hashcounts + 1)
         {
-          fatalerror("For some reason, I was unable to append the feature to the sks file named ",
+          fatalerror("For some reason, I was unable to append the feature to the svm file named ",
                      file1);
         }
         fclose(hashf);
@@ -1398,13 +1417,12 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       else
       {
         file_hashlens = statbuf.st_size;
-        file_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                      crm_mmap_file(file1,
-                                    0, 
-									file_hashlens,
+        file_hashes = crm_mmap_file(file1,
+                                    0,
+                                    file_hashlens,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED,
-                                    NULL);
+                                    &file_hashlens);
         file_hashlens = file_hashlens
                         / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
       }
@@ -1620,21 +1638,23 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 
       file1_hashlens = statbuf1.st_size;
-      file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file1,
-                                   0, 
-								   file1_hashlens,
+      file1_hashes = crm_mmap_file(file1,
+                                   0,
+                                   file1_hashlens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file1_hashlens);
       file1_hashlens = file1_hashlens
                        / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
       //find out how many documents in file1
-      for (i = 0; i < file1_hashlens; i++){
+      for (i = 0; i < file1_hashlens; i++)
+      {
         if (internal_trace)
+        {
           fprintf(stderr,
                   "\nThe %ldth hash value in file1 is 0x%08lX",
                   i, (unsigned long)file1_hashes[i].hash);
+        }
         if (file1_hashes[i].hash == 0)
         {
           k1++;
@@ -1711,23 +1731,21 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       k1 = 0;
       k2 = 0;
       file1_hashlens = statbuf1.st_size;
-      file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file1,
-                                   0, 
-								   file1_hashlens,
+      file1_hashes = crm_mmap_file(file1,
+                                   0,
+                                   file1_hashlens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file1_hashlens);
       file1_hashlens = file1_hashlens
                        / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
       file2_hashlens = statbuf2.st_size;
-      file2_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file2,
-                                   0, 
-								   file2_hashlens,
+      file2_hashes = crm_mmap_file(file2,
+                                   0,
+                                   file2_hashlens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file2_hashlens);
       file2_hashlens = file2_hashlens
                        / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
 
@@ -2036,6 +2054,23 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           "Writing to a svm file %s\n",
                           file1);
                 }
+
+                //     And make sure the file pointer is at EOF.
+                (void)fseek(hashf, 0, SEEK_END);
+
+                if (ftell(hashf) == 0)
+                {
+                  CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+                  classifier_info.classifier_bits = CRM_SVM;
+
+                  if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
+                  {
+                    fatalerror("For some reason, I was unable to write the header to the svm file named ",
+                               file1);
+                  }
+                }
+
                 for (i = 0; i < k1 - delete_num1; i++)
                 {
                   int temp_count = 0;
@@ -2073,8 +2108,28 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
               else
               {
                 if (user_trace)
+                {
                   fprintf(stderr,
-                          "Writing to a svm file %s\n", file2);
+                          "Writing to a svm file %s\n",
+                          file2);
+                }
+
+                //     And make sure the file pointer is at EOF.
+                (void)fseek(hashf, 0, SEEK_END);
+
+                if (ftell(hashf) == 0)
+                {
+                  CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+                  classifier_info.classifier_bits = CRM_SVM;
+
+                  if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
+                  {
+                    fatalerror("For some reason, I was unable to write the header to the svm file named ",
+                               file2);
+                  }
+                }
+
                 for (i = k1 - delete_num1; i < svm_prob.l; i++)
                 {
                   int temp_count = 0;
@@ -2157,6 +2212,23 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           if (user_trace)
             fprintf(stderr, "Writing to a svm solution file %s\n", file3);
 
+          //     And make sure the file pointer is at EOF.
+          (void)fseek(hashf, 0, SEEK_END);
+
+          ret = 0;
+          if (ftell(hashf) == 0)
+          {
+            CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+            classifier_info.classifier_bits = CRM_SVM;
+
+            if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
+            {
+              fatalerror("Couldn't write the header to the .hypsvm file named ",
+                         file3);
+            }
+          }
+
           ret = fwrite(&k1, sizeof(k1), 1, hashf);
           ret += fwrite(&k2, sizeof(k2), 1, hashf);
           for (i = 0; i < svm_prob.l; i++)
@@ -2216,7 +2288,6 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   char file3[MAX_PATTERN];
   regex_t regcb;
   regmatch_t match[5];
-  FILE *hashf;
   long textoffset;
   long textmaxoffset;
   crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
@@ -2633,6 +2704,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
     else
     {
+      FILE *hashf;
+
       k1 = 0;
       k2 = 0;
 
@@ -2640,13 +2713,12 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       crm_force_munmap_filename(file1);
       crm_force_munmap_filename(file2);
 
-      file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file1,
-                                   0, 
-								   file1_hashlens,
+      file1_hashes = crm_mmap_file(file1,
+                                   0,
+                                   file1_hashlens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file1_hashlens);
       file1_hashlens = file1_hashlens
                        / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
 
@@ -2659,13 +2731,12 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
       file2_hashlens = statbuf2.st_size;
-      file2_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file2,
-                                   0, 
-								   file2_hashlens,
+      file2_hashes = crm_mmap_file(file2,
+                                   0,
+                                   file2_hashlens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file2_hashlens);
       file2_hashlens = file2_hashlens
                        / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
       hashlens[1] = file2_hashlens;
@@ -2722,7 +2793,18 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
           if (hashf != NULL)
           {
-            int ret = fread(&temp_k1, sizeof(temp_k1), 1, hashf);
+            int ret;
+
+            if (is_crm_headered_file(hashf))
+            {
+              if (fseek(hashf, CRM114_HEADERBLOCK_SIZE, SEEK_SET))
+              {
+                fatalerror("For some reason, I was unable to skip the CRM header for the file named ",
+                           file3);
+              }
+            }
+
+            ret = fread(&temp_k1, sizeof(temp_k1), 1, hashf);
             ret += fread(&temp_k2, sizeof(temp_k2), 1, hashf);
             if (ret != 2)
             {
@@ -2837,7 +2919,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             Q_init();
             solve();             //result is in solver
             b = calc_b();
-            if (user_trace)
+            if (internal_trace)
             {
               fprintf(stderr, "b=%f\n", b);
             }
@@ -2923,10 +3005,6 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           }
         }
 
-        if (hashf != NULL)
-        {
-          fclose(hashf);
-        }
         decision = calc_decision(hashes, alpha, b);
         decision = sigmoid_predict(decision, AB[0], AB[1]);
         free(alpha);
@@ -2935,6 +3013,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         x = NULL;
         free(y);
         y = NULL;
+      }
+      if (hashf != NULL)
+      {
+        fclose(hashf);
       }
       crm_force_munmap_filename(file1);
       crm_force_munmap_filename(file2);

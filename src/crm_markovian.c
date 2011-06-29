@@ -181,6 +181,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   {
     //      file didn't exist... create it
     FILE *f;
+    CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
     if (user_trace)
     {
       fprintf(stderr, "\nHad to create new CSS file %s\n", learnfilename);
@@ -195,23 +197,24 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           errno_descr(errno));
       free(learnfilename);
       return fev;
-
-#if 0
-      if (engine_exit_base != 0)
-      {
-        exit(engine_exit_base + 19);
-      }
-      else
-      {
-        exit(EXIT_FAILURE);
-      }
-#endif
     }
     //       do we have a user-specified file size?
     if (sparse_spectrum_file_length == 0)
     {
       sparse_spectrum_file_length =
         DEFAULT_MARKOVIAN_SPARSE_SPECTRUM_FILE_LENGTH;
+    }
+
+    classifier_info.classifier_bits = CRM_MARKOVIAN;
+
+    if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
+    {
+      fev = fatalerror_ex(SRC_LOC(),
+                          "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                          learnfilename, errno, errno_descr(errno));
+      fclose(f);
+      free(learnfilename);
+      return fev;
     }
 
     //       put in sparse_spectrum_file_length entries of NULL
@@ -234,27 +237,28 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   }
   //
   hfsize = statbuf.st_size;
-  if (user_trace)
-  {
-    fprintf(stderr, "Sparse spectra file %s has length %ld bins\n",
-            learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
-  }
 
   //
   //         mmap the hash file into memory so we can bitwhack it
   //
-  hashes = (FEATUREBUCKET_TYPE *)crm_mmap_file(learnfilename,
-                                               0, 
-											   hfsize,
-                                               PROT_READ | PROT_WRITE,
-                                               MAP_SHARED,
-                                               NULL);
+  hashes = crm_mmap_file(learnfilename,
+                         0,
+                         hfsize,
+                         PROT_READ | PROT_WRITE,
+                         MAP_SHARED,
+                         &hfsize);
   if (hashes == MAP_FAILED)
   {
     fev = fatalerror("Couldn't get access to the statistics file named: ",
                      learnfilename);
     free(learnfilename);
     return fev;
+  }
+
+  if (user_trace)
+  {
+    fprintf(stderr, "Sparse spectra file %s has length %ld bins\n",
+            learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
   }
 
   //
@@ -1154,13 +1158,12 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //
           hashlens[maxhash] = statbuf.st_size;
           //  mmap the hash file into memory so we can bitwhack it
-          hashes[maxhash] = (FEATUREBUCKET_TYPE *)
-			  crm_mmap_file(fname,
-            0, 
-			hashlens[maxhash],
-            PROT_READ | PROT_WRITE,
-            MAP_SHARED,
-            NULL);
+          hashes[maxhash] = crm_mmap_file(fname,
+                                          0,
+                                          hashlens[maxhash],
+                                          PROT_READ | PROT_WRITE,
+                                          MAP_SHARED,
+                                          &hashlens[maxhash]);
 
           if (hashes[maxhash] == MAP_FAILED)
           {

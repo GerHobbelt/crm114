@@ -1,5 +1,5 @@
 //  crm_expr_classify.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -206,39 +206,39 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   {
     retval = crm_expr_osb_bayes_classify(csl, apb, txt, start, len);
   }
-  else    if (classifier_flags & CRM_CORRELATE)
+  else if (classifier_flags & CRM_CORRELATE)
   {
     retval = crm_expr_correlate_classify(csl, apb, txt, start, len);
   }
-  else    if (classifier_flags & CRM_OSB_WINNOW)
+  else if (classifier_flags & CRM_OSB_WINNOW)
   {
     retval = crm_expr_osb_winnow_classify(csl, apb, txt, start, len);
   }
-  else    if (classifier_flags & CRM_OSBF)
+  else if (classifier_flags & CRM_OSBF)
   {
     retval = crm_expr_osbf_bayes_classify(csl, apb, txt, start, len);
   }
-  else    if (classifier_flags & CRM_HYPERSPACE)
+  else if (classifier_flags & CRM_HYPERSPACE)
   {
     retval = crm_expr_osb_hyperspace_classify(csl, apb, txt, start, len);
   }
-  else    if (classifier_flags & CRM_ENTROPY)
+  else if (classifier_flags & CRM_ENTROPY)
   {
     retval = crm_expr_bit_entropy_classify(csl, apb, txt, start, len);
   }
-  else    if (classifier_flags & CRM_SVM)
+  else if (classifier_flags & CRM_SVM)
   {
     retval = crm_expr_svm_classify(csl, apb, txt, start, len);
   }
-  else    if (classifier_flags & CRM_SKS)
+  else if (classifier_flags & CRM_SKS)
   {
     retval = crm_expr_sks_classify(csl, apb, txt, start, len);
   }
-  else    if (classifier_flags & CRM_FSCM)
+  else if (classifier_flags & CRM_FSCM)
   {
     retval = crm_expr_fscm_classify(csl, apb, txt, start, len);
   }
-  else    if (classifier_flags & CRM_SCM)
+  else if (classifier_flags & CRM_SCM)
   {
     retval = crm_expr_scm_classify(csl, apb, txt, start, len);
   }

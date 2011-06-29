@@ -54,12 +54,12 @@ extern char *tempbuf;
 
 
 //    the microcompiler
-int crm_microcompiler(CSL_CELL *csl,
+int crm_microcompiler(CSL_CELL  *csl,
                       VHT_CELL **vht);
 
 
 //  hash function for variable tables
-#if defined(CRM_WITH_OLD_HASH_FUNCTION)
+#if defined (CRM_WITH_OLD_HASH_FUNCTION)
 crmhash_t strnhash(const char *str, long len);
 #else
 crmhash_t strnhash(const char *str, size_t len);
@@ -69,14 +69,14 @@ crmhash64_t strnhash64(const char *str, size_t len);
 
 //  string translate function - for the TRANSLATE function
 long strntrn(
-    unsigned char *datastr,
-    long          *datastrlen,
-    long          maxdatastrlen,
-    unsigned char *fromstr,
-    long          fromstrlen,
-    unsigned char *tostr,
-    long          tostrlen,
-    long          flags);
+  unsigned char *datastr,
+  long          *datastrlen,
+  long           maxdatastrlen,
+  unsigned char *fromstr,
+  long           fromstrlen,
+  unsigned char *tostr,
+  long           tostrlen,
+  long           flags);
 
 
 //   basic math evaluator top function
@@ -87,8 +87,6 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat);
 
 //   basic math evaluator in RPN
 long stralmath(char *buf, long inlen, long maxlen, long *retstat);
-long stralmath_reduce(double *valstack, long *opstack,
-                      long *sp, char *outformat);
 
 //   load a file with info in a partially filled out csl cell.
 int crm_load_csl(CSL_CELL *csl);
@@ -100,15 +98,16 @@ void crm_destructive_alter_nvariable(char *varname, long varlen,
 
 //  setting a program label in the VHT
 void crm_setvar(
-    char *filename,                     // file where first defined (or NULL)
-    int  filedesc,                      // filedesc of defining file (or NULL)
-    char *nametxt,                      // block of text hosting variable name
-    long nstart,                        // index into nametxt to start varname
-    long nlen,                          // length of name
-    char *valtxt,                       // text block hosts the captured value
-    long vstart,                        // index of start of cap. value
-    long vlen,                          // length of captured value
-    long linenumber                     // linenumber (if pgm, else -1)
+  char *filename,                       // file where first defined (or NULL)
+  int   filedesc,                       // filedesc of defining file (or NULL)
+  char *nametxt,                        // block of text hosting variable name
+  long  nstart,                         // index into nametxt to start varname
+  long  nlen,                           // length of name
+  char *valtxt,                         // text block hosts the captured value
+  long  vstart,                         // index of start of cap. value
+  long  vlen,                           // length of captured value
+  long  linenumber,                     // linenumber (if pgm, else -1)
+  long  lazy_redirects                  // if nonzero, this is a lazy redirect
 );
 
 //   put a variable and a value into the temporary area
@@ -118,17 +117,17 @@ void crm_set_temp_var(char *varname, char *value);
 //   put a variable and a window-based value into the temp area
 void crm_set_windowed_var(char *varname,
                           char *text,
-                          long start,
-                          long len,
-                          long stmtnum);
+                          long  start,
+                          long  len,
+                          long  stmtnum);
 
 //   put a counted-length var and a data-window-based value into the temp area.
 void crm_set_windowed_nvar(char *varname,
-                           long varlen,
+                           long  varlen,
                            char *valtext,
-                           long start,
-                           long len,
-                           long stmtnum);
+                           long  start,
+                           long  len,
+                           long  stmtnum);
 
 //    set a program label.
 void crm_setpgmlabel(long start, long end, long stmtnum);
@@ -252,10 +251,10 @@ uint64_t crm_flagparse(char *input, long inlen); //  the user input
 //     get the next word in the input.  (note- the regex stops only when
 //     one hits a NULL, which may yield a slightly bogus result.
 long crm_nextword(const char *input,
-                  long inlen,
-                  long starthere,
-                  long *start,
-                  long *len);
+                  long        inlen,
+                  long        starthere,
+                  long       *start,
+                  long       *len);
 
 int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -289,8 +288,8 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         char *txt, long start, long len);
 int crm_expr_scm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
                        long txtstart, long txtlen);
-int crm_neural_net_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				    char *txt, long start, long len);
+int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+                         char *txt, long start, long len);
 
 
 
@@ -318,8 +317,8 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                            char *txt, long start, long len);
 int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
                           long txtstart, long txtlen);
-int crm_neural_net_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-				       char *txt, long start, long len);
+int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+                            char *txt, long start, long len);
 
 //  surgically alter a variable
 int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -350,27 +349,27 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 //  CLUMP and PMULC
-int crm_expr_clump (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
-int crm_expr_pmulc (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 
 //      parse a CRM114 statement; this is mostly a setup routine for
 //     the generic parser.
 
 int crm_statement_parse(char           *in,
-                        long           slen,
+                        long            slen,
                         ARGPARSE_BLOCK *apb);
 
 
 //    and a generic parser routine for parsing a line according
 //    to the type of quoting done.
 int crm_generic_parse_line(
-    char *txt,                       //   the start of the program line
-    int len,                        //   how long is the line
-    int maxargs,                    //   howm many things to search for (max)
-    int *ftype,                     //   type of thing found (index by schars)
-    int *fstart,                    //   starting location of found arg
-    int *flen                       //   length of found arg
+  char *txt,                         //   the start of the program line
+  int   len,                         //   how long is the line
+  int   maxargs,                     //   howm many things to search for (max)
+  int  *ftype,                       //   type of thing found (index by schars)
+  int  *fstart,                      //   starting location of found arg
+  int  *flen                         //   length of found arg
 );
 
 //    and to avoid all the mumbo-jumbo, an easy way to get a copy of
@@ -392,8 +391,8 @@ long crm_trigger_fault(char *reason);
 //     do an microgroom of a hashed file.
 long crm_microgroom(FEATUREBUCKET_TYPE *h,
                     unsigned char      *seen_features,
-                    long               hs,
-                    unsigned long      hindex);
+                    long                hs,
+                    unsigned long       hindex);
 void crm_packcss(FEATUREBUCKET_TYPE *h,
                  unsigned char *seen_features,
                  long hs, long packstart, long packlen);
@@ -404,8 +403,8 @@ void crm_packseg(FEATUREBUCKET_TYPE *h,
 //     and microgrooming for winnow files
 long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
                            unsigned char               *seen_features,
-                           unsigned long               hfsize,
-                           unsigned long               hindex);
+                           unsigned long                hfsize,
+                           unsigned long                hindex);
 
 void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
                          unsigned char *xhashes,
@@ -433,19 +432,19 @@ long crm_qexpandvar(char *buf, long inlen, long maxlen, long *retstat);
 
 //              generic (everything, as you want it, bitmasked) expansion
 long crm_zexpandvar(char *buf,
-                    long inlen,
-                    long maxlen,
+                    long  inlen,
+                    long  maxlen,
                     long *retstat,
-                    long exec_bitmask);
+                    long  exec_bitmask);
 
 //       Var-restriction operators  (do []-vars, like subscript and regex )
-long crm_restrictvar(char *boxstring,
-                     long boxstrlen,
-                     long *vht_idx,
+long crm_restrictvar(char  *boxstring,
+                     long   boxstrlen,
+                     long  *vht_idx,
                      char **outblock,
-                     long *outoffset,
-                     long *outlen,
-                     char *errstr);
+                     long  *outoffset,
+                     long  *outlen,
+                     char  *errstr);
 
 
 //      crm114-specific regex compilation
@@ -475,6 +474,7 @@ void crm_munmap_file_internal(void *map);
 void crm_munmap_all(void);
 void crm_force_munmap_filename(char *filename);
 void crm_force_munmap_addr(void *addr);
+void *crm_get_header_for_mmap_file(void *addr);
 
 //    Some statistics functions
 //
@@ -493,8 +493,8 @@ double crm_frand(void);
 #ifdef HAVE_STRINGIZE
 #define CRM_STRINGIFY(e)        # e
 #else
-#error\
-    "Comment this error line out if you are sure your system does not support the # preprocessor stringize operator. My Gawd, what system _is_ this?"
+#error \
+  "Comment this error line out if you are sure your system does not support the # preprocessor stringize operator. My Gawd, what system _is_ this?"
 #define CRM_STRINGIFY(e)        "---\?\?\?---" /* \?\? to prevent trigraph warnings by GCC 4 et al */
 #endif
 
@@ -502,39 +502,39 @@ double crm_frand(void);
 
 //  helper routine for untrappable errors
 #define untrappableerror(msg1, msg2)    \
-    untrappableerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
+  untrappableerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
 
 void untrappableerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2)
-    __attribute__((__noreturn__));
+__attribute__((__noreturn__));
 void untrappableerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
-    __attribute__((__noreturn__, __format__(__printf__, 4, 5)));
+__attribute__((__noreturn__, __format__(__printf__, 4, 5)));
 void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
-    __attribute__((__noreturn__, __format__(__printf__, 4, 0)));
+__attribute__((__noreturn__, __format__(__printf__, 4, 0)));
 
 //  helper routine for fatal errors
 #define fatalerror(msg1, msg2)  \
-    fatalerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
+  fatalerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
 
 long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2);
 long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
-    __attribute__((__format__(__printf__, 4, 5)));
+__attribute__((__format__(__printf__, 4, 5)));
 long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
-    __attribute__((__format__(__printf__, 4, 0)));
+__attribute__((__format__(__printf__, 4, 0)));
 
 //  helper routine for nonfatal errors
 #define nonfatalerror(msg1, msg2)       \
-    nonfatalerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
+  nonfatalerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
 
 long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2);
 long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
-    __attribute__((__format__(__printf__, 4, 5)));
+__attribute__((__format__(__printf__, 4, 5)));
 long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
-    __attribute__((__format__(__printf__, 4, 0)));
+__attribute__((__format__(__printf__, 4, 0)));
 
 
 /*
-   Reset the nonfatalerror counters/handlers. This is useful when you run multiple scripts
-   one after the other from within a single crm app, such as crm_test.
+ * Reset the nonfatalerror counters/handlers. This is useful when you run multiple scripts
+ * one after the other from within a single crm app, such as crm_test.
  */
 void reset_nonfatalerrorreporting(void);
 
@@ -549,34 +549,34 @@ void crm_show_assert_msg(int lineno, const char *srcfile, const char *funcname, 
 void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, const char *extra_msg);
 
 #define CRM_ASSERT(expr)                                                        \
-    do                                                                          \
-    {                                                                           \
-        if (!(expr))                                                            \
-        {                                                                       \
-            crm_show_assert_msg(__LINE__, __FILE__, __FUNCTION__,               \
-                CRM_STRINGIFY(expr));                                           \
-        }                                                                       \
-    } while (0)
+  do                                                                          \
+  {                                                                           \
+    if (!(expr))                                                            \
+    {                                                                       \
+      crm_show_assert_msg(__LINE__, __FILE__, __FUNCTION__,               \
+                          CRM_STRINGIFY(expr));                                           \
+    }                                                                       \
+  } while (0)
 
 #define CRM_ASSERT_EX(expr, msg)                                                \
-    do                                                                          \
-    {                                                                           \
-        if (!(expr))                                                            \
-        {                                                                       \
-            crm_show_assert_msg_ex(__LINE__, __FILE__, __FUNCTION__,            \
-                CRM_STRINGIFY(expr), (msg));                                    \
-        }                                                                       \
-    } while (0)
+  do                                                                          \
+  {                                                                           \
+    if (!(expr))                                                            \
+    {                                                                       \
+      crm_show_assert_msg_ex(__LINE__, __FILE__, __FUNCTION__,            \
+                             CRM_STRINGIFY(expr), (msg));                                    \
+    }                                                                       \
+  } while (0)
 
 #define CRM_VERIFY(expr)                                                        \
-    do                                                                          \
-    {                                                                           \
-        if (!(expr))                                                            \
-        {                                                                       \
-            crm_show_assert_msg(__LINE__, __FILE__, __FUNCTION__,               \
-                CRM_STRINGIFY(expr));                                           \
-        }                                                                       \
-    } while (0)
+  do                                                                          \
+  {                                                                           \
+    if (!(expr))                                                            \
+    {                                                                       \
+      crm_show_assert_msg(__LINE__, __FILE__, __FUNCTION__,               \
+                          CRM_STRINGIFY(expr));                                           \
+    }                                                                       \
+  } while (0)
 
 #else
 
@@ -620,32 +620,32 @@ const char *Win32_syserr_descr(DWORD errorcode);
 
 
 #define fatalerror_Win32(msg)                                                                                   \
-    fatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
+  fatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
 
 static inline void fatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg)
 {
-    DWORD error = GetLastError();
-    const char *errmsg = Win32_syserr_descr(error);
+  DWORD error = GetLastError();
+  const char *errmsg = Win32_syserr_descr(error);
 
-    fatalerror_ex(lineno, file, funcname, msg,
-                  (long)error,
-                  (long)error,
-                  errmsg);
+  fatalerror_ex(lineno, file, funcname, msg,
+                (long)error,
+                (long)error,
+                errmsg);
 }
 
 
 #define nonfatalerror_Win32(msg)                                                                                        \
-    nonfatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
+  nonfatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
 
 static inline void nonfatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg)
 {
-    DWORD error = GetLastError();
-    const char *errmsg = Win32_syserr_descr(error);
+  DWORD error = GetLastError();
+  const char *errmsg = Win32_syserr_descr(error);
 
-    nonfatalerror_ex(lineno, file, funcname, msg,
-                     (long)error,
-                     (long)error,
-                     errmsg);
+  nonfatalerror_ex(lineno, file, funcname, msg,
+                   (long)error,
+                   (long)error,
+                   errmsg);
 }
 
 
@@ -685,11 +685,11 @@ void free_debugger_data(void);
 
 
 /*
-   Extra support routines.
+ * Extra support routines.
  */
 
 // write count bytes of val val to file dst
-int file_memset(FILE *dst, unsigned char val, size_t count);
+int file_memset(FILE *dst, unsigned char val, int count);
 
 const char *skip_path(const char *srcfile);
 
@@ -703,6 +703,14 @@ int is_stdin_or_null(FILE *f);
 int is_stdout_err_or_null(FILE *f);
 
 
+
+/*
+   CRM114 version/portability header support
+ */
+int is_crm_headered_file(FILE *f);
+int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, const char *human_readable_message);
+int crm_correct_for_version_header(void **ptr, long *len);
+int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_native, CRM_DECODED_PORTA_HEADER_INFO *dst);
 
 
 

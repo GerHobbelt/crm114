@@ -90,23 +90,24 @@ extern long q_expansion_mode;
 //
 typedef struct mythical_vht_cell
 {
-    char *filename;      // file where defined (or NULL)
-    int   filedesc;      // filedesc of defining file (or NULL)
-    char *nametxt;       // block of text that hosts the variable name
-    long  nstart;        // index into nametxt to start of varname
-    long  nlen;          // length of name
-    char *valtxt;        // text block that hosts the captured value
+  char *filename;        // file where defined (or NULL)
+  int   filedesc;        // filedesc of defining file (or NULL)
+  char *nametxt;         // block of text that hosts the variable name
+  long  nstart;          // index into nametxt to start of varname
+  long  nlen;            // length of name
+  char *valtxt;          // text block that hosts the captured value
                          // vstart, vlen, mstart, and mlen are all measured
                          // from the _start_ of valtxt, mstart relative to
                          // vstart, etc!!!
-    long vstart;        // zero-base index of start of variable (inclusive)
-    long vlen;          // length of captured value : this plus vstart is where
+  long vstart;          // zero-base index of start of variable (inclusive)
+  long vlen;            // length of captured value : this plus vstart is where
                         //  you could put a NULL if you wanted to.
-    long mstart;        // zero-base start of most recent match of this var
-    long mlen;          // length of most recent match against this var; this
+  long mstart;          // zero-base start of most recent match of this var
+  long mlen;            // length of most recent match against this var; this
                         //   plus mstart is where you could put a NULL if you
                         //    wanted to.
-    long linenumber;    // linenumber of this variable (if known, else -1)
+  long linenumber;      // linenumber of this variable (if known, else -1)
+  long lazy_redirects;  // how many lazy redirects are allowed (0 by default);
 } VHT_CELL;
 
 //   The argparse block is filled in at run time, though at least in
@@ -118,21 +119,21 @@ typedef struct mythical_vht_cell
 
 typedef struct mythical_argparse_block
 {
-    char      *a1start;
-    long       a1len;
-    char      *p1start;
-    long       p1len;
-    char      *p2start;
-    long       p2len;
-    char      *p3start;
-    long       p3len;
-    char      *b1start;
-    long       b1len;
-    char      *s1start;
-    long       s1len;
-    char      *s2start;
-    long       s2len;
-    uint64_t   sflags;
+  char      *a1start;
+  long       a1len;
+  char      *p1start;
+  long       p1len;
+  char      *p2start;
+  long       p2len;
+  char      *p3start;
+  long       p3len;
+  char      *b1start;
+  long       b1len;
+  char      *s1start;
+  long       s1len;
+  char      *s2start;
+  long       s2len;
+  uint64_t   sflags;
 } ARGPARSE_BLOCK;
 
 
@@ -143,19 +144,19 @@ typedef struct mythical_argparse_block
 //
 typedef struct mythical_mct_cell
 {
-    char           *hosttxt;    // text file this statement lives in.
-    ARGPARSE_BLOCK *apb;        // the argparse block for this statement
-    long            start;      // zero-base index of start of statement (inclusive)
-    long            fchar;      // zero-base index of non-blank stmt (for prettyprint)
-    long            achar;      // zero-base index of start of args;
-    long            stmt_utime; // user time spent in this statement line;
-    long            stmt_stime; // system time spent in this statement line;
-    int             stmt_type;  // statement type of this line
-    int             nest_level; // nesting level of this statement
-    int             fail_index; // if this statement failed, where would we go?
-    int             liaf_index; // if this statement liafed, where would we go?
-    int             trap_index; // if this statement faults, where would we go?
-    int             stmt_break; // 1 if "break" on this stmt, 0 otherwise.
+  char           *hosttxt;      // text file this statement lives in.
+  ARGPARSE_BLOCK *apb;          // the argparse block for this statement
+  long            start;        // zero-base index of start of statement (inclusive)
+  long            fchar;        // zero-base index of non-blank stmt (for prettyprint)
+  long            achar;        // zero-base index of start of args;
+  long            stmt_utime;   // user time spent in this statement line;
+  long            stmt_stime;   // system time spent in this statement line;
+  int             stmt_type;    // statement type of this line
+  int             nest_level;   // nesting level of this statement
+  int             fail_index;   // if this statement failed, where would we go?
+  int             liaf_index;   // if this statement liafed, where would we go?
+  int             trap_index;   // if this statement faults, where would we go?
+  int             stmt_break;   // 1 if "break" on this stmt, 0 otherwise.
 } MCT_CELL;
 
 // structure of a control stack level cell.
@@ -169,79 +170,79 @@ struct mythical_csl_cell;
 
 typedef struct mythical_csl_cell
 {
-    char           *filename;                                //filename if any
-    long            rdwr;                                    // 0=readonly, 1=rdwr
-    long            filedes;                                 //  file descriptor it's open on (if any)
-    char           *filetext;                                //  text buffer
-    long            nchars;                                  //  characters of data we have
-    crmhash_t       hash;                                    //  hash of this data (if done)
-    MCT_CELL      **mct;                                     //  microcompile (if compiled)
-    long            mct_size;                                // number of slots available in the MCT
-    long            nstmts;                                  //  how many statements in the microcompile
-    long            preload_window;                          //  do we preload the window or not?
-    long            cstmt;                                   //  current executing statement of this file
-    struct mythical_csl_cell *caller;                        //  pointer to this file's caller (if any)
-    long return_vht_cell;                                    //  index into the VHT to stick the return value
-    long calldepth;                                          //  how many calls deep is this stack frame
-    long aliusstk[MAX_BRACKETDEPTH];                         // the status stack for ALIUS
+  char           *filename;                                  //filename if any
+  long            rdwr;                                      // 0=readonly, 1=rdwr
+  long            filedes;                                   //  file descriptor it's open on (if any)
+  char           *filetext;                                  //  text buffer
+  long            nchars;                                    //  characters of data we have
+  crmhash_t       hash;                                      //  hash of this data (if done)
+  MCT_CELL      **mct;                                       //  microcompile (if compiled)
+  long            mct_size;                                  // number of slots available in the MCT
+  long            nstmts;                                    //  how many statements in the microcompile
+  long            preload_window;                            //  do we preload the window or not?
+  long            cstmt;                                     //  current executing statement of this file
+  struct mythical_csl_cell *caller;                          //  pointer to this file's caller (if any)
+  long return_vht_cell;                                      //  index into the VHT to stick the return value
+  long calldepth;                                            //  how many calls deep is this stack frame
+  long aliusstk[MAX_BRACKETDEPTH];                           // the status stack for ALIUS
 
-    unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
-    unsigned int filetext_allocated : 1; // if the filetext was allocated on the heap.
-    unsigned int mct_allocated      : 1; // if the mct collection was allocated on the heap.
+  unsigned int filename_allocated : 1;   // if the filename was allocated on the heap.
+  unsigned int filetext_allocated : 1;   // if the filetext was allocated on the heap.
+  unsigned int mct_allocated      : 1;   // if the mct collection was allocated on the heap.
 } CSL_CELL;
 
 typedef struct
 {
-    crmhash_t     hash;
-    crmhash_t     key;
-    unsigned long value;
+  crmhash_t     hash;
+  crmhash_t     key;
+  unsigned long value;
 } FEATUREBUCKET_STRUCT;
 
 
 typedef struct
 {
-    unsigned char version[4];
-    unsigned long flags;
-    unsigned long skip_to;
+  unsigned char version[4];
+  unsigned long flags;
+  unsigned long skip_to;
 } FEATURE_HEADER_STRUCT;
 
 
 typedef struct
 {
-    crmhash_t hash;
-    crmhash_t key;
+  crmhash_t hash;
+  crmhash_t key;
 #if defined (GER)
-    double value;
+  double value;
 #else
-    float value;
+  float value;
 #endif
 } WINNOW_FEATUREBUCKET_STRUCT;
 
 #define ENTROPY_RESERVED_HEADER_LEN 1024
 typedef struct
 {
-    int32_t /* long */ firlatstart;
-    int32_t /* long */ firlatlen;
-    int32_t /* long */ nodestart;
-    int32_t /* long */ nodeslen;
-    int64_t /* long long */ totalbits;
+  int32_t firlatstart;
+  int32_t firlatlen;
+  int32_t nodestart;
+  int32_t nodeslen;
+  int64_t totalbits;
 } ENTROPY_HEADER_STRUCT;
 
 typedef struct mythical_entropy_alphabet_slot
 {
-    int32_t /* long */ count;
-    int32_t /* long */ nextcell;
+  int32_t count;
+  int32_t nextcell;
 } ENTROPY_ALPHABET_SLOT;
 
 //  28 byte header, 24 bytes alph (52 tot).  Pare: 16 header, 16 alph (36 tot)
 typedef struct mythical_entropy_cell
 {
-    double fir_prior;
-    int32_t /* long */ fir_larger;
-    int32_t /* long */ fir_smaller;
-    int32_t /* long */ firlat_slot;
-    //  long total_count;
-    ENTROPY_ALPHABET_SLOT abet[ENTROPY_ALPHABET_SIZE];
+  double  fir_prior;
+  int32_t fir_larger;
+  int32_t fir_smaller;
+  int32_t firlat_slot;
+  //  long total_count;
+  ENTROPY_ALPHABET_SLOT abet[ENTROPY_ALPHABET_SIZE];
 } ENTROPY_FEATUREBUCKET_STRUCT;
 
 
@@ -282,7 +283,8 @@ typedef struct mythical_entropy_cell
 #define CRM_DEBUG 30
 #define CRM_CLUMP 31         // make clusters out of tokens
 #define CRM_PMULC 32         // pmulc translates tokens to cluster names
-#define CRM_UNIMPLEMENTED 33
+#define CRM_LAZY 33          // makes a "lazy" variable.
+#define CRM_UNIMPLEMENTED 34
 
 
 //      FLAGS FLAGS FLAGS
@@ -359,8 +361,8 @@ typedef struct mythical_entropy_cell
 //     and a struct to put them in.
 typedef struct
 {
-    char     *string;
-    uint64_t  value;
+  char     *string;
+  uint64_t  value;
 } FLAG_DEF;
 
 
@@ -378,17 +380,17 @@ typedef struct
 
 typedef struct
 {
-    char *stmt_name;
-    int   stmt_code;
-    int   namelen;
-    int   is_executable;
-    int   minslashes;
-    int   maxslashes;
-    int   minparens;
-    int   maxparens;
-    int   minboxes;
-    int   maxboxes;
-    uint64_t   flags_allowed_mask;
+  char    *stmt_name;
+  int      stmt_code;
+  int      namelen;
+  int      is_executable;
+  int      minslashes;
+  int      maxslashes;
+  int      minparens;
+  int      maxparens;
+  int      minboxes;
+  int      maxboxes;
+  uint64_t flags_allowed_mask;
 } STMT_TABLE_TYPE;
 
 
@@ -436,6 +438,204 @@ typedef struct
 #define CRM_MMAP_CACHE_RELEASE 2
 //   drop really unmaps
 #define CRM_MMAP_CACHE_DROP 3
+
+
+
+
+
+
+/*
+ * CRM114 version/portability header support
+ */
+
+
+#define CRM_PORTABILITY_HEADER_SEQUENCE               "#!\n#CRM114:"
+#define CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH        (WIDTHOF(CRM_PORTABILITY_HEADER_SEQUENCE) - 1)
+#define CRM_PORTABILITY_HEADER_TEXT_SENTINEL          "\x1A\x04\x05\0x0C\0x1C"
+#define CRM_PORTABILITY_HEADER_TEXT_SENTINEL_LENGTH   (WIDTHOF(CRM_PORTABILITY_HEADER_TEXT_SENTINEL) - 1)
+
+
+typedef struct crm_porta_header_info
+{
+  int64_t classifier_bits;
+  union
+  {
+    char args[512];
+    union
+    {
+      int32_t i32;
+      int64_t i64;
+      float f;
+      double d;
+    } params[16];                 /* assuming 16-byte alignment as worst case, this'll fit nicely in 512 bytes */
+  } v;
+} CRM_PORTA_HEADER_INFO;
+
+
+
+
+
+
+/*
+ * See the documentation in CRM_VERSIONING.C for these:
+ */
+
+
+typedef struct
+{
+  unsigned char marker[16];        /* the HEX(FF) byte + 15 bytes of NUL filler */
+  int32_t       i32;
+} i32_align_test_t;
+
+typedef struct
+{
+  unsigned char marker[16];        /* the HEX(FF) byte + 15 bytes of NUL filler */
+  int64_t       i64;
+} i64_align_test_t;
+
+typedef struct
+{
+  unsigned char marker[16];        /* the HEX(FF) byte + 15 bytes of NUL filler */
+  float         f;
+} float_align_test_t;
+
+typedef struct
+{
+  unsigned char marker[16];        /* the HEX(FF) byte + 15 bytes of NUL filler */
+  double        d;
+} double_align_test_t;
+
+typedef union
+{
+  unsigned char       filler[32];
+  i32_align_test_t    i32;
+  i64_align_test_t    i64;
+  float_align_test_t  f;
+  double_align_test_t d;
+} align_test_t;
+
+
+typedef union
+{
+  unsigned char filler[16];
+  int32_t       i32;
+} i32_endian_test_t;
+
+typedef union
+{
+  unsigned char filler[16];
+  int64_t       i64;
+} i64_endian_test_t;
+
+typedef union
+{
+  unsigned char filler[16];
+  float         f;
+} float_endian_test_t;
+
+typedef union
+{
+  unsigned char filler[16];
+  double        d;
+} double_endian_test_t;
+
+
+typedef union
+{
+  unsigned char filler[16];
+  int32_t       i32;
+} i32_arg_t;
+
+
+
+
+
+
+typedef struct
+{
+  //    Header (6)              The character sequence 'CRM114'
+  char crm_identifier[16];
+  //      M:Alignment
+  //        int32_t (32)
+  align_test_t i32_a;
+  //        int64_t (32)
+  align_test_t i64_a;
+  //        float (32)
+  align_test_t float_a;
+  //        double (32)
+  align_test_t double_a;
+  //      M:Endianess
+  //        int32_t (16)
+  i32_endian_test_t i32_e;
+  //        int64_t (16)
+  i64_endian_test_t i64_e;
+  //        float:value1 (16)
+  float_endian_test_t float_e_v1;
+  //        float:value2 (16)
+  float_endian_test_t float_e_v2;
+  float_endian_test_t float_e_NaN;
+  //        float:filler (96)
+  float_endian_test_t float_e_filler[6];
+  //        double:
+  double_endian_test_t double_e_v1;
+  double_endian_test_t double_e_v2;
+  double_endian_test_t double_e_filler[6];
+  //    Header2 (6)              The character sequence 'CRM114'
+  char crm_identifier_2[16];
+  //    Host Type (32)
+  char host_type[32];
+  //    Version (48)
+  char version_indentifier[48];
+
+  //    Format Version  4
+  i32_arg_t format_version;
+  //    (Endianess      0
+
+  //    INT Word Size   4                 4 --> sizeof(int)
+  i32_arg_t int_size;
+  //    LONG Size       4                 8 --> sizeof(long)
+  i32_arg_t long_size;
+  //    LONG LONG Size  4                 8 --> sizeof(long long)
+  //                                      0 --> 'long long' is unknown type on this box
+  i32_arg_t long_long_size;
+  //    INT32 Size      4                 4 --> sizeof(int32_t)
+  i32_arg_t i32_size;
+  //    INT64 Size      4                 8 --> sizeof(int64_t)
+  i32_arg_t i64_size;
+  //    INT32 Alignment 0                 must be 'auto-detected' using the sections above)
+  //    INT64 Alignment 0                 must be 'auto-detected' using the sections above)
+  //    FLOAT Size      4                 4 --> sizeof(float)
+  i32_arg_t float_size;
+  //    DOUBLE Size     4                 8 --> sizeof(double)
+  i32_arg_t double_size;
+  //    (FLOAT/DOUBLE
+  //     IEEE Endianess 0                 must be 'auto-detected' using the sections above)
+
+  //    Classifier      8                 e.g. CRM_OSB_WINNOW
+  //    Classifier Arguments
+  //                    512               This depends on the classifier and platform: arbitrary content.
+  CRM_PORTA_HEADER_INFO classifier_info;
+} crm_porta_bin_header_block;
+
+
+
+typedef struct
+{
+  // decoded elements from the header:
+  crm_porta_bin_header_block binary_section;
+
+  char *human_readable_message;
+
+  int header_version;
+
+  int text_section_size;
+  int binary_section_size;
+  int integer_endianess;
+  int floating_point_endianess;
+} CRM_DECODED_PORTA_HEADER_INFO;
+
+
+
 
 
 

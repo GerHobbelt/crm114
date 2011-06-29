@@ -1,6 +1,6 @@
 //  crm_expr_sks.c (String kernel SVM)  - version v1.0
 //
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -589,8 +589,7 @@ static void selectB(int workset[], int *select_times)
         if (i != -1)
         {
           Qi = get_rowQ(i, svm_prob.l);
-          a = Qi[i] + DiagQ[t]
-              - 2 * svm_prob.y[i] * svm_prob.y[t] * Qi[t];
+          a = Qi[i] + DiagQ[t] - 2 * svm_prob.y[i] * svm_prob.y[t] * Qi[t];
           if (a <= 0)
             a = TAU;
           if (-(b * b) / a <= obj_min)
@@ -1039,9 +1038,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   flen = apb->p1len;
   flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
 
-  strcpy(
-    ptext,
-    "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
+  strcpy(ptext,
+         "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
   plen = strlen(ptext);
   plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
   i = crm_regcomp(&regcb, ptext, plen, cflags);
@@ -1257,9 +1255,10 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //  file, we need to force an unmap-by-name which will allow a remap
         //  with the new file length later on.
         crm_force_munmap_filename(file1);
+
         if (user_trace)
           fprintf(stderr, "Opening a sks file %s for append.\n", file1);
-        stringf = fopen(file1, "ab+");
+        stringf = fopen(file1, "ab");
         if (stringf == NULL)
         {
           fatalerror("For some reason, I was unable to append-open the sks file named ",
@@ -1273,6 +1272,22 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           if (user_trace)
           {
             fprintf(stderr, "Writing to a sks file %s\n", file1);
+          }
+
+          //     And make sure the file pointer is at EOF.
+          (void)fseek(stringf, 0, SEEK_END);
+
+          if (ftell(stringf) == 0)
+          {
+            CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+            classifier_info.classifier_bits = CRM_SKS;
+
+            if (0 != fwrite_crm_headerblock(stringf, &classifier_info, NULL))
+            {
+              fatalerror("For some reason, I was unable to write the header to the sks file named ",
+                         file1);
+            }
           }
 
           //    and write the sorted hashes out.
@@ -1328,13 +1343,12 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         else
         {
           file_hashlens = statbuf.st_size;
-          file_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                        crm_mmap_file(file1,
-                                      0, 
-									  file_hashlens,
+          file_hashes = crm_mmap_file(file1,
+                                      0,
+                                      file_hashlens,
                                       PROT_READ | PROT_WRITE,
                                       MAP_SHARED,
-                                      NULL);
+                                      &file_hashlens);
           file_hashlens = file_hashlens
                           / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
         }
@@ -1502,18 +1516,29 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     param.max_run_time = 1;
     param.k = 4;
 
+#if 0 /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
     if (8 != sscanf(ptext,
                     "%d %d %lf %lf %lf %lf %lf %d",
+#else
+    if (7 != sscanf(ptext,
+                    "%d %d %lf %lf %lf %lf %d",
+#endif
                     &(param.svm_type),
                     &(param.kernel_type),
                     &(param.cache_size),
                     &(param.eps),
                     &(param.C),
+#if 0 /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
                     &(param.nu),
+#endif
                     &(param.max_run_time),
                     &(param.k)))
     {
+#if 0 /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
       nonfatalerror("Failed to decode the 8 SKS setup parameters [learn]: ", ptext);
+#else
+      nonfatalerror("Failed to decode the 7 SKS setup parameters [learn]: ", ptext);
+#endif
     }
   }
   else
@@ -1549,63 +1574,63 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 
       file1_hashlens = statbuf1.st_size;
-      file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file1,
-                                   0, 
-								   file1_hashlens,
+      file1_hashes = crm_mmap_file(file1,
+                                   0,
+                                   file1_hashlens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file1_hashlens);
+
       file1_hashlens = file1_hashlens
                        / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
-      //find out how many documents in file1
-      for (i = 0; i < file1_hashlens; i++)
-      {
-        if (internal_trace)
-          fprintf(stderr,
-                  "\nThe %ldth hash value in file1 is 0x%08lX",
-                  i, (unsigned long)file1_hashes[i].hash);
-        if (file1_hashes[i].hash == 0)
-        {
-          k1++;
-        }
-      }
-      if (internal_trace)
-      {
-        fprintf(stderr,
-                "\nThe total number of documents in file1 is %d\n",
-                k1);
-      }
+                                //find out how many documents in file1
+                                for (i = 0; i < file1_hashlens; i++)
+                                {
+                                  if (internal_trace)
+                                    fprintf(stderr,
+                                            "\nThe %ldth hash value in file1 is 0x%08lX",
+                                            i, (unsigned long)file1_hashes[i].hash);
+                                  if (file1_hashes[i].hash == 0)
+                                  {
+                                    k1++;
+                                  }
+                                }
+                                if (internal_trace)
+                                {
+                                  fprintf(stderr,
+                                          "\nThe total number of documents in file1 is %d\n",
+                                          k1);
+                                }
 
-      //initialize the svm_prob.x, svm_prob.y
-      svm_prob.l = k1;
-      x = calloc(svm_prob.l, sizeof(x[0]));
-      y = calloc(svm_prob.l, sizeof(y[0]));
-      for (i = 0; i < k1; i++)
-        y[i] = 1;
-      svm_prob.y = y;
-      x[0] = &(file1_hashes[0]);
-      k = 1;
-      for (i = 1; i < file1_hashlens - 1; i++)
-      {
-        if (file1_hashes[i].hash == 0)
-        {
-          x[k++] = &(file1_hashes[i + 1]);
-        }
-      }
-      svm_prob.x = x;
-      if (internal_trace)
-      {
-        for (i = 0; i < k; i++)
-        {
-          fprintf(stderr, "\nx[%ld]=0x%08lX\n", i, (unsigned long)x[i][1].hash);
-        }
-      }
-      Q_init();
-      solve();       //result is in solver
+                                //initialize the svm_prob.x, svm_prob.y
+                                svm_prob.l = k1;
+                                x = calloc(svm_prob.l, sizeof(x[0]));
+                                y = calloc(svm_prob.l, sizeof(y[0]));
+                                for (i = 0; i < k1; i++)
+                                  y[i] = 1;
+                                svm_prob.y = y;
+                                x[0] = &(file1_hashes[0]);
+                                k = 1;
+                                for (i = 1; i < file1_hashlens - 1; i++)
+                                {
+                                  if (file1_hashes[i].hash == 0)
+                                  {
+                                    x[k++] = &(file1_hashes[i + 1]);
+                                  }
+                                }
+                                svm_prob.x = x;
+                                if (internal_trace)
+                                {
+                                  for (i = 0; i < k; i++)
+                                  {
+                                    fprintf(stderr, "\nx[%ld]=0x%08lX\n", i, (unsigned long)x[i][1].hash);
+                                  }
+                                }
+                                Q_init();
+                                solve(); //result is in solver
 
-      //free cache
-      cache_free(&svmcache);
+                                //free cache
+                                cache_free(&svmcache);
     }
   }
 
@@ -1639,23 +1664,21 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       k1 = 0;
       k2 = 0;
       file1_lens = statbuf1.st_size;
-      file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file1,
-                                   0, 
-								   file1_lens,
+      file1_hashes = crm_mmap_file(file1,
+                                   0,
+                                   file1_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file1_lens);
       file1_lens = file1_lens
                    / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
       file2_lens = statbuf2.st_size;
-      file2_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file2,
-                                   0, 
-								   file2_lens,
+      file2_hashes = crm_mmap_file(file2,
+                                   0,
+                                   file2_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file2_lens);
       file2_lens = file2_lens
                    / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
 
@@ -1766,12 +1789,27 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
         else
         {
-          int ret;
+          int ret = 0;
+          CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
           if (user_trace)
             fprintf(stderr, "Writing to a svm solution file %s\n", file3);
 
-          ret = fwrite(&k1, sizeof(k1), 1, stringf);
+          //     And make sure the file pointer is at EOF.
+          (void)fseek(stringf, 0, SEEK_END);
+
+          if (ftell(stringf) == 0)
+          {
+            classifier_info.classifier_bits = CRM_SKS;
+
+            if (0 != fwrite_crm_headerblock(stringf, &classifier_info, NULL))
+            {
+              fatalerror("Couldn't write the header to the .hypsvm file named ",
+                         file3);
+            }
+          }
+
+          ret += fwrite(&k1, sizeof(k1), 1, stringf);
           ret += fwrite(&k2, sizeof(k2), 1, stringf);
           for (i = 0; i < svm_prob.l; i++)
             ret += fwrite(&(solver.alpha[i]), sizeof(solver.alpha[i]), 1, stringf);
@@ -1800,9 +1838,11 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         free(y);
         y = NULL;
         if (user_trace)
+        {
           fprintf(stderr,
                   "Finish calculating SVM hyperplane, store the solution to %s!\n",
                   file3);
+        }
       }       //end if two sks files are not empty
 
       crm_force_munmap_filename(file1);
@@ -1810,6 +1850,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       crm_force_munmap_filename(file3);
     }     //end if two sks files are exist!
   }       //end if user inputs three file_names
+
   regcomp_failed:
   return 0;
 }
@@ -1930,18 +1971,29 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     param.max_run_time = 1;
     param.k = 4;
 
+#if 0 /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
     if (8 != sscanf(ptext,
                     "%d %d %lf %lf %lf %lf %lf %d",
+#else
+    if (7 != sscanf(ptext,
+                    "%d %d %lf %lf %lf %lf %d",
+#endif
                     &(param.svm_type),
                     &(param.kernel_type),
                     &(param.cache_size),
                     &(param.eps),
                     &(param.C),
+#if 0 /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
                     &(param.nu),
+#endif
                     &(param.max_run_time),
                     &(param.k)))
     {
+#if 0 /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
       nonfatalerror("Failed to decode the 8 SKS setup parameters [classify]: ", ptext);
+#else
+      nonfatalerror("Failed to decode the 7 SKS setup parameters [classify]: ", ptext);
+#endif
     }
   }
   else
@@ -2067,7 +2119,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     qsort(hashes, hashcounts,
           sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
-          &hash_compare);
+                 &hash_compare);
     if (user_trace)
     {
       fprintf(stderr, "sorted hashes:\n");
@@ -2123,9 +2175,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   flen = apb->p1len;
   flen = crm_nexpandvar(ftext, flen, MAX_PATTERN);
 
-  strcpy(
-    ptext,
-    "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
+  strcpy(ptext,
+         "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
   plen = strlen(ptext);
   i = crm_regcomp(&regcb, ptext, plen, cflags);
   if (i > 0)
@@ -2150,7 +2201,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     file2[match[2].rm_eo - match[2].rm_so] = 0;
     memmove(file3, &ftext[match[3].rm_so], (match[3].rm_eo - match[3].rm_so));
     file3[match[3].rm_eo - match[3].rm_so] = 0;
-    if (internal_trace)
+    if (user_trace)
       fprintf(stderr, "file1=%s\tfile2=%s\tfile3=%s\n", file1, file2, file3);
 
     //open all files,
@@ -2181,13 +2232,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       crm_force_munmap_filename(file1);
       crm_force_munmap_filename(file2);
 
-      file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file1,
-                                   0, 
-								   file1_lens,
+      file1_hashes = crm_mmap_file(file1,
+                                   0,
+                                   file1_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file1_lens);
       file1_lens = file1_lens
                    / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
 
@@ -2198,13 +2248,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                          "We need that part later, so we're stuck.  Sorry.");
       strcpy(stringname[0], file1);
       file2_lens = statbuf2.st_size;
-      file2_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                     crm_mmap_file(file2,
-                                   0, 
-								   file2_lens,
+      file2_hashes = crm_mmap_file(file2,
+                                   0,
+                                   file2_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
-                                   NULL);
+                                   &file2_lens);
       file2_lens = file2_lens
                    / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
       stringlens[1] = file2_lens;
@@ -2245,7 +2294,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       if (user_trace)
         fprintf(stderr,
                 "\nThe total number of documents in file2 is %d\n", k2);
-      stringf = fopen(file3, "rb+");     /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
+      stringf = fopen(file3, "rb");     /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
       if (stringf == NULL)
       {
         nonfatalerror("For some reason, I was unable to read-open the SKS 1vs2 solution file file named ",
@@ -2257,11 +2306,22 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         int *y = NULL;
         HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 
+        if (is_crm_headered_file(stringf))
+        {
+          if (fseek(stringf, CRM114_HEADERBLOCK_SIZE, SEEK_SET))
+          {
+            fatalerror("For some reason, I was unable to skip the CRM header for the file named ",
+                       file3);
+          }
+        }
+
         if (k3 == 0)
         {
           if (stringf != NULL)
           {
-            int ret = fread(&temp_k1, sizeof(temp_k1), 1, stringf);
+            int ret;
+
+            ret = fread(&temp_k1, sizeof(temp_k1), 1, stringf);
             ret += fread(&temp_k2, sizeof(temp_k2), 1, stringf);
             if (ret != 2)
             {
@@ -2452,8 +2512,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   }       //end (k==0)
   else
   {
-    nonfatalerror(
-      "You need to input (file1.svm | file2.svm | f1vsf2.svmhyp)\n", "");
+    nonfatalerror("You need to input (file1.svm | file2.svm | f1vsf2.svmhyp)\n", "");
     return 0;
   }
   free(hashes);

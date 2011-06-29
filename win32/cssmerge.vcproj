@@ -226,6 +226,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\crm_versioning.c"
+				>
+			</File>
+			<File
 				RelativePath=".\crm_win32_port.c"
 				>
 			</File>

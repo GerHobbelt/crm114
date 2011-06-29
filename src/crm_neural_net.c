@@ -173,11 +173,12 @@ static long hidden_layer_size = NN_HIDDEN_LAYER_SIZE;
 //      Create a new neural net statistics file from nothing...
 //
 //
-static int make_new_backing_file(char *filename)
+static int make_new_backing_file(const char *filename)
 {
   long i;
   FILE *f;
   NEURAL_NET_HEAD_STRUCT h;
+  CRM_PORTA_HEADER_INFO classifier_info = { 0 };
 
   f = fopen(filename, "wb");
   if (!f)
@@ -185,12 +186,38 @@ static int make_new_backing_file(char *filename)
     nonfatalerror("unable to create neural network backing file", "filename");
     return -1;
   }
+
+  classifier_info.classifier_bits = CRM_NEURAL_NET;
+
+  if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
+  {
+    fatalerror_ex(SRC_LOC(),
+                  "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                  filename, errno, errno_descr(errno));
+    fclose(f);
+    return -1;
+  }
+
   h.retina_size = retina_size;
   h.first_layer_size = first_layer_size;
   h.hidden_layer_size = hidden_layer_size;
-  fwrite(&h, 1, sizeof(NEURAL_NET_HEAD_STRUCT), f);
-  for (i = sizeof(NEURAL_NET_HEAD_STRUCT); i < HEADER_SIZE; i++)
-    fputc(0, f);
+  if (1 != fwrite(&h, sizeof(NEURAL_NET_HEAD_STRUCT), 1, f))
+  {
+    fatalerror_ex(SRC_LOC(),
+                  "\n Couldn't write Neural Net header to file %s; errno=%d(%s)\n",
+                  filename, errno, errno_descr(errno));
+    fclose(f);
+    return -1;
+  }
+
+  if (file_memset(f, 0, HEADER_SIZE - sizeof(NEURAL_NET_HEAD_STRUCT)))
+  {
+    fatalerror_ex(SRC_LOC(),
+                  "\n Couldn't write to file %s; errno=%d(%s)\n",
+                  filename, errno, errno_descr(errno));
+    fclose(f);
+    return -1;
+  }
 
   //   the actual size required for the neural network coeffs.  Note that
   //   this leaves ZERO padding between the coeffs and the "stored texts".
@@ -199,7 +226,14 @@ static int make_new_backing_file(char *filename)
   while (i--)
   {
     float a = ((0.2 * rand()) / RAND_MAX) - 0.1;
-    fwrite(&a, 1, sizeof(a), f);
+    if (1 != fwrite(&a, sizeof(a), 1, f))
+    {
+      fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't write Neural Net Coefficients to file %s; errno=%d(%s)\n",
+                    filename, errno, errno_descr(errno));
+      fclose(f);
+      return -1;
+    }
   }
   fclose(f);
   return 0;
@@ -211,18 +245,20 @@ static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
   NEURAL_NET_HEAD_STRUCT *h;
   struct stat statee;
   float *w;
+  long filesize_on_disk;
 
   if (stat(filename, &statee))
   {
     nonfatalerror("unable to map neural network backing file", "filename");
     return -1;
   }
+  filesize_on_disk = statee.st_size;
   nn->file_origin = crm_mmap_file(filename,
-                     0, 
-					 statee.st_size,
-                     PROT_READ | PROT_WRITE,
-                     MAP_SHARED,
-                     NULL);
+                                  0,
+                                  filesize_on_disk,
+                                  PROT_READ | PROT_WRITE,
+                                  MAP_SHARED,
+                                  &filesize_on_disk);
   if (nn->file_origin == MAP_FAILED)
   {
     nonfatalerror("unable to map neural network backing file", "filename");
@@ -302,7 +338,7 @@ static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
                    + h->retina_size * h->first_layer_size
                    + h->first_layer_size * h->hidden_layer_size
                    + h->hidden_layer_size * 2;
-  nn->docs_end = (crmhash_t *)((char *)h + statee.st_size);
+  nn->docs_end = (crmhash_t *)((char *)h + filesize_on_disk);
   return 0;
 }
 
@@ -899,7 +935,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long i, j, n, rn;
   crmhash_t *new_doc_start, *current_doc, *k, *l;
   long n_docs, n_docs_without_training, in_class, current_doc_len;
-  long n_cycles, filesize_on_disk, soft_cycle_limit;
+  long n_cycles, soft_cycle_limit;
 
   //   regmatch_t matchee[2];
   //  char param_text[MAX_PATTERN];
@@ -962,7 +998,11 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //
   if (stat(filename, &statee))
   {
-    make_new_backing_file(filename);
+    if (make_new_backing_file(filename))
+    {
+      free(filename);
+      return -1;
+    }
     stat(filename, &statee);
     k = NULL;
   }
@@ -1004,16 +1044,16 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   if (k == NULL)   //then this files never been seen before so append it and remap
   {
-    j = statee.st_size;
     if (internal_trace)
-      fprintf(stderr, "NN: new file will start at offset %ld\n", j);
+      fprintf(stderr, "NN: new file will start at offset %ld\n", statee.st_size);
     crm_force_munmap_filename(filename);
+
     if (n < 2)
     {
       if (internal_trace)
       {
         fprintf(stderr,
-                "NN: not going to train the network on a null string thankyou.\n");
+                "NN: not going to train the network on a null string, thank you.\n");
       }
     }
     else
@@ -1034,6 +1074,27 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       else
       {
         int32_t val;
+        int retv;
+
+        //     And make sure the file pointer is at EOF.
+        (void)fseek(f, 0, SEEK_END);
+
+        retv = 0;
+        if (ftell(f) == 0)
+        {
+          CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+          classifier_info.classifier_bits = CRM_NEURAL_NET;
+
+          if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
+          {
+            fatalerror("Couldn't write the header to the .hypsvm file named ",
+                       filename);
+            fclose(f);
+            free(filename);
+            return -1;
+          }
+        }
 
         val = !(apb->sflags & CRM_REFUTE);
         if (internal_trace)
@@ -1043,27 +1104,36 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           else
             fprintf(stderr, "learning out of class\n");
         }
-        fwrite(&val, 1, sizeof(val), f);           //  in-class(0) or out-of-class(1)
-        i = 0;                                     //number of times we went without training this guy
-        fwrite(&val, 1, sizeof(val), f);           // number of times notrain
-        fwrite(&sum, 1, sizeof(sum), f);           // hash of whole doc- for fastfind
-        fwrite(ret, rn, sizeof(ret[0]), f);        // the actual data
+        retv += fwrite(&val, sizeof(val), 1, f);           //  in-class(0) or out-of-class(1)
+        i = 0;                                             //number of times we went without training this guy
+        retv += fwrite(&val, sizeof(val), 1, f);           // number of times notrain
+        retv += fwrite(&sum, sizeof(sum), 1, f);           // hash of whole doc- for fastfind
+        retv += fwrite(ret, sizeof(ret[0]), rn, f);        // the actual data
+        if (retv != 1 + 1 + 1 + rn)
+        {
+          fatalerror("Couldn't write the solution to the .hypsvm file named ",
+                     filename);
+          fclose(f);
+          free(filename);
+          return -1;
+        }
 
         fclose(f);
       }
     }
 
     stat(filename, &statee);
-    filesize_on_disk = statee.st_size;
     if (internal_trace)
       fprintf(stderr, "NN: filesize is now %ld.\n", statee.st_size);
 
     if (map_file(nn, filename))
     {
       //nonfatalerror("Couldn't mmap file!", filename);
+      free(filename);
       return -1;
     }
-    new_doc_start = (crmhash_t  *)((char *)(nn->file_origin) + j);
+
+    new_doc_start = nn->docs_end;
   }
   else
   {
@@ -1118,8 +1188,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       {
         current_doc_len++;
       }
-      if (do_net_learn_back_prop_with_noise(
-            nn, current_doc, current_doc_len - 1, in_class))
+      if (do_net_learn_back_prop_with_noise(nn, current_doc, current_doc_len - 1, in_class))
       {
         if (((apb->sflags & CRM_REFUTE) && in_class)
             || !((apb->sflags & CRM_REFUTE) || in_class))
@@ -1218,7 +1287,7 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   char regex_text[MAX_PATTERN];       //  the regex pattern
   long regex_text_len;
 
-  crmhash_t /* unsigned long */ bag[32768], *ret, sum;
+  crmhash_t bag[32768], *ret, sum;
 
   long i, j, k, n, rn, fail_on = MAX_CLASSIFIERS, n_classifiers, out_pos;
 

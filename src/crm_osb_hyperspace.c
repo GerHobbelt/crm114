@@ -1,5 +1,5 @@
 //  crm_osb_hyperspace.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -601,6 +601,23 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
       if (user_trace)
         fprintf(stderr, "Writing to hash file %s\n", hashfilename);
+
+      //     And make sure the file pointer is at EOF.
+      (void)fseek(hashf, 0, SEEK_END);
+
+      if (ftell(hashf) == 0)
+      {
+        CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+        classifier_info.classifier_bits = CRM_HYPERSPACE;
+
+        if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
+        {
+          fatalerror("For some reason, I was unable to write the header to the file named ",
+                     hashfilename);
+        }
+      }
+
       //    and write the sorted hashes out.
       ret = fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
                    hashcounts,       /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
@@ -664,13 +681,12 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       else
       {
         file_hashlens = statbuf.st_size;
-        file_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                      crm_mmap_file(hashfilename,
-                                    0, 
-									file_hashlens,
+        file_hashes = crm_mmap_file(hashfilename,
+                                    0,
+                                    file_hashlens,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED,
-                                    NULL);
+                                    &file_hashlens);
         file_hashlens = file_hashlens
                         / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
       }
@@ -1166,13 +1182,12 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //
           hashlens[maxhash] = statbuf.st_size;
 
-          hashes[maxhash] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-                            crm_mmap_file(fname,
-                                          0, 
-										  hashlens[maxhash],
+          hashes[maxhash] = crm_mmap_file(fname,
+                                          0,
+                                          hashlens[maxhash],
                                           PROT_READ,
                                           MAP_SHARED,
-                                          NULL);
+                                          &hashlens[maxhash]);
 
           if (hashes[maxhash] == MAP_FAILED)
           {
@@ -1210,6 +1225,15 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
               }
               else
               {
+                if (is_crm_headered_file(hashf))
+                {
+                  if (fseek(hashf, CRM114_HEADERBLOCK_SIZE, SEEK_SET))
+                  {
+                    fatalerror("For some reason, I was unable to skip the CRM header for the file named ",
+                               fname);
+                  }
+                }
+
                 fread(hashes[maxhash], 1, hashlens[maxhash], hashf);
                 fclose(hashf);
               }

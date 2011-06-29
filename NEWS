@@ -2,26 +2,39 @@ CRM114 NEWS - user visible changes (and some other changes also.)
 Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
+  
+  
+Version 20071015-BlameGerHobbelt
+
+* Added the initial part of cross-platform/compiler/CRM-version portiability 
+  header code: each CRM114 file is now fitted with a special header, whicn 
+  be used to detect platform/version/etc. differences - and thus helols to 
+  migrate those.
+
+* And another sync/merge with BillY :-)
+
 
 Version 20070917-BlameGerHobbelt
 
 * merged with latest from BillY again
 
-* statistics for 'make megatest' seem fine, EXCEPT clump/pmulc classifiers, which
-  are way off
+* statistics for 'make megatest' seem fine, EXCEPT clump/pmulc classifiers, 
+  which are way off
 
-* KNOWN BUG: pmulc/clump should not be used, until I find what makes those behave
-  so badly on 64-bit (in both BillY WGET and these 'Ger-whatever' releases)
+* KNOWN BUG: pmulc/clump should not be used, until I find what makes those 
+  behave so badly on 64-bit (in both BillY WGET and these 'Ger-whatever' 
+  releases)
 
 
 Version 20070815-BlameBadData
 
 * merged with latest from BillY again
 
-* #ifdef GER  for all the changes which _might_ have caused changed in megatest output.
-  We'll revisit these later on.
+* #ifdef GER  for all the changes which _might_ have caused changed in 
+  megatest output. We'll revisit these later on.
 
-* Code changes to make 32- and 64-bit boxes produce the same results in megatest
+* Code changes to make 32- and 64-bit boxes produce the same results in 
+  megatest
 
 * A few Win32 changes/fixes.
 
@@ -32,23 +45,27 @@ Version 20070807-BlameTheInterns
 
 * merged fixes by Bill Y.
 
-* added preliminary fix for braces matching issue in crm compiler.
-  This fix is NOT complete (only works for alius statements now).
+* added preliminary fix for braces matching issue in crm compiler. This fix 
+  is NOT complete (only works for alius statements now).
 
-* added atexit() handler for memory allocation cleanup. The hunt
-  for mem leaks is still on.
+* added atexit() handler for memory allocation cleanup. The hunt for mem 
+  leaks is still on.
 
-* added Win32 debug code for memory allocation analysis/reporting in debug builds.
+* added Win32 debug code for memory allocation analysis/reporting in debug 
+  builds.
 
-* re-added the explanatory texts to the Makefiles a la Makefile as used by Bill.
+* re-added the explanatory texts to the Makefiles a la Makefile as used by 
+  Bill.
 
-* KNOWN BUG: SKS is b0rked in my version of the code (I've been messing around with some
-  #define's, that's probably why, but no time to find out how to revert that.)
+* KNOWN BUG: SKS is b0rked in my version of the code (I've been messing 
+  around with some #define's, that's probably why, but no time to find out 
+  how to revert that.)
+  
   --> update: fixed. #undef GET_RID_OF_PUNCTUATION
 
-* added a new hash function which should be portable across machines (same 32-bit
-  output with a good distribution), which can also produce 64-bit hashes (encapsulated
-  by the strnhash64() function)
+* added a new hash function which should be portable across machines (same 
+  32-bit output with a good distribution), which can also produce 64-bit 
+  hashes (encapsulated by the strnhash64() function)
 
 
 Version 20070805-BlameTheInterns
@@ -57,18 +74,19 @@ Version 20070805-BlameTheInterns
 
 * added sourcefile+line reporting for all error and warning messages.
 
-* Moved assert() usage to CRM_ASSERT usage so we can determine when and if to shot
-  down those checks. Bill (and probably others) think these should remain in there
-  forever. I (Ger) think of them more along the lines of 'only for testing now' but
-  I see the point.
+* Moved assert() usage to CRM_ASSERT usage so we can determine when and if 
+  to shot down those checks. Bill (and probably others) think these should 
+  remain in there forever. I (Ger) think of them more along the lines of 
+  'only for testing now' but see the point.
 
-* the POSIX #define use is now gone from the code: everything now properly
-  checks if the relevant functions, etc. are available using the HAVE_XXX
+* the POSIX #define use is now gone from the code: everything now properly 
+  checks if the relevant functions, etc. are available using the HAVE_XXX 
   defines produced by ./configure
 
-* added crm_touch() as a centralized fix for mmap not touching the files when data
-  was written. Previously all systems read/write a few bogus bytes and that code
-  was littered throughout. Code has been inspected and cleaned up.
+* added crm_touch() as a centralized fix for mmap not touching the files 
+  when data was written. Previously all systems read/write a few bogus bytes 
+  and that code was littered throughout. Code has been inspected and cleaned 
+  up.
  
 Version 20070731-BlameTheInterns
 
@@ -104,9 +122,9 @@ Version 20040816.BlameClockworkOrange-auto.3, 2004-08-19 (JvB)
 Version 20040816.BlameClockworkOrange-auto.2, 2004-08-18 (JvB)
 
 * docs/Makefile.am: make sure QUICKREF.txt gets distributed and installed
-  (Thanks Ondřej Surý).
-* configure.ac, tests/Makefile.am: ship 5 more tests from Bill (Thanks Ondřej
-  Surý).
+  (Thanks Ondrej Sur�).
+* configure.ac, tests/Makefile.am: ship 5 more tests from Bill (Thanks Ondrej
+  Sur�).
 
 Version 20040816.BlameClockworkOrange-auto.1, 2004-08-18 (JvB)
 

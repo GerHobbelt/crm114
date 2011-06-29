@@ -1,5 +1,5 @@
 //  crm_osbf_bayes.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -314,8 +314,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           "\n Couldn't create file %s; errno=%d(%s)\n",
                           learnfilename,
                           errno,
-                          errno_descr(errno)
-            );
+                          errno_descr(errno));
       // return fev;
       exit(EXIT_FAILURE);
     }
@@ -329,11 +328,11 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //         open the hash file into memory so we can bitwhack it
   //
   header = crm_mmap_file(learnfilename,
-                         0, 
-						 statbuf.st_size,
-                         PROT_READ | PROT_WRITE, 
-						 MAP_SHARED, 
-						 NULL);
+                         0,
+                         statbuf.st_size,
+                         PROT_READ | PROT_WRITE,
+                         MAP_SHARED,
+                         NULL);
 
   if (header == MAP_FAILED)
   {
@@ -462,8 +461,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
               i,
               textoffset,
               (long)(ts.ptok - (unsigned char *)&(txtptr[textoffset])),
-              (long)((ts.ptok + ts.toklen) -
-                     (unsigned char *)&(txtptr[textoffset])),
+              (long)((ts.ptok + ts.toklen) - (unsigned char *)&(txtptr[textoffset])),
               ts.toklen, tempbuf);
     }
 
@@ -926,17 +924,15 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //
           hashlens[maxhash] = statbuf.st_size;
           //  mmap the hash file into memory so we can bitwhack it
-          header[maxhash] = (OSBF_FEATURE_HEADER_STRUCT *)
-                            crm_mmap_file(fname,
-                                          0, 
-										  hashlens[maxhash],
+          header[maxhash] = crm_mmap_file(fname,
+                                          0,
+                                          hashlens[maxhash],
                                           PROT_READ | PROT_WRITE,
                                           MAP_SHARED,
-                                          NULL);
+                                          &hashlens[maxhash]);
           if (header[maxhash] == MAP_FAILED)
           {
-            nonfatalerror
-            ("Couldn't memory-map the table file", fname);
+            nonfatalerror("Couldn't memory-map the table file", fname);
           }
           else
           {

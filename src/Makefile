@@ -86,7 +86,8 @@ am__objects_1 = crm_compiler.$(OBJEXT) crm_errorhandlers.$(OBJEXT) \
 	crm_stats.$(OBJEXT) crm_expr_sks.$(OBJEXT) \
 	crm_expr_svm.$(OBJEXT) crm_expr_fscm.$(OBJEXT) \
 	crm_strcompress.$(OBJEXT) crm_expr_clump_nn.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT)
+	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
+	crm_versioning.$(OBJEXT)
 am__objects_2 =
 am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	crm_main.$(OBJEXT)
@@ -95,26 +96,26 @@ crm114_LDADD = $(LDADD)
 am_cssdiff_OBJECTS = cssdiff.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	$(am__objects_2)
+	crm_versioning.$(OBJEXT) $(am__objects_2)
 cssdiff_OBJECTS = $(am_cssdiff_OBJECTS)
 cssdiff_LDADD = $(LDADD)
 am_cssmerge_OBJECTS = cssmerge.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	$(am__objects_2)
+	crm_versioning.$(OBJEXT) $(am__objects_2)
 cssmerge_OBJECTS = $(am_cssmerge_OBJECTS)
 cssmerge_LDADD = $(LDADD)
 am_cssutil_OBJECTS = cssutil.$(OBJEXT) crm_css_maintenance.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	$(am__objects_2)
+	crm_versioning.$(OBJEXT) $(am__objects_2)
 cssutil_OBJECTS = $(am_cssutil_OBJECTS)
 cssutil_LDADD = $(LDADD)
 am_osbf_util_OBJECTS = osbf-util.$(OBJEXT) \
 	crm_osbf_maintenance.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	$(am__objects_2)
+	crm_versioning.$(OBJEXT) $(am__objects_2)
 osbf_util_OBJECTS = $(am_osbf_util_OBJECTS)
 osbf_util_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
@@ -141,7 +142,11 @@ AMTAR = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run tar
 #      Are we compiling on a POSIX system or a Windows system?  NOTE:
 #       WINDOWS IS UNSUPPORTED BY THE AUTHOR.  THE AUTHOR WILL
 #	ACCEPT REASONABLE-LOOKING PATCHES BUT WINDOWS-ONLY 
-#       BUG REPORTS THAT DO NOT REPRODUCE UNDER LINUX ET AL _CANNOT_ BE WORKED.
+#       BUG REPORTS THAT DO NOT REPRODUCE UNDER LINUX ET AL 
+#       SIMPLY _CANNOT_ BE WORKED AS I HAVE NO WINDOWS MACHINES.  
+#       SO, IF YOU FIND A WINDOWS-ONLY BUG, PLEASE PUT IT ON THE 
+#       MAILING LIST SO WINDOWS PEOPLE CAN WORK THE BUG.
+#
 #SYSTEMTYPE = POSIX
 #SYSTEMTYPE = WIN32
 #
@@ -153,7 +158,7 @@ AMTAR = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run tar
 AM_CFLAGS =  -Wall -Wextra
 # AM_CFLAGS += -g -O3
 #     turn this one on for no optimization, but debugging and time profiling.
-#AM_CFLAGS += -g -O0 -Wall -pg
+#AM_CFLAGS += -g -O0 -Wall -pg -CB
 #     turn this one on for really picayune debugging.
 AM_CPPFLAGS = 
 # AM_CPPFLAGS += -Wall
@@ -173,7 +178,7 @@ AWK = gawk
 BIN_PATH = /usr/local/bin
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O0
+CFLAGS = -g -O3
 CPP = gcc -E
 CPPFLAGS = 
 CRM = :|crm
@@ -214,6 +219,7 @@ ECHO_T =
 EGREP = /usr/bin/grep -E
 EXEEXT = 
 GREP = /usr/bin/grep
+#    use this one if you want program profiling.
 #AM_LDFLAGS += -static -static-libgcc -pg
 #
 #   Any standard install flags?  We nominally use protection 755
@@ -222,7 +228,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2007-10-15
+ISODATE = 2007-11-03
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -236,9 +242,9 @@ OBJEXT = o
 PACKAGE = crm114
 PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
 PACKAGE_NAME = CRM114
-PACKAGE_STRING = CRM114 20070917-BlameGerHobbelt
+PACKAGE_STRING = CRM114 20071015-BlameGerHobbelt
 PACKAGE_TARNAME = crm114
-PACKAGE_VERSION = 20070917-BlameGerHobbelt
+PACKAGE_VERSION = 20071015-BlameGerHobbelt
 PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
@@ -246,6 +252,7 @@ RANLIB = ranlib
 SED = /usr/bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
+#PREV_VERSION=20070830-BlameGerHobbelt
 #PREV_VERSION=20070828-BlameGerHobbelt
 #PREV_VERSION=20070827-BlameGerHobbelt
 #PREV_VERSION=20070826-BlameGerHobbelt
@@ -270,7 +277,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-654
+TAR_FILENAME_POSTFIX = Ger-806
 TRE_CONFIG = no
 
 #
@@ -281,7 +288,7 @@ TRE_CONFIG = no
 #     What version is this software (PLEASE don't change this just 
 #     to mess with my brain. - wsy)
 #
-VERSION = 20070917-BlameGerHobbelt
+VERSION = 20071015-BlameGerHobbelt
 
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
@@ -341,7 +348,8 @@ zip = /usr/bin/zip
 DISTCLEANFILES = 
 CLEANFILES = *.o *~ *.bak
 ARCHIVE_BASE_NAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-$(TAR_FILENAME_POSTFIX)
-PREV_VERSION = 20070830-BlameGerHobbelt
+PREV_VERSION = 20070917-BlameGerHobbelt
+#
 #        uncomment the next line if you want to "strip" the debugger info 
 #        from the binaries when installing.  This speeds up load, but 
 #        you won't be able to submit meaningful CRM114 engine bug reports.
@@ -374,7 +382,8 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
 	crm_expr_svm.c crm_expr_fscm.c \
 	crm_strcompress.c crm_expr_clump_nn.c \
-	crm_generic_port.c crm_stdio_port.c
+	crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h crm_expr_clump_nn.h config.h 
@@ -393,7 +402,8 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_preprocessor.o \
 	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
 	crm_strcompress.o crm_expr_clump_nn.o \
-	crm_generic_port.o crm_stdio_port.o
+	crm_generic_port.o crm_stdio_port.o \
+	crm_versioning.o
 
 UTILFILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c 
 CRMFILES = mailfilter.crm mailfilter.cf \
@@ -441,21 +451,27 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(CRMFILES) \
 	$(TEXTFILES)
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt \
+	merge-results-29-oct-2007.txt
+
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c \
 	$(HFILES)
 
 osbf_util_SOURCES = osbf-util.c \
 	crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c \
 	$(HFILES)
 
 cssdiff_SOURCES = cssdiff.c \
 	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c \
 	$(HFILES)
 
 cssmerge_SOURCES = cssmerge.c \
 	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
+	crm_versioning.c \
 	$(HFILES)
 
 .SUFFIXES = .c .o
@@ -584,6 +600,7 @@ include ./$(DEPDIR)/crm_strcompress.Po
 include ./$(DEPDIR)/crm_util_errorhandlers.Po
 include ./$(DEPDIR)/crm_var_hash_table.Po
 include ./$(DEPDIR)/crm_vector_tokenize.Po
+include ./$(DEPDIR)/crm_versioning.Po
 include ./$(DEPDIR)/crm_winnow_maintenance.Po
 include ./$(DEPDIR)/crmregex_gnu.Po
 include ./$(DEPDIR)/crmregex_tre.Po
@@ -985,53 +1002,60 @@ cssdiff.o: cssdiff.c  \
 cssmerge.o: cssmerge.c  \
 	$(HFILES)
 
-crm_generic_port.o: crm_generic_port.c  \
+crm_generic_port.o: crm_generic_port.c \
 	$(HFILES)
 
 crm_stdio_port.o: crm_stdio_port.c \
 	$(HFILES)
 
-cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
+crm_versioning.o: crm_versioning.c \
+	$(HFILES)
+
+cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
 		crm_css_maintenance.o \
 		crm_util_errorhandlers.o \
 		crm_str_funcs.o \
 		crm_generic_port.o \
 		crm_stdio_port.o \
+		crm_versioning.o \
 		-o cssutil
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-osbf-util: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
+osbf-util: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
 		crm_osbf_maintenance.o \
 		crm_generic_port.o \
 		crm_stdio_port.o \
+		crm_versioning.o \
 		-o osbf-util
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
+cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
 		crm_util_errorhandlers.o \
 		crm_str_funcs.o \
 		crm_generic_port.o \
 		crm_stdio_port.o \
+		crm_versioning.o \
 		-o cssdiff
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o 
+cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
 		crm_generic_port.o \
 		crm_stdio_port.o \
+		crm_versioning.o \
 		-o cssmerge
 	$(E) ""
 	$(E) "   Done.  Type \"make help\" to see what else you can make."
@@ -1246,7 +1270,7 @@ css_gzip: css_tarfile
 distribution: install src_gzip i386_gzip css_gzip
 	md5sum crm114-$(VERSION).*.tar.gz
 
-rsync:
+rsync:  FORCE
 	rsync -zrltDv \
 	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) \
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
@@ -1379,6 +1403,8 @@ cssmerge.o: crm114_sysincludes.h crm114_config.h crm114_structs.h crm114.h
 cssutil.o: crm114_sysincludes.h crm114_config.h crm114_structs.h crm114.h
 osbf-util.o: crm114_sysincludes.h crm114_config.h crm114_structs.h crm114.h
 osbf-util.o: crm114_osbf.h
+crm_versioning.o: crm114_sysincludes.h crm114_config.h crm114_structs.h crm114.h
+crm_versioning.o: crm114_osbf.h
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

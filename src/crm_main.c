@@ -1,5 +1,5 @@
 //  crm_main.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -378,7 +378,7 @@ int main(int argc, char **argv)
       fprintf(stderr, " CRM114 version %s (regex engine: %s)\n ",
               VERSION,
               crm_regversion());
-      fprintf(stderr, " Copyright 2001-2006 William S. Yerazunis\n");
+      fprintf(stderr, " Copyright 2001-2007 William S. Yerazunis\n");
       fprintf(stderr, " This software is licensed under the GPL "
                       "with ABSOLUTELY NO WARRANTY\n");
       fprintf(stderr, "     For language help, RTFRM.\n");
@@ -689,7 +689,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "Setting debug countdown to %ld statements\n",
                 debug_countdown);
       }
-      if (debug_countdown == 0)                      //  if next arg wasn't numeric, back up
+      if (debug_countdown == 0)  //  if next arg wasn't numeric, back up
         i--;
       goto end_command_line_parse_loop;
     }
@@ -932,7 +932,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "Setting microgroom_stop_after to %ld\n",
                 microgroom_stop_after);
       }
-      if (microgroom_stop_after <= 0)                     //  if value <= 0 set it to default
+      if (microgroom_stop_after <= 0)  //  if value <= 0 set it to default
         microgroom_stop_after = MICROGROOM_STOP_AFTER;
       goto end_command_line_parse_loop;
     }
@@ -953,7 +953,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "Setting microgroom_chain_length to %ld\n",
                 microgroom_chain_length);
       }
-      if (microgroom_chain_length < 5)                      //  if value <= 5 set it to default
+      if (microgroom_chain_length < 5)  //  if value <= 5 set it to default
         microgroom_chain_length = MICROGROOM_CHAIN_LENGTH;
       goto end_command_line_parse_loop;
     }
@@ -974,7 +974,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "Setting min pmax/pmin of a feature to %f\n",
                 min_pmax_pmin_ratio);
       }
-      if (min_pmax_pmin_ratio < 0)                      //  if value < 0 set it to 0
+      if (min_pmax_pmin_ratio < 0)  //  if value < 0 set it to 0
         min_pmax_pmin_ratio = OSBF_MIN_PMAX_PMIN_RATIO;
       goto end_command_line_parse_loop;
     }
@@ -1434,7 +1434,8 @@ int main(int argc, char **argv)
                cdw->filetext,
                0,
                cdw->nchars,
-               -1);
+               -1,
+               0);
   }
   //
   //    We also set up the :_iso: to hold the isolated variables.
@@ -1465,7 +1466,8 @@ int main(int argc, char **argv)
                tdw->filetext,
                0,
                0,
-               -1);
+               -1,
+               0);
   }
 #endif
   //    Now we're here, we can actually run!

@@ -1,5 +1,5 @@
 //  crm_correlate.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -45,7 +45,7 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long hlen;
   long cflags, eflags;
   struct stat statbuf;      //  for statting the hash file
-  int hfd;                  //  hashfile fd
+  FILE *f;                  //  hashfile fd
   //
   //regex_t regcb;
   long textoffset;
@@ -132,7 +132,8 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (k != 0)
   {
     //      file didn't exist... create it
-    FILE *f;
+    CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
     if (user_trace)
     {
       fprintf(stderr, "\nCreating new correlate file %s\n", learnfilename);
@@ -148,45 +149,77 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           errno_descr(errno));
       free(learnfilename);
       return fev;
-
-#if 0
-      if (engine_exit_base != 0)
-      {
-        exit(engine_exit_base + 1);
-      }
-      else
-      {
-        exit(EXIT_FAILURE);
-      }
-#endif
     }
 
-    //      file_memset(f, 0, count count); don't do any output at all.
-    made_new_file = 1;
-    //
-    fclose(f);
+    classifier_info.classifier_bits = CRM_CORRELATE;
 
-    //    and reset the statbuf to be correct
-    k = stat(learnfilename, &statbuf);
-    CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
+    if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
+    {
+      fev = fatalerror_ex(SRC_LOC(),
+                          "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                          learnfilename, errno, errno_descr(errno));
+      fclose(f);
+      free(learnfilename);
+      return fev;
+    }
+
+    //      file_memset(f, 0, count); // don't do any output at all.
+    made_new_file = 1;
+
+    statbuf.st_size = 0;
+  }
+  else
+  {
+    if (user_trace)
+    {
+      fprintf(stderr, "Opening correlate file %s for append\n", learnfilename);
+    }
+    f = fopen(learnfilename, "ab+");
+    if (!f)
+    {
+      fev = fatalerror_ex(SRC_LOC(),
+                          "\n Couldn't open your correlate file %s for append; errno=%d(%s)\n",
+                          learnfilename,
+                          errno,
+                          errno_descr(errno));
+      free(learnfilename);
+      return fev;
+    }
+
+    if (is_crm_headered_file(f))
+    {
+      statbuf.st_size -= CRM114_HEADERBLOCK_SIZE;
+    }
+
+    //     And make sure the file pointer is at EOF.
+    (void)fseek(f, 0, SEEK_END);
+
+    if (ftell(f) == 0)
+    {
+      CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+      classifier_info.classifier_bits = CRM_CORRELATE;
+
+      if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
+      {
+        fev = fatalerror("Couldn't write the header to the .hypsvm file named ",
+                         learnfilename);
+        fclose(f);
+        free(learnfilename);
+        return fev;
+      }
+
+      //      file_memset(f, 0, count); // don't do any output at all.
+      made_new_file = 1;
+
+      statbuf.st_size = 0;
+    }
   }
   //
   if (user_trace)
   {
     fprintf(stderr, "Correlation text file %s has length %ld characters\n",
             learnfilename, statbuf.st_size / sizeof(FEATUREBUCKET_TYPE));
-  }
-
-  //
-  //         open the text file into memory so we can bitwhack it
-  //
-  hfd = open(learnfilename, O_RDWR | O_BINARY);
-  if (hfd < 0)
-  {
-    fev = fatalerror("Couldn't open the correlation file named: ",
-                     learnfilename);
-    free(learnfilename);
-    return fev;
   }
 
   //
@@ -209,8 +242,8 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   {
     long q;
 
-    CRM_ASSERT(hfd >= 0);
-    close(hfd);
+    CRM_ASSERT(f != NULL);
+    fclose(f);
     q = fatalerror(" Attempt to LEARN from a nonexistent variable ",
                    ltext);
     free(learnfilename);
@@ -224,8 +257,8 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (mdw == NULL)
   {
     long q;
-    CRM_ASSERT(hfd >= 0);
-    close(hfd);
+    CRM_ASSERT(f != NULL);
+    fclose(f);
     q = fatalerror(" Bogus text block containing variable ", ltext);
     free(learnfilename);
     return q;
@@ -245,12 +278,13 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //      append the "learn" text to the end of the file.
     //
-    lseek(hfd, 0, SEEK_END);
-    if (textlen != write(hfd, &(mdw->filetext[textoffset]), textlen))
+    CRM_ASSERT(f != NULL);
+    (void)fseek(f, 0, SEEK_END);
+    if (textlen != fwrite(&(mdw->filetext[textoffset]), 1, textlen, f))
     {
       long q;
-      CRM_ASSERT(hfd >= 0);
-      close(hfd);
+      CRM_ASSERT(f != NULL);
+      fclose(f);
       q = fatalerror("Failed to append the 'learn' text to the correlation file '%s'\n",
                      learnfilename);
       free(learnfilename);
@@ -258,8 +292,8 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
   }
 
-  CRM_ASSERT(hfd >= 0);
-  close(hfd);
+  CRM_ASSERT(f != NULL);
+  fclose(f);
 
   free(learnfilename);
   return 0;
@@ -325,9 +359,9 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   char *hashes[MAX_CLASSIFIERS];
   long hashlens[MAX_CLASSIFIERS];
   char *hashname[MAX_CLASSIFIERS];
-  long succhash;
+  int succhash;
   long vbar_seen;       // did we see '|' in classify's args?
-  long maxhash;
+  int maxhash;
   long fnstart, fnlen;
   long fn_start_here;
   long textoffset;
@@ -430,9 +464,10 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //      fprintf(stderr, "fname is '%s' len %ld\n", fname, fnlen);
       fn_start_here = fnstart + fnlen + 1;
       if (user_trace)
-        fprintf(stderr, "Classifying with file -%s- "
-                        "succhash=%ld, maxhash=%ld\n",
+      {
+        fprintf(stderr, "Classifying with file -%s- succhash=%d, maxhash=%d\n",
                 fname, succhash, maxhash);
+      }
       if (fname[0] == '|' && fname[1] == 0)
       {
         if (vbar_seen)
@@ -462,13 +497,13 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //  file exists - do the mmap
           //
           hashlens[maxhash] = statbuf.st_size;
-		  // [i_a] hashlens[maxhash] must be fixed for the header size!
-          hashes[maxhash] = (char *)crm_mmap_file(fname,
-                                          0, 
-										  hashlens[maxhash],
+          // [i_a] hashlens[maxhash] must be fixed for the header size!
+          hashes[maxhash] = crm_mmap_file(fname,
+                                          0,
+                                          hashlens[maxhash],
                                           PROT_READ,
                                           MAP_SHARED,
-                                          NULL);
+                                          &hashlens[maxhash]);
           if (hashes[maxhash] == MAP_FAILED)
           {
             nonfatalerror("Couldn't memory-map the table file",
@@ -522,7 +557,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //    now, set up the normalization factor fcount[]
   if (user_trace)
-    fprintf(stderr, "Running with %ld files for success out of %ld files\n",
+    fprintf(stderr, "Running with %d files for success out of %d files\n",
             succhash, maxhash);
 
   // sanity checks...  Uncomment for super-strict CLASSIFY.
@@ -540,9 +575,8 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //    do we have at least 1 valid .css file at both sides of '|'?
   if (!vbar_seen || succhash < 0 || (maxhash <= succhash))
   {
-    nonfatalerror(
-      "Couldn't open at least 1 .css file per SUCC | FAIL category "
-      "for classify().\n", "Hope you know what are you doing.");
+    nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category for classify().\n",
+                  "Hope you know what are you doing.");
   }
 
   //
