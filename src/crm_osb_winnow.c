@@ -173,6 +173,10 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
     learnfilename = strdup(&htext[i]);
+        if (!learnfilename)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
 
     //             and stat it to get it's length
     k = stat(learnfilename, &statbuf);
@@ -984,9 +988,11 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         xhashes[maxhash] = calloc(hashlens[maxhash],
                                 sizeof(xhashes[maxhash][0]));
                         if (!xhashes[maxhash])
+						{
                             untrappableerror(
                                     "Couldn't alloc xhashes[maxhash]\n",
                                     "We need that part.  Sorry.\n");
+						}
 
                         maxhash++;
                     }

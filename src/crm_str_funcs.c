@@ -2289,6 +2289,10 @@ void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int 
         return MAP_FAILED; /* [i_a] unreachable code */
     }
     p->name = strdup(filename);
+        if (!p->name)
+        {
+            untrappableerror("Cannot allocate filename memory", "Stick a fork in us; we're _done_.");
+        }
     p->start = start;
     p->requested_len = requested_len;
     p->prot = prot;
@@ -2818,7 +2822,10 @@ int strntrn(
         flen = fromstrlen;
         to = calloc(tostrlen, sizeof(to[0]));
         if (to == NULL || tostr == NULL)
+		{
+			free(from);
             return -1;
+		}
         strncpy((char *)to, (char *)tostr, tostrlen);
         tlen = tostrlen;
     }
@@ -2996,4 +3003,116 @@ int strntrn(
 //   and Miller
 //
 //////////////////////////////////////////////////////////////////
+
+
+
+#undef free
+#undef malloc
+#undef realloc
+#undef calloc
+#undef strdup
+
+
+char *crm114_strdup(const char *str
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+, int blocktype, const char *filename, int lineno
+#endif
+)
+{
+	char *p = NULL;
+
+	if (str)
+	{
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+		p = _strdup_dbg(str, blocktype, filename, lineno);
+#else
+		p = strdup(str);
+#endif
+	}
+	return p;
+}
+
+void *crm114_malloc(size_t count
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+, int blocktype, const char *filename, int lineno
+#endif
+)
+{
+	void *p = NULL;
+
+	if (count > 0)
+	{
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+		p = _calloc_dbg(count, 1, blocktype, filename, lineno);
+#else
+		p = calloc(count, 1);
+#endif
+	}
+	return p;
+}
+
+void *crm114_realloc(void *ptr, size_t count
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+, int blocktype, const char *filename, int lineno
+#endif
+)
+{
+	void *p = NULL;
+
+	if (count > 0)
+	{
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+		p = _realloc_dbg(ptr, count, blocktype, filename, lineno);
+#else
+		p = realloc(ptr, count);
+#endif
+	}
+	else if (p)
+	{
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+		_free_dbg(p, blocktype);
+#else
+		free(p);
+#endif
+	}
+	return p;
+}
+
+void *crm114_calloc(size_t count, size_t elem_size
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+, int blocktype, const char *filename, int lineno
+#endif
+)
+{
+	void *p = NULL;
+
+	if (count > 0 && elem_size > 0)
+	{
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+		p = _calloc_dbg(count, elem_size, blocktype, filename, lineno);
+#else
+		p = calloc(count, elem_size);
+#endif
+	}
+	return p;
+}
+
+void crm114_free(void **ptrref
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+, int blocktype, const char *filename, int lineno
+#endif
+)
+{
+	CRM_ASSERT(ptrref != NULL);
+	if (*ptrref)
+	{
+#if defined(MSVC_DEBUG_MALLOC_SERIES)
+		_free_dbg(*ptrref, blocktype);
+#else
+		free(*ptrref);
+#endif
+	}
+	*ptrref = NULL;
+}
+
 

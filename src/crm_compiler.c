@@ -320,19 +320,24 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
 
     //  now, allocate the microcompile table
     if (user_trace)
-        fprintf(stderr, "Program statements: %d, program length %d\n",
+	{
+		fprintf(stderr, "Program statements: %d, program length %d\n",
                 j, pgmlength);
+	}
 
     csl->mct_size = csl->nstmts + 10;
     csl->mct = (MCT_CELL **)calloc(csl->mct_size, sizeof(csl->mct[0]));
     csl->mct_allocated = 1;
     if (!csl->mct)
+	{
         untrappableerror("Couldn't alloc MCT table.\n"
                          "This is where your compilation results go, "
                          "so if we can't compile, we can't run.  Sorry.", "");
-
+	}
     if (internal_trace)
-        fprintf(stderr, "microcompile table at %p\n", (void *)csl->mct);
+	{
+		fprintf(stderr, "microcompile table at %p\n", (void *)csl->mct);
+	}
 
     //  alloc all of the statement cells.
     for (i = 0; i < csl->mct_size; i++)
@@ -597,6 +602,19 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                          );
         }
 
+		// [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
+        if (stab_stmtcode == CRM_DEBUG)
+        {
+			// but only when we're running the debugger or _expect_ to run the debugger!
+			if (debug_countdown <= DEBUGGER_DISABLED_FOREVER)
+			{
+				CRM_ASSERT(DEBUGGER_DISABLED_FOREVER + 1 < -1);
+				debug_countdown = DEBUGGER_DISABLED_FOREVER + 1; // special signal: debugger disabled... for now.
+
+				// and make sure the variable exists...
+				crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "");
+			}
+		}
 
         //            Fill in the MCT entry with what we've learned.
         //

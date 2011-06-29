@@ -48,6 +48,8 @@ extern int internal_trace;
 
 extern int debug_countdown;
 
+extern int inside_debugger; // [i_a] signal used by the debugger to tell specific code sections that their behaviour should be different then.
+
 extern int cmdline_break;
 
 extern int cycle_counter;

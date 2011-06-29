@@ -330,7 +330,7 @@ int main(int argc, char **argv)
     microgroom_stop_after = 0;
     min_pmax_pmin_ratio = OSBF_MIN_PMAX_PMIN_RATIO;
     ignore_environment_vars = 0;
-    debug_countdown = -2; /* [i_a] special signal: debugger disabled, unless 'debug' command is found. */
+    debug_countdown = DEBUGGER_DISABLED_FOREVER; /* [i_a] special signal: debugger disabled, unless 'debug' command is found. */
     cycle_counter = 0;
     cmdline_break = -1;
     profile_execution = 0;
@@ -727,6 +727,7 @@ int main(int argc, char **argv)
                     // untrappableerror("Failed to decode the numeric -d argument [debug statement countdown]: ", argv[i]);
                 }
             }
+		
             if (user_trace)
             {
                 fprintf(stderr, "Setting debug countdown to %d statements\n",
@@ -1372,16 +1373,20 @@ int main(int argc, char **argv)
 
     cdw = calloc(1, sizeof(cdw[0]));
     if (!cdw)
+	{
         untrappableerror("Couldn't alloc cdw.\nThis is very bad.", "");
+	}
     cdw->filename = NULL;
     cdw->rdwr = 1;
     cdw->filedes = -1;
     cdw->filetext = calloc(data_window_size, sizeof(cdw->filetext[0]));
     cdw->filetext_allocated = 1;
     if (!cdw->filetext)
-        untrappableerror(
+	{
+		untrappableerror(
             "Couldn't alloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.",
             "");
+	}
 
     //      also allocate storage for the windowed data input
     newinputbuf = calloc(data_window_size, sizeof(newinputbuf[0]));

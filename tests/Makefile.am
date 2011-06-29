@@ -313,7 +313,7 @@ EXTRA_DIST = megatest_knowngood.log \
 	$(MEGATEST_INPUT_FILES) $(TEST_REFERENCE_FILES) \
 	megatest.bat \
 	megatest.sh.in \
-    	megatest_ng.sh.in \
+	megatest_ng.sh.in \
 	testscript.sh.in \
 	statustest.filter.sh.in \
 	crm114_error_report.filter.sh.in \
@@ -485,7 +485,11 @@ test_timing_minutes_announcement:
 
 
 # check everything except neural: too slow :-(
-check-local:                    \
+check-local:                    
+
+
+
+bogus-local1:
 		initial_tests1	\
 		initial_tests2  \
 		further_tests  \
@@ -1311,8 +1315,21 @@ Clump_Pmulc_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
 
 cleanup_test:
 	-rm -f i_test.css
+	-rm -f i_vs_q_test.css
 	-rm -f q_test.css
+	-rm -f randtst.txt
+	-rm -rf *.temp.*
+	-rm -rf *.temperr
+	-rm -rf *.tempchk
+	-rm -rf *.diffout
+	-rm -rf *.tempout
+	-rm -rf *.filtout
 
+#./tests/test_rewrites.mfp
+#./tests/e2.out
+#./tests/whitelist.mfp.example
+
+clean: cleanup_test
 
 
 
@@ -1335,7 +1352,8 @@ check-am: all-am
 	srcdir=$(srcdir); export srcdir; \
 	builddir=$(builddir); export builddir; \
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS); \
-	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local; \
+	$(MAKE) $(AM_MAKEFLAGS) cleanup_test
 
 
 .PHONY: test test_basics test_other test_megatest test_megatest_ng test_mailfilter test_mailreaver megatest megatest_ng test_classifiers

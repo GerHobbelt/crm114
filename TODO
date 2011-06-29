@@ -126,12 +126,17 @@ Stefan Seyfried
 
 - megatest.sh should work out of the box, _after_ installation.
   I'd be nice to have a ``make test'' run this, _before_ installation.
+  
+  (DONE: GerH -- split up megatest into particles in tests/ + make check; there's
+   also make megatest / make megatest_ng for those that love the old ways.)
 
 - C sources should have
 
   #ifdef HAVE_CONFIG_H
   #include "config.h"
   #endif
+  
+  (DONE: GerH)
 
 - document how to have both a /usr/bin/crm114-tre and a /usr/bin/crm114-rx
   installed: ./configure --program-suffix ; cd src ; make install .
@@ -141,3 +146,7 @@ Stefan Seyfried
 
 - add link to http://camram.sourceforge.net/ .
 
+- migrate malloc/calloc/free/strdup/etc. to crm_malloc(..., error_reason_message)
+  (basic routines have been set up in crm_str_funcs.c) and make sure no intern
+  can ever use malloc/realloc/etc. ever again -- this to ensure each allocation
+  is checked and duely reported.

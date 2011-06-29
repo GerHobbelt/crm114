@@ -549,6 +549,10 @@ static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
     //  These are the deltas used for learning (only).
     nn->delta_first_layer = calloc(h->first_layer_size, sizeof(nn->delta_first_layer[0]));
     nn->delta_hidden_layer = calloc(h->hidden_layer_size, sizeof(nn->delta_hidden_layer[0]));
+        if (!nn->retina || !nn->first_layer || !nn->hidden_layer || !nn->delta_first_layer || !nn->delta_hidden_layer)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
 
 
     // remember output layer is statically allocated!

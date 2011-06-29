@@ -189,6 +189,10 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
     learnfilename = strdup(&htext[i]);
+        if (!learnfilename)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
 
     //             and stat it to get it's length
     k = stat(learnfilename, &statbuf);
@@ -1323,13 +1327,17 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //     Note that we _calloc_, not malloc, to zero the memory first.
                 seen_features[ifile] = calloc(hashlens[ifile] + 1, sizeof(seen_features[ifile][0]));
                 if (seen_features[ifile] == NULL)
+				{
                     untrappableerror(" Couldn't allocate enough memory to keep "
                                      " track of nonunique features.  ",
                             "This is deadly. ");
+				}
             }
             else
+			{
                 seen_features[ifile] = NULL;
-        }
+			}
+		}
 
 
 

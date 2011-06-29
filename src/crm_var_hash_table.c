@@ -38,8 +38,10 @@ void crm_vht_init(int argc, char **argv)
     //   create the variable hash table (one big one, shared )
     vht = (VHT_CELL **)calloc(vht_size, sizeof(vht[0]));
     if (!vht)
+	{
         untrappableerror("Couldn't alloc VHT cell.\n",
             "No VHT cells, no variables, so no can run.  Sorry.");
+	}
 #ifndef CRM_DONT_ASSERT
     {
         int i;
@@ -53,19 +55,23 @@ void crm_vht_init(int argc, char **argv)
     //    initialize the temporary (non-data-window) area...
     tdw = calloc(1, sizeof(tdw[0]));
     if (!tdw)
+	{
         untrappableerror("Couldn't alloc tdw.\n"
                          "We need the TDW for isolated variables."
                          "Can't continue.  Sorry.\n", "");
+	}
     tdw->filename = NULL;
     tdw->rdwr = 1;
     tdw->filedes = -1;
     tdw->filetext = calloc(data_window_size, sizeof(tdw->filetext[0]));
     tdw->filetext_allocated = 1;
     if (!tdw->filetext)
+	{
         untrappableerror("Couldn't alloc tdw->filetext.\n"
                          "Without this space, you can't have any isolated "
                          "variables,\n and we're stuck.  Sorry.", "");
-    tdw->filetext[0] = 0;
+	}
+	tdw->filetext[0] = 0;
     tdw->nchars = 0;
     tdw->hash = 0;
     tdw->mct = NULL;
@@ -82,6 +88,15 @@ void crm_vht_init(int argc, char **argv)
     crm_set_temp_var(":_sc:", ";");
     crm_set_temp_var(":_cd:", "0");
     crm_set_temp_var("::", " ");
+
+			// [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
+			//
+			// but only when we're running the debugger or _expect_ to run the debugger!
+			if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
+			{
+				// make sure the variable exists...
+				crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "");
+			}
 
     //   put the version string in as a variable.
     {
@@ -224,7 +239,6 @@ void crm_vht_init(int argc, char **argv)
         while (environ[i])
         {
             char *name;
-            char *value;
             char *s;
 
             if (strlen(tempbuf) + strlen(environ[i]) < (data_window_size - 1000))
@@ -258,7 +272,7 @@ void crm_vht_init(int argc, char **argv)
             if (!name)
             {
                 untrappableerror("Couldn't alloc :_env_ space."
-                                 "Can't continue.\n", "");
+                                 "Can't continue.\n", "Stick a fork in us; we're _done_.");
             }
             s = strmov(name, ":_env_");
             memmove(s, environ[i], j);
@@ -481,14 +495,15 @@ void crm_vht_init(int argc, char **argv)
         }
     }
 }
+
+
 //           routine to put a variable into the temporary (tdw)
 //           buffer.  names and values end up interleaved
 //           sequentially, separated by newlines.  TDW really should have
 //           been called the idw (Isolated Data Window) but it's too
 //           late to fix it now.
 //
-//
-void crm_set_temp_nvar(char *varname, char *value, int vallen)
+void crm_set_temp_nvar(const char *varname, const char *value, int vallen)
 {
     int namestart, namelen;
     int valstart;
@@ -580,9 +595,9 @@ void crm_set_temp_nvar(char *varname, char *value, int vallen)
 //     Use ONLY where you can be sure no embedded NULs will be seen (i.e.
 //     fixed strings in the early startup.
 //
-void crm_set_temp_var(char *varname, char *value)
+void crm_set_temp_var(const char *varname, const char *value)
 {
-    crm_set_temp_nvar(varname, value, strlen(value));
+    crm_set_temp_nvar(varname, value, (int)strlen(value));
 }
 
 
@@ -1284,7 +1299,9 @@ while (delta + mdw->nchars > data_window_size - 1)
         " increasing data window... ");
     ndw = (char *)calloc(data_window_size, sizeof(ndw[0]));
     if (!ndw)
+	{
         untrappableerror("Couldn't alloc ndw.  This is bad too.\n", "");
+	}
 
     //  now copy the old data window into the new one
     memmove(ndw, mdw->filetext, odws);
@@ -1313,7 +1330,7 @@ while (delta + mdw->nchars > data_window_size - 1)
 //    or the index of the appropriate NULL slot to put
 //    the var in, if not found.
 
-int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
+int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen)
 {
     crmhash_t hc;
     int i, j, k;
@@ -1410,7 +1427,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
 #else
                 fwrite_ASCII_Cfied(stderr, vname, vlen);
 #endif
-                fprintf(stderr, "(len %d) not at %d (empty)\n", vlen, i);
+                fprintf(stderr, "(len %d) not at %d (empty)\n", (int)vlen, i);
                 fprintf(stderr, "Returning the index where it belonged.\n");
             }
             return i;
@@ -1434,7 +1451,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
                 fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
                 fprintf(stderr, " (len %d) found at %d (",
-                    vlen, i);
+                    (int)vlen, i);
                 if (vht[i]->valtxt == cdw->filetext)
                 {
                     fprintf(stderr, "(main)");
@@ -1454,7 +1471,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
             {
                 int ic;
                 fprintf(stderr, "\n Hash clash (at %d): wanted %s (len %d)",
-                    i, vname, vlen);
+                    i, vname, (int)vlen);
                 fprintf(stderr, " but found '");
 #if 0
                 for (ic = 0; ic < vht[i]->nlen; ic++)
@@ -1558,7 +1575,9 @@ void crm_setvar(
         //  allocate a fresh, empty VHT cell
         vht[i] = (VHT_CELL *)calloc(1, sizeof(vht[i][0]));
         if (!vht[i])
+		{
             untrappableerror("Couldn't alloc space for VHT cell.  We need VHT cells for variables.  We can't continue.", "");
+		}
 
         //  fill in the name info data
         vht[i]->filename = filename;
@@ -1649,7 +1668,9 @@ int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len)
         char *deathfu;
         deathfu = (char *)calloc((len + 10), sizeof(deathfu[0]));
         if (!deathfu)
+		{
             untrappableerror("Couldn't alloc 'deathfu'.\n  Time to die. ", "");
+		}
         strncpy(deathfu, &(csl->filetext[start]), len);
         deathfu[len] = 0;
         q = fatalerror("Control Referencinge a non-existent variable- this"

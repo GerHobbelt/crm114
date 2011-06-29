@@ -424,5 +424,25 @@
 
 
 
+// a special variable which holds the last error report for watching in the debugger.
+//
+// Of course, the varname could be reached from the CRM script 
+// itself too, but that's not the intent.
+#define HIDDEN_DEBUG_FAULT_REASON_VARNAME	":_?:"
+
+// with that also comes a special NEGATIVE VALUED 'signal' value for the debugger enable counter:
+// 
+// -2 signals the debugger is currently DISabled but will become ENabled in the future
+//    due to a 'debug' statement in the script.
+//
+// -3 signals that the debugger will NEVER be enabled during this run.
+//
+// -1 means the debugger is temporarily disabled by a debugger instruction to be re-ENabled
+//    when hitting a breakpoint.
+//
+#define DEBUGGER_DISABLED_FOREVER			-3
+
+
+
 #endif /* __CRM114_CONFIG_H__ */
 

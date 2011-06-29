@@ -166,24 +166,16 @@ buf[inlen] = hack_c;
     //  GROT GROT GROT must fix this for 8-bit safe error messages
     if (inlen > maxlen)
     {
-        q = fatalerror(
+        fatalerror(
             "You have blown the gaskets while building a string.  Orig string was: ",
             buf);
-        if (q == 0)
-        {
+
             /* return (inlen); -- this is a serious buffer overflow risk as any
             * using routines will assume the maxlen will never be surpassed! */
 #if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
 buf[inlen] = hack_c;
 #endif
             return maxlen;
-        }
-#if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
-buf[inlen] = hack_c;
-#endif
-        return inlen;
-
-        // goto bailout; -- same thing as 'return inlen' anyhow.
     }
 
     //   First thing- do the ANSI \-Expansions
@@ -426,15 +418,12 @@ buf[inlen] = hack_c;
 
     if (tbuf == NULL || vname == NULL)
     {
-        q = fatalerror("Couldn't allocate memory for Q-variable expansion!",
+        fatalerror("Couldn't allocate memory for Q-variable expansion!",
             "Try making the window set smaller with the -w option");
-        if (q == 0)
-        {
 #if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
 buf[inlen] = hack_c;
 #endif
             return inlen;
-        }
     }
 
     //    OK, we might have a :*: substitution operator, so we actually have
@@ -761,13 +750,12 @@ buf[inlen] = hack_c;
                     //      text itself
 
                     char lentext[MAX_VARNAME];
-                    int m, mm;
+                    int m;
 
                     //   the vlen-2 is because we need to get
                     //    rid of the ':'
                     sprintf(lentext, "%d", vlen - 2);
-                    mm = strlen(lentext);
-                    for (m = 0; m < mm && id < maxlen; m++)
+                    for (m = 0; lentext[m] && id < maxlen; m++)
                     {
                         tbuf[id] = lentext[m];
                         id++;
@@ -776,7 +764,7 @@ buf[inlen] = hack_c;
                 else
                 {
                     char lentext[MAX_VARNAME];
-                    int m, mm;
+                    int m;
 
                     //     There really was a variable value by that name.
                     //     suck it out, and splice it's text value
@@ -793,8 +781,7 @@ buf[inlen] = hack_c;
                     //   Actually, we want the _length_ of the variable
                     //
                     sprintf(lentext, "%d", vht[vht_index]->vlen);
-                    mm = strlen(lentext);
-                    for (m = 0; m < mm && id < maxlen; m++)
+                    for (m = 0; lentext[m] && id < maxlen; m++)
                     {
                         tbuf[id] = lentext[m];
                         id++;
@@ -885,7 +872,7 @@ buf[inlen] = hack_c;
                 {
                     //      there was no variable by that name, use the text itself
                     char mathtext[MAX_VARNAME];
-                    int m, mm;
+                    int m;
 
                     vlen = CRM_MIN(MAX_VARNAME - 1, vlen - 2);
                     if (vlen > 0)
@@ -899,7 +886,7 @@ buf[inlen] = hack_c;
                             fprintf(stderr, "Out-Mathtext is -'%s'-\n", mathtext);
                         if (retstat && *retstat < 0)
                         {
-                            q = fatalerror("Problem during math evaluation of ",
+                             fatalerror("Problem during math evaluation of ",
                                 mathtext);
 #if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
 buf[inlen] = hack_c;
@@ -915,8 +902,7 @@ buf[inlen] = hack_c;
                         m = 0;
                     }
 
-                    mm = strlen(mathtext);
-                    for (m = 0; m < mm && id < maxlen; m++)
+                    for (m = 0; mathtext[m] && id < maxlen; m++)
                     {
                         tbuf[id] = mathtext[m];
                         id++;
@@ -925,7 +911,7 @@ buf[inlen] = hack_c;
                 else
                 {
                     char mathtext[MAX_VARNAME];
-                    int m, mm;
+                    int m;
 
                     //     There really was a variable value by that name.
                     //     suck it out, and splice it's text value
@@ -949,7 +935,7 @@ buf[inlen] = hack_c;
                     m = strmath(mathtext, vlen - 2, MAX_VARNAME, retstat);
                     if (retstat && *retstat < 0)
                     {
-                        q = fatalerror("Problem during math evaluation of ",
+                        fatalerror("Problem during math evaluation of ",
                             mathtext);
 #if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
 buf[inlen] = hack_c;
@@ -958,8 +944,7 @@ buf[inlen] = hack_c;
 
                         // goto bailout; -- same thing as 'return inlen' anyhow.
                     }
-                    mm = strlen(mathtext);
-                    for (m = 0; m < mm && id < maxlen; m++)
+                    for (m = 0; mathtext[m] && id < maxlen; m++)
                     {
                         tbuf[id] = mathtext[m];
                         id++;
@@ -994,7 +979,9 @@ buf[inlen] = hack_c;
     {
         fprintf(stderr, " Returned length from qexpandvar is %d\n", inlen);
         if (retstat)
+		{
             fprintf(stderr, "retstat was: %d\n", *retstat);
+		}
     }
 #if PROVE_BOGUS_DATA_BEYOND_DOES_NOT_CORRUPT
 buf[inlen] = hack_c;

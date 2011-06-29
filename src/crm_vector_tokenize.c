@@ -570,7 +570,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
             int b;
             int e;
             int token_len;
-            char *token;
+            const char *token;
 
             //         skip non-graphical characters
             for (b = 0; b < txt_len && !crm_isgraph(txt[b]); b++)
@@ -697,7 +697,7 @@ static int default_regex_VT_tokenizer_func(VT_USERDEF_TOKENIZER *obj,
         {
             int status;
             int token_len;
-            char *token;
+            const char *token;
 
             status = crm_regexec(&obj->regcb, txt, txt_len, WIDTHOF(obj->match), obj->match, obj->regex_compiler_flags, NULL);
             if (status != REG_OK)
@@ -820,7 +820,7 @@ static int default_regex_VT_tokenizer_cleanup_func(VT_USERDEF_TOKENIZER *obj)
 {
     if (obj->regex_malloced)
     {
-        free((void *)obj->regex);
+        free(obj->regex);
         obj->regex = NULL;
     }
     crm_regfree(&obj->regcb);
@@ -998,6 +998,10 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
             s1len = crm_nexpandvar(s1text, s1len, MAX_PATTERN);
 
             tokenizer->regex = dst = calloc(s1len + 1, sizeof(tokenizer->regex[0]));
+        if (!dst)
+        {
+            untrappableerror("Cannot allocate VT memory", "Stick a fork in us; we're _done_.");
+        }
             memcpy(dst, s1text, s1len * sizeof(tokenizer->regex[0]));
             dst[s1len] = 0;
             tokenizer->regexlen = s1len;
@@ -1008,6 +1012,10 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
             char *dst;
 
             tokenizer->regex = dst = calloc(regex_len + 1, sizeof(tokenizer->regex[0]));
+        if (!dst)
+        {
+            untrappableerror("Cannot allocate VT memory", "Stick a fork in us; we're _done_.");
+        }
             memcpy(dst, regex, regex_len * sizeof(tokenizer->regex[0]));
             dst[regex_len] = 0;
             tokenizer->regexlen = regex_len;

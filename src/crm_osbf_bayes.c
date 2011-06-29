@@ -313,6 +313,10 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
     learnfilename = strdup(&htext[i]);
+        if (!learnfilename)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
 
     //             and stat it to get it's length
     k = stat(learnfilename, &statbuf);

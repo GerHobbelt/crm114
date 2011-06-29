@@ -468,11 +468,11 @@ static void agglomerative_averaging_cluster(CLUMPER_STATE_STRUCT *s, int goal)
 
     if (!clusters)
     {
-        untrappableerror("Cannot allocate cluster block", "");
+        untrappableerror("Cannot allocate cluster block", "Stick a fork in us; we're _done_.");
     }
     if (!M)
     {
-        untrappableerror("Cannot allocate distance matrix M[]", "");
+        untrappableerror("Cannot allocate distance matrix M[]", "Stick a fork in us; we're _done_.");
     }
 
     for (i = 1; i < n - 1; i++)

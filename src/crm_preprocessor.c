@@ -254,6 +254,10 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 CRM_ASSERT(ecsl->nchars < max_pgmsize);
                 ecsl->filetext[ecsl->nchars] = 0;
                 ecsl->filename = strdup(insertfilename); // [i_a] insertfilename will get out of scope soon and we need to keep this around till the end
+        if (!ecsl->filename)
+        {
+            untrappableerror("Cannot allocate preprocessor memory", "Stick a fork in us; we're _done_.");
+        }
                 ecsl->filename_allocated = 1;
 
                 //

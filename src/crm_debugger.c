@@ -23,6 +23,8 @@
 
 
 
+int inside_debugger = 0;
+
 static FILE *mytty = NULL;
 static char **show_expr_list = NULL;
 static char *last_e_expression = NULL;
@@ -167,6 +169,195 @@ int dbg_decode_step_mode(char **arg)
 
 
 /*
+   Decode N,M and N.M line number specs; also supported: ^,M and N,$ for start/end.
+
+   *start and *end are set to the decoded number range (0 for ^, INT_MAX for $)
+   and number of decoded characters is returned.
+
+   Also support other formats:
+
+     N<M  from M before N upto N including. N may be removed to signal 'current'. No M means 'everything'.
+
+	 N>M  from N upto M after N. N may be removed to signal 'current'. No M means 'everything'.
+
+	 N~M  from M before N upto M after N. default M = 3, default N = current.
+
+
+   Negative return code means decode failure:
+
+   -2: leading cruft before ./,
+
+   -3: non-numeric cruft immediately after ./, which do not match any of 'accepted_follow_chars'
+*/
+int decode_line_number_range(const char *buf, int buflen, int *start, int *end, int current, const char *accepted_follow_chars)
+{
+	char s[256];
+	int i;
+	int val1;
+		int val2;
+		char *s2;
+		int ret = 0;
+		int mode;
+
+		CRM_ASSERT(start != NULL);
+		CRM_ASSERT(end != NULL);
+		CRM_ASSERT(buf != NULL);
+		CRM_ASSERT(buflen >= 0);
+
+		if (buflen == 0)
+		{
+			buflen = (int)strlen(buf);
+		}
+		buflen = CRM_MIN(WIDTHOF(s) - 2, buflen);
+	strncpy(s, buf, buflen);
+	s[buflen] = 0;
+	buflen = (int)strlen(s);
+	s[buflen+1] = 0;    // special extra NUL for use by the 's2' section below.
+
+	i = (int)strcspn(s, ".,<>~");
+	mode = s[i];
+
+		CRM_ASSERT(i + 1 < WIDTHOF(s));
+
+		// set first section plus optional ./, as 'decoded' for later.
+		ret = (s[i] == 0 ? i : i + 1);
+
+		// split buf in two parts:
+		s2 = s + i + 1;
+		s[i] = 0;
+
+		// decode first part:
+			i = sscanf(s, " %d", &val1);
+		if (i != 1)
+		{
+			// if it's all whitespace up front, set start as 'current'
+			i = (int)strspn(s, " \t\r\n");
+			if (s[i] == 0)
+			{
+				*start = current;
+			}
+			else
+			{
+				// failed to decode: cruft preceeding the initial . or ,
+				return -2;
+			}
+		}
+		else
+		{
+			*start = val1;
+		}
+
+		// decode second part
+		CRM_ASSERT(strcspn(s2, "") < WIDTHOF(s)); // that's why we NULled both [l-1] and [l-2] at the start up there: two strings for the price of one.
+
+		i = sscanf(s2, " %d", &val2);
+		if (i != 1)
+		{
+			// if it's all whitespace at the end, set end to 'current'
+			i = (int)strspn(s2, " \t\r\n");
+			if (s2[i] == 0)
+			{
+				*end = current;
+
+				// set section as 'decoded' for later.
+				ret += (int)strlen(s2);
+			}
+			else if (s2[i] == '$')
+			{
+				// end is end: 
+				*end = INT_MAX;
+
+				// set section as 'decoded' for later.
+				ret += i + 1; // one past the '$'
+			}
+			else if (!accepted_follow_chars 
+				|| !strchr(accepted_follow_chars, s2[i]))
+			{
+				// failed to decode: cruft following the initial . or ,
+				return -3;
+			}
+			else
+			{
+				// special case: trailing cruft is acceptable cruft.
+				*end = current;
+
+				// set section as 'decoded' for later.
+				ret += i;
+			}
+		}
+		else
+		{
+			*end = val2;
+
+			// skip whitespace and number and more whitespace:
+			i = (int)strspn(s2, " \t\r\n");
+			i += (int)strspn(s2 + i, "01234567890x");
+			i += (int)strspn(s2 + i, " \t\r\n");
+
+			ret += i;
+		}
+
+		// process 'mode' now:
+		switch (mode)
+		{
+		default:
+			// format: N, without the M: N-N
+			*end = *start;
+			break;
+
+		case '<':
+			// everything before N:
+			if (*end != 0)
+			{
+				// range: N<M: M lines before current
+				int e = *start;
+
+				*start = e - *end;
+				*end = e;
+			}
+			else
+			{
+				*end = *start;
+				*start = 0;
+			}
+			break;
+		
+		case '>':
+			// everything AFTER N:
+			if (*end != 0)
+			{
+				// range: N>M: M lines after current
+			    *end += *start;
+			}
+			else
+			{
+				*end = INT_MAX;
+			}
+			break;
+		
+		case '~':
+			// *end around *start
+			if (*start != 0)
+			{
+				current = *start;
+			}
+			if (*end == 0 || *end == INT_MAX)
+			{
+				*end = 3; // default
+			}
+			// don't care about integer wrap; if that happens, it was intentional from the caller anyway.
+			*start = current - *end;
+			*end = current + *end;
+			break;
+		}
+			// also don't care if *end < *start; again, if that happens, it was probably intentional from the caller anyway.
+
+		return ret;
+}
+
+
+
+/*
  * Return 0 on success, non-zero on failure.
  *
  *dst will point to a strdup()ped string when succesful; *arg will have been updated too.
@@ -281,7 +472,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                     else
                     {
                         // okay, expand...
-                        int expr_len = (int)strlen(show_expr_list[idx - 1]);
+                        size_t expr_len = strlen(show_expr_list[idx - 1]);
 
                         if (expr_len > WIDTHOF(buf) - 1 - i)
                         {
@@ -290,7 +481,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                         else
                         {
                             strcpy(buf + i, show_expr_list[idx - 1]);
-                            i += expr_len;
+                            i += (int)expr_len;
 
                             dbg_arg = end;
                             // ^^^^ this points now to the terminating '%', which
@@ -481,6 +672,10 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
 
     // now feed it back to caller in malloc()ed space:
     *dst = strdup(buf);
+        if (!*dst)
+        {
+            untrappableerror("Cannot allocate debugger memory", "Stick a fork in us; we're _done_.");
+        }
 
     // and feed back corrected dbg_arg:
     *arg = dbg_arg;
@@ -532,6 +727,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
     MCT_CELL *current_crm_command = NULL;
     const STMT_TABLE_TYPE *current_crm_commanddef = NULL;
 
+	inside_debugger = 1; // signal the other code section we're now inside the debugger!
+
     CRM_ASSERT(csl != NULL);
 
     if (csl != NULL
@@ -549,6 +746,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
     {
         untrappableerror("The debugger has found that the CRM114 compiler screwed up somewhere. ",
             "The inspected statement doesn't seem valid. You may scream now...");
+
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
         return -1;
     }
 
@@ -566,6 +766,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
     {
         // programmed breakpoint detected ('debug' statement): allow the debugger to pop up on the NEXT statement!
         dbg_step_mode &= ~SM_PENDING;
+
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
         return 0;
     }
     else if (reason_for_the_call == CRM_DBG_REASON_BREAKPOINT)
@@ -589,6 +792,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
         {
             if (csl->calldepth >= dbg_exec_calldepth)
             {
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
                 return 0;
             }
         }
@@ -598,10 +803,14 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
         {
             if (csl->calldepth >= dbg_exec_calldepth)
             {
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
                 return 0;
             }
             if (current_crm_command->nest_level >= dbg_exec_nestlevel)
             {
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
                 return 0;
             }
         }
@@ -611,6 +820,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
         {
             if (csl->calldepth > dbg_exec_calldepth)
             {
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
                 return 0;
             }
         }
@@ -618,6 +829,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
         {
             if (!current_crm_commanddef->is_executable)
             {
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
                 return 0;
             }
         }
@@ -651,7 +864,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
         show_expr_list = calloc(1, sizeof(show_expr_list[0]));
         if (!show_expr_list)
         {
-            untrappableerror("Cannot allocate debugger expression show list", "");
+            untrappableerror("Cannot allocate debugger expression show list", "Stick a fork in us; we're _done_.");
         }
         show_expr_list[0] = NULL;
     }
@@ -660,21 +873,21 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
         dbg_inbuf = calloc(dbg_iobuf_size, sizeof(dbg_inbuf[0]));
         if (!dbg_inbuf)
         {
-            untrappableerror("Cannot allocate debugger input buffer", "");
+            untrappableerror("Cannot allocate debugger input buffer", "Stick a fork in us; we're _done_.");
         }
         dbg_inbuf[0] = 0;
 
         dbg_outbuf = calloc(dbg_iobuf_size, sizeof(dbg_outbuf[0]));
         if (!dbg_outbuf)
         {
-            untrappableerror("Cannot allocate debugger output buffer", "");
+            untrappableerror("Cannot allocate debugger output buffer", "Stick a fork in us; we're _done_.");
         }
         dbg_outbuf[0] = 0;
 
         dbg_last_command = calloc(dbg_iobuf_size, sizeof(dbg_last_command[0]));
         if (!dbg_last_command)
         {
-            untrappableerror("Cannot allocate debugger input recall buffer", "");
+            untrappableerror("Cannot allocate debugger input recall buffer", "Stick a fork in us; we're _done_.");
         }
         dbg_last_command[0] = 0;
     }
@@ -721,22 +934,67 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                     // reset traces to stored setting
                     user_trace = old_user_trace;
                     internal_trace = old_internal_trace;
-                    untrappableerror("cannot allocate buffer to display watched expressions.", "");
+                    untrappableerror("cannot allocate buffer to display watched expressions.", "Stick a fork in us; we're _done_.");
                 }
             }
 
+			fprintf(stderr, "\n--- watched expressions: ------------------------------\n");
             for (watch = 0; show_expr_list[watch]; watch++)
             {
                 int retval = 0;
+				int op_pos;
+				int expand_flags = 0;
+				int len;
 
-                strcpy(show_expr_buffer, show_expr_list[watch]);
-                crm_zexpandvar(show_expr_buffer, (int)strlen(show_expr_buffer), data_window_size,
-                    &retval,
-                    CRM_EVAL_ANSI
-                    | CRM_EVAL_STRINGVAR
-                    | CRM_EVAL_REDIRECT
-                    | CRM_EVAL_STRINGLEN
-                    | (strstr(show_expr_buffer, ":@") ? CRM_EVAL_MATH : 0));
+                strncpy(show_expr_buffer, show_expr_list[watch], data_window_size);
+				show_expr_buffer[data_window_size - 1] = 0;
+				len = (int)strlen(show_expr_buffer);
+
+				// what's the first operator that we see? Try to keep expansion to the bare minimum so watched
+				// EXPRESSIONS are not processed any more than needed.
+				for (op_pos = strcspn(show_expr_buffer, ":"); op_pos < len; strcspn(show_expr_buffer + op_pos + 1, ":"))
+				{
+					CRM_ASSERT(show_expr_buffer[op_pos] == ':'); 
+					CRM_ASSERT(op_pos + 1 <= len); 
+					switch (show_expr_buffer[op_pos+1])
+				{
+				default:
+					continue;
+
+				case '@':
+					expand_flags |= (CRM_EVAL_ANSI
+                    | CRM_EVAL_MATH
+					 | CRM_EVAL_STRINGLEN
+					| CRM_EVAL_REDIRECT
+					| CRM_EVAL_STRINGVAR);
+
+				case '#':
+					expand_flags |= (CRM_EVAL_ANSI
+                    | CRM_EVAL_MATH
+					 | CRM_EVAL_STRINGLEN
+					| CRM_EVAL_REDIRECT
+					| CRM_EVAL_STRINGVAR);
+					break;
+
+				case '+':
+					expand_flags |= (CRM_EVAL_ANSI
+                    | CRM_EVAL_MATH
+					 | CRM_EVAL_STRINGLEN
+					| CRM_EVAL_REDIRECT
+					| CRM_EVAL_STRINGVAR);
+					break;
+
+				case '*':
+					expand_flags |= (CRM_EVAL_ANSI
+                    | CRM_EVAL_STRINGVAR);
+					break;
+				}
+					break;
+				}
+                
+				retval = crm_zexpandvar(show_expr_buffer, (int)strlen(show_expr_buffer), data_window_size,
+						&retval,
+                    expand_flags);
 
                 fprintf(stderr, "[#%2d]: '%s' (%d) /%s/\n", watch + 1, show_expr_list[watch], retval, show_expr_buffer);
             }
@@ -926,7 +1184,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
         case 'c':
         case 'C':
-            debug_countdown = 1;
+            debug_countdown = 0;
 
             if (dbg_arg)
             {
@@ -1114,6 +1372,10 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
                         maxlen = 0;
                         vht_ref = calloc(vht_size, sizeof(vht_ref[0]));
+        if (!vht_ref)
+        {
+            untrappableerror("Cannot allocate debugger memory", "Stick a fork in us; we're _done_.");
+        }
 
                         len = 0;
                         for (i = 0; i < vht_size; i++)
@@ -1197,7 +1459,15 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                             if (show_expr_list[j] == NULL)
                             {
                                 show_expr_list = realloc(show_expr_list, (j + 2) * sizeof(show_expr_list[0]));
+        if (!show_expr_list)
+        {
+            untrappableerror("Cannot allocate debugger memory", "Stick a fork in us; we're _done_.");
+        }
                                 show_expr_list[j] = strdup(dbg_outbuf);
+        if (!show_expr_list[j])
+        {
+            untrappableerror("Cannot allocate debugger memory", "Stick a fork in us; we're _done_.");
+        }
                                 show_expr_list[j + 1] = NULL;
 
                                 fprintf(stderr, "'e' expression added to the watch list:\n"
@@ -1225,7 +1495,15 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                     if (show_expr_list[j] == NULL)
                     {
                         show_expr_list = realloc(show_expr_list, (j + 2) * sizeof(show_expr_list[0]));
+        if (!show_expr_list)
+        {
+            untrappableerror("Cannot allocate debugger memory", "Stick a fork in us; we're _done_.");
+        }
                         show_expr_list[j] = strdup(last_e_expression);
+        if (!show_expr_list[j])
+        {
+            untrappableerror("Cannot allocate debugger memory", "Stick a fork in us; we're _done_.");
+        }
                         show_expr_list[j + 1] = NULL;
 
                         fprintf(stderr, "'e' expression added to the watch list:\n"
@@ -1430,18 +1708,22 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 // skip until ';' seperator or newline:
                 cmd_done_len = (int)strcspn(dbg_inbuf, ";\r\n");
 
-                i = sscanf(&dbg_inbuf[1], " %d.%d", &stmtnum, &endstmtnum);
-                if (i <= 0)
-                {
-                    stmtnum = csl->cstmt;
+				i = decode_line_number_range(&dbg_inbuf[1], 0, &stmtnum, &endstmtnum, csl->cstmt, ";");
 
-                    endstmtnum = stmtnum;
-
-                    // +N = show current + N subsequent statements
-                    i = sscanf(&dbg_inbuf[1], " >%d", &j);
-                    if (i == 1)
-                    {
-                        endstmtnum = stmtnum + j;
+				if (i < 0)
+				{
+					fprintf(stderr, "Debugger: Invalid number range specified: %s\n", &dbg_inbuf[1]);
+					fprintf(stderr, "          Accepted formats (where N and M are numbers):\n"
+                                    "            N.M\n"
+                                    "            N,M\n"
+                                    "            <M\n"
+									"            >M\n"
+                                    "            N~M\n"
+                                    "          N and/or M may be removed to use default value there.\n");
+				}
+				else
+				{
+					cmd_done_len = i + 1;
 
                         // sanity check: do not print beyond end of statement range; no need
                         // to report an error message in the loop below...
@@ -1449,59 +1731,18 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                         {
                             endstmtnum = csl->nstmts;
                         }
-                    }
-                    else
-                    {
-                        // ~N: show a 'context' of +/- N statements around the current statement
-                        i = sscanf(&dbg_inbuf[1], " ~%d", &j);
-                        if (i == 1)
-                        {
-                            endstmtnum = stmtnum + j;
-                            stmtnum -= j;
-
-                            // sanity check: do not print beyond end of statement range; no need
-                            // to report an error message in the loop below...
-                            if (endstmtnum > csl->nstmts)
-                            {
-                                endstmtnum = csl->nstmts;
-                            }
                             if (stmtnum < 0)
                             {
                                 stmtnum = 0;
                             }
-                        }
-                    }
-                }
-                else if (i == 1)
-                {
-                    endstmtnum = stmtnum;
-                }
-                else if (i == 2)
-                {
-                    // sanity check: do not print beyond end of statement range; no need
-                    // to report an error message in the loop below...
-                    if (endstmtnum > csl->nstmts)
-                    {
-                        endstmtnum = csl->nstmts;
-                    }
-                }
 
-                fprintf(stderr, "\n");
+							fprintf(stderr, "\n--- listing: --------------------------------------------\n");
                 for ( ; stmtnum <= endstmtnum; stmtnum++)
                 {
-                    fprintf(stderr, "statement %d: ", stmtnum);
-                    if (stmtnum < 0 || stmtnum > csl->nstmts)
-                    {
-                        fprintf(stderr, "... does not exist!\n");
-                        if (stmtnum < 0)
-                        {
-                            stmtnum = -1;
-                            continue;
-                        }
-                        break;
-                    }
-                    else
-                    {
+                        int stmt_len;
+
+						fprintf(stderr, /* "statement" */ "%4d: ", stmtnum);
+                    CRM_ASSERT(stmtnum >= 0 && stmtnum <= csl->nstmts);
 #if 0
                         for (j = csl->mct[stmtnum]->start;
                              j < csl->mct[stmtnum + 1]->start;
@@ -1510,14 +1751,12 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                             fprintf(stderr, "%c", csl->filetext[j]);
                         }
 #else
-                        int stmt_len;
-
                         j = csl->mct[stmtnum]->start;
                         stmt_len = csl->mct[stmtnum + 1]->start - j;
                         fprintf(stderr, "%.*s", stmt_len, csl->filetext + j);
 #endif
-                    }
                 }
+				}
             }
             break;
 
@@ -1578,6 +1817,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                     {
                         untrappableerror("The debugger has found that the CRM114 compiler screwed up somewhere. ",
                             "The inspected statement doesn't seem valid. You may scream now...");
+
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
                         return -1;
                     }
                     dbg_exec_nestlevel = current_crm_command->nest_level;
@@ -1715,6 +1957,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
             {
                 untrappableerror("The debugger has found that the CRM114 compiler screwed up somewhere. ",
                     "The inspected statement doesn't seem valid. You may scream now...");
+
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
                 return -1;
             }
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1740,6 +1985,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
             {
                 untrappableerror("The debugger has found that the CRM114 compiler screwed up somewhere. ",
                     "The inspected statement doesn't seem valid. You may scream now...");
+
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
+
                 return -1;
             }
             dbg_exec_nestlevel = current_crm_command->nest_level;
@@ -1759,7 +2007,10 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 int len_decades;
                 int width_decades;
                 VHT_CELL **vht_ref = calloc(vht_size, sizeof(vht_ref[0]));
-
+        if (!vht_ref)
+        {
+            untrappableerror("Cannot allocate debugger memory", "Stick a fork in us; we're _done_.");
+        }
 
                 len = 0;
                 for (i = 0; i < vht_size; i++)
@@ -1965,6 +2216,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
             memmove(dbg_inbuf, dbg_inbuf + cmd_done_len, strlen(dbg_inbuf + cmd_done_len) + 1);
         }
     }
+
+		inside_debugger = 0; // signal the other code section we're now LEAVING the debugger!
 
     return ret_code;
 }

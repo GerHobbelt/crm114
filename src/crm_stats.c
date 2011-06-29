@@ -257,6 +257,10 @@ void print_histogram_float(float *f, int n, int n_buckets)
     double min, max, s;
 
     buckets = calloc(n_buckets, sizeof(buckets[0]));
+        if (!buckets)
+        {
+            untrappableerror("Cannot allocate histogram memory", "Stick a fork in us; we're _done_.");
+        }
     min = max = f[0];
     for (i = 1; i < n; i++)
         if (f[i] > max)

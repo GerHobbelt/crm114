@@ -861,5 +861,52 @@ extern FILE *crm_stderr;
 
 
 
+
+#if defined(_NORMAL_BLOCK) && defined(_CRT_BLOCK)
+
+#define MSVC_DEBUG_MALLOC_SERIES		1
+
+#undef free
+#undef malloc
+#undef realloc
+#undef calloc
+#undef strdup
+
+#define   strdup(s)				crm114_strdup(s, _NORMAL_BLOCK, __FILE__, __LINE__)
+#define   malloc(s)             crm114_malloc(s, _NORMAL_BLOCK, __FILE__, __LINE__)
+#define   calloc(c, s)          crm114_calloc(c, s, _NORMAL_BLOCK, __FILE__, __LINE__)
+#define   realloc(p, s)         crm114_realloc(p, s, _NORMAL_BLOCK, __FILE__, __LINE__)
+#define   free(p)               crm114_free((void **)&(p), _NORMAL_BLOCK, __FILE__, __LINE__)
+
+char *crm114_strdup(const char *str, int blocktype, const char *filename, int lineno);
+void *crm114_malloc(size_t count, int blocktype, const char *filename, int lineno);
+void *crm114_realloc(void *ptr, size_t count, int blocktype, const char *filename, int lineno);
+void *crm114_calloc(size_t count, size_t elem_size, int blocktype, const char *filename, int lineno);
+void crm114_free(void **ptrref, int blocktype, const char *filename, int lineno);
+
+
+#else
+
+#undef free
+#undef malloc
+#undef realloc
+#undef calloc
+#undef strdup
+
+char *crm114_strdup(const char *str);
+void *crm114_malloc(size_t count);
+void *crm114_realloc(void *ptr, size_t count);
+void *crm114_calloc(size_t count, size_t elem_size);
+void crm114_free(void **ptrref);
+
+#define strdup(s)		crm114_strdup(s)
+#define malloc(c)       crm114_malloc(c)
+#define realloc(p, c)   crm114_realloc(p, c)
+#define calloc(c, s)    crm114_calloc(c, s)
+#define free(p)         crm114_free((void **)&(p))
+
+#endif
+
+
 #endif /* __CRM114_SYSINCLUDES_H__ */
 

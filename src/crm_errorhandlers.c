@@ -741,6 +741,8 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
         args);
     fputs(reason, stderr);
 
+	// [i_a] no use storing the reason message in a variable now...
+
     if (engine_exit_base != 0)
     {
         exit(engine_exit_base + 2);
@@ -796,6 +798,20 @@ int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const c
         original_statement_line,
         fmt,
         args);
+
+	// [i_a] prevent side effects to the script execution from happening due to errors while inside the debugger,
+	// e.g. due to failures in the watched expressions...
+	if (inside_debugger)
+	{
+		fputs(reason, stderr);
+		return -1;
+	}
+
+	// [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
+	if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
+	{
+	crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
+	}
 
     trap_catch = check_for_trap_handler(csl, reason);
     if (trap_catch == 0)
@@ -857,6 +873,20 @@ int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, cons
         original_statement_line,
         fmt,
         args);
+
+	// [i_a] prevent side effects to the script execution from happening due to errors while inside the debugger,
+	// e.g. due to failures in the watched expressions...
+	if (inside_debugger)
+	{
+		fputs(reason, stderr);
+		return -1;
+	}
+
+	// [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
+	if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
+	{
+	crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
+	}
 
     trap_catch = check_for_trap_handler(csl, reason);
     if (trap_catch == 0)
@@ -941,7 +971,7 @@ void crm_output_profile(CSL_CELL *csl)
 //  and branch to the chosen location -1 (due to the increment in the
 //  main invocation loop)
 
-int crm_trigger_fault(char *reason)
+int crm_trigger_fault(const char *reason)
 {
     //
     //    and if the fault is correctly trapped, this is the fixup.
@@ -1094,9 +1124,7 @@ int crm_trigger_fault(char *reason)
                     rnlen = crm_nexpandvar(reasonname, apb.p1len, MAX_VARNAME);
                     //   crm_nexpandvar null-terminates for us so we can be
                     //   8-bit-unclean here
-                    crm_set_temp_nvar(reasonname,
-                        reason,
-                        strlen(reason));
+                    crm_set_temp_var(reasonname, reason);
                 }
                 done = 1;
             }

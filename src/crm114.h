@@ -106,8 +106,8 @@ void crm_setvar(
                );
 
 //   put a variable and a value into the temporary area
-void crm_set_temp_nvar(char *varname, char *value, int vallen);
-void crm_set_temp_var(char *varname, char *value);
+void crm_set_temp_nvar(const char *varname, const char *value, int vallen);
+void crm_set_temp_var(const char *varname, const char *value);
 
 //   put a variable and a window-based value into the temp area
 void crm_set_windowed_var(char *varname,
@@ -171,7 +171,7 @@ int crm_expandvar(char *buf, int maxlen);
 //   it's either stored in, or ought to be stored in (i.e. check for a NULL
 //   VHT cell before use).
 
-int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen);
+int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen);
 
 
 //     crm_extractflag - given an arbitrary string cmd (start/len)
@@ -775,7 +775,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call);
 int crm_nexpandvar(char *buf, int inlen, int maxlen);
 
 //     execute a FAULT triggering.
-int crm_trigger_fault(char *reason);
+int crm_trigger_fault(const char *reason);
 
 //     do an microgroom of a hashed file.
 int crm_microgroom(FEATUREBUCKET_TYPE *h,

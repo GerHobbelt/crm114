@@ -212,6 +212,10 @@ Builtin variables:
           :_ppid:              - process ID of the parent of the current process.
           :_dw:                - the current data window contents (usually the default arg)
           :_iso:               - the current isolated data block (change at your own peril!)
+          
+          :_?:                 - watchable variable: last (trappable) failure report message; ONLY AVAILABLE
+                                 when the debugger will be used (-d commandline switch / 'debug'
+                                 statement in script) 
 
 ----  VARIABLE EXPANSION  ----
 

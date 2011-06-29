@@ -651,8 +651,8 @@ static int deflate(SCM_STATE_STRUCT *s, char *t, int len, int *starts, int
 		fatalerror_ex(SRC_LOC(), "FSCM tries to deflate %d data words to a global buffer which is too small (%d words). "
 			"Please run crm114 with the '-w %d' (or a larger number) commandline switch.",
 				len,
-				data_window_size / sizeof(int),
-				len * sizeof(int));
+				(int)(data_window_size / sizeof(int)),
+				(int)(len * sizeof(int)));
 		return -1;
 	}
 

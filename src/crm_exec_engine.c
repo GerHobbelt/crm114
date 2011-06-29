@@ -539,6 +539,13 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             }
             strncpy(reason, rbuf, rlen + 1);
             reason[rlen + 1] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
+
+	// [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
+	if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
+	{
+	crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
+	}
+
             fresult = crm_trigger_fault(reason);
             if (fresult != 0)
             {
@@ -783,6 +790,10 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                 goto invoke_bailout;
             }
             newcsl = (CSL_CELL *)calloc(1, sizeof(newcsl[0]));
+        if (!newcsl)
+        {
+            untrappableerror("Cannot allocate compiler memory", "Stick a fork in us; we're _done_.");
+        }
             newcsl->filename = csl->filename;
 			newcsl->filename_allocated = 0;
             newcsl->filetext = csl->filetext;
@@ -1311,7 +1322,7 @@ invoke_done:
     }
 
 	//     give the debugger one last chance to do things.
-    if (debug_countdown > -2) // also pop up the debugger when in 'continue' or 'counted' run
+    if (debug_countdown > DEBUGGER_DISABLED_FOREVER) // also pop up the debugger when in 'continue' or 'counted' run
 	{
 		int end_stmt_nr = csl->cstmt;
 

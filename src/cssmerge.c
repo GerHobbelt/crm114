@@ -210,10 +210,10 @@ int main(int argc, char **argv)
                 nonfatalerror("Couldn't write the header to the .CSS file named "
                           , argv[optind]);
                 fclose(f);
-                free((void *)user_msg);
+                free(user_msg);
                 return -1;
             }
-            free((void *)user_msg);
+            free(user_msg);
 
             //       put in  bytes of NULL
 

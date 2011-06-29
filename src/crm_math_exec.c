@@ -33,15 +33,11 @@ static int math_formatter(double value, char *format, char *buf, int buflen);
 int strmath(char *buf, int inlen, int maxlen, int *retstat)
 {
     int status;
-    int old_internal_trace;
-
-    old_internal_trace = internal_trace;
 
     if (inlen < 0)
     {
         fatalerror("Bug in caller to strmath() - it makes no sense to",
             " have a negative length string!\n");
-        internal_trace = old_internal_trace;
         return 0;
     }
 
@@ -51,7 +47,6 @@ int strmath(char *buf, int inlen, int maxlen, int *retstat)
         memmove(buf, &buf[1], inlen - 1);
         buf[inlen - 1] = 0;
         status = stralmath(buf, inlen - 1, maxlen, retstat);
-        internal_trace = old_internal_trace;
         return status;
     }
     if (buf[0] == 'R')
@@ -60,7 +55,6 @@ int strmath(char *buf, int inlen, int maxlen, int *retstat)
         memmove(buf, &buf[1], inlen - 1);
         buf[inlen - 1] = 0;
         status = strpnmath(buf, inlen - 1, maxlen, retstat);
-        internal_trace = old_internal_trace;
         return status;
     }
 

@@ -1,108 +1,293 @@
+2008-05-01 Ger Hobbelt
+
+    * The error handling routines now 'know' when we're inside the
+      debugger, so failures in watched expressions (which can easily
+      happen ;-) ) won't have side-effects such as execution of trap
+      handlers in the script itself (ouch!).
+
+    * Improved the debugger and updated QUICKREF.txt accordingly.
+
+    * Debugger 'v' command: line range handling split off to a separate
+      routine; now handles a more flexible format too (every number can
+      be 'defaulted').
+
+    * Did we now finally stamp out all the boundary bugs in expandvar()?
+      -- This following a bug report by Jason Lewis, which showed a
+      boundary bug in vanilla CRM114, but upon renewed inspection I
+      found the GerH copy still could also suffer from boundary issues
+      (though is fewer, rather obscure conditions, yet a boundary bug is
+      one too many anyhow).
+
+    * expandvar() code cleanup - at least a bit.
+
+      KNOWN BUG: ":@: :@: 1 + 1 ::" is not handled properly by
+                 expandvar: nested match expressions in an 'eval'
+                 statement screw up BADLY.
+
+      TODO: for performance reasons, the quad loop through the buffer
+            for each expansion should be reduced to a single round only.
+            This can be nicely combined with the fix for KNOWN BUG
+            above.
+
+    * debugger: 'c' restored to its proper glory: 'c' without any arg
+      should just GO. We've got 'n' for single stepping, don't we?
+
+    * makefiles/configure: upgraded to the latest autoconf/automake/etc.
+
+      KNOWN BUGS: some of the AX_... macros use undocumented
+                  AC_RUN_LOG() which does not exist anymore in the
+                  latest release.
+
+                  This must be fixed (diff commandline flag checks and a
+                  few others suffer from this)
+
+    * makefiles: 'make check' target now does something VERY useful: it
+      runs all the megatest tests (except Neural Net) as separate tests.
+      See tests/Makefile.am for the individual make targets: use these
+      to test only a subset of the available tests -- very handy when
+      debugging a certain bit of code or classifier.
+
+      This is another step towards a complete 'standardized' make/conf
+      setup:
+
+
+        ./bootstrap      <-- for maintainers only!
+
+        ./configure
+
+        make
+
+        make check
+
+        make install
+
+        make clean
+
+      and for maintainers the extra:
+
+        make distcheck
+
+        make dist
+
+        make distclean
+
+    * KNOWN BUG: 'make distcheck' does not really like my 'alternative'
+                 .tar.gz distro archive naming scheme, so it barfs after
+                 running most of the tests.
+
+                 This needs to be fixed.
+
+    * Win32: KNOWN BUG: syscall() is b0rked: generally it'll work, but
+             there are certain spurious conditions related to the OS and
+             environment which can cause the current code to hang
+             forever.
+
+             This should be fixed by moving to the new fully async
+             hnadling scheme -- not ready for release that yet. :-(
+
+    * compiler checks (table in crm_compiler.c) have been corrected for
+      some of the more modern (experimental) classifiers.
+
+    * makefiles: if you want a verbose 'make check', i.e. when you want
+      to debug the scripts, do so using the environment variable:
+
+         CRM114_MAKE_SCRIPTS_DEBUG=1; export CRM114_MAKE_SCRIPTS_DEBUG;
+
+    * makefiles/tests: a new testscript.sh[.in] test driver has been
+      added. This driver is used to run the individual tests; several
+      specialized postprocessing filter scripts (using SED and AWK)
+      having been added too, so results of a test can be validated in a
+      flexible way. For example, see this classifier test which takes
+      certain floating point issues into account upon auto-
+      comparison/validation:
+
+        Support_Vector_Machine_Unigram_test1: $(TEST_PREREQUISITES) test_timing_seconds_announcement
+            $(E) "*******************************************"
+            $(E) "* Support Vector Machine (SVM) unigram classifier "
+            $(E) "*******************************************"
+            [...]
+            $(SILENT)\
+            CRM114_CHECK_FILTER_ARGS="-v prob=0.1 -v pR=0.2"; export CRM114_CHECK_FILTER_ARGS; \
+            ./testscript.sh '-{ isolate (:s:); {classify < svm unigram unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' \
+                $(srcdir)/mt_ng_Support_Vector_Machine_SVM_unigram_1.input \
+                $(refdir)/Support_Vector_Machine_Unigram_test1.step4.refoutput \
+                $(builddir)/crm114_classify.filter.sh
+            [...]
+
+      Note the CRM114_CHECK_FILTER_ARGS environment variable in there
+      which sets custom AWK variables to configure the custom AWK/SH
+      postprocess filter script 'crm114_classify.filter.sh' to tolerate
+      a certain spread in 'prob' probability and 'pR' values. See also
+      the 'crm114_classify.filter.awk' AWK script which does the
+      postprocessing.
+
+      The concept
+      -----------
+
+      testscript.sh is the main driver: it starts CRM114 with the
+      specified script (either file or 'literal' '-{...}' script code;
+      feed CRM114 any specified input file/literal text over stdin and
+      store the stdout and stderr output in temporary files, which are
+      merged with the CRM114 exit code into a template file, which is
+      fed, together with its equivalent reference file from the
+      tests/ref/ directory, to the postprocessing section: this is
+      either a custom script wich compares both files, or standard UNIX
+      diff. Any differences found are reported to the console and will
+      cause cause the test to 'FAIL'. A match with the reference file
+      will produce and 'OK' instead.
+
+      The only custom postprocessing/diff script at this date which
+      accepts extra parameters is crm114_classify.filter.sh, which gets
+      its extra args through aforementioned environment variable.
+
+      The other custom scripts (tests/ref/*.filter.sh) serve particular
+      purposes and don't require parameterization.
+
+    * TODO: tests/Makefile.am cleanup: now some of those lines are
+            _extremely_ large; these may be broken into readable bits.
+
+
 2008-04-13 Ger Hobbelt
 
     * COLOPHON.txt fixed (Debian bug #471554: typo in COLOPHON.txt)
-    
-    * Vector Tokenizer changes to allow full custom 3D vector matrices; also included additional return value for use
-      with the v2.0 classifier diagnostics code.
-      
-      DIAG v2.0 is not published yet; this stuff is related to the 'cssanalyze' command and
-      is thus able to report which strings were used to produced what hashes; the VT diag feedback is required to
-      allow cssanalyze to report which tokens (character sequences) were merged together (and how) to create the
-      recorded 'feature' (== derived hash). This allows one to VERY closely inspect which 'original words' were
-      used to produce the pR classification in the end.
-      
+
+    * Vector Tokenizer changes to allow full custom 3D vector matrices;
+      also included additional return value for use with the v2.0
+      classifier diagnostics code.
+
+      DIAG v2.0 is not published yet; this stuff is related to the
+      'cssanalyze' command and is thus able to report which strings were
+      used to produced what hashes; the VT diag feedback is required to
+      allow cssanalyze to report which tokens (character sequences) were
+      merged together (and how) to create the recorded 'feature' (==
+      derived hash). This allows one to VERY closely inspect which
+      'original words' were used to produce the pR classification in the
+      end.
+
 
 2008-03-31 Ger Hobbelt
 
-    * Fixes in -err/-out handling; also fixed the 'output' script command: 
-    
-        output [stderr]
-        
-      will _still_ go to the '-err filename' redirected stderr, just like it would when you'd called crm114 using
-      
-        crm114 .... 2> filename
-        
-      instead.
-      
-    * Fixes in crm114 parser/compiler to properly run mailreaver.crm et al.
-    
-    * Added stricter checks (now checks at all ;-) ) in the compiler: decoded flags in <arg>
-      element are checked against the predefined allowed flag set (in crm_compiler.c). If any
-      flag is NOT in the allowed set, an error will be reported.
-      
-      This resulted in a significant update of the stmt_table[] flag set definitions for each command to match the rest of the code.
-      
-      QUICKREF.txt has been updated too in several places to mimic these.
-      
-    * mailreaver et al contained a few \: escapes in their trap handlers which
-      shouldn't be there. Removed.
-      
-    * fixed the fault/trap handlers: now the offending source line itself is included in the error 
-      report.
-      
-      Yes, this is a kinda kludgy fix for another nasty issue: the line numbers reported by CRM14 
-      are 'nearby' at best, due to the fact that the [errorhandling] code is not aware of the modifications performed
-      by the preprocessor: line breaking, 'insert' processing, line merging ('\' continuation char at end of line pulls next line up).
-      In fact, the code does NEVER track 'original source line/position/filename' info for the script sources.
-      This also means that 'insert' will cause crm14 to report some really fancy linenumbers in the _main_ source file when the offending line is in the insert-ed code or follows that 'insert' statement
-      in the main source file.
-      
-      This will not be fixed until we introduce 'sourceinfo' tracking code which 'remembers' where the source code
-      came from on a per-char basis: filename/line/position -- remember the preprocessor does line breaking, triggered by comments, semicolons and the recognition of another 'token' outside []()//<> braces anyway!
-      
-    * Fixed a nonfatal OSB Bayes file access failure report: 
-    
-      WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING 
-      
-      The complete code should be inspected to 
-      
-      (a) determine which errors are _really_ fatal, as the code is littered with fatalerror()s which at least look like they're not 
-          all that fatal anyhow: nothing a trap handler in the script can't handle.
-          
-      (b) nonfatalerror()s should probably abort the current command.
-          
-      An example for (b) which was changed in the code: when one of the CSS databases cannot be opened for some reason, the classify run
-      should be aborted immediately, because that file will be lacking from the evaluation, thus - at the very least - inadvertentedly skewing the pR results to numbers which might lead to wrong conclusions.
-      
-      In this particular case, the good.css was missing, but the code continued on, was _lucky_ to find spam.css was also lacking, or spam.css would've been used to find the 'good guys' this way. This is not a severe issue for classify calls which include only 2 files - though the validation for this is also lacking, so you still get weird results at times - but it is harder to tolerate when the classify should run across multiple CSS files: if one is missing from the action for some reason, the 'pR' output cannot be trusted.
-      
-      Hence, such nonfatalerror() issues should abort the command by returning to caller immediately.
-      
-      
-      GROT GROT GROT: Currently there's also been [almost] no checking if all memory and handles are
-                      correctly freed/released when aborting a command due to a nonfatalerror().
+    * Fixes in -err/-out handling; also fixed the 'output' script
+      command:
 
-        
+        output [stderr]
+
+      will _still_ go to the '-err filename' redirected stderr, just
+      like it would when you'd called crm114 using
+
+        crm114 .... 2> filename
+
+      instead.
+
+    * Fixes in the 'updated' crm114 parser/compiler to properly run
+      mailreaver.crm et al again.
+
+    * Added stricter checks (now checks at all ;-) ) in the compiler:
+      decoded flags in <arg> element are checked against the predefined
+      allowed flag set (in crm_compiler.c). If any flag is NOT in the
+      allowed set, an error will be reported.
+
+      This resulted in a significant update of the stmt_table[] flag set
+      definitions for each command to match the rest of the code.
+
+      QUICKREF.txt has been updated too in several places to mimic
+      these.
+
+    * mailreaver et al contained a few \: escapes in their trap handlers
+      which shouldn't be there. Removed.
+
+    * fixed the fault/trap handlers: now the offending source line
+      itself is included in the error report.
+
+      Yes, this is a kinda kludgy fix for another nasty issue: the line
+      numbers reported by CRM14 are 'nearby' at best, due to the fact
+      that the [errorhandling] code is not aware of the modifications
+      performed by the preprocessor: line breaking, 'insert' processing,
+      line merging ('\' continuation char at end of line pulls next line
+      up). In fact, the code does NEVER track 'original source
+      line/position/filename' info for the script sources. This also
+      means that 'insert' will cause crm14 to report some really fancy
+      linenumbers in the _main_ source file when the offending line is
+      in the insert-ed code or follows that 'insert' statement in the
+      main source file.
+
+      This will not be fixed until we introduce 'sourceinfo' tracking
+      code which 'remembers' where the source code came from on a per-
+      char basis: filename/line/position -- remember the preprocessor
+      does line breaking, triggered by comments, semicolons and the
+      recognition of another 'token' outside []()//<> braces anyway!
+
+    * Fixed a nonfatal OSB Bayes file access failure report:
+
+      WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+
+      The complete code should be inspected to
+
+      (a) determine which errors are _really_ fatal, as the code is
+          littered with fatalerror()s which at least look like they're
+          not all that fatal anyhow: nothing a trap handler in the
+          script can't handle.
+
+      (b) nonfatalerror()s should probably abort the current command.
+
+      An example for (b) which was changed in the code: when one of the
+      CSS databases cannot be opened for some reason, the classify run
+      should be aborted immediately, because that file will be lacking
+      from the evaluation, thus - at the very least - inadvertentedly
+      skewing the pR results to numbers which might lead to wrong
+      conclusions.
+
+      In this particular case, the good.css was missing, but the code
+      continued on, was _lucky_ to find spam.css was also lacking, or
+      spam.css would've been used to find the 'good guys' this way. This
+      is not a severe issue for classify calls which include only 2
+      files - though the validation for this is also lacking, so you
+      still get weird results at times - but it is harder to tolerate
+      when the classify should run across multiple CSS files: if one is
+      missing from the action for some reason, the 'pR' output cannot be
+      trusted.
+
+      Hence, such nonfatalerror() issues should abort the command by
+      returning to caller immediately.
+
+
+      GROT GROT GROT: Currently there's also been [almost] no checking
+                      if all memory and handles are correctly
+                      freed/released when aborting a command due to a
+                      nonfatalerror().
+
 
 2008-03-26 Ger Hobbelt
 
     * updated to Bill's latest release (20080326)
-    
-    * fixed a dumb mistake in crmregex_tre.c which I'd introduced myself :-(
-    
+
+    * fixed a dumb mistake in crmregex_tre.c which I'd introduced myself
+      :-(
+
 
 2008-03-25 Ger Hobbelt
 
-    * 'int'ified ('INTifada') crm114 sources - finally got fed up and killed the 
-      'long' fetish.
+    * 'int'ified ('INTifada') crm114 sources - finally got fed up and
+      killed the 'long' fetish.
 
-      INTifada: 'long' fetish has been removed from the code: now everything is 
-      an 'int' like every good boy should, unless it specifically NEEDS to be 
-      something else.
+      INTifada: 'long' fetish has been removed from the code: now
+      everything is an 'int' like every good boy should, unless it
+      specifically NEEDS to be something else.
 
-      Process to redo this in a blunt way (I did it the hard way: partial code 
-      inspection):
+      Process to redo this in a blunt way (I did it the hard way:
+      partial code inspection):
 
-        convert 'long long' to int64_t and unsigned long long to uint64_t
+        convert 'long long' to int64_t and unsigned long long to
+        uint64_t
 
-        find timing code and make sure those clock_t derivatives are 'clock_t' 
-        instead of long
+        find timing code and make sure those clock_t derivatives are
+        'clock_t' instead of long
 
-        s/\<long\>/int/g
+          s/\<long\>/int/g
 
-    * Added fwrite_ASCII_Cfied() routine to report variables, etc. to stderr/stdout, so 
-      non-ascii variables, mucked up scripts, etc. don't get a chance to blow up 
-      the console anymore.
+    * Added fwrite_ASCII_Cfied() routine to report variables, etc. to
+      stderr/stdout, so non-ascii variables, mucked up scripts, etc.
+      don't get a chance to blow up the console anymore.
 
     * Merged latest Neural Net code
 
@@ -118,20 +303,21 @@
 
       correctly by processing - you wish - the 'alius' opcode in there.
 
-      The new code can cope with series of comments and inter-command comments 
-      like these lines:
+      The new code can cope with series of comments and inter-command
+      comments like these lines:
 
         # so? \#  output  # what? \#/checking for a foo.../#if we mingle comments with code? \# # like this?
 
       See alius_w_comment.crm for a few test cases.
 
-    * Bugfix in 'file1 | file2 | file3' regexes in SKS and SVM: now correctly 
-      copes with megatest.sh's
+    * Bugfix in 'file1 | file2 | file3' regexes in SKS and SVM: now
+      correctly copes with megatest.sh's
 
         ./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }'
 
-      Note that 'q_test.css|' in there: file2 will be decoded by the old regex, 
-      but no match for file3 as the relevant part of the old regex said:
+      Note that 'q_test.css|' in there: file2 will be decoded by the old
+      regex, but no match for file3 as the relevant part of the old
+      regex said:
 
         [[:space:]]+\\|[[:space:]]+([[:graph:]]+)
 
@@ -141,54 +327,55 @@
 
 2008-03-24 Ger Hobbelt
 
-    * Latest gcc versions recognize and handle trigraphs like you'd expect ;-) 
-      so all "???" sequences have been converted to "\?\?\?" to keep GCC and 
-      other compilers from unintentionally recognizing a trigraph there.
+    * Latest gcc versions recognize and handle trigraphs like you'd
+      expect ;-) so all "???" sequences have been converted to "\?\?\?"
+      to keep GCC and other compilers from unintentionally recognizing a
+      trigraph there.
 
-    * added second // slash arg to the CRM 'syscall' cvommand to specify 
-      alternative commands for other OS-es. This is intended to allow CRM114 and 
-      CRM script writers to cope with the absolutely NON-portable syscall 
-      operation: this is only portable across UNIX boxes - and then only to a 
-      degree.
+    * added second // slash arg to the CRM 'syscall' cvommand to specify
+      alternative commands for other OS-es. This is intended to allow
+      CRM114 and CRM script writers to cope with the absolutely NON-
+      portable syscall operation: this is only portable across UNIX
+      boxes - and then only to a degree.
 
       So the second slash arg has format:
 
         /[hoststring]commandline/
 
-      where 'hoststring' is the compile-time HOSTTYPE string, which, for 
-      example, for the Win32 builds is 'Windows-MS'. BTW: hoststring-comparison 
-      is caseINSENSITIVE.
+      where 'hoststring' is the compile-time HOSTTYPE string, which, for
+      example, for the Win32 builds is 'Windows-MS'. BTW: hoststring-
+      comparison is caseINSENSITIVE.
 
-      The square brackets are used to delimit the hoststring, so when the 
-      'hoststring' matches the compile-time constant in your CRM114 binary, the 
-      'commandline' will be used to replace the commandline as specified in the 
-      first // slash arg.
+      The square brackets are used to delimit the hoststring, so when
+      the 'hoststring' matches the compile-time constant in your CRM114
+      binary, the 'commandline' will be used to replace the commandline
+      as specified in the first // slash arg.
 
       See randomiotest.crm for an example.
 
-    * Fixed OSBF/OSB/Markovian classify code when too many CSS databases to use 
-      for classification have been specified - this prevents an array-overrun & 
-      out-of-bounds memory access.
+    * Fixed OSBF/OSB/Markovian classify code when too many CSS databases
+      to use for classification have been specified - this prevents an
+      array-overrun & out-of-bounds memory access.
 
-    * Got fed up with the minor differences between Win32 and UNIX megatest: 
-      created a copy in megatest_ng.sh, which should produce indentical results 
-      to megatest.sh, but uses input files (*.input) instead of the UNIX shell 
-      <<-EOF...EOF code.
+    * Got fed up with the minor differences between Win32 and UNIX
+      megatest: created a copy in megatest_ng.sh, which should produce
+      indentical results to megatest.sh, but uses input files (*.input)
+      instead of the UNIX shell <<-EOF...EOF code.
 
-      This is mirrored in the new megatest.bat, which can thus use the same 
-      input files; I've found that the difference between a LF or CRLF line 
-      termination byte sequence does lead to some significant differences in the 
-      test results.
+      This is mirrored in the new megatest.bat, which can thus use the
+      same input files; I've found that the difference between a LF or
+      CRLF line termination byte sequence does lead to some significant
+      differences in the test results.
 
     * Major fixes to the Win32 syscall command; now
 
         exectest.crm
 
-      does actually run on Win32. Please note that UNIX commands still won't 
-      work allow of a sudden on a Win32 box - unless you provide the proper 
-      binaries and environment - but at least vanilla syscall, syscall <keep> 
-      and even syscall <async> now work async expected: no crash or indefinite 
-      lockup anymore!
+      does actually run on Win32. Please note that UNIX commands still
+      won't work allow of a sudden on a Win32 box - unless you provide
+      the proper binaries and environment - but at least vanilla
+      syscall, syscall <keep> and even syscall <async> now work async
+      expected: no crash or indefinite lockup anymore!
 
       Note that this still applies:
         "Sorry, syscall to a label isn't implemented in this version "
@@ -197,11 +384,12 @@
 
         bill_style_errormessage
 
-      constant in crm_[util_]errorhandlers.c - maybe we'll make this run-time 
-      configurable one day, instead of compile-time like it is today...
+      constant in crm_[util_]errorhandlers.c - maybe we'll make this
+      run-time configurable one day, instead of compile-time like it is
+      today...
 
-      Bill's format puts the code info at the end, instead of at the start, and 
-      looks like this:
+      Bill's format puts the code info at the end, instead of at the
+      start, and looks like this:
 
          (runtime system location: crm_expr_file_io.c(151) in routine: crm_expr_input)
 
@@ -222,12 +410,12 @@
 
           **** OSB Hyperspace classifier                  <-- matches better when you define
                     #define USE_FIXED_UNIQUE_MODE     0  /* zero! trurn OFF to match Bill's! */
-  
-                WARNING: there's a VT bug in the 20080324 wget copy of CRM114, 
-                         which reflects on the knowngood: it is NOT good in that 
-                         regard. The GerH builds includes the fixes, but will 
-                         differ from knowngood until the base has been fixed 
-                         too.
+
+                WARNING: there's a VT bug in the 20080324 wget copy of
+                         CRM114, which reflects on the knowngood: it is
+                         NOT good in that regard. The GerH builds
+                         includes the fixes, but will differ from
+                         knowngood until the base has been fixed too.
 
           **** OSB three-letter Hyperspace classifier     <-- as above
           **** Unigram Hyperspace classifier              <-- as above
@@ -269,35 +457,40 @@
               echo === TEST 014 ===
               .\crm114 matchtest.crm  < matchtest_mt_ng_1.input
 
-      still needs some medical attention IMHO, as CRM114 on Win32 is much more 
-      'picky' about whitespace than its UNIX brethren.  Why? Don't know yet. But 
-      it shown in line leading and trailing whitespace sometimes.
+      still needs some medical attention IMHO, as CRM114 on Win32 is
+      much more 'picky' about whitespace than its UNIX brethren.  Why?
+      Don't know yet. But it shown in line leading and trailing
+      whitespace sometimes.
 
-      Probably due to the clunky whitespace skip loops in the CRM114 code.
+      Probably due to the clunky whitespace skip loops in the CRM114
+      code.
 
 
-    * UNIX / GNU make now comes with a working 'test' target, which actually 
-      uses the new megatest_ng.sh New Generation ;-) shell script. As before, a 
-      diff with Bill's knowngood is provided when done. so now you can
+    * UNIX / GNU make now comes with a working 'test' target, which
+      actually uses the new megatest_ng.sh New Generation ;-) shell
+      script. As before, a diff with Bill's knowngood is provided when
+      done. so now you can
 
         make test
 
       like everybody else out there!
 
-    * Included VT and other fixes reported in the CRM114 ML these last few days:
+    * Included VT and other fixes reported in the CRM114 ML these last
+      few days:
 
          Hyperspace featurecounts Fixed
 
-         TRE interface/regex cache fixed (Paolo) -- I discarded my older fix, 
-                                                    because I have not been able 
-                                                    to guarantee that it 
-                                                    would've worked, where 
-                                                    Paolo's does - has been 
+         TRE interface/regex cache fixed (Paolo) -- I discarded my older fix,
+                                                    because I have not been able
+                                                    to guarantee that it
+                                                    would've worked, where
+                                                    Paolo's does - has been
                                                     tested on a victim.
 
     * Updated and reformatted (indent cleanup) QUICKREF.txt.
 
-    * QUICKREF.txt now includes preliminary documentation for the new CRM statements:
+    * QUICKREF.txt now includes preliminary documentation for the new
+      CRM statements:
 
         cssanalyze <flags> (:report:) (:c1:) /params/
         cssbackup <flags> (:report:) (:dst: :c1:) /params/
@@ -307,27 +500,27 @@
         cssmerge <flags> (:report:) (destfile) (:c1:...:cN:) /params/
         cssrestore <flags> (:report:) (:c1: :src:) /params/
 
-      These are intended to obsolete the external css* tools in due time and 
-      should be able to handle each classifier (see the bottom of classifier 
-      sources for the preliminary hooks/code).
+      These are intended to obsolete the external css* tools in due time
+      and should be able to handle each classifier (see the bottom of
+      classifier sources for the preliminary hooks/code).
 
 
 2008-01-28 Ger Hobbelt
 
-  * (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The 
+  * (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The
     others will follow its lead in this.
 
-  * Included qsort implementation by Michael Tokarev 
-    (http://www.corpit.ru/mjt/qsort.html) for a bit of improved performance as 
+  * Included qsort implementation by Michael Tokarev
+    (http://www.corpit.ru/mjt/qsort.html) for a bit of improved performance as
     suggested by Paolo.
 
-  * Fixed Makefile.am so standard ./bootstrap script works as expected, 
+  * Fixed Makefile.am so standard ./bootstrap script works as expected,
     including 'make distcheck': that one doesn't fail anymore.
 
-  * Included the original BillY makefile in src/: it is minimally patched to 
+  * Included the original BillY makefile in src/: it is minimally patched to
     make it behave as expected with the new GNU/autoconf enabled code in here.
 
-    For those who like to compile this thing the old fashioned way on compatible 
+    For those who like to compile this thing the old fashioned way on compatible
     systems, please run
 
       cd src
@@ -343,34 +536,34 @@
     i.e. replace 'make' in Bill's documents with make_vanilla_UNIX.sh if you want to go
     down that road (you'll miss out on all the ./configure goodness though ;-) ).
 
-    Note that a special configuration headerfile (src/config_vanilla_UNIX_sys_defaults.h) is 
-    provided to help make_BillY compile on compatible UNIX systems. This 
-    headerfile includes a toned down UNIX build configuration. Tested on SuSE 
-    Linux, but should (hopefully) build on other UNIXes as well. If any compile 
-    time errors occur here, please edit the src/config_vanilla_UNIX_sys_defaults.h headerfile 
-    according and please post the diffs/changes to the crm developer mailing 
+    Note that a special configuration headerfile (src/config_vanilla_UNIX_sys_defaults.h) is
+    provided to help make_BillY compile on compatible UNIX systems. This
+    headerfile includes a toned down UNIX build configuration. Tested on SuSE
+    Linux, but should (hopefully) build on other UNIXes as well. If any compile
+    time errors occur here, please edit the src/config_vanilla_UNIX_sys_defaults.h headerfile
+    according and please post the diffs/changes to the crm developer mailing
     list.
 
-    WARNING: src/make_vanilla_UNIX.sh et al are provided as a 'backwards compatible 
+    WARNING: src/make_vanilla_UNIX.sh et al are provided as a 'backwards compatible
         build fix' ONLY and are NOT meant to replace the available ./configure-
-        driven build/install available in this or future GerXXXX crm 
+        driven build/install available in this or future GerXXXX crm
         distro/builds!
 
-        * Made initial provisions to merge the crm tools with crm itself: added 
-          the statements cssmerge / cssdiff / cssinfo / cssanalyze / cssbackup / 
+        * Made initial provisions to merge the crm tools with crm itself: added
+          the statements cssmerge / cssdiff / cssinfo / cssanalyze / cssbackup /
           cssrestore / csscreate.
 
-          These statements should suffice to cover the functionality found in 
+          These statements should suffice to cover the functionality found in
           the cssutil / osbf_util / cssmerge / cssdiff tools.
 
-        * Improved the indent.sh shell script and src/Makefile a bit; the 
-          included uncrustify.cfg config file is compatible with the latest 
+        * Improved the indent.sh shell script and src/Makefile a bit; the
+          included uncrustify.cfg config file is compatible with the latest
           uncrustify version today (jan/2008): v0.42
 
-        * KNOWN BUG: 'make reindent': uncrustify will not format the last few 
-                     lines of crm_mjt_qsort.h in a suitable layout. The code 
-                     will compile, but correct this one by hand to undo the 
-                     damage there (until I find what's wrong with uncrustify :-( 
+        * KNOWN BUG: 'make reindent': uncrustify will not format the last few
+                     lines of crm_mjt_qsort.h in a suitable layout. The code
+                     will compile, but correct this one by hand to undo the
+                     damage there (until I find what's wrong with uncrustify :-(
                      ).
 
   * KNOWN BUG for clump/pmulc still applies! :-(

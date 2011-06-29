@@ -45,6 +45,7 @@ char *strmov(char *dst, const char *src)
 
 #endif
 
+
 #if defined (PREFER_PORTABLE_MEMMOVE) || !defined (HAVE_MEMMOVE)
 
 void *crm_memmove(void *dst, const void *src, size_t len)
@@ -124,7 +125,7 @@ int file_memset(FILE *dst, unsigned char val, int count)
 
     while (count > 0)
     {
-        int len = fwrite(buf, 1, CRM_MIN(count, 1024), dst);
+        int len = (int)fwrite(buf, 1, CRM_MIN(count, 1024), dst);
         if (len <= 0)
             return -1;
 

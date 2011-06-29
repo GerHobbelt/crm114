@@ -185,7 +185,7 @@ static void generate_err_reason_msg(
         /* can't handle this error message in such a small buffer, so quit now you still can. */
         return;
     }
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     /*
      * Now print the custom message section. Keep a guestimated room for the next section too: 256.
@@ -197,11 +197,11 @@ static void generate_err_reason_msg(
 
         vsnprintf(dst, widthleft, fmt, args);
         dst[widthleft - 1] = 0;
-        len = strlen(dst);
+        len = (int)strlen(dst);
         dst += len;
     }
     has_newline = (dst[-1] == '\n');
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     /*
      * make sure there's still enough room for the last part of this message...
@@ -220,19 +220,19 @@ static void generate_err_reason_msg(
         }
     }
 #undef MIN_BUFLEN_REQD
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     if (!has_newline && widthleft > 1)
     {
         dst = strmov(dst, "\n");
     }
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     if (!encouraging_msg || ! * encouraging_msg)
     {
         encouraging_msg = "Sorry, but this program is very sick and probably should be killed off.";
     }
-    encouragment_length = strlen(encouraging_msg) + 1;
+    encouragment_length = (int)strlen(encouraging_msg) + 1;
 
     if (widthleft > encouragment_length
         + WIDTHOF("This happened at line %d of file %s\n") + 40)
@@ -240,13 +240,13 @@ static void generate_err_reason_msg(
         dst = strmov(dst, encouraging_msg);
         has_newline = (dst[-1] == '\n');
     }
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     if (!has_newline && widthleft > 1)
     {
         dst = strmov(dst, "\n");
     }
-    widthleft = reason_bufsize - (dst - reason);
+    widthleft = reason_bufsize - (int)(dst - reason);
 
     /*
      * If we want/have to, add the BillY style of source location error reporting here.
@@ -273,7 +273,7 @@ static void generate_err_reason_msg(
                 ((srcfile && *srcfile) ? srcfile : "---"),
                 lineno);
             dst[widthleft - 1] = 0;
-            len = strlen(dst);
+            len = (int)strlen(dst);
             dst += len;
 
             fname_pos = dst;
@@ -429,30 +429,29 @@ void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, cons
             len = strlen(dst);
             max_dst_len -= len;
             dst += len;
-            if (max_dst_len <= 3)
+            if (max_dst_len <= 5)
                 break;
 
             if (p[1] == '1')
             {
                 // replace '%1' with ''arg''
-                strncpy(dst, "'", max_dst_len);
-                strncpy(dst + 1, (arg ? arg : "\?\?\?"), max_dst_len - 1);
+                *dst++ = '\'';
+				max_dst_len--;
+                strncpy(dst, (arg ? arg : "\?\?\?"), max_dst_len);
                 dst[max_dst_len] = 0;
                 len = strlen(dst);
                 max_dst_len -= len;
                 dst += len;
                 if (max_dst_len <= 2)
                     break;
-                strncpy(dst, "'", max_dst_len);
-                dst++;
+                *dst++ = '\'';
                 max_dst_len--;
 
                 p += 2;
             }
             else
             {
-                strncpy(dst, "%", max_dst_len);
-                dst++;
+                *dst++ = '%';
                 max_dst_len--;
 
                 p++;

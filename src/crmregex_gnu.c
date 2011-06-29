@@ -168,6 +168,10 @@ int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
             if (internal_trace)
                 fprintf(stderr, "couldn't find it\n");
             regex_temp = (char *)calloc((regex_len + 1), sizeof(regex_temp[0]));
+        if (!regex_temp)
+        {
+            untrappableerror("Cannot allocate regex memory", "Stick a fork in us; we're _done_.");
+        }
             memcpy(regex_temp, regex, regex_len);
             CRM_ASSERT(regex_temp[regex_len] == 0);
             rlen_temp = regex_len;

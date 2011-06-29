@@ -316,6 +316,10 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    malloc up the unsorted hashbucket space
     hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT + 1 /* still space for the sentinel at worst case! */, 
             sizeof(hashes[0]));
+        if (!hashes)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
     hashcounts = 0;
     //  put in a zero as the start marker.
     hashes[hashcounts].hash = 0;
@@ -953,6 +957,10 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //        make the space for the unknown text's hashes
     unk_hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT + 1 /* still space for sentinel at worst case! */,
             sizeof(unk_hashes[0]));
+        if (!unk_hashes)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
     unk_hashcount = 0;
 #ifndef VECTOR_TOKENIZER
 #if defined (GER)

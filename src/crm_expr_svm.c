@@ -277,6 +277,10 @@ static void cache_init(int len, int size, CACHE *svmcache)
     svmcache->l = len;
     svmcache->size = size;
     svmcache->head = (CACHE_NODE *)calloc(len, sizeof(svmcache->head[0]));
+        if (!svmcache->head)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
 #if 0 /* [i_a] unused code... */
     size /= sizeof(Qitem_t);
     size -= len * (sizeof(CACHE_NODE) / sizeof(Qitem_t));
@@ -519,7 +523,12 @@ static Qitem_t *get_DiagQ()
     Qitem_t *DiagQ = calloc(svm_prob.l, sizeof(DiagQ[0]));
     int i;
 
-    for (i = 0; i < svm_prob.l; i++)
+        if (!DiagQ)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
+
+		for (i = 0; i < svm_prob.l; i++)
     {
         DiagQ[i] = kernel(svm_prob.x[i], svm_prob.x[i]);
     }
@@ -881,6 +890,10 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
     hiTarget = (posn + 1.0) / (posn + 2.0);
     loTarget = 1 / (negn + 2.0);
     t = (double *)calloc(svm_prob.l, sizeof(t[0]));
+        if (!t)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
     for (i = 0; i < svm_prob.l; i++)
     {
         if (svm_prob.y[i] > 0)
@@ -1070,6 +1083,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    malloc up the unsorted hashbucket space
     hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
             sizeof(hashes[0]));
+        if (!hashes)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
     hashcounts = 0;
 
     //  Extract the file names for storing svm solver.( file1.svm |
@@ -1716,6 +1733,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             svm_prob.l = k1;
             x = calloc(svm_prob.l, sizeof(x[0]));
             y = calloc(svm_prob.l, sizeof(y[0]));
+        if (!x || !y)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
             for (i = 0; i < k1; i++)
             {
                 y[i] = 1;
@@ -1850,6 +1871,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 svm_prob.l = k1 + k2;
                 x = calloc(svm_prob.l, sizeof(x[0]));
                 y = calloc(svm_prob.l, sizeof(y[0]));
+        if (!x || !y)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
                 for (i = 0; i < k1; i++)
                 {
                     y[i] = 1;
@@ -1897,6 +1922,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                 //compute decision values for all training documents
                 deci_array = (double *)calloc(svm_prob.l, sizeof(deci_array[0]));
+        if (!deci_array)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
                 for (i = 0; i < svm_prob.l; i++)
                 {
                     deci_array[i] = calc_decision(svm_prob.x[i], solver.alpha, b);
@@ -1927,6 +1956,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     int delete_num1 = 0, delete_num2 = 0;
 
                     id_desc = calloc(svm_prob.l, sizeof(id_desc[0]));
+        if (!id_desc)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
                     //id_asc = calloc(svm_prob.l, sizeof(id_asc[0]));
                     if (user_trace)
                         fprintf(stderr, "\nStart microgrooming......\n");
@@ -2036,6 +2069,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (delete_num1 != 0 || delete_num2 != 0)
                     {
                         HYPERSPACE_FEATUREBUCKET_STRUCT **new_x = calloc((k1 + k2 - delete_num1 - delete_num2), sizeof(new_x[0]));
+        if (!new_x)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
 
                         QSORT(int, id_desc, svm_prob.l, int_compare);
                         //now start deleting documents and write the
@@ -2056,6 +2093,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                 CRM_ASSERT(j < (k1 + k2 - delete_num1 - delete_num2));
                                 new_x[j] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)calloc((temp_count + 1),
                                         sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
+        if (!new_x[j])
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
                                 for (temp_i = 0; temp_i < temp_count; temp_i++)
                                     new_x[j][temp_i] = svm_prob.x[id_desc[i]][temp_i];
                                 new_x[j][temp_count].hash = 0;
@@ -2074,6 +2115,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                 CRM_ASSERT(j < (k1 + k2 - delete_num1 - delete_num2));
                                 new_x[j] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)calloc((temp_count + 1),
                                         sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
+        if (!new_x[j])
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
                                 for (temp_i = 0; temp_i < temp_count; temp_i++)
                                     new_x[j][temp_i] = svm_prob.x[id_desc[i]][temp_i];
                                 new_x[j][temp_count].hash = 0;
@@ -2223,6 +2268,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //compute A,B for sigmoid prediction
                         deci_array = (double *)realloc(deci_array, svm_prob.l
                                 * sizeof(double));
+        if (!deci_array)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
                         for (i = 0; i < svm_prob.l; i++)
                         {
                             deci_array[i] = calc_decision(svm_prob.x[i],
@@ -2442,6 +2491,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    malloc up the unsorted hashbucket space
     hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
             sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
+        if (!hashes)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
     hashcounts = 0;
 
 #if 01
@@ -2787,9 +2840,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashlens[0] = file1_hashlens;
             hashname[0] = (char *)calloc((strlen(file1) + 10), sizeof(hashname[0][0]));
             if (!hashname[0])
-                untrappableerror("Couldn't alloc hashname[0]\n",
+			{
+				untrappableerror("Couldn't alloc hashname[0]\n",
                         "We need that part later, so we're stuck.  Sorry.");
-            strcpy(hashname[0], file1);
+			}
+			strcpy(hashname[0], file1);
 
 
             file2_hashlens = statbuf2.st_size;
@@ -2805,9 +2860,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashlens[1] = file2_hashlens;
             hashname[1] = (char *)calloc(strlen(file2) + 10, sizeof(hashname[1][0]));
             if (!hashname[1])
+			{
                 untrappableerror("Couldn't alloc hashname[1]\n",
                         "We need that part later, so we're stuck.  Sorry.");
-            strcpy(hashname[1], file2);
+			}
+			strcpy(hashname[1], file2);
 
             //find out how many documents in file1 and file2 separately
             for (i = 0; i < file1_hashlens; i++)
@@ -2886,6 +2943,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 svm_prob.l = k1 + k2;
                 x = calloc(svm_prob.l, sizeof(x[0]));
                 y = calloc(svm_prob.l, sizeof(y[0]));
+        if (!x || !y)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
                 for (i = 0; i < k1; i++)
                 {
                     y[i] = 1;
@@ -2919,6 +2980,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 svm_prob.x = x;
 
                 alpha = (double *)calloc(svm_prob.l, sizeof(alpha[0]));
+        if (!alpha)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
 
                 if ((k3 != 0) || (temp_k1 != k1) || (temp_k2 != k2))
                 {
@@ -2996,6 +3061,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                         //compute A,B for sigmoid prediction
                         deci_array = (double *)calloc(svm_prob.l, sizeof(deci_array[0]));
+        if (!deci_array)
+        {
+            untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        }
                         for (i = 0; i < svm_prob.l; i++)
                         {
                             deci_array[i] = calc_decision(svm_prob.x[i], alpha, b);

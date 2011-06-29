@@ -568,7 +568,7 @@ int is_crm_headered_file(FILE *f)
     if (!fseek(f, 0, SEEK_SET))
     {
         memset(sequence, 0, sizeof(sequence));
-        ret = fread(sequence, sizeof(sequence[0]), WIDTHOF(sequence) - 1, f);
+        ret = (int)fread(sequence, sizeof(sequence[0]), WIDTHOF(sequence) - 1, f);
         sequence[WIDTHOF(sequence) - 1] = 0;
 
 		ret = is_crm_headered_mmapped_file(sequence, ret);
@@ -855,7 +855,7 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
     //                    512               This depends on the classifier and platform: arbitrary content.
     memcpy(&binhdr.classifier_info, classifier_info, sizeof(binhdr.classifier_info));
 
-    ret = fwrite(&binhdr, sizeof(binhdr), 1, f);
+    ret = (int)fwrite(&binhdr, sizeof(binhdr), 1, f);
     if (ret != 1)
         return -1;
 
@@ -1117,7 +1117,7 @@ int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_n
             if (!e)
                 return 42;
 
-            len = e - p;
+            len = (int)(e - p);
             if (len > 0)
             {
                 dst->human_readable_message = calloc(len + 1, sizeof(dst->human_readable_message[0]));
