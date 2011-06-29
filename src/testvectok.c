@@ -203,8 +203,8 @@ int main(void)
     int ret;
     int k;
     crmhash_t feavec[2048];
-    int feamult[2048];
-    int feaord[2048];
+    uint32_t feamult[2048];
+    uint32_t feaord[2048];
     ARGPARSE_BLOCK apb = { 0 };
     VT_USERDEF_TOKENIZER tokenizer = { 0 };
     VT_USERDEF_COEFF_MATRIX our_coeff = { 0 };
@@ -420,47 +420,10 @@ int main(void)
 
 // just copied here to make this bugger compile ASAP:
 
-
+// bogus code to make link phase happy while we are in limbo between obsoleting this tool and
+// getting cssXXXX script commands working in crm114 itself.
 void free_stack_item(CSL_CELL *csl)
-{
-    if (!csl)
-        return;
-
-    if (csl->mct && csl->mct_allocated)
-    {
-        int i;
-
-        for (i = 0; i < csl->mct_size; i++)
-        {
-            MCT_CELL *cp = csl->mct[i];
-
-            if (cp != NULL)
-            {
-#if !FULL_PARSE_AT_COMPILE_TIME
-                free(cp->apb);
-                cp->apb = NULL;
-#endif
-                // free(cp->hosttxt);
-                free(cp);
-                csl->mct[i] = NULL;
-            }
-        }
-        free(csl->mct);
-        csl->mct = NULL;
-    }
-
-    if (csl->filename_allocated)
-    {
-        free(csl->filename);
-    }
-    csl->filename = NULL;
-    if (csl->filetext_allocated)
-    {
-        free(csl->filetext);
-    }
-    csl->filetext = NULL;
-    free(csl);
-}
+{ }
 
 
 

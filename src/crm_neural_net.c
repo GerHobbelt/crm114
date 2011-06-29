@@ -239,6 +239,7 @@ typedef struct nn_per_doc_file_header
 	int32_t number_of_rounds;
 	crmhash_t checksum;
 	uint32_t docsize;	// number of hashes stored
+	uint32_t global_weight;	// 0: each hash feature comes with its own weight; !0: weight for each feature hash
 	uint32_t docsize_in_bytes;
 } NEURAL_NET_PER_DOC_FILEHEADER;
 
@@ -434,12 +435,24 @@ static int make_new_backing_file(const char *filename)
     }
     if (sparse_spectrum_file_length)
     {
-        first_layer_size = (int)sqrt((int)(sparse_spectrum_file_length / 1024));
+#if 0
+        first_layer_size = (sparse_spectrum_file_length + 1023) / 1024;
         if (first_layer_size < 4)
             first_layer_size = 4;
         hidden_layer_size = first_layer_size * 2;
         retina_size = first_layer_size * 1024;
         // if (retina_size < 1024) retina_size = 1024;  -- dead code: first_layer_size >= 4 anyway
+#else
+	// [i_a] we should also allow prime-sized retinas: 
+	// those may offer better hash-to-index feature distribution
+	// across the retina (using the MODULO mapping function)
+        retina_size = sparse_spectrum_file_length;
+	if (retina_size < 4093)
+		retina_size = 4093; // largest prime below 4096, so we can have 2^n and prime-sized retinas at |first_layer| = 4 :-)
+        first_layer_size = (retina_size + 1024 - 1) / 1024;
+        CRM_ASSERT(first_layer_size >= 4);
+        hidden_layer_size = first_layer_size * 2;
+#endif
     }
     if (internal_trace || user_trace)
     {
@@ -795,7 +808,7 @@ static double get_pR2(double icnr, double ocnr)
 //    Actually evaluate the neural net, given
 //    the "bag" of features.
 
-static void do_net(NEURAL_NET_STRUCT *nn, crmhash_t *bag, int baglen)
+static void do_net(NEURAL_NET_STRUCT *nn, crmhash_t *bag, int baglen, uint32_t *feature_weights)
 {
     int i;
     int neuron, channel;
@@ -923,7 +936,7 @@ static void do_net(NEURAL_NET_STRUCT *nn, crmhash_t *bag, int baglen)
         //     push it over one channel, to retina channel 1.
         if (channel == 0)
             channel = 1;
-        nn->retina[channel] += 1.0;
+        nn->retina[channel] += feature_weights[i];
     }
 #endif
 	//     debugging check
@@ -1078,7 +1091,7 @@ static int compare_hash_vals(const void *a, const void *b)
 static int eat_document(ARGPARSE_BLOCK *apb,
         char *text, int text_len, int  *ate,
         regex_t *regee,
-        crmhash_t *feature_space, int max_features,
+        crmhash_t *feature_space, int max_features, uint32_t *feature_weights,
         uint64_t flags, crmhash_t *sum)
 {
     int n_features = 0;
@@ -1099,20 +1112,20 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     //     previously precompiled regex) and use the automagical code in
     //     vector_tokenize_selector to get the "right" parse regex from the
     //     user program's APB.
-    crm_vector_tokenize_selector(apb,                     // the APB
+    crm_vector_tokenize_selector(apb, // the APB
             vht,
             tdw,
-            text,                                         // intput string
-            text_len,                                     // how many bytes
-            0,                                            // starting offset
-            NULL,                                         // tokenizer
-            NULL,                                         // coeff array
-            feature_space,                                // where to put the hashed results
-            max_features - 1,                             //  max number of hashes
+            text,             // intput string
+            text_len,         // how many bytes
+            0,                // starting offset
+            NULL,             // tokenizer
+            NULL,             // coeff array
+            feature_space,    // where to put the hashed results
+            max_features - 1, //  max number of hashes
+            feature_weights,
             NULL,
-            NULL,
-            &n_features                                   // how many hashes we actually got
-                                );
+            &n_features       // how many hashes we actually got
+           );
 
     //     GROT GROT GROT
     //     maybe we should force a constant into one column of input
@@ -1218,6 +1231,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     regex_t regee;
 
     crmhash_t bag[NN_MAX_FEATURES];
+    uint32_t feature_weights[NN_MAX_FEATURES];
 
     crmhash_t sum;
 
@@ -1346,7 +1360,7 @@ double epoch_errmag;
     //    according to the parsing regex, and compute the checksum "sum".
     //
     n_features = eat_document(apb, txtptr + txtstart, txtlen, &i,
-            &regee, bag, WIDTHOF(bag), apb->sflags, &sum);
+            &regee, bag, WIDTHOF(bag), feature_weights, apb->sflags, &sum);
 
     if (user_trace)
         fprintf(stderr, "\n\n***  TOTAL FEATURES = %d **** %08lX %08lX %08lX\n\n",
@@ -1589,6 +1603,8 @@ len = (doc - (char *)hdr);
                 crmhash_t val;
 #else
 				NEURAL_NET_PER_DOC_FILEHEADER doc_hdr = {0};
+int has_different_weights;
+int weight;
 #endif
 				int retv;
 
@@ -1681,6 +1697,24 @@ len = (doc - (char *)hdr);
 				doc_hdr.out_of_class = out_of_class;
 				doc_hdr.docsize = n_features;
 				doc_hdr.docsize_in_bytes = n_features * sizeof(bag[0]);
+
+		// check if the feature weights actually are disparate:
+	has_different_weights = 0;
+	weight = feature_weights[0];
+for (i = 1; i < n_features; i++)
+{
+	if (feature_weights[i] != weight)
+	{
+	has_different_weights = 1;
+break;
+}
+}
+	doc_hdr.global_weight = weight;
+	if (has_different_weights)
+{
+	doc_hdr.global_weight = 0;
+doc_hdr.docsize_in_bytes += n_features * sizeof(feature_weights[0]);
+}
                 retv = (int)fwrite(&doc_hdr, sizeof(doc_hdr), 1, f);
 #endif
 
@@ -1690,6 +1724,16 @@ len = (doc - (char *)hdr);
                 //    it also means we don't bust the CPU cache nearly as
                 //    badly!
                 retv += (int)fwrite(bag, sizeof(bag[0]), n_features, f); // the actual data
+
+				if (has_different_weights)
+{
+                int rv = (int)fwrite(feature_weights, sizeof(feature_weights[0]), n_features, f); // the actual data
+		if (rv != n_features)
+	{
+		retv = -1;
+	}
+}
+
                 if (internal_trace)
                 {
                     fprintf(stderr,
@@ -1952,6 +1996,8 @@ len = (doc - (char *)hdr);
 #if !SIZE_BASED_JUMP
             out_of_class = k[0];
 #else
+			uint32_t *weights;
+
 		hdr = (NEURAL_NET_PER_DOC_FILEHEADER *)doc;
 		doc += sizeof(*hdr) + hdr->docsize_in_bytes;
 
@@ -1998,6 +2044,20 @@ len = (doc - (char *)hdr);
                 // [i_a] TBD   speed up and improve by providing jump distance in k[0] ? Be aware of the previous increments of k then; we're beyond the k[0]/k[1]/k[2] header here.
             }
 #else
+			if (hdr->global_weight == 0)
+			{
+				weights = (uint32_t *)(((crmhash_t *)hdr) + hdr->docsize);
+			}
+			else
+			{
+				weights = feature_weights; // take the all-1-values default feature weight table instead!
+
+				// init the feature_weights table 
+				for (i = 0; i < hdr->docsize; i++)
+		{
+			feature_weights[i] = hdr->global_weight;
+			}
+			}
             current_doc = (crmhash_t *)(hdr + 1);
 			current_doc_len = hdr->docsize;
 #endif
@@ -2021,7 +2081,7 @@ len = (doc - (char *)hdr);
             }
 
             //      Run the net on the document
-            do_net(nn, current_doc, current_doc_len);
+            do_net(nn, current_doc, current_doc_len, weights);
             if (internal_trace)
             {
                 fprintf(stderr, "-- doc @ %p got network outputs of %f v. %f\n",
@@ -2552,11 +2612,14 @@ int crm_neural_net_classify(
     int filenames_field_len;
     char filenames[MAX_CLASSIFIERS][MAX_FILE_NAME_LEN];
 
-    NEURAL_NET_STRUCT NN, *nn = &NN;
+    NEURAL_NET_STRUCT NN;
+	NEURAL_NET_STRUCT *nn = &NN;
 
     regex_t regee;
 
-    crmhash_t bag[NN_MAX_FEATURES], sum;
+    crmhash_t bag[NN_MAX_FEATURES];
+    uint32_t feature_weights[NN_MAX_FEATURES];
+crmhash_t sum;
     int baglen;
 
     int i, j, k, n, n_classifiers, out_pos;
@@ -2640,7 +2703,7 @@ int crm_neural_net_classify(
     }
 
     baglen = eat_document(apb, txtptr + txtstart, txtlen, &j,
-            &regee, bag, WIDTHOF(bag), apb->sflags, &sum);
+            &regee, bag, WIDTHOF(bag), feature_weights, apb->sflags, &sum);
 
     //loop over classifiers and calc scores
     for (i = 0; i < n_classifiers; i++)
@@ -2662,7 +2725,7 @@ int crm_neural_net_classify(
         // ret = malloc( sizeof(unsigned int) * nn->retina_size);
         // rn = project_features(bag, n, ret, nn->retina_size);
         //example_length[i] = nn->docs_end - nn->docs_start;  -- [i_a]
-        do_net(nn, bag, baglen);
+        do_net(nn, bag, baglen, feature_weights);
         output[i][0] = nn->output_layer[0];
         output[i][1] = nn->output_layer[1];
         // free(ret);

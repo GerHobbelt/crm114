@@ -526,13 +526,13 @@ int crm_zexpandvar(char *buf,
                             int lclen;
                             lcstring[0] = 0;
                             lclen = sprintf(lcstring, "%d", csl->cstmt);
-                            crm_set_temp_nvar(":_cs:", lcstring, lclen, -1);
+                            crm_set_temp_nvar(":_cs:", lcstring, lclen, -1, 0);
                         }
                     }
 
                     for (q = 0; q < vht[vht_index]->vlen && id < maxlen; q++)
                     {
-                        tbuf[id] = vht[vht_index]->valtxt[(vht[vht_index]->vstart) + q];
+                        tbuf[id] = vht[vht_index]->valtxt[vht[vht_index]->vstart + q];
                         id++;
                     }
                 }
@@ -628,7 +628,7 @@ int crm_zexpandvar(char *buf,
 
                     for (q = 0; q < vht[vht_index]->vlen && id < maxlen; q++)
                     {
-                        vname[q] = vht[vht_index]->valtxt[(vht[vht_index]->vstart) + q];
+                        vname[q] = vht[vht_index]->valtxt[vht[vht_index]->vstart + q];
                     }
                     //   note that vlen is varname len, but vht[]->vlen is
                     //    the length of the text.  Bad choice of names, eh?
@@ -667,7 +667,7 @@ int crm_zexpandvar(char *buf,
                     }
                     for (q = 0; q < vht[vht_index]->vlen && id < maxlen; q++)
                     {
-                        tbuf[id] = vht[vht_index]->valtxt[(vht[vht_index]->vstart) + q];
+                        tbuf[id] = vht[vht_index]->valtxt[vht[vht_index]->vstart + q];
                         id++;
                     }
                 }
@@ -922,7 +922,7 @@ int crm_zexpandvar(char *buf,
                     m = 0;
                     for (q = 0; q < vht[vht_index]->vlen && m < maxlen; q++)
                     {
-                        mathtext[m] = vht[vht_index]->valtxt[(vht[vht_index]->vstart) + q];
+                        mathtext[m] = vht[vht_index]->valtxt[vht[vht_index]->vstart + q];
                         m++;
                     }
                     // mathtext[m] = 0;
@@ -1096,7 +1096,7 @@ int crm_restrictvar(char *boxstring,
                 vmidx, vht[vmidx]);
     }
     //       Is it a real variable?
-    if (((void *)vht[vmidx]) == NULL)
+    if (vht[vmidx] == NULL)
     {
         snprintf(errstr, maxerrlen,
                 "This program wants to use a nonexistent variable named: '%s'",

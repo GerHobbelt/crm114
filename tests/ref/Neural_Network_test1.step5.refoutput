@@ -7,11 +7,11 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
- type I 
-CLASSIFY succeeds; (neural.net) success probability: 0.755664  pR: 19.1143
-Best match to file #0 (i_test.css) prob: 0.7557  pR: -26.6013
+ type Q 
+CLASSIFY fails; (neural.net) success probability: 0.282151  pR: 4.4550
+Best match to file #1 (q_test.css) prob: 0.7178  pR: -17.8201
 Total features in input file: 268
-#0 (i_test.css): icnr: 0.37 ocnr: 0.63 prob: 7.56e-01, pR: -26.60
-#1 (q_test.css): icnr: 0.12 ocnr: 0.88 prob: 2.44e-01, pR: -76.46
+#0 (i_test.css): icnr: 0.18 ocnr: 0.83 prob: 2.82e-01, pR: -66.31
+#1 (q_test.css): icnr: 0.63 ocnr: 0.76 prob: 7.18e-01, pR: -17.82
 
 

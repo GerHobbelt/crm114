@@ -1178,8 +1178,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             for (j = 1; j < OSB_BAYES_WINDOW_LEN; j++)
             {
                 h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
-                h2 =
-                    hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
+                h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
                 hindex = h1;
 
                 if (internal_trace)
@@ -1419,13 +1418,11 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     // normalize hits to max learnings
                     if (learnings[i_min_p] < learnings[i_max_p])
                     {
-                        hits_min_p *=
-                            (hitcount_t)(learnings[i_max_p] / (0.0 + learnings[i_min_p]));
+                        hits_min_p *=                            (hitcount_t)(learnings[i_max_p] / (0.0 + learnings[i_min_p]));
                     }
                     else
                     {
-                        hits_max_p *=
-                            (hitcount_t)(learnings[i_min_p] / (0.0 + learnings[i_max_p]));
+                        hits_max_p *=                            (hitcount_t)(learnings[i_min_p] / (0.0 + learnings[i_max_p]));
                     }
 
                     sum_hits = hits_max_p + hits_min_p;

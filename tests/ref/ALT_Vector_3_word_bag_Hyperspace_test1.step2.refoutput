@@ -1,0 +1,10 @@
+TEST SCRIPT + COMMANDLINE:
+-{learn <alt.hyperspace> (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 1/} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+

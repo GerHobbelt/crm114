@@ -99,19 +99,20 @@ char *tempbuf = NULL;
 
 CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = { 0 };
 
-
-void free_stack_item(CSL_CELL *csl)
-{
-    fprintf(stderr, "Should never get here.\n");
-    abort();
-}
-
-
-
-
-
-
 ANALYSIS_CONFIG cfg = { 0 };
+
+
+
+
+// bogus code to make link phase happy while we are in limbo between obsoleting this tool and
+// getting cssXXXX script commands working in crm114 itself.
+void free_stack_item(CSL_CELL *csl)
+{ }
+
+
+
+
+
 
 
 

@@ -579,7 +579,7 @@ invoke_top:
                 //   set during the CALL statement, not calculated during RETURN.
                 char depthstr[33];
                 sprintf(depthstr, "%d", csl->calldepth);
-                crm_set_temp_var(":_cd:", depthstr, -1);
+                crm_set_temp_var(":_cd:", depthstr, -1, 0);
             }
         }
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
@@ -836,9 +836,9 @@ invoke_top:
             // [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
             if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
             {
-                crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason, -1);
+                crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason, -1, 0);
             }
-            crm_set_temp_var(":_fault:", reason, -1);
+            crm_set_temp_var(":_fault:", reason, -1, 0);
 
             fresult = crm_trigger_fault(reason);
             if (fresult != 0)
@@ -855,7 +855,7 @@ invoke_top:
 
     case CRM_ACCEPT:
         {
-            char varname[MAX_VARNAME];
+            //char varname[MAX_VARNAME];
             int varidx;
             //   Accept:  take the current window, and output it to
             //   standard output.
@@ -865,9 +865,9 @@ invoke_top:
                 fprintf(stderr, "Executing an ACCEPT\n");
             //
             //
-            varname[0] = 0;
-            strcpy(varname, ":_dw:");
-            varidx = crm_vht_lookup(vht, varname, strlen(varname), csl->calldepth);
+            //varname[0] = 0;
+            //strcpy(varname, ":_dw:");
+            varidx = crm_vht_lookup(vht, ":_dw:", 5, csl->calldepth);
             if (varidx == 0
                 || vht[varidx] == NULL)
             {
@@ -1131,6 +1131,7 @@ invoke_top:
 
             if (user_trace)
                 fprintf(stderr, "Executing a user CALL statement\n");
+
             //  look up the variable name in the vht.  If it's not there, or
             //  not in our file, call a fatal error.
 
@@ -1183,7 +1184,7 @@ invoke_top:
             newcsl->preload_window = csl->preload_window;
             newcsl->caller = csl;
             newcsl->calldepth = csl->calldepth + 1;
-            newcsl->running = csl->running;
+           newcsl->running = csl->running;
             //     put in the target statement number - this is a label!
             CRM_ASSERT(k >= 0);
             CRM_ASSERT(k <= csl->nstmts);
@@ -1296,7 +1297,7 @@ invoke_top:
                                         "No such return value var, creating var %s\n",
                                         &outbuf[retname_start]);
                             }
-							crm_set_temp_var(&outbuf[retname_start], "", csl->calldepth); /* scope = PARENT level! */
+			crm_set_temp_var(&outbuf[retname_start], "", csl->calldepth, !!(apb->sflags & CRM_KEEP)); /* scope = PARENT level! or... global! */
                             ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen, csl->calldepth);
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
                             CRM_ASSERT(tstmt == csl->cstmt);
@@ -1347,7 +1348,7 @@ invoke_top:
                     //   properly set :_cd: since we're now in the 'callee' code
                     char depthstr[33];
                     sprintf(depthstr, "%d", csl->calldepth);
-                    crm_set_temp_var(":_cd:", depthstr, -1);
+                    crm_set_temp_var(":_cd:", depthstr, -1, 0);
                 }
 
                 //  maybe run some JIT parsing on the called statement?
@@ -1382,7 +1383,7 @@ invoke_top:
                 //     We don't have flags, so we don't bother fixing the
                 //     flag variables.
                 //
-                //            get the paren arg of this routine
+                // get the paren arg of this routine
                 CRM_ASSERT(apb != NULL);
                 argnamelen = crm_get_pgm_arg(outbuf, data_window_size, apb->p1start, apb->p1len);
                 argnamelen = crm_nexpandvar(outbuf, argnamelen, data_window_size, vht, tdw);
@@ -1434,7 +1435,11 @@ invoke_top:
                         //      finally, we can put the variable in.  (this is
                         //      an ALTER to a zero-length variable, which is why
                         //      we moved it to the end of the TDW.
-                        crm_set_temp_nvar(outbuf, tempbuf, argvallen, csl->calldepth);
+			//
+			// NEVER allow this var to be allocated in outer scope if it doesn't reside
+			// there yet:
+			//
+                        crm_set_temp_nvar(outbuf, tempbuf, argvallen, csl->calldepth, 0);
                     }
                     //
                     //   That's it... we're done.
@@ -1581,9 +1586,9 @@ invoke_top:
                 vlen = 0;
             if (crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen))
             {
-                crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
+                crm_set_windowed_nvar(NULL, &out_var[ovstart], ovlen, cdw->filetext,
                         istart, vlen,
-						csl->cstmt, csl->calldepth);
+						csl->cstmt, csl->calldepth, !!(apb->sflags & CRM_KEEP));
             }
             else
             {
@@ -1666,7 +1671,7 @@ invoke_top:
                         char varname[MAX_VARNAME];
                         strncpy(varname, &temp_vars[vstart], vlen);
                         varname[vlen] = 0;
-                        nonfatalerror("can't intersect a nonexistent variable.",
+                        nonfatalerror("can't union a nonexistent variable.",
                                 varname);
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
                         CRM_ASSERT(tstmt == csl->cstmt);
@@ -1682,7 +1687,7 @@ invoke_top:
                             char varname[MAX_VARNAME];
                             strncpy(varname, &temp_vars[vstart], vlen);
                             varname[vlen] = 0;
-                            nonfatalerror("can't intersect isolated variable.",
+                            nonfatalerror("can't union an isolated variable.",
                                     varname);
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
                             CRM_ASSERT(tstmt == csl->cstmt);
@@ -1712,9 +1717,9 @@ invoke_top:
                 vlen = 0;
             if (crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen))
             {
-                crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
+                crm_set_windowed_nvar(NULL, &out_var[ovstart], ovlen, cdw->filetext,
                         istart, vlen,
-                        csl->cstmt, csl->calldepth);
+                        csl->cstmt, csl->calldepth, !!(apb->sflags & CRM_KEEP));
             }
             else
             {

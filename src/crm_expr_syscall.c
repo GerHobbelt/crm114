@@ -658,14 +658,14 @@ sys_cmd[0] = 0;
 #if defined (HAVE_GETPID)
                     pid = getpid();
                     sprintf(pidstr, "%d", (int)pid);
-                    crm_set_temp_var(":_pid:", pidstr, -1);
+                    crm_set_temp_var(":_pid:", pidstr, -1, 0);
                     if (user_trace)
                         fprintf(stderr, "My new PID is %s\n", pidstr);
 #endif
 #if defined (HAVE_GETPPID)
                     pid = getppid();
                     sprintf(pidstr, "%d", (int)pid);
-                    crm_set_temp_var(":_ppid:", pidstr, -1);
+                    crm_set_temp_var(":_ppid:", pidstr, -1, 0);
 #endif
                 }
                 //   See if we have redirection of stdin and stdout

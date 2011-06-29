@@ -1,0 +1,65 @@
+#
+#        test the call-return statements.
+#
+window
+#
+alter (:_dw:) /This is the original data window.  It shouldn't change/
+#
+output / Doing factorial with a mutating argument \n/
+isolate (:z:) /5/
+call /:factorial:/ [ :*:z: 1 ]
+output / :*:z: factorial is :*:out: (level :*:_cd:)\n\n/
+#
+output /And the data window is now: :*:_dw:\n/
+
+#######################
+# Must... Control... Fist... Of.... Runaway Line Count!!!
+####################
+exit /0/
+
+
+
+########################################
+#
+#      Start of the callable routines
+########################################
+
+
+#########################################
+#
+#     Calculate the factorial.  Note that
+#     this routine uses a global :out: to capture the
+#     accumulated result
+#
+#     Yes, I know it's dirtylooking, but most routines don't need 
+#     to be recursive, and of those that do, most really are changing
+#     a data structure in-place, and hence don't really need to
+#     do this twitchy magic.
+#
+
+#
+# <keep> for isolate / intersect / union is used to make the variables
+# global, when they don't already exist in this or an outer scope.
+#
+
+:factorial: (:arg:)
+{
+	output / arglist return factorial call entry, args = :*:arg: (level :*:_cd:)\n/
+	isolate (:nm1:)
+	isolate <keep> (:out:)    # global var, or at least residing in outer scope...
+	match [:arg:] (:: :n: :out:) /([0-9]+) ([0-9]+)/		
+	{
+		eval /:@: :*:n: > 1 :/
+		eval (:nm1:) /:@: :*:n: - 1 :/
+		eval (:out:) /:@: :*:out: * :*:n: :/
+		call /:factorial:/ [ :*:nm1: :*:out: ]
+		output / Call return, :out: = :*:out: ( level :*:_cd:) \n/
+		return
+	}
+	alius
+	{
+		output / Recursion bottomed out, returning :out: = :*:out: \n/
+		return
+	}
+}
+

@@ -495,7 +495,7 @@ return -1;
         char myhash[32];
         sprintf(myhash, "%08lX", (unsigned long int)strnhash(csl->filetext, csl->nchars));
         myhash[8] = 0;
-        crm_set_temp_var(":_pgm_hash:", myhash, -1);
+        crm_set_temp_var(":_pgm_hash:", myhash, -1, 0);
     }
 
     ///   GROT GROT GROT  for some reason, Gnu Regex segfaults if it

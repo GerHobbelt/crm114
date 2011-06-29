@@ -611,8 +611,8 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int fn_start_here;
     int bestseen;
     int thistotal;
-    int *feature_weight;
-    int *order_no;
+    uint32_t *feature_weight;
+    uint32_t *order_no;
     int hashcounts;
 
     double top10scores[10];

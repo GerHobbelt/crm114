@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); {classify <alt.winnow> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I :*:_nl::*:s::*:_nl:/} alius { output / type Q :*:_nl::*:s::*:_nl:/ }}       
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type I 
+CLASSIFY succeeds; (alt.winnow) success probability: 0.5694  pR: 1.2134
+Best match to file #0 (i_test.css) weight: 46.2936  pR: 15.1042
+Total features in input file: 40
+#0 (i_test.css): features: 58845.63, unseen:      9, hits:     31, uhits: 34444.44, weight:  46.29, wc:  37.29, plc:   0.14, fac:   1.20, plcc:  15.10, t:  43.59, b:   0.76, pR:  15.10
+#1 (q_test.css): features: 70359.04, unseen:      8, hits:     32, uhits: 40000.00, weight:  35.01, wc:  27.01, plc:  -0.14, fac:   0.84, plcc:   5.31, t:  22.02, b:   0.27, pR:   5.31
+
+

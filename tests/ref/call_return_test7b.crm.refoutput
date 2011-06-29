@@ -1,0 +1,31 @@
+TEST SCRIPT + COMMANDLINE:
+call_return_test7b.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+crm114: *WARNING*
+Your call statement wants to return a value to a nonexistent variable; I'll create an isolated one.  Hope that's OK. Varname was ':out:'
+I'll try to keep working.
+This happened at line 10 of file /windows/G/prj/3actual/crm114/tests/call_return_test7b.crm:
+    call /:factorial_inplace:/ [ :*:z: 1 ] (:out:)
+(runtime system location: crm_exec_engine.c(1287) in routine: crm_invoke)
+
+STDOUT TEST OUTPUT:
+ Doing factorial with inplace args. 
+ downward recurse call entry, args =  5 1  (level 1)
+ downward recurse call entry, args =  4 5  (level 2)
+ downward recurse call entry, args =  3 20  (level 3)
+ downward recurse call entry, args =  2 60  (level 4)
+ downward recurse call entry, args =  1 120  (level 5)
+ Recursion bottomed out, returning :out: = 120 
+ Call return, :out: = 120 (level 4)
+ Call return, :out: = 120 (level 3)
+ Call return, :out: = 120 (level 2)
+ Call return, :out: = 120 (level 1)
+ 5 factorial_inplace is 120 (level 0) 
+
+And the data window is now: This is the original data window.  It shouldn't change
+

@@ -345,6 +345,139 @@ int crm_vector_tokenize
 
 
 
+
+
+
+
+/*
+ * Bob Jenkins derived mixer
+ */
+
+#define rot(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
+
+
+/*
+ * -------------------------------------------------------------------------------
+ * mix -- mix 3 32-bit values reversibly.
+ *
+ * This is reversible, so any information in (a,b,c) before mix() is
+ * still in (a,b,c) after mix().
+ *
+ * If four pairs of (a,b,c) inputs are run through mix(), or through
+ * mix() in reverse, there are at least 32 bits of the output that
+ * are sometimes the same for one pair and different for another pair.
+ * This was tested for:
+ * pairs that differed by one bit, by two bits, in any combination
+ * of top bits of (a,b,c), or in any combination of bottom bits of
+ * (a,b,c).
+ * "differ" is defined as +, -, ^, or ~^.  For + and -, I transformed
+ * the output delta to a Gray code (a^(a>>1)) so a string of 1's (as
+ * is commonly produced by subtraction) look like a single 1-bit
+ * difference.
+ * the base values were pseudorandom, all zero but one bit set, or
+ * all zero plus a counter that starts at zero.
+ *
+ * Some k values for my "a-=c; a^=rot(c,k); c+=b;" arrangement that
+ * satisfy this are
+ *  4  6  8 16 19  4
+ *  9 15  3 18 27 15
+ * 14  9  3  7 17  3
+ * Well, "9 15 3 18 27 15" didn't quite get 32 bits diffing
+ * for "differ" defined as + with a one-bit base and a two-bit delta.  I
+ * used http://burtleburtle.net/bob/hash/avalanche.html to choose
+ * the operations, constants, and arrangements of the variables.
+ *
+ * This does not achieve avalanche.  There are input bits of (a,b,c)
+ * that fail to affect some output bits of (a,b,c), especially of a.  The
+ * most thoroughly mixed value is c, but it doesn't really even achieve
+ * avalanche in c.
+ *
+ * This allows some parallelism.  Read-after-writes are good at doubling
+ * the number of bits affected, so the goal of mixing pulls in the opposite
+ * direction as the goal of parallelism.  I did what I could.  Rotates
+ * seem to cost as much as shifts on every machine I could lay my hands
+ * on, and rotates are much kinder to the top and bottom bits, so I used
+ * rotates.
+ * -------------------------------------------------------------------------------
+ */
+#define mix(a, b, c)                       \
+    {                                      \
+        a -= c;  a ^= rot(c, 4);  c += b;  \
+        b -= a;  b ^= rot(a, 6);  a += c;  \
+        c -= b;  c ^= rot(b, 8);  b += a;  \
+        a -= c;  a ^= rot(c, 16);  c += b; \
+        b -= a;  b ^= rot(a, 19);  a += c; \
+        c -= b;  c ^= rot(b, 4);  b += a;  \
+    }
+
+/*
+ * -------------------------------------------------------------------------------
+ * final -- final mixing of 3 32-bit values (a,b,c) into c
+ *
+ * Pairs of (a,b,c) values differing in only a few bits will usually
+ * produce values of c that look totally different.  This was tested for
+ * pairs that differed by one bit, by two bits, in any combination
+ * of top bits of (a,b,c), or in any combination of bottom bits of
+ * (a,b,c).
+ * "differ" is defined as +, -, ^, or ~^.  For + and -, I transformed
+ * the output delta to a Gray code (a^(a>>1)) so a string of 1's (as
+ * is commonly produced by subtraction) look like a single 1-bit
+ * difference.
+ * the base values were pseudorandom, all zero but one bit set, or
+ * all zero plus a counter that starts at zero.
+ *
+ * These constants passed:
+ * 14 11 25 16 4 14 24
+ * 12 14 25 16 4 14 24
+ * and these came close:
+ * 4  8 15 26 3 22 24
+ * 10  8 15 26 3 22 24
+ * 11  8 15 26 3 22 24
+ * -------------------------------------------------------------------------------
+ */
+#define final(a, b, c)           \
+    {                            \
+        c ^= b; c -= rot(b, 14); \
+        a ^= c; a -= rot(c, 11); \
+        b ^= a; b -= rot(a, 25); \
+        c ^= b; c -= rot(b, 16); \
+        a ^= c; a -= rot(c, 4);  \
+        b ^= a; b -= rot(a, 14); \
+        c ^= b; c -= rot(b, 24); \
+    }
+
+
+
+//
+// Paul Hsieh's Superfast hash anno 2008.
+//
+// http://www.azillionmonkeys.com/qed/hash.html
+//
+#define SuperFastMix(a, b)                              \
+{														\
+        a += (b & 0xFFFF);								\
+        a ^= (a << 16) ^ ((b & 0xFFFF0000U) >> 5);		\
+        a += a >> 11;									\
+}
+
+#define SuperFastMixFinal(hash)							\
+{														\
+    /* Force "avalanching" of final 127 bits */			\
+    hash ^= hash << 3;									\
+    hash += hash >> 5;									\
+    hash ^= hash << 4;									\
+    hash += hash >> 17;									\
+    hash ^= hash << 25;									\
+    hash += hash >> 6;									\
+}														
+
+
+
+
+
+
+
+
 typedef struct
 {
     crmhash_t h1;
@@ -510,16 +643,16 @@ static int indirect_hash_compare_2(void const *a, void const *b)
 //
 int crm_vector_tokenize
 (
-        const char                    *text,               // input string (null-safe!)
-        int                            textlen,            //   how many bytes of input.
-        int                            start_offset,       //     start tokenizing at this byte.
-        VT_USERDEF_TOKENIZER          *tokenizer,          // the regex tokenizer (elements in struct MAY be changed)
+        const char *text,               // input string (null-safe!)
+        int textlen,            //   how many bytes of input.
+        int start_offset,       //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER *tokenizer,          // the regex tokenizer (elements in struct MAY be changed)
         const VT_USERDEF_COEFF_MATRIX *our_coeff,          // the pipeline coefficient control array, etc.
-        crmhash_t                     *features_buffer,    // where the output features go
-        int                            features_bufferlen, //   how many output features (max)
-        int                           *feature_weights,    // feature weight per feature
-        int                           *order_no,           // order_no (starting at 0) per feature
-        int                           *features_out        // how many longs did we actually use up
+        crmhash_t *features_buffer,    // where the output features go
+        int features_bufferlen, //   how many output features (max)
+        uint32_t *feature_weights,    // feature weight per feature
+        uint32_t *order_no,           // order_no (starting at 0) per feature
+        int *features_out        // how many longs did we actually use up
 )
 {
     crmhash_t hashpipe[CRM_VT_BURST_SIZE + UNIFIED_WINDOW_LEN - 1];  // the pipeline for hashes
@@ -794,7 +927,7 @@ int crm_vector_tokenize
                         // assert: make sure the multiplier values are odd for proper spread.
                         CRM_ASSERT(universal_multiplier == 0 ? TRUE : (universal_multiplier & 1));
                         // the - minus 'icol' is intentional: reversed pipeline: older is lower index.
-                        ihash += hp[-icol] *universal_multiplier;
+                        ihash += hp[-icol] * universal_multiplier;
                     }
 
                     //    Stuff the final ihash value into features array -- iff we still got room for it
@@ -1219,11 +1352,11 @@ static void discover_matrices_max_dimensions(const VT_USERDEF_COEFF_MATRIX *matr
     /*
      * Could've coded it like this:
      *
-     * for (z = UNIFIED_VECTOR_STRIDE; z-- >= 0; )
+     * for (z = UNIFIED_VECTOR_STRIDE; z-- > 0; )
      * {
-     *      for (y = UNIFIED_VECTOR_LIMIT; y-- >= 0; )
+     *      for (y = UNIFIED_VECTOR_LIMIT; y-- > 0; )
      *      {
-     *              for (x = UNIFIED_WINDOW_LEN; x-- >= 0; )
+     *              for (x = UNIFIED_WINDOW_LEN; x-- > 0; )
      *              {
      *                      ...
      *
@@ -2743,11 +2876,6 @@ int generate_matrix_for_model(VT_USERDEF_COEFF_MATRIX *matrix, contributing_toke
 
 
 /*
-   Return TRUE when the given VT matrix would permit the use of Arne's optimization.
-
-   Return FALSE otherwise.
-
-
    Note: Arne's optimization is based on the assumption that, when no hit is found for the
    feature hash proeduced through the first row of the VT matrix, the feature hashes of the
    subsequent rows of the same matrix won't produce a hit either.
@@ -2760,33 +2888,82 @@ int generate_matrix_for_model(VT_USERDEF_COEFF_MATRIX *matrix, contributing_toke
    assumed possible when ALL 2D matrices (each stride's matrix) permits Arne's optimization.
 */
 
-static int check_if_arne_optimization_is_possible(const VT_USERDEF_COEFF_MATRIX *matrix)
+static void check_and_set_flags(VT_USERDEF_COEFF_MATRIX *matrix)
 {
     int x;
     int y;
     int z;
+	int m = 0;
 
     CRM_ASSERT(matrix);
 
-	// only need to check the non-zero columns of the first row: all other rows must have these as well:
-	for (z = matrix->cm.output_stride; z-- >= 0; )
+	matrix->flags.arne_optimization_allowed = 1;
+			  matrix->flags.cm_is_position_dependent = 1;
+
+	// Arne's optimization: only need to check the non-zero columns of the first row: 
+	// all other rows must have these as well.
+	//
+	// CM position-independent: need to check all rows: all non-zero multipliers must
+	// be the same.
+	for (z = matrix->cm.output_stride; z-- > 0; )
      {
-		 for (x = matrix->cm.pipe_len; x-- >= 0; )
-          {
-			  const int *col = &matrix->cm.coeff_array[z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN + x];
-			  if (col[0] == 0)
-				  continue;
+		  const int *mtx = &matrix->cm.coeff_array[z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN];
 
-			  // check if this column is active (non-zero) for all *other* rows as well:
-			  for (y = matrix->cm.pipe_iters; y-- >= 1; )
-          {
-			  if (col[y * UNIFIED_WINDOW_LEN] == 0)
-				  return FALSE;
+		  // Arne: check to make sure row[0] doesn't have this column SET
+					  if (mtx[0] != 0)
+					  {
+							matrix->flags.arne_optimization_allowed = 0;
+					  }
+
+					  // check first row for position independence...
+			  for (x = matrix->cm.pipe_len; x-- > 1; )
+			  {
+				const int *col = mtx + x;
+
+				  if (*col != 0)
+				  {
+						  if (*col != m)
+						  {
+							  matrix->flags.cm_is_position_dependent = 0;
+						  }
+				  }
 			  }
-		 }
-	}
 
-	return TRUE;
+			  // check the rest of the 2D matrix for Arne and position independence at the same time...
+			  for (y = matrix->cm.pipe_iters; y-- > 1; )
+		  {
+			  const int *row = mtx + y * UNIFIED_WINDOW_LEN;
+
+			  m = mtx[0]; // whole row must all have the same multiplier to be considered position independent
+
+			  for (x = matrix->cm.pipe_len; x-- > 1; )
+			  {
+				const int *col = row + x;
+
+				  if (*col == 0)
+				  {
+					  // Arne: check to make sure row[0] doesn't have this column SET
+					  if (mtx[x] != 0)
+					  {
+							matrix->flags.arne_optimization_allowed = 0;
+					  }
+				  }
+				  else
+				  {
+						  if (*col != m)
+						  {
+							  matrix->flags.cm_is_position_dependent = 0;
+						  }
+				  }
+			  }
+		  }
+
+if (!matrix->flags.arne_optimization_allowed 
+	&& !matrix->flags.cm_is_position_dependent)
+{
+	break;
+}
+	}
 }
 
 
@@ -3393,7 +3570,6 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
     int fw_y_max = 0;
 			char *src = &s2text[match[1].rm_so];
 			int srclen = match[1].rm_eo - match[1].rm_so;
-			int start = 0;
 
     discover_matrices_max_dimensions(coeff_matrix, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
 
@@ -3476,7 +3652,8 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
         if (regex_status == 0 && match[1].rm_so >= 0)
         {
             //  Yes, it matched. Fetch the 3D sizes and adjust the matrix accordingly.
-			int x, y, z;
+        int x;
+        int y;
     int x_max = 0;
     int y_max = 0;
     int z_max = 0;
@@ -3484,7 +3661,6 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
     int fw_y_max = 0;
 			char *src = &s2text[match[1].rm_so];
 			int srclen = match[1].rm_eo - match[1].rm_so;
-			int start = 0;
 
     discover_matrices_max_dimensions(coeff_matrix, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
 
@@ -3643,7 +3819,6 @@ int config_vt_coeff_matrix_and_tokenizer
     {
         int x;
         int y;
-        int z;
         contributing_token_func *cb = osb_contributing_token;
         int pipe_len = OSB_BAYES_WINDOW_LEN;
         int pipe_iters = 4;
@@ -3655,8 +3830,8 @@ int config_vt_coeff_matrix_and_tokenizer
             pipe_len = MARKOVIAN_WINDOW_LEN;
             pipe_iters = 16;
 
-            ew = hidden_markov_weight;
-            ew_len = WIDTHOF(hidden_markov_weight);
+            ew = super_markov_weight;
+            ew_len = WIDTHOF(super_markov_weight);
 
 		//default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
 		}
@@ -3667,8 +3842,8 @@ int config_vt_coeff_matrix_and_tokenizer
             pipe_len = MARKOVIAN_WINDOW_LEN;
             pipe_iters = 16;
 
-            ew = hidden_markov_weight;
-            ew_len = WIDTHOF(hidden_markov_weight);
+            ew = super_markov_weight;
+            ew_len = WIDTHOF(super_markov_weight);
 
 		//default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
         }
@@ -3992,7 +4167,7 @@ int config_vt_coeff_matrix_and_tokenizer
             return -1;
         }
 
-		our_coeff->flags.arne_optimization_allowed = check_if_arne_optimization_is_possible(our_coeff);
+		check_and_set_flags(our_coeff);
     }
 
 	CRM_ASSERT(default_tokenizer.padding_length == 0);
@@ -4061,8 +4236,8 @@ int crm_vector_tokenize_selector
         VT_USERDEF_COEFF_MATRIX *user_coeff,         // the pipeline coefficient control array, etc.
         crmhash_t               *features,           // where the output features go
         int                      featureslen,        // how many output features (max)
-        int                     *feature_weights,    // feature weight per feature
-        int                     *order_no,           // order_no (starting at 0) per feature
+        uint32_t                *feature_weights,    // feature weight per feature
+        uint32_t                *order_no,           // order_no (starting at 0) per feature
         int                     *features_out        // how many feature-slots did we actually use up
 // int *next_offset --> is in VT_USERDEF_TOKENIZER object already
 )

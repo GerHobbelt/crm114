@@ -125,6 +125,7 @@ typedef struct mythical_vht_cell
                          //    wanted to.
     int linenumber;      // linenumber of this variable (if known, else -1)
     int scope_depth;     
+	int out_of_scope;	// set to !0 when getting out of scope. Implies this variable is 'deleted'
     int lazy_redirects;  // how many lazy redirects are allowed (0 by default);
 } VHT_CELL;
 
@@ -218,6 +219,9 @@ typedef struct mythical_csl_cell
     int return_vht_cell;                 // index into the VHT to stick the return value
     int calldepth;                       // how many calls deep is this stack frame
     int aliusstk[MAX_BRACKETDEPTH];      // the status stack for ALIUS
+	int *vht_var_collection;				// array of variables (indexes into the VHT) which have been created in this scope
+	int vht_var_collection_size;		
+	int vht_var_collection_fill;		
 
     unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
     unsigned int filetext_allocated : 1; // if the filetext was allocated on the heap.

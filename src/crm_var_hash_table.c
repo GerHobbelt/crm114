@@ -81,13 +81,13 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
 
     //    install a few constants.
 
-    crm_set_temp_var(":_nl:", "\n", -1);
-    crm_set_temp_var(":_ht:", "\t", -1);
-    crm_set_temp_var(":_bs:", "\b", -1);
-    crm_set_temp_var(":_sl:", "/", -1);
-    crm_set_temp_var(":_sc:", ";", -1);
-    crm_set_temp_var(":_cd:", "0", -1);
-    crm_set_temp_var("::", " ", -1);
+    crm_set_temp_var(":_nl:", "\n", -1, 0);
+    crm_set_temp_var(":_ht:", "\t", -1, 0);
+    crm_set_temp_var(":_bs:", "\b", -1, 0);
+    crm_set_temp_var(":_sl:", "/", -1, 0);
+    crm_set_temp_var(":_sc:", ";", -1, 0);
+    crm_set_temp_var(":_cd:", "0", -1, 0);
+    crm_set_temp_var("::", " ", -1, 0);
 
     // [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
     //
@@ -95,7 +95,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
     if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
     {
         // make sure the variable exists...
-        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "", -1);
+        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "", -1, 0);
     }
 
     //   put the version string in as a variable.
@@ -106,18 +106,18 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
                 REVISION,
                 crm_regversion());
         verstr[WIDTHOF(verstr) - 1] = 0;
-        crm_set_temp_var(":_crm_version:", verstr, -1);
+        crm_set_temp_var(":_crm_version:", verstr, -1, 0);
     }
 
-    crm_set_temp_var(":_hosttype:", HOSTTYPE, -1);
+    crm_set_temp_var(":_hosttype:", HOSTTYPE, -1, 0);
 
     //
     //    install the argc and argv values; restart argv values from [2]
     //    if a "--" metaflag is seen.
     //
     //    argv[0] and argv[1] are not overrideable by "--".
-    crm_set_temp_var(":_arg0:", argv[0], -1);
-    crm_set_temp_var(":_arg1:", argv[1], -1);
+    crm_set_temp_var(":_arg0:", argv[0], -1, 0);
+    crm_set_temp_var(":_arg1:", argv[1], -1, 0);
 
     //     Check to see if there's a "--" arg.  If so, mark uvstart
     //   (that is, "user var start" at that point)... but only the first "--".
@@ -146,7 +146,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
         for (j = 2, i = uvstart; i < argc; i++, j++)
         {
             sprintf(anamebuf, ":_arg%d:", j);
-            crm_set_temp_var(anamebuf, argv[i], -1);
+            crm_set_temp_var(anamebuf, argv[i], -1, 0);
             arg_count = j + 1;
         }
 
@@ -163,7 +163,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
         //
         // _pos0 and _pos1 will exist before '--' @ uvstart; program isn't
         // necessarily @ argv[1] though!
-        crm_set_temp_var(":_pos0:", posv[0], -1);
+        crm_set_temp_var(":_pos0:", posv[0], -1, 0);
         strcpy(posvars, posv[0]);
         pos_count = 1;
         // now, _pos0 has surely been set; now collect other arguments
@@ -175,7 +175,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
             if (posv[i][0] != '-')
             {
                 sprintf(anamebuf, ":_pos%d:", j);
-                crm_set_temp_var(anamebuf, posv[i], -1);
+                crm_set_temp_var(anamebuf, posv[i], -1, 0);
                 strcat(posvars, " ");
                 strcat(posvars, posv[i]);
                 pos_count = ++j;
@@ -186,22 +186,22 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
         //
         //    and put the "user-visible" argc into a var as well.
         sprintf(anamebuf, "%d", arg_count);
-        crm_set_temp_var(":_argc:", anamebuf, -1);
+        crm_set_temp_var(":_argc:", anamebuf, -1, 0);
 
         sprintf(anamebuf, "%d", pos_count);
-        crm_set_temp_var(":_posc:", anamebuf, -1);
+        crm_set_temp_var(":_posc:", anamebuf, -1, 0);
 
-        crm_set_temp_var(":_pos_str:", posvars, -1);
+        crm_set_temp_var(":_pos_str:", posvars, -1, 0);
         //
         //   and set the fault to be a null string for now.
-        crm_set_temp_var(":_fault:", "", -1);
+        crm_set_temp_var(":_fault:", "", -1, 0);
         //
         //   set the current line number to a set of zeroes...
-        crm_set_temp_var(":_cs:", "00000000", -1);
+        crm_set_temp_var(":_cs:", "00000000", -1, 0);
         //
         //   Set the "lazy" intermediate variable to just a space.
         //   This will get rebound to point to the active lazy var.
-        crm_set_temp_var(":_lazy:", " ", -1);
+        crm_set_temp_var(":_lazy:", " ", -1, 0);
 
         //    set the current pid and parent pid.
         {
@@ -210,16 +210,16 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
 #if defined (HAVE_GETPID)
             pid = (int)getpid();
             sprintf(pidstr, "%d", pid);
-            crm_set_temp_var(":_pid:", pidstr, -1);
+            crm_set_temp_var(":_pid:", pidstr, -1, 0);
 #else
-            crm_set_temp_var(":_pid:", "123456789", -1);
+            crm_set_temp_var(":_pid:", "123456789", -1, 0);
 #endif
 #if defined (HAVE_GETPPID)
             pid = (int)getppid();
             sprintf(pidstr, "%d", pid);
-            crm_set_temp_var(":_ppid:", pidstr, -1);
+            crm_set_temp_var(":_ppid:", pidstr, -1, 0);
 #else
-            crm_set_temp_var(":_ppid:", "123456789", -1);
+            crm_set_temp_var(":_ppid:", "123456789", -1, 0);
 #endif
         }
     }
@@ -285,7 +285,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
             strcpy(s, ":");
             if (environ[i][j] != 0)
                 j++; //  step past the equals sign.
-            crm_set_temp_var(name, &environ[i][j], -1);
+            crm_set_temp_var(name, &environ[i][j], -1, 0);
             free(name);
         }
 
@@ -308,7 +308,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
                 {
                     dirbuf[len - 1] = 0;
                 }
-                crm_set_temp_var(":_env_PWD:", dirbuf, -1);
+                crm_set_temp_var(":_env_PWD:", dirbuf, -1, 0);
                 if (strlen(dirbuf) + WIDTHOF("PWD=") < (data_window_size - 1000))
                 {
                     strcat(tempbuf, "PWD=");
@@ -343,7 +343,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
             }
             else
             {
-                crm_set_temp_var(":_env_USER:", pwbufret->pw_name, -1);
+                crm_set_temp_var(":_env_USER:", pwbufret->pw_name, -1, 0);
                 if (strlen(pwbufret->pw_name) + WIDTHOF("USER=") < (data_window_size - 1000))
                 {
                     strcat(tempbuf, "USER=");
@@ -373,7 +373,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
             }
             else
             {
-                crm_set_temp_var(":_env_USER:", pwbufret->pw_name, -1);
+                crm_set_temp_var(":_env_USER:", pwbufret->pw_name, -1, 0);
                 if (strlen(pwbufret->pw_name) + WIDTHOF("USER=") < (data_window_size - 1000))
                 {
                     strcat(tempbuf, "USER=");
@@ -399,7 +399,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
             }
             else
             {
-                crm_set_temp_var(":_env_USER:", userbuf, -1);
+                crm_set_temp_var(":_env_USER:", userbuf, -1, 0);
                 if (strlen(userbuf) + WIDTHOF("USER=") < (data_window_size - 1000))
                 {
                     strcat(tempbuf, "USER=");
@@ -420,7 +420,7 @@ void crm_vht_init(int argc, char **argv, int posc, char **posv)
 #endif
         }
     }
-    crm_set_temp_var(":_env_string:", tempbuf, -1);
+    crm_set_temp_var(":_env_string:", tempbuf, -1, 0);
 
     //    see if argv[1] is a '-( whatever) arg, which limits the
     //    set of runtime parameters allowed on the command line.
@@ -543,7 +543,7 @@ else
                         fprintf(stderr, "\n Setting cmdline var '%s' to '%s'\n",
                                 anamebuf, avalbuf);
                     }
-                    crm_set_temp_var(anamebuf, avalbuf, 0);
+                    crm_set_temp_var(anamebuf, avalbuf, 0, 0);
                 }
                 else
                 {
@@ -567,7 +567,7 @@ else
 //           been called the idw (Isolated Data Window) but it's too
 //           late to fix it now.
 //
-void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int calldepth)
+void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int calldepth, int keep_in_outer_scope)
 {
     int namestart, namelen;
     int valstart;
@@ -637,10 +637,10 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int c
         tdw->filetext[tdw->nchars] = 0;
         //
         //      now, we whack the actual VHT.
-        crm_setvar(NULL, 0,
+        crm_setvar(&i, NULL, 0,
                 tdw->filetext, namestart, namelen,
                 tdw->filetext, valstart, vallen,
-                0, 0, calldepth);
+                0, (keep_in_outer_scope ? 0 : calldepth));
         //     that's it.
     }
     else
@@ -655,9 +655,9 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int c
 //     Use ONLY where you can be sure no embedded NULs will be seen (i.e.
 //     fixed strings in the early startup.
 //
-void crm_set_temp_var(const char *varname, const char *value, int calldepth)
+void crm_set_temp_var(const char *varname, const char *value, int calldepth, int keep_in_outer_scope)
 {
-    crm_set_temp_nvar(varname, value, (int)strlen(value), calldepth);
+    crm_set_temp_nvar(varname, value, (int)strlen(value), calldepth, keep_in_outer_scope);
 }
 
 
@@ -676,13 +676,15 @@ void crm_set_temp_var(const char *varname, const char *value, int calldepth)
 //           (reclamation uses "crm_compress_tdw_section", see comments
 //           further down in the code here)
 
-void crm_set_windowed_nvar(char *varname,
+void crm_set_windowed_nvar(int *vhtidx, 
+						   char *varname,
         int                      varlen,
         char                    *valtext,
         int                      start,
         int                      len,
         int                      stmtnum,
-		int calldepth)
+		int calldepth,
+int keep_in_outer_scope)
 {
     int i;
     int namestart, namelen;
@@ -725,10 +727,10 @@ void crm_set_windowed_nvar(char *varname,
         tdw->nchars++;
         //
         //      now, we whack the actual VHT.
-        crm_setvar(NULL, 0,
+        crm_setvar(&i, NULL, 0,
                 tdw->filetext, namestart, namelen,
                 valtext, start, len,
-                stmtnum, 0, calldepth);
+                stmtnum, (keep_in_outer_scope ? 0 : calldepth));
         //     that's it.
     }
     else
@@ -745,10 +747,10 @@ void crm_set_windowed_nvar(char *varname,
             //
             if (internal_trace)
                 fprintf(stderr, "... old var\n");
-            crm_setvar(NULL, 0,
+            crm_setvar(&i, NULL, 0,
                     vht[i]->nametxt, vht[i]->nstart, vht[i]->nlen,
                     valtext, start, len,
-                    stmtnum, 0, calldepth);
+                    stmtnum, (keep_in_outer_scope ? 0 : calldepth));
 
             //       Do we need to repair the leaked memory?  Only necessary if the
             //       old text was in the tdw area; this is harmless if the area
@@ -1200,7 +1202,7 @@ void crm_destructive_alter_nvariable(const char *varname, int varlen,
         if (vht[vhtindex] == NULL)
         {
             // IGNORE FOR NOW
-            crm_set_temp_nvar(&varname[i], newstr, newlen, calldepth);
+            crm_set_temp_nvar(&varname[i], newstr, newlen, calldepth, 0);
             nonfatalerror_ex(SRC_LOC(), "Attempt to alter the value of a nonexistent "
                                         "variable, so I'm creating an ISOLATED variable.  "
                                         "I hope that's OK.  The nonexistent variable is: "
@@ -1254,9 +1256,7 @@ void crm_destructive_alter_nvariable(const char *varname, int varlen,
     //
     //     now we have space, and we can put in the characters from
     //     the new pattern
-    crm_memmove(&(mdw->filetext[vht[vhtindex]->vstart]),
-            newstr,
-            newlen);
+    crm_memmove(&mdw->filetext[vht[vhtindex]->vstart],            newstr,            newlen);
 }
 
 
@@ -1284,7 +1284,7 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
     {
         fatalerror(" Data window trying to get too long.",
                 " Try increasing the data window maximum size.");
-        goto bailout;
+      return;
     }
 
     if (delta == 0)
@@ -1335,9 +1335,6 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
     crm_updatecaptures(mdw->filetext,
             where,
             delta);
-bailout:
-    // semicolon to conform to the ANSI C standard
-    ;
 }
 
 //        allow_data_window_to_grow
@@ -1487,13 +1484,15 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen, int scope_dep
 					return found;
 				}
             }
-
+			
+			if (!vht[i]->out_of_scope)
+			{
             //  there's something here - is it what we have been seeking
             if (vlen == vht[i]->nlen
                 && memcmp(&vht[i]->nametxt[vht[i]->nstart],
                         vname, vlen) == 0)
             {
-				if (vht[i]->scope_depth == scope_depth)
+				if (act_like_Bill || vht[i]->scope_depth == scope_depth)
 				{
 					//  Yes, we found it.
 					if (internal_trace)
@@ -1548,6 +1547,7 @@ if (vht[i]->scope_depth < scope_depth
                     fprintf(stderr, "' instead.");
                 }
             }
+			}
 
             i++;
             //  check wraparound
@@ -1575,9 +1575,24 @@ if (vht[i]->scope_depth < scope_depth
 					if (internal_trace)
 					{
 						int index;
-						fprintf(stderr, "Variable Hash Table Dump\n");
-						for (index = 0; index < vht_size; index++)
+				int b;
+
+						fprintf(stderr, "Variable Hash Table Dump @ scope depth %d\n", csl->calldepth);
+						for (b = INT_MAX, index = 0; index < vht_size; index++)
 						{
+if (vht[index] == NULL)
+{
+	if (b > index)
+	{
+		b = index;
+}
+continue;
+}
+if (index >0 && vht[index - 1] == NULL)
+{
+							fprintf(stderr, "empty slots in range %d .. %d\n", b, index);
+b = INT_MAX;
+}
 							fprintf(stderr, "  var '");
 							fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
 							fprintf(stderr, "'[%d] found at %d (",
@@ -1590,17 +1605,199 @@ if (vht[i]->scope_depth < scope_depth
 							{
 								fprintf(stderr, "(isol)");
 							}
-							fprintf(stderr, " s: %d, l:%d)\n",
-									vht[index]->vstart, vht[index]->vlen);
+							fprintf(stderr, " s: %d, l:%d,%s scope: %d)\n",
+									vht[index]->vstart, vht[index]->vlen,
+	(vht[index]->out_of_scope ? " (out-of-scope)" : ""),
+vht[index]->scope_depth);
 						}
 					}
-					fatalerror(" Variable hash table overflow while looking "
-							   "for variable: ",
-							badvarname);
+					fatalerror_ex(SRC_LOC(),
+" Variable hash table overflow while looking "
+							   "for variable '%s' at scope level %d",
+							badvarname, scope_depth);
 					return 0;
 				}
             }
         }
+}
+
+
+/*
+   Find the first empty slot in the symbol table following the given VHT index.
+
+   This routine is used by the subscope variable declaration code, i.e.
+   isolate et al, who can override outer scope variables by local scope
+   entity.
+*/
+int crm_vht_find_next_empty_slot(VHT_CELL **vht, int vht_index, const char *vname, size_t vlen)
+{
+    int i;
+    int vsidx;
+    int vslen;
+
+    if (crm_nextword(vname, vlen, 0, &vsidx, &vslen))
+    {
+        i = (int)(strnhash(&vname[vsidx], vslen) % vht_size);
+	}
+	else
+	{
+		// empty var-name = erroneous situtation 
+		//
+		// Anyway, since we always want to return a valid index, then at least 
+		// set it up so we return an index to a NULL entry:
+		i = vht_index;
+	}
+vht_index = i;
+
+        for(;;)
+        {
+            // find an unused or discarded slot:
+			if (vht[i] == NULL)
+            {
+				return i;
+            }
+			if (vht[i]->out_of_scope
+				&& vlen == vht[i]->nlen
+                && memcmp(&vht[i]->nametxt[vht[i]->nstart], vname, vlen) == 0)
+            {
+				// same variable, yet discarded: re-use!
+				//
+				// NOTE: we only re-use the same variable names, as those are
+				//       the only ones which are 'properly prepped' already in
+				//       storage space. ;-)
+				return i;
+			}
+
+            i++;
+            //  check wraparound
+            if (i >= vht_size)
+                i = 0;
+
+            //   check for hash table full - if it is, right now we
+            //   do a fatal error.  Eventually we should just resize the
+            //   hash table.  Even better- we should keep track of the number
+            //   of variables, and thereby resize automatically whenever we
+            //   get close to overflow.
+            if (i == (vht_index - 1))
+            {
+					char badvarname[MAX_VARNAME];
+					strncpy(badvarname, vht[vht_index]->nametxt + vht[vht_index]->nstart, vht[vht_index]->nlen);
+					badvarname[vht[vht_index]->nlen] = 0;
+					if (internal_trace)
+					{
+						int index;
+				int b;
+
+						fprintf(stderr, "Variable Hash Table Dump @ scope depth %d\n", csl->calldepth);
+						for (b = INT_MAX, index = 0; index < vht_size; index++)
+						{
+if (vht[index] == NULL)
+{
+	if (b > index)
+	{
+		b = index;
+}
+continue;
+}
+if (index >0 && vht[index - 1] == NULL)
+{
+							fprintf(stderr, "empty slots in range %d .. %d\n", b, index);
+b = INT_MAX;
+}
+							fprintf(stderr, "  var '");
+							fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
+							fprintf(stderr, "'[%d] found at %d (",
+									vht[index]->nlen,  index);
+							if (vht[index]->valtxt == cdw->filetext)
+							{
+								fprintf(stderr, "(main)");
+							}
+							else
+							{
+								fprintf(stderr, "(isol)");
+							}
+							fprintf(stderr, " s: %d, l:%d,%s scope: %d)\n",
+									vht[index]->vstart, vht[index]->vlen,
+	(vht[index]->out_of_scope ? " (out-of-scope)" : ""),
+vht[index]->scope_depth);
+						}
+					}
+					fatalerror_ex(SRC_LOC(),
+					" Variable hash table overflow while looking "
+							   "for an empty slot for variable '%s'",
+							badvarname);
+					return 0;
+            }
+        }
+}
+
+/*
+   Register the given VHT variable with its scope's CSL, so that, when
+   that CSL goes out of scope, the VHT can be updated accordingly.
+
+   NOTE: as we already know, when we get here, that this is a new variable,
+   we also 'know' it has NOT been added to this list before, so we don't
+   have to check and can simply append the VHT index at the end of the list.
+   */
+void register_var_with_csl(CSL_CELL *csl, int vht_index)
+{
+					if (internal_trace)
+					{
+fprintf(stderr, "register var '");
+							fwrite_ASCII_Cfied(stderr, vht[vht_index]->nametxt + vht[vht_index]->nstart, vht[vht_index]->nlen);
+							fprintf(stderr, "' @ index = %d with CSL @ call depth = %d --> %d\n", 
+	  vht_index, csl->calldepth, vht[vht_index]->scope_depth);
+}
+if (act_like_Bill)
+return;
+
+	if (!csl->vht_var_collection)
+	{
+		csl->vht_var_collection_fill = 0;
+		csl->vht_var_collection_size = 256;
+		csl->vht_var_collection = (int *)calloc(csl->vht_var_collection_size, sizeof(csl->vht_var_collection[0]));
+	}
+	CRM_ASSERT(csl->vht_var_collection_fill < csl->vht_var_collection_size);
+	if (csl->vht_var_collection_fill == csl->vht_var_collection_size)
+	{
+		csl->vht_var_collection_size += 256;
+		csl->vht_var_collection = (int *)realloc(csl->vht_var_collection, (csl->vht_var_collection_size * sizeof(csl->vht_var_collection[0])));
+		memset(csl->vht_var_collection + csl->vht_var_collection_fill, 0, 
+			(csl->vht_var_collection_size - csl->vht_var_collection_fill) * sizeof(csl->vht_var_collection[0]));
+	}
+	csl->vht_var_collection[csl->vht_var_collection_fill++] = vht_index;
+}
+
+void mark_vars_as_out_of_scope(CSL_CELL *csl)
+{
+					if (internal_trace)
+					{
+fprintf(stderr, "marking vars as out of scope with CSL @ call depth = %d\n", 
+	csl->calldepth);
+}
+if (act_like_Bill)
+return;
+
+	if (csl->vht_var_collection)
+	{
+		int i;
+
+		for (i = 0; i < csl->vht_var_collection_fill; i++)
+		{
+			CRM_ASSERT(csl->vht_var_collection[i] >= 0);
+			CRM_ASSERT(vht[csl->vht_var_collection[i]]);
+			CRM_ASSERT(act_like_Bill ? TRUE : vht[csl->vht_var_collection[i]]->scope_depth == csl->calldepth);
+
+					if (internal_trace)
+					{
+fprintf(stderr, "marking var '");
+							fwrite_ASCII_Cfied(stderr, vht[csl->vht_var_collection[i]]->nametxt + vht[csl->vht_var_collection[i]]->nstart, vht[csl->vht_var_collection[i]]->nlen);
+							fprintf(stderr, "' @ index = %d as out of scope with CSL @ call depth = %d --> %d\n", 
+	  csl->vht_var_collection[i], csl->calldepth, vht[csl->vht_var_collection[i]]->scope_depth);
+}
+			vht[csl->vht_var_collection[i]]->out_of_scope = 1;
+		}
+	}
 }
 
 
@@ -1612,6 +1809,7 @@ if (vht[i]->scope_depth < scope_depth
 //    of the cdw and tdw usage, etc.
 //
 void crm_setvar(
+				int *vhtidx,
         char *filename,
         int   filedesc,
         char *nametxt,
@@ -1621,7 +1819,7 @@ void crm_setvar(
         int   vstart,
         int   vlen,
         int   linenumber,
-        int   lazy_redirects,
+     // int   lazy_redirects,
 		int calldepth
                )
 {
@@ -1634,10 +1832,20 @@ void crm_setvar(
         fatalerror_ex(SRC_LOC(), "Attempting to set the value of an illegal variable '%.*s'.", nlen, &nametxt[nstart]);
         return;
     }
-    i = crm_vht_lookup(vht, &nametxt[nstart], nlen, calldepth);
+	
+	if (vhtidx)
+	{
+		i = *vhtidx;
+	}
+	else
+	{
+	    i = crm_vht_lookup(vht, &nametxt[nstart], nlen, calldepth);
+	}
+
     if (vht[i] == NULL)
     {
         //    Nope, this is an empty VHT slot
+		CSL_CELL *our_csl;
 
         //  allocate a fresh, empty VHT cell
         vht[i] = (VHT_CELL *)calloc(1, sizeof(vht[i][0]));
@@ -1652,10 +1860,27 @@ void crm_setvar(
         vht[i]->nametxt = nametxt;
         vht[i]->nstart = nstart;
         vht[i]->nlen = nlen;
-        vht[i]->vstart = 0;
-        vht[i]->vlen = 0;
-        vht[i]->lazy_redirects = lazy_redirects;
-	vht[i]->scope_depth = calldepth;
+        // vht[i]->lazy_redirects = lazy_redirects;
+		vht[i]->scope_depth = calldepth;
+		vht[i]->out_of_scope = 0;
+
+if (!act_like_Bill)
+{
+		for (our_csl = csl; our_csl->calldepth > calldepth; our_csl = our_csl->caller)
+		{
+			if (!our_csl->caller)
+				break;
+		}
+		if (our_csl->calldepth == calldepth)
+		{
+		register_var_with_csl(our_csl, i);
+		}
+		else
+		{
+			CRM_ASSERT(calldepth == -1);
+		}
+}
+
         //  and now that the slot has proper initial information,
         //  we can use the same code as is used in an update to do
         //  the initial setting of values.  This is good because
@@ -1674,7 +1899,8 @@ void crm_setvar(
     vht[i]->mstart = vstart;
     vht[i]->mlen = 0;
     vht[i]->linenumber = linenumber;
-    vht[i]->lazy_redirects = lazy_redirects;
+    // vht[i]->lazy_redirects = lazy_redirects;
+
 	// do NOT change scope_depth! Once created, a variable's scope remains as it is!
 
     if (internal_trace)

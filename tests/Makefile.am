@@ -148,6 +148,12 @@ TEST_REFERENCE_FILES =                            \
 	$(refdir)/call_return_test2.crm.refoutput \
 	$(refdir)/call_return_test3.crm.refoutput \
 	$(refdir)/call_return_test4.crm.refoutput \
+	$(refdir)/call_return_test5.crm.refoutput \
+	$(refdir)/call_return_test6.crm.refoutput \
+	$(refdir)/call_return_test7.crm.refoutput \
+	$(refdir)/call_return_test5b.crm.refoutput \
+	$(refdir)/call_return_test6b.crm.refoutput \
+	$(refdir)/call_return_test7b.crm.refoutput \
 	$(refdir)/call_return_test.crm.refoutput \
 	$(refdir)/Clump_Pmulc_test1.step1.refoutput \
 	$(refdir)/Clump_Pmulc_test1.step2.refoutput \
@@ -414,6 +420,8 @@ test_SCRIPTS = \
 	match_isolate_reclaim.crm match_attr_fromend_newend.crm \
 	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
 	quine.crm call_return_test2.crm call_return_test3.crm call_return_test4.crm \
+	call_return_test5.crm call_return_test6.crm call_return_test7.crm \
+	call_return_test5b.crm call_return_test6b.crm call_return_test7b.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	tenfold_validate.crm \
@@ -808,6 +816,12 @@ initial_tests2:              \
 		call_return_test2 \
 		call_return_test3 \
 		call_return_test4 \
+		call_return_test5 \
+		call_return_test6 \
+		call_return_test7 \
+		call_return_test5b \
+		call_return_test6b \
+		call_return_test7b \
 		translate_tr_test \
 		zz_translate_test \
 		quine_test
@@ -1173,6 +1187,30 @@ call_return_test3: $(TEST_PREREQUISITES) call_return_test3.crm
 call_return_test4: $(TEST_PREREQUISITES) call_return_test4.crm
 	$(SILENT)\
 	./testscript.sh call_return_test4.crm "" -
+
+call_return_test5: $(TEST_PREREQUISITES) call_return_test5.crm
+	$(SILENT)\
+	./testscript.sh call_return_test5.crm "" -
+
+call_return_test6: $(TEST_PREREQUISITES) call_return_test6.crm
+	$(SILENT)\
+	./testscript.sh call_return_test6.crm "" -
+
+call_return_test7: $(TEST_PREREQUISITES) call_return_test7.crm
+	$(SILENT)\
+	./testscript.sh call_return_test7.crm "" -
+
+call_return_test5b: $(TEST_PREREQUISITES) call_return_test5b.crm
+	$(SILENT)\
+	./testscript.sh call_return_test5b.crm "" -
+
+call_return_test6b: $(TEST_PREREQUISITES) call_return_test6b.crm
+	$(SILENT)\
+	./testscript.sh call_return_test6b.crm "" -
+
+call_return_test7b: $(TEST_PREREQUISITES) call_return_test7b.crm
+	$(SILENT)\
+	./testscript.sh call_return_test7b.crm "" -
 
 translate_tr_test: $(TEST_PREREQUISITES) translate_tr.crm
 	$(SILENT)\

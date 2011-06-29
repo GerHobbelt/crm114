@@ -1026,9 +1026,9 @@ int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const c
     {
 		if (debug_countdown > DEBUGGER_DISABLED_FOREVER && original_statement_line > 0 && tdw && data_window_size)
 		{
-			crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason, -1);
+			crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason, -1, 0);
 		}
-		crm_set_temp_var(":_fault:", reason, -1);
+		crm_set_temp_var(":_fault:", reason, -1, 0);
 	}
 
     trap_catch = check_for_trap_handler(csl, reason);
@@ -1103,9 +1103,9 @@ int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, cons
     // [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
     if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
     {
-        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason, -1);
+        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason, -1, 0);
     }
-    crm_set_temp_var(":_fault:", reason, -1);
+    crm_set_temp_var(":_fault:", reason, -1, 0);
 
     trap_catch = check_for_trap_handler(csl, reason);
     if (trap_catch == 0)
@@ -1646,7 +1646,7 @@ int crm_trigger_fault(const char *reason)
             // after we've fixed the MAX_VARNAME up there with a -1 too.
             if (strlen(reasonname) > 0)
             {
-                crm_set_temp_var(reasonname, reason, csl->calldepth);
+                crm_set_temp_var(reasonname, reason, csl->calldepth, 0 /* keep_in_outer_scope */ );
 
                 // did we have a double error in the exception variable writing?
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)

@@ -41,7 +41,7 @@ static const STMT_TABLE_TYPE stmt_table[] =
     { "accept",    CRM_ACCEPT,        6,  1,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "alius",     CRM_ALIUS,         5,  1,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "alter",     CRM_ALTER,         5,  1,     0,    0,  0,     1,  1,    1,  1,   0,  0,    0 },
-    { "call",      CRM_CALL,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  1,    0 },
+    { "call",      CRM_CALL,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  1,  CRM_KEEP },
     { "cssmerge",  CRM_CSS_MERGE,     8,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_UNIQUE | CRM_MICROGROOM | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
@@ -94,7 +94,7 @@ static const STMT_TABLE_TYPE stmt_table[] =
       | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
       | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "debug",     CRM_DEBUG,         5,  0,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
-    { "eval",      CRM_EVAL,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  0,    0 },
+    { "eval",      CRM_EVAL,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  0,  CRM_KEEP },
     { "exit",      CRM_EXIT,          4,  1,     0,    0,  0,     0,  1,    0,  0,   0,  0,    0 },
     { "fail",      CRM_FAIL,          4,  1,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "fault",     CRM_FAULT,         5,  1,     0,    0,  0,     0,  1,    0,  0,   0,  0,    0 },
@@ -102,9 +102,9 @@ static const STMT_TABLE_TYPE stmt_table[] =
     //  text         internal       nlen exec special  min max   min max   min max  min max  flags
     //   rep           code               ?    flags   angles   slashargs  parens    boxes
     { "hash",      CRM_HASH,          4,  1,     0,    0,  0,     1,  1,    1,  1,   0,  0,    0 },
-    { "input",     CRM_INPUT,         5,  1,     0,    0,  1,     0,  0,    0,  1,   0,  1,  CRM_BYLINE | CRM_READLINE },
-    { "intersect", CRM_INTERSECT,     9,  1,     0,    0,  0,     0,  0,    1,  1,   1,  1,    0 },
-    { "isolate",   CRM_ISOLATE,       7,  1,     0,    0,  1,     0,  1,    1,  1,   0,  0,  CRM_DEFAULT },
+    { "input",     CRM_INPUT,         5,  1,     0,    0,  1,     0,  0,    0,  1,   0,  1,  CRM_BYLINE | CRM_READLINE | CRM_KEEP },
+    { "intersect", CRM_INTERSECT,     9,  1,     0,    0,  0,     0,  0,    1,  1,   1,  1,  CRM_KEEP },
+    { "isolate",   CRM_ISOLATE,       7,  1,     0,    0,  1,     0,  1,    1,  1,   0,  0,  CRM_DEFAULT | CRM_KEEP },
     { "lazy",      CRM_LAZY,          4,  1,     0,    0,  1,     0,  1,    1,  1,   0,  0,  CRM_DEFAULT },
     { "learn",     CRM_LEARN,         5,  1,     0,    0,  1,     0,  2,    1,  1,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL |
       CRM_BYCHUNK
@@ -125,7 +125,7 @@ static const STMT_TABLE_TYPE stmt_table[] =
     { "match",     CRM_MATCH,         5,  1,     0,    0,  1,     1,  1,    0,  1,   0,  1,
       CRM_ABSENT | CRM_NOCASE | CRM_LITERAL | CRM_FROMSTART
       | CRM_FROMCURRENT | CRM_FROMNEXT | CRM_FROMEND | CRM_NEWEND
-      | CRM_BACKWARDS | CRM_NOMULTILINE | CRM_BASIC                         },
+      | CRM_BACKWARDS | CRM_NOMULTILINE | CRM_BASIC },
     { "mutate",    CRM_MUTATE,        7,  1,     1,    0,  1,     1,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_BYCHAR | CRM_NOMULTILINE | CRM_BYLINE |
       CRM_BYCHUNK | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT | CRM_STRING | CRM_ABSENT },
     { "output",    CRM_OUTPUT,        6,  1,     0,    0,  1,     0,  1,    0,  0,   0,  1,  CRM_APPEND },
@@ -140,7 +140,7 @@ static const STMT_TABLE_TYPE stmt_table[] =
     { "syscall",   CRM_SYSCALL,       7,  1,     0,    0,  1,     0,  1,    0,  3,   0,  1,  CRM_KEEP | CRM_ASYNC },
     { "translate", CRM_TRANSLATE,     9,  1,     0,    0,  1,     0,  2,    0,  1,   0,  1,  CRM_UNIQUE | CRM_LITERAL },
     { "trap",      CRM_TRAP,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  0,    0 },
-    { "union",     CRM_UNION,         5,  1,     0,    0,  0,     0,  0,    1,  1,   1,  1,    0 },
+    { "union",     CRM_UNION,         5,  1,     0,    0,  0,     0,  0,    1,  1,   1,  1,  CRM_KEEP },
     { "window",    CRM_WINDOW,        6,  1,     0,    0,  1,     0,  2,    0,  2,   0,  0,  CRM_NOCASE | CRM_BYCHAR | CRM_BYCHUNK | CRM_BYEOF |
       CRM_EOFACCEPTS | CRM_EOFRETRY | CRM_LITERAL },
 };
@@ -685,7 +685,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             stab_stmtcode = CRM_LABEL;
             CRM_ASSERT(stmt_table[stab_index].stmt_code == stab_stmtcode);
             k = (int)strcspn(&pgmtext[nbindex + 1], ":");
-            crm_setvar(NULL, -1, pgmtext, nbindex, k + 2,                    NULL, 0, 0,  stmtnum, 0, -1);
+            crm_setvar(NULL, NULL, -1, pgmtext, nbindex, k + 2,                    NULL, 0, 0,  stmtnum, -1);
         }
 #if 0
         else if (strncasecmp(&pgmtext[nbindex], "insert=", 7) == 0)
@@ -823,7 +823,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                 debug_countdown = DEBUGGER_DISABLED_FOREVER + 1;                 // special signal: debugger disabled... for now.
 
                 // and make sure the variable exists...
-                crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "", -1);
+                crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "", -1, 0);
             }
         }
 

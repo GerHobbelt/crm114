@@ -107,22 +107,23 @@ void crm_destructive_alter_nvariable(const char *varname, int varlen,
 
 //  setting a program label in the VHT
 void crm_setvar(
-        char *filename,                 // file where first defined (or NULL)
-        int   filedesc,                 // filedesc of defining file (or NULL)
-        char *nametxt,                  // block of text hosting variable name
-        int   nstart,                   // index into nametxt to start varname
-        int   nlen,                     // length of name
-        char *valtxt,                   // text block hosts the captured value
-        int   vstart,                   // index of start of cap. value
-        int   vlen,                     // length of captured value
-        int   linenumber,               // linenumber (if pgm, else -1)
-        int   lazy_redirects,           // if nonzero, this is a lazy redirect
+int *vhtidx,
+char *filename,        // file where first defined (or NULL)
+int   filedesc,        // filedesc of defining file (or NULL)
+char *nametxt,         // block of text hosting variable name
+int   nstart,          // index into nametxt to start varname
+int   nlen,            // length of name
+char *valtxt,          // text block hosts the captured value
+int   vstart,          // index of start of cap. value
+int   vlen,            // length of captured value
+int   linenumber,      // linenumber (if pgm, else -1)
+// int   lazy_redirects,  // if nonzero, this is a lazy redirect
      int calldepth          
 	 );
 
 //   put a variable and a value into the temporary area
-void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int calldepth);
-void crm_set_temp_var(const char *varname, const char *value, int calldepth);
+void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int calldepth, int keep_in_outer_scope);
+void crm_set_temp_var(const char *varname, const char *value, int calldepth, int keep_in_outer_scope);
 
 //   put a variable and a window-based value into the temp area
 void crm_set_windowed_var(char *varname,
@@ -132,13 +133,15 @@ void crm_set_windowed_var(char *varname,
         int                     stmtnum);
 
 //   put a counted-length var and a data-window-based value into the temp area.
-void crm_set_windowed_nvar(char *varname,
+void crm_set_windowed_nvar(int *vhtidx, 
+						   char *varname,
         int                      varlen,
         char                    *valtext,
         int                      start,
         int                      len,
         int                      stmtnum,
-		int calldepth);
+		int calldepth,
+int keep_in_outer_scope);
 
 //    set a program label.
 void crm_setpgmlabel(int start, int end, int stmtnum);
@@ -189,6 +192,9 @@ int crm_expandvar(char *buf, int maxlen);
 
 int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen, int scope_depth);
 
+int crm_vht_find_next_empty_slot(VHT_CELL **vht, int vht_index, const char *vname, size_t vlen);
+void register_var_with_csl(CSL_CELL *csl, int vht_index);
+void mark_vars_as_out_of_scope(CSL_CELL *csl);
 
 int crm_is_legal_variable(const char *vname, size_t vlen);
 
@@ -746,7 +752,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_isolate_this(int *vptr,
         char *nametext, int namestart, int namelen,
-        char *valuetext, int valuestart, int valuelen);
+        char *valuetext, int valuestart, int valuelen,
+		int keep_in_outer_scope);
 
 //  INPUT - do input
 int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -959,6 +966,7 @@ typedef struct magical_VT_userdef_coeff_matrix
 
 		// flag determined by the VT engine itself:
 		unsigned arne_optimization_allowed: 1; 
+		unsigned cm_is_position_dependent: 1;
     } flags;
 
 
@@ -975,16 +983,16 @@ VT_USERDEF_COEFF_MATRIX;
 int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // the pipeline coefficient control array, etc.
         const char *src, int srclen, int mode);
 int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
-        const ARGPARSE_BLOCK                 *apb, // The args for this line of code
-        VHT_CELL                            **vht,
-        CSL_CELL                             *tdw,
-        const VT_USERDEF_TOKENIZER           *default_tokenizer);
+        const ARGPARSE_BLOCK *apb, // The args for this line of code
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        const VT_USERDEF_TOKENIZER *default_tokenizer);
 int config_vt_coeff_matrix_and_tokenizer(ARGPARSE_BLOCK *apb,  // The args for this line of code
-        VHT_CELL                                       **vht,
-        CSL_CELL                                        *tdw,
-        VT_USERDEF_TOKENIZER                            *tokenizer, // the parsing regex (might be ignored)
-        VT_USERDEF_COEFF_MATRIX                         *our_coeff  // the pipeline coefficient control array, etc.
-                                        );
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        VT_USERDEF_TOKENIZER *tokenizer, // the parsing regex (might be ignored)
+        VT_USERDEF_COEFF_MATRIX *our_coeff  // the pipeline coefficient control array, etc.
+);
 int transfer_matrix_to_VT(VT_USERDEF_COEFF_MATRIX *dst,
 						const int *src, 
 						size_t src_x, size_t src_y, size_t src_z);
@@ -996,35 +1004,35 @@ int transfer_matrix_to_VT(VT_USERDEF_COEFF_MATRIX *dst,
 
 int crm_vector_tokenize_selector
 (
-        ARGPARSE_BLOCK          *apb,            // The args for this line of code
-        VHT_CELL               **vht,
-        CSL_CELL                *tdw,
-        const char              *text,            // input string (null-safe!)
-        int                      textlen,         //   how many bytes of input.
-        int                      start_offset,    //     start tokenizing at this byte.
+ ARGPARSE_BLOCK *apb,            // The args for this line of code
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        const char *text,            // input string (null-safe!)
+        int textlen,         //   how many bytes of input.
+        int start_offset,    //     start tokenizing at this byte.
         VT_USERDEF_TOKENIZER    *tokenizer,       // the parsing regex (might be ignored)
         VT_USERDEF_COEFF_MATRIX *userdef_coeff,   // the pipeline coefficient control array, etc.
         crmhash_t               *features,        // where the output features go
-        int                      featureslen,     //   how many output features (max)
-        int                     *feature_weights, // feature weight per feature
-        int                     *order_no,        // order_no (starting at 0) per feature
-        int                     *features_out     // how many feature-slots did we actually use up
+        int featureslen,     //   how many output features (max)
+        uint32_t *feature_weights, // feature weight per feature
+        uint32_t *order_no,        // order_no (starting at 0) per feature
+        int *features_out     // how many feature-slots did we actually use up
 );
 
 // this interface method is provided only for those that 'know what they're doing',
 // i.e. (unit) test code such as testtocvek:
 int crm_vector_tokenize
 (
-        const char                    *text,               // input string (null-safe!)
-        int                            textlen,            //   how many bytes of input.
-        int                            start_offset,       //     start tokenizing at this byte.
-        VT_USERDEF_TOKENIZER          *tokenizer,          // the regex tokenizer (elements in struct MAY be changed)
+        const char *text,               // input string (null-safe!)
+        int textlen,            //   how many bytes of input.
+        int start_offset,       //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER *tokenizer,          // the regex tokenizer (elements in struct MAY be changed)
         const VT_USERDEF_COEFF_MATRIX *our_coeff,          // the pipeline coefficient control array, etc.
-        crmhash_t                     *features_buffer,    // where the output features go
-        int                            features_bufferlen, //   how many output features (max)
-        int                           *feature_weights,    // feature weight per feature
-        int                           *order_no,           // order_no (starting at 0) per feature
-        int                           *features_out        // how many longs did we actually use up
+        crmhash_t *features_buffer,    // where the output features go
+        int features_bufferlen, //   how many output features (max)
+        uint32_t *feature_weights,    // feature weight per feature
+        uint32_t *order_no,           // order_no (starting at 0) per feature
+        int *features_out        // how many longs did we actually use up
 );
 
 

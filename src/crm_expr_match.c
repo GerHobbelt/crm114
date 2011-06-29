@@ -522,34 +522,12 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             done = 0;        //  loop till we've captured all the vars
             mc = 0;
             vstart = 0;
-#if 0
-            while (!done)
-            {
-                // bind each variable
-                //    find the start of the variable
-                while (bindable_vars[vstart] > 0x0
-                       && bindable_vars[vstart] < 0x021
-                       && bindable_vars[vstart] != ')')
-                    vstart++;
-                if (bindable_vars[vstart] == ')'
-                    || bindable_vars[vstart] == 0x0)
-                {
-                    done = 1;
-                }
-                else
-                {
-                    //    Now, the next space or ) ends the variable
-                    vlen = 0;
-                    while (bindable_vars[vstart + vlen] >= 0x21
-                           && bindable_vars[vstart + vlen] != ')')
-                        vlen++;
-#else
+
             while (crm_nextword(bindable_vars, bindable_vars_len, vstart, &vstart, &vlen))
             {
                 // bind each variable
                 //    find the start of the variable
-                {
-#endif
+
                     CRM_ASSERT(vlen > 0);
 
                     //    have the next variable name, put out debug info.
@@ -584,18 +562,18 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         vn = (char *)calloc((MAX_VARNAME + 16), sizeof(vn[0]));
                         if (!vn)
                             untrappableerror("Couldn't alloc vn.\n Can't fix that.", "");
-                        strncpy(vn, &(bindable_vars[vstart]), vlen);
+                        strncpy(vn, &bindable_vars[vstart], vlen);
                         vn[vlen] = 0;
                         if (strcmp(vn, ":_dw:") != 0)
                         {
-                            {
                                 int vi;
+
                                 if (!crm_is_legal_variable(vn, vlen))
                                 {
-                                    int fev = fatalerror_ex(
-                                            SRC_LOC(),
-                                            "Attempt to store MATCH subexpression results into an illegal variable '%.*s'. How very bizarre.", vlen,
-                                            vn);
+                                    int fev = fatalerror_ex(SRC_LOC(),
+                                            "Attempt to store MATCH subexpression results into "
+											"an illegal variable '%.*s'. How very bizarre.", 
+											vlen, vn);
                                     return fev;
                                 }
                                 vi = crm_vht_lookup(vht, vn, vlen, csl->calldepth);
@@ -611,21 +589,23 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                     index_starts[mc] = vht[vi]->vstart;
                                     index_lengths[mc] = vht[vi]->vlen;
                                 }
-                            }
+
                             //    watch out for nonparticipating () submatches...
                             //    (that is, submatches that weren't used because
                             //     of a|(b(c)) regexes.  These have .rm_so offsets
                             //      of < 0 .
                             if (matches[mc].rm_so >= 0)
-                                crm_set_windowed_nvar(vn,
+							{
+                                crm_set_windowed_nvar(&vi,
+									vn,
                                         vlen,
                                         mdw->filetext,
-                                        matches[mc].rm_so
-                                        + textoffset,
-                                        matches[mc].rm_eo
-                                        - matches[mc].rm_so,
+                                        matches[mc].rm_so                                        + textoffset,
+                                        matches[mc].rm_eo                                        - matches[mc].rm_so,
                                         csl->cstmt,
-										csl->calldepth);
+										csl->calldepth,
+ !!(apb->sflags & CRM_KEEP));
+							}
                         }
                         else
                         {
@@ -646,7 +626,6 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 "Exceeded MAX_SUBREGEX limit-too many parens in match",
                                 " Looks like you blew the gaskets on 'er.\n");
                     }
-                }
             }
             //
             //      Now do cleanup/reclamation of old memory space, if needed.

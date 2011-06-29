@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); {classify <alt.markovian unigram> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I :*:_nl::*:s::*:_nl:/} alius { output / type Q :*:_nl::*:s::*:_nl:/ }} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type I 
+CLASSIFY succeeds; (alt.markovian) success probability: 0.7123  pR: 0.3937
+Best match to file #0 (i_test.css) prob: 0.7123  pR: 0.3937
+Total features in input file: 10
+#0 (i_test.css): features: 8811, hits: 635, prob: 7.12e-01, pR:   0.39
+#1 (q_test.css): features: 8489, hits: 539, prob: 2.88e-01, pR:  -0.39
+
+

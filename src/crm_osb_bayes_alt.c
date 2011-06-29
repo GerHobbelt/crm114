@@ -794,8 +794,8 @@ int crm_expr_alt_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int bestseen;
     int thistotal;
     int ifile;
-    int *feature_weight;
-    int *order_no;
+    uint32_t *feature_weight;
+    uint32_t *order_no;
     int hashcounts;
 
     if (internal_trace)
@@ -1336,7 +1336,7 @@ int crm_expr_alt_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             int j;
             int l;
-            int fw;
+            uint32_t fw;
             unsigned int th = 0;      //  a counter used only in TSS hashing
             crmhash_t hindex;
             crmhash_t h1, h2;

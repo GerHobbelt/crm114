@@ -1,0 +1,62 @@
+#
+#        test the call-return statements.
+#
+window
+#
+alter (:_dw:) /This is the original data window.  It shouldn't change/
+#
+output / Doing factorial with inplace args.\n/
+isolate (:z:) /5/
+call /:factorial_inplace:/ [ :*:z: 1 ]
+output / :*:z: factorial_inplace is :*:out: (level :*:_cd:) \n\n/
+#
+output /Returned output = :*:out: (level :*:_cd:)\n/
+output /And the data window is now: :*:_dw:\n/
+
+#######################
+# Must... Control... Fist... Of.... Runaway Line Count!!!
+####################
+exit /0/
+
+
+
+########################################
+#
+#      Start of the callable routines
+########################################
+
+
+##############################################
+#
+#     Here's factorial again, but we're treating :arg: as a known data
+#     structure (that we MATCH into) and then we just ALTER fields within it.
+#
+#     Other than the fact that we mutilate :arg: , this is not a bad way 
+#     to write code.
+
+#
+# <keep> for isolate / intersect / union is used to make the variables
+# global, when they don't already exist in this or an outer scope.
+#
+
+:factorial_inplace: (:arg:)
+{
+	output / downward recurse call entry, args = :*:arg: (level :*:_cd:)\n/
+	isolate (:out:) <keep> //	# global var decl.
+	match [:arg:] (:: :n: :out:) /([0-9]+) ([0-9]+)/
+	{
+		eval /:@: :*:n: > 1 :/
+		eval (:out:) /:@::*:out: * :*:n::/
+		eval (:n:) /:@: :*:n: - 1:/
+		call /:factorial_inplace:/ [:*:arg:]
+		output / Call return, :out: = :*:out: (level :*:_cd:)\n/
+		return
+	}
+	alius
+	{
+		output / Recursion bottomed out, returning :out: = :*:out: \n/
+		return
+	}
+}
+
+

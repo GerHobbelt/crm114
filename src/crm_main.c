@@ -140,6 +140,14 @@ void free_stack_item(CSL_CELL *csl)
     if (!csl)
         return;
 
+mark_vars_as_out_of_scope(csl);
+
+	if (csl->vht_var_collection)
+	{
+		free(csl->vht_var_collection);
+	}
+	csl->vht_var_collection = NULL;
+
     if (csl->mct && csl->mct_allocated)
     {
         int i;
@@ -173,6 +181,7 @@ void free_stack_item(CSL_CELL *csl)
         free(csl->filetext);
     }
     csl->filetext = NULL;
+
     free(csl);
 }
 
@@ -207,10 +216,50 @@ static void crm_final_cleanup(void)
 
     crm_munmap_all();
 
+					if (internal_trace)
+					{
+						int index;
+				int b;
+
+						fprintf(stderr, "Variable Hash Table Dump @ scope depth %d\n", csl->calldepth);
+						for (b = INT_MAX, index = 0; index < vht_size; index++)
+						{
+if (vht[index] == NULL)
+{
+	if (b > index)
+	{
+		b = index;
+}
+continue;
+}
+if (index >0 && vht[index - 1] == NULL)
+{
+							fprintf(stderr, "empty slots in range %d .. %d\n", b, index);
+b = INT_MAX;
+}
+							fprintf(stderr, "  var '");
+							fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
+							fprintf(stderr, "'[%d] found at %d (",
+									vht[index]->nlen,  index);
+							if (vht[index]->valtxt == cdw->filetext)
+							{
+								fprintf(stderr, "(main)");
+							}
+							else
+							{
+								fprintf(stderr, "(isol)");
+							}
+							fprintf(stderr, " s: %d, l:%d,%s scope: %d)\n",
+									vht[index]->vstart, vht[index]->vlen,
+	(vht[index]->out_of_scope ? " (out-of-scope)" : ""),
+vht[index]->scope_depth);
+						}
+					}
+
+    free_stack(csl); // expects a live vht...
+    csl = NULL;
     free_hash_table(vht, vht_size);
     vht = NULL;
-    free_stack(csl);
-    csl = NULL;
     free_stack(cdw);
     cdw = NULL;
     free_stack(tdw);
@@ -1719,7 +1768,7 @@ end_command_line_parse_loop:
 
     //    Put a copy of the preprocessor-result text into
     //    the isolated variable ":_pgm_text:"
-    crm_set_temp_var(":_pgm_text:", csl->filetext, -1);
+    crm_set_temp_var(":_pgm_text:", csl->filetext, -1, 0);
 
     //  If the windowflag == 0, we should preload the data window.  Now,
     //  let's get some data in.
@@ -1817,6 +1866,7 @@ end_command_line_parse_loop:
         crm_memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
         tdw->nchars++;
         crm_setvar(NULL,
+			NULL,
                 0,
                 tdw->filetext,
                 dwname,
@@ -1825,7 +1875,6 @@ end_command_line_parse_loop:
                 0,
                 cdw->nchars,
                 -1,
-                0,
 				-1);
     }
     //
@@ -1850,6 +1899,7 @@ end_command_line_parse_loop:
         crm_memmove(&tdw->filetext[tdw->nchars], "\n", strlen("\n"));
         tdw->nchars++;
         crm_setvar(NULL,
+			NULL,
                 0,
                 tdw->filetext,
                 isoname,
@@ -1858,7 +1908,6 @@ end_command_line_parse_loop:
                 0,
                 0,
                 -1,
-                0,
 				-1);
     }
 #endif

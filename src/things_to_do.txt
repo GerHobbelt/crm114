@@ -301,6 +301,8 @@ this on. (trade off longer compile time for faster run time).
 64) modify crm_setvar so it takes an optional VHT index, to save
 double lookups.
 
+DONE (GerH)
+
 65) Abstract out mapping files & add cacheing.
 
 66) add a marker that the flags have been parsed & didn't contain a

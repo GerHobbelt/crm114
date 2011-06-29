@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); {classify <alt.hyperspace string unigram> ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I :*:_nl::*:s::*:_nl:/} alius { output / type Q :*:_nl::*:s::*:_nl:/ }} 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type I 
+CLASSIFY succeeds; (alt.hyperspace) success probability: 0.6845  pR: 3.3630
+Best match to file #0 (i_test.css) prob: 0.6845  pR: 3.3630
+Total features in input file: 10
+#0 (i_test.css): features: 8810, hits: 9, radiance: 9.20e-03, prob: 6.84e-01, pR:   3.36
+#1 (q_test.css): features: 8488, hits: 6, radiance: 4.24e-03, prob: 3.16e-01, pR:  -3.36
+
+

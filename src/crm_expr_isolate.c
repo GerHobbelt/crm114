@@ -242,7 +242,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //
                 iso_status = crm_isolate_this(&vmidx,
                         vname, 0, vlen,
-                        tempbuf, 0, vallen);
+                        tempbuf, 0, vallen, !!(apb->sflags & CRM_KEEP));
                 if (iso_status != 0)
 		{
                     return iso_status;
@@ -268,7 +268,8 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 //
 int crm_isolate_this(int *vptr,
         char *nametext, int namestart, int namelen,
-        char *valuetext, int valuestart, int valuelen)
+        char *valuetext, int valuestart, int valuelen,
+		int keep_in_outer_scope)
 
 {
     int is_old;
@@ -276,8 +277,10 @@ int crm_isolate_this(int *vptr,
     int vmidx;
     int oldvstart = 0;
     int oldvlen = 0;
-
+	int calldepth;
     int neededlen;
+	const char *varname;
+	int varnamelen;
 
     if (internal_trace)
     {
@@ -296,16 +299,56 @@ int crm_isolate_this(int *vptr,
     if (vptr)
     {
         vmidx = *vptr;
-    }
+if (vht[vmidx])
+{
+		varname = &vht[vmidx]->nametxt[vht[vmidx]->nstart];
+		varnamelen = vht[vmidx]->nlen;
+ }
+else
+{
+		varname = &nametext[namestart];
+		varnamelen = namelen;
+}
+   }
     else
     {
-        if (!crm_is_legal_variable(&nametext[namestart], namelen))
+		varname = &nametext[namestart];
+		varnamelen = namelen;
+        if (!crm_is_legal_variable(varname, varnamelen))
         {
-            fatalerror_ex(SRC_LOC(), "Attempt to ISOLATE an illegal variable '%.*s'.", namelen, &nametext[namestart]);
+            fatalerror_ex(SRC_LOC(), "Attempt to ISOLATE an illegal variable '%.*s'.", varnamelen, varname);
             return -1;
         }
-        vmidx = crm_vht_lookup(vht, &nametext[namestart], namelen, csl->calldepth);
+        vmidx = crm_vht_lookup(vht, varname, varnamelen, csl->calldepth);
     }
+
+	calldepth = csl->calldepth;
+	
+	if (!keep_in_outer_scope && vht[vmidx] && vht[vmidx]->scope_depth < csl->calldepth)
+	{
+		// when we isolate, we do so at the CURRENT scope level,
+		// hence we create a fresh variable at current scope depth
+		// now... We CAN re-use discarded older instances of this 
+		// variable here!
+		vmidx = crm_vht_find_next_empty_slot(vht, vmidx, varname, varnamelen);
+		if (vmidx == 0)
+		{
+			return -1;
+		}
+		if (vht[vmidx])
+		{
+			CRM_ASSERT(vht[vmidx]->out_of_scope);
+			vht[vmidx]->out_of_scope = 0;
+			vht[vmidx]->scope_depth = calldepth;
+
+			register_var_with_csl(csl, vmidx);
+		}
+	}
+	else if (keep_in_outer_scope && vht[vmidx] == NULL)
+	{
+		// var doesn't exist yet, but <keep> means we'd like to have it as a global var (at level 0)
+		calldepth = 0;
+	}
 
     //     check the vht - if it's not here, we need to add it.
     //
@@ -388,13 +431,15 @@ vname, data_window_size);
         tdw->nchars++;
 
         //      now, we whack the actual VHT.
-        crm_setvar(NULL, 0,
+        crm_setvar(&vmidx, NULL, 0,
                 tdw->filetext, nstart, namelen,
                 tdw->filetext, vstart, valuelen,
-                csl->cstmt, 0, csl->calldepth);
+                csl->cstmt, calldepth);
         //     that's it.    It's now in the TDW and in the VHT
         return 0;
     }
+
+	CRM_ASSERT(vht[vmidx]);
 
     //  No, it's a preexisting variable.  We need to do the shuffle.
     //

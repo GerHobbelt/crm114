@@ -160,7 +160,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fprintf(stderr, "Final qex_stat was %d\n", qex_stat);
 
     //    for now, use the qex_stat that came back from qexpandvar.
-    if (qex_stat > 0)
+    if (qex_stat != 0)
     {
         if (user_trace)
             fprintf(stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %d\n", csl->cstmt);

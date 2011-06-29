@@ -1,0 +1,17 @@
+TEST SCRIPT + COMMANDLINE:
+-{ isolate (:s:); {classify <alt.osb unique> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I :*:_nl::*:s::*:_nl:/} alius { output / type Q :*:_nl::*:s::*:_nl:/ } } 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+ type Q 
+CLASSIFY fails; (alt.osb) success probability: 0.0003  pR: -3.6018
+Best match to file #1 (q_test.css) prob: 0.9997  pR: 3.6018
+Total features in input file: 44
+#0 (i_test.css): features: 29646, hits: 56, prob: 2.50e-04, pR:  -3.60
+#1 (q_test.css): features: 27922, hits: 479, prob: 1.00e-00, pR:   3.60
+
+

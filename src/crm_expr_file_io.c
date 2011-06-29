@@ -435,7 +435,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 inbuf[ichar] = 0;                   // null at the end
             }
         }
-        crm_set_temp_nvar(vname, inbuf, ichar, csl->calldepth);
+        crm_set_temp_nvar(vname, inbuf, ichar, csl->calldepth, !!(apb->sflags & CRM_KEEP));
     }
 
     //     and close the input file if it's not stdin.

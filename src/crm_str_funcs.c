@@ -1428,6 +1428,67 @@ int hash_selftest(void)
 
 
 
+/*
+Derived from hashword() but targetted for use in the 
+VT engine, where input integer values are multiplied
+with a position-dependent multiplier, before being 
+mixed into the final hash.
+
+WARNING WARNING WARNING WARNING
+
+This code is VERY VT specific: k[] is addressed
+in DESCENDING order, i.e. k is walking BACKWARDS.
+
+This is VERY SPECIFIC as it depends entirely on the
+layout of the token hashes (input k[]) in the VT
+buffers! 
+
+Do NOT use for other pruposes!
+ */
+crmhash_t hashword4VT(const crmhash_t *k,            /* the key, an array of uint32_t values */
+					  const crmhash_t *mults,
+        size_t          length,       /* the length of the key, in uint32_ts */
+        uint32_t        initval)      /* the previous hash, or an arbitrary value */
+{
+    uint32_t a, b, c;
+
+    /* Set up the internal state */
+    a = b = c = 0xdeadbeef + (((uint32_t)length) << 2) + initval;
+
+    /*------------------------------------------------- handle most of the key */
+    while (length > 0)
+    {
+        c += *k-- * mults[2];
+        b += *k-- * mults[1];
+        a += *k-- * mults[0];
+        mix(a, b, c);
+        length -= 3;
+		mults += 3;
+    }
+
+    /*------------------------------------------- handle the last 3 uint32_t's */
+    switch (length)                  /* all the case statements fall through */
+    {
+    case 3:
+        c += *k-- * mults[2];
+
+    case 2:
+        b += *k-- * mults[1];
+
+    case 1:
+        a += *k * mults[0];
+        final(a, b, c);
+
+    case 0:   /* case 0: nothing left to add */
+        break;
+    }
+    /*------------------------------------------------------ report the result */
+    return c;
+}
+
+
+
+
 //     strnhash - generate the hash of a string of length N
 //     goals - fast, works well with short vars includng
 //     letter pairs and palindromes, not crypto strong, generates
@@ -1506,7 +1567,7 @@ static crmhash_t old_crm114_strnhash(const char *str, size_t len)
     crmhash_t tmp;
 
     // initialize hval
-    hval = len;
+    hval = (int32_t)len;
 
     //  for each character in the incoming text:
     for (i = 0; i < len; i++)
@@ -1536,14 +1597,14 @@ static crmhash_t old_crm114_strnhash(const char *str, size_t len)
 
 
 
-static crmhash_t old_crm114_fixed_strnhash(const char *str, int len)
+static crmhash_t old_crm114_fixed_strnhash(const char *str, size_t len)
 {
     size_t i;
     crmhash_t hval;
     crmhash_t tmp;
 
     // initialize hval
-    hval = len;
+    hval = (crmhash_t)len;
 
     //  for each character in the incoming text:
     for (i = 0; i < len; i++)
@@ -1567,7 +1628,7 @@ static crmhash_t old_crm114_fixed_strnhash(const char *str, int len)
 
         //    rotate hval 3 bits to the left (thereby making the
         //    3rd msb of the above mess the hsb of the output hash)
-        hval = (hval << 3) ^ (hval >> 29);
+        hval = rot(hval, 3);
     }
     return hval;
 }
@@ -1687,14 +1748,14 @@ uint32_t SuperFastHash(const char *data, int len, uint32_t hash)
 
 
 
-static crmhash_t SuperFast_strnhash(const char *str, int len)
+static crmhash_t SuperFast_strnhash(const char *str, size_t len)
 {
     size_t i;
     crmhash_t hval;
     crmhash_t tmp;
 
     // initialize hval
-    hval = len;
+    hval = (crmhash_t)len;
 
     //  for each character in the incoming text:
     for (i = 0; i < len; i++)
@@ -1709,15 +1770,15 @@ static crmhash_t SuperFast_strnhash(const char *str, int len)
 
 
 // SHTPAP: Stupid Hash To Prove A Point
-static crmhash_t shtpap_strnhash(const char *str, int len)
+static crmhash_t shtpap_strnhash(const char *str, size_t len)
 {
     crmhash_t hval;
 
     // initialize hval; encode length in hash
-    hval = len;
+    hval = (crmhash_t)len;
     hval = SuperFastHash((const char *)&hval, sizeof(hval), 0);
 
-    return SuperFastHash(str, len, hval);
+    return SuperFastHash(str, (int)len, hval);
 }
 
 
@@ -1731,7 +1792,7 @@ static crmhash_t shtpap_strnhash(const char *str, int len)
 static crmhash_t OpenSSL_strnhash(const char *str, size_t len)
 	{
 	crmhash_t ret=0;
-	size_t n;
+	crmhash_t n;
 	crmhash_t v;
 	int r;
 
@@ -1749,12 +1810,36 @@ static crmhash_t OpenSSL_strnhash(const char *str, size_t len)
 		v=n|(*str++);
 		n+=0x100;
 		r= (int)((v>>2)^v)&0x0f;
-		ret=(ret<<r)|(ret>>(32-r));
+		ret=rot(ret,r);
 		// ret&=0xFFFFFFFFUL;
 		ret^=v*v;
 		}
 	return (ret>>16)^ret;
 	}
+
+
+
+
+/*
+Burtle: On machines with a rotate (such as the Intel x86 line) this is 6n+2 instructions. I have seen the (hash % prime) replaced with
+
+  hash = (hash ^ (hash>>10) ^ (hash>>20)) & mask;
+
+eliminating the % and allowing the table size to be a power of 2, making this 6n+6 instructions. % can be very slow, for example it is 230 times slower than addition on a Sparc 20.
+*/
+crmhash_t Rotating_strnhash(const char *key, size_t len /*, crmhash_t prime */)
+{
+  crmhash_t hash;
+  size_t i;
+  for (hash=(crmhash_t)len, i=0; i<len; ++i)
+  {
+    hash = rot(hash,4)^key[i];
+  }
+  /* return (hash % prime); */
+  return hash;
+}
+
+
 
 
 
@@ -1771,7 +1856,7 @@ crmhash_t strnhash(const char *str, size_t len)
         break;
 
     case 2:
-        h = old_crm114_fixed_strnhash(str, (int)len);
+        h = old_crm114_fixed_strnhash(str, len);
         break;
 
     case 3:
@@ -1779,15 +1864,19 @@ crmhash_t strnhash(const char *str, size_t len)
         break;
 
     case 4:
-        h = shtpap_strnhash(str, (int)len);
+        h = shtpap_strnhash(str, len);
         break;
 
     case 5:
-        h = SuperFast_strnhash(str, (int)len);
+        h = SuperFast_strnhash(str, len);
         break;
 
 	case 6:
 		h = OpenSSL_strnhash(str, len);
+		break;
+
+	case 7:
+		h = Rotating_strnhash(str, len);
 		break;
     }
 

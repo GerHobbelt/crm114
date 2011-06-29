@@ -506,8 +506,8 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int bestseen;
     int thistotal;
 
-    int *feature_weight;
-    int *order_no;
+    uint32_t *feature_weight;
+    uint32_t *order_no;
     int hashcounts;
 
     // cubic weights seem to work well with this new code... - Fidelis
@@ -920,7 +920,7 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             int j, k;
             unsigned th = 0;    //  a counter used only in TSS hashing
-            int fw;
+            uint32_t fw;
             unsigned int hindex;
             crmhash_t h1, h2;
             // remember indexes of classes with min and max local probabilities

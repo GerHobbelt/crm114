@@ -702,6 +702,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\libcrm114\hashes32.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\libcrm114\hashtable_base.cpp"
 				>
 			</File>
@@ -791,6 +795,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\libcrm114\libcrm114_bayesian.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\libcrm114\libcrm114_bio.h"
 				>
 			</File>
@@ -808,6 +816,10 @@
 			</File>
 			<File
 				RelativePath="..\src\libcrm114\libcrm114_statuscodes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\libcrm114\libcrm114_storage.h"
 				>
 			</File>
 			<File
