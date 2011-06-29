@@ -18,6 +18,11 @@
 //
 ///////////////////////////////////////////////////////////////////
 //
+//     Do you want all the classifiers?  Or just the "production
+//     ready ones"?   Comment the next line out if you want everything.
+//#define PRODUCTION_CLASSIFIERS_ONLY
+//
+//
 //   default size of the variables hashtable (a.k.a. the VHT)
 #define DEFAULT_VHT_SIZE 4095
  
@@ -331,21 +336,42 @@
 
 //     Neural Net parameters
 //
-#define NN_RETINA_SIZE 65536
-#define NN_FIRST_LAYER_SIZE 64
-#define NN_HIDDEN_LAYER_SIZE 64
+#define NN_RETINA_SIZE 8192
+#define NN_FIRST_LAYER_SIZE 8
+#define NN_HIDDEN_LAYER_SIZE 16
+#define NN_MAX_FEATURES 65536
 
 //     Neural Net training setups
+//
+//     Note- convergence seems to work well at 
+//    alpha 0.2 init_noise 0.5 stoch_noise 0.1 gain_noise 0.00000001
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.1 gain_noise 0.00000001
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 0.00000001
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 0.00000001
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 2.0
+//    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 2.0 zerotr 0.9999
+
+#define NN_DEFAULT_ALPHA 0.2
+//   Initialization noise magnitude
+#define NN_INITIALIZATION_NOISE_MAGNITUDE 0.2
+//   Stochastic noise magnitude
+#define NN_DEFAULT_STOCH_NOISE 0.05
+//   Gain noise magnitude
+#define NN_DEFAULT_GAIN_NOISE 2.0
+//   Zero-tracking factor - factor the weights move toward zero every epoch
+#define NN_ZERO_TRACKING 0.9999
 //   Threshold for back propagation
-#define NN_INTERNAL_TRAINING_THRESHOLD 0.3
+#define NN_INTERNAL_TRAINING_THRESHOLD 0.1
 //  Just use 1 neuron excitation per token coming in. 
 #define NN_N_PUMPS 1
 //  How many training cycles before we punt out 
-#define NN_MAX_TRAINING_CYCLES 100
+#define NN_MAX_TRAINING_CYCLES 500
 //  When doing a "nuke and retry", allow this many training cycles.
-#define NN_MAX_TRAINING_CYCLES_FROMSTART 2000
+#define NN_MAX_TRAINING_CYCLES_FROMSTART 5000
+//  How many times to allow a punt?
+#define NN_FROMSTART_PUNTING 1000000
 //  After how many "not needed" cycles do we microgroom this doc away?
-#define NN_MICROGROOM_THRESHOLD 10      
+#define NN_MICROGROOM_THRESHOLD 1000000      
 //  use the sparse retina design?  No, it's not good.
 #define NN_SPARSE_RETINA 0 
 

@@ -197,7 +197,7 @@ static CRM_MMAP_CELL *cache = NULL;  // "volatile" for W32 compile bug
 //     Watch out tho- this takes a CRM_MMAP_CELL, not a *ptr, so don't
 //     call it from anywhere except inside this file.
 //
-void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
+static void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
 {
   long munmap_status;
 

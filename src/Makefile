@@ -24,8 +24,10 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20071201-BlameLittleStevie_VT
-PREV_VERSION=20071126-BlameGerHobbelt
+VERSION=20080326-BlameSentansoken
+PREV_VERSION=20080217-BlameJoeLangeway_VT
+#PREV_VERSION=20071201-BlameLittleStevie_VT
+#PREV_VERSION=20071126-BlameGerHobbelt
 #PREV_VERSION=20070917-BlameGerHobbelt
 #VERSION=20070830-BlameGerHobbelt
 #PREV_VERSION=20070828-BlameGerHobbelt
@@ -69,7 +71,7 @@ SYSTEMTYPE = POSIX
 #  Our default is with debugging, full optimization, and lots of warnings:
 CFLAGS += -g -O3 -Wall
 #     turn this one on for no optimization, but debugging and time profiling:
-#CFLAGS += -g -O0 -Wall -pg -CB
+#CFLAGS += -g -O0 -Wall -pg
 #     turn this one on for really picayune debugging:
 # CFLAGS += -Wextra
 #
@@ -77,9 +79,9 @@ CFLAGS += -g -O3 -Wall
 #   Comment this out if you want dynamic linking
 #
 #    BSD users - do NOT use -static-libgcc!!!
-LDFLAGS += -static -static-libgcc 
+#LDFLAGS += -static -static-libgcc 
 #    use this one if you want program profiling.
-#LDFLAGS += -static -static-libgcc -pg
+LDFLAGS += -static -static-libgcc -pg
 #
 #   Any standard install flags?  We nominally use protection 755
 INSTALLFLAGS += -m 755
@@ -189,7 +191,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	rewritetest.crm test_rewrites.mfp \
 	randomiotest.crm isolate_reclaim_test.crm \
 	match_isolate_test.crm match_isolate_reclaim.crm \
-	call_return_test.crm defaulttest.crm\
+	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
 	shroud.crm quine.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \

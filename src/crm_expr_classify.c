@@ -128,6 +128,7 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       retval = crm_expr_bit_entropy_learn(csl, apb, txt, start, len);
     }
   else
+#ifndef PRODUCTION_CLASSIFIERS_ONLY
   if (classifier_flags & CRM_SVM)
     {
       retval = crm_expr_svm_learn(csl, apb, txt, start, len);
@@ -148,6 +149,7 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       retval = crm_neural_net_learn (csl, apb, txt, start, len);
     }
   else
+#endif
     { 
       //    Default with no classifier specified is Markov
       apb->sflags = apb->sflags | CRM_MARKOVIAN;
@@ -177,23 +179,29 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   crm_get_pgm_arg (box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
   //  Use crm_restrictvar to get start & length to look at.
-  i = crm_restrictvar(box_text, apb->b1len, 
+  i = crm_restrictvar(box_text, 
+		      apb->b1len, 
 		      NULL,
 		      &txt,
 		      &start,
 		      &len,
 		      errstr);
 
-  if ( i > 0)
+  if ( i < 0)
     {
       long curstmt;
       long fev;
       fev = 0;
       curstmt = csl->cstmt;
-      if (i == 1)
-	fev = nonfatalerror5 (errstr, "", CRM_ENGINE_HERE);
-      if (i == 2)
-	fev = fatalerror5 (errstr, "", CRM_ENGINE_HERE);
+      if (i == -1)
+	{
+	  fev = nonfatalerror5 (errstr, "", CRM_ENGINE_HERE);
+	};
+      if (i == -2)
+	{
+	  fev = fatalerror5 (errstr, "", CRM_ENGINE_HERE);
+	};
+
       //
       //     did the FAULT handler change the next statement to execute?
       //     If so, continue from there, otherwise, we FAIL.
@@ -244,6 +252,7 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       retval = crm_expr_bit_entropy_classify (csl, apb, txt, start, len);
     }
   else
+#ifndef PRODUCTION_CLASSIFIERS_ONLY
   if (classifier_flags & CRM_SVM)
     {
       retval = crm_expr_svm_classify (csl, apb, txt, start, len);
@@ -264,6 +273,7 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       retval = crm_neural_net_classify (csl, apb, txt, start, len);
     }
   else
+#endif
     {
       //    Default with no classifier specified is Markov
       apb->sflags = apb->sflags | CRM_MARKOVIAN;

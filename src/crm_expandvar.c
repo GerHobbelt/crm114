@@ -334,7 +334,7 @@ long crm_zexpandvar (char *buf,
   if (cp == NULL)
     {
       if (internal_trace)
-	fprintf (stderr, "No further expansions possible");
+	fprintf (stderr, "No further expansions possible\n");
       return (inlen);
     };
   
@@ -1058,8 +1058,9 @@ long crm_restrictvar ( char *boxstring,
 
   //      Got the varname.  Do a lookup.
   vmidx = crm_vht_lookup (vht, varname, varnamelen);
-  //  fprintf (stderr, "vmidx = %ld, vht[vmidx] = %lx\n", vmidx, vht[vmidx]);
-
+  if (internal_trace)
+    fprintf (stderr, "vmidx = %ld, vht[vmidx] = %lx\n", 
+	     (long) vmidx, (long) vht[vmidx]);
   //       Is it a real variable?
   if ( ((void *) vht[vmidx]) == NULL )  
     {
@@ -1282,7 +1283,7 @@ long crm_restrictvar ( char *boxstring,
 	fprintf (stderr, " length %ld", (unsigned long) *outlen);
       fprintf (stderr, "\n");
     };
-  return (0);
+  return ( 0 );
 }
 
     

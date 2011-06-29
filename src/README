@@ -20,6 +20,72 @@ Now that we're clear on that, let's begin.
 
                     ----- News This Release: -----
 
+March 26, 2008 - BlameSentansoken
+
+This release is basically a bugfix release and includes some (but not
+all) fixes to the Hyperspace classifier, the vector tokenizer (VT),
+and the neural network.  Many thanks to Paolo, Ger, and the other mailing
+list denizens who found the bugs.  The neural network can now learn nonlinear
+problems in reasonable times (such as the classic XOR problem).  It
+also includes a new example - alternating_example_neural.crm.  This is
+a good example of how to turn a single big example file into a number
+of small ones (which is recommended).  If you run it as "crm -t
+alternating_example_neural.crm" you also get an amusing look at the
+neural net as it trains (and no, I did not intentionally make it into
+a "The Matrix" style output- that was actually the natural way to
+express the state of the training).  Upgrade to this version only if
+you are using Hyperspace or the Neural Network.
+
+
+Feb 13, 2008 - BlameJoeLangeway_VT
+
+This release includes an improved vector tokenizer (that is, VT),
+VT in the Hyperspace classifier, and a VT-enabled and much-improved 
+neural net as well.  Bug fixes include the pR=5.0 change to work 
+versus microspams better, as well as some other bugfixes in both 
+the code and the test set.  The neural network is now 8192 x 8 x 8 x 2
+(that is 8192 retina slots feeding 8 input neurons; each of the input
+neurons feeds all 8 of the hidden layer neurons, all 8 hidden layer 
+neurons feed both of the two output neurons) for minimum disk footprint
+of just over half a megabyte before you staart adding documents.  For
+large data sets you should expand the network with -s NNN where NNN is
+the number of retina slots (the rest of the net will scale reasonably; 
+the minimum is 1024 retina slots feeding 4 x 4 x 2).  The algorithm 
+now uses both backpropagation and stochastic updates to avoid getting
+caught in local minima.   
+
+As before, the neural net works best if you train in both in-class and
+out-of-class (i.e. REFUTE) examples.  Default is to update weights
+only on the end of each training loop epoch; use BYCHUNK to update
+after each example document.  APPEND turns off autotraining after a
+LEARN.  The default cycle limits for LEARN are 5000 cycles if FROMSTART
+is used and 250 cycles incrementally (experimentally determined to 
+work OK).  To run another 250 cycles, just LEARN with a null text
+to learn- this won't add a document but _will_ run 250 more backprop 
+cycles.
+
+One trick that's not in the C code yet but that users can implement
+in the CRM114 program is to alternate positive and negative chunks of
+example text.  By alternating examples, the BYCHUNK epoch learner can
+converge on this rather difficult problem in not-unreasonable time
+(an hour or three, depending on your CPU).
+
+Running the neural net with -t can be illuminating; each line starts
+with E (for epoch) and then the epoch number.  After that, each "."
+means one chunk of text that was successfully classified "strongly"
+(3:1 neural response ratio).  A # means a positive (in-class) example
+that was classified as out of class, while a + means positive that was
+classified positive but not strongly; an X means a negative
+(out-of-class) example that was classified as a positive example, and
+an x (lower case!) as an out-of-class example that was classified
+"correctly" but not strongly so.  It's rather fun to watch the system
+as it learns the small differences between two very similar files (the
+INTRO and QUICKREF files, taken in chunks of 1Kbyte+ characters rather
+than as two big chunks as done in megatest.  This takes a while, versus
+the same problem run as only two examples, which runs in about
+fifteen seconds.)
+
+
 May 5, 2007 - BlameSpamConf
 
 This is a mixed enhancement/bugfix release.  You can now use 

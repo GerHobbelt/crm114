@@ -408,6 +408,10 @@ long crm_vector_tokenize_selector
   char *my_regex;
   long my_regex_len;
 
+  char s1text[MAX_PATTERN];
+  long s1len;
+
+
  // For slash-embedded pipeline definitions.
   long ca[UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT]; 
 
@@ -420,11 +424,11 @@ long crm_vector_tokenize_selector
   classifier_flags = apb->sflags;
   featurebits = 32;
   hash_vec0 = osb1_coeff;
-  hash_len0 = 5;
-  hash_iters0 = 5;
+  hash_len0 = OSB_BAYES_WINDOW_LEN;    // was 5
+  hash_iters0 = 4; // should be 4
   hash_vec1 = osb2_coeff;
-  hash_len1 = 5;
-  hash_iters1 = 5;
+  hash_len1 = OSB_BAYES_WINDOW_LEN;     // was 5
+  hash_iters1 = 4; // should be 4
   output_stride = 1;
 
   //    put in the passed-in regex values, if any.
@@ -450,7 +454,7 @@ long crm_vector_tokenize_selector
        || classifier_flags & CRM_OSBF
        )
     {
-      //     Build a 64-bit interleaved feature set.
+      //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
       featurebits = 64;
       output_stride = 2;
     };
@@ -490,7 +494,23 @@ long crm_vector_tokenize_selector
   //     Now all of the defaults have been filled in; we now see if the 
   //     caller has overridden any (or all!) of them.   We assume that the
   //     user who overrides them has pre-sanity-checked them as well.
-  //
+  
+  //     First check- did the user override the regex?
+
+  //    Did the user program specify a first slash paramter?  (only
+  //    override this if a regex was passed in)
+  if (! regex)
+    {
+      crm_get_pgm_arg (s1text, MAX_PATTERN, apb->s1start, apb->s1len);
+      s1len = apb->s1len;
+      s1len = crm_nexpandvar (s1text, s1len, MAX_PATTERN);
+      my_regex = s1text;
+      my_regex_len = s1len;
+    };
+
+
+  //      Did the user specify a pipeline vector set ?   If so, it's
+  //      in the second set of slashes.
   {
     char s2text[MAX_PATTERN];
     long s2len;
@@ -742,7 +762,7 @@ long crm_vector_osb1
       regexlen,
       osb1_coeff,
       OSB_BAYES_WINDOW_LEN, 
-      5,
+      4,  // should be 4
       features,
       featureslen,
       2,
@@ -772,7 +792,7 @@ long crm_vector_osb2
       regexlen,
       osb2_coeff,
       OSB_BAYES_WINDOW_LEN, 
-      5,
+      4,  // should be 4
       features,
       featureslen,
       2,

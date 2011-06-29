@@ -613,39 +613,53 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   h = 0;
   k = 0;
 
-   //   Use the flagged vector tokenizer
-   crm_vector_tokenize_selector
-     (apb,                   // the APB
-      txtptr,                 // intput string 
-      txtlen,                 // how many bytes
-      txtstart,               // starting offset
-      ptext,                  // parser regex
-      plen,                   // parser regex len
-      NULL,                   // tokenizer coeff array
-      0,                      // tokenizer pipeline len
-      0,                      // tokenizer pipeline iterations
-      (unsigned long *) hashes,     // where to put the hashed results
-      HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
-      &hashcounts,             // how many hashes we actually got
-      &next_offset);           // where to start again for more hashes
-   
+  //    Are we actually calling the vector tokenizer??
+  //  fprintf (stderr, "gweep!!\n");
+
+  //   Use the flagged vector tokenizer
+  crm_vector_tokenize_selector
+    (apb,                   // the APB
+     txtptr,                 // intput string 
+     txtlen,                 // how many bytes
+     txtstart,               // starting offset
+     ptext,                  // parser regex
+     plen,                   // parser regex len
+     NULL,                   // tokenizer coeff array
+     0,                      // tokenizer pipeline len
+     0,                      // tokenizer pipeline iterations
+     (unsigned long *) hashes,     // where to put the hashed results
+     HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
+     &hashcounts,             // how many hashes we actually got
+     &next_offset);           // where to start again for more hashes
+  
 #endif
-   
+  
   //   Now sort the hashes array.
   //
   qsort (hashes, hashcounts, 
 	 sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT),
 	 &hash_compare );
 
-  hashcounts--;
   if (user_trace)
     fprintf (stderr, "Total hashes generated: %ld\n", hashcounts);
 
   //   And uniqueify the hashes array
   //
   
-  i = 1;
-  j = 1;
+  i = 0;
+  j = 0;
+
+  if (internal_trace)
+    fprintf (stderr, "Pre-Unique: %ld as %lx %lx %lx %lx %lx %lx %lx %lx\n",
+	     hashcounts,
+	     hashes[0].hash,
+	     hashes[1].hash,
+	     hashes[2].hash,
+	     hashes[3].hash,
+	     hashes[4].hash,
+	     hashes[5].hash,
+	     hashes[6].hash,
+	     hashes[7].hash);
   
   if (unique)
     {
@@ -662,6 +676,22 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       };
       hashcounts = j;
     };
+
+  //    Put in a sentinel zero.
+  hashes[hashcounts].hash = 0;
+
+  //Debug print
+  if (internal_trace)
+    fprintf (stderr, "Post-Unique: %ld as %lx %lx %lx %lx %lx %lx %lx %lx\n",
+	     hashcounts,
+	     hashes[0].hash,
+	     hashes[1].hash,
+	     hashes[2].hash,
+	     hashes[3].hash,
+	     hashes[4].hash,
+	     hashes[5].hash,
+	     hashes[6].hash,
+	     hashes[7].hash);
 
   if (user_trace)
     fprintf (stderr, "Unique hashes generated: %ld\n", hashcounts);

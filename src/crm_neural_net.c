@@ -1,14 +1,15 @@
 //  crm_neural_net.c
-
-//  by Joe Langeway derived from crm_osb_hyperspace.c and produced for the
-//  crm114 so:
+//
+//  derived from crm_osb_hyperspace.c by Joe Langeway, rehacked by 
+//  Bill Yerazunis.  Since this code is directly derived from
+//  crm_osb_hyperspace.c and produced for the crm114 project so:
 //  
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
 //  GPL by visiting the Free Software Foundations web site at
 //  www.fsf.org, and a copy is included in this distribution.  
 //
-//  Other licenses may be negotiated; contact Bill for details.  
+//  Other licenses may be negotiated; contact Bill or Joe for details.  
 //
 /////////////////////////////////////////////////////////////////////
 //
@@ -17,7 +18,7 @@
 //     Original spec by Bill Yerazunis, original code by Joe Langeway,
 //     recode for CRM114 use by Bill Yerazunis. 
 //
-//     This code section (crm_neural_net and subsidiary routines) is
+//     This file of code (crm_neural_net* and subsidiary routines) is
 //     dual-licensed to both William S. Yerazunis and Joe Langeway,
 //     including the right to reuse this code in any way desired,
 //     including the right to relicense it under any other terms as
@@ -26,95 +27,27 @@
 //////////////////////////////////////////////////////////////////////
 
 /*
-
   This file is part of on going research and should not be considered
   a finished product, a reliable tool, an example of good software
   engineering, or a reflection of any quality of Joe's besides his
   tendancy towards long hours. 
   
   
-  Here's what's really going on:
+  Here's what's going on:
 
-  This is a three-layer feed-forward neural net, fully connected, with
-  64K input channels in the retina, 64 neurons in the first layer, 64
-  neurons in the second (hidden) layer, and 2 neurons in the output
-  layer.  Using the -s or -S command line parameter will change these
-  default values in a (relatively) smart way.
+  It's three-layer Kohonen-flavor feed-forward neural net, trained by
+  accumulating weight updates, calculated with simple gradiant descent
+  and back propagation, to apply once for all documents.
 
-  The "retina" is (by default) 64K channels, each channel corresponds
-  to a retina feature.  Usually the retina features are just the 
-  hashed tokens modulo down to the retina size, so for a 64K channel 
-  retina, the low-order 16 bits of the hash get used.  << option - it's
-  possible to set things up to get more than one retina channel excited
-  by one hashed token feature, but that's not the default config. >>
+  NB:  the <bychunk> flag changes this behavior to train the results of each
+  document as the document is encountered.  This is _usually_ a good idea.
 
-  Each of the 64K retina channels feeds to each of the first-layer
-  neurons, so that's 64K weights inputting to each neuron.  By default
-  there are 64 neurons in this first layer.  In that sense, it's
-  really a big crossbar.  [[ note to self: consider non-crossbar
-  configurations of neurons, say in an ECC-syndrome or block pattern
-  or checkerboard or walsh-hadamard or gray-codeset or even only the
-  near-diagonal terms are allowed to be nonzero. ]]
+  The <fromstart> means "reinitialize the net".  Use this if things get 
+  wedged.
 
-  Anyway, after the first layer of 64 neurons does it's summing of
-  channel times weight-per-channel, it applies the sigmoid function
-  and the result goes to the second (hidden) layer of neurons.  By 
-  default, there are also 64 neurons in this second layer and they 
-  are also connected to the first layer in a crossbar - every neuron
-  output in the first layer is one of 64 weighted and summed inputs 
-  to the second layer.  This second layer also applies the sigmoid
-  function to it's sum.
-
-  The final layer is just *two* neurons, each of these neurons gets
-  the input of all 64 second layer neurons, weighted.  The reason for 
-  two neurons in the final layer rather than one is "degrees of freedom".
-
-  Consider a system with only one neuron in the final layer; we would
-  train it to output a 1 for "yes, member of my class" and 0 for "no,
-  not a member".  But, how can such a system yield any response of
-  certainty in value?  It can't, with only a single output.
-
-  By adding a second neuron in the output that is trained conversely 
-  (1 for "not in class" and 0 for "member of class") , we also obtain a
-  "not in class" as an affirmative and independent degree of freedom;
-  thus our neural net can yield a two-dimensional result in even a 
-  single statistics file situation.
-
-  Training of this network is by back-propagation; see below for the
-  details on that (but consider it a simple allocation of blame) whenever
-  an incorrect result occurs).
-
-  This code does have two "kinks" - stochastic updating, and
-  net-nuking.  
-
-  Stochastic updating, simply put, when the classic
-  backprop update rule says to update a weight by some value x,
-  instead we update by 2 * x * frand(), where frand is a uniform
-  random value between 0.0 and 1.0.  This seems very effective in
-  keeping us from getting our network stuck in a local minimum.
-  Net-nuking is allowing the user program to command the network to
-  start from a random state and retrain.  This is a fail-safe 
-  maneuver so that local minima can again be (hopefully) missed.
-  
-  The counterpart of net-nuking is "learning without retrain", where
-  we accept a text as a class member example but don't retrain the
-  network yet, on the knowledge that many more texts will soon follow
-  and a retrain without those texts is a waste of CPU cycles.  
-  Learning without retraining is set by the < append > flag, and 
-  nuking the net is triggered by the < fromstart > flag.
-  One can also continue learning without a net-nuke by learning
-  an empty text.
-
-  Other (minor) kinks - you'll see "NN_SPARSE_RETINA" - that means
-  that the retina has been split into two parts.  The first part of
-  the retina gets positive excitations (feature was present),  The second
-  half is 1:1 with the first half but records negative excitations (feature
-  was definitely NOT PRESENT).
-  
-  You will also see NN_N_PUMPS - this means that a token feature may excite
-  more than one channel.  By default, a token only excites one channel; but
-  the function that converts 32-bit feature tokens into channel numbers can
-  emit more than one channel to excite per incoming feature.
+  The <append> flag means _do not retrain_. Instead, just log this data
+  into the file and return ASAP (use this to load up a bunch of data
+  and then train it all, which is computationally cheaper)
 
 */
 
@@ -139,12 +72,34 @@ extern char *newinputbuf;
 
 //    the globals used when we need a big buffer  - allocated once, used 
 //    wherever needed.  These are sized to the same size as the data window.
-// do not mut these or random binary shall be shat upon thee
+//    do not mut these or random binary shall be shat upon thee
 extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
 
+//static int neural_trace = 1;
+static int neural_trace = 0;
+
 #define HEADER_SIZE 1024
+
+#define STOCHASTIC
+//#define TRAIN_PER_DOCUMENT	
+//#define ACCUMULATE_TRAINING
+
+//    DESCRIPTION OF A NEURAL NETWORK
+//
+//   retina_size is number of inputs to the first layer; feature IDs need
+//                 to be moduloed down to this value.
+//   first_layer_size is the number neurons in the first layer.  Every neuron
+//                 sums retina_size weighted values from each of the 
+//                 retina inputs
+//   hidden_layer_size is the number of neurons in the hidden layer.  Each of
+//                 these neurons sums first_layer_size weighted outputs
+//                  of the first layer
+//   ... and of course, in this implementation, the final layer is just TWO
+//                 neurons (in-class and out-of-class), summing up 
+//                 hidden_layer_size weighted outputs.
+
 
 typedef struct mythical_neural_net_header
 {
@@ -154,31 +109,146 @@ typedef struct mythical_neural_net_header
   
 typedef struct mythical_neural_net
 {
-  float **Win;
-  float **Whid;
-  float **Wout;
-  float *first_layer;
-  float *hidden_layer;
-  float output_layer[2];
-  float *delta_first_layer;
-  float *delta_hidden_layer;
-  float delta_output_layer[2];
+  //             The W's are the weights
+  float *Win, *Whid, *Wout;
+  //                these are the activatoin intensities
+  float *retina, *first_layer, *hidden_layer, output_layer[2];
+  //                      these are the learning deltas
+  float *delta_first_layer, *delta_hidden_layer, delta_output_layer[2];
   unsigned long *docs_start, *docs_end;
   long retina_size, first_layer_size, hidden_layer_size;
   void *file_origin;
 } NEURAL_NET_STRUCT;
 
-static int joe_trace = 0, super_verbose = 0;
-static double alpha = 0.02;
-//implement these!
-long    retina_size = NN_RETINA_SIZE,
-        first_layer_size = NN_FIRST_LAYER_SIZE,
-        hidden_layer_size = NN_HIDDEN_LAYER_SIZE;
+//   Three little functions to turn bare pointers to the neural
+//   network coefficient arrays into *floats so they can be read
+//   or written.  This hack is because C doesn't do multidimensional
+//   arrays with runtime defined dimensions very well.  
+//
+//    Just to remind you- nn is the neural net, "neuron" is the neuron being 
+//    activated, and "channel" is the channel on that neuron.  (note that 
+//    this means actual storage is in "odometer" format - the last arg 
+//    varying fastest.
+//  
+inline static float *arefWin(NEURAL_NET_STRUCT *nn, long neuron, long channel)
+{
+  //  if (neuron < 0 || neuron > nn->first_layer_size)
+  //  fprintf (stderr, "bad neuron number %ld in first layer calc\n", neuron);
+  //if (channel < 0 || channel > nn->retina_size)
+  //  fprintf (stderr, "bad channel number %ld in first layer calc\n", channel);
+  //  fprintf (stderr, "nn = %lx, Win = %lx, neuron = %ld, channel = %ld\n",
+  //	   nn, nn->Win, neuron, channel);
+  return &(nn->Win [(neuron * nn->retina_size) + channel]);
+}
+inline static float avalWin(NEURAL_NET_STRUCT *nn, long neuron, long channel)
+{
+  //  if (neuron < 0 || neuron > nn->first_layer_size)
+  //  fprintf (stderr, "bad neuron number %ld in first layer calc\n", neuron);
+  //if (channel < 0 || channel > nn->retina_size)
+  //  fprintf (stderr, "bad channel number %ld in first layer calc\n", channel);
+  //  fprintf (stderr, "nn = %lx, Win = %lx, neuron = %ld, channel = %ld\n",
+  //	   nn, nn->Win, neuron, channel);
+  return (nn->Win [(neuron * nn->retina_size) + channel]);
+}
 
 
-//      Create a new neural net statistics file from nothing...
+//     Same deal, nn is the net, "neuron" is the neuron number, "channel" 
+//      is the channel on that neuron.
+inline static float *arefWhid(NEURAL_NET_STRUCT *nn, long neuron, long channel)
+{
+  if (neuron < 0 || neuron > nn->hidden_layer_size)
+    fprintf (stderr, "bad neuron number %ld in hidden layer calc\n", neuron);
+  if (channel < 0 || channel > nn->first_layer_size)
+    fprintf (stderr, "bad channel number %ld in hidden layer calc\n", channel);
+  return & (nn->Whid[( neuron * nn->first_layer_size) + channel]);
+}
+
+//     Final layer, same deal;, nn is the net, "neuron" is the neuron 
+//      number (here, 0 or 1), "channel" is the channel on that neuron.
+inline static float *arefWout(NEURAL_NET_STRUCT *nn, long neuron, long channel)
+{
+  if (neuron < 0 || neuron > 1)
+    fprintf (stderr, "bad neuron number %ld in final layer calc\n", neuron);
+  if (channel < 0 || channel > nn->hidden_layer_size)
+    fprintf (stderr, "bad channel number %ld in final layer calc\n", channel);
+  return &(nn->Wout [(neuron * nn->hidden_layer_size) + channel]);
+}
+
+inline static float sign (float x)
+{
+  if (x < 0.0) return -1;
+  return 1;
+}
+
+//    Stochastic_factor is a "noise term" to keep the net shaken up a bit;
+//    this prevents getting stuck in local minima (one of which can occur
+//    when a weight approaches zero, because then the motion becomes *very*
+//    small (alpha, the motion factor, is usually << 1.0) and it's not
+//    possible for the weight value to "jump over" zero and
+//    go negative.  This causes that weight to lock; if enough weights lock,
+//    the net fails to converge.
 //
+//    There are two parameters used (both are static local vars!).  One is
+//    the maximum noise added (recommended to be about the same value as 
+//    alpha) and the other is the drop rate, which is how fast the noise 
+//    diminishes with increasing learning cycles.  This is measured in 
+//    terms of the soft cycle limit and epoch number; perhaps it would be
+//    better if the drop was actually a 1/R curve (Boltzmann curve) but
+//    this works well.  
 //
+//    Note: the following also worked pretty well:
+//     ((0.05 * (double)rand() / (double) RAND_MAX) - 0.025)
+
+inline static double rand0to1()
+{
+  return ((double)rand() / (double)RAND_MAX);
+}
+
+inline static float stochastic_factor (float stoch_noise,
+				       long soft_cycle_limit, 
+				       long epoch_num) 
+{
+  float v;
+  
+  v = ( rand0to1() - 0.5) * stoch_noise;
+  //  v = ((((double)rand ()) / ((double) RAND_MAX))) * stoch_noise;
+  //  v = v * ( 1 / ( epoch_num + 1));		
+  //  v = v * 
+  //    (1 - (epoch_num / soft_cycle_limit));
+  return (v);
+};
+
+//     Gain noise is noise applied to the training impulse, rather than
+//     gain applied to the weights
+inline static double gain_noise_factor ()
+{
+  return ( rand0to1() * NN_DEFAULT_GAIN_NOISE) ;
+};
+
+
+//  These are used _only_ when a new net needs to be created;  
+//  the actual net dimensions used usually come from the file header
+long    retina_size = NN_RETINA_SIZE;
+long    first_layer_size = NN_FIRST_LAYER_SIZE;
+long    hidden_layer_size = NN_HIDDEN_LAYER_SIZE;
+
+/*
+
+Another (as yet unimplemented) idea is to stripe the retina in a
+pattern such that each neuron is "up against" every other neuron at
+least once, but not as many times as the current "full crossbar"
+system, which takes a long time to train.
+
+One way to do this is to label the points onto a fully connected graph
+nodes, and then to take the graph nodes in pairwise (or larger) groups
+such as, on edges, faces, or hyperfaces, so that every graph node is
+taken against every other node and hence every input at one level is
+"against" every other input.  However, we haven't implemented this.
+
+*/
+
+
+
 static int make_new_backing_file(char *filename)
 {
   long i;
@@ -188,25 +258,67 @@ static int make_new_backing_file(char *filename)
   f = fopen(filename, "wb");
   if(!f)
   {
-    nonfatalerror5("unable to create neural network backing file", "filename",
+    nonfatalerror5("unable to create neural network backing file", filename,
                         CRM_ENGINE_HERE);
     return -1;
   }
+
+  if(sparse_spectrum_file_length)
+  {
+    first_layer_size = sqrt (sparse_spectrum_file_length / 1024);
+    if (first_layer_size < 4) first_layer_size = 4;
+    hidden_layer_size = first_layer_size * 2 ;
+    retina_size = first_layer_size * 1024  ;
+    if (retina_size < 1024) retina_size = 1024;
+  }
+  if (neural_trace || user_trace )
+    fprintf (stderr, "Input sparse_spectrum_file_length = %ld. \n"
+	     "new neural net dimensions:\n retina width=%ld, "
+	     "first layer neurons = %ld, hidden layer neurons = %ld\n",
+	     sparse_spectrum_file_length, retina_size, 
+	     first_layer_size, hidden_layer_size);
+	     
   h.retina_size = retina_size;
   h.first_layer_size = first_layer_size;
   h.hidden_layer_size = hidden_layer_size;
+  
+  //    Write out the header fields
   fwrite(&h, 1, sizeof(NEURAL_NET_HEAD_STRUCT), f);
-  for(i = sizeof(NEURAL_NET_HEAD_STRUCT); i < HEADER_SIZE; i++)
-    fputc('\0', f);
 
-  //   the actual size required for the neural network coeffs.  Note that
-  //   this leaves ZERO padding between the coeffs and the "stored texts".
-  i = retina_size * first_layer_size + first_layer_size * hidden_layer_size +
-              hidden_layer_size * 2;
+  //     Pad out the header space to header_size
+  for(i = sizeof(NEURAL_NET_HEAD_STRUCT); i < HEADER_SIZE; i++)
+    {
+       fputc('\0', f);
+    };
+
+  //      and write random small floating points into the 
+  //      weighting.
+  i = (retina_size * first_layer_size)
+    + (first_layer_size * hidden_layer_size)
+    + (hidden_layer_size * 2);
+  if (neural_trace)
+    {
+      fprintf (stderr, "Putting out %ld coefficients.\n", i);
+      fprintf (stderr, "Initial weight ");
+      i--;
+      a = rand0to1 () * NN_INITIALIZATION_NOISE_MAGNITUDE;
+      fprintf (stderr, "%lf ", a);
+      fwrite(&a, 1, sizeof(float), f);
+      i--;
+      a = rand0to1 () * NN_INITIALIZATION_NOISE_MAGNITUDE;
+      fprintf (stderr, "%lf ", a);
+      fwrite(&a, 1, sizeof(float), f);
+      i--;
+      a = rand0to1 () * NN_INITIALIZATION_NOISE_MAGNITUDE;
+      fprintf (stderr, "%lf ", a);
+      fwrite(&a, 1, sizeof(float), f);
+      fprintf (stderr, "\n");
+    };
   while(i--)
   {
-    a = (0.2 * (float)rand() / (float)RAND_MAX) - 0.1;
-    fwrite(&a, 1, sizeof(float), f);
+      a = rand0to1 () * NN_INITIALIZATION_NOISE_MAGNITUDE;
+      //      fprintf (stderr, "%lf ", a);
+      fwrite(&a, 1, sizeof(float), f);
   }  
   fclose(f);
   return 0;
@@ -214,109 +326,74 @@ static int make_new_backing_file(char *filename)
 
 static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
 {
-  long i;
   NEURAL_NET_HEAD_STRUCT *h;
-  struct stat statee;
+  struct stat statbuf;
   float *w;
-
-  if(stat(filename, &statee))
-    {
-      nonfatalerror5("unable to map neural network backing file", "filename",
-		     CRM_ENGINE_HERE);
-      return -1;
-    };
-  
+  nn-> file_origin = MAP_FAILED;
+  if(stat(filename, &statbuf))
+  {
+    //    nonfatalerror5("unable to map neural network backing file", 
+    //	   "filename", CRM_ENGINE_HERE);
+    //  fprintf (stderr, "static mmap: No such file; nn = %lx\n", (long) nn );
+    
+    return -1;
+  }
+  //  fprintf (stderr, "File is %s\n", filename);
   nn->file_origin = crm_mmap_file
-    (  filename,
-       0, statee.st_size,
-       PROT_READ | PROT_WRITE,
-       MAP_SHARED,
-       NULL     );
-
+                     (  filename,
+                        0, statbuf.st_size,
+                        PROT_READ | PROT_WRITE,
+                        MAP_SHARED,
+                        NULL     );
   if(nn->file_origin == MAP_FAILED)
-    {
-      nonfatalerror5("unable to map neural network backing file", "filename",
-		     CRM_ENGINE_HERE);
-      return -1;
-    };
-  
-  //    Fill in our NN's description from stuff in the header- the sizes,
-  //    the weights Win (input layer, Whid (hidden layer) and Wout (output
-  //    layer) and the 
-  //  
-  //     (note that Win, Whid, and Wout actually pointers to arrays of pointers.
-  //      In this way we get the appearence of two dimensional arrays, but are
-  //      actually just pointing from each start of a one-d array, UNLIKE
-  //      when you just create a long vector and use subscript arithmetic)
-  //     Note also that most of these (the ones "malloced" below) are
-  //     transient and are NOT part of the disk image.
-  //     
-  //  aim the h-struct at the mem-mapped file
+  {
+    nonfatalerror5("unable to map neural network backing file", "filename",
+                         CRM_ENGINE_HERE);
+    return -1;
+  }
   h = nn->file_origin;
-  //   copy the important sizes
   nn->retina_size = h->retina_size;
   nn->first_layer_size = h->first_layer_size;
   nn->hidden_layer_size = h->hidden_layer_size;
-  //  and make space for Win, Whid, and Wout  
-  //   GROT GROT GROT why?  Why not use the file versions?
-  nn->Win = malloc(sizeof(float *) * h->retina_size);
-  nn->Whid = malloc(sizeof(float *) * h->first_layer_size);
-  nn->Wout = malloc(sizeof(float *) * h->hidden_layer_size);
-  //   and the activation values (these aren't needed to be kept.
+
+  if (internal_trace)
+    fprintf (stderr, "Neural net dimensions: retina width=%ld, "
+	     "first layer neurons = %ld, hidden layer neurons = %ld\n",
+	     retina_size, first_layer_size, hidden_layer_size);
+
+  
+  //  These are the sums of the weighted input activations for these layers
+  nn->retina = malloc (sizeof(float *) * h->retina_size);
   nn->first_layer = malloc(sizeof(float *) * h->first_layer_size);
   nn->hidden_layer = malloc(sizeof(float *) * h->hidden_layer_size);
+
+  //  These are the deltas used for learning (only).
   nn->delta_first_layer = malloc(sizeof(float *) * h->first_layer_size);
   nn->delta_hidden_layer = malloc(sizeof(float *) * h->hidden_layer_size);
+
+  // remember output layer is statically allocated!
   
-  if(!nn->Win || !nn->Whid || !nn->Wout)
-    {
-      nonfatalerror5("unable to malloc, tell Joe to make the NN use macros"
-		     " instead of caching easily computable addresses",
-		     "filename", CRM_ENGINE_HERE);
-      return -1;
-    };
-
-  //    Set up some aux indexes.
-  //
-  w = (float *)( (char *)h + HEADER_SIZE);
-      
-  //     fill in the pointers for Win[i] so that C will think it's 
-  //     really a two-dimensional array.    
-  for(i = 0; i < h->retina_size; i++)
-    nn->Win[i] = w + i * h->first_layer_size;
+  //skip w over the header
+  w = (float *)  ( (char *)h + HEADER_SIZE);
+  nn->Win = w;
+  nn->Whid = w + h->retina_size * h->first_layer_size           ;
   
-  //     fill in the pointers for Whid[i] the same way- now C thinks
-  //     it's a 2-D array
-  for(i = 0; i < h->first_layer_size; i++)
-    nn->Whid[i] = w + h->retina_size * h->first_layer_size 
-      + i * h->hidden_layer_size;
-
-  //      and the same pointers for the output layer.  Yes, this gets
-  //      hairy because this is now the third thing in the array
-  for(i = 0; i < h->hidden_layer_size; i++)
-    nn->Wout[i] = w + h->retina_size * h->first_layer_size 
-      + h->first_layer_size * h->hidden_layer_size
-      + i * 2;
-
-  //      This is where the saved documents start (not the actual text, but
-  //      rather the sorted bags of retina projections.  For the default case,
-  //      with a 64K channel retina, this is the hashes mod 64K.  For other 
-  //      configurations of the network, this will be something different.  In
-  //      all cases though the individual projections are Unsigned Longs.
+  nn->Wout = w + h->retina_size * h->first_layer_size
+               + h->first_layer_size * h->hidden_layer_size     ;
+  
   nn->docs_start = (unsigned long *) w
-    + h->retina_size * h->first_layer_size 
-    + h->first_layer_size * h->hidden_layer_size
-    + h->hidden_layer_size * 2;
+                        + h->retina_size * h->first_layer_size 
+                        + h->first_layer_size * h->hidden_layer_size
+                        + h->hidden_layer_size * 2;
+  
 
-  nn->docs_end = (unsigned long *)( (char *)h + statee.st_size);
+  nn->docs_end = (unsigned long *)( (char *)h + statbuf.st_size);
   return 0;
 }
 
 static void unmap_file(NEURAL_NET_STRUCT *nn, char *filename)
 {
-  free(nn->Win);
-  free(nn->Whid);
-  free(nn->Wout);
+  free(nn->retina);
   free(nn->first_layer);
   free(nn->hidden_layer);
   free(nn->delta_first_layer);
@@ -327,7 +404,33 @@ static void unmap_file(NEURAL_NET_STRUCT *nn, char *filename)
   //    flag, some network filesystems will fail to mark the file as
   //    modified and so their cacheing will make a mistake.
   //
-  //    The fix is to do a trivial read/write on the .css ile, to force
+  //    The fix is to do a trivial read/write on the file, to force
+  //    the filesystem to repropagate it's caches.
+  //
+  {
+    int hfd;                  //  hashfile fd
+    char foo;
+    hfd = open (filename, O_RDWR);
+    read (hfd, &foo, sizeof(foo));
+    lseek (hfd, 0, SEEK_SET);
+    write (hfd, &foo, sizeof(foo));
+    close (hfd);
+  }
+#endif
+}
+
+//     Do a _forced_ unmap.  This is needed if the file will be
+//     written to with fwrite, etc.
+static void force_unmap_file(NEURAL_NET_STRUCT *nn, char *filename)
+{
+  unmap_file (nn, filename);
+  crm_force_munmap_filename(filename);
+#ifdef POSIX
+  //    Because mmap/munmap doesn't set atime, nor set the "modified"
+  //    flag, some network filesystems will fail to mark the file as
+  //    modified and so their cacheing will make a mistake.
+  //
+  //    The fix is to do a trivial read/write on the file, to force
   //    the filesystem to repropagate it's caches.
   //
   {
@@ -343,331 +446,184 @@ static void unmap_file(NEURAL_NET_STRUCT *nn, char *filename)
 }
 
 //cache this if this thing is too slow, we'll need crazy interpolation though
-// Actually, it's not bad; we spend far more time in frand() than here.
 static float logistic(float a)
 {
-  return 1.0 / (1.0 + exp(-a) + 0.000001);
+  float y;
+  if(isnan(a))
+    {
+      char *foo;
+      foo = malloc (32);
+      fprintf (stderr, "Logistic of a NAN\n");
+      foo = NULL;
+      strcpy ("hello, world", foo);
+      fatalerror5("Tried to compute the logistic function of a NAN!!", "",
+		  CRM_ENGINE_HERE); 
+      return 0.5; //perhaps we should escape all the way
+    }
+  
+    y = 1.0 / (1.0 + exp(-a));
+    if(isnan(y))
+    {
+      fatalerror5("Computed a NAN as a RESULT of the logistic function!", "",
+		  CRM_ENGINE_HERE);
+      return 0.5;
+    }
+  return y;
 }
 
-//  GROT GROT GROT this is piecewise linear; we may want to make this
-//  a smoother one later... but that's a hard problem and not particularly
-//  pressing issue right now.
+
+//    A totally ad-hoc way to calculate pR.  (well, since all pR's
+//     are really ad-hoc underneath, it's perfectly reasonable).
+//
 static double get_pR(double p)
 {
   double a = fabs(p - 0.5);
+  // scale 0..0.1 to 0..1.0
   if( a < 0.1 )
     a *= 10.0;
+  //  scale 0.1...0.2 to 1.0...10.0
   else if(a < 0.2)
     a = 1.0 + 90.0 * (a - 0.1);
+  //   scale 0.2...0.3 to 10.0...100.0
   else if(a < 0.3)
     a = 10.0 + 900.0 * (a - 0.2);
+  //    scale 0.3... to 100.0...and up
   else
     a = 100.0 + 1000.0 * (a - 0.3);
   return p >= 0.5 ? a : -a;
 }
 
+//    Actually evaluate the neural net, given
+//    the "bag" of features.  
 
-// if any bag[i] > nn->retina_size you're doomed
-//
-static void do_net
-  (NEURAL_NET_STRUCT *nn, unsigned long *bag, long n, float *output_layer)
+static void do_net (NEURAL_NET_STRUCT *nn, unsigned long *bag, long baglen)
 {
-  long i, j, k, absent_shift = nn->retina_size / 2;
-  for(i = 0; i < nn->first_layer_size; i++)
-    nn->first_layer[i] = 0.0;
-  for(i = 0; i < nn->hidden_layer_size; i++)
-    nn->hidden_layer[i] = 0.0;
-  nn->output_layer[0] = nn->output_layer[1] = 0.0;
-  k = 0;
-  if(NN_SPARSE_RETINA)  
-    for(i = 0; i < absent_shift; i++)
-      if(bag[k] == i)
-	{
-	  for(j = 0; j < nn->first_layer_size; j++)
-	    nn->first_layer[j] += nn->Win[i][j];     
-	  k++;
-	} else
-        for(j = 0; j < nn->first_layer_size; j++)
-          nn->first_layer[j] += nn->Win[ i + absent_shift ][j];     
-  else
-    for(i = 0; i < n; i++)  
-      for(j = 0; j < nn->first_layer_size; j++)
-        nn->first_layer[j] += nn->Win[ bag[i] ][j];     
+  long i;
+  long neuron, channel;
+
+  //    Initialize the activation levels to zeroes everywhere
+
+  //   First layer:
+  for(neuron = 0; neuron < nn->first_layer_size; neuron++)
+    nn->first_layer[neuron] = 0.00;
+
+  //   Second (hidden) layer:
+  for(neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+    nn->hidden_layer[neuron] = 0.00;
+
+  //   Final layer:
+  nn->output_layer[0] = 0.00;
+  nn->output_layer[1] = 0.00;
+
+  //    Sum up the activations on the first layer of the net.
+  //    Note that this code (amazingly) works fine for both _non_-projected
+  //    as well as projected feature bags, by inclusion of the modulo on
+  //    the retina size.
+  //  
+  //    Note that the sentinel to "stop" is a 0 or 1 in the bag array,
+  //    which is the marker for "next featureset".  Also, note that the
+  //    features in the bag have already been "uniqued" in the vector
+  //    tokenizer, if UNIQUE is desired.
+
+  if (neural_trace)
+    {
+      fprintf (stderr, "First six items in the bag are: \n "
+	       "     %ld %ld %ld %ld %ld %ld\n",
+	       bag[0], bag[1], bag[2], bag[3], bag[4], bag[5]);
+    };
   
-  for(i = 0; i < nn->first_layer_size; i++)
-    {
-      nn->first_layer[i] = logistic(nn->first_layer[i]);
-      for(j = 0; j < nn->hidden_layer_size; j++)
-	nn->hidden_layer[j] += nn->Whid[i][j] * nn->first_layer[i];
-    }
-  for(i = 0; i < nn->hidden_layer_size; i++)
-    {
-      nn->hidden_layer[i] = logistic(nn->hidden_layer[i]);
-      nn->output_layer[0] += nn->Wout[i][0] * nn->hidden_layer[i];
-      nn->output_layer[1] += nn->Wout[i][1] * nn->hidden_layer[i];
-    }
-  output_layer[0] = logistic( nn->output_layer[0] );
-  output_layer[1] = logistic( nn->output_layer[1] );
-  if(0&&joe_trace)
-    {
-      fprintf(stderr, "ran do_net on doc at %x and got (%f, %f)\n", (int)bag,
-	      output_layer[0], output_layer[1]);
-    }
-}
-
-
-static int do_net_learn_back_prop_with_noise
-(NEURAL_NET_STRUCT *nn,
- unsigned long *bag, long n,
- long in_class)
-{
-  long i, j, k, absent_shift;
-  float scoro;
-  //  if we use half the retina nodes as inversions of the others than we need to
-  //  know how much half is, and we don't go above this for "normal" (not 
-  //  inverted) channels.
-  absent_shift = nn->retina_size / 2;
-
-  //      Zero out the first layer activations  
-  for(i = 0; i < nn->first_layer_size; i++)
-    nn->first_layer[i] = 0.0;
-
-  //      Zero out the middle layer activations
-  for(i = 0; i < nn->hidden_layer_size; i++)
-    nn->hidden_layer[i] =0.0;
-
-  //       Zero out the output layer activations
-  nn->output_layer[0] = 0.0;
-  nn->output_layer[1] = 0.0;
-
-  //  if we use sparse retina stuff it's so we can use half the retina 
-  //  nodes as inversions of the others
-  k = 0;
-  if(NN_SPARSE_RETINA)  
-    {
-      //loop through every possible feature and see if it is high or low, set
-      //the inversion node high if the primary is low
-      for(i = 0; i < absent_shift; i++)
-        //the bag is sorted, so it's this one if it's there at all	
-        if(bag[k] == i) 
-	  {
-                //     propagate input signals to first layer    
-            for(j = 0; j < nn->first_layer_size; j++)
-	      while(bag[k++] == i)
-                nn->first_layer[j] += nn->Win[i][j];     
-	  } 
-	else
-	  {
-                //     propagate signal to first layer    
-	    for(j = 0; j < nn->first_layer_size; j++)
-	      nn->first_layer[j] += nn->Win[ i + absent_shift ][j];     
-	  }
-    }
-  else
-    { 
-        //  just take the input as bag of activations and propagate to 
-        //  the first layer activation values.
-      for(i = 0; i < n; i++)  
-	for(j = 0; j < nn->first_layer_size; j++)
-	  nn->first_layer[j] += nn->Win[ bag[i] ][j];     
-    }
+  //   Empty the retina:
+  for (channel = 0; channel < nn->retina_size; channel++)
+    nn->retina[channel] = 0.00;
   
-  //    Turn activations in first layer into sigmoid of activations     
-  for(i = 0; i < nn->first_layer_size; i++)
+  // for each feature in the bag
+  for(i = 0; bag[i] > 1; i++)  
     {
-      nn->first_layer[i] = logistic(nn->first_layer[i]);
-    }   
-    
-  //    Calculate activations in the second (hidden) layer      
-  for(i = 0; i < nn->first_layer_size; i++)
+      channel = bag[i] % nn-> retina_size;
+      //     Channel 0 is reserved as "constants", so if the modulo
+      //     puts a stimulus onto the 0th retina channel, we actually 
+      //     push it over one channel, to retina channel 1.
+      if (channel == 0) channel = 1;
+      nn->retina[channel] += 1.0;
+    };
+  //     debugging check
+  if (neural_trace)
+    fprintf (stderr, "Running do_net %lx on doc at %lx length %ld\n", 
+	     (long) nn, (long) bag, i);
+
+  //    Now we actually calculate the neuron activation values.
+  //
+  //    First, the column 0 "always activated" constants, since channel
+  //    zero is verboten as an actual channel (we roll channel 0 activations
+  //    over onto channel 1)
+  //
+
+  nn->retina[0] = 1.0;
+
+  //   Major confusion prevention debugging statement.
+  if ( 0 )
+    for (channel = 0; channel < nn->retina_size; channel++)
+      if (nn->retina[channel] > 0)
+	fprintf (stderr, " %ld", channel);
+
+  for ( neuron = 0; neuron < nn->first_layer_size; neuron++)
+    for (channel = 0; channel < nn->retina_size; channel++)
+      //  sum the activations on the first layer for this channel
+      nn->first_layer[neuron] += 
+	//	avalWin(nn, neuron, channel)
+	nn->Win[(neuron*nn->retina_size) + channel]
+	* nn->retina[channel];
+
+  //   Do a nonlinear function (logistic) in-place on the first layer outputs.
+  for(neuron = 0; neuron < nn->first_layer_size; neuron++)
     {
-      for(j = 0; j < nn->hidden_layer_size; j++)
-        nn->hidden_layer[j] += nn->Whid[i][j] * nn->first_layer[i];
-    }
-    
-  //   Turn hidden layer activation sums into sigmoid of hidden activations    
-  for(i = 0; i < nn->hidden_layer_size; i++)
-    {
-      nn->hidden_layer[i] = logistic(nn->hidden_layer[i]);
-    }
-    
-  //    Calculate final (output) layer activation sums
-  for(i = 0; i < nn->hidden_layer_size; i++)
-    {
-      nn->output_layer[0] += nn->Wout[i][0] * nn->hidden_layer[i];
-      nn->output_layer[1] += nn->Wout[i][1] * nn->hidden_layer[i];
-    }
+      nn->first_layer[neuron] = logistic(nn->first_layer[neuron]);
+    };
+ 
+  //    For each neuron output in the first layer, generate activation
+  //    levels for the second (hidden) layer inputs.
+  //     
+  //     Like the retina, we "sacrifice" the input "neuron zero" to be the 
+  //     bias-from-zero weight 
+
+  for (neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+    nn->hidden_layer[neuron] = *arefWhid (nn, neuron, 0);
+
+  for( channel = 1; channel < nn->first_layer_size; channel++)
+    for(neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+      nn->hidden_layer[neuron] += 
+	*arefWhid(nn, neuron, channel)
+	* nn->first_layer[channel];
+   
   
-  //     Finally logistic-ize the output activation sums
+  //   Do our nonlinear function (logistic) here on the second layer outputs.
+  for(neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+    nn->hidden_layer[neuron] = logistic(nn->hidden_layer[neuron]);
+  
+  //     Generate the values in the final output layer (both neurons)
+  //
+  //     Again, we sacrifice neuron 0 of the hidden layer to be the
+  //     bias weights.
+
+  nn->output_layer[0] = *arefWout (nn, 0, 0);
+  nn->output_layer[0] = *arefWout (nn, 1, 0);
+   
+  for(channel = 1; channel < nn->hidden_layer_size; channel++)
+    {
+      nn->output_layer[0] += *arefWout(nn, 0, channel) 
+	* nn->hidden_layer[channel];
+      nn->output_layer[1] += *arefWout(nn, 1, channel) 
+	* nn->hidden_layer[channel];
+    };
+  
   nn->output_layer[0] = logistic( nn->output_layer[0] );
   nn->output_layer[1] = logistic( nn->output_layer[1] );
+  if (internal_trace || neural_trace)
+    fprintf (stderr, "Network final outputs: %lf vs %lf\n",
+	     nn->output_layer[0], nn->output_layer[1]);
 
-  //     And create a final score.   nn->output_layer[0] is the "in-class"
-  //     signal; nn->output_layer[1] is the "out of class" signal, so just
-  //     subtracting them would yield a -1...+1 range.  This rescales it to
-  //     0.0 ... +1.0 range.
-  scoro = 0.5 * (1.0 + nn->output_layer[0] - nn->output_layer[1]);
-  
-  if(super_verbose && joe_trace)
-    {
-      fprintf(stderr, "learning doc at %x and scored %f\t%f\t%f\n", (int)bag,
-	      scoro, nn->output_layer[0], nn->output_layer[1]);
-    }
-
-
-  //  Calculate delta on the output delta layer.  This is the amount of total
-  //   output error that the particular neuron was responsible for.
-  //
-  //  This isn't just the delta per se, this is also the derivative of the
-  //  sigmoid output function.  This is gradient descent learning, on the
-  //  weights used by the output layer to weight-off the middle layer. 
- 
-  if(scoro < 0.5 + NN_INTERNAL_TRAINING_THRESHOLD && in_class)
-    {
-      nn->delta_output_layer[0] = 
-        (1.0 - nn->output_layer[0])  // this term is the target minus actual 
-                                     // value we got (i.e. actual error)
-        * nn->output_layer[0] * (1.0 - nn->output_layer[0]);  // This term is
-                                     // the derivative of the sigmoid function
-                                     // at the actual value (i.e. the slope 
-                                     // of the sigmoid, but computed from the 
-                                     // output of the sigmoid, not the input!
-                                     //  ... dy/dx given y, not dy/dx given x) 
-                                     //
-                                     // We multiply these together in a bizarre
-                                     //  (mis)application of Newton's method
-                                     //  called the delta rule to find out how
-                                     //  much we really need to tweak the input
-                                     //  weights of this layer of the net to 
-                                     //  get the desired result,
-       //
-       //  same thing here... and below three times as well for the 
-       //    prior layers.
-      nn->delta_output_layer[1] = (0.0 - nn->output_layer[1]) *
-        nn->output_layer[1] * (1.0 - nn->output_layer[1]);
-    } 
-  else
-    if(scoro > 0.5 - NN_INTERNAL_TRAINING_THRESHOLD && !in_class)
-      //  Repeat of the above, but "out of class".  All the math is the same,
-      //  except that the target values are 0 and 1 instead of 1 and 0.  
-      //   Note that the derivative term doesn't change; that's why this
-      //   code looks asymmetric.
-      {
-	nn->delta_output_layer[0] = (0.0 - nn->output_layer[0]) *
-	  nn->output_layer[0] * (1.0 - nn->output_layer[0]);
-	nn->delta_output_layer[1] = (1.0 - nn->output_layer[1]) *
-	  nn->output_layer[1] * (1.0 - nn->output_layer[1]);
-      } 
-    else   //   Else we're good on this document, no need to change weights
-      {
-	if(0 && joe_trace)
-	  {
-	    fprintf(stderr, "not learning doc at %x which scored %f\t%f\t%f\n",
-		    (int)bag, scoro, nn->output_layer[0], nn->output_layer[1]);
-	  }
-	return 0;
-      } 
-   
-  //     Note that to use crm_frand as a multiplier, we should double 
-  //      the value of alpha from 0.01 to 0.02 .  This alpha value is an
-  //       empirical value; however stochastic learning has very different
-  //        behavior than straight constant-value gradient descent.  Feel free
-  //         to experiment if you're bored.
-  for(i = 0; i < nn->hidden_layer_size; i++)
-    {
-      nn->Wout[i][0] += 
-        crm_frand() * alpha * nn->delta_output_layer[0] * nn->hidden_layer[i];
-      nn->Wout[i][1] += 
-	crm_frand() * alpha * nn->delta_output_layer[1] * nn->hidden_layer[i];
-    }
-  
-  //      Now we use the above crazy looking delta rule on the hidden layer.
-  //       Because we don't have actual target values, we have to split the
-  //        "target" value into the part coming from Wout[i][0] and the part 
-  //          coming Wout[i][1] and assume that those are representative.
-  for(i = 0; i < nn->hidden_layer_size; i++)
-  { 
-    nn->delta_hidden_layer[i] = 0.0;
-    //  what part of the error is from output 0 (in-class)...
-    nn->delta_hidden_layer[i] += nn->delta_output_layer[0] * nn->Wout[i][0];
-    //   what part of the error is from output 1 (out-of-class)...
-    nn->delta_hidden_layer[i] += nn->delta_output_layer[1] * nn->Wout[i][1];
-    //    .... times the dy/dx given y at this point on the sigmoid gives
-    //     us the +/- blame for this neuron
-    nn->delta_hidden_layer[i] *= 
-      nn->hidden_layer[i] * (1.0 - nn->hidden_layer[i]);
-  }
-  
-  //     now run through the hidden layer neurons and stochastically apply
-  //      the blame correction factor on the weights used by the middle
-  //       layer to weight-out the outputs of the first layer, so we multiply
-  //        those deltas by the actual outputs of the first layer.
-  for(i = 0; i < nn->first_layer_size; i++)
-    for(j = 0; j < nn->hidden_layer_size; j++)
-      nn->Whid[i][j] += 
-        crm_frand() * alpha * nn->delta_hidden_layer[j] * nn->first_layer[i];
-  
-  
-  //     And once more again, for the first layer, calculate the deltas desired
-  //     to get the results we expect for the first layer.
-  for(i = 0; i < nn->first_layer_size; i++)
-    {
-      nn->delta_first_layer[i] = 0.0;
-      for(j = 0; j < nn->hidden_layer_size; j++)
-	nn->delta_first_layer[i] += nn->delta_hidden_layer[j] * nn->Whid[i][j];
-      nn->delta_first_layer[i] *= nn->first_layer[i] * (1.0 - nn->first_layer[i]);
-    }
-  
-  //    and once more, apply those deltas to the first layer's weights
-  //     as it sees the input retina channels.
-  if(NN_SPARSE_RETINA)  
-    for(i = 0; i < absent_shift; i++)
-      if(bag[k] == i)
-	{
-	  for(j = 0; j < nn->first_layer_size; j++)
-	    while(bag[k++] == i)    
-              nn->Win[ i ][j] += crm_frand() * alpha * nn->delta_first_layer[j];     
-	} 
-      else
-        {
-         for(j = 0; j < nn->first_layer_size; j++)
-           nn->Win[ i + absent_shift ][j] += 
-	     crm_frand() * alpha * nn->delta_first_layer[j];
-        }       
-  else
-    for(i = 0; i < n; i++)  
-      for(j = 0; j < nn->first_layer_size; j++)
-        nn->Win[ bag[i] ][j] += crm_frand() * alpha * nn->delta_first_layer[j];
-  
-  if(joe_trace)
-    {
-      fputc(in_class ? 'x' : 'o', stderr);
-    }
-  return 1;
 }
 
-//       Nuke the net from orbit.  It's the only way to be sure.
-//            GROT GROT GROT GROT 
-//        Note to the reader: if you DO NOT use stochastic updates, then
-//         +X and -X as weights is a really _bad_ idea, because it means 
-//          that all of the weights that started the same way in a particular
-//           neuron always stay the same way!  Stochastic updates fixes this,
-//            so if you don't use stochastic updates FIX THIS TO GIVE RANDOMS
-static void nuke(NEURAL_NET_STRUCT *nn)
-{
-  long j;
-  float *f;
-  j = nn->retina_size * nn->first_layer_size
-    + nn->first_layer_size * nn->hidden_layer_size
-    + nn->hidden_layer_size * 2;
-  f = nn->Win[0];
-  //   use a high-order bit of rand to get reasonable randomicity
-  while(j--)
-    *f++ = rand() & 16384 ? 0.1 : -0.1;   // use crm_frand instead here if you
-                                          // don't want to use stochastic 
-                                          // learning.
-}
-  
 
 static int compare_longs(const void *a, const void *b)
 {
@@ -678,204 +634,180 @@ static int compare_longs(const void *a, const void *b)
   return 0;
 }
 
-//         GROT GROT GROT
-//      This is the feature extractor.  In goes text, out comes a 
-//      sorted bag of hashes (not projected yet).  This whole thing
-//      can and should be replaced by the vector tokenizer soon.
-//         GROT GROT GROT
+
+//     Convert a text into a bag of features, obeying things
+//     like the tokenizer regex and the UNIQUE flag.  The result 
+//     is a bag of sorted features.  This does _not_ do projection
+//     onto the retina, however (see "project_features" for that).
+//     Note- in later versions of this code, we no longer project
+//     separately.  Instead, we modulo at runtime onto the retina.
 //
-static int eat_document
+static long eat_document
         (       char *text, long text_len, long *ate,
                 regex_t *regee,
                 unsigned long *feature_space, long max_features,
                 long long flags, unsigned long *sum)
 {
-  long n_features = 0, i, j;
-  unsigned long hash_pipe[OSB_BAYES_WINDOW_LEN];
-  unsigned long hash_coefs[] = { 1, 3, 5, 11, 23, 47};
-  regmatch_t match[1];
-  char *t_start;
-  long t_len;
-  long f;
+  long n_features = 0;
+  long i, j;
   int unigram, unique, string;
+  long next_offset;
    
   unique = apb->sflags & CRM_UNIQUE;
   unigram = apb->sflags & CRM_UNIGRAM;
   string = apb->sflags & CRM_STRING;
   
-  if(string)
-    unique = 1;
-  
   *sum = 0;
   *ate = 0;
-  
-  for(i = 0; i < OSB_BAYES_WINDOW_LEN; i++)
-    hash_pipe[i] = 0xdeadbeef;
-  while(text_len > 0 && n_features < max_features - 1)
+
+  //   Use the flagged vector tokenizer           
+  //
+  //     GROT GROT GROT note that we _disregard_ the passed-in "regee" (the
+  //     previously precompiled regex) and use the automagical code in 
+  //     vector_tokenize_selector to get the "right" parse regex from the 
+  //     user program's APB.
+  crm_vector_tokenize_selector
+    (apb,                   // the APB                                         
+     text,                   // intput string                                  
+     text_len,              // how many bytes                                 
+     0,                      // starting offset                                
+     NULL,                  // parser regex                                   
+     0,                     // parser regex len                               
+     NULL,                   // tokenizer coeff array                          
+     0,                      // tokenizer pipeline len                         
+     0,                      // tokenizer pipeline iterations                  
+     feature_space,           // where to put the hashed results
+     max_features - 1,        //  max number of hashes                    
+     &n_features,             // how many hashes we actually got               
+     &next_offset);           // where to start again for more hashes          
+
+  //     GROT GROT GROT
+  //     maybe we should force a constant into one column of input
+  //     so we can change the threshold of level activation?
+
+  //   Sort the features for speed in matching later - NO NEED ANY MORE 
+  //  qsort(feature_space, n_features, sizeof(unsigned long), compare_longs);
+
+  // anything that hashed to 0 or 1 needs to be promoted to 2 or 3, because
+  //   0 and 1 are our "in-class" and "out-of-class" sentinels.  Also 
+  //   calculate the checksum for this document.
+
+  for (i = 0; i < n_features; i++)
     {
-      if ( crm_regexec (regee, text, text_len, 1, match, 0, NULL))
-	//no match or regex error, we're done
-	break;
-      else
-	{
-	  t_start = text + match->rm_so;
-	  t_len = match->rm_eo - match->rm_so;
-	  if(string)
-	    {
-	      text += match->rm_so + 1;
-	      text_len -= match->rm_so + 1;
-	      *ate += match->rm_so + 1;
-	    }
-	  else
-	    {
-	      text += match->rm_eo;
-	      text_len -= match->rm_eo;
-	      *ate += match->rm_eo;
-	    }
-	  
-	  for(i = OSB_BAYES_WINDOW_LEN - 1; i > 0; i--)
-	    hash_pipe[i] = hash_pipe[i - 1];
-	  hash_pipe[0] = strnhash(t_start, t_len);
-	}  
-      f = 0;
-      if(unigram)
-	*sum += feature_space[n_features++] = hash_pipe[0];
-      else
-	for(i = 1; i < OSB_BAYES_WINDOW_LEN && hash_pipe[i] != 0xdeadbeef; i++)
-	  *sum += feature_space[n_features++] = 
-	    hash_pipe[0] + hash_pipe[i] * hash_coefs[i];
+      if (feature_space[i] == 0)
+	feature_space[i] = 2;
+      if (feature_space[i] == 1)
+	feature_space[i] = 3;
     }
 
-  //    We sort the features so we get sequential memory access hereafter.
-  qsort(feature_space, n_features, sizeof(unsigned long), compare_longs);
-  
-  for(i = 0; i < n_features && feature_space[i] == 0; i++)
-    feature_space[i] = 1;
-  
+  //    Do a uniquifying pass.
   if(unique)
     {
-      i = 0; j = 0;
+      //   Sort the features for uniquifying      
+      qsort(feature_space, n_features, sizeof(unsigned long), compare_longs); 
+      //      do "two finger" uniquifying on the sorted result.
+      i = 0; 
       for(j = 0; j < n_features; j++)
-	if(feature_space[i] != feature_space[j])
+	if ( feature_space[j] != feature_space [j+1] )
 	  feature_space[++i] = feature_space[j];
-      feature_space[++i] = 0;
-      n_features = i + 1; //the zero counts
-    } 
-  else
-    {
-      feature_space[n_features++] = 0;
-    }
+      n_features = i;
+    };
+
+  //  and do the checksum update
+  *sum = 0;
+  for (i = 0; i < n_features; i++)
+    *sum += *sum + feature_space[i];
+
+  //    All done.
   return n_features;
 }
 
-
-//       Given a bag of features, project them onto the retina, yielding
-//      a bag of retina excitations.  Note that this is is very close to
-//     but NOT exactly modulo, as if you do sparse retinas or multipumps,
-//    that all changes.
-int project_features(unsigned long *feat, int nf, unsigned long *ret, int max)
+//     Nuke the net - basically fill it with small uniformly distributed
+//     random weighting coefficients.  This gets the net out of a "stuck
+//     on center" condition.  A flag of 0 means "from zero", a flag of 1
+//     means "in addition to current state".
+//
+static void nuke(NEURAL_NET_STRUCT *nn, long flag)
 {
-  int i, j, k;
-  unsigned long a, soft_max;
-  j = 0;
-  soft_max = NN_SPARSE_RETINA ? max / 2 : max;
-  for(i = 0; i < nf && j < max; i++)
-  {
-    a = feat[i];
-    ret[j++] = a % soft_max;
-    a /= max;
-    for(k = 1; k < NN_N_PUMPS && a && j < max; k++)
-    {
-      ret[j++] = a % soft_max;
-      a /= soft_max;
-    }
-  }
-  qsort(ret, j, sizeof(unsigned long), compare_longs);
-  for(k = 0; k < j && ret[k] == 0; k++)
-    ret[k] = 1; 
-  ret[j++] = 0;
-  return j;
-}
+  long j;
+  float *f;
+  float dsn, dsno;
 
-static void print_doc_info(NEURAL_NET_STRUCT *nn)
-{
-  unsigned long *start = nn->docs_start;
-  unsigned long *end = nn->docs_end;
-  int i = 0, in_class, good, hash;
-  float o[2];
-  unsigned long *k;
-  while(start < end)
-  {
-    k = start;
-    in_class = *k++;
-    good = *k++;
-    hash = *k++;
-    while(*k++);
-    do_net(nn, start + 3, k - start - 3, o);
-    fprintf(stderr, "document #%d @ %lx is %d long\t(%d,%d,%d)\t(%f,%f)\n",
-        i, (long)start, k - start,in_class,good,hash,o[0],o[1] );
-    start = k;
-    i++;
-  }
+  dsn = NN_DEFAULT_STOCH_NOISE  ;
+  dsno = - dsn / 2.0;
+
+  if (neural_trace)
+    fprintf (stderr, "********Nuking the net to random values\n");
+  
+  f = nn->Win;
+  for (j = 0; j < nn->retina_size * nn->first_layer_size; j++)
+    f[j] = flag*f[j] + dsno + dsn * rand0to1();
+
+  f = nn->Whid;
+  for (j = 0; j < nn->first_layer_size * nn-> hidden_layer_size; j++)
+    f[j] = flag*f[j] + dsno + dsn * rand0to1();
+
+  f = nn->Wout;
+  for (j = 0; j < nn-> hidden_layer_size  * 2; j++)
+    f[j] = flag*f[j] + dsno + dsn * rand0to1();
+  
 }
 
 
-//entry point for learning
+//   Entry point for learning
+//    Basically, we use gradient descent.
+//
 int crm_neural_net_learn
     (   CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         char *txtptr, long txtstart, long txtlen   )
 {
-  NEURAL_NET_STRUCT NN, *nn = &NN;
+  NEURAL_NET_STRUCT my_nn, *nn = &my_nn;
   char filename[MAX_PATTERN];
   char htext[MAX_PATTERN];
   long htext_len;
-  struct stat statee; 
-  long append_only;
+  struct stat statbuf; 
   
   regex_t regee;
-  char regex_text[MAX_PATTERN];  //  the regex pattern
-  long regex_text_len;
 
-  unsigned long bag[32768], *ret, sum;
+  unsigned long bag[NN_MAX_FEATURES];
 
-  long i, j, n, rn;
+  unsigned long sum;
+
+  long i, j, n_features;
+  long old_file_size;
   unsigned long *new_doc_start, *current_doc, *k, *l; 
-  long n_docs, n_docs_without_training, in_class, current_doc_len;
+  long found_duplicate, n_docs, n_docs_trained, out_of_class, current_doc_len;
   long n_cycles, filesize_on_disk, soft_cycle_limit;
 
   FILE *f;
   
-  //   regmatch_t matchee[2];
-  //  char param_text[MAX_PATTERN];
-  // long param_text_len;
+  float *dWin, *dWhid, *dWout;
+  
+  float stoch_noise, internal_training_threshold;
+  double alpha = NN_DEFAULT_ALPHA;
+  double alphalocal;
+  
+  long this_doc_was_wrong;
+  double errmag, epoch_errmag;
+
+  //     in_class_docs and out_class_docs are lookaside lists so
+  //     we can alternate training of in-class and out-of-class
+  //     examples, so huge batches are not a problem.
+  //      GROT GROT GROT this goes in later...  coded in .crm,
+  //      it works really well, but not coded into the C yet.
+  //
+  //  long in_class_docs[MAX_PATTERN], out_class_docs[MAX_PATTERN];
+  //  long icd, icd_max, ocd, ocd_max; 
+
+  long neuron, channel;
   
   if(internal_trace)
-    joe_trace = 1;
+    neural_trace = 1;
     
-  if(joe_trace)
+  if(neural_trace)
     fprintf(stderr, "entered crm_neural_net_learn\n");
-
-  //        Append-only mode means don't actually run the long
-  //        training, because more examples are soon to arrive.
-  append_only = 0;
-  if (apb->sflags & CRM_APPEND)
-    {
-      if (user_trace)
-	fprintf (stderr, "Append-only mode activated\n");
-      append_only = 1;
-    };
-
-  //     Set reasonable sizes for the various parts of the NN, assuming
-  //     that the sparse_spectrum_file_length is vaguely reasonable.
-  //
-  if(sparse_spectrum_file_length)
-  {
-    retina_size = 1024 * sqrt(sparse_spectrum_file_length / 1024);
-    first_layer_size = sqrt(sparse_spectrum_file_length / 1024);
-    hidden_layer_size = first_layer_size;
-  }
   
-  //parse out backing file name
+  //    Get the filename
   crm_get_pgm_arg (htext, MAX_PATTERN, apb->p1start, apb->p1len);
   htext_len = apb->p1len;
   htext_len = crm_nexpandvar (htext, htext_len, MAX_PATTERN);
@@ -887,218 +819,910 @@ int crm_neural_net_learn
   htext[j] = '\000';
   strcpy (filename, &htext[i]);
 
-  crm_get_pgm_arg (regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
-  regex_text_len = apb->s1len;
-  if(regex_text_len == 0)
-  {
-    strcpy(regex_text, "[[:graph:]]+"); 
-    regex_text_len = strlen( regex_text );
-  }
-  regex_text[regex_text_len] = '\0';
-  regex_text_len = crm_nexpandvar (regex_text, regex_text_len, MAX_PATTERN);
-  if( crm_regcomp (&regee, regex_text, regex_text_len, REG_EXTENDED) )
-  {
-    nonfatalerror5 ("Problem compiling the tokenizer regex:", regex_text,
-		  CRM_ENGINE_HERE);
-    return 0;
-  }
-  n = eat_document( txtptr + txtstart, txtlen, &i,
-                      &regee, bag, 32768, apb->sflags, &sum);
-  
-  //    Now we've got features, save them in the backing file.
-  //      
-  if(stat(filename, &statee))
+  //     Set a nominal epoch cycle limiter
+  //
+  soft_cycle_limit = NN_MAX_TRAINING_CYCLES;
+  if(apb->sflags & CRM_FROMSTART)    //  FROMSTART reinits the coeffs.
     {
-      make_new_backing_file(filename);
-      stat(filename, &statee);
-      k = NULL;
-    }
+      soft_cycle_limit = NN_MAX_TRAINING_CYCLES_FROMSTART;
+    } 
   else
     {
-      if(map_file(nn, filename))
+      soft_cycle_limit = NN_MAX_TRAINING_CYCLES;
+    };
+
+  //    Get alpha, the stochastic noise level, and the cycle limit from 
+  //      the s2 parameter
+  //
+  {
+    char s2_buf[MAX_PATTERN];
+    long s2_len;
+
+    alpha = NN_DEFAULT_ALPHA;
+    stoch_noise = NN_DEFAULT_STOCH_NOISE;
+    internal_training_threshold = NN_INTERNAL_TRAINING_THRESHOLD;
+
+    crm_get_pgm_arg (s2_buf, MAX_PATTERN, apb->s2start, apb->s2len);
+    s2_len = apb->s2len;
+    s2_len = crm_nexpandvar (s2_buf, s2_len, MAX_PATTERN);
+    if (s2_len > 0)
+      sscanf (s2_buf, "%lf %f %ld %f", 
+	      &alpha, 
+	      &stoch_noise, 
+	      &soft_cycle_limit, 
+	      &internal_training_threshold);
+    if (alpha < 0.000001 ) alpha = 0.000001;
+    if (alpha > 1.0) alpha = 1.0;
+    if (alpha < 0.0 ) alpha = NN_DEFAULT_ALPHA;
+    if (stoch_noise > 1.0) stoch_noise = 1.0;
+    if (stoch_noise < 0) stoch_noise = NN_DEFAULT_STOCH_NOISE;
+    if (soft_cycle_limit < 0) 
+      soft_cycle_limit = NN_MAX_TRAINING_CYCLES_FROMSTART;
+
+    //    fprintf (stderr, "**Alpha = %lf, noise = %f cycle limit = %ld\n", 
+    //     alpha, stoch_noise, soft_cycle_limit);
+  }
+
+  //    Convert the text form of the document into a bag of features
+  //    according to the parsing regex, and compute the checksum "sum".
+  //
+  n_features = eat_document ( txtptr + txtstart, txtlen, &i,
+                      &regee, bag, NN_MAX_FEATURES, apb->sflags, &sum);
+
+  if (user_trace)
+    fprintf (stderr, "\n\n***  TOTAL FEATURES = %ld **** %ld %ld %ld \n\n", 
+	     n_features, bag[0], bag[1], bag[2]);
+  
+  //    Put the document's features into the file by appending to the
+  //    end of the file.  Note that we have a header - a 0 for normal
+  //    (in-class) learning, and a 1 for "not in class" learning, then
+  //    then a document checksum for fast finding of duplicate documents,
+  //    then a reserved number for how many times this hasn't needed training
+  //    (a speedup that is currently unused)
+  //
+
+  found_duplicate = 0;
+  
+  i = stat (filename, &statbuf);
+
+  if (i != 0)
+    {
+      //   Nope, file does not exist.  Make a new one.
+      if (user_trace)
+	fprintf (stderr, "Making a new backing file: '%s'\n", filename);
+      make_new_backing_file(filename);
+      stat(filename, &statbuf);
+      if (neural_trace)
+	fprintf (stderr, "Initial file size: %ld\n", statbuf.st_size);
+    }
+
+  //   The file now ought to exist.  Map it.
+  i = map_file (nn, filename);
+  if ( i < 0)
+    {
+      fatalerror5 ("Could not create the neural net backing file ",
+		   filename, CRM_ENGINE_HERE);
+    };
+  //    Scan the file for documents with the matching checksum
+  //    so we can selectively forget / refute documents.
+  //      (GROT GROT GROT - I hate this method of refutation- it
+  //      depends on absolutely identical documents.  On the other
+  //      hand, it's how a NN can be told of negative examples, which
+  //      back-propagation needs. - wsy.  ).
+  //
+  //    This is admittedly ugly to map the file, scan it, unmap it,
+  //    write append to it, and map it again.  Bleah.... Yes, I know.
+
+  found_duplicate = 0;
+  for(k = nn->docs_start; 
+      k < nn->docs_end 
+	&& (k[0] = 0 || k[0] == 1)  //   Find a start-of-doc sentinel
+	&& k[2] != sum;             //  does the checksum match?
+      k++);
+  
+  if (k[2] == sum)
+    found_duplicate = 1;
+  //   Did we find a matching sum
+  if(found_duplicate)
+    {
+      k[1] = 0;
+      if (apb->sflags & CRM_REFUTE)
 	{
-	  //we already threw a nonfatalerror5
-	  return -1;
-	}
-      for(k = nn->docs_start; k < nn->docs_end && k[2] != sum; k++)
-	for(k += 3; *k; k++);
-      if(k < nn->docs_end)
+	  if (neural_trace)
+	    fprintf (stderr, "Marking this doc as out-of-class.\n");
+	  k[1] = 1;
+	};
+      if (apb->sflags & CRM_ABSENT)
 	{
-	  k[2] = apb->sflags & CRM_REFUTE ? 0 : 1;
-	  j = (char *)k - (char *)nn;
-	  if(joe_trace)
-	    fprintf(stderr, "learning same file twice\n");
+	  //   erasing something out of the
+	  //   input set.   Cut it out of the 
+	  //   knowledge base.
+	  unsigned long *dest;      
+	  long len;
+	  if (neural_trace)
+	    fprintf (stderr, "Obliterating data...");
+	  
+	  dest = k;
+	  //   Find the next zero sentinel
+	  for(k += 3; *k; k++);
+	  //   and copy from here to end of file over our
+	  //    incorrectly attributed data, overwriting it.
+	  len = (unsigned long) k - (unsigned long) dest;
+	  if (neural_trace)
+	    fprintf (stderr, "start %lx length %ld\n",
+		     (unsigned long) dest, len);
+	  for (; k< nn->docs_end; k++)
+	    {
+	      *dest = *k;
+	      dest++;
+	    };
+	  //
+	  //    now unmap the file, msync it, unmap it, and truncate
+	  //    it.  Then remap it back in; viola- the bad data's gone.
+	  force_unmap_file (nn, filename);
+	  truncate (filename, statbuf.st_size - len);
+	  map_file (nn, filename);
+	  if (neural_trace)
+	    fprintf (stderr, "Dealt with a duplicate at %lx\n", 
+		     (unsigned long) k);
 	}
       else
-	k = NULL;
-      retina_size = nn->retina_size;
-    }  
-  
-  //    By now retina_size is known for sure, so we can project the 
-  //    bagged features onto the retina.
-  //
-  ret = malloc(sizeof(unsigned long) * retina_size);
-  rn = project_features(bag, n, ret, retina_size);
-  
-  
-  if(k == NULL) //then this files never been seen before so append it and remap
-  {
-    j = statee.st_size;
-    if(joe_trace)
-      fprintf(stderr, "NN: new file will start at offset %ld\n", j);
-    crm_force_munmap_filename(filename);
-    if(n < 2)
-      {
-	if(joe_trace)
-	  fprintf(stderr, 
-		  "NN: not going to train the network on a null string thankyou.\n");
-      }
-    else
-      {  
-	f = fopen(filename, "ab+");
-	i = (apb->sflags & CRM_REFUTE) ? 0 : 1;
-	if(joe_trace)
-	  {
-	    if(i)
-	      fprintf(stderr, "learning in class\n");
-	    else
-	      fprintf(stderr, "learning out of class\n");
-	  }
-	fwrite(&i, 1, sizeof(long), f);      //  in-class(0) or out-of-class(1)
-	i = 0; //number of times we went without training this guy
-	fwrite(&i, 1, sizeof(long), f);      // number of times notrain
-	fwrite(&sum, 1, sizeof(long), f);    // hash of whole doc- for fastfind
-	fwrite(ret, rn, sizeof(long), f);    // the actual data
-	
-	fclose(f);
-      };
+	{
+	  if(neural_trace)
+	    fprintf(stderr, "***Learning same file twice.  W.T.F. \n");
+	};
+    };
+  retina_size = nn->retina_size;
 
-    stat(filename, &statee);
-    filesize_on_disk = statee.st_size;
-    if(joe_trace)
-        fprintf(stderr, "NN: filesize is now %ld.\n", statee.st_size);
-  
-    if(map_file(nn, filename))
-    {
-      //nonfatalerror("Couldn't mmap file!", filename);
-      return -1;
+  //   then this data file has never been seen before so append it and remap
+  //
+  if(! found_duplicate) 
+    {                         // adding to the old file
+      if (neural_trace) fprintf (stderr, "Appending new data.\n");
+      old_file_size = statbuf.st_size;
+      if(neural_trace)
+	fprintf(stderr, "NN: new file data will start at offset %ld\n", 
+		old_file_size);
+
+      //   make sure that there's something to add.
+      if(n_features < 0.5 )
+	{
+	  if(neural_trace)
+	    fprintf(stderr, 
+		    "NN: Can't add a null example to the net.\n");
+	} 
+      else
+	{
+
+	  // unmap the file so we can write-append to it.
+	  force_unmap_file(nn, filename);
+	  f = fopen(filename, "ab+");
+	  out_of_class = (apb->sflags & CRM_REFUTE);
+	  if (out_of_class != 0) out_of_class = 1;   // change bitpat to 1 bit
+	  if(internal_trace || neural_trace)
+	    {
+	      fprintf (stderr, "Sense writing %ld\n", out_of_class);
+	      if(out_of_class)
+		fprintf(stderr, "learning out of class\n");
+	      else
+		fprintf(stderr, "learning in class\n");
+	    }
+
+	  //     Offset 0 is the sentinel - always either 0 or 1
+	  //   Offset 0 -  Write 0 or 1 (in-class or out-class)
+	  fwrite(&out_of_class, 1, sizeof(long), f);
+	  
+	  //  Offset 1 - Write the number of passes without a 
+	  //  retrain on this one
+	  i = 0; //number of times we went without training this guy
+	  fwrite(&i, 1, sizeof(long), f);
+	  
+	  //  Offset 2 - Write the sum of the document feature hashes.
+	  fwrite(&sum, 1, sizeof(long), f);   //hash of whole doc
+	  
+	  //       ALERT ALERT ALERT
+	  //    CHANGED to save the bag, _not_ the projection!
+	  //    This means we must project during training, however
+	  //    it also means we don't bust the CPU cache nearly as 
+	  //    badly!   
+	  fwrite (bag, n_features, sizeof(long), f);
+	  if (neural_trace)
+	    { 
+	      fprintf (stderr, 
+		       "Appending 3 marker longs and %ld longs of features\n",
+		       n_features);
+	      fprintf (stderr, "First three features are %ld %ld %ld\n",
+		       bag[0], bag[1], bag[2]);
+	    }
+	  //    Close the file and we've now updated the disk image.
+	  fclose(f);
+	}
+      stat(filename, &statbuf);
+      filesize_on_disk = statbuf.st_size;
+      if(neural_trace)
+        fprintf(stderr, "NN: statted filesize is now %ld.\n", statbuf.st_size);
+      
+      //   MMap the file back into memory and fix up the nn->blah structs
+      if(map_file(nn, filename))
+	{
+	  //nonfatalerror("Couldn't mmap file!", filename);
+	  return -1;
+	}
+
+      if (neural_trace)
+	fprintf (stderr, "Neural network mapped at %lx\n", (long) nn);
+
+      new_doc_start = 
+	(unsigned long *) ((char *)(nn->file_origin) + old_file_size);
+
+      //    Print out a telltale to see if we're in the right place.
+      if (neural_trace)
+	{ 
+	  fprintf (stderr, "\nAfter mmap, offsets of weight arrays"
+		   " are:\n   Win: %lx, Whid: %lx, Wout: %lx\n",
+		   (long)nn->Win, (long)nn->Whid, (long)nn->Wout);
+	  fprintf (stderr, "First weights (in/hid/out): %lf, %lf, %lf\n", 
+		   nn->Win[0], nn->Whid[0], nn->Wout[0]);
+	  fprintf (stderr, "Weight ptrs from map start : "
+		   "Win: %lx, Whid: %lx, Wout: %lx\n",
+		   (long) ((void *)&nn->Win[0]),
+	           (long) ((void *)&nn->Whid[0]),
+		   (long) ((void *)&nn->Wout[0]));
+	  fprintf (stderr, "Weight ptrs (arefWxxx funcs: "
+		   "Win: %lx, Whid: %lx, Wout: %lx\n",
+		   (long) ((void *)arefWin(nn, 0, 0)),
+		   (long) ((void *)arefWhid(nn, 0, 0)),
+		   (long) ((void *)arefWout(nn, 0, 0)));
+	};
+
     }
-    new_doc_start = (unsigned long *) ((char *)(nn->file_origin) + j);
-  }
   else
     new_doc_start = k;
   
-  n_docs = 0;
-  for(k = nn->docs_start; k < nn->docs_end;)
+  //    If we're in APPEND mode, we don't train yet.  So we're
+  //    complete at this point and can return to the caller.
+  //
+  if(apb->sflags & CRM_APPEND)
     {
-      in_class = *k++;
-      if( ((apb->sflags & CRM_REFUTE) && in_class) 
-	  || !( (apb->sflags & CRM_REFUTE) || in_class)   )
-	*k++ += 1;
-      else
-	k++;
-      k++;
-      while(*k++);
-      n_docs++;
+      if (neural_trace || internal_trace)
+	fprintf (stderr, 
+		 "Append mode- exiting neural_learn without recalc\n");
+      unmap_file (nn, filename);
+      return -1;
     }
   
-  //    Do the actual learning-looping only if append _wasn't_ specified.
-  //
-  if (append_only == 0)
+  //   Are we going from the absolute start?
+  if (apb->sflags & CRM_FROMSTART)
+      nuke(nn, 0);
+
+
+  //   Tally the number of example documents in this file
+  n_docs = 0;
+  for(k = nn->docs_start; k < nn->docs_end; k++)
     {
-      n_docs_without_training = 0;
-      n_cycles = 0;
-      k = new_doc_start;
+      if (*k < 2)
+      n_docs++;
+    };
+
+  n_cycles = 0;
+  
+  n_docs_trained = 1;
+  
+
+  //    Malloc the internal allocations for back propagation.  These
+  //    are the deltas used in the "blame game" of back-propagation itself.
+  //
+  dWin = malloc(sizeof(float) * nn->retina_size * nn->first_layer_size);
+  dWhid = malloc(sizeof(float) * nn->first_layer_size * nn->hidden_layer_size);
+  dWout = malloc(sizeof(float) * nn->hidden_layer_size * 2);
+  
+  //    Check - did we malloc successfully?
+  if(!dWin || !dWhid || !dWout)
+    {
+      if(dWin)
+	free(dWin);
+      if(dWhid)
+	free(dWhid);
+      if(dWout)
+	free(dWout);
+      unmap_file(nn, filename);
+      fatalerror5("unable to malloc!", "Neural network 3", CRM_ENGINE_HERE);
+      return -1;
+    }
+  
+  alphalocal = alpha;
+  //    Now the learning loop itself
+  n_docs_trained = 1;
+  while(n_cycles < soft_cycle_limit && n_docs_trained > 0)
+    {
+      float eic0, eic1, eoc0, eoc1;
+      if (neural_trace)
+	fprintf (stderr, "\n\n**** Start of epoch %ld on net at %lx\n", 
+		 n_cycles, (long)nn);
+      if (user_trace)
+	fprintf (stderr, "\nE %4f%7ld ", 
+		 alphalocal, 
+		 n_cycles);
+      n_docs_trained = 0;
+      epoch_errmag = 0.0;
+      errmag = 0.0;
+
+
+      //    Zero out any accumulated delta errors, in the reverse
+      //    (back-propagation) order, so we can template this code
+      //    again for the actual backprop.
+      //
+      //       mid-to-out layer deltas first
+      for( channel = 0; channel < nn->hidden_layer_size; channel++)
+	for (neuron = 0; neuron < 2; neuron++)
+	dWout[channel * 2 + neuron] = 0.0;
+
+      //       in-to-mid deltas next
+      for( channel = 0; channel < nn->first_layer_size; channel++)
+	for(neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+	  dWhid[channel * nn->hidden_layer_size + neuron] = 0.0;
+
+      //       Retina-to-in layer deltas last.
+      for(channel = 0; channel < nn->retina_size; channel++)
+	for(neuron = 0; neuron < nn->first_layer_size; neuron++)
+	  dWin[channel * nn->first_layer_size + neuron] = 0.0;
       
-      if(apb->sflags & CRM_FROMSTART)
+      //    Add stochastic noise to the network... this happens
+      //    only once per epoch no matter what the protocol...
+      //
+      if (stoch_noise > 0.0)
 	{
-	  nuke(nn);
-	  soft_cycle_limit = NN_MAX_TRAINING_CYCLES_FROMSTART;
-	} 
-      else
-	soft_cycle_limit = NN_MAX_TRAINING_CYCLES;
-      
-      while(n_docs_without_training < n_docs && n_cycles < soft_cycle_limit)
+	  //   First, noodge the output layer's input-side weights:
+	  for (neuron = 0; neuron < 2; neuron++)
+	    for(channel = 0; channel < nn->hidden_layer_size; channel++)
+	      {
+		*arefWout(nn, neuron, channel) +=
+		  stochastic_factor (stoch_noise, soft_cycle_limit, n_cycles);
+	      };
+	  
+	  //     Then for the hidden layer's input weights
+	  for (neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+	    for(channel = 0; channel < nn->first_layer_size; channel++)
+	      {
+		*arefWhid(nn, neuron, channel) +=
+		  stochastic_factor (stoch_noise, soft_cycle_limit, n_cycles);
+	      };
+	  
+	  //     Finally, the input layer's input weights
+	  for (neuron = 0; neuron < nn->first_layer_size; neuron++)
+	    for(channel = 0; channel < nn->retina_size; channel++)
+	      {
+		*arefWin(nn, neuron, channel) +=
+		  stochastic_factor (stoch_noise, soft_cycle_limit, n_cycles);
+	      };
+	};
+
+      //    "Track" the weights closer to zero.  This keeps unused 
+      //    weights from going haywire.  Note that the static magnitude
+      //    of this is equal to the average stochastic noise.
+      //
+      if (stoch_noise > 0.0)
 	{
-	  in_class = *k++;
-	  l = k++;
-	  k++; //to skip doc hash
+	  //   First, noodge the output layer's input-side weights:
+	  for (neuron = 0; neuron < 2; neuron++)
+	    for(channel = 0; channel < nn->hidden_layer_size; channel++)
+	      {
+		*arefWout(nn, neuron, channel) *= NN_ZERO_TRACKING ;
+	      };
+	  
+	  //     Then for the hidden layer's input weights
+	  for (neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+	    for(channel = 0; channel < nn->first_layer_size; channel++)
+	      {
+		*arefWhid(nn, neuron, channel) *= NN_ZERO_TRACKING ;
+	      };
+	  
+	  //     Finally, the input layer's input weights
+	  for (neuron = 0; neuron < nn->first_layer_size; neuron++)
+	    for(channel = 0; channel < nn->retina_size; channel++)
+	      {
+		*arefWin(nn, neuron, channel) *= NN_ZERO_TRACKING ;
+	      };
+	};
+
+      //   Loop around and train each document.
+      for(k = nn->docs_start; k < nn->docs_end;)  // the per-document loop
+	{
+	  //  Start on the 0/1 (in-class/out-of-class) sentinel
+	  out_of_class = k[0];      
+	  if (out_of_class != 0 && out_of_class != 1)
+	    fatalerror5 ( "SYNCH ERROR in training data file: ", 
+			  "filename",
+			  CRM_ENGINE_HERE);
+	  
+	  if (neural_trace)
+	    {
+	      fprintf (stderr, " Doc %lx out_of_class %ld \n", 
+		       (unsigned long int) k, 
+		       out_of_class);
+	      fprintf (stderr, 
+		       "First weights (in/hid/out): %lf, %lf, %lf\n", 
+		       nn->Win[0], nn->Whid[0], nn->Wout[0]);
+	    };
+	  
+	  k++;
+	  //  save a pointer to the "OK this many times" counter
+	  l = k;
+	  
+	  k++; 
+	  //   Now we point to the document checksum.
+	  //     Skip over the doc checksum
+	  k++; 
+	  
+	  //      Now k is the first feature in the current document.
+	  //      Find end of the current doc 
 	  current_doc = k;
 	  current_doc_len = 0;
-	  while(*k++) 
-	    current_doc_len++;
-	  if(  do_net_learn_back_prop_with_noise
-	       ( nn, current_doc, current_doc_len - 1, in_class )
+	  while (k < nn->docs_end && *k > 1)
+	    {
+	      k++;
+	      current_doc_len++;
+	    };
+	  //    k now points to the next document
+	  if (neural_trace)
+	    fprintf (stderr, 
+		     "Current doc %lx class %ld len %lx next doc start %lx next sense %lx\n",
+		     (unsigned long) current_doc,
+		     (unsigned long) out_of_class,
+		     (unsigned long) current_doc_len,
+		     (unsigned long) k,
+		     (unsigned long) *k);
+
+     	  //      Run the net on the document
+	  do_net(nn, current_doc, current_doc_len);
+	  if( neural_trace )
+	    fprintf(stderr, "-- doc @ %lx got network outputs of %f v. %f\n",
+		    (unsigned long)current_doc,
+		    nn->output_layer[0], nn->output_layer[1]);
+
+	  //       Keep track of the total error of this epoch.
+	  errmag = (! (out_of_class)) ?
+	    nn->output_layer[1] + (1 - nn->output_layer[0])
+	    :
+	    nn->output_layer[0] + (1 - nn->output_layer[1]);
+	  epoch_errmag += errmag;
+
+	  //    Now, the test- output channel 0 is "in class", channel
+	  //    1 is "not in class".  We see if the output of the
+	  //    net is acceptable here, and if not, backprop our errors.
+	  // 
+	  //     Note that the SRI document says 'Always backprop every
+	  //     training sample on every training epoch."  Maybe that's a
+	  //     good idea, maybe not.  Maybe it causes overfitting. 
+	  //     It's a good question either way. 
+	  //    
+	  //     These error terms are all cast such that a value less than 
+	  //     zero is a "retrain" condition.
+	  eic0 = nn->output_layer[0] - (1.0 - internal_training_threshold);
+	  eoc0 = (internal_training_threshold) - nn->output_layer[0];
+	  eic1 = (internal_training_threshold) - nn->output_layer[1];
+	  eoc1 = nn->output_layer[1] - (1.0 - internal_training_threshold);
+
+	  //    Do the error bounds comparison
+	  this_doc_was_wrong = 0;
+	  if(
+	     ( ! out_of_class &&
+	       (( eic0 < 0 ) || ( eic1 < 0 )) 
 	       )
+	     ||
+	     ( out_of_class && 
+	       (( eoc0 < 0 ) || (eoc1 < 0 ))
+	       )
+	     )
 	    {
-	      if( ((apb->sflags & CRM_REFUTE) && in_class) 
-		  || !( (apb->sflags & CRM_REFUTE) || in_class)   )
-		*l = 0;
-	      n_docs_without_training = 0;
-	    }
-	  else
-	    n_docs_without_training++;
-	  if(k >= nn->docs_end)
-	    {
-	      k = nn->docs_start;
-	      n_cycles++;
-	    }
-	  if(joe_trace && k == new_doc_start)
-	    fputc('|', stderr);
-	}
-      if(n_cycles == soft_cycle_limit)
-	if (joe_trace)
-	  fprintf(stderr, "neural: failed to converge after %d training cycles\n",
-		  NN_MAX_TRAINING_CYCLES);
-      
-      if(joe_trace)
-	fprintf(stderr, "\nn_cycles = %ld\n", n_cycles);
-      if(apb->sflags & CRM_MICROGROOM)
-	{
-	  int trunced = 0;
-	  for(k = nn->docs_start; k < nn->docs_end;)
-	    {
-	      current_doc = k;
-	      k += 3;
-	      while(*k++);
-	      if(current_doc[1] > NN_MICROGROOM_THRESHOLD)
+	      n_docs_trained ++;
+	      this_doc_was_wrong = 1;
+	      *l = 0;      // reset the "OK this many times" pointer.
+	    };
+
+	if (user_trace)
+	  {
+	    if (this_doc_was_wrong)
+	      {
+		if ( ! out_of_class )
+		  { 
+		    if (nn->output_layer[0] > nn->output_layer[1])
+		      fprintf (stderr, "+");
+		    else
+		      fprintf (stderr, "#");
+		  }
+		else 
+		  {
+		    if (nn->output_layer[0] < nn->output_layer[1])
+		      fprintf (stderr, "x");
+		    else
+		      fprintf (stderr, "X");
+		  };
+	      }
+	    else
+	      {
+		fprintf (stderr, " ");
+	      };
+	  };
+	if (internal_trace)
+	  fprintf (stderr, " %6lf ", errmag);
+
+	//  Do we want to train everything, even if it's right?	  
+//#define TRAIN_ALWAYS 1
+#define TRAIN_ALWAYS 0
+
+
+	  if  (this_doc_was_wrong 
+	       || TRAIN_ALWAYS 
+	       || (!(apb->sflags & CRM_BYCHUNK) ))
+      {    
+	//    this block is the "actually train this document" section
+	//   If we got here, we're training, either because tne neural 
+	//   net got it wrong, or because we're in TRAIN_ALWAYS.  
+	//   So, it's time to run the ugly backprop.
+	//
+	if(neural_trace) fprintf(stderr, " Need backprop on doc at %lx\n", 
+				 (long) current_doc );
+
+		//       Start setting the errors.  Work backwards, from the
+	//       known desired states.
+	//
+	//     Now, for a bit of tricky math.  One could train 
+	//     with heuristics (a la the Winnow algorithm) or one could
+	//     train with a gradient descent algorithm.  
+	//
+	//      Luckily, the gradient descent is actually quite simple;
+	//      it turns out the partial derivative of the logistic 
+	//      function dL(x)/dx is just  (1-L(x)) * L(x) .  Plotting this
+	//      on a spreadsheet is quite illuminating - it ranges from 
+	//      nearly zero near infinity to 0.25 at zero.
+	//  
+	//   See http://www.speech.sri.com/people/anand/771/html/node37.html
+	//   for details of this math.  SRI: here means "from the SRI paper"
+	//
+	//     SRI: del_j = -(target - output)*(1 - output)*(output)
+	//
+#define GRADIENT_DESCENT
+#ifdef GRADIENT_DESCENT
+	if (neural_trace)
+	  fprintf (stderr, "Generating error deltas for output layer\n");
+
+	//  1.0 and 0.0 are the desired final layer outputs for "in class".
+	nn->delta_output_layer[0] = 1.0;
+	nn->delta_output_layer[1] = 0.0;
+	//     out-of-class gets them reversed
+	if (out_of_class)
+	  {
+	    nn->delta_output_layer[0] = 0.0;
+	    nn->delta_output_layer[1] = 1.0;
+	  };
+	
+	if (neural_trace)
+	  fprintf (stderr, "Output layer desired values: %lf, %lf\n",
+		   nn->delta_output_layer[0],
+		   nn->delta_output_layer[1]);
+
+
+	//    Now generate the values "in place" from the desired values
+	//    MAYBE TYPO in the SRI document- it says this is 
+	//    SRI: -del_k = (t_j - o_j) (1 - o_j) o_j) and it is unclear if
+	//    the minus sign should _not_ be there.  
+	//
+	//    However, a spreadsheet calculation of the actual values for
+	//    the derivative of the logistic function show that in fact 
+	//    del_k is positive for positive errors (that is, when the
+	//    desired value is higher than the output value, del_k 
+	//    should be positive for when the desired output is greater
+	//    than the actual output)
+
+	//   Del_k on the output layer first
+	//
+	for (neuron = 0; neuron < 2; neuron++)
+	  nn->delta_output_layer[neuron] =
+	    ( 
+	     ( nn->delta_output_layer[neuron]            //  target - actual
+	       -  nn->output_layer[neuron] )
+	     * (1.0 - nn->output_layer[neuron])         // 1 - actual
+	     * (nn->output_layer[neuron])               // actual
+	      );
+	
+	if (neural_trace)
+	  fprintf (stderr, "Output layer output error delta-sub_j: %lf, %lf\n",
+		   nn->delta_output_layer[0],
+		   nn->delta_output_layer[1]);
+	
+	//       Now we calculate the delta weight we want to apply to the
+	//       middle layer's inputs, again, this is "in place".
+	//
+	//    The corrected del_j formula for hidden and input neurons is:
+	//     del_j = o_j (1 - o_j) SUM (del_k * w_kj) 
+	//     (where the sum is over all neurons downstream of neuron j)
+	if (neural_trace)
+	  fprintf (stderr, "Doing the hidden layer.\n");
+	
+	if (neural_trace)
+	  fprintf (stderr, "Now doing the sum of the del_k * w_kj\n");
+	
+	//     Initialize the hidden layer deltas
+	for (neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+	  nn->delta_hidden_layer[neuron] = 0;
+	
+	//    Calculate the SUM del_k * w_kj "in place"
+	//
+	//    Start with the error term (which is del_k of the output
+	//    node times the weight coupling the hidden layer to that
+	//    output node).  This is the error for a middle layer.
+	for (neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+	  for (channel = 0; channel < 2; channel++)
+	    nn->delta_hidden_layer[neuron] += 
+	      nn->delta_output_layer[channel]
+	      * (*arefWout(nn, channel, neuron ));
+	
+	//     Now multiply by the o_j * (1-o_j) term
+	for (neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+	  nn->delta_hidden_layer[neuron] =
+	    (nn->delta_hidden_layer[neuron] 
+	     * nn->hidden_layer[neuron]
+	     * (1.0 - nn->hidden_layer[neuron]));
+	
+	if (neural_trace)
+	  fprintf (stderr, "First three hidden delta_subj's: %lf %lf %lf\n",
+		   nn->delta_hidden_layer[0],
+		   nn->delta_hidden_layer[1],
+		   nn->delta_hidden_layer[2]);
+
+	
+	//   Do the calculation for the retina-to-input layer.  Same
+	//    deal as before.
+	//
+	//    The corrected del_j formula for hidden and input neurons is:
+	//     del_j = o_j (1 - o_j) SUM (del_k * w_kj) 
+	//     (where the sum is over all neurons downstream of neuron j)
+	if (neural_trace)
+	  fprintf (stderr, "Doing the input layer.\n");
+	
+	if (neural_trace)
+	  fprintf (stderr, "Now doing the sum of the del_k * w_kj\n");
+	
+	//     Initialize the input layer deltas
+	for (neuron = 0; neuron < nn->first_layer_size; neuron++)
+	  nn->delta_first_layer[neuron] = 0;
+	
+	//    Calculate the SUM  "in place" (the error mag term)
+	for (neuron = 0; neuron < nn->first_layer_size; neuron++)
+	  for (channel = 0; channel < nn->hidden_layer_size; channel++)
+	    nn->delta_first_layer[neuron] += 
+	      nn->delta_hidden_layer[neuron]
+	      * (*arefWhid(nn, channel, neuron));
+	
+	//     Now multiply by the o_j * (1-)_j) term
+	for (neuron = 0; neuron < nn->first_layer_size; neuron++)
+	  nn->delta_first_layer[neuron] =
+	    ( nn->delta_first_layer[neuron] 
+	      * nn->first_layer[neuron]
+	      * (1.0 - nn->first_layer[neuron]));
+	
+       	if (neural_trace)
+	  fprintf (stderr, "First three input delta_subj's: %lf %lf %lf\n",
+		   nn->delta_first_layer[0],
+		   nn->delta_first_layer[1],
+		   nn->delta_first_layer[2]);
+	
+#endif
+	
+	//    The SRI document suggests that the right thing to do 
+	//    is to update after each training example is calculated.
+	//    So, we'll try that.  :)   RESULT: It works fine for _one_
+	//    document, but not multiple documents tend to oscillate
+	//    back and forth.  Conclusion: sometimes you need to sum 
+	//    up the deltas and error terms.
+	//   
+	//
+	//   We have the del_k's all calculated for all three
+	//    layers, and we can use them to calculate the desired
+	//     change in weights for each layer.  
+	//      These weight changes do not take place immediately;
+	//       we might do them at the end of a training epoch.
+
+	alphalocal = alpha * (1.0 + gain_noise_factor());
+
+	//  Are we training after each document?
+	if (apb->sflags & CRM_BYCHUNK)
+	  {
+
+	    //   First, the output layer's input-side weights:
+	    for (neuron = 0; neuron < 2; neuron++)
+	      for(channel = 0; channel < nn->hidden_layer_size; channel++)
 		{
-		  memmove(current_doc, k, sizeof(unsigned long) * (nn->docs_end - k));
-		  nn->docs_end -= k - current_doc;
-		  k = current_doc;
-		  trunced = sizeof(char)
-		    * ( (char *)(nn->docs_end) - (char *)(nn->file_origin) );
-		  n_docs--;
-		}
-	    }
-	  if(trunced)
+		  *arefWout(nn, neuron, channel) =
+		    *arefWout (nn, neuron, channel)
+		    + ( alphalocal
+			* nn->delta_output_layer[neuron]
+			* nn->hidden_layer[channel]);
+		};
+	    
+	    //     Then for the hidden layer's input weights
+	    for (neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+	      for(channel = 0; channel < nn->first_layer_size; channel++)
+		{
+		  *arefWhid(nn, neuron, channel) =
+		    *arefWhid (nn, neuron, channel)
+		    + ( alphalocal
+			* nn->delta_hidden_layer[neuron]
+			* nn->first_layer[channel]);
+		};
+	    
+	    //     Finally, the input layer's input weights
+	    for (neuron = 0; neuron < nn->first_layer_size; neuron++)
+	      for(channel = 0; channel < nn->retina_size; channel++)
+		{
+		  *arefWin(nn, neuron, channel) =
+		    *arefWin (nn, neuron, channel)
+		    + ( alphalocal
+			* nn->delta_first_layer[neuron]
+			* nn->retina[channel]);
+		};
+	  }
+	else
+	  //  Are we doing all docs, then training on the sum?
+	  {
+
+	    //   First, the output layer's input-side weights:
+	    for (neuron = 0; neuron < 2; neuron++)
+	      for(channel = 0; channel < nn->hidden_layer_size; channel++)
+		{
+		  dWout[channel*2 + neuron] +=
+		    ( alphalocal
+		      * nn->delta_output_layer[neuron]
+		      * nn->hidden_layer[channel]);
+		};
+	    
+	    //     Then for the hidden layer's input weights
+	    for (neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+	      for(channel = 0; channel < nn->first_layer_size; channel++)
+		{
+		  dWhid [channel * nn->hidden_layer_size + neuron] +=
+		    ( alphalocal
+		      * nn->delta_hidden_layer[neuron]
+		      * nn->first_layer[channel]);
+		};
+	    
+	    //     Finally, the input layer's input weights
+	    for (neuron = 0; neuron < nn->first_layer_size; neuron++)
+	      for(channel = 0; channel < nn->retina_size; channel++)
+		{
+		  dWin [ channel * nn->first_layer_size + neuron] +=
+		    ( alphalocal
+		      * nn->delta_first_layer[neuron]
+		      *  nn->retina[channel]);
+		}; 
+	    //#endif
+	  };
+
+      }       // end of train this document
+	  else
 	    {
-	      if(joe_trace)
-		print_doc_info(nn);
-	      crm_force_munmap_filename(filename);
-	      truncate(filename, trunced);
-	      if(joe_trace)
-		fprintf(stderr, "\nleaving neural net learn after truncating"
-			", n_docs = %ld\n", n_docs);
-	      return 0;
-	    }    
-	}      
-      if(joe_trace)
-	print_doc_info(nn);
-    
+	      if(neural_trace)
+		fprintf(stderr, "Doc %lx / %ld OK, looks good, not trained\n",
+			(long unsigned) current_doc, out_of_class);       
+	    };      //      END OF THE PER-DOCUMENT LOOP
+
+	  if (neural_trace)
+	    fprintf (stderr, 
+		     "Moving to next document at k=%lx to docs_end= %lx\n",
+		     (long int)k, (long int)nn->docs_end);
+	};
+      n_cycles++;
+      if (neural_trace)
+	fprintf (stderr, "All documents processed.\n"
+		 "Now first weight coeffs: %lf %lf, %lf\n", 
+		 nn->Win[0], nn->Whid[0], nn->Wout[0]);
+      
+      //    If we're _not_ doing immediate-per-document training...
+      if (! (apb->sflags & CRM_BYCHUNK))
+	{
+	  
+	  if (neural_trace)
+	    fprintf (stderr, "putting accumulated deltas out.\n");
+	  
+	  //   First, the output layer's input-side weights:
+	  for (neuron = 0; neuron < 2; neuron++)
+	    for(channel = 0; channel < nn->hidden_layer_size; channel++)
+	      {
+		*arefWout(nn, neuron, channel) +=
+		  dWout [ channel * 2 + neuron ];
+	      };
+	  
+	  //     Then for the hidden layer's input weights
+	  for (neuron = 0; neuron < nn->hidden_layer_size; neuron++)
+	    for(channel = 0; channel < nn->first_layer_size; channel++)
+	      {
+		*arefWhid(nn, neuron, channel) +=
+		  dWhid [channel * nn->hidden_layer_size + neuron];
+	      };
+	  
+	  //     Finally, the input layer's input weights
+	  for (neuron = 0; neuron < nn->first_layer_size; neuron++)
+	    for(channel = 0; channel < nn->retina_size; channel++)
+	      {
+		*arefWin(nn, neuron, channel) +=
+		  dWin[ channel * nn->first_layer_size + neuron];
+	      };
+	};
+      
+      if (user_trace) 
+	fprintf (stderr, "    %6lf", epoch_errmag);
+
+      if (neural_trace)
+	fprintf (stderr, "End of epoch;\n"
+		 "after training first weight coeffs: %lf %lf, %lf", 
+		 nn->Win[0], nn->Whid[0], nn->Wout[0]);    
+
+      //   Sometimes, it's better to dropkick.
+      if (n_cycles % NN_FROMSTART_PUNTING == 0)
+      	{
+	  fprintf (stderr, "punt...");
+      	  nuke (nn, 0);
+      	};
+
+    };        //    End of training epoch loop - back to linear code
+  
+  
+  free(dWin);
+  free(dWhid);
+  free(dWout);
+  
+  if(n_cycles >= soft_cycle_limit)
+    nonfatalerror5 ( "neural: failed to converge within the training limit.  ",
+			 "Beware your results.\n You might want to consider"
+		     " a larger network as well.", CRM_ENGINE_HERE);
+  
+  if(neural_trace)
+    fprintf(stderr, "\nn_cycles = %ld\n", n_cycles);
+
+  //    Do we microgroom?  
+  //    GROT GROT GROT don't do this yet - this code isn't right.
+  //    GROT GROT GROT
+  if(apb->sflags & CRM_MICROGROOM & 0)
+    {
+      int trunced = 0;
+      for(k = nn->docs_start; k < nn->docs_end;)
+	{
+	  current_doc = k;
+	  k += 3;
+	  while(*k++);
+	  if(current_doc[1] > NN_MICROGROOM_THRESHOLD)
+	    {
+	      memmove(current_doc, k, sizeof(unsigned long) * (nn->docs_end - k));
+	      nn->docs_end -= k - current_doc;
+	      k = current_doc;
+	      trunced = sizeof(char)
+		* ( (char *)(nn->docs_end) - (char *)(nn->file_origin) );
+	      n_docs--;
+	    }
+	}
+      if(trunced)
+	{
+	  crm_force_munmap_filename(filename);
+	  truncate(filename, trunced);
+	  if(neural_trace)
+	    fprintf(stderr, "\nleaving neural net learn after truncating"
+		    ", n_docs = %ld\n", n_docs);
+	  return 0;
+	}    
     }
   
   unmap_file(nn, filename);
   
-  if(joe_trace)
+  if(neural_trace)
     fprintf(stderr, "\nleaving neural net learn"
-        ", n_docs = %ld\n", n_docs);
+	    ", n_docs = %ld\n", n_docs);
   return 0;
 }
 
-int crm_neural_net_classify
-    (   CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen   )
+int crm_neural_net_classify (   
+			     CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+			     char *txtptr, long txtstart, long txtlen   )
 {
   char filenames_field[MAX_PATTERN];
   long filenames_field_len;
@@ -1107,24 +1731,26 @@ int crm_neural_net_classify
   NEURAL_NET_STRUCT NN, *nn = &NN;
   
   regex_t regee;
-  char regex_text[MAX_PATTERN];  //  the regex pattern
-  long regex_text_len;
+  
+  unsigned long bag[NN_MAX_FEATURES], sum;
+  long baglen;
 
-  unsigned long bag[32768], *ret, sum;
-
-  long i, j, k, n, rn, fail_on = MAX_CLASSIFIERS, n_classifiers, out_pos;
-
+  long i, j, k, n, n_classifiers, out_pos; 
+  long fail_on = MAX_CLASSIFIERS;
+  
   float output[MAX_CLASSIFIERS][2];
   double p[MAX_CLASSIFIERS], pR[MAX_CLASSIFIERS], suc_p, suc_pR, tot;
   
   char out_var[MAX_PATTERN];
   long out_var_len;
-
   
+  
+  n = 0;
+
   if(internal_trace)
-    joe_trace = 1;
-    
-  if(joe_trace)
+    neural_trace = 1;
+  
+  if(neural_trace)
     fprintf(stderr, "entered crm_neural_net_classify\n");
   
   
@@ -1132,123 +1758,115 @@ int crm_neural_net_classify
   crm_get_pgm_arg (filenames_field, MAX_PATTERN, apb->p1start, apb->p1len);
   filenames_field_len = apb->p1len;
   filenames_field_len =
-      crm_nexpandvar(filenames_field, filenames_field_len, MAX_PATTERN);
+    crm_nexpandvar(filenames_field, filenames_field_len, MAX_PATTERN);
   
   //grab output variable name
   crm_get_pgm_arg (out_var, MAX_PATTERN, apb->p2start, apb->p2len);
   out_var_len = apb->p2len;
   out_var_len = crm_nexpandvar (out_var, out_var_len, MAX_PATTERN);
   
-  //get tokenizing regex
-  crm_get_pgm_arg (regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
-  regex_text_len = apb->s1len;
-  if(regex_text_len == 0)
-  {
-    strcpy(regex_text, "[[:graph:]]+"); 
-    regex_text_len = strlen( regex_text );
-  }
-  regex_text[regex_text_len] = '\0';
-  regex_text_len = crm_nexpandvar (regex_text, regex_text_len, MAX_PATTERN);
-  if( crm_regcomp (&regee, regex_text, regex_text_len, REG_EXTENDED) )
-  {
-    nonfatalerror("Problem compiling this regex:", regex_text);
-    return 0;
-  }
-  
-  // a tiny automata for your troubles to grab the names of our classifier 
-  // files and figure out what side of the "|" they're on, hey Bill, why isn't
-  // this in the stringy stuff?
-
-  n_classifiers = 0;
-
+  //a tiny automata for your troubles to grab the names of our classifier files
+    // and figure out what side of the "|" they're on, hey Bill, why isn't
+    // this in the stringy stuff?
   for(i = 0, j = 0, k = 0; i < filenames_field_len && j < MAX_CLASSIFIERS; i++)
-    {
-      if(filenames_field[i] == '\\') //allow escaped in case filename is wierd
-	filenames[j][k++] = filenames_field[++i];
-      else 
-	if(isspace(filenames_field[i]) && k > 0) 
-	  {         //white space terminates filenames
-	    filenames[j][k] = '\0';
+    if(filenames_field[i] == '\\') //allow escaped in case filename is wierd
+      filenames[j][k++] = filenames_field[++i];
+    else if(isspace(filenames_field[i]) && k > 0) 
+      {   //white space terminates filenames
+	filenames[j][k] = '\0';
+	k = 0;
+	j++;
+      } 
+    else if(filenames_field[i] == '|')
+      { //found the bar, terminate filename if we're in one
+	if(k > 0)
+	  {
 	    k = 0;
 	    j++;
-	  } 
-	else 
-	  if ( filenames_field[i] == '|')
-	    { //found the bar, terminate filename if we're in one
-	      if(k > 0)
-		{
-		  k = 0;
-		  j++;
-		}
-	      fail_on = j;
-	    }
-	  else if (isgraph(filenames_field[i])) //just copy char otherwise
-	    filenames[j][k++] = filenames_field[i];
-    };
-
+	  }
+	fail_on = j;
+      }
+    else if(isgraph(filenames_field[i])) //just copy char otherwise
+      filenames[j][k++] = filenames_field[i];
+  
+  
   if(j < MAX_CLASSIFIERS)
     filenames[j][k] = '\0';
   if(k > 0)
     n_classifiers = j + 1;
   else
     n_classifiers = j;
-
-
+  
   if(fail_on > n_classifiers)
     fail_on = n_classifiers;
   
-  if(joe_trace)
+  if(neural_trace)
     {
-      fprintf(stderr, "Diagnostic: fail_on = %ld n_classifiers = %ld\n", 
-	      fail_on, n_classifiers); 
+      fprintf(stderr, "fail_on = %ld\n", fail_on); 
       for(i = 0; i < n_classifiers; i++)
-	fprintf(stderr, "filenames[%ld] = >%s<\n", i, filenames[i]);
+	fprintf(stderr, "filenames[%ld] = %s\n", i, filenames[i]);
     };
-  
-  n = eat_document( txtptr + txtstart, txtlen, &j,
-		    &regee, bag, 32768, apb->sflags, &sum);
 
-  if (internal_trace)
-    fprintf (stderr, 
-     "files: %ld, Filename0: >%s<  Filename1: >%s<  Filename2: >%s<\n",
-     n_classifiers, filenames[0], filenames[1], filenames[2]);
-  
+  baglen = eat_document( txtptr + txtstart, txtlen, &j,
+		    &regee, bag, NN_MAX_FEATURES, apb->sflags, &sum);
+
   //loop over classifiers and calc scores
-  i = 0;
   for(i = 0; i < n_classifiers; i++)
     {
-      if (internal_trace)
-	fprintf (stderr,  "Now running filenames[%ld] = >%s<\n", 
-		 i, filenames[i]);
-      if(map_file(nn, &filenames[i] [0] ))
+      if(map_file(nn, filenames[i]))
         {
           nonfatalerror("Couldn't mmap file!", filenames[i]);
-          output[i][0] = 0.0;
-          output[i][1] = 0.0;
+          output[i][0] = 0.5;
+          output[i][1] = 0.5;
           continue;
         }
-      ret = malloc( sizeof(unsigned long) * nn->retina_size);
-      rn = project_features(bag, n, ret, nn->retina_size);
-      do_net(nn, ret, rn, output[i]);
-      free(ret);
+      //   ***  now we do projection in real time because it's smaller!
+      //     this allows different sized nn's to be compared.
+      // ret = malloc( sizeof(unsigned long) * nn->retina_size);
+      // rn = project_features(bag, n, ret, nn->retina_size);
+      do_net(nn, bag, baglen);
+      output[i][0] = nn->output_layer[0];
+      output[i][1] = nn->output_layer[1];
+      // free(ret);
       unmap_file(nn, filenames[i]);
-      if(joe_trace)
-	fprintf(stderr, "%s:\t%f\t%f\n", 
+      if(neural_trace)
+	fprintf(stderr, "Network outputs on file %s:\t%f\t%f\n", 
 		filenames[i], output[i][0], output[i][1]);
-      
     }
+  
+  //    Calculate the winners and losers.  
+  
+  //    Get total activation output for all of the networks first:
   tot = 0.0;
   for(i = 0; i < n_classifiers; i++)
-    tot += p[i] = 0.5 * (1.0 + output[i][0] - output[i][1]);
+    {
+      //    Normalize the classifiers to a [0...1] range  
+      tot += p[i] = 0.5 * (1.0 + output[i][0] - output[i][1]);
+    }
+
+  if(neural_trace)
+    fprintf(stderr, "tot = %f\n", tot);
+
   for(i = 0; i < n_classifiers; i++)
-    p[i] /= tot;
+    {  
+      //     response fraction of this class.
+      p[i] /= tot;
+      if(neural_trace)
+	fprintf(stderr, "p[%ld] = %f (normalized)\n", i, p[i]);
+    }
+  
+  //      Find the one "best matching" network
   j = 0;
   for(i = 1; i < n_classifiers; i++)
     if( p[i] > p[j])
       j = i;
+  
+  //      Find the overall winning side - success, or fail
   suc_p = 0.0;
   for(i = 0; i < fail_on; i++)
     suc_p += p[i];
+  
+  //      Calculate pR's for all of the classifiers.
   for(i = 0; i < n_classifiers; i++)
     pR[i] = get_pR(p[i]);
   suc_pR = get_pR(suc_p);
@@ -1256,40 +1874,40 @@ int crm_neural_net_classify
   
   if(suc_p > 0.5 ) //test for nan as well
     out_pos += sprintf
-          ( outbuf + out_pos,
-            "CLASSIFY succeeds; success probability: %f  pR: %6.4f\n",
-            suc_p, suc_pR);
+      ( outbuf + out_pos,
+	"CLASSIFY succeeds; success probability: %f  pR: %6.4f\n",
+	suc_p, suc_pR);
   else
     out_pos += sprintf
-          ( outbuf + out_pos,
-            "CLASSIFY fails; success probability: %f  pR: %6.4f\n",
-            suc_p, suc_pR);
-
-  out_pos += sprintf
-          ( outbuf + out_pos,
-            "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f  \n",
-            j,
-            filenames[j],
-            p[j], pR[j]);
+      ( outbuf + out_pos,
+	"CLASSIFY fails; success probability: %f  pR: %6.4f\n",
+	suc_p, suc_pR);
   
   out_pos += sprintf
-                ( outbuf + out_pos,
-                  "Total features in input file: %ld\n",
-                  n  );
+    ( outbuf + out_pos,
+      "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f  \n",
+      j,
+      filenames[j],
+      p[j], pR[j]);
+  
+  out_pos += sprintf
+    ( outbuf + out_pos,
+      "Total features in input file: %ld\n",
+      baglen  );
   
   for(i = 0; i < n_classifiers; i++)
     out_pos += sprintf
-                ( outbuf + out_pos,
-                  "#%ld (%s): prob: %3.2e, pR: %6.2f\n",
-                  i, filenames[i], p[i], pR[i] );
+      ( outbuf + out_pos,
+	"#%ld (%s): prob: %3.2e, pR: %6.2f\n",
+	i, filenames[i], p[i], pR[i] );
   
   if(out_var_len)
     crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_pos);
   
   if (suc_p <= 0.5)
-  {
-    csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-    csl->aliusstk [csl->mct[csl->cstmt]->nest_level] = -1;
-  }  
+    {
+      csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+      csl->aliusstk [csl->mct[csl->cstmt]->nest_level] = -1;
+    }  
   return 0;
 }

@@ -25,7 +25,7 @@ char * tre_version (void);
 //  and include the routine declarations file
 #include "crm114.h"
 
-//  Cache for regex compilations
+ //  Cache for regex compilations
 typedef struct {
   char *regex;
   regex_t *preg;   // ptr to struct of {long, void*}
