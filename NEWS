@@ -1,8 +1,23 @@
-# $Id: NEWS,v 1.43 2004/08/19 11:34:24 vanbaal Exp $
 CRM114 NEWS - user visible changes (and some other changes also.)
 Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
+
+Version 20070731-BlameTheInterns
+
+* revived the autoconfiscation of crm114: once again, you can run 
+
+    ./configure
+    make
+    make megatest
+    make install   (<-- untested!)
+  
+  to build crm114 on your platform.
+
+* revived Win32 port; now comes with MSVC2005 project files.
+
+* TODO: list all the goodies added by Bill and his interns :-)
+
 
 Version 20040816.BlameClockworkOrange-auto.3, 2004-08-19 (JvB)
 

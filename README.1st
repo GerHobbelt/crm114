@@ -1,4 +1,38 @@
-# $Id: README.1st,v 1.7 2004/08/19 11:10:25 vanbaal Exp $
+Compile and install is standard:
+
+    ./configure
+    make
+
+You may wish to run the regression test set to verify the proper operation
+of your crm114 copy, before continuing with the final stage of the install by
+running
+
+    make megatest
+
+If this turns out OK, you may proceed by installing CRM114 in your system
+directory (default: /usr/local/bin ( by running
+
+    make install
+
+
+NOTE: if you don't want to see too many strict compiler warnings, you can
+      run an alternative configure command:
+
+          ./configure --disable-extended-compile-checks
+
+      in order to turn OFF most of the compiler warnings.
+
+
+To see what can be configured, run
+
+    ./configure --help
+
+to have an overview of all commandline arguments listed.
+
+
+
+
+-----------------------------------------------------------------------
 
 This is a repackaging of Bill Yerazunis's CRM114.  The official
 CRM114 releases are available from http://crm114.sourceforge.net/ .

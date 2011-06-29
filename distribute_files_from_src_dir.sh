@@ -22,7 +22,6 @@ check_file	mailfilter	classifymail.crm		.in
 check_file	mailfilter	mailfilter.crm			.in
 check_file	mailfilter	rewriteutil.crm			.in
 check_file	mailfilter	unionintersecttest.crm		.in
-check_file	man		include.zmm			.in
 check_file	tests		aliustest.crm			.in
 check_file	tests		approxtest.crm			.in
 check_file	tests		argtest.crm			.in

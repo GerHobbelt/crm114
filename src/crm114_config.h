@@ -1,31 +1,31 @@
 //  crm114_config.h  - Controllable Regex Mutilator base config, version X0.1
 //  Copyright 2001-2006 William S. Yerazunis, all rights reserved.
-//  
+//
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
 //  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the 
-//  author for details.  
+//  www.fsf.org .  Other licenses may be negotiated; contact the
+//  author for details.
 //
 ///////////////////////////////////////////////////////////////////
 //
 //    Configuration for CRM114.  Some things here you can change
-//    with relative impunity.  Other things, not so much.  Where 
-//    there are limiting factors noted, please obey them or you 
+//    with relative impunity.  Other things, not so much.  Where
+//    there are limiting factors noted, please obey them or you
 //    may break something important.  And, of course, realize that
-//    this is GPLed software with NO WARRANTY - make any changes 
-//    and that goes double. 
+//    this is GPLed software with NO WARRANTY - make any changes
+//    and that goes double.
 //
 ///////////////////////////////////////////////////////////////////
 //
 //   default size of the variables hashtable (a.k.a. the VHT)
 #define DEFAULT_VHT_SIZE 4095
- 
+
 //   default limit on the control stack (for catching infinite loops,
 //   not a preallocated variable)
 #define DEFAULT_CSTK_LIMIT 1024
 
-//   how many levels (pending operations) will we allow in 
+//   how many levels (pending operations) will we allow in
 //   math evaluations.  We _could_ have it be unlimited, but
 //   this serves as an error catcher in runaway programs.
 #define DEFAULT_MATHSTK_LIMIT 1024
@@ -44,7 +44,7 @@
 
 //    mmap cacheing length - only actually write out this often.
 //     set to 0 to disable mmap cacheing and release files faster.
-//      However, this has a negative speed impact. 
+//      However, this has a negative speed impact.
 //#define UNMAP_COUNT_MAX 0
 //#define UNMAP_COUNT_MAX 2
 #define UNMAP_COUNT_MAX 1000
@@ -69,9 +69,9 @@
 //    actual regex will share the same cache slot, which is pretty
 //    cool.
 //
-//    For programs that don't loop, or reuse the same regex a lot, 
-//    performance is slightly better with cacheing disabled.  But if you 
-//    do reuse the same regexes tens or hundreds of times (say, lots of 
+//    For programs that don't loop, or reuse the same regex a lot,
+//    performance is slightly better with cacheing disabled.  But if you
+//    do reuse the same regexes tens or hundreds of times (say, lots of
 //    LIAF-loops) then cacheing can accelerate your program significantly.
 //
 //#define CRM_REGEX_CACHESIZE 0
@@ -101,9 +101,9 @@
 //
 //    Choose ONE of the following:
 //          SBPH, TGB2, TGB, TSS, or ARBITRARY_WINDOW_LEN:
-//   
+//
 //    *** DANGER, WILL ROBINSON ***  You MUST rebuild your .css files from
-//    samples of text if you change this.  
+//    samples of text if you change this.
 //
 //
 //     Sparse Binary Polynomial Hashing
@@ -140,8 +140,8 @@
 //
 #define UNIFIED_BAYES_WINDOW_LEN 5
 //
-//   
-//         Winnow algorithm parameters here...  
+//
+//         Winnow algorithm parameters here...
 //
 #define OSB_WINNOW_WINDOW_LEN 5
 #define OSB_WINNOW_PROMOTION 1.23f
@@ -152,13 +152,13 @@
 //     for SBPH and much better for TSS, the "new" one works slightly
 //     better for TGB and TGB2, and _much_ better for FOO
 //
-//     The current default (not necessarily optimal) 
-//     is Markovian SBPH, STATIC_LOCAL_PROBABILITIES, 
+//     The current default (not necessarily optimal)
+//     is Markovian SBPH, STATIC_LOCAL_PROBABILITIES,
 //     LOCAL_PROB_DENOM = 16, and SUPER_MARKOV
 //
-//#define LOCAL_PROB_DENOM 2.0 
-#define LOCAL_PROB_DENOM 16.0 
-//#define LOCAL_PROB_DENOM 256.0 
+//#define LOCAL_PROB_DENOM 2.0
+#define LOCAL_PROB_DENOM 16.0
+//#define LOCAL_PROB_DENOM 256.0
 #define STATIC_LOCAL_PROBABILITIES
 //#define LENGTHBASED_LOCAL_PROBABILITIES
 //
@@ -168,7 +168,7 @@
 //#define BREYER_CHHABRA_SIEFKES_WEIGHTS
 //#define BREYER_CHHABRA_SIEFKES_BASE7_WEIGHTS
 //#define BCS_MWS_WEIGHTS
-//#define BCS_EXP_WEIGHTS 
+//#define BCS_EXP_WEIGHTS
 //
 //
 //    Do we use learncount-based normalization in calculating probabilities?
@@ -202,7 +202,7 @@
 //
 //    define the default max chain length in a .css file that triggers
 //    autogrooming, the rescale factor when we rescale, and how often
-//    we rescale, and what chance (mask and key) for any particular 
+//    we rescale, and what chance (mask and key) for any particular
 //    slot to get rescaled when a rescale is triggered for that slot chain.
 //#define MICROGROOM_CHAIN_LENGTH 1024
 #define MICROGROOM_CHAIN_LENGTH 256
@@ -211,7 +211,7 @@
 #define MICROGROOM_STOCHASTIC_MASK 0x0000000F
 #define MICROGROOM_STOCHASTIC_KEY  0x00000001
 #define MICROGROOM_STOP_AFTER 32    //  maximum number of buckets groom-zeroed
-                                    
+
 #define FEATURE_HIT_INCREMENT_SIZE 7
 
 //    define the "block ratio" of how of a memory data window we're
@@ -246,7 +246,7 @@
 #define MAX_VARNAME 2048
 
 //   define the default number of bytes in a learning file hash table
-//   (note that this should be a prime number, or at least one with a 
+//   (note that this should be a prime number, or at least one with a
 //    lot of big factors)
 //
 //       this value (2097153) is one more than 2 megs, for a .css of 24 megs
@@ -313,7 +313,7 @@
 //     cookies on a fatal error
 #define MAX_NONFATAL_ERRORS 100
 
-//     How big is a feature bucket?  Is it a byte, a short, a long, 
+//     How big is a feature bucket?  Is it a byte, a short, a long,
 //     a float, whatever.  :)
 #define FEATUREBUCKET_TYPE FEATUREBUCKET_STRUCT
 //#define FEATUREBUCKET_VALUE_MAX 32767

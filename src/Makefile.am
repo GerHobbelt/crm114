@@ -12,15 +12,9 @@
 
 #    Makefile for CRM114
 #
-#
-#   If you want to install the executables somewhere else, change
-#    BINDIR here.  Default is /usr/bin but you can change it to /usr/local/bin
-#     if you prefer that sort of thing.
-#
-prefix=@PREFIXDIR@
+
 DISTCLEANFILES = 
 CLEANFILES = *.o *~ *.bak
-BINDIR=${prefix}/bin
 
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
@@ -37,9 +31,7 @@ VER_SUFFIX=@VER_SUFFIX@
 #     What version is this software (PLEASE don't change this just 
 #     to mess with my brain. - wsy)
 #
-CRM114_ARCHIVE = /homes/crm114/archive
 VERSION = @VERSION@
-PREV_VERSION = 20070730-BlameTheInterns
 #PREV_VERSION = 20070505-BlameIdiocy
 #PREV_VERSION = 20070428-BlameSpamConf
 #PREV_VERSION = 20061103-BlameDalkey
@@ -62,7 +54,7 @@ PREV_VERSION = 20070730-BlameTheInterns
 #       WINDOWS IS UNSUPPORTED BY THE AUTHOR.  THE AUTHOR WILL
 #	ACCEPT REASONABLE-LOOKING PATCHES BUT WINDOWS-ONLY 
 #       BUG REPORTS THAT DO NOT REPRODUCE UNDER LINUX ET AL _CANNOT_ BE WORKED.
-SYSTEMTYPE = POSIX
+#SYSTEMTYPE = POSIX
 #SYSTEMTYPE = WIN32
 #
 #
@@ -71,12 +63,16 @@ SYSTEMTYPE = POSIX
 #  really picayune stuff.
 #  
 AM_CFLAGS = @AM_CFLAGS@
-# AM_CFLAGS += -g -O3 -Wall -pedantic
-AM_CFLAGS += -g -O3 -Wall 
+# AM_CFLAGS += -g -O3
 #     turn this one on for no optimization debugging.
 #AM_CFLAGS += -g -O0 -Wall 
 #     turn this one on for really picayune debugging.
-#AM_CFLAGS += -Wextra
+
+AM_CPPFLAGS = @AM_CPPFLAGS@
+# AM_CPPFLAGS += -Wall
+# AM_CPPFLAGS += -Wextra 
+# AM_CPPFLAGS += -pedantic
+
 #
 #   Choose between static and dynamic linking (we recommend static linking)
 #   Comment this out if you want dynamic linking
@@ -129,36 +125,12 @@ TRE_TARFILE = tre-0.7.5
 
 
 
-if CRM_GNU_REGEX
-regexsource = crmregex_gnu.c
-else
-regexsource = crmregex_tre.c
-endif
-
-bin_PROGRAMS = crm114 cssutil cssdiff cssmerge
-
-crm114_SOURCES = $(regexsource) crm_compiler.c crm_correlate.c \
-	crm_css_maintenance.c crm_debugger.c crm_errorhandlers.c crm_exec_engine.c crm_expandvar.c \
-	crm_expr_alter.c crm_expr_classify.c crm_expr_file_io.c crm_expr_isolate.c \
-	crm_expr_match.c crm_expr_syscall.c crm_expr_window.c crm_markovian.c crm_main.c \
-	crm_math_exec.c crm_osb_bayes.c crm_osb_neural.c crm_osb_winnow.c crm_preprocessor.c \
-	crm_stmt_parser.c crm_str_funcs.c crm_var_hash_table.c crm_winnow_maintenance.c config.h \
-	crm114_config.h crm114.h crm114_structs.h crm114_sysincludes.h \
-	copy_extra_files_from_src_dir.sh
-
-cssutil_SOURCES = cssutil.c crm_css_maintenance.c crm114.h crm114_structs.h \
-  crm114_config.h crm114_sysincludes.h
-cssdiff_SOURCES = cssdiff.c crm_css_maintenance.c crm114.h crm114_structs.h \
-  crm114_config.h crm114_sysincludes.h
-cssmerge_SOURCES = cssmerge.c crm_css_maintenance.c crm114.h crm114_structs.h \
-  crm114_config.h crm114_sysincludes.h
-
 #
 #
 #   These are the files needed to build the CRM114 engine; they don't 
 #   include the side utilities
 #
-CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
+CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_math_exec.c crm_var_hash_table.c crm_expandvar.c \
 	crm_stmt_parser.c \
 	crm_expr_alter.c crm_expr_match.c crm_css_maintenance.c \
@@ -169,14 +141,14 @@ CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
 	crm_expr_syscall.c crm_expr_classify.c crm_expr_translate.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
-	crm_util_errorhandlers.c crm_expr_clump_nn.c crm_stats.c \
-	crm_expr_svm.c crm_strcompress.c \
+	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
+	crm_expr_svm.c crm_expr_fscm.c \
 	crm_generic_port.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
-	crm114.h regex.h crm114_osbf.h crm_expr_clump_nn.h
+	crm114.h regex.h crm114_osbf.h config.h
 
-OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
+OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
 	crm_stmt_parser.o \
 	crm_expr_alter.o crm_expr_match.o crm_css_maintenance.o \
@@ -187,12 +159,12 @@ OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
 	crm_preprocessor.o \
-	crm_expr_clump_nn.o crm_stats.o crm_expr_svm.o crm_strcompress.o \
+	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
 	crm_generic_port.o
-#  NOTE - no crm_util_errorhandlers, crmregex_gnu or crmregex_tre here!
 
 
-UTILFILES = osbf-util.c cssutil.c cssdiff.c cssmerge.c 
+
+UTILFILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c 
 
 CRMFILES = mailfilter.crm mailfilter.cf \
 	mailreaver.crm mailtrainer.crm \
@@ -234,10 +206,38 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	megatest.sh megatest_knowngood.log 
 
 
+
+EXTRA_DIST = indent.sh diff_em.sh \
+	config_win32.h crm114.sln crm114.vcproj cssdiff.vcproj osbf-util.vcproj \
+	resource.h crm114.ico cssmerge.vcproj cssutil.vcproj \
+	getopt.h getopt_ex.h getopt.c getopt_ex.c \
+	crm_win32_port.c \
+	megatest.bat crm114rc.h crm114rc.rc \
+	$(UTILFILES) \
+	$(CRMFILES) \
+	$(TEXTFILES)
+
+
+
+
+bin_PROGRAMS = crm114 cssutil osbfutil cssdiff cssmerge
+
+
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
+
+cssutil_SOURCES = cssutil.c crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
+
+osbfutil_SOURCES = osbf-util.c crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
+
+cssdiff_SOURCES = cssdiff.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
+
+cssmerge_SOURCES = cssmerge.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
+
+
 #
 #
 
-all: crm114 cssutil cssdiff cssmerge osbf-util
+all: crm114 cssutil cssdiff cssmerge osbfutil
 
 #
 #    Done.  
@@ -264,7 +264,7 @@ help: FORCE
 #                               Don't do this on a binary kit!
 #    make cssfiles            - builds a set of .css files from data
 #                               in ./good.dir/* and ./spam.dir/*
-#    make distribtion         - builds the .gzballs for distribution
+#    make distribution        - builds the .gzballs for distribution
 #                               of with your mods built in.
 
 #
@@ -273,10 +273,10 @@ help: FORCE
 #	linked against the GNU regex library, a lot of functionality
 #       won't be available, and "make megatest" will fail.
 #
-crm114_gnu: $(OFILES) crmregex_gnu.o 
-	$(CC) $(LDFLAGS) $(LIBS) $(OFILES) \
+crm114_gnu: $(OFILES) crmregex_gnu.o crm_main.o
+	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
 	  crmregex_gnu.o \
-	  -lm -o crm114
+	  -o crm114_gnu
 
 
 #   
@@ -286,10 +286,10 @@ crm114_gnu: $(OFILES) crmregex_gnu.o
 #   then build it, add /usr/local/lib to /etc/ld.so.conf, then 
 #   to set the library up.
 #
-crm114: $(OFILES) crmregex_tre.o
-	$(CC) $(LDFLAGS) $(LIBS) $(OFILES) \
+crm114: $(OFILES) crmregex_tre.o crm_main.o
+	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
 	  crmregex_tre.o \
-	  -lm -ltre -o crm114
+	  -o crm114
 #
 #    Done.  Type "make help" to see what else you can make.
 #
@@ -304,7 +304,7 @@ crm114: $(OFILES) crmregex_tre.o
 #
 
 
-crm_main.o: crm_main.c  \
+crm_main.o: crm_main.c \
 	$(HFILES)
 
 crm_compiler.o: crm_compiler.c \
@@ -376,13 +376,13 @@ crm_osbf_bayes.o: crm_osbf_bayes.c \
 crm_osb_hyperspace.o: crm_osb_hyperspace.c \
 	$(HFILES)
 
-crm_expr_clump_nn.o: crm_expr_clump_nn.c \
+crm_expr_sks.o: crm_expr_sks.c \
 	$(HFILES)
 
 crm_expr_svm.o: crm_expr_svm.c \
 	$(HFILES)
 
-crm_strcompress.o: crm_strcompress.c \
+crm_expr_fscm.o: crm_expr_fscm.c \
 	$(HFILES)
 
 crm_stats.o: crm_stats.c \
@@ -405,50 +405,63 @@ crm_debugger.o: crm_debugger.c \
 
 crm_str_funcs.o: crm_str_funcs.c \
 	$(HFILES)
-	$(COMPILE) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_str_funcs.c -o crm_str_funcs.o
 
 crmregex_tre.o: crmregex_tre.c \
 	$(HFILES)
-	$(COMPILE) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crmregex_tre.c -o crmregex_tre.o
 
-crmregex_gnu.o: crmregex_gnu.c $(HFILES)
-	$(COMPILE) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crmregex_gnu.c -o crmregex_gnu.o
+crmregex_gnu.o: crmregex_gnu.c \
+	$(HFILES)
 
-crm_util_errorhandlers.o: crm_util_errorhandlers.c $(HFILES)
-	$(COMPILE) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_util_errorhandlers.c \
-	-o crm_util_errorhandlers.o
+crm_util_errorhandlers.o: crm_util_errorhandlers.c \
+	$(HFILES)
 
-cssutil: cssutil.c crm_css_maintenance.o crm_util_errorhandlers.o $(HFILES)
-	$(COMPILE) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c cssutil.c -o cssutil.o  
-	$(CC) $(LDFLAGS) cssutil.o \
+cssutil.o: cssutil.c  \
+	$(HFILES)
+
+osbf-util.o: osbf-util.c  \
+	$(HFILES)
+
+cssdiff.o: cssdiff.c  \
+	$(HFILES)
+
+cssmerge.o: cssmerge.c  \
+	$(HFILES)
+
+crm_generic_port.o: crm_generic_port.c  \
+	$(HFILES)
+
+
+
+
+cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o 
+	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
 		crm_css_maintenance.o \
 		crm_util_errorhandlers.o \
-		crm_str_funcs.o -lm -ltre -o cssutil
+		crm_str_funcs.o -o cssutil
 
-osbf-util: osbf-util.c crm_osbf_maintenance.o crm_util_errorhandlers.o $(HFILES)
-	$(COMPILE) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c osbf-util.c -o osbf-util.o  
-	$(CC) $(LDFLAGS) osbf-util.o \
+osbfutil: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o 
+	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
-		crm_osbf_maintenance.o -lm -ltre -o osbf-util
+		crm_osbf_maintenance.o -o osbfutil
 
-cssdiff: cssdiff.c crm_util_errorhandlers.o $(HFILES)
-	$(COMPILE) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c cssdiff.c -o cssdiff.o
-	$(CC) $(LDFLAGS) \
+cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o 
+	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
 		crm_util_errorhandlers.o \
-		crm_str_funcs.o -ltre cssdiff.o -o cssdiff
+		crm_str_funcs.o -o cssdiff
 
-cssmerge: cssmerge.c crm_util_errorhandlers.o $(HFILES)
-	$(COMPILE) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c cssmerge.c -o cssmerge.o
-	$(CC) $(LDFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' \
+cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o 
+	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
-		-ltre cssmerge.c -o cssmerge
+		-o cssmerge
+
 
 clean:
 	-rm -f crm114
 	-rm -f cssutil
 	-rm -f osbf-util
+	-rm -f osbfutil
 	-rm -f cssdiff
 	-rm -f cssmerge
 	-rm -f crm114
@@ -471,11 +484,11 @@ install: FORCE
 #    Installing Utilities
 #	
 install_utils:
-	$(MAKE) cssmerge cssutil cssdiff osbf-util
-	install $(INSTALLFLAGS) cssdiff $(BINDIR)/cssdiff$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssmerge $(BINDIR)/cssmerge$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssutil $(BINDIR)/cssutil$(VER_SUFFIX)
-	install $(INSTALLFLAGS) osbf-util $(BINDIR)/osbf-util$(VER_SUFFIX)
+	$(MAKE) cssmerge cssutil cssdiff osbfutil
+	install $(INSTALLFLAGS) cssdiff $(bindir)/cssdiff$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssmerge $(bindir)/cssmerge$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssutil $(bindir)/cssutil$(VER_SUFFIX)
+	install $(INSTALLFLAGS) osbfutil $(bindir)/osbfutil$(VER_SUFFIX)
 	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 #   ^^^ if you don't have EMACS installed in the default place, you
@@ -489,15 +502,15 @@ install_utils:
 #    Installing engine
 #
 install_engine: crm114
-	install $(INSTALLFLAGS) crm114 $(BINDIR)/crm$(VER_SUFFIX)
+	install $(INSTALLFLAGS) crm114 $(bindir)/crm$(VER_SUFFIX)
 
 
 install_binary_only: FORCE
-	install $(INSTALLFLAGS) crm114 $(BINDIR)/crm$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssdiff $(BINDIR)/cssdiff$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssmerge $(BINDIR)/cssmerge$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssutil $(BINDIR)/cssutil$(VER_SUFFIX)	
-	install $(INSTALLFLAGS) osbf-util $(BINDIR)/osbf-util$(VER_SUFFIX)
+	install $(INSTALLFLAGS) crm114 $(bindir)/crm$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssdiff $(bindir)/cssdiff$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssmerge $(bindir)/cssmerge$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssutil $(bindir)/cssutil$(VER_SUFFIX)	
+	install $(INSTALLFLAGS) osbfutil $(bindir)/osbfutil$(VER_SUFFIX)
 	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 
@@ -510,13 +523,14 @@ uninstall-hook:
 
 
 uninstall: FORCE
-	-rm -rf $(BINDIR)/crm$(VER_SUFFIX)
-	-rm -rf $(BINDIR)/crmg$(VER_SUFFIX)
-	-rm -rf $(BINDIR)/crma$(VER_SUFFIX)
-	-rm -rf $(BINDIR)/cssdiff$(VER_SUFFIX)
-	-rm -rf $(BINDIR)/cssmerge$(VER_SUFFIX)
-	-rm -rf $(BINDIR)/cssutil$(VER_SUFFIX)
-	-rm -rf $(BINDIR)/osbf-util$(VER_SUFFIX)
+	-rm -rf $(bindir)/crm$(VER_SUFFIX)
+	-rm -rf $(bindir)/crmg$(VER_SUFFIX)
+	-rm -rf $(bindir)/crma$(VER_SUFFIX)
+	-rm -rf $(bindir)/cssdiff$(VER_SUFFIX)
+	-rm -rf $(bindir)/cssmerge$(VER_SUFFIX)
+	-rm -rf $(bindir)/cssutil$(VER_SUFFIX)
+	-rm -rf $(bindir)/osbf-util$(VER_SUFFIX)
+	-rm -rf $(bindir)/osbfutil$(VER_SUFFIX)
 	-rm -rf $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 
@@ -534,8 +548,15 @@ uninstall: FORCE
 #       install is broken (or you've found a bug).
 #
 megatest: FORCE
-	./megatest.sh  > megatest_test.log 2>&1
-	diff megatest_knowngood.log megatest_test.log &	sleep 1
+	-cp $(srcdir)/*.crm ./           2>&1
+	-cp $(srcdir)/*.mfp ./           2>&1
+	-cp $(srcdir)/*.example ./       2>&1
+	-cp $(srcdir)/QUICKREF.txt ./    2>&1
+	-cp $(srcdir)/INTRO.txt ./       2>&1
+	-cp $(srcdir)/COLOPHON.txt ./    2>&1
+	-cp $(srcdir)/FAQ.txt ./         2>&1
+	$(srcdir)/megatest.sh > megatest_test.log 2>&1
+	diff -EbwBd $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 
 
 #
@@ -601,7 +622,7 @@ src_gzip: tarfile
 i386_tarfile: all
 	rm -rf crm114-$(VERSION).i386
 	mkdir crm114-$(VERSION).i386
-	cp crm114 cssutil cssdiff cssmerge osbf-util \
+	cp crm114 cssutil cssdiff cssmerge osbfutil \
 	Makefile \
 	CRM114_Mailfilter_HOWTO.txt \
 	COLOPHON.txt \
@@ -642,18 +663,25 @@ rsync:  FORCE
 	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES)\
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
 
-FORCE:
+diff: FORCE
+	-(sh diff_em.sh );
 
+
+# original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
 reindent:
-	indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
+	indent -bad -bap -bl -bli0 -bls -cbi4 -cdw -cli0 -di8 -hnl -i4 -l80 -lp -nbc -nce -ncs -npcs -nprs -npsl -nsaf -nsai -nsaw -nsob -nut -pi4 -sc -ss -T index_t -T hitcount_t -T regex_t -T regmatch_t -T regamatch_t -T regaparams_t -T Qitem_t -T regoff_t -T tre_char_t -T COOCCURRENCE_SCORE_TYPE *.c *.h
+
 
 .SUFFIXES = .c .o
 
 .c.o:
-	$(COMPILE) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c $< -o $@
+	$(COMPILE) -c $< -o $@
 
 
-# .PHONY: 
+FORCE:
+
+.PHONY: FORCE reindent depend diff rsync
+
 
 depend:
 	makedepend -- $(CFLAGS) -- *.[ch]

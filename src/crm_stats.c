@@ -1,17 +1,17 @@
-//  crm_stats.c  
-//  
+//  crm_stats.c
+//
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
 //  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
+//  www.fsf.org, and a copy is included in this distribution.
 //
 //     This code is dual-licensed to both William S. Yerazunis and Joe
 //     Langeway, including the right to reuse this code in any way
 //     desired, including the right to relicense it under any other
 //     terms as desired.
 //
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
+//  Other licenses may be negotiated; contact the
+//  author for details.
 //
 //  include some standard files
 #include "crm114_sysincludes.h"
@@ -30,14 +30,14 @@ static const double norm_cdf_lookup[] = { 9.865876e-10, 1.086112e-09, 1.195391e-
 //there is currently no interpolation
 double crm_norm_cdf(double x)
 {
-	long i;   
+        long i;
 
-	if(x < -6.0)
-		return 0.0;
-	if(x >= 6.0)
-		return 1.0;
-	i = (long)((x + 6.0) * 32.0);   
-	return norm_cdf_lookup[i];
+        if(x < -6.0)
+                return 0.0;
+        if(x >= 6.0)
+                return 1.0;
+        i = (long)((x + 6.0) * 32.0);
+        return norm_cdf_lookup[i];
 }
 
 //  notice we put -7.0 in place of -inf, monotonicity is all that
@@ -50,24 +50,24 @@ static const double log_lookup_table[] = { -7.0, -5.950643e+00, -5.257495e+00, -
 //   this guy does linear interpolation, it's fun
 double crm_log(double x)
 {
-	double r = 0, g;
-	int i;
-	while(x >= 2.0)
-	{
-		r += log_lookup_table[768]; //this is (log(2)
-		x /= 2.0;
-	}
-	i = (int)(x * 384.0);
-	g = x - ((double)i) / 384.0;
-	r += (1.0 - g) * log_lookup_table[ i ] + g * log_lookup_table[ i + 1 ];
-	return r;
+        double r = 0, g;
+        int i;
+        while(x >= 2.0)
+        {
+                r += log_lookup_table[768]; //this is (log(2)
+                x /= 2.0;
+        }
+        i = (int)(x * 384.0);
+        g = x - ((double)i) / 384.0;
+        r += (1.0 - g) * log_lookup_table[ i ] + g * log_lookup_table[ i + 1 ];
+        return r;
 }
 
 #define ONE_OVER_SQRT_2PI 0.3989422804014327
 
 double norm_pdf(double x)
 {
-	return ONE_OVER_SQRT_2PI * exp( -0.5 * x * x);
+        return ONE_OVER_SQRT_2PI * exp( -0.5 * x * x);
 }
 
 //  this guy makes it so x = 0 yields 1, this is just for when you
@@ -75,5 +75,5 @@ double norm_pdf(double x)
 
 double normalized_gauss(double x, double s)
 {
-	return exp( -0.5 * x * x / (s * s));
+        return exp( -0.5 * x * x / (s * s));
 }

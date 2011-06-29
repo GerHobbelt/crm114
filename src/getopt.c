@@ -1,5 +1,5 @@
 /*!
-	\file
+        \file
 */
 
 /*
@@ -69,7 +69,7 @@ int getopt(int argc, char *const *argv, const char *optstring)
 
 int getopt_long(int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index)
 {
-	return getopt_long_ex(argc, argv, options, long_options, opt_index, fprintf, stderr);
+        return getopt_long_ex(argc, argv, options, long_options, opt_index, fprintf, stderr);
 }
 
 

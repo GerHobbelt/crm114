@@ -3,7 +3,7 @@
 //     what you need for the full crm114 runtime.
 //
 //  include some standard files
-#include "crm114_sysincludes.h"   
+#include "crm114_sysincludes.h"
 
 long fatalerror ( char *str1, char *str2)
 {

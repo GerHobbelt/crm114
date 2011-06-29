@@ -464,7 +464,19 @@ echo to do basic mathematics and inequality testing, either only in EVALs | .\cr
 echo === TEST 464 ===
 echo But fear not, we _do_ have the document you want. | .\crm114 "-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}" 
 
+del i_test.css 
+del q_test.css
+echo === TEST 465 ===
+.\crm114 "-{window; output /\n**** Fast Substring Compression Match Classifier \n/}"
+.\crm114 "-{learn < fscm > (q_test.css) /[[:graph:]]+/}" < QUICKREF.txt
+echo === TEST 466 ===
+.\crm114 "-{learn < fscm > (i_test.css) /[[:graph:]]+/}" < INTRO.txt
+echo === TEST 467 ===
+echo to do basic mathematics and inequality testing, either only in EVALs | .\crm114 "-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }" 
+echo === TEST 468 ===
+echo But fear not, we _do_ have the document you want. | .\crm114 "-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}" 
 
+del i_vs_q_test.css
 del i_test.css 
 del q_test.css
 echo === TEST 470 ===
@@ -494,7 +506,7 @@ echo === TEST 493 ===
 .\crm114 "-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (q_test.css) /[[:graph:]]+/; liaf }" < QUICKREF.txt
 echo === TEST 495 ===
 rem    build the actual hyperplanes
-.\crm114 "-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < svm unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }"
+.\crm114 "-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < svm unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }"
 
 echo === TEST 499 ===
 echo to do basic mathematics and inequality testing, either only in EVALs | .\crm114 "-{ isolate (:s:); {classify < svm unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }" 
@@ -506,8 +518,41 @@ del i_vs_q_test.css
 del i_test.css 
 del q_test.css
 
+echo === TEST 503 ===
+.\crm114 "-{window; output /\n**** String Kernel SVM (SKS) classifier \n/}"
+.\crm114 "-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (i_test.css) /[[:graph:]]+/; liaf}" < INTRO.txt
+echo === TEST 504 ===
+.\crm114 "-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (q_test.css) /[[:graph:]]+/; liaf }" < QUICKREF.txt
+echo === TEST 505 ===
+rem    build the actual hyperplanes
+.\crm114 "-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks > /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ }"
+echo === TEST 506 ===
+echo to do basic mathematics and inequality testing, either only in EVALs | .\crm114 "-{ isolate (:s:); {classify < sks > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }" 
+echo === TEST 507 ===
+echo But fear not, we _do_ have the document you want. | .\crm114 "-{ isolate (:s:); {classify < sks > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}" 
+del i_vs_q_test.css
+del i_test.css 
+del q_test.css
 
+echo === TEST 508 ===
+.\crm114 "-{window; output /\n**** String Kernel SVM (SKS) Unique classifier \n/}"
+.\crm114 "-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%%^&*()/; learn [:one_paragraph:] < sks unique > (i_test.css) /[[:graph:]]+/ / 0 0 100 0.001 1 0.5 1 4/; liaf}" < INTRO.txt
+echo === TEST 509 ===
+.\crm114 "-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/;  translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%%^&*()/; learn [:one_paragraph:] < sks unique > (q_test.css) /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ ; liaf }" < QUICKREF.txt
 echo === TEST 510 ===
+rem    build the actual hyperplanes
+.\crm114 "-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks unique > /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ }"
+echo === TEST 511 ===
+echo to do basic mathematics and inequality testing, either only in EVALs | .\crm114 "-{ isolate (:s:);  translate /.,!?@#$%%^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }" 
+echo === TEST 512 ===
+echo But fear not, we _do_ have the document you want. | .\crm114 "-{ isolate (:s:); translate /.,!?@#$%%^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}" 
+
+del i_vs_q_test.css
+del i_test.css 
+del q_test.css
+
+
+echo === TEST 520 ===
 .\crm114 "-{window ; output /\n**** Bytewise Correlation classifier \n/}"
 echo to do basic mathematics and inequality testing, either only in EVALs | .\crm114 "-{ isolate (:s:) {classify <correlate> ( INTRO.txt | QUICKREF.txt ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}" 
 

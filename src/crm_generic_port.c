@@ -1,13 +1,13 @@
 //  crm_win32_port.c  - Controllable Regex Mutilator,  version v1.0
 //  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
+//
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
 //  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
+//  www.fsf.org, and a copy is included in this distribution.
 //
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
+//  Other licenses may be negotiated; contact the
+//  author for details.
 //
 //  include some standard files
 #include "crm114_sysincludes.h"
@@ -35,12 +35,12 @@
 
 char *strmov(char *dst, const char *src)
 {
-	assert(dst != NULL);
-	assert(src != NULL);
+        assert(dst != NULL);
+        assert(src != NULL);
 
-	while ((*dst++ = *src++) != 0)
-	  ;
-	return dst - 1;
+        while ((*dst++ = *src++) != 0)
+          ;
+        return dst - 1;
 }
 
 #endif

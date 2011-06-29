@@ -48,3 +48,21 @@ c_SCRIPTS = \
  windowtest.crm \
  windowtest_fromvar.crm
 
+
+
+megatest: FORCE
+	echo ""        
+	echo "    This runs a moderately interesting set of base tests"
+	echo "    to exercise much of CRM114 under TRE.  This takes about"
+	echo "    1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
+	echo "    be patient; you (hopefully) won't see anything till the"
+	echo "    full set of tests complete.  If you didn't use TRE, all"
+	echo "    bets are off."
+	echo ""
+	echo "    Lines of output that start with OK_IF_mumble are allowed"
+	echo "    to change values.  No other lines should.  If other lines"
+	echo "    do change, either your kit isn't quite right or your"
+	echo "    install is broken (or you've found a bug)."
+	echo ""
+	$(srcdir)/megatest.sh > megatest_test.log 2>&1
+	diff -EbwBd megatest_knowngood.log megatest_test.log & sleep 1

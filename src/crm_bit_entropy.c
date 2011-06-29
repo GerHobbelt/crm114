@@ -1,13 +1,13 @@
 //  crm_bit_entropy.c  - Controllable Regex Mutilator,  version v1.0
 //  Copyright 2001-2006 William S. Yerazunis, all rights reserved.
-//  
+//
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
 //  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
+//  www.fsf.org, and a copy is included in this distribution.
 //
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
+//  Other licenses may be negotiated; contact the
+//  author for details.
 //
 //  include some standard files
 #include "crm114_sysincludes.h"
@@ -35,21 +35,21 @@
 //    then Andrej used it for spam filtering.  Matthew Young-Lai
 //    then proposed a technique for merging nodes which is limited
 //    to re-merging the "cloned" nodes in Gordon's work.  Our merging
-//    method here has no such limitation.)  
-//  
+//    method here has no such limitation.)
+//
 //    This particular implementation is entirely separate, similar in
 //    tht it uses a Markov chain, but does not use cloning.  Rather it
-//    uses cross- linking, in a minimum-entropy format, and supports 
-//    "open-ended" Markov chains, rather than the toroidal lattices 
+//    uses cross- linking, in a minimum-entropy format, and supports
+//    "open-ended" Markov chains, rather than the toroidal lattices
 //    required in Cormack's DMC.
 //
 //    For those of you into references as "closest prior", see:
-//    1) Cormack, Gordon V. et al, Data Compression using Dynamic Markov 
+//    1) Cormack, Gordon V. et al, Data Compression using Dynamic Markov
 //       Modeling (Computer Journal #6, 1987
 //    2) Bratko, Andrej, Markov Modeling for Spam Filtering (?) TREC
 //       2005
-//    3) Matthew Young-Lai,  Adding state merging to the DMC data 
-//       compression algorithm, Information Processing Letters 70 
+//    3) Matthew Young-Lai,  Adding state merging to the DMC data
+//       compression algorithm, Information Processing Letters 70
 //       (1999) 223–228.
 //
 //
@@ -64,16 +64,16 @@
 //    Like every other Markov chain, there's a start node, and then
 //    for each observed 1 or 0 there's an observed freqency of 1 or 0,
 //    and the associated next node for a 1 or 0.  The quality of match
-//    is just the sums of the entropy (*) of each path taken.  
+//    is just the sums of the entropy (*) of each path taken.
 //
 //    More correctly, entropy is the weighted sum for an ensemble of
 //    signals, and is -Psig * log2 (Psig), and the sum over an
 //    ensemble of possible texts yields the entropy which is the
 //    average bit rate.  Whichever Markov chain shows less entropy
-//    is the one that matches best.  However, in this case we're 
+//    is the one that matches best.  However, in this case we're
 //    only given one example, which is the text in consideration,
 //    and so the probability of each transition is 1.0000 exactly
-//    (as we have only a single sample of the unknown).  Thus, we 
+//    (as we have only a single sample of the unknown).  Thus, we
 //    actually sum the bits required; that is, log2 (Psig).
 //
 //    Nota Bene 1: in order to make this code a little bit more
@@ -88,7 +88,7 @@
 //    classifiers, note that this classifier does NOT use the tokenizer
 //    regex system, nor the SBPH or the OSB feature set.  Instead,
 //    all that state information is captured by where you are in the
-//    Markov chain, and the concept of "token" is replaced by the 
+//    Markov chain, and the concept of "token" is replaced by the
 //    concept of "alphabet".  By default, right now the "alphabet"
 //    is single bits.
 //
@@ -165,7 +165,7 @@
 //    do one of : (1) stop accumulating entropy; you can't go any
 //    further; (2) go back to the START node and keep accumulating, or
 //    (3) jump to the node with the closest prior history and keep
-//    accumulating.  
+//    accumulating.
 //
 //    Do this on each bitwise markov file; the file which accumulates
 //    the lowest compressed size is the best matching file.
@@ -174,7 +174,7 @@
 ///////////////////////////////////////////////////////////////////
 //
 //          Algorithm for Learning - Overview
-//    
+//
 //    Before you learn in the first text, initialize the data
 //    structure with a START node with NULL exit nodes for each of the
 //    possible exits.  If you want, you can put something bigger or
@@ -186,9 +186,9 @@
 //    you're learning a file, and you end up at a node exit that's
 //    a NULL (meaning no node is yet linked in for the current bit
 //    pattern) then grab a node off the free list (or malloc one).
-//    See below under "advanced methods" for how to get more 
+//    See below under "advanced methods" for how to get more
 //    nodes by merging very similar nodes together.
-// 
+//
 //    Whenever a node is seen with both a sufficiently large number of
 //    seens, and a sufficiently balanced number of differing symbols,
 //    "clone" the node so that the Markov chain branches on the
@@ -203,14 +203,14 @@
 //    last part of the corpus data), but there are ways to merge
 //    similar nodes (see "advanced methods" below) to get more free
 //    nodes without throwing away data.
-//    
+//
 //    Note - there is a "classical" method for building a hidden
 //    Markov model, but it's O(n^2) in the number of nodes in the
 //    output model!  It basically uses hillclimbing techniques to form
 //    the convex hull and then climbing to the local top of the hull
 //    repeatedly.  That's fine for small HMMs but here, when we may
 //    have a million nodes, that's way too slow.
-// 
+//
 //       Method 1 - for both initial-loop or terminated Markov chains
 //
 //        Follow the Markov chain from START, incrementing the seen-0
@@ -249,7 +249,7 @@
 //    until a state is found with at least two infeeders, and clone
 //    *that* node and all successor nodes down to the current node.
 //    Note that if we hit the START node we don't do this as there's
-//    no way to clone START.  
+//    no way to clone START.
 //
 //    The simple and obvious way to clone a node of low predictive
 //    power is to keep track of the previous node while doing a
@@ -260,7 +260,7 @@
 //    only a single infeeder, which we know is at best a single line
 //    of prior states of arbitrary length, and at worst a series of
 //    nodes that all looked similar at some time in the past.
-//    
+//
 
 
 //////////////////////////////////////////////////////////////////
@@ -284,7 +284,7 @@
 //    generated floating point number is the "closest node".  This is
 //    a different version of "arithmetical coding", but it can be
 //    lossy (in a controlled way).  See the Guazzo coding method in
-//    Cormack's paper - note that we do NOT use Guazzo coding for 
+//    Cormack's paper - note that we do NOT use Guazzo coding for
 //    generating output but rather just for quickly finding the node
 //    whth the closest prior state for us to jump to when we run
 //    off the edge of a model.
@@ -305,7 +305,7 @@
 //    1/4 = 0.250, while the second-most-recent is 3/4 * 1/4 = 3/16 =
 //    .1875, and the bit before that is 3/4 * 3/16 = 9/64 = .04687,
 //    and so on.
-//    
+//
 //    Higher exponents just stretch out this series even further.
 //    There is no need to assume only an integer exponent.  Indeed,
 //    it's only because of the finite precision of the computer that
@@ -317,8 +317,8 @@
 //    1, which yields a prior bit weight of 1/2 (whch is just the
 //    floating-point mantissa as described above).  (NB: as of 20070101,
 //    the "floating point" has been replaced by a "long long" with 64 bits
-//    of precision.  This uses less space) 
-//    
+//    of precision.  This uses less space)
+//
 //    Values of the exponent less than one yield a situation where the
 //    range of possible outcome FIR numbers becomes discontinuous;
 //    that is, significant chunks of the range become unreachable by
@@ -350,13 +350,13 @@
 //    they have similar local probabilities - that is, if they have similar
 //    0-counts and 1-counts.  If one node goes 0 mostly and the other
 //    goes 1 mostly, then there's a good chance that this isn't a good
-//    merge.  How to weight FIR prior history match versus the local 
+//    merge.  How to weight FIR prior history match versus the local
 //    outbound probability is a good question.
 //
 //    Another merge candidate is to look at nodes which have identical
 //    0 or 1 destinations.  However, finding this requires either an
 //    extensible list of back pointers or brute-force search (albeit
-//    over a very small subset of the entire Marov Chain).  
+//    over a very small subset of the entire Marov Chain).
 //
 //    If we're running in <unique> mode (that is, nodes are allocated
 //    on each unique path, and no node has ancestors with any
@@ -374,33 +374,33 @@
 //    alphabets are an obvious extension) we perform the following steps:
 //
 //    * update the to-be-kept node with the sums of the outbound 0-seen
-//      and 1-seen counts.  Without any loss, we can choose the 
+//      and 1-seen counts.  Without any loss, we can choose the
 //      to-be-kept node is the node with the lower index number.
 //    * we keep whichever output chain had the highest counts of each
 //      of the 0-seen and 1-seen categories
-//    * we set the FIR prior history to the weighted average of the 
+//    * we set the FIR prior history to the weighted average of the
 //      two prior weighted averages
 //    * for the two output nodes which were _not_ kept (a 0-chain and
-//      a 1-chain) mark these chains for eligibility for garbage 
+//      a 1-chain) mark these chains for eligibility for garbage
 //      if we choose active collection;
 //    * put the merged-away node on the free list.
 //    * make an update pass thorugh the nodeset; any node outlet pointing to
 //      the merged-away node is reset to point to the to-be-kept node.
-//    
+//
 //    We may choose to merge more than one node when we encounter
 //    an empty free list.  Each merge gives us one node for sure, plus
-//    the possibility of many others.  
-//   
+//    the possibility of many others.
+//
 //    At some point, a garbage collection is necessary to reclaim nodes
 //    that no longer have a prior node.  We can do this either by:
 //    * reference counts - each node can keep an accurate reference count
-//      of nodes that can transfer to this node.  Since there are only 
+//      of nodes that can transfer to this node.  Since there are only
 //      three events that can cause the reference count to change (those
 //      being "allocate from free list == refcount = 1", "clone node
-//      refcount = split incomings, and  "merge with another node 
-//      == refcount1 + refcount2" then the refcounts can be maintained at 
+//      refcount = split incomings, and  "merge with another node
+//      == refcount1 + refcount2" then the refcounts can be maintained at
 //      relatively low cost.
-//    * we can run a "classic" mark and sweep.  However, there's a 
+//    * we can run a "classic" mark and sweep.  However, there's a
 //      better way...
 //    * we could add back pointers in each node.  Unfortunately, that
 //      means the size of a node could grow rather large.  There is
@@ -408,8 +408,8 @@
 //    * We could add chaining pointers on the _output_ of each seen
 //      slot.  The "to" node gets a single slot added, to point to
 //      the first node that can transfer in; each such node points
-//      to the next node that can also transfer to the target node.  
-//      Preferably, the insertions are done in order so the list 
+//      to the next node that can also transfer to the target node.
+//      Preferably, the insertions are done in order so the list
 //      remains sorted.
 //
 //    When learning a new text, we also compute the running FIR prior
@@ -421,18 +421,18 @@
 //    this reason, node FIR prior encodings may change so it's necessary
 //    for the sorted FIR vector to contain not just the FIR values, but
 //    also backpointers to the FIR nodes that held them.
-//   
-//     Improvement: rather than a separate sorted list of FIR values, 
+//
+//     Improvement: rather than a separate sorted list of FIR values,
 //     embed the FIR value in the cell, along with the "next less"
 //     and "next greater" indices.  Thus, each cell contains within it
 //     pointers to it's most likely merge candidates.
-//     
+//
 //     Secondary improvement - when allocating a new node from the
 //     free list, how does one efficiently link the new node into the
 //     next-less and next-greater lists?  Sequential search clearly
 //     works, but is inefficient.  Clearly a binary (or near-binary)
 //     tree would assist this but it's a programming hassle to
-//     maintain the two data structures in synchrony.  
+//     maintain the two data structures in synchrony.
 //
 //     Alternatively, a fixed-size table of nodes at or close to
 //     various "thresholds" can be maintained; when a node changes
@@ -442,13 +442,13 @@
 //     node that is currently in that slot.  If it's better (not just
 //     as good, "better", to minimize thrashing) then the new node
 //     index is written into the table; otherwise the old node stays.
-// 
+//
 //     Note that nothing prevents a node from being in the table more
 //     than once, nor is there any correctness "need" for the table to
 //     be exactly right.  Instead, the lookaside table is just a
 //     speedup that helps a lot most of the time.  When a node changes
-//     value, it will move (some) so incorrectness is part of the 
-//     game.  If you really want, you can move the node to a new 
+//     value, it will move (some) so incorrectness is part of the
+//     game.  If you really want, you can move the node to a new
 //     lookaside table slot, and then look at the previous next-less
 //     and next-greater nodes, and choose one of them to go into
 //     the table, replacing the (now moved) node.  (NB: in implementation,
@@ -461,23 +461,23 @@
 ////////////////////////////////////////////////////////////////////////
 //
 //    Futher Hacks and Improvements: resuming a CLASSIFY past NULL.
-//    
+//
 //    If the classifier runs off the end of the known Markov chains,
 //    what do we do?  Just drop the following text?  Possibly - but
 //    there is an alternative.
 //
 //    We can use the FIR arithmetical coding to resume the Markov
-//    chain at a near-optimal position.  The difference between where 
+//    chain at a near-optimal position.  The difference between where
 //    we are and where we resume should be as small as possible;
 //    fortunately the FIR-next-least and FIR-next-greater indices in the
 //    current node give the two nearest side-steps at the current Markov
-//    node; we can then explore up and down the FIR chain to find a 
+//    node; we can then explore up and down the FIR chain to find a
 //    preexisting node that actually has a further non-NULL chain.
-//    The entropy increase due to this side-step outside the Markov 
+//    The entropy increase due to this side-step outside the Markov
 //    chain is not entirely computable from the FIR values, because
 //    the prior information that's already rolled off the least significant
 //    bit of the FIR calculation.
-//       
+//
 //    (note: this is currently the default action)
 
 ////////////////////////////////////////////////////////////////////
@@ -501,7 +501,7 @@
 //      * also always the node "higher than the highest".
 //
 //    If we have a FIR lookaside speedup table, that also needs to
-//    have space allocated. 
+//    have space allocated.
 //
 //    Each normal node contains a header containing:
 //
@@ -512,7 +512,7 @@
 //      * the index to the node with the next smallest FIR value
 //
 //    These FIR prior values are updated whenever a node is
-//    visited during learning.  This may mean minor motion up and 
+//    visited during learning.  This may mean minor motion up and
 //    down the FIR chain.
 //
 //    Each node also contains BITMARKOV_ALPHABET_SIZE slots; each slot
@@ -524,13 +524,13 @@
 //
 //     Forward Markov slots:
 //
-//      * how many times this alphabet member was seen as the input at 
+//      * how many times this alphabet member was seen as the input at
 //        this node.
 //
 //      * when it's seen, what the index of the next node to transition to
 //        is (index, not pointer, for position-independent code)
 //
-//     Backward slots for maintenance (clone and merge)   
+//     Backward slots for maintenance (clone and merge)
 //
 //      * index of the first incoming node that can transfer to this
 //        node when that prior node saw this member of the alphabet A
@@ -546,9 +546,9 @@
 //        nodes that can reach a particular node.  As we don't need
 //        to traverse this list in any particular order, it's strictly
 //        a "stack" (newest added at the front).
-//      
 //
-//    Using 64-bit storage for the floating-point FIR values and 
+//
+//    Using 64-bit storage for the floating-point FIR values and
 //    for the visit counts, and 32-bit storage for all indices, then
 //    assuming we're using a binary alphabet, we have:
 //
@@ -563,9 +563,9 @@
 //
 //    Total - 56 bytes storage per nodem, 18K nodes per megabyte.
 //    Note that the absolute minimum size is 24 bytes/node with no
-//    advanced features, so we're about a factor of two worse in 
+//    advanced features, so we're about a factor of two worse in
 //    space, and for that we get near-linear in size for both learning
-//    and classification.  
+//    and classification.
 //
 //    If we add in a 0.1% overhead size for the FIR prior lookaside
 //    accelleration table (containing 1 index per 4-byte word) then
@@ -583,8 +583,8 @@
 //    grid method may be used to smooth it out.  But we'll climb that
 //    mountain when we come to it.
 //
-//    Note to self: don't use the mathlib LOG function!  
-//    It's far too slow.  We'll custom craft our own that uses 
+//    Note to self: don't use the mathlib LOG function!
+//    It's far too slow.  We'll custom craft our own that uses
 //    linear interpolation over a lookup table.
 //
 
@@ -598,17 +598,17 @@
 //     state.  Since the FIR-prior value encodes at least 64 bits, can
 //     go to 96 bits (GCC 4.0 "long double") and possibly 128 (if your
 //     compiler supports "-mlong-double-128") shouldn't we be sticking
-//     with the FIR-prior and simply *ignoring* the actual links, as 
+//     with the FIR-prior and simply *ignoring* the actual links, as
 //     they (and the state nodes) encode far less information?
-//       
+//
 //     Submitted as an "ultimate" pare-down - the memory contains
 //     ONLY the times-previously-seen information.  It's a big array,
 //     indexed by the most significant N bits of the prior, with the
 //     high-order bit being the transition now being executed.  All
 //     that's there in the array is the number of times this transition
 //     has been executed in LEARN mode; everything else is embedded
-//     in the state (which _is_ the index).  
-//   
+//     in the state (which _is_ the index).
+//
 //     That optimization would concieveably allow one to write an
 //     embedded form of bit-entropic classification in as little as
 //     two to four megabytes of space per class; in short, something
@@ -626,26 +626,26 @@
 //
 
 
-/////////////////////////////////////////////////////////////////          
+/////////////////////////////////////////////////////////////////
 //
 //    **** NOTE - THIS IS ALL UNNECESSARY AND DEPRECATED IN THE CURRENT CODE!
 //
 //        Per-node memory layout
 //
 //    We have three pointers in the node slot; each of these is replicated
-//    for each member of the alphabet in the Markov graph.  
+//    for each member of the alphabet in the Markov graph.
 //    *  The .nextcell says what the next cell is when we see this alph
-//    *  The .backfirst cell says what the first cell is that could 
+//    *  The .backfirst cell says what the first cell is that could
 //          get us here when it saw an alph
 //    *  The .samenext cell says what the next cell that also gets you
 //          you to the same nextcell when you see the same alph.
-// 
+//
 //    Yes, this is slightly redundant, but it's very fast.  (but note the
 //    approximation above that would save us all this memory!)
-//   
+//
 //    A diagram here helps to understand the slotting structure
-//   
-//    node  
+//
+//    node
 //     .nextcell   >------------------->--> node
 //     .backfirst <---\     />------->/        .nextcell >---------->
 //     .samenext -|    \---------------------< .backfirst
@@ -660,8 +660,8 @@
 //     only come from the alpha link of a node of FIR value 0.520 ; a
 //     node of value 0.779 can only have come from the 1-link of a FIR
 //     of .558 so we can just search the FIR around there.
-//      
-//                                      
+//
+//
 //
 //    Helper function to calculate entropy from a probability
 //
@@ -673,20 +673,20 @@ static double stats_2_entropy (long count, long total)
   static long init = 0;
   static double loglookups[ENT_CACHE_MAXCOUNT][ENT_CACHE_MAXTOTAL];
   double value;
-  
+
   //   if no prior information, this is 1 bit exactly of data.
-  if (total < 0.5) 
+  if (total < 0.5)
     return (1.00);
-  
+
   if (count > total)
     return (0.0);
-  
-  //  value =  ( - (crm_logl (
-  //	      (count + BIT_ENTROPIC_PROBABILITY_NERF)
-  //	      / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
+
+  //  value =  ( - (log(
+  //          (count + BIT_ENTROPIC_PROBABILITY_NERF)
+  //          / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
   //     / 0.69314718 );
   //  return (value);
-  
+
   //      Do we need to initialize the cache to "no data", which we
   //      code for as a -1 as the entropy.
   if (init == 0)
@@ -694,41 +694,41 @@ static double stats_2_entropy (long count, long total)
       long i, j;
       init = 1;
       for (i = 0; i < ENT_CACHE_MAXCOUNT; i++)
-	for (j = 0; j < ENT_CACHE_MAXTOTAL; j++)
-	  loglookups[i][j] = -1;
+        for (j = 0; j < ENT_CACHE_MAXTOTAL; j++)
+          loglookups[i][j] = -1;
     }
-  
+
   //    See if we've already cached this log probability value?
   if ( count < ENT_CACHE_MAXCOUNT && total < ENT_CACHE_MAXTOTAL)
     {
       value = loglookups[count][total];
       if (value > 0.0)
-	return value;
+        return value;
     }
 
   //     Nope.  Nothing in the cache.  Calculate it and cache it.
-  //    
+  //
   //      "correct" entropy is factored by the unknown prior:
-  // value =  ( - ( ( count + BIT_ENTROPIC_PROBABILITY_NERF) 
-  //	 / ( total + BIT_ENTROPIC_PROBABILITY_NERF))
-  //     *  (crm_logl (
-  //	    (count + BIT_ENTROPIC_PROBABILITY_NERF)
-  //	    / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
+  // value =  ( - ( ( count + BIT_ENTROPIC_PROBABILITY_NERF)
+  //     / ( total + BIT_ENTROPIC_PROBABILITY_NERF))
+  //     *  (log (
+  //        (count + BIT_ENTROPIC_PROBABILITY_NERF)
+  //        / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
   //     / 0.69314718 );
 
   //      But here, we know the event has come to pass and so the
   //     prior is 1.0 (the event itself is a certainty at this point;
   //     we are now just counting bits needed to encode it ! ).
-  value =  ( - crm_logl (
-			 (count + BIT_ENTROPIC_PROBABILITY_NERF)
-			 / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
+  value =  ( - log (
+                         (count + BIT_ENTROPIC_PROBABILITY_NERF)
+                         / (total +  BIT_ENTROPIC_PROBABILITY_NERF)))
     / 0.69314718 ;
-  
+
 
   //   if it fits, put it in the cache
   if ( count < ENT_CACHE_MAXCOUNT && total < ENT_CACHE_MAXTOTAL)
     loglookups[count][total] = value;
-  
+
   //     and we're done.
 
   return (value);
@@ -748,20 +748,20 @@ static long fir_2_slot (double fir, long firlatlen)
 static double slot_2_fir (long slot, long firlatlen)
 {
   double outval;
-  /* 
-	 [i_a] shouldn't this be: 
+  /*
+         [i_a] shouldn't this be:
 
-		outval = (slot + 0.5) / firlatlen;
+                outval = (slot + 0.5) / firlatlen;
 
      to arrive at an even distribution of fir values for the complete range of slot values,
-	 where each fir value returned is the one right smack in the middle of the ir range
-	 which is assigned to that same slot (fir_2_slot()).
+         where each fir value returned is the one right smack in the middle of the ir range
+         which is assigned to that same slot (fir_2_slot()).
 
-	 One slot has a width of (1.0 / firlatlen) when assuming an even distribution over
-	 firlatlen slots.
-	 That means the 'middle' FIR value for a slot S is the fir value ((S + 0.5) / firlatlen).
+         One slot has a width of (1.0 / firlatlen) when assuming an even distribution over
+         firlatlen slots.
+         That means the 'middle' FIR value for a slot S is the fir value ((S + 0.5) / firlatlen).
   */
-#if 10 
+#if 10
   outval = (slot + 0.5) / firlatlen;
 #else
   outval = (slot + 0.5) / (firlatlen - 1);
@@ -773,29 +773,29 @@ static double slot_2_fir (long slot, long firlatlen)
 
 //    Dump just the significant entries in the FIRlat
 static void firlat_significant (ENTROPY_FEATUREBUCKET_STRUCT *nodes,
-				long *firlat, long firlatlen)
+                                long *firlat, long firlatlen)
 {
   long i;
   fprintf (stderr, "**** FIRLAT significant scan *****\n");
   fprintf (stderr, "root node low %ld high %ld\n",
-	   nodes[0].fir_smaller, nodes[0].fir_larger);
+           nodes[0].fir_smaller, nodes[0].fir_larger);
   for (i = 0; i < firlatlen; i++)
     {
       if (firlat[i] > 0)
-	{
-	  fprintf (stderr, 
-		   "FIRLAT slot %ld pval %f node %ld fv %f down %ld up %ld\n",
-		   i, slot_2_fir(i, firlatlen),
-		   firlat[i], nodes[firlat[i]].fir_prior,
-		   nodes[firlat[i]].fir_smaller,
-		   nodes[firlat[i]].fir_larger);
-	}
+        {
+          fprintf (stderr,
+                   "FIRLAT slot %ld pval %f node %ld fv %f down %ld up %ld\n",
+                   i, slot_2_fir(i, firlatlen),
+                   firlat[i], nodes[firlat[i]].fir_prior,
+                   nodes[firlat[i]].fir_smaller,
+                   nodes[firlat[i]].fir_larger);
+        }
     }
 }
 
-static void firlat_sanity_scan (long *firlat, long firlatlen, 
-				ENTROPY_FEATUREBUCKET_STRUCT *nodes,
-				long nodeslen)
+static void firlat_sanity_scan (long *firlat, long firlatlen,
+                                ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+                                long nodeslen)
 {
   long i;
   long stepcounter;
@@ -804,20 +804,20 @@ static void firlat_sanity_scan (long *firlat, long firlatlen,
   for (i = 0; i < firlatlen; i++)
     {
       if (firlat[i] > nodeslen || firlat[i] < 0 )
-	fprintf (stderr, 
-		 "Internal FIRLAT error: slot %ld claims OOB node %ld\n",
-		 i, firlat[i]);
+        fprintf (stderr,
+                 "Internal FIRLAT error: slot %ld claims OOB node %ld\n",
+                 i, firlat[i]);
     }
   for (i = 0; i < nodeslen; i++)
     {
       if (   nodes[i].fir_smaller < -1
-	     || nodes[i].fir_larger < -1
-	     || nodes[i].fir_smaller > nodeslen
-	     || nodes[i].fir_larger > nodeslen )
-	fprintf (stderr, 
-		 "Internal FIRchain error at node %ld (%f) smaller: %ld larger %ld\n",
-		 i, nodes[i].fir_prior, 
-		 nodes[i].fir_smaller, nodes[i].fir_larger);
+             || nodes[i].fir_larger < -1
+             || nodes[i].fir_smaller > nodeslen
+             || nodes[i].fir_larger > nodeslen )
+        fprintf (stderr,
+                 "Internal FIRchain error at node %ld (%f) smaller: %ld larger %ld\n",
+                 i, nodes[i].fir_prior,
+                 nodes[i].fir_smaller, nodes[i].fir_larger);
     }
 
   //
@@ -825,9 +825,9 @@ static void firlat_sanity_scan (long *firlat, long firlatlen,
   //
   stepcounter = 0;
   i = nodes[0].fir_larger;
-  while (stepcounter < nodeslen + 1 
-	 && nodes[i].fir_larger > 0 
-	 && nodes[i].fir_larger < nodeslen)
+  while (stepcounter < nodeslen + 1
+         && nodes[i].fir_larger > 0
+         && nodes[i].fir_larger < nodeslen)
     {
       stepcounter++;
       i = nodes[i].fir_larger;
@@ -836,14 +836,14 @@ static void firlat_sanity_scan (long *firlat, long firlatlen,
     fprintf (stderr, "ERROR: the FIR chain is figure-6ed upward\n");
   if (nodes[i].fir_larger != 0)
     fprintf (stderr, "ERROR: the FIR chain goes off to node %ld\n",
-	     nodes[i].fir_larger);
+             nodes[i].fir_larger);
 
   //  and again, check chain integrity downward
   stepcounter = 0;
   i = nodes[0].fir_smaller;
-  while (stepcounter < nodeslen + 1 
-	 && nodes[i].fir_smaller > 0 
-	 && nodes[i].fir_smaller < nodeslen)
+  while (stepcounter < nodeslen + 1
+         && nodes[i].fir_smaller > 0
+         && nodes[i].fir_smaller < nodeslen)
     {
       stepcounter++;
       i = nodes[i].fir_smaller;
@@ -852,13 +852,13 @@ static void firlat_sanity_scan (long *firlat, long firlatlen,
     fprintf (stderr, "ERROR: the FIR chain is figure-6ed downward\n");
   if (nodes[i].fir_smaller != 0)
     fprintf (stderr, "ERROR: the FIR chain goes off to node %ld\n",
-	     nodes[i].fir_smaller);
+             nodes[i].fir_smaller);
 }
 
-  
+
 //
-//    Helper function to find the smallest node that's larger than 
-//    the called FIR.   
+//    Helper function to find the smallest node that's larger than
+//    the called FIR.
 //
 //    Originally both this routine and find_closest returned exact
 //    answers- but a bug caused the hash-table to find exact entry
@@ -886,38 +886,38 @@ static long firlat_find_smallest_larger
   long firlat_entry;
   long step_count;
 
-  //  Start out with FIRlat option.  
+  //  Start out with FIRlat option.
   firlat_entry = fir_2_slot ( my_fir, firlatlen);
   if (internal_trace)
-    fprintf (stderr, "FFSL: Searching for FIR: %f slot %ld\n",  
-	     my_fir, firlat_entry);
+    fprintf (stderr, "FFSL: Searching for FIR: %f slot %ld\n",
+             my_fir, firlat_entry);
 
   if (firlat_entry < 0 || firlat_entry >= firlatlen)
     fprintf (stderr, "FIRLAT is very hosed!\n");
   if (internal_trace)
-    fprintf 
-      (stderr, 
+    fprintf
+      (stderr,
        "FFSL search: FIR: %f, slot: %ld node: %ld, smaller: %ld, larger:%ld\n",
        my_fir, firlat_entry, firlat[firlat_entry],
-       nodes[firlat[firlat_entry]].fir_smaller, 
+       nodes[firlat[firlat_entry]].fir_smaller,
        nodes[firlat[firlat_entry]].fir_larger );
-  
+
 
   if (firlat[firlat_entry] > nodeslen
       || nodes[firlat[firlat_entry]].fir_smaller < 0
       || nodes[firlat[firlat_entry]].fir_larger < 0 )
     fprintf (stderr, "Internal FIR chain error at slot %ld node %ld (%f)\n",
-	     firlat_entry, firlat[firlat_entry], my_fir);
-  
+             firlat_entry, firlat[firlat_entry], my_fir);
+
   //   Move down in the firlat till we find a live node.
-  while ( firlat_entry > 0 && firlat[firlat_entry] <= 0) 
+  while ( firlat_entry > 0 && firlat[firlat_entry] <= 0)
     {
-      //    fprintf (stderr, 
-      //	   "firlat_entry: %ld points to node %ld so stepdown\n",
-      //	   firlat_entry, firlat[firlat_entry]);
+      //    fprintf (stderr,
+      //           "firlat_entry: %ld points to node %ld so stepdown\n",
+      //           firlat_entry, firlat[firlat_entry]);
       firlat_entry--;
       if (internal_trace)
-	fprintf (stderr, "_");
+        fprintf (stderr, "_");
 
     }
 
@@ -938,20 +938,20 @@ static long firlat_find_smallest_larger
       //  Yes.  Resort to sequential search
       hit_node = nodes[0].fir_larger;
       if (internal_trace)
-	fprintf (stderr, 
-		 "FFSL: Need to start from rootptr- next node is %ld (%f) for fir %f\n",
-		 hit_node, nodes[hit_node].fir_prior, my_fir);
+        fprintf (stderr,
+                 "FFSL: Need to start from rootptr- next node is %ld (%f) for fir %f\n",
+                 hit_node, nodes[hit_node].fir_prior, my_fir);
     }
   else
     {
       //   This non-null entry is where we start to look.
       hit_node = firlat[firlat_entry];
       if (internal_trace)
-	fprintf (stderr,  
-		 "FFSL: non-null ENTRY at slot %ld node: %ld prior: %f down %ld up %ld\n", 
-		 firlat_entry,
-		 hit_node, nodes[hit_node].fir_prior,
-		 nodes[hit_node].fir_smaller, nodes[hit_node].fir_larger);
+        fprintf (stderr,
+                 "FFSL: non-null ENTRY at slot %ld node: %ld prior: %f down %ld up %ld\n",
+                 firlat_entry,
+                 hit_node, nodes[hit_node].fir_prior,
+                 nodes[hit_node].fir_smaller, nodes[hit_node].fir_larger);
     }
 
 
@@ -965,9 +965,9 @@ static long firlat_find_smallest_larger
       hit_node = nodes[hit_node].fir_larger;
       step_count++;
       if (internal_trace)
-	fprintf (stderr, "+");
+        fprintf (stderr, "+");
     }
-  
+
   //   Part 2 - assure that (because of FIRlat issues) we are not "above"
   //   yet other nodes that we are smaller than.
   while ( hit_node > 0 && my_fir < nodes[hit_node].fir_prior )
@@ -975,7 +975,7 @@ static long firlat_find_smallest_larger
       hit_node = nodes[hit_node].fir_smaller;
       step_count++;
       if (internal_trace)
-	fprintf (stderr, "-");
+        fprintf (stderr, "-");
     }
 
   //    and again, try going up one last time.
@@ -984,28 +984,28 @@ static long firlat_find_smallest_larger
       hit_node = nodes[hit_node].fir_larger;
       step_count++;
       if (internal_trace)
-	fprintf (stderr, "*");
+        fprintf (stderr, "*");
     }
 
   //   hit_node is now the smallest node that's larger than us
   if (internal_trace)
-    fprintf (stderr, "FFSL result node: %ld with FIR %f\n", 
-	     hit_node, 
-	     nodes[hit_node].fir_prior);
-  
+    fprintf (stderr, "FFSL result node: %ld with FIR %f\n",
+             hit_node,
+             nodes[hit_node].fir_prior);
+
   if (internal_trace)
     fprintf (stderr, "Steps used: %ld\n", step_count);
 
   return (hit_node);
 }
 
-static long firlat_find_closest_node 
+static long firlat_find_closest_node
   ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
     long nodeslen,
     long *firlat,
     long firlatlen,
     double currentfir)
-{		       
+{
   long larger;
   long smaller;
   long closest;
@@ -1032,9 +1032,9 @@ static long firlat_find_closest_node
 
 #endif
 
-  //      return the index of the node that's closest in 
+  //      return the index of the node that's closest in
   //      FIRLAT value to our current node.
-  
+
   //          assume larger is closer;
   larger = firlat_find_smallest_larger
     (nodes, nodeslen, firlat, firlatlen, currentfir);
@@ -1044,17 +1044,17 @@ static long firlat_find_closest_node
   //          now make sure that smaller isn't better.
   smaller = nodes[larger].fir_smaller;
   error_smaller = currentfir - nodes[smaller].fir_prior;
-  if (error_smaller < error_larger) 
+  if (error_smaller < error_larger)
     closest = smaller;
   return (closest);
 }
 
 //      How we remove a node from the FIR chain and firlat
 static void firlat_remove_node  ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
-				  long nodeslen,
-				  long *firlat,
-				  long firlatlen,
-				  long curnode)
+                                  long nodeslen,
+                                  long *firlat,
+                                  long firlatlen,
+                                  long curnode)
 {
   //   cut it out of the chain first
   long smaller_node, larger_node;
@@ -1067,20 +1067,20 @@ static void firlat_remove_node  ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
   {
     if (internal_trace)
       {
-	fprintf (stderr, "About to FIR chop node %ld (%ld %ld)\n",
-		 curnode, smaller_node, larger_node);
+        fprintf (stderr, "About to FIR chop node %ld (%ld %ld)\n",
+                 curnode, smaller_node, larger_node);
       }
     if (smaller_node < 0 && larger_node < 0)
       {
-	//  what do we do if the node ain't in the FIR chain - nuthin!
-	//  we might be initiated on a shuffle or somesuch.
+        //  what do we do if the node ain't in the FIR chain - nuthin!
+        //  we might be initiated on a shuffle or somesuch.
         //  fprintf (stderr, " BLARG!!!!  removing a non-FIRchained node!\n");
       }
     else
       {
-	//  cut the node out of the FIR chain.
-	nodes[smaller_node].fir_larger = larger_node;
-	nodes[larger_node].fir_smaller = smaller_node;
+        //  cut the node out of the FIR chain.
+        nodes[smaller_node].fir_larger = larger_node;
+        nodes[larger_node].fir_smaller = smaller_node;
       }
   }
   //  Now we're definitely out of the chain.  Mark us so....
@@ -1088,12 +1088,12 @@ static void firlat_remove_node  ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
   nodes[curnode].fir_larger = -1;
 
   if (internal_trace)
-    fprintf 
-      ( stderr, 
-	"FIRchain delete %ld (%f) between %ld (%f) and %ld (%f)\n",
-	curnode,      nodes[curnode].fir_prior,
-	smaller_node, nodes[curnode].fir_prior,
-	larger_node,  nodes[curnode].fir_prior);
+    fprintf
+      ( stderr,
+        "FIRchain delete %ld (%f) between %ld (%f) and %ld (%f)\n",
+        curnode,      nodes[curnode].fir_prior,
+        smaller_node, nodes[curnode].fir_prior,
+        larger_node,  nodes[curnode].fir_prior);
 
   //  Since we're not in the chain (and unfindable that way, we can
   //  now also be removed from the FIRLAT lookaside table.
@@ -1103,9 +1103,9 @@ static void firlat_remove_node  ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
     {
       firlat_entry = nodes[curnode].firlat_slot;
       if ( firlat[firlat_entry] == curnode)
-	firlat[firlat_entry] = 0;
+        firlat[firlat_entry] = 0;
     }
-  
+
   //     This is the slot where we once were.  Fix it up.
   //
   firlat_entry =  fir_2_slot ( nodes[curnode].fir_prior, firlatlen);
@@ -1113,16 +1113,16 @@ static void firlat_remove_node  ( ENTROPY_FEATUREBUCKET_STRUCT *nodes,
     {
       long correct_node;
       perfect_fir = slot_2_fir ( firlat_entry, firlatlen);
-      correct_node = firlat_find_closest_node 
-	( nodes, nodeslen, firlat, firlatlen, perfect_fir);
+      correct_node = firlat_find_closest_node
+        ( nodes, nodeslen, firlat, firlatlen, perfect_fir);
       if (fir_2_slot(nodes[correct_node].fir_prior, firlatlen) == firlat_entry)
-	{
-	  firlat[firlat_entry] = correct_node;
-	  if (internal_trace)
-	    fprintf (stderr, "FIRtable insert node %ld at slot %ld\n",
-		     correct_node, firlat_entry);
-	}
-    } 
+        {
+          firlat[firlat_entry] = correct_node;
+          if (internal_trace)
+            fprintf (stderr, "FIRtable insert node %ld at slot %ld\n",
+                     correct_node, firlat_entry);
+        }
+    }
 
   if (internal_trace)
     firlat_significant (nodes, firlat, firlatlen);
@@ -1140,10 +1140,10 @@ static void firlat_insert_node
   long current_occupant, firlat_slot;
   double perfect_fir_value, old_fir_error, new_fir_error;
 
-  if ( nodes[curnode].fir_smaller > 0 
+  if ( nodes[curnode].fir_smaller > 0
        || nodes[curnode].fir_larger > 0)
     fprintf (stderr, "BLARG !!!  We're reinserting node %ld twice!\n",
-	     curnode);
+             curnode);
 
   if (internal_trace)
     firlat_significant (nodes, firlat, firlatlen);
@@ -1155,10 +1155,10 @@ static void firlat_insert_node
   smaller_node = nodes[larger_node].fir_smaller;
 
   if (internal_trace)
-    fprintf (stderr, 
-	     "FIRchain insert between node S: %ld (%f) and L: %ld (%f)\n",
-	     smaller_node, nodes[smaller_node].fir_prior,
-	     larger_node, nodes[larger_node].fir_prior);
+    fprintf (stderr,
+             "FIRchain insert between node S: %ld (%f) and L: %ld (%f)\n",
+             smaller_node, nodes[smaller_node].fir_prior,
+             larger_node, nodes[larger_node].fir_prior);
 
   //    Plug ourselves into the fir chain
   nodes[larger_node].fir_smaller = curnode;
@@ -1166,88 +1166,88 @@ static void firlat_insert_node
   nodes[smaller_node].fir_larger = curnode;
   nodes[curnode].fir_smaller = smaller_node;
   if (internal_trace)
-    fprintf 
-      ( stderr, 
-	"FIRchain done - inserted %ld (%f) between %ld (%f) and %ld (%f)\n",
-	curnode,      nodes[curnode].fir_prior,
-	smaller_node, nodes[smaller_node].fir_prior,
-	larger_node,  nodes[larger_node].fir_prior);
+    fprintf
+      ( stderr,
+        "FIRchain done - inserted %ld (%f) between %ld (%f) and %ld (%f)\n",
+        curnode,      nodes[curnode].fir_prior,
+        smaller_node, nodes[smaller_node].fir_prior,
+        larger_node,  nodes[larger_node].fir_prior);
 
   //    and put ourselves into the FIRLat if appropriate.
-  
+
   firlat_slot = fir_2_slot (nodes[curnode].fir_prior, firlatlen);
   current_occupant = firlat[firlat_slot ];
-  
+
   if (current_occupant == 0)
-    { 
+    {
       //     No current occupant in the FIRLAT- put us in.
       firlat [firlat_slot] = curnode;
       nodes[curnode].firlat_slot = firlat_slot;
       if (internal_trace)
-	fprintf (stderr, 
-		 "Inserted node %ld into empty slot at %ld (%f)\n",
-		 curnode, firlat_slot, nodes[curnode].fir_prior);
+        fprintf (stderr,
+                 "Inserted node %ld into empty slot at %ld (%f)\n",
+                 curnode, firlat_slot, nodes[curnode].fir_prior);
     }
   else
     {
       //      There's a prior occupant- need to see who's more accurate.
       perfect_fir_value = slot_2_fir ( firlat_slot, firlatlen);
-      old_fir_error = fabs (nodes[current_occupant].fir_prior 
-			    - perfect_fir_value);
-      new_fir_error = fabs (nodes[curnode].fir_prior 
-			    - perfect_fir_value);
+      old_fir_error = fabs (nodes[current_occupant].fir_prior
+                            - perfect_fir_value);
+      new_fir_error = fabs (nodes[curnode].fir_prior
+                            - perfect_fir_value);
       if (new_fir_error < old_fir_error)
-	{
-	  firlat[firlat_slot] = curnode;
-	  nodes[curnode].firlat_slot = firlat_slot;
-	  if (internal_trace)
-	    fprintf (stderr, 
-		     "Insert over %ld at slot %ld (%f) with node %ld\n",
-		     current_occupant, firlat_slot, 
-		     nodes[curnode].fir_prior, curnode);
-	}
+        {
+          firlat[firlat_slot] = curnode;
+          nodes[curnode].firlat_slot = firlat_slot;
+          if (internal_trace)
+            fprintf (stderr,
+                     "Insert over %ld at slot %ld (%f) with node %ld\n",
+                     current_occupant, firlat_slot,
+                     nodes[curnode].fir_prior, curnode);
+        }
     }
   if (internal_trace)
     firlat_significant (nodes, firlat, firlatlen);
 
 }
-  
+
 
 //
 //      Routine to dump what's in the node set and lookaside table
 //
-static void dump_bit_entropy_data ( 
-				   ENTROPY_FEATUREBUCKET_STRUCT *nodes, 
-				   long nodeslen, 
-				   long *firlat, 
-				   long firlatlen)
+static void dump_bit_entropy_data (
+                                   ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+                                   long nodeslen,
+                                   long *firlat,
+                                   long firlatlen)
 {
   int i;
-  fprintf (stderr, 
-	   "  node    A0    c    A1    c    PFIR   FIR<   FIR>\n");
+  fprintf (stderr,
+           "  node    A0    c    A1    c    PFIR   FIR<   FIR>\n");
   for (i = 0; i < nodeslen && nodes[i].fir_prior > -1.0; i++)
     {
       fprintf (stderr,
-	       "%5d %5ld %5ld %5ld %5ld %5.3f %5ld %5ld\n",
-	       i,
-	       nodes[i].abet[0].nextcell, 
-	       nodes[i].abet[0].count, 
-	       nodes[i].abet[1].nextcell,
-	       nodes[i].abet[1].count,
-	       nodes[i].fir_prior,
-	       nodes[i].fir_smaller,
-	       nodes[i].fir_larger);		     
+               "%5d %5ld %5ld %5ld %5ld %5.3f %5ld %5ld\n",
+               i,
+               nodes[i].abet[0].nextcell,
+               nodes[i].abet[0].count,
+               nodes[i].abet[1].nextcell,
+               nodes[i].abet[1].count,
+               nodes[i].fir_prior,
+               nodes[i].fir_smaller,
+               nodes[i].fir_larger);
     }
   fprintf (stderr, "FIRlat contents:");
   for (i = 0; i < firlatlen; i++)
     {
       if (firlat[i] > 0 )
-	{
-	  fprintf (stderr, "\n   %d     %ld  (perf: %f  actual: %f) ", 
-		   i, firlat[i],
-		   ((i + 0.5) / firlatlen),
-		   nodes[firlat[i]].fir_prior);
-	}
+        {
+          fprintf (stderr, "\n   %d     %ld  (perf: %f  actual: %f) ",
+                   i, firlat[i],
+                   ((i + 0.5) / firlatlen),
+                   nodes[firlat[i]].fir_prior);
+        }
     }
   fprintf (stderr, "\n");
 }
@@ -1265,11 +1265,11 @@ static void dump_bit_entropy_data (
 //       start of the nominal freelist.
 //
 static long nodes_init_shufflenet (
-				   ENTROPY_FEATUREBUCKET_STRUCT *nodes,
-				   long nodeslen,
-				   long height,
-				   long width,
-				   long firstnode)
+                                   ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+                                   long nodeslen,
+                                   long height,
+                                   long width,
+                                   long firstnode)
 {
   long w, h, a ;
   long node, target, f;
@@ -1278,35 +1278,35 @@ static long nodes_init_shufflenet (
   for (w = 0; w < width; w++)      // zero to width-1
     for (h = 0; h < height; h++)    // zero to height-1
       {
-	//      What is our "from" node?
-	node = f + h + (w * height);
-	//      Mark these nodes "not yet in the FIR chain".
-	nodes[node].fir_smaller = -1;
-	nodes[node].fir_larger = -1;
-	//      set each member of the alphabet to the shuffle of the
-	//      next column (modulo width, so the whole thing loops)
-	for (a = 0; a < ENTROPY_ALPHABET_SIZE; a++)
-	  {
-	    //                     zero the count
-	    nodes[node].abet[a].count = 0;
-	    //tcol = (w + 1) % width;
-	    //trow = ((h * ENTROPY_ALPHABET_SIZE) + a) % height;
-	    //target = f 
-	    //  + tcol * height
-	    //  + trow; 
-	    //                     where does this node.abet point?
-	    target = f                        //  start of shuffle
-	      + ((w+1) % width) * height      //  go to the next column
-	      + (((h*ENTROPY_ALPHABET_SIZE) + a) % height) ; //  within col
-	    //
-	    //fprintf (stderr, "\nlinking from node %ld slot %ld to %ld", 
-	    //	     node, a, target); 
-	    //                     aim our current node.abet there.
-	    nodes[node].abet[a].nextcell = target;
-	    //   and initialize the prior
-	    nodes[node].fir_prior = -1.0;
+        //      What is our "from" node?
+        node = f + h + (w * height);
+        //      Mark these nodes "not yet in the FIR chain".
+        nodes[node].fir_smaller = -1;
+        nodes[node].fir_larger = -1;
+        //      set each member of the alphabet to the shuffle of the
+        //      next column (modulo width, so the whole thing loops)
+        for (a = 0; a < ENTROPY_ALPHABET_SIZE; a++)
+          {
+            //                     zero the count
+            nodes[node].abet[a].count = 0;
+            //tcol = (w + 1) % width;
+            //trow = ((h * ENTROPY_ALPHABET_SIZE) + a) % height;
+            //target = f
+            //  + tcol * height
+            //  + trow;
+            //                     where does this node.abet point?
+            target = f                        //  start of shuffle
+              + ((w+1) % width) * height      //  go to the next column
+              + (((h*ENTROPY_ALPHABET_SIZE) + a) % height) ; //  within col
+            //
+            //fprintf (stderr, "\nlinking from node %ld slot %ld to %ld",
+            //       node, a, target);
+            //                     aim our current node.abet there.
+            nodes[node].abet[a].nextcell = target;
+            //   and initialize the prior
+            nodes[node].fir_prior = -1.0;
 
-	  }
+          }
       }
   //  fprintf (stderr, "\n");
   //  dump_bit_entropy_data (nodes, nodeslen, NULL, 0);
@@ -1315,20 +1315,20 @@ static long nodes_init_shufflenet (
 }
 
 
-//        
-//    How to learn Bit Entropic style 
+//
+//    How to learn Bit Entropic style
 //
 
-int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-			      char *txtptr, long txtstart, long txtlen)
+int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+                              char *txtptr, long txtstart, long txtlen)
 {
-  //     learn the osb_bayes transform spectrum of this input window as 
+  //     learn the osb_bayes transform spectrum of this input window as
   //     belonging to a particular type.
   //     learn <flags> (classname) /word/
   //
   long i, j, k;
   ENTROPY_FEATUREBUCKET_STRUCT *nodes;  //  the node array (after mapping!)
-  long nodeslen = 0;              //  how many nodes do we have?      
+  long nodeslen = 0;              //  how many nodes do we have?
   long nodebytes;             //  how many bytes of nodes?
   long *firlat;               //  the FIR prior lookaside table
   ENTROPY_HEADER_STRUCT *headers;     //  the what-is-where headers.
@@ -1352,16 +1352,16 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   double bitweight;
 
   long fev;                 // fev is for fatal errors
-  
+
   //                         node file details
   char htext[MAX_PATTERN];    // the node filename working buffer
   long hlen;
   char *learnfilename;        // the real node file name
   long hfsize;              //  size of the node file
   struct stat statbuf;      //  for statting the node file
-  long made_new_file; 
+  long made_new_file;
   long unique_states = 0;
-  
+
   if (internal_trace)
     fprintf (stderr, "executing a bit-entropic LEARN\n");
 
@@ -1380,7 +1380,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       sense = -sense;
       if (user_trace)
-	fprintf (stderr, " refuting bit-entropic learning\n");
+        fprintf (stderr, " refuting bit-entropic learning\n");
     }
 
   crosslink = 0;
@@ -1388,7 +1388,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       crosslink = 1;
       if (user_trace)
-	fprintf (stderr, " enabling crosslinking\n");
+        fprintf (stderr, " enabling crosslinking\n");
     }
 
   unique_states = 0;
@@ -1396,9 +1396,9 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       unique_states = 1;
       if (user_trace)
-	fprintf (stderr, " enabling unique states\n");
+        fprintf (stderr, " enabling unique states\n");
     }
-  
+
   //
   //             grab the filename, and stat the file
   //      note that neither "stat", "fopen", nor "open" are
@@ -1410,10 +1410,10 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //             filename starts at i,  ends at j. null terminate it.
   htext[j] = '\000';
-  learnfilename = strdup ( &(htext[i] ));
+  learnfilename = &(htext[i]);
 
   //             and stat it to get it's length
-  k = stat (&htext[i], &statbuf);
+  k = stat (learnfilename, &statbuf);
 
   made_new_file = 0;
 
@@ -1422,25 +1422,28 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       //      file didn't exist... create it
       FILE *f;
+
       if (user_trace)
-	{
-	  fprintf (stderr, "\nHad to create new BEN file %s\n", &htext[i]);
-	  fprintf (stderr, "Opening %s for BEN file creation\n", &htext[i]);
-	}
-      f = fopen (&htext[i], "wb");
-         
-      if (!f)
-	{
-	  fprintf (stderr, 
-		   "\n Couldn't open your new BEN file %s for writing; errno=%d\n",
-		   &htext[i], errno);
-	  if (engine_exit_base != 0)
-	    {
-	      exit (engine_exit_base + 23);
-	    }
-	  else
-	    exit (EXIT_FAILURE);
+        {
+          fprintf (stderr, "\nHad to create new BEN file %s\n", learnfilename);
+          fprintf (stderr, "Opening %s for BEN file creation\n", learnfilename);
         }
+      f = fopen (learnfilename, "wb");
+
+      if (!f)
+        {
+          fprintf (stderr,
+                   "\n Couldn't open your new BEN file %s for writing; errno=%d\n",
+                   learnfilename, errno);
+          if (engine_exit_base != 0)
+            {
+              exit (engine_exit_base + 23);
+            }
+          else
+            exit (EXIT_FAILURE);
+        }
+          else
+          {
       //       did we get a value for sparse_spectrum_file_length?
       //      (yes, even though we aren't using "sparse spectra", we'll
       //      use the same -S or -s  parameter.  If we're in unique_states
@@ -1448,81 +1451,83 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //      only allocate enough nodes for the header, the firlat, and
       //      the standard toroid (plus a little because we don't trust
       //      ourselves).
-      
-      if (sparse_spectrum_file_length == 0 ) 
-	{
-	  if (unique_states)
-	    {
-	      sparse_spectrum_file_length = 
-		DEFAULT_BIT_ENTROPY_FILE_LENGTH;
-	    }
-	  else
-	    {
-	      sparse_spectrum_file_length =
-		( BIT_ENTROPIC_SHUFFLE_HEIGHT * BIT_ENTROPIC_SHUFFLE_WIDTH )
-		+ 1000;
-	    }
-	}
-      
-      //   How many bytes of nodes do we need?    
+
+      if (sparse_spectrum_file_length == 0 )
+        {
+          if (unique_states)
+            {
+              sparse_spectrum_file_length =
+                DEFAULT_BIT_ENTROPY_FILE_LENGTH;
+            }
+          else
+            {
+              sparse_spectrum_file_length =
+                ( BIT_ENTROPIC_SHUFFLE_HEIGHT * BIT_ENTROPIC_SHUFFLE_WIDTH )
+                + 1000;
+            }
+        }
+
+      //   How many bytes of nodes do we need?
       nodeslen = sparse_spectrum_file_length;
       nodebytes = nodeslen
-	* (sizeof (ENTROPY_FEATUREBUCKET_STRUCT));
-      firlatlen = (long)(sparse_spectrum_file_length 
-	* BIT_ENTROPIC_FIR_LOOKASIDE_FRACTION);
+        * (sizeof (ENTROPY_FEATUREBUCKET_STRUCT));
+      firlatlen = (long)(sparse_spectrum_file_length
+        * BIT_ENTROPIC_FIR_LOOKASIDE_FRACTION);
       firlatbytes = firlatlen * sizeof (long);
-      
+
       if (user_trace)
-	fprintf (stderr, 
-	       "No such file, must create it, length %ld nodes, %ld lats (%ld nodebytes, %ld latbytes)\n",
-	       nodeslen,
-	       firlatlen,
-	       nodebytes,
-	       firlatbytes);
-      
+        fprintf (stderr,
+               "No such file, must create it, length %ld nodes, %ld lats (%ld nodebytes, %ld latbytes)\n",
+               nodeslen,
+               firlatlen,
+               nodebytes,
+               firlatbytes);
+
       //       Write them bytes, all NULs.  (the 1024 is just some padding)
       //
-      for (j = 0; j < (1024 + firlatbytes + nodebytes + 
-		       (ENTROPY_RESERVED_HEADER_LEN * sizeof (long))); j++)
-	fputc ('\000', f);
-      
-      
+      for (j = 0; j < (1024 + firlatbytes + nodebytes +
+                       (ENTROPY_RESERVED_HEADER_LEN * sizeof (long))); j++)
+        fputc ('\000', f);
+
+
       made_new_file = 1;
       fclose (f);
-      //    and reset the statbuf to be correct
-      k = stat (&htext[i], &statbuf);
+          }
+
+          //    and reset the statbuf to be correct
+      k = stat (learnfilename, &statbuf);
     }
-  //    
+  //
   hfsize = statbuf.st_size;
   //
   //      map the bit-entropy file into memory
   //
-  fmap = ( long *) crm_mmap_file (&(htext[i]),
-				    0, hfsize,
-				    PROT_READ | PROT_WRITE,
-				    MAP_SHARED,
-				    NULL);
-  
+  fmap = ( long *) crm_mmap_file (learnfilename,
+                                    0, hfsize,
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED,
+                                    NULL);
+
   if (fmap == MAP_FAILED)
     {
       fev = fatalerror ("Couldn't get to the bit-entropic file named: ",
-			&htext[i]);
+                        learnfilename);
       return (fev);
     }
 
   headers = (ENTROPY_HEADER_STRUCT *) fmap;
-  
+
   /////////////////////////////////////////////////////////////////
   //
   //    Now the file is memory mapped - if we just made it, we must
   //    put the right format into it.
-  
+
   if ( made_new_file )
     {
       int i;
 
       //   Start with initializing the headers.
-      //    
+      //
       headers->firlatstart = ENTROPY_RESERVED_HEADER_LEN; //Start of the FIRlat
       //
       firlat = (long *) & fmap[headers->firlatstart];
@@ -1531,10 +1536,10 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //
       //    the actual nodes start after the FIRlat
       headers->nodestart = headers->firlatstart + firlatlen;
-      // 
+      //
       //     and the actual address of the first node is:
       nodes = (ENTROPY_FEATUREBUCKET_STRUCT *) & (fmap[headers->nodestart]);
-      // 
+      //
       //     and the number of nodes is...
       headers->nodeslen = nodeslen;
       //
@@ -1544,9 +1549,9 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //   initialize the FIR lookaside to contain the metanode (node 0) as
       //   a sentinel value, except for the two extremum nodes.
       for (i = 0; i < firlatlen; i++)
-	firlat[i] = 0;
+        firlat[i] = 0;
 
-      //   initialize the metanode (node 0) which points to the 
+      //   initialize the metanode (node 0) which points to the
       //   start and end of the FIR chains, and to the free list.
       nodes[0].fir_smaller = 3;   // yes, the initial DB looks like an
       nodes[0].fir_larger = 2;    //  infinity sign, with node 0 "twisted"
@@ -1554,79 +1559,79 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       nodes[0].abet[1].nextcell = 1;
 
       if (! unique_states )
-	{
-	  //   put in a shuffled initial state.
-	  long first_freenode;
+        {
+          //   put in a shuffled initial state.
+          long first_freenode;
           long width, height;
-	  //    width should be the square root of the size, rounded down
-	  //    to a multiple of 8 (assuming byte-wise orientation)
+          //    width should be the square root of the size, rounded down
+          //    to a multiple of 8 (assuming byte-wise orientation)
           width = ((int) (sqrt (sparse_spectrum_file_length)) / 8 ) * 8;
-	  //     height should be as many as possible with complete rows
-	  height = sparse_spectrum_file_length / width;
-	  if (user_trace)
-	    fprintf (stderr, "New toroid. width: %ld, height %ld\n",
-		     width, height);
-	  first_freenode = nodes_init_shufflenet 
-	    (nodes, nodeslen, 
-	     height, width,
-	     1);                       // the 1 means "node 1 is first node!
-	  
-	  //    mark node 1 as the start of the actual Markov chain
-	  nodes[0].abet[1].nextcell = 1;
-	  //    chain the rest of the nodes into a freelist.
-	  for (i = first_freenode; i < nodeslen; i++)
-	    {
-	      nodes[i].abet[0].nextcell = i+1 ;
-	      nodes[i].fir_prior = -1.0;
-	    }
-	  //    mark the last node in the freelist as the end of the node
-	  //    freelist.
-	  nodes[0].abet[0].nextcell = first_freenode;
-	  nodes[nodeslen-1].abet[0].nextcell = 0;
-	}
+          //     height should be as many as possible with complete rows
+          height = sparse_spectrum_file_length / width;
+          if (user_trace)
+            fprintf (stderr, "New toroid. width: %ld, height %ld\n",
+                     width, height);
+          first_freenode = nodes_init_shufflenet
+            (nodes, nodeslen,
+             height, width,
+             1);                       // the 1 means "node 1 is first node!
+
+          //    mark node 1 as the start of the actual Markov chain
+          nodes[0].abet[1].nextcell = 1;
+          //    chain the rest of the nodes into a freelist.
+          for (i = first_freenode; i < nodeslen; i++)
+            {
+              nodes[i].abet[0].nextcell = i+1 ;
+              nodes[i].fir_prior = -1.0;
+            }
+          //    mark the last node in the freelist as the end of the node
+          //    freelist.
+          nodes[0].abet[0].nextcell = first_freenode;
+          nodes[nodeslen-1].abet[0].nextcell = 0;
+        }
       else
-	{//    Else very basic init - nodes 1, 2, and 3 in a vee, with
-	  //   nodes 2 and 3 with no sucessors whatsoever.
-	  //   initialize the START node (node 1) to point to node 2 on a 0
-	  nodes[1].abet[0].count = 0;
-	  nodes[1].abet[0].nextcell = 2;
+        {//    Else very basic init - nodes 1, 2, and 3 in a vee, with
+          //   nodes 2 and 3 with no sucessors whatsoever.
+          //   initialize the START node (node 1) to point to node 2 on a 0
+          nodes[1].abet[0].count = 0;
+          nodes[1].abet[0].nextcell = 2;
 
-	  //   initialize the START node (node 1) to point to node 3 on a 1
-	  nodes[1].abet[1].count = 0;
-	  nodes[1].abet[1].nextcell = 3; 
+          //   initialize the START node (node 1) to point to node 3 on a 1
+          nodes[1].abet[1].count = 0;
+          nodes[1].abet[1].nextcell = 3;
 
-	  //   initialize node 2 (that is, first bit is zero)
-	  //    initialize the outoput on a 0 to be "nowhere"
-	  nodes[2].abet[0].count = 0;
-	  nodes[2].abet[0].nextcell = 0;
+          //   initialize node 2 (that is, first bit is zero)
+          //    initialize the outoput on a 0 to be "nowhere"
+          nodes[2].abet[0].count = 0;
+          nodes[2].abet[0].nextcell = 0;
 
-	  //   initialize the output on 1 to be "nowhere"
-	  nodes[2].abet[1].count = 0;
-	  nodes[2].abet[1].nextcell = 0;
+          //   initialize the output on 1 to be "nowhere"
+          nodes[2].abet[1].count = 0;
+          nodes[2].abet[1].nextcell = 0;
 
-	  //   initialize node 3 (that is, first bit is 1)
-	  //    initialize the outoput on a 0 to be "nowhere"
-	  nodes[3].abet[0].count = 0;
-	  nodes[3].abet[0].nextcell = 0;
+          //   initialize node 3 (that is, first bit is 1)
+          //    initialize the outoput on a 0 to be "nowhere"
+          nodes[3].abet[0].count = 0;
+          nodes[3].abet[0].nextcell = 0;
 
-	  //   initialize the output on 1 to be "nowhere"
-	  nodes[3].abet[1].count = 0;
-	  nodes[3].abet[1].nextcell = 0;
+          //   initialize the output on 1 to be "nowhere"
+          nodes[3].abet[1].count = 0;
+          nodes[3].abet[1].nextcell = 0;
 
-	  //   initialize nodes 4 through n into a free list.  We don't care
-	  //   about any other field than the next node field while on the
-	  //   free list.
-	  for ( i = 4; i < nodeslen; i++)
-	    {
-	      nodes[i].abet[0].nextcell = i+1 ;
-	      nodes[i].fir_prior = -1.0;
-	    }
-	  nodes[0].abet[0].nextcell = 4;
+          //   initialize nodes 4 through n into a free list.  We don't care
+          //   about any other field than the next node field while on the
+          //   free list.
+          for ( i = 4; i < nodeslen; i++)
+            {
+              nodes[i].abet[0].nextcell = i+1 ;
+              nodes[i].fir_prior = -1.0;
+            }
+          nodes[0].abet[0].nextcell = 4;
 
-	  //    mark the last node in the freelist as the end of the node
-	  //    freelist.
-	  nodes[nodeslen-1].abet[0].nextcell = 0;
-	}
+          //    mark the last node in the freelist as the end of the node
+          //    freelist.
+          nodes[nodeslen-1].abet[0].nextcell = 0;
+        }
 
       //   Either way, we have to initialize the start of the FIR system
       //    initialize the START node (node 1) into the FIR system
@@ -1642,17 +1647,17 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       nodes[2].fir_larger = 1;
       //firlat[fir_2_slot (0.0, firlatlen)] = 2;
       //nodes[2].firlat_slot = fir_2_slot(0.0, firlatlen);
-	  
+
       //    initialize node 3 into the FIR system
       nodes[3].fir_prior = 1.0;
       nodes[3].fir_smaller = 1;
       nodes[3].fir_larger = 0;
       //firlat[fir_2_slot (1.0, firlatlen)] = 3;
       //nodes[3].firlat_slot = fir_2_slot(1.0, firlatlen);
-       
+
 
     }
-  
+
   //    If this isn't a new file, grab stuff out of the header:
   //firlat = & headers[headers[0]];
   firlat = & fmap [headers->firlatstart];
@@ -1666,23 +1671,23 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   nodebytes = nodeslen * (sizeof (ENTROPY_FEATUREBUCKET_STRUCT));
 
   // headers [4] and [5] are for the long long totalbits.
-  //  totalbits = (long long *) &headers[4];    
+  //  totalbits = (long long *) &headers[4];
   totalbits = & (headers->totalbits);
-  
+
   //     In this format, the first BIT_ENTROPIC_FIR_LOOKASIDE_FRACTION
   //     longwords contain the FIR prior lookaside table and the
   //     remainder contain actual nodes, and start immediately after
   //     the FIR lookaside table.
-  //  
+  //
   if (internal_trace)
     fprintf (stderr,
-	     "Firlatlen = %ld (%ld bytes), nodeslen = %ld (%ld bytes)\n", 
-	     firlatlen, firlatbytes, nodeslen, nodebytes);
+             "Firlatlen = %ld (%ld bytes), nodeslen = %ld (%ld bytes)\n",
+             firlatlen, firlatbytes, nodeslen, nodebytes);
 
-  if (user_trace) 
+  if (user_trace)
     fprintf (stderr, "Bit-entropic file %s has length %ld nodes\n",
-	     &htext[i], nodeslen);
-  
+             learnfilename, nodeslen);
+
   //     If this is a new file, we have to write in the FIR lookaside
   //     table and the free node list.  Otherwise, the free list will
   //     recurse and GCing will not work.  Additionally, we need to
@@ -1712,13 +1717,13 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     with lousy TER (36/10000, 24/1000) and 5140 total errors
 
   //     even better might be an _adaptive_ threshold, that looks at the
-  //    available freelist length and modulates according to that. 
+  //    available freelist length and modulates according to that.
   //    Boundary conditions: with empty file, threshold is very small.
   //    and with a full file, threshold is 10/nodeslen.
   //    (we use the parameterized form of a line here - the first term can
   //    be dropped, because it's always times zero.  But we leave it here
   //    in case we actually want a nonzero initial threshold.)
-  
+
   //      If user specified an overriding value, use that.
   if (apb->s2len > 0)
     {
@@ -1726,7 +1731,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       clerrlen = apb->s2len;
       clerrlen = crm_nexpandvar (clerrtxt, clerrlen, MAX_PATTERN);
       crosslink_thresh = strtod (clerrtxt, NULL) * crosslink_thresh;
-    }  
+    }
 
 
 
@@ -1735,7 +1740,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //        Setup is complete.  We now just churn through the
   //      incoming bitstream, incrementing and allocating new cells
   //      as needed.  Magic Merging and Cloning action may happen as well.
-  
+
   //
   textoffset = txtstart;
   textmaxoffset = txtstart + txtlen;
@@ -1743,24 +1748,24 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     also, in most ASCII text, it's zero)
   bitnum = 8;
 
-  //     The current node starts at the START node, which is the 
+  //     The current node starts at the START node, which is the
   //     the abet[1] link of the metanode (node 0)
   curnode = nodes[0].abet[1].nextcell;
-  
+
   bitweight = BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT;
 
   //    localfir is the value of the FIR summary as we sit on
-  //    the current node.  Thus, it contains the influence of the 
+  //    the current node.  Thus, it contains the influence of the
   //    most recent step that got us here, but NOT the effect of the current
-  //    alph.  
+  //    alph.
   //
   //   Of course, the starting  is DEFINED as the FIR of the
   //   START node.
   localfir = nodes[curnode].fir_prior;
 
   if (internal_trace)
-    fprintf (stderr, "Going to do %ld characters.\n", 
-	     (unsigned long) textmaxoffset - (unsigned long) textoffset);
+    fprintf (stderr, "Going to do %ld characters.\n",
+             (unsigned long) textmaxoffset - (unsigned long) textoffset);
 
   while (textoffset + 1 < textmaxoffset || bitnum > 0)
     {
@@ -1770,85 +1775,85 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       unsigned short nextnextalph;
       unsigned short nextnextnextalph;
       double newnodefir;
-      
+
       //  get the next alph member.
       bitnum = bitnum - ENTROPY_CHAR_SIZE;
       if (bitnum < 0)
-	{
-	  bitnum = 7;
-	  textoffset ++;
-	}
+        {
+          bitnum = 7;
+          textoffset ++;
+        }
       thischar = txtptr [ textoffset ];
       thisalph = ( thischar >> bitnum ) & ENTROPY_CHAR_BITMASK;
 
       if (internal_trace)
-	firlat_sanity_scan (firlat, firlatlen, nodes, nodeslen);
+        firlat_sanity_scan (firlat, firlatlen, nodes, nodeslen);
 
-      
+
       //  nextalph is a lookahead one bit.  We use it for smarter
       //  crosslinking.
       nextalph = ( thischar >> (bitnum - 1) ) & ENTROPY_CHAR_BITMASK;
       if (textoffset < textmaxoffset && bitnum == 0)
-	nextalph = ((txtptr [textoffset+1]) >> 7) & ENTROPY_CHAR_BITMASK;
+        nextalph = ((txtptr [textoffset+1]) >> 7) & ENTROPY_CHAR_BITMASK;
 
       //  nextnextalph is lookahead two bits.  Yet smarter crosslinking
       nextnextalph = ( thischar >> (bitnum - 2) ) & ENTROPY_CHAR_BITMASK;
       if (textoffset < textmaxoffset && bitnum == 0)
-	nextnextalph = txtptr [textoffset+1] >> 6 & ENTROPY_CHAR_BITMASK;
+        nextnextalph = txtptr [textoffset+1] >> 6 & ENTROPY_CHAR_BITMASK;
       if (textoffset < textmaxoffset && bitnum == 1)
-	nextnextalph = txtptr [textoffset+1] >> 7 & ENTROPY_CHAR_BITMASK;
+        nextnextalph = txtptr [textoffset+1] >> 7 & ENTROPY_CHAR_BITMASK;
 
       //  nextnextnextalph is lookahead three bits.  Even more smarter
       nextnextnextalph = ( thischar >> (bitnum - 3) ) & ENTROPY_CHAR_BITMASK;
       if (textoffset < textmaxoffset && bitnum == 0)
-	nextnextalph = txtptr [textoffset+1] >> 5 & ENTROPY_CHAR_BITMASK;
+        nextnextalph = txtptr [textoffset+1] >> 5 & ENTROPY_CHAR_BITMASK;
       if (textoffset < textmaxoffset && bitnum == 1)
-	nextnextnextalph = txtptr [textoffset+1] >> 6 & ENTROPY_CHAR_BITMASK;
+        nextnextnextalph = txtptr [textoffset+1] >> 6 & ENTROPY_CHAR_BITMASK;
       if (textoffset < textmaxoffset && bitnum == 2)
-	nextnextnextalph = txtptr [textoffset+1] >> 7 & ENTROPY_CHAR_BITMASK;
-      
+        nextnextnextalph = txtptr [textoffset+1] >> 7 & ENTROPY_CHAR_BITMASK;
 
 
-      if (internal_trace)
-	fprintf (stderr, "Working char '%c' (%ld untouched), bit %ld.\n",
-		 thischar,
-		 (unsigned long) textmaxoffset - (unsigned long) textoffset -1,
-		 bitnum);
 
       if (internal_trace)
-	fprintf (stderr, 
-		 "\nNow at node %ld, alph %d, (bit %ld) localFIR %f\n", 
-		 curnode, thisalph, bitnum, localfir);
+        fprintf (stderr, "Working char '%c' (%ld untouched), bit %ld.\n",
+                 thischar,
+                 (unsigned long) textmaxoffset - (unsigned long) textoffset -1,
+                 bitnum);
+
+      if (internal_trace)
+        fprintf (stderr,
+                 "\nNow at node %ld, alph %d, (bit %ld) localFIR %f\n",
+                 curnode, thisalph, bitnum, localfir);
 
       //   remove this node from the FIRlat and the fir chain
-      
+
       if (internal_trace)
-	fprintf (stderr, "Removing node %ld from FIRlat\n",
-		 curnode);
+        fprintf (stderr, "Removing node %ld from FIRlat\n",
+                 curnode);
       firlat_remove_node (nodes, nodeslen, firlat, firlatlen, curnode);
-      
+
 
       ///////////////////////////////////////////////////////////////
       //
       //  calculate node's new FIR and where it will go into the FIRlat
       //
       {
-	long totalcount, i;
-	totalcount = 0;
-	for (i = 0; i < ENTROPY_ALPHABET_SIZE; i++)
-	  totalcount += nodes[curnode].abet[i].count;
-	newnodefir = 
-	  ( localfir + (totalcount * nodes[curnode].fir_prior) ) 
-	  / ( totalcount + 1.0 );
+        long totalcount, i;
+        totalcount = 0;
+        for (i = 0; i < ENTROPY_ALPHABET_SIZE; i++)
+          totalcount += nodes[curnode].abet[i].count;
+        newnodefir =
+          ( localfir + (totalcount * nodes[curnode].fir_prior) )
+          / ( totalcount + 1.0 );
       }
-	
+
       nodes[curnode].fir_prior = newnodefir;
 
       //////////////////////////////////////////////////////
       //
       //   Increment our exit path from curnode; remember that we
       //   might be "unlearning" so use "sense" rather than just incrementing
-      //   Of course, this doesn't completely unlearn, as there's always the 
+      //   Of course, this doesn't completely unlearn, as there's always the
       //   chance we allocated a new node, or did a merge or clone on
       //   the initial learn and there's no way to "undo" that for certain.
       //
@@ -1861,7 +1866,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //    zero, meaning that this node never actually got hit.  In
       //    which case, smoe gyrations are appropriate.  But for now, let's
       //    ignore the problem.
-      
+
 
       ////////////////////////////////////////////////////////////
       //
@@ -1869,21 +1874,21 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //
 
       if (internal_trace)
-	{
-	  fprintf (stderr, 
-		   "Current Status before replacement at node %ld\n", curnode);
-	  dump_bit_entropy_data (nodes, nodeslen, firlat, firlatlen);
-	}
+        {
+          fprintf (stderr,
+                   "Current Status before replacement at node %ld\n", curnode);
+          dump_bit_entropy_data (nodes, nodeslen, firlat, firlatlen);
+        }
 
       firlat_insert_node (nodes, nodeslen, firlat, firlatlen, curnode);
 
       if (internal_trace)
-	{
-	  fprintf (stderr, 
-		   "Current Status after replacement at node %ld\n", curnode);
-	  dump_bit_entropy_data (nodes, nodeslen, firlat, firlatlen);
-	}
-      
+        {
+          fprintf (stderr,
+                   "Current Status after replacement at node %ld\n", curnode);
+          dump_bit_entropy_data (nodes, nodeslen, firlat, firlatlen);
+        }
+
       //////////////
       //   we've fixed up the FIR chain;
       //   we've fixed up the FIR lookaside table.
@@ -1892,14 +1897,14 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //     allocate yet another node.
 
       /////////////////////////////////////////////////////
-      //      
-      //   Calculate the new local FIR for this path (NOT the 
+      //
+      //   Calculate the new local FIR for this path (NOT the
       //   node, but for the current path we will have taken at
       //   the next step in the node model.
       //
-      localfir = ( thisalph * BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT) 
-	+ ( localfir * ( 1.0 - BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT ));
-      
+      localfir = ( thisalph * BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT)
+        + ( localfir * ( 1.0 - BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT ));
+
       if (localfir > 1.0000) localfir = 1.00;
       if (localfir < 0.0000) localfir = 0.00;
 
@@ -1911,193 +1916,195 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //   we been here before?)  Or is this the first time?
       //
       if (nodes[curnode].abet[thisalph].nextcell > 0)
-	{
-	  //  yes, there's a node already for this node's successor
-	  //  and this particular alph element.
-	  //  Make that the current node, and move along!
+        {
+          //  yes, there's a node already for this node's successor
+          //  and this particular alph element.
+          //  Make that the current node, and move along!
 
-	  curnode = nodes[curnode].abet[thisalph].nextcell;
+          curnode = nodes[curnode].abet[thisalph].nextcell;
 #ifdef BEN_GRAPHIC
-	  fprintf (stderr, ".");
+          fprintf (stderr, ".");
 #endif
-	  if (internal_trace)
-	    fprintf (stderr, "next old cell %ld\n", curnode);
-	}
+          if (internal_trace)
+            fprintf (stderr, "next old cell %ld\n", curnode);
+        }
       else
-	{
-	  //
-	  //  no successor on this alphabet slot yet, so we need a new one.
-	  //   
-	  //  If we have no free nodes, we have no choice but to crosslink.
-	  //  If we have free nodes, and crosslinking isn't enabled, we
-	  //      just allocate a new node.
-	  //  If crosslinking is enabled, we see what the preferred 
-	  //      new FIR will be, and see what node will work for that.
-	  //
-	  //  Note that this is a lattice - try A, then B, then C.
-	  //  so we have to do it in two phases.
+        {
+          //
+          //  no successor on this alphabet slot yet, so we need a new one.
+          //
+          //  If we have no free nodes, we have no choice but to crosslink.
+          //  If we have free nodes, and crosslinking isn't enabled, we
+          //      just allocate a new node.
+          //  If crosslinking is enabled, we see what the preferred
+          //      new FIR will be, and see what node will work for that.
+          //
+          //  Note that this is a lattice - try A, then B, then C.
+          //  so we have to do it in two phases.
 
-	  long further_node, i, do_crosslink;
-	  double crosslink_err;
-	  
-	  //fprintf (stderr, "-");
-	  //   Sentinel to know we need to calculate a crosslink
-	  further_node = -10001;
-	  
-	  // fprintf (stderr, 
-	  //  "Ran off the end of entropy model at node %ld\n",
-	  //	   curnode);
+          long further_node, i, do_crosslink;
+          double crosslink_err;
 
-	  //    Assume no crosslink unless we find out otherwise.
-	  do_crosslink = 0;
+          //fprintf (stderr, "-");
+          //   Sentinel to know we need to calculate a crosslink
+          further_node = -10001;
 
-	  //    Is crosslink forced because we're out of nodes?
-	  if (nodes[0].abet[0].nextcell == 0)
-	    {
-	      do_crosslink = 1;
-	      // fprintf (stderr, "$");
-	      if (internal_trace)
-		fprintf (stderr, "Empty freelist, forced crosslink\n");
-	    }
-	  //    do we possibly want to crosslink anyway?  At least,
-	  //    we may need to calculate the best next node, which is
-	  //    the one with the closest FIR to what our nextnode FIR is.
-	  if ( crosslink || do_crosslink )
-	    {
+          // fprintf (stderr,
+          //  "Ran off the end of entropy model at node %ld\n",
+          //       curnode);
+
+          //    Assume no crosslink unless we find out otherwise.
+          do_crosslink = 0;
+
+          //    Is crosslink forced because we're out of nodes?
+          if (nodes[0].abet[0].nextcell == 0)
+            {
+              do_crosslink = 1;
+              // fprintf (stderr, "$");
+              if (internal_trace)
+                fprintf (stderr, "Empty freelist, forced crosslink\n");
+            }
+          //    do we possibly want to crosslink anyway?  At least,
+          //    we may need to calculate the best next node, which is
+          //    the one with the closest FIR to what our nextnode FIR is.
+          if ( crosslink || do_crosslink )
+            {
               further_node = firlat_find_closest_node
                 ( nodes,
-		  nodeslen,
+                  nodeslen,
                   firlat,
                   firlatlen,
                   localfir);
               crosslink_err = fabs (localfir - nodes[further_node].fir_prior);
 
-	      if (
-		  crosslink_err < crosslink_thresh 
-		  //     this node OK?
-		  && nodes[further_node].abet[nextalph].count > crosslink_mincount
-		  //     One node lookahead
-		  && nodes[further_node].abet[nextalph^0x1].count == 0
-		  && nodes[further_node].abet[nextalph].nextcell > 0
-		  //     Two nodes lookahead
-		  && nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].count > 0
-		  && nodes [nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph^0x1].count == 0
-		  //     THREE nodes lookahead
-		  && nodes[nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].nextcell].abet[nextnextnextalph].count > 0
-		  && nodes[nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].nextcell].abet[nextnextnextalph^0x1].count == 0
-		  )
-		{
-		  do_crosslink = 1;
+              if (
+                  crosslink_err < crosslink_thresh
+                  //     this node OK?
+                  && nodes[further_node].abet[nextalph].count > crosslink_mincount
+                  //     One node lookahead
+                  && nodes[further_node].abet[nextalph^0x1].count == 0
+                  && nodes[further_node].abet[nextalph].nextcell > 0
+                  //     Two nodes lookahead
+                  // *INDENT-OFF*
+                  && nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].count > 0
+                  && nodes [nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph^0x1].count == 0
+                  //     THREE nodes lookahead
+                  && nodes[nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].nextcell].abet[nextnextnextalph].count > 0
+                  && nodes[nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].nextcell].abet[nextnextnextalph^0x1].count == 0
+                  // *INDENT-ON*
+                  )
+                {
+                  do_crosslink = 1;
 #ifdef BEN_GRAPHIC
-		  fprintf (stderr, "!");
+                  fprintf (stderr, "!");
 #endif
-		  if (internal_trace)
-		  fprintf (stderr, "Opportunistic crosslink accepted %f\n",
-			   crosslink_err);
-		}
-	      else
-		// try one higher in the FIR stream...
-		{
-		  further_node = nodes[further_node].fir_larger;
-		  crosslink_err = fabs 
-		    (localfir - nodes[further_node].fir_prior);
-		  if (crosslink_err < crosslink_thresh
-		      && nodes[further_node].abet[nextalph].count > 0
-		      && nodes[further_node].abet[nextalph^0x1].count == 0
-		      )
-		    {
-		      do_crosslink = 1;
+                  if (internal_trace)
+                  fprintf (stderr, "Opportunistic crosslink accepted %f\n",
+                           crosslink_err);
+                }
+              else
+                // try one higher in the FIR stream...
+                {
+                  further_node = nodes[further_node].fir_larger;
+                  crosslink_err = fabs
+                    (localfir - nodes[further_node].fir_prior);
+                  if (crosslink_err < crosslink_thresh
+                      && nodes[further_node].abet[nextalph].count > 0
+                      && nodes[further_node].abet[nextalph^0x1].count == 0
+                      )
+                    {
+                      do_crosslink = 1;
 #ifdef BEN_GRAPHIC
-		      fprintf (stderr, "!^");
+                      fprintf (stderr, "!^");
 #endif
-		      if (internal_trace)
-			fprintf (stderr, 
-				 "Opportunistic up-crosslink accepted %f\n",
-				 crosslink_err);
-		    }
-		  else
-		    //  try one lower in the FIR stream....
-		    {
-		      further_node = nodes[further_node].fir_smaller;
-		      further_node = nodes[further_node].fir_smaller;
-		      crosslink_err = fabs 
-			(localfir - nodes[further_node].fir_prior);
-		      if (crosslink_err < crosslink_thresh
-			  && nodes[further_node].abet[nextalph].count > 0
-			  && nodes[further_node].abet[nextalph^0x1].count == 0
-			  )
-			{
-			  do_crosslink = 1;
+                      if (internal_trace)
+                        fprintf (stderr,
+                                 "Opportunistic up-crosslink accepted %f\n",
+                                 crosslink_err);
+                    }
+                  else
+                    //  try one lower in the FIR stream....
+                    {
+                      further_node = nodes[further_node].fir_smaller;
+                      further_node = nodes[further_node].fir_smaller;
+                      crosslink_err = fabs
+                        (localfir - nodes[further_node].fir_prior);
+                      if (crosslink_err < crosslink_thresh
+                          && nodes[further_node].abet[nextalph].count > 0
+                          && nodes[further_node].abet[nextalph^0x1].count == 0
+                          )
+                        {
+                          do_crosslink = 1;
 #ifdef BEN_GRAPHIC
-			  fprintf (stderr, "!v");
+                          fprintf (stderr, "!v");
 #endif
-			  if (internal_trace)
-			    fprintf (stderr, 
-				     "Opportunistic down-crosslink accepted %f\n",
-				     crosslink_err);
-			}
-		    }
-		}
-	      //  Note that further_node is set either way, so we don't
-	      //  need to recalculate it.
-	    }
-	  
-	  //   Are we crosslinking?
-	  if (do_crosslink)
-	    {
-	      //   Enforce sanity on further_node before crosslink
-	      if (further_node < 1) 
-		{
-		  if (further_node < 1) 
-		    fprintf (stderr, 
-			     "Bogus crosslink %ld!  Branching back to node 1.\n",
-			     further_node);
-		  further_node = 1;
-		  fprintf (stderr, "?");
-		}
-	      //   Put furnode in as the next node for this alph
-	      nodes[curnode].abet[thisalph].nextcell = further_node;
-	    }
-	  else
-	    {
-	      //   Time for a new node.  We link it in with the
-	      //   current alph's slot in curnode..
-#ifdef BEN_GRAPHIC
-	      fprintf (stderr, "@");
-#endif
-	      further_node = nodes[0].abet[0].nextcell;
-	      if (internal_trace)
-		fprintf (stderr, "Allocating new cell %ld\n", 
-			 further_node);
-	      nodes[curnode].abet[thisalph].nextcell = further_node;
+                          if (internal_trace)
+                            fprintf (stderr,
+                                     "Opportunistic down-crosslink accepted %f\n",
+                                     crosslink_err);
+                        }
+                    }
+                }
+              //  Note that further_node is set either way, so we don't
+              //  need to recalculate it.
+            }
 
-	      //   cut this node out of the front of the free list.
-	      nodes[0].abet[0].nextcell = 
-		nodes[further_node].abet[0].nextcell;
+          //   Are we crosslinking?
+          if (do_crosslink)
+            {
+              //   Enforce sanity on further_node before crosslink
+              if (further_node < 1)
+                {
+                  if (further_node < 1)
+                    fprintf (stderr,
+                             "Bogus crosslink %ld!  Branching back to node 1.\n",
+                             further_node);
+                  further_node = 1;
+                  fprintf (stderr, "?");
+                }
+              //   Put furnode in as the next node for this alph
+              nodes[curnode].abet[thisalph].nextcell = further_node;
+            }
+          else
+            {
+              //   Time for a new node.  We link it in with the
+              //   current alph's slot in curnode..
+#ifdef BEN_GRAPHIC
+              fprintf (stderr, "@");
+#endif
+              further_node = nodes[0].abet[0].nextcell;
+              if (internal_trace)
+                fprintf (stderr, "Allocating new cell %ld\n",
+                         further_node);
+              nodes[curnode].abet[thisalph].nextcell = further_node;
 
-	      //   wipe out any old data that might be there.
-	      for (i = 0; i < ENTROPY_ALPHABET_SIZE ; i++)
-		{
-		  nodes[further_node].abet[i].count = 0;
-		  nodes[further_node].abet[i].nextcell = 0;
-		}
-	      //   initialize the new node with the current FIR prior
-	      nodes[further_node].fir_prior = localfir;
-	      
-	      //    hook the new node into the FIR chain 
-	      firlat_insert_node
-		(nodes, nodeslen, firlat, firlatlen, further_node);
-	    }
-	  if (internal_trace) 
-	    fprintf (stderr, 
-		     "Now moving from node %ld to %ld (nfir %f, pfir %f)\n",
-		     curnode, further_node, 
-		     nodes[further_node].fir_prior, localfir);
-	  curnode = further_node;
-	}
+              //   cut this node out of the front of the free list.
+              nodes[0].abet[0].nextcell =
+                nodes[further_node].abet[0].nextcell;
+
+              //   wipe out any old data that might be there.
+              for (i = 0; i < ENTROPY_ALPHABET_SIZE ; i++)
+                {
+                  nodes[further_node].abet[i].count = 0;
+                  nodes[further_node].abet[i].nextcell = 0;
+                }
+              //   initialize the new node with the current FIR prior
+              nodes[further_node].fir_prior = localfir;
+
+              //    hook the new node into the FIR chain
+              firlat_insert_node
+                (nodes, nodeslen, firlat, firlatlen, further_node);
+            }
+          if (internal_trace)
+            fprintf (stderr,
+                     "Now moving from node %ld to %ld (nfir %f, pfir %f)\n",
+                     curnode, further_node,
+                     nodes[further_node].fir_prior, localfir);
+          curnode = further_node;
+        }
     }
 
-  //    All done munging the markov chain.  
+  //    All done munging the markov chain.
   //    Time to clean up and go home.
 
   //  and remember to let go of the mmap and the pattern bufffer
@@ -2115,41 +2122,40 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int hfd;                  //  hashfile fd
     char foo;
     hfd = open(learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
-	if (hfd < 0)
+        if (hfd < 0)
     {
       if (errno == ENAMETOOLONG)
-	  {
-		  untrappableerror ("Couldn't open the file (filename too long): ",
-			  learnfilename );
-	  }
+          {
+                  untrappableerror ("Couldn't open the file (filename too long): ",
+                          learnfilename );
+          }
       else
-	  {
+          {
         untrappableerror ("Couldn't open the file: ",
-			  learnfilename );
-	  }
+                          learnfilename );
+          }
     }
     else
-	{
+        {
     read (hfd, &foo, sizeof(foo));
     lseek (hfd, 0, SEEK_SET);
     write (hfd, &foo, sizeof(foo));
     close (hfd);
-	}
+        }
   }
 #endif
-  free (learnfilename);
   return (0);
 }
 
 
 int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-				   char *txtptr, long txtstart, long txtlen)
+                                   char *txtptr, long txtstart, long txtlen)
 {
 
   //  fprintf (stderr, "Sorry, Not Yet Implemented\n");
   //return (0);
 
-  //      classify the sparse spectrum of this input window 
+  //      classify the sparse spectrum of this input window
   //      as belonging to a particular type.
   //
   //       This code should look very familiar- it's cribbed from
@@ -2158,12 +2164,12 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long i, j, k;
 
   //  the statistics file names
-  char htext[MAX_PATTERN+MAX_CLASSIFIERS*MAX_FILE_NAME_LEN];  
+  char htext[MAX_PATTERN+MAX_CLASSIFIERS*MAX_FILE_NAME_LEN];
   long htext_maxlen = MAX_PATTERN+MAX_CLASSIFIERS*MAX_FILE_NAME_LEN;
   long hlen;
-  //  the match statistics variable 
-  char stext[MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100)]; 
-  long stext_maxlen = MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100); 
+  //  the match statistics variable
+  char stext[MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100)];
+  long stext_maxlen = MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100);
   long slen;
   char svrbl[MAX_PATTERN];  //  the match statistics text buffer
   long svlen;
@@ -2185,7 +2191,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   double renorm = 0.0;
   double entropy_renorm = 0.0;
   double entropy_sum = 0.0;
-  
+
   //  int hfds[MAX_CLASSIFIERS];
   ENTROPY_FEATUREBUCKET_STRUCT *nodestarts[MAX_CLASSIFIERS];
   ENTROPY_FEATUREBUCKET_STRUCT *nodes;
@@ -2201,7 +2207,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long long *totalbits[MAX_CLASSIFIERS];
 
   long succhash;
-  long vbar_seen;	// did we see '|' in classify's args?
+  long vbar_seen;       // did we see '|' in classify's args?
   long maxhash;
   long fnstart, fnlen;
   long fn_start_here;
@@ -2212,35 +2218,35 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   if (internal_trace)
     fprintf (stderr, "executing a bit-entropic CLASSIFY\n");
-  
+
   //           extract the hash file names
   crm_get_pgm_arg (htext, htext_maxlen, apb->p1start, apb->p1len);
   hlen = apb->p1len;
   hlen = crm_nexpandvar (htext, hlen, htext_maxlen);
-  
-  
+
+
   //            extract the optional "match statistics" variable
   //
   crm_get_pgm_arg (svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
   svlen = apb->p2len;
   svlen = crm_nexpandvar (svrbl, svlen, MAX_PATTERN);
-  { 
+  {
     long vstart, vlen;
     crm_nextword (svrbl, svlen, 0, &vstart, &vlen);
     memmove (svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
     svrbl[vlen] = '\000';
   }
-  
+
   //     status variable's text (used for output stats)
-  //    
+  //
   stext[0] = '\000';
   slen = 0;
-  
-  //            set our flags, if needed.  The defaults are
-  //            "case" 
 
-  //             Crosslink, in this case, means to allow 
+  //            set our flags, if needed.  The defaults are
+  //            "case"
+
+  //             Crosslink, in this case, means to allow
   //             FIR jumping whenever we've not seen this
   //             situation before.
   crosslink = 0;
@@ -2248,31 +2254,31 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       crosslink = 1;
       if (user_trace)
-	fprintf (stderr, " enabling crosslinking\n");
+        fprintf (stderr, " enabling crosslinking\n");
     }
 
-  
-  //       Now, the loop to open the files.  
+
+  //       Now, the loop to open the files.
   bestseen = 0;
   thistotal = 0;
 
   //      initialize our arrays for N .css files
-  for (i = 0; i < MAX_CLASSIFIERS; i++) 
+  for (i = 0; i < MAX_CLASSIFIERS; i++)
     {
       ptc[i] = 0.5;      // priori probability
     }
-  
+
   //     Our evaluator is to simply traverse the Markov chain that
   //     starts at nodes[0].abet[0].nextcell, and add together all of
   //     the entropies - that is, the -log2(prob) of each node.  Of
   //     course, we have to nerf the probabilities away from 0, as
   //     that would yield a log2(0.0) which is infinite and thus not
   //     well-represented in IEEE floating point.
-  //   
+  //
   //     For our purposes, we will use:
-  //           probability = this_count + BIT_ENTROPIC_PROBABILITY_NERF 
+  //           probability = this_count + BIT_ENTROPIC_PROBABILITY_NERF
   //                          / total_count
-  //    
+  //
   //     If we run off the "end" of the Markov chain, we use the FIRs
   //     to quickly find another node that's "really similar" to this
   //     node.  (this can only happen if the initialized Markov
@@ -2280,7 +2286,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     with a perfect shuffle graph which is toroidal and has no
   //     "end" to run off of.
   //
-  
+
   vbar_seen = 0;
   maxhash = 0;
   succhash = 0;
@@ -2297,142 +2303,142 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   while ( fnlen > 0 && ((maxhash < MAX_CLASSIFIERS-1)))
     {
       crm_nextword (htext,
-		    hlen, fn_start_here,
-		    &fnstart, &fnlen); 
+                    hlen, fn_start_here,
+                    &fnstart, &fnlen);
       if (fnlen > 0)
-	{
-	  strncpy (fname, &htext[fnstart], fnlen);
-	  fn_start_here = fnstart + fnlen + 1;
-	  fname[fnlen] = '\000';
-	  if (user_trace)
-	    fprintf (stderr, "Classifying with file -%s- "
-			     "succhash=%ld, maxhash=%ld\n",
-			     fname, succhash, maxhash);
-	  if ( fname[0] == '|' && fname[1] == '\000')
-	    {
-	      if (vbar_seen)
-		{
-		  nonfatalerror ("Only one ' | ' allowed in a CLASSIFY.\n" ,
-				 "We'll ignore it for now.");
-		}
-	      else
-		{
-		  succhash = maxhash;
-		}
-	      vbar_seen ++;
-	    }
-	  else
-	    {
-	      //  be sure the file exists 
-	      //             stat the file to get it's length
-	      k = stat (fname, &statbuf);
-	      //             quick check- does the file even exist?
-	      if (k != 0)
-		{
-		  nonfatalerror ("Nonexistent Classify table named: ",
-				 fname);
-		}
-	      else
-		{
-		  //  file exists - do the open/process/close      
-		  //    
-		  hashlens[maxhash] = statbuf.st_size;
-		  //  mmap the hash file into memory so we can bitwhack it
+        {
+          strncpy (fname, &htext[fnstart], fnlen);
+          fn_start_here = fnstart + fnlen + 1;
+          fname[fnlen] = '\000';
+          if (user_trace)
+            fprintf (stderr, "Classifying with file -%s- "
+                             "succhash=%ld, maxhash=%ld\n",
+                             fname, succhash, maxhash);
+          if ( fname[0] == '|' && fname[1] == '\000')
+            {
+              if (vbar_seen)
+                {
+                  nonfatalerror ("Only one ' | ' allowed in a CLASSIFY.\n" ,
+                                 "We'll ignore it for now.");
+                }
+              else
+                {
+                  succhash = maxhash;
+                }
+              vbar_seen ++;
+            }
+          else
+            {
+              //  be sure the file exists
+              //             stat the file to get it's length
+              k = stat (fname, &statbuf);
+              //             quick check- does the file even exist?
+              if (k != 0)
+                {
+                  nonfatalerror ("Nonexistent Classify table named: ",
+                                 fname);
+                }
+              else
+                {
+                  //  file exists - do the open/process/close
+                  //
+                  hashlens[maxhash] = statbuf.st_size;
+                  //  mmap the hash file into memory so we can bitwhack it
 
-		  fmaps[maxhash] = 
-		    crm_mmap_file ( fname, 
-				    0, hashlens[maxhash],
-				    PROT_READ | PROT_WRITE,
-				    MAP_SHARED,
-				    NULL);
-		  headers[maxhash] = (ENTROPY_HEADER_STRUCT *) 
-		    fmaps[maxhash];
+                  fmaps[maxhash] =
+                    crm_mmap_file ( fname,
+                                    0, hashlens[maxhash],
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED,
+                                    NULL);
+                  headers[maxhash] = (ENTROPY_HEADER_STRUCT *)
+                    fmaps[maxhash];
 
-		  if (headers[maxhash] == MAP_FAILED )
-		    {
-		      nonfatalerror ("Couldn't memory-map the table file",
-				     fname);
-		    }
-		  else
-		    {
-		      //
-		      //     Check to see if this file is the right version
-		      //
-		      //long fev;
-		      //if (hashes[maxhash][0].hash != 0 ||
-		      //	  hashes[maxhash][0].key  != 0) 
-		      //{
-		      //  fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
-		      //		   fname);
-		      //  return (fev);
-		      //}
-		      
-		      //   Pull the file info out of the header (the
-		      //   first 1024 bytes is the header)
-		      //firlats[maxhash] = (long *) 
-		      //     & headers[maxhash][headers[maxhash][0]];
-		      firlats[maxhash]= (long *) 
-			& (fmaps[maxhash] [headers[maxhash]->firlatstart]);
-		      //firlatlens[maxhash] = headers[maxhash][1];
-		      firlatlens[maxhash] = headers[maxhash]->firlatlen;
-		      //nodestarts[maxhash] = (ENTROPY_FEATUREBUCKET_STRUCT *) 
-		      //  & (headers[maxhash][headers[maxhash][2]]);
-		      nodestarts[maxhash] = (ENTROPY_FEATUREBUCKET_STRUCT *)
-			& (fmaps[maxhash] [headers[maxhash]->nodestart]);
-		      //nodelens[maxhash] = headers[maxhash][3];
-		      nodelens[maxhash] = headers[maxhash]->nodeslen;
-		      // totalbits[maxhash] = (long long *) &headers[4];
-		      totalbits[maxhash] = &(headers[maxhash]->totalbits);
+                  if (headers[maxhash] == MAP_FAILED )
+                    {
+                      nonfatalerror ("Couldn't memory-map the table file",
+                                     fname);
+                    }
+                  else
+                    {
+                      //
+                      //     Check to see if this file is the right version
+                      //
+                      //long fev;
+                      //if (hashes[maxhash][0].hash != 0 ||
+                      //          hashes[maxhash][0].key  != 0)
+                      //{
+                      //  fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
+                      //                   fname);
+                      //  return (fev);
+                      //}
 
-		      if (internal_trace)
-			fprintf (stderr, 
-			   "File #%ld firlat %p len %ld and nodes %p\n",
-			       maxhash, 
-			       (void *)firlats[maxhash],  
-			       firlatlens [maxhash],
-			       (void *)nodestarts[maxhash]);
+                      //   Pull the file info out of the header (the
+                      //   first 1024 bytes is the header)
+                      //firlats[maxhash] = (long *)
+                      //     & headers[maxhash][headers[maxhash][0]];
+                      firlats[maxhash]= (long *)
+                        & (fmaps[maxhash] [headers[maxhash]->firlatstart]);
+                      //firlatlens[maxhash] = headers[maxhash][1];
+                      firlatlens[maxhash] = headers[maxhash]->firlatlen;
+                      //nodestarts[maxhash] = (ENTROPY_FEATUREBUCKET_STRUCT *)
+                      //  & (headers[maxhash][headers[maxhash][2]]);
+                      nodestarts[maxhash] = (ENTROPY_FEATUREBUCKET_STRUCT *)
+                        & (fmaps[maxhash] [headers[maxhash]->nodestart]);
+                      //nodelens[maxhash] = headers[maxhash][3];
+                      nodelens[maxhash] = headers[maxhash]->nodeslen;
+                      // totalbits[maxhash] = (long long *) &headers[4];
+                      totalbits[maxhash] = &(headers[maxhash]->totalbits);
 
-		      //    Keep a copy of the data filename for later.
-		      hashname[maxhash] = (char *) calloc ((fnlen+10), sizeof(hashname[maxhash][0])); 
-		      if (!hashname[maxhash])
-			untrappableerror(
-			   "Couldn't malloc hashname[maxhash]\n",
-			   "We need that part later, so we're stuck.  Sorry.");
-		      strncpy(hashname[maxhash],fname,fnlen);
-		      hashname[maxhash][fnlen] = 0;
-		      maxhash++;
-		    }
-		}
-	    }
-	  if (maxhash > MAX_CLASSIFIERS-1)
-	    nonfatalerror ("Too many classifier files.",
-			   "Some may have been disregarded");
-	}
+                      if (internal_trace)
+                        fprintf (stderr,
+                           "File #%ld firlat %p len %ld and nodes %p\n",
+                               maxhash,
+                               (void *)firlats[maxhash],
+                               firlatlens [maxhash],
+                               (void *)nodestarts[maxhash]);
+
+                      //    Keep a copy of the data filename for later.
+                      hashname[maxhash] = (char *) calloc ((fnlen+10), sizeof(hashname[maxhash][0]));
+                      if (!hashname[maxhash])
+                        untrappableerror(
+                           "Couldn't malloc hashname[maxhash]\n",
+                           "We need that part later, so we're stuck.  Sorry.");
+                      strncpy(hashname[maxhash],fname,fnlen);
+                      hashname[maxhash][fnlen] = 0;
+                      maxhash++;
+                    }
+                }
+            }
+          if (maxhash > MAX_CLASSIFIERS-1)
+            nonfatalerror ("Too many classifier files.",
+                           "Some may have been disregarded");
+        }
     }
 
   //
-  //    If there is no '|', then all files are "success" files.  
-  if (succhash == 0) 
+  //    If there is no '|', then all files are "success" files.
+  if (succhash == 0)
     succhash = maxhash;
 
   //    a CLASSIFY with no arguments is always a "success".
   if (maxhash == 0)
     return (0);
 
-  
+
   // sanity checks...  Uncomment for super-strict CLASSIFY.
-  // 
-  //	do we have at least 1 valid .css files?
+  //
+  //    do we have at least 1 valid .css files?
   if (maxhash == 0)
     {
       fatalerror ("Couldn't open at least 2 .css files for classify().", "");
     }
-  //	do we have at least 1 valid .css file at both sides of '|'?
+  //    do we have at least 1 valid .css file at both sides of '|'?
   //if (!vbar_seen || succhash < 0 || (maxhash < succhash + 2))
   //  {
   //    nonfatalerror (
   //      "Couldn't open at least 1 .ben file per SUCC | FAIL classes "
-  //	" for classify().\n","Hope you know what are you doing.");
+  //    " for classify().\n","Hope you know what are you doing.");
   //  }
 
   //   now all of the files are mmapped into memory,
@@ -2447,7 +2453,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //        The actual graph-following starts here.  To maximize locality
   //        of reference, we do the graph-following first for one graph,
   //        then for another, then for another.  That way, we tend to stay
-  //        in the CPU cache better.   
+  //        in the CPU cache better.
   //
   //        Note to self - doing this may or may not speed up the other
   //        classifiers- but because they tend to use less memory it may
@@ -2461,142 +2467,141 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     double localfir;
     long bitnum;
     long nextnode;
-    
-    //        zero out our entropy accumulators 
+
+    //        zero out our entropy accumulators
     //
     for (c = 0; c < MAX_CLASSIFIERS; c++)
       {
-	total_entropy[c] = 0.0;
-	firjumps[c] = 0;
+        total_entropy[c] = 0.0;
+        firjumps[c] = 0;
 
       }
 
     for (c = 0; c < maxhash; c++)
       {
-	if (internal_trace)
-	  fprintf (stderr, "Now running against stats file %ld\n", c);
-	//        initialize our per-graph-following stuff:
-	totalfeatures = 0;
-	nodes = nodestarts[c];
-	nodeslen = nodelens[c];
-	//        initialize our starting conditions.
-	curnode = nodes[0].abet[1].nextcell;
-	localfir = nodes[nodes[0].abet[1].nextcell].fir_prior;
-	  
-	textoffset = txtstart;
-	textmaxoffset = txtstart + txtlen;
-	bitnum = 8;
+        if (internal_trace)
+          fprintf (stderr, "Now running against stats file %ld\n", c);
+        //        initialize our per-graph-following stuff:
+        totalfeatures = 0;
+        nodes = nodestarts[c];
+        nodeslen = nodelens[c];
+        //        initialize our starting conditions.
+        curnode = nodes[0].abet[1].nextcell;
+        localfir = nodes[nodes[0].abet[1].nextcell].fir_prior;
 
-	//    Now the big loop to follow the graph
-	while (textoffset + 1 < textmaxoffset || bitnum > 0)
-	  {
-	    long nodetotcount, itc;
-	    double add_entropy; 
-	    bitnum = bitnum - ENTROPY_CHAR_SIZE;
-	    if (bitnum < 0)
-	      {
-		bitnum = 7;
-		textoffset ++;
-	      }
-	    thischar = txtptr [textoffset];
-	    thisalph = ( thischar >> bitnum ) & ENTROPY_CHAR_BITMASK;
-	    totalfeatures++;
+        textoffset = txtstart;
+        textmaxoffset = txtstart + txtlen;
+        bitnum = 8;
 
-	    if (internal_trace)
-	      firlat_sanity_scan (firlats[c], firlatlens[c], nodes, nodeslen);
+        //    Now the big loop to follow the graph
+        while (textoffset + 1 < textmaxoffset || bitnum > 0)
+          {
+            long nodetotcount, itc;
+            double add_entropy;
+            bitnum = bitnum - ENTROPY_CHAR_SIZE;
+            if (bitnum < 0)
+              {
+                bitnum = 7;
+                textoffset ++;
+              }
+            thischar = txtptr [textoffset];
+            thisalph = ( thischar >> bitnum ) & ENTROPY_CHAR_BITMASK;
+            totalfeatures++;
+
+            if (internal_trace)
+              firlat_sanity_scan (firlats[c], firlatlens[c], nodes, nodeslen);
 
 
-	    //   update our local FIR to what it will be when we're
-	    //   at the next node.  (this is effective not at the
-	    //   current node, but one step further into the future.)
-	    localfir = thisalph * BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT
-	      + localfir * (1.0 - BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT);
+            //   update our local FIR to what it will be when we're
+            //   at the next node.  (this is effective not at the
+            //   current node, but one step further into the future.)
+            localfir = thisalph * BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT
+              + localfir * (1.0 - BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT);
 
-	    //   and go where it told us.  Note that we may want to 
-	    //   FIR jump if we've never been here before, or there is
-	    //   no "next node", or there _is_ no next node.
-	    //   we *have* been to before. 
-	    nodetotcount = 0;
-	    for (itc = 0; itc < ENTROPY_ALPHABET_SIZE; itc++)
-	      nodetotcount += nodes[curnode].abet[itc].count;
-	    if (internal_trace)
-	      fprintf (stderr, "%ld/%ld ", 
-		       nodes[curnode].abet[thisalph].count, nodetotcount);
-	    if ( 
-		( nodetotcount < 1) 
-		|| nodes[curnode].abet[thisalph].count < 1
-		|| nodes[curnode].abet[thisalph].nextcell < 1 
-		)
-	      {
-		//    Either no corpus history, or
-		//           this cell has never gone here before, or
-		//           we're off the edge of the model completely
-		//    In any case, we're better off FIR-jumping no
-		//    matter what because we'll never be back "in corpus"
-		double error;
-		nextnode = firlat_find_closest_node 
-		  (nodes, nodeslen, firlats[c], firlatlens[c], localfir);
-		error = localfir - nodes[nextnode].fir_prior;
-		if (internal_trace)
-		  fprintf (stderr, 
-			   "FIR jumping, error = %12g, new node %ld\n",
-			   error, nextnode);
-		if (error < 0.00) error = - error;
-		
-		//    and add the error entropy estimate 
-		//    due to the FIR jump; since this is knowable
-		//    due to it being "no choice", the entropy is very small.
-		add_entropy =
-		  // pow (2.0, (error / BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT));
-		  // stats_2_entropy (1, nodelens[c]) ;
-		  
-		  //   the following one seems to work well.. entirely
-		  //   unjustifiably, but it works.  ROC=0.128
-		  // stats_2_entropy (1,10);
-		   stats_2_entropy (1,1000);
+            //   and go where it told us.  Note that we may want to
+            //   FIR jump if we've never been here before, or there is
+            //   no "next node", or there _is_ no next node.
+            //   we *have* been to before.
+            nodetotcount = 0;
+            for (itc = 0; itc < ENTROPY_ALPHABET_SIZE; itc++)
+              nodetotcount += nodes[curnode].abet[itc].count;
+            if (internal_trace)
+              fprintf (stderr, "%ld/%ld ",
+                       nodes[curnode].abet[thisalph].count, nodetotcount);
+            if (
+                ( nodetotcount < 1)
+                || nodes[curnode].abet[thisalph].count < 1
+                || nodes[curnode].abet[thisalph].nextcell < 1
+                )
+              {
+                //    Either no corpus history, or
+                //           this cell has never gone here before, or
+                //           we're off the edge of the model completely
+                //    In any case, we're better off FIR-jumping no
+                //    matter what because we'll never be back "in corpus"
+                double error;
+                nextnode = firlat_find_closest_node
+                  (nodes, nodeslen, firlats[c], firlatlens[c], localfir);
+                error = localfir - nodes[nextnode].fir_prior;
+                if (internal_trace)
+                  fprintf (stderr,
+                           "FIR jumping, error = %12g, new node %ld\n",
+                           error, nextnode);
+                if (error < 0.00) error = - error;
 
-		  //   This one is horrible.  5% error rates...
-		  //   stats_2_entropy (nodes[nextnode].total_count, 
-		  //  nodes[0].total_count);
-		  
-		  //stats_2_entropy (0, nodetotcount);
-		  //0.5;
+                //    and add the error entropy estimate
+                //    due to the FIR jump; since this is knowable
+                //    due to it being "no choice", the entropy is very small.
+                add_entropy =
+                  // pow (2.0, (error / BIT_ENTROPIC_FIR_PRIOR_BIT_WEIGHT));
+                  // stats_2_entropy (1, nodelens[c]) ;
 
-		  //   This one is justifiable, and is very close to 
-		  //   the unjustifiable one above, but not quite as good.
-		  //  GROT GROT GROT
-		  //stats_2_entropy (1, nodetotcount + 1);
-		
-	        total_entropy[c] = total_entropy[c] + add_entropy;
-		curnode = nextnode;
-		firjumps[c]++;
-	      }
-	    else            
-	      //     else no FIRjump, things look good.
-	      //     we're still "in the corpus" or we've not enabled
-	      //     FIR jumping.
-	      {
-		add_entropy = 
-		  stats_2_entropy ( nodes[curnode].abet[thisalph].count,
-				    nodetotcount );
-		total_entropy[c] = 
-		  total_entropy[c] +
-		  add_entropy;
-		//       and move to the next node.
-		curnode = nodes[curnode].abet[thisalph].nextcell;
-		//  go back to the start cell if we're off the end and
-		//  we've not enabled crosslinked FIRjumping
-		if (curnode < 1) 
-		  {
-		    fprintf (stderr, "X");
-		    curnode = nodes[0].abet[0].nextcell;
-		  }
-	      }
-	    if (internal_trace)
-	      fprintf (stderr, "%f\n", add_entropy);
-	  }
+                  //   the following one seems to work well.. entirely
+                  //   unjustifiably, but it works.  ROC=0.128
+                  // stats_2_entropy (1,10);
+                   stats_2_entropy (1,1000);
+
+                  //   This one is horrible.  5% error rates...
+                  //   stats_2_entropy (nodes[nextnode].total_count,
+                  //  nodes[0].total_count);
+
+                  //stats_2_entropy (0, nodetotcount);
+                  //0.5;
+
+                  //   This one is justifiable, and is very close to
+                  //   the unjustifiable one above, but not quite as good.
+                  //  GROT GROT GROT
+                  //stats_2_entropy (1, nodetotcount + 1);
+
+                total_entropy[c] = total_entropy[c] + add_entropy;
+                curnode = nextnode;
+                firjumps[c]++;
+              }
+            else
+              //     else no FIRjump, things look good.
+              //     we're still "in the corpus" or we've not enabled
+              //     FIR jumping.
+              {
+                add_entropy =
+                  stats_2_entropy ( nodes[curnode].abet[thisalph].count,
+                                    nodetotcount );
+                total_entropy[c] +=
+                  add_entropy;
+                //       and move to the next node.
+                curnode = nodes[curnode].abet[thisalph].nextcell;
+                //  go back to the start cell if we're off the end and
+                //  we've not enabled crosslinked FIRjumping
+                if (curnode < 1)
+                  {
+                    fprintf (stderr, "X");
+                    curnode = nodes[0].abet[0].nextcell;
+                  }
+              }
+            if (internal_trace)
+              fprintf (stderr, "%f\n", add_entropy);
+          }
       }
-    
+
     //          Test Results on TREC public testset
     // No node-merge or node-clone
     //   Unique states
@@ -2607,10 +2612,10 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   256 x 256 lattice:
     //     no FIR-hop
     //     FIR-hopping
-    //       TOE shuffle - 3342/91996, time 199/71/15 minutes 
-    //   512 x 512 lattice: 
+    //       TOE shuffle - 3342/91996, time 199/71/15 minutes
+    //   512 x 512 lattice:
     //     no FIR-hop
-    //       TOE  - 3035/92189 ( ~3 % )  time: 233 / 74 / 25 min 
+    //       TOE  - 3035/92189 ( ~3 % )  time: 233 / 74 / 25 min
     //       TEFT - 8609/75962 and 9508/92189, 272 minutes
     //   1024x1024 lattice:
     //     FIR-hop
@@ -2623,17 +2628,17 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     if (internal_trace)
       {
-	for (k = 0; k < maxhash; k++)
-	  fprintf (stderr, "entropy for classifier %ld is %f\n",
-		   k, total_entropy[k]);
+        for (k = 0; k < maxhash; k++)
+          fprintf (stderr, "entropy for classifier %ld is %f\n",
+                   k, total_entropy[k]);
       }
-    
+
     ////////////////////////////////////////////////////
     //
     //   Now build the output report (if desired, that is, svlen > 0
     //
     //   How we convert entropy into probability and pR:
-    //  
+    //
     //   Basically, we cheat a lot.  If you consider the definition of
     //   entropy, it's the log of probability.  The probability of a
     //   particular document being generated by a particular markov
@@ -2645,7 +2650,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   (that is, the monkeys-on-typewriters probability) of each
     //   document are just 1 / (2 ^ entropy), and the relative
     //   probabilities can then be scaled out by summing and dividing
-    //   in the real domain.  
+    //   in the real domain.
     //
     //   However, those probabilities are REALLY SMALL - well below
     //   the lower limit of IEEE floating point numbers, and so we can
@@ -2658,43 +2663,43 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   Once we have relative probabilities, we can then jump right
     //   back into the standard summing code to decide on success or
     //   failure.
-    
+
     //   Step 1: find the minimum needed to add to start renormalization
     entropy_renorm = total_entropy[0];
     entropy_sum = 0.0;
     for (k = 0; k < maxhash; k++)
       {
-	if (internal_trace)
-	  fprintf (stderr, "entropy class %ld is %f\n", k, total_entropy[k]);
-	if (total_entropy[k] < entropy_renorm )
-	  {
-	    entropy_renorm = total_entropy [k];
-	  }
-	entropy_sum += total_entropy[k];
+        if (internal_trace)
+          fprintf (stderr, "entropy class %ld is %f\n", k, total_entropy[k]);
+        if (total_entropy[k] < entropy_renorm )
+          {
+            entropy_renorm = total_entropy [k];
+          }
+        entropy_sum += total_entropy[k];
       }
     if (internal_trace)
       fprintf (stderr, "entropy_renorm = %f\n", entropy_renorm);
-    
+
     //   Step 2: add entropy renorm constant, and convert to unnormalized P
     //   Note that this is 2 raised to very small powers, and often
     //   returns zero, so we have to nerf it with DBL_MIN.
     for (k = 0; k < maxhash; k++)
       {
-	//  Bad formula - technically accurate but pR maxes out 
-	//    at 304 for nearly all texts
-	//ptc [k] = 1 / 
-	// ( pow (2.00, (total_entropy[k] - entropy_renorm)) + 1000 * DBL_MIN);
-	//    better formula - probs very close to 0.5
-	// ptc [k] = (entropy_sum - total_entropy[k] ) / entropy_sum;
-	//
-	//  try a much smaller exponential to bring things back into line:
-	//   Note: the 1.1 below is _empirical_, chosen to normalize this
-	//   classifier to a +/- 10 pR units for good thick threshold training.
-	//   It has no other meaning beyond that.
-	ptc [k] = 1.0 / 
-	  (pow (1.1, (total_entropy[k] - entropy_renorm)) + (1000 * DBL_MIN)) ;
-	if (internal_trace)
-	 fprintf (stderr, "class %ld ptc %f\n", k, ptc[k]);
+        //  Bad formula - technically accurate but pR maxes out
+        //    at 304 for nearly all texts
+        //ptc [k] = 1 /
+        // ( pow (2.00, (total_entropy[k] - entropy_renorm)) + 1000 * DBL_MIN);
+        //    better formula - probs very close to 0.5
+        // ptc [k] = (entropy_sum - total_entropy[k] ) / entropy_sum;
+        //
+        //  try a much smaller exponential to bring things back into line:
+        //   Note: the 1.1 below is _empirical_, chosen to normalize this
+        //   classifier to a +/- 10 pR units for good thick threshold training.
+        //   It has no other meaning beyond that.
+        ptc [k] = 1.0 /
+          (pow (1.1, (total_entropy[k] - entropy_renorm)) + (1000 * DBL_MIN)) ;
+        if (internal_trace)
+         fprintf (stderr, "class %ld ptc %f\n", k, ptc[k]);
       }
     //   Step 3: renormalize the probabilities to sum to 1.000
     renorm = 0.0;
@@ -2702,9 +2707,9 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       renorm = renorm + ptc[k];
     for (k = 0; k < maxhash; k++)
       {
-	ptc[k] = (ptc[k] / renorm) + 1000 * DBL_MIN ;
-       	if (internal_trace)
-	  fprintf (stderr, "class %ld RENORM ptc %f\n", k, ptc[k]);
+        ptc[k] = (ptc[k] / renorm) + 1000 * DBL_MIN ;
+        if (internal_trace)
+          fprintf (stderr, "class %ld RENORM ptc %f\n", k, ptc[k]);
       }
     //    Now we're in probability space in the ptc array.  Away we go!
     tprob = 0.0;
@@ -2712,107 +2717,107 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       tprob = tprob + ptc[k];
     if (svlen > 0)
       {
-	char buf[1024];
-	double accumulator;
-	double remainder;
-	double overall_pR;
-	long m;
-	buf [0] = '\000';
-	accumulator = 1000 * DBL_MIN;
-	for (m = 0; m < succhash; m++)
-	  {
-	    accumulator = accumulator + ptc[m];
-	  }
-	remainder = 1000 * DBL_MIN;
-	for (m = succhash; m < maxhash; m++)
-	  if (bestseen != m)
-	    {
-	      remainder = remainder + ptc[m];
-	    }
-	overall_pR = (log10 (accumulator) - log10 (remainder));
-	
-	//   note also that strcat _accumulates_ in stext.
-	//  There would be a possible buffer overflow except that _we_ control
-	//   what gets written here.  So it's no biggie.
-	
-	if (tprob > 0.5000)
-	  {
-	    sprintf (buf, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR );
-	  }
-	else
-	  {
-	    sprintf (buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR );
-	  }
-	if (strlen (stext) + strlen(buf) <= stext_maxlen)
-	  strcat (stext, buf);
-	bestseen = 0;
-	for (k = 0; k < maxhash; k++)
-	  if (ptc[k] > ptc[bestseen] ) bestseen = k;
-	remainder = 1000 * DBL_MIN;
-	for (m = 0; m < maxhash; m++)
-	if (bestseen != m)
-	  {
-	    remainder = remainder + ptc[m];
-	  }
-	snprintf (buf, NUMBEROF(buf), "Best match to file #%ld (%s) "	\
-		 "prob: %6.4f  pR: %6.4f  \n",
-		 bestseen,
-		 hashname[bestseen],
-		 ptc[bestseen],
-		 (log10(ptc[bestseen]) - log10(remainder)));
-	buf[NUMBEROF(buf) - 1] = 0;
-	if (strlen (stext) + strlen(buf) <= stext_maxlen)
-	  strcat (stext, buf);
-	sprintf (buf, "Total features in input file: %ld\n", totalfeatures); 
-	if (strlen (stext) + strlen(buf) <= stext_maxlen)
-	  strcat (stext, buf);
-	for (k = 0; k < maxhash; k++)
-	  {
-	    long m;
-	    double pctused; 
-	    remainder = 1000 * DBL_MIN;
-	    for (m = 0; m < maxhash; m++)
-	      if (k != m)
-		{
-		  remainder = remainder + ptc[m];
-		}
-	    nodes = nodestarts[k];
-	    //  percent usage- hack due to "0" being a sentinel for no space
-	    pctused = nodes[0].abet[0].nextcell;
-	    if (nodes[0].abet[0].nextcell == 0) pctused = nodelens[k];
-	    pctused = 100.0 * pctused / nodelens[k];
-	    snprintf (buf, NUMBEROF(buf),
-		     "#%ld (%s):"
-		     " features: %lld (%.0f%%), entropy: %8f, jumps: %ld, prob: %3.2e, pR: %6.2f\n", 
-		     k,
-		     hashname[k],
-		     //		     nodes[0].total_count,
-		     *totalbits[k],
-		     pctused,
-		     total_entropy[k],
-		     firjumps[k],
-		     ptc[k], 
-		     (log10 (ptc[k]) - log10 (remainder) )  );
-		buf[NUMBEROF(buf) - 1] = 0;
-	    // strcat (stext, buf);
-	    if (strlen(stext)+strlen(buf) <= stext_maxlen)
-	      strcat (stext, buf);
-	  }
-	// check here if we got enough room in stext to stuff everything
-	// perhaps we'd better rise a nonfatalerror, instead of just
-	// whining on stderr
-	if (strcmp(&(stext[strlen(stext)-strlen(buf)]), buf) != 0)
-	  {
-	    nonfatalerror( "WARNING: not enough room in the buffer to create "
-			   "the statistics text.  Perhaps you could try bigger "
-			   "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-			   " ");
-	  }
-	crm_destructive_alter_nvariable (svrbl, svlen, 
-					 stext, strlen (stext));
+        char buf[1024];
+        double accumulator;
+        double remainder;
+        double overall_pR;
+        long m;
+        buf [0] = '\000';
+        accumulator = 1000 * DBL_MIN;
+        for (m = 0; m < succhash; m++)
+          {
+            accumulator = accumulator + ptc[m];
+          }
+        remainder = 1000 * DBL_MIN;
+        for (m = succhash; m < maxhash; m++)
+          if (bestseen != m)
+            {
+              remainder = remainder + ptc[m];
+            }
+        overall_pR = (log10 (accumulator) - log10 (remainder));
+
+        //   note also that strcat _accumulates_ in stext.
+        //  There would be a possible buffer overflow except that _we_ control
+        //   what gets written here.  So it's no biggie.
+
+        if (tprob > 0.5000)
+          {
+            sprintf (buf, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR );
+          }
+        else
+          {
+            sprintf (buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR );
+          }
+        if (strlen (stext) + strlen(buf) <= stext_maxlen)
+          strcat (stext, buf);
+        bestseen = 0;
+        for (k = 0; k < maxhash; k++)
+          if (ptc[k] > ptc[bestseen] ) bestseen = k;
+        remainder = 1000 * DBL_MIN;
+        for (m = 0; m < maxhash; m++)
+        if (bestseen != m)
+          {
+            remainder = remainder + ptc[m];
+          }
+        snprintf (buf, WIDTHOF(buf), "Best match to file #%ld (%s) "   \
+                 "prob: %6.4f  pR: %6.4f  \n",
+                 bestseen,
+                 hashname[bestseen],
+                 ptc[bestseen],
+                 (log10(ptc[bestseen]) - log10(remainder)));
+        buf[WIDTHOF(buf) - 1] = 0;
+        if (strlen (stext) + strlen(buf) <= stext_maxlen)
+          strcat (stext, buf);
+        sprintf (buf, "Total features in input file: %ld\n", totalfeatures);
+        if (strlen (stext) + strlen(buf) <= stext_maxlen)
+          strcat (stext, buf);
+        for (k = 0; k < maxhash; k++)
+          {
+            long m;
+            double pctused;
+            remainder = 1000 * DBL_MIN;
+            for (m = 0; m < maxhash; m++)
+              if (k != m)
+                {
+                  remainder = remainder + ptc[m];
+                }
+            nodes = nodestarts[k];
+            //  percent usage- hack due to "0" being a sentinel for no space
+            pctused = nodes[0].abet[0].nextcell;
+            if (nodes[0].abet[0].nextcell == 0) pctused = nodelens[k];
+            pctused = 100.0 * pctused / nodelens[k];
+            snprintf (buf, WIDTHOF(buf),
+                     "#%ld (%s):"
+                     " features: %lld (%.0f%%), entropy: %8f, jumps: %ld, prob: %3.2e, pR: %6.2f\n",
+                     k,
+                     hashname[k],
+                     //              nodes[0].total_count,
+                     *totalbits[k],
+                     pctused,
+                     total_entropy[k],
+                     firjumps[k],
+                     ptc[k],
+                     (log10 (ptc[k]) - log10 (remainder) )  );
+                buf[WIDTHOF(buf) - 1] = 0;
+            // strcat (stext, buf);
+            if (strlen(stext)+strlen(buf) <= stext_maxlen)
+              strcat (stext, buf);
+          }
+        // check here if we got enough room in stext to stuff everything
+        // perhaps we'd better rise a nonfatalerror, instead of just
+        // whining on stderr
+        if (strcmp(&(stext[strlen(stext)-strlen(buf)]), buf) != 0)
+          {
+            nonfatalerror( "WARNING: not enough room in the buffer to create "
+                           "the statistics text.  Perhaps you could try bigger "
+                           "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+                           " ");
+          }
+        crm_destructive_alter_nvariable (svrbl, svlen,
+                                         stext, strlen (stext));
       }
   }
-  
+
   //  cleanup time!
   //  remember to let go of the fd's and mmaps
   for (k = 0; k < maxhash; k++)
@@ -2828,7 +2833,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   for (i = 0; i < maxhash; i++) {
     ///////////////////////////////////////
-    //	  ! XXX SPAMNIX HACK!
+    //    ! XXX SPAMNIX HACK!
     //!                         -- by Barry Jaspan
     //
     //! Without the statement "k = i" (which should have no effect),
@@ -2840,7 +2845,7 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //! crm114-developers).  I've also examined the assembler produced
     //! with various changes here and, though I don't speak PPC, w/o
     //! the k = i it is qualitatively different.
-    //! 
+    //!
     //! For now, I'm concluding it is an optimizer bug, and fixing it
     //! with the "k = i" statement.  This occurs on MacOS X 10.2 with
     //! Apple Computer, Inc. GCC version 1175, based on gcc version
@@ -2853,19 +2858,19 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (tprob <= 0.5000)
     {
       if (user_trace)
-	fprintf (stderr, "CLASSIFY was a FAIL, skipping forward.\n");
+        fprintf (stderr, "CLASSIFY was a FAIL, skipping forward.\n");
       //    and do what we do for a FAIL here
       csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
       csl->aliusstk [csl->mct[csl->cstmt]->nest_level] = -1;
       return (0);
     }
 
-  
-  //    
+
+  //
   //   all done... if we got here, we should just continue execution
   if (user_trace)
     fprintf (stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
   return (0);
 
 }
- 
+

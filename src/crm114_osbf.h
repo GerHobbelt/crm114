@@ -21,9 +21,9 @@ typedef struct
 {
   unsigned char version[4];
   unsigned long flags;
-  unsigned long buckets_start;	/* offset to first bucket, in bucket size units */
-  unsigned long buckets;	/* number of buckets in the file */
-  unsigned long learnings;	/* number of trainings executed */
+  unsigned long buckets_start;  /* offset to first bucket, in bucket size units */
+  unsigned long buckets;        /* number of buckets in the file */
+  unsigned long learnings;      /* number of trainings executed */
 } OSBF_FEATURE_HEADER_STRUCT;
 
 /* define header size to be a multiple of bucket size with aprox. 4 Kbytes */
@@ -58,13 +58,13 @@ typedef union
                                              (bucket.key) == (k))
 
 /* CSS file version */
-#define SBPH_VERSION		0
-#define OSB_VERSION		1
-#define CORRELATE_VERSION	2
-#define NEURAL_VERSION		3
-#define OSB_WINNOW_VERSION	4
-#define OSBF_VERSION		5
-#define UNKNOWN_VERSION		6
+#define SBPH_VERSION            0
+#define OSB_VERSION             1
+#define CORRELATE_VERSION       2
+#define NEURAL_VERSION          3
+#define OSB_WINNOW_VERSION      4
+#define OSBF_VERSION            5
+#define UNKNOWN_VERSION         6
 
 /*
   Array with pointers to CSS version names, indexed with the
@@ -78,7 +78,7 @@ extern char *CSS_version_name[];
 
 #define OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH 94321
 
-/* max chain len - microgrooming is triggered after this, if enabled */ 
+/* max chain len - microgrooming is triggered after this, if enabled */
 #define OSBF_MICROGROOM_CHAIN_LENGTH 29
 /* maximum number of buckets groom-zeroed */
 #define OSBF_MICROGROOM_STOP_AFTER 128
@@ -90,17 +90,17 @@ extern char *CSS_version_name[];
 #define OSBF_MAX_LONG_TOKENS 1000
 
 extern int crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
-			      char *txtptr, long txtoffset, long txtlen);
+                              char *txtptr, long txtoffset, long txtlen);
 extern int crm_expr_osbf_bayes_classify (CSL_CELL * csl,
-					 ARGPARSE_BLOCK * apb,
-			      char *txtptr, long txtoffset, long txtlen);
+                                         ARGPARSE_BLOCK * apb,
+                              char *txtptr, long txtoffset, long txtlen);
 extern void crm_osbf_set_microgroom(int value);
 extern void crm_osbf_microgroom (OSBF_FEATURE_HEADER_STRUCT * h,
-				 unsigned long hindex);
+                                 unsigned long hindex);
 extern void crm_osbf_packcss (OSBF_FEATURE_HEADER_STRUCT * h,
-			      unsigned long packstart, unsigned long packlen);
+                              unsigned long packstart, unsigned long packlen);
 extern void crm_osbf_packseg (OSBF_FEATURE_HEADER_STRUCT * h,
-			      unsigned long packstart, unsigned long packlen);
+                              unsigned long packstart, unsigned long packlen);
 extern unsigned long crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT * header,
                     unsigned long index);
 extern unsigned long crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT * header,
@@ -111,8 +111,8 @@ extern void crm_osbf_update_bucket (OSBF_FEATURE_HEADER_STRUCT * header,
                             unsigned long bindex, int delta);
 extern void crm_osbf_insert_bucket (OSBF_FEATURE_HEADER_STRUCT * header,
                             unsigned long bindex, unsigned long hash,
-		                            unsigned long key, int value);
+                                            unsigned long key, int value);
 extern int crm_osbf_create_cssfile (char *cssfile, unsigned long buckets,
-				    unsigned long major, unsigned long minor,
-				    unsigned long spectrum_start);
+                                    unsigned long major, unsigned long minor,
+                                    unsigned long spectrum_start);
 

@@ -58,13 +58,13 @@ typedef int reg_errcode_t;
 
 /* Extra regcomp() flags. */
 #ifndef REG_BASIC
-#define REG_BASIC	0
+#define REG_BASIC       0
 #endif /* !REG_BASIC */
 #define REG_RIGHT_ASSOC (REG_LITERAL << 1)
 #define REG_UNGREEDY    (REG_RIGHT_ASSOC << 1)
 
 /* Extra regexec() flags. */
-#define REG_APPROX_MATCHER	 0x1000
+#define REG_APPROX_MATCHER       0x1000
 #define REG_BACKTRACKING_MATCHER (REG_APPROX_MATCHER << 1)
 
 #else /* !TRE_USE_SYSTEM_REGEX_H */
@@ -75,7 +75,7 @@ typedef int reg_errcode_t;
 typedef int regoff_t;
 typedef struct {
   size_t re_nsub;  /* Number of parenthesized subexpressions. */
-  void *value;	   /* For internal use only. */
+  void *value;     /* For internal use only. */
 } regex_t;
 
 typedef struct {
@@ -85,33 +85,33 @@ typedef struct {
 
 
 typedef enum {
-  REG_OK = 0,		/* No error. */
+  REG_OK = 0,           /* No error. */
   /* POSIX regcomp() return error codes.  (In the order listed in the
-     standard.)	 */
-  REG_NOMATCH,		/* No match. */
-  REG_BADPAT,		/* Invalid regexp. */
-  REG_ECOLLATE,		/* Unknown collating element. */
-  REG_ECTYPE,		/* Unknown character class name. */
-  REG_EESCAPE,		/* Trailing backslash. */
-  REG_ESUBREG,		/* Invalid back reference. */
-  REG_EBRACK,		/* "[]" imbalance */
-  REG_EPAREN,		/* "\(\)" or "()" imbalance */
-  REG_EBRACE,		/* "\{\}" or "{}" imbalance */
-  REG_BADBR,		/* Invalid content of {} */
-  REG_ERANGE,		/* Invalid use of range operator */
-  REG_ESPACE,		/* Out of memory.  */
+     standard.)  */
+  REG_NOMATCH,          /* No match. */
+  REG_BADPAT,           /* Invalid regexp. */
+  REG_ECOLLATE,         /* Unknown collating element. */
+  REG_ECTYPE,           /* Unknown character class name. */
+  REG_EESCAPE,          /* Trailing backslash. */
+  REG_ESUBREG,          /* Invalid back reference. */
+  REG_EBRACK,           /* "[]" imbalance */
+  REG_EPAREN,           /* "\(\)" or "()" imbalance */
+  REG_EBRACE,           /* "\{\}" or "{}" imbalance */
+  REG_BADBR,            /* Invalid content of {} */
+  REG_ERANGE,           /* Invalid use of range operator */
+  REG_ESPACE,           /* Out of memory.  */
   REG_BADRPT
 } reg_errcode_t;
 
 /* POSIX regcomp() flags. */
-#define REG_EXTENDED	1
-#define REG_ICASE	(REG_EXTENDED << 1)
-#define REG_NEWLINE	(REG_ICASE << 1)
-#define REG_NOSUB	(REG_NEWLINE << 1)
+#define REG_EXTENDED    1
+#define REG_ICASE       (REG_EXTENDED << 1)
+#define REG_NEWLINE     (REG_ICASE << 1)
+#define REG_NOSUB       (REG_NEWLINE << 1)
 
 /* Extra regcomp() flags. */
-#define REG_BASIC	0
-#define REG_LITERAL	(REG_NOSUB << 1)
+#define REG_BASIC       0
+#define REG_LITERAL     (REG_NOSUB << 1)
 #define REG_RIGHT_ASSOC (REG_LITERAL << 1)
 #define REG_UNGREEDY    (REG_RIGHT_ASSOC << 1)
 
@@ -120,16 +120,16 @@ typedef enum {
 #define REG_NOTEOL (REG_NOTBOL << 1)
 
 /* Extra regexec() flags. */
-#define REG_APPROX_MATCHER	 (REG_NOTEOL << 1)
+#define REG_APPROX_MATCHER       (REG_NOTEOL << 1)
 #define REG_BACKTRACKING_MATCHER (REG_APPROX_MATCHER << 1)
 
 #endif /* !TRE_USE_SYSTEM_REGEX_H */
 
 /* REG_NOSPEC and REG_LITERAL mean the same thing. */
 #if defined(REG_LITERAL) && !defined(REG_NOSPEC)
-#define REG_NOSPEC	REG_LITERAL
+#define REG_NOSPEC      REG_LITERAL
 #elif defined(REG_NOSPEC) && !defined(REG_LITERAL)
-#define REG_LITERAL	REG_NOSPEC
+#define REG_LITERAL     REG_NOSPEC
 #endif /* defined(REG_NOSPEC) */
 
 /* The maximum number of iterations in a bound expression. */
@@ -142,11 +142,11 @@ regcomp(regex_t *preg, const char *regex, int cflags);
 
 extern int
 regexec(const regex_t *preg, const char *string, size_t nmatch,
-	regmatch_t pmatch[], int eflags);
+        regmatch_t pmatch[], int eflags);
 
 extern size_t
 regerror(int errcode, const regex_t *preg, char *errbuf,
-	 size_t errbuf_size);
+         size_t errbuf_size);
 
 extern void
 regfree(regex_t *preg);
@@ -162,7 +162,7 @@ regwcomp(regex_t *preg, const wchar_t *regex, int cflags);
 
 extern int
 regwexec(const regex_t *preg, const wchar_t *string,
-	 size_t nmatch, regmatch_t pmatch[], int eflags);
+         size_t nmatch, regmatch_t pmatch[], int eflags);
 #endif /* TRE_WCHAR */
 
 /* Versions with a maximum length argument and therefore the capability to
@@ -172,7 +172,7 @@ regncomp(regex_t *preg, const char *regex, size_t len, int cflags);
 
 extern int
 regnexec(const regex_t *preg, const char *string, size_t len,
-	 size_t nmatch, regmatch_t pmatch[], int eflags);
+         size_t nmatch, regmatch_t pmatch[], int eflags);
 
 #ifdef TRE_WCHAR
 extern int
@@ -180,31 +180,31 @@ regwncomp(regex_t *preg, const wchar_t *regex, size_t len, int cflags);
 
 extern int
 regwnexec(const regex_t *preg, const wchar_t *string, size_t len,
-	  size_t nmatch, regmatch_t pmatch[], int eflags);
+          size_t nmatch, regmatch_t pmatch[], int eflags);
 #endif /* TRE_WCHAR */
 
 #ifdef TRE_APPROX
 
 /* Approximate matching parameter struct. */
 typedef struct {
-  int cost_ins;	       /* Default cost of an inserted character. */
-  int cost_del;	       /* Default cost of a deleted character. */
+  int cost_ins;        /* Default cost of an inserted character. */
+  int cost_del;        /* Default cost of a deleted character. */
   int cost_subst;      /* Default cost of a substituted character. */
-  int max_cost;	       /* Maximum allowed cost of a match. */
+  int max_cost;        /* Maximum allowed cost of a match. */
 
-  int max_ins;	       /* Maximum allowed number of inserts. */
-  int max_del;	       /* Maximum allowed number of deletes. */
+  int max_ins;         /* Maximum allowed number of inserts. */
+  int max_del;         /* Maximum allowed number of deletes. */
   int max_subst;       /* Maximum allowed number of substitutes. */
-  int max_err;	       /* Maximum allowed number of errors total. */
+  int max_err;         /* Maximum allowed number of errors total. */
 } regaparams_t;
 
 /* Approximate matching result struct. */
 typedef struct {
   size_t nmatch;       /* Length of pmatch[] array. */
   regmatch_t *pmatch;  /* Submatch data. */
-  int cost;	       /* Cost of the match. */
-  int num_ins;	       /* Number of inserts in the match. */
-  int num_del;	       /* Number of deletes in the match. */
+  int cost;            /* Cost of the match. */
+  int num_ins;         /* Number of inserts in the match. */
+  int num_del;         /* Number of deletes in the match. */
   int num_subst;       /* Number of substitutes in the match. */
 } regamatch_t;
 
@@ -212,20 +212,20 @@ typedef struct {
 /* Approximate matching functions. */
 extern int
 regaexec(const regex_t *preg, const char *string,
-	 regamatch_t *match, regaparams_t params, int eflags);
+         regamatch_t *match, regaparams_t params, int eflags);
 
 extern int
 reganexec(const regex_t *preg, const char *string, size_t len,
-	  regamatch_t *match, regaparams_t params, int eflags);
+          regamatch_t *match, regaparams_t params, int eflags);
 #ifdef TRE_WCHAR
 /* Wide character approximate matching. */
 extern int
 regawexec(const regex_t *preg, const wchar_t *string,
-	  regamatch_t *match, regaparams_t params, int eflags);
+          regamatch_t *match, regaparams_t params, int eflags);
 
 extern int
 regawnexec(const regex_t *preg, const wchar_t *string, size_t len,
-	   regamatch_t *match, regaparams_t params, int eflags);
+           regamatch_t *match, regaparams_t params, int eflags);
 #endif /* TRE_WCHAR */
 
 /* Sets the parameters to default values. */
@@ -248,9 +248,9 @@ typedef struct {
 
 extern int
 reguexec(const regex_t *preg, const tre_str_source *string,
-	 size_t nmatch, regmatch_t pmatch[], int eflags);
+         size_t nmatch, regmatch_t pmatch[], int eflags);
 
-/* Returns the version string.	The returned string is static. */
+/* Returns the version string.  The returned string is static. */
 extern char *
 tre_version(void);
 
@@ -280,6 +280,6 @@ tre_have_approx(const regex_t *preg);
 #ifdef __cplusplus
 }
 #endif
-#endif				/* TRE_REGEX_H */
+#endif                          /* TRE_REGEX_H */
 
 /* EOF */

@@ -1,3 +1,15 @@
+2007-08-03 Ger Hobbelt
+
+	* revived the autoconfiscated crm114 build setup
+
+	* fixed several items
+
+	* added stuff for the Win32 port
+
+	* various minor tweaks and fixes
+
+	* improved internal error checking
+
 2004-08-21 12:32  Joost van Baal <joostvb-crm114@mdcc.cx>
 
 	* man/include.zmm.in: make ./configure's prefix available to

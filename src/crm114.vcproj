@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\libtre\tre\lib;..\..\libtre\tre\win32"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;VERSION=\&quot;20070428-BlameSpamConf\&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -74,6 +74,7 @@
 				OutputFile="$(OutDir)/crm114.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
+				AssemblyDebug="1"
 				ProgramDatabaseFile="$(OutDir)/crm114.pdb"
 				SubSystem="1"
 				TargetMachine="1"
@@ -131,11 +132,14 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\libtre\tre\lib;..\..\libtre\tre\win32"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;VERSION=\&quot;20070428-BlameSpamConf\&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -161,11 +165,14 @@
 				AdditionalDependencies=" msvcprt.lib"
 				OutputFile="$(OutDir)/crm114.exe"
 				LinkIncremental="1"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -242,11 +249,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\crm_expr_clump_nn.c"
+				RelativePath=".\crm_expr_file_io.c"
 				>
 			</File>
 			<File
-				RelativePath=".\crm_expr_file_io.c"
+				RelativePath=".\crm_expr_fscm.c"
 				>
 			</File>
 			<File
@@ -255,6 +262,10 @@
 			</File>
 			<File
 				RelativePath=".\crm_expr_match.c"
+				>
+			</File>
+			<File
+				RelativePath=".\crm_expr_sks.c"
 				>
 			</File>
 			<File
@@ -326,10 +337,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\crm_strcompress.c"
-				>
-			</File>
-			<File
 				RelativePath=".\crm_util_errorhandlers.c"
 				>
 				<FileConfiguration
@@ -366,7 +373,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -392,6 +398,14 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\config.h"
+				>
+			</File>
+			<File
+				RelativePath=".\config_win32.h"
+				>
+			</File>
+			<File
 				RelativePath=".\crm114.h"
 				>
 			</File>
@@ -409,10 +423,6 @@
 			</File>
 			<File
 				RelativePath=".\crm114_sysincludes.h"
-				>
-			</File>
-			<File
-				RelativePath=".\crm_expr_clump_nn.h"
 				>
 			</File>
 			<File
@@ -510,6 +520,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Makefile.am"
+				>
+			</File>
+			<File
 				RelativePath=".\megatest.bat"
 				>
 			</File>
@@ -582,6 +596,106 @@
 				</File>
 				<File
 					RelativePath=".\BSD_build_files\shell_libs"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="rootdir"
+				>
+				<File
+					RelativePath="..\AUTHORS"
+					>
+				</File>
+				<File
+					RelativePath="..\autogen.sh"
+					>
+				</File>
+				<File
+					RelativePath="..\bootstrap"
+					>
+				</File>
+				<File
+					RelativePath="..\BUGS"
+					>
+				</File>
+				<File
+					RelativePath="..\ChangeLog"
+					>
+				</File>
+				<File
+					RelativePath="..\configure.ac"
+					>
+				</File>
+				<File
+					RelativePath="..\COPYING"
+					>
+				</File>
+				<File
+					RelativePath="..\CREDITS"
+					>
+				</File>
+				<File
+					RelativePath="..\crm114.kdevelop"
+					>
+				</File>
+				<File
+					RelativePath="..\crm114.lsm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\distribute_files_from_src_dir.sh"
+					>
+				</File>
+				<File
+					RelativePath="..\Doxyfile"
+					>
+				</File>
+				<File
+					RelativePath="..\fix_crlf.sh"
+					>
+				</File>
+				<File
+					RelativePath="..\HACKING"
+					>
+				</File>
+				<File
+					RelativePath="..\INSTALL"
+					>
+				</File>
+				<File
+					RelativePath="..\MAILINGLIST"
+					>
+				</File>
+				<File
+					RelativePath="..\Makefile.am"
+					>
+				</File>
+				<File
+					RelativePath="..\NEWS"
+					>
+				</File>
+				<File
+					RelativePath="..\README"
+					>
+				</File>
+				<File
+					RelativePath="..\README.1st"
+					>
+				</File>
+				<File
+					RelativePath="..\README.maintainer"
+					>
+				</File>
+				<File
+					RelativePath="..\README.win32"
+					>
+				</File>
+				<File
+					RelativePath="..\setversion"
+					>
+				</File>
+				<File
+					RelativePath="..\TODO"
 					>
 				</File>
 			</Filter>

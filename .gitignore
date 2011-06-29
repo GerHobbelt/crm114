@@ -28,6 +28,9 @@ BuildLog.htm
 Makefile.in
 config.log
 config.status
+stamp.year
+stamp.month
+stamp.day
 	   
 dist
 tmp-build

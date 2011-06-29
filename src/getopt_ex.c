@@ -1,5 +1,5 @@
 /*!
-	\file
+        \file
 */
 
 /*
@@ -1478,7 +1478,7 @@ int main(int argc, char **argv)
 int getopt_long_ex(int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index
                ,void (*print_error)(void *, const char *, ...), void *propagate)
 {
-	return _getopt_internal(argc, argv, options, long_options, opt_index, 0, print_error, propagate);
+        return _getopt_internal(argc, argv, options, long_options, opt_index, 0, print_error, propagate);
 }
 
 /* Like getopt_long, but '-' as well as '--' can indicate a long option.

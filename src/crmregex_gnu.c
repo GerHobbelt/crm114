@@ -1,24 +1,22 @@
 //       CRM114 Regex redirection bounce package this file bounces
 //       CRM114 regex requests to whichever regex package has been
-//       compiled and linked in to CRM114.  
+//       compiled and linked in to CRM114.
 //
 //       Adding a new regex package is relatively easy- just mimic the
-//       ifdef stanzas below to map the functions 
-// 
+//       ifdef stanzas below to map the functions
+//
 //         crm_regcomp
 //         crm_regexec
 //         crm_regerror
 //         crm_regfree
 //         crm_regversion
 //
-//      into whatever calls your preferred regex package uses.   
+//      into whatever calls your preferred regex package uses.
 //
 
-#include "crm114_sysincludes.h" 
+//  include some standard files
+#include "crm114_sysincludes.h"
 
-#include <regex.h>
-
-//
 //  include any local crm114 configuration file
 #include "crm114_config.h"
 
@@ -27,6 +25,10 @@
 
 //  and include the routine declarations file
 #include "crm114.h"
+
+
+#if defined(HAVE_GNU_REGEX)
+
 
 //
 //      How to do a register compilation
@@ -38,13 +40,13 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
   if (strlen (regex) < regex_len)
     {
       if (null_errored == 0)
-	{
-	  fatalerror ("The regex contains a NUL inside the stated length,",
-		  "but your GNU regex library can't handle embedded NULs.  Therefore, treat all results WITH GREAT SUSPICION.");
-	  null_errored = 1;
-	}
+        {
+          fatalerror ("The regex contains a NUL inside the stated length,",
+                  "but your GNU regex library can't handle embedded NULs.  Therefore, treat all results WITH GREAT SUSPICION.");
+          null_errored = 1;
+        }
     }
-  //  
+  //
   //   bug workaround for regex libraries that can't compile the null regex
   if (regex_len == 0)
     return (regcomp (preg, "()", cflags));
@@ -57,13 +59,13 @@ int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
 //       How to do a regex execution from the compiled register
 //
 int crm_regexec ( regex_t *preg, char *string, long string_len,
-		 size_t nmatch, regmatch_t pmatch[], int eflags, 
-		  char *aux_string)
+                 size_t nmatch, regmatch_t pmatch[], int eflags,
+                  char *aux_string)
 {
   static int null_errored = 0;
   int savedcrockchar;
   int regexresult;
-  
+
   //   GRODY GRODY GRODY !!!  If using the GNU (or other POSIX) regex
   //   libraries, we have to crock in a NULL to end the regex search.
   //   We have to insert a NULL because the GNU regex libraries are
@@ -73,23 +75,23 @@ int crm_regexec ( regex_t *preg, char *string, long string_len,
   string [ string_len + 1 ] = '\000';
   if (internal_trace)
     {
-      fprintf (stderr, "    crocking in a NULL for the %c\n", 
-	     savedcrockchar);
+      fprintf (stderr, "    crocking in a NULL for the %c\n",
+             savedcrockchar);
     }
 
   if (strlen (string) < string_len)
     {
       if (null_errored == 0)
-	{
-	  fprintf (stderr, "\nRegexec  strlen: %d, stated_len: %ld \n",
-		   strlen (string), string_len);
-	  nonfatalerror ("Your data window contained a NUL inside the stated length,",
-		      "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");
-	  null_errored = 1;
-	}
+        {
+          fprintf (stderr, "\nRegexec  strlen: %d, stated_len: %ld \n",
+                   strlen (string), string_len);
+          nonfatalerror ("Your data window contained a NUL inside the stated length,",
+                      "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");
+          null_errored = 1;
+        }
     }
   regexresult = regexec ( preg, string, nmatch, pmatch, eflags);
-  
+
   //    and de-crock the nulled character
   string [ string_len + 1] = savedcrockchar;
 
@@ -98,7 +100,7 @@ int crm_regexec ( regex_t *preg, char *string, long string_len,
 
 
 size_t crm_regerror (int errorcode, regex_t *preg, char *errbuf,
-		     size_t errbuf_size)
+                     size_t errbuf_size)
 
 {
   return (regerror (errorcode, preg, errbuf, errbuf_size));
@@ -106,7 +108,7 @@ size_t crm_regerror (int errorcode, regex_t *preg, char *errbuf,
 
 void crm_regfree (regex_t *preg)
 {
-    regfree (preg); 
+    regfree (preg);
 }
 
 char * crm_regversion (void)
@@ -115,3 +117,7 @@ char * crm_regversion (void)
 
   return (verstr);
 }
+
+
+#endif
+

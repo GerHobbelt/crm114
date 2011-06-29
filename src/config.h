@@ -1,12 +1,44 @@
 /* src/config.h.  Generated from config.h.in by configure.  */
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
-   */
+/* Define to 1 if you have the <arpa/inet.h> header file. */
+#define HAVE_ARPA_INET_H 1
+
+/* Define to 1 if you have the <assert.h> header file. */
+#define HAVE_ASSERT_H 1
+
+/* BSD REs */
+/* #undef HAVE_BSD_REGEX */
+
+/* Define to 1 if the system has the type `clock_t'. */
+#define HAVE_CLOCK_T 1
+
+/* Define to 1 if you have the <crtdbg.h> header file. */
+/* #undef HAVE_CRTDBG_H */
+
+/* Define to 1 if you have the <crt_externs.h> header file. */
+/* #undef HAVE_CRT_EXTERNS_H */
+
+/* Define to 1 if you have the <ctype.h> header file. */
+#define HAVE_CTYPE_H 1
+
+/* Define to 1 if you have the <direct.h> header file. */
+/* #undef HAVE_DIRECT_H */
+
+/* Define to 1 if you have the <dirent.h> header file. */
 #define HAVE_DIRENT_H 1
 
 /* Define to 1 if you have the `dup2' function. */
 #define HAVE_DUP2 1
+
+/* Define if you have the 'environ' global environment variable */
+/* #undef HAVE_ENVIRON */
+
+/* Define to 1 if you have the <errno.h> header file. */
+#define HAVE_ERRNO_H 1
+
+/* Define to 1 if you have the `fabs' function. */
+#define HAVE_FABS 1
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
@@ -20,21 +52,114 @@
 /* Define to 1 if you have the `fork' function. */
 #define HAVE_FORK 1
 
+/* Define to 1 if you have the `getopt' function. */
+#define HAVE_GETOPT 1
+
+/* Define to 1 if you have the <getopt_ex.h> header file. */
+/* #undef HAVE_GETOPT_EX_H */
+
+/* Define to 1 if you have the <getopt.h> header file. */
+#define HAVE_GETOPT_H 1
+
+/* Define to 1 if you have the `getopt_long' function. */
+#define HAVE_GETOPT_LONG 1
+
 /* Define to 1 if you have the `getpagesize' function. */
 #define HAVE_GETPAGESIZE 1
+
+/* Define to 1 if you have the `getpid' function. */
+#define HAVE_GETPID 1
+
+/* Define to 1 if you have the `getppid' function. */
+#define HAVE_GETPPID 1
+
+/* GNU REs */
+/* #undef HAVE_GNU_REGEX */
+
+/* Define to 1 if you have the <history.h> header file. */
+/* #undef HAVE_HISTORY_H */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
+/* Define to 1 if you have the <io.h> header file. */
+/* #undef HAVE_IO_H */
+
+/* Define to 1 if you have the `isalnum' function. */
+#define HAVE_ISALNUM 1
+
+/* Define to 1 if you have the `isalpha' function. */
+#define HAVE_ISALPHA 1
+
+/* Define to 1 if you have the `isascii' function. */
+#define HAVE_ISASCII 1
+
+/* Define to 1 if you have the `isblank' function. */
+#define HAVE_ISBLANK 1
+
+/* Define to 1 if you have the `iscntrl' function. */
+#define HAVE_ISCNTRL 1
+
+/* Define to 1 if you have the `isdigit' function. */
+#define HAVE_ISDIGIT 1
+
+/* Define to 1 if you have the `isgraph' function. */
+#define HAVE_ISGRAPH 1
+
+/* Define to 1 if you have the `islower' function. */
+#define HAVE_ISLOWER 1
+
+/* Define to 1 if you have the `isprint' function. */
+#define HAVE_ISPRINT 1
+
+/* Define to 1 if you have the `ispunct' function. */
+#define HAVE_ISPUNCT 1
+
+/* Define to 1 if you have the `isspace' function. */
+#define HAVE_ISSPACE 1
+
+/* Define to 1 if you have the `isupper' function. */
+#define HAVE_ISUPPER 1
+
+/* Define to 1 if you have the `isxdigit' function. */
+#define HAVE_ISXDIGIT 1
+
+/* Define to 1 if you have the <libintl.h> header file. */
+#define HAVE_LIBINTL_H 1
+
 /* Define to 1 if you have the `m' library (-lm). */
 #define HAVE_LIBM 1
 
-/* Define to 1 if you have the `tre' library (-ltre). */
-#define HAVE_LIBTRE 1
+/* Define if you have a readline compatible library */
+#define HAVE_LIBREADLINE 1
+
+/* Define to 1 if you have the <lmcons.h> header file. */
+/* #undef HAVE_LMCONS_H */
+
+/* Define to 1 if you have the <locale.h> header file. */
+#define HAVE_LOCALE_H 1
+
+/* Define to 1 if you have the `log' function. */
+#define HAVE_LOG 1
+
+/* Define to 1 if you have the `log10' function. */
+#define HAVE_LOG10 1
+
+/* Define to 1 if you have the `log2' function. */
+#define HAVE_LOG2 1
+
+/* Define to 1 if you have the `logl' function. */
+#define HAVE_LOGL 1
+
+/* compiler understands long long */
+#define HAVE_LONG_LONG 1
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #define HAVE_MALLOC 1
+
+/* Define to 1 if you have the <math.h> header file. */
+#define HAVE_MATH_H 1
 
 /* Define to 1 if you have the `memchr' function. */
 #define HAVE_MEMCHR 1
@@ -45,8 +170,14 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
 
+/* Define to 1 if you have the `memset' function. */
+#define HAVE_MEMSET 1
+
 /* Define to 1 if you have a working `mmap' system call. */
 #define HAVE_MMAP 1
+
+/* Define to 1 if you have the `msync' function. */
+#define HAVE_MSYNC 1
 
 /* Define to 1 if you have the `munmap' function. */
 #define HAVE_MUNMAP 1
@@ -54,8 +185,63 @@
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
 
-/* Define to 1 if you have the `regcomp' function. */
-/* #undef HAVE_REGCOMP */
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#define HAVE_NETINET_IN_H 1
+
+/* PCRE REs */
+/* #undef HAVE_PCRE_REGEX */
+
+/* Define to 1 if the system has the type `pid_t'. */
+#define HAVE_PID_T 1
+
+/* Define to 1 if you have the `pipe' function. */
+#define HAVE_PIPE 1
+
+/* POSIX REs */
+/* #undef HAVE_POSIX_REGEX */
+
+/* Define to 1 if you have the `pow' function. */
+#define HAVE_POW 1
+
+/* Define to 1 if you have the <process.h> header file. */
+/* #undef HAVE_PROCESS_H */
+
+/* Define to 1 if you have the <readline.h> header file. */
+/* #undef HAVE_READLINE_H */
+
+/* Define if your readline library has \`add_history' */
+#define HAVE_READLINE_HISTORY 1
+
+/* Define to 1 if you have the <readline/history.h> header file. */
+#define HAVE_READLINE_HISTORY_H 1
+
+/* Define to 1 if you have the <readline/readline.h> header file. */
+#define HAVE_READLINE_READLINE_H 1
+
+/* Define to 1 if your system has a GNU libc compatible `realloc' function,
+   and to 0 otherwise. */
+#define HAVE_REALLOC 1
+
+/* REs support */
+#define HAVE_REGEX 1
+
+/* Define to 1 if you have the <regex.h> header file. */
+#define HAVE_REGEX_H 1
+
+/* Define to 1 if you have the `setlocale' function. */
+#define HAVE_SETLOCALE 1
+
+/* Define to 1 if you have the <signal.h> header file. */
+#define HAVE_SIGNAL_H 1
+
+/* Define to 1 if you have the `snprintf' function. */
+#define HAVE_SNPRINTF 1
+
+/* Define to 1 if you have the `sqrt' function. */
+#define HAVE_SQRT 1
+
+/* Define to 1 if you have the `stat' function. */
+#define HAVE_STAT 1
 
 /* Define to 1 if `stat' has the bug that it succeeds when given the
    zero-length file name argument. */
@@ -67,17 +253,35 @@
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
 
+/* Define to 1 if you have the <stdio.h> header file. */
+#define HAVE_STDIO_H 1
+
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
 
 /* Define to 1 if you have the `strcasecmp' function. */
 #define HAVE_STRCASECMP 1
 
+/* Define to 1 if you have the `strchr' function. */
+#define HAVE_STRCHR 1
+
 /* Define to 1 if you have the `strcspn' function. */
 #define HAVE_STRCSPN 1
 
 /* Define to 1 if you have the `strdup' function. */
 #define HAVE_STRDUP 1
+
+/* Define to 1 if you have the `strerror' function. */
+#define HAVE_STRERROR 1
+
+/* Define to 1 if you have the `strftime' function. */
+#define HAVE_STRFTIME 1
+
+/* Define to 1 if you have the `stricmp' function. */
+/* #undef HAVE_STRICMP */
+
+/* Define to 1 if cpp supports the ANSI # stringizing operator. */
+#define HAVE_STRINGIZE 1
 
 /* Define to 1 if you have the <strings.h> header file. */
 #define HAVE_STRINGS_H 1
@@ -91,12 +295,21 @@
 /* Define to 1 if you have the `strncasecmp' function. */
 #define HAVE_STRNCASECMP 1
 
+/* Define to 1 if you have the `strncpy' function. */
+#define HAVE_STRNCPY 1
+
+/* Define to 1 if you have the `strnicmp' function. */
+/* #undef HAVE_STRNICMP */
+
 /* Define to 1 if you have the `strstr' function. */
 #define HAVE_STRSTR 1
 
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
    */
 /* #undef HAVE_SYS_DIR_H */
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#define HAVE_SYS_MMAN_H 1
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
    */
@@ -105,20 +318,53 @@
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
 
+/* Define to 1 if you have the <sys/times.h> header file. */
+#define HAVE_SYS_TIMES_H 1
+
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
 
-/* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
+/* Define to 1 if you have the <sys/wait.h> header file. */
 #define HAVE_SYS_WAIT_H 1
+
+/* Define to 1 if you have the `times' function. */
+#define HAVE_TIMES 1
+
+/* Define to 1 if you have the <time.h> header file. */
+#define HAVE_TIME_H 1
+
+/* TRE REs */
+#define HAVE_TRE_REGEX 1
+
+/* Define to 1 if you have the <tre/regex.h> header file. */
+#define HAVE_TRE_REGEX_H 1
+
+/* Define to 1 if you have the `truncate' function. */
+#define HAVE_TRUNCATE 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
+
+/* SYSV 8 REs */
+/* #undef HAVE_V8_REGEX */
+
+/* SYSV 8 RE exports regsub */
+/* #undef HAVE_V8_REGSUB */
 
 /* Define to 1 if you have the `vfork' function. */
 #define HAVE_VFORK 1
 
 /* Define to 1 if you have the <vfork.h> header file. */
 /* #undef HAVE_VFORK_H */
+
+/* Define to 1 if you have the `vsnprintf' function. */
+#define HAVE_VSNPRINTF 1
+
+/* Define to 1 if you have the `waitpid' function. */
+#define HAVE_WAITPID 1
+
+/* Define to 1 if you have the <wchar.h> header file. */
+#define HAVE_WCHAR_H 1
 
 /* Define to 1 if `fork' works. */
 #define HAVE_WORKING_FORK 1
@@ -128,6 +374,15 @@
 
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
+
+/* Define to 1 if you have the `_snprintf' function. */
+/* #undef HAVE__SNPRINTF */
+
+/* Define to 1 if you have the `_stat' function. */
+/* #undef HAVE__STAT */
+
+/* Define if you have the '__environ' global environment variable */
+#define HAVE___ENVIRON 1
 
 /* Set host type */
 #define HOSTTYPE "linux-gnu"
@@ -146,31 +401,70 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20040627-BlameSeifkes-auto.1"
+#define PACKAGE_STRING "CRM114 20070731-BlameTheInterns"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20040627-BlameSeifkes-auto.1"
+#define PACKAGE_VERSION "20070731-BlameTheInterns"
+
+/* "enable replacement memmove if system memmove is broken or missing" */
+/* #undef PREFER_PORTABLE_MEMMOVE */
+
+/* "enable replacement (v)snprintf if system (v)snprintf is broken" */
+/* #undef PREFER_PORTABLE_SNPRINTF */
 
 /* Define to 1 if the C compiler supports function prototypes. */
 #define PROTOTYPES 1
+
+/* revision code of the software */
+#define REVISION "20070804T1728"
 
 /* Define to 1 if the `setvbuf' function takes the buffering type as its
    second argument and the buffer pointer as the third, as on System V before
    release 3. */
 /* #undef SETVBUF_REVERSED */
 
+/* The size of `long int', as computed by sizeof. */
+#define SIZEOF_LONG_INT 8
+
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "20040627-BlameSeifkes-auto.1"
+#define VERSION "20070731-BlameTheInterns"
+
+/* version suffix code of the software */
+#define VER_SUFFIX "070804T1728"
+
+/* Define to 1 if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
+/* #undef WORDS_BIGENDIAN */
 
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
 # define _GNU_SOURCE 1
+#endif
+
+/* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
+   #define below would cause a syntax error. */
+/* #undef _UINT32_T */
+
+/* Define for Solaris 2.5.1 so the uint64_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
+   #define below would cause a syntax error. */
+/* #undef _UINT64_T */
+
+/* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the
+   #define below would cause a syntax error. */
+/* #undef _UINT8_T */
+
+/* Define to 1 if type `char' is unsigned and you are not using gcc.  */
+#ifndef __CHAR_UNSIGNED__
+/* # undef __CHAR_UNSIGNED__ */
 #endif
 
 /* Define like PROTOTYPES; this can be used by system headers. */
@@ -185,14 +479,56 @@
 /* #undef inline */
 #endif
 
+/* Define to the type of a signed integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+/* #undef int16_t */
+
+/* Define to the type of a signed integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+/* #undef int32_t */
+
+/* Define to the type of a signed integer type of width exactly 64 bits if
+   such a type exists and the standard includes do not define it. */
+/* #undef int64_t */
+
+/* Define to the type of a signed integer type of width exactly 8 bits if such
+   a type exists and the standard includes do not define it. */
+/* #undef int8_t */
+
 /* Define to rpl_malloc if the replacement function should be used. */
 /* #undef malloc */
 
 /* Define to `int' if <sys/types.h> does not define. */
+/* #undef mode_t */
+
+/* Define to `int' if <sys/types.h> does not define. */
 /* #undef pid_t */
+
+/* Define to rpl_realloc if the replacement function should be used. */
+/* #undef realloc */
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
 
+/* Define to the type of an unsigned integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+/* #undef uint16_t */
+
+/* Define to the type of an unsigned integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+/* #undef uint32_t */
+
+/* Define to the type of an unsigned integer type of width exactly 64 bits if
+   such a type exists and the standard includes do not define it. */
+/* #undef uint64_t */
+
+/* Define to the type of an unsigned integer type of width exactly 8 bits if
+   such a type exists and the standard includes do not define it. */
+/* #undef uint8_t */
+
 /* Define as `fork' if `vfork' does not work. */
 /* #undef vfork */
+
+/* Define to empty if the keyword `volatile' does not work. Warning: valid
+   code using `volatile' can become incorrect without. Disable with care. */
+/* #undef volatile */

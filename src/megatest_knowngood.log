@@ -1,4 +1,4 @@
- This is CRM114, version 20070730-BlameTheInterns (TRE 0.7.5 (LGPL))
+ This is CRM114, version 20070731-BlameTheInterns (TRE 0.7.5 (LGPL))
  Copyright 2001-2006 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -202,8 +202,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 12904 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 12904 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 31871 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 31871 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -656,7 +656,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20070730-BlameTheInterns ( TRE 0.7.5 (LGPL) )
+version: 20070731-BlameTheInterns ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?
@@ -892,36 +892,84 @@ Total features in input file: 408
 #1 (q_test.css): features: 533520 (100%), entropy: 388.325192, jumps: 22, prob: 3.09e-07, pR:  -6.51 
 
 
-**** Support Vector Machine (SVM) unigram classifier 
- type I 
-CLASSIFY succeeds; success probability: 0.9163  pR: 10.3946
-Best match to file #0 (i_test.css) prob: 0.9163  pR: 10.3946  
-Total features in input file: 1
-#0 (i_test.css): documents: 300, features: 7464,  prob: 9.16e-01, pR:  10.39 
-#1 (q_test.css): documents: 175, features: 6095,  prob: 8.37e-02, pR: -10.39 
+**** Fast Substring Compression Match Classifier 
+ type Q 
+CLASSIFY fails; success probability: 0.049565  pR: -147.9304
+Best match to file #1 (q_test.css) prob: 0.9504  pR: 147.9304  
+Total features in input file: 69
+#0 (i_test.css): features: 53184, score:1.18e+02, prob: 4.96e-02,pR: -147.93
+#1 (q_test.css): features: 66688, score:5.48e+02, prob: 9.50e-01,pR: 147.93
 
  type I 
-CLASSIFY succeeds; success probability: 0.9163  pR: 10.3946
-Best match to file #0 (i_test.css) prob: 0.9163  pR: 10.3946  
-Total features in input file: 1
-#0 (i_test.css): documents: 300, features: 7464,  prob: 9.16e-01, pR:  10.39 
-#1 (q_test.css): documents: 175, features: 6095,  prob: 8.37e-02, pR: -10.39 
+CLASSIFY succeeds; success probability: 0.949211  pR: 146.6004
+Best match to file #0 (i_test.css) prob: 0.9492  pR: 146.6004  
+Total features in input file: 51
+#0 (i_test.css): features: 53184, score:3.33e+02, prob: 9.49e-01,pR: 146.60
+#1 (q_test.css): features: 66688, score:7.33e+01, prob: 5.08e-02,pR: -146.60
+
+
+**** Support Vector Machine (SVM) unigram classifier 
+ type I 
+CLASSIFY succeeds; success probability: 0.8868  pR: 8.9402
+Best match to file #0 (i_test.css) prob: 0.8868  pR: 8.9402  
+Total features in input file: 11
+#0 (i_test.css): documents: 300, features: 7464,  prob: 8.87e-01, pR:   8.94 
+#1 (q_test.css): documents: 175, features: 6095,  prob: 1.13e-01, pR:  -8.94 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.9951  pR: 23.0417
+Best match to file #0 (i_test.css) prob: 0.9951  pR: 23.0417  
+Total features in input file: 10
+#0 (i_test.css): documents: 300, features: 7464,  prob: 9.95e-01, pR:  23.04 
+#1 (q_test.css): documents: 175, features: 6095,  prob: 4.94e-03, pR: -23.04 
 
 
 **** Support Vector Machine (SVM) classifier 
  type I 
-CLASSIFY succeeds; success probability: 0.9456  pR: 12.4011
-Best match to file #0 (i_test.css) prob: 0.9456  pR: 12.4011  
-Total features in input file: 4
-#0 (i_test.css): documents: 300, features: 34780,  prob: 9.46e-01, pR:  12.40 
-#1 (q_test.css): documents: 175, features: 31487,  prob: 5.44e-02, pR: -12.40 
+CLASSIFY succeeds; success probability: 0.8724  pR: 8.3472
+Best match to file #0 (i_test.css) prob: 0.8724  pR: 8.3472  
+Total features in input file: 44
+#0 (i_test.css): documents: 300, features: 34780,  prob: 8.72e-01, pR:   8.35 
+#1 (q_test.css): documents: 175, features: 31487,  prob: 1.28e-01, pR:  -8.35 
 
  type I 
-CLASSIFY succeeds; success probability: 0.9456  pR: 12.4011
-Best match to file #0 (i_test.css) prob: 0.9456  pR: 12.4011  
-Total features in input file: 4
-#0 (i_test.css): documents: 300, features: 34780,  prob: 9.46e-01, pR:  12.40 
-#1 (q_test.css): documents: 175, features: 31487,  prob: 5.44e-02, pR: -12.40 
+CLASSIFY succeeds; success probability: 0.9675  pR: 14.7373
+Best match to file #0 (i_test.css) prob: 0.9675  pR: 14.7373  
+Total features in input file: 40
+#0 (i_test.css): documents: 300, features: 34780,  prob: 9.67e-01, pR:  14.74 
+#1 (q_test.css): documents: 175, features: 31487,  prob: 3.25e-02, pR: -14.74 
+
+
+**** String Kernel SVM (SKS) classifier 
+ type I 
+CLASSIFY succeeds; success probability: 0.8756  pR: 8.4731
+Best match to file #0 (i_test.css) prob: 0.8756  pR: 8.4731  
+Total features in input file: 69
+#0 (i_test.css):documents: 300, features: 52237,  prob: 8.76e-01, pR:   8.47 
+#1 (q_test.css):documents: 175, features: 65832,  prob: 1.24e-01, pR:  -8.47 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.9836  pR: 17.7819
+Best match to file #0 (i_test.css) prob: 0.9836  pR: 17.7819  
+Total features in input file: 51
+#0 (i_test.css):documents: 300, features: 52237,  prob: 9.84e-01, pR:  17.78 
+#1 (q_test.css):documents: 175, features: 65832,  prob: 1.64e-02, pR: -17.78 
+
+
+**** String Kernel SVM (SKS) Unique classifier 
+ type I 
+CLASSIFY succeeds; success probability: 0.8873  pR: 8.9604
+Best match to file #0 (i_test.css) prob: 0.8873  pR: 8.9604  
+Total features in input file: 68
+#0 (i_test.css):documents: 300, features: 42397,  prob: 8.87e-01, pR:   8.96 
+#1 (q_test.css):documents: 175, features: 36769,  prob: 1.13e-01, pR:  -8.96 
+
+ type I 
+CLASSIFY succeeds; success probability: 0.9859  pR: 18.4550
+Best match to file #0 (i_test.css) prob: 0.9859  pR: 18.4550  
+Total features in input file: 49
+#0 (i_test.css):documents: 300, features: 42397,  prob: 9.86e-01, pR:  18.46 
+#1 (q_test.css):documents: 175, features: 36769,  prob: 1.41e-02, pR: -18.46 
 
 
 **** Bytewise Correlation classifier 

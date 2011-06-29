@@ -1,13 +1,13 @@
 //  crm_str_funcs.c  - Controllable Regex Mutilator,  version v1.0
 //  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
+//
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
 //  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
+//  www.fsf.org, and a copy is included in this distribution.
 //
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
+//  Other licenses may be negotiated; contact the
+//  author for details.
 //
 //  include some standard files
 #include "crm114_sysincludes.h"
@@ -24,8 +24,9 @@
 
 
 
+
 //     strnhash - generate the hash of a string of length N
-//     goals - fast, works well with short vars includng 
+//     goals - fast, works well with short vars includng
 //     letter pairs and palindromes, not crypto strong, generates
 //     hashes that tend toward relative primality against common
 //     hash table lengths (so taking the output of this function
@@ -68,8 +69,8 @@ long strnhash (char *str, long len)
 
       //    add some bits out of the middle as low order bits.
       hval = hval + (( hval >> 12) & 0x0000ffff) ;
-		     
-      //     swap bytes 0 with 3 
+
+      //     swap bytes 0 with 3
       chtmp = hstr [0];
       hstr[0] = hstr[3];
       hstr [3] = chtmp;
@@ -91,9 +92,9 @@ long strnhash (char *str, long len)
 unsigned long strnhash (char *str, long len)
 {
   long i;
-  unsigned long hval; /* [i_a] Win32 native doesn't know about any int32_t ... */
+  int32_t hval; /* [i_a] Win32 native doesn't know about any int32_t ... */
   // int32_t hval;
-  unsigned long tmp;
+  int32_t tmp;
 
   // initialize hval
   hval= len;
@@ -112,7 +113,7 @@ unsigned long strnhash (char *str, long len)
       //    add some bits out of the middle as low order bits.
       hval = hval + (( hval >> 12) & 0x0000ffff) ;
 
-      //     swap most and min significative bytes 
+      //     swap most and min significative bytes
       tmp = (hval << 24) | ((hval >> 24) & 0xff);
       hval &= 0x00ffff00;           // zero most and min significative bytes of hval
       hval |= tmp;                  // OR with swapped bytes
@@ -154,7 +155,7 @@ unsigned long strnhash (char *str, long len)
 
 //     An mmap cell.  This is how we cache.
 //
-typedef struct prototype_crm_mmap_cell 
+typedef struct prototype_crm_mmap_cell
 {
   char *name;
   long start;
@@ -179,7 +180,7 @@ typedef struct prototype_crm_mmap_cell
 
 //  We want these to hang around but not be visible outside this file.
 
-CRM_MMAP_CELL *cache = NULL;
+static CRM_MMAP_CELL *cache = NULL;
 
 
 //////////////////////////////////////
@@ -191,7 +192,7 @@ CRM_MMAP_CELL *cache = NULL;
 void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
 {
 #ifdef POSIX
-  long munmap_status; 
+  long munmap_status;
 
   if (map->prot & PROT_WRITE)
     msync (map->addr, map->actual_len, MS_ASYNC | MS_INVALIDATE);
@@ -214,10 +215,10 @@ void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
     lseek (map->fd, 0, SEEK_SET);
     write (map->fd, &foo, sizeof(foo));
   }
-  
-  //     Although the docs say we can close the fd right after mmap, 
+
+  //     Although the docs say we can close the fd right after mmap,
   //     while leaving the mmap outstanding even though the fd is closed,
-  //     actual testing versus several kernels shows this leads to 
+  //     actual testing versus several kernels shows this leads to
   //     broken behavior.  So, we close here instead.
   //
   close (map->fd);
@@ -235,7 +236,7 @@ void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
 }
 
 /////////////////////////////////////////////////////
-//    
+//
 //     Hard-unmap by filename.   Do this ONLY if you
 //      have changed the file by some means outside of
 //      the mmap system (i.e. by writing via fopen/fwrite/fclose).
@@ -249,8 +250,9 @@ void crm_force_munmap_filename (char *filename)
     {
       if (strcmp(p->name, filename) == 0)
         {
-	  //   found it... force an munmap.
-	  crm_force_munmap_addr (p->addr);
+          //   found it... force an munmap.
+          crm_force_munmap_addr (p->addr);
+		  break; /* 'p' will be INVALID by now! */
         }
     }
 }
@@ -266,9 +268,9 @@ void crm_force_munmap_addr (void *addr)
 {
   CRM_MMAP_CELL *p;
 
-  //     step 1- search the mmap cache to see if we actually have this 
+  //     step 1- search the mmap cache to see if we actually have this
   //     mmapped
-  //   
+  //
   p = cache;
   while ( p != NULL && p->addr != addr)
     p = p->next;
@@ -276,20 +278,20 @@ void crm_force_munmap_addr (void *addr)
   if ( ! p )
     {
       nonfatalerror ("Internal fault - this code has tried to force unmap memory "
-		     "that it never mapped in the first place.  ",
-		     "Please file a bug report. ");
+                     "that it never mapped in the first place.  ",
+                     "Please file a bug report. ");
       return;
     }
-    
+
   //   Step 2: we have the mmap cell of interest.  Mark it for real unmapping.
   //
   p->unmap_count = UNMAP_COUNT_MAX + 1;
-  
+
   //   Step 3: use the standard munmap to complete the unmapping
   crm_munmap_file (addr);
   return;
-} 
-  
+}
+
 
 //////////////////////////////////////////////////////
 //
@@ -301,9 +303,9 @@ void crm_munmap_file (void *addr)
 {
   CRM_MMAP_CELL *p;
 
-  //     step 1- search the mmap cache to see if we actually have this 
+  //     step 1- search the mmap cache to see if we actually have this
   //     mmapped
-  //   
+  //
   p = cache;
   while ( p != NULL && p->addr != addr)
     p = p->next;
@@ -311,15 +313,15 @@ void crm_munmap_file (void *addr)
   if ( ! p )
     {
       nonfatalerror ("Internal fault - this code has tried to unmap memory "
-		     "that it never mapped in the first place.  ",
-		     "Please file a bug report. ");
+                     "that it never mapped in the first place.  ",
+                     "Please file a bug report. ");
       return;
     }
-    
+
   //   Step 2: we have the mmap cell of interest.  Do the right thing.
   //
   p->unmap_count = (p->unmap_count) + 1;
-  if (p->unmap_count > UNMAP_COUNT_MAX) 
+  if (p->unmap_count > UNMAP_COUNT_MAX)
     {
       crm_unmap_file_internal (p);
       //
@@ -327,46 +329,70 @@ void crm_munmap_file (void *addr)
       //    list as well.
       //
       if (p->prev != NULL)
-	p->prev->next = p->next;
+	  {
+        p->prev->next = p->next;
+	  }
       else
-	cache = p->next;
+	  {
+	    assert(cache == p);
+        cache = p->next;
+	  }
       if (p->next != NULL)
-	p->next->prev = p->prev;
+	  {
+        p->next->prev = p->prev;
+	  }
+	  else
+	  {
+		  assert(p->prev ? p->prev->next == NULL : 1);
+		  assert(!p->prev ? cache == NULL : 1);
+	  }
       free(p->name);
       free(p);
     }
   else
     {
       if (p->prot & PROT_WRITE)
-	{
+        {
 #ifdef POSIX
          msync (p->addr, p->actual_len, MS_ASYNC | MS_INVALIDATE);
 #endif
 #ifdef WIN32
-	 //unmap our view of the file, which will lazily write any
-	 //changes back to the file
-	 UnmapViewOfFile(p->addr);
-	 //and remap so we still have it open
-	 p->addr = MapViewOfFile(p->mapping, (p->mode &
-		 MAP_PRIVATE)?FILE_MAP_COPY:((p->prot &
-		 PROT_WRITE)?FILE_MAP_WRITE:FILE_MAP_READ), 0, 0, 0);
-	 //if the remap failed for some reason, just free everything
-	 //  and get rid of this cached mmap entry.
-	 if (p->addr == NULL)
-	   {
-	     CloseHandle(p->mapping);
-	     CloseHandle(p->fd);
-	     if (p->prev != NULL)
-	       p->prev->next = p->next;
-	     else
-	       cache = p->next;
-	     if (p->next != NULL)
-	       p->next->prev = p->prev;
-	     free(p->name);
-	     free(p);
-	   }
+         //unmap our view of the file, which will lazily write any
+         //changes back to the file
+         UnmapViewOfFile(p->addr);
+         //and remap so we still have it open
+         p->addr = MapViewOfFile(p->mapping, (p->mode &
+                 MAP_PRIVATE)?FILE_MAP_COPY:((p->prot &
+                 PROT_WRITE)?FILE_MAP_WRITE:FILE_MAP_READ), 0, 0, 0);
+         //if the remap failed for some reason, just free everything
+         //  and get rid of this cached mmap entry.
+         if (p->addr == NULL)
+           {
+             CloseHandle(p->mapping);
+             CloseHandle(p->fd);
+			  if (p->prev != NULL)
+			  {
+				p->prev->next = p->next;
+			  }
+			  else
+			  {
+				assert(cache == p);
+				cache = p->next;
+			  }
+			  if (p->next != NULL)
+			  {
+				p->next->prev = p->prev;
+			  }
+			  else
+			  {
+				  assert(p->prev ? p->prev->next == NULL : 1);
+				  assert(!p->prev ? cache == NULL : 1);
+			  }
+             free(p->name);
+             free(p);
+           }
 #endif
-	}
+        }
     }
 }
 
@@ -376,7 +402,8 @@ void crm_munmap_file (void *addr)
 //           Force an Unmap on every mmapped memory area we know about
 void crm_munmap_all()
 {
-  while (cache != NULL) {
+  while (cache != NULL) 
+  {
     cache->unmap_count = UNMAP_COUNT_MAX + 1;
     crm_munmap_file (cache->addr);
   }
@@ -391,13 +418,13 @@ void crm_munmap_all()
 //     prot flags are in the mmap() format - that is, PROT_, not O_ like open.
 //      (it would be nice if length could be self-generated...)
 
-void *crm_mmap_file (char *filename, 
-		     long start, long requested_len, long prot, long mode, 
-		     long *actual_len)
+void *crm_mmap_file (char *filename,
+                     long start, long requested_len, long prot, long mode,
+                     long *actual_len)
 {
   CRM_MMAP_CELL *p;
   long pagesize = 0;
-  struct stat statbuf = {0}; 
+  struct stat statbuf = {0};
 #ifdef POSIX
   mode_t open_flags;
 #endif
@@ -409,28 +436,28 @@ void *crm_mmap_file (char *filename,
 
   pagesize = 0;
   //    Search for the file - if it's already mmaped, just return it.
-  for (p = cache; p != NULL; p = p->next) 
+  for (p = cache; p != NULL; p = p->next)
     {
       if (strcmp(p->name, filename) == 0
-	  && p->prot == prot
-	  && p->mode == mode 
-	  && p->start == start
-	  && p->requested_len == requested_len) 
-	{
-	  if (actual_len)
-	    *actual_len = p->actual_len;
-	  return (p->addr);
-	}
+          && p->prot == prot
+          && p->mode == mode
+          && p->start == start
+          && p->requested_len == requested_len)
+        {
+          if (actual_len)
+            *actual_len = p->actual_len;
+          return (p->addr);
+        }
     }
-  
+
   //    No luck - we couldn't find the matching file/start/len/prot/mode
   //    We need to add an mmap cache cell, and mmap the file.
-  //  
-  p = (void *) calloc( 1, sizeof (p[0]) );  
+  //
+  p = (void *) calloc( 1, sizeof (p[0]) );
   if (p == NULL)
     {
       untrappableerror(" Unable to malloc enough memory for mmap cache.  ",
-		       " This is unrecoverable.  Sorry.");
+                       " This is unrecoverable.  Sorry.");
       return MAP_FAILED; /* [i_a] unreachable code */
     }
   p->name = strdup(filename);
@@ -440,9 +467,9 @@ void *crm_mmap_file (char *filename,
   p->mode = mode;
 
 #ifdef POSIX
-  
+
   open_flags = O_RDWR;
-  if ( ! (p->prot & PROT_WRITE) && (p->prot & PROT_READ) ) 
+  if ( ! (p->prot & PROT_WRITE) && (p->prot & PROT_READ) )
     open_flags = O_RDONLY;
   if ( (p->prot & PROT_WRITE) && !(p->prot & PROT_READ))
     open_flags = O_WRONLY;
@@ -456,25 +483,25 @@ void *crm_mmap_file (char *filename,
       long k;
       k = stat (p->name, &statbuf);
       if ( k != 0 )
-	{
-	  free (p->name);
-	  free (p);
-	  if (actual_len)
-	    *actual_len = 0;
-	  return (MAP_FAILED);
-	}
+        {
+          free (p->name);
+          free (p);
+          if (actual_len)
+            *actual_len = 0;
+          return (MAP_FAILED);
+        }
     }
 
   if (user_trace)
     fprintf (stderr, "MMAPping file %s for direct memory access.\n", filename);
   p->fd = open (filename, open_flags);
-  if (p->fd < 0) 
+  if (p->fd < 0)
     {
       close (p->fd);
       free(p->name);
       free(p);
       if (actual_len)
-	*actual_len = 0;
+        *actual_len = 0;
       return MAP_FAILED;
     }
 
@@ -483,33 +510,33 @@ void *crm_mmap_file (char *filename,
   if (p->actual_len < 0)
     p->actual_len = statbuf.st_size - p->start;
 
-  //    
+  //
 
   //  fprintf (stderr, "m");
-  p->addr = mmap (NULL, 
-		  p->actual_len, 
-		  p->prot,
-		  p->mode,
-		  p->fd,
-		  p->start);
+  p->addr = mmap (NULL,
+                  p->actual_len,
+                  p->prot,
+                  p->mode,
+                  p->fd,
+                  p->start);
   //fprintf (stderr, "M");
 
   //     we can't close the fd now (the docs say yes, testing says no,
   //     we need to wait till we're really done with the mmap.)
   //close(p->fd);
 
-  if (p->addr == MAP_FAILED) 
+  if (p->addr == MAP_FAILED)
     {
       close (p->fd);
       free(p->name);
       free(p);
       if (actual_len)
-	*actual_len = 0;
+        *actual_len = 0;
       return MAP_FAILED;
     }
-  
-  
-#endif       
+
+
+#endif
 #ifdef WIN32
   if (p->mode & MAP_PRIVATE)
     {
@@ -520,20 +547,20 @@ void *crm_mmap_file (char *filename,
   else
     {
       if (p->prot & PROT_WRITE)
-	{
-	  open_flags = GENERIC_WRITE;
-	  createmap_flags = PAGE_READWRITE;
-	  openmap_flags = FILE_MAP_WRITE;
-	}
+        {
+          open_flags = GENERIC_WRITE;
+          createmap_flags = PAGE_READWRITE;
+          openmap_flags = FILE_MAP_WRITE;
+        }
       if (p->prot & PROT_READ)
-	{
-	  open_flags |= GENERIC_READ;
-	  if (!(p->prot & PROT_WRITE))
-	    {
-	      createmap_flags = PAGE_READONLY;
-	      openmap_flags = FILE_MAP_READ;
-	    }
-	}
+        {
+          open_flags |= GENERIC_READ;
+          if (!(p->prot & PROT_WRITE))
+            {
+              createmap_flags = PAGE_READONLY;
+              openmap_flags = FILE_MAP_READ;
+            }
+        }
     }
   if (internal_trace)
     fprintf (stderr, "MMAP file open mode: %ld\n", (long) open_flags);
@@ -544,21 +571,21 @@ void *crm_mmap_file (char *filename,
       long k;
       k = stat (p->name, &statbuf);
       if (k != 0)
-	{
-	  free (p->name);
-	  free (p);
-	  if (actual_len)
-	    *actual_len = 0;
-	  return (MAP_FAILED);
-	}
+        {
+          free (p->name);
+          free (p);
+          if (actual_len)
+            *actual_len = 0;
+          return (MAP_FAILED);
+        }
     }
 
   if (user_trace)
     fprintf (stderr, "MMAPping file %s for direct memory access.\n", filename);
 
   p->fd = CreateFile(filename, open_flags, 0,
-		     NULL, OPEN_EXISTING, 0, NULL);
-  if (p->fd == INVALID_HANDLE_VALUE) 
+                     NULL, OPEN_EXISTING, 0, NULL);
+  if (p->fd == INVALID_HANDLE_VALUE)
     {
       free(p->name);
       free(p);
@@ -569,11 +596,11 @@ void *crm_mmap_file (char *filename,
   if (p->actual_len < 0)
     p->actual_len = statbuf.st_size - p->start;
 
-  p->mapping = CreateFileMapping(p->fd, 
-				 NULL, 
-				 createmap_flags, 0, requested_len,
-				 NULL);
-  if (p->mapping == NULL) 
+  p->mapping = CreateFileMapping(p->fd,
+                                 NULL,
+                                 createmap_flags, 0, requested_len,
+                                 NULL);
+  if (p->mapping == NULL)
     {
       CloseHandle(p->fd);
       free(p->name);
@@ -581,7 +608,7 @@ void *crm_mmap_file (char *filename,
       return NULL;
     }
   p->addr = MapViewOfFile(p->mapping, openmap_flags, 0, 0, 0);
-  if (p->addr == NULL) 
+  if (p->addr == NULL)
     {
       CloseHandle(p->mapping);
       CloseHandle(p->fd);
@@ -589,13 +616,13 @@ void *crm_mmap_file (char *filename,
       free(p);
       return NULL;
     }
-  
+
   {
     SYSTEM_INFO info;
     GetSystemInfo(&info);
     pagesize = info.dwPageSize;
   }
-  
+
   //  Jaspan-san says force-loading every page is a good thing
   //  under Windows.  I know it's a bad thing under Linux,
   //  so we'll only do it under Windows.
@@ -613,33 +640,25 @@ void *crm_mmap_file (char *filename,
   if (actual_len)
     *actual_len = p->actual_len;
 
-	       
+
   //   Now, insert this fresh mmap into the cache list
   //
   p->unmap_count = 0;
   p->prev = NULL;
   p->next = cache;
   if (cache != NULL)
+  {
     cache->prev = p;
+  }
   cache = p;
   return p->addr;
 }
 
-#ifdef WIN32
-clock_t times(TMS_STRUCT *buf)
-{
-  FILETIME create, exit, kern, user;
-  if (GetProcessTimes(GetCurrentProcess(), &create, &exit, &kern, &user)) 
-    {
-      buf->tms_utime = user.dwLowDateTime;
-      buf->tms_stime = kern.dwLowDateTime;
-      buf->tms_cutime = 0;
-      buf->tms_cstime = 0;
-      return GetTickCount();
-    }
-  return -1;
-}
-#endif
+
+
+/* [i_a] moved times() call to porting section */
+
+
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -652,9 +671,9 @@ clock_t times(TMS_STRUCT *buf)
 /////////////////////////////////////////////////////////////////////
 //
 //     strntrn - translate characters of a string.
-//    
+//
 //     Original spec by Bill Yerazunis, original code by Raul Miller,
-//     recode for CRM114 use by Bill Yerazunis. 
+//     recode for CRM114 use by Bill Yerazunis.
 //
 //     This code section (crm_strntrn and subsidiary routines) is
 //     dual-licensed to both William S. Yerazunis and Raul Miller,
@@ -680,22 +699,22 @@ clock_t times(TMS_STRUCT *buf)
 //   REMEMBER TO FREE() THE RESULT OR ELSE YOU WILL LEAK MEMORY!!!
 
 
-unsigned char * crm_strntrn_invert_string (unsigned char *str, 
-					   long len, 
-					   long *rlen)
+unsigned char * crm_strntrn_invert_string (unsigned char *str,
+                                           long len,
+                                           long *rlen)
 {
   unsigned char *outstr;
   long i, j;
 
   //  create our output string space.  It will never be more than 256
   //  characters.  It might be less.  But we don't care.
-  outstr = calloc (256 , sizeof(outstr[0])); 
+  outstr = calloc (256 , sizeof(outstr[0]));
 
   //  error out if there's a problem with MALLOC
   if (!outstr)
     {
       untrappableerror(
-	  "Can't allocate memory to invert strings for strstrn", "");
+          "Can't allocate memory to invert strings for strstrn", "");
     }
 
   //  The string of all characters is the inverse of "" (the empty
@@ -705,7 +724,7 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
   //  The string "^" (equivalent to total overall string "^^") is the
   //  string of all characters *except* ^; the mainline code suffices
   //  for that situation as well.
-  // 
+  //
   //  BUT THEN how does one specify the string of a single "^"?  Well,
   //  it's NOT of NOT of "NOT" ("^"), so "^^^" in the original, or
   //  "^^" here, is taken as just a literal "^" (one carat character).
@@ -727,19 +746,19 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
   for (i = 0; i < len; i++)
     outstr [ str [i]] = 0;
 
-  //   outstr now is a map of the characters that should be present in the 
+  //   outstr now is a map of the characters that should be present in the
   //   final output string.  Since at most this is 1:1 with the map (which may
   //   have zeros) we can just reuse outstr.
   //
   for (i = 0, j = 0 ; i < 256; i++)
     if (outstr[i])
       {
-	outstr[j] = (unsigned char)i;
-	j++;
+        outstr[j] = (unsigned char)i;
+        j++;
       }
-	assert(j <= 256);
+        assert(j <= 256);
 
-  //    The final string length is j characters long, in outstr.  
+  //    The final string length is j characters long, in outstr.
   //    Don't forget to free() it later.  :-)
 
   //  printf ("Inversion: '%s' RLEN: %d\n", outstr, *rlen);
@@ -750,9 +769,9 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
 //   expand those hyphenated string ranges - input is str, of length len.
 //    We return the new string, and the new length in rlen.
 //
-unsigned char * crm_strntrn_expand_hyphens(unsigned char *str, 
-					   long len, 
-					   long *rlen) 
+unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
+                                           long len,
+                                           long *rlen)
 {
   long j, k, adj;
   unsigned char* r;
@@ -766,12 +785,12 @@ unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
   //    character, then the result is gauranteed to be no longer than
   //    255 characters.
   //
-  for (j= 1, adj=0; j < len-1; j++) 
+  for (j= 1, adj=0; j < len-1; j++)
     {
-      if ('-' == str[j]) 
-	{
-	  adj+= abs(str[j+1]-str[j-1])-2;
-	}
+      if ('-' == str[j])
+        {
+          adj+= abs(str[j+1]-str[j-1])-2;
+        }
     }
 
   //      Get the string length for our expanded strings
@@ -779,50 +798,50 @@ unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
   *rlen = adj + len;
 
   //      Get the space for our expanded string.
-  r = calloc ( (1 + *rlen) , sizeof(r[0]));	/* 1 + to avoid empty problems */ 
-  if (!r) 
+  r = calloc ( (1 + *rlen) , sizeof(r[0]));     /* 1 + to avoid empty problems */
+  if (!r)
     {
       untrappableerror(
-	  "Can't allocate memory to expand hyphens for strstrn", "");
+          "Can't allocate memory to expand hyphens for strstrn", "");
     }
 
   //   Now expand the string, from "str" into "r"
   //
-  
-  for (j= 0, k=0; j < len; j++) 
+
+  for (j= 0, k=0; j < len; j++)
     {
       r[k]= str[j];
       //  are we in a hyphen expression?  Check edge conditions too!
-      if ('-' == str[j] && j > 0 && j < len-1) 
-	{
-	  //  we're in a hyphen expansion
-	  if (j && j < len) 
-	    {
-	      int delta;
-	      int m = str[j-1];
-	      int n = str[j+1];
-	      int c;
+      if ('-' == str[j] && j > 0 && j < len-1)
+        {
+          //  we're in a hyphen expansion
+          if (j && j < len)
+            {
+              int delta;
+              int m = str[j-1];
+              int n = str[j+1];
+              int c;
 
-	      //  is this an increasing or decreasing range?
-	      delta = m < n ? 1 : -1;
+              //  is this an increasing or decreasing range?
+              delta = m < n ? 1 : -1;
 
-	      //  run through the hyphen range.
-	      if (m != n) 
-		{
-		  for (c= m+delta; c != n; c+= delta) 
-		    {
-		      r[k++]= (unsigned char) c;
-		    }
-		  r[k++]= (unsigned char)n;
-		}
-	      j+= 1;
-	    }
-	} 
-      else 
-	{
-	  //    It's not a range, so we just move along.  Move along!
-	  k++;
-	}
+              //  run through the hyphen range.
+              if (m != n)
+                {
+                  for (c= m+delta; c != n; c+= delta)
+                    {
+                      r[k++]= (unsigned char) c;
+                    }
+                  r[k++]= (unsigned char)n;
+                }
+              j+= 1;
+            }
+        }
+      else
+        {
+          //    It's not a range, so we just move along.  Move along!
+          k++;
+        }
     }
 
   //  fprintf (stderr, "Resulting range string: %s \n", r);
@@ -830,9 +849,9 @@ unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
   return (r);
 }
 
-//   strntrn - translate a string, like tr() but more fun.  
+//   strntrn - translate a string, like tr() but more fun.
 //    This new, improved version not only allows inverted ranges
-//     like 9-0 --> 9876543210 but also negation of strings and literals 
+//     like 9-0 --> 9876543210 but also negation of strings and literals
 //
 //      flag of CRM_UNIQUE means "uniquify the incoming string"
 //
@@ -840,18 +859,18 @@ unsigned char * crm_strntrn_expand_hyphens(unsigned char *str,
 //      so "^" and "-" regain their literal meaning
 //
 //      The modification is "in place", and datastrlen gets modified.
-//       This routine returns a long >=0 strlen on success, 
+//       This routine returns a long >=0 strlen on success,
 //        and a negative number on failure.
 
 long strntrn (
-		  unsigned char *datastr,
-		  long *datastrlen,
-		  long maxdatastrlen,
-		  unsigned char *fromstr,
-		  long fromstrlen,
-		  unsigned char *tostr,
-		  long tostrlen,
-		  long flags) 
+                  unsigned char *datastr,
+                  long *datastrlen,
+                  long maxdatastrlen,
+                  unsigned char *fromstr,
+                  long fromstrlen,
+                  unsigned char *tostr,
+                  long tostrlen,
+                  long flags)
 {
   long len= *datastrlen;
   long flen, tlen;
@@ -868,7 +887,7 @@ long strntrn (
 
   //     Minor optimization - if we're just uniquing, we don't need
   //     to do any of the other stuff.  We can just return now.
-  //   
+  //
   if (tostrlen == 0 && fromstrlen == 0)
     {
       // fprintf (stderr, "Fast exit from strntrn  \n");
@@ -882,12 +901,12 @@ long strntrn (
   //
   if (CRM_LITERAL & flags)
     {
-      //       Else - we're in literal mode; just copy the 
+      //       Else - we're in literal mode; just copy the
       //       strings.
-      from = calloc (fromstrlen , sizeof(from[0])); 
+      from = calloc (fromstrlen , sizeof(from[0]));
       strncpy  ( (char *)from,  (char *)fromstr, fromstrlen);
       flen = fromstrlen;
-      to = calloc (tostrlen , sizeof(to[0])); 
+      to = calloc (tostrlen , sizeof(to[0]));
       strncpy ((char *) to, (char *)tostr, tostrlen);
       tlen = tostrlen;
       if (from == NULL || to == NULL) return (-1);
@@ -896,135 +915,135 @@ long strntrn (
     {
       //  Build the expanded from-string
       if (fromstr[0] != '^')
-	{
-	  from = crm_strntrn_expand_hyphens(fromstr, fromstrlen, &flen);
-	  if (!from) return (-1);
-	}
+        {
+          from = crm_strntrn_expand_hyphens(fromstr, fromstrlen, &flen);
+          if (!from) return (-1);
+        }
       else
-	{
-	  unsigned char *temp;
-	  long templen;
-	  temp = crm_strntrn_expand_hyphens(fromstr+1, fromstrlen-1, &templen);
-	  if (!temp) return (-1);
-	  from = crm_strntrn_invert_string (temp, templen, &flen);
-	  if (!from) return (-1);
-	  free (temp);
-	}
-      
+        {
+          unsigned char *temp;
+          long templen;
+          temp = crm_strntrn_expand_hyphens(fromstr+1, fromstrlen-1, &templen);
+          if (!temp) return (-1);
+          from = crm_strntrn_invert_string (temp, templen, &flen);
+          if (!from) return (-1);
+          free (temp);
+        }
+
       //     Build the expanded to-string
       //
       if (tostr[0] != '^')
-	{
-	  to = crm_strntrn_expand_hyphens(tostr, tostrlen, &tlen);
-	  if (!to) return (-1);
-	}
+        {
+          to = crm_strntrn_expand_hyphens(tostr, tostrlen, &tlen);
+          if (!to) return (-1);
+        }
       else
-	{
-	  unsigned char *temp;
-	  long templen;
-	  temp = crm_strntrn_expand_hyphens(tostr+1, tostrlen-1, &templen);
-	  if (!temp) return (-1);
-	  to = crm_strntrn_invert_string (temp, templen, &tlen);
-	  if (!to) return (-1);
-	  free (temp);
-	}
+        {
+          unsigned char *temp;
+          long templen;
+          temp = crm_strntrn_expand_hyphens(tostr+1, tostrlen-1, &templen);
+          if (!temp) return (-1);
+          to = crm_strntrn_invert_string (temp, templen, &tlen);
+          if (!to) return (-1);
+          free (temp);
+        }
     }
-      
+
   //  If we're in <unique> mode, squish out any duplicated
   //   characters in the input data first.  We can do this as an in-place
-  //    scan of the input string, and we always do it if <unique> is 
+  //    scan of the input string, and we always do it if <unique> is
   //     specified.
   //
-  if (CRM_UNIQUE & flags) 
+  if (CRM_UNIQUE & flags)
     {
-      unsigned char unique_map [256]; 
+      unsigned char unique_map [256];
 
       //                        build the map of the uniqueable characters
       //
       for (j = 0; j < 256; j++)
-	unique_map[j] = 1;           // all characters are keepers at first...
+        unique_map[j] = 1;           // all characters are keepers at first...
       for (j = 0; j < flen; j++)
-	unique_map[from[j]] = 0;    //  but some need to be uniqued.
-      
+        unique_map[from[j]] = 0;    //  but some need to be uniqued.
+
       //                          If the character has a 0 the unique map,
       //                          and it's the same as the prior character,
       //                          don't copy it.  Just move along.
-      
-      for (j= 0, k= 0, last= -1; j < len; j++) 
-	{
-	  if (datastr[j] != last || unique_map[datastr[j]] ) 
-	    {
-	      last= datastr[k++]= datastr[j];
-	    }
-	}
+
+      for (j= 0, k= 0, last= -1; j < len; j++)
+        {
+          if (datastr[j] != last || unique_map[datastr[j]] )
+            {
+              last= datastr[k++]= datastr[j];
+            }
+        }
       len= k;
     }
 
   //     Minor optimization - if we're just uniquing, we don't need
 
-  //     Build the mapping array  
+  //     Build the mapping array
   //
-  if (replace) 
+  if (replace)
     {
       //  This is replacement mode (not deletion mode) so we need
       //   to build the character map.  We
       //    initialize the map as each character maps to itself.
       //
-      for (j= 0; j < 256; j++) 
-	{
-	  map[j]= (unsigned char)j;
-	}
+      for (j= 0; j < 256; j++)
+        {
+          map[j]= (unsigned char)j;
+        }
 
       //   go through and mod each character in the from-string to
       //   map into the corresponding character in the to-string
       //   (and start over in to-string if we run out)
       //
-      for (j= 0, k=0; j < flen; j++) 
-	{
-	  map[from[j]]= to[k];
-	  //   check- did we run out of characters in to-string, so
-	  //    that we need to start over in to-string?
-	  k++;
-	  if (k >= tlen) 
-	    {
-	      k= 0;
-	    }
-	}
+      for (j= 0, k=0; j < flen; j++)
+        {
+          map[from[j]]= to[k];
+          //   check- did we run out of characters in to-string, so
+          //    that we need to start over in to-string?
+          k++;
+          if (k >= tlen)
+            {
+              k= 0;
+            }
+        }
 
 
-      //    Finally, the map is ready.  We go through the 
+      //    Finally, the map is ready.  We go through the
       //     datastring translating one character at a time.
       //
-      for (j= 0; j < len; j++) 
-	{
-	  datastr[j]= map[datastr[j]];
-	}
-    } 
-  else 
+      for (j= 0; j < len; j++)
+        {
+          datastr[j]= map[datastr[j]];
+        }
+    }
+  else
     {
       //  No, we are not in replace mode, rather we are in delete mode
       //  so the map now says whether we're keeping the character or
       //  deleting the character.
-      for (j= 0; j < 256; j++) 
-	{
-	  map[j]= 1;
-	}
-      for (j= 0; j < flen; j++) 
-	{
-	  map[from[j]] = 0;
-	}
-      for (j= 0, k= 0; j < len; j++) 
-	{
-	  if (map[datastr[j]]) 
-	    {
-	      datastr[k++]= datastr[j];
-	    }
-	}
+      for (j= 0; j < 256; j++)
+        {
+          map[j]= 1;
+        }
+      for (j= 0; j < flen; j++)
+        {
+          map[from[j]] = 0;
+        }
+      for (j= 0, k= 0; j < len; j++)
+        {
+          if (map[datastr[j]])
+            {
+              datastr[k++]= datastr[j];
+            }
+        }
       len= k;
     }
- 
+
   //          drop the storage that we allocated
-  //          
+  //
   free(from);
   free(to);
   *datastrlen = len;
