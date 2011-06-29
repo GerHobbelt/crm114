@@ -9,9 +9,9 @@ STDERR TEST OUTPUT:
 crm114: *ERROR*
 Too many parens '()' arguments were specified for this command: we see you specified 1 args while the maximum allowed is 0.
 Sorry, but this program is very sick and probably should be killed off.
-This happened at line 29 of file fataltrapprogramerr.crm:
+This happened at line 29 of file /windows/G/prj/3actual/crm114/tests/fataltrapprogramerr.crm:
     output [/No/Such/Directory/frotz.mumble] (:hi:)  # GerH builds > 2257 will catch this programming mistake
-(runtime system location: crm_stmt_parser.c(664) in routine: crm_statement_parse)
+(runtime system location: crm_stmt_parser.c(685) in routine: crm_statement_parse)
 
 STDOUT TEST OUTPUT:
 

@@ -13,7 +13,7 @@
 # N worst errors.  In the limit, this is the single worst error.
 # This is slow but yields very "tight" and accurate files.
 #
-# Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
+# Copyright (C) 2002-2009 William S. Yerazunis; licensed under the
 # GNU Public License (GPL) version 2.  A copy of this license is included
 # in the distribution media, or obtain one from www.fsf.org .
 #
@@ -138,6 +138,7 @@ isolate (:_hosttype:) <default> /UNKNOWN/
 isolate <default> (:fileprefix:) //
 #
 isolate <default> (:do_refute_training:) /SET/
+isolate <default> (:do_doublesided_training:) //
 
 isolate (:classifier_reason:) /no reason yet/
 #
@@ -158,10 +159,6 @@ isolate <default> (:fail_classify_mail_to:) //
 isolate <default> (:fail_blacklist_mail_to:) //
 isolate <default> (:fail_SSM_mail_to:)  //
 
-#
-#       now, :clf: is the classify & learn flags.
-isolate <default> (:clf:) //
-
 isolate (:dospath:) //
 #
 
@@ -172,6 +169,63 @@ isolate (:dospath:) //
 #       any command line arguments that get set.
 
 isolate <default> (:verbose_startup:) //
+# [i_a] since GerH-BlameBarack, ALL config-file defined variables MUST be declared here
+#       (due to them otherwise remaining within the scope of the :load_cf_file: 
+#       subroutine)!
+isolate (:spw:) <default> /DEFAULT-PASSWORD/
+isolate (:accepted_mail_exit_code:) <default> //
+isolate (:add_extra_stuff:) <default> //
+isolate (:add_headers:) <default> //
+isolate (:add_mailtrainer_report:) <default> //
+isolate (:add_verbose_stats:) <default> //
+isolate (:automatic_training:) <default> //
+isolate (:autotrain_address:) <default> //
+isolate (:blacklist_enabled:) <default> //
+isolate (:blacklist_mfp_path:) <default> //
+isolate (:cache_dupe_command:) <default> //
+isolate (:clf:) <default> //
+isolate (:clf_vt_cfg:) <default> //
+isolate (:confirm_flag_subject_string:) <default> //
+isolate (:decision_length:) <default> //
+isolate (:do_base64:) <default> //
+isolate (:do_doublesided_training:) <default> //
+isolate (:do_refute_training:) <default> //
+isolate (:expand_urls:) <default> //
+isolate (:general_fails_to:) <default> //
+isolate (:good_flag_subject_string:) <default> //
+isolate (:good_threshold:) <default> //
+isolate (:inoculations_enabled:) <default> //
+isolate (:lcr:) <default> //
+isolate (:log_all_mail_to_file:) <default> //
+isolate (:log_rejections:) <default> //
+isolate (:log_rejections_to_file:) <default> //
+isolate (:log_to_allmail.txt:) <default> //
+isolate (:log_to_nonspamtext:) <default> //
+isolate (:log_to_spamtext:) <default> //
+isolate (:mail:) <default> //
+isolate (:mail_separator:) <default> //
+isolate (:mime_decoder:) <default> //
+isolate (:priolist_enabled:) <default> //
+isolate (:priolist_mfp_path:) <default> //
+isolate (:program_fault_exit_code:) <default> //
+isolate (:rejected_mail_exit_code:) <default> //
+isolate (:rewrites_enabled:) <default> //
+isolate (:rewrites_mfp_path:) <default> //
+isolate (:spam_flag_subject_string:) <default> //
+isolate (:spam_threshold:) <default> //
+isolate (:text_cache:) <default> //
+isolate (:thick_threshold:) <default> //
+isolate (:trainer_invoke_command:) <default> //
+isolate (:trainer_randomizer_command:) <default> //
+isolate (:undo_interruptus:) <default> //
+isolate (:unsure_flag_subject_string:) <default> //
+isolate (:unsure_mail_exit_code:) <default> //
+isolate (:url_fetch_cmd:) <default> //
+isolate (:url_trim_cmd:) <default> //
+isolate (:verbose_logfile:) <default> //
+isolate (:whitelist_enabled:) <default> //
+isolate (:whitelist_mfp_path:) <default> //
+
 isolate <default> (:config:) /:*:fileprefix:mailfilter.cf/
 
 #
@@ -443,6 +497,7 @@ alter (:report:) /:*:report:  good source directory: :*:gooddir::*:goodwildcard:
 alter (:report:) /:*:report:  spam CSS file:         :*:spamcss:\n/
 alter (:report:) /:*:report:  good CSS file:         :*:goodcss:\n/
 alter (:report:) /:*:report:  classifier config:     :*:clf:\n/
+alter (:report:) /:*:report:  classifier VT config:  :*:clf_vt_cfg:\n/
 
 #
 # [i_a] make sure the training thick threshold is at least MAX(spam_threshold, good_threshold)
@@ -655,8 +710,8 @@ isolate (:randfiles:) //
     # [i_a]
     #
     # This is a clear spot for the use of the new 'csscreate' command!
-    #csscreate <:*:clf:> /:*:lcr:/ (:*:goodcss:)
-    learn [:_nl:] <:*:clf:> /./ (:*:goodcss:)
+    #csscreate <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/ (:*:goodcss:)
+    learn [:_nl:] <:*:clf:> /./ /:*:clf_vt_cfg:/ (:*:goodcss:)
 }
 {
     input (:bogus_buf:) [:*:spamcss: 0 128]
@@ -667,8 +722,8 @@ isolate (:randfiles:) //
     # [i_a]
     #
     # This is a clear spot for the use of the new 'csscreate' command!
-    #csscreate <:*:clf:> /:*:lcr:/ (:*:spamcss:)
-    learn [:_nl:] <:*:clf:> /./ (:*:spamcss:)
+    #csscreate <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/ (:*:spamcss:)
+    learn [:_nl:] <:*:clf:> /./ /:*:clf_vt_cfg:/ (:*:spamcss:)
 }
 
 
@@ -1071,7 +1126,7 @@ return /:*:filename:/
         # To make sure this would be RARE case, mailtrainer now has code at the top to ensure
         # our 'thick threshold' is never LESS THAN any of the two classify thresholds: good or bad.
         
-        eval /:@: :*:pr: < :*:thick_threshold: : /
+        eval /:@: :*:pr: < :*:thick_threshold: :/
 :force_train_good:
         {
             {
@@ -1085,22 +1140,35 @@ return /:*:filename:/
         }
         alter (:report:) /:*:report: Training GOOD on :*:filename: (pR was :*:pr:) \n /
 
-        learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                (:*:goodcss:)
+        learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/ (:*:goodcss:)
+        {
+            match [:do_doublesided_training:] /SET/
+            match [:clf:] <absent nocase> /fscm/  # [i_a] HyperSpace supports refute these days, it seems
+            output / (doublesided) /
+            alter (:report:) /:*:report: Training doublesided.\n /
+
+            learn [:m_text:] <:*:clf: refute> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:spamcss:)
+        }
 
         alter (:cleanrun:) /0/
         #   REclassify to see if we're now "good"; if not, refute!
         call /:get_pr:/ [:m_text:]
         {
-            eval /:@: :*:pr: < :*:thick_threshold: : /
+            eval /:@: :*:pr: < :*:thick_threshold: :/
             match [:do_refute_training:] /SET/
             {
                 match [:clf:] <absent nocase> /fscm/  # [i_a] HyperSpace supports refute these days, it seems
                 output /& refute /
                 alter (:report:) /:*:report: & refute/
 
-                learn [:m_text:] <:*:clf: refute> /:*:lcr:/  \
-                      (:*:spamcss:)
+                learn [:m_text:] <:*:clf: refute> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:spamcss:)
+                {
+                    match [:do_doublesided_training:] /SET/
+                    output / (doublesided) /
+                    alter (:report:) /:*:report: Training doublesided.\n /
+
+                    learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:goodcss:)
+                }
             }
             alius
             {
@@ -1108,8 +1176,15 @@ return /:*:filename:/
                 #       this will give you a maximum of repeat * 2 'learn' operations per email in worst-case.
                 output /& repeat /
                 alter (:report:) /:*:report: & repeat/
-                learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                      (:*:goodcss:)
+                learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:goodcss:)
+                {
+                    match [:do_doublesided_training:] /SET/
+                    match [:clf:] <absent nocase> /fscm/  # [i_a] HyperSpace supports refute these days, it seems
+                    output / (doublesided) /
+                    alter (:report:) /:*:report: Training doublesided.\n /
+
+                    learn [:m_text:] <:*:clf: refute> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:spamcss:)
+                }
             }
         }
         {
@@ -1151,7 +1226,7 @@ return
         # To make sure this would be RARE case, mailtrainer now has code at the top to ensure
         # our 'thick threshold' is never LESS THAN any of the two classify thresholds: good or bad.
 
-        eval /:@: :*:pr: > (0 - :*:thick_threshold:) : /
+        eval /:@: :*:pr: > (0 - :*:thick_threshold:) :/
 :force_train_spam:
         {
             {
@@ -1165,21 +1240,35 @@ return
         }
         alter (:report:) /:*:report: Training SPAM on :*:filename: (pR was :*:pr:) \n /
 
-        learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                (:*:spamcss:)
+        learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:spamcss:)
+        {
+            match [:do_doublesided_training:] /SET/
+            match [:clf:] <absent nocase> /fscm/  # [i_a] HyperSpace supports refute these days, it seems
+            output / (doublesided) /
+            alter (:report:) /:*:report: Training doublesided.\n /
+
+            learn [:m_text:] <:*:clf: refute> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:goodcss:)
+        }
 
         alter (:cleanrun:) /0/
         #   REclassify to see if we're now "good"; if not, refute!
         call /:get_pr:/ [:m_text:]
         {
-            eval /:@: :*:pr: > (0 - :*:thick_threshold:) : /
+            eval /:@: :*:pr: > (0 - :*:thick_threshold:) :/
             match [:do_refute_training:] /SET/
             {
                 match [:clf:] <absent nocase> /fscm/  # [i_a] HyperSpace supports refute these days, it seems
                 output /& refute /
                 alter (:report:) /:*:report: & refute/
-                learn [:m_text:] <:*:clf: refute> /:*:lcr:/  \
-                        (:*:goodcss:)
+                learn [:m_text:] <:*:clf: refute> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:goodcss:)
+                {
+                    match [:do_doublesided_training:] /SET/
+                    match [:clf:] <absent nocase> /fscm/  # [i_a] HyperSpace supports refute these days, it seems
+                    output / (doublesided) /
+                    alter (:report:) /:*:report: Training doublesided.\n /
+
+                    learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:spamcss:)
+                }
             }
             alius
             {
@@ -1187,8 +1276,15 @@ return
                 #       this will give you a maximum of repeat * 2 'learn' operations per email in worst-case.
                 output /& repeat /
                 alter (:report:) /:*:report: & repeat/
-                learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                        (:*:spamcss:)
+                learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:spamcss:)
+                {
+                    match [:do_doublesided_training:] /SET/
+                    match [:clf:] <absent nocase> /fscm/  # [i_a] HyperSpace supports refute these days, it seems
+                    output / (doublesided) /
+                    alter (:report:) /:*:report: Training doublesided.\n /
+
+                    learn [:m_text:] <:*:clf: refute> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:goodcss:)
+                }
             }
         }
         {
@@ -1330,8 +1426,7 @@ return /0/
         # if this is a ZERO :pr:, train something
         eval /:@: :*:pr: = 0 :/
         output /\n Learning :*:filename: as initial good mail seed.\n/
-        learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                (:*:goodcss:)
+        learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:goodcss:)
     }
 }
 {
@@ -1344,8 +1439,7 @@ return /0/
         # if this is a ZERO :pr:, train something
         eval /:@: :*:pr: = 0 :/
         output /\n Learning :*:filename: as initial spam mail seed.\n/
-        learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-               (:*:spamcss:)
+        learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/  (:*:spamcss:)
     }
 }
 

@@ -31,7 +31,7 @@
 # COPYLEFT
 #
 #   Copyright (c) 2006 Guido U. Draheim <guidod@gmx.de>
-#   Copyright (c) 2008 Ger Hobbelt <ger@hobbelt.com>
+#   Copyright (c) 2008-2009 Ger Hobbelt <ger@hobbelt.com>
 #
 #   This program is free software; you can redistribute it and/or
 #   modify it under the terms of the GNU General Public License as

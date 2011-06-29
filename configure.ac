@@ -5,7 +5,7 @@
 # under the terms of the GNU GPL.  See the file COPYING.
 #
 # Copyright (C) 2003, 2004 Joost van Baal
-# Copyright (C) 2007 Ger Hobbelt
+# Copyright (C) 2007-2009 Ger Hobbelt <ger@hobbelt.com>
 #
 # Process this file with autoconf to produce a configure script.
 
@@ -68,7 +68,7 @@ ISODATE=`date +%Y-%m-%d`
 AC_SUBST(ISODATE)
 
 AC_COPYRIGHT([
-Copyright (C) Copyright 2001-2008  William S. Yerazunis
+Copyright (C) Copyright 2001-2009  William S. Yerazunis
 ])
 
 
@@ -1081,6 +1081,7 @@ AC_CONFIG_FILES([Makefile
                  mailfilter/mkcss.crm
                  examples/rewriteutil.crm
                  win32/config_win32.h
+                 win32/crm114rc.rc
 ],
 [
 	#

@@ -86,6 +86,27 @@ static const FLAG_DEF crm_flags[] =
 /* #define CRM_MAXFLAGS 42   [i_a] unused in the new code */
 
 
+int show_instruction_flags(uint64_t flags, show_instruction_spec_writer_cb *cb, void *propagator)
+{
+	int i;
+	int n = 0;
+
+	for (i = 0; i < WIDTHOF(crm_flags); i++)
+	{
+		if (flags & crm_flags[i].value)
+		{
+			if (n > 0 && (*cb)(" ", -1, propagator) < 0)
+				return -1;
+			if ((*cb)(crm_flags[i].string, -1, propagator) < 0)
+				return -1;
+			n++;
+		}
+	}
+
+	return 0;
+}
+
+
 
 int skip_blanks(const char *buf, int start, int bufsize)
 {
@@ -387,7 +408,7 @@ uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_defin
 }
 
 //     Get the next word in a string.  "word" is defined by the
-//     continuous span of characters that are above ascii ! (> hex 0x20
+//     continuous span of characters that are printable ascii! (> hex 0x20)
 //
 //     The search starts at the "start" position given; the start position
 //     is updated on each call and so is mutilated.  To step through a

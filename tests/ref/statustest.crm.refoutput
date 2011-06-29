@@ -13,7 +13,7 @@ STDOUT TEST OUTPUT:
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 13189 from-pipe: 5 to-pipe: 4
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 13189 from-pipe: 5 to-pipe: 4
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 1535 from-pipe: 5 to-pipe: 4
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 1535 from-pipe: 5 to-pipe: 4
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123

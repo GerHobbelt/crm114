@@ -15,12 +15,12 @@ Double Trap: Variable Value Assignment Problem in VARIABLE destination 'ex' whil
 crm114: *ERROR*
 Attempting to assign a value to an illegal variable 'ex'.
 Sorry, but this program is very sick and probably should be killed off.
-This happened at line 14 of file double_trap_error2.crm:
+This happened at line 14 of file /windows/G/prj/3actual/crm114/tests/double_trap_error2.crm:
     trap (ex) /./  # erroneous var
-(runtime system location: crm_var_hash_table.c(589) in routine: crm_set_temp_nvar)
+(runtime system location: crm_var_hash_table.c(602) in routine: crm_set_temp_nvar)
 Sorry, but this program is very sick and probably should be killed off.
-This happened at line 14 of file double_trap_error2.crm:
+This happened at line 14 of file /windows/G/prj/3actual/crm114/tests/double_trap_error2.crm:
     trap (ex) /./  # erroneous var
-(runtime system location: crm_errorhandlers.c(1641) in routine: crm_trigger_fault)
+(runtime system location: crm_errorhandlers.c(1662) in routine: crm_trigger_fault)
 
 

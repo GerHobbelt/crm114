@@ -13,8 +13,8 @@ crm114: *WARNING*
 name or has not been specified at all
  so I'll ignore the whole statement.
 I'll try to keep working.
-This happened at line 9 of file illegal_empty_alter1.crm:
+This happened at line 9 of file /windows/G/prj/3actual/crm114/tests/illegal_empty_alter1.crm:
     alter (:*:dst:) /FUBAR/
-(runtime system location: crm_expr_alter.c(230) in routine: crm_expr_alter)
+(runtime system location: crm_expr_alter.c(229) in routine: crm_expr_alter)
 
 

@@ -78,7 +78,7 @@ int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char *learnfilename = NULL;
     WINNOW_FEATUREBUCKET_STRUCT *hashes = MAP_FAILED; //  the text of the hash file
     unsigned char *xhashes = NULL;                    //  and the mask of what we've seen
-    crmhash_t *hashpipe;
+    crmhash_t *hashpipe = NULL;
     int hashcounts;
     //
     double sense;

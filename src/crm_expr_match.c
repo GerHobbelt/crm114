@@ -28,7 +28,6 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     int i;
     int j;
-    int k;
     int mc;
     char pch[MAX_PATTERN];
     int pchlen;
@@ -566,7 +565,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 (int)(matches[mc].rm_eo + textoffset));
                         fwrite_ASCII_Cfied(stderr,
                                 mdw->filetext + matches[mc].rm_so + textoffset,
-                                (matches[mc].rm_so + textoffset) - (matches[mc].rm_eo + textoffset));
+                                (matches[mc].rm_eo + textoffset) - (matches[mc].rm_so + textoffset));
                         fprintf(stderr, "\n");
                     }
                     vnext = vstart + vlen;

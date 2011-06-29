@@ -9,42 +9,42 @@ STDERR TEST OUTPUT:
 crm114: *WARNING*
  This expansion eval didn't end with a ':' which is often an error...  Check it sometime?
 I'll try to keep working.
-This happened at line 53 of file evil_eval_test1.crm:
+This happened at line 53 of file /windows/G/prj/3actual/crm114/tests/evil_eval_test1.crm:
     isolate (:*:)//
 (runtime system location: crm_expandvar.c(477) in routine: crm_zexpandvar)
 
 crm114: *WARNING*
  This statement is missing the variable to isolate so I'll just ignore the whole statement. 
 I'll try to keep working.
-This happened at line 53 of file evil_eval_test1.crm:
+This happened at line 53 of file /windows/G/prj/3actual/crm114/tests/evil_eval_test1.crm:
     isolate (:*:)//
 (runtime system location: crm_expr_isolate.c(56) in routine: crm_expr_isolate)
 
 crm114: *WARNING*
  The variable you're asking me to ISOLATE  has an utterly bogus name.  I'll ignore the rest of the statement  
 I'll try to keep working.
-This happened at line 53 of file evil_eval_test1.crm:
+This happened at line 53 of file /windows/G/prj/3actual/crm114/tests/evil_eval_test1.crm:
     isolate (:*:)//
 (runtime system location: crm_expr_isolate.c(99) in routine: crm_expr_isolate)
 
 crm114: *WARNING*
  This redirection eval didn't end with a ':' which is often an error...  Check it sometime?
 I'll try to keep working.
-This happened at line 55 of file evil_eval_test1.crm:
+This happened at line 55 of file /windows/G/prj/3actual/crm114/tests/evil_eval_test1.crm:
     isolate (:+:)/:@::*:n*:*:+:/
 (runtime system location: crm_expandvar.c(601) in routine: crm_zexpandvar)
 
 crm114: *WARNING*
  This statement is missing the variable to isolate so I'll just ignore the whole statement. 
 I'll try to keep working.
-This happened at line 55 of file evil_eval_test1.crm:
+This happened at line 55 of file /windows/G/prj/3actual/crm114/tests/evil_eval_test1.crm:
     isolate (:+:)/:@::*:n*:*:+:/
 (runtime system location: crm_expr_isolate.c(56) in routine: crm_expr_isolate)
 
 crm114: *WARNING*
  The variable you're asking me to ISOLATE  has an utterly bogus name.  I'll ignore the rest of the statement  
 I'll try to keep working.
-This happened at line 55 of file evil_eval_test1.crm:
+This happened at line 55 of file /windows/G/prj/3actual/crm114/tests/evil_eval_test1.crm:
     isolate (:+:)/:@::*:n*:*:+:/
 (runtime system location: crm_expr_isolate.c(99) in routine: crm_expr_isolate)
 

@@ -34,16 +34,16 @@ BEGIN
         BEGIN
             VALUE "Comments", "CRM114 - the Controllable Regex Mutilator\nCRM114 is a system to examine incoming e-mail, system log streams, data files or other data streams, and to sort, filter, or alter the incoming files or data streams according to the user's wildest desires."
             " Criteria for categorization of data can be via a host of methods, including regexes, approximate regexes, a Hidden Markov Model, Orthogonal Sparse Bigrams, WINNOW, Correllation, KNN/Hyperspace, or Bit Entropy (or by other means - it's all programmable).\nAccuracy has been seen in excess of 99.9 per cent. In other words, CRM114 learns, and it learns fast.\nCRM114 is compatible with SpamAssassin or other spam-flagging software; it can also be pipelined in front of or behind procmail. CRM114 is also useful as a syslog or firewall log filter, to alert you to important events but ignore the ones that aren't meaningful.\nPeople have been able to run CRM114 on Linux, BSD, Mac OS-X, and Windows (natively and with Cygwin), and it has even been integrated with Microsoft Outlook and QUALCOMM Eudora. See the 'Cool Things' link below for details. I can't help on any of these except Linux, though if you ask on the mailing list, someone might be able to assist you.\nNot every user gets great results with the default classifier; that's why CRM114 has several different classifiers available. It's easy to switch classifiers and run a script to see what the tradeoffs are in terms of speed, accuracy, disk space, rate of learning, etc."
-            VALUE "CompanyName", "crm114"
-            VALUE "FileDescription", "crm114"
+            VALUE "CompanyName", "@PACKAGE@"
+            VALUE "FileDescription", "@PACKAGE@"
             VALUE "FileVersion", "2009, 2, 15, 0"
-            VALUE "InternalName", "crm114-20081111-BlameBarack"
+            VALUE "InternalName", "crm114-@PACKAGE_VERSION@"
             VALUE "LegalCopyright", "Copyright (C) 2005 - 2009"
             VALUE "LegalTrademarks", "Released as Open Source"
-            VALUE "OriginalFilename", "crm114"
-            VALUE "ProductName", "crm114"
-            VALUE "ProductVersion", "2008, 11, 11, 4560"
-            VALUE "SpecialBuild", "20081111-BlameBarack GerH build 4560"
+            VALUE "OriginalFilename", "@PACKAGE@"
+            VALUE "ProductName", "@PACKAGE@"
+            VALUE "ProductVersion", "2008, 11, 11, @REVISION@"
+            VALUE "SpecialBuild", "@PACKAGE_VERSION@ GerH build @REVISION@"
         END
     END
     BLOCK "VarFileInfo"

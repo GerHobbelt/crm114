@@ -1,6 +1,6 @@
 # maillib.crm - handy library for mail whacking - wsy 2006
 #
-# Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
+# Copyright (C) 2002-2009 William S. Yerazunis; licensed under the
 # GNU Public License (GPL) version 2.  A copy of this license is included
 # in the distribution media, or obtain one from www.fsf.org .
 #
@@ -371,6 +371,7 @@ return /:*:m_text:/
 # Add a new header
 :mungmail_add: (:new_header:)
 {
+    isolate (:current_headers:) //    # since GerH-BlameBarack as that one features calldepth-based variable scoping
     #     Grab the current headers
     call /:mungmail_grab_current_headers:/
     alter (:current_headers:) /:*:current_headers::*:new_header:\n/
@@ -387,6 +388,7 @@ return
     #      return that.  Note that we add the colon here; don't
     #      put it into the desired_header string.
     #
+    isolate (:current_headers:) //    # since GerH-BlameBarack as that one features calldepth-based variable scoping
     call /:mungmail_grab_current_headers:/
     {
         match [:current_headers:] <nocase> (:: :desired_header:)  \
@@ -394,7 +396,7 @@ return
         return /:*:desired_header:/
     }
 }
-return
+return //
 
 
 #
@@ -402,6 +404,7 @@ return
 #
 :mungmail_delete: (:new_header:)
 {
+    isolate (:current_headers:) //    # since GerH-BlameBarack as that one features calldepth-based variable scoping
     call /:mungmail_grab_current_headers:/
     {
         match (:new_header_type:) [:new_header:] /[[:graph:]]+/
@@ -424,6 +427,7 @@ return
 #
 :mungmail_unique: (:new_header:)
 {
+    isolate (:current_headers:) //    # since GerH-BlameBarack as that one features calldepth-based variable scoping
     call /:mungmail_grab_current_headers:/
     {
         match (:new_header_type:) [:new_header:] /[[:graph:]]+/
@@ -711,11 +715,12 @@ Good css:    ':*:fileprefix::*:goodcss:'\n\
 spam css:    ':*:fileprefix::*:spamcss:'\n\
 lcr:         ':*:lcr:'\n\
 clf:         ':*:clf:'\n\
+clf VT cf:   ':*:clf_vt_cfg:'\n\
 text:        ':*:text:'\n]  # for content: :+:text:
 
     # next brace set because classify will branch based on pR!
     {
-        classify <:*:clf:> [:*:text:] /:*:lcr:/ \
+        classify <:*:clf:> [:*:text:] /:*:lcr:/ /:*:clf_vt_cfg:/ \
                  (:*:fileprefix::*:goodcss: | :*:fileprefix::*:spamcss: ) \
                  (:classify_status:)
     }

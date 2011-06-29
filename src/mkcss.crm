@@ -70,6 +70,7 @@ isolate <default> (:fileprefix:) //
 #
 #       now, :clf: is the classify & learn flags.
 isolate <default> (:clf:) //
+isolate <default> (:clf_vt_cfg:) //
 
 isolate (:dospath:) //
 #
@@ -122,6 +123,7 @@ alter (:report:) /:*:report:Commanded on:\n/
 alter (:report:) /:*:report:  spam CSS file:         :*:spamcss:\n/
 alter (:report:) /:*:report:  good CSS file:         :*:goodcss:\n/
 alter (:report:) /:*:report:  classifier config:     :*:clf:\n/
+alter (:report:) /:*:report:  classifier VT config:  :*:clf_vt_cfg:\n/
 alter (:report:) /:*:report:  verbose is:            :*:verbose:\n/
 
 
@@ -158,8 +160,8 @@ alter (:report:) /:*:report:  verbose is:            :*:verbose:\n/
     # [i_a]
     #
     # This is a clear spot for the use of the new 'csscreate' command!
-    #csscreate <:*:clf:> /:*:lcr:/ (:*:goodcss:)
-    learn [:_nl:] <:*:clf:> /./ (:*:goodcss:)
+    #csscreate <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/ (:*:goodcss:)
+    learn [:_nl:] <:*:clf:> /./ /:*:clf_vt_cfg:/ (:*:goodcss:)
 }
 {
     input (:bogus_buf:) [:*:spamcss: 0 128]
@@ -170,8 +172,8 @@ alter (:report:) /:*:report:  verbose is:            :*:verbose:\n/
     # [i_a]
     #
     # This is a clear spot for the use of the new 'csscreate' command!
-    #csscreate <:*:clf:> /:*:lcr:/ (:*:spamcss:)
-    learn [:_nl:] <:*:clf:> /./ (:*:spamcss:)
+    #csscreate <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/ (:*:spamcss:)
+    learn [:_nl:] <:*:clf:> /./ /:*:clf_vt_cfg:/ (:*:spamcss:)
 }
 
 

@@ -15,12 +15,12 @@ Double Trap: Trap Pattern Expansion Problem in TRAP pattern ':bogus' while proce
 crm114: *WARNING*
  This expansion eval didn't end with a ':' which is often an error...  Check it sometime?
 I'll try to keep working.
-This happened at line 14 of file double_trap_error5.crm:
+This happened at line 14 of file /windows/G/prj/3actual/crm114/tests/double_trap_error5.crm:
     trap (:ex:) /:*:bogus/  # erroneous variable expansion in regex
 (runtime system location: crm_expandvar.c(477) in routine: crm_zexpandvar)
 Sorry, but this program is very sick and probably should be killed off.
-This happened at line 14 of file double_trap_error5.crm:
+This happened at line 14 of file /windows/G/prj/3actual/crm114/tests/double_trap_error5.crm:
     trap (:ex:) /:*:bogus/  # erroneous variable expansion in regex
-(runtime system location: crm_errorhandlers.c(1445) in routine: crm_trigger_fault)
+(runtime system location: crm_errorhandlers.c(1465) in routine: crm_trigger_fault)
 
 

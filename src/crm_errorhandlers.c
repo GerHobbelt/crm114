@@ -933,7 +933,7 @@ void untrappableerror_ex(int lineno, const char *srcfile, const char *funcname, 
 
     va_start(args, fmt);
     untrappableerror_va(lineno, srcfile, funcname, fmt, args);
-    va_end(args);
+    va_end(args); /* [i_a] unreachable code */
 }
 
 void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)

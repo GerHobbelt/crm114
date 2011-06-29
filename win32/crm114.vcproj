@@ -667,6 +667,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\crm114rc.rc.in"
+				>
+			</File>
+			<File
 				RelativePath=".\resource.h"
 				>
 			</File>

@@ -11,7 +11,7 @@ crm114: *UNTRAPPABLE ERROR*
 Better start screaming, guv', since the software's just gone critical:
 assertion '!(scale <= 1.19209290e-7F && scale >= -1.19209290e-7F)' failed!
 Sorry, but this program is very sick and probably should be killed off.
-This happened at line 3 of file (from command line):
+This happened at line 3 of file /windows/G/prj/3actual/crm114/tests/(from command line):
     clump [:one_paragraph:] <bychunk> (i_test.css) /[[:graph:]]+/
 (runtime system location: crm_expr_clump.c(844) in routine: thresholding_average_cluster)
 

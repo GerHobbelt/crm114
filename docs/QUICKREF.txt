@@ -1,6 +1,6 @@
      The CRM114 Quick Reference Card.  Updated 20090201
 
-     Copyright W.S. Yerazunis, 2002-2008.  All rights reserved. This 
+     Copyright W.S. Yerazunis, 2002-2009.  All rights reserved. This 
      software is released under V2.1 of the Gnu Public License. Go to 
      www.fsf.org to get a complete copy of the license.
 
@@ -430,6 +430,7 @@ call /:entrypoint_label:/ [:arg1: :arg2:... ] [:2nd_arg1: :2nd_arg2:... ] (:ret_
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /svm-specific controls/
+classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /VT-specific controls/
                                   - compare the statistics of the current 
                                     data window buffer with classfiles 
                                     c1...cN . In general, class statistics 
@@ -581,8 +582,41 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /svm-specific con
                                     pR/pR_offset.
 
                      /svm-specific controls/
-                                  - a vector of seven parameters for SVM-
+                                  - a vector of EIGHT parameters for SVM-
                                     classifiers
+
+                     /sks-specific controls/
+                                  - a vector of SEVEN parameters for SKS-
+                                    classifiers
+
+                     /VT-specific controls/
+                                  - a comma separated list of VT instructions
+                                    which are used to define/use custom VT 2.5D mix ~ and 2D weight matrices.
+
+                                    Note that the weight matrices apply to the markovian / bayesian classifiers only: markovian, OSB, OSBF and Winnow. Other classifiers employ different mechanisms to strengthen the influence of particular features.
+
+                                    The following sub-instructions are recognized by crm114:
+
+                                      vector:        len iter stride  m0 m1 m2 ...
+                                      vector-model:  osb | sbph
+                                      vector-clip:   len iter stride
+
+                                      weight:        iter stride  w0 w1 w2 w3 ...
+                                      weight-clip:   iter stride
+                                      weight-model:  flat | osb | chi2 | entropic | markov | super_markov | bcs | bcs_mws | bcs_exp | bcs_b7 | osbf
+
+                                    The vector: and vector-clip: sub-instruction arguments are all integer numbers; the vector-model: sub-instruction argument is a text (identifier). The same applies to the weight*: sub-instruction arguments.
+
+                                    To create truely custom VT matrices, only should use the 'vector:' sub-instruction. The m0, etc.
+                                    mix values (preferably primes as these are used as multipliers in a 'universal hash' algorithm (cf. Knuth). The values are to be listed in x,y,z order where x ~ len, y ~ iter and z ~ stride.
+
+                                    The vector models can be used to use a non-default, yet predefined VT mix matrix with a given classifier. 'osb' is the default sparse bigram matrix (WPCW), while 'sbph' is the full SBPH mixer.
+
+                                    The vector-clip: sub-instruction can be used to 'resize' the existing VT matrix, be it a default or custom one.
+
+                                    The order of application is: vector-model, vector, vector-clip. Likewise for the weight* sub-instructions.
+
+                                    ('bcs' stands for Breyer-Chhabra-Siefkes)
 
 
 clump [:text:] (clumpfile) (status) <flags> /regex/ /params/

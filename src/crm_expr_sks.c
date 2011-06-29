@@ -1806,6 +1806,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                     ret += (int)fwrite(&k1, sizeof(k1), 1, stringf);
                     ret += (int)fwrite(&k2, sizeof(k2), 1, stringf);
+CRM_ASSERT(svm_prob.l == k1 + k2); // [i_a] this is assumed by the solver reader code elsewhere!
                     for (i = 0; i < svm_prob.l; i++)
                         ret += (int)fwrite(&(solver.alpha[i]), sizeof(solver.alpha[i]), 1, stringf);
                     ret += (int)fwrite(&b, sizeof(b), 1, stringf);

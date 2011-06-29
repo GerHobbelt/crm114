@@ -8,10 +8,10 @@ STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
  type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 217.4547
+CLASSIFY succeeds; (hyperspace) success probability: 1.0000  pR: 217.4547/0.0000
 Best match to file #0 (i_test.css) prob: 1.0000  pR: 217.4547  
 Total features in input file: 10
 #0 (i_test.css): features: 8810, hits: 7, radiance: 5.57e-03, prob: 1.00e+00, pR: 217.45
-#1 (q_test.css): features: 8376, hits: 0, radiance: 0.00e+00, prob: 1.80e-22, pR: -217.45
+#1 (q_test.css): features: 8488, hits: 0, radiance: 0.00e+00, prob: 1.80e-22, pR: -217.45
 
 

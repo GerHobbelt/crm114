@@ -2,7 +2,7 @@
 #  **** bangline argument config commented out for better system portability
 # -( spam good cache dontstore stats_only verbose maxprio minprio delprio fileprefix config)
 #
-#    Copyright (C) 2002-2008 William S. Yerazunis; licensed under the
+#    Copyright (C) 2002-2009 William S. Yerazunis; licensed under the
 #    GNU Public License (GPL) version 2.  A copy of this license is included
 #    in the distribution media, or obtain one from www.fsf.org .
 #
@@ -189,8 +189,6 @@ isolate <default> (:fail_priority_mail_to:) //
 isolate <default> (:fail_classify_mail_to:) //
 isolate <default> (:fail_blacklist_mail_to:) //
 isolate <default> (:fail_SSM_mail_to:)  //
-isolate <default> (:log_rejections:) //
-isolate <default> (:log_rejections_to_file:) //
 
 isolate (:dospath:) //
 
@@ -203,7 +201,81 @@ isolate (:dospath:) //
 
 isolate (:verbose_startup:) <default> //
 isolate (:truncate_logfile:) <default> /SET/
+# [i_a] since GerH-BlameBarack, ALL config-file defined variables MUST be declared here
+#       (due to them otherwise remaining within the scope of the :load_cf_file: 
+#       subroutine)!
+isolate (:spw:) <default> /DEFAULT-PASSWORD/
+isolate (:accepted_mail_exit_code:) <default> //
+isolate (:add_extra_stuff:) <default> //
+isolate (:add_headers:) <default> //
+isolate (:add_mailtrainer_report:) <default> //
+isolate (:add_verbose_stats:) <default> //
+isolate (:automatic_training:) <default> //
+isolate (:autotrain_address:) <default> //
+isolate (:blacklist_enabled:) <default> //
+isolate (:blacklist_mfp_path:) <default> //
+isolate (:cache_dupe_command:) <default> //
+isolate (:clf:) <default> //
+isolate (:clf_vt_cfg:) <default> //
+isolate (:confirm_flag_subject_string:) <default> //
+isolate (:decision_length:) <default> //
+isolate (:do_base64:) <default> //
+isolate (:do_doublesided_training:) <default> //
+isolate (:do_refute_training:) <default> //
+isolate (:expand_urls:) <default> //
+isolate (:general_fails_to:) <default> //
+isolate (:good_flag_subject_string:) <default> //
+isolate (:good_threshold:) <default> //
+isolate (:inoculations_enabled:) <default> //
+isolate (:lcr:) <default> //
+isolate (:log_all_mail_to_file:) <default> //
+isolate (:log_rejections:) <default> //
+isolate (:log_rejections_to_file:) <default> //
+isolate (:log_to_allmail.txt:) <default> //
+isolate (:log_to_nonspamtext:) <default> //
+isolate (:log_to_spamtext:) <default> //
+isolate (:mail:) <default> //
+isolate (:mail_separator:) <default> //
+isolate (:mime_decoder:) <default> //
+isolate (:priolist_enabled:) <default> //
+isolate (:priolist_mfp_path:) <default> //
+isolate (:program_fault_exit_code:) <default> //
+isolate (:rejected_mail_exit_code:) <default> //
+isolate (:rewrites_enabled:) <default> //
+isolate (:rewrites_mfp_path:) <default> //
+isolate (:spam_flag_subject_string:) <default> //
+isolate (:spam_threshold:) <default> //
+isolate (:text_cache:) <default> //
+isolate (:thick_threshold:) <default> //
+isolate (:trainer_invoke_command:) <default> //
+isolate (:trainer_randomizer_command:) <default> //
+isolate (:undo_interruptus:) <default> //
+isolate (:unsure_flag_subject_string:) <default> //
+isolate (:unsure_mail_exit_code:) <default> //
+isolate (:url_fetch_cmd:) <default> //
+isolate (:url_trim_cmd:) <default> //
+isolate (:verbose_logfile:) <default> //
+isolate (:whitelist_enabled:) <default> //
+isolate (:whitelist_mfp_path:) <default> //
+
 isolate <default> (:config:) /:*:fileprefix:mailfilter.cf/
+
+#
+isolate (:decision_length:) <default> /8192/
+
+#
+# Make sure we know who our CSS files are.
+#
+isolate (:spamcss:) <default> /spam.css/
+# Backwards compatible:
+isolate (:nonspamcss:) <default> /nonspam.css/
+# Modern:
+isolate (:goodcss:) <default> /:*:nonspamcss:/
+
+# extra paths:
+isolate (:priolist_mfp_path:) <default> /:*:fileprefix:priolist.mfp/
+isolate (:whitelist_mfp_path:) <default> /:*:fileprefix:whitelist.mfp/
+isolate (:blacklist_mfp_path:) <default> /:*:fileprefix:blacklist.mfp/
 
 #
 # read in the options/configuration file
@@ -237,25 +309,8 @@ isolate (:spam:) <default> /:*:learnspam:/
 isolate (:good:) <default> /:*:learngood:/
 isolate (:dontstore:) <default> //
 isolate (:stats_only:) <default> //
-isolate (:automatic_training:) <default> //
 isolate (:verbose:) <default> //
 isolate (:force:) <default> //
-#
-isolate (:decision_length:) <default> /8192/
-
-#
-# Make sure we know who our CSS files are.
-#
-isolate (:spamcss:) <default> /spam.css/
-# Backwards compatible:
-isolate (:nonspamcss:) <default> /nonspam.css/
-# Modern:
-isolate (:goodcss:) <default> /:*:nonspamcss:/
-
-# extra paths:
-isolate (:priolist_mfp_path:) <default> /:*:fileprefix:priolist.mfp/
-isolate (:whitelist_mfp_path:) <default> /:*:fileprefix:whitelist.mfp/
-isolate (:blacklist_mfp_path:) <default> /:*:fileprefix:blacklist.mfp/
 
 # make sure to truncate the logfile:
 {
@@ -1155,8 +1210,8 @@ goto /:finish_up:/
 			match [:classifier_reason:] /ACCEPT/
 			# it wasn't spam... autotrain it "nonspam"
 			output [:*:fileprefix:nonspamtext.txt] <append> /:*:text:/
-			learn [:m_text:] <:*:clf:> /:*:lcr:/ (:*:goodcss:)
-			## learn <microgroom>  (:*:fileprefix::*:nonspamcss:) [:m_text:]  /:*:lcr:/
+			learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/ (:*:goodcss:)
+			## learn <microgroom>  (:*:fileprefix::*:nonspamcss:) [:m_text:]  /:*:lcr:/ /:*:clf_vt_cfg:/
 			## goto /:autotrain_finish:/
 		}
 		alius
@@ -1166,8 +1221,8 @@ goto /:finish_up:/
 			
 			# it was spam... autotrain it "spam"
 			output [:*:fileprefix:spamtext.txt] <append> /:*:text:/
-			learn [:m_text:] <:*:clf:> /:*:lcr:/ (:*:spamcss:)
-			# learn <microgroom> (:*:fileprefix::*:spamcss:) [:m_text:] /:*:lcr:/
+			learn [:m_text:] <:*:clf:> /:*:lcr:/ /:*:clf_vt_cfg:/ (:*:spamcss:)
+			# learn <microgroom> (:*:fileprefix::*:spamcss:) [:m_text:] /:*:lcr:/ /:*:clf_vt_cfg:/
 			## goto /:autotrain_finish:/
 		}
 	}

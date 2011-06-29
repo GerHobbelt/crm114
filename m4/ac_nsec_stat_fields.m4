@@ -17,7 +17,7 @@
 #
 # COPYLEFT
 #
-#   Copyright (c) 2007 Ger Hobbelt <ger@hobbelt.com>
+#   Copyright (c) 2007-2009 Ger Hobbelt <ger@hobbelt.com>
 #
 #   Copying and distribution of this file, with or without
 #   modification, are permitted in any medium without royalty provided

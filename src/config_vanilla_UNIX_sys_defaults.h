@@ -707,7 +707,7 @@
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
 /* revision number of software */
-#define REVISION "4521"
+#define REVISION "4560"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT sizeof(int)
@@ -725,7 +725,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-4521"
+#define TAR_FILENAME_POSTFIX "Ger-4560"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME

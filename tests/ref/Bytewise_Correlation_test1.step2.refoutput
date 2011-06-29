@@ -8,10 +8,10 @@ STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
  type I 
-CLASSIFY succeeds; success probability: 1.0000  pR: 4.3445
-Best match to file #0 (/home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input) prob: 1.0000  pR: 4.3445
+CLASSIFY succeeds; (correlate) success probability: 1.0000  pR: 4.3458
+Best match to file #0 (/home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input) prob: 1.0000  pR: 4.3458
 Total features in input file: 53186
-#0 (/home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input): features: 53186, L1: 593131 L2: 3238253 L3: 344785845, L4: 52869796589 prob: 1.00e-00, pR:   4.34
-#1 (/home/ger/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input): features: 69338, L1: 1065967 L2: 1365758 L3: 2000158, L4: 4298642 prob: 4.52e-05, pR:  -4.34
+#0 (/home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input): features: 53186, L1: 593131 L2: 3238253 L3: 344785845, L4: 52869796589 prob: 1.00e-00, pR:   4.35
+#1 (/home/ger/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input): features: 70416, L1: 1085246 L2: 1389813 L3: 2033683, L4: 4362813 prob: 4.51e-05, pR:  -4.35
 
 

@@ -26,6 +26,12 @@ isolate (:z:) /5/
 call /:factorial_inplace:/ [ :*:z: 1 ]
 output / :*:z: factorial_inplace is :*:out: (level :*:_cd:) \n\n/
 #
+output / Doing factorial with inplace args. Corrected for scoped variables!\n/
+isolate (:z:) /5/
+isolate (:out:) //     # var used within the called routine
+call /:factorial_inplace:/ [ :*:z: 1 ]
+output / :*:z: factorial_inplace is :*:out: (level :*:_cd:) \n\n/
+#
 output / Doing factorial with return args \n/
 isolate (:z:) /5/
 isolate (:out:) //

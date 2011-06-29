@@ -11,17 +11,17 @@ STDOUT TEST OUTPUT:
 
 **** Alternating Example Neural Network Classifier RUNNING TEST
  type Q 
-CLASSIFY fails; success probability: 0.059712  pR: -86.0572
-Best match to file #1 (q_test.css) prob: 0.9403  pR: 86.0572  
-Total features in input file: 86
-#0 (i_test.css): icnr: 0.06 ocnr: 0.94 prob: 5.97e-02, pR: -88.01
-#1 (q_test.css): icnr: 0.93 ocnr: 0.07 prob: 9.40e-01, pR:  86.06
+CLASSIFY fails; (neural net) success probability: 0.033775  pR: -21.7267
+Best match to file #1 (q_test.css) prob: 0.9662  pR: 86.9068
+Total features in input file: 172
+#0 (i_test.css): icnr: 0.03 ocnr: 0.96 prob: 3.38e-02, pR: -92.56
+#1 (q_test.css): icnr: 0.93 ocnr: 0.06 prob: 9.66e-01, pR:  86.91
 
  type I 
-CLASSIFY succeeds; success probability: 0.819964  pR: 57.5907
-Best match to file #0 (i_test.css) prob: 0.8200  pR: 92.4527  
+CLASSIFY succeeds; (neural net) success probability: 0.859575  pR: 16.9365
+Best match to file #0 (i_test.css) prob: 0.8596  pR: 91.4497
 Total features in input file: 168
-#0 (i_test.css): icnr: 0.96 ocnr: 0.03 prob: 8.20e-01, pR:  92.45
-#1 (q_test.css): icnr: 0.21 ocnr: 0.79 prob: 1.80e-01, pR: -57.59
+#0 (i_test.css): icnr: 0.96 ocnr: 0.04 prob: 8.60e-01, pR:  91.45
+#1 (q_test.css): icnr: 0.15 ocnr: 0.84 prob: 1.40e-01, pR: -67.75
 
 

@@ -534,6 +534,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Win32 pthreads", "Win32 pth
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jig_reporter", "jig_reporter.vcproj", "{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jig_rungen", "jig_rungen.vcproj", "{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {E546544D-5D5D-4AED-AB31-FD35AEAB6BB6}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Itanium = Debug|Itanium
@@ -1144,6 +1162,30 @@ Global
 		{5595B3F2-E162-45D2-9E66-81413C226818}.Release|Win32.Build.0 = Release|Win32
 		{5595B3F2-E162-45D2-9E66-81413C226818}.Release|x64.ActiveCfg = Release|x64
 		{5595B3F2-E162-45D2-9E66-81413C226818}.Release|x64.Build.0 = Release|x64
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Debug|Itanium.ActiveCfg = Debug|Itanium
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Debug|Itanium.Build.0 = Debug|Itanium
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Debug|Win32.Build.0 = Debug|Win32
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Debug|x64.ActiveCfg = Debug|x64
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Debug|x64.Build.0 = Debug|x64
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Release|Itanium.ActiveCfg = Release|Itanium
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Release|Itanium.Build.0 = Release|Itanium
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Release|Win32.ActiveCfg = Release|Win32
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Release|Win32.Build.0 = Release|Win32
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Release|x64.ActiveCfg = Release|x64
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F}.Release|x64.Build.0 = Release|x64
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Debug|Itanium.ActiveCfg = Debug|Itanium
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Debug|Itanium.Build.0 = Debug|Itanium
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Debug|Win32.ActiveCfg = Debug|Win32
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Debug|Win32.Build.0 = Debug|Win32
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Debug|x64.ActiveCfg = Debug|x64
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Debug|x64.Build.0 = Debug|x64
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Release|Itanium.ActiveCfg = Release|Itanium
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Release|Itanium.Build.0 = Release|Itanium
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Release|Win32.ActiveCfg = Release|Win32
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Release|Win32.Build.0 = Release|Win32
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Release|x64.ActiveCfg = Release|x64
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1198,6 +1240,9 @@ Global
 		{4A077629-8590-434C-9486-0D069DF341A3} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
 		{4A077629-8590-434C-9486-0D069DF341A2} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
 		{4A077629-8590-434C-9486-0D069DF341A1} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
+		{5595B3F2-E162-45D2-9E66-81413C226818} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
+		{4C51A6D2-BC59-4F42-8123-C7AB90EDEB2F} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
+		{544AD86A-FCD9-4ECD-A67D-6A4F43F57849} = {C121AACB-0173-4EED-97D8-104C9934F5EB}
 		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}
 		{7437BF7D-E5EF-4580-9222-1EE3727A6E62} = {5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}
 		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}

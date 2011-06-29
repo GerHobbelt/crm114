@@ -1,5 +1,5 @@
 //  crm_main.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2008  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2009  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -245,6 +245,83 @@ char stderr_buf[65536];
 #endif
 
 
+struct write_spec_prop
+{
+	FILE *o;
+	int pos;
+};
+
+static int write_spec_bit(const char *str, int len, void *propagator)
+{
+	struct write_spec_prop *p = (struct write_spec_prop *)propagator;
+	int ret = 0;
+
+	if (len == -1)
+		len = strlen(str);
+
+	if (len > 0)
+	{
+		// check if it still fits on this line or is end-of-line:
+		if (str[0] == '\n')
+		{
+			// rude hackish code: 'knows' we send "\n" strings as opcode 'line terminators'.
+			ret = fwrite(str, len, 1, p->o);
+			if (ret < 0)
+				return -1;
+
+			p->pos = 0;
+		}
+		else if (p->pos + len >= 79)
+		{
+			// split or wrap?
+			const char *ws2 = str - 1;
+			const char *ws;
+
+			do
+			{
+					ws = ws2;
+				  ws2 = memchr(ws2 + 1, ' ', len - (ws2 + 1 - str));
+			}  while (ws2 && ws2 - str + p->pos < 79);
+			
+			if (ws)
+			{
+				ret = fwrite(str, ws + 1 - str, 1, p->o);
+				if (ret < 0)
+					return -1;
+			}
+			else
+			{
+				ws = str - 1;
+			}
+
+			fwrite("\n        ", 9, 1, p->o);
+			p->pos = 8;
+			// indent!
+
+			if (len - (ws + 1 - str) > 0)
+			{
+				ret = fwrite(ws + 1, len - (ws + 1 - str), 1, p->o);
+				if (ret < 0)
+					return -1;
+
+				p->pos += len - (ws + 1 - str);
+			}
+		}
+		else
+		{
+			ret = fwrite(str, len, 1, p->o);
+			if (ret < 0)
+				return -1;
+
+			p->pos += len;
+		}
+	}
+
+	return 0;
+}
+
+
+
 int main(int argc, char **argv)
 {
     int i;  //  some random counters, when we need a loop
@@ -442,7 +519,7 @@ int main(int argc, char **argv)
                     REVISION,
                     crm_regversion(),
                     HOSTTYPE);
-            fprintf(stderr, " Copyright 2001-2008 William S. Yerazunis\n");
+            fprintf(stderr, " Copyright 2001-2009 William S. Yerazunis\n");
             fprintf(stderr, " This software is licensed under the GPL "
                             "with ABSOLUTELY NO WARRANTY\n");
             fprintf(stderr, "     For language help, RTFRM.\n");
@@ -879,6 +956,7 @@ int main(int argc, char **argv)
             int len = WIDTHOF(cs);
             char *dst = cs;
             int partlen;
+			struct write_spec_prop prop = {0};
 
             //   NOTE - version info goes to stdout, not stderr, just like GCC does
             fprintf(stdout, " This is CRM114, version %s, rev %s (%s) (OS: %s)\n",
@@ -886,7 +964,7 @@ int main(int argc, char **argv)
                     REVISION,
                     crm_regversion(),
                     HOSTTYPE);
-            fprintf(stdout, " Copyright 2001-2008 William S. Yerazunis\n");
+            fprintf(stdout, " Copyright 2001-2009 William S. Yerazunis\n");
             fprintf(stdout, " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
             fprintf(stdout, "\n"
                             "Classifiers included in this build:\n");
@@ -1049,6 +1127,12 @@ int main(int argc, char **argv)
             {
                 fprintf(stdout, "  none\n");
             }
+
+            fprintf(stdout, "\nScript language:\n"
+				"  Reserved words (instructions) + attributes / format:\n");
+
+			prop.o = stdout;
+			show_instruction_spec(-1, write_spec_bit, &prop);
 
             if (engine_exit_base != 0)
             {

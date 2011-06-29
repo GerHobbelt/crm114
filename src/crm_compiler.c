@@ -147,6 +147,125 @@ static const STMT_TABLE_TYPE stmt_table[] =
 
 
 
+/*
+   code to print the script language specification, whole or part.
+
+   When opcode_id < 0, show all instructions. Otherwise, show only the one.
+ */
+int show_instruction_spec(int opcode_id, show_instruction_spec_writer_cb *cb, void *propagator)
+{
+	int i;
+	int j;
+	int max_nl = 0;
+	int n;
+
+	for (i = 0; i < WIDTHOF(stmt_table); i++)
+	{
+		if (stmt_table[i].namelen > max_nl)
+		{
+			max_nl = stmt_table[i].namelen;
+		}
+	}
+
+	n= 0;
+	for (i = 0; i < WIDTHOF(stmt_table); i++)
+	{
+		const STMT_TABLE_TYPE *s = &stmt_table[i];
+
+		if (opcode_id < 0 || opcode_id == s->stmt_code)
+		{
+			if (s->is_executable)
+			{
+				// print one statement:
+				char buf[64 * 60];
+				char *d = buf;
+				size_t dlen = sizeof(buf);
+			
+				if (n > 0 && (*cb)("\n", -1, propagator) < 0)
+					return -1;
+
+				snprintf(d, dlen, "%*s ", -max_nl, s->stmt_name);
+				if ((*cb)(d, -1, propagator) < 0)
+					return -1;
+
+				j = 0;
+
+				if (s->flags_allowed_mask)
+				{
+					if ((*cb)("<", -1, propagator) < 0)
+						return -1;
+
+					if (show_instruction_flags(s->flags_allowed_mask, cb, propagator) < 0)
+						return -1;
+
+					if (s->has_non_standard_flags)
+					{
+					if ((*cb)(" ...", -1, propagator) < 0)
+						return -1;
+					}
+
+					if ((*cb)("> ", -1, propagator) < 0)
+						return -1;
+
+					j = 1;
+				}
+
+					// <>
+				for (/* j = 0 */; j < s->minangles; j++)
+				{
+					if ((*cb)("<...> ", -1, propagator) < 0)
+						return -1;
+				}
+				for (; j < s->maxangles; j++)
+				{
+					if ((*cb)("<optional> ", -1, propagator) < 0)
+						return -1;
+				}
+
+    // ()
+				for (j = 0; j < s->minparens; j++)
+				{
+					if ((*cb)("(...) ", -1, propagator) < 0)
+						return -1;
+				}
+				for (; j < s->maxparens; j++)
+				{
+					if ((*cb)("(optional) ", -1, propagator) < 0)
+						return -1;
+				}
+
+    // []
+				for (j = 0; j < s->minboxes; j++)
+				{
+					if ((*cb)("[...] ", -1, propagator) < 0)
+						return -1;
+				}
+				for (; j < s->maxboxes; j++)
+				{
+					if ((*cb)("[optional] ", -1, propagator) < 0)
+						return -1;
+				}
+
+				// /.../
+				for (j = 0; j < s->minslashes; j++)
+				{
+					if ((*cb)("/.../ ", -1, propagator) < 0)
+						return -1;
+				}
+				for (; j < s->maxslashes; j++)
+				{
+					if ((*cb)("/optional/ ", -1, propagator) < 0)
+						return -1;
+				}
+
+				n++;
+			}
+		}
+	}
+	return 0;
+}
+
+
 
 
 //   Get a file into a memory buffer.  We can either prep to execute

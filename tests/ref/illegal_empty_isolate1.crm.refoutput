@@ -11,7 +11,7 @@ TRAP:
 crm114: *WARNING*
  This statement is missing the variable to isolate so I'll just ignore the whole statement. 
 I'll try to keep working.
-This happened at line 7 of file illegal_empty_isolate1.crm:
+This happened at line 7 of file /windows/G/prj/3actual/crm114/tests/illegal_empty_isolate1.crm:
     isolate () /FUBAR/
 (runtime system location: crm_expr_isolate.c(56) in routine: crm_expr_isolate)
 

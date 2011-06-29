@@ -13,8 +13,8 @@ EX2:
 crm114: *ERROR*
 Double Trap: Regular Expression Compilation Problem in TRAP pattern '[A-' while processing the trappable error 'YO! YA!': Invalid character range
 Sorry, but this program is very sick and probably should be killed off.
-This happened at line 14 of file double_trap_error1.crm:
+This happened at line 14 of file /windows/G/prj/3actual/crm114/tests/double_trap_error1.crm:
     trap (:ex:) /[A-/  # erroneous regex
-(runtime system location: crm_errorhandlers.c(1500) in routine: crm_trigger_fault)
+(runtime system location: crm_errorhandlers.c(1520) in routine: crm_trigger_fault)
 
 

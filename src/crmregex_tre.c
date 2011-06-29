@@ -67,7 +67,12 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
     //    matches the same thing).
     if (regex_len == 0)
     {
-        return regncomp(preg, "()", 2, cflags);
+#if 0 /* [i_a] this will leak memory due to nil-action crm_regfree in a regex cached environment. */
+		return regncomp(preg, "()", 2, cflags);
+#else
+		regex = "()";
+		regex_len = 2;
+#endif
     }
 
     //   Are we cacheing compiled regexes?  Maybe not...
@@ -377,13 +382,12 @@ void crm_regfree(regex_t *preg)
 #if CRM_REGEX_CACHESIZE > 0
     //  nothing!  yes indeed, if we are using cacheing, we don't free
     //  till and unless we decache, so crm_regfree is a noop.
-    return;
-
+    memset(preg, 0, sizeof(preg[0]));
+	return;
 #else
     regfree(preg);
-#endif
-
     memset(preg, 0, sizeof(preg[0]));
+#endif
 }
 
 char *crm_regversion(void)

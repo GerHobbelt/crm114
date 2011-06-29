@@ -898,9 +898,12 @@ static int firlat_find_smallest_larger(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
     //  Start out with FIRlat option.
     if (my_fir < 0.00 || my_fir >= 1.00 || firlatlen < 10 || firlatlen > 200000)
     {
+    if (internal_trace || user_trace) /* [i_a] would otherwise clutter trainings in a bad way... */
+    {
         fprintf(stderr, "My FIR is outrageous (value: %e, firlatlen %d)\n",
                 my_fir,
                 firlatlen);
+    }
     }
     firlat_entry = fir_2_slot(my_fir, firlatlen);
     if (internal_trace)

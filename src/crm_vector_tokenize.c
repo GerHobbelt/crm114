@@ -962,6 +962,171 @@ int crm_vector_tokenize
 
 
 
+static void discover_matrices_max_dimensions(const VT_USERDEF_COEFF_MATRIX *matrix,
+        int *pipe_len, int *pipe_iter, int *stride,
+        int *weight_cols, int *weight_rows)
+{
+    int x;
+    int y;
+    int z;
+    int x_max = 0;
+    int y_max = 0;
+    int z_max = 0;
+    int i;
+    const int *m;
+
+    CRM_ASSERT(pipe_len);
+    CRM_ASSERT(pipe_iter);
+    CRM_ASSERT(stride);
+    CRM_ASSERT(weight_rows);
+    CRM_ASSERT(weight_cols);
+    CRM_ASSERT(matrix);
+
+    /*
+     * Could've coded it like this:
+     *
+     * for (z = UNIFIED_VECTOR_STRIDE; z-- >= 0; )
+     * {
+     *      for (y = UNIFIED_VECTOR_LIMIT; y-- >= 0; )
+     *      {
+     *              for (x = UNIFIED_WINDOW_LEN; x-- >= 0; )
+     *              {
+     *                      ...
+     *
+     * but I wanted to do it different this time.
+     * The excuse? Well, this one may be slightly faster than the above
+     * because the number of multiplications, etc. in there are quite
+     * many: one round for each and every element in the matrix,
+     * but since we may expect tiny portions of the matrix space
+     * filled, deriving x/y/z from the continguous index is probably
+     * faster. Especially when the compiler converts those divisions
+     * in here to bitshifts (which can be done as long as those constants
+     * remain powers of 2...)
+     *
+     * Besides, as this code uses less vars in the main flow (which just
+     * skips zeroes), this thing optimizes better on register-depraved
+     * architectures, such as i86.
+     *
+     * But that's all rather anal excuses for checking out a crazy idea.
+     *
+     * ---
+     *
+     * And anyhow, this thing can run quite a bit faster still as we
+     * 'know' valid rows always have their column[0] set, so the fastest
+     * way to find max_y at least is to just scan the column[0] bottom up,
+     * then once we non-zero values there, we can jump to the end of the
+     * row to scan backwards looking for another possible max_x.
+     *
+     * The same for max_z: the max_z is the last one which has column[0]
+     * for row[0] set. Once we've found that one that's it for max_z.
+     *
+     * But then everything after that '---' there is optimization
+     * derived from knowledge about the data living in these matrices.
+     *
+     * Users _can_ feed this thing 'weird' row data, which will remain
+     * undiscovered then.
+     *
+     * So we do it the 'we-don't-know-about-the-data-at-all' way here,
+     * as this code will be used in diagnostics code, where such cuteness
+     * doesn't really help:
+     */
+    m = matrix->cm.coeff_array;
+
+    for (i = WIDTHOF(matrix->cm.coeff_array); --i >= 0;)
+    {
+        if (!m[i])
+            continue;
+
+        /* now we've hit a non-zero entry: derive x/y/z from i: */
+        z = i / (UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT);
+        CRM_ASSERT(z < UNIFIED_VECTOR_STRIDE);
+        y = i / UNIFIED_WINDOW_LEN;
+        x = i % UNIFIED_WINDOW_LEN;
+        /* alt code: x = i - UNIFIED_WINDOW_LEN * y; -- y here still 'includes' z as well */
+        y -= UNIFIED_VECTOR_LIMIT * z;
+
+        if (x_max < x)
+        {
+            x_max = x;
+        }
+        if (y_max < y)
+        {
+            y_max = y;
+        }
+        CRM_ASSERT(z_max != 0 ? z_max >= z : TRUE);
+        if (!z_max)
+        {
+            z_max = z;
+        }
+
+        /*
+         * ignore the rest of this row, as it doesn't add
+         * anything to what we found here. We sub X instead
+         * of X-1 which would correct for that extra --i up
+         * there in the loop, but we do NOT want to check
+         * column [0] so doing it like this will get us
+         * to the last column of the previous row, which
+         * is where we want to start scanning again.
+         */
+        i -= x;
+    }
+
+    *pipe_len = x_max + 1;
+    *pipe_iter = y_max + 1;
+    *stride = z_max + 1;
+
+
+    /* now do the same for the 2D weight matrix: */
+    x_max = 0;
+    y_max = 0;
+    m = matrix->fw.feature_weight;
+
+    for (i = WIDTHOF(matrix->fw.feature_weight); --i >= 0;)
+    {
+        if (!m[i])
+            continue;
+
+        /* now we've hit a non-zero entry: derive x/y from i: */
+        y = i / UNIFIED_VECTOR_LIMIT;
+        x = i % UNIFIED_VECTOR_LIMIT;
+
+        if (x_max < x)
+        {
+            x_max = x;
+        }
+        CRM_ASSERT(y_max != 0 ? y_max >= y : TRUE);
+        if (!y_max)
+        {
+            y_max = y;
+        }
+
+        /*
+         * ignore the rest of this row, as it doesn't add
+         * anything to what we found here. We sub X instead
+         * of X-1 which would correct for that extra --i up
+         * there in the loop, but we do NOT want to check
+         * column[0] so doing it like this will get us
+         * to the last column of the previous row, which
+         * is where we want to start scanning again.
+         */
+        i -= x;
+    }
+
+
+    *weight_rows = y_max + 1;
+    *weight_cols = x_max + 1;
+
+	if (user_trace)
+{
+fprintf(stderr, "discover_matrices_max_dimensions() --> x: %d, y: %d, z: %d / weight: x: %d, y: %d\n",
+        *pipe_len, *pipe_iter, *stride,        *weight_cols, *weight_rows);
+}
+}
+
+
+
+
+
 #if 0
 
 static const int markov1_coeff[] =
@@ -1009,25 +1174,36 @@ static const int markov2_coeff_width = OSB_BAYES_WINDOW_LEN;                    
 static const int markov2_coeff_height = WIDTHOF(markov2_coeff) / OSB_BAYES_WINDOW_LEN;     // should be 16
 #endif
 
-#ifdef JUST_FOR_REFERENCE
+//#ifdef JUST_FOR_REFERENCE
 
 //    hctable is where the OSB coeffs came from - this is now just a
-//    historical artifact - DO NOT USE THIS!!!
+//    historical artifact - DO NOT USE THIS!!! 
+// --> [i_a] yes, we DO use this! Because those old VT tables can be readily generated from this in a very flexible manner!
+
+/*
+ * 'Unified hash' multipliers. Must be odd; being prime is good.
+ */
 static const int hctable[] =
 {
     1, 7,
     3, 13,
     5, 29,
-    11, 51,
+    11, 53 /*51*/,
     23, 101,
-    47, 203,
-    97, 407,
-    197, 817,
+    47, 211 /*203*/,
+    97, 409 /*407*/,
+    197, 821 /*817*/,
     397, 1637,
-    797, 3277
+    797, 3299 /*3277*/,
+	1597, 6607,
+2999,13259,
+6007,26597,
+12049,53077,
+24083,106163,
+48221,213467,
 };
 
-#endif
+// #endif
 
 #if 0
 static const int osb1_coeff[] =
@@ -1111,7 +1287,7 @@ static const int winnow2_coeff_height = WIDTHOF(winnow2_coeff) / 10;
  * All features of any 'order' (== VT matrix row)
  * all weigh in as much as the next one.
  */
-static const int others_feature_weight[] =
+static const int flat_model_weight[] =
 {
     1,
 };
@@ -1126,7 +1302,6 @@ static const int chi2_feature_weight[] =
 	125, 64, 27, 8, 1
 };
 
-#if defined(ENTROPIC_WEIGHTS)
 
 //
 //   Calculate entropic weight of this feature.
@@ -1137,7 +1312,7 @@ static const int chi2_feature_weight[] =
 //   in the hashpipe that are used for this particular
 //   calculation, == 1 + bitcount(Jval)
 
-static const int markovian_ew[16] = // Jval
+static const int entropic_weight[16] = // Jval
 {
     1, // 0
     2, // 1
@@ -1157,7 +1332,6 @@ static const int markovian_ew[16] = // Jval
     5
 };      // 15
 
-#elif defined(MARKOV_WEIGHTS)
 
 //
 //   Calculate entropic weight of this feature.
@@ -1165,7 +1339,7 @@ static const int markovian_ew[16] = // Jval
 //    calculation.  Maybe it's right, maybe not.  It does
 //    seem to work better than constant or entropic...
 
-static const int markovian_ew[16] = // Jval
+static const int hidden_markov_weight[16] = // Jval
 {
     1, // 0
     2, // 1
@@ -1185,7 +1359,6 @@ static const int markovian_ew[16] = // Jval
     16
 };       // 15
 
-#elif defined(SUPER_MARKOV_WEIGHTS)
 
 //
 //   Calculate entropic weight of this feature.
@@ -1198,7 +1371,7 @@ static const int markovian_ew[16] = // Jval
 //    hibits are  0, 1,  2.  3,   4,    5
 //    weights are 1, 4, 16, 64, 256, 1024
 
-static const int markovian_ew[32] = // Jval
+static const int super_markov_weight[32] = // Jval
 {
     1,   // 0
     4,   // 1
@@ -1234,7 +1407,6 @@ static const int markovian_ew[32] = // Jval
     1024 // 31 - 1F
 };
 
-#elif defined(BREYER_CHHABRA_SIEFKES_WEIGHTS)
 
 //
 //   This uses the Breyer-Chhabra-Siefkes model that
@@ -1243,7 +1415,7 @@ static const int markovian_ew[32] = // Jval
 //   a single occurrence.
 //
 
-static const int markovian_ew[16] = // Jval
+static const int breyer_chhabra_siefkes_weight[16] = // Jval
 {
     1,  // 0
     3,  // 1
@@ -1263,7 +1435,6 @@ static const int markovian_ew[16] = // Jval
     541
 };        // 15
 
-#elif defined(BCS_MWS_WEIGHTS)
 
 //
 //   This uses the Breyer-Chhabra-Siefkes model that
@@ -1272,7 +1443,7 @@ static const int markovian_ew[16] = // Jval
 //   a single occurrence.
 //
 
-static const int markovian_ew[] = // Jval
+static const int breyer_chhabra_siefkes_mws_weight[] = // Jval
 {
     1,   // 0
     3,   // 1
@@ -1308,7 +1479,6 @@ static const int markovian_ew[] = // Jval
     4683 // 31 - 1F
 };
 
-#elif defined(BCS_EXP_WEIGHTS)
 
 //
 //   This uses the Breyer-Chhabra-Siefkes model that
@@ -1317,7 +1487,7 @@ static const int markovian_ew[] = // Jval
 //   a single occurrence.
 //
 
-static const int markovian_ew[] = // Jval
+static const int breyer_chhabra_siefkes_exp_weight[] = // Jval
 {
     1,    // 0
     8,    // 1
@@ -1353,7 +1523,6 @@ static const int markovian_ew[] = // Jval
     32768 // 31 - 1F
 };
 
-#elif defined(BREYER_CHHABRA_SIEFKES_BASE7_WEIGHTS)
 
 //
 //   This uses the Breyer-Chhabra-Siefkes base 7 model that
@@ -1362,7 +1531,7 @@ static const int markovian_ew[] = // Jval
 //   a single occurrence.
 //
 
-static const int markovian_ew[16] = // Jval
+static const int breyer_chhabra_siekfes_base7_weight[16] = // Jval
 {
     1,   // 0
     7,   // 1
@@ -1382,11 +1551,163 @@ static const int markovian_ew[16] = // Jval
     2401
 };         // 15
 
-#endif
+
 
 static const int osbf_feature_weight[] =
 {
     3125, 256, 27, 4, 1
+};
+
+
+
+
+
+/*
+ * return matrix cell value for the given element.
+ */
+typedef int contributing_token_func(int x, int y, int z, const int *table, size_t table_size);
+
+
+
+/*
+ * Markovian: first node + N-deep all bit patterns
+ */
+static int markovian_contributing_token(int x, int y, int z, const int *table, size_t table_size)
+{
+    if (z >= 2)
+    {
+        return 0;
+    }
+if (table_size < 32 && y > 1 << (table_size - 1) /* ~ power(2, table_size/2)) */ )
+    {
+   // '>' means we can include the single token monogram as a vector in the matrix!
+        return 0;
+    }
+
+    // 0 => 0
+    // 1 => 0, 1
+    // 2 => 0, 2
+    if (x > 0)
+    {
+   // markov chain creation
+        int bit = 1 << (x - 1);
+
+        if (!(y & bit))
+        {
+            return 0;				 
+        }
+    }
+
+	x <<= 1;     // 2 * x
+	x += z;
+    if (x >= table_size)
+    {
+        return 0;
+    }
+    return table[x];
+}
+
+/*
+ * GerH markovian.alt et al: no single, just N-deep all bit patterns
+ */
+static int markov_alt_contributing_token(int x, int y, int z, const int *table, size_t table_size)
+{
+    if (z >= 2)
+    {
+        return 0;
+    }
+if (table_size < 32 && y > 1 << (table_size - 1) /* ~ power(2, table_size/2)) */ )
+    {
+   // '>' means we can include the single token monogram as a vector in the matrix!
+        return 0;
+    }
+
+	if (x > 0)
+    {
+        int bit = 1 << (x - 1);
+
+        if (!((y + 1) & bit))
+        {
+            return 0;
+        }
+    }
+
+	x <<= 1;     // 2 * x
+	x += z;
+    if (x >= table_size)
+    {
+        return 0;
+    }
+    return table[x];
+}
+
+/*
+ * OSB et al: vanilla CRM114 only uses 1 + 2^N patterns
+ */
+static int osb_contributing_token(int x, int y, int z, const int *table, size_t table_size)
+{
+    if (z >= 2)
+    {
+        return 0;
+    }
+if (y >= table_size / 2)
+    {
+   // '>=' means we can include the single token monogram as a last vector in the matrix!
+        return 0;
+    }
+
+        if (y + 1 != x && x != 0)
+        {
+  // sparse bigram creation:
+            return 0;
+        }
+
+	x <<= 1;     // 2 * x
+	x += z;
+    if (x >= table_size)
+    {
+        return 0;
+    }
+    return table[x];
+}
+
+
+#define VECTOR_MODEL_REC_DEF(cb, x, y, z, id)		{ cb, x, y, z, hctable, WIDTHOF(hctable), id }
+#define WEIGHT_MODEL_REC_DEF(table, id)		{ table, WIDTHOF(table), id }
+
+static const struct vector_id_def
+{
+	contributing_token_func *cb;
+	int x;
+	int y;
+	int z;
+	const int *table;
+	size_t table_size;
+	char *identifier;
+} vector_model_ids[] =
+{
+	VECTOR_MODEL_REC_DEF(osb_contributing_token, OSB_BAYES_WINDOW_LEN, 4, 2, "osb"),
+	VECTOR_MODEL_REC_DEF(markovian_contributing_token, MARKOVIAN_WINDOW_LEN, 16, 2, "sbph"),
+};
+
+static const struct weight_id_def
+{
+	const int *weight_table;
+	int weight_table_size;
+	char *identifier;
+} weight_model_ids[] =
+{
+	WEIGHT_MODEL_REC_DEF(flat_model_weight, "flat"),
+	WEIGHT_MODEL_REC_DEF(osb_bayes_feature_weight, "osb"),
+	WEIGHT_MODEL_REC_DEF(chi2_feature_weight, "chi2"),
+	WEIGHT_MODEL_REC_DEF(entropic_weight, "entropic"),
+	WEIGHT_MODEL_REC_DEF(hidden_markov_weight, "markov"),
+	WEIGHT_MODEL_REC_DEF(super_markov_weight, "super_markov"),
+	WEIGHT_MODEL_REC_DEF(breyer_chhabra_siefkes_weight, "bcs"),
+	WEIGHT_MODEL_REC_DEF(breyer_chhabra_siefkes_mws_weight, "bcs_mws"),
+	WEIGHT_MODEL_REC_DEF(breyer_chhabra_siefkes_exp_weight, "bcs_exp"),
+	WEIGHT_MODEL_REC_DEF(breyer_chhabra_siekfes_base7_weight, "bcs_b7"),
+	WEIGHT_MODEL_REC_DEF(osbf_feature_weight, "osbf"),
 };
 
 
@@ -2102,6 +2423,250 @@ int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
 
 
 
+
+
+
+int transfer_matrix_to_VT(VT_USERDEF_COEFF_MATRIX *dst,
+						const int *src, 
+						size_t src_x, size_t src_y, size_t src_z)
+{
+	if (!dst || !src || !src_x || src_y || !src_z)
+	{
+		return -1;
+	}
+	if (src_x > UNIFIED_WINDOW_LEN
+		|| src_y > UNIFIED_VECTOR_LIMIT
+		|| src_z > UNIFIED_VECTOR_STRIDE)
+	{
+		// out of range: source matrix dimension too large!
+		return -2;
+	}
+
+	dst->cm.output_stride = src_z;
+	dst->cm.pipe_iters = src_y;
+	dst->cm.pipe_len = src_x;
+
+	while (src_z-- > 0)
+	{
+		int y;
+
+		for (y = 0; y < src_y; y++)
+		{
+			int x;
+
+			for (x = 0; x < src_x; x++)
+			{
+				int src_idx = src_z * src_y * src_x + y * src_x + x;
+				int dst_idx = src_z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN + y * UNIFIED_WINDOW_LEN + x;
+
+				dst->cm.coeff_array[dst_idx] = src[src_idx];
+			}
+		}
+	}
+
+	 return 0;
+}
+
+
+
+int generate_matrix_for_model(VT_USERDEF_COEFF_MATRIX *matrix, contributing_token_func *cb, const int *table, size_t table_size)
+{
+        int *ca = matrix->cm.coeff_array;
+        int x;
+        int y;
+        int z;
+
+	// construct the 3D VT matrix:
+        for (z = 0; z < UNIFIED_VECTOR_STRIDE; z++)
+        {
+            for (y = 0; y < UNIFIED_VECTOR_LIMIT; y++)
+            {
+                int m = (*cb)(0, y, z, table, table_size);
+                int *row = &ca[UNIFIED_WINDOW_LEN * (y + UNIFIED_VECTOR_LIMIT * z)];
+
+                /* no useful row of the 2D matrix? == nothing more to generate for this section */
+                if (m == 0)
+                {
+                    // make sure 'pipe_iters' isn't too large:
+#if 0
+					CRM_ASSERT(z == 0 ? pipe_iters <= y : TRUE);
+#endif
+					break;
+                }
+
+				row[0] = m;
+
+                for (x = 1; x < UNIFIED_WINDOW_LEN; x++)
+                {
+                    m = (*cb)(x, y, z, table, table_size);
+                    row[x] = m;
+                }
+            }
+        }
+
+	return 0;
+}
+
+
+/*
+   Return TRUE when the given VT matrix would permit the use of Arne's optimization.
+
+   Return FALSE otherwise.
+
+
+   Note: Arne's optimization is based on the assumption that, when no hit is found for the
+   feature hash proeduced through the first row of the VT matrix, the feature hashes of the
+   subsequent rows of the same matrix won't produce a hit either.
+
+   This means that all subsequent rows must AT LEAST include ALL tokens selected
+   by the first row.
+
+
+   Note #2: here we check for each 2D matrix (each 'stride') individually. Arne is only
+   assumed possible when ALL 2D matrices (each stride's matrix) permits Arne's optimization.
+*/
+
+static int check_if_arne_optimization_is_possible(const VT_USERDEF_COEFF_MATRIX *matrix)
+{
+    int x;
+    int y;
+    int z;
+
+    CRM_ASSERT(matrix);
+
+	// only need to check the non-zero columns of the first row: all other rows must have these as well:
+	for (z = matrix->cm.output_stride; z-- >= 0; )
+     {
+		 for (x = matrix->cm.pipe_len; x-- >= 0; )
+          {
+			  const int *col = &matrix->cm.coeff_array[z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN + x];
+			  if (col[0] == 0)
+				  continue;
+
+			  // check if this column is active (non-zero) for all *other* rows as well:
+			  for (y = matrix->cm.pipe_iters; y-- >= 1; )
+          {
+			  if (col[y * UNIFIED_WINDOW_LEN] == 0)
+				  return FALSE;
+			  }
+		 }
+	}
+
+	return TRUE;
+}
+
+
+
+
+
+typedef int fprintf_equivalent_func (void *propagate, const char *msg, ...)
+__attribute__((__format__(__printf__, 2, 3)));
+
+
+static void print_matrices(const VT_USERDEF_COEFF_MATRIX *our_coeff,
+        fprintf_equivalent_func *cb, void *propagate)
+{
+    int x;
+    int y;
+    int z;
+    int x_max = 0;
+    int y_max = 0;
+    int z_max = 0;
+    int fw_x_max = 0;
+    int fw_y_max = 0;
+
+    discover_matrices_max_dimensions(our_coeff, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
+
+    CRM_ASSERT(cb != 0);
+    for (z = 0; z < z_max; z++)
+    {
+        (*cb)(propagate, "\n========== coeff matrix[%d/%d] = %d x %d ==========",
+              z + 1,
+              z_max,
+              x_max,
+              y_max);
+        for (y = 0; y < y_max;)
+        {
+            (*cb)(propagate, "\nrow[%3d]:", y);
+
+            /* dump row: */
+            for (x = 0; x < x_max;)
+            {
+                (*cb)(propagate, " %6d", our_coeff->cm.coeff_array[x + UNIFIED_WINDOW_LEN * (y + UNIFIED_VECTOR_LIMIT * z)]);
+                x++;
+                if (our_coeff->cm.pipe_len == x)
+                {
+					(*cb)(propagate, (our_coeff->cm.pipe_iters > y ? " :" : "  "));
+                }
+            }
+
+            y++;
+            if (our_coeff->cm.pipe_iters == y)
+            {
+                (*cb)(propagate, "\n         ");
+                /* edge detect: */
+                for (x = 0; ; x++)
+                {
+                    if (our_coeff->cm.pipe_len > x)
+                    {
+                        (*cb)(propagate, ".......");
+                    }
+                    else
+                    {
+                        (*cb)(propagate, ".'");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /* now dump the weight 2D matrix as well: */
+    (*cb)(propagate, "\n========== feature weight matrix = %d x %d ==========",
+          fw_x_max,
+          fw_y_max);
+    for (y = 0; y < fw_y_max;)
+    {
+        (*cb)(propagate, "\nrow[%3d]:", y);
+
+        /* dump row: */
+        for (x = 0; x < fw_x_max;)
+        {
+            (*cb)(propagate, " %6d", our_coeff->fw.feature_weight[x + UNIFIED_VECTOR_LIMIT * y]);
+            x++;
+            if (our_coeff->fw.column_count == x)
+            {
+				(*cb)(propagate, (our_coeff->fw.row_count > y ? " :" : "  "));
+            }
+        }
+
+        y++;
+        if (our_coeff->fw.row_count == y)
+        {
+            (*cb)(propagate, "\n         ");
+            /* edge detect: */
+            for (x = 0; ; x++)
+            {
+                if (our_coeff->fw.column_count > x)
+                {
+                    (*cb)(propagate, ".......");
+                }
+                else
+                {
+                    (*cb)(propagate, ".'");
+                    break;
+                }
+            }
+        }
+    }
+
+    (*cb)(propagate, "\n");
+}
+
+
+
+
+
 static int fetch_value(int *value_ref,
         const char        **src_ref,
         int                *srclen_ref,
@@ -2324,8 +2889,184 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
         // static const char *vt_weight_regex = "vector: ([ 0-9]*)";
         static const char *vt_weight_regex = "vector:([^,;]+)";
         static const char *vt_feature_weight_regex = "weight:([^,;]+)";
+		static const char *vt_matrix_clip_regex = "vector-clip:([^,;]+)"; 
+		static const char *vt_weight_clip_regex = "weight-clip:([^,;]+)"; 
+		static const char *vt_weight_model_regex = "weight-model:([^,;]+)"; 
+		static const char *vt_vector_model_regex = "vector-model:([^,;]+)"; 
 
-        //   Compile up the regex to find the vector tokenizer weights
+        //   Compile up the regex to find the desired VT model
+        regex_status = crm_regcomp(&regcb, vt_vector_model_regex, (int)strlen(vt_vector_model_regex), REG_ICASE | REG_EXTENDED);
+        if (regex_status != 0)
+        {
+            char errmsg[1024];
+
+            crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
+            nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Matrix: "
+                                        "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
+                    vt_vector_model_regex,
+                    errmsg);
+            return -1;
+        }
+
+        // Use the regex to find the feature weight model identifier
+        regex_status = crm_regexec(&regcb, s2text, s2len, WIDTHOF(match), match, REG_ICASE | REG_EXTENDED, NULL);
+
+        //   Did we actually get a match for the extended parameters?
+        if (regex_status == 0 && match[1].rm_so >= 0)
+        {
+            // Yes, it matched. Take the string, remove leading and trailing whitespace and match
+			// case-INsensitively to our list of known weight models:
+			char *id = &s2text[match[1].rm_so];
+			int len = match[1].rm_eo - match[1].rm_so;
+			int start = 0;
+			
+			if (!crm_nextword(id, len, start, &start, &len))
+			{
+            nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Model: "
+				"You have specified an empty VT matrix model identifier with your 'vector-model:' attribute for the VT (Vector Tokenizer). Assuming the default model...");
+
+			// don't change anything weight matrix related!
+			}
+			else
+			{
+				int i;
+				int model = -1;
+			
+				id += start;
+
+				for (i = 0; i < WIDTHOF(vector_model_ids); i++)
+				{
+					if (!strncasecmp(id, vector_model_ids[i].identifier, CRM_MAX(strlen(vector_model_ids[i].identifier), len)))
+					{
+						// match!
+						model = i;
+						break;
+					}
+				}
+
+				if (model < 0)
+				{
+            fatalerror_ex(SRC_LOC(), "Custom VT Coefficient Model: "
+				"You have specified an unidentified VT matrix model "
+				"identifier '%*.*s' with your 'vector-model:' "
+				"attribute for the VT (Vector Tokenizer). "
+				"Assuming the default model...",
+				len, len, id);
+			return -1;
+				}
+				else
+				{
+					// copy model:
+					if (generate_matrix_for_model(coeff_matrix, vector_model_ids[model].cb, vector_model_ids[model].table, vector_model_ids[model].table_size))
+    {
+        fatalerror("Failed to generate the VT matrix from the specified model.",
+                "This kind of disaster shouldn't befall you.");
+        return -1;
+    }
+	if (coeff_matrix->cm.pipe_len == 0)
+	{
+		coeff_matrix->cm.pipe_len = vector_model_ids[model].x;
+	}
+	if (coeff_matrix->cm.pipe_iters == 0)
+	{
+		coeff_matrix->cm.pipe_iters = vector_model_ids[model].y;
+	}
+	if (coeff_matrix->cm.output_stride == 0)
+	{
+		coeff_matrix->cm.output_stride = vector_model_ids[model].z;
+	}
+				}
+			}
+        }
+
+        crm_regfree(&regcb);
+
+
+
+
+        //   Compile up the regex to find the desired feature weight model
+        regex_status = crm_regcomp(&regcb, vt_weight_model_regex, (int)strlen(vt_weight_model_regex), REG_ICASE | REG_EXTENDED);
+        if (regex_status != 0)
+        {
+            char errmsg[1024];
+
+            crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
+            nonfatalerror_ex(SRC_LOC(), "Custom VT Weight Model: "
+                                        "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
+                    vt_weight_model_regex,
+                    errmsg);
+            return -1;
+        }
+
+        // Use the regex to find the feature weight model identifier
+        regex_status = crm_regexec(&regcb, s2text, s2len, WIDTHOF(match), match, REG_ICASE | REG_EXTENDED, NULL);
+
+        //   Did we actually get a match for the extended parameters?
+        if (regex_status == 0 && match[1].rm_so >= 0)
+        {
+            // Yes, it matched. Take the string, remove leading and trailing whitespace and match
+			// case-INsensitively to our list of known weight models:
+			char *id = &s2text[match[1].rm_so];
+			int len = match[1].rm_eo - match[1].rm_so;
+			int start = 0;
+			
+			if (!crm_nextword(id, len, start, &start, &len))
+			{
+            nonfatalerror_ex(SRC_LOC(), "Custom VT Weight Model: "
+				"You have specified an empty weight model identifier with your 'weight-model:' attribute for the VT (Vector Tokenizer). Assuming the default model...");
+
+			// don't change anything weight matrix related!
+			}
+			else
+			{
+				int i;
+				int model = -1;
+			
+				id += start;
+
+				for (i = 0; i < WIDTHOF(weight_model_ids); i++)
+				{
+					if (!strncasecmp(id, weight_model_ids[i].identifier, CRM_MAX(strlen(weight_model_ids[i].identifier), len)))
+					{
+						// match!
+						model = i;
+						break;
+					}
+				}
+
+				if (model < 0)
+				{
+            fatalerror_ex(SRC_LOC(), "Custom VT Weight Model: "
+				"You have specified an unidentified weight model identifier '%*.*s' with your 'weight-model:' attribute for the VT (Vector Tokenizer). Assuming the default model...",
+				len, len, id);
+			return -1;
+				}
+				else
+				{
+					// copy weight model:
+					int x;
+					int y;
+
+					CRM_ASSERT(weight_model_ids[model].weight_table_size <= UNIFIED_VECTOR_LIMIT);
+
+					for (x = coeff_matrix->fw.column_count = CRM_MAX(16, weight_model_ids[model].weight_table_size); x-- > 0; )
+					{
+						for (y = 0; y < UNIFIED_VECTOR_STRIDE; y++)
+						{
+							coeff_matrix->fw.feature_weight[x + UNIFIED_VECTOR_LIMIT * y] = weight_model_ids[model].weight_table[x];
+						}
+					}
+					coeff_matrix->fw.row_count = UNIFIED_VECTOR_STRIDE;
+				}
+			}
+        }
+
+        crm_regfree(&regcb);
+
+
+
+
+        //   Compile up the regex to find the vector tokenizer hash mix multipliers
         regex_status = crm_regcomp(&regcb, vt_weight_regex, (int)strlen(vt_weight_regex), REG_ICASE | REG_EXTENDED);
         if (regex_status != 0)
         {
@@ -2357,7 +3098,9 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
         crm_regfree(&regcb);
 
 
-        //   Compile up the regex to find the vector tokenizer weights
+
+
+        //   Compile up the regex to find the vector tokenizer feature weights
         regex_status = crm_regcomp(&regcb, vt_feature_weight_regex, (int)strlen(vt_feature_weight_regex), REG_ICASE | REG_EXTENDED);
         if (regex_status != 0)
         {
@@ -2389,479 +3132,173 @@ int get_vt_vector_from_2nd_slasharg(VT_USERDEF_COEFF_MATRIX *coeff_matrix,
         crm_regfree(&regcb);
 
 
-        // TODO
-        // TBD
-        // check for the 'mclip:' and 'wclip:' attributes, which 'resize' the default matrices.
-    }
-
-    return 0;
-}
 
 
-/*
- * return matrix cell value for the given element.
- */
-typedef int contributing_token_func (int x, int y, int z);
-
-/*
- * 'Unified hash' multipliers. Must be odd; being prime is good.
- */
-static const int hctable[] =
-{
-    1, 7,
-    3, 13,
-    5, 29,
-    11, 51,
-    23, 101,
-    47, 203,
-    97, 407,
-    197, 817,
-    397, 1637,
-    797, 3277
-};
-
-/*
- * Markovian: first node + N-deep all bit patterns
- */
-static int markovian_contributing_token(int x, int y, int z)
-{
-    if (z >= 2)
-    {
-        return 0;
-    }
-
-    // 0 => 0
-    // 1 => 0, 1
-    // 2 => 0, 2
-    if (x > 0)
-    {
-        int bit = 1 << (x - 1);
-
-        if (!(y & bit))
+        
+		//   Compile up the regex to find the vector tokenizer mix matrix redim sizes
+        regex_status = crm_regcomp(&regcb, vt_matrix_clip_regex, (int)strlen(vt_matrix_clip_regex), REG_ICASE | REG_EXTENDED);
+        if (regex_status != 0)
         {
-            return 0;				 
-        }
-    }
+            char errmsg[1024];
 
-	x <<= 1;     // 2 * x
-	x += z;
-    if (x >= WIDTHOF(hctable))
-    {
-        return 0;
-    }
-    return hctable[x];
-}
-
-/*
- * GerH markovian.alt et al: no single, just N-deep all bit patterns
- */
-static int markov_alt_contributing_token(int x, int y, int z)
-{
-    if (z >= 2)
-    {
-        return 0;
-    }
-
-	if (x > 0)
-    {
-        int bit = 1 << (x - 1);
-
-        if (!((y + 1) & bit))
-        {
-            return 0;
-        }
-    }
-
-	x <<= 1;     // 2 * x
-	x += z;
-    if (x >= WIDTHOF(hctable))
-    {
-        return 0;
-    }
-    return hctable[x];
-}
-
-/*
- * OSB et al: vanilla CRM114 only uses 1 + 2^N patterns
- */
-static int osb_contributing_token(int x, int y, int z)
-{
-    if (z >= 2)
-    {
-        return 0;
-    }
-
-        if (y + 1 != x && x != 0)
-        {
-            return 0;
+            crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
+            nonfatalerror_ex(SRC_LOC(), "Custom VT Coefficient Matrix: "
+                                        "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
+                    vt_matrix_clip_regex,
+                    errmsg);
+            return -1;
         }
 
-	x <<= 1;     // 2 * x
-	x += z;
-    if (x >= WIDTHOF(hctable))
-    {
-        return 0;
-    }
-    return hctable[x];
-}
+        //   Use the regex to find the vector tokenizer weights
+        regex_status = crm_regexec(&regcb, s2text, s2len, WIDTHOF(match), match, REG_ICASE | REG_EXTENDED, NULL);
 
-
-int transfer_matrix_to_VT(VT_USERDEF_COEFF_MATRIX *dst,
-						const int *src, 
-						size_t src_x, size_t src_y, size_t src_z)
-{
-	if (!dst || !src || !src_x || src_y || !src_z)
-	{
-		return -1;
-	}
-	if (src_x > UNIFIED_WINDOW_LEN
-		|| src_y > UNIFIED_VECTOR_LIMIT
-		|| src_z > UNIFIED_VECTOR_STRIDE)
-	{
-		// out of range: source matrix dimension too large!
-		return -2;
-	}
-
-	dst->cm.output_stride = src_z;
-	dst->cm.pipe_iters = src_y;
-	dst->cm.pipe_len = src_x;
-
-	while (src_z-- > 0)
-	{
-		int y;
-
-		for (y = 0; y < src_y; y++)
-		{
-			int x;
-
-			for (x = 0; x < src_x; x++)
-			{
-				int src_idx = src_z * src_y * src_x + y * src_x + x;
-				int dst_idx = src_z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN + y * UNIFIED_WINDOW_LEN + x;
-
-				dst->cm.coeff_array[dst_idx] = src[src_idx];
-			}
-		}
-	}
-
-	 return 0;
-}
-
-static void discover_matrices_max_dimensions(const VT_USERDEF_COEFF_MATRIX *matrix,
-        int *pipe_len, int *pipe_iter, int *stride,
-        int *weight_cols, int *weight_rows)
-{
-    int x;
-    int y;
-    int z;
-    int x_max = 0;
-    int y_max = 0;
-    int z_max = 0;
-    int i;
-    const int *m;
-
-    CRM_ASSERT(pipe_len);
-    CRM_ASSERT(pipe_iter);
-    CRM_ASSERT(stride);
-    CRM_ASSERT(weight_rows);
-    CRM_ASSERT(weight_cols);
-    CRM_ASSERT(matrix);
-
-    /*
-     * Could've coded it like this:
-     *
-     * for (z = UNIFIED_VECTOR_STRIDE; z-- >= 0; )
-     * {
-     *      for (y = UNIFIED_VECTOR_LIMIT; y-- >= 0; )
-     *      {
-     *              for (x = UNIFIED_WINDOW_LEN; x-- >= 0; )
-     *              {
-     *                      ...
-     *
-     * but I wanted to do it different this time.
-     * The excuse? Well, this one may be slightly faster than the above
-     * because the number of multiplications, etc. in there are quite
-     * many: one round for each and every element in the matrix,
-     * but since we may expect tiny portions of the matrix space
-     * filled, deriving x/y/z from the continguous index is probably
-     * faster. Especially when the compiler converts those divisions
-     * in here to bitshifts (which can be done as long as those constants
-     * remain powers of 2...)
-     *
-     * Besides, as this code uses less vars in the main flow (which just
-     * skips zeroes), this thing optimizes better on register-depraved
-     * architectures, such as i86.
-     *
-     * But that's all rather anal excuses for checking out a crazy idea.
-     *
-     * ---
-     *
-     * And anyhow, this thing can run quite a bit faster still as we
-     * 'know' valid rows always have their column[0] set, so the fastest
-     * way to find max_y at least is to just scan the column[0] bottom up,
-     * then once we non-zero values there, we can jump to the end of the
-     * row to scan backwards looking for another possible max_x.
-     *
-     * The same for max_z: the max_z is the last one which has column[0]
-     * for row[0] set. Once we've found that one that's it for max_z.
-     *
-     * But then everything after that '---' there is optimization
-     * derived from knowledge about the data living in these matrices.
-     *
-     * Users _can_ feed this thing 'weird' row data, which will remain
-     * undiscovered then.
-     *
-     * So we do it the 'we-don't-know-about-the-data-at-all' way here,
-     * as this code will be used in diagnostics code, where such cuteness
-     * doesn't really help:
-     */
-    m = matrix->cm.coeff_array;
-
-    for (i = WIDTHOF(matrix->cm.coeff_array); --i >= 0;)
-    {
-        if (!m[i])
-            continue;
-
-        /* now we've hit a non-zero entry: derive x/y/z from i: */
-        z = i / (UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT);
-        CRM_ASSERT(z < UNIFIED_VECTOR_STRIDE);
-        y = i / UNIFIED_WINDOW_LEN;
-        x = i % UNIFIED_WINDOW_LEN;
-        /* alt code: x = i - UNIFIED_WINDOW_LEN * y; -- y here still 'includes' z as well */
-        y -= UNIFIED_VECTOR_LIMIT * z;
-
-        if (x_max < x)
+        //   Did we actually get a match for the extended parameters?
+        if (regex_status == 0 && match[1].rm_so >= 0)
         {
-            x_max = x;
-        }
-        if (y_max < y)
-        {
-            y_max = y;
-        }
-        CRM_ASSERT(z_max != 0 ? z_max >= z : TRUE);
-        if (!z_max)
-        {
-            z_max = z;
-        }
-
-        /*
-         * ignore the rest of this row, as it doesn't add
-         * anything to what we found here. We sub X instead
-         * of X-1 which would correct for that extra --i up
-         * there in the loop, but we do NOT want to check
-         * column [0] so doing it like this will get us
-         * to the last column of the previous row, which
-         * is where we want to start scanning again.
-         */
-        i -= x;
-    }
-
-    *pipe_len = x_max + 1;
-    *pipe_iter = y_max + 1;
-    *stride = z_max + 1;
-
-
-    /* now do the same for the 2D weight matrix: */
-    x_max = 0;
-    y_max = 0;
-    m = matrix->fw.feature_weight;
-
-    for (i = WIDTHOF(matrix->fw.feature_weight); --i >= 0;)
-    {
-        if (!m[i])
-            continue;
-
-        /* now we've hit a non-zero entry: derive x/y from i: */
-        y = i / UNIFIED_VECTOR_LIMIT;
-        x = i % UNIFIED_VECTOR_LIMIT;
-
-        if (x_max < x)
-        {
-            x_max = x;
-        }
-        CRM_ASSERT(y_max != 0 ? y_max >= y : TRUE);
-        if (!y_max)
-        {
-            y_max = y;
-        }
-
-        /*
-         * ignore the rest of this row, as it doesn't add
-         * anything to what we found here. We sub X instead
-         * of X-1 which would correct for that extra --i up
-         * there in the loop, but we do NOT want to check
-         * column[0] so doing it like this will get us
-         * to the last column of the previous row, which
-         * is where we want to start scanning again.
-         */
-        i -= x;
-    }
-
-
-    *weight_rows = y_max + 1;
-    *weight_cols = x_max + 1;
-}
-
-
-/*
-   Return TRUE when the given VT matrix would permit the use of Arne's optimization.
-
-   Return FALSE otherwise.
-
-
-   Note: Arne's optimization is based on the assumption that, when no hit is found for the
-   feature hash proeduced through the first row of the VT matrix, the feature hashes of the
-   subsequent rows of the same matrix won't produce a hit either.
-
-   This means that all subsequent rows must AT LEAST include ALL tokens selected
-   by the first row.
-
-
-   Note #2: here we check for each 2D matrix (each 'stride') individually. Arne is only
-   assumed possible when ALL 2D matrices (each stride's matrix) permits Arne's optimization.
-*/
-
-static int check_if_arne_optimization_is_possible(const VT_USERDEF_COEFF_MATRIX *matrix)
-{
-    int x;
-    int y;
-    int z;
-
-    CRM_ASSERT(matrix);
-
-	// only need to check the non-zero columns of the first row: all other rows must have these as well:
-	for (z = matrix->cm.output_stride; z-- >= 0; )
-     {
-		 for (x = matrix->cm.pipe_len; x-- >= 0; )
-          {
-			  const int *col = &matrix->cm.coeff_array[z * UNIFIED_VECTOR_LIMIT * UNIFIED_WINDOW_LEN + x];
-			  if (col[0] == 0)
-				  continue;
-
-			  // check if this column is active (non-zero) for all *other* rows as well:
-			  for (y = matrix->cm.pipe_iters; y-- >= 1; )
-          {
-			  if (col[y * UNIFIED_WINDOW_LEN] == 0)
-				  return FALSE;
-			  }
-		 }
-	}
-
-	return TRUE;
-}
-
-
-
-
-
-typedef int fprintf_equivalent_func (void *propagate, const char *msg, ...)
-__attribute__((__format__(__printf__, 2, 3)));
-
-
-static void print_matrices(const VT_USERDEF_COEFF_MATRIX *our_coeff,
-        fprintf_equivalent_func *cb, void *propagate)
-{
-    int x;
-    int y;
-    int z;
+            //  Yes, it matched. Fetch the 3D sizes and adjust the matrix accordingly.
+			int x, y, z;
     int x_max = 0;
     int y_max = 0;
     int z_max = 0;
     int fw_x_max = 0;
     int fw_y_max = 0;
+			char *src = &s2text[match[1].rm_so];
+			int srclen = match[1].rm_eo - match[1].rm_so;
+			int start = 0;
 
-    discover_matrices_max_dimensions(our_coeff, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
+    discover_matrices_max_dimensions(coeff_matrix, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
 
-    CRM_ASSERT(cb != 0);
-    for (z = 0; z < z_max; z++)
-    {
-        (*cb)(propagate, "\n========== coeff matrix[%d/%d] = %d x %d ==========",
-              z + 1,
-              z_max,
-              x_max,
-              y_max);
-        for (y = 0; y < y_max;)
-        {
-            (*cb)(propagate, "\nrow[%3d]:", y);
-
-            /* dump row: */
-            for (x = 0; x < x_max;)
-            {
-                (*cb)(propagate, " %6d", our_coeff->cm.coeff_array[x + UNIFIED_WINDOW_LEN * (y + UNIFIED_VECTOR_LIMIT * z)]);
-                x++;
-                if (our_coeff->cm.pipe_len == x)
+                //   The first parameter is the pipe length
+                if (fetch_value(&x, &src, &srclen, 0, UNIFIED_WINDOW_LEN, "tokenizer pipe length"))
                 {
-					(*cb)(propagate, (our_coeff->cm.pipe_iters > y ? " :" : "  "));
+                    return -1;
                 }
-            }
-
-            y++;
-            if (our_coeff->cm.pipe_iters == y)
+#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+            if (x > x_max)
             {
-                (*cb)(propagate, "\n         ");
-                /* edge detect: */
-                for (x = 0; ; x++)
-                {
-                    if (our_coeff->cm.pipe_len > x)
-                    {
-                        (*cb)(propagate, ".......");
-                    }
-                    else
-                    {
-                        (*cb)(propagate, ".'");
-                        break;
-                    }
-                }
+                nonfatalerror_ex(SRC_LOC(), "You've specified a VT coefficient matrix %s "
+                                            "value which is too large: %d > %d",
+                        "pipeline length",
+                        x, x_max);
+				return -1;
             }
+#endif
+            coeff_matrix->cm.pipe_len = x;
+
+            //   The second parameter is the number of repeats
+            if (fetch_value(&y, &src, &srclen, 0, UNIFIED_VECTOR_LIMIT, "tokenizer iteration count"))
+            {
+                return -1;
+            }
+#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+            if (y > y_max)
+            {
+                nonfatalerror_ex(SRC_LOC(), "You've specified a VT coefficient matrix %s "
+                                            "value which is too large: %d > %d",
+                        "iteration count",
+                        y, y_max);
+				return -1;
+            }
+#endif
+            coeff_matrix->cm.pipe_iters = y;
+
+            //   The third parameter is the number of coefficient matrices, i.e. one for each step of a full 'stride':
+            if (fetch_value(&z, &src, &srclen, 0, UNIFIED_VECTOR_STRIDE, "tokenizer matrix count"))
+            {
+                return -1;
+            }
+#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+            if (z > z_max)
+            {
+                nonfatalerror_ex(SRC_LOC(), "You've specified a VT coefficient matrix %s "
+                                            "value which is too large: %d > %d",
+                        "matrix count",
+                        z, z_max);
+				return -1;
+            }
+#endif
+            coeff_matrix->cm.output_stride = z;
         }
+
+        crm_regfree(&regcb);
+
+
+
+
+        
+		//   Compile up the regex to find the vector tokenizer feature weight table redim sizes
+        regex_status = crm_regcomp(&regcb, vt_weight_clip_regex, (int)strlen(vt_weight_clip_regex), REG_ICASE | REG_EXTENDED);
+        if (regex_status != 0)
+        {
+            char errmsg[1024];
+
+            crm_regerror(regex_status, &regcb, errmsg, WIDTHOF(errmsg));
+            nonfatalerror_ex(SRC_LOC(), "Custom VT Weight Matrix: "
+                                        "Regular Expression Compilation Problem in VT (Vector Tokenizer) pattern '%s': %s",
+                    vt_weight_clip_regex,
+                    errmsg);
+            return -1;
+        }
+
+        //   Use the regex to find the vector tokenizer weights
+        regex_status = crm_regexec(&regcb, s2text, s2len, WIDTHOF(match), match, REG_ICASE | REG_EXTENDED, NULL);
+
+        //   Did we actually get a match for the extended parameters?
+        if (regex_status == 0 && match[1].rm_so >= 0)
+        {
+            //  Yes, it matched. Fetch the 3D sizes and adjust the matrix accordingly.
+			int x, y, z;
+    int x_max = 0;
+    int y_max = 0;
+    int z_max = 0;
+    int fw_x_max = 0;
+    int fw_y_max = 0;
+			char *src = &s2text[match[1].rm_so];
+			int srclen = match[1].rm_eo - match[1].rm_so;
+			int start = 0;
+
+    discover_matrices_max_dimensions(coeff_matrix, &x_max, &y_max, &z_max, &fw_x_max, &fw_y_max);
+
+            //   The first parameter is the number of repeats
+            if (fetch_value(&x, &src, &srclen, 0, UNIFIED_VECTOR_LIMIT, "feature order (iteration count)"))
+            {
+                return -1;
+            }
+#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+            if (x > CRM_MAX(fw_x_max, y_max))
+            {
+                nonfatalerror_ex(SRC_LOC(), "You've specified a VT weight table %s "
+                                            "value which is too large: %d > %d",
+                        "iteration count",
+                        x, CRM_MAX(fw_x_max, y_max));
+				return -1;
+            }
+#endif
+			coeff_matrix->fw.column_count = x;
+
+            //   The second parameter is the number of coefficient matrices, i.e. one for each step of a full 'stride':
+            if (fetch_value(&y, &src, &srclen, 0, UNIFIED_VECTOR_STRIDE, "tokenizer matrix count (stride)"))
+            {
+                return -1;
+            }
+#if 0 /* cannot check yet! it may be that data is coming out of the default coeff matrix instead! */
+            if (y > UNIFIED_VECTOR_STRIDE)
+            {
+                nonfatalerror_ex(SRC_LOC(), "You've specified a VT weight table %s "
+                                            "value which is too large: %d > %d",
+                        "matrix count (stride)",
+                        y, UNIFIED_VECTOR_STRIDE);
+				return -1;
+            }
+#endif
+			coeff_matrix->fw.row_count = y;
+        }
+
+        crm_regfree(&regcb);
     }
 
-    /* now dump the weight 2D matrix as well: */
-    (*cb)(propagate, "\n========== feature weight matrix = %d x %d ==========",
-          fw_x_max,
-          fw_y_max);
-    for (y = 0; y < fw_y_max;)
-    {
-        (*cb)(propagate, "\nrow[%3d]:", y);
-
-        /* dump row: */
-        for (x = 0; x < fw_x_max;)
-        {
-            (*cb)(propagate, " %6d", our_coeff->fw.feature_weight[x + UNIFIED_VECTOR_LIMIT * y]);
-            x++;
-            if (our_coeff->fw.column_count == x)
-            {
-				(*cb)(propagate, (our_coeff->fw.row_count > y ? " :" : "  "));
-            }
-        }
-
-        y++;
-        if (our_coeff->fw.row_count == y)
-        {
-            (*cb)(propagate, "\n         ");
-            /* edge detect: */
-            for (x = 0; ; x++)
-            {
-                if (our_coeff->fw.column_count > x)
-                {
-                    (*cb)(propagate, ".......");
-                }
-                else
-                {
-                    (*cb)(propagate, ".'");
-                    break;
-                }
-            }
-        }
-    }
-
-    (*cb)(propagate, "\n");
+    return 0;
 }
-
-
-
-
-
 //////////////////////////////////////////////////////////////////////////
 //
 //  config_vt_coeff_matrix_and_tokenizer can be used to configure your (not-so-)default
@@ -2936,12 +3373,12 @@ int config_vt_coeff_matrix_and_tokenizer
     default_tokenizer.regex_compiler_flags = REG_EXTENDED;
     default_tokenizer.regex_compiler_flags_are_set = 1;
 
-	default_tokenizer.padding_length = OSB_BAYES_WINDOW_LEN - 1;
+	//default_tokenizer.padding_length = OSB_BAYES_WINDOW_LEN - 1;
 	default_tokenizer.pad_start = TRUE;
 	default_tokenizer.pad_end_with_first_chunk = FALSE;
 
-    ew = others_feature_weight;
-    ew_len = WIDTHOF(others_feature_weight);
+    ew = flat_model_weight;
+    ew_len = WIDTHOF(flat_model_weight);
 
     default_coeff.cm.output_stride = 1;   // but may be adjusted to 2 further on ...
 
@@ -2965,7 +3402,7 @@ int config_vt_coeff_matrix_and_tokenizer
         //     We're a 64-bit hash, so build a 64-bit interleaved feature set.
         default_coeff.cm.output_stride = 2;
 
-		default_tokenizer.padding_length = OSB_BAYES_WINDOW_LEN - 1;
+		//default_tokenizer.padding_length = OSB_BAYES_WINDOW_LEN - 1;
 	default_tokenizer.pad_start = FALSE;
 	default_tokenizer.pad_end_with_first_chunk = TRUE;
 	}
@@ -2975,7 +3412,6 @@ int config_vt_coeff_matrix_and_tokenizer
 
 
     {
-        int *ca = default_coeff.cm.coeff_array;
         int x;
         int y;
         int z;
@@ -2990,10 +3426,10 @@ int config_vt_coeff_matrix_and_tokenizer
             pipe_len = MARKOVIAN_WINDOW_LEN;
             pipe_iters = 16;
 
-            ew = markovian_ew;
-            ew_len = WIDTHOF(markovian_ew);
+            ew = hidden_markov_weight;
+            ew_len = WIDTHOF(hidden_markov_weight);
 
-		default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
+		//default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
 		}
         else if (classifier_flags & CRM_ALT_MARKOVIAN)
         {
@@ -3002,10 +3438,10 @@ int config_vt_coeff_matrix_and_tokenizer
             pipe_len = MARKOVIAN_WINDOW_LEN;
             pipe_iters = 16;
 
-            ew = markovian_ew;
-            ew_len = WIDTHOF(markovian_ew);
+            ew = hidden_markov_weight;
+            ew_len = WIDTHOF(hidden_markov_weight);
 
-		default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
+		//default_tokenizer.padding_length = MARKOVIAN_WINDOW_LEN - 1;
         }
         else if (classifier_flags & CRM_OSB_WINNOW)
         {
@@ -3014,10 +3450,10 @@ int config_vt_coeff_matrix_and_tokenizer
             pipe_len = OSB_WINNOW_WINDOW_LEN;
             pipe_iters = 4;
 
-            //ew = markovian_ew;
-            //ew_len = WIDTHOF(markovian_ew);
+            //ew = hidden_markov_weight;
+            //ew_len = WIDTHOF(hidden_markov_weight);
 
-		default_tokenizer.padding_length = OSB_WINNOW_WINDOW_LEN - 1;
+		//default_tokenizer.padding_length = OSB_WINNOW_WINDOW_LEN - 1;
         }
         else if (classifier_flags & CRM_ALT_OSB_WINNOW)
         {
@@ -3026,10 +3462,10 @@ int config_vt_coeff_matrix_and_tokenizer
             pipe_len = OSB_WINNOW_WINDOW_LEN;
             pipe_iters = 4;
 
-            //ew = markovian_ew;
-            //ew_len = WIDTHOF(markovian_ew);
+            //ew = hidden_markov_weight;
+            //ew_len = WIDTHOF(hidden_markov_weight);
 
-		default_tokenizer.padding_length = OSB_WINNOW_WINDOW_LEN - 1;
+		//default_tokenizer.padding_length = OSB_WINNOW_WINDOW_LEN - 1;
         }
         else if (classifier_flags & CRM_OSBF)
         {
@@ -3067,33 +3503,14 @@ int config_vt_coeff_matrix_and_tokenizer
             ew_len = WIDTHOF(chi2_feature_weight);
     }
 
+	
+	if (generate_matrix_for_model(&default_coeff, cb, hctable, WIDTHOF(hctable)))
+    {
+        fatalerror("Failed to generate the VT matrix from the specified model.",
+                "This kind of disaster shouldn't befall you.");
+        return -1;
+    }
 
-        for (z = 0; z < UNIFIED_VECTOR_STRIDE; z++)
-        {
-            for (y = 0; y < UNIFIED_VECTOR_LIMIT; y++)
-            {
-                int m = (*cb)(0, y, z);
-                int *row = &ca[UNIFIED_WINDOW_LEN * (y + UNIFIED_VECTOR_LIMIT * z)];
-
-                /* no useful row of the 2D matrix? == nothing more to generate for this section */
-                if (m == 0)
-                {
-                    // make sure 'pipe_iters' isn't too large:
-#if 0
-					CRM_ASSERT(z == 0 ? pipe_iters <= y : TRUE);
-#endif
-					break;
-                }
-
-				row[0] = m;
-
-                for (x = 1; x < UNIFIED_WINDOW_LEN; x++)
-                {
-                    m = (*cb)(x, y, z);
-                    row[x] = m;
-                }
-            }
-        }
             default_coeff.cm.pipe_len = pipe_len;
             default_coeff.cm.pipe_iters = pipe_iters;
 
@@ -3188,6 +3605,13 @@ int config_vt_coeff_matrix_and_tokenizer
     }
 
 
+    if (internal_trace || user_trace)
+    {
+	fprintf(stderr, "default matrices -->\n");
+        print_matrices(&default_coeff, (fprintf_equivalent_func *)fprintf, stderr);
+	fprintf(stderr, "\n-------------------------------------------------\n");
+    }
+
     {
         VT_USERDEF_COEFF_MATRIX coeff_matrix = { 0 };
 
@@ -3202,6 +3626,13 @@ int config_vt_coeff_matrix_and_tokenizer
         }
         else
         {
+    if (internal_trace || user_trace)
+    {
+	fprintf(stderr, "2nd slash arg: matrices -->\n");
+        print_matrices(&coeff_matrix, (fprintf_equivalent_func *)fprintf, stderr);
+	fprintf(stderr, "\n-------------------------------------------------\n");
+    }
+
             if (our_coeff->cm.pipe_len == 0 || our_coeff->cm.pipe_iters == 0 || our_coeff->cm.output_stride == 0)
             {
                 if (coeff_matrix.cm.pipe_len != 0 && coeff_matrix.cm.pipe_iters != 0 && coeff_matrix.cm.output_stride != 0
@@ -3247,9 +3678,11 @@ int config_vt_coeff_matrix_and_tokenizer
         }
     }
 
-    if (internal_trace)
+    if (internal_trace || user_trace)
     {
+	fprintf(stderr, "VT: constructed matrices -->\n");
         print_matrices(our_coeff, (fprintf_equivalent_func *)fprintf, stderr);
+	fprintf(stderr, "\n-------------------------------------------------\n");
     }
 
 	{
@@ -3298,6 +3731,7 @@ int config_vt_coeff_matrix_and_tokenizer
                     z_max);
             return -1;
         }
+
         if (our_coeff->fw.column_count > fw_x_max
             || our_coeff->fw.row_count > fw_y_max)
         {
@@ -3332,7 +3766,8 @@ int config_vt_coeff_matrix_and_tokenizer
 		our_coeff->flags.arne_optimization_allowed = check_if_arne_optimization_is_possible(our_coeff);
     }
 
-	default_tokenizer.padding_length = our_coeff->cm.pipe_len - 1;
+	CRM_ASSERT(default_tokenizer.padding_length == 0);
+		default_tokenizer.padding_length = our_coeff->cm.pipe_len - 1;
 	default_tokenizer.padding_settings_are_set = TRUE;
 
     //     Now all of the classifier defaults have been filled in; we now see if the

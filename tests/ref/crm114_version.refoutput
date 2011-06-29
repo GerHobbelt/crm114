@@ -7,8 +7,8 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
- This is CRM114, version 20081111-BlameBarack, rev 4446 (TRE 0.7.5 (LGPL, APPROX, WCHAR, MULTIBYTE)) (OS: linux-gnu)
- Copyright 2001-2008 William S. Yerazunis
+ This is CRM114, version 20081111-BlameBarack, rev 4560 (TRE 0.7.5 (LGPL, APPROX, WCHAR, MULTIBYTE)) (OS: linux-gnu)
+ Copyright 2001-2009 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
 Classifiers included in this build:
@@ -21,3 +21,87 @@ Extra features:
     - '-Cdbg' will cause a memory access violation in a last ditch
       effort to trigger your debugger
 
+Script language:
+  Reserved words (instructions) + attributes / format:
+accept     
+alius      
+alter      (...) /.../ 
+call       (optional) [optional] /.../ 
+cssmerge   <basic bychar string microgroom markovian markov osb correlate 
+        winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
+        default sks svm fscm neural auto autodetect alt.markovian alt.markov 
+        alt.osb alt.winnow alt.osbf alt.hyperspace ...> (...) (optional) 
+        [optional] /optional/ 
+cssdiff    <basic bychar string microgroom markovian markov osb correlate 
+        winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
+        default sks svm fscm neural auto autodetect alt.markovian alt.markov 
+        alt.osb alt.winnow alt.osbf alt.hyperspace ...> (...) (optional) 
+        [optional] /optional/ 
+cssbackup  <basic bychar string microgroom markovian markov osb correlate 
+        winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
+        default sks svm fscm neural auto autodetect alt.markovian alt.markov 
+        alt.osb alt.winnow alt.osbf alt.hyperspace ...> (...) (optional) 
+        [optional] /optional/ 
+cssrestore <basic bychar string microgroom markovian markov osb correlate 
+        winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
+        default sks svm fscm neural auto autodetect alt.markovian alt.markov 
+        alt.osb alt.winnow alt.osbf alt.hyperspace ...> (...) (optional) 
+        [optional] /optional/ 
+cssinfo    <basic bychar string microgroom markovian markov osb correlate 
+        winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
+        default sks svm fscm neural auto autodetect alt.markovian alt.markov 
+        alt.osb alt.winnow alt.osbf alt.hyperspace ...> (...) (optional) 
+        [optional] /optional/ 
+cssanalyze <basic bychar string microgroom markovian markov osb correlate 
+        winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
+        default sks svm fscm neural auto autodetect alt.markovian alt.markov 
+        alt.osb alt.winnow alt.osbf alt.hyperspace ...> (...) (optional) 
+        [optional] /optional/ 
+csscreate  <nocase basic literal nomultiline byline bychar string bychunk 
+        microgroom markovian markov osb correlate winnow chi2 unique entropy 
+        entropic osbf hyperspace unigram crosslink default sks svm fscm neural 
+        alt.markovian alt.markov alt.osb alt.winnow alt.osbf alt.hyperspace 
+        ...> (...) (optional) [optional] /optional/ 
+cssmigrate <basic bychar string microgroom markovian markov osb correlate 
+        winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
+        default sks svm fscm neural auto autodetect alt.markovian alt.markov 
+        alt.osb alt.winnow alt.osbf alt.hyperspace> (...) [...] /optional/ 
+eval       (optional) /.../ 
+exit       /optional/ 
+fail       
+fault      /optional/ 
+hash       (...) /.../ 
+input      <nomultiline byline lineedit> (optional) [optional] 
+intersect  (...) [...] 
+isolate    <default> (...) /optional/ 
+lazy       <default> (...) /optional/ 
+learn      <fromstart nocase basic literal nomultiline byline bychar string 
+        bychunk append refute microgroom markovian markov osb correlate winnow 
+        chi2 unique entropy entropic osbf hyperspace unigram crosslink sks svm 
+        fscm neural alt.markovian alt.markov alt.osb alt.winnow alt.osbf 
+        alt.hyperspace> (...) [optional] /optional/ /optional/ 
+classify   <nocase basic literal nomultiline byline bychar string bychunk 
+        microgroom markovian markov osb correlate winnow chi2 unique entropy 
+        entropic osbf hyperspace unigram crosslink sks svm fscm neural 
+        alt.markovian alt.markov alt.osb alt.winnow alt.osbf alt.hyperspace> 
+        (...) (optional) [optional] /optional/ /optional/ 
+liaf       
+match      <fromstart fromnext fromend newend fromcurrent nocase absent basic 
+        backwards literal nomultiline byline> (optional) [optional] /.../ 
+mutate     <nocase absent basic nomultiline byline bychar string bychunk 
+        unique default ...> (optional) [optional] /.../ 
+output     <append> [optional] /optional/ 
+clump      <bychunk refute unique unigram> (...) (optional) [...] /optional/ 
+        /optional/ 
+pmulc      <bychunk refute unique unigram> (...) (optional) [...] /optional/ 
+return     /optional/ 
+routine    
+sort       <nocase basic backwards nomultiline byline bychar string bychunk 
+        unique default> (optional) [optional] /optional/ 
+syscall    <keep async> (optional) (optional) (optional) [optional] /optional/ 
+        
+translate  <literal unique> (optional) [optional] /optional/ /optional/ 
+trap       (optional) /.../ 
+union      (...) [...] 
+window     <nocase literal bychar string bychunk byeof eofaccepts eofretry> 
+        (optional) (optional) /optional/ /optional/ 

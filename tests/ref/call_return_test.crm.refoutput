@@ -27,7 +27,7 @@ End (level 0)
  Call return, :out: = 120 ( level 3) 
  Call return, :out: = 120 ( level 2) 
  Call return, :out: = 120 ( level 1) 
- 5 factorial is 120 (level 0)
+ 5 factorial is :out: (level 0)
 
  Doing factorial with inplace args. 
  downward recurse call entry, args =  5 1  (level 1)
@@ -40,7 +40,20 @@ End (level 0)
  Call return, :out: = 120 (level 3)
  Call return, :out: = 120 (level 2)
  Call return, :out: = 120 (level 1)
- 5 factorial_inplace is 120 (level 0) 
+ 5 factorial_inplace is :out: (level 0) 
+
+ Doing factorial with inplace args. Corrected for scoped variables!
+ downward recurse call entry, args =  5 1  (level 1)
+ downward recurse call entry, args =  4 5  (level 2)
+ downward recurse call entry, args =  3 20  (level 3)
+ downward recurse call entry, args =  2 60  (level 4)
+ downward recurse call entry, args =  1 120  (level 5)
+ Recursion bottomed out, returning :out: = 120 
+ Call return, :out: = 120 (level 4)
+ Call return, :out: = 120 (level 3)
+ Call return, :out: = 120 (level 2)
+ Call return, :out: = 120 (level 1)
+ 5 factorial_inplace is  (level 0) 
 
  Doing factorial with return args 
  Call factorial_returnarg entry, arg =  5  (level 1)

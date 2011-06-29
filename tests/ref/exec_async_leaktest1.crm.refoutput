@@ -10,9 +10,9 @@ crm114: *ERROR*
 Statement 41(exec_async_leaktest1.crm) NOT YET IMPLEMENTED !!! Check your source code. Here's the text:
 failures
 Sorry, but this program is very sick and probably should be killed off.
-This happened at line 41 of file exec_async_leaktest1.crm:
+This happened at line 41 of file /windows/G/prj/3actual/crm114/tests/exec_async_leaktest1.crm:
     failures -----\n/
-(runtime system location: crm_compiler.c(675) in routine: crm_microcompiler)
+(runtime system location: crm_compiler.c(803) in routine: crm_microcompiler)
 
 STDOUT TEST OUTPUT:
 

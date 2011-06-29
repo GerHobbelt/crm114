@@ -9,9 +9,9 @@ STDERR TEST OUTPUT:
 crm114: *WARNING*
 Your call statement wants to return a value to a nonexistent variable; I'll create an isolated one.  Hope that's OK. Varname was ':d:'
 I'll try to keep working.
-This happened at line 5 of file call_return_test4.crm:
+This happened at line 5 of file /windows/G/prj/3actual/crm114/tests/call_return_test4.crm:
     call /:func:/ (:d:)
-(runtime system location: crm_exec_engine.c(1272) in routine: crm_invoke)
+(runtime system location: crm_exec_engine.c(1286) in routine: crm_invoke)
 
 STDOUT TEST OUTPUT:
 C = ABC

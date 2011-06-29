@@ -78,7 +78,7 @@ testing <absent> versus binding  (the '67' bug)
 crm114: *WARNING*
  This program specifies an 'absent' match, and also tries to bind variables that, by the above, aren't matched!   We'll ignore these variable bindings for now.
 I'll try to keep working.
-This happened at line 293 of file matchtest.crm:
+This happened at line 293 of file /windows/G/prj/3actual/crm114/tests/matchtest.crm:
     match <absent> (:incognita:) /nothinjkljiejfksn;s94jf94msks/
 (runtime system location: crm_expr_match.c(506) in routine: crm_expr_match)
 

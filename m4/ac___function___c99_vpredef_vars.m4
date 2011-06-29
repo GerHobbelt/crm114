@@ -15,7 +15,7 @@
 #
 # COPYLEFT
 #
-#   Copyright (c) 2007 Ger Hobbelt <ger@hobbelt.com>
+#   Copyright (c) 2007-2009 Ger Hobbelt <ger@hobbelt.com>
 #
 #   Code has been largely derived from the work by Kris Katterjohn for NMAP.
 #

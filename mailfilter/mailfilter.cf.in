@@ -213,8 +213,8 @@
 #   ---------  experienced users will probably set this to 'no' after testing
 #    ---------  their configuration for functionality.
 #
-:log_to_allmail.txt:  /yes/
-# :log_to_allmail.txt: /no/
+#:log_to_allmail.txt:  /yes/
+:log_to_allmail.txt: /no/
 
 #   -------  Another logging option - log all mail to somewhere else
 #    -------  entirely.  Whatever pathname is given here will be prefixed
@@ -291,8 +291,8 @@
 #    ---------  configuration to verify that rejected mail goes to the
 #     ---------  reject address.  Only works in mailfilter.crm
 #
-:log_rejections: /yes/
-#:log_rejections: /no/
+#:log_rejections: /yes/
+:log_rejections: /no/
 
 #  ------- alternate rejection logging - set this pathname to non-null
 #   ------ to log rejections elsewhere.  Only for mailreaver.crm.
@@ -379,7 +379,7 @@
 #:clf: /microgroom/
 #:clf: /osb/
 #:clf: /osb microgroom/
-:clf: /osb unique microgroom/
+#:clf: /osb unique microgroom/
 #:clf: /correlate/
 #:clf: /winnow/
 #:clf: /osbf/
@@ -387,6 +387,29 @@
 #:clf: /osbf unique microgroom/
 #:clf: /hyperspace/
 #:clf: /hyperspace unique/
+:clf: /alt.osb/
+#:clf: /alt.winnow/
+#:clf: /alt.osbf/
+#:clf: /alt.markovian/
+#:clf: /markovian/
+#:clf: /alt.hyperspace/
+#:clf: /fscm/
+#:clf: /entropy/
+# ^^^ with WINNOW, don't forget to SET doublesided training below!
+#
+#
+#
+# Classifier 2nd slash arg: specialty arguments (comma separated):
+#       vector:        len iter stride  m0 m1 m2 ...
+#       weight:        iter stride  w0 w1 w2 w3 ...
+#		vector-clip:   len iter stride
+#		weight-clip:   iter stride
+#		weight-model:  flat | osb | chi2 | entropic | markov | super_markov | bcs | bcs_mws | bcs_exp | bcs_b7 | osbf
+#		vector-model:  osb | sbph
+#
+:clf_vt_cfg: //
+#:clf_vt_cfg: / vector-model: osb /
+#:clf_vt_cfg: / vector-model: osb, vector-clip: 16 15 2 /
 #
 #
 #
@@ -472,6 +495,23 @@
 #
 #:do_refute_training: /SET/
 :do_refute_training: //
+
+#
+# [i_a]
+# Set to empty // if you do want mailtrainer to use 'regular' one-sided training.
+# 'double sided' training means a message is not only trained as X (spam or ham)
+# but _also_ <refute>-trained as !X (not spam or not-ham) at the same time.
+# 
+# Normally, you wouldn't SET this option, unless you're using, for example, the
+# winnow classifier, which fares quite a bit better when trained doublesided.
+#
+# NOTE: of course, you can only SET this option when using classifiers which 
+#       support the <refute> attribute!
+#
+# Default when not specified: NOT SET.
+#
+#:do_doublesided_training: /SET/
+:do_doublesided_training: //
 
 
 

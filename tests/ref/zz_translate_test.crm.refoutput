@@ -7,7 +7,7 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
-version: 20081111-BlameBarack, rev 4446 (TRE 0.7.5 (LGPL, APPROX, WCHAR, MULTIBYTE))
+version: 20081111-BlameBarack, rev 4560 (TRE 0.7.5 (LGPL, APPROX, WCHAR, MULTIBYTE))
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?

@@ -11,8 +11,8 @@ EXCEPTION:
 crm114: *ERROR*
 Attempt to store a CALL return value into an illegal variable 'ABC'. How very bizarre.
 Sorry, but this program is very sick and probably should be killed off.
-This happened at line 5 of file call_return_test2.crm:
+This happened at line 5 of file /windows/G/prj/3actual/crm114/tests/call_return_test2.crm:
     call /:func:/ (:*:c:)
-(runtime system location: crm_exec_engine.c(1257) in routine: crm_invoke)
+(runtime system location: crm_exec_engine.c(1271) in routine: crm_invoke)
 
 

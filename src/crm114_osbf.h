@@ -1,5 +1,5 @@
 //  crm114_osbf.h  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2004  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2009  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the

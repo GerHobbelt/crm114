@@ -1379,6 +1379,18 @@ ssize_t fwrite_ASCII_Cfied(FILE *dst, const char *src, size_t len);
 
 
 
+typedef int show_instruction_spec_writer_cb(const char *str, int len, void *propagator);
+
+/*
+   code to print the script language specification, whole or part.
+ */
+int show_instruction_spec(int opcode_id, show_instruction_spec_writer_cb *cb, void *propagator);
+int show_instruction_flags(uint64_t flags, show_instruction_spec_writer_cb *cb, void *propagator);
+
+
+
+
+
 void init_stdin_out_err_as_os_handles(void);
 void cleanup_stdin_out_err_as_os_handles(void);
 FILE *os_stdin(void);
@@ -1454,6 +1466,12 @@ static /* inline */ int64_t cvt_chars2int64(const char *str, size_t len)
 }
 
 
+
+#else
+
+#define crm_init_analysis				/**/
+#define crm_terminate_analysis			/**/
+#define cvt_chars2int64					/**/
 
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
