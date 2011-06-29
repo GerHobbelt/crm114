@@ -1330,7 +1330,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           file_hashlens = statbuf.st_size;
           file_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
                         crm_mmap_file(file1,
-                                      0, file_hashlens,
+                                      0, 
+									  file_hashlens,
                                       PROT_READ | PROT_WRITE,
                                       MAP_SHARED,
                                       NULL);
@@ -1550,7 +1551,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       file1_hashlens = statbuf1.st_size;
       file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
                      crm_mmap_file(file1,
-                                   0, file1_hashlens,
+                                   0, 
+								   file1_hashlens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
                                    NULL);
@@ -1639,7 +1641,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       file1_lens = statbuf1.st_size;
       file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
                      crm_mmap_file(file1,
-                                   0, file1_lens,
+                                   0, 
+								   file1_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
                                    NULL);
@@ -1648,7 +1651,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       file2_lens = statbuf2.st_size;
       file2_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
                      crm_mmap_file(file2,
-                                   0, file2_lens,
+                                   0, 
+								   file2_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
                                    NULL);
@@ -2179,7 +2183,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
       file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
                      crm_mmap_file(file1,
-                                   0, file1_lens,
+                                   0, 
+								   file1_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
                                    NULL);
@@ -2195,7 +2200,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       file2_lens = statbuf2.st_size;
       file2_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
                      crm_mmap_file(file2,
-                                   0, file2_lens,
+                                   0, 
+								   file2_lens,
                                    PROT_READ | PROT_WRITE,
                                    MAP_SHARED,
                                    NULL);

@@ -217,9 +217,9 @@ static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
     nonfatalerror("unable to map neural network backing file", "filename");
     return -1;
   }
-  nn->file_origin = crm_mmap_file
-                    (filename,
-                     0, statee.st_size,
+  nn->file_origin = crm_mmap_file(filename,
+                     0, 
+					 statee.st_size,
                      PROT_READ | PROT_WRITE,
                      MAP_SHARED,
                      NULL);

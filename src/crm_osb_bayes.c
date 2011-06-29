@@ -231,7 +231,8 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //      map the .css file into memory
   //
   hashes = (FEATUREBUCKET_TYPE *)crm_mmap_file(learnfilename,
-                                               0, hfsize,
+                                               0, 
+											   hfsize,
                                                PROT_READ | PROT_WRITE,
                                                MAP_SHARED,
                                                NULL);
@@ -1069,7 +1070,8 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
           hashes[maxhash] = (FEATUREBUCKET_TYPE *)
                             crm_mmap_file(fname,
-                                          0, hashlens[maxhash],
+                                          0, 
+										  hashlens[maxhash],
                                           PROT_READ | PROT_WRITE,
                                           MAP_SHARED,
                                           NULL);

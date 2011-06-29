@@ -120,7 +120,8 @@ int main(int argc, char **argv)
         hfsize = statbuf.st_size;
         //         mmap the hash file into memory so we can bitwhack it
         h1 = (FEATUREBUCKET_TYPE *)crm_mmap_file(argv[optind],
-                                                 0, hfsize,
+                                                 0, 
+												 hfsize,
                                                  PROT_READ | PROT_WRITE,
                                                  MAP_SHARED,
                                                  NULL);
@@ -146,7 +147,8 @@ int main(int argc, char **argv)
         hfsize2 = statbuf.st_size;
         //         mmap the hash file into memory so we can bitwhack it
         h2 = (FEATUREBUCKET_TYPE *)crm_mmap_file(argv[optind + 1],
-                                                 0, hfsize2,
+                                                 0, 
+												 hfsize2,
                                                  PROT_READ | PROT_WRITE,
                                                  MAP_SHARED,
                                                  NULL);

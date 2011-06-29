@@ -244,7 +244,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //         mmap the hash file into memory so we can bitwhack it
   //
   hashes = (FEATUREBUCKET_TYPE *)crm_mmap_file(learnfilename,
-                                               0, hfsize,
+                                               0, 
+											   hfsize,
                                                PROT_READ | PROT_WRITE,
                                                MAP_SHARED,
                                                NULL);
@@ -1153,9 +1154,10 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //
           hashlens[maxhash] = statbuf.st_size;
           //  mmap the hash file into memory so we can bitwhack it
-          hashes[maxhash] = (FEATUREBUCKET_TYPE *)crm_mmap_file(
-            fname,
-            0, hashlens[maxhash],
+          hashes[maxhash] = (FEATUREBUCKET_TYPE *)
+			  crm_mmap_file(fname,
+            0, 
+			hashlens[maxhash],
             PROT_READ | PROT_WRITE,
             MAP_SHARED,
             NULL);

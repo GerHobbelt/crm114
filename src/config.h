@@ -5,7 +5,7 @@
 #define CRM_ASSERT_IS_UNTRAPPABLE 1
 
 /* DISable ASSERT/VERIFY checks */
-#define CRM_DONT_ASSERT 1
+/* #undef CRM_DONT_ASSERT */
 
 /* do not include the Bit-Entropy classifier in the build */
 /* #undef CRM_WITHOUT_BIT_ENTROPY */
@@ -567,7 +567,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-650"
+#define TAR_FILENAME_POSTFIX "Ger-654"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

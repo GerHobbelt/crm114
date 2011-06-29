@@ -178,9 +178,12 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
                 fputc(0, f);
             fclose(f);
         }
-        space =
-            crm_mmap_file(filename, 0, filesize, PROT_READ | PROT_WRITE,
-                          MAP_SHARED, NULL);
+        space = crm_mmap_file(filename, 
+			0, 
+			filesize, 
+			PROT_READ | PROT_WRITE,
+                          MAP_SHARED, 
+						  NULL);
         make_scm_state(s, space);
     }
     else
@@ -188,9 +191,12 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         char   *o;
         SCM_HEADER_STRUCT *h;
 
-        s->header =
-            crm_mmap_file(filename, 0, statbuf.st_size, PROT_READ | PROT_WRITE,
-                          MAP_SHARED, NULL);
+        s->header = crm_mmap_file(filename, 
+			0, 
+			statbuf.st_size, 
+			PROT_READ | PROT_WRITE,
+                          MAP_SHARED, 
+						  NULL);
         o = (char *)s->header;
 
         h = s->header;

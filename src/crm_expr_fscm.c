@@ -221,8 +221,13 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
             }
             fclose(f);
         }
-        space = crm_mmap_file
-                (filename, 0, filesize, PROT_READ | PROT_WRITE, MAP_SHARED, NULL);
+
+	     space = crm_mmap_file(filename, 
+			0, 
+			filesize, 
+			PROT_READ | PROT_WRITE, 
+			MAP_SHARED, 
+			NULL);
         if (!space)
         {
             nonfatalerror("failed to do mmap of freshly created file", filename);
@@ -235,8 +240,11 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         char *o;
         SCM_HEADER_STRUCT *h;
 
-        s->header = crm_mmap_file
-                    (filename, 0, statbuf.st_size, PROT_READ | PROT_WRITE, MAP_SHARED,
+        s->header = crm_mmap_file(filename, 
+			0, 
+			statbuf.st_size, 
+			PROT_READ | PROT_WRITE, 
+			MAP_SHARED,
                      NULL);
         if (!s->header)
         {

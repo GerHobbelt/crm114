@@ -173,7 +173,7 @@ AWK = gawk
 BIN_PATH = /usr/local/bin
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O3
+CFLAGS = -g -O0
 CPP = gcc -E
 CPPFLAGS = 
 CRM = :|crm
@@ -270,7 +270,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-650
+TAR_FILENAME_POSTFIX = Ger-654
 TRE_CONFIG = no
 
 #

@@ -2057,9 +2057,7 @@ void crm_munmap_all(void)
 //     prot flags are in the mmap() format - that is, PROT_, not O_ like open.
 //      (it would be nice if length could be self-generated...)
 
-void *crm_mmap_file(char *filename,
-                    long start, long requested_len, long prot, long mode,
-                    long *actual_len)
+void *crm_mmap_file(char *filename, long start, long requested_len, long prot, long mode, long *actual_len)
 {
   CRM_MMAP_CELL *p;
   long pagesize = 0;

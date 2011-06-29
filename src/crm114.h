@@ -468,12 +468,7 @@ char *crm_regversion(void);
 //
 
 
-void *crm_mmap_file(char *filename,
-                    long start,
-                    long len,
-                    long prot,
-                    long mode,
-                    long *actual_len);
+void *crm_mmap_file(char *filename, long start, long len, long prot, long mode, long *actual_len);
 
 void crm_munmap_file(void *where);
 void crm_munmap_file_internal(void *map);

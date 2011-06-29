@@ -666,7 +666,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         file_hashlens = statbuf.st_size;
         file_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
                       crm_mmap_file(hashfilename,
-                                    0, file_hashlens,
+                                    0, 
+									file_hashlens,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED,
                                     NULL);
@@ -1167,7 +1168,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
           hashes[maxhash] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
                             crm_mmap_file(fname,
-                                          0, hashlens[maxhash],
+                                          0, 
+										  hashlens[maxhash],
                                           PROT_READ,
                                           MAP_SHARED,
                                           NULL);

@@ -101,7 +101,7 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
 
   h.max_documents = max_docs;
   h.n_documents = 0;
-  h.document_offsets_offset = sizeof(CLUMPER_HEADER_STRUCT);
+  h.document_offsets_offset = sizeof(h);
   h.clusters_offset = h.document_offsets_offset +
                       sizeof(int32_t) * h.max_documents;
   h.distance_matrix_offset = h.clusters_offset +
@@ -156,19 +156,19 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
 
 static int map_file(CLUMPER_STATE_STRUCT *s, char *filename)
 {
-  struct stat statee;
+  struct stat statbuf;
 
   memset(s, 0, sizeof(s));
 
-  if (stat(filename, &statee))
+  if (stat(filename, &statbuf))
   {
     nonfatalerror("Couldn't stat file!", filename);
     return -1;
   }
 
-  s->file_origin = crm_mmap_file
-                   (filename,
-                    0, statee.st_size,
+  s->file_origin = crm_mmap_file(filename,
+                    0, 
+					statbuf.st_size,
                     PROT_READ | PROT_WRITE,
                     MAP_SHARED,
                     NULL);
@@ -269,7 +269,7 @@ static int compare_features(const void *a, const void *b)
 static int eat_document(ARGPARSE_BLOCK *apb,
                         char *text, long text_len, long *ate,
                         regex_t *regee,
-                        crmhash_t *feature_space, long max_features,
+                        crmhash_t *feature_space, int max_features,
                         uint64_t flags)
 {
   int n_features = 0;
@@ -326,13 +326,17 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     }
     else
     {
-      for (i = 1; i < OSB_BAYES_WINDOW_LEN && hash_pipe[i] != 0xdeadbeef && n_features < max_features - 1; i++)
+      for (i = 1; i < OSB_BAYES_WINDOW_LEN 
+		  && hash_pipe[i] != 0xdeadbeef 
+		  && n_features < max_features - 1; i++)
       {
         feature_space[n_features++] =
           hash_pipe[0] + hash_pipe[i] * hash_coefs[i];
+		CRM_ASSERT(n_features < max_features - 1);
       }
     }
   }
+  CRM_ASSERT(n_features < max_features);
   qsort(feature_space, n_features, sizeof(feature_space[0]), compare_features);
 
   if (unique)
@@ -351,6 +355,7 @@ static int eat_document(ARGPARSE_BLOCK *apb,
   {
     feature_space[n_features++] = 0;
   }
+  CRM_ASSERT(n_features <= max_features);
   return n_features;
 }
 
@@ -494,6 +499,7 @@ static void agglomerative_averaging_cluster(CLUMPER_STATE_STRUCT *s, long goal)
               continue;
             m_k_i = aref_dist_mat(M, k, i);
             m_l_i = aref_dist_mat(M, l, i);
+            CRM_ASSERT(!(ckl <= FLT_EPSILON && ckl >= -FLT_EPSILON));
             m_k_i[0] = (ck * m_k_i[0] + cl * m_l_i[0]) / ckl;
             m_l_i[0] = 0.0;
           }
@@ -554,6 +560,7 @@ static void agglomerative_averaging_cluster(CLUMPER_STATE_STRUCT *s, long goal)
         continue;
       m_k_i = aref_dist_mat(M, k, i);
       m_l_i = aref_dist_mat(M, l, i);
+      CRM_ASSERT(!(ckl <= FLT_EPSILON && ckl >= -FLT_EPSILON));
       m_k_i[0] = (ck * m_k_i[0] + cl * m_l_i[0]) / ckl;
       m_l_i[0] = 0.0;
     }
@@ -766,8 +773,14 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
 
   for (i = 0; i < H_BUCKETS; i++)
     H[i] = 0;
-  // j = n * (n - 1) / 2;
+#if 01
+  j = n * (n - 1) / 2;
+#else
   j = m_size; // [i_a] shouldn't that be j = (n * (n + 1) / 2 - 1) in previous line (a.k.a. m_size) ???
+  // NOPE! Discussed this on the ML and Joe told me the other one is the correct count [i_a]
+#endif
+  CRM_ASSERT(j <= m_size);
+  CRM_ASSERT(j <= WIDTHOF(M));
   min = 1000000000.0;
   max = -1000000000.0;
 
@@ -779,6 +792,11 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
       max = s->distance_matrix[i];
   }
   scale = (max - min) / (H_BUCKETS - 0.1);
+#if 0 /* [i_a] quick and dirty hack to prevent crash below, but this doesn't help, as now things further down below go bump in the night :-( */
+  if (scale <= FLT_EPSILON && scale >= -FLT_EPSILON)
+	scale = 1;
+#endif
+  CRM_ASSERT(!(scale <= FLT_EPSILON && scale >= -FLT_EPSILON));
   t = -1.0;
   for (i = 0; i < j; i++)
   {
@@ -805,10 +823,13 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
     k = C[i] = H[i] + k;
     t_A = A[i] = H[i] * (min + (i + 0.5) * scale) + t_A;
   }
+  CRM_ASSERT(j != 0);
   gM = t_A / (float)j;
   t_score = 0.0;
   for (i = 2; i < H_BUCKETS - 2; i++)
   {
+    CRM_ASSERT(!((k - C[i]) <= FLT_EPSILON && (k - C[i]) >= -FLT_EPSILON));
+    CRM_ASSERT(!(C[i] <= FLT_EPSILON && C[i] >= -FLT_EPSILON));
     scoro = square(gM - (t_A - A[i]) / (k - C[i])) * (k - C[i])
             + square(gM - A[i] / C[i]) * C[i];
     if (scoro > t_score)
@@ -919,6 +940,7 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
         continue;
       m_k_i = aref_dist_mat(M, k, i);
       m_l_i = aref_dist_mat(M, l, i);
+      CRM_ASSERT(!(ckl <= FLT_EPSILON && ckl >= -FLT_EPSILON));
       m_k_i[0] = (ck * m_k_i[0] + cl * m_l_i[0]) / ckl;
       m_l_i[0] = 0.0;
     }
@@ -1071,7 +1093,8 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
   {
     param_text[matchee[1].rm_eo] = 0;
-    strcpy(tag, &param_text[matchee[1].rm_so]);
+    strncpy(tag, &param_text[matchee[1].rm_so], sizeof(tag));
+	tag[sizeof(tag) - 1] = 0;
   }
   else
   {
@@ -1086,7 +1109,8 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
   {
     param_text[matchee[1].rm_eo] = 0;
-    strcpy(classv, &param_text[matchee[1].rm_so]);
+    strncpy(classv, &param_text[matchee[1].rm_so], sizeof(classv));
+	classv[sizeof(classv) - 1] = 0;
   }
   else
   {
@@ -1201,6 +1225,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     long n;
     crmhash_t feature_space[32768];
     FILE *f;
+
     if (stat(filename, &statbuf))
     {
       if (!make_new_clumper_backing_file(filename, max_documents))
@@ -1217,6 +1242,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
           //we already nonfatalerrored
           return 0;
         }
+		// GROT GROT GROT
         for (i = s.header->n_documents - 1; i >= 0; i++ /* [i_a] should this REALLY be 'i++' instead of 'i--' ??? */ )
         {
           if (0 == strcmp(tag, s.document_tags[i]))
@@ -1267,7 +1293,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     i = s.header->n_documents++;
 
     s.document_offsets[i] = s.header->file_length;
-    s.header->file_length += sizeof(crmhash_t) * n;
+    s.header->file_length += sizeof(feature_space[0]) * n;
     for (j = 0; j < i; j++)
     {
       *aref_dist_mat(s.distance_matrix, j, i) = get_document_affinity(
@@ -1530,10 +1556,15 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       if (A[i] > A[j])
         j = i;
       if (A[i] == 0.0)
+      {
         p[i] = 0.0;
+      }
       else
+      {
+        CRM_ASSERT(!(A[i] <= FLT_EPSILON && A[i] >= -FLT_EPSILON));
         p[i] = normalized_gauss(1.0 / A[i] - 1.0, 0.5);
       //p[i] = A[i];
+      }
       T += p[i];
     }
     if (s.header->n_clusters < 2)

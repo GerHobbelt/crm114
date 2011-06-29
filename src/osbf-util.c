@@ -74,8 +74,7 @@ void helptext(void)
             "            -D   - dump css file to stdout in CSV format.\n"
             "            -R csv-file  - create and restore css from CSV.\n"
             "                           Options -s and -S are ignored when"
-            " restoring.\n"
-    );
+            " restoring.\n");
 }
 
 int main(int argc, char **argv)
@@ -344,7 +343,8 @@ int main(int argc, char **argv)
         //
         //   mmap the hash file into memory so we can bitwhack it
         header = crm_mmap_file(cssfile,
-                               0, hfsize,
+                               0, 
+							   hfsize,
                                PROT_READ | PROT_WRITE,
                                MAP_SHARED,
                                NULL);

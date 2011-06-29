@@ -7043,7 +7043,7 @@ if test "${enable_assertions+set}" = set; then
   enableval=$enable_assertions;
    { echo "$as_me:$LINENO: result: $enable_assertions" >&5
 echo "${ECHO_T}$enable_assertions" >&6; }
-   if eval "test x$enable_assertions = xyes"; then
+   if eval "test x$enable_assertions = xno"; then
 
 cat >>confdefs.h <<_ACEOF
 #define CRM_DONT_ASSERT 1
@@ -7055,11 +7055,6 @@ else
 
    { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
-
-cat >>confdefs.h <<_ACEOF
-#define CRM_DONT_ASSERT 1
-_ACEOF
-
 
 fi
 

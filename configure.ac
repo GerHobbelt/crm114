@@ -477,13 +477,12 @@ get triggered EVER, so you MAY assume specifying this option is
 a 'free speedup'. (default: assertions are ENABLED)]),
   [
    AC_MSG_RESULT($enable_assertions)
-   if eval "test x$enable_assertions = xyes"; then
+   if eval "test x$enable_assertions = xno"; then
      AC_DEFINE_UNQUOTED(CRM_DONT_ASSERT, 1, [DISable ASSERT/VERIFY checks])
    fi
   ],
   [
    AC_MSG_RESULT([yes])
-   AC_DEFINE_UNQUOTED(CRM_DONT_ASSERT, 1, [DISable ASSERT/VERIFY checks])
   ])
 
 AC_MSG_CHECKING([if we want run-time trappable assertions])

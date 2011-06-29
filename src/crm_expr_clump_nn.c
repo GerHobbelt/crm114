@@ -1281,9 +1281,12 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
 
     if (internal_trace)
       fprintf(stderr, "\ndone writing file, about to mmap\n");
-    s->header =
-      crm_mmap_file(filename, 0, file_size, PROT_READ | PROT_WRITE,
-                    MAP_SHARED, NULL /*&actual_file_size */);
+    s->header = crm_mmap_file(filename, 
+		0, 
+		file_size, 
+		PROT_READ | PROT_WRITE,
+                    MAP_SHARED, 
+					NULL /*&actual_file_size */);
 
     if (internal_trace)
     {
@@ -1319,10 +1322,12 @@ static void map_file_for_learn(CLUSTEROR_STATE_STRUCT *s, char *filename)
   }
   else
   {
-    file_size = statbuf.st_size;
-    s->header =
-      crm_mmap_file(filename, 0, file_size, PROT_READ | PROT_WRITE,
-                    MAP_SHARED, NULL /*&actual_file_size */);
+    s->header = crm_mmap_file(filename, 
+		0, 
+		statbuf.st_size, 
+		PROT_READ | PROT_WRITE,
+                    MAP_SHARED, 
+					NULL /*&actual_file_size */);
     if (s->header == MAP_FAILED)
     {
       fatalerror_ex(SRC_LOC(),
@@ -2532,7 +2537,12 @@ int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                   "Unable to open cluster file %s\n", filename);
   }
 
-  s.header = crm_mmap_file(filename, 0, statbuf.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, NULL);
+  s.header = crm_mmap_file(filename, 
+	  0, 
+	  statbuf.st_size, 
+	  PROT_READ | PROT_WRITE, 
+	  MAP_SHARED, 
+	  NULL);
 
   s.hash_table = (HASH_NODE_STRUCT *)((char *)(s.header) + s.header->hash_slots_offset);
   s.tokens = (TOKEN_STRUCT *)((char *)(s.header) + s.header->tokens_offset);

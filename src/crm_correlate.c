@@ -46,7 +46,6 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long cflags, eflags;
   struct stat statbuf;      //  for statting the hash file
   int hfd;                  //  hashfile fd
-  long hfsize;              //  size of the hash file
   //
   //regex_t regcb;
   long textoffset;
@@ -172,11 +171,10 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
   }
   //
-  hfsize = statbuf.st_size;
   if (user_trace)
   {
     fprintf(stderr, "Correlation text file %s has length %ld characters\n",
-            learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
+            learnfilename, statbuf.st_size / sizeof(FEATUREBUCKET_TYPE));
   }
 
   //
@@ -464,9 +462,10 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //  file exists - do the mmap
           //
           hashlens[maxhash] = statbuf.st_size;
-          hashes[maxhash] = (char *)
-                            crm_mmap_file(fname,
-                                          0, hashlens[maxhash],
+		  // [i_a] hashlens[maxhash] must be fixed for the header size!
+          hashes[maxhash] = (char *)crm_mmap_file(fname,
+                                          0, 
+										  hashlens[maxhash],
                                           PROT_READ,
                                           MAP_SHARED,
                                           NULL);

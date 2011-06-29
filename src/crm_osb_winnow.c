@@ -246,9 +246,9 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //         open the .cow hash file into memory so we can bitwhack it
   //
   hashes = (WINNOW_FEATUREBUCKET_STRUCT *)
-           crm_mmap_file(
-    learnfilename,
-    0, hfsize,
+           crm_mmap_file(learnfilename,
+    0, 
+	hfsize,
     PROT_READ | PROT_WRITE,
     MAP_SHARED,
     NULL);
@@ -914,7 +914,8 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //  mmap the hash file into memory so we can bitwhack it
           hashes[maxhash] = (WINNOW_FEATUREBUCKET_STRUCT *)
                             crm_mmap_file(fname,
-                                          0, hashlens[maxhash],
+                                          0, 
+										  hashlens[maxhash],
                                           PROT_READ,
                                           MAP_SHARED,
                                           NULL);

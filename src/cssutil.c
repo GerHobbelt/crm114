@@ -299,7 +299,8 @@ int main(int argc, char **argv)
         //
         //   mmap the hash file into memory so we can bitwhack it
         hashes = (FEATUREBUCKET_TYPE *)crm_mmap_file(cssfile,
-                                                     0, hfsize,
+                                                     0, 
+													 hfsize,
                                                      PROT_READ | PROT_WRITE,
                                                      MAP_SHARED,
                                                      NULL);

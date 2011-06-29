@@ -1640,7 +1640,6 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   char htext[MAX_PATTERN];    // the node filename working buffer
   long hlen;
   char *learnfilename;        // the real node file name
-  long hfsize;                //  size of the node file
   struct stat statbuf;        //  for statting the node file
   long made_new_file;
   long unique_states = 0;
@@ -1785,12 +1784,11 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
   }
   //
-  hfsize = statbuf.st_size;
-  //
   //      map the bit-entropy file into memory
   //
-  fmap = (int32_t /* long */ *)crm_mmap_file(learnfilename,
-                                             0, hfsize,
+  fmap = (int32_t *)crm_mmap_file(learnfilename,
+                                             0, 
+											 statbuf.st_size,
                                              PROT_READ | PROT_WRITE,
                                              MAP_SHARED,
                                              NULL);
@@ -1862,8 +1860,8 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       if (user_trace)
         fprintf(stderr, "New toroid. width: %ld, height %ld\n",
                 width, height);
-      first_freenode = nodes_init_shufflenet
-                       (nodes, nodeslen,
+      first_freenode = nodes_init_shufflenet(
+		                nodes, nodeslen,
                         height, width,
                         1);            // the 1 means "node 1 is first node!
 
@@ -2113,7 +2111,8 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //  calculate node's new FIR and where it will go into the FIRlat
     //
     {
-      int32_t /* long */ totalcount, i;
+      int32_t totalcount;
+	  int i;
       totalcount = 0;
       for (i = 0; i < ENTROPY_ALPHABET_SIZE; i++)
       {
@@ -2454,7 +2453,6 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   int32_t /* long */ *firlats[MAX_CLASSIFIERS];
   long firlatlens[MAX_CLASSIFIERS];
   char *hashname[MAX_CLASSIFIERS];
-  long hashlens[MAX_CLASSIFIERS];
   long firjumps[MAX_CLASSIFIERS];
   int64_t /* long long */ *totalbits[MAX_CLASSIFIERS];
 
@@ -2596,12 +2594,11 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
           //  file exists - do the open/process/close
           //
-          hashlens[maxhash] = statbuf.st_size;
           //  mmap the hash file into memory so we can bitwhack it
 
-          fmaps[maxhash] =
-            crm_mmap_file(fname,
-                          0, hashlens[maxhash],
+          fmaps[maxhash] = crm_mmap_file(fname,
+                          0, 
+						  statbuf.st_size,
                           PROT_READ | PROT_WRITE,
                           MAP_SHARED,
                           NULL);

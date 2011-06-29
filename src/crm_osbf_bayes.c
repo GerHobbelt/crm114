@@ -329,8 +329,11 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //         open the hash file into memory so we can bitwhack it
   //
   header = crm_mmap_file(learnfilename,
-                         0, statbuf.st_size,
-                         PROT_READ | PROT_WRITE, MAP_SHARED, NULL);
+                         0, 
+						 statbuf.st_size,
+                         PROT_READ | PROT_WRITE, 
+						 MAP_SHARED, 
+						 NULL);
 
   if (header == MAP_FAILED)
   {
@@ -925,7 +928,8 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           //  mmap the hash file into memory so we can bitwhack it
           header[maxhash] = (OSBF_FEATURE_HEADER_STRUCT *)
                             crm_mmap_file(fname,
-                                          0, hashlens[maxhash],
+                                          0, 
+										  hashlens[maxhash],
                                           PROT_READ | PROT_WRITE,
                                           MAP_SHARED,
                                           NULL);
