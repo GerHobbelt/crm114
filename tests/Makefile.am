@@ -1341,3 +1341,39 @@ check-am: all-am
 .PHONY: test test_basics test_other test_megatest test_megatest_ng test_mailfilter test_mailreaver megatest megatest_ng test_classifiers
 
 
+# ERROR: files left in build directory after distclean:
+# ./crm114-20080326-BlameSentansoken-Ger-2244.src.tar.bz2
+# ./crm114-20080326-BlameSentansoken-Ger-2244.Win32.bin.tar.bz2
+# ./crm114-20080326-BlameSentansoken-Ger-2244.unified.diff.zip
+# ./crm114-20080326-BlameSentansoken-Ger-2244.src.tar.gz
+# ./crm114-20080326-BlameSentansoken-Ger-2244.unified.diff.tar.gz
+# ./crm114-20080326-BlameSentansoken-Ger-2244.normal.diff.tar.gz
+# ./crm114-20080326-BlameSentansoken-Ger-2244.Win32.bin.tar.gz
+# ./src/diff/crm114.20080501.normal.diff
+# ./src/diff/crm114.20080501.unified.diff
+# ./src/diff/crm114.20080501.context.diff
+# ./crm114-20080326-BlameSentansoken-Ger-2244.normal.diff.zip
+# ./crm114-20080326-BlameSentansoken-Ger-2244.context.diff.tar.gz
+# ./crm114-20080326-BlameSentansoken-Ger-2244.unified.diff.tar.bz2
+# ./crm114-20080326-BlameSentansoken-Ger-2244.src.zip
+# ./crm114-20080326-BlameSentansoken-Ger-2244.context.diff.zip
+# ./crm114-20080326-BlameSentansoken-Ger-2244.normal.diff.tar.bz2
+# ./crm114-20080326-BlameSentansoken-Ger-2244.Win32.bin.zip
+# ./crm114-20080326-BlameSentansoken-Ger-2244.src.shar.gz
+# ./tests/crm114_versiontest.filter.sh.temp.tstout
+# ./tests/testscript.sh.tempout
+# ./tests/test_rewrites.mfp
+# ./tests/statustest.filter.sh.temp.refout
+# ./tests/testscript.sh.temperr
+# ./tests/crm114_error_report.filter.sh.temp.tstout
+# ./tests/crm114_error_report.filter.sh.temp.refout
+# ./tests/testscript.sh.tempchk
+# ./tests/crm114_classify.filter.sh.temp.refout
+# ./tests/e2.out
+# ./tests/i_test.css
+# ./tests/crm114_classify.filter.sh.temp.tstout
+# ./tests/statustest.filter.sh.temp.tstout
+# ./tests/whitelist.mfp.example
+# ./tests/crm114_versiontest.filter.sh.temp.refout
+# ./tests/testscript.sh.diffout
+# ./crm114-20080326-BlameSentansoken-Ger-2244.context.diff.tar.bz2
