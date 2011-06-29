@@ -10,22 +10,23 @@ mkdir diff
 for f in *.[ch] megatest.sh *.crm *.mfp ; do
 	if [ -e @ORIGINAL_BILLY_DISTRO_DIR@/$f ] 
 	then
+		rm -f diff/$f.`date +%Y%m%d`.normal.diff 2>&1
 		rm -f diff/$f.`date +%Y%m%d`.context.diff 2>&1
 		rm -f diff/$f.`date +%Y%m%d`.unified.diff 2>&1
-		diff @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.normal.diff
+		@DIFF@ @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.normal.diff
 		# don't keep empty diffs around, that's clutter
 		if [ -s diff/$f.`date +%Y%m%d`.normal.diff ]
 		then
-			diff -c @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.context.diff
-			diff -u @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.unified.diff
+			@DIFF@ -c @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.context.diff
+			@DIFF@ -u @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.unified.diff
 		else
-			rm diff/$f.`date +%Y%m%d`.normal.diff
+			rm -f diff/$f.`date +%Y%m%d`.normal.diff
 		fi
 	fi
 done
 
 # and produce a 'global spanning' diff
-diff @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/ . -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/crm114.`date +%Y%m%d`.normal.diff
-diff -c @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/ . -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/crm114.`date +%Y%m%d`.context.diff
-diff -u @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/ . -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/crm114.`date +%Y%m%d`.unified.diff
+@DIFF@ @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/ . -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/crm114.`date +%Y%m%d`.normal.diff
+@DIFF@ -c @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/ . -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/crm114.`date +%Y%m%d`.context.diff
+@DIFF@ -u @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/ . -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/crm114.`date +%Y%m%d`.unified.diff
 

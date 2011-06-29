@@ -44,25 +44,35 @@ report_msg()
   echo "  $1"
 }
 
+write2ref=0
 
 scriptfile="$1"
+inputdata="$2"
 expected="$3"
 diffscript="$4"
-inputdata="$2"
 
 tmpout="$0.tempout"
 tmperr="$0.temperr"
+tmpchk="$0.tempchk"
 diffout="$0.diffout"
 
+literalscript=0
 if [ ! -f "${scriptfile}" ]; then
-  echo "script file '"${scriptfile}"' does not exist!"
-  exit 66
+  # echo "sed proc = " 
+  # echo `echo "${scriptfile}" | sed -e "s/^-{.\+} */-{/" `
+  if [ "x`echo "${scriptfile}" | sed -e "s/^-{.\+} */-{/" `" = "x-{" ]; then
+    report_msg "going to use '${scriptfile}' as literal test script"
+    literalscript=1
+  else
+    report_error "crm114 test script '${scriptfile}' does not exist"
+    exit 66
+  fi
 fi
 
 # diffscript may be NIL, must otherwise exist as file
 if [ ! -z "${diffscript}" ]; then
   if [ ! -f "${diffscript}" ]; then
-    report_error "diff script '"${diffscript}"' does not exist"
+    report_error "diff script '${diffscript}' does not exist"
     exit 65
   fi
 fi
@@ -72,43 +82,106 @@ fi
 # this is handy to generate the 'expected output' files to start off with...
 if [ ! -z "${expected}" ]; then
   if [ "x${expected}" = "x-" ]; then
-    expected="ref/${scriptfile}.refoutput"
-    report_warning "going to use expected outfile file '"${expected}"'..."
+    if [ ${literalscript} = 0 ]; then
+      expected="ref/${scriptfile}.refoutput"
+      report_msg "going to use expected outfile file '${expected}'..."
+    else
+      report_error "expected outfile file '${expected}' does not exist and cannot be 'generated' from the script filename as you specified a literal script!"
+      exit 64
+    fi
   fi
   if [ ! -f "${expected}" ]; then
-    report_warning "expected outfile file '"${expected}"' does not exist: script will create this file!"
+    report_warning "expected outfile file '${expected}' does not exist: script will create this file!"
+    write2ref=1
   fi
 else
-  report_error "expected outfile file '"${expected}"' does not exist"
-  exit 64
+  report_error "expected outfile file '${expected}' does not exist"
+  exit 63
 fi
 
 shift
 shift
 shift
 shift
+
+args="$@"
+# hmmm... weird; using $@ everywhere instead of this args above will strip off any but the first arg.
+# must be screwing up somewhere...
+# Hm. Mebbee the @xyz@ expansions in here done by configure? :-S
 
 rm -f "${tmperr}" 
 rm -f "${tmpout}"
 
-# see if inputfile is a nonempty string
+# see if inputfile is a nonempty string; run CRM test scenario accordingly
 
-report_msg "going to run CRM114 '"${scriptfile}"' with commandline: $@"
+report_msg "going to run CRM114 '${scriptfile}' with commandline: ${args}"
 
+retcode=65536
 if [ -z "${inputdata}" ]; then
-  report_warning "input is nil/empty"
-  ${CRM_BIN} "${scriptfile}" $@ 2> "${tmperr}" > "${tmpout}"
+  report_msg "input is nil/empty"
+  report_msg ": crm114 ${scriptfile} ${args}"
+  ${CRM_BIN} "${scriptfile}" ${args} 2> "${tmperr}" > "${tmpout}"
+  retcode=$?
 else
   # see if file exists; if not, assume input to be literal text
   if [ -f "${inputdata}" ]; then
     # run test:
-    ${CRM_BIN} "${scriptfile}" $@ < "${inputdata}" 2> "${tmperr}" > "${tmpout}"
+    report_msg ": crm114 ${scriptfile} ${args}"
+    ${CRM_BIN} "${scriptfile}" ${args} < "${inputdata}" 2> "${tmperr}" > "${tmpout}"
+    retcode=$?
   else
-    echo "${inputdata}" | ${CRM_BIN} "${scriptfile}" $@ 2> "${tmperr}" > "${tmpout}"
+    report_msg ": echo '${inputdata}' | crm114 ${scriptfile} ${args}"
+    echo "${inputdata}" | ${CRM_BIN} "${scriptfile}" ${args} 2> "${tmperr}" > "${tmpout}"
   fi
 fi
 
-exit 0
+
+# now create a reference compare file:
+rm -f "${tmpchk}"
+echo "TEST SCRIPT + COMMANDLINE:"  > "${tmpchk}"
+echo "${scriptfile} ${args}"      >> "${tmpchk}"
+echo ""                           >> "${tmpchk}"
+echo "RETURN CODE:"               >> "${tmpchk}"
+echo "${retcode}"                 >> "${tmpchk}"
+echo ""                           >> "${tmpchk}"
+echo "STDERR TEST OUTPUT:"        >> "${tmpchk}"
+if [ -f "${tmperr}" ]; then
+  cat "${tmperr}"                 >> "${tmpchk}"
+fi
+echo ""                           >> "${tmpchk}"
+echo "STDOUT TEST OUTPUT:"        >> "${tmpchk}"
+if [ -f "${tmpout}" ]; then
+  cat "${tmpout}"                 >> "${tmpchk}"
+fi
+
+
+if [ ${write2ref} = 1 ]; then
+  # write reference file!
+  cp "${tmpchk}" "${expected}"
+fi
+
+
+# and compare that chk file with the reference file:
+retcode=65536
+if [ ! -z "${diffscript}" ]; then
+  "${diffscript}" "${expected}" "${tmpchk}" "${diffout}"
+  retcode=$?
+else
+  @DIFF@ -u @DIFF_FLAGS@ "${expected}" "${tmpchk}" > "${diffout}"
+  retcode=$?
+fi
+
+report_msg "retcode = ${retcode}"
+if [ ${retcode} == 0 ]; then
+  echo "OK"
+else
+  echo "---- diff report: ----"
+  cat "${diffout}"
+  echo "----------------------"
+  echo "FAIL"
+fi
+
+exit ${retcode}
 
 
 
