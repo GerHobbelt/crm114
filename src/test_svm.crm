@@ -1,0 +1,129 @@
+#!/usr/bin/crm
+
+window
+
+isolate (:index_file:)    /index/  # files to run, in TREC index format
+				#  that is, with one data per line like:
+				#  "ham"|"spam" relative/file/name
+isolate (:P:) <default>   //   # if set with --P, do by paragraphs
+isolate (:L:) <default>   /100000/ # run microgroomed learn modulo this cycle 
+isolate (:S:) <default>   /0/  # number of msgs to skip off start of index
+isolate (:N:) <default>   /1000/
+isolate (:M:) <default>   /1000/
+isolate (:ham_svm:)	  /ham.svm/
+isolate (:spam_svm:)      /spam.svm/
+isolate (:ham_vs_spam:)   /ham_vs_spam.svmhyp/	
+
+isolate (:total: :lino: :messago: :filo: :label: :stat:)
+isolate (:nham:) /0/
+isolate (:nspam:) /0/
+isolate (:correct:) /0/
+
+#output /N = ':*:N:'\n/
+eval (:total:)/:*:M: /
+input (:whole_index_file:) [:*:index_file:]
+
+#   Skip first :S: files
+output /Skipping first :*:S: files.\n/
+{
+	eval /:@: :*:S: - 1 :/ (:S:)
+	match <fromend> [:whole_index_file:] /[^\n]*\n/ (:lino:)
+        eval /:@: :*:S: > 0 :/
+        liaf
+}
+	 
+output /Learning the next :*:N: files.\n/
+{ 
+	eval /:@: :*:N: > 0 :/	
+	#output /N = ':*:N:'\n/
+	{	
+		match <fromend> [:whole_index_file:] /[^\n]*\n/ (:lino:)
+		#output /:*:lino:/
+		match <nomultiline> [:lino:] /([[:graph:]]+)[[:space:]]+([[:graph:]]+)/(:: :label: :filo:)
+		input (:messago:) [:*:filo: 0 10000]
+		#output /learning file :*:filo:\n/
+		{
+			match /ham/ [:label:]
+			#output /This is a ham!\n/
+			eval (:nham:) /:@: :*:nham: + 1:/	
+			{
+			    match [:P:] /SET/
+			    match [:messago:] <fromend> (:one_para:) \
+				/([[:graph:]]+[[:space:]]+){7}.*?\n\n/
+			    learn (:*:ham_svm:) < svm unigram unique> \
+                             [:one_para:] /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/
+			    liaf
+			}
+			alius
+                        learn (:*:ham_svm:) < svm unigram unique > \
+                             [:messago:] /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/
+
+		}
+		alius
+		{
+			match /spam/ [:label:]	
+			#output /This is a spam!\n/
+			eval (:nspam:) /:@: :*:nspam: + 1:/	
+			{
+			   match [:P:] /SET/
+			   match [:messago:] <fromend> (:one_para:) \
+				/([[:graph:]]+[[:space:]]+){7}.*?\n\n/
+  			   learn (:*:spam_svm:) < svm unigram unique > \
+ 			    [:one_para:] /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ 
+			   liaf
+			}
+			alius
+			learn (:*:spam_svm:) < svm unigram unique > \
+                           [:messago:] /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/
+		}	
+	}
+	eval (:N:) /:@: :*:N: - 1:/
+	{
+	    eval /:@: :*:N: % :*:L: = 0 :/
+ 	    learn (:*:ham_svm: |:*:spam_svm:|:*:ham_vs_spam:) \
+	    < svm unigram unique microgroom > \
+	    /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1.0/ 
+	    output /*/
+	}
+	liaf
+}
+
+output /total number of training spam is :*:nspam:\ntotal number of training ham is :*:nham:\n/
+output /Calculating ideal SVM to separate the classes.\n/
+learn (:*:ham_svm: |:*:spam_svm:|:*:ham_vs_spam:) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ 
+output /Starting classify on next :*:M: files.\n/
+##start classify
+{ 
+	eval /:@: :*:M: > 0 :/	
+	{	
+		match <fromend> [:whole_index_file:] /[^\n]*\n/ (:lino:)
+		output /start classify :*:lino:/
+		match <nomultiline> [:lino:] /([[:graph:]]+)[[:space:]]+([[:graph:]]+)/(:: :label: :filo:)
+		input (:messago:) [:*:filo: 0 10000]
+		{
+			classify (ham.svm|spam.svm|ham_vs_spam.svmhyp) (:stat:)[:messago:] < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ 
+		}
+		output /:*:stat:\n/
+		{		
+			match [:stat:] /succeeds/
+			match [:lino:] /ham/
+			eval (:correct:) /:@: :*:correct: + 1:/
+		}
+		alius
+		{		
+			match [:stat:] /fails/
+			match [:lino:] /spam/
+			eval (:correct:) /:@: :*:correct: + 1:/
+		}
+		
+	}
+	eval (:M:) /:@: :*:M: - 1:/
+
+	liaf
+}
+output /total=:*:total:\n/
+output /correct=:*:correct:\n/
+eval (:correct:) /:@: (:*:correct:) \/ (:*:total:) : /
+eval (:correct:) /:@: :*:correct: * 100 :/		
+output /accuracy = :*:correct:%/
+#output /total number of predicted texts = :*:total:,number of correctly classified texts = :*:correct:\n/

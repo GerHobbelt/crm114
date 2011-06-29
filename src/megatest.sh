@@ -343,8 +343,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 ./crm114 '-{window; output /\n**** OSB Hyperspace classifier \n/}'
-./crm114 '-{learn <hyperspace> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn <hyperspace> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn <hyperspace unique> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
+./crm114 '-{learn <hyperspace unique> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
 ./crm114 '-{ isolate (:s:); {classify <hyperspace> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -355,8 +355,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 ./crm114 '-{window; output /\n**** Unigram Hyperspace classifier \n/}'
-./crm114 '-{learn < hyperspace unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn < hyperspace unigram> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn < hyperspace unique unigram> (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
+./crm114 '-{learn < hyperspace unique unigram> (i_test.css) /[[:graph:]]+/}' < INTRO.txt
 ./crm114 '-{ isolate (:s:); {classify < hyperspace unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -389,9 +389,94 @@ EOF
 But fear not, we _do_ have the document you want. 
 EOF
 
+rm -f i_test.css 
+rm -f q_test.css
+./crm114 '-{window; output /\n**** Fast Substring Compression Match Classifier \n/}'
+./crm114 '-{learn < fscm > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
+./crm114 '-{learn < fscm > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+to do basic mathematics and inequality testing, either only in EVALs
+EOF
+./crm114 '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+But fear not, we _do_ have the document you want. 
+EOF
+
 
 rm -f i_test.css 
 rm -f q_test.css
+./crm114 '-{window; output /\n**** Support Vector Machine (SVM) unigram classifier \n/}'
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF.txt
+#    build the actual hyperplanes
+./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ }'
+
+./crm114 '-{ isolate (:s:); {classify < svm unigram unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+to do basic mathematics and inequality testing, either only in EVALs
+EOF
+
+./crm114 '-{ isolate (:s:); {classify < svm unigram unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+But fear not, we _do_ have the document you want. 
+EOF
+
+rm -f i_vs_q_test.css
+rm -f i_test.css 
+rm -f q_test.css
+
+
+./crm114 '-{window; output /\n**** Support Vector Machine (SVM) classifier \n/}'
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unique > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF.txt
+#    build the actual hyperplanes
+./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < svm unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ }'
+
+./crm114 '-{ isolate (:s:); {classify < svm unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+to do basic mathematics and inequality testing, either only in EVALs
+EOF
+
+./crm114 '-{ isolate (:s:); {classify < svm unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+But fear not, we _do_ have the document you want. 
+EOF
+
+rm -f i_vs_q_test.css
+rm -f i_test.css 
+rm -f q_test.css
+
+./crm114 '-{window; output /\n**** String Kernel SVM (SKS) classifier \n/}'
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF.txt
+#    build the actual hyperplanes
+./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < sks > /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ }'
+
+./crm114 '-{ isolate (:s:); {classify < sks > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+to do basic mathematics and inequality testing, either only in EVALs
+EOF
+
+./crm114 '-{ isolate (:s:); {classify < sks > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+But fear not, we _do_ have the document you want. 
+EOF
+rm -f i_vs_q_test.css
+rm -f i_test.css 
+rm -f q_test.css
+
+./crm114 '-{window; output /\n**** String Kernel SVM (SKS) Unique classifier \n/}'
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (i_test.css) /[[:graph:]]+/ / 0 0 100 0.001 1 1 4/; liaf}' < INTRO.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/;  translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (q_test.css) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ ; liaf }' < QUICKREF.txt
+#    build the actual hyperplanes
+./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < sks unique > /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ }'
+
+./crm114 '-{ isolate (:s:);  translate /.,!?@#$%^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+to do basic mathematics and inequality testing, either only in EVALs
+EOF
+
+./crm114 '-{ isolate (:s:); translate /.,!?@#$%^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ [:_dw:] ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+But fear not, we _do_ have the document you want. 
+EOF
+
+rm -f i_vs_q_test.css
+rm -f i_test.css 
+rm -f q_test.css
+
+
 ./crm114 '-{window ; output /\n**** Bytewise Correlation classifier \n/}'
 ./crm114 '-{ isolate (:s:) {classify <correlate> ( INTRO.txt | QUICKREF.txt ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs

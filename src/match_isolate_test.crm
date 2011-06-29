@@ -4,7 +4,7 @@
 #
 {
 	window
-	output /\nMatch-Isolate reclamation test.  If this program doesn't \n/
+	output /\nMatch-Isolate reclamation test 1. If this program doesn't \n/
 	output /error out, the test is passed. (we allocate about 80 megs, \n/
 	output /well past the window size, but in small (400K) chunks that\n/
 	output /alternately are allocated and become reclaimable) \n/
@@ -32,6 +32,7 @@
 		match (:b2:) /./
 		eval (:passes:) /:@: :*:passes: + 1 :/
 		#          how many passes should we run?
+		# output /:*:passes:\n/
 		eval /:@: :*:passes: < 100 :/
 		liaf
 	}

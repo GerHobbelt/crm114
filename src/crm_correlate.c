@@ -98,7 +98,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   sense = +1;
   if (apb->sflags & CRM_NOCASE)
     {
-      cflags = cflags || REG_ICASE;
+      cflags = cflags | REG_ICASE;
       eflags = 1;
       if (user_trace)
 	fprintf (stderr, "turning oncase-insensitive match\n");

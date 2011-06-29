@@ -49,7 +49,7 @@ activate, and train the CRM114 mailfilter.
 
                         ------------------
 
-    C views the entire world as if your only tool is a hammer.  CRM
+    C views the entire world as if your only tool is a hammer.  CRM114
 	views the world as if your only good tools are a set of
 	scissors and a roll of sticky splicing tape.
 
@@ -294,7 +294,7 @@ looks like this:
 	#! /usr/bin/crm
 
 If you put this at the start of each file, the shell will know your
-program is a crm114 program and will automagically load crm114 to run
+program is a CRM114 program and will automagically load CRM114 to run
 your program.  You will also need to do a "chmod o+x yourfilename" to
 enable the file as an executable.
 
@@ -907,7 +907,8 @@ the INPUT statement works as follows:
   you've already hit EOF on stdin, you will be able to read past 
   that EOF should more input be available.)
 
-  2) if you specify <byline>, only one line of input is read.
+  2) if you specify <byline>, only the first line of the input file 
+  is read.
 
 
 ----- Getting a quick hashcode -----
@@ -1134,9 +1135,11 @@ one big program file.
 One issue on INSERT - all INSERTs happen at the very start of program
 setup, during preprocessing, and way before micro-compilation and
 execution, even before the data window gets loaded from standard
-input.  This means you can't INSERT :*:filename: in your program (the
-compiler would get very sick if you tried!).  But you _can_ SYSCALL if
-you really need this functionality.
+input.  This means that the only variable filenames you can INSERT 
+into your program are those that are defined via command line
+arguments; you can't compute :filename: and then INSERT :*:filename: 
+in your program (the compiler would get very sick if you tried!).  
+But you _can_ SYSCALL if you really need this functionality.
 
 
 ----- Doing Math and EVAL -----

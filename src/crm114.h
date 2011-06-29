@@ -257,6 +257,15 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				   char *txt, long start, long len);
 int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
 				   char *txt, long start, long len);
+int crm_expr_alt_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				    char *txt, long start, long len);
+int crm_expr_svm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				    char *txt, long start, long len);
+int crm_expr_sks_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				    char *txt, long start, long len);
+int crm_expr_fscm_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				    char *txt, long start, long len);
+
 
 
 //   The bigger one - classifying...
@@ -275,6 +284,14 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				      char *txt, long start, long len);
 int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
 				      char *txt, long start, long len);
+int crm_expr_alt_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				       char *txt, long start, long len);
+int crm_expr_svm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				       char *txt, long start, long len);
+int crm_expr_sks_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				       char *txt, long start, long len);
+int crm_expr_fscm_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				       char *txt, long start, long len);
 
 
 //  surgically alter a variable
@@ -436,5 +453,10 @@ void crm_munmap_all ();
 void crm_force_munmap_filename (char *filename);
 void crm_force_munmap_addr (void *addr);
 
+//    Some statistics functions
 //
+double crm_norm_cdf(double x);
+double crm_log(double x);
+double norm_pdf(double x);
+double normalized_gauss(double x, double s);
 

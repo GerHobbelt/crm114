@@ -38,7 +38,7 @@ extern char *tempbuf;
 //       the actual textual representations of the flags, with their values
 //     DON'T FORGET TO ALSO MODIFY THIS IN crm114_structs.h !!
 
-FLAG_DEF crm_flags[37] =
+FLAG_DEF crm_flags[41] =
   {
     {"fromstart", CRM_FROMSTART},
     {"fromnext", CRM_FROMNEXT},
@@ -75,11 +75,14 @@ FLAG_DEF crm_flags[37] =
     {"unigram", CRM_UNIGRAM},
     {"crosslink", CRM_CROSSLINK},
     {"default", CRM_DEFAULT},
-    {"", 0},
+    {"lineedit", CRM_READLINE},
+    {"sks", CRM_SKS},
+    {"svm", CRM_SVM},
+    {"fscm", CRM_FSCM},
     {"", 0}
   };
     
-#define CRM_MAXFLAGS 35
+#define CRM_MAXFLAGS 39
     
 
 

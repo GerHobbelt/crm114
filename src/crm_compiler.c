@@ -38,7 +38,7 @@ extern char *tempbuf;
 
 //     Here's the real statement description table.
 //
-STMT_TABLE_TYPE stmt_table[38] =
+STMT_TABLE_TYPE stmt_table[39] =
   {
     //
 
@@ -79,15 +79,17 @@ STMT_TABLE_TYPE stmt_table[38] =
       CRM_KEEP | CRM_ASYNC                                       },
     { "hash",       CRM_HASH,   0,  1,       1,  1,  1,  1,  0,  0,  0},
     { "translate",CRM_TRANSLATE,0,  1,       0,  2,  0,  1,  0,  1,  
-      CRM_UNIQUE | CRM_LITERAL                                        },
+      CRM_UNIQUE | CRM_LITERAL                               },
     { "intersect",CRM_INTERSECT,0,  1,       0,  0,  1,  1,  1,  1,  0},
-    { "union",     CRM_UNION,   0,  1,       0,  0,  1,  1,  1,  1,  0},
-    { "eval",       CRM_EVAL,   0,  1,       1,  1,  1,  1,  0,  0,  0},
-    { "alius",     CRM_ALIUS,   0,  1,       0,  0,  0,  0,  0,  0,  0},
-    { "call",      CRM_CALL,    0,  1,       0,  0,  0,  0,  0,  0,  0},
-    { "routine",   CRM_ROUTINE, 0,  1,       0,  0,  0,  0,  0,  0,  0},
+    { "union",    CRM_UNION,    0,  1,       0,  0,  1,  1,  1,  1,  0},
+    { "eval",     CRM_EVAL,     0,  1,       1,  1,  1,  1,  0,  0,  0},
+    { "alius",    CRM_ALIUS,    0,  1,       0,  0,  0,  0,  0,  0,  0},
+    { "call",     CRM_CALL,     0,  1,       0,  0,  0,  0,  0,  0,  0},
+    { "routine",  CRM_ROUTINE,  0,  1,       0,  0,  0,  0,  0,  0,  0},
     { "return",   CRM_RETURN,   0,  1,       0,  1,  0,  0,  0,  0,  0},
     { "debug",    CRM_DEBUG ,   0,  0,       0,  0,  0,  0,  0,  0,  0},
+    { "clump",    CRM_CLUMP,    0,  1,       0,  1,  1,  1,  0,  1,  0},
+    { "pmulc",    CRM_PMULC,    0,  1,       0,  1,  0,  0,  0,  1,  0},
     { "NoMoreStmts",CRM_UNIMPLEMENTED,0,0,   0,  0,  0,  0,  0,  0,  0}
   };
 //   Get a file into a memory buffer.  We can either prep to execute

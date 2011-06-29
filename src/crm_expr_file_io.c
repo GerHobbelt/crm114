@@ -21,6 +21,13 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
+//  and for READLINE - only this file uses it (it may not be portable
+// #define HAVE_READLINE
+#ifdef HAVE_READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
 //    the command line argc, argv
 extern int prog_argc;
 extern char **prog_argv;
@@ -53,6 +60,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
   long mc;
   long done;
   long till_eof;
+  long use_readline;
 
   //         a couple of vars to bash upon
   long i, j;
@@ -69,6 +77,14 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
       if (user_trace)
 	fprintf (stderr, " reading one line mode\n ");
     };
+
+  use_readline = 0;
+  if (apb->sflags & CRM_READLINE)
+    {
+      use_readline = 1;
+      if (user_trace)
+	fprintf (stderr, " Using READLINE input line editing\n ");
+    };
   
   //    get the list of variable names
   //
@@ -82,7 +98,6 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
       strcpy (temp_vars, ":_dw:");
       tvlen = strlen (":_dw:");
     };
-
 
   if (internal_trace)
     fprintf (stderr, "  inputting to var: >>>%s<<<\n", temp_vars);
@@ -153,7 +168,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
       //        must make a copy of the varname.
       //
       char vname[MAX_VARNAME];
-      long ichar;
+      long ichar = 0;
       memmove (vname, &(temp_vars[vstart]), vlen);
       vname [vlen] = '\000';
 
@@ -171,35 +186,46 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 	    nonfatalerror ("Dang, seems that this file isn't fseek()able: ",
 			   filename);
       
-      //        Are we in <byline> mode?  If so, read one char at a time.
-      if (! till_eof)
+      //    are we supposed to use readline?
+#ifdef HAVE_READLINE
+      if (use_readline)
 	{
-	  //    grab characters in a loop, terminated by EOF or newline
-	  ichar = 0;
-	  if (feof (fp) ) clearerr (fp);
-	  while (!feof (fp) 
-		 && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
-		 && ( till_eof || ( ichar == 0 || inbuf [ichar-1] != '\n'))
-		 && ichar <= iolen )	    
-	    {
-	      inbuf[ichar] = fgetc (fp);
-	      ichar++;
-	    };
-	  if (ichar > 0) ichar-- ; //   get rid of any present newline
-	  inbuf[ichar] = '\000';   // and put a null on the end of it.
+	  char *chartemp; 
+	  chartemp = readline ("");
+	  strncpy (inbuf, chartemp, data_window_size);
+	  free (chartemp);
 	}
       else
-	{
-	  //    Nope, we are in full-block mode, read the whole block in
-	  //    a single I/O if we can.
-	  ichar = 0;
-	  if (feof (fp)) clearerr (fp);         // reset any EOF
-	  ichar = fread (inbuf, 1, iolen, fp);  // do a block I/O
-	  inbuf[ichar] ='\000';                 // null at the end
-	};
+#endif
+	//        Are we in <byline> mode?  If so, read one char at a time.
+	if (! till_eof)
+	  {
+	    //    grab characters in a loop, terminated by EOF or newline
+	    ichar = 0;
+	    if (feof (fp) ) clearerr (fp);
+	    while (!feof (fp) 
+		   && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
+		   && ( till_eof || ( ichar == 0 || inbuf [ichar-1] != '\n'))
+		   && ichar <= iolen )	    
+	      {
+		inbuf[ichar] = fgetc (fp);
+		ichar++;
+	      };
+	    if (ichar > 0) ichar-- ; //   get rid of any present newline
+	    inbuf[ichar] = '\000';   // and put a null on the end of it.
+	  }
+	else
+	  {
+	    //    Nope, we are in full-block mode, read the whole block in
+	    //    a single I/O if we can.
+	    ichar = 0;
+	    if (feof (fp)) clearerr (fp);         // reset any EOF
+	    ichar = fread (inbuf, 1, iolen, fp);  // do a block I/O
+	    inbuf[ichar] ='\000';                 // null at the end
+	  };
       crm_set_temp_nvar (vname, inbuf, ichar);
     };
-
+  
   //     and close the input file if it's not stdin.
   if (fp != stdin) fclose (fp);
 

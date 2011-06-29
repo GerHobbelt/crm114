@@ -24,8 +24,9 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION = 20070428-BlameSpamConf
-PREV_VERSION = 20061103-BlameDalkey
+VERSION = 20070731-BlameTheInterns
+PREV_VERSION = 20070505-BlameIdiocy
+#PREV_VERSION = 20061103-BlameDalkey
 #PREV_VERSION = 20061010-BlameBratko
 #PREV_VERSION = 20060920-BlameNico
 #PREV_VERSION = 20060704a-BlameRobert
@@ -116,26 +117,28 @@ CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
 	crm_expr_syscall.c crm_expr_classify.c crm_expr_translate.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
-	crm_util_errorhandlers.c 
-#	crm_osb_neural.c \
-#
+	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c\
+	crm_expr_svm.c crm_expr_fscm.c
+
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h regex.h crm114_osbf.h 
-#
+
 OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
-	crm_exec_engine.o crm_preprocessor.o crm_var_hash_table.o \
-	crm_math_exec.o crm_expandvar.o crm_stmt_parser.o \
+	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
+	crm_stmt_parser.o \
 	crm_expr_alter.o crm_expr_match.o crm_css_maintenance.o \
-	crm_markovian.o	crm_osb_bayes.o crm_osb_hyperspace.o \
+	crm_markovian.o crm_osb_bayes.o crm_osb_hyperspace.o \
 	crm_correlate.o crm_osb_winnow.o crm_winnow_maintenance.o \
 	crm_osbf_bayes.o crm_osbf_maintenance.o crm_bit_entropy.o \
-	crm_expr_window.o crm_expr_isolate.o  crm_expr_file_io.o \
+	crm_expr_window.o crm_expr_isolate.o crm_expr_file_io.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
-	crm_debugger.o crm_str_funcs.o 
-#	crm_osb_neural.o \
+	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
+	crm_preprocessor.o  \
+	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o
+#  NOTE - no crm_util_errorhandlers, crmregex_gnu or crmregex_tre here!
+
 
 UTILFILES = osbf-util.c cssutil.c  cssdiff.c cssmerge.c 
-
 
 CRMFILES = mailfilter.crm mailfilter.cf \
 	mailreaver.crm mailtrainer.crm \
@@ -160,6 +163,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	paolo_ov2.crm paolo_ov3.crm paolo_ov4.crm paolo_ov5.crm \
 	pad.crm calc.crm \
 	gatlingsort.crm \
+	test_svm.crm \
 	classifymail.crm 
 
 TEXTFILES = COLOPHON.txt pad.dat \
@@ -180,35 +184,59 @@ TEXTFILES = COLOPHON.txt pad.dat \
 #
 
 all: crm114 cssutil cssdiff cssmerge osbf-util
+	#
+	#    Done.  
+	#  
+	#    ***  Type "make help" to see what else you can make.
+	#
+
+help: FORCE
+	#
+	#    You can make the following things:
+	#
+	#    make   -or-   make all   - builds the binaries.  This uses the
+	#                               TRE regex library
+	#    make crm114_gnu          - builds version with GNU regex instead
+	#                               of the TRE library.
+	#    make install             - builds and installs the binaries.  
+	#                               You must be root to do this.
+	#    make uninstall           - uninstalls the binaries.  You must
+	#                               be root to do this.
+	#    make megatest            - runs the full test suite ( takes
+	#                               about ~1 minute, TRE version _ONLY_! )
+	#    make clean               - deletes all .o and executables.  
+	#                               Don't do this on a binary kit!
+        #    make cssfiles            - builds a set of .css files from data
+	#                               in ./good.dir/* and ./spam.dir/*
+	#    make distribtion         - builds the .gzballs for distribution
+        #                               of with your mods built in.
 
 crm114_gnu: $(OFILES) crmregex_gnu.o 
 	#
-	#   Note: if you haven't installed TRElib, the next step 
-	#   will get an error.
-	#       For TRElib, look in the TRE sub-directory of this kit.
-	#   Remember to use ./configure --enable-static for static libs.
-	#   You will also need to add "usr/local/lib/*" to /etc/ld.so.conf,
-	#   and then run ldconfig (as root) to set the library up and make
-	#   the library known to the static and runtime linkers.
+	#   Note:  You've chosen to make a GNU regex library CRM114.  
+        #       Although CRM114 will work mostly correctly when
+	#	linked against the GNU regex library, a lot of functionality
+	#       won't be available, and "make megatest" will fail.
 	#
 	$(CC) $(LDFLAGS) $(LIBS) $(OFILES) \
 	  crmregex_gnu.o \
-	  -lm -o crm114_gnu
+	  -lm -o crm114
 
 
 crm114: $(OFILES) crmregex_tre.o
-	#
-	#   Note: if you haven't installed TRElib, the next step 
-	#   will get an error.
-	#       For TRElib, look in the TRE sub-directory of this kit.
-	#   Remember to use ./configure --enable-static for static libs.
-	#   You will also need to add /usr/local/lib to /etc/ld.so.conf,
-	#   and then run ldconfig (as root) to set the library up and make
-	#   the library known to the static and runtime linkers.
+	#   
+	#   Now building the TRE regex version of CRM114.  If you don't have
+	#   TRE already, you will need to fetch it from the website and
+	#   then ./configure --enable-static to get the static TRE libs,
+	#   then build it, add /usr/local/lib to /etc/ld.so.conf, then 
+	#   to set the library up.
 	#
 	$(CC) $(LDFLAGS) $(LIBS) $(OFILES) \
 	  crmregex_tre.o \
 	  -lm -ltre -o crm114
+	#
+	#    Done.  Type "make help" to see what else you can make.
+	#
 
 #
 #     Note To The Reader:  I'd really _love_ to have all of these
@@ -216,6 +244,7 @@ crm114: $(OFILES) crmregex_tre.o
 #     something that uses $(CFILE), but it isn't.  Maybe the autoconf
 #     version would have that- but one change at a time, eh?
 #
+
 
 crm_main.o: crm_main.c  \
 	$(HFILES)
@@ -243,7 +272,7 @@ crm_var_hash_table.o: crm_var_hash_table.c \
 
 crm_math_exec.o: crm_math_exec.c \
 	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_math_exec.c -o crm_math_exec.o
+	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_math_exec.c -o crm_math_exec.o 
 
 crm_expandvar.o: crm_expandvar.c \
 	$(HFILES)
@@ -312,6 +341,22 @@ crm_osbf_bayes.o: crm_osbf_bayes.c \
 crm_osb_hyperspace.o: crm_osb_hyperspace.c \
 	$(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_osb_hyperspace.c -o crm_osb_hyperspace.o
+
+crm_expr_sks.o: crm_expr_sks.c \
+	$(HFILES)
+	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_sks.c -o crm_expr_sks.o
+
+crm_expr_svm.o: crm_expr_svm.c \
+	$(HFILES)
+	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_svm.c -o crm_expr_svm.o
+
+crm_expr_fscm.o: crm_expr_fscm.c \
+	$(HFILES)
+	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_fscm.c -o crm_expr_fscm.o
+
+crm_stats.o: crm_stats.c \
+	$(HFILES)
+	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_stats.c -o crm_stats.o
 
 #crm_osb_neural.o: crm_osb_neural.c \
 #	$(HFILES)
@@ -390,17 +435,15 @@ clean:
 
 
 install: FORCE
-	$(MAKE) install_crm114 install_utils
-
-install_crm114: crm114
+	$(MAKE) install_engine install_utils
 	#
-	#   NOTE - the default CRM114 now uses the TRE regex lib, not GNU
-	#          If you want the GNU one (not recommended) you should
-	#          use 'install_gnu' as the make target.
-	#    
-	$(MAKE) install_engine
+	#    Done.  Type "make help" to see what else you can make.
+	#
 
 install_utils:
+	#
+	#    Installing Utilities
+	#	
 	$(MAKE) cssmerge cssutil cssdiff osbf-util
 	install $(INSTALLFLAGS) cssdiff $(BINDIR)/cssdiff$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssmerge $(BINDIR)/cssmerge$(VER_SUFFIX)
@@ -414,10 +457,10 @@ install_utils:
 # use different name so we can keep it around along with default one
 # and same VER_SUFFIX postfix 
 install_engine: crm114
+	#
+	#    Installing engine
+	#
 	install $(INSTALLFLAGS) crm114 $(BINDIR)/crm$(VER_SUFFIX)
-
-install_gnu: crm114_gnu
-	install $(INSTALLFLAGS) crm114_gnu $(BINDIR)/crmg$(VER_SUFFIX)
 
 install_binary_only: FORCE
 	install $(INSTALLFLAGS) crm114 $(BINDIR)/crm$(VER_SUFFIX)

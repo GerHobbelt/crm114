@@ -254,9 +254,9 @@ int crm_invoke ()
       {
 	int retval; long retlen;
 	char retstr [MAX_PATTERN];
-	crm_get_pgm_arg (retstr, MAX_VARNAME, apb->s1start, apb->s1len);
+	crm_get_pgm_arg (retstr, MAX_PATTERN, apb->s1start, apb->s1len);
 	retlen = apb->s1len;
-	retlen = crm_nexpandvar (retstr, retlen, MAX_VARNAME);
+	retlen = crm_nexpandvar (retstr, retlen, MAX_PATTERN);
 	retval = 0;
 	if (retlen > 0)
 	  sscanf (retstr, "%d", &retval);

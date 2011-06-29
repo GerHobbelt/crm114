@@ -88,7 +88,12 @@
 #
 ##########################################################################
           
-#  ----------- define an optional target for where to send spam,  
+#  ----------- define an optional target for where to send spam (that is,
+#   ------------ emails that we want to "fail", or reject to another
+#    ------------ address.  Note that this is NOT a "program fault" address,
+#     ------------ but where to send "bad" email to in the general case.
+#      ------------ You can specify tightly controlled conditions too,
+#       ------------ (see the next stanza)  
 #   ----------- To NOT forward this to another account, just leave the
 #    ----------- address as the empty string, which is '//'.
 #     ----------- This works fine especially if your mail reader program
@@ -103,7 +108,8 @@
 
 #   -------- If you would prefer to send specific kinds of spam to 
 #    -------- different mailboxes, here's where to do it.
-#     ----------(be sure to uncomment the line!)
+#     -------- (be sure to uncomment the line!).  Again, these are
+#      --------- not "program fault" conditions, just different filter results.
 #
 # :fail_priority_mail_to:  /where_priority_fails_go/
 # :fail_blacklist_mail_to:  /where_blacklist_fails_go/
@@ -207,6 +213,10 @@
 :log_all_mail_to_file: //
 #:log_all_mail_to_file: /my_personal_mail_log_file_name.txt/
 
+#     --------- When we log messages, should we use a mail separator?
+#      --------- And, if so, what?
+:mail_separator: /\n-=-=-=-=-=-=- cut here -=-=-=-=-=-=-\n/
+
 #
 #     ---------- Message Cacheing for retraining - do we keep a cache of
 #    ---------- messages we've classified recently "in the wild" as retrain
@@ -251,7 +261,7 @@
 #             ------  you can use the "sort --key 1.2" on date-named files to
 #              -----   achieve chronological training
 :trainer_randomizer_command: /.\/shuffle.crm/
-#:trainer_randomizer_command: /.\/crm114_tre shuffle.crm/
+#:trainer_randomizer_command: /.\/crm114 shuffle.crm/
 #:trainer_randomizer_command: /sort --key 1.2/
 
 
@@ -357,24 +367,30 @@
 #
 #
 #
-
-# --------- If you are using thick-threshold training of any sort,
-# ---------- (for OSBF or otherwise) put the threshold here.
-# ----------- Remember, the polarity of the thick threshold value
-# ------------ is that anything scoring less than this value
-# ------------- should be considered a trainable error, and it "flips over"
-# -------------- so that both good mail and spam have the right symmetrical
-# ---------------- polarity.
-
-#     ------ a very small thick threshold (or zero!) works for Markovian.
-#:thick_threshold: /0/
-#:thick_threshold: /.001/
-#     ----- a thick threshold of 5 to 20 seems good for OSB, OSBF, 
-#     Hyperspace, Bit-Entropy, and Winnow
-#:thick_threshold: /5.0/
-:thick_threshold: /10.0/
-#:thick_threshold: /20.0/
+#     --------Thresholds for GOOD/UNSURE/SPAM thick-threshold training
+#     -------
+#     ------ A very small thick threshold (or zero!) works for Markovian.
+#     ----- A thick threshold of 5 to 20 seems good for OSB, OSBF, 
+#     ---- Hyperspace, Bit-Entropy, and Winnow.  If you want an asymmetric
+#     --- threshold system, you can do that by having :good_threshold:
+#     -- be different from :spam_threshold:.  The defaults are +/- 10.0
 #
+#
+#   ---- Things rated equal to or better than this are GOOD email
+#:good_threshold: /0.01/
+#:good_threshold: /5.0/
+:good_threshold: /10.0/
+#:good_threshold: /20.0/
+#
+#   ---- Things rated less than or equal to this are SPAM
+#:spam_threshold: /-0.01/
+#:spam_threshold: /-5.0/
+:spam_threshold: /-10.0/
+#:spam_threshold: /-20.0/
+  
+#   ---- mailfilter uses a single threshold and operates symmetrically.
+#   --- (this is only to provide backward compatibility)
+:thick_threshold: /10.0/
 
 #   ---- What regex do we use for LEARN/CLASSIFY?  the first is the
 #   ---- "old standard".  Other ones are handy for different spam
@@ -382,7 +398,7 @@
 #   ---- packed HTML spam, which is almost everybody in 2003, so it
 #   ---- used to be the default.  But since spammers have shifted away
 #   ---- from this, it isn't the default any longer.  IF you change
-#   ---- this, you MUST rebuild your .css files with roughly equal
+#   ---- this, you MUST rebuild your .css files with decent
 #   ---- amounts of locally-grown spam and nonspam ( if you've been
 #   ---- following instructions and using the "reaver" cache, this is
 #   ---- easily done! )

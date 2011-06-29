@@ -38,7 +38,7 @@ window
     {
 	match [:help:] /SET/
 	output / shuffle - mix sequence of input stream  (GPLed) \n/
-	output /   --help         - this help text.
+	output /   --help         - this help text. \n/
 	output /   --pass=N       - run N passes of shuffle (default auto) \n/
 	output /   --seed=string  - 'random' shuffle control seed. \n/
 	output /   --unit=regex   - regex of the indivisble unit to shuffle\n/

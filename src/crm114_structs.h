@@ -240,7 +240,9 @@ typedef struct {
 #define CRM_ALIUS 28
 #define CRM_TRANSLATE 29
 #define CRM_DEBUG 30
-#define CRM_UNIMPLEMENTED 31
+#define CRM_CLUMP 31         // make clusters out of tokens
+#define CRM_PMULC 32         // pmulc translates tokens to cluster names
+#define CRM_UNIMPLEMENTED 33
 
 
 //      FLAGS FLAGS FLAGS
@@ -292,8 +294,18 @@ typedef struct {
 #define CRM_HYPERSPACE    (1 << 29)
 #define CRM_UNIGRAM       (1 << 30)
 #define CRM_CROSSLINK     (1 << 31)
+//
+//        Flags that need to be sorted back in
+//           input
+#define CRM_READLINE      (1LL << 32)
 //           isolate flags
-#define CRM_DEFAULT       (1LL << 32) // force  "long long" constant
+#define CRM_DEFAULT       (1LL << 33) 
+//           SKS classifier
+#define CRM_SKS          (1LL << 34)
+//           SVM classifier
+#define CRM_SVM           (1LL << 35)
+//           FSCM classifier
+#define CRM_FSCM          (1LL << 36)
 //  
 //     and a struct to put them in.
 typedef struct 

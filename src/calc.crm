@@ -7,7 +7,17 @@ output /Enter expressions.  Hit return to evaluate, empty line to exit\n      /
 	isolate (:y:)
 	input <byline> (:x:)
 	match [:x:] /./ 
-	eval (:y:) /:@::*:x::/
-	output /:*:y:\n      /
+	{
+		#   Eval once -- this one does variable subsitutions
+		eval (:x:) /:+:x:/
+		#   Eval again -- this one does the actual math
+		eval (:y:) / :@::*:x:: /
+		output /:*:y:\n      /
+		trap (:z:) /.*/
+		isolate (:y:)  /I couldn't evaluate ':*:x:' ./
+		output /:*:y:\n/
+		match [:z:] /\*WARNING\* \n(.*)\nI'll try/ (:: :R:)
+		output /:*:R:\n\n      /
+	}
 	liaf
 }

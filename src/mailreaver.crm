@@ -550,12 +550,12 @@ input (:priolist:) [:*:fileprefix:priolist.mfp]
     #      It's a pure classify.  Three possibilities:
     {
 	#   Case 1 - It's spam.
-	eval /:@: :*:pr: < (0.0 - :*:thick_threshold:) :/
+	eval /:@: :*:pr: <= :*:spam_threshold: :/
 	goto /:looks_spam:/
     }
     {
 	#   Case 2 - It's good.
-	eval /:@: :*:pr: > :*:thick_threshold:) :/
+	eval /:@: :*:pr: >= :*:good_threshold: :/
 	goto /:looks_good:/
     }
     {

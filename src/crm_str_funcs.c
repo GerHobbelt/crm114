@@ -186,9 +186,11 @@ typedef struct prototype_crm_mmap_cell
 #endif
 } CRM_MMAP_CELL;
 
-CRM_MMAP_CELL *cache = NULL;
 
-char one_byte;
+//  We want these to hang around but not be visible outside this file.
+
+static CRM_MMAP_CELL *cache = NULL;
+
 
 //////////////////////////////////////
 //
@@ -607,6 +609,8 @@ void *crm_mmap_file (char *filename,
   //  under Windows.  I know it's a bad thing under Linux,
   //  so we'll only do it under Windows.
   {
+    char one_byte;
+
     char *addr = (char *) p->addr;
     long i;
     for (i = 0; i < p->actual_len; i += pagesize)

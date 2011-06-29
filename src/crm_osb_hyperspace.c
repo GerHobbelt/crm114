@@ -260,7 +260,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   sense = +1;
   if (apb->sflags & CRM_NOCASE)
     {
-      cflags = cflags || REG_ICASE;
+      cflags = cflags | REG_ICASE;
       eflags = 1;
       if (user_trace)
 	fprintf (stderr, "turning oncase-insensitive match\n");
@@ -476,7 +476,7 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    else
 	      {
 		for (j = 1; 
-		     j < 3;      // OSB_BAYES_WINDOW_LEN;
+		     j < OSB_BAYES_WINDOW_LEN;     
 		     j++)
 		  {
 		    h1 = hashpipe[0]*hctable[0] + hashpipe[j] * hctable[j<<1];
@@ -504,14 +504,16 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
  regcomp_failed:
 
 
+
   //   Now sort the hashes array.
   //
-  hashcounts--;
-  if (user_trace)
-    fprintf (stderr, "Total hashes generated: %ld\n", hashcounts);
   qsort (hashes, hashcounts, 
 	 sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT),
 	 &hash_compare );
+
+  hashcounts--;
+  if (user_trace)
+    fprintf (stderr, "Total hashes generated: %ld\n", hashcounts);
 
   //   And uniqueify the hashes array
   //
@@ -1267,7 +1269,7 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  else
 	    {
 	      for (j = 1; 
-		   j < 3; //OSB_BAYES_WINDOW_LEN;
+		   j < OSB_BAYES_WINDOW_LEN;
 		   j++)
 		{
 		  h1 = hashpipe[0]*hctable[0] + hashpipe[j] * hctable[j<<1];
@@ -1295,12 +1297,13 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     we can do fast comparisons against each document's hashes in
   //     the hyperspace vector files.
 
+  qsort (unk_hashes, unk_hashcount, sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT),
+	 &hash_compare);
+
   unk_hashcount--;
   if (user_trace)
     fprintf (stderr, "Total hashes in the unknown text: %ld\n", unk_hashcount);
 
-  qsort (unk_hashes, unk_hashcount, sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT),
-	 &hash_compare);
 
 
   //       uniqueify the hashes array.

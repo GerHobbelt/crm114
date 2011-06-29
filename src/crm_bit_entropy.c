@@ -1777,6 +1777,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       unsigned short thisalph;
       unsigned short nextalph;
       unsigned short nextnextalph;
+      unsigned short nextnextnextalph;
       double newnodefir;
       
       //  get the next alph member.
@@ -1797,14 +1798,24 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //  crosslinking.
       nextalph = ( thischar >> (bitnum - 1) ) & ENTROPY_CHAR_BITMASK;
       if (textoffset < textmaxoffset && bitnum == 0)
-	nextalph = ((txtptr [textoffset+1]) >> 7) && ENTROPY_CHAR_BITMASK;
+	nextalph = ((txtptr [textoffset+1]) >> 7) & ENTROPY_CHAR_BITMASK;
 
       //  nextnextalph is lookahead two bits.  Yet smarter crosslinking
       nextnextalph = ( thischar >> (bitnum - 2) ) & ENTROPY_CHAR_BITMASK;
       if (textoffset < textmaxoffset && bitnum == 0)
-	nextnextalph = txtptr [textoffset+1] >> 6 && ENTROPY_CHAR_BITMASK;
+	nextnextalph = txtptr [textoffset+1] >> 6 & ENTROPY_CHAR_BITMASK;
       if (textoffset < textmaxoffset && bitnum == 1)
-	nextnextalph = txtptr [textoffset+1] >> 7 && ENTROPY_CHAR_BITMASK;
+	nextnextalph = txtptr [textoffset+1] >> 7 & ENTROPY_CHAR_BITMASK;
+
+      //  nextnextnextalph is lookahead three bits.  Even more smarter
+      nextnextnextalph = ( thischar >> (bitnum - 3) ) & ENTROPY_CHAR_BITMASK;
+      if (textoffset < textmaxoffset && bitnum == 0)
+	nextnextalph = txtptr [textoffset+1] >> 5 & ENTROPY_CHAR_BITMASK;
+      if (textoffset < textmaxoffset && bitnum == 1)
+	nextnextnextalph = txtptr [textoffset+1] >> 6 & ENTROPY_CHAR_BITMASK;
+      if (textoffset < textmaxoffset && bitnum == 2)
+	nextnextnextalph = txtptr [textoffset+1] >> 7 & ENTROPY_CHAR_BITMASK;
+      
 
 
       if (internal_trace)
@@ -1969,17 +1980,21 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                   firlatlen,
                   localfir);
               crosslink_err = fabs (localfir - nodes[further_node].fir_prior);
-	      if (crosslink_err < crosslink_thresh 
-		&& nodes[further_node].abet[nextalph].count > crosslink_mincount 
-		&& nodes[further_node].abet[nextalph^0x1].count == 0
+
+	      if (
+		  crosslink_err < crosslink_thresh 
+		  //     this node OK?
+		  && nodes[further_node].abet[nextalph].count > crosslink_mincount
+		  //     One node lookahead
+		  && nodes[further_node].abet[nextalph^0x1].count == 0
+		  && nodes[further_node].abet[nextalph].nextcell > 0
+		  //     Two nodes lookahead
+		  && nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].count > 0
+		  && nodes [nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph^0x1].count == 0
+		  //     THREE nodes lookahead
+		  && nodes[nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].nextcell].abet[nextnextnextalph].count > 0
+		  && nodes[nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].nextcell].abet[nextnextnextalph^0x1].count == 0
 		  )
-		//&& nodes[further_node].abet[nextalph].nextcell > 0
-		//&& nodes
-		//     [nodes[further_node].abet[nextalph].nextcell]
-		//          .abet[nextnextalph].count > 0
-		//&& nodes
-		//     [nodes[further_node].abet[nextalph].nextcell].
-		//           abet[nextnextalph^0x1].count == 0)
 		{
 		  do_crosslink = 1;
 #ifdef BEN_GRAPHIC

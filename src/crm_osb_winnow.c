@@ -126,7 +126,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   if (apb->sflags & CRM_NOCASE)
     {
-      cflags = cflags || REG_ICASE;
+      cflags = cflags | REG_ICASE;
       eflags = 1;
       if (user_trace)
 	fprintf (stderr, "turning oncase-insensitive match\n");

@@ -293,6 +293,13 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
                                   whenever the statistics file gets to
                                   crowded.  However, this disables certain 
                                   optimizations that can speed classification.
+      <unique>                  - use unique features only; this improves
+                                  accuracy while using less memory.
+                                  Usable with Markov and OSB modes.
+      <unigram>			- use single-word features only;  his makes 
+                                  CRM114 almost exactly equivalent to most 
+                                  other Bayesian classifiers.  Works with 
+                                  the OSB, Winnow and hyperspace classifiers.
       <osb>			- use orthogonal sparse bigram (OSB)
                                   features and Markovian classification
                                   instead of Markovian SBPH features.
@@ -300,9 +307,6 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
 				  with about 1/4 the memory and disk needs,
 				  and about 4x the speed of full Markovian,
 				  with basically the same accuracy.
-      <unique>                  - use unique features only; this improves
-                                  accuracy while using less memory.
-                                  Usable with Markov and OSB modes.
       <osbf>                    - use the Fidelis Confidence Factor 
                                   local probability generator.  This
                                   format is not compatible with the default,
@@ -320,16 +324,17 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
                                   set of sources that shines most brightly onto
                                   the unknown document's hyperspatial location
                                   is the matching class.  EXPERIMENTAL!!!
-      <unigram>			- use single-word features only;  his makes 
-                                  CRM114 almost exactly equivalent to most 
-                                  other Bayesian classifiers.  Works with 
-                                  the OSB, Winnow and hyperspace classifiers.
       <entropy>                 - use the bit-entropy classifier.  This uses
                                   compressibility of the unknown given the 
                                   prior learned text as a perfect compressor
                                   model.  No tokenization happens- this 
                                   classifier works one bit at a time.  
                                   EXPERIMENTAL !!!
+      <svm>                     - use the SVM classifier.  This uses SVM 
+                                  (support vector machine) techniques.  NB:
+                                  for now VERY EXPERIMENTAL; OSB or unigram
+                                  features (default OSB features), 
+                                  2-class only, generates A_vs_B files.
       <correlate>               - use the full correlative matcher.  Very
                                   slow, but capable of matching stemmed words
                                   in any language and of matching binary files
@@ -365,6 +370,21 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
 					  you specify. If given, the pR in
 					  'stats' will be printed in the form
 					  pR/pR_offset. 
+                          /svm-specific controls/ - a vector of seven parameters
+                                          for SVM-classifiers
+
+clump [:text:] (clumpfile) /regex/ - does incremental parametric
+                                   clumping of tokens to generate
+                                   local (ascii numeric) synonyms.
+                                   Algorithm and parameters are
+                                   variable, the stored clumps go into
+                                   clumpfile, and can be looked up
+                                   with pmulc.
+      [:text:]             -       input text; var-restriction allowed
+      (clumpfile)          -       name of file to hold the clumps
+      /regex/              -       optional tokenization regex; default is 
+                                   /[[:graph:]]+/
+      /params/             -       control parameters
 
 
 debug                      -       drop immediately into the interactive
@@ -390,10 +410,9 @@ eval (:result:) /instring/ -       repeatedly evaluates /instring/ until it
                                    has an inequality test, (>, >=, <,
                                    <=, =, or !=) then if the test
                                    fails, the EVAL will FAIL to the
-                                   end of block.  If the evaluation
-                                   has a numeric fault (e.g. 
-                                   divide-by-zero) the EVAL will
-                                   do a TRAPpable FAULT.
+                                   end of block.  Math is IEEE-compliant,
+                                   so unreasonable things like divide-by-zero
+                                   may yield NaN (Not A Number) or +/- INF
  
 
 exit  /:exitcode:/		 - ends program execution.  If supplied, the
@@ -561,6 +580,8 @@ learn <flags> (:class:) [:in:] /word-pat/ - learn the statistics of the :in:
                                        Markov chain versus allocating new
                                        nodes.  You must specify an empty
                                        word-pat to use entropy fuzz.
+    /svm-specific controls/          - a vector of seven parameters
+                                          for SVM-classifiers
 
 
 liaf				 - skips UP to START of the current {} block
@@ -639,6 +660,15 @@ output <flags> [filename] /output-text/ - output an arbitrary string
                                     the write is the length of the
 				    expansion of /output-text/
               /output-text/       - string to output (var-expanded)
+
+pmulc (clumpfile) [:text:] /regex/  - use the clumpfile as a lookup 
+                                    to translate tokens into their 
+                                    equivalence classes.
+      [:text:]              -       input text; var-restriction allowed
+      (clumpfile)           -       name of file to holding the clumps
+      /regex/               -       optional tokenization regex; default is
+                                    /[[:graph:]]+/
+
 
 
 return /returnval/                - return from a CALL.  Note that since
@@ -1030,7 +1060,14 @@ The evaluation is done in four sequential passes:
       evaluation; otherwise the -q value determines which evaluator
       to use.
     
-      Allowed operators are:  + - * / % > < = >= <= != e E f F g G x X only.
+      Allowed operators are:  
+
+             + - * / % ^ v > < = >= <= != e E f F g G x X only.
+
+      The '^' operator is exponentiation; A ^ B is A raised to the B power.
+      The 'v' operator is any-base log; A v B is the log of B in logbase 
+      A ; note that the logbase is _required_ and there is no default.
+      
 
       Only >, >=, <, <=, = and != set logical results; they also evaluate
       to 1 and 0 for continued chain operations - e.g. 

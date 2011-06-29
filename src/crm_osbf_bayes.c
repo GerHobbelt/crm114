@@ -258,7 +258,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   sense = +1;
   if (apb->sflags & CRM_NOCASE)
     {
-      cflags = cflags || REG_ICASE;
+      cflags = cflags | REG_ICASE;
       eflags = 1;
       if (user_trace)
 	fprintf (stderr, "turning oncase-insensitive match\n");
@@ -1358,7 +1358,9 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	    {
 	      // hmmm, unsigned long gives better precision than float...
 	      //float hits_max_p, hits_min_p, sum_hits, diff_hits;
-	      unsigned long hits_max_p, hits_min_p, sum_hits, diff_hits;
+	      //unsigned long hits_max_p, hits_min_p, sum_hits, diff_hits;
+	      unsigned long hits_max_p, hits_min_p, sum_hits;
+	      long diff_hits;
 	      float K1, K2, K3;
 
 	      hits_min_p = hits[i_min_p];

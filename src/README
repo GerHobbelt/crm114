@@ -20,13 +20,14 @@ Now that we're clear on that, let's begin.
 
                     ----- News This Release: -----
 
-April 28, 2007 - BlameSpamConf
+May 5, 2007 - BlameSpamConf
 
 This is a mixed enhancement/bugfix release.  You can now use 
 INSERT localfile and also INSERT [var_expanded_file] ; note that
 the expansion only uses command-line and environment variables
-such as :_env_HOME: (this isn't run-time expansion).  Several other bugs
-are also stomped.  
+such as :_env_HOME: (this isn't run-time expansion).  The algebraic
+math evaluator has now been switched over to a much nicer system. 
+Several other bugs are also stomped.
 
 
 Feb 16, 2007 - BlameBaltar
