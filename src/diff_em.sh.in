@@ -1,4 +1,8 @@
 #! /bin/bash
+## Process this file with configure to produce diff_em.sh
+
+## This script is free software; you can distribute it and/or modify it
+## under the terms of the GNU GPL.  See the file COPYING.
 
 rm -rf diff
 mkdir diff 

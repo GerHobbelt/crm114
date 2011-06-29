@@ -27,8 +27,8 @@ Command Line Options:
 
  -h             - print help text
 
- -H N           - select hash function N - handle this with the utmost care!
-                  (default=0)
+ -H N           - select hash function N - handle this with the utmost
+                  care! (default=0)
 
  -l N           - print a listing (detail level 1 through 5)
 
@@ -44,8 +44,8 @@ Command Line Options:
 
  -r N           - set OSBF min pmax/pmin ratio (default=9)
 
- -s N           - new sparse spectra feature file (.css) size is N (default
-                  1 meg+1 featureslots)
+ -s N           - new sparse spectra feature file (.css) size is N
+                  (default 1 meg+1 featureslots)
 
  -S N           - new feature file (.css) size is N rounded up to 2^I+1
                   featureslots
@@ -62,43 +62,82 @@ Command Line Options:
 
  -w N           - max data window (bytes, default 16 megs)
 
- --             - signals the end CRM114 flags; prior flags are not seen by the
-                  user program; subsequent args are not processed by CRM114.
+ --             - signals the end CRM114 flags; prior flags are not seen
+                  by the user program; subsequent args are not processed
+                  by CRM114.
 
  --foo          - creates the user variable :foo: with the value SET
 
  --x=y          - creates the user variable :x: with the value y
 
- -in file       - use file instead of stdin for input. Note that '-in' may
-                  specify the standard handle value '0' for stdin.
+ -in file       - use file instead of stdin for input. Note that '-in'
+                  may specify the standard handle value '0' for stdin.
+                  Accepted as 'stdin' representatives:
 
- -out file      - use file instead of stdout for output
+                    0
+                    -
+                    stdin
+                    /dev/stdin
+                    CON:
+                    /dev/tty
 
- -err file      - use file instead of stderr for output. Note that '-out' may
-                  use the same file as '-err'. Note also that '-out' and '-err'
-                  may specify the standard
+                  NOT allowed are the stdout/stderr handle values 1 and
+                  2: crm114 will report an error when you do.
 
-                - handle values '1' for stdout and '2' for stderr. This implies
-                  that '-err 1' is essentially identical to the UNIX shell
-                  '2>&1' redirection.
+ -out file      - use file instead of stdout for output. See '-err' for
+                  ways to specify stdout/stderr.
 
- -Cdbg          - direct developer support: trigger the C/IDE debugger when an
-                  internal error is hit.
+ -err file      - use file instead of stderr for output. Note that '-
+                  out' may use the same file as '-err'. Note also that
+                  '-out' and '-err' may specify the standard handle
+                  values '1' for stdout and '2' for stderr. This implies
+                  that '-err 1' is essentially identical to the UNIX
+                  shell '2>&1' redirection, though without the buffer
+                  delays that would otherwise occur when you mix stdout
+                  and stderr output to a single channel.
 
-Absent the -{ program } flag, the first arg is taken to be the name of
-a file containing a crm114 program, subsequent args are merely supplied
-as :_argN: values.  Use single quotes around command line programs
-'-{ like this }' to prevent the shell from doing odd things to your
-command-line programs.
+                  Accepted as default stdio channel (stdout for -out,
+                  stderr for -err) representatives:
+
+                    -
+                    CON:
+                    /dev/tty
+
+                  Accepted as EXPLICIT 'stdout' representatives:
+
+                    1
+                    stdout
+                    /dev/stdout
+
+                  and likewise for explicit stderr:
+
+                    stderr
+                    /dev/stderr
+
+                  NOT allowed is the stdin handle value 0: crm114 will
+                  report an error when you do.
+
+ -Cdbg          - direct developer support: trigger the C/IDE debugger
+                  when an internal error is hit.
+
+                  WARNING: only available when 'crm114 -v' reports
+                           crm114 was built with assertions enabled in
+                           the code.
+
+Absent the -{ program } flag, the first arg is taken to be the name of a
+file containing a crm114 program, subsequent args are merely supplied as
+:_argN: values.  Use single quotes around command line programs '-{ like
+this }' to prevent the shell from doing odd things to your command-line
+programs.
 
 CRM114 can be directly invoked by the shell if the first line of your
 program file uses the shell standard, as in:
 
         #! /usr/bin/crm
 
-You can use CRM114 flags on the shell-standard invocation line, and
-hide them with '--' from the program itself; '--' incidentally prevents
-the invoking user from changing any CRM114 invocation flags.
+You can use CRM114 flags on the shell-standard invocation line, and hide
+them with '--' from the program itself; '--' incidentally prevents the
+invoking user from changing any CRM114 invocation flags.
 
 Flags should be located after any positional variables on the command
 line.  Flags _are_ visible as :_argN: variables, so you can create
@@ -245,7 +284,6 @@ so use it only for good, and never for evil.
 
 
 # this is a comment
-
 # and this too \#                 - A comment is not a piece of preprocessor
                                     sugar - it is a -statement- and ends at
                                     the newline or at "\#"
@@ -292,7 +330,6 @@ noop                              - no-op statement
 
 
 :label:                           - define a GOTOable label
-
 :label: (:arg:)                   - define a CALLable label.  The args in
                                     the CALL statement are concatenated and
                                     put into the freshly ISOLATEd var :arg:
@@ -344,6 +381,7 @@ call /:entrypoint_label:/ [:arg1: :arg2:... ] (:ret_arg:)
                                     from the routine called (if it returns
                                     anything).  If it had a previous value,
                                     that value is overwritten on return.
+
 
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
@@ -453,6 +491,7 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ // /svm-specific 
                                   - a vector of seven parameters for
                                     SVM-classifiers
 
+
 clump [:text:] (clumpfile) (status) <flags> /regex/ /params/
                                   - does incremental parametric clustering of
                                     documents to generate document groups.  No
@@ -482,6 +521,7 @@ clump [:text:] (clumpfile) (status) <flags> /regex/ /params/
                                     for more (much faster computationally).
                                     If N < 0 the number of clusters is
                                     determined automatically.
+
 
 cssanalyze <flags> (:c1:) (:report:) /params/
                                   - analyze the CRM database :c1: and report
@@ -689,6 +729,7 @@ isolate (:var1: :var2: ... :varN:)
                                     (var-expanded).  If no value is
                                     supplied, the previous value is
                                     retained/copied.
+
 
 input <flags> [:filename:]
 input <flags> (:result:) [:filename:]
@@ -1332,8 +1373,8 @@ The evaluation is done in four sequential passes:
 
       Allowed operators are:
 
-             + - * / % ^ v > < = >= <= != e E f F g G x X 
-             
+             + - * / % ^ v > < = >= <= != e E f F g G x X
+
       only.
 
       The '^' operator is exponentiation; A ^ B is A raised to the B power.
@@ -1352,12 +1393,12 @@ The evaluation is done in four sequential passes:
          a > 3 and c > 9
          b > 5 and c > 9
 
-      Formatting operators: e E f F g G x X - the left side value is unchanged, 
-      but the right side value is used as a formatting precision value (note 
-      that x and X do not change precision), (i.e. the speed of light expressed 
-      in E 7.2 precision such as by 299792458 E 7.2 is 3.00E+08) The operators 
-      e, E, f, F, g, G, x, and X have the same meaning as in C. (beware a 
-      precision after the decimal of 10 though; and note that an x or X format 
+      Formatting operators: e E f F g G x X - the left side value is unchanged,
+      but the right side value is used as a formatting precision value (note
+      that x and X do not change precision), (i.e. the speed of light expressed
+      in E 7.2 precision such as by 299792458 E 7.2 is 3.00E+08) The operators
+      e, E, f, F, g, G, x, and X have the same meaning as in C. (beware a
+      precision after the decimal of 10 though; and note that an x or X format
       is limited to 32 bits.)
 
 
@@ -1528,6 +1569,523 @@ that don't use spaces to delimit words, such as some Asian languages.
 It works quite well against spam.  This filter is still experimental
 and non-compatible upgrades may occur - keep your training data if you
 use this filter!
+
+
+     ------------ Using the CRM114 built-in script debugger ---------
+
+When you run crm114 with the '-d' commandline option or place a 'debug'
+statement in your scripts, you can use the crm114 built-in debugger to
+debug/analyze your scripts.
+
+These debugger commands are available (you can see the complete list
+when typing 'h' or '?' at the debugger prompt 'crm-dbg[...]>'):
+
+a :var: /value/    - alter :var: to /value/
+
+b <n>              - toggle breakpoint on line <n>
+
+b <label>          - toggle breakpoint on <label>
+
+c                  - continue execution till breakpoint or end or ...
+                     Note that this depends on the 'm' settings; for
+                     instance 'm ie' will make 'c' singlestep too.
+
+           !!!       This may be considered a bug, as we've got 'n' for
+                     that...
+
+c <n>              - execute <number> more statements
+
+c <m>              - execute next statement while setting executing
+                     <mode> to:
+
+                       n / d    - reset to default: single step [into],
+                                  break at any line
+
+                       i        - single step [into]
+
+                       s        - skip calls, i.e. skip to next stmt on
+                                  same call depth
+
+                       o        - step out, i.e. skip to stmt after
+                                  'return'ing outa here
+
+                       f        - 'fail': skip until } terminating this
+                                  scope block
+
+                     Note: 'o' and 'f' are auto-reset: they're active
+                           only once.
+
+                       a        - break at any statement
+
+                       e        - break only at executable statements
+
+                     Note: 'a'/'e' can be combined with any one of
+                     'i'/'s'/'o'/'f'.
+
+c <m> <n>          - the above combined: set mode + step <n> statements
+
+d                  - dump a list of all variables known to the program.
+                     This includes all 'system variables', i.e.
+                     variables starting with an '_' underscore, e.g.
+                     :_dw:
+
+e <e>              - expand expression <e>; if none specified, show the
+                     previous one again. See the '+' command for a complete
+                     description of the <e> format.
+
+                     NOTE that the 'regex to match available variables
+                          for adding to watch list' feature does NOT
+                          apply to 'e': it only supports '<'
+                          indirection, next to literal expanded
+                          expressions such as
+
+                            :*:good_pR__value:
+
+                          to view the content of the script variable
+                          ':good_pR__value:'.
+
++ <e>              - 'watch' the expanded expression <e>. 'Watching'
+                     means the debugger will print this expression's
+                     expansion after executing any command which may
+                     have changed the program state in any way, e.g. 'c'
+                     or 'n'
+
+                     Special processing of <e>:
+
+                     - No arg? -> add last 'e' expr to show list
+
+                     - Does the expression start with a '<' character?
+                       In that case, it's assumed to be an 'indirection'
+                       instruction to fetch expression from the active
+                       source code line itself. Or somewhere else...
+
+                       The format is this:
+
+                          <NBI
+
+                       where
+
+                          N is a number signifying a line number
+                            (statement number in the source,
+                            corresponding to the line number as reported
+                            in a 'v' program listing).
+
+                          N can also be simply '.', which is the current
+                            statement.
+
+                          B is the type of crm114 script command
+                            argument delimiter we're looking for: /, <,
+                            [ or (
+
+                            For instance, specify '/' if you like to
+                            grab the content of the // args of that
+                            'output' command you're looking at.
+
+                          I is the number of this particular braced
+                            element: 1 by default.
+
+                       Thus
+
+                          <./2
+
+                       indicates that we like a copy of the 2nd //
+                       argument for the current statement.
+
+                       Other indirections:
+
+                          N can also be '<', which indicates that the
+                            remainder of the line is specially formatted
+                            line, which must be processed once to
+                            produce the desired expression from the
+                            already existing list of 'watched
+                            expressions'.
+
+                            The 'formatted line' may include '%n%'
+                            (where n is a number) arguments, where these
+                            'n' numbers point at that particular watched
+                            expression.
+
+                       Example:
+
+                          <<:*%5%
+
+                       will take the 5th existing watch expression and
+                       replace the '%5%' string with that. Assuming the
+                       5th watched expression is ':filename:' (for
+                       instance grabbed from a match expression using
+                       '<.(3'), then the resulting expression string
+                       will become:
+
+                          :*:filename:
+
+                       The '<<' formatted indirection is handy to use
+                       for a two-step copy&paste process where output
+                       variables are grabbed from the script, then
+                       merged together with other text to watch the
+                       value written to such variables.
+
+                       Of course, you may specify multiple %n% items in
+                       a format string, e.g.
+
+                          << full path = ':*%3%/%7%'
+
+                       where, for example, the 3rd and 7 th watched
+                       expression read:
+
+                         3rd:  ':spamdir:'
+                         7th:  ':*:stripped_filename:'
+
+                       It's all a matter of string concatenation,
+                       really. ;-)
+
+
+                     The '+' command has something extra:
+
+                       Once the '<' indirection has been expanded, '+'
+                       (NOT 'e': that command does not support this)
+                       will inspect the produced expression:
+
+                     - Is <e> not a :@:, :#:, :+: or :@: expression?
+                       Assume it then to be a search regex which will
+                       select any (partially) matching existing variable
+                       to the watch list. The regex may select several
+                       existing variables at once and add them all to
+                       the 'watch list' if the equivalent :@:varname:
+                       expressions are not already on the watchlist.
+
+                       NOTE: Yes, duplicate expressions are NOT added to
+                             the watch list at ANY time to prevent
+                             clutter.
+
+                       Make sure an '_' is in there when you want to add
+                       system vars too:
+
+                         + *
+
+                       is an exception (as '*' is not a valid regex)
+                       which is equivalent too
+
+                         + .*
+
+                       but because it's missing an '_' underscore in the
+                       regex, only 'regular application variables' are
+                       added to the watch list, i.e. any variables which
+                       start with an '_' underscore are NOT added. For
+                       example, :_dw: is NOT added (which you may
+                       consider a Good Thing if you don't want your
+                       watch list to blow up instantly ;-)
+
+                         + [_]?.*
+
+                       however WILL add all those system variables.
+                       Since some variables contain a lot of data,
+                       expect a loooong output now.
+
+                       NOTE: watched expression values are written as-is
+                             to stderr; presently no 'encoding' a.k.a.
+                             'escaping' facilities are provided, so a
+                             watched variable ':str:' which contains the
+                             C-escaped bytes "ABC\rFG", i.e. 5 ASCII
+                             capitals and a ASCII CR, WILL print
+                             somewhat like:
+
+                              FG/3] :*:str: = /ABC
+
+                             because the CR will wrap the line but not
+                             advance, so 'FG' is printed over the watch
+                             index number. This is described here so
+                             you've been warned: terminal escape codes
+                             stored in crm114 variables, etc. MAY blow
+                             up your term when using the debugger watch
+                             expression feature.
+
+                       Note that the use of the '<' indirection option
+                            with the '+' debugger command can lead to
+                            some surprises due to the subsequent regex-
+                            if-not-a- :?:-expression check. Neverthless,
+                            for extremely convoluted debugger watch
+                            commands, I'm sure someone will find use for
+                            this mix; personally I've used '<'
+                            indirection with both 'e' and '+', but only
+                            to produce :?: expressions which would
+                            therefore not be considered regex search
+                            criteria.
+
+- <n>                - remove the watched expression #<n> from the show
+                       list.
+
+                       <n> not a number? Treat as a search regex and
+                       remove any (partially) matching watched
+                       expression. For example:
+
+                         - str
+
+                       will remove ANY expression from the watch list
+                       which contains the string 'str'. Another example:
+
+                         - :[@#]:
+
+                       will remove any :@: 'math evaluation' or :#:
+                       'string length' from the watch list.
+
+f                    - fail forward to block-closing '}'
+
+                       Note: this is similar to 'cf' (== 'c f'); see 'c'.
+
+h                    - show this on-line help. Add extra 'h' or '?' for
+                       list of examples and extended info.
+
+?                    - same as 'h'.
+
+j <n>                - jump to statement <number>. Statement numbers are
+                       closely related to their line numbers, but due to
+                       script preprocessing by the crm114 compiler, this
+                       is only somewhat correct. Therefore you should
+                       use the 'v' command to find the exact number for
+                       each statement: it's the 'linenumber' printed
+                       before each statement when displayed using the
+                       'v' debugger command.
+
+j <label>            - jump to statement <label>
+
+l                    - liaf backward to block-opening '{'
+
+m <m>                - set executing <mode>. See 'c' above for <m> mode
+                       flags list
+
+n                    - execute next statement (same as 'c 1')
+
+n <m>                - same as 'c <m> 1'
+
+q                    - quit the program and exit
+
+t                    - toggle user-level tracing (which is turned on by
+                       default at the start of the run when you
+                       specified the '-d' crm114 commandline option to
+                       enter the debugger).
+
+T                    - toggle system-level tracing
+
+v <n>.<m>            - view source code statement <n> till <m>.
+
+                       No <n> given: show current statement.
+
+                       Alternatives:
+
+                         'v >5' = (type '>' char!) show current and 5
+                                  extra;
+
+                         'v ~3' = show context of 3 lines before till 3
+                                  lines after the currently active
+                                  statement
+
+;                    - no-op: separate multiple commands on a single
+                       debugger commandline; you can use this to merge
+                       multiple commands on a single line, which is a
+                       handy way to define a 'macro' which will be
+                       repeated by the '.' debugger command (see below).
+                       Nevertheless, some commands cannot be terminated
+                       by a ';' but only by EdOfLine, i.e. a press on
+                       the ENTER/Return key. These are:
+
+                         e
+                         +
+                         -
+                         a
+                         h
+
+.                    - repeat the previous commandline which did not
+                       start with the '.' command.
+
+                       NOTE: when you want to be nasty, you could
+                             specify commandlines like these to cause an
+                             'infinite loop' in the debugger:
+
+                               n ; .
+
+                             which will single-step and then repeat the
+                             last stored commandline which did not start
+                             with '.', i.e. this same line. HOWEVER, the
+                             debugger is smart enough to break this
+                             infinite loop when a breakpoint or the end-
+                             of-program has been reached, so that you
+                             can type other commands on the debugger
+                             prompt.
+
+Some examples
+=============
+
+To start off:
+
+m ie
+
+        Set Step Mode to default 'step into' but only show the prompt again,
+        when we've hit an executable statement. This also means '{' and '}'
+        braces will be skipped, together with any commant lines.
+
+n ; v >5
+
+        Very handy command sequence, which will execute one more statement,
+        then show the currently active and 5 more source lines. Once you've
+        executed this debugger 'macro' once, follow up with:
+
+.
+
+        Execute previous 'debugger macro' again. A 'debugger macro' is just the
+        last line you typed in the debugger, which did NOT start with a '.'
+        dot. By hitting ENTER on the debugger prompt, you 'erase' any 'macro'
+        in memory and '.' will do nothing.
+
+...
+
+        Execute the last recorded 'debugger macro' 3 times in a row.
+
++ :*:filename:
+
+        Add the expression ':*:filename:' to the watched expressions, which are
+        printed by the debugger each time when a prompt is to be shown. Of
+        course, the expressions support all CRM114 :?: expression types,
+        include :@: math expressions.
+
+        Note: invalid expressions do not result in error messages; these are
+        simply processed as best as possible and the result printed on screen.
+
+        Note 2: when you use '+', semicolons which can usually be used to
+        separate multiple commands on a single debugger prompt line, are
+        ignored: anything following the '+' is considered part of the
+        expression to be watched.
+
++ :_.*HOME
+
+        Add any system variable (i.e. variable which starts with an '_'
+        underscore) matching the ':_.*HOME' regex. This means a variable
+        called ':_HOME_VAR:' will be added to the watch list too as partial
+        matches are accepted!
+
+- 4
+
+        remove the 4th watched expression
+
+
+- *
+
+        Special case, identical to '- .*' which remove all watched expressions
+        as each will match the '.*' regex.
+
+
+Extended examples
+=================
+
+c do 5
+
+        Reset Step mode to default: break at ANY statement (including comments
+        and braces) and then run until EITHER you've 'executed' 5 lines, OR
+        until you've finally exited the function by having executed a 'RETRUN'
+        statement. Note that when you execute 'RETURN' when the count is not
+        '5 lines executed', CRM114 will CONTINUE RUNNING until the 5 statements
+        have been executed.
+
+b 511
+
+        Put a breakpoint to program line 511. Note that the debugger will
+        ALWAYS pop up and show a breakpoint on the given line, even when step
+        mode is 'E' (executable statements only) and the breakpoint is located
+        at a brace or comment line.
+
+
+Note that you do not need to separate debugger commands and their first
+     parameter by whitespace; this may however be easier on the human
+     doing the typing, so lines like
+
+          n5
+
+     or
+
+          co
+
+     are identical to their whitespaced counterparts:
+
+          n 5
+
+     and
+
+          c o
+
+
+The debugger prompt: how to 'read' it
+-------------------------------------
+
+It looks somewhat like this:
+
+  crm-dbg[0|Ai-]>
+
+and contains a wealth of information within the [] square brackets:
+
+- The initial number is the current stack call depth (zero-based) of the
+  crm114 script execution.
+
+  For instance, you may find that a 'trap' catching a fault inside a
+  'call'ed routine does not unwind the stack like 'return', despite the
+  fact that the code looks like the 'trap' is in the main code line (see
+  mailreaver.crm et al for an example of that): developers that come
+  from a classic programming background may be misled by this visual
+  'cue' as crm114 does in fact NOT support 'scope' for variables or code
+  flow in the classic sense; in other words: all variables are visible
+  globally, no matter where and when they were instanciated, and trap-
+  ped faults do not cause stack unwinding, just because the 'trap' is
+  several 'layers' of '}' closing braces down the code line.
+
+- The three characters following the '|' pipe symbol are encoded as
+  follows, assuming the three positions are numbered 1, 2 and 3:
+
+  1: A/E       - 'E' when the step mode ('m') is set to 'e' (single-step
+                 from executable to executable statement == skip
+                 comments and curly braces), 'A' otherwise.
+
+  2: i/?/S/O/F - '?' when the step mode ('m') is a weird combo (debugger
+                 developer error!),
+
+                 'S' when mode is 'step over call' ('m s'),
+
+                 'O' when it's mode 'step out of call' ('m o'),
+
+                 'F' when set to 'step out of this brace's scope' ==
+                 step beyond the next closing curly brace ('m f'),
+
+                 'i' otherwise == 'step into' mode ('m i')
+
+                 NOTE that 'o' and 'F' are 'autoresetting' modes, so
+                      having them executed once, will reset the mode to
+                      'step into' ('i'). This has been done to prevent
+                      nasty surprises when you're debugging and
+                      hammering a bit too enthousiastic on the '.'
+                      repeat key, for instance, when your previous
+                      commandline was, for example, 'n ; v > 5' or some
+                      other execution stepping combo.
+
+  3: -/B/b/$   - 'B' when the debugger prompt showed up due to a 'debug'
+                 statement being hit in the script.
+
+                 'b' when a configured breakpoint was triggered. This
+                 can also happen when executing downcounting commands
+                 like, for example, 'n 10', which will single-step 10
+                 executable commands when running in mode 'm ie'.
+
+                 '$' when the script has completed running. Note that in
+                 this situation, you cannot use any jump debugger
+                 commands (e.g. 'j' or 'l') anymore with any chance at
+                 success: the machine is already on its way to wind down
+                 and this is merely provided as a service to have a
+                 last-minute oggle at those variables (try '+ *' for
+                 instance) before we shut down.
+
+                 Hence the use of any 'executing' debugger command, such
+                 as 'c' or 'n' will simply terminate crm114 as the
+                 script execution has terminated.
+
+                 Maybe a later release allows 'j' or other commands to
+                 be successful in this situation, but that is not to be
+                 today, alas.
 
 
      ------------ Overall Language Notes ------------

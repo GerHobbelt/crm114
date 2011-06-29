@@ -54,7 +54,7 @@ static void dump_error_script_line(char *dst, int maxdstlen, CSL_CELL *csl, int 
     // current statement where the error occurred:
     if (csl && csl->nstmts > 0 && csl->mct && csl->filetext
         && stmtnum >= 0 && stmtnum < csl->nstmts
-		&& stmtnum + 1 < csl->mct_size
+        && stmtnum + 1 < csl->mct_size
         && csl->filetext)
     {
         MCT_CELL *stmt = csl->mct[stmtnum];
@@ -92,22 +92,22 @@ static void dump_error_script_line(char *dst, int maxdstlen, CSL_CELL *csl, int 
                 }
                 // now maxchar points to EOL or EOS
             }
-			else
-			{
-				//
-				// the compiler/preprocessor has a tendency to include the leading whitespace of the next line
-				// with _this_ line, so we'll get rid of any trailing whitespace now to make sure it all'll
-				// look mighty pretty right there.
-				//
-                for (; --maxchar >= startchar; )
-				{
-					if (!crm_isspace(sourcedata[maxchar]))
-					{
-						maxchar++;
-						break;
-					}
-				}
-			}
+            else
+            {
+                //
+                // the compiler/preprocessor has a tendency to include the leading whitespace of the next line
+                // with _this_ line, so we'll get rid of any trailing whitespace now to make sure it all'll
+                // look mighty pretty right there.
+                //
+                for ( ; --maxchar >= startchar;)
+                {
+                    if (!crm_isspace(sourcedata[maxchar]))
+                    {
+                        maxchar++;
+                        break;
+                    }
+                }
+            }
 
             // try to preserve our sanity whn the line length numbers are weird: heuristical fix for something that's probably utterly FUBAR.
             if (maxchar > startchar + 255)

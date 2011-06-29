@@ -27,9 +27,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
+				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -77,6 +77,10 @@
 				AssemblyDebug="1"
 				ProgramDatabaseFile="$(OutDir)/cssmerge.pdb"
 				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
 				Profile="true"
 			/>
@@ -117,9 +121,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
+				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -173,7 +177,7 @@
 				OptimizeForWindows98="1"
 				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
-				Profile="true"
+				Profile="false"
 			/>
 			<Tool
 				Name="VCALinkTool"

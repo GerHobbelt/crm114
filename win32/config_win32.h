@@ -185,9 +185,6 @@
 /* Define to 1 if you have the <libintl.h> header file. */
 #undef HAVE_LIBINTL_H
 
-/* Define to 1 if you have the `m' library (-lm). */
-#undef HAVE_LIBM
-
 /* Define if you have a readline compatible library */
 #undef HAVE_LIBREADLINE
 
@@ -502,6 +499,9 @@
 /* Define to 1 if you have the `_setmode' function. */
 #define HAVE__SETMODE 1
 
+/* Define to 1 if you have the `_set_errno' function. */
+#define HAVE__SET_ERRNO 1
+
 /* Define to 1 if you have the `_set_output_format' function. */
 #define HAVE__SET_OUTPUT_FORMAT 1
 
@@ -544,6 +544,9 @@
  * first (like Intel and VAX). */
 #define MACHINE_IS_LITTLE_ENDIAN 1
 
+/* directory where BillY's original crm114 distro resides */
+#define ORIGINAL_BILLY_DISTRO_DIR ../../../1original/crm114/src/crm114.sourceforge.net/src
+
 /* Name of package */
 #define PACKAGE "crm114"
 
@@ -568,16 +571,8 @@
 /* "enable replacement (v)snprintf if system (v)snprintf is broken" */
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
-/* Define to 1 if the C compiler supports function prototypes. */
-#define PROTOTYPES 1
-
-/* revision code of the software */
-#define REVISION "1960"
-
-/* Define to 1 if the `setvbuf' function takes the buffering type as its
- * second argument and the buffer pointer as the third, as on System V before
- * release 3. */
-/* #undef SETVBUF_REVERSED */
+/* revision number of software */
+#define REVISION "2222"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT sizeof(int)  /* 4 */
@@ -595,7 +590,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1960"
+#define TAR_FILENAME_POSTFIX "Ger-2222"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
@@ -606,16 +601,12 @@
 /* version suffix code of the software */
 #define VER_SUFFIX ""
 
-/* Define to 1 if on AIX 3.
- * System headers sometimes define this.
- * We just want to avoid a redefinition error message.  */
-#ifndef _ALL_SOURCE
-/* # undef _ALL_SOURCE */
-#endif
-
-/* Enable GNU extensions on systems that have them.  */
-#ifndef _GNU_SOURCE
-#undef _GNU_SOURCE
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel and VAX). */
+#if defined __BIG_ENDIAN__
+# define WORDS_BIGENDIAN 1
+#elif ! defined __LITTLE_ENDIAN__
+/* # undef WORDS_BIGENDIAN */
 #endif
 
 /* Define to 1 if on MINIX. */
@@ -648,8 +639,27 @@
 /* # undef __CHAR_UNSIGNED__ */
 #endif
 
-/* Define like PROTOTYPES; this can be used by system headers. */
-#define __PROTOTYPES 1
+/* Enable extensions on AIX 3, Interix.  */
+#ifndef _ALL_SOURCE
+# define _ALL_SOURCE 1
+#endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE 1
+#endif
+/* Enable threading extensions on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# define _POSIX_PTHREAD_SEMANTICS 1
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# define _TANDEM_SOURCE 1
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# define __EXTENSIONS__ 1
+#endif
+
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
@@ -691,6 +701,9 @@ typedef unsigned __int8 uint8_t;
 
 /* Define to `int' if <sys/types.h> does not define. */
 /* #undef mode_t */
+
+/* Define to `long int' if <sys/types.h> does not define. */
+/* #undef off_t */
 
 /* Define to `int' if <sys/types.h> does not define. */
 typedef int pid_t;

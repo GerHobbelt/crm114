@@ -784,22 +784,22 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 step_mode_str[1] = 'F';
                 break;
             }
-                step_mode_str[2] = '-';
-    if (reason_for_the_call == CRM_DBG_REASON_DEBUG_STATEMENT)
-    {
-        // programmed breakpoint detected ('debug' statement): allow the debugger to pop up on the NEXT statement!
+            step_mode_str[2] = '-';
+            if (reason_for_the_call == CRM_DBG_REASON_DEBUG_STATEMENT)
+            {
+                // programmed breakpoint detected ('debug' statement): allow the debugger to pop up on the NEXT statement!
                 step_mode_str[2] = 'B';
-    }
-    else if (reason_for_the_call == CRM_DBG_REASON_BREAKPOINT)
-    {
-        // configured/set breakpoint detected: allow the debugger to pop up NOW!
+            }
+            else if (reason_for_the_call == CRM_DBG_REASON_BREAKPOINT)
+            {
+                // configured/set breakpoint detected: allow the debugger to pop up NOW!
                 step_mode_str[2] = 'b';
-    }
-    else if (reason_for_the_call == CRM_DBG_REASON_DEBUG_END_OF_PROGRAM)
-    {
-        // end of program detected: allow the debugger to pop up NOW, because this is very last time we will get a chance!
+            }
+            else if (reason_for_the_call == CRM_DBG_REASON_DEBUG_END_OF_PROGRAM)
+            {
+                // end of program detected: allow the debugger to pop up NOW, because this is very last time we will get a chance!
                 step_mode_str[2] = '$';
-    }
+            }
             step_mode_str[3] = 0;
 
             fprintf(stderr, "\ncrm-dbg[%d|%s]> ", csl->calldepth, step_mode_str);
@@ -1073,19 +1073,19 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                     regex_t preg;
                     int add_system_vars_too = 0;
 
-					char *arg = last_e_expression; 
-					int arglen = (int)strcspn(arg, "\r\n");
+                    char *arg = last_e_expression;
+                    int arglen = (int)strcspn(arg, "\r\n");
 
-                        for (arglen--; arglen >= 0 && !crm_isgraph(arg[arglen]); arglen--)
-                            ;
-                        arglen++;
+                    for (arglen--; arglen >= 0 && !crm_isgraph(arg[arglen]); arglen--)
+                        ;
+                    arglen++;
 
-                        if (!strncmp(arg, "*", arglen))
-                        {
-                            // kill 'em all!
-                            arg = ".*";
-                            arglen = (int)strlen(arg);
-                        }
+                    if (!strncmp(arg, "*", arglen))
+                    {
+                        // kill 'em all!
+                        arg = ".*";
+                        arglen = (int)strlen(arg);
+                    }
 
                     // ONLY add system variables into the mix when they SEEM explicitly addressed:
                     // we don't check the precise regex, but the mention of an underscore in there
@@ -1208,7 +1208,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                             }
                             // else: expression not added to watch list: expression already exists in watch list!
                         }
-						free(vht_ref);
+                        free(vht_ref);
                     }
                 }
                 else
@@ -1339,7 +1339,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                         {
                             regmatch_t match[2];
                             int count = 0;
-							int k;
+                            int k;
 
                             for (k = j = 0; show_expr_list[j]; j++)
                             {
@@ -1382,15 +1382,15 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
                                     show_watched_expr = 1;
                                 }
-								else
-								{
-									// shift other expressions one down in the list to close the gap: including NULL sentinel
+                                else
+                                {
+                                    // shift other expressions one down in the list to close the gap: including NULL sentinel
 
-									show_expr_list[k++] = show_expr_list[j];
+                                    show_expr_list[k++] = show_expr_list[j];
                                 }
                             }
-							// when we get here, all valid remaining expressions are there, yet the NULL sentinel is missing:
-							show_expr_list[k] = NULL;
+                            // when we get here, all valid remaining expressions are there, yet the NULL sentinel is missing:
+                            show_expr_list[k] = NULL;
 
 
                             // done with the regex
@@ -1793,8 +1793,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                     fwrite_ASCII_Cfied(stderr, vht_ref[i]->nametxt + vht_ref[i]->nstart, vht_ref[i]->nlen);
                     fprintf(stderr, "'\n");
                 }
-				
-				free(vht_ref);
+
+                free(vht_ref);
             }
             break;
 
@@ -1820,9 +1820,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
             fprintf(stderr, "e <e> - expand expression <e>; if none specified, show the previous one again.\n");
             fprintf(stderr, "+ <e> - watch the expanded expression <e>.\n"
                             "        No arg? -> add last 'e' expr to show list\n"
-							"        Is <e> not a :@:, :#:, :+: or :@: expression? Assume it to be a regex\n"
-							"        which will select any (partially) matching existing variable to the watch\n"
-							"        list. Make sure an '_' is in there when you want to add system vars too.\n");
+                            "        Is <e> not a :@:, :#:, :+: or :@: expression? Assume it to be a regex\n"
+                            "        which will select any (partially) matching existing variable to the watch\n"
+                            "        list. Make sure an '_' is in there when you want to add system vars too.\n");
             fprintf(stderr, "- <n> - remove the watched expression #<n> from the show list.\n"
                             "        <n> not a number? Treat as a regex and remove any (partially) matching\n"
                             "        watched expression.\n");
@@ -1893,10 +1893,10 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 fprintf(stderr, "        ignored: anything following the '+' is considered part of the\n");
                 fprintf(stderr, "        expression to be watched.\n");
                 fprintf(stderr, "\n");
-				fprintf(stderr, "+ :_.*HOME\n");
+                fprintf(stderr, "+ :_.*HOME\n");
                 fprintf(stderr, "\n");
-				fprintf(stderr, "        Add any system variable (i.e. variable which starts with an '_'\n");
-				fprintf(stderr, "        underscore) matching the ':_.*HOME' regex. This means a variable\n");
+                fprintf(stderr, "        Add any system variable (i.e. variable which starts with an '_'\n");
+                fprintf(stderr, "        underscore) matching the ':_.*HOME' regex. This means a variable\n");
                 fprintf(stderr, "        called ':_HOME_VAR:' will be added to the watch list too as partial\n");
                 fprintf(stderr, "        matches are accepted!\n");
                 fprintf(stderr, "\n");

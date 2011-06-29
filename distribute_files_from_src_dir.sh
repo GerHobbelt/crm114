@@ -85,6 +85,11 @@ process_crm         tests                alius_w_comment.crm               .in
 process_crm         tests                zz_translate_test.crm             .in
 process_crm         tests                quine.crm                         .in
 process_crm         tests                print_binary2decimal_int32.crm    .in
+process_crm         tests                rewritetest.crm                   .in
+process_crm         tests                paolo_ov2.crm                     .in
+process_crm         tests                paolo_ov3.crm                     .in
+process_crm         tests                paolo_ov4.crm                     .in
+process_crm         tests                paolo_ov5.crm                     .in
 
 
 check_file          tests                megatest_knowngood.log
@@ -160,7 +165,6 @@ process_shfile      tests                megatest_ng.sh                     .in
 
 process_crm         mailfilter        classifymail.crm        .in
 process_crm         mailfilter        mailfilter.crm          .in
-process_crm         mailfilter        rewriteutil.crm         .in
 process_crm         mailfilter        maillib.crm             .in
 process_crm         mailfilter        mailreaver.crm          .in
 process_crm         mailfilter        mailtrainer.crm         .in
@@ -193,6 +197,7 @@ check_file        examples        priolist.mfp
 check_file        examples        rewrites.mfp
 check_file        examples        whitelist.mfp
 check_file        examples        whitelist.mfp.example
+process_crm       examples        rewriteutil.crm                 .in
 
 check_file        examples        pad.dat
 

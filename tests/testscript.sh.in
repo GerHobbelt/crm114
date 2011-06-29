@@ -19,7 +19,7 @@
 # return exit code 0 on success; any other return code for test failure
 #
 
-CRM_BIN="/windows/G/prj/3actual/crm114/src/crm114"
+CRM_BIN="@abs_top_builddir@/src/crm114"
 
 
 report_error()

@@ -1,0 +1,21 @@
+#!./crm114
+ 
+window
+alter (:_dw:) /HHHH\nC-T: mpt; by="--0123"\nhhhh\n\nMIME.\n----0123\nC-T: txt\nC-T-E: 7\n\nTTTT\n\n----0123\nC-T: img\n name="clonic.GIF"\nC-T-E: b64\niiii\n\noooo\noooo\n\n----0123--\n\n\n/
+
+{
+    match (:: :headers: :body:) /(.*?)\n\n(.*)/
+}
+isolate (:headers:)
+{
+    match <nomultiline> [:headers:] /^C-T: .* by="(.+)"/ \
+    	(:x: :boundary:)
+    output /:boundary:=:*:boundary:\n/
+}
+isolate (:c:) /0/
+{
+    eval (:c:) /:@::*:c:+1:/
+    match <fromend> [:body:] (:x: :headers:) /\n--:*:boundary:\n(.+?)\n\n/
+    output /:c:=:*:c:\n:*:headers:\n\n/
+    liaf
+}

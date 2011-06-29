@@ -1,0 +1,21 @@
+#!./crm114
+ 
+window
+alter (:_dw:) /HHHHHHHHHHHHHHHHHH\nContent-Type: multipart; boundary="--0123456789"\nhhhhhhhhhhhhhhhhhhhhhh\n\nThis is a multi-part message in MIME format.\n----0123456789\nContent-Type: text\nContent-Transfer-Encoding: 7bit\n\nTTTTTTTTTTTTTTTTTTTTTTT\n\n----0123456789\nContent-Type: image\n name="clonic.GIF"\nContent-Transfer-Encoding: base64\niiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\n\nooooooooooooooooooooooooooooooooo\noooooooooooooooooooooooooooo\n\n----0123456789--\n\n\n/
+
+{
+    match (:: :headers: :body:) /(.*?)\n\n(.*)/
+}
+isolate (:headers:)
+{
+    match <nomultiline> [:headers:] /^Content-Type: .* boundary="(.+)"/ \
+    	(:x: :boundary:)
+    output /:boundary:=:*:boundary:\n/
+}
+isolate (:c:) /0/
+{
+    eval (:c:) /:@::*:c:+1:/
+    match <fromend> [:body:] (:x: :headers:) /\n--:*:boundary:\n(.+?)\n\n/
+    output /:c:=:*:c:\n:*:headers:\n\n/
+    liaf
+}

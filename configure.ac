@@ -9,11 +9,26 @@
 #
 # Process this file with autoconf to produce a configure script.
 
+
+#############################################################
+#
+#  WARNING: several custom macros in ./m4 use the undocumented
+#       AC_RUN_LOG
+#  macro which silently barfs on the latest automake/conf setup.
+# GET RID OF IT!
+#  Use AC_RUN_TRY or similar instead. To be researched!
+#
+#                          Ger Hobbelt
+#
+
+
+
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
 AC_INIT([CRM114], [20080326-BlameSentansoken], [crm114-general@lists.sourceforge.net])
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR([m4])
+AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE([1.10 check-news dist-bzip2 dist-zip dist-tarZ]) 
 
@@ -67,7 +82,9 @@ Copyright (C) Copyright 2001-2008  William S. Yerazunis
 ])
 
 
-AC_DEFINE_UNQUOTED([ORIGINAL_BILLY_DISTRO_DIR], [../../../1original/crm114/src/crm114.sourceforge.net/src], [directory where BillY's original crm114 distro resides])
+ORIGINAL_BILLY_DISTRO_DIR="../../../1original/crm114/src/crm114.sourceforge.net/src"
+AC_DEFINE_UNQUOTED(ORIGINAL_BILLY_DISTRO_DIR, "$ORIGINAL_BILLY_DISTRO_DIR", [directory where BillY's original crm114 distro resides])
+AC_SUBST(ORIGINAL_BILLY_DISTRO_DIR)
 
 
 
@@ -386,6 +403,7 @@ AC_PATH_PROG([HTMLTIDY], [tidy], [])
 AC_PATH_PROG([DB2X_XSLTPROC], [db2x_xsltproc], [])
 AC_PATH_PROG([DB2X_MANXML], [db2x_manxml], [])
 AC_PATH_PROG([DB2X_TEXIXML], [db2x_texixml], [])
+AC_PATH_PROG([GZIP], [gzip], [])
 AC_PATH_PROG([BZIP2], [bzip2], [])
 
 
@@ -395,7 +413,8 @@ AX_DIFF_OPTION([w])
 AX_DIFF_OPTION([B])
 AX_DIFF_OPTION([d])
 AX_DIFF_OPTION([-strip-trailing-cr])
-
+# [i_a] GROT GROT GROT: nasty last minute hack because the AX_DIFF_OPTION macros don't work anymore :-(((((
+DIFF_FLAGS="-EbwBd --strip-trailing-cr"
 
 
 
@@ -993,6 +1012,10 @@ AC_CONFIG_FILES([Makefile
                  tests/nestaliustest.crm
                  tests/overalterisolatedtest.crm
                  tests/paolo_overvars.crm
+                 tests/paolo_ov2.crm
+                 tests/paolo_ov3.crm
+                 tests/paolo_ov4.crm
+                 tests/paolo_ov5.crm
                  tests/randomiotest.crm
                  tests/rewritetest.crm
                  tests/skudtest.crm
@@ -1020,6 +1043,7 @@ AC_CONFIG_FILES([Makefile
                  tests/quine.crm
                  tests/defaulttest.crm
                  tests/print_binary2decimal_int32.crm
+                 tests/testscript.sh
                  examples/pad.crm
                  examples/shroud.crm
                  mailfilter/classifymail.crm
@@ -1027,19 +1051,21 @@ AC_CONFIG_FILES([Makefile
                  mailfilter/maillib.crm
                  mailfilter/mailreaver.crm
                  mailfilter/mailtrainer.crm
-                 mailfilter/rewriteutil.crm
+                 examples/rewriteutil.crm
+],
+[
+	#
+	# and when we finally have produced the files, make sure the generated shell scripts are executable:
+	#
+	chmod a+x src/*.sh
+	chmod a+x tests/*.sh
+	chmod a+x tests/*.crm
+	chmod a+x examples/*.crm
+	chmod a+x mailfilter/*.crm
 ])
 
 AC_OUTPUT
 
-#
-# and when we finally have produced the files, make sure the generated sheel scripts are executable:
-#
-chmod a+x src/*.sh
-chmod a+x tests/*.sh
-chmod a+x tests/*.crm
-chmod a+x examples/*.crm
-chmod a+x mailfilter/*.crm
 
 
 dnl Print configuration summary

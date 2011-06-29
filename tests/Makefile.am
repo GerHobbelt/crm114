@@ -59,6 +59,8 @@ testdir = $(datadir)/doc/$(PACKAGE)/examples/tests
 ECHO = echo
 E = $(SILENT) $(ECHO)
 
+
+
 MEGATESTFILES = \
 	mt_ng_Bit_Entropy_2.input \
 	mt_ng_OSB_Markov_Chisquared_Unique_2.input \
@@ -144,6 +146,10 @@ test_SCRIPTS = \
 	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
 	alius_w_comment.crm \
 	userdirtest.crm \
+	paolo_ov2.crm \
+	paolo_ov3.crm \
+	paolo_ov4.crm \
+	paolo_ov5.crm \
 	print_binary2decimal_int32.crm
 
 
@@ -157,7 +163,9 @@ test_UBERSCRIPTS = megatest.sh \
 
 EXTRA_DIST = megatest_knowngood.log \
 	test_rewrites.mfp \
-	$(test_SCRIPTS) $(test_UBERSCRIPTS) $(MEGATESTFILES)
+	$(test_SCRIPTS) $(test_UBERSCRIPTS) $(MEGATESTFILES) \
+	testscript.sh.in
+
  
 
 
@@ -253,6 +261,45 @@ test_mailreaver:
 	$(E) "test_mailreaver CALLED"
 	$(E) "   ************************************"
 
+
+script: bracktest other_tests
+
+bracktest: testscript.sh bracktest.crm
+	./testscript.sh bracktest.crm "" - 
+
+other_tests: testscript.sh 
+	./testscript.sh escapetest.crm "" - 
+	./testscript.sh fataltraptest.crm "" - 
+	./testscript.sh inserttest_a.crm "" - 
+	./testscript.sh matchtest.crm     matchtest_mt_ng_1.input -
+	./testscript.sh backwardstest.crm backwardstest_mt_ng_1.input -
+	./testscript.sh backwardstest.crm backwardstest_mt_ng_2.input -
+	./testscript.sh overalterisolatedtest.crm "" -  
+	./testscript.sh rewritetest.crm "" -  
+	./testscript.sh skudtest.crm "" -  
+	./testscript.sh statustest.crm "" -  
+	./testscript.sh unionintersecttest.crm "" - 
+	./testscript.sh beeptest.crm "" -  
+	./testscript.sh defaulttest.crm "" - 
+	./testscript.sh defaulttest.crm  "" - "" --blah="command override"
+	./testscript.sh windowtest.crm windowtest_mt_ng_1.input -
+	./testscript.sh windowtest_fromvar.crm windowtest_fromvar_mt_ng_1.input -
+	./testscript.sh approxtest.crm approxtest_mt_ng_1.input -
+	./testscript.sh mathalgtest.crm  "" - 
+	./testscript.sh mathrpntest.crm  "" - "" -q 1
+	./testscript.sh eval_infiniteloop.crm "" - 
+	./testscript.sh randomiotest.crm "" - 
+	./testscript.sh paolo_overvars.crm "" - 
+	./testscript.sh paolo_ov2.crm "" - 
+	./testscript.sh paolo_ov3.crm "" - 
+	./testscript.sh paolo_ov4.crm "" - 
+	./testscript.sh paolo_ov5.crm "" - 
+	./testscript.sh match_isolate_test.crm "" - "" -e
+	./testscript.sh match_isolate_reclaim.crm "" - "" -e
+	./testscript.sh call_return_test.crm "" - 
+	./testscript.sh translate_tr.crm "" - 
+	./testscript.sh zz_translate_test.crm "" - 
+	./testscript.sh quine.crm "" - 
 
 
 .PHONY: test test_basics test_other test_megatest test_megatest_ng test_mailfilter test_mailreaver megatest megatest_ng

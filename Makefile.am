@@ -23,9 +23,10 @@ DB2X_XSLTPROC  = @DB2X_XSLTPROC@
 DB2X_MANXML    = @DB2X_MANXML@
 DB2X_TEXIXML   = @DB2X_TEXIXML@
 
-# [i_a] override AC_LOCAL so the tool will correctly include the ./m4 directory too
-#       (bug in aclocal 1.xx?)
-ACLOCAL = @ACLOCAL@ -I $(top_srcdir)/m4
+
+# [i_a] instruct AC_LOCAL to correctly include the ./m4 directory too
+ACLOCAL_AMFLAGS = -I $(top_srcdir)/m4
+
 
 SEVENZIP_OPTIONS=a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on
 # SEVENZIP_OPTIONS=a -si
@@ -103,6 +104,26 @@ EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
 	cleanup.bat autogen.sh CREDITS README.win32 BUGS \
 	README.maintainer MAILINGLIST \
 	$(MSVC_PRJ_FILES)
+
+WIN32_BIN_EXTRA = CREDITS README.win32 BUGS \
+	MAILINGLIST \
+	HACKING README.1st \
+	docs/classify_details.txt \
+	docs/COLOPHON.txt \
+	docs/CRM114_Mailfilter_HOWTO.txt \
+	docs/FAQ.txt \
+	docs/INTRO.txt \
+	docs/knownbugs.txt \
+	docs/QUICKREF.txt \
+	docs/README \
+	docs/VT_generic_Vector_Tokenization.txt \
+	mailfilter/classifymail.crm \
+	mailfilter/mailfilter.cf \
+	mailfilter/mailfilter.crm \
+	mailfilter/maillib.crm \
+	mailfilter/mailreaver.crm \
+	mailfilter/mailtrainer.crm
+
 
 
 if MAINTAINER_MODE
@@ -245,19 +266,19 @@ dist-win32-bin: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.tar.bz2
 if OS_HAS_TAR
 if OS_HAS_GZIP
-	$(TAR_BIN) -c win32/bin/*.exe win32/bin/*.dll | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).Win32.bin.tar.gz
+	$(TAR_BIN) -c $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' ` | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).Win32.bin.tar.gz
 endif
 if OS_HAS_BZIP2
-	$(TAR_BIN) -c win32/bin/*.exe win32/bin/*.dll | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).Win32.bin.tar.bz2
+	$(TAR_BIN) -c $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' ` | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).Win32.bin.tar.bz2
 endif
 if OS_HAS_COMPRESS
 endif
 endif
 if OS_HAS_SEVENZIP
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).Win32.bin.7z win32/bin/*.exe win32/bin/*.dll 
+	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).Win32.bin.7z $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' `
 endif
 if OS_HAS_ZIP
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).Win32.bin.zip win32/bin/*.exe win32/bin/*.dll 
+	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).Win32.bin.zip $(WIN32_BIN_EXTRA) `find win32/bin/ -name '*.exe' -o -name '*.dll' `
 endif
 
 

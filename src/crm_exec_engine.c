@@ -203,7 +203,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
 
     if (user_trace)
     {
-        fprintf(stderr, "\nExecuting line %d :\n", csl->cstmt);
+        fprintf(stderr, "\nExecuting line %d:\n", csl->cstmt);
         fprintf(stderr, " -->  ");
 #if 0
         for (i = 0; i < slen; i++)

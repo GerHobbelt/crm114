@@ -27,9 +27,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
+				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -56,7 +56,7 @@
 				BrowseInformation="1"
 				WarningLevel="4"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4127;4018;4389;6244;6262;6011"
 				EnablePREfast="true"
 			/>
@@ -78,6 +78,10 @@
 				AssemblyDebug="1"
 				ProgramDatabaseFile="$(OutDir)/crm114.pdb"
 				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
 				Profile="true"
 			/>
@@ -118,9 +122,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin directory"
-				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(TargetFileName)"
+				Description="copy $(TargetFileName) to bin\$(PlatformName) directory"
+				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;mkdir &quot;$(SolutionDir)bin\$(PlatformName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
+				Outputs="$(SolutionDir)bin\$(PlatformName)\$(TargetFileName)"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -174,7 +178,7 @@
 				OptimizeForWindows98="1"
 				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
-				Profile="true"
+				Profile="false"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -863,6 +867,10 @@
 				</File>
 				<File
 					RelativePath="..\src\mailtrainer.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\src\make_vanilla_UNIX.sh"
 					>
 				</File>
 				<File

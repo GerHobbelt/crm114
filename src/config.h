@@ -541,7 +541,7 @@
 #define MACHINE_IS_LITTLE_ENDIAN 1
 
 /* directory where BillY's original crm114 distro resides */
-#define ORIGINAL_BILLY_DISTRO_DIR ../../../1original/crm114/src/crm114.sourceforge.net/src
+#define ORIGINAL_BILLY_DISTRO_DIR "../../../1original/crm114/src/crm114.sourceforge.net/src"
 
 /* Name of package */
 #define PACKAGE "crm114"
@@ -568,7 +568,7 @@
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
 /* revision number of software */
-#define REVISION "2222"
+#define REVISION "2229"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4
@@ -586,7 +586,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-2222"
+#define TAR_FILENAME_POSTFIX "Ger-2229"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

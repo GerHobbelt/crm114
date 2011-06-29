@@ -18,8 +18,7 @@ c_SCRIPTS = \
  mailfilter.crm \
  maillib.crm \
  mailreaver.crm \
- mailtrainer.crm \
- rewriteutil.crm
+ mailtrainer.crm
 
 EXTRA_DIST = mailfilter.cf
 

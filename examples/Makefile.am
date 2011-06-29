@@ -27,7 +27,8 @@ crm_DATA = \
  priolist.mfp \
  rewrites.mfp \
  whitelist.mfp \
- whitelist.mfp.example
+ whitelist.mfp.example \
+ rewriteutil.crm
 
 
 

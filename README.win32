@@ -1,16 +1,17 @@
-crm114-gnu-win32 is a command line driven program. Please refer to the manual
+crm114-win32 is a command line driven program. Please refer to the manual
 page from the source distribution (available in the ./man/ directory) and
 check the commandline syntax for a list of generally available command-line 
 options (depending on your build, some may not be available to you; run
 
-  crm114 -h
+  crm114 -v
 
 to inspect the included feature set available).
 
 Specific technical documentation is also available in the ./docs/ directory.
 
 This Win32 port of crm114 is a full featured version. It currently only lacks 
-syscall support (i.e. cannot run external applications/tools).
+syscall /:label:/ support (i.e. cannot fork a crm114 script). Running external applications/tools
+using 'syscall' is supported though.
 
 
 !!!! WARNING !!!!
@@ -43,6 +44,13 @@ The crm114 source code distribution does NOT include cygwin/MingW support.
 !!!! WARNING !!!!
 
 
-For the latest information always check the pavuk homepage at URL:
+For the latest information always check the crm114 homepage at URL:
 
   http://crm114.sourceforge.net/
+
+and the crm114 Win32 port at
+
+  http://www.hebbut.net/ --> 'Public Offerings' --> CRM114
+or
+  http://crm114.hebbut.net/
+

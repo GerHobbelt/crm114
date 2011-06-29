@@ -502,6 +502,9 @@
 /* Define to 1 if you have the `_setmode' function. */
 /* #undef HAVE__SETMODE */
 
+/* Define to 1 if you have the `_set_errno' function. */
+/* #undef HAVE__SET_ERRNO */
+
 /* Define to 1 if you have the `_set_output_format' function. */
 /* #undef HAVE__SET_OUTPUT_FORMAT */
 
@@ -544,6 +547,9 @@
  * first (like Intel and VAX). */
 #define MACHINE_IS_LITTLE_ENDIAN 1
 
+/* directory where BillY's original crm114 distro resides */
+#define ORIGINAL_BILLY_DISTRO_DIR ../../../1original/crm114/src/crm114.sourceforge.net/src
+
 /* Name of package */
 #define PACKAGE "crm114"
 
@@ -568,13 +574,8 @@
 /* "enable replacement (v)snprintf if system (v)snprintf is broken" */
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
-/* revision code of the software */
-#define REVISION "1960"
-
-/* Define to 1 if the `setvbuf' function takes the buffering type as its
-   second argument and the buffer pointer as the third, as on System V before
-   release 3. */
-/* #undef SETVBUF_REVERSED */
+/* revision number of software */
+#define REVISION "2222"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4
@@ -592,7 +593,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1960"
+#define TAR_FILENAME_POSTFIX "Ger-2222"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
