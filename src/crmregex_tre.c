@@ -383,7 +383,7 @@ void crm_regfree(regex_t *preg)
     regfree(preg);
 #endif
 
-	memset(preg, 0, sizeof(preg[0]));
+    memset(preg, 0, sizeof(preg[0]));
 }
 
 char *crm_regversion(void)

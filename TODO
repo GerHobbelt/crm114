@@ -157,4 +157,6 @@ Stefan Seyfried
 - See if we can find a better solution for the crm_free() void** casting and the
   GCC 3.x resulting warning in -O3 mode about type-punning. :-(
 
-
+- make VT <unique> / oridering cooperate with feature_weight/order_no fetching
+  classifiers & Arne's optimization: right now, those extra values are *SHOT*
+  when <unique> is specified.

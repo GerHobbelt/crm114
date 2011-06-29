@@ -376,7 +376,14 @@ static int make_new_backing_file(const char *filename)
     f = fopen(filename, "wb");
     if (!f)
     {
-        nonfatalerror("unable to create neural network backing file", filename);
+        char dirbuf[DIRBUFSIZE_MAX];
+
+        fatalerror_ex(SRC_LOC(),
+                "\n Couldn't open your NEURAL NET backing file %s for writing; (full path: '%s') errno=%d(%s)\n",
+                filename,
+                mk_absolute_path(dirbuf, WIDTHOF(dirbuf), filename),
+                errno,
+                errno_descr(errno));
         return -1;
     }
 
@@ -636,7 +643,7 @@ static double logistic(double a)
 
     if (isnan(a))
     {
-#if 0 // [i_a] gibberish
+#if 0   // [i_a] gibberish
         char *foo;
         foo = malloc(32);
         fprintf(stderr, "Logistic of a NAN\n");
@@ -701,8 +708,8 @@ static double logistic(double a)
         adub = a - lo;
         //    fprintf (stderr, "a = %lf, lo = %d, adub = %lf\n",
         //     a, lo, adub);
-        y = logistic_lookup[lo + 11] * adub
-            + logistic_lookup[lo + 11 + 1] * (1.0 - adub);
+        y = logistic_lookup[lo + 11] *adub
+            + logistic_lookup[lo + 11 + 1] *(1.0 - adub);
         return y;
     }
 #endif
@@ -838,7 +845,7 @@ static void do_net(NEURAL_NET_STRUCT *nn, crmhash_t *bag, int baglen)
             nn->first_layer[neuron] +=
                 //	avalWin(nn, neuron, channel)
                 nn->Win[(neuron * nn->retina_size) + channel]
-                * nn->retina[channel];
+                *nn->retina[channel];
         }
     }
 
@@ -865,7 +872,7 @@ static void do_net(NEURAL_NET_STRUCT *nn, crmhash_t *bag, int baglen)
         {
             nn->hidden_layer[neuron] +=
                 *arefWhid(nn, neuron, channel)
-            * nn->first_layer[channel];
+                * nn->first_layer[channel];
         }
     }
 
@@ -886,9 +893,9 @@ static void do_net(NEURAL_NET_STRUCT *nn, crmhash_t *bag, int baglen)
     for (channel = 1; channel < nn->hidden_layer_size; channel++)
     {
         nn->output_layer[0] += *arefWout(nn, 0, channel)
-        * nn->hidden_layer[channel];
+                               * nn->hidden_layer[channel];
         nn->output_layer[1] += *arefWout(nn, 1, channel)
-        * nn->hidden_layer[channel];
+                               * nn->hidden_layer[channel];
     }
 
     nn->output_layer[0] = logistic(nn->output_layer[0]);
@@ -965,6 +972,8 @@ static int eat_document(ARGPARSE_BLOCK *apb,
             NULL,                                         // coeff array
             feature_space,                                // where to put the hashed results
             max_features - 1,                             //  max number of hashes
+            NULL,
+            NULL,
             &n_features                                   // how many hashes we actually got
                                 );
 
@@ -1356,9 +1365,12 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             f = fopen(filename, "ab+");
             if (f == NULL)
             {
+                char dirbuf[DIRBUFSIZE_MAX];
+
                 int fev = fatalerror_ex(SRC_LOC(),
-                        "\n Couldn't open your new CSS file %s for append; errno=%d(%s)\n",
+                        "\n Couldn't open your NEURAL NET backing file %s for appending; (full path: '%s') errno=%d(%s)\n",
                         filename,
+                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), filename),
                         errno,
                         errno_descr(errno));
                 return fev;
@@ -1939,7 +1951,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         nn->delta_hidden_layer[neuron] +=
                             nn->delta_output_layer[channel]
-                            * (*arefWout(nn, channel, neuron));
+                            *(*arefWout(nn, channel, neuron));
                     }
                 }
 
@@ -1948,8 +1960,8 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     nn->delta_hidden_layer[neuron] =
                         (nn->delta_hidden_layer[neuron]
-                         * nn->hidden_layer[neuron]
-                         * (1.0 - nn->hidden_layer[neuron]));
+                         *nn->hidden_layer[neuron]
+                         *(1.0 - nn->hidden_layer[neuron]));
                 }
 
                 if (internal_trace)
@@ -1986,7 +1998,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         nn->delta_first_layer[neuron] +=
                             nn->delta_hidden_layer[neuron]
-                            * (*arefWhid(nn, channel, neuron));
+                            *(*arefWhid(nn, channel, neuron));
                     }
                 }
 
@@ -1995,8 +2007,8 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     nn->delta_first_layer[neuron] =
                         (nn->delta_first_layer[neuron]
-                         * nn->first_layer[neuron]
-                         * (1.0 - nn->first_layer[neuron]));
+                         *nn->first_layer[neuron]
+                         *(1.0 - nn->first_layer[neuron]));
                 }
 
                 if (internal_trace)
@@ -2034,9 +2046,9 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         {
                             *arefWout(nn, neuron, channel) =
                                 *arefWout(nn, neuron, channel)
-                            + (alphalocal
-                               * nn->delta_output_layer[neuron]
-                               * nn->hidden_layer[channel]);
+                                + (alphalocal
+                                   * nn->delta_output_layer[neuron]
+                                   *nn->hidden_layer[channel]);
                         }
                     }
 
@@ -2047,9 +2059,9 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         {
                             *arefWhid(nn, neuron, channel) =
                                 *arefWhid(nn, neuron, channel)
-                            + (alphalocal
-                               * nn->delta_hidden_layer[neuron]
-                               * nn->first_layer[channel]);
+                                + (alphalocal
+                                   * nn->delta_hidden_layer[neuron]
+                                   *nn->first_layer[channel]);
                         }
                     }
 
@@ -2060,9 +2072,9 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         {
                             *arefWin(nn, neuron, channel) =
                                 *arefWin(nn, neuron, channel)
-                            + (alphalocal
-                               * nn->delta_first_layer[neuron]
-                               * nn->retina[channel]);
+                                + (alphalocal
+                                   * nn->delta_first_layer[neuron]
+                                   *nn->retina[channel]);
                         }
                     }
                 }
@@ -2077,7 +2089,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             dWout[channel * 2 + neuron] +=
                                 (alphalocal
                                  * nn->delta_output_layer[neuron]
-                                 * nn->hidden_layer[channel]);
+                                 *nn->hidden_layer[channel]);
                         }
                     }
 
@@ -2089,7 +2101,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             dWhid[channel * nn->hidden_layer_size + neuron] +=
                                 (alphalocal
                                  * nn->delta_hidden_layer[neuron]
-                                 * nn->first_layer[channel]);
+                                 *nn->first_layer[channel]);
                         }
                     }
 
@@ -2101,7 +2113,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             dWin[channel * nn->first_layer_size + neuron] +=
                                 (alphalocal
                                  * nn->delta_first_layer[neuron]
-                                 *  nn->retina[channel]);
+                                 *nn->retina[channel]);
                         }
                     }
                     //#endif
@@ -2375,6 +2387,7 @@ int crm_neural_net_classify(
         //     this allows different sized nn's to be compared.
         // ret = malloc( sizeof(unsigned int) * nn->retina_size);
         // rn = project_features(bag, n, ret, nn->retina_size);
+        //example_length[i] = nn->docs_end - nn->docs_start;  -- [i_a]
         do_net(nn, bag, baglen);
         output[i][0] = nn->output_layer[0];
         output[i][1] = nn->output_layer[1];
@@ -2432,6 +2445,10 @@ int crm_neural_net_classify(
         total_icnr = i < fail_on ? output[i][0] : output[i][1];
         total_ocnr = i < fail_on ? output[i][1] : output[i][0];
     }
+    //      renormalize total responses
+    total_icnr = total_icnr / n_classifiers;
+    total_ocnr = total_ocnr / n_classifiers;
+
     suc_pR = get_pR2(total_icnr, total_ocnr);
     out_pos = 0;
 
@@ -2439,18 +2456,18 @@ int crm_neural_net_classify(
     if (suc_p > 0.5)
     {
         out_pos += sprintf(outbuf + out_pos,
-                "CLASSIFY succeeds; success probability: %f  pR: %6.4f\n",
+                "CLASSIFY succeeds; (neural net) success probability: %f  pR: %6.4f\n",
                 suc_p, suc_pR);
     }
     else
     {
         out_pos += sprintf(outbuf + out_pos,
-                "CLASSIFY fails; success probability: %f  pR: %6.4f\n",
+                "CLASSIFY fails; (neural net) success probability: %f  pR: %6.4f\n",
                 suc_p, suc_pR);
     }
 
     out_pos += sprintf(outbuf + out_pos,
-            "Best match to file #%d (%s) prob: %6.4f  pR: %6.4f  \n",
+            "Best match to file #%d (%s) prob: %6.4f  pR: %6.4f\n",
             j,
             filenames[j],
             p[j], pR[j]);
@@ -2467,7 +2484,7 @@ int crm_neural_net_classify(
     }
 
     if (out_var_len)
-        crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_pos);
+        crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_pos, csl->calldepth);
 
     if (suc_p <= 0.5)
     {
@@ -2476,8 +2493,10 @@ int crm_neural_net_classify(
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
-        CRM_ASSERT(csl->cstmt >= 0);
-        CRM_ASSERT(csl->cstmt <= csl->nstmts);
+        if (internal_trace)
+        {
+            fprintf(stderr, "CLASSIFY.NEURAL.NET is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
     return 0;

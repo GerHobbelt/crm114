@@ -1,0 +1,572 @@
+#! /usr/local/bin/crm114
+#     
+#    Program to do 10-fold validation on N classes using various classifiers.
+#
+# 1)  the first user arg is the name of an index file, in TREC format, but
+#     we allow arbitrary classnames and directories instead of just "ham"
+#     and "spam", eg:
+#
+#        arb_classname1 ./foos/file0001.txt
+#        arb_classname2 ./bars/file0001.txt
+#
+# 2)  The classnames are "skimmed" from the index file by doing a prepass,
+#     then the class files are created by learning a tiny text into each one.
+#
+# 3)  Then the index file is divided into ten parts; then the parts are
+#     used for 10-fold validation.  The results are concatenated into a
+#     "results" file, also in TREC format, but note that this is NOT a
+#     proper TREC style file as it doesn't preserve sequence information
+#     (and will keep our training classnames, which may or may not match
+#     work with the TREC analyzers.)
+#
+# 4)  We consider the case of a result pR == 0.00 exactly to be WRONG for all
+#     classes, and train whenever it occurs.
+#
+#
+window
+
+{
+    isolate (:a:) //
+    isolate (:c:) /:*:_argc:/
+    {
+        eval (:a:) /:_arg:@::*:c:-1::/
+        match [:*:a:] <absent> /^--help$/
+        eval (:c:) /:@::*:c:-1:/
+        eval /:@::*:c: >= 1:/
+        liaf
+    }
+    # also print the on-line help when no testset file was specified:
+    {
+        eval /:@::*:_posc: <= 2:/
+        alter (:*:a:) /--help/  # fake it to make through...
+    }
+    match [:*:a:] /^--help$/
+
+    output /This is the tenfold reaver tester, which does a tenfold validation\n/
+    output /test using mailreaver\/mailtrainer and the specified testset files.\n/
+    output /\n/
+    output /You *must* supply at least one testset file.\n/
+    output /\n/
+    output /Command Format:\n/
+    output /      .\/tenfold_validate_mailreaver.crm [options]*\n/
+    output /\n/
+    output /Required options:\n/
+    output / <file>       File containing <class filepath> lines, each\n/
+    output /              specifying one test file for that class.\n/
+    output /\n/
+    output /Optional options: (most of the options supported by mailreaver!)\n/
+    output / --spamcss=spam_statistics.css\n/
+    output /              (Default: spam.css)\n/
+    output / --goodcss=good_statistics.css\n/
+    output /              (Default: nonspam.css)\n/
+    output / --verbose    (tell me more.)\n/
+    output / --config=filename\n/
+    output /              (Use filename as the .cf file. Default is mailfilter.cf)\n/
+    output / --fileprefix=dir\n/
+    output /              (Look in this dir for the .css, .cf and .txt files)\n/
+    output /              (I.e. expect all files in "fileprefix")\n/
+    output / --truncate_logfile[=no]\n/
+    output /              (Overwrite the logfile [=SET] or append to logfile [=no])\n/
+    output /              (Default: overwrite)\n/
+    output /\n/
+    output /Optional TenFold options:\n/
+    output / --doublesided\n/
+    output / --clf=<osb unique microgroom>\n/
+    output / --regex=<re>\n/
+    output / --thickness=<5.0>\n/
+    output / --show_partitions\n/
+    output / --decision_length=<2048>\n/
+    output / --results=<results>\n/
+    output / --truncate_results\n/
+    exit /42/
+}
+
+
+#####################################################################
+#
+#       This is the code to read the per-user configuration.  Note
+#       that because this happens during the run, it will _override_
+#       any command line arguments that get set.
+
+isolate <default> (:fileprefix:) //
+isolate (:verbose_startup:) <default> //
+isolate (:truncate_logfile:) <default> /SET/
+isolate <default> (:config:) /:*:fileprefix:mailfilter.cf/
+
+#
+# read in the options/configuration file
+#
+call /:load_cf_file:/ [:*:config:]
+
+isolate <default> (:verbose:) /SET/
+isolate <default> (:clf:) /osb unique microgroom/
+isolate <default> (:regex:) /:*:lcr:/
+isolate <default> (:doublesided:) /:*:do_refute_training:/
+isolate <default> (:thick_threshold:) /5.0/
+isolate <default> (:thickness:) /:*:thick_threshold:/
+isolate <default> (:show_partitions:) /SET/
+isolate <default> (:decision_length:) /16384/      # /2048/
+isolate <default> (:results:) /results/
+isolate <default> (:truncate_results:) //
+#
+isolate <default> (:initial_text:) /:*:_nl:/
+#
+# get the index file
+#
+#input [:*:_pos2:] (:index_file:)
+#
+# when more then one file was specified, append!
+#
+isolate (:index_file:) //
+isolate (:i:) /2/
+{
+	eval /:@::*:i: < :*:_posc::/
+	isolate (:p:) /:_pos:*:i::/
+	output /Reading from index file ':+:p:'\n/
+	input [:+:p:] (:extra_file:)
+	call /:verbosity:/ [Appending input:\n==============================\n:*:extra_file:\n==============================\n]
+	alter (:index_file:) /:*:index_file:\n:*:extra_file:\n/
+	eval (:i:) /:@::*:i: + 1:/
+	liaf
+}
+call /:verbosity:/ [The final input:\n==============================\n:*:index_file:\n==============================\n]
+
+#
+# Scan the index file for classnames and .stat file names
+#
+isolate (:cnames:) //
+isolate (:cstatfiles:) //
+isolate (:s:) //
+match [:index_file:] //
+{
+	match [:index_file:] <nomultiline fromend> /([[:graph:]]+).*/ (:: :classname:)
+	{
+		match <absent> [:cnames:] /:*:classname:/
+		alter (:cnames:) /:*:cnames::*:classname:\n/
+		alter (:cstatfiles:) /:*:cstatfiles: :*:classname:.stat/
+	}
+	liaf
+}
+{
+        #  Funny business for SVM and SKS solution files
+	match [:clf:] /sks|svm/
+	match [:cstatfiles:] /[[:graph:]]( )[[:graph:]]/ (:: :midspace:)
+        alter (:midspace:) / | /
+
+	alter (:cstatfiles:) /:*:cstatfiles: | versus.stat/
+	output /SVM\/SKS special form: :*:cstatfiles:\n/
+}
+
+
+
+output /Classify\/Learn Flags: :*:clf:\n/
+output /Classes found:\n:*:cnames:\n/
+#
+#
+# Divide filenames into 10 groups (for 10-fold validation)
+#
+match [:index_file:] //
+isolate (:f0: :f1: :f2: :f3: :f4: :f5: :f6: :f7: :f8: :f9:)
+{
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F0: Add filename: ':*:filename:'\n]
+	alter (:f0:) /:*:f0:\n:*:filename:/
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F1: Add filename: ':*:filename:'\n]
+	alter (:f1:) /:*:f1:\n:*:filename:/
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F2: Add filename: ':*:filename:'\n]
+	alter (:f2:) /:*:f2:\n:*:filename:/
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F3: Add filename: ':*:filename:'\n]
+	alter (:f3:) /:*:f3:\n:*:filename:/
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F4: Add filename: ':*:filename:'\n]
+	alter (:f4:) /:*:f4:\n:*:filename:/
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F5: Add filename: ':*:filename:'\n]
+	alter (:f5:) /:*:f5:\n:*:filename:/
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F6: Add filename: ':*:filename:'\n]
+	alter (:f6:) /:*:f6:\n:*:filename:/
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F7: Add filename: ':*:filename:'\n]
+	alter (:f7:) /:*:f7:\n:*:filename:/
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F8: Add filename: ':*:filename:'\n]
+	alter (:f8:) /:*:f8:\n:*:filename:/
+	match <fromend nomultiline> [:index_file:] \
+		/[[:graph:]]+[[:space:]]+[[:graph:]]+/ (:filename:)
+	call /:verbosity:/ [F9: Add filename: ':*:filename:'\n]
+	alter (:f9:) /:*:f9:\n:*:filename:/
+	liaf
+}
+{
+	match [:show_partitions:] /SET/
+	output /F0: \n:*:f0:\n\n/
+	output /F1: \n:*:f1:\n\n/
+	output /F2: \n:*:f2:\n\n/
+	output /F3: \n:*:f3:\n\n/
+	output /F4: \n:*:f4:\n\n/
+	output /F5: \n:*:f5:\n\n/
+	output /F6: \n:*:f6:\n\n/
+	output /F7: \n:*:f7:\n\n/
+	output /F8: \n:*:f8:\n\n/
+	output /F9: \n:*:f9:\n\n/
+}
+#
+# Create the filenames vector
+#
+match [:cnames:] //
+isolate (:filenames:) //
+{
+	match <fromend nomultiline> /[[:graph:]]+/ [:cnames:] (:name:)
+	alter (:filenames:) /:*:filenames: :*:name:.stat /
+	liaf
+}
+
+# truncate :*:results:?
+{
+	match [:truncate_results:] /SET/
+	output [:*:results:] //
+}
+
+#
+# Now the big part of the work.
+#
+# Run the first validation batch
+#
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f0:]
+	call /:learn_files:/ [:*:f1:]
+	call /:learn_files:/ [:*:f2:]
+	call /:learn_files:/ [:*:f3:]
+	call /:learn_files:/ [:*:f4:]
+	call /:learn_files:/ [:*:f5:]
+	call /:learn_files:/ [:*:f6:]
+	call /:learn_files:/ [:*:f7:]
+	call /:learn_files:/ [:*:f8:]
+	call /:check_files:/ [:*:f9:]
+}
+
+# turn verbosity OFF: too much of a good thing after the first round!
+alter (:verbose:) //
+# exit
+
+#
+# Run the second validation batch
+#
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f1:]  
+	call /:learn_files:/ [:*:f2:]  
+	call /:learn_files:/ [:*:f3:]  
+	call /:learn_files:/ [:*:f4:]  
+	call /:learn_files:/ [:*:f5:]  
+	call /:learn_files:/ [:*:f6:]  
+	call /:learn_files:/ [:*:f7:]  
+	call /:learn_files:/ [:*:f8:]  
+	call /:learn_files:/ [:*:f9:]  
+	call /:check_files:/ [:*:f0:]  
+}
+#
+#
+#    Run the third validation batch
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f2:]
+	call /:learn_files:/ [:*:f3:]  
+	call /:learn_files:/ [:*:f4:]  
+	call /:learn_files:/ [:*:f5:]  
+	call /:learn_files:/ [:*:f6:]  
+	call /:learn_files:/ [:*:f7:]  
+	call /:learn_files:/ [:*:f8:]  
+	call /:learn_files:/ [:*:f9:]  
+	call /:learn_files:/ [:*:f0:]  
+	call /:check_files:/ [:*:f1:]  
+}
+#
+#    Run the fourth validation batch
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f3:]  
+	call /:learn_files:/ [:*:f4:]  
+	call /:learn_files:/ [:*:f5:]  
+	call /:learn_files:/ [:*:f6:]  
+	call /:learn_files:/ [:*:f7:]  
+	call /:learn_files:/ [:*:f8:]  
+	call /:learn_files:/ [:*:f9:]  
+	call /:learn_files:/ [:*:f0:]  
+	call /:learn_files:/ [:*:f1:]  
+	call /:check_files:/ [:*:f2:]  
+}
+#
+#    Run the fifth validation batch
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f4:]  
+	call /:learn_files:/ [:*:f5:]  
+	call /:learn_files:/ [:*:f6:]  
+	call /:learn_files:/ [:*:f7:]  
+	call /:learn_files:/ [:*:f8:]  
+	call /:learn_files:/ [:*:f9:]  
+	call /:learn_files:/ [:*:f0:]  
+	call /:learn_files:/ [:*:f1:]  
+	call /:learn_files:/ [:*:f2:]  
+	call /:check_files:/ [:*:f3:]  
+}
+#
+#    Run the sixth validation batch
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f5:]  
+	call /:learn_files:/ [:*:f6:]  
+	call /:learn_files:/ [:*:f7:]  
+	call /:learn_files:/ [:*:f8:]  
+	call /:learn_files:/ [:*:f9:]  
+	call /:learn_files:/ [:*:f0:]  
+	call /:learn_files:/ [:*:f1:]  
+	call /:learn_files:/ [:*:f2:]  
+	call /:learn_files:/ [:*:f3:]  
+	call /:check_files:/ [:*:f4:]  
+}
+#
+#    Run the seventh validation batch
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f6:]  
+	call /:learn_files:/ [:*:f7:]  
+	call /:learn_files:/ [:*:f8:]  
+	call /:learn_files:/ [:*:f9:]  
+	call /:learn_files:/ [:*:f0:]  
+	call /:learn_files:/ [:*:f1:]  
+	call /:learn_files:/ [:*:f2:]  
+	call /:learn_files:/ [:*:f3:]  
+	call /:learn_files:/ [:*:f4:]  
+	call /:check_files:/ [:*:f5:]  
+}
+#
+#    Run the eighth validation batch
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f7:]  
+	call /:learn_files:/ [:*:f8:]  
+	call /:learn_files:/ [:*:f9:]  
+	call /:learn_files:/ [:*:f0:]  
+	call /:learn_files:/ [:*:f1:]  
+	call /:learn_files:/ [:*:f2:]  
+	call /:learn_files:/ [:*:f3:]  
+	call /:learn_files:/ [:*:f4:]  
+	call /:learn_files:/ [:*:f5:]  
+	call /:check_files:/ [:*:f6:]  
+}
+#
+#    Run the ninth validation batch
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f8:]  
+	call /:learn_files:/ [:*:f9:]  
+	call /:learn_files:/ [:*:f0:]  
+	call /:learn_files:/ [:*:f1:]  
+	call /:learn_files:/ [:*:f2:]  
+	call /:learn_files:/ [:*:f3:]  
+	call /:learn_files:/ [:*:f4:]  
+	call /:learn_files:/ [:*:f5:]  
+	call /:learn_files:/ [:*:f6:]  
+	call /:check_files:/ [:*:f7:]  
+}
+#
+#    Run the tenth validation batch
+{
+	call /:clean_the_files:/
+	call /:learn_files:/ [:*:f9:]  
+	call /:learn_files:/ [:*:f0:]  
+	call /:learn_files:/ [:*:f1:]  
+	call /:learn_files:/ [:*:f2:]  
+	call /:learn_files:/ [:*:f3:]  
+	call /:learn_files:/ [:*:f4:]  
+	call /:learn_files:/ [:*:f5:]  
+	call /:learn_files:/ [:*:f6:]  
+	call /:learn_files:/ [:*:f7:]  
+	call /:check_files:/ [:*:f8:]  
+}
+
+exit /0/
+
+
+:clean_the_files:
+#
+# Empty the statistics files, create fresh empty ones
+#
+
+isolate (:learned:) /0/
+
+output /\n/
+match [:cnames:] //
+{
+	match <fromend nomultiline> /[[:graph:]]+/ [:cnames:] (:name:)
+	output /Deleting old :*:name:.stat\n/
+	syscall /rm -rf :*:name:.stat /
+
+	#output /CREATING :*:name:.stat with :*:initial_text:\n/
+	output /CREATING :*:name:.stat ...\n/
+	learn <:*:clf:> /:*:regex:/ [:initial_text:] (:*:name:.stat)
+
+	# syscall /ls -la 1>&2 /
+	liaf
+	{
+		match [:clf:] /svm|sks/
+		syscall /rm -rf versus.stat/
+	}
+}
+return
+
+
+
+:learn_files: (:file_list:)
+#
+#
+match [:file_list:] //
+{
+	call /:verbosity:/ [Cstatfiles: ':*:cstatfiles:']
+	match <fromend nomultiline> [:file_list:] /([[:graph:]]+)[[:blank:]]+([[:graph:]]+)/ (:: :cnam: :fnam:)
+	call /:verbosity:/ [\nExample file: :*:fnam: (:*:cnam:)]
+	input [:*:fnam: 0 :*:decision_length:] (:ftext:)
+	isolate (:s:) //
+	{
+		classify <:*:clf:> /:*:regex:/ [:ftext:] (:*:cstatfiles:) (:s:)
+	}
+	call /:verbosity:/ [:*:s:]
+	#   Did our classify result say we're good?
+	{
+		match [:s:] <nomultiline> (:L: :pr:) /^\#. \(:*:cnam:\.stat\).*pR:[[:blank:]]+([-+0-9.eE]+)/
+		call /:verbosity:/ [classify match: line = ':*:L:'; pR = ':*:pr:']
+		{
+			output /./
+			eval /:@: :*:pr: < :*:thickness: :/
+			{
+				eval /:@: :*:pr: < 0 :/
+				output /X/
+			}
+			output /\nExample file: :*:fnam: (:*:cnam:)  /
+			output /(pR: :*:pr:) learning into :*:cnam:.stat  /
+			learn <:*:clf:> [:ftext:] /:*:regex:/ (:*:cnam:.stat)
+			{
+				# if doublesided, go through the list of all 
+				# classfiles and anti-learn if it's not
+				# our class.
+				match [:doublesided:] /SET/
+				match [:cstatfiles:] /.*/ (:cs_alt:)
+				{
+					match <fromend> [:cs_alt:] /[[:graph:]]+/ (:csfil:)
+					{
+						match <absent> [:csfil:] /:*:cnam:/ 
+						output /learn-out: :*:csfil:\n/
+						learn <:*:clf: refute> [:ftext:] (:*:csfil:) /:*:regex:/
+					}
+					liaf
+				}
+			}
+			{
+                                #  fixup for versus-file anomaly in svm/sks 
+				match [:clf:] /svm|sks/
+				learn <:*:clf:> /:*:regex:/ (:*:cstatfiles:)
+			}
+			{
+				output / trained.\n/
+			}
+		}
+	}
+	liaf
+}
+return
+
+
+:check_files: (:file_list:)
+#
+output /\nNow the final testing 10%: /
+output <append> [:*:results:] /=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=\n/
+match [:file_list:] //
+{
+	call /:verbosity:/ [Cstatfiles: ':*:cstatfiles:']
+	match <fromend nomultiline> [:file_list:] /([[:graph:]]+)[[:blank:]]+([[:graph:]]+)/ (:: :cnam: :fnam:)
+	call /:verbosity:/ [\nExample file: :*:fnam: (:*:cnam:)]
+	output <append> [:*:results:] /File: :*:fnam: class: :*:cnam: /
+	input [:*:fnam: 0 :*:decision_length:] (:ftext:)
+	isolate (:s:) //
+	{
+		classify <:*:clf:> /:*:regex:/ [:ftext:] (:*:cstatfiles:) (:s:)
+	}
+	call /:verbosity:/ [:*:s:]
+	alter (:pr:) /0.0/
+	#    Get our :*:results: back
+	{
+		{
+			match [:s:] <nomultiline> (:L: :pr:) /^\#. \(:*:cnam:\.stat\).*pR:[[:blank:]]+([-+0-9.eE]+)/
+			call /:verbosity:/ [classify match: line = ':*:L:'; pR = ':*:pr:']
+		}
+		alius
+		output / BOGUS!!!!!\n/
+	}
+	call /:verbosity:/ [pR = :*:pr:]
+
+	#   Did our classify result say we're good?
+	{
+		{
+			eval /:@: :*:pr: > 0.0 :/
+			output /-/
+			output <append> [:*:results:] / pR: :*:pr: CORRECT.\n/
+		}
+		alius
+		{
+			output /X/
+			output <append> [:*:results:] / pR: :*:pr: WRONG.\n/
+		}
+	}
+	liaf
+}
+output /\n/
+return
+
+
+
+
+
+
+################################################################
+#
+#        Catch failures.
+
+trap (:broken_program_message:) /.*/
+{
+    #accept
+    isolate <default> (:mailout:) //
+    output [:*:mailout:] /:*:_dw:/
+
+    output /:*:_nl: Aw, crud.  tenfold_validate_mailreaver.crm broke.  Here's the error: :*:_nl:/
+    output /:*:broken_program_message:/
+    output [stderr] /:*:_nl: ERROR: tenfold_validate_mailreaver.crm broke.  Here's the error: :*:_nl:/
+    output [stderr] /ERROR: :*:broken_program_message:/
+}
+isolate <default> (:program_fault_exit_code:) /66/
+exit /:*:program_fault_exit_code:/
+
+
+######################################################################3
+#
+#              Library insertions start here.
+#
+#insert [:*:fileprefix:maillib.crm]
+#insert [:*:_env_PWD:maillib.crm]
+#insert [:*:_env_PWD:/../mailfilter/mailreaver.crm]
+insert [../mailfilter/mailreaver.crm]

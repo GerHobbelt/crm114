@@ -81,9 +81,22 @@ window
     output /              (Look in this dir for the .css, .cf and .txt files)\n/
     output /              (I.e. expect all files in "fileprefix")\n/
     output /\n/
-    output /That's all!  Enjoy.\n/
+    output /MailFilter.CF Override Commands:\n/
+    output /   You can specify any mailfilter.cf entry as an option on the command\n/
+    output /   line to override that option in the mailfilter.cf configuration\n/
+    output /   file, e.g.\n/
+    output /     --do_base64=yes\n/
+    output /   See the mailfilter.cf file for all available entries.\n/
     exit /42/
 }
+
+isolate (:program_fault_exit_code:) /66/   # [i_a] in case mailfilter.cf cannot be loaded: make sure we don't get an error report cascade.
+isolate (:our_exit_code:) /0/
+call /:exec_mailtrainer:/ (:our_exit_code:)
+exit /:our_exit_code:/
+
+:exec_mailtrainer: (:our_exit_code:)
+isolate <default> (:program_fault_exit_code:) /66/
 
 #
 # --->>>    Basic Design Philosophy ( do these IN ORDER ) - note
@@ -116,36 +129,40 @@ window
 #
 #    --- These vars must have a value, or else we'll get errors ----
 #
-isolate (:program_fault_exit_code:) /66/   # [i_a] in case mailfilter.cf cannot be loaded: make sure we don't get an error report cascade.
+
+# GerH vs VANILLA fixes:
+isolate (:_hosttype:) <default> /UNKNOWN/
+# GerH vs VANILLA fixes -- END --
+
 #
 isolate <default> (:fileprefix:) //
 #
-isolate (:do_refute_training:) /SET/
+isolate <default> (:do_refute_training:) /SET/
 
 isolate (:classifier_reason:) /no reason yet/
-#
-isolate (:our_exit_code:) /0/
 #
 isolate (:stats:) / pR: 0.000000 /
 #
 isolate (:pr:) /0.00000/
 #
-isolate (:subj_text:) / (None) /
+isolate <default> (:subj_text:) / (None) /
 #
-isolate (:add_extra_stuff:) //
+isolate <default> (:add_extra_stuff:) //
 #
 #      Isolate these email addresses, and give them values,
 #      in case the user doesn't.
-isolate (:reject_address:) //
-isolate (:unsure_address:) //
-isolate (:fail_priority_mail_to:) //
-isolate (:fail_classify_mail_to:) //
-isolate (:fail_blacklist_mail_to:) //
-isolate (:fail_SSM_mail_to:)  //
-isolate (:log_rejections:) //
+isolate <default> (:reject_address:) //
+isolate <default> (:unsure_address:) //
+isolate <default> (:fail_priority_mail_to:) //
+isolate <default> (:fail_classify_mail_to:) //
+isolate <default> (:fail_blacklist_mail_to:) //
+isolate <default> (:fail_SSM_mail_to:)  //
+
 #
 #       now, :clf: is the classify & learn flags.
-isolate (:clf:) //
+isolate <default> (:clf:) //
+
+isolate (:dospath:) //
 #
 
 #####################################################################
@@ -154,7 +171,7 @@ isolate (:clf:) //
 #       that because this happens during the run, it will _override_
 #       any command line arguments that get set.
 
-isolate (:verbose_startup:) <default> //
+isolate <default> (:verbose_startup:) //
 isolate <default> (:config:) /:*:fileprefix:mailfilter.cf/
 
 #
@@ -200,6 +217,9 @@ isolate <default> (:thick:)    /no/
     match <absent> [:thick:] /^no$/
     alter (:thick_threshold:) /:*:thick:/
 }
+
+call /:mk_abspath_on_fileprefix:/ [:*:goodcss:] (:goodcss:)
+call /:mk_abspath_on_fileprefix:/ [:*:spamcss:] (:spamcss:)
 
 #   and set up our bookkeeping variables
 #
@@ -305,8 +325,8 @@ isolate (:single_file_mode:) //
 		trap /.*/ (:reason:)
 		{
 			output / :*:reason:/
-			output /Unable to read your good file ':*:goodfile:'\n/
-			alter (:report:) /:*:report: Unable to read your good file ':*:goodfile:'\n/
+			output /Unable to process your good file ':*:goodfile:'\n/
+			alter (:report:) /:*:report: Unable to process your good file ':*:goodfile:'\n/
 			goto /:error_exit:/
 		}
 	}
@@ -339,8 +359,8 @@ isolate (:single_file_mode:) //
 		trap /.*/ (:reason:)
 		{
 			output / :*:reason:/
-			output /Unable to read your spam file ':*:spamfile:'\n/
-			alter (:report:) /:*:report: Unable to read your spam file ':*:spamfile:'\n/
+			output /Unable to process your spam file ':*:spamfile:'\n/
+			alter (:report:) /:*:report: Unable to process your spam file ':*:spamfile:'\n/
 			goto /:error_exit:/
 		}
 	}
@@ -420,8 +440,8 @@ alter (:report:) /:*:report:  good source directory: :*:gooddir::*:goodwildcard:
 		alter (:report:) /:*:report:  single file mode:      no\n/
 	}
 }
-alter (:report:) /:*:report:  spam CSS file:         :*:fileprefix::*:spamcss:\n/
-alter (:report:) /:*:report:  good CSS file:         :*:fileprefix::*:goodcss:\n/
+alter (:report:) /:*:report:  spam CSS file:         :*:spamcss:\n/
+alter (:report:) /:*:report:  good CSS file:         :*:goodcss:\n/
 alter (:report:) /:*:report:  classifier config:     :*:clf:\n/
 
 #
@@ -504,20 +524,22 @@ alter (:report:) /:*:report:  concise log file:      :*:rfile:\n/
         call /:verbosity:/ [mailtrainer: host type = ':*:_hosttype:']
         match [:_hosttype:] /Windows-MS/
         call /:mk_dospath:/ [:*:spamdir::*:spamwildcard:] (:dospath:)
+        call /:verbosity:/ [mailtrainer: scan dir: dir \/s \/b :*:dospath:]
         syscall /dir \/s \/b :*:dospath: / () (:spamfiles:)
-        output /directory scan for ':*:spamdir::*:spamwildcard:' --> ':*:dospath:' --> :*:spamfiles:\n/
+        call /:verbosity:/ [directory scan for ':*:spamdir::*:spamwildcard:' --> ':*:dospath:' --> :*:spamfiles:\n]
     }
     alius
     {
-        syscall /find :*:spamdir: -type f -name :*:spamwildcard: -print/ () (:spamfiles:)
-        output /directory scan for ':*:spamdir::*:spamwildcard:' --> :*:spamfiles:\n/
+        call /:verbosity:/ [mailtrainer: scan dir: find :*:spamdir: -type f -name ':*:spamwildcard:' -print]
+        syscall /find :*:spamdir: -type f -name ':*:spamwildcard:' -print/ () (:spamfiles:)
+        call /:verbosity:/ [directory scan for ':*:spamdir::*:spamwildcard:' --> :*:spamfiles:\n]
     }
     # output /spamfiles:  ':*:spamfiles:'\n/
     trap /.*/ (:reason:)
     {
-        output / :*:reason:/
-        output /Unable to read your spamdir at :*:spamdir: \n/
-        alter (:report:) /:*:report: Unable to read your spamdir at :*:spamdir: \n/
+        output /:*:reason:/
+        output /Unable to process your spamdir at :*:spamdir: \n/
+        alter (:report:) /:*:report: Unable to process your spamdir at :*:spamdir: \n/
         goto /:error_exit:/
     }
 }
@@ -531,20 +553,22 @@ alter (:report:) /:*:report:  concise log file:      :*:rfile:\n/
         call /:verbosity:/ [mailtrainer: host type = ':*:_hosttype:']
         match [:_hosttype:] /Windows-MS/
         call /:mk_dospath:/ [:*:gooddir::*:goodwildcard:] (:dospath:)
+        call /:verbosity:/ [mailtrainer: scan dir: dir \/s \/b :*:dospath:]
         syscall /dir \/s \/b :*:dospath: / () (:goodfiles:)
-        output /directory scan for ':*:gooddir::*:goodwildcard:' --> ':*:dospath:' --> :*:goodfiles:\n/
+        call /:verbosity:/ [directory scan for ':*:gooddir::*:goodwildcard:' --> ':*:dospath:' --> :*:goodfiles:\n]
     }
     alius
     {
-        syscall /find :*:gooddir: -type f -name :*:goodwildcard: -print/ () (:goodfiles:)
-        output /directory scan for ':*:gooddir::*:goodwildcard:' --> :*:goodfiles:\n/
+        call /:verbosity:/ [mailtrainer: scan dir: find :*:gooddir: -type f -name ':*:goodwildcard:' -print]
+        syscall /find :*:gooddir: -type f -name ':*:goodwildcard:' -print/ () (:goodfiles:)
+        call /:verbosity:/ [directory scan for ':*:gooddir::*:goodwildcard:' --> :*:goodfiles:\n]
     }
     # output /goodfiles:  ':*:goodfiles:'\n/
     trap /.*/ (:reason:)
     {
         output /:*:reason:/
-        output /Unable to read your gooddir at :*:gooddir: \n/
-        alter (:report:) /:*:report: Unable to read your gooddir at :*:gooddir: \n/
+        output /Unable to process your gooddir at :*:gooddir: \n/
+        alter (:report:) /:*:report: Unable to process your gooddir at :*:gooddir: \n/
         goto /:error_exit:/
     }
 }
@@ -623,28 +647,28 @@ isolate (:randfiles:) //
     # only create the new CSS files when they don't exist yet:
     # if we can READ from them, they exist
     # (input [] is faster than syscall-based exist checks)
-    input (:bogus_buf:) [:*:fileprefix::*:goodcss: 0 128]
+    input (:bogus_buf:) [:*:goodcss: 0 128]
     trap //
 
-    call /:verbosity:/ [Creating a (yet empty) GOOD CSS database file ':*:fileprefix::*:goodcss:'\n]
+    call /:verbosity:/ [Creating a (yet empty) GOOD CSS database file ':*:goodcss:'\n]
 
     # [i_a]
     #
     # This is a clear spot for the use of the new 'csscreate' command!
-    #csscreate <:*:clf:> /:*:lcr:/ (:*:fileprefix::*:goodcss:)
-    learn [:_nl:] <:*:clf:> /:*:lcr:/ (:*:fileprefix::*:goodcss:)
+    #csscreate <:*:clf:> /:*:lcr:/ (:*:goodcss:)
+    learn [:_nl:] <:*:clf:> /./ (:*:goodcss:)
 }
 {
-    input (:bogus_buf:) [:*:fileprefix::*:spamcss: 0 128]
+    input (:bogus_buf:) [:*:spamcss: 0 128]
     trap //
 
-    call /:verbosity:/ [Creating a (yet empty) SPAM CSS database file ':*:fileprefix::*:spamcss:'\n]
+    call /:verbosity:/ [Creating a (yet empty) SPAM CSS database file ':*:spamcss:'\n]
 
     # [i_a]
     #
     # This is a clear spot for the use of the new 'csscreate' command!
-    #csscreate <:*:clf:> /:*:lcr:/ (:*:fileprefix::*:spamcss:)
-    learn [:_nl:] <:*:clf:> /:*:lcr:/ (:*:fileprefix::*:spamcss:)
+    #csscreate <:*:clf:> /:*:lcr:/ (:*:spamcss:)
+    learn [:_nl:] <:*:clf:> /./ (:*:spamcss:)
 }
 
 
@@ -756,9 +780,13 @@ DEBUG: goodwildcard = ':*:goodwildcard:'\n]
                 call /:test_train_good:/
             }
 
-            trap /unable to read-open/
-            output /\nCOULDN'T READ THE GOOD FILE ':*:filename:'\n/
-            alter (:_dw:) /:*:_nl:/
+		trap /.*/ (:reason:)
+		{
+			output / :*:reason:/
+			output /Unable to process the GOOD file ':*:filename:'\n/
+			alter (:report:) /:*:report: Unable to process the GOOD file ':*:filename:'\n/
+			alter (:_dw:) /:*:_nl:/
+		}
         }
         alius
         {
@@ -772,9 +800,14 @@ DEBUG: goodwildcard = ':*:goodwildcard:'\n]
                 #    output / M_TEXT: :*:m_text:\n/
                 call /:test_train_spam:/
             }
-            trap /unable to read-open/
-            output /\nCOULDN'T READ THE SPAM FILE ':*:filename:'\n/
-            alter (:_dw:) /:*:_nl:/
+
+		trap /.*/ (:reason:)
+		{
+			output / :*:reason:/
+			output /Unable to process the SPAM file ':*:filename:'\n/
+			alter (:report:) /:*:report: Unable to process the SPAM file ':*:filename:'\n/
+			alter (:_dw:) /:*:_nl:/
+		}
         }
     }
     alius
@@ -800,9 +833,14 @@ DEBUG: goodwildcard = ':*:goodwildcard:'\n]
                 #    output / M_TEXT: :*:m_text:\n/
                 call /:test_train_good:/
             }
-            trap /unable to read-open/
-            output /\nCOULDN'T READ THE GOOD FILE ':*:filename:'\n/
-            alter (:_dw:) /:*:_nl:/
+
+		trap /.*/ (:reason:)
+		{
+			output / :*:reason:/
+			output /Unable to process the GOOD file ':*:filename:'\n/
+			alter (:report:) /:*:report: Unable to process the GOOD file ':*:filename:'\n/
+			alter (:_dw:) /:*:_nl:/
+		}
         }
         #
         # ditto for the first spam file.  Again, if the match fails, there
@@ -822,9 +860,14 @@ DEBUG: goodwildcard = ':*:goodwildcard:'\n]
                 #    output / M_TEXT: :*:m_text:\n/
                 call /:test_train_spam:/
             }
-            trap /unable to read-open/
-            output /\nCOULDN'T READ THE SPAM FILE ':*:filename:'\n/
-            alter (:_dw:) /:*:_nl:/
+
+		trap /.*/ (:reason:)
+		{
+			output / :*:reason:/
+			output /Unable to process the SPAM file ':*:filename:'\n/
+			alter (:report:) /:*:report: Unable to process the SPAM file ':*:filename:'\n/
+			alter (:_dw:) /:*:_nl:/
+		}
         }
     }
 }
@@ -1043,7 +1086,7 @@ return /:*:filename:/
         alter (:report:) /:*:report: Training GOOD on :*:filename: (pR was :*:pr:) \n /
 
         learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                (:*:fileprefix::*:goodcss:)
+                (:*:goodcss:)
 
         alter (:cleanrun:) /0/
         #   REclassify to see if we're now "good"; if not, refute!
@@ -1057,7 +1100,7 @@ return /:*:filename:/
                 alter (:report:) /:*:report: & refute/
 
                 learn [:m_text:] <:*:clf: refute> /:*:lcr:/  \
-                      (:*:fileprefix::*:spamcss:)
+                      (:*:spamcss:)
             }
             alius
             {
@@ -1066,7 +1109,7 @@ return /:*:filename:/
                 output /& repeat /
                 alter (:report:) /:*:report: & repeat/
                 learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                      (:*:fileprefix::*:goodcss:)
+                      (:*:goodcss:)
             }
         }
         {
@@ -1123,7 +1166,7 @@ return
         alter (:report:) /:*:report: Training SPAM on :*:filename: (pR was :*:pr:) \n /
 
         learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                (:*:fileprefix::*:spamcss:)
+                (:*:spamcss:)
 
         alter (:cleanrun:) /0/
         #   REclassify to see if we're now "good"; if not, refute!
@@ -1136,7 +1179,7 @@ return
                 output /& refute /
                 alter (:report:) /:*:report: & refute/
                 learn [:m_text:] <:*:clf: refute> /:*:lcr:/  \
-                        (:*:fileprefix::*:goodcss:)
+                        (:*:goodcss:)
             }
             alius
             {
@@ -1145,7 +1188,7 @@ return
                 output /& repeat /
                 alter (:report:) /:*:report: & repeat/
                 learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                        (:*:fileprefix::*:spamcss:)
+                        (:*:spamcss:)
             }
         }
         {
@@ -1165,8 +1208,8 @@ return
 :error_exit:
 {
     output /\n\n Something went very wrong.  You might want to debug.\n\n/
-    exit /1/
 }
+return /1/
 
 #####################################################
 :good_exit:
@@ -1251,7 +1294,7 @@ return
 }
 
 #  output /:*:report:/
-exit /0/
+return /0/
 
 
 
@@ -1274,7 +1317,7 @@ exit /0/
 #####  Step 1 - train a single example in each class, to get "off center"
 #
 # [i_a] This code assumes that a pR = 0.0 (or VERY close to zero) does not
-# happen once the CSS database have at least one message trained into them.
+# happen once the CSS databases have at least one message trained into them.
 # Generally, this is a 'good enough' assumption.
 #
 {
@@ -1288,7 +1331,7 @@ exit /0/
         eval /:@: :*:pr: = 0 :/
         output /\n Learning :*:filename: as initial good mail seed.\n/
         learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-                (:*:fileprefix::*:goodcss:)
+                (:*:goodcss:)
     }
 }
 {
@@ -1302,7 +1345,7 @@ exit /0/
         eval /:@: :*:pr: = 0 :/
         output /\n Learning :*:filename: as initial spam mail seed.\n/
         learn [:m_text:] <:*:clf:> /:*:lcr:/  \
-               (:*:fileprefix::*:spamcss:)
+               (:*:spamcss:)
     }
 }
 
@@ -1430,6 +1473,7 @@ trap (:broken_program_message:) /.*/
     output [stderr] /:*:_nl:ERROR: mailtrainer.crm broke.  Here's the error: :*:_nl:/
     output [stderr] /ERROR::*:broken_program_message::*:_nl:/
 }
+isolate <default> (:program_fault_exit_code:) /66/
 exit /:*:program_fault_exit_code:/
 
 
@@ -1438,6 +1482,7 @@ exit /:*:program_fault_exit_code:/
 ######################################################################3
 #
 #              Library insertions start here.
+#
 insert maillib.crm
 
 

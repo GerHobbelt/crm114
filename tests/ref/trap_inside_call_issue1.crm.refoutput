@@ -1,0 +1,14 @@
+TEST SCRIPT + COMMANDLINE:
+trap_inside_call_issue1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+m1
+g1
+t1
+m2
+

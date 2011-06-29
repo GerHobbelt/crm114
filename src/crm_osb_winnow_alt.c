@@ -70,8 +70,6 @@ int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     int i, j, k;
     int h;                   //  h is our counter in the hashpipe;
-    char ptext[MAX_PATTERN]; //  the regex pattern
-    int plen;
     char htext[MAX_PATTERN]; //  the hash name
     int hlen;
     int cflags, eflags;
@@ -80,12 +78,9 @@ int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char *learnfilename = NULL;
     WINNOW_FEATUREBUCKET_STRUCT *hashes = MAP_FAILED; //  the text of the hash file
     unsigned char *xhashes = NULL;                    //  and the mask of what we've seen
-    crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
+    crmhash_t *hashpipe;
+    int hashcounts;
     //
-	regex_t regcb = {0};
-    regmatch_t match[5];    //  we only care about the outermost match
-    int textoffset;
-    int textmaxoffset;
     double sense;
     int microgroom;
     int use_unigrams;
@@ -104,14 +99,10 @@ int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     hlen = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN, vht, tdw);
     CRM_ASSERT(hlen < MAX_PATTERN);
-    //
-    //        We get the varname and var-restriction from the caller now
-    // llen = crm_get_pgm_arg (ltext, MAX_PATTERN, apb->b1start, apb->b1len);
-    // llen = crm_nexpandvar (ltext, llen, MAX_PATTERN, vht, tdw);
 
     //     get the "this is a word" regex
-    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
+    //plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
+    //plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
     //            set our cflags, if needed.  The defaults are
     //            "case" and "affirm", (both zero valued).
@@ -167,7 +158,7 @@ int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         fev = nonfatalerror_ex(SRC_LOC(),
                 "\nYou didn't specify a valid filename: '%.*s'\n",
-                (int)hlen,
+                hlen,
                 htext);
         return fev;
     }
@@ -202,9 +193,12 @@ int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         f = fopen(learnfilename, "wb");
         if (!f)
         {
+            char dirbuf[DIRBUFSIZE_MAX];
+
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your new COW file %s for writing; errno=%d(%s)\n",
+                    "\n Couldn't open your new COW file %s for writing; (full path: '%s') errno=%d(%s)\n",
                     learnfilename,
+                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
                     errno,
                     errno_descr(errno));
             goto fail_dramatically;
@@ -313,25 +307,10 @@ int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     xhashes = calloc(hfsize, sizeof(xhashes[0]));
     if (!xhashes)
     {
-        untrappableerror(
-                "Couldn't alloc xhashes\n",
+        untrappableerror("Couldn't alloc xhashes\n",
                 "We need that part.  Sorry.\n");
     }
 
-    //   compile the word regex
-    //
-    if (internal_trace)
-    {
-        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
-    }
-
-        i = crm_regcomp(&regcb, ptext, plen, cflags);
-        if (i != 0)
-        {
-            crm_regerror(i, &regcb, tempbuf, data_window_size);
-            nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
-            goto regcomp_failed;
-        }
 
 
     //   Start by priming the pipe... we will shift to the left next.
@@ -341,140 +320,38 @@ int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     j = 0;
     i = 0;
 
-#ifdef OLD_STUPID_VAR_RESTRICTION
-    if (llen > 0)
-    {
-        vhtindex = crm_vht_lookup(vht, ltext, llen);
-    }
-    else
-    {
-        vhtindex = crm_vht_lookup(vht, ":_dw:", 5);
-    }
-
-    if (vht[vhtindex] == NULL)
-    {
-        fev = fatalerror(" Attempt to LEARN from a nonexistent variable ",
-                ltext);
-        goto fail_dramatically;
-    }
-    mdw = NULL;
-    if (tdw->filetext == vht[vhtindex]->valtxt)
-        mdw = tdw;
-    if (cdw->filetext == vht[vhtindex]->valtxt)
-        mdw = cdw;
-    if (mdw == NULL)
-    {
-        fev = fatalerror(" Bogus text block containing variable ", ltext);
-        goto fail_dramatically;
-    }
-    textoffset = vht[vhtindex]->vstart;
-    textmaxoffset = textoffset + vht[vhtindex]->vlen;
-#endif
-
-    textoffset = txtstart;
-    textmaxoffset = txtstart + txtlen;
 
 
     //   init the hashpipe with 0xDEADBEEF
-    for (h = 0; h < OSB_WINNOW_WINDOW_LEN; h++)
+    hashpipe = calloc(BAYES_MAX_FEATURE_COUNT, sizeof(hashpipe[0]));
+    if (!hashes)
     {
-        hashpipe[h] = 0xDEADBEEF;
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
     }
+    hashcounts = 0;
+
+    //   Use the flagged vector tokenizer
+    crm_vector_tokenize_selector(apb, // the APB
+            vht,
+            tdw,
+            txtptr + txtstart,        // intput string
+            txtlen,                   // how many bytes
+            0,                        // starting offset
+            NULL,                     // tokenizer
+            NULL,                     // coeff array
+            hashpipe,                 // where to put the hashed results
+            BAYES_MAX_FEATURE_COUNT,  //  max number of hashes
+            NULL,
+            NULL,
+            &hashcounts               // how many hashes we actually got
+                                );
+    CRM_ASSERT(hashcounts >= 0);
+    CRM_ASSERT(hashcounts < BAYES_MAX_FEATURE_COUNT);
+    CRM_ASSERT(hashcounts % 2 == 0);
 
     //    and the big loop...
-    i = 0;
-    while (k == 0 && textoffset <= textmaxoffset)
+    for (k = 0; k < hashcounts; k++)
     {
-        int wlen;
-        int slen;
-        //      unsigned char *ptok = &(mdw->filetext[textoffset]);
-        //unsigned char *ptok_max = &(mdw->filetext[textmaxoffset]);
-
-        //  do the regex
-        //  slen = endpoint (= start + len)
-        //        - startpoint (= curr textoffset)
-        //      slen = txtlen ;
-        slen = textmaxoffset - textoffset;
-
-        // if pattern is empty, extract non graph delimited tokens
-        // directly ([[graph]]+) instead of calling regexec  (8% faster)
-        if (ptext[0] != 0)
-        {
-            k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                    slen, WIDTHOF(match), match, 0, NULL);
-        }
-        else
-        {
-            k = 0;
-            //         skip non-graphical characthers
-            match[0].rm_so = 0;
-            while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                   && textoffset + match[0].rm_so < textmaxoffset)
-                match[0].rm_so++;
-            match[0].rm_eo = match[0].rm_so;
-            while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                   && textoffset + match[0].rm_eo < textmaxoffset)
-                match[0].rm_eo++;
-            if (match[0].rm_so == match[0].rm_eo)
-                k = 1;
-        }
-
-        if (k != 0 || textoffset > textmaxoffset)
-            goto learn_end_regex_loop;
-
-
-        wlen = match[0].rm_eo - match[0].rm_so;
-        memmove(tempbuf,
-                &(txtptr[textoffset + match[0].rm_so]),
-                wlen);
-        tempbuf[wlen] = 0;
-
-        if (internal_trace)
-        {
-            fprintf(stderr,
-                    "  Learn #%d t.o. %d strt %d end %d len %d is -%s-\n",
-                    i,
-                    textoffset,
-                    (int)match[0].rm_so,
-                    (int)match[0].rm_eo,
-                    wlen,
-                    tempbuf);
-        }
-        if (match[0].rm_eo == 0)
-        {
-            nonfatalerror("The LEARN pattern matched zero length! ",
-                    "\n Forcing an increment to avoid an infinite loop.");
-            match[0].rm_eo = 1;
-        }
-
-
-        //      Shift the hash pipe down one
-        //
-        for (h = OSB_WINNOW_WINDOW_LEN - 1; h > 0; h--)
-        {
-            hashpipe[h] = hashpipe[h - 1];
-        }
-
-
-        //  and put new hash into pipeline
-        hashpipe[0] = strnhash(tempbuf, wlen);
-
-        if (internal_trace)
-        {
-            fprintf(stderr, "  Hashpipe contents: ");
-            for (h = 0; h < OSB_WINNOW_WINDOW_LEN; h++)
-                fprintf(stderr, " 0x%08lX", (unsigned long int)hashpipe[h]);
-            fprintf(stderr, "\n");
-        }
-
-
-        //  and account for the text used up.
-        textoffset = textoffset + match[0].rm_eo;
-        i++;
-
-        //        is the pipe full enough to do the hashing?
-        if (1)   //  we always run the hashpipe now, even if it's
-                 //  just full of 0xDEADBEEF.  (was i >=5)
         {
             crmhash_t hindex;
             crmhash_t h1, h2;
@@ -488,147 +365,140 @@ int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //     Note that we start at j==1 here, so that we do NOT
             //     ever calculate (or save) the unigrams.
             //
-            for (j = 1;
-                 j < OSB_WINNOW_WINDOW_LEN;
-                 j++)
+// #ifdef TGB
+// #ifdef TGB2
+// #ifdef TSS
+// #ifdef SBPH
+            hindex = hashpipe[k++];
+            h1 = hindex;
+
+            //   and what's our primary hash index?  Note that
+            //   hindex = 0 is reserved for our version and
+            //   usage flags, so we autobump those to hindex=1
+            hindex %= hfsize;
+            if (hindex == 0)
+                hindex = 1;
+
+            //   this is the secondary (crosscut) hash, used for
+            //   confirmation of the key value.  Note that it shares
+            //   no common coefficients with the previous hash.
+            h2 = hashpipe[k];
+            if (h2 == 0)
+                h2 = 0xdeadbeef;
+
+// #ifdef ARBITRARY_WINDOW_LENGTH
+            if (internal_trace)
             {
-                if (use_unigrams)
+                fprintf(stderr, "Polynomial %d has hash: 0x%08lX  h1:0x%08lX  h2:0x%08lX\n",
+                        k, (unsigned long int)hashpipe[k], (unsigned long int)h1, (unsigned long int)h2);
+            }
+
+            //
+            //   we now look at both the primary (h1) and
+            //   crosscut (h2) indexes to see if we've got
+            //   the right bucket or if we need to look further
+            //
+            incrs = 0;
+            //   while ( hashes[hindex].key != 0
+            //      &&  ( hashes[hindex].hash != h1
+            //            || hashes[hindex].key  != h2 ))
+            while ((!((hashes[hindex].hash == h1) && (hashes[hindex].key == h2)))
+                   //   Unnecessary - if it doesn't match, and value != 0...
+                   //  && (hashes[hindex].key != 0)
+                   && (hashes[hindex].value != 0))
+            {
+                //
+                //
+                //       If microgrooming is enabled, and we've found a
+                //       chain that's too long, we groom it down.
+                //
+                if (microgroom && (incrs > MICROGROOM_CHAIN_LENGTH))
                 {
-                    h1 = hashpipe[0] * hctable[0];
-                    if (h1 < spectra_start)
-                        h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1];
-                    if (h2 == 0)
-                        h2 = 0xdeadbeef;
-                    j = OSB_WINNOW_WINDOW_LEN;
+#ifdef STOCHASTIC_AMNESIA
+                    //     set the random number generator up...
+                    //     note that this is repeatable for a
+                    //     particular test set, yet dynamic.  That
+                    //     way, we don't always autogroom away the
+                    //     same feature; we depend on the previous
+                    //     feature's key.
+                    srand((unsigned int)h2);
+#endif
+                    //
+                    //   and do the groom.
+
+                    //   reset our hindex to where we started...
+                    //
+                    hindex = h1 % hfsize;
+                    if (hindex < spectra_start)
+                        hindex = spectra_start;
+
+                    //    and microgroom.
+                    //fprintf(stderr,  "\nCalling microgroom hindex %d hash: %d  key: %d  value: %f ",
+                    //      hindex, hashes[hindex].hash, hashes[hindex].key, hashes[hindex].value );
+
+                    crm_winnow_microgroom(hashes, xhashes, hfsize, hindex);
+                    incrs = 0;
+                }
+                //      check to see if we've incremented ourself all the
+                //      way around the .cow file.  If so, we're full, and
+                //      can hold no more features (this is unrecoverable)
+                if (incrs > hfsize - 3)
+                {
+                    nonfatalerror("Your program is stuffing too many "
+                                  "features into this size .cow file.  "
+                                  "Adding any more features is "
+                                  "impossible in this file.",
+                            "You are advised to build a larger "
+                            ".cow file and merge your data into "
+                            "it.");
+                    goto learn_end_regex_loop;
+                }
+                //
+                //     FINALLY!!!
+                //
+                //    This isn't the hash bucket we're looking for.  Move
+                //    along, move along....
+                incrs++;
+                hindex++;
+                if (hindex >= hfsize)
+                    hindex = spectra_start;
+            }
+
+            if (internal_trace)
+            {
+                if (hashes[hindex].value == 0)
+                {
+                    fprintf(stderr, "New feature at %d\n", (int)hindex);
                 }
                 else
                 {
-                    h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
-                    if (h1 < spectra_start)
-                        h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
-                    if (h2 == 0)
-                        h2 = 0xdeadbeef;
+                    fprintf(stderr, "Old feature at %d\n", (int)hindex);
                 }
-                hindex = h1 % hfsize;
-                if (hindex < spectra_start)
-                    hindex = spectra_start;
-
-                if (internal_trace)
-                {
-                    fprintf(stderr, "Polynomial %d has h1: 0x%08lX  h2: 0x%08lX\n",
-                            j, (unsigned long int)h1, (unsigned long int)h2);
-                }
-
-                //
-                //   we now look at both the primary (h1) and
-                //   crosscut (h2) indexes to see if we've got
-                //   the right bucket or if we need to look further
-                //
-                incrs = 0;
-                //   while ( hashes[hindex].key != 0
-                //      &&  ( hashes[hindex].hash != h1
-                //            || hashes[hindex].key  != h2 ))
-                while ((!((hashes[hindex].hash == h1) && (hashes[hindex].key == h2)))
-                       //   Unnecessary - if it doesn't match, and value != 0...
-                       //  && (hashes[hindex].key != 0)
-                       && (hashes[hindex].value != 0))
-                {
-                    //
-                    //
-                    //       If microgrooming is enabled, and we've found a
-                    //       chain that's too long, we groom it down.
-                    //
-                    if (microgroom && (incrs > MICROGROOM_CHAIN_LENGTH))
-                    {
-#ifdef STOCHASTIC_AMNESIA
-                        //     set the random number generator up...
-                        //     note that this is repeatable for a
-                        //     particular test set, yet dynamic.  That
-                        //     way, we don't always autogroom away the
-                        //     same feature; we depend on the previous
-                        //     feature's key.
-                        srand((unsigned int)h2);
-#endif
-                        //
-                        //   and do the groom.
-
-                        //   reset our hindex to where we started...
-                        //
-                        hindex = h1 % hfsize;
-                        if (hindex < spectra_start)
-                            hindex = spectra_start;
-
-                        //    and microgroom.
-                        //fprintf(stderr,  "\nCalling microgroom hindex %d hash: %d  key: %d  value: %f ",
-                        //      hindex, hashes[hindex].hash, hashes[hindex].key, hashes[hindex].value );
-
-                        crm_winnow_microgroom(hashes, xhashes, hfsize, hindex);
-                        incrs = 0;
-                    }
-                    //      check to see if we've incremented ourself all the
-                    //      way around the .cow file.  If so, we're full, and
-                    //      can hold no more features (this is unrecoverable)
-                    if (incrs > hfsize - 3)
-                    {
-                        nonfatalerror("Your program is stuffing too many "
-                                      "features into this size .cow file.  "
-                                      "Adding any more features is "
-                                      "impossible in this file.",
-                                "You are advised to build a larger "
-                                ".cow file and merge your data into "
-                                "it.");
-                        goto learn_end_regex_loop;
-                    }
-                    //
-                    //     FINALLY!!!
-                    //
-                    //    This isn't the hash bucket we're looking for.  Move
-                    //    along, move along....
-                    incrs++;
-                    hindex++;
-                    if (hindex >= hfsize)
-                        hindex = spectra_start;
-                }
-
-                if (internal_trace)
-                {
-                    if (hashes[hindex].value == 0)
-                    {
-                        fprintf(stderr, "New feature at %d\n", (int)hindex);
-                    }
-                    else
-                    {
-                        fprintf(stderr, "Old feature at %d\n", (int)hindex);
-                    }
-                }
-
-                //      With _winnow_, we just multiply by the sense factor.
-                //
-                if (xhashes[hindex] == 0)
-                {
-                    hashes[hindex].hash = h1;
-                    hashes[hindex].key  = h2;
-                    xhashes[hindex] = 1;
-                    if (hashes[hindex].value > 0)
-                    {
-                        hashes[hindex].value *= sense;
-                    }
-                    else
-                    {
-                        hashes[hindex].value = sense;
-                    }
-                }
-
-                // fprintf(stderr, "Hash index: %d  value: %f \n", hindex, hashes[hindex].value);
             }
+
+            //      With _winnow_, we just multiply by the sense factor.
+            //
+            if (xhashes[hindex] == 0)
+            {
+                hashes[hindex].hash = h1;
+                hashes[hindex].key  = h2;
+                xhashes[hindex] = 1;
+                if (hashes[hindex].value > 0)
+                {
+                    hashes[hindex].value *= sense;
+                }
+                else
+                {
+                    hashes[hindex].value = sense;
+                }
+                    CRM_ASSERT(hashes[hindex].value > 0.0);
+            }
+
+            // fprintf(stderr, "Hash index: %d  value: %f \n", hindex, hashes[hindex].value);
         }
     }
-    //   end the while k==0
 
 learn_end_regex_loop:
-regcomp_failed:
 fail_dramatically:
 
     //  and remember to let go of the mmap and the pattern bufffer
@@ -638,6 +508,10 @@ fail_dramatically:
         crm_munmap_file((void *)hashes);
 
     free(xhashes);
+
+
+    if (hashpipe)
+        free(hashpipe);
 
 #if 0  /* now touch-fixed inside the munmap call already! */
 #if defined (HAVE_MMAP) || defined (HAVE_MUNMAP)
@@ -651,8 +525,6 @@ fail_dramatically:
     crm_touch(learnfilename);
 #endif
 #endif
-
-    crm_regfree(&regcb);
 
     return 0;
 }
@@ -673,15 +545,17 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //       the code for LEARN
     //
     int i, j, k;
-    int h;                   //  we use h for our hashpipe counter, as needed.
-    char ptext[MAX_PATTERN]; //  the regex pattern
-    int plen;
+    int h;                      //  we use h for our hashpipe counter, as needed.
+    char ostext[MAX_PATTERN];   //  optional pR offset
+    int oslen;
+    double pR_offset;
     //  the hash file names
     char htext[MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN];
     int htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
     int hlen;
     //  the match statistics variable inbuf
     char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
+    char *stext_ptr = stext;
     int stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
     int slen;
     char svrbl[MAX_PATTERN]; //  the match statistics text buffer
@@ -694,9 +568,8 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int use_unigrams;
 
     struct stat statbuf;    //  for statting the hash file
-    crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
-	regex_t regcb = {0};
-    regmatch_t match[5];    //  we only care about the outermost match
+                            //  longest association set in the hashing
+    crmhash_t *hashpipe;
 
     double fcounts[MAX_CLASSIFIERS]; // total counts for feature normalize
 
@@ -707,7 +580,7 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     hitcount_t hits[MAX_CLASSIFIERS];      // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
     double totalweights[MAX_CLASSIFIERS];  //  total of hits * weights
-    double unseens[MAX_CLASSIFIERS];       //  total unseen features.
+    hitcount_t unseens[MAX_CLASSIFIERS];       //  total unseen features.
     double classifierprs[MAX_CLASSIFIERS]; //  pR's of each class
     int totalfeatures;                     //  total features
     hitcount_t htf;                        // hits this feature got.
@@ -721,7 +594,8 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int totalfeatures;                     //  total features
     double htf;                            // hits this feature got.
 #endif
-    double tprob = 0;                      //  total probability in the "success" domain.
+    double tprob = 0;                                   //  total probability in the "success" domain.
+    double min_success = 0.5;                           // minimum probability to be considered success
 
     //double textlen;    //  text length  - rougly corresponds to
     //  information content of the text to classify
@@ -735,10 +609,11 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int maxhash;
     int fnstart, fnlen;
     int fn_start_here;
-    int textoffset;
-    int textmaxoffset;
     int bestseen;
     int thistotal;
+    int *feature_weight;
+    int *order_no;
+    int hashcounts;
 
     double top10scores[10];
     int top10polys[10];
@@ -761,8 +636,22 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the "this is a word" regex
     //
-    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
+    //plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
+    //plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
+
+    //       extract the optional pR offset value
+    //
+    oslen = crm_get_pgm_arg(ostext, MAX_PATTERN, apb->s2start, apb->s2len);
+    pR_offset = 0;
+    min_success = 0.5;
+    if (oslen > 0)
+    {
+        oslen = crm_nexpandvar(ostext, oslen, MAX_PATTERN, vht, tdw);
+        CRM_ASSERT(oslen < MAX_PATTERN);
+        ostext[oslen] = 0;
+        pR_offset = strtod(ostext, NULL);
+        min_success = 1.0 - 1.0 / (1 + pow(10, pR_offset));
+    }
 
     //            extract the optional "match statistics" variable
     //
@@ -771,6 +660,7 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     CRM_ASSERT(svlen < MAX_PATTERN);
     {
         int vstart, vlen;
+
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
             memmove(svrbl, &svrbl[vstart], vlen);
@@ -798,7 +688,7 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         if (user_trace)
             fprintf(stderr, " setting NOCASE for tokenization\n");
-        cflags += REG_ICASE;
+        cflags |= REG_ICASE;
         eflags = 1;
     }
 
@@ -818,17 +708,6 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, " enabling unigram-only operation.\n");
     }
 
-    //   compile the word regex
-    if (internal_trace)
-        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
-    i = crm_regcomp(&regcb, ptext, plen, cflags);
-    if (i != 0)
-    {
-        crm_regerror(i, &regcb, tempbuf, data_window_size);
-        nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
-        goto regcomp_failed;
-    }
-
 
 
     //       Now, the loop to open the files.
@@ -846,13 +725,13 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //      initialize our arrays for N .css files
     for (i = 0; i < MAX_CLASSIFIERS; i++)
     {
-        fcounts[i] = 0.0;  // check later to prevent a divide-by-zero
-                           // error on empty .css file
+        fcounts[i] = 0.0;        // check later to prevent a divide-by-zero
+                                 // error on empty .css file
         cpcorr[i] = 0.0;         // corpus correction factors
         hits[i] = 0;             // absolute hit counts
         totalhits[i] = 0;        // absolute hit counts
         totalweights[i] = 0.0;   // hit_i * weight*i count
-        unseens[i] = 0.0;        // text features not seen in statistics files
+        unseens[i] = 0;        // text features not seen in statistics files
     }
 
     for (i = 0; i < 10; i++)
@@ -899,9 +778,11 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //      fprintf(stderr, "fname is '%s' len %d\n", fname, fnlen);
             fn_start_here = fnstart + fnlen + 1;
             if (user_trace)
+            {
                 fprintf(stderr, "Classifying with file -%s- "
                                 "succhash=%d, maxhash=%d\n",
                         fname, succhash, maxhash);
+            }
             if (fname[0] == '|' && fname[1] == 0)
             {
                 if (vbar_seen)
@@ -917,13 +798,15 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
             else
             {
+                int k;
+
                 //  be sure the file exists
                 //             stat the file to get it's length
                 k = stat(fname, &statbuf);
                 //             quick check- does the file even exist?
                 if (k != 0)
                 {
-                    nonfatalerror("Nonexistent Classify table named: ",
+                    return nonfatalerror("Nonexistent Classify table named: ",
                             fname);
                 }
                 else
@@ -1035,12 +918,14 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         return nonfatalerror("Couldn't open at least 1 .css file for classify().", "");
     }
 
+#if 0
     //    do we have at least 1 valid .css file at both sides of '|'?
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
                              "for classify().\n", "Hope you know what are you doing.");
     }
+#endif
 
     {
         int ifile;
@@ -1050,11 +935,22 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         for (ifile = 0; ifile < maxhash; ifile++)
         {
             fcounts[ifile] = 0.0;
-            for (k = 1; k < hashlens[ifile]; k++)
-                fcounts[ifile] += hashes[ifile][k].value;
-            if (fcounts[ifile] <= 0.0)
-                fcounts[ifile] = 1.0;
-            totalcount += fcounts[ifile];
+            {
+                int k;
+
+                for (k = 1; k < hashlens[ifile]; k++)
+				{
+                    CRM_ASSERT(hashes[ifile][k].value >= 0.0);
+                    fcounts[ifile] += hashes[ifile][k].value;
+				}
+#if 0
+                if (fcounts[ifile] <= 0.0)
+				{
+                    fcounts[ifile] = 1.0;
+				}
+#endif
+                totalcount += fcounts[ifile];
+            }
         }
         //
         //     calculate cpcorr (count compensation correction)
@@ -1077,135 +973,55 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     k = 0;
     thistotal = 0;
 
-#ifdef OLD_STUPID_VAR_RESTRICTION
-    if (llen > 0)
-    {
-        vhtindex = crm_vht_lookup(vht, ltext, llen);
-    }
-    else
-    {
-        vhtindex = crm_vht_lookup(vht, ":_dw:", 5);
-    }
-    if (vht[vhtindex] == NULL)
-    {
-        return fatalerror(" Attempt to CLASSIFY from a nonexistent variable ",
-                ltext);
-    }
-    mdw = NULL;
-    if (tdw->filetext == vht[vhtindex]->valtxt)
-        mdw = tdw;
-    if (cdw->filetext == vht[vhtindex]->valtxt)
-        mdw = cdw;
-    if (mdw == NULL)
-        return fatalerror(" Bogus text block containing variable ", ltext);
-
-    textoffset = vht[vhtindex]->vstart;
-    textmaxoffset = textoffset + vht[vhtindex]->vlen;
-
-    textlen = (vht[vhtindex]->vlen);
-    if (textlen < 1.0)
-        textlen = 1.0;
-#endif
-    textoffset = txtstart;
-    textmaxoffset = txtstart + txtlen;
-
 
     //   init the hashpipe with 0xDEADBEEF
-    for (h = 0; h < OSB_WINNOW_WINDOW_LEN; h++)
+    hashpipe = calloc(BAYES_MAX_FEATURE_COUNT, sizeof(hashpipe[0]));
+    if (!hashpipe)
     {
-        hashpipe[h] = 0xDEADBEEF;
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
     }
+    feature_weight = calloc(BAYES_MAX_FEATURE_COUNT, sizeof(feature_weight[0]));
+    if (!feature_weight)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
+    order_no = calloc(BAYES_MAX_FEATURE_COUNT, sizeof(order_no[0]));
+    if (!order_no)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
+    hashcounts = 0;
+
+    //   Use the flagged vector tokenizer
+    crm_vector_tokenize_selector(apb, // the APB
+            vht,
+            tdw,
+            txtptr + txtstart,        // intput string
+            txtlen,                   // how many bytes
+            0,                        // starting offset
+            NULL,                     // tokenizer
+            NULL,                     // coeff array
+            hashpipe,                 // where to put the hashed results
+            BAYES_MAX_FEATURE_COUNT,  //  max number of hashes
+            feature_weight,
+            order_no,
+            &hashcounts               // how many hashes we actually got
+                                );
+    CRM_ASSERT(hashcounts >= 0);
+    CRM_ASSERT(hashcounts < BAYES_MAX_FEATURE_COUNT);
+    CRM_ASSERT(hashcounts % 2 == 0);
 
     totalfeatures = 0;
 
     //  stop when we no longer get any regex matches
     //   possible edge effect here- last character must be matchable, yet
     //    it's also the "end of buffer".
-    while (k == 0 && textoffset <= textmaxoffset)
     {
-        int wlen;
-        int slen;
-        //      unsigned char *ptok = &(mdw->filetext[textoffset]);
-        //  unsigned char *ptok_max = &(mdw->filetext[textmaxoffset]);
+        int i;
 
-        //  do the regex
-        //      slen = txtlen - textoffset;
-        slen = textmaxoffset - textoffset;
-
-        // if pattern is empty, extract non graph delimited tokens
-        // directly ([[graph]]+) instead of calling regexec  (8% faster)
-        if (ptext[0] != 0)
+        for (i = 0; i < hashcounts; i++)
         {
-            k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                    slen, WIDTHOF(match), match, 0, NULL);
-        }
-        else
-        {
-            k = 0;
-            //         skip non-graphical characthers
-            match[0].rm_so = 0;
-            while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                   && textoffset + match[0].rm_so < textmaxoffset)
-                match[0].rm_so++;
-            match[0].rm_eo = match[0].rm_so;
-            while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                   && textoffset + match[0].rm_eo < textmaxoffset)
-                match[0].rm_eo++;
-            if (match[0].rm_so == match[0].rm_eo)
-                k = 1;
-        }
-
-        if (k != 0 || textoffset > textmaxoffset)
-            goto classify_end_regex_loop;
-
-        wlen = match[0].rm_eo - match[0].rm_so;
-        memmove(tempbuf,
-                &(txtptr[textoffset + match[0].rm_so]),
-                wlen);
-        tempbuf[wlen] = 0;
-
-        if (internal_trace)
-        {
-            fprintf(stderr,
-                    "  Classify #%d t.o. %d strt %d end %d len %d is -%s-\n",
-                    i,
-                    textoffset,
-                    (int)match[0].rm_so,
-                    (int)match[0].rm_eo,
-                    wlen,
-                    tempbuf);
-        }
-        if (match[0].rm_eo == 0)
-        {
-            nonfatalerror("The CLASSIFY pattern matched zero length! ",
-                    "\n Forcing an increment to avoid an infinite loop.");
-            match[0].rm_eo = 1;
-        }
-        //  slide previous hashes up 1
-        for (h = OSB_WINNOW_WINDOW_LEN - 1; h >= 1; h--)
-        {
-            hashpipe[h] = hashpipe[h - 1];
-        }
-
-
-        //  and put new hash into pipeline
-        hashpipe[0] = strnhash(tempbuf, wlen);
-
-        if (0)
-        {
-            fprintf(stderr, "  Hashpipe contents: ");
-            for (h = 0; h < OSB_WINNOW_WINDOW_LEN; h++)
-                fprintf(stderr, " 0x%08lX", (unsigned long int)hashpipe[h]);
-            fprintf(stderr, "\n");
-        }
-
-        //   account for the text we used up...
-        textoffset = textoffset + match[0].rm_eo;
-        i++;
-
-        //        is the pipe full enough to do the hashing?
-        if (1) //  we init with 0xDEADBEEF, so the pipe is always full (i >=5)
-        {
+            int l;
             int j, k;
             unsigned th = 0;      //  a counter used only in TSS hashing
             crmhash_t hindex;
@@ -1219,171 +1035,203 @@ int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //     Note that we start at j==1 here, so that we do NOT
             //     ever calculate (or save) the unigrams.
             //
-            for (j = 1;
-                 j < OSB_WINNOW_WINDOW_LEN;
-                 j++)
+
+// #ifdef FOO
+// #ifdef TGB
+// #ifdef TGB2
+// #ifdef TSS
+// #ifdef SBPH
+            hindex = hashpipe[i++];
+            h1 = hindex;
+
+            //   this is the secondary (crosscut) hash, used for
+            //   confirmation of the key value.  Note that it shares
+            //   no common coefficients with the previous hash.
+            h2 = hashpipe[i];
+            if (h2 == 0)
+                h2 = 0xdeadbeef;
+
+// #ifdef ARBITRARY_WINDOW_LENGTH
+            if (internal_trace)
             {
-                if (use_unigrams)
+                fprintf(stderr, "Polynomial %d has hash: 0x%08lX  h1:0x%08lX  h2:0x%08lX\n",
+                        i, (unsigned long int)hashpipe[i], (unsigned long int)h1, (unsigned long int)h2);
+            }
+
+
+            //    Now, for each of the feature files, what are
+            //    the statistics (found, not found, whatever)
+            //
+            htf = 0;
+            totalfeatures++;
+            for (k = 0; k < maxhash; k++)
+            {
+                int lh, lh0;
+
+                lh = hindex % hashlens[k];
+                if (lh < spectra_start)
+                    lh = spectra_start;
+                lh0 = lh;
+                hits[k] = 0;
+                while (hashes[k][lh].key != 0
+                       && (hashes[k][lh].hash != h1
+                           || hashes[k][lh].key  != h2))
                 {
-                    h1 = hashpipe[0] * hctable[0];
-                    if (h1 < spectra_start)
-                        h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1];
-                    if (h2 == 0)
-                        h2 = 0xdeadbeef;
-                    j = OSB_WINNOW_WINDOW_LEN;
+                    lh++;
+                    if (lh >= hashlens[k])
+                        lh = spectra_start;
+                    if (lh == lh0)
+                        break;     // wraparound
+                }
+
+                //   Did we find the feature?  Or did we hit end-of-chain?
+                //
+                if (hashes[k][lh].hash == h1 && hashes[k][lh].key == h2)
+                {
+                    //    found the feature
+                    //
+                    //    Have we seen it before?
+                    if (xhashes[k][lh] == 0)
+                    {
+#if defined (GER)
+                        double z;
+#else
+                        float z;
+#endif
+
+                        // remember totalhits
+                        htf++;                      // and hits-this-feature
+                        hits[k]++;                  // increment hits.
+                        z = hashes[k][lh].value;
+                        //                  fprintf (stdout, "L: %f  ", z);
+                        // and weight sum
+                        totalweights[k] += z;
+                        totalhits[k]++;
+                        //
+                        //  and mark the feature as seen.
+                        xhashes[k][lh] = 1;
+                    }
                 }
                 else
                 {
-                    h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
-                    if (h1 < spectra_start)
-                        h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
-                    if (h2 == 0)
-                        h2 = 0xdeadbeef;
+                    // unseens score 1.0, which is totally ambivalent; seen
+                    // and accepted score more, seen and refuted score less
+                    //
+                    unseens[k]++;
+                    totalweights[k] += 1.0;
                 }
+            }
 
-                hindex = h1;
-                if (internal_trace)
-                    fprintf(stderr, "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n",
-                            j, (unsigned long int)h1, (unsigned long int)h2);
-
-                //    Now, for each of the feature files, what are
-                //    the statistics (found, not found, whatever)
-                //
-                htf = 0;
-                totalfeatures++;
+            if (internal_trace)
+            {
                 for (k = 0; k < maxhash; k++)
                 {
-                    int lh, lh0;
-
-                    lh = hindex % (hashlens[k]);
-                    if (lh < spectra_start)
-                        lh = spectra_start;
-                    lh0 = lh;
-                    hits[k] = 0;
-                    while (hashes[k][lh].key != 0
-                           && (hashes[k][lh].hash != h1
-                               || hashes[k][lh].key  != h2))
-                    {
-                        lh++;
-                        if (lh >= hashlens[k])
-                            lh = spectra_start;
-                        if (lh == lh0)
-                            break; // wraparound
-                    }
-
-                    //   Did we find the feature?  Or did we hit end-of-chain?
-                    //
-                    if (hashes[k][lh].hash == h1 && hashes[k][lh].key == h2)
-                    {
-                        //    found the feature
-                        //
-                        //    Have we seen it before?
-                        if (xhashes[k][lh] == 0)
-                        {
-#if defined (GER)
-                            double z;
-#else
-                            float z;
-#endif
-
-                            // remember totalhits
-                            htf++;                  // and hits-this-feature
-                            hits[k]++;              // increment hits.
-                            z = hashes[k][lh].value;
-                            //                  fprintf (stdout, "L: %f  ", z);
-                            // and weight sum
-                            totalweights[k] += z;
-                            totalhits[k]++;
-                            //
-                            //  and mark the feature as seen.
-                            xhashes[k][lh] = 1;
-                        }
-                    }
-                    else
-                    {
-                        // unseens score 1.0, which is totally ambivalent; seen
-                        //  and accepted score more, seen and refuted score less
-                        //
-                        unseens[k] += 1.0;
-                        totalweights[k] += 1.0;
-                    }
-                }
-
-                if (internal_trace)
-                {
-                    for (k = 0; k < maxhash; k++)
-                    {
-                        // fprintf(stderr, "ZZZ\n");
-                        fprintf(stderr,
-                                " poly: %d  filenum: %d, HTF: %7ld, hits: %7ld, th: %10ld, tw: %6.4e\n",
-                                j, k, (long int)htf, (long int)hits[k], (long int)totalhits[k], totalweights[k]);
-                    }
-                }
-                //
-                //    avoid the fencepost error for window=1
-                if (OSB_WINNOW_WINDOW_LEN == 1)
-                {
-                    j = 99999;
+                    // fprintf(stderr, "ZZZ\n");
+                    fprintf(stderr,
+                            " poly: %d  filenum: %d, HTF: %7ld, hits: %7ld, th: %10ld, tw: %6.4e\n",
+                            i, k, (long int)htf, (long int)hits[k], (long int)totalhits[k], totalweights[k]);
                 }
             }
         }
-    }      //  end of repeat-the-regex loop
-classify_end_regex_loop:
-
-    //  cleanup time!
-    //  remember to let go of the fd's and mmaps and mallocs
-    for (k = 0; k < maxhash; k++)
-    {
-        crm_munmap_file(hashes[k]);
-        free(xhashes[k]);
     }
-    //  and let go of the regex buffery
-        crm_regfree(&regcb);
 
     if (user_trace)
     {
         for (k = 0; k < maxhash; k++)
+        {
             fprintf(stderr, "Match for file %d:  hits: %d  weight: %f\n",
                     k, (int)totalhits[k], totalweights[k]);
+        }
     }
     //
     //      Do the calculations and format some output, which we may or may
     //      not use... but we need the calculated result anyway.
     //
-    if (1)
+    if (1 /* svlen > 0 */)
     {
-        char buf[1024];
+        // char buf[1024];
         double accumulator;
         double remainder;
+        double accumulator_hit;
+        double remainder_hit;
         double overall_pR;
         int m;
+	double totweight;
+	double totweight_corr;
+hitcount_t tothits;
+hitcount_t totunseens;
+double ch_prs[MAX_CLASSIFIERS];
+double plcc[MAX_CLASSIFIERS];
+	double tprob_hit;
+double renorm;
 
-        buf[0] = 0;
-        accumulator = 10 * DBL_MIN;
+        // buf[0] = 0;
+        //accumulator = 10 * DBL_MIN;
+
+	totweight = 0.0;
+tothits = 0;
+totunseens = 0;
+        for (m = 0; m < maxhash; m++)
+        {
+		totweight += totalweights[m];
+			tothits += totalhits[m];
+			totunseens += unseens[m];
+        }
+				if (totweight < 10 * DBL_MIN)
+				totweight = 10 * DBL_MIN;
+totweight_corr = totweight - totunseens;
+				if (totweight_corr < 10 * DBL_MIN)
+				totweight_corr = 10 * DBL_MIN;
 
         for (m = 0; m < maxhash; m++)
         {
-            if (totalweights[m] < 1)
-                totalweights[m] = 1;
-            if (totalhits[m] < 1)
-                totalhits[m] = 1;
-            classifierprs[m] = 10.0 * (log10(totalweights[m]) - log10(totalhits[m]));
+			double w = totalweights[m];
+			hitcount_t h = totalhits[m];
+
+#if 0
+			classifierprs[m] = 10.0 * ((w >= 1.0 ? log10(w) : 0.0) - (h >= 1 ? log10(h) : 0.0));
+#else
+#if 0
+			classifierprs[m] = 0.5 + (2 * w - totweight) / (LOCAL_PROB_DENOM * totweight);
+#else
+			w -= unseens[m];
+			classifierprs[m] = (2 * w - totweight) / totweight;
+			// classifierprs[m] = 0.5 + (2 * w - totweight_corr) / (LOCAL_PROB_DENOM * totweight_corr);
+#endif
+				if (tothits == 0)
+ch_prs[m] = 0.0;
+else
+		ch_prs[m] = 0.5 + (2.0 * totalhits[m] - tothits) /  (LOCAL_PROB_DENOM * tothits);
+#endif
         }
+        accumulator_hit = 0.0;
+        accumulator = 0.0;
         for (m = 0; m < succhash; m++)
         {
             accumulator += totalweights[m];
+            accumulator_hit += totalhits[m];
         }
-        remainder = 10 * DBL_MIN;
+
+        remainder_hit = 0.0;
+        remainder = 0.0;
         for (m = succhash; m < maxhash; m++)
         {
             remainder += totalweights[m];
+            remainder_hit += totalhits[m];
         }
+				if (accumulator < 10 * DBL_MIN)
+				accumulator = 10 * DBL_MIN;
+				if (remainder < 10 * DBL_MIN)
+				remainder = 10 * DBL_MIN;
+				if (accumulator_hit < 10 * DBL_MIN)
+				accumulator_hit = 10 * DBL_MIN;
+				if (remainder_hit < 10 * DBL_MIN)
+				remainder_hit = 10 * DBL_MIN;
 
-        tprob = (accumulator) / (accumulator + remainder);
+        tprob = accumulator / totweight;
+        tprob_hit = accumulator_hit / tothits;
 
-        //     *******************************************
+		//     *******************************************
         //
         //        Note - we use 10 as the normalization for pR here.
         //        it's because we don't have an actual probability
@@ -1396,27 +1244,56 @@ classify_end_regex_loop:
         //  There would be a possible buffer overflow except that _we_ control
         //   what gets written here.  So it's no biggie.
 
-        if (tprob > 0.5)
+        if (tprob > min_success)
         {
-            sprintf(buf, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            // if a pR offset was given, print it together with the real pR
+            if (oslen > 0)
+            {
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY succeeds; (alt.winnow) success probability: "
+                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        tprob, overall_pR, pR_offset);
+            }
+            else
+            {
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY succeeds; (alt.winnow) success probability: "
+                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+            }
         }
         else
         {
-            sprintf(buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            // if a pR offset was given, print it together with the real pR
+            if (oslen > 0)
+            {
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY fails; (alt.winnow) success probability: "
+                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        tprob, overall_pR, pR_offset);
+            }
+            else
+            {
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY fails; (alt.winnow) success probability: "
+                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+            }
         }
-        if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            strcat(stext, buf);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
 
         //   find best single matching file
         //
         bestseen = 0;
-        for (k = 0; k < maxhash; k++)
+        for (m = 0; m < maxhash; m++)
         {
-            if (classifierprs[k] > classifierprs[bestseen])
-                bestseen = k;
+            if (classifierprs[m] > classifierprs[bestseen])
+            {
+                bestseen = m;
+            }
         }
 
-        remainder = 10 * DBL_MIN;
+        remainder = 0.0;
         for (m = 0; m < maxhash; m++)
         {
             if (bestseen != m)
@@ -1425,94 +1302,222 @@ classify_end_regex_loop:
             }
         }
 
-        //   ... and format some output of best single matching file
-        //
-        snprintf(buf, WIDTHOF(buf), "Best match to file #%d (%s) "
-                                    "weight: %6.4f  pR: %6.4f\n",
-                bestseen,
-                hashname[bestseen],
-                totalweights[bestseen],
-                classifierprs[bestseen]);
-        buf[WIDTHOF(buf) - 1] = 0;
-        if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            strcat(stext, buf);
-        sprintf(buf, "Total features in input file: %d\n", totalfeatures);
-        if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            strcat(stext, buf);
-
-        //     Now do the per-file breakdowns:
-        //
-        for (k = 0; k < maxhash; k++)
+        for (m = 0; m < maxhash; m++)
         {
-            int m;
-            remainder = 10 * DBL_MIN;
-            for (m = 0; m < maxhash; m++)
+            int k;
+double plc;
+double w;
+double fac;
+double sig;
+            
+			remainder = 0.0;
+            for (k = 0; k < maxhash; k++)
             {
                 if (k != m)
                 {
-                    remainder += totalweights[m];
+                    remainder += totalweights[k] - unseens[k];
                 }
             }
-            snprintf(buf, WIDTHOF(buf),
-                    "#%d (%s):"
-                    " features: %.2f, unseen: %3.2e, weight: %3.2e, pR: %6.2f\n",
-                    k,
-                    hashname[k],
-                    fcounts[k],
-                    unseens[k],
-                    totalweights[k],
-                    classifierprs[k]);
-            buf[WIDTHOF(buf) - 1] = 0;
-            // strcat (stext, buf);
-            if (strlen(stext) + strlen(buf) <= stext_maxlen)
+
+		w = totalweights[m];
+w -= unseens[m];
+
+	fac = 1.0;
+if (totalhits[m] != 0)
+{
+	fac = (totalweights[m] - unseens[m]) / totalhits[m];
+}
+sig = totalhits[m] / (double)(unseens[m] > 0 ? unseens[m] : 1.0);
+
+plc = log10(w > 10 * DBL_MIN ? w : DBL_MIN) - log10(remainder > 10 * DBL_MIN ? remainder : 10 * DBL_MIN);
+	
+//plcc[m] = (1.0 + sig) * plc; // * (w > 1.0 ? w : 1.0); // * fac;
+//plcc[m] *= 20;
+if (tothits != 0)
+{
+plcc[m] = 20 * (2.0 * w - remainder) / tothits;
+}
+else
+{
+plcc[m] = -400.0;
+}
+        }
+
+	// renormalize:
+renorm = 0.0;
+        for (m = 0; m < maxhash; m++)
+        {
+	renorm += plcc[m];
+}
+renorm /= 300.0 * maxhash;
+if (renorm < 1.0)
+renorm = 1.0;
+
+        //   ... and format some output of best single matching file
+        //
+        snprintf(stext_ptr, stext_maxlen, "Best match to file #%d (%s) "
+                                          "weight: %6.4f  pR: %6.4f\n",
+                bestseen,
+                hashname[bestseen],
+                totalweights[bestseen],
+                plcc[bestseen] / renorm);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
+
+        snprintf(stext_ptr, stext_maxlen, "Total features in input file: %d\n", totalfeatures);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
+
+        //     Now do the per-file breakdowns:
+        //
+        for (m = 0; m < maxhash; m++)
+        {
+            int k;
+double plc;
+double w;
+double fac;
+double sig;
+double plcc1;
+            
+			remainder = 0.0;
+            for (k = 0; k < maxhash; k++)
             {
-                strcat(stext, buf);
+                if (k != m)
+                {
+                    remainder += totalweights[k] - unseens[k];
+                }
             }
+
+		w = totalweights[m];
+w -= unseens[m];
+
+	fac = 1.0;
+if (totalhits[m] != 0)
+{
+	fac = (totalweights[m] - unseens[m]) / totalhits[m];
+}
+sig = totalhits[m] / (double)(unseens[m] > 0 ? unseens[m] : 1.0);
+
+plc = log10(w > 10 * DBL_MIN ? w : DBL_MIN) - log10(remainder > 10 * DBL_MIN ? remainder : 10 * DBL_MIN);
+	
+if (tothits != 0)
+{
+plcc1 = (2.0 * w - remainder) / tothits;
+}
+else
+{
+plcc1 = -400.0;
+}
+            snprintf(stext_ptr, stext_maxlen,
+                    "#%d (%s):"
+					" features: %.2f, unseen: %6ld, hits: %6ld, uhits: %6.2f, weight: %6.2f, wc: %6.2f, plc: %6.2f, fac: %6.2f, plcc: %6.2f, t: %6.2f, b: %6.2f, pR: %6.2f\n",
+                    m,
+                    hashname[m],
+                    fcounts[m],
+                    (long int)unseens[m],
+					(long int)totalhits[m],
+                    sig * 10000,
+                    totalweights[m],
+	w,
+	plc,
+fac,
+plcc[m],
+(2.0 * w - totalhits[m]),
+plcc1,
+plcc[m] / renorm /* classifierprs[m] */ );
+            stext_ptr[stext_maxlen - 1] = 0;
+            stext_maxlen -= (int)strlen(stext_ptr);
+            stext_ptr += strlen(stext_ptr);
         }
-        // check here if we got enough room in stext to stuff everything
-        // perhaps we'd better rise a nonfatalerror, instead of just
-        // whining on stderr
-        if (strcmp(&(stext[strlen(stext) - strlen(buf)]), buf) != 0)
+    }
+    // check here if we got enough room in stext to stuff everything
+    // perhaps we'd better rise a nonfatalerror, instead of just
+    // whining on stderr
+    if (stext_maxlen <= 1)
+    {
+        nonfatalerror("WARNING: not enough room in the buffer to create "
+                      "the statistics text.  Perhaps you could try bigger "
+                      "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+                " ");
+    }
+    if (svlen > 0)
+    {
+        crm_destructive_alter_nvariable(svrbl, svlen, stext, (int)strlen(stext), csl->calldepth);
+    }
+
+
+
+
+    //  cleanup time!
+    //  remember to let go of the fd's and mmaps
+    {
+        int k;
+
+        for (k = 0; k < maxhash; k++)
         {
-            nonfatalerror("WARNING: not enough room in the buffer to create "
-                          "the statistics text.  Perhaps you could try bigger "
-                          "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-                    " ");
-        }
-        if (svlen > 0)
-        {
-            crm_destructive_alter_nvariable(svrbl, svlen,
-                    stext, (int)strlen(stext));
+            //      close (hfds [k]);
+            if (hashes[k])
+            {
+                crm_munmap_file(hashes[k]);
+            }
+
+            //
+            //  Free the hashnames, to avoid a memory leak.
+            //
+            if (hashname[k])
+            {
+                free(hashname[k]);
+            }
+
+            //   and let go of the seen_features array
+            if (xhashes[k])
+                free(xhashes[k]);
+            xhashes[k] = NULL;
         }
     }
 
-    //
-    //  Free the hashnames, to avoid a memory leak.
-    //
-    for (i = 0; i < maxhash; i++)
-        free(hashname[i]);
-    if (tprob <= 0.5)
+    if (hashpipe)
+    {
+        free(hashpipe);
+    }
+    if (feature_weight)
+{
+    free(feature_weight);
+    }
+    if (order_no)
+{
+free(order_no);
+}
+
+
+    if (tprob <= min_success)
     {
         if (user_trace)
+        {
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
+        }
         //    and do what we do for a FAIL here
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+        if (internal_trace)
+        {
+            fprintf(stderr, "CLASSIFY.WINNOW.ALT is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         CRM_ASSERT(csl->cstmt >= 0);
         CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }
 
-
     //
     //   all done... if we got here, we should just continue execution
     if (user_trace)
         fprintf(stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
-regcomp_failed:
     return 0;
 }
 

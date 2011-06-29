@@ -29,6 +29,10 @@
 #
 :load_cf_file: (:cf_filename:)
 {
+    # before we load all those config options again, check if we haven't done this show already:
+    isolate (:done_load_cf_file:) <default> //
+    match [:done_load_cf_file:] <absent> /^yes: :*:cf_filename:$/
+
     isolate (:option_txt:) //
     # isolate (:ev:)                   -- unused
     isolate (:verbose_startup:)
@@ -50,9 +54,35 @@
 
     #   and loop till there are no more options.
     {
-        #   find a line that looks like a parameter setting...
-        match <fromend nomultiline> (:line: :name: :value:) \
-                [:option_txt:] /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
+        isolate(:line: :name: :value: :cf_line:) //
+
+        # find a line that looks like a parameter setting...
+        #
+        # Two formats are supported:
+        #   :var: /value/
+        #   :var: [value]
+        # where the latter can be used to allow UNIX paths to be specified without the need 
+        # for \-escaping them. (See for example the file:
+        #   ./mailfilter/mailfilter.cf.in
+        # in this distribution.
+        {
+            # regex 
+            #   /^[[:space:]]*(:[[:graph:]]+:)[[:space:]]+([\/\[].*[\/\]])[[:space:]]*$/
+            # does NOT work :-(
+            # Meanwhile, we decided to introduce some .cf error checking as well (thanks
+            # to me making a boo-boo in there, which went unnoticed for a looong time :-( )
+            #
+            # match <fromend nomultiline> (:line: :name: :value:) \
+            #       [:option_txt:] /^[[:space:]]*(:[[:graph:]]+:)[[:space:]]+([\/\[].*)$/
+            match <fromend nomultiline> (:line: :cf_line:) \
+                   [:option_txt:] /^[[:space:]]*([[:graph:]].*)$/
+        }
+
+        # WARNING: this code will fail (eternal loop) for vanilla CRM114 thanks to isolate bug!
+        #          For vanilla users, the probable hack is init-ing to / / and match /../ 
+        #          instead, but I don't want that kludgery in here.
+        match [:line:] /./
+
         {
             #     Verbose startup?
             match [:verbose_startup:] /SET/
@@ -61,11 +91,27 @@
         {
             #    don't execute the assign if there's
             #    a # at the start of the line.
-            match <absent> [:name:] /^\x23/
+            match <absent> [:cf_line:] /^\x23/
+
+            # now make sure we've got // or [] delimited value:
+            {
+                {
+                    match (:: :name: :value:) [:cf_line:] /^(:[[:graph:]]+:)[[:space:]]+\/(.*)\/[[:space:]]*$/
+                }
+                alius
+                {
+                    match (:: :name: :value:) [:cf_line:] /^(:[[:graph:]]+:)[[:space:]]+\[(.*)\][[:space:]]*$/
+                }
+                alius
+                {
+                    fault /ERROR: config line (:*:cf_line:) has an incorrect delimited value or name element!\n/
+                }
+            }
+
             {
                 #     Verbose startup?
                 match [:verbose_startup:] /SET/
-                output /  :*:name: := ':*:value:'\n/
+                output /~~~  :*:name: := ':*:value:'\n/
             }
 
             # isolate (:*:name:) /:*:value:/
@@ -75,21 +121,36 @@
             # the mailfilter.cf option values, e.g.:
             #
             #:trainer_invoke_command: /crm114 :*:fileprefix:mailtrainer.crm/
+            #
+            # Here we also check if the option has already been set to something
+            # before (non-nil value!); if so, we do NOT replace that value.
+            # This behaviour is used to allow commandline options to overrule
+            # our config file here.
 
+            isolate (:*:name:) <default> //
             {
                 {
-                    # HACK to survive bloody eval bug in vanilla CRM114:
-                    isolate (:*:name:) /:*:value:/
                     match [:*:name:] <absent> /./
-                    isolate (:*:name:) //
+                    #eval (:*:name:) /:*:value:/
+                    {
+                        {
+                            # HACK to survive bloody eval bug in vanilla CRM114:
+                            isolate (:*:name:) /:*:value:/
+                            match [:*:name:] <absent> /./
+                        }
+                        alius
+                        {
+                            eval (:*:name:) /:*:value:/
+                        }
+                    }
                 }
                 alius
                 {
-                    isolate (:*:name:) //
-                    eval (:*:name:) /:*:value:/
+                    #     Verbose startup?
+                    match [:verbose_startup:] /SET/
+                    output /-!!  Option :*:name: is not set\n     by the config file (as it already has a value).\n/
                 }
             }
-
             {
                 #     Verbose startup?
                 match [:verbose_startup:] /SET/
@@ -105,6 +166,12 @@
     }
 }
 # All done, return.
+
+# mark our work done, for when the caller comes around another time...
+# ... but we /will/ redo this when the next time around /another/
+# config file is specified:
+alter (:done_load_cf_file:) /yes: :*:cf_filename:/
+
 return
 
 
@@ -240,7 +307,8 @@ isolate (:commentbin:) //
     #
     isolate (:rewrites:) //
     isolate (:fileprefix:) <default> //
-    input (:rewrites:) [:*:fileprefix:rewrites.mfp]
+    isolate (:rewrites_mfp_path:) <default> /:*:fileprefix:rewrites.mfp/
+    input (:rewrites:) [:*:rewrites_mfp_path:]
 
     #    reset matching on rewrites to start of string - if no string, no more
     #    processing of rewrites !!
@@ -660,6 +728,7 @@ text:        ':*:text:'\n]  # for content: :+:text:
 return /:*:pr:/
 
 
+#############################################################
 #
 # convert path to DOS/Windows compatible version
 #
@@ -675,6 +744,36 @@ return /:*:pr:/
 return /:*:dospath:/
 
 
+#############################################################
+#
+# convert path to absolute path, based on :*:fileprefix:
+#
+:mk_abspath_on_fileprefix: (:inpath:)
+{
+    isolate (:fileprefix:) <default> //
+    match [:fileprefix:] /./
+
+    # check if specified path is an absolute path already (Win32/UNIX):
+    # --> does it start with a /, \ or drive letter + : ?
+    {
+        {
+            match [:_hosttype:] /Windows-MS/
+            match [:inpath:] <absent> /^[\\\/]/
+            match [:inpath:] <absent> /^[a-zA-Z]:/
+            call /:mk_dospath:/ [:*:fileprefix:/:*:inpath:] (:inpath:)
+        }
+        alius
+        {
+            match [:inpath:] <absent> /^\//
+            alter (:inpath:) /:*:fileprefix:\/:*:inpath:/
+            translate <unique> (:dospath:) [:dospath:] /\\/ /\\/
+        }
+    }
+}
+return /:*:inpath:/
+
+
+#############################################################
 #
 #     And the mother of all traps...
 #

@@ -15,6 +15,8 @@
 
 window
 
+# output /PWD=':*:_env_PWD:'\n/
+
 {
     isolate (:a:) //
     isolate (:c:) /:*:_argc:/
@@ -91,6 +93,10 @@ window
     output / --fileprefix=dir  - Look in this dir for the .css, .cf and .txt files\n/
     output /                     (expect all files in "fileprefix", except '--config')\n/
     output / --config=filename - Use filename as the .cf file. Default is mailfilter.cf\n/
+    output / --truncate_logfile[=no]\n/
+    output /                   - Overwrite the logfile (=SET) or append to logfile (=no)\n/
+    output /                     (Default: overwrite)\n/
+    output / --automatic_training\n/
     output /\n/
     output /These commands are only accepted from the email body:\n/
     output /\n/
@@ -101,8 +107,23 @@ window
     output /[*] - meaning that if it's a command line flag, the entire\n/
     output /      standard input is the example text and if it's an inline\n/
     output /      command, then the example text follows the inline commandline.\n/
+    output /\n/
+    output /MailFilter.CF Override Commands:\n/
+    output /   You can specify any mailfilter.cf entry as an option on the command\n/
+    output /   line to override that option in the mailfilter.cf configuration\n/
+    output /   file, e.g.\n/
+    output /     --priolist_mfp_path=${HOME}\/priolist.mfp\n/
+    output /   See the mailfilter.cf file for all available entries.\n/
     exit /42/
 }
+
+isolate (:program_fault_exit_code:) /66/   # [i_a] in case mailfilter.cf cannot be loaded: make sure we don't get an error report cascade.
+isolate (:our_exit_code:) /0/
+call /:exec_mailreaver:/ (:our_exit_code:)
+exit /:our_exit_code:/
+
+:exec_mailreaver: (:our_exit_code:)
+isolate <default> (:program_fault_exit_code:) /66/
 
 #
 #     Overall Design:
@@ -142,7 +163,6 @@ window
 #
 # --- These vars must have a value, or else we'll get errors ----
 #
-isolate (:program_fault_exit_code:) /66/   # [i_a] in case mailfilter.cf cannot be loaded: make sure we don't get an error report cascade.
 
 # GerH vs VANILLA fixes:
 isolate (:_hosttype:) <default> /UNKNOWN/
@@ -153,25 +173,24 @@ isolate <default> (:fileprefix:) //
 #
 isolate (:classifier_reason:) /no reason yet/
 #
-isolate (:our_exit_code:) /0/
-#
 isolate (:stats:) / pR: 0.000000 /
 #
 isolate (:pr:) /0.00000/
 #
-isolate (:subj_text:) / (None) /
+isolate <default> (:subj_text:) / (None) /
 #
-isolate (:add_extra_stuff:) //
+isolate <default> (:add_extra_stuff:) //
 #
 #      Isolate these email addresses, and give them values,
 #      in case the user doesn't.
-isolate (:reject_address:) //
-isolate (:unsure_address:) //
-isolate (:fail_priority_mail_to:) //
-isolate (:fail_classify_mail_to:) //
-isolate (:fail_blacklist_mail_to:) //
-isolate (:fail_SSM_mail_to:)  //
-isolate (:log_rejections:) //
+isolate <default> (:reject_address:) //
+isolate <default> (:unsure_address:) //
+isolate <default> (:fail_priority_mail_to:) //
+isolate <default> (:fail_classify_mail_to:) //
+isolate <default> (:fail_blacklist_mail_to:) //
+isolate <default> (:fail_SSM_mail_to:)  //
+isolate <default> (:log_rejections:) //
+isolate <default> (:log_rejections_to_file:) //
 
 isolate (:dospath:) //
 
@@ -183,6 +202,7 @@ isolate (:dospath:) //
 #       any command line arguments that get set.
 
 isolate (:verbose_startup:) <default> //
+isolate (:truncate_logfile:) <default> /SET/
 isolate <default> (:config:) /:*:fileprefix:mailfilter.cf/
 
 #
@@ -217,6 +237,7 @@ isolate (:spam:) <default> /:*:learnspam:/
 isolate (:good:) <default> /:*:learngood:/
 isolate (:dontstore:) <default> //
 isolate (:stats_only:) <default> //
+isolate (:automatic_training:) <default> //
 isolate (:verbose:) <default> //
 isolate (:force:) <default> //
 #
@@ -231,11 +252,21 @@ isolate (:nonspamcss:) <default> /nonspam.css/
 # Modern:
 isolate (:goodcss:) <default> /:*:nonspamcss:/
 
+# extra paths:
+isolate (:priolist_mfp_path:) <default> /:*:fileprefix:priolist.mfp/
+isolate (:whitelist_mfp_path:) <default> /:*:fileprefix:whitelist.mfp/
+isolate (:blacklist_mfp_path:) <default> /:*:fileprefix:blacklist.mfp/
+
 # make sure to truncate the logfile:
 {
     match [:verbose:] /SET/
+    match [:truncate_logfile:] <absent> /SET/
     output [:*:verbose_logfile:] /Start of mailreaver session\n/
 }
+
+call /:mk_abspath_on_fileprefix:/ [:*:goodcss:] (:goodcss:)
+call /:mk_abspath_on_fileprefix:/ [:*:spamcss:] (:spamcss:)
+
 
 #######################################################################
 #
@@ -400,43 +431,43 @@ input [:*:mailfile:]
             match [:cmds:] \
                     /maxprio ([-+][[:graph:]]+) / \
                     (:: :prio_regex:)
-            input [:*:fileprefix:priolist.mfp] (:priotext:)
+            input [:*:priolist_mfp_path:] (:priotext:)
             alter (:priotext:) \
                     /:*:prio_regex:\n:*:priotext:/
-            output [:*:fileprefix:priolist.mfp] /:*:priotext:/
+            output [:*:priolist_mfp_path:] /:*:priotext:/
             call /:mungmail_add:/ [X-CRM114-Success: Added new highest priority entry ":*:prio_regex:" ]
             #accept
             output [:*:mailout:] /:*:_dw:/
-            exit /:*:accepted_mail_exit_code:/
+            return /:*:accepted_mail_exit_code:/
         }
         {
             #      Command to set a minprio entry
             match [:cmds:] \
                     /minprio ([-+][[:graph:]]+)/ \
                     (:: :prio_regex:)
-            input [:*:fileprefix:priolist.mfp] (:priotext:)
+            input [:*:priolist_mfp_path:] (:priotext:)
             alter (:priotext:) \
                     /:*:priotext:\n:*:prio_regex:/
-            output [:*:fileprefix:priolist.mfp] /:*:priotext:/
+            output [:*:priolist_mfp_path:] /:*:priotext:/
             call /:mungmail_add:/ [X-CRM114-Success: Added new lowest priority entry ":*:prio_regex:" ]
             #accept
             output [:*:mailout:] /:*:_dw:/
-            exit /:*:accepted_mail_exit_code:/
+            return /:*:accepted_mail_exit_code:/
         }
         {
             #      Command to delete a priolist entry
             match [:cmds:] \
                     /delprio ([[:graph:]]+)/ \
                     (:: :prio_regex:)
-            input [:*:fileprefix:priolist.mfp] (:priotext:)
+            input [:*:priolist_mfp_path:] (:priotext:)
             match [:priotext:] <nomultiline> \
                     /^.*:*:prio_regex:.*$/ (:die:)
             alter (:die:) /\n/
-            output [:*:fileprefix:priolist.mfp] /:*:priotext:/
+            output [:*:priolist_mfp_path:] /:*:priotext:/
             call /:mungmail_add:/ [X-CRM114-Success: Deleted priority entry ":*:prio_regex:" ]
             #accept
             output [:*:mailout:] /:*:_dw:/
-            exit /:*:accepted_mail_exit_code:/
+            return /:*:accepted_mail_exit_code:/
         }
     }
 }
@@ -449,15 +480,60 @@ input [:*:mailfile:]
 }
 
 
+# vvvvv---- these two are done through the 'argv' copy below:
+#{
+#    match [:force:] /SET/
+#    alter (:trainer_invoke_command:) /:*:trainer_invoke_command: --force/
+#}
+#{
+#    match [:verbose:] /SET/
+#    alter (:trainer_invoke_command:) /:*:trainer_invoke_command: --verbose/
+#}
+
+
+# make sure sub-scripts (mailtrainer.crm!) run in the same directory as we do!
+# and since we might have started with a 'crm114 -u xyz'...
 {
-    match [:force:] /SET/
-    alter (:trainer_invoke_command:) /:*:trainer_invoke_command: --force/
-}
-{
-    match [:verbose:] /SET/
-    alter (:trainer_invoke_command:) /:*:trainer_invoke_command: --verbose/
+    isolate (:_env_PWD:) <default> //    # making sure vanilla CRM114 doesn't b0rk here!
+    match [:_env_PWD:] /./
+    {
+        # make sure there's at least one space in there...
+        alter (:trainer_invoke_command:) /:*:trainer_invoke_command: /
+        # now find the FIRST (unescaped) space in there: that's the spot 
+        # just after the command itself and before any command line 
+        # options which follow:
+        match [:trainer_invoke_command:] (:: :after_cmd_pos:) /^[[:graph:]]+[^\\[:space:]]\([[:space:]]\)/
+        # and inject the '-u' command line option in there:
+        alter (:after_cmd_pos:) / -u :*:_env_PWD: /
+    }
 }
 
+# copy argv[] set into mailtrainer commandline: this will ensure mailfilter.cf overrides
+# and options such as --force also end up inside mailtrainer, where they are needed as well.
+{
+    isolate (:i:) /:*:_argc:/
+    {
+        eval (:i:) /:@::*:i: - 1:/
+        eval /:@::*:i: > 0:/
+
+        isolate (:name:) /:_arg:*:i::/
+        isolate (:value:) /:+:name:/
+        {
+            # see if it is an arg of format '--a' or '--a=val':
+            match (:name:) [:value:] /--(.*)/
+	    {
+                # strip away the optional '=val' part:
+                match (:: :name:) [:name:] /^--([^=]*)/
+            }
+            isolate (:value:) /::*:name::/
+            # now check what the current value is and append that:
+
+            alter (:trainer_invoke_command:) /:*:trainer_invoke_command: --:*:name:=:+:value:/
+        }
+
+        liaf
+    }
+}
 
 
 call /:verbosity:/ [Flags:\nverbose_startup: :*:verbose_startup:, spam: :*:spam:, good: :*:good:, dontstore: :*:dontstore:, stats_only: :*:stats_only:, verbose: :*:verbose:]
@@ -574,6 +650,7 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
 #
 #    Are we supposed to learn this as spam?
 #
+:train_this_message:
 {
     {
         match [:spam:] /SET/
@@ -620,8 +697,8 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
                 syscall /:*:cache_dupe_command: :*:long_cacheid: :*:text_cache:\/known_:*:learn_mode:\/:*:cacheid: /
                 #
                 #      Now run mailtrainer.crm on the new copy
-                call /:verbosity:/ [Gonna learn using:\n:*:trainer_invoke_command: --fileprefix=:*:fileprefix: --:*:learn_mode:=:*:text_cache:\/known_:*:learn_mode:\/:*:cacheid: --:*:learn_mode_contra:=:*:text_cache:\/empty\/]
-                syscall /:*:trainer_invoke_command: --fileprefix=:*:fileprefix: --:*:learn_mode:=:*:text_cache:\/known_:*:learn_mode:\/:*:cacheid: --:*:learn_mode_contra:=:*:text_cache:\/empty\/ / () (:mailtrainer_output: :mailtrainer_err_output:) (:mailtrainer_status:)
+                call /:verbosity:/ [Gonna learn using:\n:*:trainer_invoke_command: --fileprefix=:*:fileprefix: --:*:learn_mode:=:*:text_cache:\/known_:*:learn_mode:\/:*:cacheid: --:*:learn_mode_contra:=:*:text_cache:\/empty\ --spamcss=:*:spamcss: --goodcss=:*:goodcss:/]
+                syscall /:*:trainer_invoke_command: --fileprefix=:*:fileprefix: --:*:learn_mode:=:*:text_cache:\/known_:*:learn_mode:\/:*:cacheid: --:*:learn_mode_contra:=:*:text_cache:\/empty\/ --spamcss=:*:spamcss: --goodcss=:*:goodcss:/ () (:mailtrainer_output: :mailtrainer_err_output:) (:mailtrainer_status:)
                 call /:verbosity:/ [mailtrainer output: ':*:mailtrainer_output:', error output: ':*:mailtrainer_err_output:', exit status: ':*:mailtrainer_status:']
                 #      and remove it from the prob_* directories, as now it's known
                 {
@@ -646,8 +723,8 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
                 match [:long_cacheid:] <absent> /./
 
                 # Now run mailtrainer.crm on the new copy
-                call /:verbosity:/ [Gonna learn using:\n:*:trainer_invoke_command: --fileprefix=:*:fileprefix: --:*:learn_mode:file=-]
-                syscall /:*:trainer_invoke_command: --fileprefix=:*:fileprefix: --:*:learn_mode:file=- / (:*:in_text:) (:mailtrainer_output: :mailtrainer_err_output:) (:mailtrainer_status:)
+                call /:verbosity:/ [Gonna learn using:\n:*:trainer_invoke_command: --fileprefix=:*:fileprefix: --:*:learn_mode:file=- --spamcss=:*:spamcss: --goodcss=:*:goodcss:]
+                syscall /:*:trainer_invoke_command: --fileprefix=:*:fileprefix: --:*:learn_mode:file=- --spamcss=:*:spamcss: --goodcss=:*:goodcss:/ (:*:in_text:) (:mailtrainer_output: :mailtrainer_err_output:) (:mailtrainer_status:)
                 call /:verbosity:/ [mailtrainer output: ':*:mailtrainer_output:', error output: ':*:mailtrainer_err_output:', exit status: ':*:mailtrainer_status:'\n]
 
                 isolate (:cache_message:) /LEARNED /
@@ -672,7 +749,7 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
             match [:stats_only:] /SET/
             call /:get_pr:/ [:in_text:] (:pr:)
             output [:*:mailout:] /:*:cache_message: (pR: :*:pr:)\n/
-            exit /:*:our_exit_code:/
+            return /:*:our_exit_code:/
         }
 
         #
@@ -690,7 +767,8 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
                     match [:mailtrainer_status:] /EXIT CODE: ([0-9]+)/ (:: :mailtrainer_status_val:)
                     eval / :@: :*:mailtrainer_status_val: = 0 :/
                     call /:get_pr:/ [:in_text:] (:pr:)
-                    call /:mungmail_unique:/ [X-CRM114-Status: Completed (:*:learn_mode_title: Learn)  (pR: :*:pr:)]
+                    #call /:mungmail_unique:/ [X-CRM114-Status: Completed (:*:learn_mode_title: Learn)  (pR: :*:pr:)]   # [i_a] make status line format match the regular classify tests in here
+                    call /:mungmail_unique:/ [X-CRM114-Status: :*:learn_mode_title: ( :*:pr: ) (Completed Learn)]
                 }
                 alius
                 {
@@ -714,7 +792,7 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
 
         #accept
         output [:*:mailout:] /:*:_dw:/
-        exit /:*:accepted_mail_exit_code:/
+        return /:*:accepted_mail_exit_code:/
     }
 }
 
@@ -735,8 +813,11 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
 #     in order given, not whitelist-then-blacklist.  The priority
 #     action list is tried before whitelist or blacklist.
 #
+{
+    match [:priolist_enabled:] /yes/
+
 isolate (:priolist:) //
-input (:priolist:) [:*:fileprefix:priolist.mfp]
+input (:priolist:) [:*:priolist_mfp_path:]
 # reset matching on :priolist: to the start of the string
 match [:priolist:] //
 #
@@ -775,19 +856,19 @@ match [:priolist:] //
     #   there are no prio-list regexes left
     liaf
 }
+}
 
 #
 #     check it against the whitelist... load the whitelist...
 #
 {
+    match [:whitelist_enabled:] /yes/
+
     isolate (:whitelist:) //
-    input (:whitelist:) [:*:fileprefix:whitelist.mfp]
+    input (:whitelist:) [:*:whitelist_mfp_path:]
     #    reset matching on whitelist to start of string
     match [:whitelist:] //
-}
-#
-#
-{
+
     #... Grab the next regex, turn the one-per-line patterns into a regex
     match <fromend nomultiline> (:waste: :whregex:) [:whitelist:]  /(.+)/
     #... see if this regex matches the incoming mail
@@ -810,13 +891,13 @@ match [:priolist:] //
 #
 #     check it against the blacklist
 {
+    match [:blacklist_enabled:] /yes/
+
     isolate (:blacklist:) //
-    input (:blacklist:) [:*:fileprefix:blacklist.mfp]
+    input (:blacklist:) [:*:blacklist_mfp_path:]
     #    reset matching on blacklist to start of string
     match [:blacklist:] //
-}
-#
-{
+
     #... Grab the next regex, turn the one-per-line patterns into a regex
     match <fromend nomultiline> (:waste: :blregex:) [:blacklist:]  /(.+)/
     #... see if this regex matches the incoming mail
@@ -919,7 +1000,7 @@ match [:priolist:] //
     {
         match [:stats_only:] /SET/
         output [:*:mailout:] /:*:pr:\n/
-        exit /:*:our_exit_code:/
+        return /:*:our_exit_code:/
     }
 
     #     flag the subject line
@@ -947,7 +1028,7 @@ match [:priolist:] //
     {
         match [:reject_address:] /.../
         syscall (:*:_dw:) /:*:mail: ':*:reject_address:' -s ':*:subj_text:'/
-        exit /:*:our_exit_code:/
+        return /:*:our_exit_code:/
     }
 }
 goto /:finish_up:/
@@ -980,7 +1061,7 @@ goto /:finish_up:/
     {
         match [:stats_only:] /SET/
         output [:*:mailout:] /:*:pr:\n/
-        exit /:*:our_exit_code:/
+        return /:*:our_exit_code:/
     }
 
     {
@@ -1021,7 +1102,7 @@ goto /:finish_up:/
     {
         match [:stats_only:] /SET/
         output [:*:mailout:] /:*:pr:\n/
-        exit /:*:our_exit_code:/
+        return /:*:our_exit_code:/
     }
 
     {
@@ -1050,6 +1131,63 @@ goto /:finish_up:/
 #         Finish up - common exit routine
 
 :finish_up:
+#
+#         Here's where we finish up processing in all the paths.
+#         
+
+# ---- should we consider automatic training?	
+{
+	match [:automatic_training:] /yes/
+	# bounce out if we've already auto-trained this email
+	match <absent> /AUTO-TRAINED/
+	isolate (:msghash:)
+	hash (:msghash:) /:*:_dw:/
+	# pick one-in-16 here: if the second-to-last digit is a 0
+	match [:msghash:] /......0./
+	#
+	# autotraining...
+	#
+	# Yep... we should use this for autotraining
+	# do we auto-train on acceptance? 
+	#
+	{
+		{ 
+			match [:classifier_reason:] /ACCEPT/
+			# it wasn't spam... autotrain it "nonspam"
+			output [:*:fileprefix:nonspamtext.txt] <append> /:*:text:/
+			learn [:m_text:] <:*:clf:> /:*:lcr:/ (:*:goodcss:)
+			## learn <microgroom>  (:*:fileprefix::*:nonspamcss:) [:m_text:]  /:*:lcr:/
+			## goto /:autotrain_finish:/
+		}
+		alius
+		{ 
+			# or do we autotrain on rejection       
+			match [:classifier_reason:] /REJECT/
+			
+			# it was spam... autotrain it "spam"
+			output [:*:fileprefix:spamtext.txt] <append> /:*:text:/
+			learn [:m_text:] <:*:clf:> /:*:lcr:/ (:*:spamcss:)
+			# learn <microgroom> (:*:fileprefix::*:spamcss:) [:m_text:] /:*:lcr:/
+			## goto /:autotrain_finish:/
+		}
+	}
+## :autotrain_finish:
+	{
+		{
+			match [:autotrain_address:] /../
+			syscall (:*:classifier_reason: :*:_nl: :*:_dw:) /:*:mail: ':*:autotrain_address:' -s "AUTO-TRAINED email - please check" /
+		}
+		alius
+		{
+	        # there was no autotrain address, so we just accept it.
+			match (:subj:) /Subject:/
+			alter (:subj:) /Subject:  AUTO_TRAINED email - please check! ... /
+			# accept
+		}
+	}
+}
+
+
 {
     {
         {
@@ -1112,15 +1250,8 @@ Content-Transfer-Encoding: quoted-printable:*:_nl::*:_nl::*:_nl::*:m_text::*:_nl
     #accept
     output [:*:mailout:] /:*:_dw:/
 }
-exit /:*:our_exit_code:/
+return /:*:our_exit_code:/
 
-
-
-
-######################################################################3
-#
-#              Library insertions start here.
-insert maillib.crm
 
 
 
@@ -1131,6 +1262,7 @@ insert maillib.crm
 trap (:broken_program_message:) /.*/
 {
     #accept
+    isolate <default> (:mailout:) //
     output [:*:mailout:] /:*:_dw:/
 
     output /:*:_nl: Aw, crud.  mailreaver.crm broke.  Here's the error: :*:_nl:/
@@ -1138,6 +1270,13 @@ trap (:broken_program_message:) /.*/
     output [stderr] /:*:_nl: ERROR: mailreaver.crm broke.  Here's the error: :*:_nl:/
     output [stderr] /ERROR: :*:broken_program_message:/
 }
+isolate <default> (:program_fault_exit_code:) /66/
 exit /:*:program_fault_exit_code:/
 
+
+######################################################################3
+#
+#              Library insertions start here.
+insert mailtrainer.crm
+#insert maillib.crm
 

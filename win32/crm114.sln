@@ -460,7 +460,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm_test_vector_tokenizer",
 		{B3002C27-B40B-413E-BDB4-13E6678F199B} = {B3002C27-B40B-413E-BDB4-13E6678F199B}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcrm114", "libcrm114.vcproj", "{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crm114full_lib", "libcrm114.vcproj", "{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
@@ -529,22 +529,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenSSL", "OpenSSL", "{8961
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Win32 pthreads", "Win32 pthreads", "{3077D004-338D-42FB-BB2B-1D5B1861FEC9}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcrm114_t1", "libcrm114_t1.vcproj", "{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{7082616F-0A6F-4265-AAB3-1EF1BADC7EA1} = {7082616F-0A6F-4265-AAB3-1EF1BADC7EA1}
-		{EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383} = {EA994E1D-4AA5-4ABB-9712-EA9CBBF7D383}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcrm114_NG", "libcrm114_NG.vcproj", "{202D8670-C05F-48A0-97F3-CF531C84C34A}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
@@ -1160,30 +1144,6 @@ Global
 		{5595B3F2-E162-45D2-9E66-81413C226818}.Release|Win32.Build.0 = Release|Win32
 		{5595B3F2-E162-45D2-9E66-81413C226818}.Release|x64.ActiveCfg = Release|x64
 		{5595B3F2-E162-45D2-9E66-81413C226818}.Release|x64.Build.0 = Release|x64
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|Itanium.ActiveCfg = Debug|Itanium
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|Itanium.Build.0 = Debug|Itanium
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|Win32.Build.0 = Debug|Win32
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|x64.ActiveCfg = Debug|x64
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Debug|x64.Build.0 = Debug|x64
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|Itanium.ActiveCfg = Release|Itanium
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|Itanium.Build.0 = Release|Itanium
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|Win32.ActiveCfg = Release|Win32
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|Win32.Build.0 = Release|Win32
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|x64.ActiveCfg = Release|x64
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B}.Release|x64.Build.0 = Release|x64
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|Itanium.ActiveCfg = Debug|Itanium
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|Itanium.Build.0 = Debug|Itanium
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|Win32.ActiveCfg = Debug|Win32
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|Win32.Build.0 = Debug|Win32
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|x64.ActiveCfg = Debug|x64
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Debug|x64.Build.0 = Debug|x64
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|Itanium.ActiveCfg = Release|Itanium
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|Itanium.Build.0 = Release|Itanium
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|Win32.ActiveCfg = Release|Win32
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|Win32.Build.0 = Release|Win32
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|x64.ActiveCfg = Release|x64
-		{202D8670-C05F-48A0-97F3-CF531C84C34A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1242,6 +1202,5 @@ Global
 		{7437BF7D-E5EF-4580-9222-1EE3727A6E62} = {5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}
 		{E546544D-5D5D-4AED-AB31-FD35AEAB6BB6} = {5418E8FF-7892-41CB-875B-D2DC5E9D0FD8}
 		{B7D2D4D5-9F5D-4E39-9020-7C09963888A5} = {5131B2E9-3420-4210-AAAD-E41F50F1C6FB}
-		{DEF7DBD1-A7AF-4921-9777-3D203003CD9B} = {5131B2E9-3420-4210-AAAD-E41F50F1C6FB}
 	EndGlobalSection
 EndGlobal

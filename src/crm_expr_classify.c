@@ -78,6 +78,10 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "LEARN is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -94,11 +98,13 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     classifier_flags = apb->sflags;
 
+#if 0
     //     Joe thinks that this should be a table or a loop.
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
+#endif
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 0, "L", (unsigned long long int)classifier_flags);
 
@@ -106,27 +112,27 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         retval = crm_expr_osb_bayes_learn(csl, apb, vht, tdw, txt, start, len);
     }
-    else    if (classifier_flags & CRM_CORRELATE)
+    else if (classifier_flags & CRM_CORRELATE)
     {
         retval = crm_expr_correlate_learn(csl, apb, vht, tdw, txt, start, len);
     }
-    else    if (classifier_flags & CRM_OSB_WINNOW)
+    else if (classifier_flags & CRM_OSB_WINNOW)
     {
         retval = crm_expr_osb_winnow_learn(csl, apb, vht, tdw, txt, start, len);
     }
-    else    if (classifier_flags & CRM_OSBF)
+    else if (classifier_flags & CRM_OSBF)
     {
         retval = crm_expr_osbf_bayes_learn(csl, apb, vht, tdw, txt, start, len);
     }
-    else    if (classifier_flags & CRM_HYPERSPACE)
+    else if (classifier_flags & CRM_HYPERSPACE)
     {
         retval = crm_expr_osb_hyperspace_learn(csl, apb, vht, tdw, txt, start, len);
     }
-    else    if (classifier_flags & CRM_ENTROPY)
+    else if (classifier_flags & CRM_ENTROPY)
     {
         retval = crm_expr_bit_entropy_learn(csl, apb, vht, tdw, txt, start, len);
     }
-    else    if (classifier_flags & CRM_SVM)
+    else if (classifier_flags & CRM_SVM)
     {
         retval = crm_expr_svm_learn(csl, apb, vht, tdw, txt, start, len);
     }
@@ -230,6 +236,10 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CLASSIFY is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -240,11 +250,6 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //            get our flags... the only ones we're interested in here
     //            are the ones that specify _which_ algorithm to use.
     classifier_flags = apb->sflags;
-
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 4, "L", (unsigned long long int)classifier_flags);
 
@@ -375,6 +380,10 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CSSMERGE is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -385,11 +394,6 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //            get our flags... the only ones we're interested in here
     //            are the ones that specify _which_ algorithm to use.
     classifier_flags = apb->sflags;
-
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 6, "L", (unsigned long long int)classifier_flags);
 
@@ -522,6 +526,10 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CSSDIFF is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -532,11 +540,6 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //            get our flags... the only ones we're interested in here
     //            are the ones that specify _which_ algorithm to use.
     classifier_flags = apb->sflags;
-
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 8, "L", (unsigned long long int)classifier_flags);
 
@@ -667,6 +670,10 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CSSBACKUP is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -677,11 +684,6 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //            get our flags... the only ones we're interested in here
     //            are the ones that specify _which_ algorithm to use.
     classifier_flags = apb->sflags;
-
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 10, "L", (unsigned long long int)classifier_flags);
 
@@ -811,6 +813,10 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CSSRESTORE is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -821,11 +827,6 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //            get our flags... the only ones we're interested in here
     //            are the ones that specify _which_ algorithm to use.
     classifier_flags = apb->sflags;
-
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 12, "L", (unsigned long long int)classifier_flags);
 
@@ -956,6 +957,10 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CSSINFO is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -966,11 +971,6 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //            get our flags... the only ones we're interested in here
     //            are the ones that specify _which_ algorithm to use.
     classifier_flags = apb->sflags;
-
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 14, "L", (unsigned long long int)classifier_flags);
 
@@ -1102,6 +1102,10 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CSSANALYZE is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1112,11 +1116,6 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //            get our flags... the only ones we're interested in here
     //            are the ones that specify _which_ algorithm to use.
     classifier_flags = apb->sflags;
-
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 16, "L", (unsigned long long int)classifier_flags);
 
@@ -1248,6 +1247,10 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CSSCREATE is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1258,12 +1261,6 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //            get our flags... the only ones we're interested in here
     //            are the ones that specify _which_ algorithm to use.
     classifier_flags = apb->sflags;
-
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
-
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 18, "L", (unsigned long long int)classifier_flags);
 
@@ -1396,6 +1393,10 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CSSMIGRATE is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1406,11 +1407,6 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //            get our flags... the only ones we're interested in here
     //            are the ones that specify _which_ algorithm to use.
     classifier_flags = apb->sflags;
-
-    classifier_flags = classifier_flags &
-                       (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET);
 
     crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 20, "L", (unsigned long long int)classifier_flags);
 

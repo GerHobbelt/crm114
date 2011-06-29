@@ -96,7 +96,15 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
         ahash[itercount] = ihash;
         if (internal_trace)
-            fprintf(stderr, "Eval ihash = %016llX\n", (unsigned long long int)ihash);
+        {
+            fprintf(stderr, "Eval ihash = %016llX at round %d\n",
+                    (unsigned long long int)ihash, itercount + 1);
+        }
+        if (user_trace)
+        {
+            fprintf(stderr, "EVAL round %d processes expression '%.*s'\n",
+                    itercount + 1, newvallen, tempbuf);
+        }
 
         // scan down to see if we see any change: faster than up.
         //
@@ -145,8 +153,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (varnamelen >= 2)
     {
         // we do accept the special 'empty var' :: here as a valid var: it does exist after all :-)
-        crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,
-                tempbuf, newvallen);
+        crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,                tempbuf, newvallen, csl->calldepth);
     }
 
     if (internal_trace)
@@ -164,6 +171,10 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+        if (internal_trace)
+        {
+            fprintf(stderr, "EVAL is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         CRM_ASSERT(csl->cstmt >= 0);
         CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -223,8 +234,7 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     newvallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
     newvallen = crm_nexpandvar(tempbuf, newvallen, data_window_size, vht, tdw);
 
-    crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,
-            tempbuf, newvallen);
+    crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,            tempbuf, newvallen, csl->calldepth);
     return 0;
 }
 

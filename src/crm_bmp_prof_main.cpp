@@ -53,6 +53,8 @@ int q_expansion_mode = 0;
 
 int selected_hashfunction = 0;  //  0 = default
 
+int act_like_Bill = 0;
+
 
 
 
@@ -321,7 +323,7 @@ int main(int argc, char **argv)
                 char *e = NULL;
                 long v = strtol(optarg, &e, 10);
 
-                if ((!e || ! * e) && v > 0 && v < 10)
+                if ((!e || !*e) && v > 0 && v < 10)
                 {
                     cfg.verbosity = (int)v;
                 }

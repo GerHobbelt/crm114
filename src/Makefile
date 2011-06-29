@@ -160,17 +160,17 @@ elisp_comp = $(top_srcdir)/m4/elisp-comp
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run aclocal-1.10
-AMTAR = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run tar
-AUTOCONF = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run automake-1.10
+ACLOCAL = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run aclocal-1.10
+AMTAR = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run tar
+AUTOCONF = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run autoconf
+AUTOHEADER = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run autoheader
+AUTOMAKE = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run automake-1.10
 AWK = gawk
 BIN_PATH = /usr/local/bin
 BZIP2 = /usr/bin/bzip2
 CC = gcc -std=gnu99
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
+CFLAGS =    -O0 -g3 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
 COL = /usr/bin/col
 COMPRESS = 
 CONFIG_STATUS_DEPENDENCIES = $(top_srcdir)/src/config_vanilla_UNIX_sys_defaults.h.in $(top_srcdir)/win32/config_win32.h.in
@@ -179,7 +179,7 @@ CPPFLAGS =
 CVS2CL = 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
+CXXFLAGS =    -O0 -g3 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
 CYGPATH_W = echo
 DB2X_MANXML = /usr/local/bin/db2x_manxml
 DB2X_TEXIXML = /usr/local/bin/db2x_texixml
@@ -200,6 +200,13 @@ GREP = /usr/bin/grep
 GZIP = /usr/bin/gzip
 HTMLTIDY = /usr/bin/tidy
 INSTALL = /usr/bin/install -c
+#PREV_VERSION=20080923-BlameVT
+#PREV_VERSION=20080630-BlameVT
+#PREV_VERSION=20080618-BlameBadGlasses
+#PREV_VERSION=20080502-BlameJason
+#PREV_VERSION=20080326-BlameSentansoken
+#PREV_VERSION=20080325-BlameSentansoken
+#PREV_VERSION=20080317-BlameJoeLangeway_VT
 #PREV_VERSION=20080217-BlameJoeLangeway_VT
 #PREV_VERSION=20071201-BlameLittleStevie_VT
 #PREV_VERSION=20071126-BlameGerHobbelt
@@ -271,7 +278,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-ISODATE = 2008-10-04
+ISODATE = 2009-02-10
 LDFLAGS =  
 LIBOBJS = 
 LIBS = -ltre -lrt -lm  -lreadline
@@ -279,21 +286,21 @@ LN_S = ln -s
 LTLIBOBJS = 
 LZMA = 
 MAINT = #
-MAKEINFO = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run makeinfo
+MAKEINFO = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 ORIGINAL_BILLY_DISTRO_DIR = /home/ger/prj/1original/crm114/src/crm114.sourceforge.net/src
 PACKAGE = crm114
 PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
 PACKAGE_NAME = CRM114
-PACKAGE_STRING = CRM114 20080630-BlameVT
+PACKAGE_STRING = CRM114 20081111-BlameBarack
 PACKAGE_TARNAME = crm114
-PACKAGE_VERSION = 20080630-BlameVT
+PACKAGE_VERSION = 20081111-BlameBarack
 PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 3495
+REVISION = 4521
 RMAN = /usr/bin/rman
 SED = /usr/bin/sed
 SET_MAKE = 
@@ -303,12 +310,12 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-3495
+TAR_FILENAME_POSTFIX = Ger-4521
 TIME = /usr/bin/time
 TRE_CONFIG = no
 TROFF = /usr/bin/groff
 UNCRUSTIFY = /usr/local/bin/uncrustify
-VERSION = 20080630-BlameVT
+VERSION = 20081111-BlameBarack
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
 #
@@ -317,10 +324,10 @@ VERSION = 20080630-BlameVT
 VER_SUFFIX =  
 ZIP = /usr/bin/zip
 ZOEM = 
-abs_builddir = /home/ger/prj/3actual/crm114/src
-abs_srcdir = /home/ger/prj/3actual/crm114/src
-abs_top_builddir = /home/ger/prj/3actual/crm114
-abs_top_srcdir = /home/ger/prj/3actual/crm114
+abs_builddir = /windows/G/prj/3actual/crm114/src
+abs_srcdir = /windows/G/prj/3actual/crm114/src
+abs_top_builddir = /windows/G/prj/3actual/crm114
+abs_top_srcdir = /windows/G/prj/3actual/crm114
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 am__include = include
@@ -348,7 +355,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = $(SHELL) /home/ger/prj/3actual/crm114/m4/install-sh
+install_sh = $(SHELL) /windows/G/prj/3actual/crm114/m4/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 lispdir = ${datarootdir}/emacs/site-lisp
@@ -372,7 +379,7 @@ top_srcdir = ..
 DISTCLEANFILES = diff/
 CLEANFILES = *.o *~ *.bak
 TAR_CMDLINE = ${TAR} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20080630-BlameVT-Ger-3495
+ARCHIVE_BASE_NAME = crm114-20081111-BlameBarack-Ger-4521
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #
@@ -383,8 +390,8 @@ DATE = `date +%Y_%m_%d_%H_%M_%S`
 #     What version is this software (PLEASE don't change this just 
 #     to mess with my brain. - wsy)
 #
-#VERSION = 20080630-BlameVT
-PREV_VERSION = 20080317-BlameJoeLangeway_VT
+#VERSION = 20081111-BlameBarack
+PREV_VERSION = 20081023-BlameMaxwell
 #INSTALLFLAGS += -m 755
 #
 #        uncomment the next line if you want to "strip" the debugger info 
@@ -530,6 +537,25 @@ CFILES_4_BMP_PROF = \
 	crm_bmp_prof_report.cpp \
 	crm_bmp_prof_scan.cpp crm_bmp_prof_utils.cpp
 
+CFILES_4_LIBCRM114 = \
+	libcrm114/if_kiss_bill.c \
+	libcrm114/interface.c \
+	libcrm114/hashtable_base.c \
+	libcrm114/bayesian_base.c \
+	libcrm114/hash_base.c \
+	libcrm114/diag_base.c \
+	libcrm114/bio_base.c \
+	libcrm114/mmap_bio_base.c \
+	libcrm114/socket_bio_base.c \
+	libcrm114/memory_bio_base.c
+
+HFILES_4_LIBCRM114 = \
+	libcrm114/libcrm_statuscodes.h \
+	libcrm114/libcrm_kiss_bill.h \
+	libcrm114/libcrm_bio.h \
+	libcrm114/libcrm_diag.h \
+	libcrm114/libcrm114.h
+
 HFILES = crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h config.h \
 	config_vanilla_UNIX_sys_defaults.h crm_mjt_qsort.h \
@@ -562,6 +588,7 @@ UTIL_C_FILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c \
 
 CRMFILES = mailfilter.crm mailfilter.cf \
 	mailreaver.crm mailtrainer.crm \
+	mkcss.crm \
 	maillib.crm shuffle.crm \
 	rewriteutil.crm \
 	matchtest.crm windowtest.crm overalterisolatedtest.crm exectest.crm \
@@ -620,6 +647,7 @@ cssdiff_SOURCES = cssdiff.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 cssmerge_SOURCES = cssmerge.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 testvectok_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) testvectok.c
 crm_bmp_prof_SOURCES = crm_bmp_prof_main.cpp $(CFILES_4_BMP_PROF) $(CFILES) $(HFILES) $(EXTRA_DEPS)
+libcrm114_SOURCES = $(CFILES_4_LIBCRM114) $(HFILES) $(HFILES_4_LIBCRM114) $(EXTRA_DEPS)
 
 # see for 'ELCFILES=' the documentation at http://www.gnu.org/software/automake/manual/automake.html#Emacs-Lisp
 dist_lisp_LISP = crm114-mode.el

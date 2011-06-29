@@ -1,0 +1,21 @@
+#
+# Vanilla CRM114 fails on this code: see the comment
+#
+
+window
+isolate (:a:) /1/
+isolate (:b:) /x/
+eval (:b:) /:@::*:a::/
+output /a = ':*:a:' ; b = ':*:b:'\n/		# expected: a = '1'; b = '1'
+
+isolate (:c:) //
+isolate (:d:) /x/
+eval (:d:) /:@::*:c::/
+output /c = ':*:c:' ; d = ':*:d:'\n/		# expected: c = ''; d = '0'
+# ^^^^ VANILLA CRM114 gives: c = ''; d = ':@::'
+# i.e. eval completely screws up when the math expression is empty.
+#
+# Error fixed in GerH; empty math expression produces a 'zero' value.
+#
+
+

@@ -338,18 +338,20 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector
-    (apb,                                  // the APB
-            vht,
-            tdw,
-            txtptr + txtstart,                        // intput string
-            txtlen,                                   // how many bytes
-            0,                                        // starting offset
-            NULL,                                     // tokenizer
-            NULL,                                     // coeff array
-            (crmhash_t *)hashes,                      // where to put the hashed results
-            HYPERSPACE_MAX_FEATURE_COUNT,             //  max number of hashes
-            &hashcounts                               // how many hashes we actually got
-    );
+                (apb,                      // the APB
+                vht,
+                tdw,
+                txtptr + txtstart,                    // intput string
+                txtlen,                               // how many bytes
+                0,                                    // starting offset
+                NULL,                                 // tokenizer
+                NULL,                                 // coeff array
+                (crmhash_t *)hashes,                  // where to put the hashed results
+                HYPERSPACE_MAX_FEATURE_COUNT,         //  max number of hashes
+                NULL,
+                NULL,
+                &hashcounts                           // how many hashes we actually got
+                );
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
     hashes[hashcounts].hash = 0;     // write sentinel
@@ -496,13 +498,19 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         crm_force_munmap_filename(hashfilename);
 
         if (user_trace)
+        {
             fprintf(stderr, "Opening hyperspace file %s for append.\n",
                     hashfilename);
+        }
         hashf = fopen(hashfilename, "ab");
         if (hashf == 0)
         {
-            fatalerror("For some reason, I was unable to append-open the file named ",
-                    hashfilename);
+            char dirbuf[DIRBUFSIZE_MAX];
+
+            fatalerror_ex(SRC_LOC(), "For some reason, I was unable to append-open the file named '%s' (full path: '%s'); errno=%d(%s)",
+                    hashfilename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
+                    errno,
+                    errno_descr(errno));
         }
         else
         {
@@ -740,9 +748,11 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (user_trace)
         {
+                        char dirbuf[DIRBUFSIZE_MAX];
+
             fprintf(stderr,
                     "Deleting feature from %d to %d (rad %f) of file %s\n",
-                    beststart, bestend, bestrad, hashfilename);
+                    beststart, bestend, bestrad, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename));
         }
 
         //   Deletion time - move the remaining stuff in the file
@@ -793,6 +803,9 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int h;                  //  we use h for our hashpipe counter, as needed.
     //  char ltext[MAX_PATTERN];  //  the variable to classify
     //int llen;
+    char ostext[MAX_PATTERN];   //  optional pR offset
+    int oslen;
+    double pR_offset;
     //  the hash file names
     char htext[MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN];
     int htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
@@ -826,8 +839,9 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #else
     int totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
 #endif
-    int totalfeatures;                     //  total features
-    double tprob;                          //  total probability in the "success" domain.
+    int totalfeatures;                                  //  total features
+    double tprob;                                       //  total probability in the "success" domain.
+    double min_success = 0.5;                           // minimum probability to be considered success
 
     double ptc[MAX_CLASSIFIERS]; // current running probability of this class
 
@@ -979,6 +993,21 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     hlen = crm_nexpandvar(htext, hlen, htext_maxlen, vht, tdw);
     CRM_ASSERT(hlen < MAX_PATTERN);
 
+
+    //       extract the optional pR offset value
+    //
+    oslen = crm_get_pgm_arg(ostext, MAX_PATTERN, apb->s2start, apb->s2len);
+    pR_offset = 0;
+    min_success = 0.5;
+    if (oslen > 0)
+    {
+        oslen = crm_nexpandvar(ostext, oslen, MAX_PATTERN, vht, tdw);
+        CRM_ASSERT(oslen < MAX_PATTERN);
+        ostext[oslen] = 0;
+        pR_offset = strtod(ostext, NULL);
+        min_success = 1.0 - 1.0 / (1 + pow(10, pR_offset));
+    }
+
     //            extract the optional "match statistics" variable
     //
     svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
@@ -986,6 +1015,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     CRM_ASSERT(svlen < MAX_PATTERN);
     {
         int vstart, vlen;
+
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
             memmove(svrbl, &svrbl[vstart], vlen);
@@ -1078,14 +1108,16 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //      fprintf(stderr, "fname is '%s' len %d\n", fname, fnlen);
             fn_start_here = fnstart + fnlen + 1;
             if (user_trace)
+            {
                 fprintf(stderr, "Classifying with file -%s- "
                                 "succhash=%d, maxhash=%d\n",
                         fname, succhash, maxhash);
+            }
             if (fname[0] == '|' && fname[1] == 0)
             {
                 if (vbar_seen)
                 {
-                    nonfatalerror("Only one ' | ' allowed in a CLASSIFY. \n",
+                    nonfatalerror("Only one '|' allowed in a CLASSIFY.\n",
                             "We'll ignore it for now.");
                 }
                 else
@@ -1102,8 +1134,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //             quick check- does the file even exist?
                 if (k != 0)
                 {
-                    nonfatalerror("Nonexistent Classify table named: ",
-                            fname);
+                    nonfatalerror("Nonexistent Classify table named: ", fname);
                 }
                 else
                 {
@@ -1196,12 +1227,14 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         return nonfatalerror("Couldn't open at least 1 .css file for classify().", "");
     }
 
+#if 0
     //    do we have at least 1 valid .css file at both sides of '|'?
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
                              "for classify().\n", "Hope you know what are you doing.");
     }
+#endif
 
 
 
@@ -1213,17 +1246,19 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
     //   Use the flagged vector tokenizer
-    crm_vector_tokenize_selector(apb,                             // the APB
+    crm_vector_tokenize_selector(apb, // the APB
             vht,
             tdw,
-            txtptr + txtstart,                                               // intput string
-            txtlen,                                                          // how many bytes
-            0,                                                               // starting offset
-            NULL,                                                            // tokenizer
-            NULL,                                                            // coeff array
-            (crmhash_t *)unk_hashes,                                         // where to put the hashed results
-            HYPERSPACE_MAX_FEATURE_COUNT,                                    //  max number of hashes
-            &unk_hashcount                                                   // how many hashes we actually got
+            txtptr + txtstart,            // intput string
+            txtlen,                       // how many bytes
+            0,                            // starting offset
+            NULL,                         // tokenizer
+            NULL,                         // coeff array
+            (crmhash_t *)unk_hashes,      // where to put the hashed results
+            HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
+            NULL,
+            NULL,
+            &unk_hashcount       // how many hashes we actually got
                                 );
     CRM_ASSERT(unk_hashcount >= 0);
     CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
@@ -1736,7 +1771,9 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             tprob = tprob + ptc[i];
         }
         for (i = 0; i < maxhash; i++)
+        {
             ptc[i] = ptc[i] / tprob;
+        }
 
         if (user_trace)
         {
@@ -1750,7 +1787,10 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     tprob = 0.0;
     for (k = 0; k < succhash; k++)
-        tprob = tprob + ptc[k];
+    {
+        tprob += ptc[k];
+    }
+
     //
     //      Do the calculations and format some output, which we may or may
     //      not use... but we need the calculated result anyway.
@@ -1787,13 +1827,40 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //  There would be a possible buffer overflow except that _we_ control
         //   what gets written here.  So it's no biggie.
 
-        if (tprob > 0.5)
+
+        if (tprob > min_success)
         {
-            sprintf(buf, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            // if a pR offset was given, print it together with the real pR
+            if (oslen > 0)
+            {
+                sprintf(buf,
+                        "CLASSIFY succeeds; (hyperspace) success probability: "
+                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        tprob, overall_pR, pR_offset);
+            }
+            else
+            {
+                sprintf(buf,
+                        "CLASSIFY succeeds; (hyperspace) success probability: "
+                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+            }
         }
         else
         {
-            sprintf(buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            // if a pR offset was given, print it together with the real pR
+            if (oslen > 0)
+            {
+                sprintf(buf,
+                        "CLASSIFY fails; (hyperspace) success probability: "
+                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        tprob, overall_pR, pR_offset);
+            }
+            else
+            {
+                sprintf(buf,
+                        "CLASSIFY fails; (hyperspace) success probability: "
+                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+            }
         }
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
@@ -1890,76 +1957,84 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
         if (svlen > 0)
         {
-            crm_destructive_alter_nvariable(svrbl, svlen,
-                    stext, (int)strlen(stext));
+            crm_destructive_alter_nvariable(svrbl, svlen,                    stext, (int)strlen(stext), csl->calldepth);
         }
     }
 
 
-    //  cleanup time!
-    //  remember to let go of the fd's and mmaps
-    for (k = 0; k < maxhash; k++)
-    {
-        //      close (hfds [k]);
-        crm_munmap_file((void *)hashes[k]);
-    }
 
     //   and drop the list of unknown hashes
     free(unk_hashes);
 
-    //
-    //  Free the hashnames, to avoid a memory leak.
-    //
 
 
-    for (i = 0; i < maxhash; i++)
+
+    //  cleanup time!
+    //  remember to let go of the fd's and mmaps
     {
-        ///////////////////////////////////////
-        //    ! XXX SPAMNIX HACK!
-        //!                         -- by Barry Jaspan
-        //
-        //! Without the statement "k = i" (which should have no effect),
-        //! the for statement crashes on MacOS X when compiled with gcc
-        //! -O3.  I've examined the pointers being freed, and they appear
-        //! valid.  I've run this under Purify on Windows, valgrind on
-        //! Linux, and efence on MacOS X; none report a problem here
-        //! (though valgrind reports umrs in the VHT code; see my post to
-        //! crm114-developers).  I've also examined the assembler produced
-        //! with various changes here and, though I don't speak PPC, w/o
-        //! the k = i it is qualitatively different.
-        //!
-        //! For now, I'm concluding it is an optimizer bug, and fixing it
-        //! with the "k = i" statement.  This occurs on MacOS X 10.2 with
-        //! Apple Computer, Inc. GCC version 1175, based on gcc version
-        //! 3.1 20020420 (prerelease).
-        //
-        k = i;
-        free(hashname[i]);
+        int k;
+
+        for (k = 0; k < maxhash; k++)
+        {
+            //      close (hfds [k]);
+            if (hashes[k])
+            {
+                crm_munmap_file(hashes[k]);
+            }
+#if 0
+            //   and let go of the seen_features array
+            if (seen_features[k])
+                free(seen_features[k]);
+            seen_features[k] = NULL;
+#endif
+
+            //
+            //  Free the hashnames, to avoid a memory leak.
+            //
+            if (hashname[k])
+            {
+                free(hashname[k]);
+            }
+        }
     }
 
-
-    if (tprob > 0.5)
+#if 0
+    //  and let go of the regex buffery
+    if (ptext[0] != 0)
     {
-        //   all done... if we got here, we should just continue execution
-        if (user_trace)
-            fprintf(stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
+        crm_regfree(&regcb);
     }
-    else
+#endif
+
+
+
+    if (tprob <= min_success)
     {
         if (user_trace)
+        {
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
+        }
         //    and do what we do for a FAIL here
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+        if (internal_trace)
+        {
+            fprintf(stderr, "CLASSIFY.HYPERSPACE is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         CRM_ASSERT(csl->cstmt >= 0);
         CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }
+
+
     //
+    //   all done... if we got here, we should just continue execution
+    if (user_trace)
+        fprintf(stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
     return 0;
 }
 

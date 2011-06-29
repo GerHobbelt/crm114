@@ -82,7 +82,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     unsigned char *xhashes = NULL;                    //  and the mask of what we've seen
     crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
     //
-	regex_t regcb = {0};
+    regex_t regcb = { 0 };
     regmatch_t match[5];    //  we only care about the outermost match
     int textoffset;
     int textmaxoffset;
@@ -167,7 +167,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         fev = nonfatalerror_ex(SRC_LOC(),
                 "\nYou didn't specify a valid filename: '%.*s'\n",
-                (int)hlen,
+                hlen,
                 htext);
         return fev;
     }
@@ -202,9 +202,12 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         f = fopen(learnfilename, "wb");
         if (!f)
         {
+            char dirbuf[DIRBUFSIZE_MAX];
+
             fev = fatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your new COW file %s for writing; errno=%d(%s)\n",
+                    "\n Couldn't open your new COW file %s for writing; (full path: '%s') errno=%d(%s)\n",
                     learnfilename,
+                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
                     errno,
                     errno_descr(errno));
             goto fail_dramatically;
@@ -313,8 +316,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     xhashes = calloc(hfsize, sizeof(xhashes[0]));
     if (!xhashes)
     {
-        untrappableerror(
-                "Couldn't alloc xhashes\n",
+        untrappableerror("Couldn't alloc xhashes\n",
                 "We need that part.  Sorry.\n");
     }
 
@@ -326,13 +328,13 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
     // compile regex if not empty - empty regex means "plain regex"
-        i = crm_regcomp(&regcb, ptext, plen, cflags);
-        if (i != 0)
-        {
-            crm_regerror(i, &regcb, tempbuf, data_window_size);
-            nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
-            goto regcomp_failed;
-        }
+    i = crm_regcomp(&regcb, ptext, plen, cflags);
+    if (i != 0)
+    {
+        crm_regerror(i, &regcb, tempbuf, data_window_size);
+        nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
+        goto regcomp_failed;
+    }
 
 
     //   Start by priming the pipe... we will shift to the left next.
@@ -345,11 +347,11 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #ifdef OLD_STUPID_VAR_RESTRICTION
     if (llen > 0)
     {
-        vhtindex = crm_vht_lookup(vht, ltext, llen);
+        vhtindex = crm_vht_lookup(vht, ltext, llen, csl->calldepth);
     }
     else
     {
-        vhtindex = crm_vht_lookup(vht, ":_dw:", 5);
+        vhtindex = crm_vht_lookup(vht, ":_dw:", 5, csl->calldepth);
     }
 
     if (vht[vhtindex] == NULL)
@@ -401,7 +403,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         // directly ([[graph]]+) instead of calling regexec  (8% faster)
         if (ptext[0] != 0)
         {
-            k = crm_regexec(&regcb, &(txtptr[textoffset]),
+            k = crm_regexec(&regcb, &txtptr[textoffset],
                     slen, WIDTHOF(match), match, 0, NULL);
         }
         else
@@ -495,20 +497,20 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (use_unigrams)
                 {
-                    h1 = hashpipe[0] * hctable[0];
+                    h1 = hashpipe[0] *hctable[0];
                     if (h1 < spectra_start)
                         h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1];
+                    h2 = hashpipe[0] *hctable[1];
                     if (h2 == 0)
                         h2 = 0xdeadbeef;
                     j = OSB_WINNOW_WINDOW_LEN;
                 }
                 else
                 {
-                    h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
+                    h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
                     if (h1 < spectra_start)
                         h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
+                    h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
                     if (h2 == 0)
                         h2 = 0xdeadbeef;
                 }
@@ -620,6 +622,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         hashes[hindex].value = sense;
                     }
+                    CRM_ASSERT(hashes[hindex].value > 0.0);
                 }
 
                 // fprintf(stderr, "Hash index: %d  value: %f \n", hindex, hashes[hindex].value);
@@ -653,7 +656,7 @@ fail_dramatically:
 #endif
 #endif
 
-        crm_regfree(&regcb);
+    crm_regfree(&regcb);
 
     return 0;
 }
@@ -677,12 +680,16 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int h;                   //  we use h for our hashpipe counter, as needed.
     char ptext[MAX_PATTERN]; //  the regex pattern
     int plen;
+    char ostext[MAX_PATTERN];   //  optional pR offset
+    int oslen;
+    double pR_offset;
     //  the hash file names
     char htext[MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN];
     int htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
     int hlen;
     //  the match statistics variable inbuf
     char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
+    char *stext_ptr = stext;
     int stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
     int slen;
     char svrbl[MAX_PATTERN]; //  the match statistics text buffer
@@ -696,7 +703,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     struct stat statbuf;    //  for statting the hash file
     crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
-	regex_t regcb = {0};
+    regex_t regcb = { 0 };
     regmatch_t match[5];    //  we only care about the outermost match
 
     double fcounts[MAX_CLASSIFIERS]; // total counts for feature normalize
@@ -708,7 +715,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     hitcount_t hits[MAX_CLASSIFIERS];      // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
     double totalweights[MAX_CLASSIFIERS];  //  total of hits * weights
-    double unseens[MAX_CLASSIFIERS];       //  total unseen features.
+    hitcount_t unseens[MAX_CLASSIFIERS];       //  total unseen features.
     double classifierprs[MAX_CLASSIFIERS]; //  pR's of each class
     int totalfeatures;                     //  total features
     hitcount_t htf;                        // hits this feature got.
@@ -722,7 +729,8 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int totalfeatures;                     //  total features
     double htf;                            // hits this feature got.
 #endif
-    double tprob = 0;                      //  total probability in the "success" domain.
+    double tprob = 0;                                   //  total probability in the "success" domain.
+    double min_success = 0.5;                           // minimum probability to be considered success
 
     //double textlen;    //  text length  - rougly corresponds to
     //  information content of the text to classify
@@ -765,6 +773,20 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
+    //       extract the optional pR offset value
+    //
+    oslen = crm_get_pgm_arg(ostext, MAX_PATTERN, apb->s2start, apb->s2len);
+    pR_offset = 0;
+    min_success = 0.5;
+    if (oslen > 0)
+    {
+        oslen = crm_nexpandvar(ostext, oslen, MAX_PATTERN, vht, tdw);
+        CRM_ASSERT(oslen < MAX_PATTERN);
+        ostext[oslen] = 0;
+        pR_offset = strtod(ostext, NULL);
+        min_success = 1.0 - 1.0 / (1 + pow(10, pR_offset));
+    }
+
     //            extract the optional "match statistics" variable
     //
     svlen = crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
@@ -772,6 +794,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     CRM_ASSERT(svlen < MAX_PATTERN);
     {
         int vstart, vlen;
+
         if (crm_nextword(svrbl, svlen, 0, &vstart, &vlen))
         {
             memmove(svrbl, &svrbl[vstart], vlen);
@@ -799,7 +822,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         if (user_trace)
             fprintf(stderr, " setting NOCASE for tokenization\n");
-        cflags += REG_ICASE;
+        cflags |= REG_ICASE;
         eflags = 1;
     }
 
@@ -847,13 +870,13 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //      initialize our arrays for N .css files
     for (i = 0; i < MAX_CLASSIFIERS; i++)
     {
-        fcounts[i] = 0.0;  // check later to prevent a divide-by-zero
-                           // error on empty .css file
+        fcounts[i] = 0.0;        // check later to prevent a divide-by-zero
+                                 // error on empty .css file
         cpcorr[i] = 0.0;         // corpus correction factors
         hits[i] = 0;             // absolute hit counts
         totalhits[i] = 0;        // absolute hit counts
         totalweights[i] = 0.0;   // hit_i * weight*i count
-        unseens[i] = 0.0;        // text features not seen in statistics files
+        unseens[i] = 0;        // text features not seen in statistics files
     }
 
     for (i = 0; i < 10; i++)
@@ -900,9 +923,11 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //      fprintf(stderr, "fname is '%s' len %d\n", fname, fnlen);
             fn_start_here = fnstart + fnlen + 1;
             if (user_trace)
+            {
                 fprintf(stderr, "Classifying with file -%s- "
                                 "succhash=%d, maxhash=%d\n",
                         fname, succhash, maxhash);
+            }
             if (fname[0] == '|' && fname[1] == 0)
             {
                 if (vbar_seen)
@@ -918,13 +943,15 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
             else
             {
+                int k;
+
                 //  be sure the file exists
                 //             stat the file to get it's length
                 k = stat(fname, &statbuf);
                 //             quick check- does the file even exist?
                 if (k != 0)
                 {
-                    nonfatalerror("Nonexistent Classify table named: ",
+                    return nonfatalerror("Nonexistent Classify table named: ",
                             fname);
                 }
                 else
@@ -1036,12 +1063,14 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         return nonfatalerror("Couldn't open at least 1 .css file for classify().", "");
     }
 
+#if 0
     //    do we have at least 1 valid .css file at both sides of '|'?
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
                              "for classify().\n", "Hope you know what are you doing.");
     }
+#endif
 
     {
         int ifile;
@@ -1051,11 +1080,22 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         for (ifile = 0; ifile < maxhash; ifile++)
         {
             fcounts[ifile] = 0.0;
-            for (k = 1; k < hashlens[ifile]; k++)
-                fcounts[ifile] += hashes[ifile][k].value;
-            if (fcounts[ifile] <= 0.0)
-                fcounts[ifile] = 1.0;
-            totalcount += fcounts[ifile];
+            {
+                int k;
+
+                for (k = 1; k < hashlens[ifile]; k++)
+				{
+                    CRM_ASSERT(hashes[ifile][k].value >= 0.0);
+                    fcounts[ifile] += hashes[ifile][k].value;
+				}
+#if 01
+                if (fcounts[ifile] <= 0.0)
+				{
+                    fcounts[ifile] = 1.0;
+				}
+#endif
+                totalcount += fcounts[ifile];
+            }
         }
         //
         //     calculate cpcorr (count compensation correction)
@@ -1081,11 +1121,11 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #ifdef OLD_STUPID_VAR_RESTRICTION
     if (llen > 0)
     {
-        vhtindex = crm_vht_lookup(vht, ltext, llen);
+        vhtindex = crm_vht_lookup(vht, ltext, llen, csl->calldepth);
     }
     else
     {
-        vhtindex = crm_vht_lookup(vht, ":_dw:", 5);
+        vhtindex = crm_vht_lookup(vht, ":_dw:", 5, csl->calldepth);
     }
     if (vht[vhtindex] == NULL)
     {
@@ -1137,7 +1177,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         // directly ([[graph]]+) instead of calling regexec  (8% faster)
         if (ptext[0] != 0)
         {
-            k = crm_regexec(&regcb, &(txtptr[textoffset]),
+            k = crm_regexec(&regcb, &txtptr[textoffset],
                     slen, WIDTHOF(match), match, 0, NULL);
         }
         else
@@ -1182,6 +1222,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     "\n Forcing an increment to avoid an infinite loop.");
             match[0].rm_eo = 1;
         }
+
         //  slide previous hashes up 1
         for (h = OSB_WINNOW_WINDOW_LEN - 1; h >= 1; h--)
         {
@@ -1201,7 +1242,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
 
         //   account for the text we used up...
-        textoffset = textoffset + match[0].rm_eo;
+        textoffset += match[0].rm_eo;
         i++;
 
         //        is the pipe full enough to do the hashing?
@@ -1226,20 +1267,20 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (use_unigrams)
                 {
-                    h1 = hashpipe[0] * hctable[0];
+                    h1 = hashpipe[0] *hctable[0];
                     if (h1 < spectra_start)
                         h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1];
+                    h2 = hashpipe[0] *hctable[1];
                     if (h2 == 0)
                         h2 = 0xdeadbeef;
                     j = OSB_WINNOW_WINDOW_LEN;
                 }
                 else
                 {
-                    h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
+                    h1 = hashpipe[0] *hctable[0] + hashpipe[j] *hctable[j << 1];
                     if (h1 < spectra_start)
                         h1 = spectra_start;
-                    h2 = hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
+                    h2 = hashpipe[0] *hctable[1] + hashpipe[j] *hctable[(j << 1) - 1];
                     if (h2 == 0)
                         h2 = 0xdeadbeef;
                 }
@@ -1258,7 +1299,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     int lh, lh0;
 
-                    lh = hindex % (hashlens[k]);
+                lh = hindex % hashlens[k];
                     if (lh < spectra_start)
                         lh = spectra_start;
                     lh0 = lh;
@@ -1307,7 +1348,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         // unseens score 1.0, which is totally ambivalent; seen
                         //  and accepted score more, seen and refuted score less
                         //
-                        unseens[k] += 1.0;
+                    unseens[k]++;
                         totalweights[k] += 1.0;
                     }
                 }
@@ -1333,27 +1374,19 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }      //  end of repeat-the-regex loop
 classify_end_regex_loop:
 
-    //  cleanup time!
-    //  remember to let go of the fd's and mmaps and mallocs
-    for (k = 0; k < maxhash; k++)
-    {
-        crm_munmap_file(hashes[k]);
-        free(xhashes[k]);
-    }
-    //  and let go of the regex buffery
-        crm_regfree(&regcb);
-
     if (user_trace)
     {
         for (k = 0; k < maxhash; k++)
+        {
             fprintf(stderr, "Match for file %d:  hits: %d  weight: %f\n",
                     k, (int)totalhits[k], totalweights[k]);
+        }
     }
     //
     //      Do the calculations and format some output, which we may or may
     //      not use... but we need the calculated result anyway.
     //
-    if (1)
+    if (1 /* svlen > 0 */)
     {
         char buf[1024];
         double accumulator;
@@ -1397,24 +1430,53 @@ classify_end_regex_loop:
         //  There would be a possible buffer overflow except that _we_ control
         //   what gets written here.  So it's no biggie.
 
-        if (tprob > 0.5)
+        if (tprob > min_success)
         {
-            sprintf(buf, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            // if a pR offset was given, print it together with the real pR
+            if (oslen > 0)
+            {
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY succeeds; (winnow) success probability: "
+                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        tprob, overall_pR, pR_offset);
+            }
+            else
+            {
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY succeeds; (winnow) success probability: "
+                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+            }
         }
         else
         {
-            sprintf(buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            // if a pR offset was given, print it together with the real pR
+            if (oslen > 0)
+            {
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY fails; (winnow) success probability: "
+                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        tprob, overall_pR, pR_offset);
+            }
+            else
+            {
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY fails; (winnow) success probability: "
+                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+            }
         }
-        if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            strcat(stext, buf);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
 
         //   find best single matching file
         //
         bestseen = 0;
-        for (k = 0; k < maxhash; k++)
+        for (m = 0; m < maxhash; m++)
         {
-            if (classifierprs[k] > classifierprs[bestseen])
-                bestseen = k;
+            if (classifierprs[m] > classifierprs[bestseen])
+            {
+                bestseen = m;
+            }
         }
 
         remainder = 10 * DBL_MIN;
@@ -1428,18 +1490,20 @@ classify_end_regex_loop:
 
         //   ... and format some output of best single matching file
         //
-        snprintf(buf, WIDTHOF(buf), "Best match to file #%d (%s) "
-                                    "weight: %6.4f  pR: %6.4f\n",
+        snprintf(stext_ptr, stext_maxlen, "Best match to file #%d (%s) "
+                                          "weight: %6.4f  pR: %6.4f\n",
                 bestseen,
                 hashname[bestseen],
                 totalweights[bestseen],
                 classifierprs[bestseen]);
-        buf[WIDTHOF(buf) - 1] = 0;
-        if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            strcat(stext, buf);
-        sprintf(buf, "Total features in input file: %d\n", totalfeatures);
-        if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            strcat(stext, buf);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
+
+        snprintf(stext_ptr, stext_maxlen, "Total features in input file: %d\n", totalfeatures);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
 
         //     Now do the per-file breakdowns:
         //
@@ -1454,57 +1518,95 @@ classify_end_regex_loop:
                     remainder += totalweights[m];
                 }
             }
-            snprintf(buf, WIDTHOF(buf),
+            snprintf(stext_ptr, stext_maxlen,
                     "#%d (%s):"
-                    " features: %.2f, unseen: %3.2e, weight: %3.2e, pR: %6.2f\n",
+                    " features: %.2f, unseen: %6ld, weight: %6.2f, pR: %6.2f\n",
                     k,
                     hashname[k],
                     fcounts[k],
-                    unseens[k],
+                    (long int)unseens[k],
                     totalweights[k],
                     classifierprs[k]);
-            buf[WIDTHOF(buf) - 1] = 0;
-            // strcat (stext, buf);
-            if (strlen(stext) + strlen(buf) <= stext_maxlen)
+            stext_ptr[stext_maxlen - 1] = 0;
+            stext_maxlen -= (int)strlen(stext_ptr);
+            stext_ptr += strlen(stext_ptr);
+        }
+    }
+    // check here if we got enough room in stext to stuff everything
+    // perhaps we'd better rise a nonfatalerror, instead of just
+    // whining on stderr
+    if (stext_maxlen <= 1)
+    {
+        nonfatalerror("WARNING: not enough room in the buffer to create "
+                      "the statistics text.  Perhaps you could try bigger "
+                      "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+                " ");
+    }
+    if (svlen > 0)
+    {
+        crm_destructive_alter_nvariable(svrbl, svlen, stext, (int)strlen(stext), csl->calldepth);
+    }
+
+
+
+
+    //  cleanup time!
+    //  remember to let go of the fd's and mmaps
+    {
+        int k;
+
+        for (k = 0; k < maxhash; k++)
+        {
+            //      close (hfds [k]);
+            if (hashes[k])
             {
-                strcat(stext, buf);
+                crm_munmap_file(hashes[k]);
             }
-        }
-        // check here if we got enough room in stext to stuff everything
-        // perhaps we'd better rise a nonfatalerror, instead of just
-        // whining on stderr
-        if (strcmp(&(stext[strlen(stext) - strlen(buf)]), buf) != 0)
-        {
-            nonfatalerror("WARNING: not enough room in the buffer to create "
-                          "the statistics text.  Perhaps you could try bigger "
-                          "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-                    " ");
-        }
-        if (svlen > 0)
-        {
-            crm_destructive_alter_nvariable(svrbl, svlen,
-                    stext, (int)strlen(stext));
+#if 0
+            //   and let go of the seen_features array
+            if (seen_features[k])
+                free(seen_features[k]);
+            seen_features[k] = NULL;
+#endif
+
+            //
+            //  Free the hashnames, to avoid a memory leak.
+            //
+            if (hashname[k])
+            {
+                free(hashname[k]);
+            }
+
+            //   and let go of the seen_features array
+            if (xhashes[k])
+                free(xhashes[k]);
+            xhashes[k] = NULL;
         }
     }
 
-    //
-    //  Free the hashnames, to avoid a memory leak.
-    //
-    for (i = 0; i < maxhash; i++)
-	{
-        free(hashname[i]);
-	}
+    //  and let go of the regex buffery
+    if (ptext[0] != 0)
+    {
+        crm_regfree(&regcb);
+    }
 
-    if (tprob <= 0.5)
+
+    if (tprob <= min_success)
     {
         if (user_trace)
+        {
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
+        }
         //    and do what we do for a FAIL here
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+        if (internal_trace)
+        {
+            fprintf(stderr, "CLASSIFY.WINNOW is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         CRM_ASSERT(csl->cstmt >= 0);
         CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;

@@ -1,0 +1,15 @@
+#
+# Vanilla CRM114 fails on this code: see the comment
+#
+
+window
+isolate (:a:) /x/
+output /a = ':*:a:'\n/		# expected: a = 'x'
+
+isolate (:a:) //
+output /a = ':*:a:'\n/		# expected: a = ''
+# ^^^^ VANILLA CRM114 gives: a = 'x'
+# i.e. '//' is treated as '<default> //' within its 'isolate' code.
+#
+# Same error for GerH builds before BlameBarack release!
+#

@@ -409,13 +409,14 @@ for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Vector 3-word-bag Hyperspa
 #    the "vector: blahblah" is coded by the desired length of the pipeline,
 #    then the number of iterations of the pipe, then pipelen * iters 
 #    integer coefficients.  Missing coefficients are taken as zero, 
-#    extra coefficients are disregarded. [i_a] WARNING: GerH needs an extra 'step' parameter in there: an extra '1'
+#    extra coefficients are disregarded.
+#    [i_a] WARNING: GerH needs an extra 'step' parameter in there: an extra '1'
 ./crm114 '-{learn < hyperspace > (q_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 1 / }' < QUICKREF_mt_ng_reference_1.input
 ./crm114 '-{learn < hyperspace > (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 1/}' < INTRO_mt_ng_reference_2.input
-./crm114 '-{ isolate (:s:); {classify < hyperspace > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ /vector: 3 1 1 1 1  /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+./crm114 '-{ isolate (:s:); {classify < hyperspace > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ /vector: 3 1 1 1 1 1 /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
-./crm114 '-{ isolate (:s:); {classify <hyperspace > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ /vector: 3 1 1 1 1 /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+./crm114 '-{ isolate (:s:); {classify <hyperspace > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ /vector: 3 1 1 1 1 1 /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
 But fear not, we _do_ have the document you want. 
 EOF
 

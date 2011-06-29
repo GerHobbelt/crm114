@@ -9,8 +9,8 @@ STDERR TEST OUTPUT:
 crm114: *WARNING*
  The variable you're asking me to ISOLATE  has an utterly bogus name.  I'll ignore the rest of the statement  
 I'll try to keep working.
-This happened at line 17 of file illegal_isolate_var3.crm:
-    trap (:r:) //
+This happened at line 10 of file illegal_isolate_var3.crm:
+    isolate (a) /FUBAR/
 (runtime system location: crm_expr_isolate.c(99) in routine: crm_expr_isolate)
 
 STDOUT TEST OUTPUT:

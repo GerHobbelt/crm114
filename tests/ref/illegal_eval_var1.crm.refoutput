@@ -13,6 +13,6 @@ Attempting to alter the value of an illegal variable 'abc'.
 Sorry, but this program is very sick and probably should be killed off.
 This happened at line 10 of file illegal_eval_var1.crm:
     eval (abc) /:@: 2 > 1:/
-(runtime system location: crm_var_hash_table.c(1225) in routine: crm_destructive_alter_nvariable)
+(runtime system location: crm_var_hash_table.c(1189) in routine: crm_destructive_alter_nvariable)
 
 

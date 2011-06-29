@@ -85,7 +85,7 @@ void free_debugger_data(void)
         free(dbg_last_command);
         dbg_last_command = NULL;
     }
-    if (mytty)
+    if (mytty && mytty != stdin) 
     {
         fclose(mytty);
         mytty = NULL;
@@ -462,7 +462,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                 case '\\':
                     dbg_arg++;
 
-                    // fall through
+                // fall through
 
                 default:
                     buf[i++] = *dbg_arg;
@@ -544,7 +544,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
             dbg_arg = end - 1;              // -1 to compensate to the adjustment after the 'fall-through'.
             current_crm_command = csl->mct[idx];
 
-            // fall through
+        // fall through
         case '.':
             // 'current_crm_command' points at the statement line we're going to grab stuff from. Now determine WHAT EXACTLY we want to grab.
 
@@ -697,7 +697,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
 
     // now feed it back to caller in malloc()ed space:
     *dst = strdup(buf);
-    if (! * dst)
+    if (!*dst)
     {
         untrappableerror("Cannot allocate debugger memory", "Stick a fork in us; we're _done_.");
     }
@@ -892,6 +892,10 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 #else
         mytty = fopen("/dev/tty", "rb");
 #endif
+	if (!mytty)
+	{
+		mytty = stdin;
+	}
         clearerr(mytty);
     }
     if (!show_expr_list)
@@ -1910,7 +1914,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         {
                             memmove(dbg_inbuf, &dbg_arg[tstart], tlen);
                             dbg_inbuf[tlen] = 0;
-                            vindex = crm_vht_lookup(vht, dbg_inbuf, tlen);
+                            vindex = crm_vht_lookup(vht, dbg_inbuf, tlen, -1);
                             if (vht[vindex] == NULL)
                             {
                                 fprintf(stderr, "No label '%s' in this debug command.  ", dbg_inbuf);
@@ -1945,6 +1949,10 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         fprintf(stderr, "Next statement is statement %d\n", nextstmt);
 
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                        csl->next_stmt_due_to_jump = nextstmt;
+                        csl->next_stmt_due_to_debugger = nextstmt;
+                        csl->next_stmt_due_to_fail = -1;
+                        csl->next_stmt_due_to_trap = -1;
                         csl->cstmt = nextstmt;
 #else
                         csl->cstmt = nextstmt;
@@ -2010,7 +2018,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                             tlen = CRM_MIN(tlen, WIDTHOF(dbg_inbuf) - 1);
                             memmove(dbg_inbuf, &dbg_arg[tstart], tlen);
                             dbg_inbuf[tlen] = 0;
-                            vindex = crm_vht_lookup(vht, dbg_inbuf, tlen);
+                            vindex = crm_vht_lookup(vht, dbg_inbuf, tlen, -1);
                             fprintf(stderr, "vindex = %d\n", vindex);
                             if (vht[vindex] == NULL)
                             {
@@ -2104,7 +2112,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         vlen = CRM_MIN(vlen, WIDTHOF(dbg_inbuf) - 1);
                         memmove(dbg_inbuf, &dbg_arg[vstart], vlen);
                         dbg_inbuf[vlen] = 0;
-                        vindex = crm_vht_lookup(vht, dbg_inbuf, vlen);
+                        vindex = crm_vht_lookup(vht, dbg_inbuf, vlen, csl->calldepth);
                         if (vht[vindex] == NULL)
                         {
                             fprintf(stderr, "No variable '%s' in this program.  ", dbg_inbuf);
@@ -2132,7 +2140,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                                 oend - ostart);
                         dbg_outbuf[oend - ostart] = 0;
                         olen = crm_nexpandvar(dbg_outbuf, oend - ostart, dbg_iobuf_size, vht, tdw);
-                        crm_destructive_alter_nvariable(dbg_inbuf, vlen, dbg_outbuf, olen);
+                        crm_destructive_alter_nvariable(dbg_inbuf, vlen, dbg_outbuf, olen, csl->calldepth);
 
                         show_watched_expr = 1;
                     }
@@ -2154,6 +2162,10 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_fail = current_crm_command->fail_index;
+            csl->next_stmt_due_to_debugger = current_crm_command->fail_index;
+            csl->next_stmt_due_to_jump = -1;
+            csl->next_stmt_due_to_trap = -1;
+            csl->cstmt = current_crm_command->fail_index;
 #else
             csl->cstmt = current_crm_command->fail_index - 1;
 #endif
@@ -2190,8 +2202,12 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
             csl->next_stmt_due_to_jump = csl->mct[csl->cstmt]->liaf_index;
+            csl->next_stmt_due_to_debugger = csl->mct[csl->cstmt]->liaf_index;
+            csl->next_stmt_due_to_fail = -1;
+            csl->next_stmt_due_to_trap = -1;
+            csl->cstmt = csl->mct[csl->cstmt]->liaf_index;
 #else
-            csl->cstmt = current_crm_command->liaf_index;
+            csl->cstmt = current_crm_command->liaf_index - 1;
 #endif
             fprintf(stderr, "Backward to {, next statement : %d\n", csl->cstmt);
             CRM_ASSERT(csl->cstmt >= 0);

@@ -322,7 +322,7 @@
 //   matching substring is good enough and losing substrings is anathema.
 //   However, if we have a number of sparse chains that are at risk for
 //   not being reachable, we can merge those chains either together or
-//   onto another chain that's in no dagner of running out of offsets.
+//   onto another chain that's in no danger of running out of offsets.
 //
 //   Note that it's not absolutely necessary for the two chains to be
 //   sorted together; as long as the chains are connected end-to-end,
@@ -416,7 +416,7 @@
 //   A question: should the regex define the next "character", or should
 //   it define the entire next window?  The former allows more flexibility
 //   (and true invariance over charactersets); the latter is easier to
-//   implement and faster at runtime.  Decision: implment as "defines the
+//   implement and faster at runtime.  Decision: implement as "defines the
 //   whole window".  Then we use the count of subexpressions to define our
 //   window length; this would allow skipping arbitrary text - with all the
 //   programming power and danger of abuse that entails. Under this paradigm,
@@ -445,11 +445,13 @@
 //
 //   Note also that there is no place the actual text or even the actual
 //   hashes of the text are stored.  All hashes that map to the same place
-//   in the "seen at" table are deemed identical (and no record is kept);
+//   in the "seen at" table are deemed identical text (and no record is kept);
 //   similarly each cell of "saved text" is really only a pointer to the
 //   most recent previous location where something that mapped to the
 //   same hash table bucket was seen).  Reconstruction of the prior text is
-//   hence marginal in confidence.
+//   hence marginal in confidence.  This ambiguity can be increased by
+//   making the hash table smaller (and thus forcing unreconstructable
+//   collisions).
 //
 ///////////////////////////////////////////////////////////
 
@@ -544,6 +546,11 @@ static int hash_compare(const unsigned int *a, const unsigned int *b)
 //      2) index the new structures; if no prior exists on the chain,
 //         let previous link be 0, otherwise it's the prior value in the
 //         hash table.
+//      3) Nota bene: Originally this code grew the structures downward;
+//         this turned out to be a bad idea because some types of documents
+//         of interest contained long runs (1000+) of identical characters and
+//         the downward-growing structures took geometrically long
+//         periods of time to traverse repeatedly.
 //
 
 int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
@@ -580,6 +587,16 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int unique;
     int use_unigram_features;
     int fev;
+
+    //        Dummies used for the vector tokenizer
+#if 0
+    char ptext[MAX_PATTERN];  //  regex pattern
+    int plen = 0;
+    int *ca = NULL;          //  Coefficient Array (we'll take the default)
+    int pipelen = 0;
+    int pipe_iters = 0;
+    int next_offset = 0;
+#endif
 
     //        unk_hashes is tempbuf, but casting-aliased to FSCM chains
     int unk_hashcount;
@@ -623,10 +640,13 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         /////////////////////////////////////
         //    Take this out when we finally support refutation
         ////////////////////////////////////
-        fev = fatalerror("FSCM Refute is NOT SUPPORTED YET\n", "");
+        fev = fatalerror("FSCM Refute is NOT SUPPORTED YET\n"
+                         "If you want refutation, this is a good time to"
+                         "learn to code.", "");
         return fev;
 
-#if 0 // unreachable code
+#if 0   // unreachable code
+        sense = -sense;
         if (user_trace)
             fprintf(stderr, " refuting learning\n");
 #endif
@@ -702,7 +722,8 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         hashfilename);
             //   Set the size of the hash table.
             if (sparse_spectrum_file_length == 0)
-                sparse_spectrum_file_length = FSCM_DEFAULT_HASH_TABLE_SIZE;
+                sparse_spectrum_file_length =
+                    FSCM_DEFAULT_HASH_TABLE_SIZE; // choose well for speed/accuracy
 
             /////////////////////////////////////////////////
             //     START OF STANDARD HEADER SETUP
@@ -745,9 +766,12 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashf = fopen(hashfilename, "wb+");
             if (!hashf)
             {
-                fev = nonfatalerror_ex(SRC_LOC(),
-                        "\n Couldn't open your new CSS file %s for writing; errno=%d(%s)\n",
+                char dirbuf[DIRBUFSIZE_MAX];
+
+                fev = fatalerror_ex(SRC_LOC(),
+                        "\n Couldn't open your new CSS file %s for writing; (full path: '%s') errno=%d(%s)\n",
                         hashfilename,
+                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
                         errno,
                         errno_descr(errno));
                 return fev;
@@ -770,6 +794,14 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
     }
 
+
+    /////////////////////////////////////////////////////////////
+    //
+    //   Grow-the-file code.
+    //
+    //     This happens whether or not this is a new file.
+    //
+    ///////////////////////////////////////////////////////
     if (sense > 0)
     {
         /////////////////
@@ -788,14 +820,17 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //    Write out the initial previous-seen hash table (all zeroes):
 
         {
-            FSCM_PREFIX_TABLE_CELL my_zero;
-            my_zero.index = 0;
+            FSCM_PREFIX_TABLE_CELL my_zero_table;
+            my_zero_table.index = 0;
             hashf = fopen(hashfilename, "ab+");
             if (!hashf)
             {
-                fev = nonfatalerror_ex(SRC_LOC(),
-                        "\n Couldn't open your CSS file %s for appending; errno=%d(%s)\n",
+                char dirbuf[DIRBUFSIZE_MAX];
+
+                fev = fatalerror_ex(SRC_LOC(),
+                        "\n Couldn't open your CSS file %s for appending; (full path: '%s') errno=%d(%s)\n",
                         hashfilename,
+                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
                         errno,
                         errno_descr(errno));
                 return fev;
@@ -804,7 +839,7 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 for (i = 0; i < sparse_spectrum_file_length; i++)
                 {
-                    if (1 != fwrite(&my_zero,
+                    if (1 != fwrite(&my_zero_table,
                                 sizeof(FSCM_PREFIX_TABLE_CELL),
                                 1,
                                 hashf))
@@ -818,7 +853,7 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
 
                 //    ... and write a single 32-bit zero to cover index zero.
-                if (1 != fwrite(&(my_zero), sizeof(FSCM_PREFIX_TABLE_CELL), 1, hashf))
+                if (1 != fwrite(&my_zero_table, sizeof(FSCM_PREFIX_TABLE_CELL), 1, hashf))
                 {
                     fev = nonfatalerror_ex(SRC_LOC(),
                             "\n Couldn't write index 0 init data to file %s; errno=%d(%s)\n",
@@ -836,7 +871,7 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //    text; we'll soon clobber the ones that are in previously
         //    seen chains to chain members (the others can stay as zeroes).
         {
-            FSCM_HASH_CHAIN_CELL my_zero;
+            FSCM_HASH_CHAIN_CELL my_zero_chain;
 
             //   Now it's time to generate the actual string hashes.
             //   By default (no regex) it's a string kernel, length 3,
@@ -844,17 +879,19 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //
             //   Generate the hashes.
             crm_vector_tokenize_selector
-            (apb,                                             // the APB
-                    vht,
-                    tdw,
-                    txtptr + txtstart,                                   // intput string
-                    txtlen,                                              // how many bytes
-                    0,                                                   // starting offset
-                    NULL,                                                // custom tokenizer
-                    NULL,                                                // custom matrix
-                    unk_hashes,                                          // where to put the hashed results
-                    data_window_size / sizeof(unk_hashes[0]),            //  max number of hashes
-                    &unk_hashcount);                                     // how many hashes we actually got
+                        (apb,                                 // the APB
+                        vht,
+                        tdw,
+                        txtptr + txtstart,                               // intput string
+                        txtlen,                                          // how many bytes
+                        0,                                               // starting offset
+                        NULL,                                            // custom tokenizer
+                        NULL,                                            // custom matrix
+                        unk_hashes,                                      // where to put the hashed results
+                        data_window_size / sizeof(unk_hashes[0]),        //  max number of hashes
+                        NULL,
+                        NULL,
+                        &unk_hashcount);                                 // how many hashes we actually got
 
             if (internal_trace)
             {
@@ -877,10 +914,10 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (internal_trace)
                 fprintf(stderr,
                         "mmapping file %s for known state\n", hashfilename);
-#if 0 // not needed for force_unmap to work as expected.
+#if 0       // not needed for force_unmap to work as expected.
             crm_mmap_file
-            (hashfilename, 0, 1, PROT_READ | PROT_WRITE,
-                    MAP_SHARED, CRM_MADV_RANDOM, NULL);
+                        (hashfilename, 0, 1, PROT_READ | PROT_WRITE,
+                        MAP_SHARED, CRM_MADV_RANDOM, NULL);
 #endif
             crm_force_munmap_filename(hashfilename);
             if (internal_trace)
@@ -892,9 +929,12 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashf = fopen(hashfilename, "ab+");
             if (!hashf)
             {
-                fev = nonfatalerror_ex(SRC_LOC(),
-                        "\n Couldn't open your CSS file %s for appending; errno=%d(%s)\n",
+                char dirbuf[DIRBUFSIZE_MAX];
+
+                fev = fatalerror_ex(SRC_LOC(),
+                        "\n Couldn't open your CSS file %s for appending; (full path: '%s') errno=%d(%s)\n",
                         hashfilename,
+                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), hashfilename),
                         errno,
                         errno_descr(errno));
                 return fev;
@@ -903,11 +943,13 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (user_trace)
                     fprintf(stderr, "Writing to hash file %s\n", hashfilename);
-                my_zero.next = 0;
-                //     Note the "+ 2" here - to put in a sentinel in the output file
-                for (i = 0; i < unk_hashcount + 2; i++)
+                my_zero_chain.next = 0;
+
+                //     Note the "+ 3" here - to put in a pair of sentinels in
+                //     the output file: one at each end of a text segment.
+                for (i = 0; i < unk_hashcount + 3; i++)
                 {
-                    if (1 != fwrite(&my_zero,
+                    if (1 != fwrite(&my_zero_chain,
                                 sizeof(FSCM_HASH_CHAIN_CELL),
                                 1,
                                 hashf))
@@ -928,7 +970,7 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         stat(hashfilename, &statbuf);
         if (internal_trace)
-            fprintf(stderr, "mmapping2 file %s\n", hashfilename);
+            fprintf(stderr, "mmapping_2 file %s\n", hashfilename);
         file_pointer =
             crm_mmap_file(hashfilename,
                     0, statbuf.st_size,
@@ -939,20 +981,22 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         //  set up our pointers for the prefix table and the chains
         file_header = (STATISTICS_FILE_HEADER_STRUCT *)file_pointer;
-        prefix_table_size = file_header->data[0];
+        //prefix_table_size = file_header->data[0];
+        prefix_table_size = file_header->chunks[3].length /
+                            sizeof(FSCM_PREFIX_TABLE_CELL);
+
         prefix_table = (FSCM_PREFIX_TABLE_CELL *)
                        &file_pointer[file_header->chunks[3].start];
         chains = (FSCM_HASH_CHAIN_CELL *)
                  &file_pointer[file_header->chunks[4].start];
 
         //    Note the little two-step dance to recover the starting location
-        //    of this next chain.
+        //    of the new chain space.
         //
-        //      Our new start here !
-        newchainstart =
-            (file_header->chunks[4].start
-             + file_header->chunks[4].length)
-            / sizeof(FSCM_HASH_CHAIN_CELL);
+        newchainstart = 1 +
+                        (file_header->chunks[4].start
+                         + file_header->chunks[4].length)
+                        / sizeof(FSCM_HASH_CHAIN_CELL);
         if (internal_trace)
             fprintf(stderr,
                     "Chain field: %u (entries %u) new chainstart offset %u\n",
@@ -966,16 +1010,15 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     &chains[newchainstart];
 
         //      ... and this is the new updated length.
-        file_header->chunks[4].length += (unk_hashcount + 2)
+        file_header->chunks[4].length += (unk_hashcount + 3)
                                          * sizeof(FSCM_HASH_CHAIN_CELL);
 
 
         //   For each hash, insert it into the prefix table
         //   at the right place (that is, at hash mod prefix_table_size).
         //   If the table had a zero, it becomes nonzero.  If the table
-        //   is nonzero, the corresponding slot in the newly written
-        //   part of the chain zone gets the old address and the hashtable
-        //   gets the new address.
+        //   is nonzero, we walk the chain and modify the first zero
+        //   to point to our new hash.
 
 
         if (internal_trace)
@@ -988,7 +1031,7 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             unsigned int pti, cind;
             pti = unk_hashes[i] % prefix_table_size;
-            //   Put in our chain entry
+
             if (internal_trace)
                 fprintf(stderr,
                         "offset %d icn: %u hash %08lx tableslot %u"
@@ -1012,11 +1055,23 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 }
             }
             //  Desired State:
-            // chains [old] points to chains [older]chains (which is prior state)
-            // chains[new] points to chains[old]
-            // prefix_table [pti] = chains [new]
-            chains[i + newchainstart].next = prefix_table[pti].index;
-            prefix_table[pti].index = i + newchainstart;
+            // chains [old] points to chains [new]
+            // prefix_table [pti] = chains [old]
+            if (prefix_table[pti].index == 0)
+            {
+                //  first entry in this chain, so fill in the table.
+                prefix_table[pti].index = i + newchainstart;
+                chains[i + newchainstart].next = 0;
+            }
+            else
+            {
+                //  not first entry-- chase the chain, we go at the end
+                cind = prefix_table[pti].index;
+                while (chains[cind].next != 0)
+                    cind = chains[cind].next;          // cdr down to end of chain
+                chains[cind].next = i + newchainstart; // point at our cell.
+                chains[i + newchainstart].next = 0;
+            }
         }
 
         //  forcibly let go of the mmap to force an msync
@@ -1127,25 +1182,46 @@ int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 ////////////////////////////////////////////////////////////////////////
 
 //     given a starting point, does it exist on a chain?
-static unsigned int chain_search_one_chain
+static unsigned int chain_search_one_chain_link
 (
         FSCM_HASH_CHAIN_CELL *chains,
         unsigned int          chain_start,
-        unsigned int          must_match
+        unsigned int          must_match,
+        int                   init_cache
 )
 {
     unsigned int retval;
-    unsigned int curch;
-    static unsigned int cached_chain_start = 0;
-    static unsigned int cached_chain_must_match = 0;
-    static unsigned int cached_chain_prior = 0;
+
+    int i, cachedex;
+
+    typedef struct
+    {
+        int chstart;
+        int cval0;
+        int cval1;
+    } FSCM_CHAIN_CACHE_CELL;
+    static FSCM_CHAIN_CACHE_CELL cache[FSCM_CHAIN_CACHE_SIZE];
+
+    //   zero the cache if requested
+    if (init_cache)
+    {
+        if (internal_trace)
+            fprintf(stderr, "initializing the chain cache.\n");
+        for (i = 0; i < FSCM_CHAIN_CACHE_SIZE; i++)
+        {
+            cache[i].chstart = cache[i].cval0 = cache[i].cval1 = 0;
+        }
+        ;
+        return 0;
+    }
+    ;
 
     retval = 0;
-    curch = chain_start;
-
     if (internal_trace)
     {
         unsigned int j;
+        fprintf(stderr, " ... chain_search_one_chain chain %u mustmatch %u\n",
+                chain_start, must_match);
         j = chain_start;
         fprintf(stderr, "...chaintrace from %u: (next: %u)",
                 j, chains[j].next);
@@ -1157,37 +1233,40 @@ static unsigned int chain_search_one_chain
         fprintf(stderr, "\n");
     }
 
-    if (internal_trace)
-        fprintf(stderr, "   ... chain_search_one_chain chain %u mustmatch %u\n",
-                chain_start, must_match);
-
-    //  See if the caches can help us
-    if (cached_chain_start == chain_start
-        && cached_chain_must_match >= must_match)
+    //    Does either or both of our cache elements have a tighter bound
+    //    on the mustmatch than the initial chainstart?
+    cachedex = chain_start % FSCM_CHAIN_CACHE_SIZE;
+    if (chain_start == cache[cachedex].chstart)
     {
-        if (internal_trace)
-            fprintf(stderr, "   (using cache) ");
-        curch = cached_chain_prior;
+        if (cache[cachedex].cval0<must_match
+                                  && cache[cachedex].cval0> chain_start)
+            chain_start = cache[cachedex].cval0;
+        if (cache[cachedex].cval1<must_match
+                                  && cache[cachedex].cval1> chain_start)
+            chain_start = cache[cachedex].cval1;
+    }
+    else // forcibly update the cache to the new chain_start
+    {
+        cache[cachedex].chstart = chain_start;
+        cache[cachedex].cval0 = chain_start;
+        cache[cachedex].cval1 = chain_start;
     }
 
-
-    //  reset the cache either way.
-    cached_chain_must_match = must_match;
-    cached_chain_start = chain_start;
-
-    while (curch > must_match && curch > 0)
+    while (chain_start < must_match && chain_start > 0)
     {
         if (internal_trace)
             fprintf(stderr, "   .... from %u to %u\n",
-                    curch, chains[curch].next);
-        cached_chain_prior = curch;
-        curch = chains[curch].next;
+                    chain_start, chains[chain_start].next);
+        chain_start = chains[chain_start].next;
+        cache[cachedex].cval1 = cache[cachedex].cval0;
+        cache[cachedex].cval0 = chain_start;
     }
-    if (curch == must_match)
+
+    if (chain_start == must_match)
     {
         if (internal_trace)
-            fprintf(stderr, "   ...Success at chainindex %u\n", curch);
-        return curch;
+            fprintf(stderr, "   ...Success at chainindex %u\n", chain_start);
+        return chain_start;
     }
 
     if (internal_trace)
@@ -1196,13 +1275,13 @@ static unsigned int chain_search_one_chain
 }
 
 
-//    From here, how long does this chain run?
+//    From this point in chainspace, how long does this chain run?
 //
 //      Do NOT implement this recursively, as a document matched against
 //       itself will recurse for each character, so unless your compiler
 //        can fix tail recursion, you'll blow the stack on long documents.
 //
-static unsigned int chain_run_length
+static unsigned int this_chain_run_length
 (
         FSCM_HASH_CHAIN_CELL *chains,              //  the known-text chains
         unsigned int         *unk_indexes,         //  index vector to head of each chain
@@ -1212,27 +1291,29 @@ static unsigned int chain_run_length
 )
 {
     unsigned int offset;
-    unsigned int search_chain;
-    int in_loop;
+    unsigned int chain_start;
+    int in_a_chain;
 
     if (internal_trace)
         fprintf(stderr,
                 "Looking for a chain member at symbol %u chainindex %u\n",
                 starting_symbol, starting_chain_index);
-    in_loop = 1;
-    offset = 0;
-    while ((starting_symbol + offset < unk_len) && in_loop)
+
+    offset = 0; // The "offset" applies to both the unk_hashes _and_ the
+                // offset in the known chainspace.
+    in_a_chain = unk_indexes[starting_symbol + offset];
+    while ((starting_symbol + offset < unk_len) && in_a_chain)
     {
-        search_chain = unk_indexes[starting_symbol + offset];
+        chain_start = unk_indexes[starting_symbol + offset];
         if (internal_trace)
             fprintf(stderr,
                     "..searching at [symbol %u offset %u] chainindex %u\n",
-                    starting_symbol, offset, search_chain);
-        in_loop = chain_search_one_chain
-                  (chains, search_chain, starting_chain_index + offset);
-        offset++;
+                    starting_symbol, offset, chain_start);
+        in_a_chain = chain_search_one_chain_link
+                    (chains, chain_start, starting_chain_index + offset, 0);
+        if (in_a_chain)
+            offset++;
     }
-    offset--;
     if (internal_trace)
         fprintf(stderr,
                 "chain_run_length finished at chain index %u (offset %u)\n",
@@ -1290,12 +1371,13 @@ static unsigned int longest_run_starting_here
 
     while (chain_index_start != 0)
     {
+        int chain_index_old;
         if (internal_trace)
             fprintf(stderr, "Scanning chain starting at %u\n",
                     chain_index_start);
-        this_run = chain_run_length
-                   (chains, unk_indexes, unk_len,
-                starting_symbol + 1, chain_index_start + 1) + 1;
+        this_run = this_chain_run_length
+                    (chains, unk_indexes, unk_len,
+                    starting_symbol + 1, chain_index_start + 1);
         //
         if (internal_trace)
             fprintf(stderr,
@@ -1314,11 +1396,19 @@ static unsigned int longest_run_starting_here
         }
         //     And go around again till we hit a zero chain index
         chain_index_start = chains[chain_index_start].next;
+        //    skip forward till end of currently found best (Boyer-Moore opt)
+        chain_index_old = chain_index_start;
+        while (chain_index_start > 0
+               && chain_index_start < chain_index_old + this_run)
+            chain_index_start = chains[chain_index_start].next;
     }
     if (internal_trace)
         fprintf(stderr, "Final result at symbol %u run length is %u\n",
                 starting_symbol, max_run);
-    return max_run;
+    if (max_run > 0)
+        return max_run + FSCM_DEFAULT_CODE_PREFIX_LEN;
+    else
+        return 0;
 }
 
 //     compress_me is the top-level calculating routine which calls
@@ -1341,12 +1431,14 @@ static double compress_me
     current_symbol = 0;
     blast_lookback = 0;
 
+    chain_search_one_chain_link(0, 0, 0, 1); // init the chain-cache
+
     while (current_symbol < unk_len)
     {
         this_run_length = longest_run_starting_here
-                          (chains, unk_indexes, unk_len, current_symbol);
+                    (chains, unk_indexes, unk_len, current_symbol);
         incr_score = 0;
-        if (this_run_length > 1)
+        if (this_run_length > 0)
         {
             //this_run_length += blast_lookback;
             incr_score = pow(this_run_length, q_exponent);
@@ -1362,8 +1454,9 @@ static double compress_me
         if (internal_trace)
             fprintf(stderr,  "Offset %u compresses %u score %lf\n",
                     current_symbol, this_run_length, incr_score);
-        current_symbol = current_symbol + this_run_length;
-        if (this_run_length == 0)
+        if (this_run_length > 0)
+            current_symbol = current_symbol + this_run_length;
+        else
             current_symbol++;
     }
     return total_score;
@@ -1440,6 +1533,12 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int maxhash;
     int bestseen;
     double scores[MAX_CLASSIFIERS]; //  per-classifier raw score.
+
+#if 0
+    int *ca = NULL;
+    int pipelen = 0;
+    int pipe_iters = 0;
+#endif
 
     // We'll generate our unknown string's hashes directly into tempbuf.
     int unk_hashcount;
@@ -1530,20 +1629,24 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //      Create our hashes; we do this once outside the loop and
     //      thus save time inside the loop.
 
-
-
+    unk_hashcount = 0;
+#if 0
+    next_offset = 0;
+#endif
     crm_vector_tokenize_selector
-    (apb,                                             // the APB
-            vht,
-            tdw,
-            txtptr + txtstart,                                   // intput string
-            txtlen,                                              // how many bytes
-            0,                                                   // starting offset
-            NULL,                                                // custom tokenizer
-            NULL,                                                // custom coeff matrix
-            unk_hashes,                                          // where to put the hashed results
-            data_window_size / sizeof(unk_hashes[0]),            //  max number of hashes
-            &unk_hashcount);                                     // how many hashes we actually got
+                (apb,                                 // the APB
+                vht,
+                tdw,
+                txtptr + txtstart,                               // intput string
+                txtlen,                                          // how many bytes
+                0,                                               // starting offset
+                NULL,                                            // custom tokenizer
+                NULL,                                            // custom coeff matrix
+                unk_hashes,                                      // where to put the hashed results
+                data_window_size / sizeof(unk_hashes[0]),        //  max number of hashes
+                NULL,
+                NULL,
+                &unk_hashcount);                                 // how many hashes we actually got
 
     if (internal_trace)
     {
@@ -1605,8 +1708,8 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (vbar_seen)
                 {
                     nonfatalerror
-                    ("Only one ' | ' allowed in a CLASSIFY. \n",
-                            "We'll ignore it for now.");
+                                ("Only one ' | ' allowed in a CLASSIFY. \n",
+                                "We'll ignore it for now.");
                 }
                 else
                 {
@@ -1623,8 +1726,8 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (k != 0)
                 {
                     nonfatalerror
-                    ("Nonexistent Classify table named: ",
-                            hfname);
+                                ("Nonexistent Classify table named: ",
+                                hfname);
                 }
                 else
                 {
@@ -1643,8 +1746,8 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (file_pointer == MAP_FAILED)
                     {
                         nonfatalerror
-                        ("Couldn't memory-map the table file :",
-                                hfname);
+                                    ("Couldn't memory-map the table file :",
+                                    hfname);
                     }
                     else
                     {
@@ -1657,7 +1760,6 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //   the chains
                         file_header =
                             (STATISTICS_FILE_HEADER_STRUCT *)file_pointer;
-                        prefix_table_size = file_header->data[0];
                         if (internal_trace)
                             fprintf(stderr,
                                     "Prefix table at %u, chains at %u\n",
@@ -1666,7 +1768,9 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                         prefix_table = (FSCM_PREFIX_TABLE_CELL *)
                                        &file_pointer[file_header->chunks[3].start];
-
+                        // prefix_table_size = file_header->data[0];
+                        prefix_table_size = file_header->chunks[3].length /
+                                            sizeof(FSCM_PREFIX_TABLE_CELL);
                         chains = (FSCM_HASH_CHAIN_CELL *)
                                  &file_pointer[file_header->chunks[4].start];
 
@@ -1696,11 +1800,16 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         }
                         //  Now for the nitty-gritty - run the compression
                         //   of the unknown versus tis statistics file.
+                        //   For thk=0.1, power of 1.2 --> 36 errs,
+                        //   1.5--> 49 errs,  1.7-->52, and 1.0 bogged down
+                        //   At thk=0.0 exponent 1.0-->191 and 18 min
+                        //   thk 0.1 exp 1.35 --> 34 in 12min. and exp 1.1 -> 43
+                        //   thk 0.05 exp 1.1--> 50.
                         scores[maxhash] = compress_me
-                                          (unk_indexes,
-                                unk_hashcount,
-                                chains,
-                                1.5);
+                                    (unk_indexes,
+                                    unk_hashcount,
+                                    chains,
+                                    1.35);
                     }
                     maxhash++;
                 }
@@ -1734,12 +1843,14 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         return nonfatalerror("Couldn't open at least 1 .css file for classify().", "");
     }
 
+#if 0
     //    do we have at least 1 valid .css file at both sides of '|'?
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
                              "for classify().\n", "Hope you know what are you doing.");
     }
+#endif
 
     ///////////////////////////////////////////////////////////
     //
@@ -1815,7 +1926,9 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     succhash, maxhash, accumulator, remainder);
         }
 
-        overall_pR = 10 * (log10(accumulator) - log10(remainder));
+        //  constant "200" below determined empirically for SSTTT at 10 pR's
+        //   (used to be 10)
+        overall_pR = 200 * (log10(accumulator) - log10(remainder));
 
         //   note also that strcat _accumulates_ in stext.
         //  There would be a possible buffer overflow except that _we_ control
@@ -1823,11 +1936,11 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (tprob > 0.5)
         {
-            sprintf(buf, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            sprintf(buf, "CLASSIFY succeeds; (fscm) success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
         }
         else
         {
-            sprintf(buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            sprintf(buf, "CLASSIFY fails; (fscm) success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
         }
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
@@ -1846,11 +1959,13 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 bestseen,
                 hashfilenames[bestseen],
                 ptc[bestseen],
-                10 * (log10(ptc[bestseen]) - log10(remainder))
+                //  "200" is for SSTTT, was 10
+                200 * (log10(ptc[bestseen]) - log10(remainder))
                );
 
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
+        // if (internal_trace)
         sprintf(buf, "Total features in input file: %d\n", unk_hashcount);
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
@@ -1873,7 +1988,7 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     hashfilechainentries[k],
                     scores[k],
                     ptc[k],
-                    10 * (log10(ptc[k]) - log10(remainder)));
+                    200 * (log10(ptc[k]) - log10(remainder)));
 
             // strcat (stext, buf);
             if (strlen(stext) + strlen(buf) <= stext_maxlen)
@@ -1889,8 +2004,7 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
                     " ");
         }
-        crm_destructive_alter_nvariable(svrbl, svlen,
-                stext, (int)strlen(stext));
+        crm_destructive_alter_nvariable(svrbl, svlen,                stext, (int)strlen(stext), csl->calldepth);
     }
 
 
@@ -1912,7 +2026,11 @@ int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (user_trace)
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
         //    and do what we do for a FAIL here
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
+#else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+#endif
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }

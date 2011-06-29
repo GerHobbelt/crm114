@@ -71,12 +71,13 @@ MAINTAINERCLEANFILES = configure.in aclocal.m4 Makefile.in
 MSVC_PRJ_FILES = win32/config_win32.h win32/config_win32.h.in \
 	win32/crm114.sln win32/crm114.vcproj win32/cssdiff.vcproj win32/osbf-util.vcproj \
 	win32/resource.h win32/crm114.ico win32/cssmerge.vcproj win32/cssutil.vcproj \
+	win32/crm_bmp_prof.vcproj win32/crm_test_VT.vcproj \
+	win32/libcrm114.vcproj win32/libcrm114_NG.vcproj win32/libcrm114_t1.vcproj \
 	win32/getopt.h win32/getopt_ex.h win32/getopt.c win32/getopt_ex.c \
 	win32/crm_win32_port.c \
 	win32/megatest.bat win32/crm114rc.h win32/crm114rc.rc
 
-EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
-	stamp.year stamp.day stamp.month \
+EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st \
 	distribute_files_from_src_dir.sh fix_crlf.sh \
 	m4/ac_environ.m4 m4/ac_func_memmove.m4 m4/ac_func_memmem.m4 \
 	m4/ac_func_snprintf.m4 m4/ax_arg_enable.m4 \
@@ -86,6 +87,7 @@ EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
 	m4/ac_nsec_stat_fields.m4 m4/ax_cc_pragma_pack.m4 \
 	m4/ax_gnu_time.m4 \
 	mk_distros.sh \
+	config_vpath.sh \
 	uncrustify.cfg \
 	cleanup.bat autogen.sh CREDITS README.win32 BUGS \
 	README.maintainer MAILINGLIST \
@@ -112,7 +114,12 @@ WIN32_BIN_EXTRA = \
 	mailfilter/mailfilter.crm \
 	mailfilter/maillib.crm \
 	mailfilter/mailreaver.crm \
-	mailfilter/mailtrainer.crm
+	mailfilter/mailtrainer.crm \
+	mailfilter/priolist.mfp \
+	mailfilter/rewrites.mfp \
+	mailfilter/blacklist.mfp \
+	mailfilter/whitelist.mfp \
+	mailfilter/whitelist.mfp.example
 
 
 
@@ -126,8 +133,6 @@ BillY-sync:
 
 endif
 
-stamp.year stamp.day stamp.month: ChangeLog configure.ac
-	sh $(srcdir)/setversion
 
 
 help:
@@ -422,13 +427,10 @@ test_basics:
 test_other:
 	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_other);
 
-# test the mailfilter script
-test_mailfilter:
-	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_mailfilter);
+# test the mailfilter/mailreaver/mailtrainer scripts
+test_fundamental_mail:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_fundamental_mail);
 
-# test the mailreaver script
-test_mailreaver:
-	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_mailreaver);
 
 test_classifiers:
 	(cd tests && $(MAKE) $(AM_MAKEFLAGS) test_classifiers);
@@ -483,7 +485,8 @@ Correlator_classifier_tests:
 CLUMP_classifier_tests:
 	(cd tests && $(MAKE) $(AM_MAKEFLAGS) CLUMP_classifier_tests);
 
-
+mk_test_sets:
+	(cd tests && $(MAKE) $(AM_MAKEFLAGS) mk_test_sets);
 
 
 

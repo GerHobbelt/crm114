@@ -18,7 +18,7 @@
  *
  * Overhaul when you've found the energy to do so...
  *
- * 200504/05 - done. mostly. (Error message buffer string is one of the remaining dirty bits.
+ * 2008 04/05 - done. mostly. (Error message buffer string is one of the remaining dirty bits.
  *
  * Remaining 'tidbits': making it cope PROPERLY with nested :@:  : math expressions. But that requires another code overhaul.
  *
@@ -68,7 +68,7 @@
 //     8) go to 2 (modulo last two chars need copying)
 //
 
-int crm_nexpandvar(char *buf, int inlen, int maxlen, VHT_CELL **vht, CSL_CELL *tdw)
+int crm_nexpandvar(char *buf, size_t inlen, size_t maxlen, VHT_CELL **vht, CSL_CELL *tdw)
 {
     return crm_zexpandvar(buf,
             inlen,
@@ -85,7 +85,7 @@ int crm_nexpandvar(char *buf, int inlen, int maxlen, VHT_CELL **vht, CSL_CELL *t
 //
 // crm_qexpandvar is the "full evaluate one pass of everything" mode.
 
-int crm_qexpandvar(char *buf, int inlen, int maxlen, int *qex_stat, VHT_CELL **vht, CSL_CELL *tdw)
+int crm_qexpandvar(char *buf, size_t inlen, size_t maxlen, int *qex_stat, VHT_CELL **vht, CSL_CELL *tdw)
 {
     return crm_zexpandvar(buf,
             inlen,
@@ -145,8 +145,8 @@ static char *vname = NULL;
 // C string instead of a binary data block.
 //
 int crm_zexpandvar(char *buf,
-        int              inlen,
-        int              maxlen,
+        size_t           inlen,
+        size_t           maxlen,
         int             *retstat,
         int              exec_bitmask,
         VHT_CELL       **vht,
@@ -184,8 +184,8 @@ int crm_zexpandvar(char *buf,
     CRM_ASSERT(buf[inlen] == 0);
     if (internal_trace)
     {
-        fprintf(stderr, "zexpandvar on =%s= len: %d bitmask: %d\n",
-                buf, inlen, exec_bitmask);
+        fprintf(stderr, "zexpandvar on =%s= len: %ld bitmask: %d\n",
+                buf, (long)inlen, exec_bitmask);
     }
 
     //   First thing- do the ANSI \-Expansions
@@ -374,7 +374,7 @@ int crm_zexpandvar(char *buf,
         inlen = id;
 
         if (internal_trace)
-            fprintf(stderr, "backslash expansion yields: =%s= len %d\n", buf, inlen);
+            fprintf(stderr, "backslash expansion yields: =%s= len %ld\n", buf, (long)inlen);
     }
     //    END OF ANSI \-EXPANSIONS
 
@@ -486,7 +486,7 @@ int crm_zexpandvar(char *buf,
 
                 if (internal_trace)
                     fprintf(stderr, "looking up variable >%s<\n", vname);
-                vht_index = crm_vht_lookup(vht, vname, vlen);
+                vht_index = crm_vht_lookup(vht, vname, vlen, csl->calldepth);
 
                 if (vht[vht_index] == NULL)
                 {
@@ -526,7 +526,7 @@ int crm_zexpandvar(char *buf,
                             int lclen;
                             lcstring[0] = 0;
                             lclen = sprintf(lcstring, "%d", csl->cstmt);
-                            crm_set_temp_nvar(":_cs:", lcstring, lclen);
+                            crm_set_temp_nvar(":_cs:", lcstring, lclen, -1);
                         }
                     }
 
@@ -552,7 +552,7 @@ int crm_zexpandvar(char *buf,
         inlen = id;
 
         if (internal_trace)
-            fprintf(stderr, " :*: var-expansion yields: =%s= len %d\n", buf, inlen);
+            fprintf(stderr, " :*: var-expansion yields: =%s= len %ld\n", buf, (long)inlen);
     }
 
     //     END OF :*: EXPANSIONS
@@ -608,7 +608,7 @@ int crm_zexpandvar(char *buf,
                 //      go get it's value and copy _that_ into the vname buffer
                 if (internal_trace)
                     fprintf(stderr, "looking up variable >%s<\n", vname);
-                vht_index = crm_vht_lookup(vht, vname, vlen);
+                vht_index = crm_vht_lookup(vht, vname, vlen, csl->calldepth);
 
                 if (vht[vht_index] == NULL)
                 {
@@ -641,7 +641,7 @@ int crm_zexpandvar(char *buf,
                 //      go get it's value and copy _that_ into tbuf as well.
                 if (internal_trace)
                     fprintf(stderr, "Second lookup variable >%s<\n", vname);
-                vht_index = crm_vht_lookup(vht, vname, vlen);
+                vht_index = crm_vht_lookup(vht, vname, vlen, csl->calldepth);
 
                 if (vht[vht_index] == NULL)
                 {
@@ -686,7 +686,7 @@ int crm_zexpandvar(char *buf,
         inlen = id;
 
         if (internal_trace)
-            fprintf(stderr, "indirection :+: expansion yields: =%s= len %d\n", buf, inlen);
+            fprintf(stderr, "indirection :+: expansion yields: =%s= len %ld\n", buf, (long)inlen);
     }
 
     //     END OF :+: EXPANSIONS
@@ -703,7 +703,7 @@ int crm_zexpandvar(char *buf,
 
         // buf[id] = 0; [i_a]
         if (internal_trace)
-            fprintf(stderr, " var-expand yields: =%s= len %d\n", buf, inlen);
+            fprintf(stderr, " var-expand yields: =%s= len %ld\n", buf, (long)inlen);
         id = 0;
         for (is = 0; is < inlen && id < maxlen; is++)
         {
@@ -741,7 +741,7 @@ int crm_zexpandvar(char *buf,
                 //      go get it's value and copy _that_ into tbuf as well.
                 if (internal_trace)
                     fprintf(stderr, "looking up variable >%s<\n", vname);
-                vht_index = crm_vht_lookup(vht, vname, vlen);
+                vht_index = crm_vht_lookup(vht, vname, vlen, csl->calldepth);
 
                 if (vht[vht_index] == NULL)
                 {
@@ -800,7 +800,7 @@ int crm_zexpandvar(char *buf,
         inlen = id;
 
         if (internal_trace)
-            fprintf(stderr, " strlen :#: expansion yields: =%s= len %d\n", buf, inlen);
+            fprintf(stderr, " strlen :#: expansion yields: =%s= len %ld\n", buf, (long)inlen);
     }
     //       END OF :#: STRING LENGTH EXPANSIONS
 
@@ -816,7 +816,7 @@ int crm_zexpandvar(char *buf,
             fprintf(stderr, "Doing math expansion\n");
 
         if (internal_trace)
-            fprintf(stderr, " length-expand yields: =%s= len %d\n", buf, inlen);
+            fprintf(stderr, " length-expand yields: =%s= len %ld\n", buf, (long)inlen);
         id = 0;
         //
         // [i_a]
@@ -862,7 +862,7 @@ int crm_zexpandvar(char *buf,
                 //      go get it's value and copy _that_ into tbuf as well.
                 if (internal_trace)
                     fprintf(stderr, "looking up variable >%s<\n", vname);
-                vht_index = crm_vht_lookup(vht, vname, vlen);
+                vht_index = crm_vht_lookup(vht, vname, vlen, csl->calldepth);
 
                 if (vht[vht_index] == NULL)
                 {
@@ -959,7 +959,7 @@ int crm_zexpandvar(char *buf,
         inlen = id;
 
         if (internal_trace)
-            fprintf(stderr, " math-expand yields: =%s= len %d\n", buf, inlen);
+            fprintf(stderr, " math-expand yields: =%s= len %ld\n", buf, (long)inlen);
     }
 
     //    END OF :@: MATH EXPANSIONS
@@ -971,7 +971,7 @@ int crm_zexpandvar(char *buf,
     //free (vname);
     if (internal_trace)
     {
-        fprintf(stderr, " Returned length from qexpandvar is %d\n", inlen);
+        fprintf(stderr, " Returned length from qexpandvar is %ld\n", (long)inlen);
         if (retstat)
         {
             fprintf(stderr, "retstat was: %d\n", *retstat);
@@ -1080,15 +1080,15 @@ int crm_restrictvar(char *boxstring,
         fprintf(stderr, "Using variable '%s' for source.\n", varname);
 
     //      Got the varname.  Do a lookup.
-	if (!crm_is_legal_variable(varname, varnamelen))
-	{
+    if (!crm_is_legal_variable(varname, varnamelen))
+    {
         snprintf(errstr, maxerrlen,
                 "This program wants to use an illegal variable named: '%.*s'",
                 varnamelen, varname);
         errstr[maxerrlen - 1] = 0;
         return -2;
-	}
-    vmidx = crm_vht_lookup(vht, varname, varnamelen);
+    }
+    vmidx = crm_vht_lookup(vht, varname, varnamelen, csl->calldepth);
     //  fprintf(stderr, "vmidx = %d, vht[vmidx] = %lx\n", vmidx, vht[vmidx]);
     if (internal_trace)
     {
@@ -1299,7 +1299,7 @@ int crm_restrictvar(char *boxstring,
                     int i;
 
                     i = 0;
-#if 0 // [i_a] this makes use of ?documented? behaviour of TRE - anyhow, why loop when you don't have to?
+#if 0               // [i_a] this makes use of ?documented? behaviour of TRE - anyhow, why loop when you don't have to?
                     while (matches[i].rm_so >= 0)
                         i++;
                     i--;

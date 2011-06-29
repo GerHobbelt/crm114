@@ -203,7 +203,7 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
         if (internal_trace)
             fprintf(stderr, "GetFileSizeEx() = %d/%d, %d:%d\n", status, error, large_int.HighPart, large_int.LowPart);
 
-        if ( /* status && error == ERROR_SUCCESS && */ !large_int.HighPart && !large_int.LowPart)
+        if (/* status && error == ERROR_SUCCESS && */ !large_int.HighPart && !large_int.LowPart)
         {
             if (exit_code != STILL_ACTIVE)
             {
@@ -478,7 +478,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         // This way, old content doesn't stay around when errors are not checked in a CRM script.
         if (*from_var)
         {
-            crm_destructive_alter_nvariable(from_var, vlen, "", 0);
+            crm_destructive_alter_nvariable(from_var, vlen, "", 0, csl->calldepth);
         }
     }
     else
@@ -499,10 +499,30 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 keep_len, keep_buf);
     }
 
-    //      get the command to execute
+    //      Get the command to execute
     //
-    cmd_len = crm_get_pgm_arg(sys_cmd, MAX_PATTERN, apb->s1start, apb->s1len);
-    cmd_len = crm_nexpandvar(sys_cmd, cmd_len, MAX_PATTERN, vht, tdw);
+    //    GROT GROT GROT
+    //      In retrospect, putting the command to execute in /slashes/
+    //      was a design error.  It's not a pattern to match, it's a
+    //      source to operate on (in the meta sense, at least).  And,
+    //      from a practical point of view, it means that pathnames with
+    //      embedded slashes are a pain in the neck to write.  So- we'll
+    //      allow the boxed [string] syntax as well as the slash /string/
+    //      syntax for now.
+    //    GROT GROT GROT
+	cmd_len = 0; 
+sys_cmd[0] = 0;
+    if (apb->s1len > 0)
+    {
+        cmd_len = crm_get_pgm_arg(sys_cmd, MAX_PATTERN, apb->s1start, apb->s1len);
+        cmd_len = crm_nexpandvar(sys_cmd, cmd_len, MAX_PATTERN, vht, tdw);
+    }
+    else if (apb->b1len > 0)
+    {
+        cmd_len = crm_get_pgm_arg(sys_cmd, MAX_PATTERN, apb->b1start, apb->b1len);
+        cmd_len = crm_nexpandvar(sys_cmd, cmd_len, MAX_PATTERN, vht, tdw);
+    }
+
     if (user_trace)
     {
         fprintf(stderr, "   command will be (len: %d) ***%s***\n", cmd_len, sys_cmd);
@@ -572,7 +592,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             return 1;
         }
 
-#if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
+#if 10  // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
         fflush(stdout);
         fflush(stderr);
 #endif
@@ -580,8 +600,12 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
         if (minion < 0)
         {
-            nonfatalerror("Tried to fork your minion, but it failed.",
-                    "Your system may have run out of process slots");
+            nonfatalerror_ex(SRC_LOC(), 
+                    "Tried to fork your minion, but it failed. "
+                    "Your system may have run out of process slots. "
+                            "errno = %d(%s)",
+                            errno,
+                            errno_descr(errno));
             return 1;
         }
 
@@ -614,7 +638,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //
             if (crm_nextword(sys_cmd, strlen(sys_cmd), 0, &vstart, &vlen))
             {
-                varline = crm_lookupvarline(vht, sys_cmd, vstart, vlen);
+                varline = crm_lookupvarline(vht, sys_cmd, vstart, vlen, -1);
             }
             else
             {
@@ -634,14 +658,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #if defined (HAVE_GETPID)
                     pid = getpid();
                     sprintf(pidstr, "%d", (int)pid);
-                    crm_set_temp_var(":_pid:", pidstr);
+                    crm_set_temp_var(":_pid:", pidstr, -1);
                     if (user_trace)
                         fprintf(stderr, "My new PID is %s\n", pidstr);
 #endif
 #if defined (HAVE_GETPPID)
                     pid = getppid();
                     sprintf(pidstr, "%d", (int)pid);
-                    crm_set_temp_var(":_ppid:", pidstr);
+                    crm_set_temp_var(":_ppid:", pidstr, -1);
 #endif
                 }
                 //   See if we have redirection of stdin and stdout
@@ -695,14 +719,19 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     }
                 }
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
-                csl->cstmt = varline;
+                csl->next_stmt_due_to_jump = varline;
+                // csl->cstmt = varline;
 #else
                 csl->cstmt = varline;
 #endif
-                CRM_ASSERT(csl->cstmt >= 0);
-                CRM_ASSERT(csl->cstmt <= csl->nstmts);
+                if (internal_trace)
+                {
+                    fprintf(stderr, "SYSCALL is jumping to statement line: %d/%d\n", varline, csl->nstmts);
+                }
+                CRM_ASSERT(varline >= 0);
+                CRM_ASSERT(varline <= csl->nstmts);
                 //   and note that this isn't a failure.
-                csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
+                csl->aliusstk[csl->mct[varline]->nest_level] = 1;
                 //   The minion's real work should now start; get out of
                 //   the syscall code and go run something real.  :)
                 return 0;
@@ -801,7 +830,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     if (strlen(inbuf) > 0)
     {
-#if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
+#if 10  // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
         fflush(stdout);
         fflush(stderr);
 #endif
@@ -890,7 +919,7 @@ readloop:
             || (outlen >= ((data_window_size >> SYSCALL_WINDOW_RATIO) - 2)
                 && keep_proc == 0))
         {
-#if 10 // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
+#if 10      // hack to make sure we don't get duplicated stdout/stderr output from the fork()ed child.
             fflush(stdout);
             fflush(stderr);
 #endif
@@ -919,7 +948,7 @@ readloop:
         if (internal_trace)
             fprintf(stderr, "  storing return str in var %s\n", from_var);
 
-        crm_destructive_alter_nvariable(from_var, vlen, outbuf, outlen);
+        crm_destructive_alter_nvariable(from_var, vlen, outbuf, outlen, csl->calldepth);
     }
 
     //  Record useful minion data, if possible.
@@ -935,7 +964,8 @@ readloop:
                     exp_keep_buf);
         crm_destructive_alter_nvariable(keep_buf, keep_len,
                 exp_keep_buf,
-                strlen(exp_keep_buf));
+                strlen(exp_keep_buf),
+				csl->calldepth);
     }
     //      If we're keeping this minion process around, record the useful
     //      information, like pid, in and out pipes, etc.
@@ -955,12 +985,14 @@ readloop:
         //
         close(from_minion[0]);
 
-	// [i_a] we tolerate illegal variable names here; if they occur, we simply ignore them... 
-	if (strlen(keep_buf) > 0 && !crm_is_legal_variable(keep_buf, strlen(keep_buf)))
-	{
-		nonfatalerror_ex(SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?", keep_buf);
-	}
-        if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf)))
+        // [i_a] we tolerate illegal variable names here; if they occur, we simply ignore them...
+        if (strlen(keep_buf) > 0 && !crm_is_legal_variable(keep_buf, strlen(keep_buf)))
+        {
+            nonfatalerror_ex(
+                    SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?",
+                    keep_buf);
+        }
+        if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf), csl->calldepth))
         {
             char exit_value_string[MAX_VARNAME];
 
@@ -976,7 +1008,8 @@ readloop:
             {
                 crm_destructive_alter_nvariable(keep_buf, keep_len,
                         exit_value_string,
-                        strlen(exit_value_string));
+                        strlen(exit_value_string),
+						csl->calldepth);
             }
         }
     }
@@ -1025,7 +1058,7 @@ readloop:
 
             if (crm_nextword(sys_cmd, (int)strlen(sys_cmd), 0, &vstart2, &vlen2))
             {
-                varline = crm_lookupvarline(vht, sys_cmd, vstart2, vlen2);
+                varline = crm_lookupvarline(vht, sys_cmd, vstart2, vlen2, -1);
             }
             else
             {
@@ -1496,7 +1529,7 @@ readloop:
                                 large_int.HighPart,
                                 large_int.LowPart);
 
-                    if ( /* status && error == ERROR_SUCCESS && */ !large_int.HighPart && !large_int.LowPart)
+                    if (/* status && error == ERROR_SUCCESS && */ !large_int.HighPart && !large_int.LowPart)
                     {
                         if (exit_code != STILL_ACTIVE)
                         {
@@ -1592,7 +1625,7 @@ readloop:
                 if (internal_trace)
                     fprintf(stderr, "  storing return str in var %s\n", from_var);
 
-                crm_destructive_alter_nvariable(from_var, vlen, outbuf, outlen);
+                crm_destructive_alter_nvariable(from_var, vlen, outbuf, outlen, csl->calldepth);
             }
 
             //  Record useful minion data, if possible.
@@ -1607,7 +1640,8 @@ readloop:
                     fprintf(stderr, "   saving minion state: %s\n", exp_keep_buf);
                 crm_destructive_alter_nvariable(keep_buf, keep_len,
                         exp_keep_buf,
-                        (int)strlen(exp_keep_buf));
+                        (int)strlen(exp_keep_buf),
+						csl->calldepth);
             }
 
             //      If we're keeping this minion process around, record the useful
@@ -1631,12 +1665,14 @@ readloop:
                     fatalerror_Win32("Failed to grab the exit code from the system call", sys_cmd);
                 }
 
-	// [i_a] we tolerate illegal variable names here; if they occur, we simply ignore them... 
-	if (strlen(keep_buf) > 0 && !crm_is_legal_variable(keep_buf, strlen(keep_buf)))
-	{
-		nonfatalerror_ex(SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?", keep_buf);
-	}
-                if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf)))
+                // [i_a] we tolerate illegal variable names here; if they occur, we simply ignore them...
+                if (strlen(keep_buf) > 0 && !crm_is_legal_variable(keep_buf, strlen(keep_buf)))
+                {
+                    nonfatalerror_ex(
+                            SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?",
+                            keep_buf);
+                }
+                if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf), csl->calldepth))
                 {
                     char exit_value_string[MAX_VARNAME];
                     if (internal_trace)
@@ -1651,7 +1687,8 @@ readloop:
                     {
                         crm_destructive_alter_nvariable(keep_buf, keep_len,
                                 exit_value_string,
-                                (int)strlen(exit_value_string));
+                                (int)strlen(exit_value_string),
+								csl->calldepth);
                     }
                 }
                 if (!CloseHandle(hminion))

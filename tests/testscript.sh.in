@@ -31,21 +31,31 @@ report_error()
   echo "  ./testscript.sh <scriptfile> <inputfile> <expected-output-file> <diff-process-script> <extra-script-args>"
   echo ""
   echo "**ERROR**:"
-  echo "  $1"
+  echo "  $@"
 }
 
 report_warning()
 {
   echo "**WARNING**:"
-  echo "  $1"
+  echo "  $@"
   echo ""
 }
 
 debug_msg()
 {
-  if [ ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ]; then
-    echo "  $1"
+  if test ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ; then
+    if test "${CRM114_MAKE_SCRIPTS_DEBUG}" \> "0" ; then
+      echo "  $@"
+    fi
   fi
+}
+
+run_cmd()
+{
+for a in "$@"; do
+   echo "run_cmd: \"$a\""
+done
+  return $?
 }
 
 write2ref=0
@@ -56,32 +66,82 @@ inputdata="$2"
 expected="$3"
 diffscript="$4"
 
-tmpout="$0.tempout"
-tmperr="$0.temperr"
-tmpchk="$0.tempchk"
-diffout="$0.diffout"
-filtout="$0.filtout"
+
+#
+# Make sure we have 'basename' on this UNIX box (code ripped from configure script):
+#
+
+# Required to use basename.
+if expr a : '\(a\)' >/dev/null 2>&1 &&
+   test "X`expr 00001 : '.*\(...\)'`" = X001; then
+  as_expr=expr
+else
+  as_expr=false
+fi
+
+if (basename -- /) >/dev/null 2>&1 && test "X`basename -- / 2>&1`" = "X/"; then
+  as_basename=basename
+else
+  as_basename=false
+fi
+
+# Name of the executable.
+as_me=`$as_basename -- "$0" ||
+$as_expr X/"$0" : '.*/\([^/][^/]*\)/*$' \| \
+	 X"$0" : 'X\(//\)$' \| \
+	 X"$0" : 'X\(/\)' \| . 2>/dev/null ||
+@ECHO@ X/"$0" |
+    sed '/^.*\/\([^/][^/]*\)\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\/\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\/\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q'`
+# End: Required to use basename.
+
+
+targetname="${BUILDDIR}/${as_me}.temp"
+# echo "targetname = ${targetname}"
+tmpout="${targetname}.tempout"
+tmperr="${targetname}.temperr"
+tmpchk="${targetname}.tempchk"
+diffout="${targetname}.diffout"
+filtout="${targetname}.filtout"
+refimfile="${targetname}.refim"
+testimfile="${targetname}.tstim"
+
+
 
 literalscript=0
-if [ ! -f "${scriptfile}" ]; then
+if test ! -f "${scriptfile}" ; then
   # echo "sed proc = " 
   # echo `echo "${scriptfile}" | sed -e "s/^-{.*} */-{/" `
-  if [ "x`echo "${scriptfile}" | sed -e "s/^-{.*} */-{/" `" = "x-{" ]; then
+  case ${scriptfile} in
+  -{*)
     debug_msg "going to use '${scriptfile}' as literal test script"
     literalscript=1
-  else 
-    if [ -f "${SRCDIR}/${scriptfile}" ]; then
+    ;;
+  *)
+    if test -f "${SRCDIR}/${scriptfile}" ; then
       scriptpath="${SRCDIR}/${scriptfile}"
     else
       report_error "crm114 test script '${scriptfile}' does not exist"
       exit 66
     fi
-  fi
+    ;;
+  esac
 fi
 
 # diffscript may be NIL, must otherwise exist as file
-if [ ! -z "${diffscript}" ]; then
-  if [ ! -f "${diffscript}" ]; then
+if test ! -z "${diffscript}" ; then
+  if test ! -f "${diffscript}" ; then
     report_error "diff script '${diffscript}' does not exist"
     exit 65
   fi
@@ -90,9 +150,9 @@ fi
 # expected output may be absent; if it is absent, a fresh file
 # will be created. containing a copy of the test output.
 # this is handy to generate the 'expected output' files to start off with...
-if [ ! -z "${expected}" ]; then
-  if [ "x${expected}" = "x-" ]; then
-    if [ ${literalscript} = 0 ]; then
+if test ! -z "${expected}" ; then
+  if test "x${expected}" = "x-" ; then
+    if test ${literalscript} = 0 ; then
       expected="${REFDIR}/${scriptfile}.refoutput"
       debug_msg "going to use expected outfile file '${expected}'..."
     else
@@ -100,7 +160,7 @@ if [ ! -z "${expected}" ]; then
       exit 64
     fi
   fi
-  if [ ! -f "${expected}" ]; then
+  if test ! -f "${expected}" ; then
     report_warning "expected outfile file '${expected}' does not exist: script will create this file!"
     write2ref=1
   fi
@@ -109,44 +169,76 @@ else
   exit 63
 fi
 
-shift
-shift
-shift
-shift
-args=$@
+# 'shift 4' only works when we actually _have_ 4 args (or more). Individual shifts it is then...
+if test $# != 0; then
+  shift
+  if test $# != 0; then
+    shift
+    if test $# != 0; then
+      shift
+      if test $# != 0; then
+        shift
+      fi
+    fi
+  fi
+fi
+
+# for some odd reason, my bash does NOT quote the args within "$@" here:
+#
+# args="$@"
+#
+# sample commandline:
+#   ./testscript.sh defaulttest.crm  "" "ref" "" "--blah=command override" --
+#
+# However, what _does_ work, is the "$@" in a for loop:
+#
+# ... nevertheless, that didn't bring us ANY closer to getting properly QUOTED arguments to CRM114.
+# I found that quotes only are properly stripped by the argv[] parsing run-time library code of your
+# 'C' application, when they have been added at the last minute: on the line where the command is issued.
+# Adding them around the args within ${args} would turn them into hard quotes, which would come through
+# into the argv[] arguments of the 'C' app proper.
+# So that leaves us two ways: either using sh conditional ${arg+alt} items to construct only last minute
+# quotes around those args that actually _exist_, or do the same using a case $# in 0) ;; 1) ;; ... etc.. Sigh.
+#
+args="$@"
 
 # hmmm... weird; using $@ everywhere instead of this args above will strip off any but the first arg.
 # must be screwing up somewhere...
 # Hm. Mebbee the @xyz@ expansions in here done by configure? :-S
+
 
 rm -f "${tmperr}" 
 rm -f "${tmpout}"
 rm -f "${tmpchk}"
 rm -f "${diffout}"
 rm -f "${filtout}"
+rm -f "${refimfile}"
+rm -f "${testimfile}"
+
 
 # see if inputfile is a nonempty string; run CRM test scenario accordingly
 
 echo "test: CRM114 '${scriptpath}' ${args}"
 
-debug_msg "going to run CRM114 '${scriptpath}' with commandline: '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
+# debug_msg "going to run CRM114 '${scriptpath}' with commandline: '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
+debug_msg "going to run CRM114 '${scriptpath}' with commandline: '${1+\"$1\"} ${2+\"$2\"} ${3+\"$3\"} ${4+\"$4\"} ${5+\"$5\"} ${6+\"$6\"} ${7+\"$7\"} ${8+\"$8\"} ${9+\"$9\"}'"
 
 retcode=65536
-if [ -z "${inputdata}" ]; then
+if test -z "${inputdata}" ; then
   debug_msg "input is nil/empty"
-  debug_msg ": crm114 ${scriptpath} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
-  ${CRM_BIN} "${scriptpath}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" 2> "${tmperr}" > "${tmpout}"
+  debug_msg ": crm114 ${scriptpath} ${1+\"$1\"} ${2+\"$2\"} ${3+\"$3\"} ${4+\"$4\"} ${5+\"$5\"} ${6+\"$6\"} ${7+\"$7\"} ${8+\"$8\"} ${9+\"$9\"}"
+  ${CRM_BIN} "${scriptpath}" ${1+"$1"} ${2+"$2"} ${3+"$3"} ${4+"$4"} ${5+"$5"} ${6+"$6"} ${7+"$7"} ${8+"$8"} ${9+"$9"} 2> "${tmperr}" > "${tmpout}"
   retcode=$?
 else
   # see if file exists; if not, assume input to be literal text
-  if [ -f "${inputdata}" ]; then
+  if test -f "${inputdata}" ; then
     # run test:
-    debug_msg ": crm114 ${scriptpath} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
-    ${CRM_BIN} "${scriptpath}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" < "${inputdata}" 2> "${tmperr}" > "${tmpout}"
+    debug_msg ": crm114 ${scriptpath} ${1+\"$1\"} ${2+\"$2\"} ${3+\"$3\"} ${4+\"$4\"} ${5+\"$5\"} ${6+\"$6\"} ${7+\"$7\"} ${8+\"$8\"} ${9+\"$9\"}"
+    ${CRM_BIN} "${scriptpath}" ${1+"$1"} ${2+"$2"} ${3+"$3"} ${4+"$4"} ${5+"$5"} ${6+"$6"} ${7+"$7"} ${8+"$8"} ${9+"$9"} < "${inputdata}" 2> "${tmperr}" > "${tmpout}"
     retcode=$?
   else
-    debug_msg ": echo '${inputdata}' | crm114 ${scriptpath} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
-    echo "${inputdata}" | ${CRM_BIN} "${scriptpath}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" 2> "${tmperr}" > "${tmpout}"
+    debug_msg ": echo '${inputdata}' | crm114 ${scriptpath} ${1+\"$1\"} ${2+\"$2\"} ${3+\"$3\"} ${4+\"$4\"} ${5+\"$5\"} ${6+\"$6\"} ${7+\"$7\"} ${8+\"$8\"} ${9+\"$9\"}"
+    echo "${inputdata}" | ${CRM_BIN} "${scriptpath}" ${1+"$1"} ${2+"$2"} ${3+"$3"} ${4+"$4"} ${5+"$5"} ${6+"$6"} ${7+"$7"} ${8+"$8"} ${9+"$9"} 2> "${tmperr}" > "${tmpout}"
     retcode=$?
   fi
 fi
@@ -156,45 +248,123 @@ fi
 echo "TEST SCRIPT + COMMANDLINE:"  > "${tmpchk}"
 echo "${scriptfile} ${args}"      >> "${tmpchk}"
 echo ""                           >> "${tmpchk}"
+#echo "TEST SCRIPT CONTENT:"       >> "${tmpchk}"
+#if test -f "${scriptpath}" ; then
+#  cat "${scriptpath}"             >> "${tmpchk}"
+#else
+#  echo "${scriptpath}"            >> "${tmpchk}"
+#fi
+#echo ""                           >> "${tmpchk}"
 echo "RETURN CODE:"               >> "${tmpchk}"
 echo "${retcode}"                 >> "${tmpchk}"
 echo ""                           >> "${tmpchk}"
 echo "STDERR TEST OUTPUT:"        >> "${tmpchk}"
-if [ -f "${tmperr}" ]; then
+if test -f "${tmperr}" ; then
   cat "${tmperr}"                 >> "${tmpchk}"
 fi
 echo ""                           >> "${tmpchk}"
 echo "STDOUT TEST OUTPUT:"        >> "${tmpchk}"
-if [ -f "${tmpout}" ]; then
+if test -f "${tmpout}" ; then
   cat "${tmpout}"                 >> "${tmpchk}"
 fi
 echo ""                           >> "${tmpchk}"
 
 
-if [ ${write2ref} = 1 ]; then
+if test ${write2ref} = 1 ; then
   # write reference file!
   cp "${tmpchk}" "${expected}"
 fi
 
 
+# because the diffscript will certainly postprocess the data, we should
+# produce a 'true' (original) diff output for display when we FAIL:
+# (yet the result OK/FAIL is determined by the diffscript below!)
+@DIFF@ -u @DIFF_FLAGS@ "${expected}" "${tmpchk}" > "${diffout}"
+
+
+# always preprocess input and ref for version numbers, error messages and paths:
+
+#
+# filter the produced output and reference file: we don't care about the reported feature set
+# as that may well differ quite a bit between GerH builds and vanilla CRM114
+#
+# Error + misc. generic filtering:
+# vanilla BillY sometimes prints 'function' instead of 'in routine:', hence the double check there on the REF
+# input
+#
+
+@SED@ -e 's/\(This is CRM114, version [^ ,]\+\).*\(([^,)]\+([^,)]\+\).*/\1 XYZ \2/' < "${expected}" \
+    -e 's/\(version: [^ ,]\+\).*\(([^,)]\+([^,)]\+\).*/\1 XYZ \2/' \
+    -e '/Copyright/s/200[6-9]/200X/g' \
+    -e '/Classifiers included in this build/,$d' \
+| @SED@ -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]*[\\\/]\?\)\([^ :\\\/]\+\):\?/ERR 1: This happened at line \1 of file \3:/' \
+    -e 's/.*crm114: \*\([A-Z]\+\)\*/ERR 3: crm114: *\1*/' \
+    -e '/ERR 1/{' \
+    -e ':a' \
+    -e 'p;n;' \
+    -e '/runtime system location:/!d' \
+    -e '/runtime system location:/!ba' \
+    -e '}' \
+    -e 's/(runtime system location: \([^ (]\+\)(\([0-9]\+\)) in routine: \([^ )]\+\)).*/ERR 2: (runtime system location: \1(LINENO) in routine: \3)/' \
+    -e 's/(runtime system location: \([^ (]\+\)(\([0-9]\+\)) function \([^ )]\+\)).*/ERR 2: (runtime system location: \1(LINENO) in routine: \3)/' \
+    -e 'p' \
+| @SED@ -e 's/For some reason, I was unable to \([a-z]\+\)-open the file named '"'"'\?\([^'"'"']\+\)'"'"'\?.*/For some reason, I was unable to \1-open the file named "\2"/' \
+    -e 's:@BIN_PATH@:abs_top_bindir:g' \
+    -e 's:/usr/local/bin:abs_top_bindir:g' \
+    -e 's:@abs_top_builddir@:abs_top_builddir:g' \
+    -e 's:/home/ger/prj/3actual/crm114:abs_top_builddir:g' \
+    -e 's:/windows/G/prj/3actual/crm114:abs_top_builddir:g' \
+    > "${refimfile}"
+
+@SED@ -e 's/\(This is CRM114, version [^ ,]\+\).*\(([^,)]\+([^,)]\+\).*/\1 XYZ \2/' < "${tmpchk}" \
+    -e 's/\(version: [^ ,]\+\).*\(([^,)]\+([^,)]\+\).*/\1 XYZ \2/' \
+    -e '/Copyright/s/200[6-9]/200X/g' \
+    -e '/Classifiers included in this build/,$d' \
+| @SED@ -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]*[\\\/]\?\)\([^ :]\+\):\?/ERR 1: This happened at line \1 of file \3:/' \
+    -e 's/.*crm114: \*\([A-Z]\+\)\*/ERR 3: crm114: *\1*/' \
+    -e '/ERR 1/{' \
+    -e ':a' \
+    -e 'p;n;' \
+    -e '/runtime system location:/!d' \
+    -e '/runtime system location:/!ba' \
+    -e 'x;}' \
+    -e 's/(runtime system location: \([^ (]\+\)(\([0-9]\+\)) in routine: \([^ )]\+\)).*/ERR 2: (runtime system location: \1(LINENO) in routine: \3)/' \
+    -e 'p' \
+| @SED@ -e 's/For some reason, I was unable to \([a-z]\+\)-open the file named '"'"'\?\([^'"'"']\+\)'"'"'\?.*/For some reason, I was unable to \1-open the file named "\2"/' \
+    -e 's:@BIN_PATH@:abs_top_bindir:g' \
+    -e 's:/usr/local/bin:abs_top_bindir:g' \
+    -e 's:@abs_top_builddir@:abs_top_builddir:g' \
+    -e 's:/home/ger/prj/3actual/crm114:abs_top_builddir:g' \
+    -e 's:/windows/G/prj/3actual/crm114:abs_top_builddir:g' \
+    > "${testimfile}"
+
+
+if test ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ; then
+  if test "${CRM114_MAKE_SCRIPTS_DEBUG}" \> "0" ; then
+    echo "--------------- GENERIC PREPROCESSING ----------------"
+    cat "${refimfile}"
+    echo "------------------------------------------------------"
+    cat "${testimfile}"
+    echo "------------------------------------------------------"
+  fi
+fi
+
+
+
+
 # and compare that chk file with the reference file:
 retcode=65536
-if [ ! -z "${diffscript}" ]; then
-  # because the diffscript will certainly postprocess the data, we should
-  # produce a 'true' (original) diff output for display when we FAIL:
-  # (yet the result OK/FAIL is determined by the diffscript below!)
-  @DIFF@ -u @DIFF_FLAGS@ "${expected}" "${tmpchk}" > "${diffout}"
-
-  targetname="${BUILDDIR}/`basename ${diffscript}`.temp"
+if test ! -z "${diffscript}" ; then
   # echo "targetname = ${targetname}"
-  "${diffscript}" "${expected}" "${tmpchk}" "${filtout}" "${targetname}"
+  "${diffscript}" "${refimfile}" "${testimfile}" "${filtout}" "${targetname}"
   retcode=$?
 else
-  @DIFF@ -u @DIFF_FLAGS@ "${expected}" "${tmpchk}" > "${diffout}"
+  @DIFF@ -u @DIFF_FLAGS@ "${refimfile}" "${testimfile}" > "${filtout}"
   retcode=$?
 fi
 
 debug_msg "CRM114_TEST_GEN = ${CRM114_TEST_GEN}"
+debug_msg "CRM_BIN = ${CRM_BIN}"
 debug_msg "SRCDIR = ${SRCDIR}"
 debug_msg "HOME = ${HOME}"
 debug_msg "CRM114_CHECK_OVERRIDE = ${CRM114_CHECK_OVERRIDE}"
@@ -208,12 +378,12 @@ debug_msg "CRM114_CHECK_QUIET = ${CRM114_CHECK_QUIET}"
 # when we are going to FAIL for real, i.e. when the OVERRIDE didn't pop in
 # to save our hide.
 #
-if [ ${retcode} == 0 ]; then
+if test ${retcode} = 0 ; then
   retstr="OK"
-  if [ -z "${CRM114_CHECK_QUIET}" ]; then
+  if test -z "${CRM114_CHECK_QUIET}" ; then
     showdiff=1
   else
-    if [ "x${CRM114_CHECK_QUIET}" == "x0" ]; then
+    if test "${CRM114_CHECK_QUIET}" \< "1" ; then
       showdiff=1
     else
       showdiff=0
@@ -223,22 +393,22 @@ else
   retstr="FAIL"
   showdiff=1
 fi
-if [ ! -z "${CRM114_CHECK_OVERRIDE}" ]; then
-  if [ ${CRM114_CHECK_OVERRIDE} == 0 ]; then
-    if [ ${retcode} != 0 ]; then
+if test ! -z "${CRM114_CHECK_OVERRIDE}" ; then
+  if test ${CRM114_CHECK_OVERRIDE} = 0 ; then
+    if test ${retcode} != 0 ; then
       retstr="${retstr} (OVERRIDEN:OK)"
       retcode=0
     fi
   else
-    if [ ${retcode} != ${CRM114_CHECK_OVERRIDE} ]; then
+    if test ${retcode} != ${CRM114_CHECK_OVERRIDE} ; then
       retstr="${retstr} (OVERRIDEN:FAIL)"
       retcode=${CRM114_CHECK_OVERRIDE}
     fi
   fi
 fi
-if [ ${retcode} == 0 ]; then
-  if [ ! -z "${CRM114_CHECK_QUIET}" ]; then
-    if [ "x${CRM114_CHECK_QUIET}" != "x0" ]; then
+if test ${retcode} = 0 ; then
+  if test ! -z "${CRM114_CHECK_QUIET}" ; then
+    if test "${CRM114_CHECK_QUIET}" \> "0" ; then
       showdiff=0
       debug_msg "retstr = ${retstr} -- showdiff = ${showdiff} (check quiet != 0 :== shut her up anyway)"
     fi
@@ -248,9 +418,9 @@ else
   showdiff=1
   debug_msg "retstr = ${retstr} -- showdiff = ${showdiff} (fail: no quietness for us)"
 fi
-if [ ${retcode} == 0 ]; then
-  if [ ${showdiff} != 0 ]; then
-    if [ -s "${diffout}" ]; then
+if test ${retcode} = 0 ; then
+  if test ${showdiff} != 0 ; then
+    if test -s "${diffout}" ; then
       echo "---- diff report: ----"
       cat "${diffout}"
       echo "----------------------"
@@ -258,8 +428,8 @@ if [ ${retcode} == 0 ]; then
   fi
   echo "${retstr}"
 else
-  if [ ${showdiff} != 0 ]; then
-    if [ -s "${diffout}" ]; then
+  if test ${showdiff} != 0 ; then
+    if test -s "${diffout}" ; then
       echo "---- diff report: ----"
       cat "${diffout}"
       echo "----------------------"

@@ -1,0 +1,20 @@
+TEST SCRIPT + COMMANDLINE:
+double_trap_error1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+X
+EX0: YO!
+EX2: 
+crm114: *ERROR*
+Double Trap: Regular Expression Compilation Problem in TRAP pattern '[A-' while processing the trappable error 'YO! YA!': Invalid character range
+Sorry, but this program is very sick and probably should be killed off.
+This happened at line 14 of file double_trap_error1.crm:
+    trap (:ex:) /[A-/  # erroneous regex
+(runtime system location: crm_errorhandlers.c(1500) in routine: crm_trigger_fault)
+
+

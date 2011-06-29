@@ -13,7 +13,7 @@
 
 
 
-AC_INIT([CRM114], [20080630-BlameVT], [crm114-general@lists.sourceforge.net])
+AC_INIT([CRM114], [20081111-BlameBarack], [crm114-general@lists.sourceforge.net])
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR([m4])
@@ -302,6 +302,10 @@ AM_CONDITIONAL([OS_HAS_DB2X_TEXIXML], [test -n "$DB2X_TEXIXML"])
 AM_CONDITIONAL([OS_HAS_GZIP], [test -n "$GZIP"])
 AM_CONDITIONAL([OS_HAS_BZIP2], [test -n "$BZIP2"])
 AM_CONDITIONAL([OS_HAS_GNU_TIME], [test -n "$GNU_TIME"])
+
+
+# extra Makefile checks for test cases:
+AM_CONDITIONAL([OS_HAS_USDWORDS], [test -e "/usr/share/dict/words"])
 
 
 
@@ -985,6 +989,7 @@ AC_CONFIG_FILES([Makefile
                  tests/exectimingtest2.crm
                  tests/fataltraptest.crm
                  tests/fataltrapprogramerr.crm
+                 tests/fataltrapprogramerr2.crm
                  tests/inserttest_a.crm
                  tests/inserttest_b.crm
                  tests/inserttest_c.crm
@@ -1012,6 +1017,8 @@ AC_CONFIG_FILES([Makefile
                  tests/windowtest.crm
                  tests/windowtest_fromvar.crm
                  tests/tenfold_validate.crm
+                 tests/tenfold_validate_ex.crm
+                 tests/tenfold_validate_mailreaver.crm
                  tests/tokendelimiterbugtest.crm
                  tests/bracesbugtest.crm
                  tests/blowuptrapbugtest.crm
@@ -1055,12 +1062,14 @@ AC_CONFIG_FILES([Makefile
                  tests/legal_indirect_isolate1.crm
                  tests/legal_indirect_alter1.crm
                  tests/legal_eval_var1.crm
+                 tests/exectest_s1.sh
                  tests/testscript.sh
                  tests/crm114_statustest.filter.sh
                  tests/crm114_error_report.filter.sh
                  tests/crm114_versiontest.filter.sh
                  tests/crm114_classify.filter.sh
                  tests/crm114_isolate_test.filter.sh
+                 tests/mk_testcases.sh
                  examples/pad.crm
                  examples/shroud.crm
                  mailfilter/classifymail.crm
@@ -1069,6 +1078,7 @@ AC_CONFIG_FILES([Makefile
                  mailfilter/maillib.crm
                  mailfilter/mailreaver.crm
                  mailfilter/mailtrainer.crm
+                 mailfilter/mkcss.crm
                  examples/rewriteutil.crm
                  win32/config_win32.h
 ],
@@ -1135,7 +1145,7 @@ Before running
 
   \$ make install
 
-you may wish to test the newly build binary by running
+you may wish to test the newly built binary by running
 
   \$ make check
 

@@ -103,7 +103,7 @@ int crm_load_csl(CSL_CELL *csl);
 
 //    alter a variable to another value (this is destructive!)
 void crm_destructive_alter_nvariable(const char *varname, int varlen,
-        const char *newstr, int newlen);
+        const char *newstr, int newlen, int calldepth);
 
 //  setting a program label in the VHT
 void crm_setvar(
@@ -116,12 +116,13 @@ void crm_setvar(
         int   vstart,                   // index of start of cap. value
         int   vlen,                     // length of captured value
         int   linenumber,               // linenumber (if pgm, else -1)
-        int   lazy_redirects            // if nonzero, this is a lazy redirect
-               );
+        int   lazy_redirects,           // if nonzero, this is a lazy redirect
+     int calldepth          
+	 );
 
 //   put a variable and a value into the temporary area
-void crm_set_temp_nvar(const char *varname, const char *value, int vallen);
-void crm_set_temp_var(const char *varname, const char *value);
+void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int calldepth);
+void crm_set_temp_var(const char *varname, const char *value, int calldepth);
 
 //   put a variable and a window-based value into the temp area
 void crm_set_windowed_var(char *varname,
@@ -136,7 +137,8 @@ void crm_set_windowed_nvar(char *varname,
         char                    *valtext,
         int                      start,
         int                      len,
-        int                      stmtnum);
+        int                      stmtnum,
+		int calldepth);
 
 //    set a program label.
 void crm_setpgmlabel(int start, int end, int stmtnum);
@@ -154,10 +156,10 @@ char *crm_mapstream(FILE *instream); // read from instream till
 // it goes dry, putting result into a buffer.
 
 //     actually execute a compiled CRM file
-int crm_invoke(CSL_CELL *csl);
+int crm_invoke(CSL_CELL **csl_ref);
 
 //     look up a variable line number (for GOTOs among other things)
-int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len);
+int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len, int calldepth);
 
 
 //      grab_delim_string looks thru char *in for the first occurrence
@@ -185,7 +187,7 @@ int crm_expandvar(char *buf, int maxlen);
 //   it's either stored in, or ought to be stored in (i.e. check for a NULL
 //   VHT cell before use).
 
-int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen);
+int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen, int scope_depth);
 
 
 int crm_is_legal_variable(const char *vname, size_t vlen);
@@ -209,7 +211,7 @@ int crm_extractflag(const char *cmd, int cmdl, const char *flag, int flagl,
         int *next, int *nextl);
 
 //      initialize the vht, insert some some useful variables
-void crm_vht_init(int argc, char **argv);
+void crm_vht_init(int argc, char **argv, int posc, char **posv);
 
 
 //      Surgically lengthen or shorten a window.   The window pointed to by
@@ -856,41 +858,56 @@ typedef int VT_tokenizer_cleanup_func (struct magical_VT_userdef_tokenizer *obj)
 //
 typedef struct magical_VT_userdef_tokenizer
 {
-    const char *input_text;                                     // used to remember the input text to tokenize ...
-    int         input_textlen;                                  // ... and its length in bytes
-    int         input_next_offset;                              // position where to continue grabbing the next token
+    const char *input_text;         // used to remember the input text to tokenize ...
+    int         input_textlen;      // ... and its length in bytes
+    int         input_next_offset;  // position where to continue grabbing the next token
 
-    int max_big_token_count;                            // maximum number of 'big' tokens allowed to be merged into a single 'feature' a la OSBF
-    int max_token_length;                               /* merge tokens longer than this with the next one into a single feature a la OSBF.
-                                                         * // Set to 0 to select the DEFAULT 'big token merge' tokenizer behaviour.
-                                                         * // Set to -1 to DISABLE any 'big token merge' tokenizer behaviour.
-                                                         * // Setting this value to a non-zero value helps 'gobble' otherwise undecipherable blocks
-                                                         * // of input such as base64 images. This 'merging/globbing' is done in the OSBF classifier
-                                                         * // among others.
-                                                         */
-    VT_tokenizer_func *tokenizer;               // The place to provide your own custom tokenizer function. If you don't, the VT will
+    int max_big_token_count;  // maximum number of 'big' tokens allowed to be merged into a single 'feature' a la OSBF
+    int max_token_length;     /* merge tokens longer than this with the next one into a single feature a la OSBF.
+                               * // Set to 0 to select the DEFAULT 'big token merge' tokenizer behaviour.
+                               * // Set to -1 to DISABLE any 'big token merge' tokenizer behaviour.
+                               * // Setting this value to a non-zero value helps 'gobble' otherwise undecipherable blocks
+                               * // of input such as base64 images. This 'merging/globbing' is done in the OSBF classifier
+                               * // among others.
+                               */
+    VT_tokenizer_func *tokenizer;  // The place to provide your own custom tokenizer function. If you don't, the VT will
     // apply the default here.
     VT_tokenizer_cleanup_func *cleanup;     // call this when done; may be used to free() data when applicable.
 
     ///////////// regex-only tokenizers; others may abuse this too /////////////////
 
-    const char *regex;                                  // the parsing regex (might be ignored)
-    int         regexlen;                               // length of the parsing regex
-    int         regex_compiler_flags;                   // set of regcomp() flags, e.g. REG_ICASE
+    const char *regex;                // the parsing regex (might be ignored)
+    int         regexlen;             // length of the parsing regex
+    int         regex_compiler_flags; // set of regcomp() flags, e.g. REG_ICASE
 
     /////////////// support flags, to be used by tokenizer() and cleanup()
 
+    int      padding_length;                    // number of hashes to pad at start / end
+    unsigned pad_start                : 1;      // pad start with 'deadbeef'
+    unsigned pad_end_with_first_chunk : 1;      // pad end with stored start tokens
+
+    unsigned padding_store_malloced : 1;
+
+    unsigned padding_settings_are_set : 1;     // !0 when padding settings have been set up
+
     unsigned regex_compiler_flags_are_set : 1;    // !0 when 'regex_compiler_flags' has been properly initialized
 
-    unsigned regex_malloced : 1;                        // !0 when regex is strdup()ed or otherwise malloc()ed and must be free()d
+    unsigned regex_malloced : 1;      // !0 when regex is strdup()ed or otherwise malloc()ed and must be free()d
 
-    unsigned initial_setup_done : 1;                    // !0 when the internals have been configured by tokenizer() for its use.
-    unsigned eos_reached        : 1;                    // !0 when tokenizer() has signalled that the end of the input stream
-    // has been reached: no more tokens to produce.
+    unsigned initial_setup_done : 1;  // !0 when the internals have been configured by tokenizer() for its use.
+    unsigned eos_reached        : 1;  /* !0 when tokenizer() has signalled that the end of the input stream
+                                       * // has been reached: no more tokens to produce. */
+    unsigned not_at_sos : 1;  /* 0 when at Start Of Stream */
 
     /////////////// internal use: stores the compiled regex and additional info to step through the input
     regex_t    regcb;                   // the compiled regex
     regmatch_t match[7];                // nevertheless, we PROBABLY only care about the outermost match
+
+    // recall for first N token hashes, to be appended at the end (end padding)
+    crmhash_t *padding_store;
+    int        padding_in_store;
+    int        padding_written_at_start;
+    int        padding_written_at_end;
 }
 VT_USERDEF_TOKENIZER;
 
@@ -920,10 +937,30 @@ typedef int VT_coeff_matrix_cleanup_func (struct magical_VT_userdef_coeff_matrix
 
 typedef struct magical_VT_userdef_coeff_matrix
 {
-    int coeff_array[UNIFIED_VECTOR_STRIDE * UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];    // the pipeline coefficient control array
-    int pipe_len;                                                                          // how long a pipeline (== coeff_array col count)
-    int pipe_iters;                                                                        // how many rows are there in coeff_array
-    int output_stride;                                                                     // how many matrices (rows x cols) are there in coeff_array
+    struct
+    {
+        int coeff_array[UNIFIED_VECTOR_STRIDE * UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT]; // the pipeline coefficient control array
+        int pipe_len;                                                                       // how long a pipeline (== coeff_array col count)
+        int pipe_iters;                                                                     // how many rows are there in coeff_array
+        int output_stride;                                                                  // how many matrices (rows x cols) are there in coeff_array
+    } cm;
+
+    struct
+    {
+        int feature_weight[UNIFIED_VECTOR_STRIDE * UNIFIED_VECTOR_LIMIT]; // the pipeline feature weight per row
+        int row_count;
+        int column_count;
+    } fw;
+
+    struct
+    {
+        unsigned unique : 1;        // bool: unique feature hashes: each hash occurs only once; implies 'sorted' hash collection
+        unsigned sorted_output : 1;
+
+		// flag determined by the VT engine itself:
+		unsigned arne_optimization_allowed: 1; 
+    } flags;
+
 
     VT_coeff_matrix_cleanup_func *cleanup;     // call this when done; may be used to free() coeff_matrix when applicable.
 }
@@ -931,23 +968,26 @@ VT_USERDEF_COEFF_MATRIX;
 
 
 
+#define USERDEF_COEFF_DECODE_COEFF_MODE 1
+#define USERDEF_COEFF_DECODE_WEIGHT_MODE 2
+
+
 int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // the pipeline coefficient control array, etc.
-        const char *src, int srclen);
+        const char *src, int srclen, int mode);
 int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
-        const ARGPARSE_BLOCK                 *apb,                                        // The args for this line of code
+        const ARGPARSE_BLOCK                 *apb, // The args for this line of code
         VHT_CELL                            **vht,
         CSL_CELL                             *tdw,
-        const char                           *regex,
-        int                                   regex_len,
-        int                                   regex_compiler_flags_override);
-int config_vt_coeff_matrix_and_tokenizer
-(
-        ARGPARSE_BLOCK          *apb,           // The args for this line of code
-        VHT_CELL               **vht,
-        CSL_CELL                *tdw,
-        VT_USERDEF_TOKENIZER    *tokenizer,     // the parsing regex (might be ignored)
-        VT_USERDEF_COEFF_MATRIX *our_coeff      // the pipeline coefficient control array, etc.
-);
+        const VT_USERDEF_TOKENIZER           *default_tokenizer);
+int config_vt_coeff_matrix_and_tokenizer(ARGPARSE_BLOCK *apb,  // The args for this line of code
+        VHT_CELL                                       **vht,
+        CSL_CELL                                        *tdw,
+        VT_USERDEF_TOKENIZER                            *tokenizer, // the parsing regex (might be ignored)
+        VT_USERDEF_COEFF_MATRIX                         *our_coeff  // the pipeline coefficient control array, etc.
+                                        );
+int transfer_matrix_to_VT(VT_USERDEF_COEFF_MATRIX *dst,
+						const int *src, 
+						size_t src_x, size_t src_y, size_t src_z);
 
 
 
@@ -959,14 +999,16 @@ int crm_vector_tokenize_selector
         ARGPARSE_BLOCK          *apb,            // The args for this line of code
         VHT_CELL               **vht,
         CSL_CELL                *tdw,
-        const char              *text,           // input string (null-safe!)
-        int                      textlen,        //   how many bytes of input.
-        int                      start_offset,   //     start tokenizing at this byte.
-        VT_USERDEF_TOKENIZER    *tokenizer,      // the parsing regex (might be ignored)
-        VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
-        crmhash_t               *features,       // where the output features go
-        int                      featureslen,    //   how many output features (max)
-        int                     *features_out    // how many feature-slots did we actually use up
+        const char              *text,            // input string (null-safe!)
+        int                      textlen,         //   how many bytes of input.
+        int                      start_offset,    //     start tokenizing at this byte.
+        VT_USERDEF_TOKENIZER    *tokenizer,       // the parsing regex (might be ignored)
+        VT_USERDEF_COEFF_MATRIX *userdef_coeff,   // the pipeline coefficient control array, etc.
+        crmhash_t               *features,        // where the output features go
+        int                      featureslen,     //   how many output features (max)
+        int                     *feature_weights, // feature weight per feature
+        int                     *order_no,        // order_no (starting at 0) per feature
+        int                     *features_out     // how many feature-slots did we actually use up
 );
 
 // this interface method is provided only for those that 'know what they're doing',
@@ -980,7 +1022,8 @@ int crm_vector_tokenize
         const VT_USERDEF_COEFF_MATRIX *our_coeff,          // the pipeline coefficient control array, etc.
         crmhash_t                     *features_buffer,    // where the output features go
         int                            features_bufferlen, //   how many output features (max)
-        int                            features_stride,    //   Spacing (in hashes) between features
+        int                           *feature_weights,    // feature weight per feature
+        int                           *order_no,           // order_no (starting at 0) per feature
         int                           *features_out        // how many longs did we actually use up
 );
 
@@ -1043,15 +1086,15 @@ int crm_expr_math(char *instr, unsigned int inlen,
 
 //      var-expansion operators
 //             simple (escapes and vars) expansion
-int crm_nexpandvar(char *buf, int inlen, int maxlen, VHT_CELL **vht, CSL_CELL *tdw);
+int crm_nexpandvar(char *buf, size_t inlen, size_t maxlen, VHT_CELL **vht, CSL_CELL *tdw);
 
 //             complex (escapes, vars, strlens, and maths) expansion
-int crm_qexpandvar(char *buf, int inlen, int maxlen, int *retstat, VHT_CELL **vht, CSL_CELL *tdw);
+int crm_qexpandvar(char *buf, size_t inlen, size_t maxlen, int *retstat, VHT_CELL **vht, CSL_CELL *tdw);
 
 //              generic (everything, as you want it, bitmasked) expansion
 int crm_zexpandvar(char *buf,
-        int              inlen,
-        int              maxlen,
+        size_t           inlen,
+        size_t           maxlen,
         int             *retstat,
         int              exec_bitmask,
         VHT_CELL       **vht,
@@ -1325,14 +1368,14 @@ void free_debugger_data(void);
  */
 
 // write count bytes of val val to file dst
-int file_memset(FILE *dst, unsigned char val, int count);
+int file_memset(FILE *dst, unsigned char val, size_t count);
 
 const char *skip_path(const char *srcfile);
 
 char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath);
 
 // dump var/string/... in src to dst
-int fwrite_ASCII_Cfied(FILE *dst, const char *src, int len);
+ssize_t fwrite_ASCII_Cfied(FILE *dst, const char *src, size_t len);
 
 
 
@@ -1344,7 +1387,7 @@ FILE *os_stderr(void);
 int is_stdin_or_null(FILE *f);
 int is_stdout_err_or_null(FILE *f);
 
-int fwrite4stdio(const char *str, size_t len, FILE *out);
+ssize_t fwrite4stdio(const char *str, size_t len, FILE *out);
 
 
 

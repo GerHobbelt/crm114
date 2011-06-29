@@ -85,11 +85,10 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     char *insert_regex =
         "\n[[:blank:]]*(insert)[[:blank:]]+([[:graph:]]+)[[:blank:]]*[\n;]";
 
-    //  "\n[[:blank:]]*(insert)[[:blank:]]+([[:graph:]]+)[[:blank:]]*[\n;]";
-    //
-    //
     if (internal_trace)
+{
         fprintf(stderr, " preprocessor - #insert processing...\n");
+}
 
     lflag = 0;
     i = 0;
@@ -127,6 +126,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     while (!done)
     {
         int filenamelen;
+
         j  = crm_regexec(&preg, csl->filetext, csl->nchars,
                 WIDTHOF(matches), matches, lflag, NULL);
         if (j != 0)
@@ -139,22 +139,20 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
         {
             char insertfilename[MAX_FILE_NAME_LEN];
             struct stat statbuf;
+            char dirbuf[DIRBUFSIZE_MAX + 1];
 
             filenamelen = matches[2].rm_eo - matches[2].rm_so;
             if (filenamelen >= MAX_FILE_NAME_LEN)
             {
-                fatalerror_ex(SRC_LOC(), "PREPROCESSOR: specified script filename '%.*s' (len: %d) "
-                                         "is too long; only filenames/paths up to %d characters are allowed!",
+                untrappableerror_ex(SRC_LOC(), "PREPROCESSOR: specified script filename '%.*s' (len: %d) "
+                                               "is too long; only filenames/paths up to %d characters are allowed!",
                         filenamelen, &csl->filetext[matches[2].rm_so],
                         filenamelen,
                         MAX_FILE_NAME_LEN - 1);
             }
-            for (j = 0; j < filenamelen && j < MAX_FILE_NAME_LEN - 1; j++)
-            {
-                insertfilename[j] = csl->filetext[matches[2].rm_so + j];
-            }
-            CRM_ASSERT(j < MAX_FILE_NAME_LEN);
-            insertfilename[j] = 0;
+            CRM_ASSERT(filenamelen < MAX_FILE_NAME_LEN);
+            memmove(insertfilename, &csl->filetext[matches[2].rm_so], filenamelen);
+            insertfilename[filenamelen] = 0;
 
             //   Check to see if this was a "delimited" insertfile name
             //   that is, wrapped in [filename] rather than plaintext -
@@ -168,26 +166,27 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                             insertfilename);
                 }
                 //  Get rid of the enclosing [ and ]
-                filenamelen = filenamelen - 2;
-                for (j = 0; j < filenamelen; j++)
-                    insertfilename[j] = insertfilename[j + 1];
+                filenamelen -= 2;
+                memmove(insertfilename, insertfilename + 1, filenamelen);
                 insertfilename[filenamelen] = 0;
                 filenamelen = crm_nexpandvar(insertfilename,
                         filenamelen,
                         MAX_FILE_NAME_LEN, vht, tdw);
+                insertfilename[filenamelen] = 0;
                 if (user_trace)
+				{
                     fprintf(stderr, " to '%s'\n", insertfilename);
             }
-            insertfilename[filenamelen] = 0;
+			}
 
             //   We have a filename; check to see if it will blow the
             //   gaskets on the filesystem or not:
             //
             if (filenamelen > MAX_FILE_NAME_LEN - 1)
-			{
+            {
                 untrappableerror("INSERT Filename was too long!  Here's the"
                                  "first part of it: ", insertfilename);
-			}
+            }
 
 #if 0
             //   To keep the matcher from looping, we change the string
@@ -203,13 +202,65 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
             csl->filetext[matches[2].rm_eo - 2] = '\\';           // smash in a "\"
 #endif
 
+                   if (!mk_absolute_path(dirbuf, WIDTHOF(dirbuf), insertfilename))
+{
+return -1;
+}
             //   stat the file - if 0, file exists
-            status = stat(insertfilename, &statbuf);
+            status = stat(dirbuf, &statbuf);
+				if (status)
+			{
+                if (user_trace)
+                {
+                    fprintf(stderr, "INSERT file '%s' does not exist. Checking if it's a relative path ('%s') to parent '%s'.\n", dirbuf, insertfilename, csl->filename);
+                }
+
+				// if file does NOT exist as-is, see if it's a relative path an retry using the path
+				// to the current active file, i.e. the one containing this insert statement...
+				if ( /* UNIX */ insertfilename[0] != '/'
+					&& /* Windows */ !((insertfilename[1] == ':' && insertfilename[2] == '\\')
+										|| insertfilename[0] == '\\')
+					&& csl->filename)	
+				{
+		            char nf[CRM_MAX(MAX_FILE_NAME_LEN, DIRBUFSIZE_MAX) + 1];
+					const char *sp;
+
+                    if (!mk_absolute_path(nf, WIDTHOF(nf), csl->filename))
+{
+return -1;
+}
+                if (internal_trace)
+                {
+                    fprintf(stderr, "Retry: expand parent dir '%s' to abs path '%s'\n", csl->filename, nf);
+                }
+					sp = skip_path(nf);
+					if (sp && sp != nf)
+					{
+						size_t len = CRM_MIN(WIDTHOF(nf), (sp - nf));
+
+						strncpy(nf + len, insertfilename, WIDTHOF(nf) - len);
+						nf[WIDTHOF(nf) - 1] = 0;
+						strncpy(insertfilename, nf, WIDTHOF(insertfilename));
+						insertfilename[WIDTHOF(insertfilename) - 1] = 0;
+
+				   // retry:
+	                   if (!mk_absolute_path(dirbuf, WIDTHOF(dirbuf), insertfilename))
+{
+return -1;
+}
+                if (user_trace)
+                {
+                    fprintf(stderr, "Retry: check for existing INSERT file: '%s' (derived from '%s')\n", dirbuf, insertfilename);
+                }
+						status = stat(dirbuf, &statbuf);
+					}
+				}
+			}
             if (!status)
             {
                 int fd;
                 int rlen;
-
+                    
                 //
                 //    OK, now we have to "insert" the file, but we have to
                 //    do it gracefully.  In particular, the file itself
@@ -225,7 +276,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 char *insert_buf;
                 if (user_trace)
                 {
-                    fprintf(stderr, "Inserting file '%s'.\n", insertfilename);
+                    fprintf(stderr, "Inserting file '%s'.\n", dirbuf);
                 }
 
                 //   Loop prevention check - too many inserts?
@@ -233,8 +284,8 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 numinserts++;
                 if (numinserts > maxinserts)
                 {
-                    untrappableerror("Too many inserts!  Limit exceeded with"
-                                     "filename : ", insertfilename);
+                    untrappableerror("Too many inserts!  Limit exceeded with "
+                                     "filename: ", dirbuf);
                 }
 
                 // malloc space only when you know you're not out of insert count bounds anyway.
@@ -242,8 +293,8 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 insert_buf = calloc(max_pgmsize, sizeof(insert_buf[0]));
                 if (!insert_buf || !ecsl)
                 {
-                    untrappableerror("Couldn't alloc enough memory to do"
-                                     " the insert of file ", insertfilename);
+                    untrappableerror("Couldn't alloc enough memory to do "
+                                     "the insert of file ", dirbuf);
                 }
 
                 ecsl->filetext = insert_buf;
@@ -251,13 +302,11 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 ecsl->nchars = 0;
                 //   OK, we now have a buffer.  Read the file in...
 
-                fd = open(insertfilename, O_RDONLY | O_BINARY);
+                fd = open(dirbuf, O_RDONLY | O_BINARY);
                 if (fd < 0)
                 {
-                    rlen = 0;
-
-                    untrappableerror("Couldn't open the insert file named: ",
-                            insertfilename);
+					rlen = 0;
+                    untrappableerror("Couldn't open the insert file named: ", dirbuf);
                 }
                 else
                 {
@@ -276,23 +325,28 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                     {
                         rlen = 0;
 
-                        untrappableerror("Cannot read from file (it may be locked?): ", insertfilename);
+                        untrappableerror("Cannot read from file (it may be locked?): ", dirbuf);
                     }
                 }
 
-                ecsl->nchars = rlen;                /* [i_a] not: statbuf.st_size; -- as the MSVC documentation says:
-                                                     * read returns the number of bytes read, which might be less than count
-                                                     * if there are fewer than count bytes left in the file or if the file
-                                                     * was opened in text mode, in which case each carriage return / line feed (CR-LF) pair
-                                                     * is replaced with a single linefeed character. Only the single
-                                                     * linefeed character is counted in the return value.
-                                                     */
+                ecsl->nchars = rlen;
+                /* [i_a] ^^^^^^^^ not: statbuf.st_size; -- as the MSVC documentation says:
+                 * read returns the number of bytes read, which might be less than count
+                 * if there are fewer than count bytes left in the file or if the file
+                 * was opened in text mode, in which case each carriage return / line feed (CR-LF) pair
+                 * is replaced with a single linefeed character. Only the single
+                 * linefeed character is counted in the return value.
+                 */
+
                 //
-                //   file's read in, put in a trailing newline. And add a NUL sentinel too when we're at it! But DON'T count that one too!
+                // file's read in, put in a trailing newline.
+                // And add a NUL sentinel too when we're at it! But DON'T count that one too!
+                //
                 ecsl->filetext[ecsl->nchars++] = '\n';
                 CRM_ASSERT(ecsl->nchars < max_pgmsize);
                 ecsl->filetext[ecsl->nchars] = 0;
-                ecsl->filename = strdup(insertfilename);                 // [i_a] insertfilename will get out of scope soon and we need to keep this around till the end
+                ecsl->filename = strdup(dirbuf);
+                // [i_a] ^^^^^^^^^^^ insertfilename / dirbuf will get out of scope soon and we need to keep this around till the end
                 if (!ecsl->filename)
                 {
                     untrappableerror("Cannot allocate preprocessor memory", "Stick a fork in us; we're _done_.");
@@ -308,10 +362,10 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 //   will it fit?
                 //
                 if ((csl->nchars + ecsl->nchars + 64) > max_pgmsize)
-				{
+                {
                     untrappableerror(" Program file buffer overflow when "
-                                     "INSERTing file ", insertfilename);
-				}
+                                     "INSERTing file ", dirbuf);
+                }
 
                 //   Does the result end with a newline?  If not, fix it.
                 if (ecsl->filetext[ecsl->nchars - 1] != '\n')
@@ -372,47 +426,51 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 //   and if we _do_, we can trap the error or not, as the
                 //   the programmer chooses.
                 //
-                //  untrappableerror
-                //    (" I'm having a problem inserting file ",
-                //                insertfilename);
+                //  untrappableerror("I'm having a problem inserting file ", dirbuf);
                 //
-                char faulttext[MAX_VARNAME];
+                char faulttext[MAX_PATTERN];
                 int textlen;
+
+                if (!act_like_Bill)
+                {
+                    untrappableerror_ex(SRC_LOC(),
+                            "Couldn't insert the file named '%s' that you asked for.  "
+                            "This is probably a bad thing.", dirbuf);
+                }
 
                 if (user_trace)
                 {
-                    fprintf(stderr, "Can't find '%s' to insert.\n"
+                    fprintf(stderr, "Can't find '%s' to insert.  "
                                     "Inserting a FAULT instead\n",
-                            insertfilename);
+                            dirbuf);
                 }
 
                 //
                 //    Build the fault string.
-                snprintf(
-                        faulttext
-                        ,
-                        MAX_VARNAME
-                        ,
-                        "\n######  THE NEXT LINE WAS AUTO_INSERTED BECAUSE THE FILE COULDN'T BE FOUND \nfault / Couldn't insert the file named '%s' that you asked for.  This is probably a bad thing./\n"
-                        ,
-                        insertfilename);
-                faulttext[MAX_VARNAME - 1] = 0;
+                snprintf(faulttext, MAX_PATTERN,
+                        "\n######  THE NEXT LINE WAS AUTO_INSERTED BECAUSE THE FILE COULDN'T BE FOUND\n"
+                        "fault / Couldn't insert the file named '%s' that you asked for.  "
+                        "This is probably a bad thing./\n",
+                        dirbuf);
+                faulttext[MAX_PATTERN - 1] = 0;
                 textlen = (int)strlen(faulttext);
 
-                if ((csl->nchars + textlen) > max_pgmsize)
+                if (csl->nchars + textlen > max_pgmsize)
+                {
                     untrappableerror(" Program file buffer overflow when "
-                                     "inserting a FAULT (INSERT file not found) message for file ", insertfilename);
+                                     "inserting a FAULT (INSERT file not found) message for file ", dirbuf);
+                }
 
                 //
                 //       make a hole to put the fault string into.
                 //
-                memmove(&(csl->filetext[matches[0].rm_eo + textlen]),
-                        &(csl->filetext[matches[0].rm_eo]),
+                memmove(&csl->filetext[matches[0].rm_eo + textlen],
+                        &csl->filetext[matches[0].rm_eo],
                         csl->nchars - matches[0].rm_eo);
                 //
                 //   and put the new text into that hole
                 //
-                memmove(&(csl->filetext[matches[0].rm_eo]),
+                memmove(&csl->filetext[matches[0].rm_eo],
                         faulttext,
                         textlen);
                 //   Mark the new length of the csl text.
@@ -421,15 +479,13 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                             textlen);
                 csl->nchars += textlen;
             }
-            i = matches[1].rm_so + 1;
+            // i = matches[1].rm_so + 1;
         }
         if (internal_trace)
         {
-            fprintf(stderr,
-                    "----------Result after preprocessing-----\n");
+            fprintf(stderr, "----------Result after preprocessing-----\n");
             print_code_with_linenos(stderr, csl->filetext, -1);
-            fprintf(stderr,
-                    "\n-------------end preprocessing------\n");
+            fprintf(stderr, "\n-------------end preprocessing------\n");
         }
     }
 
@@ -439,12 +495,12 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
         char myhash[32];
         sprintf(myhash, "%08lX", (unsigned long int)strnhash(csl->filetext, csl->nchars));
         myhash[8] = 0;
-        crm_set_temp_var(":_pgm_hash:", myhash);
+        crm_set_temp_var(":_pgm_hash:", myhash, -1);
     }
 
     ///   GROT GROT GROT  for some reason, Gnu Regex segfaults if it
     //    tries to free this register.
-    crm_regfree (&preg);
+    crm_regfree(&preg);
     //fprintf(stderr, "returning\n");
     return 0;
 }
@@ -541,7 +597,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     && csl->filetext[i + 1] == '#')
                 {
                     i++;
-#if 0 // [i_a] 20080325 - fix for alius_w_comment.crm processing...
+#if 0               // [i_a] 20080325 - fix for alius_w_comment.crm processing...
                     neednewline = 1;
                     seennewline = 0;
 #endif

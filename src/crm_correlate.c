@@ -150,9 +150,12 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         f = fopen(learnfilename, "wb");
         if (!f)
         {
-            fev = nonfatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your new correlate file %s for writing; errno=%d(%s)\n",
+            char dirbuf[DIRBUFSIZE_MAX];
+
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't open your new CORRELATE file %s for writing; (full path: '%s') errno=%d(%s)\n",
                     learnfilename,
+                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
                     errno,
                     errno_descr(errno));
             return fev;
@@ -194,9 +197,12 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         f = fopen(learnfilename, "ab+");
         if (!f)
         {
-            fev = nonfatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your correlate file %s for append; errno=%d(%s)\n",
+            char dirbuf[DIRBUFSIZE_MAX];
+
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't open your CORRELATE file %s for append; (full path: '%s') errno=%d(%s)\n",
                     learnfilename,
+                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), learnfilename),
                     errno,
                     errno_descr(errno));
             return fev;
@@ -251,16 +257,16 @@ int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     if (llen > 0)
     {
-	if (!crm_is_legal_variable(ltext, llen))
-	{
-		int q = fatalerror_ex(SRC_LOC(), "Attempt to LEARN from an illegal variable '%.*s'. How very bizarre.", llen, ltext);
-        return q;
-	}
-        vhtindex = crm_vht_lookup(vht, ltext, llen);
+        if (!crm_is_legal_variable(ltext, llen))
+        {
+            int q = fatalerror_ex(SRC_LOC(), "Attempt to LEARN from an illegal variable '%.*s'. How very bizarre.", llen, ltext);
+            return q;
+        }
+		vhtindex = crm_vht_lookup(vht, ltext, llen, csl->calldepth);
     }
     else
     {
-        vhtindex = crm_vht_lookup(vht, ":_dw:", 5);
+        vhtindex = crm_vht_lookup(vht, ":_dw:", 5, csl->calldepth);
     }
 
     if (vht[vhtindex] == NULL)
@@ -459,8 +465,8 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //      initialize our arrays for N .css files
     for (i = 0; i < MAX_CLASSIFIERS; i++)
     {
-        fcounts[i] = 0;  // check later to prevent a divide-by-zero
-                         // error on empty .css file
+        fcounts[i] = 0;       // check later to prevent a divide-by-zero
+                              // error on empty .css file
         cpcorr[i] = 0.0;      // corpus correction factors
         linear_hits[i] = 0;   // linear hits
         square_hits[i] = 0;   // square of the runlength
@@ -615,12 +621,14 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         return nonfatalerror("Couldn't open at least 1 .css file for classify().", "");
     }
 
+#if 0
     //    do we have at least 1 valid .css file at both sides of '|'?
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
                              "for classify().\n", "Hope you know what are you doing.");
     }
+#endif
 
     //
     //   now all of the files are mmapped into memory,
@@ -855,11 +863,11 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         if (tprob > 0.5)
         {
-            sprintf(buf, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            sprintf(buf, "CLASSIFY succeeds; (correlate) success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
         }
         else
         {
-            sprintf(buf, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            sprintf(buf, "CLASSIFY fails; (correlate) success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
         }
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
@@ -940,8 +948,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
         if (svlen > 0)
         {
-            crm_destructive_alter_nvariable(svrbl, svlen,
-                    stext, (int)strlen(stext));
+            crm_destructive_alter_nvariable(svrbl, svlen,                    stext, (int)strlen(stext), csl->calldepth);
         }
     }
 
@@ -962,6 +969,12 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+        if (internal_trace)
+        {
+            fprintf(stderr, "CLASSIFY.CORRELATE is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
+        CRM_ASSERT(csl->cstmt >= 0);
+        CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }

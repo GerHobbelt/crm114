@@ -88,6 +88,9 @@ extern int q_expansion_mode;
 
 extern int selected_hashfunction;  //  0 = default
 
+extern int act_like_Bill;
+
+
 
 // forward reference for CSL
 struct mythical_stmt_type;
@@ -113,15 +116,16 @@ typedef struct mythical_vht_cell
                          // vstart, vlen, mstart, and mlen are all measured
                          // from the _start_ of valtxt, mstart relative to
                          // vstart, etc!!!
-    int vstart;        // zero-base index of start of variable (inclusive)
-    int vlen;          // length of captured value : this plus vstart is where
-                       //  you could put a NULL if you wanted to.
-    int mstart;        // zero-base start of most recent match of this var
-    int mlen;          // length of most recent match against this var; this
-                       //   plus mstart is where you could put a NULL if you
-                       //    wanted to.
-    int linenumber;     // linenumber of this variable (if known, else -1)
-    int lazy_redirects; // how many lazy redirects are allowed (0 by default);
+    int vstart;          // zero-base index of start of variable (inclusive)
+    int vlen;            // length of captured value : this plus vstart is where
+                         //  you could put a NULL if you wanted to.
+    int mstart;          // zero-base start of most recent match of this var
+    int mlen;            // length of most recent match against this var; this
+                         //   plus mstart is where you could put a NULL if you
+                         //    wanted to.
+    int linenumber;      // linenumber of this variable (if known, else -1)
+    int scope_depth;     
+    int lazy_redirects;  // how many lazy redirects are allowed (0 by default);
 } VHT_CELL;
 
 //   The argparse block is filled in at run time, though at least in
@@ -192,31 +196,33 @@ struct mythical_csl_cell;
 
 typedef struct mythical_csl_cell
 {
-    char      *filename;                                    // filename if any
-    int        rdwr;                                        // 0=readonly, 1=rdwr
-    int        filedes;                                     // file descriptor it's open on (if any)
-    char      *filetext;                                    // text buffer
-    int        nchars;                                      // characters of data we have
-    crmhash_t  hash;                                        // hash of this data (if done)
-    MCT_CELL **mct;                                         // microcompile (if compiled)
-    int        mct_size;                                    // number of slots available in the MCT
-    int        nstmts;                                      // how many statements in the microcompile
-    int        preload_window;                              // do we preload the window or not?
-    int        cstmt;                                       // current executing statement of this file
+    char      *filename;                 // filename if any
+    int        rdwr;                     // 0=readonly, 1=rdwr
+    int        filedes;                  // file descriptor it's open on (if any)
+    char      *filetext;                 // text buffer
+    int        nchars;                   // characters of data we have
+    crmhash_t  hash;                     // hash of this data (if done)
+    MCT_CELL **mct;                      // microcompile (if compiled)
+    int        mct_size;                 // number of slots available in the MCT
+    int        nstmts;                   // how many statements in the microcompile
+    int        preload_window;           // do we preload the window or not?
+    int        cstmt;                    // current executing statement of this file
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
-    int cstmt_recall;                                           // current executing statement of this file; may NOT be edited outside the exec engine
-    int next_stmt_due_to_trap;                                  // subsequent statement that will be executed, due to trap/fault; -1 if irrelevant
-    int next_stmt_due_to_fail;                                  // subsequent statement that will be executed, due to fail; -1 if irrelevant
-    int next_stmt_due_to_jump;                                  // subsequent statement that will be executed, due to trap/fail/fault/...; -1 if irrelevant
+    int cstmt_recall;                    // current executing statement of this file; may NOT be edited outside the exec engine
+    int next_stmt_due_to_trap;           // subsequent statement that will be executed, due to trap/fault; -1 if irrelevant
+    int next_stmt_due_to_fail;           // subsequent statement that will be executed, due to fail; -1 if irrelevant
+    int next_stmt_due_to_jump;           // subsequent statement that will be executed, due to trap; -1 if irrelevant
+    int next_stmt_due_to_debugger;       // subsequent statement that will be executed, due to debugger activity; -1 if irrelevant
 #endif
-    struct mythical_csl_cell *caller;                           // pointer to this file's caller (if any)
-    int return_vht_cell;                                        // index into the VHT to stick the return value
-    int calldepth;                                              // how many calls deep is this stack frame
-    int aliusstk[MAX_BRACKETDEPTH];                             // the status stack for ALIUS
+    struct mythical_csl_cell *caller;    // pointer to this file's caller (if any)
+    int return_vht_cell;                 // index into the VHT to stick the return value
+    int calldepth;                       // how many calls deep is this stack frame
+    int aliusstk[MAX_BRACKETDEPTH];      // the status stack for ALIUS
 
     unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
     unsigned int filetext_allocated : 1; // if the filetext was allocated on the heap.
     unsigned int mct_allocated      : 1; // if the mct collection was allocated on the heap.
+    unsigned int running            : 1; // if the script interpreter is executing this code sequence
 } CSL_CELL;
 
 //     A 1024-byte standardized header for our statistical files (well, the
@@ -470,18 +476,18 @@ typedef struct
 
 typedef struct mythical_stmt_type
 {
-    char    *stmt_name;
-    int      stmt_code;
-    int      namelen;
+    char    *stmt_name;   // text representation
+    int      stmt_code;   // internal opcode ID
+    int      namelen;     // == strlen(stmt_name)
     unsigned is_executable          : 1;
     unsigned has_non_standard_flags : 1;
-    int      minangles;
+    int      minangles;   // <>
     int      maxangles;
-    int      minslashes;
+    int      minslashes;  // /.../
     int      maxslashes;
-    int      minparens;
+    int      minparens;   // ()
     int      maxparens;
-    int      minboxes;
+    int      minboxes;    // []
     int      maxboxes;
     uint64_t flags_allowed_mask;
 } STMT_TABLE_TYPE;

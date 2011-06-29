@@ -394,7 +394,7 @@ typedef struct
 
 
 /* This feature is available in gcc versions 2.5 and later.  */
-#ifndef __attribute__
+#undef __attribute__
 #if defined (__GNUC__)
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 5) || __STRICT_ANSI__
 #define __attribute__(spec) /* empty */
@@ -402,6 +402,9 @@ typedef struct
 /* The __-protected variants of `format' and `printf' attributes
  * are accepted by gcc versions 2.6.4 (effectively 2.7) and later.  */
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#undef __format__
+#undef __printf__
+#undef __noreturn__
 #define __format__    format
 #define __printf__    printf
 #define __noreturn__  noreturn
@@ -409,7 +412,21 @@ typedef struct
 #else
 #define __attribute__(spec) /* empty */
 #endif                      /*  defined(__GNUC__) */
-#endif                      /* __attribute__ */
+
+/* Microsoft's standard source code annotation language (SAL) */
+#undef __in_z
+#undef __format_string
+#if defined(_MSC_VER)
+#if defined(HAVE_SAL_H)
+#include <sal.h>
+#else
+#define __in_z
+#define __format_string
+#endif
+#else
+#define __in_z
+#define __format_string
+#endif
 
 
 
@@ -613,7 +630,7 @@ void *crm_memmove(void *dst, const void *src, size_t len);
 #if defined (HAVE_STAT_EMPTY_STRING_BUG)
 static inline int crm_stat(const char *path, struct stat *buf)
 {
-    if (!path || ! * path || !buf)
+    if (!path || !*path || !buf)
     {
         errno = EINVAL;
         return -1;

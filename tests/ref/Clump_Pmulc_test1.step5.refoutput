@@ -1,5 +1,5 @@
 TEST SCRIPT + COMMANDLINE:
--{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: \n:*:s:\n/} alius { output / Unsure result \n:*:s:\n/ } } 
+-{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: :*:_nl::*:s::*:_nl:/} alius { output / Unsure result :*:_nl::*:s::*:_nl:/ } } 
 
 RETURN CODE:
 0

@@ -54,8 +54,8 @@ file contents:
  ----- keeping a process around ----  
 
  preparing... 
- did one... MINION PROC PID: 5771 from-pipe: 5 to-pipe: 4
- did it again...MINION PROC PID: 5771 from-pipe: 5 to-pipe: 4
+ did one... MINION PROC PID: 15291 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 15291 from-pipe: 5 to-pipe: 4
  and done ...DEAD MINION, EXIT CODE: 0 
 file contents:
  .  a one 
@@ -79,105 +79,105 @@ file contents:
 proc = DEAD MINION, EXIT CODE: 254
 --- and finally synch/eof : 
  
- ---end-----proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+ ---end-----proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- s1 script: got immediate : 
 hello #0
  
- ---end-----proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+ ---end-----proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #1
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 -hello #2
 -
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #3
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 -hello #4
 -
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #5
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 -hello #6
 -
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #7
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 -hello #8
 -
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #9
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 -hello #10
 -
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #11
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 -hello #12
 -
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #13
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 -hello #14
 -
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #15
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 -hello #16
 -
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #17
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 -hello #18
 -
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- got this later : 
 -hello #19
 -
 --- .1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- .1 sleep: got : 
 --
 --- 1 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- 1.0 sleep: got : 
 --
 --- 3 sleep
-proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15395 from-pipe: 5 to-pipe: 4
 --- 3.0 sleep: got : 
 --
 --- and finally synch/eof : 
@@ -185,9 +185,9 @@ proc = MINION PROC PID: 5786 from-pipe: 5 to-pipe: 4
  ---end-----Testing fire-and-forget asynch 
 proc = DEAD MINION, EXIT CODE: 254
 fire and forget ls got:  
-proc = MINION PROC PID: 5832 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15447 from-pipe: 5 to-pipe: 4
 fire and forget s1 script for current dir got:  
-proc = MINION PROC PID: 5832 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15447 from-pipe: 5 to-pipe: 4
 fire and forget s1 script got:  
-proc = MINION PROC PID: 5832 from-pipe: 5 to-pipe: 4
+proc = MINION PROC PID: 15447 from-pipe: 5 to-pipe: 4
 

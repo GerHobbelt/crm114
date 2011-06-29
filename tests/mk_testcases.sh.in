@@ -1,0 +1,21 @@
+#! /bin/sh
+
+#
+# This script generates series of FUNDAMENTAL test sets in ./testcases/ for use with
+# mailreaver/mailtrainer and other classify/training tests (e.g. tenfold validation)
+#
+# Each test set is stored in its own (numbered) directory for ease of use.
+#
+
+#
+# mk_testcases <debug 0/1> <test_samples 1..10K> <testcase_startnumber>
+# 
+
+CRM_BIN="@abs_top_builddir@/src/crm114"
+BUILDDIR=@abs_builddir@
+SRCDIR=@abs_srcdir@
+REFDIR="${SRCDIR}/ref"
+
+rm -rf ${BUILDDIR}/testcases
+cat ${BUILDDIR}/scowl/english-*-all | @AWK@ -f ${SRCDIR}/mk_uniq_files.awk -v filepath=${BUILDDIR}/testcases/ -v debug=$1 -v max_test_samples=$2 -v testcase=$3
+

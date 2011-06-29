@@ -4,8 +4,8 @@ window
 	output / Alternating Example Neural Network Classifier TRAINING \n/
 #   load the files in
 	isolate (:intro: :quickref:)
-	input (:intro:) [ /home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input 0 32000]
-	input (:quick:) [ /home/ger/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input 0 32000]
+	input (:intro:) [ /windows/G/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input 0 32000]
+	input (:quick:) [ /windows/G/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input 0 32000]
 
 #    Now loop.
      isolate (:loopcontrol:) //
@@ -53,7 +53,7 @@ isolate (:s:)
 isolate (:filetxt:) //
 
 { 
-  input (:filetxt:) [ /home/ger/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input 32000 4096 ]
+  input (:filetxt:) [ /windows/G/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input 32000 4096 ]
   match (:t1:) [:filetxt:] /(....){255}.*?\n\n/ 
   {
     classify < neural unigram> ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ [:t1:] 
@@ -65,7 +65,7 @@ isolate (:filetxt:) //
 
 { 
   isolate (:t2:) //
-  input (:filetxt:) [ /home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input 32000 4096 ]
+  input (:filetxt:) [ /windows/G/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input 32000 4096 ]
   match (:t2:) [:filetxt:] /(....){255}.*?\n/ 
 
   {

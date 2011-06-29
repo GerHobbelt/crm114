@@ -1,0 +1,12 @@
+TEST SCRIPT + COMMANDLINE:
+vanilla_eval_bug0001.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+a = '1' ; b = '1'
+c = '' ; d = '0'
+

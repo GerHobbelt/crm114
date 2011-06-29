@@ -1181,31 +1181,31 @@ const char *crm_decode_header_err2msg(int errorcode)
 
     case 5:
         return
-               "CSS database header: Floating point markers do not match this platform; this may be a non-native database or the database is corrupted.";
+            "CSS database header: Floating point markers do not match this platform; this may be a non-native database or the database is corrupted.";
 
     case 6:
         return
-               "CSS database header: 'CRM114' text marker does not match this platform; this may be a non-native database or the database is corrupted.";
+            "CSS database header: 'CRM114' text marker does not match this platform; this may be a non-native database or the database is corrupted.";
 
     case 7:
         return
-               "CSS database header: Decoded host type and/or version markers do not match this platform; this is a non-native database or the database is corrupted.";
+            "CSS database header: Decoded host type and/or version markers do not match this platform; this is a non-native database or the database is corrupted.";
 
     case 8:
         return
-               "CSS database header: Decoded version/release numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
+            "CSS database header: Decoded version/release numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
 
     case 9:
         return
-               "CSS database header: integer size numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
+            "CSS database header: integer size numbers do not match this platform & build; this is either an old or a non-native database. Try to migrate the database.";
 
     case 10:
         return
-               "CSS database header: the classifier marker does not match the current active classifier code; this database was created for another classifier. Do not use this database for this classifier.";
+            "CSS database header: the classifier marker does not match the current active classifier code; this database was created for another classifier. Do not use this database for this classifier.";
 
     case 11:
         return
-               "CSS database header: the hash algorithm marker does not match the current active hash type code; this database was created with another hash algorithm active. Change your hash algorithm if you wish to use this database.";
+            "CSS database header: the hash algorithm marker does not match the current active hash type code; this database was created with another hash algorithm active. Change your hash algorithm if you wish to use this database.";
 
     case 42:
         return "CSS database has corrupted 'human readable info block' markers. Your database is very probably hosed.";

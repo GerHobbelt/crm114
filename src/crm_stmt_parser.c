@@ -80,7 +80,7 @@ static const FLAG_DEF crm_flags[] =
     { "alt.winnow", CRM_ALT_OSB_WINNOW },
     { "alt.osbf", CRM_ALT_OSBF },
     { "alt.hyperspace", CRM_ALT_HYPERSPACE },
-    { NULL, 0 }   /* [i_a] sentinel */
+    /* { NULL, 0 }   /* [i_a] sentinel */
 };
 
 /* #define CRM_MAXFLAGS 42   [i_a] unused in the new code */
@@ -491,15 +491,11 @@ int crm_statement_parse(char *in,
     int ftype[CRM_STATEMENT_PARSE_MAXARG];
     int fstart[CRM_STATEMENT_PARSE_MAXARG];
     int flen[CRM_STATEMENT_PARSE_MAXARG];
-#if FULL_PARSE_AT_COMPILE_TIME
     const STMT_TABLE_TYPE *stmt_def;
     STMT_TABLE_TYPE actual_arg_counts = { 0 };
-#endif
 
     CRM_ASSERT(mct);
-#if FULL_PARSE_AT_COMPILE_TIME
     stmt_def = mct->stmt_def;
-#endif
 
     //     we call the generic parser with the right args to slice and
     //     dice the incoming statement into declension-delimited parts
@@ -533,12 +529,10 @@ int crm_statement_parse(char *in,
 #else
     memset(apb, 0, sizeof(*apb));
 #endif
-#if FULL_PARSE_AT_COMPILE_TIME
     actual_arg_counts.maxangles = 1;
     actual_arg_counts.maxparens = 3;
     actual_arg_counts.maxboxes = 1;
     actual_arg_counts.maxslashes = 2;
-#endif
 
     //   Scan through the incoming chunks
     //
@@ -555,9 +549,7 @@ int crm_statement_parse(char *in,
                 {
                     apb->a1start = &in[fstart[i]];
                     apb->a1len = flen[i];
-#if FULL_PARSE_AT_COMPILE_TIME
                     actual_arg_counts.minangles = 1;
-#endif
                 }
                 else
                 {
@@ -575,25 +567,19 @@ int crm_statement_parse(char *in,
                 {
                     apb->p1start = &in[fstart[i]];
                     apb->p1len = flen[i];
-#if FULL_PARSE_AT_COMPILE_TIME
                     actual_arg_counts.minparens = 1;
-#endif
                 }
                 else if (apb->p2start == NULL)
                 {
                     apb->p2start = &in[fstart[i]];
                     apb->p2len = flen[i];
-#if FULL_PARSE_AT_COMPILE_TIME
                     actual_arg_counts.minparens = 2;
-#endif
                 }
                 else if (apb->p3start == NULL)
                 {
                     apb->p3start = &in[fstart[i]];
                     apb->p3len = flen[i];
-#if FULL_PARSE_AT_COMPILE_TIME
                     actual_arg_counts.minparens = 3;
-#endif
                 }
                 else
                 {
@@ -611,9 +597,7 @@ int crm_statement_parse(char *in,
                 {
                     apb->b1start = &in[fstart[i]];
                     apb->b1len = flen[i];
-#if FULL_PARSE_AT_COMPILE_TIME
                     actual_arg_counts.minboxes = 1;
-#endif
                 }
                 else
                 {
@@ -631,17 +615,13 @@ int crm_statement_parse(char *in,
                 {
                     apb->s1start = &in[fstart[i]];
                     apb->s1len = flen[i];
-#if FULL_PARSE_AT_COMPILE_TIME
                     actual_arg_counts.minslashes = 1;
-#endif
                 }
                 else if (apb->s2start == NULL)
                 {
                     apb->s2start = &in[fstart[i]];
                     apb->s2len = flen[i];
-#if FULL_PARSE_AT_COMPILE_TIME
                     actual_arg_counts.minslashes = 2;
-#endif
                 }
                 else
                 {
@@ -661,7 +641,6 @@ int crm_statement_parse(char *in,
         }
     }
 
-#if FULL_PARSE_AT_COMPILE_TIME
     // now we got some checkin' to do... hold on.
     check_arg_counts(actual_arg_counts.minangles,
             actual_arg_counts.maxangles,
@@ -690,7 +669,6 @@ int crm_statement_parse(char *in,
             stmt_def->maxslashes,
             "slashes '//'",
             SRC_LOC());
-#endif
 
     return k;    // return value is how many declensional arguments we found.
 }
@@ -889,9 +867,9 @@ int crm_generic_parse_line(
                 continue;
             }
 
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // fallthrough! fallthrough! fallthrough! fallthrough! fallthrough!
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // fallthrough! fallthrough! fallthrough! fallthrough! fallthrough!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         case CRM_FIND_ARG_SECTION:
             //    is curchar one of the start chars?  (this is 8-bit-safe,
             //     because schars is always normal ASCII)

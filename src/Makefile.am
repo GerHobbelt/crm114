@@ -51,7 +51,14 @@ DATE=`date +%Y_%m_%d_%H_%M_%S`
 #     to mess with my brain. - wsy)
 #
 #VERSION = @VERSION@
-PREV_VERSION=20080317-BlameJoeLangeway_VT
+PREV_VERSION=20081023-BlameMaxwell
+#PREV_VERSION=20080923-BlameVT
+#PREV_VERSION=20080630-BlameVT
+#PREV_VERSION=20080618-BlameBadGlasses
+#PREV_VERSION=20080502-BlameJason
+#PREV_VERSION=20080326-BlameSentansoken
+#PREV_VERSION=20080325-BlameSentansoken
+#PREV_VERSION=20080317-BlameJoeLangeway_VT
 #PREV_VERSION=20080217-BlameJoeLangeway_VT
 #PREV_VERSION=20071201-BlameLittleStevie_VT
 #PREV_VERSION=20071126-BlameGerHobbelt
@@ -267,6 +274,24 @@ CFILES_4_BMP_PROF = \
 	crm_bmp_prof_report.cpp \
 	crm_bmp_prof_scan.cpp crm_bmp_prof_utils.cpp
 
+CFILES_4_LIBCRM114 = \
+	libcrm114/if_kiss_bill.c \
+	libcrm114/interface.c \
+	libcrm114/hashtable_base.c \
+	libcrm114/bayesian_base.c \
+	libcrm114/hash_base.c \
+	libcrm114/diag_base.c \
+	libcrm114/bio_base.c \
+	libcrm114/mmap_bio_base.c \
+	libcrm114/socket_bio_base.c \
+	libcrm114/memory_bio_base.c
+
+HFILES_4_LIBCRM114 = \
+	libcrm114/libcrm_statuscodes.h \
+	libcrm114/libcrm_kiss_bill.h \
+	libcrm114/libcrm_bio.h \
+	libcrm114/libcrm_diag.h \
+	libcrm114/libcrm114.h
 
 HFILES = crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h config.h \
@@ -306,6 +331,7 @@ UTIL_C_FILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c \
 
 CRMFILES = mailfilter.crm mailfilter.cf \
 	mailreaver.crm mailtrainer.crm \
+	mkcss.crm \
 	maillib.crm shuffle.crm \
 	rewriteutil.crm \
 	matchtest.crm windowtest.crm overalterisolatedtest.crm exectest.crm \
@@ -373,7 +399,6 @@ noinst_PROGRAMS = testvectok
 
 crm114_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) crm_main.c
 
-
 cssutil_SOURCES = cssutil.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 
 osbf_util_SOURCES = osbf-util.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
@@ -385,6 +410,9 @@ cssmerge_SOURCES = cssmerge.c $(CFILES) $(HFILES) $(EXTRA_DEPS)
 testvectok_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) testvectok.c
 
 crm_bmp_prof_SOURCES = crm_bmp_prof_main.cpp $(CFILES_4_BMP_PROF) $(CFILES) $(HFILES) $(EXTRA_DEPS)
+
+libcrm114_SOURCES = $(CFILES_4_LIBCRM114) $(HFILES) $(HFILES_4_LIBCRM114) $(EXTRA_DEPS)
+
 
 
 # see for 'ELCFILES=' the documentation at http://www.gnu.org/software/automake/manual/automake.html#Emacs-Lisp
@@ -893,4 +921,3 @@ depend:
 	makedepend -- $(CFLAGS) -- *.[ch]
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-

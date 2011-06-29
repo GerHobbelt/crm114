@@ -279,6 +279,10 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
             dst[len++] = '/';
             dst[len] = 0;
         }
+                if (internal_trace)
+                {
+                    fprintf(stderr, "mk_absolute_path: cwd = '%s'\n", dst);
+                }
         d = dst + len;
         len = dst_size - len;
         if (len < strlen(src_filepath) + 1)
@@ -290,6 +294,10 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
             return NULL;
         }
         strcpy(d, src_filepath);
+                if (internal_trace)
+                {
+                    fprintf(stderr, "mk_absolute_path: merged path = '%s'\n", dst);
+                }
     }
     else
     {
@@ -309,10 +317,9 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
     s = d = dst + len - 1;
     skip_parent = 0;
 
-    if (d[0] == '.')
+    if (d - 1 >= dst && d[0] == '.')
     {
         // special case at start: full path ends in '.', '..' or something ending in a '.' period. See which it is.
-        CRM_ASSERT(d > dst);
         if (d[-1] == '/')
         {
             // ends in '/.' which is just 'this dir', so discard the period: make sure a directory spec ends with a '/' this time
@@ -328,6 +335,10 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
 
     while (d >= dst)
     {
+                if (internal_trace)
+                {
+                    fprintf(stderr, "mk_absolute_path: skip = %d, raw remain = '%.*s', produce = '%s'\n", skip_parent, (int)(d - dst + 1), dst, s + 1);
+                }
         if (d[0] == '/')
         {
             if (d - 1 >= dst && d[-1] == '/')
@@ -345,7 +356,7 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
                     d -= 2;
                     continue;
                 }
-                if (d[-2] == '.' && d - 3 >= dst && d[-3] == '/')
+                else if (d[-2] == '.' && d - 3 >= dst && d[-3] == '/')
                 {
                     // skip a 'parent dir': '../'
                     d -= 3;
@@ -354,12 +365,23 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
                 }
             }
             // a real dir follows left: skip it?
-            if (skip_parent--)
+            if (skip_parent)
             {
-                d--;
-                while (d >= dst && d[0] != '/')
-                    d--;
+                do
+                {
+                    while (d >= dst && d[0] == '/')
+                        d--;
+                    while (d >= dst && d[0] != '/')
+                        d--;
+                } while (--skip_parent);
                 continue;
+            }
+            // going to copy /-terminated dir to src: copy / here, rest below:
+            *s-- = *d--;
+            // did we just copy the / root at dst[0]?
+            if (d < dst)
+            {
+                break;
             }
         }
         // real dir or filename: copy to src
@@ -370,7 +392,7 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
     }
 
     // now 's' points as start of compressed path; it also is a pointer >= dst, so move content down to 'dst':
-    memmove(dst, s, strlen(s) + 1);
+    memmove(dst, s + 1, strlen(s + 1) + 1);
 #else
 #error "Please provide a suitable mk_absolute_path() implementation for your platform"
 #endif
@@ -569,7 +591,7 @@ void generate_err_reason_msg(
     }
     widthleft = reason_bufsize - (int)(dst - reason);
 
-    if (!encouraging_msg || ! * encouraging_msg)
+    if (!encouraging_msg || !*encouraging_msg)
     {
         encouraging_msg = "Sorry, but this program is very sick and probably should be killed off.";
     }
@@ -595,9 +617,10 @@ void generate_err_reason_msg(
         && csl && csl->filename)
     {
         int len;
+                        char dirbuf[DIRBUFSIZE_MAX];
 
         snprintf(dst, widthleft, "This happened at line %d of file %s:\n    ",
-                csl->cstmt, csl->filename);
+                csl->cstmt, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), csl->filename));
         dst[widthleft - 1] = 0;
         len = (int)strlen(dst);
         dst += len;
@@ -677,22 +700,24 @@ void generate_err_reason_msg(
 
 
 /*
- *   Check to see - is there a trap available or is this a non-trap
- *   program?
+ * Check to see - is there a trap available or is this a non-trap
+ * program?
  *
- *      if (csl->mct[csl->cstmt]->trap_index <  csl->nstmts)
+ * Perform all the sanity checks necessary to stay while handling this error.
+ * Assume the WORST!
  *
+ * Return 0 when the trap catched this one.
  *
- *   Perform all the sanity checks necessary to stay while handling this error.
- *       Assume the WORST!
+ * Return -1 when no trap whatsoever was found.
  *
- *       Return 0 when the trap catched this one.
- *
- *       Return -1 when no trap whatsoever was found.
+ * Note: a trap handler will only be detected when the script is actually
+ *       being executed. This ensures that preprocessor/compiler errors
+ *       are immediately shown and will never silently progress into running
+ *       a script of indetermined state.
  */
 static int check_for_trap_handler(CSL_CELL *csl, const char *reason)
 {
-    if (csl && csl->nstmts > 0 && csl->mct
+    if (csl && csl->running && csl->nstmts > 0 && csl->mct
         && csl->cstmt >= 0 && csl->cstmt < csl->nstmts && csl->mct[csl->cstmt]
         && csl->mct[csl->cstmt]->trap_index < csl->nstmts)
     {
@@ -765,7 +790,7 @@ const char *errno_descr(int errno_number)
 {
     const char *ret = strerror(errno_number);
 
-    if (!ret || ! * ret)
+    if (!ret || !*ret)
     {
         return "\?\?\?";
     }
@@ -778,7 +803,7 @@ const char *syserr_descr(int errno_number)
 {
     char *ret = strerror(errno_number);
 
-    if (!ret || ! * ret)
+    if (!ret || !*ret)
     {
         return "\?\?\?";
     }
@@ -914,6 +939,7 @@ void untrappableerror_ex(int lineno, const char *srcfile, const char *funcname, 
 void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)
 {
     char reason[MAX_PATTERN];
+    int original_statement_line = (csl != NULL ? csl->cstmt : -1);
 
     generate_err_reason_msg(
             reason,
@@ -924,7 +950,7 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
             " *UNTRAPPABLE ERROR*",
             NULL,
             csl,
-            csl->cstmt,
+			original_statement_line,
             fmt,
             args);
     fputs(reason, stderr);
@@ -996,10 +1022,14 @@ int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const c
     }
 
     // [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
-    if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
+    if (original_statement_line > 0 && tdw && data_window_size)
     {
-        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
-    }
+		if (debug_countdown > DEBUGGER_DISABLED_FOREVER && original_statement_line > 0 && tdw && data_window_size)
+		{
+			crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason, -1);
+		}
+		crm_set_temp_var(":_fault:", reason, -1);
+	}
 
     trap_catch = check_for_trap_handler(csl, reason);
     if (trap_catch == 0)
@@ -1073,8 +1103,9 @@ int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, cons
     // [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
     if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
     {
-        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason);
+        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, reason, -1);
     }
+    crm_set_temp_var(":_fault:", reason, -1);
 
     trap_catch = check_for_trap_handler(csl, reason);
     if (trap_catch == 0)
@@ -1278,6 +1309,8 @@ int crm_trigger_fault(const char *reason)
     int done;
     int trapline;
     int original_statement;
+    char reasonname[MAX_PATTERN];
+    int rnlen;
 
     CRM_ASSERT(csl != NULL);
 
@@ -1309,6 +1342,16 @@ int crm_trigger_fault(const char *reason)
     CRM_ASSERT(csl->cstmt <= csl->nstmts);
     original_statement = csl->cstmt;
     trapline = csl->cstmt;
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+    // make sure a 'double failure' does NOT loop indefinitely on the same erroneous trap!
+    if (csl->next_stmt_due_to_trap >= 0)
+    {
+        trapline = csl->next_stmt_due_to_trap;
+        // AND reports the proper erroneous line: the TRAP statement itself!
+        csl->cstmt = trapline;
+    }
+#endif
+
 
     done = 0;
     while (!done)
@@ -1321,6 +1364,9 @@ int crm_trigger_fault(const char *reason)
             {
                 fprintf(stderr, "     ... no applicable TRAP.\n");
             }
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->cstmt = original_statement;
+#endif
             return 1;
         }
 
@@ -1328,22 +1374,39 @@ int crm_trigger_fault(const char *reason)
         //
         //        make sure we're really on a trap statement.
         //
-        if (csl->mct[trapline]->stmt_type != CRM_TRAP)
+        if (csl->mct[trapline]->stmt_type != CRM_TRAP
+            && csl->mct[trapline]->stmt_type != CRM_BOGUS
+            && csl->mct[trapline]->stmt_type != CRM_NOOP)
+        {
+            printf("opcode %d\n", csl->mct[trapline]->stmt_type);
+            untrappableerror(
+                    "Internal Coding Error: should never get here, as trap statement numbers should match up with TRAP opcodes in the script!",
+                    "");
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->cstmt = original_statement;
+#endif
             return 1;
+        }
 
         // [i_a] fixup for a trap cycle if the trap statement to be parsed is at fault itself (blowuptrapbugtest.crm)
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
-        csl->next_stmt_due_to_trap = trapline;
+        csl->next_stmt_due_to_trap = trapline + 1; // skip PAST the TRAP opcode itself!
+        // AND reports the proper erroneous line: the TRAP statement itself!
+        csl->cstmt = trapline;
 #else
         csl->cstmt = trapline;
 #endif
+        if (internal_trace)
+        {
+            fprintf(stderr, "ERRORHANDLER is jumping to statement line: %d/%d\n", trapline, csl->nstmts);
+        }
 
         //       OK, we're here, with a live trap.
         slen = (csl->mct[trapline + 1]->fchar)
                - (csl->mct[trapline]->fchar);
 
 #if !FULL_PARSE_AT_COMPILE_TIME
-        if (!csl->mct[csl->cstmt]->apb)
+        if (!csl->mct[trapline]->apb)
         {
             (void)crm_statement_parse(
                     &(csl->filetext[csl->mct[trapline]->fchar]),
@@ -1354,10 +1417,10 @@ int crm_trigger_fault(const char *reason)
         else
         {
             //    OR start using the JITted apb
-            apb = *csl->mct[csl->cstmt]->apb;
+            apb = *csl->mct[trapline]->apb;
         }
 #else
-        apb = csl->mct[csl->cstmt]->apb;
+        apb = csl->mct[trapline]->apb;
 #endif
         if (user_trace)
         {
@@ -1389,6 +1452,44 @@ int crm_trigger_fault(const char *reason)
         CRM_ASSERT(pat_len < MAX_PATTERN);
         trap_pat[pat_len] = 0;
 
+        // did we have a double error in the variable expansion?
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        if (csl->next_stmt_due_to_trap - 1 != trapline)
+        {
+            // collect inner fault reason:
+            strcpy(reasonname, ":*:_fault:");
+            rnlen = crm_nexpandvar(reasonname, strlen(reasonname), MAX_PATTERN, vht, tdw);
+            CRM_ASSERT(rnlen < MAX_PATTERN);
+            reasonname[rnlen] = 0;
+
+            i = fatalerror_ex(SRC_LOC(),
+                    "Double Trap: Trap Pattern Expansion Problem in TRAP pattern '%s' while processing the trappable error '%s': %s",
+                    trap_pat,
+                    reason,
+                    reasonname);
+            csl->cstmt = original_statement;
+            return i;
+        }
+#else
+        if (csl->cstmt != trapline)
+        {
+            // collect inner fault reason:
+            strcpy(reasonname, ":*:_fault:");
+            rnlen = crm_nexpandvar(reasonname, strlen(reasonname), MAX_PATTERN, vht, tdw);
+            CRM_ASSERT(rnlen < MAX_PATTERN);
+            reasonname[rnlen] = 0;
+
+            csl->cstmt = trapline;
+
+            i = fatalerror_ex(SRC_LOC(),
+                    "Double Trap: Trap Pattern Expansion Problem in TRAP pattern '%s' while processing the trappable error '%s': %s",
+                    trap_pat,
+                    reason,
+                    reasonname);
+            return i;
+        }
+#endif
+
         //
         if (user_trace)
         {
@@ -1407,16 +1508,63 @@ int crm_trigger_fault(const char *reason)
         }
         else
         {
-            crm_regerror(i, &preg, tempbuf, data_window_size);
+            crm_regerror(i, &preg, reasonname, MAX_PATTERN);
             // CRM_ASSERT(csl->cstmt == trapline); previous code can have called fatalerror[_ex] multiple times,
             // causing the traphandler line to move forward multiple times. So reassign the traphandler and
             // go from there:
-            fatalerror_ex(SRC_LOC(),
-                    "Double Trap: Regular Expression Compilation Problem in TRAP pattern '%s' while processing the trappable error '%s'.",
-                    tempbuf,
-                    reason);
-            // trapline = csl->cstmt; // [i_a] the call to fatalerror[_ex] will have found a new trapline!
+
+            // make sure such a 'double error' does NOT loop indefinitely on the same erroneous trap!
+            // AND reports the proper erroneous line: the TRAP statement itself!
+            CRM_ASSERT(csl->cstmt == trapline);
+
+            i = fatalerror_ex(SRC_LOC(),
+                    "Double Trap: Regular Expression Compilation Problem in TRAP pattern '%s' while processing the trappable error '%s': %s",
+                    trap_pat,
+                    reason,
+                    reasonname);
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            csl->cstmt = original_statement;
+#endif
+            return i;
         }
+
+        // did we have a double error in the regex parsing?
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+        if (csl->next_stmt_due_to_trap - 1 != trapline)
+        {
+            // collect inner fault reason:
+            strcpy(reasonname, ":*:_fault:");
+            rnlen = crm_nexpandvar(reasonname, strlen(reasonname), MAX_PATTERN, vht, tdw);
+            CRM_ASSERT(rnlen < MAX_PATTERN);
+            reasonname[rnlen] = 0;
+
+            i = fatalerror_ex(SRC_LOC(),
+                    "Double Trap: Regex Problem in TRAP pattern '%s' while processing the trappable error '%s': %s",
+                    trap_pat,
+                    reason,
+                    reasonname);
+            csl->cstmt = original_statement;
+            return i;
+        }
+#else
+        if (csl->cstmt != trapline)
+        {
+            // collect inner fault reason:
+            strcpy(reasonname, ":*:_fault:");
+            rnlen = crm_nexpandvar(reasonname, strlen(reasonname), MAX_PATTERN, vht, tdw);
+            CRM_ASSERT(rnlen < MAX_PATTERN);
+            reasonname[rnlen] = 0;
+
+            csl->cstmt = trapline;
+
+            i = fatalerror_ex(SRC_LOC(),
+                    "Double Trap: Regex Problem in TRAP pattern '%s' while processing the trappable error '%s': %s",
+                    trap_pat,
+                    reason,
+                    reasonname);
+            return i;
+        }
+#endif
 
 
         //    trap_regcomp_error:
@@ -1439,33 +1587,108 @@ int crm_trigger_fault(const char *reason)
             // CRM_ASSERT(csl->cstmt == trapline); previous code can have called fatalerror[_ex] multiple times,
             // causing the traphandler line to move forward multiple times. So reassign the traphandler and
             // go from there:
-#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
-            csl->next_stmt_due_to_trap = trapline;
-#else
-            csl->cstmt = trapline;
-#endif
-            CRM_ASSERT(csl->cstmt >= 0);
-            CRM_ASSERT(csl->cstmt <= csl->nstmts);
+            CRM_ASSERT(csl->cstmt == trapline);
+            if (internal_trace)
+            {
+                fprintf(stderr, "TRIGGER.TRAP is jumping to statement line: %d/%d\n", trapline, csl->nstmts);
+            }
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
             //
             //     If there's a trap variable, modify it.
+            rnlen = crm_get_pgm_arg(reasonname, MAX_PATTERN, apb.p1start, apb.p1len);
+            rnlen = crm_nexpandvar(reasonname, rnlen, MAX_PATTERN, vht, tdw);
+            CRM_ASSERT(rnlen < MAX_VARNAME);
+            CRM_ASSERT(rnlen >= 0);
+            reasonname[rnlen] = 0;
+
+            // did we have a double error in the exception variable expansion?
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+            if (csl->next_stmt_due_to_trap - 1 != trapline)
             {
-                char reasonname[MAX_VARNAME];
-                int rnlen;
-                rnlen = crm_get_pgm_arg(reasonname, MAX_VARNAME, apb.p1start, apb.p1len);
-                rnlen = crm_nexpandvar(reasonname, rnlen, MAX_VARNAME, vht, tdw);
-                CRM_ASSERT(rnlen < MAX_VARNAME);
-                reasonname[rnlen] = 0;
-                // crm_nexpandvar null-terminates for us so we can be
-                // 8-bit-unclean here -- [i_a] update: but it does NOT do so
-                // under ALL circumstances, so better throw in a NUL sentinel,
-                // after we've fixed the MAX_VARNAME up there with a -1 too.
-                if (strlen(reasonname) > 0)
-                {
-                    crm_set_temp_var(reasonname, reason);
-                }
-                done = 1;
+                // collect inner fault reason:
+                strcpy(trap_pat, ":*:_fault:");
+                pat_len = crm_nexpandvar(trap_pat, strlen(trap_pat), MAX_PATTERN, vht, tdw);
+                CRM_ASSERT(pat_len < MAX_PATTERN);
+                trap_pat[pat_len] = 0;
+
+                i = fatalerror_ex(SRC_LOC(),
+                        "Double Trap: Variable Expansion Problem in VARIABLE destination '%s' while processing the trappable error '%s': %s",
+                        reasonname,
+                        reason,
+                        trap_pat);
+                csl->cstmt = original_statement;
+                return i;
             }
+#else
+            if (csl->cstmt != trapline)
+            {
+                // collect inner fault reason:
+                strcpy(trap_pat, ":*:_fault:");
+                pat_len = crm_nexpandvar(trap_pat, strlen(trap_pat), MAX_PATTERN, vht, tdw);
+                CRM_ASSERT(pat_len < MAX_PATTERN);
+                trap_pat[pat_len] = 0;
+
+                csl->cstmt = trapline;
+
+                i = fatalerror_ex(SRC_LOC(),
+                        "Double Trap: Variable Expansion Problem in VARIABLE destination '%s' while processing the trappable error '%s': %s",
+                        reasonname,
+                        reason,
+                        trap_pat);
+                return i;
+            }
+#endif
+            // only set error target variable here when no double error occurred:
+
+            // crm_nexpandvar null-terminates for us so we can be
+            // 8-bit-unclean here -- [i_a] update: but it does NOT do so
+            // under ALL circumstances, so better throw in a NUL sentinel,
+            // after we've fixed the MAX_VARNAME up there with a -1 too.
+            if (strlen(reasonname) > 0)
+            {
+                crm_set_temp_var(reasonname, reason, csl->calldepth);
+
+                // did we have a double error in the exception variable writing?
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+                if (csl->next_stmt_due_to_trap - 1 != trapline)
+                {
+                    // collect inner fault reason:
+                    strcpy(trap_pat, ":*:_fault:");
+                    pat_len = crm_nexpandvar(trap_pat, strlen(trap_pat), MAX_PATTERN, vht, tdw);
+                    CRM_ASSERT(pat_len < MAX_PATTERN);
+                    trap_pat[pat_len] = 0;
+
+                    i = fatalerror_ex(
+                            SRC_LOC(),
+                            "Double Trap: Variable Value Assignment Problem in VARIABLE destination '%s' while processing the trappable error '%s': %s",
+                            reasonname,
+                            reason,
+                            trap_pat);
+                    csl->cstmt = original_statement;
+                    return i;
+                }
+#else
+                if (csl->cstmt != trapline)
+                {
+                    // collect inner fault reason:
+                    strcpy(trap_pat, ":*:_fault:");
+                    pat_len = crm_nexpandvar(trap_pat, strlen(trap_pat), MAX_PATTERN, vht, tdw);
+                    CRM_ASSERT(pat_len < MAX_PATTERN);
+                    trap_pat[pat_len] = 0;
+
+                    csl->cstmt = trapline;
+
+                    i = fatalerror_ex(
+                            SRC_LOC(),
+                            "Double Trap: Variable Value Assignment Problem in VARIABLE destination '%s' while processing the trappable error '%s': %s",
+                            reasonname,
+                            reason,
+                            trap_pat);
+                    return i;
+                }
+#endif
+            }
+            done = 1;
         }
         else
         {
@@ -1477,9 +1700,10 @@ int crm_trigger_fault(const char *reason)
                         "TRAP didn't match - trying next trap in line.\n");
             }
         }
-        //      and note that we haven't set "done" == 1 yet, so
-        //      we will go through the loop again.
     }
+#if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
+    csl->cstmt = original_statement;
+#endif
     return 0;
 }
 

@@ -229,39 +229,39 @@ int scan_to_determine_input_ranges(FILE *inf, int read_size, CRM_ANALYSIS_PROFIL
                     }
                     break;
 
-                    /*
-                     * These are the marker calls writing to CAP:
-                     *
-                     * crm_analysis_mark(&analysis_cfg, MARK_CHAIN_LENGTH, h1, "ii", (int)(lh - lh0), (int)hashes[k][lh].value);
-                     * crm_analysis_mark(&analysis_cfg, MARK_CHAIN_LENGTH, h1, "ii", (int)incrs, (int)hashes[hindex].value);
-                     * crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 0, "L", (unsigned long long int)classifier_flags);
-                     * crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 1, "Li", (unsigned long long int)apb->sflags, (int)hfsize);
-                     * crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 2, "Lii", (unsigned long long int)apb->sflags, (int)hashlens[maxhash], (int)maxhash);
-                     * crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_DB_TOTALS, ifile, "ii", (int)info_block[ifile]->v.OSB_Bayes.learncount, (int)info_block[ifile]->v.OSB_Bayes.features_learned);
-                     * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 0, "");
-                     * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 1, "");
-                     * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 2, "");
-                     * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 3, "");
-                     * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 4, "");
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASH64_VALUE, len, "LLL", (unsigned long long int)h, (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE, j, "iii", (unsigned int)hindex, (unsigned int)h1, (unsigned int)h2);
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE, j, "iii", (unsigned int)lh, (unsigned int)h1, (unsigned int)h2);
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_DIRECT_HIT, h1, "ii", (int)(lh - lh0), (int)feature_weight);
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_DIRECT_HIT, h1, "ii", (int)incrs, (int)hashes[hindex].value);
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_HIT, h1, "ii", (int)incrs, (int)hashes[hindex].value);
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_HIT, h1, "iii", (int)(lh - lh0), (int)feature_weight, (int)totalhits[k]);
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_HIT_REFUTE, h1, "ii", (int)incrs, (int)hashes[hindex].value);
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_MISS, h1, "i", (unsigned int)(lh - lh0));
-                     * crm_analysis_mark(&analysis_cfg, MARK_HASH_VALUE, len, "iLL", (unsigned int)h, (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
-                     * crm_analysis_mark(cfg, MARK_INIT, 0, "LLi", (long long int)clock_freq, (long long int)clock_rez, (int)selected_hashfunction);
-                     * crm_analysis_mark(&analysis_cfg, MARK_MICROGROOM, h1, "i", (int)incrs);
-                     * crm_analysis_mark(&analysis_cfg, MARK_MICROGROOM, h1, "ii", (int)incrs, (int)zeroedfeatures);
-                     * crm_analysis_mark(&analysis_cfg, MARK_OPERATION, csl->cstmt, "iL", csl->mct[csl->cstmt]->stmt_type, (unsigned long long int)csl->mct[csl->cstmt]->apb.sflags);
-                     * crm_analysis_mark(&analysis_cfg, MARK_SWITCH_CONTEXT, 0, "");
-                     * crm_analysis_mark(&analysis_cfg, MARK_TERMINATION, 0, "");
-                     *
-                     * Convert these markers to possible dimensions and determine min/max for each
-                     */
+                /*
+                 * These are the marker calls writing to CAP:
+                 *
+                 * crm_analysis_mark(&analysis_cfg, MARK_CHAIN_LENGTH, h1, "ii", (int)(lh - lh0), (int)hashes[k][lh].value);
+                 * crm_analysis_mark(&analysis_cfg, MARK_CHAIN_LENGTH, h1, "ii", (int)incrs, (int)hashes[hindex].value);
+                 * crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 0, "L", (unsigned long long int)classifier_flags);
+                 * crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 1, "Li", (unsigned long long int)apb->sflags, (int)hfsize);
+                 * crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 2, "Lii", (unsigned long long int)apb->sflags, (int)hashlens[maxhash], (int)maxhash);
+                 * crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_DB_TOTALS, ifile, "ii", (int)info_block[ifile]->v.OSB_Bayes.learncount, (int)info_block[ifile]->v.OSB_Bayes.features_learned);
+                 * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 0, "");
+                 * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 1, "");
+                 * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 2, "");
+                 * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 3, "");
+                 * crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 4, "");
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASH64_VALUE, len, "LLL", (unsigned long long int)h, (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE, j, "iii", (unsigned int)hindex, (unsigned int)h1, (unsigned int)h2);
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE, j, "iii", (unsigned int)lh, (unsigned int)h1, (unsigned int)h2);
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_DIRECT_HIT, h1, "ii", (int)(lh - lh0), (int)feature_weight);
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_DIRECT_HIT, h1, "ii", (int)incrs, (int)hashes[hindex].value);
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_HIT, h1, "ii", (int)incrs, (int)hashes[hindex].value);
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_HIT, h1, "iii", (int)(lh - lh0), (int)feature_weight, (int)totalhits[k]);
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_HIT_REFUTE, h1, "ii", (int)incrs, (int)hashes[hindex].value);
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASHPROBE_MISS, h1, "i", (unsigned int)(lh - lh0));
+                 * crm_analysis_mark(&analysis_cfg, MARK_HASH_VALUE, len, "iLL", (unsigned int)h, (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
+                 * crm_analysis_mark(cfg, MARK_INIT, 0, "LLi", (long long int)clock_freq, (long long int)clock_rez, (int)selected_hashfunction);
+                 * crm_analysis_mark(&analysis_cfg, MARK_MICROGROOM, h1, "i", (int)incrs);
+                 * crm_analysis_mark(&analysis_cfg, MARK_MICROGROOM, h1, "ii", (int)incrs, (int)zeroedfeatures);
+                 * crm_analysis_mark(&analysis_cfg, MARK_OPERATION, csl->cstmt, "iL", csl->mct[csl->cstmt]->stmt_type, (unsigned long long int)csl->mct[csl->cstmt]->apb.sflags);
+                 * crm_analysis_mark(&analysis_cfg, MARK_SWITCH_CONTEXT, 0, "");
+                 * crm_analysis_mark(&analysis_cfg, MARK_TERMINATION, 0, "");
+                 *
+                 * Convert these markers to possible dimensions and determine min/max for each
+                 */
                 case MARK_INIT:
                     // crm_analysis_mark(&analysis_cfg, MARK_INIT, 0, "iLL", 1, (long long int)clock_freq, (long long int)clock_rez);
                     ENSURE(value_cnt == 3);
@@ -592,27 +592,27 @@ int scan_to_determine_input_ranges(FILE *inf, int read_size, CRM_ANALYSIS_PROFIL
                         {
                             decoded_classifier = CLASSIFIER_OSB_BAYES;
                         }
-                        else    if (classifier_flags & CRM_CORRELATE)
+                        else if (classifier_flags & CRM_CORRELATE)
                         {
                             decoded_classifier = CLASSIFIER_CORRELATE;
                         }
-                        else    if (classifier_flags & CRM_OSB_WINNOW)
+                        else if (classifier_flags & CRM_OSB_WINNOW)
                         {
                             decoded_classifier = CLASSIFIER_OSB_WINNOW;
                         }
-                        else    if (classifier_flags & CRM_OSBF)
+                        else if (classifier_flags & CRM_OSBF)
                         {
                             decoded_classifier = CLASSIFIER_OSBF_BAYES;
                         }
-                        else    if (classifier_flags & CRM_HYPERSPACE)
+                        else if (classifier_flags & CRM_HYPERSPACE)
                         {
                             decoded_classifier = CLASSIFIER_HYPERSPACE;
                         }
-                        else    if (classifier_flags & CRM_ENTROPY)
+                        else if (classifier_flags & CRM_ENTROPY)
                         {
                             decoded_classifier = CLASSIFIER_ENTROPY;
                         }
-                        else    if (classifier_flags & CRM_SVM)
+                        else if (classifier_flags & CRM_SVM)
                         {
                             decoded_classifier = CLASSIFIER_SVM;
                         }

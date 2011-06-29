@@ -252,8 +252,8 @@ static void cache_init(int len, int size, CACHE *svmcache)
     //   as large as two columns of Qmatrix
 #endif
     (svmcache->lru_headnode).prev
-    = (svmcache->lru_headnode).next
-      = &(svmcache->lru_headnode);
+        = (svmcache->lru_headnode).next
+              = &(svmcache->lru_headnode);
 }
 
 
@@ -498,8 +498,8 @@ static Qitem_t *get_rowQ(int i, int length)
                 //   multiply by the +1/-1 labels (in the .y structures) to
                 //   face the kernel result in the right direction.
                 rowQ[temp] = (Qitem_t)(svm_prob.y[i]
-                                       * svm_prob.y[temp]
-                                       * kernel(svm_prob.x[i], svm_prob.x[temp]));
+                        *svm_prob.y[temp]
+                        *kernel(svm_prob.x[i], svm_prob.x[temp]));
             else if (param.svm_type == ONE_CLASS)
                 rowQ[temp] = (Qitem_t)kernel(svm_prob.x[i], svm_prob.x[temp]);
         }
@@ -583,10 +583,10 @@ static void selectB(int workset[], int *select_times)
              || ((svm_prob.y[t] == -1) && (solver.alpha[t] > 0)))
             && select_times[t] < 10)
         {
-            if (-svm_prob.y[t] * solver.G[t] >= G_max)
+            if (-svm_prob.y[t] *solver.G[t] >= G_max)
             {
                 i = t;
-                G_max = -svm_prob.y[t] * solver.G[t];
+                G_max = -svm_prob.y[t] *solver.G[t];
             }
         }
     }
@@ -601,15 +601,15 @@ static void selectB(int workset[], int *select_times)
              || ((svm_prob.y[t] == 1) && (solver.alpha[t] > 0)))
             && select_times[t] < 10)
         {
-            b = G_max + svm_prob.y[t] * solver.G[t];
-            if (-svm_prob.y[t] * solver.G[t] <= G_min)
-                G_min = -svm_prob.y[t] * solver.G[t];
+            b = G_max + svm_prob.y[t] *solver.G[t];
+            if (-svm_prob.y[t] *solver.G[t] <= G_min)
+                G_min = -svm_prob.y[t] *solver.G[t];
             if (b > 0)
             {
                 if (i != -1)
                 {
                     Qi = get_rowQ(i, svm_prob.l);
-                    a = Qi[i] + DiagQ[t] - 2 * svm_prob.y[i] * svm_prob.y[t] * Qi[t];
+                    a = Qi[i] + DiagQ[t] - 2 * svm_prob.y[i] *svm_prob.y[t] *Qi[t];
                     if (a <= 0)
                         a = TAU;
                     if (-(b * b) / a <= obj_min)
@@ -715,38 +715,38 @@ static void solve(void)
         Qj = get_rowQ(j, svm_prob.l);
 
         //  Calculate the incremental step forward.
-        a = Qi[i] + DiagQ[j] - 2 * svm_prob.y[i] * svm_prob.y[j] * Qi[j];
+        a = Qi[i] + DiagQ[j] - 2 * svm_prob.y[i] *svm_prob.y[j] *Qi[j];
         if (a <= 0)
             a = TAU;
-        b = -svm_prob.y[i] * solver.G[i] + svm_prob.y[j] * solver.G[j];
+        b = -svm_prob.y[i] *solver.G[i] + svm_prob.y[j] *solver.G[j];
 
         //  update alpha (weight vector)
         oldi = solver.alpha[i];
         oldj = solver.alpha[j];
-        solver.alpha[i] += svm_prob.y[i] * b / a;
-        solver.alpha[j] -= svm_prob.y[j] * b / a;
+        solver.alpha[i] += svm_prob.y[i] *b / a;
+        solver.alpha[j] -= svm_prob.y[j] *b / a;
 
         //  Project alpha back to the feasible region(that is, where
         //  where 0 <= alpha <= C )
-        sum = svm_prob.y[i] * oldi + svm_prob.y[j] * oldj;
+        sum = svm_prob.y[i] *oldi + svm_prob.y[j] *oldj;
         if (solver.alpha[i] > param.C)
             solver.alpha[i] = param.C;
         if (solver.alpha[i] < 0)
             solver.alpha[i] = 0;
         solver.alpha[j] = svm_prob.y[j]
-                          * (sum - svm_prob.y[i] * (solver.alpha[i]));
+                          *(sum - svm_prob.y[i] *(solver.alpha[i]));
         if (solver.alpha[j] > param.C)
             solver.alpha[j] = param.C;
         if (solver.alpha[j] < 0)
             solver.alpha[j] = 0;
         solver.alpha[i] = svm_prob.y[i]
-                          * (sum - svm_prob.y[j] * (solver.alpha[j]));
+                          *(sum - svm_prob.y[j] *(solver.alpha[j]));
 
         //update gradient array
         for (t = 0; t < svm_prob.l; t++)
         {
-            solver.G[t] += Qi[t] * (solver.alpha[i] - oldi)
-                           + Qj[t] * (solver.alpha[j] - oldj);
+            solver.G[t] += Qi[t] *(solver.alpha[i] - oldi)
+                           + Qj[t] *(solver.alpha[j] - oldj);
         }
     }
 
@@ -833,7 +833,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
         for (i = 0; i < svm_prob.l; i++)
         {
             if (alpha[i] != 0)
-                sum += svm_prob.y[i] * alpha[i] * kernel(x, svm_prob.x[i]);
+                sum += svm_prob.y[i] *alpha[i] *kernel(x, svm_prob.x[i]);
         }
         sum += b;
     }
@@ -842,7 +842,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
         for (i = 0; i < svm_prob.l; i++)
         {
             if (alpha[i] != 0)
-                sum += alpha[i] * kernel(x, svm_prob.x[i]);
+                sum += alpha[i] *kernel(x, svm_prob.x[i]);
         }
         sum -= b;
     }
@@ -884,9 +884,9 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
     AB[1] = log((negn + 1.0) / (posn + 1.0));
     for (i = 0; i < svm_prob.l; i++)
     {
-        fApB = deci_array[i] * AB[0] + AB[1];
+        fApB = deci_array[i] *AB[0] + AB[1];
         if (fApB >= 0)
-            fval += t[i] * fApB + log(1 + exp(-fApB));
+            fval += t[i] *fApB + log(1 + exp(-fApB));
         else
             fval += (t[i] - 1) * fApB + log(1 + exp(fApB));
     }
@@ -897,7 +897,7 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
         h21 = g1 = g2 = 0.0;
         for (i = 0; i < svm_prob.l; i++)
         {
-            fApB = deci_array[i] * AB[0] + AB[1];
+            fApB = deci_array[i] *AB[0] + AB[1];
             if (fApB >= 0)
             {
                 p = exp(-fApB) / (1.0 + exp(-fApB));
@@ -909,11 +909,11 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
                 q = exp(fApB) / (1.0 + exp(fApB));
             }
             d2 = p * q;
-            h11 += deci_array[i] * deci_array[i] * d2;
+            h11 += deci_array[i] *deci_array[i] *d2;
             h22 += d2;
-            h21 += deci_array[i] * d2;
+            h21 += deci_array[i] *d2;
             d1 = t[i] - p;
-            g1 += deci_array[i] * d1;
+            g1 += deci_array[i] *d1;
             g2 += d1;
         }
         // Stopping Criterion
@@ -934,9 +934,9 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
             newf = 0.0;
             for (i = 0; i < svm_prob.l; i++)
             {
-                fApB = deci_array[i] * newA + newB;
+                fApB = deci_array[i] *newA + newB;
                 if (fApB >= 0)
-                    newf += t[i] * fApB + log(1 + exp(-fApB));
+                    newf += t[i] *fApB + log(1 + exp(-fApB));
                 else
                     newf += (t[i] - 1) * fApB + log(1 + exp(fApB));
             }
@@ -995,7 +995,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char ptext[MAX_PATTERN]; //the regrex pattern
     int plen;
     int i, j, k;
-	regex_t regcb = {0};
+    regex_t regcb = { 0 };
     regmatch_t match[5];
     int textoffset;
     int textmaxoffset;
@@ -1101,7 +1101,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     "\nYou didn't specify a valid filename: '%.*s'\n",
                     (int)flen,
                     ftext);
-         crm_regfree(&regcb);
+            crm_regfree(&regcb);
             return fev;
         }
         j += i;
@@ -1212,8 +1212,14 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 stringf = fopen(file1, "ab+");
                 if (stringf == NULL)
                 {
-                    fatalerror("For some reason, I was unable to append-open the sks file named ",
-                            file1);
+                    char dirbuf[DIRBUFSIZE_MAX];
+
+                    fatalerror_ex(SRC_LOC(),
+                            "\n Couldn't open your SKS file %s for append; (full path: '%s') errno=%d(%s)\n",
+                            file1,
+                            mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file1),
+                            errno,
+                            errno_descr(errno));
                     return 0;
                 }
                 else
@@ -1416,9 +1422,11 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                 if (user_trace)
                 {
+                     char dirbuf[DIRBUFSIZE_MAX];
+
                     fprintf(stderr,
                             "Deleting feature from %d to %d (rad %f) of file %s\n",
-                            beststart, bestend, bestrad, file1);
+                            beststart, bestend, bestrad, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file1));
                 }
 
                 //   Deletion time - move the remaining stuff in the file
@@ -1469,7 +1477,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         param.max_run_time = 1;
         param.k = 4;
 
-#if 0 /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
+#if 0   /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
         if (8 != sscanf(ptext,
                     "%d %d %lf %lf %lf %lf %lf %d",
                     &param.svm_type,
@@ -1763,8 +1771,14 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 stringf = fopen(file3, "wb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
                 if (stringf == NULL)
                 {
-                    fatalerror("Couldn't write-open the .hypsvm file: ",
-                            file3);
+                    char dirbuf[DIRBUFSIZE_MAX];
+
+                    fatalerror_ex(SRC_LOC(),
+                            "\n Couldn't open your SKS.HYPSVM file %s for writing; (full path: '%s') errno=%d(%s)\n",
+                            file3,
+                            mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file3),
+                            errno,
+                            errno_descr(errno));
                     return 0;
                 }
                 else
@@ -1850,7 +1864,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char file1[MAX_PATTERN];
     char file2[MAX_PATTERN];
     char file3[MAX_PATTERN];
-	regex_t regcb = {0};
+    regex_t regcb = { 0 };
     regmatch_t match[5];
     int textoffset;
     int textmaxoffset;
@@ -1963,7 +1977,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         param.max_run_time = 1;
         param.k = 4;
 
-#if 0 /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
+#if 0   /* [i_a] unifying SKS & SVM would mean you'd have *8* (eight) args here, including '.nu' */
         if (8 != sscanf(ptext,
                     "%d %d %lf %lf %lf %lf %lf %d",
                     &param.svm_type,
@@ -2134,7 +2148,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         k2 = stat(file2, &statbuf2);
         k3 = stat(file3, &statbuf3);
 
-         crm_regfree(&regcb);
+        crm_regfree(&regcb);
 
         if (k1 != 0)
         {
@@ -2155,7 +2169,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             k1 = 0;
             k2 = 0;
 
-			file1_lens = statbuf1.st_size;
+            file1_lens = statbuf1.st_size;
             crm_force_munmap_filename(file1);
             crm_force_munmap_filename(file2);
 
@@ -2230,8 +2244,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             stringf = fopen(file3, "rb"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
             if (stringf == NULL)
             {
-                nonfatalerror_ex(SRC_LOC(), "For some reason, I was unable to read-open the SKS 1vs2 solution file named '%s': error = %d(%s)",
+                char dirbuf[DIRBUFSIZE_MAX];
+
+                nonfatalerror_ex(SRC_LOC(),
+                        "\n Couldn't open your SKS 1vs2 file %s for reading; (full path: '%s') errno=%d(%s)\n",
                         file3,
+                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file3),
                         errno,
                         errno_descr(errno));
             }
@@ -2241,7 +2259,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 int *y = NULL;
                 HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 
-                if (is_crm_headered_file(stringf))
+                if (stringf != NULL && is_crm_headered_file(stringf))
                 {
                     if (fseek(stringf, CRM114_HEADERBLOCK_SIZE, SEEK_SET))
                     {
@@ -2459,12 +2477,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         nonfatalerror("You need to input (file1.svm | file2.svm | f1vsf2.svmhyp)\n", "");
         free(file_string);
-         crm_regfree(&regcb);
+        crm_regfree(&regcb);
         return 0;
     }
-         crm_regfree(&regcb);
+    crm_regfree(&regcb);
 
-		 free(hashes);
+    free(hashes);
     hashes = NULL;
 
 
@@ -2482,7 +2500,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             pr = 10 * (log10(decision + 1e-300) - log10(1.0 - decision + 1e-300));
             sprintf(buf,
-                    "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n",
+                    "CLASSIFY succeeds; (sks) success probability: %6.4f  pR: %6.4f\n",
                     decision, pr);
             bestseen = 0;
         }
@@ -2490,7 +2508,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             pr = 10 * (log10(decision + 1e-300) - log10(1.0 - decision + 1e-300));
             sprintf(buf,
-                    "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n",
+                    "CLASSIFY fails; (sks) success probability: %6.4f  pR: %6.4f\n",
                     decision, pr);
             bestseen = 1;
         }
@@ -2542,8 +2560,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         //   finally, save the status output
         //
-        crm_destructive_alter_nvariable(svrbl, svlen,
-                stext, (int)strlen(stext));
+        crm_destructive_alter_nvariable(svrbl, svlen,                stext, (int)strlen(stext), csl->calldepth);
     }
 
     free(file_string);
@@ -2567,6 +2584,10 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+        if (internal_trace)
+        {
+            fprintf(stderr, "CLASSIFY.SKS is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         CRM_ASSERT(csl->cstmt >= 0);
         CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;

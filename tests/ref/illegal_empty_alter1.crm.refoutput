@@ -15,6 +15,6 @@ name or has not been specified at all
 I'll try to keep working.
 This happened at line 9 of file illegal_empty_alter1.crm:
     alter (:*:dst:) /FUBAR/
-(runtime system location: crm_expr_alter.c(218) in routine: crm_expr_alter)
+(runtime system location: crm_expr_alter.c(230) in routine: crm_expr_alter)
 
 

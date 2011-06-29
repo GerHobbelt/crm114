@@ -1,0 +1,25 @@
+#
+# exhibit a trap within a trap execution:
+#
+
+window
+output /X\n/
+fault /YO!/
+output /Y\n/
+
+trap (:ex:) /./
+output /EX0: :*:ex:\n/
+fault /:*:ex: YA!/
+
+trap (ex) /[A-./  # erroneous var + erroneous regex
+output /EX1: :*:ex:\n/
+
+
+trap (:ex:) /./
+output /EX2: :*:ex:\n/
+
+
+trap (:ex:) /./
+output /EX3: :*:ex:\n/
+
+

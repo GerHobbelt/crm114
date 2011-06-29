@@ -38,9 +38,10 @@ script, shouldn't you?/
 	trap (:my_fault:) /.*/
 	{
 		output / BAD! BAD! This CRM version does NOT catch the programming mistake there! Instead,\
- it only sees the I/O error in the same line - fault text was :*:my_fault: / 
+ it only sees the I\/O error in the same line - fault text was :*:my_fault: / 
 	}
 }
+output / --- and the 'corrected' code which should fail with an I\/O error "unable to write-open"--- :*:_nl:/
 {
 	{
 		output [/No/Such/Directory/frotz.mumble] /:hi:/  # This is correct code; should give the I/O error as expected

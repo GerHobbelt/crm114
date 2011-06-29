@@ -107,12 +107,40 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
             else  //  OK- isolate this variable
             {
-	if (!crm_is_legal_variable(vname, vlen))
-	{
-		fatalerror_ex(SRC_LOC(), "Attempt to ISOLATE an illegal variable '%.*s'. How very bizarre.", vlen, vname);
-		return -1;
-	}
-                vmidx = crm_vht_lookup(vht, vname, vlen);
+		int has_arg;
+
+                if (!crm_is_legal_variable(vname, vlen))
+                {
+                    fatalerror_ex(SRC_LOC(), "Attempt to ISOLATE an illegal variable '%.*s'. How very bizarre.", vlen, vname);
+                    return -1;
+                }
+                vmidx = crm_vht_lookup(vht, vname, vlen, csl->calldepth);
+                //
+                //        get initial value - that's the slashed value.
+                //
+                //       Although the initial design for CRM114 used slashed
+                //       values, this is really problematic in two senses; it's
+                //       not a pattern string (it gets expanded!) and second
+                //       from a practical point of view: writing a pathname
+                //       with all slashes escaped is a pain.  So we'll allow
+                //       [boxed strings] as well as /slashes/.
+                //
+
+		// slash arg can be empty: make sure we know about it anyway as 'isolate (:a:)' is quite
+		// different from 'isolate (:a:) //'!
+		has_arg = (apb->s1start || apb->b1start);
+
+                vallen = 0;
+                if (apb->s1len > 0)
+                {
+                    vallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
+                    CRM_ASSERT(tempbuf[vallen] == 0);
+                }
+                else if (apb->b1len > 0)
+                {
+                    vallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->b1start, apb->b1len);
+                    CRM_ASSERT(tempbuf[vallen] == 0);
+                }
                 //
                 //     Now, check these cases in order:
                 //
@@ -131,23 +159,21 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     if (internal_trace)
                         fprintf(stderr, "Not a preexisting var.\n");
 
-                    if (!apb->s1start)
+                    if (!vallen)
                     {
-                        // no slash value- set to ""
-                        if (internal_trace)
+                        // no or empty slash value - set to ""
+                        if (internal_trace && !has_arg)
                         {
                             fprintf(stderr, "No initialization value given, using"
                                             " a zero-length string.\n");
                         }
                         tempbuf[0] = 0;
-                        vallen = 0;
                     }
                     else
                     {
                         //  not preexisting, has a /value/, use it.
                         if (internal_trace)
                             fprintf(stderr, "using the slash-value given.\n");
-                        vallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
                         CRM_ASSERT(tempbuf[vallen] == 0);
                         vallen = crm_nexpandvar(tempbuf, vallen, data_window_size - tdw->nchars, vht, tdw);
                     }
@@ -164,28 +190,35 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     {
                         if (user_trace)
                         {
-                            fprintf(stderr, " var exists, default flag on, "
-                                            "so no action taken.\n");
+                            fprintf(stderr,
+                                    " The var already exists, default flag on, "
+                                    "so no action taken.\n");
                         }
                         continue;
                     }
 
-                    if (apb->s1start)
+                    if (has_arg)
                     {
                         //  yes, statement has a /value/
                         //    get the /value/
                         if (internal_trace)
-                            fprintf(stderr, "Using the provided slash-val.\n");
-                        vallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
-                        CRM_ASSERT(tempbuf[vallen] == 0);
-                        vallen = crm_nexpandvar(tempbuf, vallen, data_window_size - tdw->nchars, vht, tdw);
+                            fprintf(stderr, "Using the provided value.\n");
+			if (vallen > 0)
+			{
+	                        CRM_ASSERT(tempbuf[vallen] == 0);
+                        	vallen = crm_nexpandvar(tempbuf, vallen, data_window_size - tdw->nchars, vht, tdw);
+			}
+			else
+			{
+	                        tempbuf[0] = 0;
+			}
                     }
                     else
                     {
                         //     no /value/, so we need to use the old value.
                         //
                         if (internal_trace)
-                            fprintf(stderr, "No slash-value, using old value.\n");
+                            fprintf(stderr, "No given value, using old value.\n");
                         if (data_window_size < vlen + 2)
                         {
                             fatalerror("The variable you're asking me to ISOLATE "
@@ -211,7 +244,9 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         vname, 0, vlen,
                         tempbuf, 0, vallen);
                 if (iso_status != 0)
+		{
                     return iso_status;
+		}
             }
         }
     }
@@ -264,12 +299,12 @@ int crm_isolate_this(int *vptr,
     }
     else
     {
-	if (!crm_is_legal_variable(&nametext[namestart], namelen))
-	{
-		fatalerror_ex(SRC_LOC(), "Attempt to ISOLATE an illegal variable '%.*s'.", namelen, &nametext[namestart]);
-		return -1;
-	}
-        vmidx = crm_vht_lookup(vht, &nametext[namestart], namelen);
+        if (!crm_is_legal_variable(&nametext[namestart], namelen))
+        {
+            fatalerror_ex(SRC_LOC(), "Attempt to ISOLATE an illegal variable '%.*s'.", namelen, &nametext[namestart]);
+            return -1;
+        }
+        vmidx = crm_vht_lookup(vht, &nametext[namestart], namelen, csl->calldepth);
     }
 
     //     check the vht - if it's not here, we need to add it.
@@ -354,7 +389,7 @@ int crm_isolate_this(int *vptr,
         crm_setvar(NULL, 0,
                 tdw->filetext, nstart, namelen,
                 tdw->filetext, vstart, valuelen,
-                csl->cstmt, 0);
+                csl->cstmt, 0, csl->calldepth);
         //     that's it.    It's now in the TDW and in the VHT
         return 0;
     }

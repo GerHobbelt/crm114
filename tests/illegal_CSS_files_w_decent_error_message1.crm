@@ -8,7 +8,7 @@
 		                             # (Not even one 32-bit hash could ever fit in there: filesize = 1)
 		output [icfwdm2.css] /y/
 		isolate (:s:) /YUCK/
-		classify (icfwdm1.css | icfwdm2.css) (:s:) /[[:graph:]]+/ 
+		classify (icfwdm1.css | icfwdm2.css) (:s:) /[[:graph:]]+/
 		output /yo!\n/
 		output /s = ':*:s:'\n/
 	}

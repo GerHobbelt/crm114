@@ -78,6 +78,7 @@ int q_expansion_mode = 0;
 
 int selected_hashfunction = 0;  //  0 = default
 
+int act_like_Bill = 0;
 
 
 

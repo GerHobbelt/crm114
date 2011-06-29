@@ -1,0 +1,31 @@
+TEST SCRIPT + COMMANDLINE:
+argtest.crm --_arg8=hooba -- --more_bogus -t -T
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+
+ :_argc: =5= 
+ :_arg0: =/home/ger/prj/3actual/crm114/src/crm114= 
+ :_arg1: =argtest.crm= 
+ :_arg2: =--more_bogus= 
+ :_arg3: =-t= 
+ :_arg4: =-T= 
+ :_arg5: =:_arg5:= 
+ :_arg6: =:_arg6:= 
+ :_arg7: =:_arg7:= 
+ :_arg8: =:_arg8:= 
+
+ :_posc: =2= 
+ :_pos_str: =/home/ger/prj/3actual/crm114/src/crm114 argtest.crm= 
+ :_pos0: =/home/ger/prj/3actual/crm114/src/crm114= 
+ :_pos1: =argtest.crm= 
+ :_pos2: =:_pos2:= 
+ :_pos3: =:_pos3:= 
+ :_pos4: =:_pos4:= 
+ :_pos5: =:_pos5:= 
+ :_pos6: =:_pos6:= 
+

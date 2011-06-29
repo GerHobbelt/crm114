@@ -190,9 +190,9 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     file_was_fopened = 0;
     if (fnlen > 0)
     {
-                if (strcmp(ifn, "0") == 0
-                    || strcmp(ifn, "-") == 0
-                    || strcmp(ifn, "stdin") == 0
+        if (strcmp(ifn, "0") == 0
+            || strcmp(ifn, "-") == 0
+            || strcmp(ifn, "stdin") == 0
             || strcmp(ifn, "/dev/stdin") == 0
             || strcmp(ifn, "CON:") == 0
             || strcmp(ifn, "/dev/tty") == 0)
@@ -202,13 +202,16 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         }
         else
         {
+            char dirbuf[DIRBUFSIZE_MAX];
+
             file_was_fopened = 1;
             fp = fopen(ifn, "rb");
             if (fp == NULL)
             {
                 fatalerror_ex(SRC_LOC(),
-                        "For some reason, I was unable to read-open the file named '%s' (expanded from '%s'): error = %d(%s)",
+                        "For some reason, I was unable to read-open the file named '%s' (full path: '%s') (expanded from '%s'): error = %d(%s)",
                         ifn,
+                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), ifn),
                         filename_plus_args,
                         errno,
                         errno_descr(errno));
@@ -360,58 +363,58 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     ichar--; //   get rid of any present newline
                 // [i_a] how about MAC and PC (CR and CRLF instead of LF as line terminators)? Quick fix here: */
                 if (ichar > 0 && inbuf[ichar] == '\r')
-                    ichar--;      //   get rid of any present carriage return too (CRLF for MSDOS)
+                    ichar--; //   get rid of any present carriage return too (CRLF for MSDOS)
                 CRM_ASSERT(ichar <= data_window_size - 1);
                 inbuf[ichar] = 0; // and put a null on the end of it.
             }
             else
             {
-        size_t readsize = iolen;
-		size_t offset;
+                size_t readsize = iolen;
+                size_t offset;
 
                 //    Nope, we are in full-block mode, read the whole block in
                 //    a single I/O if we can.
                 ichar = 0;
                 if (feof(fp))
-                    clearerr(fp);                        // reset any EOF
+                    clearerr(fp); // reset any EOF
 
-            // ichar = (int)fread(inbuf, 1, iolen, fp); // do a block I/O
+                // ichar = (int)fread(inbuf, 1, iolen, fp); // do a block I/O
 #if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
-        readsize = CRM_MIN(16384, readsize);   // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
+                readsize = CRM_MIN(16384, readsize); // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
 #endif
-        for (offset = 0; !feof(fp) && offset < iolen; )
-        {
-            size_t rs;
-			size_t rr;
-
-            rs = offset + readsize < iolen
-					? readsize 
-					: iolen - offset;
-            rr = fread(inbuf + offset, 1, rs, fp);
-            if (ferror(fp))
-            {
-                if (errno == ENOMEM && readsize > 1) //  insufficient memory?
+                for (offset = 0; !feof(fp) && offset < iolen;)
                 {
-                    nonfatalerror("Insufficient Memory Error while trying to get startup input.",
+                    size_t rs;
+                    size_t rr;
+
+                    rs = offset + readsize < iolen
+                         ? readsize
+                         : iolen - offset;
+                    rr = fread(inbuf + offset, 1, rs, fp);
+                    if (ferror(fp))
+                    {
+                        if (errno == ENOMEM && readsize > 1) //  insufficient memory?
+                        {
+                            nonfatalerror("Insufficient Memory Error while trying to get startup input.",
                                     "This is usually pretty much hopeless, but "
                                     "I'll try to keep running anyway.");
 
-                    readsize = readsize / 2; //  try a smaller block
-                    clearerr(fp);
+                            readsize = readsize / 2; //  try a smaller block
+                            clearerr(fp);
+                        }
+                        else
+                        {
+                            //fatalerror("Error while trying to get startup input.",
+                            //           "This is usually pretty much hopeless, but "
+                            //           "I'll try to keep running anyway.");
+                            break;
+                        }
+                    }
+                    offset += rr;
                 }
-                else
-                {
-                    //fatalerror("Error while trying to get startup input.",
-                    //           "This is usually pretty much hopeless, but "
-                    //           "I'll try to keep running anyway.");
-                    break;
-                }
-            }
-			offset += rr;
-        }
                 ichar = offset;
 
-		        if (ferror(fp))
+                if (ferror(fp))
                 {
                     //     and close the input file if it's not stdin.
                     if (file_was_fopened)
@@ -432,7 +435,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 inbuf[ichar] = 0;                   // null at the end
             }
         }
-        crm_set_temp_nvar(vname, inbuf, ichar);
+        crm_set_temp_nvar(vname, inbuf, ichar, csl->calldepth);
     }
 
     //     and close the input file if it's not stdin.
@@ -564,7 +567,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 }
                 if (iolen < 0)
                     iolen = 0;
-                else if (! * fileiolen || iolen > data_window_size)
+                else if (!*fileiolen || iolen > data_window_size)
                     iolen = data_window_size;
                 if (user_trace)
                 {
@@ -629,8 +632,12 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     if (outf == 0)
     {
-        fatalerror("For some reason, I was unable to write-open the file named",
-                fnam);
+        char dirbuf[DIRBUFSIZE_MAX];
+
+        fatalerror_ex(SRC_LOC(), "For some reason, I was unable to write-open the file named '%s'; (full path: '%s') errno=%d(%s)",
+                fnam, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), fnam),
+                errno,
+                errno_descr(errno));
     }
     else
     {

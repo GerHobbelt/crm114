@@ -205,6 +205,9 @@
 :rewrites_enabled: /yes/
 #:rewrites_enabled: /no/
 
+# The place where we'd want to find our rewrites.mfp:
+:rewrites_mfp_path:  /:*:fileprefix:rewrites.mfp/
+
 
 #  ---------  Do we copy incoming text into allmail.txt ?  default is yes, but
 #   ---------  experienced users will probably set this to 'no' after testing
@@ -258,12 +261,13 @@
 #     -- use this next one if you have installed CRM114 with "make install"
 #     -- (This is preferred and is the default)
 #:trainer_invoke_command: /:*:fileprefix:mailtrainer.crm/
-#:trainer_invoke_command: /.\/crm114 :*:fileprefix:mailtrainer.crm --reload/
-:trainer_invoke_command: /.\/crm114 :*:fileprefix:mailtrainer.crm --reload --repeat=2/
+#:trainer_invoke_command: [./crm114 :*:fileprefix:mailtrainer.crm --reload]
+:trainer_invoke_command: [./crm114 :*:fileprefix:mailtrainer.crm --reload --repeat=2]
 #
 #     -- use this one if you can't do a "make install" and so must run the
 #     --- crm114_tre binary directly out of the current working directory.
-# :trainer_invoke_command: /.\/crm114_tre :*:fileprefix:mailtrainer.crm /
+# :trainer_invoke_command: [./crm114 :*:fileprefix:mailtrainer.crm ]
+#:trainer_invoke_command: [./crm114 :*:fileprefix:mailtrainer.crm --reload --repeat=2]
 
 
 #    ------  If we're cacheing for retraining, we're probably using
@@ -291,8 +295,9 @@
 #:log_rejections: /no/
 
 #  ------- alternate rejection logging - set this pathname to non-null
-#   ------  to log rejections elsewhere.  Only for mailreaver.crm.
-#    -----   Set to NULL ( // ) to turn this off.
+#   ------ to log rejections elsewhere.  Only for mailreaver.crm.
+#    ----- Set to NULL ( // ) to turn this off. (This item is
+#     ---- independent of :log_rejections: !)
 :log_rejections_to_file: //
 #:log_rejections_to_file /this_is_my_rejected_email_log_file.txt/
 
@@ -440,6 +445,24 @@
 #
 #
 #
+# ------------ HIGHLY EXPERIMENTAL - automatic training!
+#             enable this only if you really want to live VERY dangerously!
+#              "Do you feel lucky today, punk?  Well, do ya?"
+#
+:automatic_training: /no/
+#
+#       ---- if you are living dangerously and have turned on autotraining,
+#            you should also set the following to point to an address that
+#            will get read on a quick basis, becuause this is where autotrain
+#            verifications will go.
+# 
+#:autotrain_address: /root/
+#
+
+
+#
+#
+#
 #
 # [i_a]
 # Set to empty // if you do not want mailtrainer to also 'refute'-train messages
@@ -453,5 +476,15 @@
 
 
 # :verbose_logfile: /mail_crm_verbose.log/
-:verbose_logfile: //
+:verbose_logfile: /stderr/
+
+
+# paths to prio/black/white-list mfp files:
+:priolist_enabled:    /yes/
+:blacklist_enabled:   /yes/
+:whitelist_enabled:   /yes/
+
+:priolist_mfp_path:   /:*:fileprefix:priolist.mfp/
+:whitelist_mfp_path:  /:*:fileprefix:whitelist.mfp/
+:blacklist_mfp_path:  /:*:fileprefix:blacklist.mfp/
 

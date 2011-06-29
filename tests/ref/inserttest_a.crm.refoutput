@@ -2,21 +2,17 @@ TEST SCRIPT + COMMANDLINE:
 inserttest_a.crm 
 
 RETURN CODE:
-0
+154
 
 STDERR TEST OUTPUT:
 
+crm114: *UNTRAPPABLE ERROR*
+Couldn't insert the file named '/windows/G/prj/3actual/crm114/tests/there_is_no_such_file_as_this.txt' that you asked for.  This is probably a bad thing.
+Sorry, but this program is very sick and probably should be killed off.
+This happened at line 0 of file /windows/G/prj/3actual/crm114/tests/inserttest_a.crm:
+    
+<<< no compiled statements yet >>>
+(runtime system location: crm_preprocessor.c(436) in routine: crm_preprocessor)
+
 STDOUT TEST OUTPUT:
-
-Start of insert processor testing 
- start here ... the first middle bit...  the really middle-middle bit ... the last middle bit...  and the last bit of normal text 
-now we test nonexistent file overrides 
-this should not cause a FATAL ERROR, because we trap it.
-We caught the nonexistent file fault here.  Message was:
- <<start of msg>>
- Couldn't insert the file named 'there_is_no_such_file_as_this.txt' that you asked for.  This is probably a bad thing.
- <<end of msg>> 
-via the TRAP
-End of insert testing. 
-
 

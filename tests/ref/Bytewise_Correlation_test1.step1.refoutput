@@ -1,5 +1,5 @@
 TEST SCRIPT + COMMANDLINE:
--{ isolate (:s:) {classify <correlate> ( /home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input | /home/ger/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }} 
+-{ isolate (:s:) {classify <correlate> ( /home/ger/prj/3actual/crm114/tests/INTRO_mt_ng_reference_2.input | /home/ger/prj/3actual/crm114/tests/QUICKREF_mt_ng_reference_1.input ) (:s:) /[[:graph:]]+/ ; output / type I :*:_nl::*:s::*:_nl:/} alius { output / type Q :*:_nl::*:s::*:_nl:/ }} 
 
 RETURN CODE:
 0

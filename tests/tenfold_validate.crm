@@ -2,22 +2,22 @@
 #     
 #    Program to do 10-fold validation on N classes using various classifiers.
 #
-# 1)  the first user arg is the name of an index file, in TREC format, but 
+# 1)  the first user arg is the name of an index file, in TREC format, but
 #     we allow arbitrary classnames and directories instead of just "ham"
 #     and "spam", eg:
 #
 #        arb_classname1 ./foos/file0001.txt
 #        arb_classname2 ./bars/file0001.txt
 #
-# 2)   The classnames are "skimmed" from the index file by doing a prepass,
+# 2)  The classnames are "skimmed" from the index file by doing a prepass,
 #     then the class files are created by learning a tiny text into each one.
 #
-# 3)   Then the index file is divided into ten parts; then the parts are
+# 3)  Then the index file is divided into ten parts; then the parts are
 #     used for 10-fold validation.  The results are concatenated into a
 #     "results" file, also in TREC format, but note that this is NOT a
 #     proper TREC style file as it doesn't preserve sequence information
 #     (and will keep our training classnames, which may or may not match
-#     work with the TREC analyzers.)  
+#     work with the TREC analyzers.)
 #
 # 4)  We consider the case of a result pR == 0.00 exactly to be WRONG for all
 #     classes, and train whenever it occurs.
@@ -32,14 +32,16 @@ isolate <default> (:thickness:) /5.0/
 isolate <default> (:show_partitions:) //
 isolate <default> (:decision_length:) /2048/
 isolate <default> (:results:) /results/
+isolate <default> (:input_filter:) //
 #
 isolate <default> (:initial_text:) /The quick brown fox jumped over the lazy dog's back 012345679/
 #
-#    get the index file
-output /Reading from index file :*:_arg2:\n/
-input [:*:_arg2:] (:index_file:)
+# get the index file
 #
-#    Scan the index file for classnames and .stat file names
+output /Reading from index file :*:_pos2:\n/
+input [:*:_pos2:] (:index_file:)
+#
+# Scan the index file for classnames and .stat file names
 #
 isolate (:cnames:) //
 isolate (:cstatfiles:) //
@@ -54,7 +56,7 @@ isolate (:s:) //
 	}
 	liaf
 }
-{  #  Funny business for SVM and SKS soltion files
+{  #  Funny business for SVM and SKS solution files
 	match [:clf:] /sks|svm/
 	match [:cstatfiles:] /[[:graph:]]( )[[:graph:]]/ (:: :midspace:)
         alter (:midspace:) / | /
@@ -293,7 +295,7 @@ match [:cnames:] //
 	syscall /rm -rf :*:name:.stat /
 	output /CREATING :*:name:.stat with :*:initial_text: \n/
 	learn <:*:clf:> /:*:regex:/ [:initial_text:] (:*:name:.stat)
-	syscall /ls -la 1>&2 /
+	# syscall /ls -la 1>&2 /
 	liaf
 	{
 		match [:clf:] /svm|sks/
@@ -311,7 +313,12 @@ match [:file_list:] //
 	match <fromend nomultiline> [:file_list:] \
 		/([[:graph:]]+)[[:blank:]]+([[:graph:]]+)/ (:: :cnam: :fnam:)
 	#output /\nExample file: :*:fnam: (:*:cnam:) /
-	input [:*:fnam: 0 :*:decision_length:] (:ftext:)
+	input [ :*:fnam: 0 :*:decision_length: ] (:ftext:)
+	{             # is there an input filter?
+		match [:input_filter:] /./
+		syscall /:*:input_filter:/ (:*:ftext:) (:ftext:)  
+		#output /text: :*:ftext:\n/
+	}
 	{
 		classify <:*:clf:> /:*:regex:/ [:ftext:] (:*:cstatfiles:) (:s:)
 	}
@@ -322,13 +329,20 @@ match [:file_list:] //
 		   /^\#. \(:*:cnam:.*pR:[[:blank:]]+([[:graph:]]+)/
 		{
 			output /./
-			eval /:@: :*:pr: < :*:thickness: :/
+			eval /:@: :*:pr: <= :*:thickness: :/
 			{
 				eval /:@: :*:pr: < 0 :/
-				output /X/
+				output /\nX/
 			}
-			output /\nExample file: :*:fnam: (:*:cnam:) /
-			output /(pR: :*:pr:) learning into :*:cnam:.stat  /
+			{
+				{
+					match [:verbose:] /./
+					output /\nExample file: :*:fnam: (:*:cnam:) /
+					output /(pR: :*:pr:) learning into :*:cnam:.stat  /
+				}
+				alius
+				output / :*:cnam: :*:pr: /
+			}
 			learn <:*:clf:> [:ftext:] /:*:regex:/ (:*:cnam:.stat)
 			{
 				#  if doublesided, go through the list of all 

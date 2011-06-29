@@ -1,0 +1,206 @@
+#! /usr/local/bin/crm114
+#
+
+window
+
+{
+    isolate (:a:) //
+    isolate (:c:) /:*:_argc:/
+    {
+        eval (:a:) /:_arg:@::*:c:-1::/
+        match [:*:a:] <absent> /^--help$/
+        eval (:c:) /:@::*:c:-1:/
+        eval /:@::*:c: >= 1:/
+        liaf
+    }
+    match [:*:a:] /^--help$/
+	
+    output /Command Format:\n/
+    output /      .\/mkcss.crm [options]*\n/
+    output /\n/
+    output /Optional options:\n/
+    output / --spamcss=spam_statistics.css\n/
+    output /              (Default: spam.css)\n/
+    output / --goodcss=good_statistics.css\n/
+    output /              (Default: nonspam.css)\n/
+    output / --verbose    (tell me more.)\n/
+    output / --report_header='string'\n/
+    output /              (include string in the report header and show\n/
+    output /               the report.)\n/
+    output / --config=filename\n/
+    output /              (Use filename as the .cf file. Default is mailfilter.cf)\n/
+    output / --fileprefix=dir\n/
+    output /              (Look in this dir for the .css, .cf and .txt files)\n/
+    output /              (I.e. expect all files in "fileprefix")\n/
+    output /\n/
+    output /MailFilter.CF Override Commands:\n/
+    output /   You can specify any mailfilter.cf entry as an option on the command\n/
+    output /   line to override that option in the mailfilter.cf configuration\n/
+    output /   file, e.g.\n/
+    output /     --do_base64=yes\n/
+    output /   See the mailfilter.cf file for all available entries.\n/
+    exit /42/
+}
+
+isolate (:program_fault_exit_code:) /66/   # [i_a] in case mailfilter.cf cannot be loaded: make sure we don't get an error report cascade.
+isolate (:our_exit_code:) /0/
+call /:exec_mkcss:/ (:our_exit_code:)
+exit /:our_exit_code:/
+
+:exec_mkcss: (:our_exit_code:)
+isolate <default> (:program_fault_exit_code:) /66/
+
+##############################################################
+#
+#
+#    ---  uncomment this if you want to include a "forced"
+#         configuration file  ---
+# insert mailfilterconfig.crm
+#
+#
+#    --- These vars must have a value, or else we'll get errors ----
+#
+
+# GerH vs VANILLA fixes:
+isolate (:_hosttype:) <default> /UNKNOWN/
+# GerH vs VANILLA fixes -- END --
+
+#
+isolate <default> (:fileprefix:) //
+#
+#       now, :clf: is the classify & learn flags.
+isolate <default> (:clf:) //
+
+isolate (:dospath:) //
+#
+
+#####################################################################
+#
+#       This is the code to read the per-user configuration.  Note
+#       that because this happens during the run, it will _override_
+#       any command line arguments that get set.
+
+isolate <default> (:verbose_startup:) //
+isolate <default> (:config:) /:*:fileprefix:mailfilter.cf/
+
+#
+# read in the options/configuration file
+#
+call /:load_cf_file:/ [:*:config:]
+
+#
+# make sure verbose_logfile has a valid, non-empty value, so output is NOT logged to stdout
+# unless we explicitly say so.
+#
+{
+    eval /:@: :#:verbose_logfile: <= 2 :/    # a valid filename? assume at least 2 chars
+    alter (:verbose_logfile:) /stderr/
+}
+
+
+isolate <default> (:verbose:)  /no/
+isolate <default> (:report_header:) //
+isolate (:spamcss:) <default> /spam.css/
+isolate (:goodcss:) <default> /nonspam.css/
+
+call /:mk_abspath_on_fileprefix:/ [:*:goodcss:] (:goodcss:)
+call /:mk_abspath_on_fileprefix:/ [:*:spamcss:] (:spamcss:)
+
+isolate (:dospath:) //
+
+
+
+
+#############################################################\
+#
+#       Start our report:
+#
+isolate (:report:) /     MailTrainer Report  \n:*:report_header:\n\n/
+
+#
+alter (:report:) /:*:report:Commanded on:\n/
+alter (:report:) /:*:report:  spam CSS file:         :*:spamcss:\n/
+alter (:report:) /:*:report:  good CSS file:         :*:goodcss:\n/
+alter (:report:) /:*:report:  classifier config:     :*:clf:\n/
+alter (:report:) /:*:report:  verbose is:            :*:verbose:\n/
+
+
+{
+	{
+		#  do we output the report header anyway
+		match [:report_header:] /./
+		output /:*:report:/
+	}
+	alius
+	{
+		call /:verbosity:/ [:*:report:]
+	}
+}
+
+
+
+
+#################################################################
+#
+#          Create spam.css and nonspam.css if they don't exist.
+#
+#  (OLD HACK: just learn a newline into each one)
+#
+{
+    # only create the new CSS files when they don't exist yet:
+    # if we can READ from them, they exist
+    # (input [] is faster than syscall-based exist checks)
+    input (:bogus_buf:) [:*:goodcss: 0 128]
+    trap //
+
+    call /:verbosity:/ [Creating a (yet empty) GOOD CSS database file ':*:goodcss:'\n]
+
+    # [i_a]
+    #
+    # This is a clear spot for the use of the new 'csscreate' command!
+    #csscreate <:*:clf:> /:*:lcr:/ (:*:goodcss:)
+    learn [:_nl:] <:*:clf:> /./ (:*:goodcss:)
+}
+{
+    input (:bogus_buf:) [:*:spamcss: 0 128]
+    trap //
+
+    call /:verbosity:/ [Creating a (yet empty) SPAM CSS database file ':*:spamcss:'\n]
+
+    # [i_a]
+    #
+    # This is a clear spot for the use of the new 'csscreate' command!
+    #csscreate <:*:clf:> /:*:lcr:/ (:*:spamcss:)
+    learn [:_nl:] <:*:clf:> /./ (:*:spamcss:)
+}
+
+
+return /0/
+
+
+
+
+
+
+
+######################################################3
+trap (:broken_program_message:) /.*/
+{
+    output /:*:_nl: Aw, crud.  mailtrainer.crm broke.  Here's the error::*:_nl:/
+    output /:*:broken_program_message::*:_nl:/
+    output [stderr] /:*:_nl:ERROR: mailtrainer.crm broke.  Here's the error: :*:_nl:/
+    output [stderr] /ERROR::*:broken_program_message::*:_nl:/
+}
+isolate <default> (:program_fault_exit_code:) /66/
+exit /:*:program_fault_exit_code:/
+
+
+
+
+######################################################################3
+#
+#              Library insertions start here.
+#
+insert maillib.crm
+
+

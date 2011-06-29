@@ -12,7 +12,7 @@ crm114: *WARNING*
 I'll try to keep working.
 This happened at line 10 of file illegal_stmt2.crm:
     output /hello/ [stderr
-(runtime system location: crm_stmt_parser.c(1106) in routine: crm_generic_parse_line)
+(runtime system location: crm_stmt_parser.c(1084) in routine: crm_generic_parse_line)
 hello
 STDOUT TEST OUTPUT:
 

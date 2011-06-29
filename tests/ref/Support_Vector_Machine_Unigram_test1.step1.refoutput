@@ -1,5 +1,5 @@
 TEST SCRIPT + COMMANDLINE:
--{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < svm unigram unique > (i_test.css) /[[:graph:]]+/; liaf} 
+-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?:*:_nl::*:_nl:/; learn [:one_paragraph:] < svm unigram unique > (i_test.css) /[[:graph:]]+/; liaf} 
 
 RETURN CODE:
 0

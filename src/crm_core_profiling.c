@@ -181,6 +181,16 @@ void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument
             store.value[i].as_int = va_arg(args, int);
             continue;
 
+        case 'p':
+            // packed int:
+            {
+                uint64_t v = va_arg(args, int);
+                v <<= 32;
+                v |= (va_arg(args, int) & 0xFFFFFFFFU);
+                store.value[i].as_int = v;
+            }
+            continue;
+
         case 'L':
             store.value[i].as_int = va_arg(args, long long int);
             continue;
@@ -317,7 +327,7 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
     int textoffset = 0;
     struct stat st;
 
-    if (!cfg || !args || args_length == 0 || args_length < -1 || ! * args)
+    if (!cfg || !args || args_length == 0 || args_length < -1 || !*args)
         return -1;
 
     if (args_length == -1)
@@ -372,9 +382,14 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
             cfg->fd = fopen(cfg->filepath, "ab");
             if (!cfg->fd)
             {
+                char dirbuf[DIRBUFSIZE_MAX];
+
                 fatalerror_ex(SRC_LOC(), "We cannot open the analysis file '%s' while setting up the analysis session. "
-                                         "We're pooped.",
-                        cfg->filepath);
+                                         "We're pooped. (full path: '%s') errno=%d(%s)",
+                        cfg->filepath,
+                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), cfg->filepath),
+                        errno,
+                        errno_descr(errno));
                 free(cfg->filepath);
                 return 1;
             }
@@ -427,14 +442,14 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
                 str[i] = 0;
 
                 // decode special case:
-                if (! * str)
+                if (!*str)
                 {
                     for (i = WIDTHOF(crm_analysis_marker_identifiers); --i >= 0;)
                     {
                         char *p = &cfg->instruments[crm_analysis_marker_identifiers[i].e];
 
                         // hit: ENABLE/DISABLE/TOGGLE that flag!
-                        *p = (char)((enable >> 1) | (enable & ! * p));                       // couldn't keep from this little play :-)
+                        *p = (char)((enable >> 1) | (enable & !*p));                         // couldn't keep from this little play :-)
                     }
                 }
                 else
@@ -464,7 +479,7 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
                     if (matchcount == 1)
                     {
                         // hit: ENABLE/DISABLE/TOGGLE that flag!
-                        *p = (char)((enable >> 1) | (enable & ! * p));                     // couldn't keep from this little play :-)
+                        *p = (char)((enable >> 1) | (enable & !*p));                       // couldn't keep from this little play :-)
                     }
                     else if (matchcount == 0)
                     {

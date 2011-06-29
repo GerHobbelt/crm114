@@ -12,7 +12,7 @@ crm114: *WARNING*
 I'll try to keep working.
 This happened at line 2 of file (from command line):
     learn < neural refute fromstart > (i_test.css) /[[:graph:]]+/
-(runtime system location: crm_neural_net.c(2190) in routine: crm_neural_net_learn)
+(runtime system location: crm_neural_net.c(2208) in routine: crm_neural_net_learn)
 
 STDOUT TEST OUTPUT:
 

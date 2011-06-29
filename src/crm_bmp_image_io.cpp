@@ -449,10 +449,10 @@ int plot_BMP_pixel(BmpFileStructure *dst, CRM_ANALYSIS_INFOBLOCK *info, double x
  *  A device-independent bitmap (DIB) is a format used to define device-independent bitmaps in various color resolutions. The main purpose of DIBs is to allow bitmaps to be moved from one device to another (hence, the device-independent part of the name). A DIB is an external format, in contrast to a device-dependent bitmap, which appears in the system as a bitmap object (created by an application...). A DIB is normally transported in metafiles (usually using the StretchDIBits() function), BMP files, and the Clipboard (CF_DIB data format).
  *
  * A typical BMP file usually contains the following blocks of data:
- * BMP Header 	Stores general information about the BMP file.
- * Bitmap Information (DIB header) 	Stores detailed information about the bitmap image.
- * Color Palette 	Stores the definition of the colors being used for indexed color bitmaps.
- * Bitmap Data 	Stores the actual image, pixel by pixel.
+ * BMP Header   Stores general information about the BMP file.
+ * Bitmap Information (DIB header)      Stores detailed information about the bitmap image.
+ * Color Palette        Stores the definition of the colors being used for indexed color bitmaps.
+ * Bitmap Data  Stores the actual image, pixel by pixel.
  *
  * The following sections discuss the data stored in the BMP file or DIB in details. This is the standard BMP file format.[2] Some bitmap images may be stored using a slightly different format, depending on the application that creates it. Also, not all fields are used; a value of 0 will be found in these unused fields.
  *
@@ -463,55 +463,55 @@ int plot_BMP_pixel(BmpFileStructure *dst, CRM_ANALYSIS_INFOBLOCK *info, double x
  * [edit] BMP file header
  *
  * This block of uint8_ts is added before the DIB format used internally by GDI and serves for identification. A typical application will read this block first to ensure that the file is actually a BMP file and that it is not damaged. Note that while all of the other integer values are stored in little-endian format (i.e. least-significant uint8_t first), the magic number is not. Hence the first uint8_t in a BMP file is 'B', and the second uint8_t is 'M'.
- * Offset# 	Size 	Purpose
- * 0 	2 	the magic number used to identify the BMP file: 0x42 0x4D (ASCII code points for B and M)
- * 2 	4 	the size of the BMP file in uint8_ts
- * 6 	2 	reserved; actual value depends on the application that creates the image
- * 8 	2 	reserved; actual value depends on the application that creates the image
- * 10 	4 	the offset, i.e. starting address, of the uint8_t where the bitmap data can be found.
+ * Offset#      Size    Purpose
+ * 0    2       the magic number used to identify the BMP file: 0x42 0x4D (ASCII code points for B and M)
+ * 2    4       the size of the BMP file in uint8_ts
+ * 6    2       reserved; actual value depends on the application that creates the image
+ * 8    2       reserved; actual value depends on the application that creates the image
+ * 10   4       the offset, i.e. starting address, of the uint8_t where the bitmap data can be found.
  *
  * [edit] Bitmap information (DIB header)
  *
  * This block of uint8_ts tells the application detailed information about the image, which will be used to display the image on the screen. The block also matches the header used internally by Windows and OS/2 and has several different variants. All of them contain a uint32_t field, specifying their size, so that an application can easily determine which header is used in the image. The reason that there are different headers is that Microsoft extended the DIB format several times. The new extended headers can be used with some GDI functions instead of the older ones, providing more functionality. Also the GDI supports a function for loading bitmap files, and it is likely that a Windows application uses it. One consequence of this is that the bitmap formats a program supports, match the formats supported by the Windows version it is running on. See the table below for more information.
- * Size 	Header 	Identified by 	Supported by the GDI of
- * 40 	Windows V3 	BITMAPINFOHEADER 	all Windows versions since Windows 3.0
- * 12 	OS/2 V1 	BITMAPCOREHEADER 	OS/2 and also all Windows versions since Windows 3.0
- * 64 	OS/2 V2
- * 108 	Windows V4 	BITMAPV4HEADER 	all Windows versions since Windows 95/NT4
- * 124 	Windows V5 	BITMAPV5HEADER 	Windows 98/2000 and newer
+ * Size         Header  Identified by   Supported by the GDI of
+ * 40   Windows V3      BITMAPINFOHEADER        all Windows versions since Windows 3.0
+ * 12   OS/2 V1         BITMAPCOREHEADER        OS/2 and also all Windows versions since Windows 3.0
+ * 64   OS/2 V2
+ * 108  Windows V4      BITMAPV4HEADER  all Windows versions since Windows 95/NT4
+ * 124  Windows V5      BITMAPV5HEADER  Windows 98/2000 and newer
  *
  * For compatibility reasons, most applications use the older DIB headers for saving files. With OS/2 being obsolete, for now the only common format is the V3 header. See next table for its description. All values are stored as unsigned integers, unless explicitly noted.
- * Offset # 	Size 	Purpose
- * 14 	4 	the size of this header (40 uint8_ts)
- * 18 	4 	the bitmap width in pixels (signed integer).
- * 22 	4 	the bitmap height in pixels (signed integer).
- * 26 	2 	the number of color planes being used. Must be set to 1.
- * 28 	2 	the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
- * 30 	4 	the compression method being used. See the next table for a list of possible values.
- * 34 	4 	the image size. This is the size of the raw bitmap data (see below), and should not be confused with the file size.
- * 38 	4 	the horizontal resolution of the image. (pixel per meter, signed integer)
- * 42 	4 	the vertical resolution of the image. (pixel per meter, signed integer)
- * 46 	4 	the number of colors in the color palette, or 0 to default to 2n.
- * 50 	4 	the number of important colors used, or 0 when every color is important; generally ignored.
+ * Offset #     Size    Purpose
+ * 14   4       the size of this header (40 uint8_ts)
+ * 18   4       the bitmap width in pixels (signed integer).
+ * 22   4       the bitmap height in pixels (signed integer).
+ * 26   2       the number of color planes being used. Must be set to 1.
+ * 28   2       the number of bits per pixel, which is the color depth of the image. Typical values are 1, 4, 8, 16, 24 and 32.
+ * 30   4       the compression method being used. See the next table for a list of possible values.
+ * 34   4       the image size. This is the size of the raw bitmap data (see below), and should not be confused with the file size.
+ * 38   4       the horizontal resolution of the image. (pixel per meter, signed integer)
+ * 42   4       the vertical resolution of the image. (pixel per meter, signed integer)
+ * 46   4       the number of colors in the color palette, or 0 to default to 2n.
+ * 50   4       the number of important colors used, or 0 when every color is important; generally ignored.
  *
  * The compression method field (uint8_ts #30-33) can have the following values:
- * Value 	Identified by 	Compression method 	Comments
- * 0 	BI_RGB 	none 	Most common
- * 1 	BI_RLE8 	RLE 8-bit/pixel 	Can be used only with 8-bit/pixel bitmaps
- * 2 	BI_RLE4 	RLE 4-bit/pixel 	Can be used only with 4-bit/pixel bitmaps
- * 3 	BI_BITFIELDS 	Bit field 	Can be used only with 16 and 32-bit/pixel bitmaps.
- * 4 	BI_JPEG 	JPEG 	The bitmap contains a JPEG image
- * 5 	BI_PNG 	PNG 	The bitmap contains a PNG image
+ * Value        Identified by   Compression method      Comments
+ * 0    BI_RGB  none    Most common
+ * 1    BI_RLE8         RLE 8-bit/pixel         Can be used only with 8-bit/pixel bitmaps
+ * 2    BI_RLE4         RLE 4-bit/pixel         Can be used only with 4-bit/pixel bitmaps
+ * 3    BI_BITFIELDS    Bit field       Can be used only with 16 and 32-bit/pixel bitmaps.
+ * 4    BI_JPEG         JPEG    The bitmap contains a JPEG image
+ * 5    BI_PNG  PNG     The bitmap contains a PNG image
  *
  * Note: The image size field can be 0 for BI_RGB bitmaps.
  *
  * The OS/2 V1 header is also popular:
- * Offset 	Size 	Purpose
- * 14 	4 	the size of this header (12 uint8_ts)
- * 18 	2 	the bitmap width in pixels.
- * 20 	2 	the bitmap height in pixels.
- * 22 	2 	the number of color planes; 1 is the only legal value
- * 24 	2 	the number of bits per pixel. Typical values are 1, 4, 8 and 24.
+ * Offset       Size    Purpose
+ * 14   4       the size of this header (12 uint8_ts)
+ * 18   2       the bitmap width in pixels.
+ * 20   2       the bitmap height in pixels.
+ * 22   2       the number of color planes; 1 is the only legal value
+ * 24   2       the number of bits per pixel. Typical values are 1, 4, 8 and 24.
  *
  * Note: OS/2 V1 bitmaps cannot be compressed and cannot be 16 or 32 bits/pixel. All values in the OS/2 V1 header are unsigned integers.
  *

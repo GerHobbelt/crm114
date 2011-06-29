@@ -40,6 +40,6 @@ Attempt to alter the value of a nonexistent variable, so I'm creating an ISOLATE
 I'll try to keep working.
 This happened at line 8 of file illegal_eval_var2.crm:
     eval (:a:) /:@: 2 > 1:/
-(runtime system location: crm_var_hash_table.c(1233) in routine: crm_destructive_alter_nvariable)
+(runtime system location: crm_var_hash_table.c(1197) in routine: crm_destructive_alter_nvariable)
 
 

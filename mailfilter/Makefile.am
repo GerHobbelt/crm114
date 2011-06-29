@@ -14,14 +14,15 @@ SILENT = @SILENT@
 cdir = $(libexecdir)/$(PACKAGE)
 
 c_SCRIPTS = \
- classifymail.crm \
- mailfilter.cf \
- mailfilter.crm \
- maillib.crm \
- mailreaver.crm \
- mailtrainer.crm
+	classifymail.crm \
+	mailfilter.cf \
+	mailfilter.crm \
+	maillib.crm \
+	mkcss.crm \
+	mailreaver.crm \
+	mailtrainer.crm
 
-EXTRA_DIST = \
+EXTRA_DIST = $(c_SCRIPTS) \
 	mailfilter.cf.in \
 	priolist.mfp \
 	rewrites.mfp \

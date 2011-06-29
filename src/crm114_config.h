@@ -25,6 +25,10 @@
 #define CRM_ASSERT_IS_UNTRAPPABLE 1  /* untrappable by default, if config.h screwed up */
 #endif
 
+// new code, which copes with fail/trap cascades occurring within a single statement
+// (See tests/chained_trap_error.crm)
+#define TOLERATE_FAIL_AND_OTHER_CASCADES  1
+
 
 // This will be defined in ./configure OR your own config_vanilla_UNIX_sys_defaults.h/config_Win32.h
 //
@@ -39,7 +43,7 @@
 //   ADVICE: this should be a prime number for good performance.
 //           depending on the hash function used, a 2^N number may work too.
 //
-#define DEFAULT_VHT_SIZE 4095
+#define DEFAULT_VHT_SIZE 4099 /* 4095 -- [i_a] 4095 is not a prime ;-) */
 
 //   default limit on the control stack (for catching infinite loops,
 //   not a preallocated variable)
@@ -65,9 +69,9 @@
 //    mmap cacheing length - only actually write out this often.
 //     set to 0 to disable mmap cacheing and release files faster.
 //      However, this has a negative speed impact.
-//#define UNMAP_COUNT_MAX 0
+#define UNMAP_COUNT_MAX 0
 //#define UNMAP_COUNT_MAX 2
-#define UNMAP_COUNT_MAX 1000
+//#define UNMAP_COUNT_MAX 1000
 
 //    What's the smallest chunk we actually want to bother reclaiming
 //    on the fly out of the isolated data area "tdw".  Set this to 1
@@ -94,9 +98,9 @@
 //    do reuse the same regexes tens or hundreds of times (say, lots of
 //    LIAF-loops) then cacheing can accelerate your program significantly.
 //
-#define CRM_REGEX_CACHESIZE 0
+//#define CRM_REGEX_CACHESIZE 0
 //#define CRM_REGEX_CACHESIZE 10
-//#define CRM_REGEX_CACHESIZE 1024
+#define CRM_REGEX_CACHESIZE 1024
 //
 //    and how do we want the regex cache to work?  RANDOM_ACCESS can
 //    keep more things around, but is only 1 LRU deep for each slot so
@@ -177,6 +181,10 @@
 //
 //          maximum stride width for VT == maximum number of matrices to use.
 #define UNIFIED_VECTOR_STRIDE 4
+
+//    For the bayes-based matchers (OSB, OSBF, Winnow, Markovian), we need to define the max hash buffer size for the VT:
+#define BAYES_MAX_FEATURE_COUNT 500000
+
 
 ////
 //         Winnow algorithm parameters here...
@@ -292,10 +300,13 @@
 //
 //       this value (1048577) is one more than a meg, for a .css of 12 megs
 //       for the Markovian, and half that for OSB classifiers
-#define DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH 1048577
-#define DEFAULT_MARKOVIAN_SPARSE_SPECTRUM_FILE_LENGTH 1048577
-#define DEFAULT_OSB_BAYES_SPARSE_SPECTRUM_FILE_LENGTH 524287 // Mersenne prime
-#define DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH 1048577
+//
+// http://primes.utm.edu/lists/small/100000.txt
+//
+#define DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH 3396997 /* 6435616333396997 (* 1048573 (* 1048577 */
+#define DEFAULT_MARKOVIAN_SPARSE_SPECTRUM_FILE_LENGTH 3396997 /* 6435616333396997 (* 1048573 (* 1048577 */
+#define DEFAULT_OSB_BAYES_SPARSE_SPECTRUM_FILE_LENGTH 3396997 /* 6435616333396997 (* 1048573 (* 524287 // Mersenne prime */
+#define DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH 3396997 /* 6435616333396997 (* 1048573 (* 1048577 */
 //#define DEFAULT_BIT_ENTROPY_FILE_LENGTH 2000000
 #define DEFAULT_BIT_ENTROPY_FILE_LENGTH 1000000
 
@@ -328,7 +339,7 @@
 #ifdef FILENAME_MAX
 #define MAX_FILE_NAME_LEN (FILENAME_MAX + 1)
 #else
-#define MAX_FILE_NAME_LEN 256
+#define MAX_FILE_NAME_LEN 262
 #endif
 #endif
 
@@ -365,8 +376,25 @@
 //      Improved FSCM-specific parameters
 //
 /////////////////////////////////////////////
-#define FSCM_DEFAULT_HASH_TABLE_SIZE 1000001
 
+//   this is 2^18 + 1
+//   This determines the tradeoff in memory vs. speed/accuracy.
+//define FSCM_DEFAULT_HASH_TABLE_SIZE 262145
+//
+//   This is 1 meg + 1
+#define FSCM_DEFAULT_HASH_TABLE_SIZE 1048577
+
+//   How long are our prefixes?  Original prefix was 3 but that's
+//   rather suboptimal for best speed.  6 looks pretty good for speed and
+//   accuracy.
+//   prefix length 6 and thickness 10 (200 multiplier) yields 29 / 4147
+//
+//#define FSCM_DEFAULT_CODE_PREFIX_LEN 3
+#define FSCM_DEFAULT_CODE_PREFIX_LEN 6
+
+//  The chain cache is a speedup for the FSCM match
+//  It's indexed modulo the chainstart, with associativity 1.0
+#define FSCM_CHAIN_CACHE_SIZE 1048577
 
 ////////////////////////////////////////////
 //

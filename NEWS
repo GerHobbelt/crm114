@@ -3,6 +3,17 @@ ChangeLog for detailed per-file info.  Refer to README for news about changes
 in the non-autoconfiscated CRM114 core (some of the contents here is copied 
 from that file).
 
+version 20081111-BlameBarack
+
+* R&D Bayesian/Markovian alt.* (alt.winnow, alt.osb, alt.osbf, alt.markovian) 
+  classifiers now have full VT support (experimental!), including feature weight
+  factor attribute and Arne's Optimization detection.
+
+* alt.winnow does not suffer from the woes with tenfold_validation scripts
+  as does the original winnow, as that bugger would produce LARGE POSITIVE
+  pR values for input messages which didn't even score a hit!
+
+
 version 20080630-BlameVT
 
 * Little to report: just now I decide to ditch the test reference files

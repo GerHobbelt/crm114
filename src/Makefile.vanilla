@@ -34,7 +34,10 @@ VER_SUFFIX ?=
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20080630-BlameVT
+VERSION=20081111-BlameBarack
+PREV_VERSION=20081023-BlameMaxwell
+#PREV_VERSION=20080923-BlameVT
+#PREV_VERSION=20080630-BlameVT
 PREV_VERSION=20080618-BlameBadGlasses
 #PREV_VERSION=20080502-BlameJason
 #PREV_VERSION=20080326-BlameSentansoken
@@ -88,8 +91,11 @@ SYSTEMTYPE = POSIX
 #  
 #  Our default is with debugging, full optimization, and lots of warnings:
 CFLAGS += -g -O3 -Wall -fno-strict-aliasing
-#     turn this one on for no optimization, but debugging and time profiling:
-#CFLAGS += -g -O0 -Wall -pg
+#     turn this one on for no optimization, but debugging
+CFLAGS += -g -O0 -Wall
+#
+#     Turn this one on for time profiling.
+#CFLAGS += -pg
 #     turn this one on for really picayune debugging:
 # CFLAGS += -Wextra
 #
@@ -100,6 +106,7 @@ CFLAGS += -g -O3 -Wall -fno-strict-aliasing
 #LDFLAGS += -static -static-libgcc 
 #    use this one if you want program profiling.
 #LDFLAGS += -static -static-libgcc -pg
+#LDFLAGS += -pg
 #
 #   Any standard install flags?  We nominally use protection 755
 INSTALLFLAGS += -m 755
@@ -109,6 +116,10 @@ INSTALLFLAGS += -m 755
 #        you won't be able to submit meaningful CRM114 engine bug reports.
 #        Default is don't strip.
 # INSTALLFLAGS += -s
+#
+#
+#        Libraries to link against.  
+LIBS += -lm 
 #
 #   Define the TRE directory (used only for building distributions- note that
 #   this must be HAND-UPDATED when new versions of TRE come out  )
@@ -652,7 +663,7 @@ megatest: FORCE
 	#       install is broken (or you've found a bug).
 	#
 	./megatest.sh 2 > megatest_test.log 2>&1
-	diff megatest_knowngood.log megatest_test.log &	sleep 1
+	diff -U 5 megatest_knowngood.log megatest_test.log & sleep 1
 
 
 cssfiles: spam.dir good.dir
@@ -699,9 +710,9 @@ cssfiles: spam.dir good.dir
 
 
 
-tarfile: all
+tarfile: all check_permissions
 	rm -rf crm114-$(VERSION).src
-	mkdir crm114-$(VERSION).src
+	mkdir -m 0755 crm114-$(VERSION).src
 	cp $(CFILES) \
 	$(HFILES) \
 	$(UTILFILES) \
@@ -712,18 +723,21 @@ tarfile: all
 	cp -a BSD_build_files crm114-$(VERSION).src
 	tar -cvf crm114-$(VERSION).src.tar crm114-$(VERSION).src
 	rm -rf crm114-$(VERSION).src
+	chmod 0644 crm114-$(VERSION).src.tar
 
 src_gzip: tarfile
 	rm -rf crm114-$(VERSION).src.tar.gz
 	gzip crm114-$(VERSION).src.tar
+	chmod 0644 crm114-$(VERSION).src.tar.gz
 
 src_7zip: tarfile
 	rm -rf crm114-$(VERSION).src.tar.7z
-	7za crm114-$(VERSION).src.tar.7z crm114-$(VERSION).src.tar
+	7za a crm114-$(VERSION).src.tar.7z crm114-$(VERSION).src.tar
+	chmod 0644 crm114-$(VERSION).src.tar.7z
 
 i386_tarfile: all
 	rm -rf crm114-$(VERSION).i386
-	mkdir crm114-$(VERSION).i386
+	mkdir -m 0755 crm114-$(VERSION).i386
 	cp crm114 cssutil cssdiff cssmerge osbf-util \
 	$(MAKEFILE) \
 	CRM114_Mailfilter_HOWTO.txt \
@@ -744,6 +758,7 @@ i386_tarfile: all
 i386_gzip: i386_tarfile
 	rm -rf crm114-$(VERSION).i386.tar.gz
 	gzip crm114-$(VERSION).i386.tar
+	chmod 0644 crm114-$(VERSION).i386.tar.gz
 
 css_tarfile: spam.css nonspam.css
 	rm -rf crm114-$(VERSION).css
@@ -752,17 +767,39 @@ css_tarfile: spam.css nonspam.css
 	crm114-$(VERSION).css
 	tar -cvf crm114-$(VERSION).css.tar crm114-$(VERSION).css
 	rm -rf crm114-$(VERSION).css
+	chmod 0644 crm114-$(VERSION).css.tar
 
 css_gzip: css_tarfile
 	rm -rf crm114-$(VERSION).css.tar.gz
 	gzip crm114-$(VERSION).css.tar
+	chmod 0644 crm114-$(VERSION).css.tar.gz
 
 distribution: src_gzip i386_gzip css_gzip src_7zip
 	md5sum crm114-$(VERSION).*.tar.gz
 
-rsync:  FORCE
-	rsync -zrltDv \
+upload_tarball: i386_gzip
+	rsync -zrltDv crm114-$(VERSION).i386.tar.gz \
+	wsy,crm114@web.sourceforge.net:htdocs/tarballs/
+
+upload_tarball_latest: i386_gzip
+	rsync -zrltDv crm114-$(VERSION).i386.tar.gz \
+	wsy,crm114@web.sourceforge.net:htdocs/tarballs/crm114-latest.i386.tar.gz
+	echo $(VERSION) > 00-LATEST-IS
+	rsync -auv 00-LATEST-IS \
+	wsy,crm114@web.sourceforge.net:htdocs/tarballs/
+
+rsync:  FORCE check_permissions
+	echo "Options Indexes" > .htaccess
+	chmod 0644 .htaccess
+	rsync -zprltDv .htaccess \
 	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES)\
-	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
+	  wsy,crm114@web.sourceforge.net:htdocs/src
+
+check_permissions: 
+	find -type d -exec chmod 0755 '{}' \;
+	find -type f -exec chmod 0644 '{}' \;
+	chmod a+x Makefile *.crm *.sh crm114 megatest.sh
+	cd BSD_build_files && \
+	  chmod a+x build_crm114 crm114_P1_Makefile shell_libs
 
 FORCE:

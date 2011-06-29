@@ -1,4 +1,7 @@
 #! /usr/local/bin/crm114 -( agent=smith target=neo target=trinity ) --
+# 
+# argc has an incorrect value for vanilla CRM114 when no user args were passed along: 3 instead of 2!
+#
 window
 { 
 	output /:*:_nl: :_argc: =:*:_argc:= / 

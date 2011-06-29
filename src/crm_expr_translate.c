@@ -133,6 +133,10 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "TRANSLATE is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -214,8 +218,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #endif
         fprintf(stderr, "- len %d\n", retlen);
     }
-    crm_destructive_alter_nvariable(destination + dst_nstart, destination_len, /* [i_a] */
-            tempbuf, retlen);
+    crm_destructive_alter_nvariable(destination + dst_nstart, destination_len,             tempbuf, retlen, csl->calldepth);
 
     //  All done - return to caller.
     //

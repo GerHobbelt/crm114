@@ -1,0 +1,33 @@
+#
+# Check if the error report actually lists the proper line for the trap: that is, NOT the call!
+#
+
+window
+	output /m1\n/
+call /:bugger:/
+	output /m2\n/
+exit /0/
+
+:bugger:
+{
+	output /g1\n/
+	input (:i:) [non_existing_file_xyz 0 128]
+	output /g2\n/
+	trap //
+	output /t1\n/
+}
+return /0/
+
+trap // (:msg:)
+{
+	output /trap 1: :*:msg:\n/
+}
+return /1/
+
+trap /.*/ (:msg:)
+{
+	output /trap 2: :*:msg:\n/
+}
+return /2/
+
+

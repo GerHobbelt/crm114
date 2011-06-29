@@ -35,6 +35,8 @@
 # modified for CRM114 by Joost van Baal
 # augmented by Ger Hobbelt (2008)
 
+cd `echo $0 | sed -e 's,[\\/][^\\/]\+$,,'`
+
 PGM=CRM114
 configure_ac="./configure.ac"
 

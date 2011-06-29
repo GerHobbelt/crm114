@@ -21,7 +21,7 @@ rm -f "${difffile}"
 rm -f "${targetname}.refout" 
 rm -f "${targetname}.tstout" 
 
-if [ ! -f "${reffile}" ] || [ ! -f "${testfile}" ]; then
+if test ! -f "${reffile}" || test ! -f "${testfile}" ; then
   echo "One of the files to compare is missing: '${reffile}' -- '${testfile}'"
   exit 66
 fi
@@ -66,21 +66,25 @@ sed -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]*[\\\/]\?\)\([^ :]
     > "${targetname}.tstout"
 
 
-if [ ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ]; then
-  echo "------------------------------------------------------"
-  cat "${targetname}.refout"
-  echo "------------------------------------------------------"
-  cat "${targetname}.tstout"
-  echo "------------------------------------------------------"
+if test ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ; then
+  if test "${CRM114_MAKE_SCRIPTS_DEBUG}" \> "0" ; then
+    echo "------------------------------------------------------"
+    cat "${targetname}.refout"
+    echo "------------------------------------------------------"
+    cat "${targetname}.tstout"
+    echo "------------------------------------------------------"
+  fi
 fi
 
 @DIFF@ -u @DIFF_FLAGS@ "${targetname}.refout" "${targetname}.tstout" > "${difffile}"
 retcode=$?
 
-if [ ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ]; then
-  echo "------------------------------------------------------"
-  cat "${difffile}"
-  echo "------------------------------------------------------"
+if test ! -z "${CRM114_MAKE_SCRIPTS_DEBUG}" ; then
+  if test "${CRM114_MAKE_SCRIPTS_DEBUG}" \> "0" ; then
+    echo "------------------------------------------------------"
+    cat "${difffile}"
+    echo "------------------------------------------------------"
+  fi
 fi
 
 exit ${retcode}

@@ -1,0 +1,39 @@
+# 
+# This thing should work as it uses the 'evaluation order' rules as described in QUICKREF:
+# first crm114 does :*:, then :+:.
+#
+# That way, variable names can be constructed in one go, IFF those variable names are only
+# used in :+: or :#: expressions (:@: requires values inside, not variables, so it does not apply)
+#
+
+{
+
+# still too redundant whitespace in there:
+{window;isolate (:i:)/:*:_argc:/;{eval (:i:)/:@::*:i:-1:/;output /:+:_arg:*:i::\n/;}}
+
+# bare metal:
+{window;isolate(:i:)/:*:_argc:/;{eval(:i:)/:@::*:i:-1:/;output/:+:_arg:*:i::\n/;}}
+
+trap (:er:) //
+output /EXCEPTION: :*:er:/
+
+}
+
+isolate (:Z:)
+output /Z::*:Z:\n/
+output /argc=:*:_argc:\n/
+
+
+output /T2\n/
+{
+isolate (:a:)/:b:/;isolate (:b:)/:c:/;isolate (:c:)/:d:/;isolate (:d:)/:e:/;isolate (:e:)/:f:/;
+isolate (:o:);
+isolate (:n:)/:@::/;
+isolate (:*:)//;
+isolate (:+:)/:@::*:n*:*:+:/;
+isolate (:j:)//;
+eval (:o:)/:*:n::*:+:a:\n/;
+output /:*:o:\n/;
+}
+
+

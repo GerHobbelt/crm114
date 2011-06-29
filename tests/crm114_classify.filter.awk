@@ -27,7 +27,7 @@ function tol(val, tolerance, offset)
 	#printf("TOL0: val = %e\n", val);
 		val /= tolerance;
 	#printf("TOL1: val = %e\n", val);
-		val = sprintf("%.0lf", val); /* eqv. int(val) but also for large numbers */
+		val = sprintf("%.0f", val); # eqv. int(val) but also for large numbers
 	#printf("TOL2: val = %e\n", val);
 		val *= tolerance;
 		val += offset;
@@ -38,8 +38,8 @@ function tol(val, tolerance, offset)
 
 BEGIN {
 	#-v entropy=50 -v jumps=2 -v prob=2.0 pR=2.0
-	printf("TOLERANCES: documents=%f, features=%f, file_features=%f, hits=%f, entropy=%f, jumps=%f prob=%e pR=%e\n", documents, features, file_features, hits, entropy, jumps, prob, pR);
-	printf("OFFSETS: o_documents=%f, o_features=%f, o_file_features=%f, o_hits=%f, o_entropy=%f, o_jumps=%f o_prob=%e o_pR=%e\n", o_documents, o_features, o_file_features, o_hits, o_entropy, o_jumps, o_prob, o_pR);
+	printf("TOLERANCES: documents=%f, features=%f, file_features=%f, hits=%f, entropy=%f, jumps=%f prob=%e pR=%e chcs=%e\n", documents, features, file_features, hits, entropy, jumps, prob, pR, chcs);
+	printf("OFFSETS: o_documents=%f, o_features=%f, o_file_features=%f, o_hits=%f, o_entropy=%f, o_jumps=%f o_prob=%e o_pR=%e o_chcs=%e\n", o_documents, o_features, o_file_features, o_hits, o_entropy, o_jumps, o_prob, o_pR, o_chcs);
 }
 
 /CLASSIFY.*; success probability: .* pR:/	{
@@ -104,8 +104,18 @@ BEGIN {
 	next;
 }
 
-# #0 (i_test.css): prob: 9.66e-01, pR: 265.70
+# #0 (i_test.css): features: 35239, chcs: 108.39, prob: 1.00e-00, pR:  50.35
+/#[0-9] \([^\)]*\): features: .* chcs: .* prob: .* pR: .*/	{
+	# make sure old and new filenames match by stripping off a lot:
+	s = $2;
+	gsub(/.*\//, "", s);
+	sub(/\..*/, "", s);
+	sub(/\(/, "", s);
+	printf("%s =%s=: features: %d chcs: %e prob: %e, pR: %e\n", $1, s, tol($4, features, o_features), tol($6, chcs, o_chcs), tol($8, prob, o_prob), tol($10, pR, o_pR));
+	next;
+}
 
+# #0 (i_test.css): prob: 9.66e-01, pR: 265.70
 /#[0-9] \([^\)]*\): prob: .* pR: .*/	{
 	# make sure old and new filenames match by stripping off a lot:
 	s = $2;

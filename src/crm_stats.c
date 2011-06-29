@@ -261,7 +261,7 @@ double crm_log(double x)
 
 double norm_pdf(double x)
 {
-    return ONE_OVER_SQRT_2PI *exp(-0.5 *x *x);
+    return ONE_OVER_SQRT_2PI * exp(-0.5 * x * x);
 }
 
 //  this guy makes it so x = 0 yields 1, this is just for when you

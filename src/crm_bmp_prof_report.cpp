@@ -51,7 +51,7 @@ int produce_opcode_coverage_report(CRM_ANALYSIS_REPORT_DATA *report_data, FILE *
                 fprintf_nsecs2dhmsss(of, 5, 6, report_data->opcode_times[i]);
                 fprintf(of, " %7.3f ", report_data->opcode_times[i] / total_time);
                 fprintf_nsecs2dhmsss(of, 3, 6, report_data->opcode_times[i] / report_data->opcode_counts[i]);
-                fprintf(of, " %7.3f\n", ((double)report_data->opcode_times[i]) / (report_data->opcode_counts[i] * total_time_per_piece));
+                fprintf(of, " %7.3f\n", ((double)report_data->opcode_times[i]) / (report_data->opcode_counts[i] *total_time_per_piece));
             }
             else
             {

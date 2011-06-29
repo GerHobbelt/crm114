@@ -1,5 +1,5 @@
 TEST SCRIPT + COMMANDLINE:
--{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump [:one_paragraph:] <bychunk> (i_test.css) /[[:graph:]]+/; output /./; liaf } 
+-{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?:*:_nl::*:_nl:){5}/; clump [:one_paragraph:] <bychunk> (i_test.css) /[[:graph:]]+/; output /./; liaf } 
 
 RETURN CODE:
 154
@@ -13,7 +13,7 @@ assertion '!(scale <= 1.19209290e-7F && scale >= -1.19209290e-7F)' failed!
 Sorry, but this program is very sick and probably should be killed off.
 This happened at line 3 of file (from command line):
     clump [:one_paragraph:] <bychunk> (i_test.css) /[[:graph:]]+/
-(runtime system location: crm_expr_clump.c(841) in routine: thresholding_average_cluster)
+(runtime system location: crm_expr_clump.c(844) in routine: thresholding_average_cluster)
 
 STDOUT TEST OUTPUT:
 

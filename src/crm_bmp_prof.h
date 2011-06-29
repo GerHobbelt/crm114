@@ -447,9 +447,9 @@ typedef struct
 
 typedef struct
 {
-    char    *stmt_name;
-    int      stmt_code;
-    unsigned is_executable : 1;
+    const char *stmt_name;
+    int         stmt_code;
+    unsigned    is_executable : 1;
 } STMT_DEF_TYPE;
 
 

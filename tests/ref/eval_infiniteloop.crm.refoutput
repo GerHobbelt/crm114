@@ -19,5 +19,5 @@ crm114: *WARNING*
 I'll try to keep working.
 This happened at line 15 of file eval_infiniteloop.crm:
     eval (:b:) /:*:a:/
-(runtime system location: crm_expr_alter.c(139) in routine: crm_expr_eval)
+(runtime system location: crm_expr_alter.c(147) in routine: crm_expr_eval)
 

@@ -123,7 +123,7 @@ typedef struct mythical_svm_param
                               // If computing time exceeds max_run_time,
                               // then start microgrooming to delete the
                               //  documents far away from the hyperplane.
-    int shrinking;      // use the shrinking heuristics, isn't available now
+    int shrinking;            // use the shrinking heuristics, isn't available now
 } SVM_PARAM;
 
 
@@ -289,8 +289,8 @@ static void cache_init(int len, int size, CACHE *svmcache)
     //   as large as two columns of Qmatrix
 #endif
     (svmcache->lru_headnode).prev
-    = (svmcache->lru_headnode).next
-      = &(svmcache->lru_headnode);
+        = (svmcache->lru_headnode).next
+              = &(svmcache->lru_headnode);
 }
 
 
@@ -504,8 +504,8 @@ static Qitem_t *get_rowQ(int i, int length)
                 //   multiply by the +1/-1 labels (in the .y structures) to
                 //   face the kernel result in the right direction.
                 rowQ[temp] = (Qitem_t)svm_prob.y[i]
-                             * svm_prob.y[temp]
-                             * kernel(svm_prob.x[i], svm_prob.x[temp]);
+                             *svm_prob.y[temp]
+                             *kernel(svm_prob.x[i], svm_prob.x[temp]);
             }
             else if (param.svm_type == ONE_CLASS)
             {
@@ -592,10 +592,10 @@ static void selectB(int workset[], int *select_times)
              || ((svm_prob.y[t] == -1) && (solver.alpha[t] > 0)))
             && select_times[t] < 10)
         {
-            if (-svm_prob.y[t] * solver.G[t] >= G_max)
+            if (-svm_prob.y[t] *solver.G[t] >= G_max)
             {
                 i = t;
-                G_max = -svm_prob.y[t] * solver.G[t];
+                G_max = -svm_prob.y[t] *solver.G[t];
             }
         }
     }
@@ -610,16 +610,16 @@ static void selectB(int workset[], int *select_times)
              || ((svm_prob.y[t] == 1) && (solver.alpha[t] > 0)))
             && select_times[t] < 10)
         {
-            b = G_max + svm_prob.y[t] * solver.G[t];
-            if (-svm_prob.y[t] * solver.G[t] <= G_min)
-                G_min = -svm_prob.y[t] * solver.G[t];
+            b = G_max + svm_prob.y[t] *solver.G[t];
+            if (-svm_prob.y[t] *solver.G[t] <= G_min)
+                G_min = -svm_prob.y[t] *solver.G[t];
             if (b > 0)
             {
                 if (i != -1)
                 {
                     Qi = get_rowQ(i, svm_prob.l);
                     a = Qi[i] + DiagQ[t]
-                        - 2 * svm_prob.y[i] * svm_prob.y[t] * Qi[t];
+                        - 2 * svm_prob.y[i] *svm_prob.y[t] *Qi[t];
                     if (a <= 0)
                         a = TAU;
                     if (-(b * b) / a <= obj_min)
@@ -731,38 +731,38 @@ static void solve(void)
         Qj = get_rowQ(j, svm_prob.l);
 
         //  Calculate the incremental step forward.
-        a = Qi[i] + DiagQ[j] - 2 * svm_prob.y[i] * svm_prob.y[j] * Qi[j];
+        a = Qi[i] + DiagQ[j] - 2 * svm_prob.y[i] *svm_prob.y[j] *Qi[j];
         if (a <= 0)
             a = TAU;
-        b = -svm_prob.y[i] * solver.G[i] + svm_prob.y[j] * solver.G[j];
+        b = -svm_prob.y[i] *solver.G[i] + svm_prob.y[j] *solver.G[j];
 
         //  update alpha (weight vector)
         oldi = solver.alpha[i];
         oldj = solver.alpha[j];
-        solver.alpha[i] += svm_prob.y[i] * b / a;
-        solver.alpha[j] -= svm_prob.y[j] * b / a;
+        solver.alpha[i] += svm_prob.y[i] *b / a;
+        solver.alpha[j] -= svm_prob.y[j] *b / a;
 
         //  Project alpha back to the feasible region(that is, where
         //  where 0 <= alpha <= C )
-        sum = svm_prob.y[i] * oldi + svm_prob.y[j] * oldj;
+        sum = svm_prob.y[i] *oldi + svm_prob.y[j] *oldj;
         if (solver.alpha[i] > param.C)
             solver.alpha[i] = param.C;
         if (solver.alpha[i] < 0)
             solver.alpha[i] = 0;
         solver.alpha[j] = svm_prob.y[j]
-                          * (sum - svm_prob.y[i] * (solver.alpha[i]));
+                          *(sum - svm_prob.y[i] *(solver.alpha[i]));
         if (solver.alpha[j] > param.C)
             solver.alpha[j] = param.C;
         if (solver.alpha[j] < 0)
             solver.alpha[j] = 0;
         solver.alpha[i] = svm_prob.y[i]
-                          * (sum - svm_prob.y[j] * (solver.alpha[j]));
+                          *(sum - svm_prob.y[j] *(solver.alpha[j]));
 
         //  update gradient array
         for (t = 0; t < svm_prob.l; t++)
         {
-            solver.G[t] += Qi[t] * (solver.alpha[i] - oldi)
-                           + Qj[t] * (solver.alpha[j] - oldj);
+            solver.G[t] += Qi[t] *(solver.alpha[i] - oldi)
+                           + Qj[t] *(solver.alpha[j] - oldj);
         }
     }
 
@@ -850,7 +850,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
         {
             if (alpha[i] != 0)
             {
-                sum += svm_prob.y[i] * alpha[i] * kernel(x, svm_prob.x[i]);
+                sum += svm_prob.y[i] *alpha[i] *kernel(x, svm_prob.x[i]);
             }
         }
         sum += b;
@@ -861,7 +861,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
         {
             if (alpha[i] != 0)
             {
-                sum += alpha[i] * kernel(x, svm_prob.x[i]);
+                sum += alpha[i] *kernel(x, svm_prob.x[i]);
             }
         }
         sum -= b;
@@ -905,9 +905,9 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
     AB[1] = log((negn + 1.0) / (posn + 1.0));
     for (i = 0; i < svm_prob.l; i++)
     {
-        fApB = deci_array[i] * AB[0] + AB[1];
+        fApB = deci_array[i] *AB[0] + AB[1];
         if (fApB >= 0)
-            fval += t[i] * fApB + log(1 + exp(-fApB));
+            fval += t[i] *fApB + log(1 + exp(-fApB));
         else
             fval += (t[i] - 1) * fApB + log(1 + exp(fApB));
     }
@@ -918,7 +918,7 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
         h21 = g1 = g2 = 0.0;
         for (i = 0; i < svm_prob.l; i++)
         {
-            fApB = deci_array[i] * AB[0] + AB[1];
+            fApB = deci_array[i] *AB[0] + AB[1];
             if (fApB >= 0)
             {
                 p = exp(-fApB) / (1.0 + exp(-fApB));
@@ -930,11 +930,11 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
                 q = exp(fApB) / (1.0 + exp(fApB));
             }
             d2 = p * q;
-            h11 += deci_array[i] * deci_array[i] * d2;
+            h11 += deci_array[i] *deci_array[i] *d2;
             h22 += d2;
-            h21 += deci_array[i] * d2;
+            h21 += deci_array[i] *d2;
             d1 = t[i] - p;
-            g1 += deci_array[i] * d1;
+            g1 += deci_array[i] *d1;
             g2 += d1;
         }
         // Stopping Criterion
@@ -955,9 +955,9 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
             newf = 0.0;
             for (i = 0; i < svm_prob.l; i++)
             {
-                fApB = deci_array[i] * newA + newB;
+                fApB = deci_array[i] *newA + newB;
                 if (fApB >= 0)
-                    newf += t[i] * fApB + log(1 + exp(-fApB));
+                    newf += t[i] *fApB + log(1 + exp(-fApB));
                 else
                     newf += (t[i] - 1) * fApB + log(1 + exp(fApB));
             }
@@ -1022,7 +1022,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int use_unigram_features;
     char ptext[MAX_PATTERN]; //the regrex pattern
     int plen;
-	regex_t regcb = {0};
+    regex_t regcb = { 0 };
     regmatch_t match[5];
     struct stat statbuf1;    //  for statting the hash file1
     struct stat statbuf2;    //  for statting the hash file2
@@ -1142,7 +1142,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         file3[0] = 0;
     }
     //    if (|Text|>0) hide the text into the .svm file
-        crm_regfree(&regcb);
+    crm_regfree(&regcb);
 
     //     get the "this is a word" regex
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
@@ -1157,7 +1157,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (i != 0)
     {
         crm_regerror(i, &regcb, tempbuf, data_window_size);
-            crm_regfree(&regcb);
+        crm_regfree(&regcb);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
         goto regcomp_failed;
     }
@@ -1189,7 +1189,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             // directly ([[graph]]+) instead of calling regexec  (8% faster)
             if (ptext[0] != 0)
             {
-                k = crm_regexec(&regcb, &(txtptr[textoffset]),
+                k = crm_regexec(&regcb, &txtptr[textoffset],
                         slen, WIDTHOF(match), match, 0, NULL);
             }
             else
@@ -1287,8 +1287,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                              j < OSB_BAYES_WINDOW_LEN; // OSB_BAYES_WINDOW_LEN;
                              j++)
                         {
-                            h1 = hashpipe[0] * hctable[0] +
-                                 hashpipe[j] * hctable[j << 1];
+                            h1 = hashpipe[0] *hctable[0] +
+                                 hashpipe[j] *hctable[j << 1];
                             if (h1 == 0)
                                 h1 = 0xdeadbeef;
                             h2 = 0xdeadbeef;
@@ -1381,8 +1381,14 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashf = fopen(file1, "ab+");
             if (hashf == NULL)
             {
-                fatalerror("For some reason, I was unable to append-open the svm file named ",
-                        file1);
+                char dirbuf[DIRBUFSIZE_MAX];
+
+                fatalerror_ex(SRC_LOC(),
+                        "\n Couldn't open your SVM file %s for appending; (full path: '%s') errno=%d(%s)\n",
+                        file1,
+                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file1),
+                        errno,
+                        errno_descr(errno));
                 return 0;
             }
             else
@@ -1588,9 +1594,11 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
             if (user_trace)
             {
+                        char dirbuf[DIRBUFSIZE_MAX];
+
                 fprintf(stderr,
                         "Deleting feature from %d to %d (rad %f) of file %s\n",
-                        beststart, bestend, bestrad, file1);
+                        beststart, bestend, bestrad, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file1));
             }
 
             //   Deletion time - move the remaining stuff in the file
@@ -1620,8 +1628,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //  let go of the hashes.
     free(hashes);
     crm_regfree(&regcb);
-    
-	if (sense < 0)
+
+    if (sense < 0)
     {
         // finish refuting....
         return 0;
@@ -2127,8 +2135,14 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             hashf = fopen(file1, "wb+");
                             if (hashf == 0)
                             {
-                                fatalerror("For some reason, I was unable to write-open the svm file named ",
-                                        file1);
+                                char dirbuf[DIRBUFSIZE_MAX];
+
+                                fatalerror_ex(SRC_LOC(),
+                                        "\n Couldn't open your SVM file %s for writing; (full path: '%s') errno=%d(%s)\n",
+                                        file1,
+                                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file1),
+                                        errno,
+                                        errno_descr(errno));
                             }
                             else
                             {
@@ -2187,8 +2201,14 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             hashf = fopen(file2, "wb+");
                             if (hashf == 0)
                             {
-                                fatalerror("For some reason, I was unable to append-open the svm file named ",
-                                        file2);
+                                char dirbuf[DIRBUFSIZE_MAX];
+
+                                fatalerror_ex(SRC_LOC(),
+                                        "\n Couldn't open your SVM file %s for appending; (full path: '%s') errno=%d(%s)\n",
+                                        file2,
+                                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file2),
+                                        errno,
+                                        errno_descr(errno));
                             }
                             else
                             {
@@ -2297,9 +2317,15 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 hashf = fopen(file3, "wb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
                 if (hashf == NULL)
                 {
-                    nonfatalerror("Couldn't write to .hypsvm file",
-                            file3);
-                    return 0;
+                    char dirbuf[DIRBUFSIZE_MAX];
+
+                    int fev = fatalerror_ex(SRC_LOC(),
+                            "\n Couldn't open your SVM.HYPSVM file %s for writing; (full path: '%s') errno=%d(%s)\n",
+                            file3,
+                            mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file3),
+                            errno,
+                            errno_descr(errno));
+                    return fev;
                 }
                 else
                 {
@@ -2385,7 +2411,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char file1[MAX_PATTERN];
     char file2[MAX_PATTERN];
     char file3[MAX_PATTERN];
-	regex_t regcb = {0};
+    regex_t regcb = { 0 };
     regmatch_t match[5];
     int textoffset;
     int textmaxoffset;
@@ -2594,7 +2620,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             // directly ([[graph]]+) instead of calling regexec  (8% faster)
             if (ptext[0] != 0)
             {
-                k = crm_regexec(&regcb, &(txtptr[textoffset]),
+                k = crm_regexec(&regcb, &txtptr[textoffset],
                         slen, WIDTHOF(match), match, 0, NULL);
             }
             else
@@ -2676,8 +2702,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                              j < OSB_BAYES_WINDOW_LEN; //OSB_BAYES_WINDOW_LEN;
                              j++)
                         {
-                            h1 = hashpipe[0] * hctable[0]
-                                 + hashpipe[j] * hctable[j << 1];
+                            h1 = hashpipe[0] *hctable[0]
+                                 + hashpipe[j] *hctable[j << 1];
                             if (h1 == 0)
                                 h1 = 0xdeadbeef;
                             hindex = h1;
@@ -2749,11 +2775,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
     else
     {
-                    crm_regfree(&regcb);
+        crm_regfree(&regcb);
         nonfatalerror("Sorry, but I can't classify the null string.", "");
         return 0;
     }
-                    crm_regfree(&regcb);
+    crm_regfree(&regcb);
 
     if (user_trace)
     {
@@ -2800,7 +2826,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (internal_trace)
             fprintf(stderr, "file1=%s\tfile2=%s\tfile3=%s\n", file1, file2, file3);
 
-                    crm_regfree(&regcb);
+        crm_regfree(&regcb);
 
         // open all files,
         // first check whether file3 is the current version solution.
@@ -2908,8 +2934,12 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashf = fopen(file3, "rb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
             if (hashf == NULL)
             {
-                nonfatalerror_ex(SRC_LOC(), "For some reason, I was unable to read-open the SVM 1vs2 solution file file named '%s': error = %d(%s)",
+                char dirbuf[DIRBUFSIZE_MAX];
+
+                nonfatalerror_ex(SRC_LOC(),
+                        "\n Couldn't open your SVM 1vs2 solution file %s for reading; (full path: '%s') errno=%d(%s)\n",
                         file3,
+                        mk_absolute_path(dirbuf, WIDTHOF(dirbuf), file3),
                         errno,
                         errno_descr(errno));
             }
@@ -3168,7 +3198,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }       //end (k==0)
     else
     {
-                    crm_regfree(&regcb);
+        crm_regfree(&regcb);
         nonfatalerror(
                 "You need to input (file1.svm | file2.svm | f1vsf2.svmhyp)\n", "");
         return 0;
@@ -3191,7 +3221,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             pr = 10 * (log10(decision + 1e-300) - log10(1.0 - decision + 1e-300));
             sprintf(buf,
-                    "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n",
+                    "CLASSIFY succeeds; (svm) success probability: %6.4f  pR: %6.4f\n",
                     decision, pr);
             bestseen = 0;
         }
@@ -3199,7 +3229,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             pr = 10 * (log10(decision + 1e-300) - log10(1.0 - decision + 1e-300));
             sprintf(buf,
-                    "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n",
+                    "CLASSIFY fails; (svm) success probability: %6.4f  pR: %6.4f\n",
                     decision, pr);
             bestseen = 1;
         }
@@ -3250,8 +3280,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         //   finally, save the status output
         //
-        crm_destructive_alter_nvariable(svrbl, svlen,
-                stext, (int)strlen(stext));
+        crm_destructive_alter_nvariable(svrbl, svlen,                stext, (int)strlen(stext), csl->calldepth);
     }
 
     //    Return with the correct status, so an actual FAIL or not can occur.
@@ -3272,8 +3301,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
-        CRM_ASSERT(csl->cstmt >= 0);
-        CRM_ASSERT(csl->cstmt <= csl->nstmts);
+        if (internal_trace)
+        {
+            fprintf(stderr, "CLASSIFY.SVM is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }

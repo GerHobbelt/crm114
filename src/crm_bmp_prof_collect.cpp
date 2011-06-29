@@ -446,27 +446,27 @@ int collect_and_display_requested_data(FILE *inf, int read_size, CRM_ANALYSIS_PR
                         {
                             decoded_classifier = CLASSIFIER_OSB_BAYES;
                         }
-                        else    if (classifier_flags & CRM_CORRELATE)
+                        else if (classifier_flags & CRM_CORRELATE)
                         {
                             decoded_classifier = CLASSIFIER_CORRELATE;
                         }
-                        else    if (classifier_flags & CRM_OSB_WINNOW)
+                        else if (classifier_flags & CRM_OSB_WINNOW)
                         {
                             decoded_classifier = CLASSIFIER_OSB_WINNOW;
                         }
-                        else    if (classifier_flags & CRM_OSBF)
+                        else if (classifier_flags & CRM_OSBF)
                         {
                             decoded_classifier = CLASSIFIER_OSBF_BAYES;
                         }
-                        else    if (classifier_flags & CRM_HYPERSPACE)
+                        else if (classifier_flags & CRM_HYPERSPACE)
                         {
                             decoded_classifier = CLASSIFIER_HYPERSPACE;
                         }
-                        else    if (classifier_flags & CRM_ENTROPY)
+                        else if (classifier_flags & CRM_ENTROPY)
                         {
                             decoded_classifier = CLASSIFIER_ENTROPY;
                         }
-                        else    if (classifier_flags & CRM_SVM)
+                        else if (classifier_flags & CRM_SVM)
                         {
                             decoded_classifier = CLASSIFIER_SVM;
                         }

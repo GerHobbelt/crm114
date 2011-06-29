@@ -73,6 +73,8 @@ Be warned.  Or send me a patch!
    (FIXED - the switchover between fixed and E notation is now
    a soft set, and the reader DOES understand E-notation)
 
+
+
 7)  If you malform a math expression (like leave off the closing colon)
 the last digit of your result gets eaten.
 

@@ -52,14 +52,14 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int inputsrclen;
     char *inputtxt;
     int inputtxtlen;
-	int inputtxt_allocated;
+    int inputtxt_allocated;
     char wvname[MAX_VARNAME];
     int wvnamelen;
     int wvnamestart;
     CSL_CELL *mdw;
     int flen;
     int regexflags;
-	regex_t preg = {0};
+    regex_t preg = { 0 };
     //  int inputmode;
     int inputsize;       //  can be by char or by EOF  < bychar byeof >
     int inputretryEOF;   //  do we retry an EOF?       < eoffails eofretry >
@@ -71,7 +71,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int done;
     int firsttime;
 
-	int retcode = -1;
+    int retcode = -1;
 
 
     inputsrcname[0] = 0;
@@ -83,7 +83,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     srcidx = 0;
     inputtxt = newinputbuf;
     inputtxtlen = newbuflen;
-	inputtxt_allocated = FALSE;
+    inputtxt_allocated = FALSE;
     failout = 0;
 
     if (user_trace)
@@ -246,13 +246,13 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         wvnamestart = 0;
     }
 
-	if (!crm_is_legal_variable(&wvname[wvnamestart], wvnamelen))
-	{
-	    crm_regfree(&preg);
-		fatalerror_ex(SRC_LOC(), "We seem to be windowing an illegal variable '%.*s'. How very bizarre.", wvnamelen, &wvname[wvnamestart]);
+    if (!crm_is_legal_variable(&wvname[wvnamestart], wvnamelen))
+    {
+        crm_regfree(&preg);
+        fatalerror_ex(SRC_LOC(), "We seem to be windowing an illegal variable '%.*s'. How very bizarre.", wvnamelen, &wvname[wvnamestart]);
         goto invoke_bailout;
-	}
-    vmidx = crm_vht_lookup(vht, &wvname[wvnamestart], wvnamelen);
+    }
+    vmidx = crm_vht_lookup(vht, &wvname[wvnamestart], wvnamelen, csl->calldepth);
     if (vht[vmidx] == NULL)
     {
         nonfatalerror("We seem to be windowing a nonexistent variable.",
@@ -388,7 +388,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         {
         case FROM_VAR:
             {
-				inputtxtlen = 0;
+                inputtxtlen = 0;
                 inputtxt = NULL;
 
                 //    we're supposed to grab our input from an input variable.
@@ -406,7 +406,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
                 //  Get the source input stuff
                 //
-                srcidx = crm_vht_lookup(vht, inputsrcname, inputsrclen);
+                srcidx = crm_vht_lookup(vht, inputsrcname, inputsrclen, csl->calldepth);
                 if (vht[srcidx] == NULL)
                 {
                     nonfatalerror("Trying to take WINDOW input from"
@@ -416,8 +416,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 }
                 //
                 //
-				inputtxtlen = vht[srcidx]->vlen;
-				inputtxt_allocated = TRUE;
+                inputtxtlen = vht[srcidx]->vlen;
+                inputtxt_allocated = TRUE;
                 inputtxt = (char *)calloc(inputtxtlen + 1, sizeof(inputtxt[0]));
                 if (inputtxt == NULL)
                 {
@@ -470,7 +470,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             fatalerror(" Sorry, but BYLINE input is not supported;",
                                     " we recommend using '\\n' in your match "
                                     "pattern");
-							goto invoke_bailout;
+                            goto invoke_bailout;
                         }
                         break;
 
@@ -585,36 +585,36 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 switch (inputEOFaccept)
                 {
                 case EOFACCEPTS:
-                                            //         In EOFENDS and EOFAIL, we take the available
-                        //     input, shove it in, and go onward.  We do this
-                        //     by "faking" the matches[0] variable.
-                        matches[0].rm_so = 0;
-                        matches[0].rm_eo = inputtxtlen;
-                        if (matches[0].rm_eo < 0)
-                            matches[0].rm_eo = 0;
-                        failout = 0;
-                    
+                    //         In EOFENDS and EOFAIL, we take the available
+                    //     input, shove it in, and go onward.  We do this
+                    //     by "faking" the matches[0] variable.
+                    matches[0].rm_so = 0;
+                    matches[0].rm_eo = inputtxtlen;
+                    if (matches[0].rm_eo < 0)
+                        matches[0].rm_eo = 0;
+                    failout = 0;
+
                     break;
 
                 case EOFFAILS:
                 default:
-                        //      Nope - got an EOF, and we aren't supposed to
-                        //      accept it.  So we MIGHT be done.  Or maybe not...
-                        //      if we have EOFRETRY set then we clear it and
-                        //      try again.
-					//
-                        //     But, if we are reading from a var, there will never
-                        //     be any more, so we are -always- done.
-                        if (inputsrc == FROM_VAR)
-                        {
-                            done = 1;
-                        }
-                        else if (inputretryEOF == EOFRETRY)
-                        {
-                            clearerr(stdin);
-                            done = 0;
-                            failout = 0;
-                        }
+                    //      Nope - got an EOF, and we aren't supposed to
+                    //      accept it.  So we MIGHT be done.  Or maybe not...
+                    //      if we have EOFRETRY set then we clear it and
+                    //      try again.
+                    //
+                    //     But, if we are reading from a var, there will never
+                    //     be any more, so we are -always- done.
+                    if (inputsrc == FROM_VAR)
+                    {
+                        done = 1;
+                    }
+                    else if (inputretryEOF == EOFRETRY)
+                    {
+                        clearerr(stdin);
+                        done = 0;
+                        failout = 0;
+                    }
                     break;
                 }
             }
@@ -639,8 +639,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     copy the pertinent part of inputtxt into the space
     //     we just made.
     memmove(&vht[vmidx]->valtxt[vht[vmidx]->vstart
-                                 + vht[vmidx]->vlen
-                                 - matches[0].rm_eo],
+                                + vht[vmidx]->vlen
+                                - matches[0].rm_eo],
             inputtxt,
             matches[0].rm_eo);
 
@@ -668,12 +668,14 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
-        CRM_ASSERT(csl->cstmt >= 0);
-        CRM_ASSERT(csl->cstmt <= csl->nstmts);
+        if (internal_trace)
+        {
+            fprintf(stderr, "WINDOW.CUT is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }
 
-	retcode = 0;
+    retcode = 0;
 
     //       and, if we got a nonfatal error, we skip all the stuff above;
     //       this is cleanup that we have to do eiher way.  Failure here
@@ -692,20 +694,18 @@ invoke_bailout:
         if (user_trace)
             fprintf(stderr, " restoring remains of input src variable.\n");
 
-        crm_destructive_alter_nvariable(inputsrcname, inputsrclen,
-                inputtxt,
-                inputtxtlen);
+        crm_destructive_alter_nvariable(inputsrcname, inputsrclen,                inputtxt,                inputtxtlen, csl->calldepth);
     }
-	else
-	{
-		newbuflen = inputtxtlen;
-	}
+    else
+    {
+        newbuflen = inputtxtlen;
+    }
 
     //      and free the temporary space
     if (inputtxt_allocated)
-	{
+    {
         free(inputtxt);
-	}
+    }
 
 crm_window_no_changes_made:
 

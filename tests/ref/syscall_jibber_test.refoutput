@@ -1,5 +1,5 @@
 TEST SCRIPT + COMMANDLINE:
--{window; isolate (:s:); syscall () () (:s:) /jibberjabber 2>&1 /; output / Status: :*:s: \n/} 
+-{window; isolate (:s:); syscall () () (:s:) /jibberjabber 2>&1 /; output / Status: :*:s: :*:_nl:/} 
 
 RETURN CODE:
 0

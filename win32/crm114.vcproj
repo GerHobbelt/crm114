@@ -2419,6 +2419,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\alius_w_comment2.crm"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\aliustest.crm"
 					>
 				</File>
@@ -2499,6 +2503,18 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\call_return_test2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\call_return_test3.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\call_return_test4.crm"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\classifytest.crm"
 					>
 				</File>
@@ -2512,6 +2528,30 @@
 				</File>
 				<File
 					RelativePath="..\tests\defaulttest.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\double_trap_error1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\double_trap_error2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\double_trap_error3.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\double_trap_error4.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\double_trap_error5.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\double_trap_error6.crm"
 					>
 				</File>
 				<File
@@ -2531,6 +2571,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\eval_ref_test1.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\evil_eval_test1.crm"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\exec_async_leaktest1.crm"
 					>
 				</File>
@@ -2544,6 +2592,10 @@
 				</File>
 				<File
 					RelativePath="..\tests\exectest.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\exectest_s1.sh.in"
 					>
 				</File>
 				<File
@@ -2576,6 +2628,14 @@
 				</File>
 				<File
 					RelativePath="..\tests\fataltrapprogramerr.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\fataltrapprogramerr2.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\fataltrapprogramerr2.crm.in"
 					>
 				</File>
 				<File
@@ -2835,6 +2895,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\Makefile.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\match_attr_fromend_newend.crm"
 					>
 				</File>
@@ -2891,6 +2955,18 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\megatest.sh.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\megatest_ng.sh.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\mk_testcases.sh.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\nestaliustest.crm"
 					>
 				</File>
@@ -2944,6 +3020,10 @@
 				</File>
 				<File
 					RelativePath="..\tests\paolo_overvars.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\pos_var_test1.crm"
 					>
 				</File>
 				<File
@@ -3011,6 +3091,22 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tests\tenfold_validate_ex.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\tenfold_validate_ex.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\tenfold_validate_mailreaver.crm"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\tenfold_validate_mailreaver.crm.in"
+					>
+				</File>
+				<File
 					RelativePath="..\tests\tokendelimiterbugtest.crm"
 					>
 				</File>
@@ -3064,6 +3160,10 @@
 				</File>
 				<File
 					RelativePath="..\tests\userdirtest.crm.in"
+					>
+				</File>
+				<File
+					RelativePath="..\tests\whitespace_test1.crm"
 					>
 				</File>
 				<File

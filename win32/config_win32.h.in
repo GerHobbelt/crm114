@@ -849,8 +849,16 @@ typedef int pid_t;
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
 
-/* Define to `int' if <sys/types.h> does not define. */
-typedef long ssize_t;
+/* Define to `long' if <sys/types.h> does not define. */
+#if defined(_MSC_VER) /* [i_a] */
+#if defined(_WIN64)
+#  define ssize_t __int64
+#else
+#  define ssize_t long
+#endif
+#else
+#  define ssize_t long
+#endif
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if
  * such a type exists and the standard includes do not define it. */

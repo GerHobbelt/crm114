@@ -77,6 +77,8 @@ int q_expansion_mode = 0;
 
 int selected_hashfunction = 0;  //  0 = default
 
+int act_like_Bill = 0;
+
 
 
 
@@ -221,9 +223,9 @@ static void crm_final_cleanup(void)
     free_regex_cache();
     cleanup_expandvar_allocations();
 
-	free(newinputbuf);
+    free(newinputbuf);
     newinputbuf = NULL;
-	free(inbuf);
+    free(inbuf);
     inbuf = NULL;
     free(outbuf);
     outbuf = NULL;
@@ -249,13 +251,16 @@ int main(int argc, char **argv)
     int status;
     int openbracket;            //  if there's a command-line program...
     int openparen = -1;         //  if there's a list of acceptable arguments
-    int user_cmd_line_vars = 0; // did the user specify --vars on cmdline?
+    //int user_cmd_line_vars = 0; // did the user specify --vars on cmdline?
 
     char *stdin_filename = "stdin (default)";
     char *stdout_filename = "stdout (default)";
     char *stderr_filename = "stderr (default)";
 
     char *profile_argset = NULL;
+
+    int posc;
+    char **posv;
 
     init_stdin_out_err_as_os_handles();
 #if 0
@@ -316,9 +321,11 @@ int main(int argc, char **argv)
 //    (void)_calloc_dbg(1, 1, _CLIENT_BLOCK, __FILE__, __LINE__);
 #endif
 
-    //  fprintf(stderr, " args: %d \n", argc);
-    //  for (i = 0; i < argc; i++)
-    //    fprintf(stderr, " argi: %d, argv: %s \n", i, argv[i]);
+#if 0
+    fprintf(stderr, " args: %d \n", argc);
+    for (i = 0; i < argc; i++)
+        fprintf(stderr, " argi: %d, argv: %s \n", i, argv[i]);
+#endif
 
     atexit(crm_final_cleanup);
 
@@ -356,6 +363,15 @@ int main(int argc, char **argv)
     engine_exit_base = 0;
     q_expansion_mode = 0;
     selected_hashfunction = 0;
+    act_like_Bill = 0;
+
+    posv = (char **)calloc(argc, sizeof(posv[0]));
+    if (!posv)
+    {
+        untrappableerror("Couldn't alloc the pos[].  Big problem!\n", "");
+    }
+    posv[0] = argv[0];
+    posc = 1;
 
     //    allocate and initialize the initial root csl (control stack
     //    level) cell.  We do this first, before command-line parsing,
@@ -383,6 +399,7 @@ int main(int argc, char **argv)
     csl->next_stmt_due_to_trap = -1;
     csl->next_stmt_due_to_jump = -1;
 #endif
+    csl->running = 0;
 
     openbracket = -1;
     openparen = -1;
@@ -444,8 +461,7 @@ int main(int argc, char **argv)
             fprintf(stderr, " -M nn   max chain length - triggers microgrooming if enabled\n");
             fprintf(stderr, " -p      profile statement times\n");
             fprintf(stderr, " -P nn   max program lines @ 128 chars/line\n");
-            fprintf(stderr, " -q m    mathmode (0,1 alg/RPN in EVAL,"
-                            "2,3 alg/RPN everywhere)\n");
+            fprintf(stderr, " -q m    mathmode (0,1 alg/RPN in EVAL,2,3 alg/RPN everywhere)\n");
             fprintf(stderr, " -r nn   set OSBF min pmax/pmin ratio (default=9)\n");
             fprintf(stderr, " -s nn   sparse spectra (.css) featureslots\n");
             fprintf(stderr, " -S nn   round up to 2^N+1 .css featureslots\n");
@@ -469,6 +485,7 @@ int main(int argc, char **argv)
                             "         may specify the standard handle values '1' for stdout and '2'\n"
                             "         for stderr. This implies that '-err 1' is essentially\n"
                             "         identical to the UNIX shell '2>&1' redirection.\n");
+            fprintf(stderr, " -Bill   makes us act like BillY vanilla crm114\n");
 #ifndef CRM_DONT_ASSERT
             fprintf(stderr, " -Cdbg   direct developer support: trigger the C/IDE debugger when an\n"
                             "         internal error is hit.\n");
@@ -495,24 +512,23 @@ int main(int argc, char **argv)
 
         //  -- means "end of crm114 flags" - remainder of args goes to
         //  the program alone.
-        if (strncmp(argv[i], "--", 2) == 0  && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "--") == 0)
         {
             if (user_trace)
                 fprintf(stderr, "system flag processing ended at arg %d .\n", i);
-            i = argc;
-            goto end_command_line_parse_loop;
+            break;
         }
         if (strncmp(argv[i], "--", 2) == 0 && strlen(argv[i]) > 2)
         {
             if (user_trace)
                 fprintf(stderr, "Commandline set of user variable at %d '%s'.\n",
                         i, argv[i]);
-            if (user_cmd_line_vars == 0)
-                user_cmd_line_vars = i;
+            //if (user_cmd_line_vars == 0)
+            //    user_cmd_line_vars = i;
             goto end_command_line_parse_loop;
         }
         //   set debug levels
-        if (strncmp(argv[i], "-t", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-t") == 0)
         {
             if (user_trace == 0)
             {
@@ -528,7 +544,7 @@ int main(int argc, char **argv)
         }
 
         // did user specify a hash function to use instead of the default one?
-        if (strncmp(argv[i], "-H", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-H") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -538,6 +554,10 @@ int main(int argc, char **argv)
                     untrappableerror("Failed to decode the numeric -H argument [hashfunction ID]: ", argv[i]);
                 }
             }
+            else
+            {
+                untrappableerror("You must specify a (numeric) -H argument [hashfunction ID]! ", "Uh-oh...");
+            }
             if (user_trace)
             {
                 fprintf(stderr, "Configuring CRM114 to use hash function %d\n",
@@ -546,7 +566,7 @@ int main(int argc, char **argv)
             goto end_command_line_parse_loop;
         }
         // did user specify his/her desire to have an analysis profile run?
-        if (strncmp(argv[i], "-A", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-A") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -568,7 +588,7 @@ int main(int argc, char **argv)
             goto end_command_line_parse_loop;
         }
 
-        if (strncmp(argv[i], "-T", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-T") == 0)
         {
             if (internal_trace == 0)
             {
@@ -583,7 +603,7 @@ int main(int argc, char **argv)
             goto end_command_line_parse_loop;
         }
 
-        if (strncmp(argv[i], "-p", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-p") == 0)
         {
             profile_execution = 1;
             if (user_trace)
@@ -592,7 +612,7 @@ int main(int argc, char **argv)
         }
 
         //   is this a change to the maximum number of program lines?
-        if (strncmp(argv[i], "-P", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-P") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -603,6 +623,10 @@ int main(int argc, char **argv)
                 }
                 max_pgmsize = 128 * max_pgmlines;
             }
+            else
+            {
+                untrappableerror("You must specify a (numeric) -P argument [number of program lines]! ", "Uh-oh...");
+            }
             if (user_trace)
             {
                 fprintf(stderr, "Setting max prog lines to %d (%d bytes)\n",
@@ -612,7 +636,7 @@ int main(int argc, char **argv)
         }
 
         //   is this a "gimme a listing" flag?
-        if (strncmp(argv[i], "-l", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-l") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -621,6 +645,10 @@ int main(int argc, char **argv)
                 {
                     untrappableerror("Failed to decode the numeric -l argument [listing level]: ", argv[i]);
                 }
+            }
+            else
+            {
+                untrappableerror("You must specify a (numeric) -l argument [listing level]! ", "Uh-oh...");
             }
             if (user_trace)
             {
@@ -631,7 +659,7 @@ int main(int argc, char **argv)
         }
 
         //   is this a "Use Local Country Code" flag?
-        if (strncmp(argv[i], "-C", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-C") == 0)
         {
             if (user_trace)
                 fprintf(stderr, "Setting locale to local\n");
@@ -641,7 +669,7 @@ int main(int argc, char **argv)
 
         //   is this a change to the math mode (0,1 for alg/RPN but only in EVAL,
         //   2,3 for alg/RPN everywhere.
-        if (strncmp(argv[i], "-q", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-q") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -656,6 +684,10 @@ int main(int argc, char **argv)
                                      "     (accepted: 0=algebra-eval, 1=RPN-eval, 2=algebra-all, 3=RPN-all)\n"
                                      "     You specified -q [expansion mode]: ", argv[i]);
                 }
+            }
+            else
+            {
+                untrappableerror("You must specify the (numeric) -q argument [expansion mode]! ", "Uh-oh...");
             }
             if (user_trace)
             {
@@ -673,7 +705,7 @@ int main(int argc, char **argv)
         }
 
         //   change the size of the maximum data window we'll allow
-        if (strncmp(argv[i], "-w", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-w") == 0)
         {
             i++; // move to the next arg
             if (i < argc)
@@ -682,6 +714,10 @@ int main(int argc, char **argv)
                 {
                     untrappableerror("Failed to decode the numeric -w argument [data windows size]: ", argv[i]);
                 }
+            }
+            else
+            {
+                untrappableerror("You must specify the (numeric) -w argument [data windows size]! ", "Uh-oh...");
             }
             if (data_window_size < 8192)
             {
@@ -697,36 +733,33 @@ int main(int argc, char **argv)
         }
 
         //   change the size of the sparse spectrum file default.
-        if (strncasecmp(argv[i], "-s", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcasecmp(argv[i], "-s") == 0)
         {
             i++;  // move to the next arg
-            if (i < argc
-                && sscanf(argv[i], "%d", &sparse_spectrum_file_length))
+            if (i < argc)
             {
-                if (strcmp(argv[i - 1], "-S") == 0)
+                if (1 == sscanf(argv[i], "%d", &sparse_spectrum_file_length))
                 {
-                    int k;
-
-                    k = (int)floor(log2(sparse_spectrum_file_length - 1));
-                    while ((2 << k) + 1 < sparse_spectrum_file_length)
+                    if (strcmp(argv[i - 1], "-S") == 0)
                     {
-                        k++;
+                        int k;
+
+                        k = (int)floor(log2(sparse_spectrum_file_length - 1));
+                        while ((2 << k) + 1 < sparse_spectrum_file_length)
+                        {
+                            k++;
+                        }
+                        sparse_spectrum_file_length = (2 << k) + 1;
                     }
-                    sparse_spectrum_file_length = (2 << k) + 1;
+                }
+                else
+                {
+                    untrappableerror("On -s flag: incomprehensible .CSS file length: ", argv[i]);
                 }
             }
             else
             {
-                fprintf(stderr, "On -s flag: Missing or incomprehensible"
-                                ".CSS file length.\n");
-                if (engine_exit_base != 0)
-                {
-                    exit(engine_exit_base + 15);
-                }
-                else
-                {
-                    exit(EXIT_FAILURE);
-                }
+                untrappableerror("On -s flag: missing .CSS file length! ", "Uh-oh...");
             }
 
             if (user_trace)
@@ -738,7 +771,7 @@ int main(int argc, char **argv)
         }
 
         //   set a break from the command line
-        if (strncmp(argv[i], "-b", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-b") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -747,6 +780,10 @@ int main(int argc, char **argv)
                 {
                     untrappableerror("Failed to decode the numeric -b argument [breakpoint line #]: ", argv[i]);
                 }
+            }
+            else
+            {
+                untrappableerror("You must specify the (numeric) -b argument [breakpoint line #]! ", "Uh-oh...");
             }
             if (user_trace)
             {
@@ -757,7 +794,7 @@ int main(int argc, char **argv)
         }
 
         //   set base value for detailed engine exit values
-        if (strncmp(argv[i], "-E", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-E") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -766,6 +803,10 @@ int main(int argc, char **argv)
                 {
                     untrappableerror("Failed to decode the numeric -E argument [engine exit base value]: ", argv[i]);
                 }
+            }
+            else
+            {
+                untrappableerror("You must specify the numeric -E argument [engine exit base value]! ", "Uh-oh...");
             }
             if (user_trace)
             {
@@ -776,7 +817,7 @@ int main(int argc, char **argv)
         }
 
         //   set countdown cycles before dropping to debugger
-        if (strncmp(argv[i], "-d", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-d") == 0)
         {
             i++;  // move to the next arg
             debug_countdown = 0;
@@ -800,7 +841,7 @@ int main(int argc, char **argv)
         }
 
         //   ignore environment variables?
-        if (strncmp(argv[i], "-e", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-e") == 0)
         {
             ignore_environment_vars++;
             if (user_trace)
@@ -809,25 +850,29 @@ int main(int argc, char **argv)
         }
 
         // is this to set the cwd?
-        if (strncmp(argv[i], "-u", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-u") == 0)
         {
             i++;  // move to the next arg
-            if (user_trace)
-                fprintf(stderr, "Setting WD to %s\n", argv[i]);
             if (i >= argc)
             {
-                fprintf(stderr, "The -u working-directory change needs an arg\n");
-                goto end_command_line_parse_loop;
+                untrappableerror("The -u working-directory change needs an arg\n", "Uh-oh...");
             }
-            if (chdir(argv[i]))
+            else
             {
-                fprintf(stderr, "Sorry, couldn't chdir to '%s'; errno=%d(%s)\n",
-                        argv[i], errno, errno_descr(errno));
+                if (user_trace)
+                {
+                    fprintf(stderr, "Setting WD to '%s'\n", argv[i]);
+                }
+                if (chdir(argv[i]))
+                {
+                    untrappableerror_ex(SRC_LOC(), "Sorry, couldn't chdir to '%s'; errno=%d(%s)\n",
+                            argv[i], errno, errno_descr(errno));
+                }
             }
             goto end_command_line_parse_loop;
         }
 
-        if (strncmp(argv[i], "-v", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-v") == 0)
         {
             int all_included = 1;
             char cs[80 * 30];
@@ -998,7 +1043,7 @@ int main(int argc, char **argv)
             fprintf(stdout, "    - '-Cdbg' will cause a memory access violation in a last ditch\n"
                             "      effort to trigger your debugger\n");
 #endif
-#endif // CRM_DONT_ASSERT
+#endif      // CRM_DONT_ASSERT
 
             if (!all_included)
             {
@@ -1020,6 +1065,10 @@ int main(int argc, char **argv)
             if (user_trace)
                 fprintf(stderr, "Command line program at arg %d\n", i);
             openbracket = i;
+
+            posv[1] = argv[i];
+            posc = 2;
+
             goto end_command_line_parse_loop;
         }
 
@@ -1040,13 +1089,20 @@ int main(int argc, char **argv)
             {
                 if (user_trace)
                     fprintf(stderr, "cmdline arglist also locks out sysflags.\n");
-                i = argc;
+                for ( ; ++i < argc;)
+                {
+                    if (argv[i][0] != '-')
+                    {
+                        posv[posc++] = argv[i];
+                    }
+                }
+                break;
             }
             goto end_command_line_parse_loop;
         }
 
         //   set microgroom_stop_after
-        if (strncmp(argv[i], "-m", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-m") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -1055,6 +1111,10 @@ int main(int argc, char **argv)
                 {
                     untrappableerror("Failed to decode the numeric -m argument [microgroom stop after #]: ", argv[i]);
                 }
+            }
+            else
+            {
+                untrappableerror("You must specify the numeric -m argument [microgroom stop after #]! ", "Uh-oh...");
             }
             if (user_trace)
             {
@@ -1067,7 +1127,7 @@ int main(int argc, char **argv)
         }
 
         //   set microgroom_chain_length length
-        if (strncmp(argv[i], "-M", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-M") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -1076,6 +1136,10 @@ int main(int argc, char **argv)
                 {
                     untrappableerror("Failed to decode the numeric -M argument [microgroom chain length]: ", argv[i]);
                 }
+            }
+            else
+            {
+                untrappableerror("You must specify the numeric -M argument [microgroom chain length]! ", "Uh-oh...");
             }
             if (user_trace)
             {
@@ -1088,7 +1152,7 @@ int main(int argc, char **argv)
         }
 
         //   set min_pmax_pmin_ratio
-        if (strncmp(argv[i], "-r", 2) == 0 && strlen(argv[i]) == 2)
+        if (strcmp(argv[i], "-r") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -1097,6 +1161,10 @@ int main(int argc, char **argv)
                 {
                     untrappableerror("Failed to decode the numeric -r argument [Pmin/Pmax ratio]: ", argv[i]);
                 }
+            }
+            else
+            {
+                untrappableerror("You must specify the numeric -r argument [Pmin/Pmax ratio]! ", "Uh-oh...");
             }
             if (user_trace)
             {
@@ -1108,7 +1176,7 @@ int main(int argc, char **argv)
             goto end_command_line_parse_loop;
         }
 
-        if (strncmp(argv[i], "-in", 3) == 0 && strlen(argv[i]) == 3)
+        if (strcmp(argv[i], "-in") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -1136,9 +1204,17 @@ int main(int argc, char **argv)
                     stdin = fopen(stdin_filename, "rb"); // open in BINARY mode!
                     if (stdin == NULL)
                     {
-                        untrappableerror("Failed to open stdin input replacement file: ", stdin_filename);
+                        char dirbuf[DIRBUFSIZE_MAX];
+
+                        stdin = os_stdin();                                                     // reset stdin before the error report is sent out!
+                        untrappableerror_ex(SRC_LOC(), "Failed to open stdin input replacement file '%s' (full path: '%s')",
+                                stdin_filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), stdin_filename));
                     }
                 }
+            }
+            else
+            {
+                untrappableerror("The -in option requires a (file/device) argument! ", "Uh-oh...");
             }
             if (user_trace)
             {
@@ -1147,7 +1223,7 @@ int main(int argc, char **argv)
             }
             goto end_command_line_parse_loop;
         }
-        if (strncmp(argv[i], "-out", 4) == 0 && strlen(argv[i]) == 4)
+        if (strcmp(argv[i], "-out") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -1195,8 +1271,11 @@ int main(int argc, char **argv)
                         stdout = fopen(stdout_filename, (appending ? "ab" : "wb"));                       // open in BINARY mode!
                         if (stdout == NULL)
                         {
+                            char dirbuf[DIRBUFSIZE_MAX];
+
                             stdout = os_stdout();                             // reset stdout before the error report is sent out!
-                            untrappableerror("Failed to open stdout input replacement file: ", stdout_filename);
+                            untrappableerror_ex(SRC_LOC(), "Failed to open stdout input replacement file '%s' (full path: '%s')",
+                                    stdout_filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), stdout_filename));
                         }
                     }
                     else
@@ -1209,6 +1288,10 @@ int main(int argc, char **argv)
                     }
                 }
             }
+            else
+            {
+                untrappableerror("The -out option requires a (file/device) argument! ", "Uh-oh...");
+            }
             if (user_trace)
             {
                 fprintf(stderr, "Setting stdout replacement file '%s'\n",
@@ -1216,7 +1299,7 @@ int main(int argc, char **argv)
             }
             goto end_command_line_parse_loop;
         }
-        if (strncmp(argv[i], "-err", 4) == 0 && strlen(argv[i]) == 4)
+        if (strcmp(argv[i], "-err") == 0)
         {
             i++;  // move to the next arg
             if (i < argc)
@@ -1264,8 +1347,11 @@ int main(int argc, char **argv)
                         stderr = fopen(stderr_filename, (appending ? "ab" : "wb"));                       // open in BINARY mode!
                         if (stderr == NULL)
                         {
+                            char dirbuf[DIRBUFSIZE_MAX];
+
                             stderr = os_stderr();                             // reset stderr before the error report is sent out!
-                            untrappableerror("Failed to open stderr input replacement file: ", stderr_filename);
+                            untrappableerror_ex(SRC_LOC(), "Failed to open stderr input replacement file '%s' (full path: '%s')",
+                                    stderr_filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), stderr_filename));
                         }
                     }
                     else
@@ -1278,6 +1364,10 @@ int main(int argc, char **argv)
                     }
                 }
             }
+            else
+            {
+                untrappableerror("The -err option requires a (file/device) argument! ", "Uh-oh...");
+            }
             if (user_trace)
             {
                 fprintf(stderr, "Setting stderr replacement file '%s'\n",
@@ -1285,9 +1375,16 @@ int main(int argc, char **argv)
             }
             goto end_command_line_parse_loop;
         }
+        if (strcmp(argv[i], "-Bill") == 0)
+        {
+            act_like_Bill = 1;
+            if (user_trace)
+                fprintf(stderr, "Enabling BillY/vanilla mode.\n");
+            goto end_command_line_parse_loop;
+        }
 
 #ifndef CRM_DONT_ASSERT
-        if (strncmp(argv[i], "-Cdbg", 5) == 0 && strlen(argv[i]) == 5)
+        if (strcmp(argv[i], "-Cdbg") == 0)
         {
             trigger_debugger = 1;
             if (user_trace)
@@ -1296,7 +1393,7 @@ int main(int argc, char **argv)
         }
 #endif
 #if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64)) && defined (_DEBUG)
-        if (strncmp(argv[i], "-memdump", 8) == 0 && strlen(argv[i]) == 8)
+        if (strcmp(argv[i], "-memdump") == 0)
         {
             trigger_memdump = 1;
             if (user_trace)
@@ -1310,15 +1407,32 @@ int main(int argc, char **argv)
         //  BOGOSITUDE - only the FIRST such thing is the name of the
         //  file we want to use as a program.  The rest of the args
         //  should just be passed along
-        if (csl->filename == NULL)
+        if (csl->filename == NULL && openbracket < 1)
         {
             if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
-                untrappableerror("Invalid filename, ", "filename too long.");
+            {
+                untrappableerror_ex(SRC_LOC(), "Couldn't open the file, "
+                                               "filename too long: (path length = %d, max = %d) '%s'",
+                        (int)strlen(argv[i]), MAX_FILE_NAME_LEN, argv[i]);
+            }
+
+            posv[1] = argv[i];
+            posc = 2;
+
             csl->filename = argv[i];
             csl->filename_allocated = 0;
             if (user_trace)
                 fprintf(stderr, "Using program file %s\n", csl->filename);
         }
+        else
+        {
+            // further non-option arguments: feed 'em to the script as :_posX: variables:
+            if (argv[i][0] != '-')
+            {
+                posv[posc++] = argv[i];
+            }
+        }
+
 end_command_line_parse_loop:
         if (internal_trace)
         {
@@ -1327,8 +1441,15 @@ end_command_line_parse_loop:
         }
     }
 
-    //  main2 ();
+    for ( ; ++i < argc;)
+    {
+        if (argv[i][0] != '-')
+        {
+            posv[posc++] = argv[i];
+        }
+    }
 
+#if 0
     //
     //     Did we get a program filename?  If not, look for one.
     //     At this point, accept any arg that doesn't start with a - sign
@@ -1342,8 +1463,14 @@ end_command_line_parse_loop:
             if (argv[i][0] != '-')
             {
                 if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
-                    untrappableerror("Couldn't open the file, ",
-                            "filename too long.");
+                {
+                    untrappableerror_ex(SRC_LOC(), "Couldn't open the file, "
+                                                   "filename too long: (path length = %d, max = %d) '%s'",
+                            (int)strlen(argv[i]), MAX_FILE_NAME_LEN, argv[i]);
+                }
+                posv[1] = argv[i];
+                posc = CRM_MAX(posc, 2);
+
                 csl->filename = argv[i];
                 csl->filename_allocated = 0;
                 i = argc;
@@ -1352,6 +1479,8 @@ end_command_line_parse_loop:
         if (user_trace)
             fprintf(stderr, "Using program file %s\n", csl->filename);
     }
+#endif
+
     //      If we still don't have a program, we're done.  Squalk an
     //      error.
     if (csl->filename == NULL && openbracket < 0)
@@ -1372,6 +1501,9 @@ end_command_line_parse_loop:
     //     open, stat and load the program file
     if (openbracket < 0)
     {
+        if (user_trace)
+            fprintf(stderr, "Using program file %s\n", csl->filename);
+
         if (argc <= 1)
         {
             fprintf(stderr, "CRM114 version %s, rev %s (regex engine: %s) (OS: %s)\n",
@@ -1418,6 +1550,8 @@ end_command_line_parse_loop:
                     "Couldn't alloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.",
                     "");
         }
+        if (user_trace)
+            fprintf(stderr, "Using program file %s\n", csl->filename);
 
         /* [i_a] make sure we never overflow the buffer: */
 
@@ -1479,7 +1613,7 @@ end_command_line_parse_loop:
 
     //     Initialize the VHT, add in a few predefined variables
     //
-    crm_vht_init(argc, argv);
+    crm_vht_init(argc, argv, posc, posv);
 
     //    Call the pre-processor on the program
     //
@@ -1491,13 +1625,13 @@ end_command_line_parse_loop:
 
     //    Put a copy of the preprocessor-result text into
     //    the isolated variable ":_pgm_text:"
-    crm_set_temp_var(":_pgm_text:", csl->filetext);
+    crm_set_temp_var(":_pgm_text:", csl->filetext, -1);
 
     //  If the windowflag == 0, we should preload the data window.  Now,
     //  let's get some data in.
 
     //    and preload the data window with stdin until we hit EOF
-	i = 0;
+    i = 0;
     if (csl->preload_window)
     {
         //     GROT GROT GROT  This is slow
@@ -1519,21 +1653,21 @@ end_command_line_parse_loop:
         //         smaller readsizes on systems that can't handle full
         //         POSIX-style massive block transfers.
         size_t readsize = data_window_size - 1;
-		size_t targetsize = data_window_size - 1;
-		size_t offset;
+        size_t targetsize = data_window_size - 1;
+        size_t offset;
 
 #if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
         readsize = CRM_MIN(16384, readsize);   // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
 #endif
-        for (offset = 0; !feof(stdin) && offset < targetsize; )
+        for (offset = 0; !feof(stdin) && offset < targetsize;)
         {
             //i += fread (cdw->filetext + i, 1, readsize-1, stdin);
             size_t rs;
-			size_t rr;
+            size_t rr;
 
-            rs = offset + readsize < targetsize 
-					? readsize 
-					: targetsize - offset;
+            rs = offset + readsize < targetsize
+                 ? readsize
+                 : targetsize - offset;
             rr = fread(cdw->filetext + offset, 1, rs, stdin);
             if (ferror(stdin))
             {
@@ -1550,9 +1684,9 @@ end_command_line_parse_loop:
                     break;
                 }
             }
-			offset += rr;
+            offset += rr;
         }
-		i = offset;
+        i = offset;
     }
 
     //   data window is now preloaded (we hope), set the cdwo up.
@@ -1597,7 +1731,8 @@ end_command_line_parse_loop:
                 0,
                 cdw->nchars,
                 -1,
-                0);
+                0,
+				-1);
     }
     //
     //    We also set up the :_iso: to hold the isolated variables.
@@ -1629,14 +1764,15 @@ end_command_line_parse_loop:
                 0,
                 0,
                 -1,
-                0);
+                0,
+				-1);
     }
 #endif
     //    Now we're here, we can actually run!
     //    set up to start at the 0'th statement (the start)
     csl->cstmt = 0;
 
-    status = crm_invoke(csl);
+    status = crm_invoke(&csl);
 
     //     This is the *real* exit from the engine, so we do not override
     // the engine's exit status with an engine_exit_base value.

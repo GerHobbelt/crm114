@@ -1,0 +1,9 @@
+# 
+# vanilla CRM114 requires whitespace where it doesn't need to be:
+#
+
+# still too redundant whitespace in there:
+{window;isolate (:i:)/:*:_argc:/;{eval (:i:)/:@::*:i:-1:/;output /:+:_arg:*:i::\n/;}}
+
+# bare metal:
+{window;isolate(:i:)/:*:_argc:/;{eval(:i:)/:@::*:i:-1:/;output/:+:_arg:*:i::\n/;}}

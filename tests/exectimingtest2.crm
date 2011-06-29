@@ -7,11 +7,11 @@ window
 	isolate (:count:) /10000/
 	isolate (:crm_exe:) //
 	# translate () [text] // // --> error report (good work, but not really what I was looking for right now. 
-	# translate (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114] // // 
+	# translate (:crm_exe:) [/windows/G/prj/3actual/crm114/src/crm114] // // 
 	# and another error for this one:
-	# match (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114] /.*/  
+	# match (:crm_exe:) [/windows/G/prj/3actual/crm114/src/crm114] /.*/  
 	# so we end up with the Final Solution - which is a wicked hack
-	call /:cvt:/ (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114]  
+	call /:cvt:/ (:crm_exe:) [/windows/G/prj/3actual/crm114/src/crm114]  
 
 	output /\n ----- running :*:count: syscalls (:*:crm_exe:) to see the timing -----\n/
 	{

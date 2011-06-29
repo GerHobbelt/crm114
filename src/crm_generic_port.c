@@ -280,7 +280,7 @@ void crm_touch(const char *filename)
  * Return 0 on success, otherwise the error will be available in
  * errno.
  */
-int file_memset(FILE *dst, unsigned char val, int count)
+int file_memset(FILE *dst, unsigned char val, size_t count)
 {
     unsigned char buf[1024];
 
@@ -288,7 +288,7 @@ int file_memset(FILE *dst, unsigned char val, int count)
 
     while (count > 0)
     {
-        int len = (int)fwrite(buf, 1, CRM_MIN(count, 1024), dst);
+        ssize_t len = (ssize_t)fwrite(buf, 1, CRM_MIN(count, 1024), dst);
         if (len <= 0)
             return -1;
 
@@ -315,12 +315,12 @@ int file_memset(FILE *dst, unsigned char val, int count)
  *
  * return -1 when an error occurred (check 'errno' for more info then)
  */
-int fwrite_ASCII_Cfied(FILE *dst, const char *src, int len)
+ssize_t fwrite_ASCII_Cfied(FILE *dst, const char *src, size_t len)
 {
     char buf[2048 + 4];
-    int i;
-    int cnt = 0;
-    int j;
+    size_t i;
+    ssize_t cnt = 0;
+    size_t j;
 
     for (j = i = 0; i < len; i++)
     {

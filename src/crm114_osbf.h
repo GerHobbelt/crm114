@@ -89,7 +89,11 @@ extern char *CSS_version_name[];
 /* max feature count */
 #define OSBF_FEATUREBUCKET_VALUE_MAX 65535
 
-#define OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH 94321
+//
+// http://primes.utm.edu/lists/small/100000.txt
+// http://primes.utm.edu/curios/page.php?rank=3019
+//
+#define OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH   3396997 /* 6435616333396997 (* 1048573 (* 94321 */
 
 /* max chain len - microgrooming is triggered after this, if enabled */
 #define OSBF_MICROGROOM_CHAIN_LENGTH 29
@@ -139,15 +143,15 @@ extern int crm_expr_osbf_bayes_css_migrate(CSL_CELL *csl,
 
 extern void crm_osbf_set_microgroom(int value);
 extern void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *h,
-        unsigned int                                        hindex);
+        unsigned int hindex);
 extern void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *h,
         unsigned int packstart, unsigned int packlen);
 extern void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *h,
         unsigned int packstart, unsigned int packlen);
 extern unsigned int crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned int                                                 index);
+        unsigned int index);
 extern unsigned int crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned int                                                 index);
+        unsigned int index);
 extern unsigned int crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
         unsigned int hash, unsigned int key);
 extern void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header,

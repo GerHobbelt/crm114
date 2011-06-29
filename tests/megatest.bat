@@ -338,6 +338,12 @@ echo === TEST 505 ===
 
 
 
+del i_test.css 
+del q_test.css
+
+echo === TEST 560 ===
+.\crm114 "-{window; output /\n**** Alternate Neural Network Classifier test script \n/}"
+.\crm114 alternating_example_neural.crm
 
 del i_vs_q_test.css
 del i_test.css 

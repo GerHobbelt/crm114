@@ -46,45 +46,53 @@ static const STMT_TABLE_TYPE stmt_table[] =
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT },
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     //  text         internal       nlen exec special  min max   min max   min max  min max  flags
     //   rep           code               ?    flags   angles   slashargs  parens    boxes
     { "cssdiff",   CRM_CSS_DIFF,      7,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_UNIQUE | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT },
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssbackup", CRM_CSS_BACKUP,    9,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT },
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssrestore", CRM_CSS_RESTORE, 10,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT },
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssinfo",   CRM_CSS_INFO,      7,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT },
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssanalyze", CRM_CSS_ANALYZE, 10,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT },
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "csscreate", CRM_CSS_CREATE,    9,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE |
       CRM_LITERAL | CRM_BYCHUNK
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET },
+      | CRM_NEURAL_NET | CRM_MARKOVIAN 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "cssmigrate", CRM_CSS_MIGRATE, 10,  1,     0,    0,  0,     0,  1,    1,  1,   1,  1,  CRM_DEFAULT | CRM_BASIC
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET | CRM_AUTODETECT },
+      | CRM_NEURAL_NET | CRM_AUTODETECT | CRM_MARKOVIAN 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "debug",     CRM_DEBUG,         5,  0,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "eval",      CRM_EVAL,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  0,    0 },
     { "exit",      CRM_EXIT,          4,  1,     0,    0,  0,     0,  1,    0,  0,   0,  0,    0 },
@@ -104,13 +112,15 @@ static const STMT_TABLE_TYPE stmt_table[] =
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
       | CRM_REFUTE | CRM_APPEND
-      | CRM_NEURAL_NET | CRM_FROMSTART },
+      | CRM_NEURAL_NET | CRM_MARKOVIAN | CRM_FROMSTART 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "classify",  CRM_CLASSIFY,      8,  1,     0,    0,  1,     0,  2,    1,  2,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL |
       CRM_BYCHUNK
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-      | CRM_NEURAL_NET },
+      | CRM_NEURAL_NET | CRM_MARKOVIAN 
+      | CRM_ALT_OSB_BAYES | CRM_ALT_OSB_WINNOW | CRM_ALT_OSBF | CRM_ALT_MARKOVIAN | CRM_ALT_HYPERSPACE },
     { "liaf",      CRM_LIAF,          4,  1,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "match",     CRM_MATCH,         5,  1,     0,    0,  1,     1,  1,    0,  1,   0,  1,
       CRM_ABSENT | CRM_NOCASE | CRM_LITERAL | CRM_FROMSTART
@@ -167,8 +177,10 @@ int crm_load_csl(CSL_CELL *csl)
         }
         else
         {
-            untrappableerror("Couldn't open the file: ",
-                    csl->filename);
+            char dirbuf[DIRBUFSIZE_MAX];
+
+            untrappableerror_ex(SRC_LOC(), "Couldn't open the file '%s' (full path: '%s')",
+                    csl->filename, mk_absolute_path(dirbuf, WIDTHOF(dirbuf), csl->filename));
         }
     }
     else
@@ -393,9 +405,9 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         csl->mct[i] = (MCT_CELL *)calloc(1, sizeof(csl->mct[i][0]));
         if (!csl->mct[i])
         {
-            untrappableerror(
-                    "Couldn't alloc MCT cell. This is very bad.\n", "");
+            untrappableerror("Couldn't alloc MCT cell. This is very bad.\n", "");
         }
+        csl->mct[i]->trap_index = -1;  // make sure fatalerror and warnings fail fatally until we're done compiling.
     }
 
     // ***  Microcompile phase 2 - set statement types
@@ -465,8 +477,9 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         csl->mct[stmtnum]->stmt_type = CRM_BOGUS;
         csl->mct[stmtnum]->stmt_def = &stmt_table[0];
         csl->mct[stmtnum]->nest_level = bracketlevel;
-        csl->mct[stmtnum]->fail_index = 0;
-        csl->mct[stmtnum]->liaf_index = 0;
+        csl->mct[stmtnum]->fail_index = -1;
+        csl->mct[stmtnum]->liaf_index = -1;
+        csl->mct[stmtnum]->trap_index = 0; // -1;
         csl->mct[stmtnum]->stmt_break = 0;
         csl->cstmt = stmtnum;
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
@@ -553,8 +566,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             stab_stmtcode = CRM_LABEL;
             CRM_ASSERT(stmt_table[stab_index].stmt_code == stab_stmtcode);
             k = (int)strcspn(&pgmtext[nbindex + 1], ":");
-            crm_setvar(NULL, -1, pgmtext, nbindex, k + 2,
-                    NULL, 0, 0,  stmtnum, 0);
+            crm_setvar(NULL, -1, pgmtext, nbindex, k + 2,                    NULL, 0, 0,  stmtnum, 0, -1);
         }
 #if 0
         else if (strncasecmp(&pgmtext[nbindex], "insert=", 7) == 0)
@@ -692,7 +704,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                 debug_countdown = DEBUGGER_DISABLED_FOREVER + 1;                 // special signal: debugger disabled... for now.
 
                 // and make sure the variable exists...
-                crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "");
+                crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "", -1);
             }
         }
 
@@ -809,7 +821,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     if (internal_trace)
     {
         fprintf(stderr, "\nCompiled program listing:\n");
-        for (stmtnum = 0; stmtnum < numstmts; stmtnum++)
+        for (stmtnum = 0; stmtnum <= numstmts; stmtnum++)
         {
             const STMT_TABLE_TYPE *stmt_def;
             ARGPARSE_BLOCK *apb;
@@ -824,11 +836,12 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                         (stmt_def->is_executable ? "Y" : "n"),
                         (stmt_def->has_non_standard_flags ? "Y" : "n"));
             }
-            fprintf(stderr, "nest level: %3d, fail index: %4d, liaf_index: %4d, stmt_break: %4d\n",
+            fprintf(stderr, "nest level: %3d, fail index: %4d, liaf_index: %4d, stmt_break: %4d, trap_line: %4d\n",
                     csl->mct[stmtnum]->nest_level,
                     csl->mct[stmtnum]->fail_index,
                     csl->mct[stmtnum]->liaf_index,
-                    csl->mct[stmtnum]->stmt_break);
+                    csl->mct[stmtnum]->stmt_break,
+                    csl->mct[stmtnum]->trap_index);
             fprintf(stderr, "    code: ");
             fwrite_ASCII_Cfied(stderr,
                     csl->mct[stmtnum]->hosttxt + csl->mct[stmtnum]->start,
@@ -877,7 +890,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         stack[sdx] = 0;
 
         //   Work downwards first, assigning LIAF targets
-        for (stmtnum = 0; stmtnum < numstmts; stmtnum++)
+        for (stmtnum = 0; stmtnum <= numstmts; stmtnum++)
         {
             switch (csl->mct[stmtnum]->stmt_type)
             {
@@ -1015,10 +1028,40 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                     fprintf(stderr, " <<%2.2d>>",
                             csl->mct[stmtnum]->stmt_type);
 
+#if 0
                     fprintf(stderr, " L%4.4d F%4.4d T%4.4d",
                             csl->mct[stmtnum]->liaf_index,
                             csl->mct[stmtnum]->fail_index,
                             csl->mct[stmtnum]->trap_index);
+#else
+                    if (csl->mct[stmtnum]->liaf_index != -1)
+                    {
+                        fprintf(stderr, " L%4.4d",
+                                csl->mct[stmtnum]->liaf_index);
+                    }
+                    else
+                    {
+                        fprintf(stderr, " L----");
+                    }
+                    if (csl->mct[stmtnum]->fail_index != -1)
+                    {
+                        fprintf(stderr, " F%4.4d",
+                                csl->mct[stmtnum]->fail_index);
+                    }
+                    else
+                    {
+                        fprintf(stderr, " F----");
+                    }
+                    if (csl->mct[stmtnum]->trap_index != -1)
+                    {
+                        fprintf(stderr, " T%4.4d",
+                                csl->mct[stmtnum]->trap_index);
+                    }
+                    else
+                    {
+                        fprintf(stderr, " T----");
+                    }
+#endif
                 }
                 if (prettyprint_listing > 1)
                     fprintf(stderr, " :  ");
@@ -1069,7 +1112,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     if (internal_trace)
     {
         fprintf(stderr, "\nCompiled program listing (COMPLETED):\n");
-        for (stmtnum = 0; stmtnum < numstmts; stmtnum++)
+        for (stmtnum = 0; stmtnum <= numstmts; stmtnum++)
         {
             const STMT_TABLE_TYPE *stmt_def;
             ARGPARSE_BLOCK *apb;
@@ -1084,11 +1127,12 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                         (stmt_def->is_executable ? "Y" : "n"),
                         (stmt_def->has_non_standard_flags ? "Y" : "n"));
             }
-            fprintf(stderr, "nest level: %3d, fail index: %4d, liaf_index: %4d, stmt_break: %4d\n",
+            fprintf(stderr, "nest level: %3d, fail index: %4d, liaf_index: %4d, stmt_break: %4d, trap_line: %4d\n",
                     csl->mct[stmtnum]->nest_level,
                     csl->mct[stmtnum]->fail_index,
                     csl->mct[stmtnum]->liaf_index,
-                    csl->mct[stmtnum]->stmt_break);
+                    csl->mct[stmtnum]->stmt_break,
+                    csl->mct[stmtnum]->trap_index);
             fprintf(stderr, "    code: ");
             fwrite_ASCII_Cfied(stderr,
                     csl->mct[stmtnum]->hosttxt + csl->mct[stmtnum]->start,

@@ -220,6 +220,10 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "MATCH is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -257,6 +261,10 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "MATCH is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -330,8 +338,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     vtextstartlimit = source_start;
     if (internal_trace)
     {
-        fprintf(stderr, "    start matchable zone: %d, begin search %d, length %d\n",
-                vtextstartlimit, textoffset, mtextlen);
+        fprintf(stderr, "    vmidx:%d -- start matchable zone: %d, begin search %d, length %d, =%.*s=\n",
+                vmidx, vtextstartlimit, textoffset, mtextlen, mtextlen, &mdw->filetext[textoffset]);
     }
 
     //       Here is the crux.  Do the REGEX match, maybe in a loop
@@ -348,6 +356,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             i = REG_NOMATCH;
             j = -textoffset;
             matches[0].rm_eo = j;
+            mtext = NULL;
 
             if (internal_trace)
             {
@@ -390,6 +399,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
             if (internal_trace && i == 0)
             {
+                CRM_ASSERT(mtext);
                 fprintf(stderr, "    CRM_NEWEND: okay-ed match @ %d, len = %d: =%.*s=\n",
                         matches[0].rm_so, matches[0].rm_eo - matches[0].rm_so,
                         matches[0].rm_eo - matches[0].rm_so, mtext + matches[0].rm_so);
@@ -451,6 +461,10 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+        if (internal_trace)
+        {
+            fprintf(stderr, "MATCH is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         CRM_ASSERT(csl->cstmt >= 0);
         CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -480,7 +494,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
         if (user_trace)
         {
-            fprintf(stderr, "Regex matched (start: %d, end: %d).\n",
+            fprintf(stderr, "Regex matched (start: %d, len: %d).\n",
                     vht[vmidx]->mstart, vht[vmidx]->mlen);
         }
 
@@ -577,12 +591,15 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         {
                             {
                                 int vi;
-	if (!crm_is_legal_variable(vn, vlen))
-	{
-		int fev = fatalerror_ex(SRC_LOC(), "Attempt to store MATCH subexpression results into an illegal variable '%.*s'. How very bizarre.", vlen, vn);
-        return fev;
-	}
-                                vi = crm_vht_lookup(vht, vn, vlen);
+                                if (!crm_is_legal_variable(vn, vlen))
+                                {
+                                    int fev = fatalerror_ex(
+                                            SRC_LOC(),
+                                            "Attempt to store MATCH subexpression results into an illegal variable '%.*s'. How very bizarre.", vlen,
+                                            vn);
+                                    return fev;
+                                }
+                                vi = crm_vht_lookup(vht, vn, vlen, csl->calldepth);
                                 if (vht[vi] == NULL)
                                 {
                                     index_texts[mc] = 0;
@@ -608,7 +625,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                         + textoffset,
                                         matches[mc].rm_eo
                                         - matches[mc].rm_so,
-                                        csl->cstmt);
+                                        csl->cstmt,
+										csl->calldepth);
                         }
                         else
                         {
@@ -682,8 +700,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             j = tdw->nchars;
                         reclaimed = crm_compress_tdw_section
                                     (index_texts[maxi],
-                                index_starts[maxi],
-                                j);
+                                    index_starts[maxi],
+                                    j);
                         // WAS index_starts[maxi] + index_lengths[maxi] );
                         if (internal_trace)
                             fprintf(stderr,

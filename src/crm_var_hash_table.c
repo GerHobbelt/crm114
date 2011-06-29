@@ -27,7 +27,7 @@
 //      initialize the variable hash table (the vht)
 //      and stuff in the "standards" (:_vars:, environment vars)
 //
-void crm_vht_init(int argc, char **argv)
+void crm_vht_init(int argc, char **argv, int posc, char **posv)
 {
     int uvstart = 0; // uvstart is the arg that the user sees (post "--")
     int uvlist = 0;
@@ -81,13 +81,13 @@ void crm_vht_init(int argc, char **argv)
 
     //    install a few constants.
 
-    crm_set_temp_var(":_nl:", "\n");
-    crm_set_temp_var(":_ht:", "\t");
-    crm_set_temp_var(":_bs:", "\b");
-    crm_set_temp_var(":_sl:", "/");
-    crm_set_temp_var(":_sc:", ";");
-    crm_set_temp_var(":_cd:", "0");
-    crm_set_temp_var("::", " ");
+    crm_set_temp_var(":_nl:", "\n", -1);
+    crm_set_temp_var(":_ht:", "\t", -1);
+    crm_set_temp_var(":_bs:", "\b", -1);
+    crm_set_temp_var(":_sl:", "/", -1);
+    crm_set_temp_var(":_sc:", ";", -1);
+    crm_set_temp_var(":_cd:", "0", -1);
+    crm_set_temp_var("::", " ", -1);
 
     // [i_a] extension: HIDDEN_DEBUG_FAULT_REASON_VARNAME keeps track of the last error/nonfatal/whatever error report:
     //
@@ -95,7 +95,7 @@ void crm_vht_init(int argc, char **argv)
     if (debug_countdown > DEBUGGER_DISABLED_FOREVER)
     {
         // make sure the variable exists...
-        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "");
+        crm_set_temp_var(HIDDEN_DEBUG_FAULT_REASON_VARNAME, "", -1);
     }
 
     //   put the version string in as a variable.
@@ -106,57 +106,50 @@ void crm_vht_init(int argc, char **argv)
                 REVISION,
                 crm_regversion());
         verstr[WIDTHOF(verstr) - 1] = 0;
-        crm_set_temp_var(":_crm_version:", verstr);
+        crm_set_temp_var(":_crm_version:", verstr, -1);
     }
 
-    crm_set_temp_var(":_hosttype:", HOSTTYPE);
+    crm_set_temp_var(":_hosttype:", HOSTTYPE, -1);
 
     //
     //    install the argc and argv values; restart argv values from [2]
     //    if a "--" metaflag is seen.
     //
     //    argv[0] and argv[1] are not overrideable by "--".
-    crm_set_temp_var(":_arg0:", argv[0]);
-    crm_set_temp_var(":_arg1:", argv[1]);
+    crm_set_temp_var(":_arg0:", argv[0], -1);
+    crm_set_temp_var(":_arg1:", argv[1], -1);
 
     //     Check to see if there's a "--" arg.  If so, mark uvstart
     //   (that is, "user var start" at that point)... but only the first "--".
     {
         int i, j;
+        char anamebuf[255];
+        int arg_count;
+        int pos_count;
 
+        arg_count = 1;
+        pos_count = 0;
         uvstart = 2;
-        i = 0;
-        j = 0;
         for (i = 2; argc > i; i++)
         {
             //   Check for the "--" metaflag
-            if (strlen(argv[i]) == 2
-                && strncmp(argv[i], "--", 2) == 0
-                && uvstart == 2)
+            if (strcmp(argv[i], "--") == 0)
             {
                 if (internal_trace)
                     fprintf(stderr, "Resetting uvstart counter to 2\n");
                 uvstart = i + 1;
+                break;
             }
         }
-    }
 
-    //       The user variables start at argv[uvstart]
-    {
-        int i, j;
-        char anamebuf[255];
-
-        j = 2;
-        for (i = uvstart; argc > i; i++)
+        //       The user variables start at argv[uvstart]
+        for (j = 2, i = uvstart; i < argc; i++, j++)
         {
             sprintf(anamebuf, ":_arg%d:", j);
-            crm_set_temp_var(anamebuf, argv[i]);
-            j++;
+            crm_set_temp_var(anamebuf, argv[i], -1);
+            arg_count = j + 1;
         }
-        //
-        //    and put the "user-visible" argc into a var as well.
-        sprintf(anamebuf, "%d", j);
-        crm_set_temp_var(":_argc:", anamebuf);
+
         //
         //   Go through argv, and place positional arguments (that is,
         //   arguments that don't contain any '-' preambles) into
@@ -167,37 +160,48 @@ void crm_vht_init(int argc, char **argv)
         //   :_pos2: and so on are the command line args.
         //
         //    prepare to treasure up the positional args
-        posvars[0] = 0;
-        j = 0;
-
-        for (i = uvstart; i < argc; i++)
+        //
+        // _pos0 and _pos1 will exist before '--' @ uvstart; program isn't
+        // necessarily @ argv[1] though!
+        crm_set_temp_var(":_pos0:", posv[0], -1);
+        strcpy(posvars, posv[0]);
+        pos_count = 1;
+        // now, _pos0 has surely been set; now collect other arguments
+        for (j = pos_count, i = 1; i < posc; i++)
         {
             //
             //   check for the "-" sign; this is a positional argument only
             //                     if there is no "-" sign.
-            if (argv[i][0] != '-')
+            if (posv[i][0] != '-')
             {
                 sprintf(anamebuf, ":_pos%d:", j);
-                crm_set_temp_var(anamebuf, argv[i]);
-                j++;
-                if (j > 0)
-                    strcat(posvars, " ");
-                strcat(posvars, argv[i]);
+                crm_set_temp_var(anamebuf, posv[i], -1);
+                strcat(posvars, " ");
+                strcat(posvars, posv[i]);
+                pos_count = ++j;
             }
         }
-        sprintf(anamebuf, "%d", j);
-        crm_set_temp_var(":_posc:", anamebuf);
-        crm_set_temp_var(":_pos_str:", posvars);
+        // we're done with posv[...]
+
+        //
+        //    and put the "user-visible" argc into a var as well.
+        sprintf(anamebuf, "%d", arg_count);
+        crm_set_temp_var(":_argc:", anamebuf, -1);
+
+        sprintf(anamebuf, "%d", pos_count);
+        crm_set_temp_var(":_posc:", anamebuf, -1);
+
+        crm_set_temp_var(":_pos_str:", posvars, -1);
         //
         //   and set the fault to be a null string for now.
-        crm_set_temp_var(":_fault:", "");
+        crm_set_temp_var(":_fault:", "", -1);
         //
         //   set the current line number to a set of zeroes...
-        crm_set_temp_var(":_cs:", "00000000");
+        crm_set_temp_var(":_cs:", "00000000", -1);
         //
         //   Set the "lazy" intermediate variable to just a space.
         //   This will get rebound to point to the active lazy var.
-        crm_set_temp_var(":_lazy:", " ");
+        crm_set_temp_var(":_lazy:", " ", -1);
 
         //    set the current pid and parent pid.
         {
@@ -206,12 +210,16 @@ void crm_vht_init(int argc, char **argv)
 #if defined (HAVE_GETPID)
             pid = (int)getpid();
             sprintf(pidstr, "%d", pid);
-            crm_set_temp_var(":_pid:", pidstr);
+            crm_set_temp_var(":_pid:", pidstr, -1);
+#else
+            crm_set_temp_var(":_pid:", "123456789", -1);
 #endif
 #if defined (HAVE_GETPPID)
             pid = (int)getppid();
             sprintf(pidstr, "%d", pid);
-            crm_set_temp_var(":_ppid:", pidstr);
+            crm_set_temp_var(":_ppid:", pidstr, -1);
+#else
+            crm_set_temp_var(":_ppid:", "123456789", -1);
 #endif
         }
     }
@@ -230,9 +238,7 @@ void crm_vht_init(int argc, char **argv)
 
         int i, j;
 
-        i = 0;
-
-        while (environ[i])
+        for (i = 0; environ[i]; i++)
         {
             char *name;
             char *s;
@@ -255,7 +261,12 @@ void crm_vht_init(int argc, char **argv)
             /* [i_a] GROT GROT GROT: patch Win32 specific 'faked' env. vars in here: USER, PWD, ... */
             if (strncmp(environ[i], "PWD=", 4) == 0)
             {
-                got_to_fake_em &= ~FAKE_PWD;
+                // got_to_fake_em &= ~FAKE_PWD;
+
+                // NEVER use the PWD environment variable, as our 'current directory' may have been
+                // changed internally when the '-u' commandline option was specified. Hence we ALWAYS
+                // must 'reconstruct' the 'proper' PWD down below:
+                continue;
             }
             else if (strncmp(environ[i], "USER=", 5) == 0)
             {
@@ -274,11 +285,8 @@ void crm_vht_init(int argc, char **argv)
             strcpy(s, ":");
             if (environ[i][j] != 0)
                 j++; //  step past the equals sign.
-            //value = strdup(&(environ[i][j]));
-            crm_set_temp_var(name, &(environ[i][j]));
+            crm_set_temp_var(name, &environ[i][j], -1);
             free(name);
-            //free(value);
-            i++; //   and do the next environment variable
         }
 
         // [i_a] patch Win32 specific 'faked' env. vars in here: USER, PWD, ...
@@ -286,56 +294,6 @@ void crm_vht_init(int argc, char **argv)
         // for some reason (stripped bare 'secure sandbox' environment or some?)
         if (got_to_fake_em & FAKE_PWD)
         {
-#if 0
-            char dirbuf[CRM_MAX(MAX_VARNAME, MAX_PATH) + 1];
-            char fulldirbuf[CRM_MAX(MAX_VARNAME, MAX_PATH) + 1];
-            DWORD dirbufsize = CRM_MAX(MAX_VARNAME, MAX_PATH) + 1;
-
-            if (!GetCurrentDirectoryA(dirbufsize, dirbuf))
-            {
-                fatalerror_Win32("Cannot fetch the current directory (PWD)", NULL);
-            }
-            else
-            {
-                /*
-                 *      From the MS docs:
-                 *
-                 *      In certain rare cases, if the specified directory is on the
-                 *      current drive, the function might omit the drive letter and
-                 *      colon from the path. Therefore, the size that is returned
-                 *      by the function might be two characters less than the size
-                 *      of the specified string, not including the terminating null
-                 *      character. This behavior might occur in edge situations
-                 *      such as in a services application. If you need the drive
-                 *      letter, make a subsequent call to GetFullPathName to
-                 *      retrieve the drive letter.
-                 */
-                if (!GetFullPathName(dirbuf, CRM_MAX(MAX_VARNAME, MAX_PATH) + 1, fulldirbuf, NULL))
-                {
-                    fatalerror_ex(SRC_LOC(),
-                            "Cannot fetch the expanded current directory (PWD) for directory '%s'",
-                            dirbuf);
-                }
-                else
-                {
-                    crm_set_temp_var(":_env_PWD:", dirbuf);
-                    if (strlen(dirbuf) + WIDTHOF("PWD=") < (data_window_size - 1000))
-                    {
-                        strcat(tempbuf, "PWD=");
-                        strcat(tempbuf, dirbuf);
-                        strcat(tempbuf, "\n");
-                    }
-                    else
-                    {
-                        untrappableerror("The ENVIRONMENT variables don't fit into the "
-                                         "available space. \nThis is very broken.  Try "
-                                         "a larger data window (with flag -w NNNNN), \nor "
-                                         "drop the environment vars with "
-                                         "the (with flag -e)", "");
-                    }
-                }
-            }
-#else
             char dirbuf[DIRBUFSIZE_MAX];
 
             if (!mk_absolute_path(dirbuf, WIDTHOF(dirbuf), "."))
@@ -344,7 +302,13 @@ void crm_vht_init(int argc, char **argv)
             }
             else
             {
-                crm_set_temp_var(":_env_PWD:", dirbuf);
+                // strip off the trailing '/' (or '\' [Win32]!) if it isn't the root dir
+                int len = (int)strlen(dirbuf);
+                if (len > 1 && strchr("\\/", dirbuf[len - 1]))
+                {
+                    dirbuf[len - 1] = 0;
+                }
+                crm_set_temp_var(":_env_PWD:", dirbuf, -1);
                 if (strlen(dirbuf) + WIDTHOF("PWD=") < (data_window_size - 1000))
                 {
                     strcat(tempbuf, "PWD=");
@@ -360,7 +324,6 @@ void crm_vht_init(int argc, char **argv)
                                      "the (with flag -e)", "");
                 }
             }
-#endif
         }
         else if (got_to_fake_em & FAKE_USER)
         {
@@ -380,7 +343,7 @@ void crm_vht_init(int argc, char **argv)
             }
             else
             {
-                crm_set_temp_var(":_env_USER:", pwbufret->pw_name);
+                crm_set_temp_var(":_env_USER:", pwbufret->pw_name, -1);
                 if (strlen(pwbufret->pw_name) + WIDTHOF("USER=") < (data_window_size - 1000))
                 {
                     strcat(tempbuf, "USER=");
@@ -410,7 +373,7 @@ void crm_vht_init(int argc, char **argv)
             }
             else
             {
-                crm_set_temp_var(":_env_USER:", pwbufret->pw_name);
+                crm_set_temp_var(":_env_USER:", pwbufret->pw_name, -1);
                 if (strlen(pwbufret->pw_name) + WIDTHOF("USER=") < (data_window_size - 1000))
                 {
                     strcat(tempbuf, "USER=");
@@ -436,7 +399,7 @@ void crm_vht_init(int argc, char **argv)
             }
             else
             {
-                crm_set_temp_var(":_env_USER:", userbuf);
+                crm_set_temp_var(":_env_USER:", userbuf, -1);
                 if (strlen(userbuf) + WIDTHOF("USER=") < (data_window_size - 1000))
                 {
                     strcat(tempbuf, "USER=");
@@ -457,9 +420,9 @@ void crm_vht_init(int argc, char **argv)
 #endif
         }
     }
-    crm_set_temp_var(":_env_string:", tempbuf);
+    crm_set_temp_var(":_env_string:", tempbuf, -1);
 
-    //    see if argv [1] is a '-( whatever) arg, which limits the
+    //    see if argv[1] is a '-( whatever) arg, which limits the
     //    set of runtime parameters allowed on the command line.
     //    If so, we have the limit list.  We put spaces around the
     //    args so we can just use strstr(3) to see if an arg is permitted
@@ -534,7 +497,7 @@ void crm_vht_init(int argc, char **argv)
                 if (isok)
                 {
                     if (internal_trace)
-                        fprintf(stderr, "setting cmdline string %s", argv[i]);
+                        fprintf(stderr, "checking cmdline string '%s' if it is a valid crm114 var=value item", argv[i]);
                     strcpy(avalbuf, "SET");
                     j = 2;
                     k = 0;
@@ -550,6 +513,14 @@ void crm_vht_init(int argc, char **argv)
                     anamebuf[k] = ':';
                     k++;
                     anamebuf[k] = 0;
+                    // make sure we don't barf on incorrect arguments such as --:=1 : such
+                    // colons will screw us up when initializing such an illegal 'variable'.
+		   if (!crm_is_legal_variable(anamebuf, k))
+			{
+			isok = 0;
+}
+else
+    		{
                     if (argv[i][j] == '=')
                     {
                         j++;  //  skip over the = sign
@@ -562,21 +533,27 @@ void crm_vht_init(int argc, char **argv)
                         }
                         avalbuf[k] = 0;
                     }
+		}
+                }
+
+		if (isok)
+                {
                     if (user_trace)
                     {
                         fprintf(stderr, "\n Setting cmdline var '%s' to '%s'\n",
                                 anamebuf, avalbuf);
                     }
-                    crm_set_temp_var(anamebuf, avalbuf);
+                    crm_set_temp_var(anamebuf, avalbuf, 0);
                 }
                 else
                 {
                     fprintf(stderr,
                             "\n ***Warning*** "
                             "This program does not accept the "
-                            "flag '%s',\n", anamebuf);
+                            "flag '%s' (derived from commandline argument '%s'),\n", 
+				anamebuf, argv[i]);
                     fprintf(stderr,
-                            " so we'll just ignore it for now. \n");
+                            " so we'll just ignore it for now.\n");
                 }
             }
         }
@@ -590,7 +567,7 @@ void crm_vht_init(int argc, char **argv)
 //           been called the idw (Isolated Data Window) but it's too
 //           late to fix it now.
 //
-void crm_set_temp_nvar(const char *varname, const char *value, int vallen)
+void crm_set_temp_nvar(const char *varname, const char *value, int vallen, int calldepth)
 {
     int namestart, namelen;
     int valstart;
@@ -609,7 +586,7 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen)
                       "your program is probably broken.", "");
     }
 
-    if ((strlen(varname) + vallen + tdw->nchars + 64) > data_window_size)
+	if ((strlen(varname) + vallen + tdw->nchars + 64) > data_window_size)
     {
         fatalerror("This program has overflowed the ISOLATEd data "
                    "area with a variable that's just too big.  "
@@ -620,12 +597,12 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen)
 
     //       check- is this the first time we've seen this variable?  Or
     //       are we re-assigning a previous variable?
-	if (!crm_is_legal_variable(&varname[vnidx], vnlen))
-	{
-		fatalerror_ex(SRC_LOC(), "Attempting to assign a value to an illegal variable '%.*s'.", vnlen, &varname[vnidx]);
-		return;
-	}
-    i = crm_vht_lookup(vht, &varname[vnidx], vnlen);
+    if (!crm_is_legal_variable(&varname[vnidx], vnlen))
+    {
+        fatalerror_ex(SRC_LOC(), "Attempting to assign a value to an illegal variable '%.*s'.", vnlen, &varname[vnidx]);
+        return;
+    }
+    i = crm_vht_lookup(vht, &varname[vnidx], vnlen, calldepth);
     if (vht[i] == NULL)
     {
         //  never assigned this variable before, so we stick it in the
@@ -663,15 +640,14 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen)
         crm_setvar(NULL, 0,
                 tdw->filetext, namestart, namelen,
                 tdw->filetext, valstart, vallen,
-                0, 0);
+                0, 0, calldepth);
         //     that's it.
     }
     else
     {
         //   This variable is preexisting.  Perform an ALTER on it.
         //
-        crm_destructive_alter_nvariable(&varname[vnidx], vnlen,
-                value, vallen);
+        crm_destructive_alter_nvariable(&varname[vnidx], vnlen,                value, vallen, calldepth);
     }
 }
 
@@ -679,9 +655,9 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen)
 //     Use ONLY where you can be sure no embedded NULs will be seen (i.e.
 //     fixed strings in the early startup.
 //
-void crm_set_temp_var(const char *varname, const char *value)
+void crm_set_temp_var(const char *varname, const char *value, int calldepth)
 {
-    crm_set_temp_nvar(varname, value, (int)strlen(value));
+    crm_set_temp_nvar(varname, value, (int)strlen(value), calldepth);
 }
 
 
@@ -705,7 +681,8 @@ void crm_set_windowed_nvar(char *varname,
         char                    *valtext,
         int                      start,
         int                      len,
-        int                      stmtnum)
+        int                      stmtnum,
+		int calldepth)
 {
     int i;
     int namestart, namelen;
@@ -713,25 +690,19 @@ void crm_set_windowed_nvar(char *varname,
     //       do the internal_trace thing
     if (internal_trace)
     {
-        int i;
         fprintf(stderr, "  setting data-window variable %s to value ",
                 varname);
-#if 0
-        for (i = start; i < start + len; i++)
-            fprintf(stderr, "%c", valtext[i]);
-#else
         fwrite_ASCII_Cfied(stderr, valtext + start, len);
-#endif
         fprintf(stderr, "\n");
     }
 
     //    check and see if the variable is already in the VHT
-	if (!crm_is_legal_variable(varname, varlen))
-	{
-		fatalerror_ex(SRC_LOC(), "Attempting to alter the value of an illegal windowed variable '%.*s'.", varlen, varname);
-		return;
-	}
-    i = crm_vht_lookup(vht, varname, varlen);
+    if (!crm_is_legal_variable(varname, varlen))
+    {
+        fatalerror_ex(SRC_LOC(), "Attempting to alter the value of an illegal windowed variable '%.*s'.", varlen, varname);
+        return;
+    }
+    i = crm_vht_lookup(vht, varname, varlen, calldepth);
     if (vht[i] == NULL)
     {
         //  nope, never seen this var before, add it into the VHT
@@ -757,7 +728,7 @@ void crm_set_windowed_nvar(char *varname,
         crm_setvar(NULL, 0,
                 tdw->filetext, namestart, namelen,
                 valtext, start, len,
-                stmtnum, 0);
+                stmtnum, 0, calldepth);
         //     that's it.
     }
     else
@@ -777,7 +748,7 @@ void crm_set_windowed_nvar(char *varname,
             crm_setvar(NULL, 0,
                     vht[i]->nametxt, vht[i]->nstart, vht[i]->nlen,
                     valtext, start, len,
-                    stmtnum, 0);
+                    stmtnum, 0, calldepth);
 
             //       Do we need to repair the leaked memory?  Only necessary if the
             //       old text was in the tdw area; this is harmless if the area
@@ -804,17 +775,17 @@ void crm_set_windowed_nvar(char *varname,
 //
 //    How we compress out an area that might no longer be in use.
 static int crm_recursive_compress_tdw_section
-(char *oldtext, int oldstart, int oldend);
+            (char *oldtext, int oldstart, int oldend);
 
 int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
 {
     //   let's court death, and do a FULL compress.
     return crm_recursive_compress_tdw_section
-           (tdw->filetext, 0, tdw->nchars + 1);
+                (tdw->filetext, 0, tdw->nchars + 1);
 }
 
 int crm_recursive_compress_tdw_section
-(char *oldtext, int oldstart, int oldend)
+            (char *oldtext, int oldstart, int oldend)
 #else
 int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
 #endif
@@ -1208,7 +1179,7 @@ end_of_nstring_tests:
 //
 
 void crm_destructive_alter_nvariable(const char *varname, int varlen,
-        const char *newstr, int newlen)
+        const char *newstr, int newlen, int calldepth)
 {
     int i;
     int vhtindex, oldlen, delta;
@@ -1220,21 +1191,21 @@ void crm_destructive_alter_nvariable(const char *varname, int varlen,
     //       inspect code using it and get rid of this.
     if (crm_nextword(varname, varlen, 0, &i, &vlen))
     {
-	if (!crm_is_legal_variable(&varname[i], vlen))
-	{
-		fatalerror_ex(SRC_LOC(), "Attempting to alter the value of an illegal variable '%.*s'.", vlen, &varname[i]);
-		return;
-	}
-        vhtindex = crm_vht_lookup(vht, &varname[i], vlen);
+        if (!crm_is_legal_variable(&varname[i], vlen))
+        {
+            fatalerror_ex(SRC_LOC(), "Attempting to alter the value of an illegal variable '%.*s'.", vlen, &varname[i]);
+            return;
+        }
+        vhtindex = crm_vht_lookup(vht, &varname[i], vlen, calldepth);
         if (vht[vhtindex] == NULL)
         {
             // IGNORE FOR NOW
-            crm_set_temp_nvar(&varname[i], newstr, newlen);
+            crm_set_temp_nvar(&varname[i], newstr, newlen, calldepth);
             nonfatalerror_ex(SRC_LOC(), "Attempt to alter the value of a nonexistent "
                                         "variable, so I'm creating an ISOLATED variable.  "
                                         "I hope that's OK.  The nonexistent variable is: "
                                         "%d/%d: '%.*s'/'%.*s'",
-                    vlen, varlen, vlen, &(varname[i]), varlen, varname);
+                    vlen, varlen, vlen, &varname[i], varlen, varname);
             return;
         }
     }
@@ -1262,24 +1233,13 @@ void crm_destructive_alter_nvariable(const char *varname, int varlen,
     //
     if (user_trace) // major debug
     {
-        int i;
         // fprintf(stderr, "\n     surgery on the var %s\n ", varname);
         fprintf(stderr, " surgery on the var >");
-#if 0
-        for (i = 0; i < varlen; i++)
-            fprintf(stderr, "%c", varname[i]);
-#else
         fwrite_ASCII_Cfied(stderr, varname, varlen);
-#endif
         fprintf(stderr, "<\n");
         //fprintf(stderr, "new value is: \n***%s***\n", newstr);
         fprintf(stderr, " new value is ***>");
-#if 0
-        for (i = 0; i < newlen; i++)
-            fprintf(stderr, "%c", newstr[i]);
-#else
         fwrite_ASCII_Cfied(stderr, newstr, newlen);
-#endif
         fprintf(stderr, "<***\n");
     }
     //     slice and splice the mdw text area, to make the right amount of
@@ -1427,21 +1387,20 @@ while (delta + mdw->nchars > data_window_size - 1)
 //    or the index of the appropriate NULL slot to put
 //    the var in, if not found.
 
-int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen)
+int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen, int scope_depth)
 {
     crmhash_t hc;
-    int i, j, k;
-    int done;
+    int i;
+	int found = -1;
+	int found_scope = -2;
     int vsidx;
     int vslen;
-
-    j = 0; // just so J is used.
 
     //   Consistency scan - look for those null varnames!  Do this every
     //   time!
     if (internal_trace || user_trace)
     {
-        int i, j;
+        int i;
         for (i = 0; i < vht_size; i++)
         {
             if (vht[i] != NULL && vht[i]->nlen < 2)
@@ -1464,15 +1423,9 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen)
                 }
                 if (corrupted)
                 {
-                    fprintf(stderr, " i=%d len=%d name='",
-                            i, vht[i]->nlen);
-#if 0
-                    for (j = 0; j < vht[i]->nlen; j++)
-                        fprintf(stderr, "%c",
-                                vht[i]->nametxt[vht[i]->nstart + j]);
-#else
+                    fprintf(stderr, " i=%d len=%d scope=%d name='",
+                            i, vht[i]->nlen, vht[i]->scope_depth);
                     fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
-#endif
                     fprintf(stderr, "'\n");
                 }
             }
@@ -1485,17 +1438,20 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen)
         if (internal_trace)
         {
             fprintf(stderr, " variable len %d, name is -", vslen);
-#if 0
-            for (k = vsidx; k < vsidx + vslen; k++)
-                fprintf(stderr, "%c", vname[k]);
-#else
             fwrite_ASCII_Cfied(stderr, vname + vsidx, vslen);
-#endif
-
-            fprintf(stderr, "- .\n");
+            fprintf(stderr, "-, scope depth =%d.\n", scope_depth);
         }
 
         hc = strnhash(&vname[vsidx], vslen) % vht_size;
+	}
+	else
+	{
+		// empty var-name = erroneous situtation 
+		//
+		// Anyway, since we always want to return a valid index, then at least 
+		// set it up so we return an index to a NULL entry:
+		hc = 0;
+	}
 
         //  go exploring - find either an empty cell (meaning that this
         //  is the first time this variable name has been entered into the
@@ -1509,74 +1465,86 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen)
         //   consider a "wrap" to have occurred if we even think about
         //   the slot just before the hashcoded slot
 
-        done = 0;
-        while (!done)
+        for(;;)
         {
             //  is there anything here yet?
             if (vht[i] == NULL)
             {
-                if (internal_trace)
-                {
-                    int ic;
-                    fprintf(stderr, "  var ");
-#if 0
-                    for (ic = 0; ic < vlen; ic++)
-                        fprintf(stderr, "%c", vname[ic]);
-#else
-                    fwrite_ASCII_Cfied(stderr, vname, vlen);
-#endif
-                    fprintf(stderr, "(len %d) not at %d (empty)\n", (int)vlen, i);
-                    fprintf(stderr, "Returning the index where it belonged.\n");
-                }
-                return i;
+				// either we only found the var in an outer scope or we didn't find it at all:
+				if (found < 0)
+				{
+					if (internal_trace)
+					{
+						fprintf(stderr, "  var ");
+						fwrite_ASCII_Cfied(stderr, vname, vlen);
+						fprintf(stderr, "(len %d) not at %d (empty), scope depth = %d\n", (int)vlen, i, scope_depth);
+						fprintf(stderr, "Returning the index where it belonged.\n");
+					}
+					return i;
+				}
+				else
+				{
+					return found;
+				}
             }
 
             //  there's something here - is it what we have been seeking
             if (vlen == vht[i]->nlen
-                && memcmp(&((vht[i]->nametxt)[vht[i]->nstart]),
-                        vname,
-                        vlen) == 0)
+                && memcmp(&vht[i]->nametxt[vht[i]->nstart],
+                        vname, vlen) == 0)
             {
-                //  Yes, we found it.
-                if (internal_trace)
-                {
-                    int ic;
-                    fprintf(stderr, "  var '");
-#if 0
-                    for (ic = 0; ic < vht[i]->nlen; ic++)
-                        fprintf(stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
-#else
-                    fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
-#endif
-                    fprintf(stderr, " (len %d) found at %d (",
-                            (int)vlen, i);
-                    if (vht[i]->valtxt == cdw->filetext)
-                    {
-                        fprintf(stderr, "(main)");
-                    }
-                    else
-                    {
-                        fprintf(stderr, "(isol)");
-                    }
-                    fprintf(stderr, " s: %d, l:%d)\n",
-                            vht[i]->vstart, vht[i]->vlen);
-                }
-                return i;
+				if (vht[i]->scope_depth == scope_depth)
+				{
+					//  Yes, we found it.
+					if (internal_trace)
+					{
+						fprintf(stderr, "  var '");
+						fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+						fprintf(stderr, " (len %d) found at %d (", (int)vlen, i);
+						if (vht[i]->valtxt == cdw->filetext)
+						{
+							fprintf(stderr, "(main)");
+						}
+						else
+						{
+							fprintf(stderr, "(isol)");
+						}
+						fprintf(stderr, " s: %d, l:%d)\n",
+								vht[i]->vstart, vht[i]->vlen);
+					}
+					return i;
+				}
+				else 
+{
+        if (internal_trace)
+        {
+            fprintf(stderr, " variable len %d, name is -", vslen);
+            fwrite_ASCII_Cfied(stderr, vname + vsidx, vslen);
+            fprintf(stderr, "- spotted at scope_depth %d, while looking for scope depth %d "
+"(previous match @ index %d, scope %d).\n", 
+vht[i]->scope_depth, scope_depth,
+found, found_scope);
+        }
+
+if (vht[i]->scope_depth < scope_depth
+					&& vht[i]->scope_depth > found_scope)
+				{
+					// found in outer scope. But we should narrow down our search to the
+					// closest scope still.
+					found = i;
+					found_scope = vht[i]->scope_depth;
+				}
+}
             }
             else
             {
                 if (internal_trace)
                 {
-                    int ic;
-                    fprintf(stderr, "\n Hash clash (at %d): wanted %s (len %d)",
-                            i, vname, (int)vlen);
-                    fprintf(stderr, " but found '");
-#if 0
-                    for (ic = 0; ic < vht[i]->nlen; ic++)
-                        fprintf(stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
-#else
+                    fprintf(stderr, "\n Hash clash (at %d): wanted '",
+                            i);
+                    fwrite_ASCII_Cfied(stderr, vname, vlen);
+                    fprintf(stderr, "' (len %d) but found '", (int)vlen);
                     fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
-#endif
                     fprintf(stderr, "' instead.");
                 }
             }
@@ -1593,50 +1561,46 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen)
             //   get close to overflow.
             if (i == (hc - 1))
             {
-                /* static */
-                char badvarname[MAX_VARNAME];
-                strncpy(badvarname, &vname[vsidx], (vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1));
-                badvarname[(vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1)] = 0;
-                if (internal_trace)
-                {
-                    int index;
-                    fprintf(stderr, "Variable Hash Table Dump\n");
-                    for (index = 0; index < vht_size; index++)
-                    {
-                        int ic;
-                        fprintf(stderr, "  var '");
-#if 0
-                        for (ic = 0; ic < vht[index]->nlen; ic++)
-                        {
-                            fprintf(stderr, "%c",
-                                    (vht[index]->nametxt)[ic + vht[index]->nstart]);
-                        }
-#else
-                        fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
-#endif
-                        fprintf(stderr, "'[%d] found at %d (",
-                                vht[index]->nlen,  index);
-                        if (vht[index]->valtxt == cdw->filetext)
-                        {
-                            fprintf(stderr, "(main)");
-                        }
-                        else
-                        {
-                            fprintf(stderr, "(isol)");
-                        }
-                        fprintf(stderr, " s: %d, l:%d)\n",
-                                vht[index]->vstart, vht[index]->vlen);
-                    }
-                }
-                fatalerror(" Variable hash table overflow while looking "
-                           "for variable: ",
-                        badvarname);
-                done = 1;
-                return 0;
+				// either we only found the var in an outer scope or we didn't find it at all:
+				// in both cases we've got a full hash table, but still...
+				if (found >= 0)
+				{
+					return found;
+				}
+				else
+				{
+					char badvarname[MAX_VARNAME];
+					strncpy(badvarname, &vname[vsidx], (vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1));
+					badvarname[(vslen < MAX_VARNAME ? vslen : MAX_VARNAME - 1)] = 0;
+					if (internal_trace)
+					{
+						int index;
+						fprintf(stderr, "Variable Hash Table Dump\n");
+						for (index = 0; index < vht_size; index++)
+						{
+							fprintf(stderr, "  var '");
+							fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
+							fprintf(stderr, "'[%d] found at %d (",
+									vht[index]->nlen,  index);
+							if (vht[index]->valtxt == cdw->filetext)
+							{
+								fprintf(stderr, "(main)");
+							}
+							else
+							{
+								fprintf(stderr, "(isol)");
+							}
+							fprintf(stderr, " s: %d, l:%d)\n",
+									vht[index]->vstart, vht[index]->vlen);
+						}
+					}
+					fatalerror(" Variable hash table overflow while looking "
+							   "for variable: ",
+							badvarname);
+					return 0;
+				}
             }
         }
-    }
-    return 0;
 }
 
 
@@ -1657,19 +1621,20 @@ void crm_setvar(
         int   vstart,
         int   vlen,
         int   linenumber,
-        int   lazy_redirects
+        int   lazy_redirects,
+		int calldepth
                )
 {
     int i, j;   // some indices to bang on
 
     //  first off, see if the variable is already stored.
 
-	if (!crm_is_legal_variable(&nametxt[nstart], nlen))
-	{
-		fatalerror_ex(SRC_LOC(), "Attempting to set the value of an illegal variable '%.*s'.", nlen, &nametxt[nstart]);
-		return;
-	}
-    i = crm_vht_lookup(vht, &nametxt[nstart], nlen);
+    if (!crm_is_legal_variable(&nametxt[nstart], nlen))
+    {
+        fatalerror_ex(SRC_LOC(), "Attempting to set the value of an illegal variable '%.*s'.", nlen, &nametxt[nstart]);
+        return;
+    }
+    i = crm_vht_lookup(vht, &nametxt[nstart], nlen, calldepth);
     if (vht[i] == NULL)
     {
         //    Nope, this is an empty VHT slot
@@ -1690,6 +1655,7 @@ void crm_setvar(
         vht[i]->vstart = 0;
         vht[i]->vlen = 0;
         vht[i]->lazy_redirects = lazy_redirects;
+	vht[i]->scope_depth = calldepth;
         //  and now that the slot has proper initial information,
         //  we can use the same code as is used in an update to do
         //  the initial setting of values.  This is good because
@@ -1709,6 +1675,7 @@ void crm_setvar(
     vht[i]->mlen = 0;
     vht[i]->linenumber = linenumber;
     vht[i]->lazy_redirects = lazy_redirects;
+	// do NOT change scope_depth! Once created, a variable's scope remains as it is!
 
     if (internal_trace)
     {
@@ -1745,13 +1712,13 @@ void crm_setvar(
 
 //  look up what the line number is of a variable.
 //
-int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len)
+int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len, int calldepth)
 {
     int i;   // some indices to bang on
 
-	// [i_a] Tolerate 'illegal' variables here: some callers of 
-	// lookupvarinline() expect reasonable results for those.
-    i = crm_vht_lookup(vht, &(text[start]), len);
+    // [i_a] Tolerate 'illegal' variables here: some callers of
+    // lookupvarinline() expect reasonable results for those.
+    i = crm_vht_lookup(vht, &(text[start]), len, calldepth);
 
 
     //    GROT GROT GROT
@@ -1801,7 +1768,6 @@ int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len)
 void crm_updatecaptures(char *text, int loc, int delta)
 {
     int vht_index;
-    int i;
     int ostart = 0, oend = 0;
     int nstart = 0, nend = 0;
 
@@ -1819,16 +1785,10 @@ void crm_updatecaptures(char *text, int loc, int delta)
             {
                 // start of valtext block check
                 // value text area
-                if (internal_trace)
+                if (internal_trace > 1)
                 {
                     fprintf(stderr, "\n  checking var ");
-#if 0
-                    for (i = 0; i < vht[vht_index]->nlen; i++)
-                        fprintf(stderr, "%c",
-                                vht[vht_index]->nametxt[vht[vht_index]->nstart + i]);
-#else
                     fwrite_ASCII_Cfied(stderr, vht[vht_index]->nametxt + vht[vht_index]->nstart,  vht[vht_index]->nlen);
-#endif
                     fprintf(stderr, " ");
                     fprintf(stderr, " s: %d, l:%d/%d, e:%d n:%d ~ %d ...",
                             vht[vht_index]->vstart,
@@ -1843,13 +1803,13 @@ void crm_updatecaptures(char *text, int loc, int delta)
                 oend = nstart = ostart + vht[vht_index]->vlen;
                 nstart = crm_mangle_offset(ostart, loc, delta, 0);
                 nend = crm_mangle_offset(oend, loc, delta, 1);
-                if (internal_trace)
+                if (internal_trace > 1)
                     fprintf(stderr, "\n   index %d vstart/vlen upd: %d, %d ",
                             vht_index,
                             vht[vht_index]->vstart, vht[vht_index]->vlen);
                 vht[vht_index]->vstart = nstart;
                 vht[vht_index]->vlen = nend - nstart;
-                if (internal_trace)
+                if (internal_trace > 1)
                     fprintf(stderr, "to %d, %d.\n",
                             vht[vht_index]->vstart,
                             vht[vht_index]->vlen);
@@ -1859,13 +1819,13 @@ void crm_updatecaptures(char *text, int loc, int delta)
                 oend = ostart + vht[vht_index]->mlen;
                 nstart = crm_mangle_offset(ostart, loc, delta, 0);
                 nend = crm_mangle_offset(oend, loc, delta, 1);
-                if (internal_trace)
+                if (internal_trace > 1)
                     fprintf(stderr, "\n index %d mstart/mlen upd: %d, %d  ",
                             vht_index,
                             vht[vht_index]->mstart, vht[vht_index]->mlen);
                 vht[vht_index]->mstart = nstart;
                 vht[vht_index]->mlen = nend - nstart;
-                if (internal_trace)
+                if (internal_trace > 1)
                     fprintf(stderr, "to %d, %d.\n",
                             vht[vht_index]->mstart,
                             vht[vht_index]->mlen);
@@ -1891,14 +1851,14 @@ void crm_updatecaptures(char *text, int loc, int delta)
                             orig_len,
                             oend - ostart);
 
-                if (internal_trace)
+                if (internal_trace > 1)
                     fprintf(stderr,
                             "\n      index %d nstart/nlen upd: %d, %d  ",
                             vht_index,
                             vht[vht_index]->nstart, vht[vht_index]->nlen);
                 vht[vht_index]->nstart = nstart;
                 vht[vht_index]->nlen = nend - nstart;
-                if (internal_trace)
+                if (internal_trace > 1)
                     fprintf(stderr, "to %d, %d.\n",
                             vht[vht_index]->nstart,
                             vht[vht_index]->nlen);
@@ -1964,7 +1924,7 @@ int crm_mangle_offset(int mark, int dot, int delta, int sl)
         //
         //   but, if delta is negative (a deletion) then we can move toward
         //   dot, but not earlier than dot.
-        mark = mark + delta; //  delta is negative, so we ADD it to subtract!
+        mark += delta; //  delta is negative, so we ADD it to subtract!
         if (mark < dot)
             mark = dot;
         return mark;
@@ -2004,7 +1964,7 @@ int crm_mangle_offset(int mark, int dot, int delta, int sl)
         //
         //   but, if delta is negative (a deletion) then we can move toward
         //   dot, but not earlier than dot.
-        mark = mark + delta; //  delta is negative, so we ADD it to subtract!
+        mark += delta; //  delta is negative, so we ADD it to subtract!
         if (mark < dot)
             mark = dot;
         return mark;
@@ -2055,24 +2015,24 @@ void free_hash_table(VHT_CELL **vht, size_t vht_size)
 // Return !0 when this is a legal variable: starting and ending with a colon, and no colon in there
 int crm_is_legal_variable(const char *vname, size_t vlen)
 {
-	if (vlen < 2)
-	{
-		return 0;
-	}
-	if (vname[0] != ':')
-	{
-		return 0;
-	}
-	if (vname[vlen - 1] != ':')
-	{
-		return 0;
-	}
-	// by now, we know we WILL find a ':'; only matter now is wehen the first one will pop up:
-	if (((const char *)memchr(vname + 1, ':', vlen - 1)) - vname != vlen - 1)
-	{
-		return 0;
-	}
-	return 1;
-}	
+    if (vlen < 2)
+    {
+        return 0;
+    }
+    if (vname[0] != ':')
+    {
+        return 0;
+    }
+    if (vname[vlen - 1] != ':')
+    {
+        return 0;
+    }
+    // by now, we know we WILL find a ':'; only matter now is wehen the first one will pop up:
+    if (((const char *)memchr(vname + 1, ':', vlen - 1)) - vname != vlen - 1)
+    {
+        return 0;
+    }
+    return 1;
+}
 
 

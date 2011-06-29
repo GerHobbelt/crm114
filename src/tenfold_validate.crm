@@ -32,6 +32,7 @@ isolate <default> (:thickness:) /5.0/
 isolate <default> (:show_partitions:) //
 isolate <default> (:decision_length:) /2048/
 isolate <default> (:results:) /results/
+isolate <default> (:input_filter:) //
 #
 isolate <default> (:initial_text:) /The quick brown fox jumped over the lazy dog's back 012345679/
 #
@@ -54,7 +55,7 @@ isolate (:s:) //
 	}
 	liaf
 }
-{  #  Funny business for SVM and SKS soltion files
+{  #  Funny business for SVM and SKS solution files
 	match [:clf:] /sks|svm/
 	match [:cstatfiles:] /[[:graph:]]( )[[:graph:]]/ (:: :midspace:)
         alter (:midspace:) / | /
@@ -293,7 +294,7 @@ match [:cnames:] //
 	syscall /rm -rf :*:name:.stat /
 	output /CREATING :*:name:.stat with :*:initial_text: \n/
 	learn <:*:clf:> /:*:regex:/ [:initial_text:] (:*:name:.stat)
-	syscall /ls -la 1>&2 /
+	# syscall /ls -la 1>&2 /
 	liaf
 	{
 		match [:clf:] /svm|sks/
@@ -311,7 +312,12 @@ match [:file_list:] //
 	match <fromend nomultiline> [:file_list:] \
 		/([[:graph:]]+)[[:blank:]]+([[:graph:]]+)/ (:: :cnam: :fnam:)
 	#output /\nExample file: :*:fnam: (:*:cnam:) /
-	input [:*:fnam: 0 :*:decision_length:] (:ftext:)
+	input [ :*:fnam: 0 :*:decision_length: ] (:ftext:)
+	{             # is there an input filter?
+		match [:input_filter:] /./
+		syscall /:*:input_filter:/ (:*:ftext:) (:ftext:)  
+		#output /text: :*:ftext:\n/
+	}
 	{
 		classify <:*:clf:> /:*:regex:/ [:ftext:] (:*:cstatfiles:) (:s:)
 	}
@@ -322,13 +328,20 @@ match [:file_list:] //
 		   /^\#. \(:*:cnam:.*pR:[[:blank:]]+([[:graph:]]+)/
 		{
 			output /./
-			eval /:@: :*:pr: < :*:thickness: :/
+			eval /:@: :*:pr: <= :*:thickness: :/
 			{
 				eval /:@: :*:pr: < 0 :/
-				output /X/
+				output /\nX/
 			}
-			output /\nExample file: :*:fnam: (:*:cnam:) /
-			output /(pR: :*:pr:) learning into :*:cnam:.stat  /
+			{
+				{
+					match [:verbose:] /./
+					output /\nExample file: :*:fnam: (:*:cnam:) /
+					output /(pR: :*:pr:) learning into :*:cnam:.stat  /
+				}
+				alius
+				output / :*:cnam: :*:pr: /
+			}
 			learn <:*:clf:> [:ftext:] /:*:regex:/ (:*:cnam:.stat)
 			{
 				#  if doublesided, go through the list of all 

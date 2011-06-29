@@ -80,7 +80,7 @@ crm114: *WARNING*
 I'll try to keep working.
 This happened at line 293 of file matchtest.crm:
     match <absent> (:incognita:) /nothinjkljiejfksn;s94jf94msks/
-(runtime system location: crm_expr_match.c(492) in routine: crm_expr_match)
+(runtime system location: crm_expr_match.c(506) in routine: crm_expr_match)
 
 
 ------------------END OF TESTING----------------------

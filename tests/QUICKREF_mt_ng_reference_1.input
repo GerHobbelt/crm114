@@ -330,6 +330,13 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
                                   model.  No tokenization happens- this 
                                   classifier works one bit at a time, always.  
                                   EXPERIMENTAL !!!
+      <fscm>                    - use the fast substring compression matcher.
+                                  This measures the compressibility of an 
+                                  unknown text using the known texts as a
+                                  compression dictionary.  Tokenization is 
+                                  used as a compressibility filter (default
+                                  tokenization is /./ which makes FSCM
+                                  equivalent to LZ77 with an infinite window.
       <svm>                     - use the SVM classifier.  This uses SVM 
                                   (support vector machine) techniques.  NB:
                                   for now VERY EXPERIMENTAL; OSB or unigram
@@ -348,8 +355,7 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
                                   Use <bychunk> to update weights after each
                                   document in a pass (default is to update
                                   weights only after all documents are seen
-                                  in a pass).
-				  VERY EXPERIMENTAL!!!
+                                  in a pass). EXPERIMENTAL!!!
       <correlate>               - use the full correlative matcher.  Very
                                   slow, but capable of matching stemmed words
                                   in any language and of matching binary files
@@ -474,8 +480,9 @@ hash (:result:) /input/          - compute a fast 32-bit hash of the
                                    /input/, and ALTER :result: to the 
                                    hexadecimal hash value.  HASH is
                                    _not_ warranted to be constant across
-                                   major releases of CRM114, nor is it
-				   cryptographically secure.
+                                   major releases of CRM114, nor across 
+                                   changes of platform (32 v 64 bit), nor 
+				   is it cryptographically secure.
      (:result:)                     - value that gets result.
                /input/              - string to be hashed (can contain 
                                       expanded :vars: , defaults to 
@@ -492,7 +499,7 @@ intersect (:out:) [:var1: :var2: ...] - makes :out: contain the part
                                    window.
 				      				     
 
-isolate (:var:) <flags> /initial-value/  - puts :var: into a data area 
+isolate (:var:) <flags> [/initial-value]/  - puts :var: into a data area 
                                    outside of the default data window
 				   buffer; subsequent changes to this 
 				   var don't change the data buffer (though 
@@ -504,10 +511,13 @@ isolate (:var:) <flags> /initial-value/  - puts :var: into a data area
        <default>                    - only create and set var if it didn't
                                       exist before (ideal for setting defaults)
            (:var:)                  - name of ISOLATEd var (var-expanded)
-                /initial-value/     - optional initial value for :var:
-				      (var-expanded).  If no value is
+                [/initial-value]/     - optional initial value for :var:
+				      (var-expanded); use either [] or //
+                                      to enclose the value.  If no value is
 				      supplied, the previous value is
-				      retained/copied.
+				      retained/copied.  If there is no
+                                      previous value and no value is supplied,
+                                      a NULL string is used.
 
 input <flags> (:result:) [:filename:] - read in the content of filename 
                                         if no filename, then read stdin
@@ -574,7 +584,7 @@ learn <flags> (:class:) [:in:] /word-pat/ - learn the statistics of the :in:
                                4-billion-dimensional hyperspace, and the 
                                set of sources that shines most brightly onto
                                the unknown document's hyperspatial location
-                               is the matching class.  EXPERIMENTAL!!!
+                               is the matching class.  Slightly experimental.
       <unigram>		     - use single-word features only; using this
                                this makes CRM114 almost exactly 
                                equivalent to most other Bayesian 
@@ -716,7 +726,7 @@ return /returnval/                - return from a CALL.  Note that since
                                      to the caller (or if the caller doesn't
                                      accept return values, it's discarded).
 
-syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ 
+syscall <flags> (:in:) (:out:) (:status:) [/command_or_label]/ 
                                     - execute a shell command or fork 
                                       to the specified label.  This happens
                                       in a fresh copy of the environment; 
@@ -763,13 +773,14 @@ syscall <flags> (:in:) (:out:) (:status:) /command_or_label/
                                       When the process exits, it's exit code
                                       will be surgically stored here (unless
                                       you specified <async>)
-                /command_or_label/  - the command or entrypoint you want to
+                [/command_or_label]/ - the command or entrypoint you want to
                                       run.  This arg is var-expanded; if the
                                       first word is a :label:, the fork begins
                                       execution at the label.  If the first
                                       word is not a :label:, then the entire
                                       string is handed off to the shell to
-                                      be executed as a shell command.
+                                      be executed as a shell command.  It can
+				      be enclosed in either [] or //.
 
 
 translate <flags> (:dest:) [:src] /from_charset/ /to_charset/   - do a 
@@ -945,8 +956,10 @@ longest match possible that can fit".
   .         (a period) matches any _single_ character (except start-of-line or
             end of line "virtual characters", but it does match a newline).
 
-  (match)    - the () go away, and the string that matched inside is
-	     available for capturing.  Use \( and \) to match actual 
+  (parenthesis)   - the () themselves go away, the item inside the parenthesis
+             is treated as a group (so you can (foo)* to get repeated foos), 
+             and whatever string matched inside is captured as a submatch 
+	     for any match variables.  Use \( and \) to match actual 
 	     parenthesis. 
 
   a|b        match a _or_ b, such as foo|bar which will match "foo" or 
@@ -1099,7 +1112,9 @@ The evaluation is done in four sequential passes:
     
       Allowed operators are:  
 
-             + - * / % ^ v > < = >= <= != e E f F g G x X only.
+             + - * / % ^ v > < = >= <= != e E f F g G x X 
+
+      only.
 
       The '^' operator is exponentiation; A ^ B is A raised to the B power.
       The 'v' operator is any-base log; A v B is the log of B in logbase 
@@ -1144,10 +1159,10 @@ The basic syntax is:
   
   (text-to-match){~[maxerrs] [#maxsubsts] [+maxinserts] [-maxdeletes]}
 
-Note that the '~' (with an optional maxerr count) is _required_ (that's how
-we know it's an approximate regex rather than just a rep-count); if you
-don't specify a max error count, you will get the best match, if you do,
-the match will have at most that many errors.
+Note that the '~' (tilde, with an optional maxerr count) is _required_
+(that's how we know it's an approximate regex rather than just a
+rep-count); if you don't specify a max error count, you will get the
+best match, if you do, the match will have at most that many errors.
 
 Remember that you specify the changes to the text in the _pattern_
 necessary to make it match the text in the string being searched.

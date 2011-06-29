@@ -35,7 +35,7 @@ window
 {
 	isolate (:count:) /10000/
 	isolate (:crm_exe:) //
-	call /:cvt:/ (:crm_exe:) [/home/ger/prj/3actual/crm114/src/crm114]  
+	call /:cvt:/ (:crm_exe:) [/windows/G/prj/3actual/crm114/src/crm114]  
 
 	output /\n ----- running :*:count: syscalls (:*:crm_exe:) to check for leaks / failures -----\n/
 	{

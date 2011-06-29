@@ -119,9 +119,12 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
     f = fopen(filename, "wb");
     if (!f)
     {
+        char dirbuf[DIRBUFSIZE_MAX];
+
         fatalerror_ex(SRC_LOC(),
-                "\n Couldn't open your clumper backing file %s for writing; errno=%d(%s)\n",
+                "\n Couldn't open your new CLUMPER backing file %s for writing; (full path: '%s') errno=%d(%s)\n",
                 filename,
+                mk_absolute_path(dirbuf, WIDTHOF(dirbuf), filename),
                 errno,
                 errno_descr(errno));
         return 0;
@@ -358,7 +361,7 @@ static int eat_document(ARGPARSE_BLOCK *apb,
                  && n_features < max_features - 1; i++)
             {
                 feature_space[n_features++] =
-                    hash_pipe[0] + hash_pipe[i] * hash_coefs[i];
+                    hash_pipe[0] + hash_pipe[i] *hash_coefs[i];
                 CRM_ASSERT(n_features < max_features - 1);
             }
         }
@@ -863,7 +866,7 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
     for (i = 0; i < H_BUCKETS; i++)
     {
         k = C[i] = H[i] + k;
-        t_A = A[i] = H[i] * (min + (i + 0.5) * scale) + t_A;
+        t_A = A[i] = H[i] *(min + (i + 0.5) * scale) + t_A;
     }
     CRM_ASSERT(j != 0);
     gM = t_A / (float)j;
@@ -873,7 +876,7 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
         CRM_ASSERT(!((k - C[i]) <= FLT_EPSILON && (k - C[i]) >= -FLT_EPSILON));
         CRM_ASSERT(!(C[i] <= FLT_EPSILON && C[i] >= -FLT_EPSILON));
         scoro = square(gM - (t_A - A[i]) / (k - C[i])) * (k - C[i])
-        + square(gM - A[i] / C[i]) * C[i];
+                + square(gM - A[i] / C[i]) * C[i];
         if (scoro > t_score)
         {
             t_score = scoro;
@@ -1090,6 +1093,10 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CLUMP is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1324,9 +1331,12 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         f = fopen(filename, "ab");
         if (!f)
         {
-            int fev = nonfatalerror_ex(SRC_LOC(),
-                    "\n Couldn't open your new clumper file %s for writing; errno=%d(%s)\n",
+            char dirbuf[DIRBUFSIZE_MAX];
+
+            int fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't open your CLUMPER file %s for appending; (full path: '%s') errno=%d(%s)\n",
                     filename,
+                    mk_absolute_path(dirbuf, WIDTHOF(dirbuf), filename),
                     errno,
                     errno_descr(errno));
             return fev;
@@ -1510,6 +1520,10 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "PMULC is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1602,7 +1616,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         }
         outbuf[out_len] = 0;
         if (out_var_len)
-            crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_len);
+            crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_len, csl->calldepth);
         unmap_file(&s);
     }
     else
@@ -1725,6 +1739,10 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #else
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+            if (internal_trace)
+            {
+                fprintf(stderr, "CLUMP/PMULC is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+            }
             CRM_ASSERT(csl->cstmt >= 0);
             CRM_ASSERT(csl->cstmt <= csl->nstmts);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -1733,7 +1751,7 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (internal_trace)
             fprintf(stderr, "JOE_TRACE:\n%s", outbuf);
         if (out_var_len)
-            crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_len);
+            crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_len, csl->calldepth);
         unmap_file(&s);
     }
     return 0;

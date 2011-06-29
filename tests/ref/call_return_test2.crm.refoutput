@@ -13,6 +13,6 @@ Attempt to store a CALL return value into an illegal variable 'ABC'. How very bi
 Sorry, but this program is very sick and probably should be killed off.
 This happened at line 5 of file call_return_test2.crm:
     call /:func:/ (:*:c:)
-(runtime system location: crm_exec_engine.c(1035) in routine: crm_invoke)
+(runtime system location: crm_exec_engine.c(1257) in routine: crm_invoke)
 
 

@@ -83,6 +83,8 @@ int q_expansion_mode = 0;
 
 int selected_hashfunction = 0;  //  0 = default
 
+int act_like_Bill = 0;
+
 
 
 
@@ -236,8 +238,8 @@ int main(int argc, char **argv)
                     {
                         // try to find the header reading first 2 "buckets"
                         if (fscanf
-                            (f, "%u;%u;%u\n", (unsigned int *)h.version,
-                                    &(h.flags), &(h.buckets_start)) != 3)
+                                        (f, "%u;%u;%u\n", (unsigned int *)h.version,
+                                        &(h.flags), &(h.buckets_start)) != 3)
                         {
                             fprintf(stderr,
                                     "\n %s is not in the right CSV format.\n",

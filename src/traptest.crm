@@ -4,7 +4,7 @@
 	{
 		{	
 			output /checking for a foo.../
-			match /foo/
+			match /foo/ 
 			output /Found a foo :*:_nl:/
 		}
 		alius

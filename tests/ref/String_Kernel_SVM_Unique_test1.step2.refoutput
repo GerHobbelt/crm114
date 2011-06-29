@@ -1,5 +1,5 @@
 TEST SCRIPT + COMMANDLINE:
--{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/;  translate [:one_paragraph:] (:one_paragraph:) /.,!?@#^&*()/; learn [:one_paragraph:] < sks unique > (q_test.css) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ ; liaf } 
+-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?:*:_nl::*:_nl:/;  translate [:one_paragraph:] (:one_paragraph:) /.,!?@#^&*()/; learn [:one_paragraph:] < sks unique > (q_test.css) /[[:graph:]]+/ /0 0 100 0.001 1 1 4/ ; liaf } 
 
 RETURN CODE:
 0

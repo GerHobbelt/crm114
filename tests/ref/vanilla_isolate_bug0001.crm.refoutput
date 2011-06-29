@@ -1,0 +1,12 @@
+TEST SCRIPT + COMMANDLINE:
+vanilla_isolate_bug0001.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+a = 'x'
+a = ''
+

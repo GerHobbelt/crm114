@@ -1,3 +1,90 @@
+2009-02-08 Ger Hobbelt
+
+    * Merged in BlameBarack vanilla changes since 2008/10.
+
+    * Notice that the unification of mailfilter + mailreaver + mailtrainer has an unexpected
+      side-effect: mailfilter would add the 'X-CRM114-Status: Good  ( <pr> )' mail header
+      while the more modern mailreaver would add the 'X-CRM114-Status: GOOD ( <pr> )'
+      mail header, which is SIMILAR but NOT IDENTICAL.
+
+      This vanilla issue turned up while working on TREC-compatible tests using Gordon
+      Cormack / Lyman published spamfilterjig toolkit, which expected this instead:
+      'X-CRM114-Status: GOOD  ( pR: -<pr> )' ... notice that extra 'pR:' string AND
+      the mandatory '-' minus in there!
+
+    * Added the mkcss.crm script (derived from work on TREC-compatible tests)
+
+    * Added tenfold_validate_ex.crm and tenfold_validate_mailreaver.crm scripts to
+      ./tests/ directory. tenfold_validate_ex spits out TREC-compatible result files
+      and includes additional features, such as 'forced training' (Train Always) vs.
+      the regular TOE (Train On Error). Another option is THTTR (Thick Threshold Training)
+      which will repeatedly (for a maximum number of iterations) train a message until
+      its classification passes a preconfigured 'thick' threshold.
+
+    * alt.winnow classifier has some VERY EXPERIMENTAL new pR calculus.
+
+    * Added vanilla CRM114 bug exhibiting tests in ./tests/ directory: vanilla_*.crm
+
+    * Fixed the trap-within-a-call handling bug in GerH builds. Test added to ./tests/
+      directory: trap_inside_call_issue1
+
+    * Hyperspace-style <unique> has been moved into the VT engine so that any classifier
+      using VT now automagically supports the <unique> attribute as well.
+
+    * Bugfix: script parser would not accept the Bayesian/Markovian 'alternative' 
+      classifiers (markovian.alt, osb.alt, osbf.alt and winnow.alt) as arguments of
+      the 'learn', 'classify' nor the 'css*' script commands.
+
+    * The experimental Bayesian/Markovian 'alternative' classifiers (markovian.alt, 
+      osb.alt, osbf.alt and winnow.alt) now include full VT support.
+
+    * VT engine has been extended to include configurable leading and trailing padding
+      in the tokenizer (vanilla uses hardcoded DEADBEEF trailing padding only).
+
+      It is the intent to make the padding script-configurable to enable quick & easy
+      testing of various edge behaviours of the VT engine; this is expected to be quite
+      important when classifying small messages.
+
+    * VT engine has been augmented to include feature hash weight factors and order number
+      feedback to allow Bayesian/Markovian classifiers full, backwards-compatible VT
+      use.
+
+      Of course, feature weight lists can be script-configured, just like VT matrices
+      already could (weight:, vector:)
+
+    * VT engine now detects and signals when Arne's optimization is feasible as this
+      depends very much on the VT matrix contents.
+
+    * All Bayesian / Markovian classifiers now use the same left-trucatable prime 
+      as their default hashtable/CSS store size.
+
+
+2008-10-20 Ger Hobbelt
+
+    * Added Bourne Shell fixes for those systems which have the original Bourne shell as /bin/sh:
+
+      '[...]' is replaced with 'test ...' -- Bourne doesn't recognize the [] alias
+
+      'shift' is surrounded by 'if test $# != 0; then ... fi' as 'shift' will print an error and abort
+      in Bourne when there are no more arguments to shift (BASH will silently ignore this)
+
+      '\n' in tests/Makefile CRM114 inline test scripts is replaced by CRM114's :*:_nl: as Bourne
+      unescapes the \n even within '...' quotes and that ruins our test validations (bash and bourne produced
+      output is not similar when you keep those \n around instead of using :*:_nl:)
+
+      added check for the existence of '/usr/share/dict/words' as not all systems have that one
+      and not having it around would previously result in an aborted (FAILed) 'make check'.
+
+    * bugfixes for mawk vs. gawk in ./tests/*.awk:
+      
+      - gawk accepts /* .. */ comments, mawk does not.
+
+      - gawk understands sprintf("%.0lf", ...), mawk does not. For mawk to work it must be: %.0f without the 'l'.
+
+
+      
+
+
 2008-10-04 Ger Hobbelt
 
     * Added a few extra test cases to 'make check': alius_w_comment2, ...

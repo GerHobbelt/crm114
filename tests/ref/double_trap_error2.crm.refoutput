@@ -1,0 +1,26 @@
+TEST SCRIPT + COMMANDLINE:
+double_trap_error2.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+X
+EX0: YO!
+EX3: 
+crm114: *ERROR*
+Double Trap: Variable Value Assignment Problem in VARIABLE destination 'ex' while processing the trappable error 'YO! YA!': 
+crm114: *ERROR*
+Attempting to assign a value to an illegal variable 'ex'.
+Sorry, but this program is very sick and probably should be killed off.
+This happened at line 14 of file double_trap_error2.crm:
+    trap (ex) /./  # erroneous var
+(runtime system location: crm_var_hash_table.c(589) in routine: crm_set_temp_nvar)
+Sorry, but this program is very sick and probably should be killed off.
+This happened at line 14 of file double_trap_error2.crm:
+    trap (ex) /./  # erroneous var
+(runtime system location: crm_errorhandlers.c(1641) in routine: crm_trigger_fault)
+
+

@@ -129,9 +129,9 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
 
         switch (buf[ip])
         {
-            //
-            //        a digit,or maybe a number - big change - we now use strtod
-            //
+        //
+        //        a digit,or maybe a number - big change - we now use strtod
+        //
         case '.':
         case '0':
         case '1':
@@ -183,15 +183,15 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
             }
             break;
 
-            //
-            //   and now the standard math operators (except for - and + above)
-            //
+        //
+        //   and now the standard math operators (except for - and + above)
+        //
         case '*':
             {
                 if (sp > 0)
                 {
                     sp--;
-                    stack[sp] = stack[sp] * stack[sp + 1];
+                    stack[sp] = stack[sp] *stack[sp + 1];
                     sinc = 1;
                 }
             }
@@ -774,7 +774,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
 
             switch (buf[ip])
             {
-                //   Monadic operators and numbers
+            //   Monadic operators and numbers
             case '-':
             case '+':
             case '0':
@@ -814,7 +814,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                 }
                 break;
 
-                //      deal with a possible rightarg strtod situation
+            //      deal with a possible rightarg strtod situation
             case ' ':
                 break;
 
@@ -827,9 +827,9 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
             }
             break;
 
-            //  if left arg is valid; next thing must be an operator;
-            //   however op then op is also valid and should form composite
-            //    operators like '>=' and '!=' (see below).
+        //  if left arg is valid; next thing must be an operator;
+        //   however op then op is also valid and should form composite
+        //    operators like '>=' and '!=' (see below).
 
         case (LEFTVALID):
             if (internal_trace)
@@ -926,7 +926,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                 }
                 break;
 
-                //      deal with a possible rightarg strtod situation
+            //      deal with a possible rightarg strtod situation
             case '-':
             case '+':
             case '0':
@@ -972,7 +972,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                 fprintf(stderr, "Executing %c operator\n", (short)opstack[sp]);
             switch (opstack[sp])
             {
-                //    Math operators
+            //    Math operators
             case '+':
                 leftarg[sp] += rightarg;
                 break;
@@ -1026,7 +1026,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                 }
                 break;
 
-                //      Relational operators
+            //      Relational operators
             case '<':
                 if (leftarg[sp] < rightarg)
                 {
@@ -1105,7 +1105,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                 }
                 break;
 
-                //           Formatting operators
+            //           Formatting operators
             case 'e':
             case 'E':
             case 'f':

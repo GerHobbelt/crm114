@@ -414,7 +414,7 @@ uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
             return c;               /* zero length strings require no mixing */
         }
 
-#else /* make valgrind happy */
+#else   /* make valgrind happy */
 
         k8 = (const uint8_t *)k;
         switch (length)
@@ -466,7 +466,7 @@ uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
             return c;
         }
 
-#endif /* !valgrind */
+#endif  /* !valgrind */
     }
     else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0))
     {
@@ -743,7 +743,7 @@ void hashlittle2(
             return;                  /* zero length strings require no mixing */
         }
 
-#else /* make valgrind happy */
+#else   /* make valgrind happy */
 
         k8 = (const uint8_t *)k;
         switch (length)
@@ -797,7 +797,7 @@ void hashlittle2(
             return;                  /* zero length strings require no mixing */
         }
 
-#endif /* !valgrind */
+#endif  /* !valgrind */
     }
     else if (HASH_LITTLE_ENDIAN && ((u.i & 0x1) == 0))
     {
@@ -1069,7 +1069,7 @@ uint32_t hashbig(const void *key, size_t length, uint32_t initval)
             return c;               /* zero length strings require no mixing */
         }
 
-#else  /* make valgrind happy */
+#else   /* make valgrind happy */
 
         k8 = (const uint8_t *)k;
         switch (length)              /* all the case statements fall through */
@@ -1121,7 +1121,7 @@ uint32_t hashbig(const void *key, size_t length, uint32_t initval)
             return c;
         }
 
-#endif /* !VALGRIND */
+#endif  /* !VALGRIND */
     }
     else
     {
@@ -1722,6 +1722,41 @@ static crmhash_t shtpap_strnhash(const char *str, int len)
 
 
 
+/* copied from OpenSSL lhash.c */
+/*
+ * The following hash seems to work very well on normal text strings
+ * no collisions on /usr/dict/words and it distributes on %2^n quite
+ * well, not as good as MD5, but still good.
+ */
+static crmhash_t OpenSSL_strnhash(const char *str, size_t len)
+	{
+	crmhash_t ret=0;
+	size_t n;
+	crmhash_t v;
+	int r;
+
+	if ((str == NULL) || (len == 0))
+		return ret;
+/*
+	unsigned char b[16];
+	MD5(c,strlen(c),b);
+	return(b[0]|(b[1]<<8)|(b[2]<<16)|(b[3]<<24)); 
+*/
+
+	n = 0x100;
+	while (len--)
+		{
+		v=n|(*str++);
+		n+=0x100;
+		r= (int)((v>>2)^v)&0x0f;
+		ret=(ret<<r)|(ret>>(32-r));
+		// ret&=0xFFFFFFFFUL;
+		ret^=v*v;
+		}
+	return (ret>>16)^ret;
+	}
+
+
 
 crmhash_t strnhash(const char *str, size_t len)
 {
@@ -1750,6 +1785,10 @@ crmhash_t strnhash(const char *str, size_t len)
     case 5:
         h = SuperFast_strnhash(str, (int)len);
         break;
+
+	case 6:
+		h = OpenSSL_strnhash(str, len);
+		break;
     }
 
     /* save the complete 'raw' hashed text by using as many 'continuation' records as necessary */
@@ -1987,7 +2026,11 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
 #if defined (HAVE_MSYNC)
     if (map->prot & PROT_WRITE)
     {
-        munmap_status = msync(map->addr, map->actual_len, MS_SYNC /* | MS_INVALIDATE */);
+#if 01 /* BlameBarack vanilla, but I have my doubts... */
+        munmap_status = msync(map->addr, map->actual_len, MS_ASYNC | MS_INVALIDATE); /* [i_a]: was: MS_SYNC (* | MS_INVALIDATE *) */
+#else
+        munmap_status = msync(map->addr, map->actual_len, MS_SYNC /* | MS_INVALIDATE */ );
+#endif
         if (munmap_status != 0)
         {
             nonfatalerror_ex(SRC_LOC(),
@@ -2196,7 +2239,11 @@ void crm_munmap_file(void *addr)
         if (p->prot & PROT_WRITE)
         {
 #if defined (HAVE_MSYNC)
-            int ret = msync(p->addr, p->actual_len, MS_SYNC /* | MS_INVALIDATE */);
+#if 01 /* BlameBarack vanilla, but I have my doubts... */
+            int ret = msync(p->addr, p->actual_len, MS_ASYNC | MS_INVALIDATE); /* [i_a] was: MS_SYNC (* | MS_INVALIDATE *) */
+#else
+            int ret = msync(p->addr, p->actual_len, MS_SYNC /* | MS_INVALIDATE */ );
+#endif
             if (ret != 0)
             {
                 nonfatalerror_ex(SRC_LOC(),

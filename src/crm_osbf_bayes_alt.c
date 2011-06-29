@@ -56,130 +56,7 @@ static const int hctable[] =
 };
 
 //          Where does the nominative data start?
-// static unsigned int spectra_start;
 
-/* structure for token searching */
-struct token_search
-{
-    unsigned char *ptok;
-    unsigned int   toklen;
-    crmhash_t      hash;
-    unsigned char *max_ptok;
-    const char    *pattern;
-    regex_t       *regcb;
-    unsigned int   max_long_tokens;
-};
-
-/************************************************************/
-
-static int get_next_token(struct token_search *pts)
-{
-    unsigned char *p_end = NULL; /* points to end of the token */
-    int error = 0;               /* default: no error */
-
-    if (pts->pattern[0] != 0)
-    {
-        regmatch_t match[5];
-
-        if (pts->ptok < pts->max_ptok)
-        {
-            error = crm_regexec(pts->regcb, (char *)pts->ptok,
-                    (int)(pts->max_ptok - pts->ptok), WIDTHOF(match), match, 0, NULL);
-            if (error == REG_NOMATCH)
-            {
-                match[0].rm_so = 0;
-                match[0].rm_eo = 0;
-                error = 0;
-            }
-            /* fprintf(stderr, "%s %d %d\n", pts->pattern, match[0].rm_so, match[0].rm_eo); */
-        }
-        else
-        {
-            match[0].rm_so = 0;
-            match[0].rm_eo = 0;
-        }
-
-        if (error == 0)
-        {
-            p_end = pts->ptok + match[0].rm_eo;
-            pts->ptok += match[0].rm_so;
-        }
-    }
-    else
-    {
-        /* find nongraph delimited token */
-        p_end = pts->ptok;
-        while ((pts->ptok < pts->max_ptok) && !crm_isgraph((int)*pts->ptok))
-            pts->ptok++;
-        p_end = pts->ptok;
-        while ((p_end < pts->max_ptok) && crm_isgraph((int)*p_end))
-            p_end++;
-    }
-
-    if (error == 0)
-    {
-        /* update token length */
-        pts->toklen = (int)(p_end - pts->ptok);
-    }
-
-    /* return error status */
-
-
-#if 0
-    {
-        unsigned int i = 0;
-        while (error == 0 && i < pts->toklen)
-            fputc(pts->ptok[i++], stderr);
-        fprintf(stderr, " %d", pts->toklen);
-    }
-#endif
-
-
-    return error;
-}
-
-/*****************************************************************/
-
-static int get_next_hash(struct token_search *pts)
-{
-    crmhash_t hash_acc = 0;
-    unsigned int count_long_tokens = 0;
-    int error;
-
-    /* get next token */
-    error = get_next_token(pts);
-
-    /* long tokens, probably base64 lines */
-    while (error == 0 && pts->toklen > OSBF_MAX_TOKEN_SIZE
-           && count_long_tokens < pts->max_long_tokens)
-    {
-        count_long_tokens++;
-        /* XOR new hash with previous one */
-        hash_acc ^= strnhash((const char *)pts->ptok, pts->toklen);
-        /* fprintf(stderr, " %0lX +\n ", hash_acc);  */
-        /* advance the pointer and get next token */
-        pts->ptok += pts->toklen;
-        error = get_next_token(pts);
-    }
-
-    if (error == 0)
-    {
-        if (pts->toklen > 0 || count_long_tokens > 0)
-        {
-            hash_acc ^= strnhash((const char *)pts->ptok, pts->toklen);
-            /* fprintf(stderr, " %0lX %d\n", hash_acc, pts->toklen); */
-            pts->hash = hash_acc;
-        }
-        else
-        {
-            /* no more hashes */
-            /* fprintf(stderr, "End of text %0lX %d\n", hash_acc, pts->toklen); */
-            error = 1;
-        }
-    }
-
-    return error;
-}
 
 /*****************************************************************/
 
@@ -198,26 +75,21 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     int i, j, k;
     int h;                      //  h is our counter in the hashpipe;
-    char ptext[MAX_PATTERN];    //  the regex pattern
-    int plen;
     //  char ltext[MAX_PATTERN];  //  the variable to learn
     //int llen;
     char htext[MAX_PATTERN];    //  the hash name
     int hlen;
     int cflags, eflags;
     struct stat statbuf;                //  for statting the hash file
+    int hfsize;                         //  size of the hash file
     OSBF_FEATUREBUCKET_STRUCT *hashes;  //  the text of the hash file
     OSBF_FEATURE_HEADER_STRUCT *header; //  header of the hash file
-    //char *seen_features;
-    crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
-
-	regex_t regcb = {0};
-    int textoffset;
-    int textmaxoffset;
+    crmhash_t *hashpipe;
+    int hashcounts;
+    //
     int sense;
     int fev;
     char *learnfilename;
-    struct token_search ts;
 
     if (user_trace)
         fprintf(stderr, "OSBF Learn\n");
@@ -237,8 +109,8 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //llen = crm_nexpandvar (ltext, llen, MAX_PATTERN, vht, tdw);
 
     //     get the "this is a word" regex
-    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
+    //plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
+    //plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
     //            set our cflags, if needed.  The defaults are
     //            "case" and "affirm", (both zero valued).
@@ -248,7 +120,7 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     sense = +1;
     if (apb->sflags & CRM_NOCASE)
     {
-        cflags = cflags | REG_ICASE;
+        cflags |= REG_ICASE;
         eflags = 1;
         if (user_trace)
             fprintf(stderr, "turning oncase-insensitive match\n");
@@ -263,7 +135,7 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         // enable microgroom
         crm_osbf_set_microgroom(1);
-        ;
+
         // if not set by command line, use default
         if (microgroom_chain_length == 0)
             microgroom_chain_length = OSBF_MICROGROOM_CHAIN_LENGTH;
@@ -288,7 +160,7 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         fev = nonfatalerror_ex(SRC_LOC(),
                 "\nYou didn't specify a valid filename: '%.*s'\n",
-                (int)hlen,
+                hlen,
                 htext);
         return fev;
     }
@@ -302,6 +174,7 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (!learnfilename)
     {
         untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+        return 1;
     }
 
     //             and stat it to get it's length
@@ -329,18 +202,19 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         k = stat(learnfilename, &statbuf);
         CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
+    //
+    hfsize = statbuf.st_size;
 
     //
     //         open the hash file into memory so we can bitwhack it
     //
     header = crm_mmap_file(learnfilename,
             0,
-            statbuf.st_size,
+            hfsize,
             PROT_READ | PROT_WRITE,
             MAP_SHARED,
             CRM_MADV_RANDOM,
-            NULL);
-
+            &hfsize);
     if (header == MAP_FAILED)
     {
         fev =
@@ -349,6 +223,13 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
     //
+
+    //
+    //   now set the hfsize to the number of entries, not the number
+    //   of bytes total
+    hfsize = hfsize / sizeof(FEATUREBUCKET_TYPE);
+
+
     if (user_trace)
     {
         fprintf(stderr,
@@ -367,8 +248,8 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 *((unsigned int *)header->version), header->flags);
         fev =
             fatalerror
-            ("The .cfc file is the wrong type!  We're expecting "
-             "a OSBF_Bayes-spectrum file.  The filename is: ", learnfilename);
+                        ("The .cfc file is the wrong type!  We're expecting "
+                         "a OSBF_Bayes-spectrum file.  The filename is: ", learnfilename);
         return fev;
     }
 
@@ -376,21 +257,7 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     // spectra_start = header->buckets_start;
 
-    //   compile the word regex
-    //
-    if (internal_trace)
-    {
-        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
-    }
 
-    // compile regex if not empty - empty regex means "plain regex"
-        i = crm_regcomp(&regcb, ptext, plen, cflags);
-        if (i != 0)
-        {
-            crm_regerror(i, &regcb, tempbuf, data_window_size);
-            nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
-            goto regcomp_failed;
-        }
 
 
     //   Start by priming the pipe... we will shift to the left next.
@@ -399,96 +266,36 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     k = 0;
     j = 0;
     i = 0;
-
-#ifdef STUPID_OLD_VAR_RESTRICTION
-    if (llen > 0)
-    {
-        vhtindex = crm_vht_lookup(vht, ltext, llen);
-    }
-    else
-    {
-        vhtindex = crm_vht_lookup(vht, ":_dw:", 5);
-    }
-
-    if (vht[vhtindex] == NULL)
-    {
-        int q;
-        q =
-            fatalerror(" Attempt to LEARN from a nonexistent variable ", ltext);
-        return q;
-    }
-    mdw = NULL;
-    if (tdw->filetext == vht[vhtindex]->valtxt)
-        mdw = tdw;
-    if (cdw->filetext == vht[vhtindex]->valtxt)
-        mdw = cdw;
-    if (mdw == NULL)
-    {
-        int q;
-        q = fatalerror(" Bogus text block containing variable ", ltext);
-        return q;
-    }
-    textoffset = vht[vhtindex]->vstart;
-    textmaxoffset = textoffset + vht[vhtindex]->vlen;
-#endif
-
-    textoffset = txtstart;
-    textmaxoffset = txtstart + txtlen;
-
     //   init the hashpipe with 0xDEADBEEF
-    for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
+    hashpipe = calloc(BAYES_MAX_FEATURE_COUNT, sizeof(hashpipe[0]));
+    if (!hashes)
     {
-        hashpipe[h] = 0xDEADBEEF;
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
     }
+    hashcounts = 0;
+
+    //   Use the flagged vector tokenizer
+    crm_vector_tokenize_selector(apb, // the APB
+            vht,
+            tdw,
+            txtptr + txtstart,        // intput string
+            txtlen,                   // how many bytes
+            0,                        // starting offset
+            NULL,                     // tokenizer
+            NULL,                     // coeff array
+            hashpipe,                 // where to put the hashed results
+            BAYES_MAX_FEATURE_COUNT,  //  max number of hashes
+            NULL,
+            NULL,
+            &hashcounts               // how many hashes we actually got
+                                );
+    CRM_ASSERT(hashcounts >= 0);
+    CRM_ASSERT(hashcounts < BAYES_MAX_FEATURE_COUNT);
+    CRM_ASSERT(hashcounts % 2 == 0);
 
     //    and the big loop...
-    i = 0;
-
-    // initialize the token search structure
-    ts.ptok = (unsigned char *)&(txtptr[textoffset]);
-    ts.max_ptok = (unsigned char *)&(txtptr[textmaxoffset]);
-    ts.toklen = 0;
-    ts.pattern = ptext;
-    ts.regcb = &regcb;
-    ts.max_long_tokens = OSBF_MAX_LONG_TOKENS;
-
-    while (get_next_hash(&ts) == 0)
+    for (k = 0; k < hashcounts; k++)
     {
-        if (internal_trace)
-        {
-            memmove(tempbuf, ts.ptok, ts.toklen);
-            tempbuf[ts.toklen] = 0;
-            fprintf(stderr,
-                    "  Learn #%d t.o. %d strt %d end %d len %d is -%s-\n",
-                    i,
-                    textoffset,
-                    (int)(ts.ptok - (unsigned char *)&(txtptr[textoffset])),
-                    (int)((ts.ptok + ts.toklen) - (unsigned char *)&(txtptr[textoffset])),
-                    ts.toklen, tempbuf);
-        }
-
-        //      Shift the hash pipe down one
-        for (h = OSB_BAYES_WINDOW_LEN - 1; h > 0; h--)
-        {
-            hashpipe[h] = hashpipe[h - 1];
-        }
-
-        //  and put new hash into pipeline
-        hashpipe[0] = ts.hash;
-
-        if (internal_trace)
-        {
-            fprintf(stderr, "  Hashpipe contents: ");
-            for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " 0x%08lX", (unsigned long int)hashpipe[h]);
-            fprintf(stderr, "\n");
-        }
-
-        /* prepare for next token */
-        ts.ptok += ts.toklen;
-        textoffset += (int)(ts.ptok - (unsigned char *)&(txtptr[textoffset]));
-        i++;
-
         {
             unsigned int hindex, bindex;
             crmhash_t h1, h2;
@@ -501,63 +308,75 @@ int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             //
             th = 0;
             //
-            CRM_ASSERT(2 * OSB_BAYES_WINDOW_LEN <= WIDTHOF(hctable));
-            for (j = 1; j < OSB_BAYES_WINDOW_LEN; j++)
+// #ifdef TGB
+// #ifdef TGB2
+// #ifdef TSS
+// #ifdef SBPH
+            hindex = hashpipe[k++];
+            h1 = hindex;
+
+            //   and what's our primary hash index?  Note that
+            //   hindex = 0 is reserved for our version and
+            //   usage flags, so we autobump those to hindex=1
+            hindex %= hfsize;
+            if (hindex == 0)
+                hindex = 1;
+
+            //   this is the secondary (crosscut) hash, used for
+            //   confirmation of the key value.  Note that it shares
+            //   no common coefficients with the previous hash.
+            h2 = hashpipe[k];
+            if (h2 == 0)
+                h2 = 0xdeadbeef;
+
+// #ifdef ARBITRARY_WINDOW_LENGTH
+            if (internal_trace)
             {
-                h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
-                h2 =
-                    hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
+                fprintf(stderr, "Polynomial %d has hash: 0x%08lX  h1:0x%08lX  h2:0x%08lX\n",
+                        k, (unsigned long int)hashpipe[k], (unsigned long int)h1, (unsigned long int)h2);
+            }
 
-                hindex = h1 % header->buckets;
+            //
+            //   we now look at both the primary (h1) and
+            //   crosscut (h2) indexes to see if we've got
+            //   the right bucket or if we need to look further
+            //
 
-                if (internal_trace)
+            bindex = crm_osbf_find_bucket(header, h1, h2);
+            if (VALID_BUCKET(header, bindex))
+            {
+                if (!EMPTY_BUCKET(hashes[bindex]))
                 {
-                    fprintf(stderr,
-                            "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n", j, (unsigned long int)h1, (unsigned long int)h2);
-                }
-
-                //
-                //   we now look at both the primary (h1) and
-                //   crosscut (h2) indexes to see if we've got
-                //   the right bucket or if we need to look further
-                //
-
-                bindex = crm_osbf_find_bucket(header, h1, h2);
-                if (VALID_BUCKET(header, bindex))
-                {
-                    if (!EMPTY_BUCKET(hashes[bindex]))
+                    if (!BUCKET_IS_LOCKED(hashes[bindex]))
                     {
-                        if (!BUCKET_IS_LOCKED(hashes[bindex]))
+                        crm_osbf_update_bucket(header, bindex, sense);
+                        if (internal_trace)
                         {
-                            crm_osbf_update_bucket(header, bindex, sense);
-                            if (internal_trace)
-                            {
-                                fprintf(stderr, "Updated feature at %d\n",
-                                        hindex);
-                            }
+                            fprintf(stderr, "Updated feature at %d\n",
+                                    hindex);
                         }
                     }
-                    else if (sense > 0)
-                    {
-                        crm_osbf_insert_bucket(header, bindex, h1, h2, sense);
-                        if (internal_trace)
-                            fprintf(stderr, "New feature at %d\n", hindex);
-                    }
                 }
-                else
+                else if (sense > 0)
                 {
-                    nonfatalerror
-                    ("Your program is stuffing too many "
-                     "features into this size .cfc file.  "
-                     "Adding any more features is "
-                     "impossible in this file.",
-                            "You are advised to build a larger "
-                            ".cfc file and merge your data into it.");
-                    goto learn_end_regex_loop;
+                    crm_osbf_insert_bucket(header, bindex, h1, h2, sense);
+                    if (internal_trace)
+                        fprintf(stderr, "New feature at %d\n", hindex);
                 }
             }
+            else
+            {
+                nonfatalerror
+                            ("Your program is stuffing too many "
+                             "features into this size .cfc file.  "
+                             "Adding any more features is "
+                             "impossible in this file.",
+                            "You are advised to build a larger "
+                            ".cfc file and merge your data into it.");
+                goto learn_end_regex_loop;
+            }
         }
-    }                           //   end the while k==0
+    }
 
 learn_end_regex_loop:
 
@@ -575,10 +394,10 @@ learn_end_regex_loop:
             for (i = 0; i < header->buckets; i++)
                 BUCKET_RAW_VALUE(hashes[i]) = BUCKET_RAW_VALUE(hashes[i]) >> 1;
             nonfatalerror
-            ("You have managed to LEARN so many documents that"
-             " you have forced rescaling of the entire database.",
-                    " If you are the first person to do this, Fidelis "
-                    " owes you a bottle of good singlemalt scotch");
+                        ("You have managed to LEARN so many documents that"
+                         " you have forced rescaling of the entire database.",
+                        " If you are the first person to do this, Fidelis "
+                        " owes you a bottle of good singlemalt scotch");
         }
     }
     else if (header->learnings >= (unsigned int)(-sense))
@@ -586,12 +405,13 @@ learn_end_regex_loop:
         header->learnings += sense;
     }
 
-regcomp_failed:
 
-    //  and remember to let go of the mmaps and the pattern bufffer
-    //     (because we may have written it, force a cache flush)
+    //  and remember to let go of all the mmaps (full flush)
     //  crm_munmap_all ();
-    crm_munmap_file((void *)header);
+    crm_force_munmap_addr(header);
+
+    if (hashpipe)
+        free(hashpipe);
 
 #if 0  /* now touch-fixed inside the munmap call already! */
 #if defined (HAVE_MMAP) || defined (HAVE_MUNMAP)
@@ -605,8 +425,6 @@ regcomp_failed:
     crm_touch(learnfilename);
 #endif
 #endif
-
-        crm_regfree(&regcb);
 
     return 0;
 }
@@ -626,8 +444,6 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     int i, j, k;
     int h;                      //  we use h for our hashpipe counter, as needed.
-    char ptext[MAX_PATTERN];    //  the regex pattern
-    int plen;
     //  char ltext[MAX_PATTERN];  //  the variable to classify
     //int llen;
     char ostext[MAX_PATTERN];   //  optional pR offset
@@ -639,8 +455,8 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int hlen;
     //  the match statistics variable
     char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
-    int stext_maxlen =
-        MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
+    char *stext_ptr = stext;
+    int stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
     int slen;
     char svrbl[MAX_PATTERN];    //  the match statistics text buffer
     int svlen;
@@ -652,17 +468,13 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int not_microgroom = 1;
 
     struct stat statbuf;        //  for statting the hash file
-	regex_t regcb = {0};
+    crmhash_t *hashpipe;
 
 #if defined (GER) || 10
-    crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
-
     hitcount_t hits[MAX_CLASSIFIERS];                   // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS];              // actual total hits per classifier
     hitcount_t htf;                                     // hits this feature got.
 #else
-    unsigned int hashpipe[OSB_BAYES_WINDOW_LEN + 1];
-
     double hits[MAX_CLASSIFIERS];               // actual hits per feature per classifier
     unsigned int totalhits[MAX_CLASSIFIERS];    // actual total hits per classifier
     double htf;                                 // hits this feature got.
@@ -691,20 +503,23 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int maxhash;
     int fnstart, fnlen;
     int fn_start_here;
-    int textoffset;
-    int textmaxoffset;
     int bestseen;
     int thistotal;
-    struct token_search ts;
+
+    int *feature_weight;
+    int *order_no;
+    int hashcounts;
 
     // cubic weights seem to work well with this new code... - Fidelis
     //const float feature_weight[] = { 0,   125,   64,  27,  8, 1, 0 }; // cubic
     // these empirical weights give better accuracy with
     // the CF * unique/totalfeatures used in this code - Fidelis
+#if 0
     const double feature_weight[] =
     {
         0, 3125, 256, 27, 4, 1
     };
+#endif
 #if defined (GER) || 10
     double confidence_factor;
 #else
@@ -736,8 +551,8 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //           extract the "this is a word" regex
     //
-    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
+    //plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
+    //plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
 
     //       extract the optional pR offset value
     //
@@ -786,7 +601,7 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     if (apb->sflags & CRM_NOCASE)
     {
-        cflags += REG_ICASE;
+        cflags |= REG_ICASE;
         eflags = 1;
     }
 
@@ -798,16 +613,6 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, " disabling fast-skip optimization.\n");
     }
 
-    //   compile the word regex if not empty
-        if (internal_trace)
-            fprintf(stderr, "\nWordmatch pattern is |%s|", ptext);
-        i = crm_regcomp(&regcb, ptext, plen, cflags);
-        if (i != 0)
-        {
-            crm_regerror(i, &regcb, tempbuf, data_window_size);
-            nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
-            goto regcomp_failed;
-        }
 
 
     //       Now, the loop to open the files.
@@ -865,7 +670,7 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //     somewhat ad-hoc interpretation that it is unreasonable to
     //     assume that any finite number of samples can appropriately
     //     represent an infinite continuum of spewage, so we can bound
-    //     the certainty of any meausre to be in the range:
+    //     the certainty of any measure to be in the range:
     //
     //        limit: [ 1/featurecount+2 , 1 - 1/featurecount+2].
     //
@@ -887,7 +692,7 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   GROT GROT GROT  this isn't NULL-clean on filenames.  But then
     //    again, stdio.h itself isn't NULL-clean on filenames.
     if (user_trace)
-        fprintf(stderr, "Classify list: -%s- \n", htext);
+        fprintf(stderr, "Classify list: -%s-\n", htext);
     fn_start_here = 0;
     fnlen = 1;
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
@@ -899,14 +704,16 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fn_start_here = fnstart + fnlen + 1;
             fname[fnlen] = 0;
             if (user_trace)
+            {
                 fprintf(stderr, "Classifying with file -%s- "
-                                "succhash=%d, maxhash=%d\n", fname, succhash, maxhash);
+                                "succhash=%d, maxhash=%d\n",
+                        fname, succhash, maxhash);
+            }
             if (fname[0] == '|' && fname[1] == 0)
             {
                 if (vbar_seen)
                 {
-                    nonfatalerror
-                    ("Only one ' | ' allowed in a CLASSIFY. \n",
+                    nonfatalerror("Only one '|' allowed in a CLASSIFY.\n",
                             "We'll ignore it for now.");
                 }
                 else
@@ -917,20 +724,23 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
             else
             {
+                int k;
+
                 //  be sure the file exists
                 //             stat the file to get it's length
                 k = stat(fname, &statbuf);
                 //             quick check- does the file even exist?
                 if (k != 0)
                 {
-                    nonfatalerror("Nonexistent Classify table named: ", fname);
+                    return nonfatalerror("Nonexistent Classify table named: ",
+                            fname);
                 }
                 else
                 {
                     // [i_a] check hashes[] range BEFORE adding another one!
                     if (maxhash >= MAX_CLASSIFIERS)
                     {
-                        nonfatalerror("Too many classifier files.",
+                        return nonfatalerror("Too many classifier files.",
                                 "Some may have been disregarded");
                     }
                     else
@@ -942,13 +752,13 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         header[maxhash] = crm_mmap_file(fname,
                                 0,
                                 hashlens[maxhash],
-                                PROT_READ | PROT_WRITE,
+                                PROT_READ,
                                 MAP_SHARED,
                                 CRM_MADV_RANDOM,
                                 &hashlens[maxhash]);
                         if (header[maxhash] == MAP_FAILED)
                         {
-                            nonfatalerror("Couldn't memory-map the table file", fname);
+                            return nonfatalerror("Couldn't memory-map the table file", fname);
                         }
                         else
                         {
@@ -991,8 +801,8 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             }
                             strncpy(hashname[maxhash], fname, fnlen);
                             hashname[maxhash][fnlen] = 0;
-                            maxhash++;
                         }
+                        maxhash++;
                     }
                 }
             }
@@ -1042,12 +852,14 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         return nonfatalerror("Couldn't open at least 1 .css file for classify().", "");
     }
 
+#if 0
     //    do we have at least 1 valid .css file at both sides of '|'?
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
                              "for classify().\n", "Hope you know what are you doing.");
     }
+#endif
 
     //
     //   now all of the files are mmapped into memory,
@@ -1057,101 +869,58 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     k = 0;
     thistotal = 0;
 
-#ifdef OLD_STUPID_VAR_RESTRICTION
-    if (llen > 0)
-    {
-        vhtindex = crm_vht_lookup(vht, ltext, llen);
-    }
-    else
-    {
-        vhtindex = crm_vht_lookup(vht, ":_dw:", 5);
-    }
-    if (vht[vhtindex] == NULL)
-    {
-        return fatalerror
-               (" Attempt to CLASSIFY from a nonexistent variable ", ltext);
-    }
-    mdw = NULL;
-    if (tdw->filetext == vht[vhtindex]->valtxt)
-        mdw = tdw;
-    if (cdw->filetext == vht[vhtindex]->valtxt)
-        mdw = cdw;
-    if (mdw == NULL)
-        return fatalerror(" Bogus text block containing variable ", ltext);
-
-    textoffset = vht[vhtindex]->vstart;
-    textmaxoffset = textoffset + vht[vhtindex]->vlen;
-    textlen = (vht[vhtindex]->vlen);
-    if (textlen < 1.0)
-        textlen = 1.0;
-#endif
-
-    textoffset = txtstart;
-    textmaxoffset = txtstart + txtlen;
-
+    totalfeatures = 0;
 
     //   init the hashpipe with 0xDEADBEEF
-    for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
+    hashpipe = calloc(BAYES_MAX_FEATURE_COUNT, sizeof(hashpipe[0]));
+    if (!hashpipe)
     {
-        hashpipe[h] = 0xDEADBEEF;
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
     }
+    feature_weight = calloc(BAYES_MAX_FEATURE_COUNT, sizeof(feature_weight[0]));
+    if (!feature_weight)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
+    order_no = calloc(BAYES_MAX_FEATURE_COUNT, sizeof(order_no[0]));
+    if (!order_no)
+    {
+        untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
+    }
+    hashcounts = 0;
+
+    //   Use the flagged vector tokenizer
+    crm_vector_tokenize_selector(apb, // the APB
+            vht,
+            tdw,
+            txtptr + txtstart,        // intput string
+            txtlen,                   // how many bytes
+            0,                        // starting offset
+            NULL,                     // tokenizer
+            NULL,                     // coeff array
+            hashpipe,                 // where to put the hashed results
+            BAYES_MAX_FEATURE_COUNT,  //  max number of hashes
+            feature_weight,
+            order_no,
+            &hashcounts               // how many hashes we actually got
+                                );
+    CRM_ASSERT(hashcounts >= 0);
+    CRM_ASSERT(hashcounts < BAYES_MAX_FEATURE_COUNT);
+    CRM_ASSERT(hashcounts % 2 == 0);
 
     totalfeatures = 0;
 
     //  stop when we no longer get any regex matches
     //   possible edge effect here- last character must be matchable, yet
     //    it's also the "end of buffer".
-
-    // initialize the token search structure
-    ts.ptok = (unsigned char *)&(txtptr[textoffset]);
-    ts.max_ptok = (unsigned char *)&(txtptr[textmaxoffset]);
-    ts.toklen = 0;
-    ts.pattern = ptext;
-    ts.regcb = &regcb;
-    ts.max_long_tokens = OSBF_MAX_LONG_TOKENS;
-
-    while (get_next_hash(&ts) == 0)
     {
-        if (internal_trace)
-        {
-            memmove(tempbuf, ts.ptok, ts.toklen);
-            tempbuf[ts.toklen] = 0;
-            fprintf(stderr,
-                    "  Classify #%d t.o. %d strt %d end %d len %d is -%s-\n",
-                    i,
-                    textoffset,
-                    (int)(ts.ptok -
-                          (unsigned char *)&(txtptr[textoffset])),
-                    (int)((ts.ptok + ts.toklen) -
-                          (unsigned char *)&(txtptr[textoffset])),
-                    ts.toklen, tempbuf);
-        }
+        int i;
 
-        //  slide previous hashes up 1
-        for (h = OSB_BAYES_WINDOW_LEN - 1; h > 0; h--)
-        {
-            hashpipe[h] = hashpipe[h - 1];
-        }
-
-        //  and put new hash into pipeline
-        hashpipe[0] = ts.hash;
-
-        if (0)
-        {
-            fprintf(stderr, "  Hashpipe contents: ");
-            for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " 0x%08lX", (unsigned long int)hashpipe[h]);
-            fprintf(stderr, "\n");
-        }
-
-        /* prepare for next token */
-        ts.ptok += ts.toklen;
-        textoffset += (int)(ts.ptok - (unsigned char *)&(txtptr[textoffset]));
-        i++;
-
+        for (i = 0; i < hashcounts; i++)
         {
             int j, k;
             unsigned th = 0;    //  a counter used only in TSS hashing
+            int fw;
             unsigned int hindex;
             crmhash_t h1, h2;
             // remember indexes of classes with min and max local probabilities
@@ -1160,407 +929,421 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             double min_local_p, max_local_p;
             int already_seen;
 
+
             //
             th = 0;
             //
-            for (j = 1; j < OSB_BAYES_WINDOW_LEN; j++)
+            j = order_no[i];
+            fw = feature_weight[i];
+
+// #ifdef FOO
+// #ifdef TGB
+// #ifdef TGB2
+// #ifdef TSS
+// #ifdef SBPH
+            hindex = hashpipe[i++];
+            h1 = hindex;
+
+            //   this is the secondary (crosscut) hash, used for
+            //   confirmation of the key value.  Note that it shares
+            //   no common coefficients with the previous hash.
+            h2 = hashpipe[i];
+            if (h2 == 0)
+                h2 = 0xdeadbeef;
+
+// #ifdef ARBITRARY_WINDOW_LENGTH
+            if (internal_trace)
             {
-                h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
-                h2 =
-                    hashpipe[0] * hctable[1] + hashpipe[j] * hctable[(j << 1) - 1];
-                hindex = h1;
+                fprintf(stderr, "Polynomial %d has hash: 0x%08lX  h1:0x%08lX  h2:0x%08lX\n",
+                        i, (unsigned long int)hashpipe[i], (unsigned long int)h1, (unsigned long int)h2);
+            }
+            //
+            //    Note - a strict interpretation of Bayesian
+            //    chain probabilities should use 0 as the initial
+            //    state.  However, because we rapidly run out of
+            //    significant digits, we use a much less strong
+            //    initial state.   Note also that any nonzero
+            //    positive value prevents divide-by-zero
+            //
+            //       Zero out "Hits This Feature"
+            htf = 0;
+            totalfeatures++;
+            //
+            //    calculate the precursors to the local probabilities;
+            //    these are the hits[k] array, and the htf total.
+            //
+            min_local_p = 1.0;
+            max_local_p = 0;
+            i_min_p = i_max_p = 0;
+            already_seen = 0;
+            for (k = 0; k < maxhash; k++)
+            {
+                int lh, lh0;
+#if defined (GER) || 10
+                double p_feat = 0;
+#else
+                float p_feat = 0;
+#endif
+
+                lh = hindex % (hashlens[k]);
+                lh0 = lh;
+                hits[k] = 0;
+
+                lh = crm_osbf_find_bucket(header[k], h1, h2);
+
+                // if the feature isn't found in the class, the index lh
+                // will point to the first empty bucket after the chain
+                // and its value will be 0.
+                //
+                // the bucket is valid if its index is valid. if the
+                // index "lh" is >= the number of buckets, it means that
+                // the .cfc file is full and the bucket wasn't found
+
+                if (VALID_BUCKET(header[k], lh) && seen_features[k][lh] == 0)
+                {
+                    // only not previously seen features are considered
+                    if (GET_BUCKET_VALUE(hashes[k][lh]) != 0)
+                    {
+                        uniquefeatures[k] += 1;     // count unique features used
+                        hits[k] = GET_BUCKET_VALUE(hashes[k][lh]);
+                        totalhits[k] += hits[k];        // remember totalhits
+                        htf += hits[k];                 // and hits-this-feature
+                        p_feat = ((double)hits[k]) / learnings[k];
+                        // find class with minimum P(F)
+                        if (p_feat <= min_local_p)
+                        {
+                            i_min_p = k;
+                            min_local_p = p_feat;
+                        }
+                        // find class with maximum P(F)
+                        if (p_feat >= max_local_p)
+                        {
+                            i_max_p = k;
+                            max_local_p = p_feat;
+                        }
+                        // mark the feature as seen
+                        seen_features[k][lh] = 1;
+                    }
+                    else
+                    {
+                        // a feature that wasn't found can't be marked as
+                        // already seen in the doc because the index lh
+                        // doesn't refer to it, but to the first empty bucket
+                        // after the chain, which is common to all not-found
+                        // features in the same chain. This is not a problem
+                        // though, because if the feature is found in another
+                        // class, it'll be marked as seen on that class,
+                        // which is enough to mark it as seen. If it's not
+                        // found in any class, it will have zero count on all
+                        // classes and will be ignored as well. So, only
+                        // found features are marked as seen.
+                        i_min_p = k;
+                        min_local_p = p_feat = 0;
+                        // for statistics only (for now...)
+                        missedfeatures[k] += 1;
+                    }
+                }
+                else
+                {
+                    // ignore already seen features
+                    if (VALID_BUCKET(header[k], lh))
+                    {
+                        min_local_p = max_local_p = 0;
+                        already_seen = 1;
+                        if (asymmetric != 0)
+                            break;
+                    }
+                    else
+                    {
+                        /* bucket not valid. treat like feature not found */
+                        i_min_p = k;
+                        min_local_p = p_feat = 0;
+                        // for statistics only (for now...)
+                        missedfeatures[k] += 1;
+                    }
+                }
+            }
+
+            //=======================================================
+            // Update the probabilities using Bayes:
+            //
+            //                      P(F|S) P(S)
+            //     P(S|F) = -------------------------------
+            //               P(F|S) P(S) +  P(F|NS) P(NS)
+            //
+            // S = class spam; NS = class nonspam; F = feature
+            //
+            // Here we adopt a different method for estimating
+            // P(F|S). Instead of estimating P(F|S) as (hits[S][F] /
+            // (hits[S][F] + hits[NS][F])), like in the original
+            // code, we use (hits[S][F] / learnings[S]) which is the
+            // ratio between the number of messages of the class S
+            // where the feature F was observed during learnings and
+            // the total number of learnings of that class. Both
+            // values are kept in the respective .cfc file, the
+            // number of learnings in the header and the number of
+            // occurrences of the feature F as the value of its
+            // feature bucket.
+            //
+            // It's worth noting another important difference here:
+            // as we want to estimate the *number of messages* of a
+            // given class where a certain feature F occurs, we
+            // count only the first ocurrence of each feature in a
+            // message (repetitions are ignored), both when learning
+            // and when classifying.
+            //
+            // Advantages of this method, compared to the original:
+            //
+            // - First of all, and the most important: accuracy is
+            // really much better, at about the same speed! With
+            // this higher accuracy, it's also possible to increase
+            // the speed, at the cost of a low decrease in accuracy,
+            // using smaller .cfc files;
+            //
+            // - It is not affected by different sized classes
+            // because the numerator and the denominator belong to
+            // the same class;
+            //
+            // - It allows a simple and fast pruning method that
+            // seems to introduce little noise: just zero features
+            // with lower count in a overflowed chain, zeroing first
+            // those in their right places, to increase the chances
+            // of deleting older ones.
+            //
+            // Disadvantages:
+            //
+            // - It breaks compatibility with previous css file
+            // format because of different header structure and
+            // meaning of the counts.
+            //
+            // Confidence factors
+            //
+            // The motivation for confidence factors is to reduce
+            // the noise introduced by features with small counts
+            // and/or low significance. This is an attempt to mimic
+            // what we do when inspecting a message to tell if it is
+            // spam or not. We intuitively consider only a few
+            // tokens, those which carry strong indications,
+            // according to what we've learned and remember, and
+            // discard the ones that may occur (approximately)
+            // equally in both classes.
+            //
+            // Once P(Feature|Class) is estimated as above, the
+            // calculated value is adjusted using the following
+            // formula:
+            //
+            //  CP(Feature|Class) = 0.5 +
+            //             CF(Feature) * (P(Feature|Class) - 0.5)
+            //
+            // Where CF(Feature) is the confidence factor and
+            // CP(Feature|Class) is the adjusted estimate for the
+            // probability.
+            //
+            // CF(Feature) is calculated taking into account the
+            // weight, the max and the min frequency of the feature
+            // over the classes, using the empirical formula:
+            //
+            //     (((Hmax - Hmin)^2 + Hmax*Hmin - K1/SH) / SH^2) ^ K2
+            // CF(Feature) = ------------------------------------------
+            //                    1 +  K3 / (SH * Weight)
+            //
+            // Hmax  - Number of documents with the feature "F" on
+            // the class with max local probability;
+            // Hmin  - Number of documents with the feature "F" on
+            // the class with min local probability;
+            // SH - Sum of Hmax and Hmin
+            // K1, K2, K3 - Empirical constants
+            //
+            // OBS: - Hmax and Hmin are normalized to the max number
+            //  of learnings of the 2 classes involved.
+            //  - Besides modulating the estimated P(Feature|Class),
+            //  reducing the noise, 0 <= CF < 1 is also used to
+            //  restrict the probability range, avoiding the
+            //  certainty falsely implied by a 0 count for a given
+            //  class.
+            //
+            // -- Fidelis Assis
+            //=========================================================
+
+            // ignore less significant features (confidence factor = 0)
+            if (already_seen != 0 || (max_local_p - min_local_p) < 1.0E-6)
+                continue;
+            // testing speed-up...
+            if (min_local_p > 0
+                && (max_local_p / min_local_p) < min_pmax_pmin_ratio)
+                continue;
+
+            // code under testing....
+            // calculate confidence_factor
+            {
+                // hmmm, unsigned int gives better precision than float...
+                //float hits_max_p, hits_min_p, sum_hits, diff_hits;
+                //unsigned int hits_max_p, hits_min_p, sum_hits, diff_hits;
+                hitcount_t hits_max_p, hits_min_p, sum_hits;
+                hitcount_t diff_hits;
+                double K1, K2, K3;
+
+                hits_min_p = hits[i_min_p];
+                hits_max_p = hits[i_max_p];
+
+                // normalize hits to max learnings
+                if (learnings[i_min_p] < learnings[i_max_p])
+                {
+                    hits_min_p *=
+                        (hitcount_t)(learnings[i_max_p] / (0.0 + learnings[i_min_p]));
+                }
+                else
+                {
+                    hits_max_p *=
+                        (hitcount_t)(learnings[i_min_p] / (0.0 + learnings[i_max_p]));
+                }
+
+                sum_hits = hits_max_p + hits_min_p;
+                diff_hits = hits_max_p - hits_min_p;
+                if (diff_hits < 0)
+                    diff_hits = -diff_hits;
+
+                // constants used in the CF formula above
+                // K1 = 0.25; K2 = 10; K3 = 8;
+                K1 = 0.25;
+                K2 = 10;
+                K3 = 8;
+
+                // calculate confidence factor (CF)
+                if (voodoo == 0)     /* || min_local_p > 0) */
+                {
+                    confidence_factor = 1 - DBL_MIN;
+                }
+                else
+                {
+                    confidence_factor =
+                        pow((diff_hits * diff_hits +
+                             hits_max_p * hits_min_p -
+                             K1 / sum_hits) / (sum_hits * sum_hits),
+                                K2) / (1.0 + K3 / (sum_hits * fw));
+                }
 
                 if (internal_trace)
                 {
                     fprintf(stderr,
-                            "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n", j, (unsigned long int)h1, (unsigned long int)h2);
+                            "CF: %.4f, max_hits = %3ld, min_hits = %3ld, "
+                            "weight: %d\n", confidence_factor,
+                            (long int)hits_max_p, (long int)hits_min_p, fw);
                 }
-                //
-                //    Note - a strict interpretation of Bayesian
-                //    chain probabilities should use 0 as the initial
-                //    state.  However, because we rapidly run out of
-                //    significant digits, we use a much less strong
-                //    initial state.   Note also that any nonzero
-                //    positive value prevents divide-by-zero
-                //
-                //       Zero out "Hits This Feature"
-                htf = 0;
-                totalfeatures++;
-                //
-                //    calculate the precursors to the local probabilities;
-                //    these are the hits[k] array, and the htf total.
-                //
-                min_local_p = 1.0;
-                max_local_p = 0;
-                i_min_p = i_max_p = 0;
-                already_seen = 0;
-                for (k = 0; k < maxhash; k++)
-                {
-                    int lh, lh0;
-#if defined (GER) || 10
-                    double p_feat = 0;
-#else
-                    float p_feat = 0;
-#endif
+            }
 
-                    lh = hindex % (hashlens[k]);
-                    lh0 = lh;
-                    hits[k] = 0;
+            // calculate the numerators P(F|C) * P(C)
+            renorm = 0.0;
+            for (k = 0; k < maxhash; k++)
+            {
+                // P(F|C) = hits[k]/learnings[k], adjusted with a
+                // confidence factor, to reduce the influence
+                // of features common to all classes
+                ptc[k] *= (0.5 + confidence_factor *
+                                  (hits[k] / learnings[k] - 0.5));
 
-                    lh = crm_osbf_find_bucket(header[k], h1, h2);
-
-                    // if the feature isn't found in the class, the index lh
-                    // will point to the first empty bucket after the chain
-                    // and its value will be 0.
-                    //
-                    // the bucket is valid if its index is valid. if the
-                    // index "lh" is >= the number of buckets, it means that
-                    // the .cfc file is full and the bucket wasn't found
-
-                    if (VALID_BUCKET(header[k], lh) && seen_features[k][lh] == 0)
-                    {
-                        // only not previously seen features are considered
-                        if (GET_BUCKET_VALUE(hashes[k][lh]) != 0)
-                        {
-                            uniquefeatures[k] += 1; // count unique features used
-                            hits[k] = GET_BUCKET_VALUE(hashes[k][lh]);
-                            totalhits[k] += hits[k];    // remember totalhits
-                            htf += hits[k];             // and hits-this-feature
-                            p_feat = ((double)hits[k]) / learnings[k];
-                            // find class with minimum P(F)
-                            if (p_feat <= min_local_p)
-                            {
-                                i_min_p = k;
-                                min_local_p = p_feat;
-                            }
-                            // find class with maximum P(F)
-                            if (p_feat >= max_local_p)
-                            {
-                                i_max_p = k;
-                                max_local_p = p_feat;
-                            }
-                            // mark the feature as seen
-                            seen_features[k][lh] = 1;
-                        }
-                        else
-                        {
-                            // a feature that wasn't found can't be marked as
-                            // already seen in the doc because the index lh
-                            // doesn't refer to it, but to the first empty bucket
-                            // after the chain, which is common to all not-found
-                            // features in the same chain. This is not a problem
-                            // though, because if the feature is found in another
-                            // class, it'll be marked as seen on that class,
-                            // which is enough to mark it as seen. If it's not
-                            // found in any class, it will have zero count on all
-                            // classes and will be ignored as well. So, only
-                            // found features are marked as seen.
-                            i_min_p = k;
-                            min_local_p = p_feat = 0;
-                            // for statistics only (for now...)
-                            missedfeatures[k] += 1;
-                        }
-                    }
-                    else
-                    {
-                        // ignore already seen features
-                        if (VALID_BUCKET(header[k], lh))
-                        {
-                            min_local_p = max_local_p = 0;
-                            already_seen = 1;
-                            if (asymmetric != 0)
-                                break;
-                        }
-                        else
-                        {
-                            /* bucket not valid. treat like feature not found */
-                            i_min_p = k;
-                            min_local_p = p_feat = 0;
-                            // for statistics only (for now...)
-                            missedfeatures[k] += 1;
-                        }
-                    }
-                }
-
-                //=======================================================
-                // Update the probabilities using Bayes:
-                //
-                //                      P(F|S) P(S)
-                //     P(S|F) = -------------------------------
-                //               P(F|S) P(S) +  P(F|NS) P(NS)
-                //
-                // S = class spam; NS = class nonspam; F = feature
-                //
-                // Here we adopt a different method for estimating
-                // P(F|S). Instead of estimating P(F|S) as (hits[S][F] /
-                // (hits[S][F] + hits[NS][F])), like in the original
-                // code, we use (hits[S][F] / learnings[S]) which is the
-                // ratio between the number of messages of the class S
-                // where the feature F was observed during learnings and
-                // the total number of learnings of that class. Both
-                // values are kept in the respective .cfc file, the
-                // number of learnings in the header and the number of
-                // occurrences of the feature F as the value of its
-                // feature bucket.
-                //
-                // It's worth noting another important difference here:
-                // as we want to estimate the *number of messages* of a
-                // given class where a certain feature F occurs, we
-                // count only the first ocurrence of each feature in a
-                // message (repetitions are ignored), both when learning
-                // and when classifying.
-                //
-                // Advantages of this method, compared to the original:
-                //
-                // - First of all, and the most important: accuracy is
-                // really much better, at about the same speed! With
-                // this higher accuracy, it's also possible to increase
-                // the speed, at the cost of a low decrease in accuracy,
-                // using smaller .cfc files;
-                //
-                // - It is not affected by different sized classes
-                // because the numerator and the denominator belong to
-                // the same class;
-                //
-                // - It allows a simple and fast pruning method that
-                // seems to introduce little noise: just zero features
-                // with lower count in a overflowed chain, zeroing first
-                // those in their right places, to increase the chances
-                // of deleting older ones.
-                //
-                // Disadvantages:
-                //
-                // - It breaks compatibility with previous css file
-                // format because of different header structure and
-                // meaning of the counts.
-                //
-                // Confidence factors
-                //
-                // The motivation for confidence factors is to reduce
-                // the noise introduced by features with small counts
-                // and/or low significance. This is an attempt to mimic
-                // what we do when inspecting a message to tell if it is
-                // spam or not. We intuitively consider only a few
-                // tokens, those which carry strong indications,
-                // according to what we've learned and remember, and
-                // discard the ones that may occur (approximately)
-                // equally in both classes.
-                //
-                // Once P(Feature|Class) is estimated as above, the
-                // calculated value is adjusted using the following
-                // formula:
-                //
-                //  CP(Feature|Class) = 0.5 +
-                //             CF(Feature) * (P(Feature|Class) - 0.5)
-                //
-                // Where CF(Feature) is the confidence factor and
-                // CP(Feature|Class) is the adjusted estimate for the
-                // probability.
-                //
-                // CF(Feature) is calculated taking into account the
-                // weight, the max and the min frequency of the feature
-                // over the classes, using the empirical formula:
-                //
-                //     (((Hmax - Hmin)^2 + Hmax*Hmin - K1/SH) / SH^2) ^ K2
-                // CF(Feature) = ------------------------------------------
-                //                    1 +  K3 / (SH * Weight)
-                //
-                // Hmax  - Number of documents with the feature "F" on
-                // the class with max local probability;
-                // Hmin  - Number of documents with the feature "F" on
-                // the class with min local probability;
-                // SH - Sum of Hmax and Hmin
-                // K1, K2, K3 - Empirical constants
-                //
-                // OBS: - Hmax and Hmin are normalized to the max number
-                //  of learnings of the 2 classes involved.
-                //  - Besides modulating the estimated P(Feature|Class),
-                //  reducing the noise, 0 <= CF < 1 is also used to
-                //  restrict the probability range, avoiding the
-                //  certainty falsely implied by a 0 count for a given
-                //  class.
-                //
-                // -- Fidelis Assis
-                //=========================================================
-
-                // ignore less significant features (confidence factor = 0)
-                if (already_seen != 0 || (max_local_p - min_local_p) < 1.0E-6)
-                    continue;
-                // testing speed-up...
-                if (min_local_p > 0
-                    && (max_local_p / min_local_p) < min_pmax_pmin_ratio)
-                    continue;
-
-                // code under testing....
-                // calculate confidence_factor
-                {
-                    // hmmm, unsigned int gives better precision than float...
-                    //float hits_max_p, hits_min_p, sum_hits, diff_hits;
-                    //unsigned int hits_max_p, hits_min_p, sum_hits, diff_hits;
-                    hitcount_t hits_max_p, hits_min_p, sum_hits;
-                    hitcount_t diff_hits;
-                    double K1, K2, K3;
-
-                    hits_min_p = hits[i_min_p];
-                    hits_max_p = hits[i_max_p];
-
-                    // normalize hits to max learnings
-                    if (learnings[i_min_p] < learnings[i_max_p])
-                    {
-                        hits_min_p *=
-                            (hitcount_t)(learnings[i_max_p] / (0.0 + learnings[i_min_p]));
-                    }
-                    else
-                    {
-                        hits_max_p *=
-                            (hitcount_t)(learnings[i_min_p] / (0.0 + learnings[i_max_p]));
-                    }
-
-                    sum_hits = hits_max_p + hits_min_p;
-                    diff_hits = hits_max_p - hits_min_p;
-                    if (diff_hits < 0)
-                        diff_hits = -diff_hits;
-
-                    // constants used in the CF formula above
-                    // K1 = 0.25; K2 = 10; K3 = 8;
-                    K1 = 0.25;
-                    K2 = 10;
-                    K3 = 8;
-
-                    // calculate confidence factor (CF)
-                    if (voodoo == 0) /* || min_local_p > 0) */
-                    {
-                        confidence_factor = 1 - DBL_MIN;
-                    }
-                    else
-                    {
-                        confidence_factor =
-                            pow((diff_hits * diff_hits +
-                                 hits_max_p * hits_min_p -
-                                 K1 / sum_hits) / (sum_hits * sum_hits),
-                                    K2) / (1.0 + K3 / (sum_hits * feature_weight[j]));
-                    }
-
-                    if (internal_trace)
-                    {
-                        fprintf(stderr,
-                                "CF: %.4f, max_hits = %3ld, min_hits = %3ld, "
-                                "weight: %5.1f\n", confidence_factor,
-                                (long int)hits_max_p, (long int)hits_min_p, feature_weight[j]);
-                    }
-                }
-
-                // calculate the numerators P(F|C) * P(C)
-                renorm = 0.0;
-                for (k = 0; k < maxhash; k++)
-                {
-                    // P(F|C) = hits[k]/learnings[k], adjusted with a
-                    // confidence factor, to reduce the influence
-                    // of features common to all classes
-                    ptc[k] = ptc[k] * (0.5 + confidence_factor *
-                                       (hits[k] / learnings[k] - 0.5));
-
-                    //   if we have underflow (any probability == 0.0 ) then
-                    //   bump the probability back up to 10^-308, or
-                    //   whatever a small multiple of the minimum double
-                    //   precision value is on the current platform.
-                    if (ptc[k] < 10 * DBL_MIN)
-                        ptc[k] = 10 * DBL_MIN;
-                    renorm += ptc[k];
-
-                    if (internal_trace)
-                    {
-                        fprintf(stderr,
-                                "CF: %.4f, totalhits[k]: %ld, missedfeatures[k]: %ld, "
-                                "uniquefeatures[k]: %ld, totalfeatures: %ld, "
-                                "weight: %5.1f\n", confidence_factor,
-                                (long int)totalhits[k], (long int)missedfeatures[k],
-                                (long int)uniquefeatures[k], (long int)totalfeatures, feature_weight[j]);
-                    }
-                }
-
-                // renormalize probabilities
-                for (k = 0; k < maxhash; k++)
-                    ptc[k] /= renorm;
+                //   if we have underflow (any probability == 0.0 ) then
+                //   bump the probability back up to 10^-308, or
+                //   whatever a small multiple of the minimum double
+                //   precision value is on the current platform.
+                //if (ptc[k] < 10 * DBL_MIN)
+                //    ptc[k] = 10 * DBL_MIN;
+                renorm += ptc[k];
 
                 if (internal_trace)
                 {
-                    for (k = 0; k < maxhash; k++)
-                    {
-                        fprintf(stderr,
-                                " poly: %d  filenum: %d, HTF: %7ld, "
-                                "learnings: %7ld, hits: %7ld, "
-                                "Pc: %6.4e\n", j, k, (long int)htf,
-                                (long int)header[k]->learnings, (long int)hits[k], ptc[k]);
-                    }
+                    fprintf(stderr,
+                            "CF: %.4f, totalhits[k]: %ld, missedfeatures[k]: %ld, "
+                            "uniquefeatures[k]: %ld, totalfeatures: %ld, "
+                            "weight: %d\n", confidence_factor,
+                            (long int)totalhits[k], (long int)missedfeatures[k],
+                            (long int)uniquefeatures[k], (long int)totalfeatures, fw);
                 }
-                //
-                //    avoid the fencepost error for window=1
-                if (OSB_BAYES_WINDOW_LEN == 1)
+            }
+                if (renorm < 10 * DBL_MIN)
+                    renorm = 10 * DBL_MIN;
+
+            // renormalize probabilities
+            for (k = 0; k < maxhash; k++)
+                ptc[k] /= renorm;
+
+            if (internal_trace)
+            {
+                for (k = 0; k < maxhash; k++)
                 {
-                    j = 99999;
+                    fprintf(stderr,
+                            " poly: %d  filenum: %d, HTF: %7ld, "
+                            "learnings: %7ld, hits: %7ld, "
+                            "Pc: %6.4e\n", j, k, (long int)htf,
+                            (long int)header[k]->learnings, (long int)hits[k], ptc[k]);
                 }
             }
         }
-    }                           //  end of repeat-the-regex loop
+    }
 
-    //  cleanup time!
-    //  remember to let go of the fd's and mmaps
+    {
+        int k;
+
+    //  One last chance to force probabilities into the non-stuck zone
+    //  and one last renormalize for both bayes and chisquared
+    renorm = 0.0;
     for (k = 0; k < maxhash; k++)
     {
-        //  let go of the file, but allow caches to be retained
-        if (header[k])
+        renorm += ptc[k];
+    }
+    if (renorm < 10 * DBL_MIN)
+    {
+        renorm = 10 * DBL_MIN;
+    }
+    for (k = 0; k < maxhash; k++)
+    {
+        ptc[k] /= renorm;
+    }
+
+        if (user_trace)
         {
-            crm_munmap_file((void *)header[k]);
+            for (k = 0; k < maxhash; k++)
+            {
+                fprintf(stderr, "Probability of match for file %d: %f\n", k, ptc[k]);
+            }
         }
-        free(seen_features[k]);
+        //
+        tprob = 0.0;
+        for (k = 0; k < succhash; k++)
+        {
+            tprob += ptc[k];
+        }
+            if (tprob < 10 * DBL_MIN)
+                tprob = 10 * DBL_MIN;
     }
 
-    //  and let go of the regex buffery
-        crm_regfree(&regcb);
-
-    //   and one last chance to force probabilities into the non-stuck zone
     //
-    //  if (pic == 0.0 ) pic = DBL_MIN;
-    //if (pnic == 0.0 ) pnic = DBL_MIN;
-    /*
-     * for (k = 0; k < maxhash; k++)
-     * if (ptc[k] < 10 * DBL_MIN)
-     *  ptc[k] = 10 * DBL_MIN;
-     */
-
-
-    if (user_trace)
-    {
-        for (k = 0; k < maxhash; k++)
-            fprintf(stderr,
-                    "Probability of match for file %d: %f\n", k, ptc[k]);
-    }
+    //      Do the calculations and format some output, which we may or may
+    //      not use... but we need the calculated result anyway.
     //
-    tprob = 0.0;
-    for (k = 0; k < succhash; k++)
-    {
-        tprob += ptc[k];
-    }
 
-    if (svlen > 0)
+    if (1 /* svlen > 0 */)
     {
-        char buf[1024];
+        // char buf[1024];
         double accumulator;
         double remainder;
         double overall_pR;
         int m;
-        buf[0] = 0;
-        accumulator = 10 * DBL_MIN;
-        for (m = 0; m < succhash; m++)
-        {
-            accumulator += ptc[m];
-        }
-        remainder = 10 * DBL_MIN;
+
+        // buf[0] = 0;
+        accumulator = tprob;
+
+        CRM_ASSERT(bestseen == 0);
+        CRM_ASSERT(succhash >= 1);
+
+        remainder = 0.0;
         for (m = succhash; m < maxhash; m++)
         {
             remainder += ptc[m];
         }
+            if (remainder < 10 * DBL_MIN)
+                remainder = 10 * DBL_MIN;
+
         overall_pR = log10(accumulator) - log10(remainder);
 
         //  note also that strcat _accumulates_ in stext.
@@ -1572,15 +1355,15 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             // if a pR offset was given, print it together with the real pR
             if (oslen > 0)
             {
-                sprintf(buf,
-                        "CLASSIFY succeeds; success probability: "
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY succeeds; (alt.osbf) success probability: "
                         "%6.4f  pR: %6.4f/%6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else
             {
-                sprintf(buf,
-                        "CLASSIFY succeeds; success probability: "
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY succeeds; (alt.osbf) success probability: "
                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
@@ -1589,29 +1372,34 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             // if a pR offset was given, print it together with the real pR
             if (oslen > 0)
             {
-                sprintf(buf,
-                        "CLASSIFY fails; success probability: "
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY fails; (alt.osbf) success probability: "
                         "%6.4f  pR: %6.4f/%6.4f\n",
                         tprob, overall_pR, pR_offset);
             }
             else
             {
-                sprintf(buf,
-                        "CLASSIFY fails; success probability: "
+                snprintf(stext_ptr, stext_maxlen,
+                        "CLASSIFY fails; (alt.osbf) success probability: "
                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
-        if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            strcat(stext, buf);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
+
+        //   find best single matching file
+        //
         bestseen = 0;
-        for (k = 0; k < maxhash; k++)
+        for (m = 0; m < maxhash; m++)
         {
-            if (ptc[k] > ptc[bestseen])
+            if (ptc[m] > ptc[bestseen])
             {
-                bestseen = k;
+                bestseen = m;
             }
         }
-        remainder = 10 * DBL_MIN;
+
+        remainder = 0.0; // 10 * DBL_MIN;
         for (m = 0; m < maxhash; m++)
         {
             if (bestseen != m)
@@ -1619,83 +1407,142 @@ int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 remainder += ptc[m];
             }
         }
-        snprintf(buf, WIDTHOF(buf), "Best match to file #%d (%s) "
-                                    "prob: %6.4f  pR: %6.4f\n",
+            if (remainder < 10 * DBL_MIN)
+                remainder = 10 * DBL_MIN;
+
+        //   ... and format some output of best single matching file
+        //
+        // if (bestseen < maxhash)
+        snprintf(stext_ptr, stext_maxlen, "Best match to file #%d (%s) "
+                                          "prob: %6.4f  pR: %6.4f\n",
                 bestseen,
                 hashname[bestseen],
-                ptc[bestseen], (log10(ptc[bestseen]) - log10(remainder)));
-        buf[WIDTHOF(buf) - 1] = 0;
-        if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            strcat(stext, buf);
-        sprintf(buf, "Total features in input file: %ld\n", (long int)totalfeatures);
-        if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            strcat(stext, buf);
-        for (k = 0; k < maxhash; k++)
+                ptc[bestseen],
+                (log10(ptc[bestseen]) - log10(remainder)));
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
+
+        snprintf(stext_ptr, stext_maxlen, "Total features in input file: %ld\n", (long int)totalfeatures);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
+
+        //     Now do the per-file breakdowns:
+        //
+        for (m = 0; m < maxhash; m++)
         {
-            int m;
-            remainder = 10 * DBL_MIN;
-            for (m = 0; m < maxhash; m++)
+            int k;
+            remainder = 0.0; // 10 * DBL_MIN;
+            for (k = 0; k < maxhash; k++)
             {
                 if (k != m)
                 {
-                    remainder += ptc[m];
+                    remainder += ptc[k];
                 }
             }
-            snprintf(buf, WIDTHOF(buf),
+            if (remainder < 10 * DBL_MIN)
+                remainder = 10 * DBL_MIN;
+
+            snprintf(stext_ptr, stext_maxlen,
                     "#%d (%s):"
-                    " hits: %ld, ufeats: %ld, prob: %3.2e, pR: %6.2f\n",
-                    k,
-                    hashname[k],
-                    (long int)totalhits[k],
-                    (long int)uniquefeatures[k],
-                    ptc[k], (log10(ptc[k]) - log10(remainder)));
-            buf[WIDTHOF(buf) - 1] = 0;
-            // strcat (stext, buf);
-            if (strlen(stext) + strlen(buf) <= stext_maxlen)
-            {
-                strcat(stext, buf);
-            }
+                    " features: %ld, hits: %ld, ufeats: %ld, prob: %3.2e, pR: %6.2f\n",
+                    m,
+                    hashname[m],
+                        (long int)learnings[m],
+                    (long int)totalhits[m],
+                    (long int)uniquefeatures[m],
+                    ptc[m],
+                    (log10(ptc[m]) - log10(remainder)));
+            stext_ptr[stext_maxlen - 1] = 0;
+            stext_maxlen -= (int)strlen(stext_ptr);
+            stext_ptr += strlen(stext_ptr);
         }
-        // check here if we got enough room in stext to stuff everything
-        // perhaps we'd better rise a nonfatalerror, instead of just
-        // whining on stderr
-        if (strcmp(&(stext[strlen(stext) - strlen(buf)]), buf) != 0)
-        {
-            nonfatalerror
-            ("WARNING: not enough room in the buffer to create "
-             "the statistics text.  Perhaps you could try bigger "
-             "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?", " ");
-        }
-        crm_destructive_alter_nvariable(svrbl, svlen, stext, (int)strlen(stext));
+    }
+    // check here if we got enough room in stext to stuff everything
+    // perhaps we'd better rise a nonfatalerror, instead of just
+    // whining on stderr
+    if (stext_maxlen <= 1)
+    {
+        nonfatalerror("WARNING: not enough room in the buffer to create "
+                      "the statistics text.  Perhaps you could try bigger "
+                      "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+                " ");
+    }
+    if (svlen > 0)
+    {
+        crm_destructive_alter_nvariable(svrbl, svlen, stext, (int)strlen(stext), csl->calldepth);
     }
 
-    //
-    //  Free the hashnames, to avoid a memory leak.
-    //
-    for (i = 0; i < maxhash; i++)
-        free(hashname[i]);
+
+
+    //  cleanup time!
+    //  remember to let go of the fd's and mmaps
+    {
+        int k;
+
+        for (k = 0; k < maxhash; k++)
+        {
+            //      close (hfds [k]);
+            if (hashes[k])
+            {
+                crm_munmap_file(header[k]);
+            }
+            //   and let go of the seen_features array
+            if (seen_features[k])
+                free(seen_features[k]);
+            seen_features[k] = NULL;
+
+            //
+            //  Free the hashnames, to avoid a memory leak.
+            //
+            if (hashname[k])
+            {
+                free(hashname[k]);
+            }
+        }
+    }
+
+    if (hashpipe)
+    {
+        free(hashpipe);
+    }
+    if (feature_weight)
+{
+    free(feature_weight);
+    }
+    if (order_no)
+{
+free(order_no);
+}
+
+
     if (tprob <= min_success)
     {
         if (user_trace)
+        {
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
+        }
         //    and do what we do for a FAIL here
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
 #else
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
 #endif
+        if (internal_trace)
+        {
+            fprintf(stderr, "CLASSIFY.OSBF.BAYES.ALT is jumping to statement line: %d/%d\n", csl->mct[csl->cstmt]->fail_index, csl->nstmts);
+        }
         CRM_ASSERT(csl->cstmt >= 0);
         CRM_ASSERT(csl->cstmt <= csl->nstmts);
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
         return 0;
     }
 
-
     //
     //   all done... if we got here, we should just continue execution
     if (user_trace)
         fprintf(stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");
-regcomp_failed:
     return 0;
 }
 

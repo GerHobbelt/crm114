@@ -11,7 +11,7 @@ accept
 output /------------------------:*:_nl:/
 {
 	isolate (:rewrites:)
-	input (:rewrites:) [/home/ger/prj/3actual/crm114/tests/test_rewrites.mfp]
+	input (:rewrites:) [/windows/G/prj/3actual/crm114/tests/test_rewrites.mfp]
 	#    reset matching on rewrites to start of string
 	match [:rewrites:] //
 }
