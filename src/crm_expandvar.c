@@ -1026,7 +1026,7 @@ long crm_restrictvar ( char *boxstring,
     fprintf (stderr, "Performing variable restriction.\n");
 
   //     Expand the string we were handed.
-  assert(boxstrlen < MAX_PATTERN);
+  CRM_ASSERT(boxstrlen < MAX_PATTERN);
   memcpy (datastring, boxstring, boxstrlen);
   datastring[boxstrlen] = '\0';
 

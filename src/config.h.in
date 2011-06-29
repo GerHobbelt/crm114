@@ -6,6 +6,9 @@
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
+/* Define to 1 if you have the `bcopy' function. */
+#undef HAVE_BCOPY
+
 /* BSD REs */
 #undef HAVE_BSD_REGEX
 
@@ -132,6 +135,9 @@
 /* Define if you have a readline compatible library */
 #undef HAVE_LIBREADLINE
 
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
 /* Define to 1 if you have the <lmcons.h> header file. */
 #undef HAVE_LMCONS_H
 
@@ -174,6 +180,9 @@
 
 /* Define to 1 if you have a working `mmap' system call. */
 #undef HAVE_MMAP
+
+/* Define to 1 if the system has the type `mode_t'. */
+#undef HAVE_MODE_T
 
 /* Define to 1 if you have the `msync' function. */
 #undef HAVE_MSYNC
@@ -246,6 +255,9 @@
    zero-length file name argument. */
 #undef HAVE_STAT_EMPTY_STRING_BUG
 
+/* Define to 1 if you have the <stdarg.h> header file. */
+#undef HAVE_STDARG_H
+
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
 
@@ -303,6 +315,9 @@
 /* Define to 1 if you have the `strstr' function. */
 #undef HAVE_STRSTR
 
+/* Define to 1 if you have the `system' function. */
+#undef HAVE_SYSTEM
+
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
    */
 #undef HAVE_SYS_DIR_H
@@ -320,8 +335,14 @@
 /* Define to 1 if you have the <sys/times.h> header file. */
 #undef HAVE_SYS_TIMES_H
 
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <sys/utime.h> header file. */
+#undef HAVE_SYS_UTIME_H
 
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #undef HAVE_SYS_WAIT_H
@@ -344,11 +365,20 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define to 1 if you have the `utime' function. */
+#undef HAVE_UTIME
+
+/* Define to 1 if you have the <utime.h> header file. */
+#undef HAVE_UTIME_H
+
 /* SYSV 8 REs */
 #undef HAVE_V8_REGEX
 
 /* SYSV 8 RE exports regsub */
 #undef HAVE_V8_REGSUB
+
+/* Define to 1 if you have the <varargs.h> header file. */
+#undef HAVE_VARARGS_H
 
 /* Define to 1 if you have the `vfork' function. */
 #undef HAVE_VFORK
@@ -379,6 +409,15 @@
 
 /* Define to 1 if you have the `_stat' function. */
 #undef HAVE__STAT
+
+/* Define to 1 if you have the `_utime' function. */
+#undef HAVE__UTIME
+
+/* Define to 1 if you have the `_vsnprintf' function. */
+#undef HAVE__VSNPRINTF
+
+/* Define to 1 if you have the `__debugbreak' function. */
+#undef HAVE___DEBUGBREAK
 
 /* Define if you have the '__environ' global environment variable */
 #undef HAVE___ENVIRON
@@ -417,9 +456,6 @@
 /* Define to 1 if the C compiler supports function prototypes. */
 #undef PROTOTYPES
 
-/* revision code of the software */
-#undef REVISION
-
 /* Define to 1 if the `setvbuf' function takes the buffering type as its
    second argument and the buffer pointer as the third, as on System V before
    release 3. */
@@ -431,6 +467,12 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* distribution archive filename postfix code of the software */
+#undef TAR_FILENAME_POSTFIX
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
 /* Version number of package */
 #undef VERSION
 
@@ -441,10 +483,27 @@
    first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
 
+/* Define to 1 if on AIX 3.
+   System headers sometimes define this.
+   We just want to avoid a redefinition error message.  */
+#ifndef _ALL_SOURCE
+# undef _ALL_SOURCE
+#endif
+
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
 # undef _GNU_SOURCE
 #endif
+
+/* Define to 1 if on MINIX. */
+#undef _MINIX
+
+/* Define to 2 if the system does not provide POSIX.1 features except with
+   this defined. */
+#undef _POSIX_1_SOURCE
+
+/* Define to 1 if you need to in order for `stat' and other things to work. */
+#undef _POSIX_SOURCE
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the

@@ -274,8 +274,8 @@ static int get_data(CACHE *svmcache,
 {
   int result = length;
   CACHE_NODE *doc = svmcache->head + doc_index;
-  assert(doc_index >= 0);
-  assert(doc_index < svmcache->l);
+  CRM_ASSERT(doc_index >= 0);
+  CRM_ASSERT(doc_index < svmcache->l);
   if(doc->len) lru_delete(doc); //least-recent-use strategy
   
   //need to allocate more space
@@ -314,10 +314,10 @@ static int get_data(CACHE *svmcache,
 //
 static double dot(void const *a, void const *b)
 {
+  HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
   int j = 0;
   int i = 0;
   double sum = 0;
-  HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
   pa = (HYPERSPACE_FEATUREBUCKET_STRUCT *) a;
   pb = (HYPERSPACE_FEATUREBUCKET_STRUCT *) b;
   while(pa[i].hash != 0 && pb[j].hash != 0)
@@ -368,8 +368,8 @@ static void simple_string_hide (char *s,
       /* (*hashcounts)++; */
 	  count++;
     }
-    assert(count >= 0);
-    assert(count < HYPERSPACE_MAX_FEATURE_COUNT);
+    CRM_ASSERT(count >= 0);
+    CRM_ASSERT(count < HYPERSPACE_MAX_FEATURE_COUNT);
 
     *hashcounts = count;
 }
@@ -379,10 +379,10 @@ static void simple_string_hide (char *s,
 //
 static double rbf ( void const *a, void const *b )
 {
+  HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
   int j = 0;
   int i = 0;
   double sum = 0;
-  HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
 
   pa = (HYPERSPACE_FEATUREBUCKET_STRUCT *) a;
   pb = (HYPERSPACE_FEATUREBUCKET_STRUCT *) b;
@@ -518,8 +518,8 @@ static void Q_init(void)
 
 static void selectB(int workset[], int *select_times)
 {
-  //select i
-  int i;
+  // select i
+  int i = -1;
   double G_max;
   double G_min;
   int t;
@@ -528,16 +528,13 @@ static void selectB(int workset[], int *select_times)
   double a,b;
   Qitem_t *Qi;
   
-  i = -1;
-  G_max = -HUGE_VAL;
-  G_min = HUGE_VAL;
-  
   //     Select a document that is on the wrong side of the hyperplane
   //    (called a "violating pair" in Fan's paper).  Note that the
   //    margin is not symmetrical - we can select any "positive" class
   //    element with alpha < param.C, but the 'negative' class must
   //    only be greater than 0.
 
+  G_max = - HUGE_VAL;
   for (t = 0; t < svm_prob.l; t++)
     {
       if((((svm_prob.y[t] == 1) && (solver.alpha[t] < param.C)) 
@@ -555,7 +552,7 @@ static void selectB(int workset[], int *select_times)
   //  select j as second member of working set;
   j = -1;
   obj_min = HUGE_VAL;
- 
+  G_min = HUGE_VAL;
   for (t = 0; t< svm_prob.l; t++)
     {
       if((((svm_prob.y[t] == -1) && (solver.alpha[t] < param.C)) 
@@ -618,14 +615,14 @@ static void solve(void)
       select_times[i] = 0;
     }
 
-  assert(solver.alpha == NULL);
+  CRM_ASSERT(solver.alpha == NULL);
   solver.alpha = calloc(svm_prob.l , sizeof(solver.alpha[0]));
   if (solver.alpha == NULL)
   {
                   untrappableerror("Couldn't allocate space for the solver.",
                           "[solver.alpha]" );
   }
-  assert(solver.G == NULL);
+  CRM_ASSERT(solver.G == NULL);
   solver.G = calloc(svm_prob.l , sizeof(solver.G[0]));
   if (solver.G == NULL)
   {
@@ -648,7 +645,7 @@ static void solve(void)
 
 	//initialize the first nu*l elements of alpha to have the value one;
 	n = (int)(param.nu * svm_prob.l);  
-        assert(n <= svm_prob.l);
+        CRM_ASSERT(n <= svm_prob.l);
 	for(i = 0; i < n; i++)
 	  solver.alpha[i] = 1;
 	if(n < svm_prob.l)
@@ -719,12 +716,12 @@ static void solve(void)
 //    after calculating error margin alpha
 static double calc_b()
 {
-  int count, i;
-  double upper, lower, sum, b;
-  count = 0;
-  upper = HUGE_VAL;
-  lower = -HUGE_VAL;
-  sum = 0;
+  int count = 0;
+  double upper = HUGE_VAL;
+  double lower = -HUGE_VAL;
+  double sum = 0;
+  int i;
+  double b;
   for (i = 0; i < svm_prob.l; i++)
     {
       if(svm_prob.y[i] == 1)
@@ -785,8 +782,7 @@ static double calc_decision(HYPERSPACE_FEATUREBUCKET_STRUCT *x,
 			    double b)
 {
   int i;
-  double sum;
-  sum = 0;
+  double sum = 0;
   i=0;
   if (param.svm_type == C_SVC)
     {
@@ -955,12 +951,12 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   HYPERSPACE_FEATUREBUCKET_STRUCT *hashes;  //  the hashes we'll sort 
   long hashcounts;
   FILE *stringf;
-  char *file_string; 
   struct stat statbuf1;      //  for statting the file1
   struct stat statbuf2;      //  for statting the file2
   time_t start_timer;
   time_t end_timer;
   double run_time;
+  char *file_string; 
 
   i = 0;
   j = 0;
@@ -1010,9 +1006,6 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, 
                    sizeof (hashes[0]));
   hashcounts = 0;
-   
-  file_string = calloc((txtlen+10), sizeof(file_string[0])); 
-  assert(file_string[0] == 0);
    
   //  Extract the file names for storing svm solver.( file1.svm |
   //  file2.svm | 1vs2_solver.svm )
@@ -1081,6 +1074,9 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
   #endif
   
+  file_string = calloc((txtlen+10), sizeof(file_string[0])); 
+  CRM_ASSERT(file_string[0] == 0);
+   
   //   Now tokenize the input text
   //   We got txtptr, txtstart, and txtlen from the caller.
   //
@@ -1131,8 +1127,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	{
 	  simple_string_hide(file_string, hashes, &hashcounts);
 
-	  assert(hashcounts >= 0);
-      assert(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+	  CRM_ASSERT(hashcounts >= 0);
+      CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
       //mark the end of a feature vector
       hashes[hashcounts].hash = 0;
 
@@ -1159,9 +1155,9 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       i = 0;
       j = 0;
       
-        assert(hashcounts >= 0);
-        assert(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-		  assert(hashes[hashcounts].hash == 0);
+        CRM_ASSERT(hashcounts >= 0);
+        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+		  CRM_ASSERT(hashes[hashcounts].hash == 0);
 	      while ( i < hashcounts )
 		{
 	    if (hashes[i].hash != hashes[i+1].hash)
@@ -1177,9 +1173,9 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  hashes[hashcounts].hash = 0;
         }
       
-        assert(hashcounts >= 0);
-        assert(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-		  assert(hashes[hashcounts].hash == 0);
+        CRM_ASSERT(hashcounts >= 0);
+        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+		  CRM_ASSERT(hashes[hashcounts].hash == 0);
       
       if (user_trace)
 	fprintf (stderr, "Total unique hashes generated: %ld\n", hashcounts);
@@ -1195,7 +1191,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      if (user_trace)
 		fprintf (stderr, "Opening a sks file %s for append.\n", file1);
           stringf = fopen ( file1 , "ab+");
-          if ( stringf == 0 )
+          if ( stringf == NULL )
 	    {
                   fatalerror ("For some reason, I was unable to append-open the sks file named ",
                           file1);
@@ -1331,18 +1327,15 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    }
 		      //   End of the K's?  If so, skip U to the end marker
 		      if ( k >= file_hashlens - 1 
-			   || file_hashes[k].hash == 0  )  
-			//  end of doc features
+		       || file_hashes[k].hash == 0  )  //  end of doc features
 			{
 			  unotk += hashcounts - u;
 		    }
 		      
-		      //  end of the U's or end of the K's?  
-		      //If so, end document.
+		  //  end of the U's or end of the K's?  If so, end document.
 		      if (u >= hashcounts
 			  || k >= file_hashlens - 1
-			  || file_hashes[k].hash == 0)  
-			// this sets end-of-document
+		     || file_hashes[k].hash == 0)  // this sets end-of-document
 			{
 			  wrapup = 1;
 			  k++;
@@ -1511,13 +1504,11 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
       
       //initialize the svm_prob.x, svm_prob.y
       svm_prob.l = k1;
-       /* int y[svm_prob.l];  ** [i_a] this is C, not C++ */
            y = calloc(svm_prob.l , sizeof(y[0]));
+      x = calloc(svm_prob.l , sizeof(x[0]));
       for(i = 0; i < k1; i++)
 	y[i] = 1;
       svm_prob.y = y;
-        /* HYPERSPACE_FEATUREBUCKET_STRUCT *x[svm_prob.l];  ** [i_a] this is C, not C++ */
-        x = calloc(svm_prob.l , sizeof(x[0]));
       x[0] = &(file1_hashes[0]);
       k = 1;
       for(i = 1;i< file1_hashlens - 1;i++)
@@ -1548,7 +1539,6 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
   // and write the solution to file3
   if(file2[0] != '\000' && file3[0] != '\000' )
     {
-        double AB[2];
       long file1_lens;
       HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
       long file2_lens;
@@ -1627,23 +1617,21 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 	  
 	  if((k1 > 0) && (k2 >0))
 	    {  
+	      //initialize the svm_prob.x, svm_prob.y
 	      int *y = NULL;
-	      HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
               double b;
               double *deci_array = NULL;
+              double AB[2];
+	      HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 	
-	      //initialize the svm_prob.x, svm_prob.y
-	      
 	      svm_prob.l = k1 + k2;
-              /* int y[svm_prob.l]; ** [i_a] this is C, not C++ */
               y = calloc(svm_prob.l , sizeof(y[0]));
+	      x = calloc(svm_prob.l , sizeof(x[0]));
 	      for(i = 0; i < k1; i++)
 		y[i] = 1;
 	      for(i = k1; i < svm_prob.l; i++)
 		y[i] = -1;
 	      svm_prob.y = y;
-	      /* HYPERSPACE_FEATUREBUCKET_STRUCT *x[svm_prob.l]; */
-              x = calloc(svm_prob.l , sizeof(x[0]));
 	      x[0] =  &(file1_hashes[0]);
 	      k = 1;
 	      for(i = 1; i < file1_lens - 1; i++)
@@ -1666,14 +1654,13 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 	      Q_init();
 	      solve(); //result is in solver
               b = calc_b();
+	      deci_array = (double*) malloc(svm_prob.l*sizeof(double));
 	      
 	      //compute decision values for all training documents 
-              deci_array = calloc(svm_prob.l , sizeof(deci_array[0]));
 	      for(i = 0; i < svm_prob.l; i++)
 		{
 		  deci_array[i] = calc_decision(svm_prob.x[i],solver.alpha, b);
 		}
-        /* double AB[2];  ** [i_a] this is C, not C++ */
 	      calc_AB(AB,deci_array, k1,k2);
 	      end_timer = time(NULL);
 	      run_time = difftime(end_timer, start_timer);
@@ -1687,7 +1674,7 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 		      "Opening a solution file %s for writing alpha and b.\n", 
 			 file3);
         stringf = fopen ( file3 , "wb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
-  if ( stringf == 0 )
+  if ( stringf == NULL )
 		{
 			fatalerror ("Couldn't write-open the .hypsvm file: ", 
 			 file3);
@@ -1724,6 +1711,8 @@ HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
 DiagQ = NULL;
 	      free(solver.alpha);
         solver.alpha = NULL;
+	      free(x);
+	      free(y);
 	      if(user_trace)
 		fprintf(stderr, 	       
               "Finish calculating SVM hyperplane, store the solution to %s!\n",
@@ -1749,15 +1738,17 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			  char *txtptr, long txtstart, long txtlen)
 {
   long i,j, k;
-  char ptext[MAX_PATTERN]; //the regrex pattern
-  long plen;
   char ftext[MAX_PATTERN];
   long flen;
+  char ptext[MAX_PATTERN]; //the regrex pattern
+  long plen;
   char file1[MAX_PATTERN];
   char file2[MAX_PATTERN];
   char file3[MAX_PATTERN];
   regex_t regcb;
   regmatch_t match[5];
+  long textoffset;
+  long textmaxoffset;
   HYPERSPACE_FEATUREBUCKET_STRUCT *hashes;  //  the hashes we'll sort 
   long hashcounts; 
   long cflags, eflags;
@@ -1766,26 +1757,25 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   struct stat statbuf1;      //  for statting the hash file1
   struct stat statbuf2;      //  for statting the hash file2
   struct stat statbuf3;      //  for statting the hash file3
-  long textoffset;
-  long textmaxoffset;
-  double *alpha;
+  double *alpha = NULL;
   double b;
   double AB[2];
   long slen;
   char svrbl[MAX_PATTERN];  //  the match statistics text buffer
   long svlen;
-  char stext [MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100)]; //  the match statistics variable
+  //  the match statistics variable
+  char stext [MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100)]; 
   long stext_maxlen = MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100);
   FILE *stringf;
   long stringlens[MAX_CLASSIFIERS];
   char *stringname[MAX_CLASSIFIERS];
   long doc_num[MAX_CLASSIFIERS];
   double decision = 0;
-  char *file_string; 
   
   long totalfeatures = 0;   //  total features
   long bestseen;
   double ptc[MAX_CLASSIFIERS]; // current running probability of this class
+  char *file_string; 
 
   //            extract the optional "match statistics" variable
   //
@@ -1834,6 +1824,10 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	fprintf (stderr, " enabling uniqueifying features.\n");
     }
   
+	
+  //   Note that during a LEARN in hyperspace, we do NOT use the mmap of
+  //    pre-existing memory.  We just write to the end of the file instead.
+  //    malloc up the unsorted hashbucket space 
   hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, 
 		   sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT));
   hashcounts = 0;
@@ -1905,7 +1899,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   #endif
 
   file_string = calloc((txtlen + 10), sizeof(file_string[0])); 
-  assert(file_string[0] == 0);
+  CRM_ASSERT(file_string[0] == 0);
   
   //   Now tokenize the input text
   //   We got txtptr, txtstart, and txtlen from the caller.
@@ -1918,7 +1912,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //generate the sorted hashes of input text
   if(txtlen > 0)
     {
-		assert(hashcounts == 0);
+		CRM_ASSERT(hashcounts == 0);
 
       #ifdef GET_RID_OF_PUNCTUATION
       while (k == 0 && textoffset <= textmaxoffset 
@@ -1976,13 +1970,13 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
      
       if(strlen(file_string) > 0)
 	{
-		assert(hashcounts == 0);
+		CRM_ASSERT(hashcounts == 0);
 	  simple_string_hide(file_string, hashes, &hashcounts);
         }
       //   Now sort the hashes array.
       //
-        assert(hashcounts >= 0);
-		assert(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+        CRM_ASSERT(hashcounts >= 0);
+		CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
       //mark the end of a feature vector
       hashes[hashcounts].hash = 0;
 
@@ -2006,9 +2000,9 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      i=0;
 	      j=0;
 
-        assert(hashcounts >= 0);
-        assert(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-		  assert(hashes[hashcounts].hash == 0);
+        CRM_ASSERT(hashcounts >= 0);
+        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+		  CRM_ASSERT(hashes[hashcounts].hash == 0);
 	      while ( i < hashcounts )
 	    {
 	      if (hashes[i].hash != hashes[i+1].hash)
@@ -2024,9 +2018,9 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  hashes[hashcounts].hash = 0;
         }
 
-        assert(hashcounts >= 0);
-        assert(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-		  assert(hashes[hashcounts].hash == 0);
+        CRM_ASSERT(hashcounts >= 0);
+        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+		  CRM_ASSERT(hashes[hashcounts].hash == 0);
     }
   else
     {
@@ -2059,11 +2053,10 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if( k==0 )
     {
         long file1_lens;
-    HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
     long file2_lens;
-    HYPERSPACE_FEATUREBUCKET_STRUCT *file2_hashes;
     int k1, k2, k3;
-
+      HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
+      HYPERSPACE_FEATUREBUCKET_STRUCT *file2_hashes;
       //get three input files.
       memmove(file1,&ftext[match[1].rm_so],(match[1].rm_eo-match[1].rm_so));
       file1[match[1].rm_eo-match[1].rm_so]='\000';
@@ -2097,7 +2090,6 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	{
       int *y = NULL;
       HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
-          double *deci_array = NULL;
 
 	  k1 = 0;
 	  k2 = 0;
@@ -2169,17 +2161,15 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    fprintf (stderr, 
 		     "\nThe total number of documents in file2 is %d\n", k2);
       stringf = fopen(file3 , "rb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
-          if ( stringf == 0 )
+          if ( stringf == NULL )
                 {
                   nonfatalerror ("For some reason, I was unable to read-open the SKS 1vs2 solution file file named ",
                           file3);
                 }
           // else
                 {
-      int temp_k1;
-          int temp_k2;
+	  int temp_k1 = 0, temp_k2 = 0;
 
-          temp_k1 = 0; temp_k2 = 0;
 	  if(k3 == 0)
 	    { 
 			if (stringf != NULL)
@@ -2198,13 +2188,13 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  doc_num[1] = k2;
 	  //assign svm_prob.x, svm_prob.y
 	  svm_prob.l = k1 + k2;
+      x = calloc(svm_prob.l , sizeof(x[0]));
       y = calloc(svm_prob.l , sizeof(y[0]));
 	  for(i = 0; i < k1; i++)
 	    y[i] = 1;
 	  for(i = k1; i < svm_prob.l; i++)
 	    y[i] = -1;
 	  svm_prob.y = y;
-      x = calloc(svm_prob.l , sizeof(x[0]));
 	  x[0] = &(file1_hashes[0]);
 	  k = 1;
 	  for(i = 1;i< file1_lens - 1;i++)
@@ -2235,6 +2225,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      //recalculate the svm solution
 	      if((k1 > 0) && (k2 >0))
 		{
+		  double *deci_array = NULL;
 #if 0
 	  //           extract parameters for svm 
 	  crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
@@ -2286,8 +2277,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    {
                       fprintf(stderr, "b=%f\n",b);
 		    }
-        assert(alpha != NULL);
-        assert(svm_prob.l <= (k1 + k2));
+        CRM_ASSERT(alpha != NULL);
+        CRM_ASSERT(svm_prob.l <= (k1 + k2));
 		  for(i = 0; i < svm_prob.l; i++)
 		    alpha[i] = solver.alpha[i];
 		  
@@ -2308,6 +2299,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                   solver.G = NULL;
                   solver.alpha = NULL;
                   DiagQ = NULL;
+		  free(x);
+		  free(y);
 		  if(user_trace)
 		    fprintf(stderr, 
 			    "Recalculation of svm hyperplane is finished!\n");
@@ -2379,13 +2372,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   
   if(svlen > 0)
     {
+      char buf [4096];
     double pr;
     char fname[MAX_FILE_NAME_LEN];
-    char buf [4096];
     buf[0] = 0;
     
     //   put in standard CRM114 result standard header:
-    /* double pr; ** [i_a] this is C, not C++ */
       ptc[0] = decision;
       ptc[1] = 1 - decision;
       if(decision >= 0.5)
@@ -2410,7 +2402,6 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //   Second line of the status report is the "best match" line:
       //
       
-    /* char fname[MAX_FILE_NAME_LEN]; ** [i_a] this is C, not C++ */
     if(bestseen)
       strncpy(fname, file2, MAX_FILE_NAME_LEN);
     else

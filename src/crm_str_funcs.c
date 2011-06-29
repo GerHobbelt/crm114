@@ -92,8 +92,7 @@ long strnhash (char *str, long len)
 unsigned long strnhash (char *str, long len)
 {
   long i;
-  int32_t hval; /* [i_a] Win32 native doesn't know about any int32_t ... */
-  // int32_t hval;
+  int32_t hval;
   int32_t tmp;
 
   // initialize hval
@@ -168,11 +167,10 @@ typedef struct prototype_crm_mmap_cell
 
   int unmap_count;         //  counter - unmap this after UNMAP_COUNT_MAX
   struct prototype_crm_mmap_cell *next, *prev;
-#ifdef POSIX
-    int fd;
-#endif
-#ifdef WIN32
+#if defined(WIN32)
     HANDLE fd, mapping;
+#else
+    int fd;
 #endif
 } CRM_MMAP_CELL;
 
@@ -189,9 +187,9 @@ static CRM_MMAP_CELL *cache = NULL;
 //     Watch out tho- this takes a CRM_MMAP_CELL, not a *ptr, so don't
 //     call it from anywhere except inside this file.
 //
-void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
+void crm_unmap_file_internal(CRM_MMAP_CELL *map)
 {
-#ifdef POSIX
+#if defined(HAVE_MSYNC) && defined(HAVE_MUNMAP)
   long munmap_status;
 
   if (map->prot & PROT_WRITE)
@@ -199,6 +197,7 @@ void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
   munmap_status = munmap (map->addr, map->actual_len);
   //  fprintf (stderr, "Munmap_status is %ld\n", munmap_status);
 
+#if 0
      //    Because mmap/munmap doesn't set atime, nor set the "modified"
      //    flag, some network filesystems will fail to mark the file as
      //    modified and so their cacheing will make a mistake.
@@ -215,6 +214,7 @@ void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
     lseek (map->fd, 0, SEEK_SET);
     write (map->fd, &foo, sizeof(foo));
   }
+#endif
 
   //     Although the docs say we can close the fd right after mmap,
   //     while leaving the mmap outstanding even though the fd is closed,
@@ -223,16 +223,18 @@ void crm_unmap_file_internal ( CRM_MMAP_CELL *map)
   //
   close (map->fd);
   //  fprintf (stderr, "U");
-#endif
 
+  CRM_ASSERT(map->name != NULL);
+  crm_touch(map->name);
 
-#ifdef WIN32
+#elif defined(WIN32)
     FlushViewOfFile(map->addr, 0);
     UnmapViewOfFile(map->addr);
     CloseHandle(map->mapping);
     CloseHandle(map->fd);
+#else
+#error "please provide an munmap implementation for your platform"
 #endif
-
 }
 
 /////////////////////////////////////////////////////
@@ -252,7 +254,7 @@ void crm_force_munmap_filename (char *filename)
         {
           //   found it... force an munmap.
           crm_force_munmap_addr (p->addr);
-		  break; /* 'p' will be INVALID by now! */
+	  break;     //  because p may be clobbered during unmap.
         }
     }
 }
@@ -299,7 +301,7 @@ void crm_force_munmap_addr (void *addr)
 //      does cacheing.  It keeps count of unmappings and only unmaps
 //      when it needs to.
 //
-void crm_munmap_file (void *addr)
+void crm_munmap_file(void *addr)
 {
   CRM_MMAP_CELL *p;
 
@@ -323,7 +325,7 @@ void crm_munmap_file (void *addr)
   p->unmap_count = (p->unmap_count) + 1;
   if (p->unmap_count > UNMAP_COUNT_MAX)
     {
-      crm_unmap_file_internal (p);
+      crm_unmap_file_internal(p);
       //
       //    File now unmapped, take the mmap_cell out of the cache
       //    list as well.
@@ -334,7 +336,7 @@ void crm_munmap_file (void *addr)
 	  }
       else
 	  {
-	    assert(cache == p);
+	    CRM_ASSERT(cache == p);
         cache = p->next;
 	  }
       if (p->next != NULL)
@@ -343,8 +345,8 @@ void crm_munmap_file (void *addr)
 	  }
 	  else
 	  {
-		  assert(p->prev ? p->prev->next == NULL : 1);
-		  assert(!p->prev ? cache == NULL : 1);
+		  CRM_ASSERT(p->prev ? p->prev->next == NULL : 1);
+		  CRM_ASSERT(!p->prev ? cache == NULL : 1);
 	  }
       free(p->name);
       free(p);
@@ -353,10 +355,9 @@ void crm_munmap_file (void *addr)
     {
       if (p->prot & PROT_WRITE)
         {
-#ifdef POSIX
+#if defined(HAVE_MSYNC)
          msync (p->addr, p->actual_len, MS_ASYNC | MS_INVALIDATE);
-#endif
-#ifdef WIN32
+#elif defined(WIN32)
          //unmap our view of the file, which will lazily write any
          //changes back to the file
          UnmapViewOfFile(p->addr);
@@ -376,7 +377,7 @@ void crm_munmap_file (void *addr)
 			  }
 			  else
 			  {
-				assert(cache == p);
+				CRM_ASSERT(cache == p);
 				cache = p->next;
 			  }
 			  if (p->next != NULL)
@@ -385,12 +386,14 @@ void crm_munmap_file (void *addr)
 			  }
 			  else
 			  {
-				  assert(p->prev ? p->prev->next == NULL : 1);
-				  assert(!p->prev ? cache == NULL : 1);
+				  CRM_ASSERT(p->prev ? p->prev->next == NULL : 1);
+				  CRM_ASSERT(!p->prev ? cache == NULL : 1);
 			  }
              free(p->name);
              free(p);
            }
+#else
+#error "please provide a msync() alternative here"
 #endif
         }
     }
@@ -400,12 +403,12 @@ void crm_munmap_file (void *addr)
 /////////////////////////////////////////////////////////
 //
 //           Force an Unmap on every mmapped memory area we know about
-void crm_munmap_all()
+void crm_munmap_all(void)
 {
   while (cache != NULL) 
   {
     cache->unmap_count = UNMAP_COUNT_MAX + 1;
-    crm_munmap_file (cache->addr);
+    crm_munmap_file(cache->addr);
   }
 }
 
@@ -425,10 +428,9 @@ void *crm_mmap_file (char *filename,
   CRM_MMAP_CELL *p;
   long pagesize = 0;
   struct stat statbuf = {0};
-#ifdef POSIX
+#if defined(HAVE_MMAP)
   mode_t open_flags;
-#endif
-#ifdef WIN32
+#elif defined(WIN32)
   DWORD open_flags = 0;
   DWORD createmap_flags = 0;
   DWORD openmap_flags = 0;
@@ -466,8 +468,7 @@ void *crm_mmap_file (char *filename,
   p->prot = prot;
   p->mode = mode;
 
-#ifdef POSIX
-
+#if defined(HAVE_MMAP) && defined(HAVE_MODE_T)
   open_flags = O_RDWR;
   if ( ! (p->prot & PROT_WRITE) && (p->prot & PROT_READ) )
     open_flags = O_RDONLY;
@@ -536,8 +537,7 @@ void *crm_mmap_file (char *filename,
     }
 
 
-#endif
-#ifdef WIN32
+#elif defined(WIN32)
   if (p->mode & MAP_PRIVATE)
     {
       open_flags = GENERIC_READ;
@@ -634,6 +634,8 @@ void *crm_mmap_file (char *filename,
     for (i = 0; i < p->actual_len; i += pagesize)
       one_byte = addr[i];
   }
+#else
+#error "please provide a mmap() equivalent"
 #endif
 
   //   If the caller asked for the length to be passed back, pass it.
@@ -756,7 +758,7 @@ unsigned char * crm_strntrn_invert_string (unsigned char *str,
         outstr[j] = (unsigned char)i;
         j++;
       }
-        assert(j <= 256);
+        CRM_ASSERT(j <= 256);
 
   //    The final string length is j characters long, in outstr.
   //    Don't forget to free() it later.  :-)

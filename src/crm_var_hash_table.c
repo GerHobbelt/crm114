@@ -175,7 +175,7 @@ void crm_vht_init (int argc, char **argv)
   //      vector into the VHT.
 
   i = 0;
-  assert(tempbuf != NULL);
+  CRM_ASSERT(tempbuf != NULL);
   tempbuf[0] = '\000';
   if ( ! ignore_environment_vars)
   {
@@ -209,11 +209,11 @@ void crm_vht_init (int argc, char **argv)
 
 		/* [i_a] GROT GROT GROT: patch Win32 specific 'faked' env. vars in here: USER, PWD, ... */
 #if defined(WIN32)
-		if (strncmp(&environ[i][j], "PWD", 3) == 0)
+		if (strncmp(environ[i], "PWD=", 4) == 0)
 		{
 			got_to_fake_em &= ~FAKE_PWD;
 		}
-		else if (strncmp(&environ[i][j], "USER", 4) == 0)
+		else if (strncmp(environ[i], "USER", 5) == 0)
 		{
 			got_to_fake_em &= ~FAKE_USER;
 		}
@@ -248,7 +248,7 @@ void crm_vht_init (int argc, char **argv)
 			
 			if (!GetCurrentDirectoryA(dirbufsize, dirbuf))
 			{
-				fatalerror_Win32("Cannot fetch the current directory (PWD).");
+				fatalerror_Win32("Cannot fetch the current directory (PWD)");
 			}
 			else
 			{
@@ -267,15 +267,27 @@ void crm_vht_init (int argc, char **argv)
 				*/
 				if (!GetFullPathName(dirbuf, CRM_MAX(MAX_VARNAME, MAX_PATH) + 1, fulldirbuf, NULL))
 				{
-					snprintf(fulldirbuf, WIDTHOF(fulldirbuf),
+					fatalerror_ex(SRC_LOC(), 
 						"Cannot fetch the expanded current directory (PWD) for directory '%s'", 
 						dirbuf);
-					fulldirbuf[WIDTHOF(fulldirbuf) - 1] = 0;
-					fatalerror_Win32(fulldirbuf);
 				}
 				else
 				{
 				    crm_set_temp_var (":_env_PWD:", dirbuf);
+					if (strlen (dirbuf) + WIDTHOF("PWD=") < (data_window_size - 1000))
+					  {
+						strcat(tempbuf, "PWD=");
+						strcat(tempbuf, dirbuf);
+						strcat(tempbuf, "\n");
+					  }
+					else
+					{
+					  untrappableerror ("The ENVIRONMENT variables don't fit into the "
+										 "available space. \nThis is very broken.  Try "
+										 "a larger data window (with flag -w NNNNN), \nor "
+										 "drop the environment vars with "
+										 "the (with flag -e)", "");
+					}
 				}
 			}
 		}
@@ -286,11 +298,25 @@ void crm_vht_init (int argc, char **argv)
 			
 			if (!GetUserNameA(userbuf, &userbufsize))
 			{
-				nonfatalerror("Cannot fetch the USER name.", "");
+				nonfatalerror_Win32("Cannot fetch the USER name.");
 			}
 			else
 			{
 			  crm_set_temp_var (":_env_USER:", userbuf);
+				if (strlen (userbuf) + WIDTHOF("USER=") < (data_window_size - 1000))
+				  {
+					strcat(tempbuf, "USER=");
+					strcat(tempbuf, userbuf);
+					strcat(tempbuf, "\n");
+				  }
+				else
+				{
+				  untrappableerror ("The ENVIRONMENT variables don't fit into the "
+									 "available space. \nThis is very broken.  Try "
+									 "a larger data window (with flag -w NNNNN), \nor "
+									 "drop the environment vars with "
+									 "the (with flag -e)", "");
+				}
 			}
 		}
 #endif

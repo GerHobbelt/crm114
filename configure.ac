@@ -1,17 +1,15 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 #
-# $Id: configure.ac,v 1.40 2004/08/18 13:52:04 vanbaal Exp $, maintained in crm114 SF CVS at
-# $Source: /cvsroot/crm114/crm114/configure.ac,v $
-#
 # This script is free software; you can distribute it and/or modify it
 # under the terms of the GNU GPL.  See the file COPYING.
 #
 # Copyright (C) 2003, 2004 Joost van Baal
 # Process this file with autoconf to produce a configure script.
 
+
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT(CRM114, [20070731-BlameTheInterns], crm114-general@lists.sourceforge.net)
+AC_INIT(CRM114, 20070731-BlameTheInterns, crm114-general@lists.sourceforge.net)
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR(m4)
@@ -25,20 +23,32 @@ AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR(src/crm_main.c)
 AC_CONFIG_HEADERS(src/config.h)
 
-REVISION=`date +%Y%m%dT%H%M`
-AC_DEFINE_UNQUOTED(REVISION, "$REVISION", [revision code of the software])
-AC_SUBST(REVISION)
+#REVISION=`date +%Y%m%dT%H%M`
+#AC_DEFINE_UNQUOTED(REVISION, "$REVISION", [revision code of the software])
+#AC_SUBST(REVISION)
 
-VER_SUFFIX=`date +%y%m%dT%H%M`
+# VER_SUFFIX=Ger-`date +%m%dT%H`
+VER_SUFFIX=
 AC_DEFINE_UNQUOTED(VER_SUFFIX, "$VER_SUFFIX", [version suffix code of the software])
 AC_SUBST(VER_SUFFIX)
 
+# one build every three hours is the fastest I can do... I guess ;-) 
+# At least this'll give me at least 3 years of build numbering before I run out of
+# the 4 digit set. And then who cares when a fifth digit is required, eh?
 
-PACKAGE=$PACKAGE_NAME
-VERSION=$PACKAGE_VERSION
-# PACKAGE=crm114
-AC_SUBST(VERSION)
-AC_SUBST(PACKAGE)
+let "buildnumber=(`date +%s` - 1185402255) / 10800"
+
+TAR_FILENAME_POSTFIX=Ger-$buildnumber
+AC_DEFINE_UNQUOTED(TAR_FILENAME_POSTFIX, "$TAR_FILENAME_POSTFIX", [distribution archive filename postfix code of the software])
+AC_SUBST(TAR_FILENAME_POSTFIX)
+
+
+# AC_DEFINE_UNQUOTED(SILENT, "@", [silent mode for make])
+SILENT="@"
+AC_SUBST(SILENT)
+
+
+
 
 AC_PREFIX_DEFAULT(/usr/local)
 
@@ -56,6 +66,8 @@ AM_MAINTAINER_MODE
 # Checks for programs.
 AC_PROG_CC(gcc egcs cl cc lcc)
 AC_GNU_SOURCE
+AC_AIX
+AC_MINIX
 AC_C_PROTOTYPES
 #
 # since AC_PROG_CC sets '-O2' in CFLAGS by default, while _we_'d like
@@ -325,13 +337,15 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 
 AC_HEADER_SYS_WAIT
+AC_HEADER_TIME
 AC_CHECK_HEADERS(fcntl.h float.h stdlib.h string.h unistd.h)
 AC_CHECK_HEADERS(stdio.h ctype.h errno.h sys/types.h sys/wait.h)
 AC_CHECK_HEADERS(dirent.h unistd.h sys/mman.h sys/stat.h math.h)
-AC_CHECK_HEADERS(time.h locale.h sys/times.h signal.h)
+AC_CHECK_HEADERS(locale.h sys/times.h signal.h time.h sys/time.h)
 AC_CHECK_HEADERS(inttypes.h arpa/inet.h netinet/in.h)
+AC_CHECK_HEADERS(stdarg.h varargs.h float.h limits.h)
 AC_CHECK_HEADERS(assert.h)
-AC_CHECK_HEADERS(libintl.h wchar.h)
+AC_CHECK_HEADERS(libintl.h sys/utime.h utime.h wchar.h)
 AC_CHECK_HEADERS(crtdbg.h signal.h io.h direct.h process.h lmcons.h)
 AC_CHECK_HEADERS(getopt.h getopt_ex.h)
 
@@ -362,6 +376,7 @@ AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 AC_CHECK_TYPES(clock_t)
 AC_CHECK_TYPES(pid_t)
+AC_CHECK_TYPES(mode_t)
 
 # check for a environ/__environ global var
 AC_ENVIRON
@@ -384,23 +399,25 @@ AC_FUNC_STRFTIME
 AC_FUNC_SNPRINTF
 AC_FUNC_MEMMOVE
 VL_LIB_READLINE
-AC_CHECK_FUNCS(dup2)
+AC_CHECK_FUNCS(dup2 bcopy)
 AC_CHECK_FUNCS(memchr memset)
 AC_CHECK_FUNCS(munmap msync)
-AC_CHECK_FUNCS(strcasecmp strcspn strdup strncasecmp strcasecmp strstr strchr)
+AC_CHECK_FUNCS(strcasecmp strncasecmp strcspn strdup strstr strchr)
 AC_CHECK_FUNCS(strnicmp stricmp)
-AC_CHECK_FUNCS(strncpy _snprintf)
+AC_CHECK_FUNCS(strncpy _snprintf _vsnprintf)
 AC_CHECK_FUNCS(strmov)
 AC_CHECK_FUNCS(times)
-AC_CHECK_FUNCS(stat _stat)
+AC_CHECK_FUNCS(stat _stat utime _utime)
 AC_CHECK_FUNCS(strerror)
-AC_CHECK_FUNCS(getpid getppid waitpid)
+AC_CHECK_FUNCS(getpid getppid waitpid system)
 AC_CHECK_FUNCS(truncate)
 AC_CHECK_FUNCS(pipe)
 AC_CHECK_FUNCS(floor fabs pow log logl log10 sqrt log2)
 AC_CHECK_FUNCS(isalnum isalpha isascii isblank iscntrl isdigit isgraph islower isprint ispunct isspace isupper isxdigit)
 AC_CHECK_FUNCS(setlocale)
 AC_CHECK_FUNCS(getopt getopt_long)
+AC_CHECK_FUNCS(__debugbreak)
+
 
 
 # Enable expanding of shebang in .crm scripts: get a usable BIN_PATH

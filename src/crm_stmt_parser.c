@@ -139,10 +139,10 @@ unsigned long long crm_flagparse (char *input, long inlen)  //  the user input
               // fprintf (stderr, " Trying %s (%ld) at pos = %d\n", crm_flags[j].string, crm_flags[j].value, j );
 
                         // make sure the flags are ordered properly; must match with crm114_structs.h defs, but that's kinda hard to check
-                        assert(crm_flags[j].value > 0);
-                        assert(j > 0 ? crm_flags[j].value >= crm_flags[j-1].value : 1);
-                        assert(j > 0 ? crm_flags[j].value == crm_flags[j-1].value ? 1 : crm_flags[j].value == (crm_flags[j-1].value << 1LL) : 1);
-                        assert(j == 0 ? crm_flags[j].value == 1 : 1);
+                        CRM_ASSERT(crm_flags[j].value > 0);
+                        CRM_ASSERT(j > 0 ? crm_flags[j].value >= crm_flags[j-1].value : 1);
+                        CRM_ASSERT(j > 0 ? crm_flags[j].value == crm_flags[j-1].value ? 1 : crm_flags[j].value == (crm_flags[j-1].value << 1LL) : 1);
+                        CRM_ASSERT(j == 0 ? crm_flags[j].value == 1 : 1);
 
               k = strlen (crm_flags[j].string);
               if (k == wlen
@@ -505,7 +505,7 @@ int crm_generic_parse_line (
           if (flen[argc] >= MAX_PATTERN)
                   flen[argc] = MAX_PATTERN - 1;
       strncpy(errstmt, &txt[fstart[argc]], CRM_MIN(MAX_PATTERN, flen[argc]));
-          assert(flen[argc] < MAX_PATTERN);
+          CRM_ASSERT(flen[argc] < MAX_PATTERN);
           errstmt[CRM_MIN(MAX_PATTERN - 1, flen[argc])] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
       nonfatalerror (" This operand doesn't seem to end.  Bug?\n -->  ",
                      errstmt);

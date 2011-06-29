@@ -1,4 +1,4 @@
- This is CRM114, version 20070731-BlameTheInterns (TRE 0.7.5 (LGPL))
+ This is CRM114, version 20070805-BlameTheInterns (TRE 0.7.5 (LGPL))
  Copyright 2001-2006 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -202,8 +202,8 @@ DEBUG: [TheEnd]
  ----- keeping a process around ----  
 
  preparing... 
- OK_IF_PID_CHANGES: one... MINION PROC PID: 31871 from-pipe: 6 to-pipe: 5
- OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 31871 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_CHANGES: one... MINION PROC PID: 28244 from-pipe: 6 to-pipe: 5
+ OK_IF_PID_SAME_AS_ABOVE: again... MINION PROC PID: 28244 from-pipe: 6 to-pipe: 5
  and done ...DEAD MINION, EXIT CODE: 0 
 exit value test got DEAD MINION, EXIT CODE: 123
  CRM114: Testing union and intersection 
@@ -656,7 +656,7 @@ del-inv:  foobarzappa13579ae
 del-inv2: xyywxwxwxwzzww0y2z4w6x8yywxwwxyzwxyyywxzxzzwXYZZYwQUICKwBROWNwFOXwwxw
 srcvar:   FOO BAR ZAPPA 0123456789.,?`~!@#$%^&*()_-+= xyzzy quick brown fox A-E
 src-dest: ULL YZI AZKKZ 0123456789.,?`~!@#$%^&*()_-+= cbaab jfrxp yildm ulc Z-V
-version: 20070731-BlameTheInterns ( TRE 0.7.5 (LGPL) )
+version: 20070805-BlameTheInterns ( TRE 0.7.5 (LGPL) )
 
 noSpaces before: Are The Russian Involved ?
 noSpaces after : AreTheRussianInvolved?
@@ -897,15 +897,15 @@ Total features in input file: 408
 CLASSIFY fails; success probability: 0.049565  pR: -147.9304
 Best match to file #1 (q_test.css) prob: 0.9504  pR: 147.9304  
 Total features in input file: 69
-#0 (i_test.css): features: 53184, score:1.18e+02, prob: 4.96e-02,pR: -147.93
-#1 (q_test.css): features: 66688, score:5.48e+02, prob: 9.50e-01,pR: 147.93
+#0 (i_test.css): features: 53184, score: 1.18e+02, prob: 4.96e-02, pR: -147.93
+#1 (q_test.css): features: 66688, score: 5.48e+02, prob: 9.50e-01, pR: 147.93
 
  type I 
 CLASSIFY succeeds; success probability: 0.949211  pR: 146.6004
 Best match to file #0 (i_test.css) prob: 0.9492  pR: 146.6004  
 Total features in input file: 51
-#0 (i_test.css): features: 53184, score:3.33e+02, prob: 9.49e-01,pR: 146.60
-#1 (q_test.css): features: 66688, score:7.33e+01, prob: 5.08e-02,pR: -146.60
+#0 (i_test.css): features: 53184, score: 3.33e+02, prob: 9.49e-01, pR: 146.60
+#1 (q_test.css): features: 66688, score: 7.33e+01, prob: 5.08e-02, pR: -146.60
 
 
 **** Support Vector Machine (SVM) unigram classifier 

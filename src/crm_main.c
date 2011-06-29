@@ -78,6 +78,8 @@ long q_expansion_mode = 0;
 
 
 
+
+
 //   The VHT (Variable Hash Table)
 VHT_CELL **vht = NULL;
 
@@ -126,6 +128,58 @@ int main(int argc, char **argv)
   int openbracket;  //  if there's a command-line program...
   int openparen = -1;     //  if there's a list of acceptable arguments
   int user_cmd_line_vars = 0;  // did the user specify --vars on cmdline?
+#if defined(WIN32) && defined(_DEBUG)
+  void *bogus_ptr;
+
+   /* 
+    * Hook in our client-defined reporting function.
+    * Every time a _CrtDbgReport is called to generate
+    * a debug report, our function will get called first.
+    */
+   _CrtSetReportHook(crm_dbg_report_function);
+
+   /* 
+    * Define the report destination(s) for each type of report
+    * we are going to generate.  In this case, we are going to
+    * generate a report for every report type: _CRT_WARN,
+    * _CRT_ERROR, and _CRT_ASSERT.
+    * The destination(s) is defined by specifying the report mode(s)
+    * and report file for each report type.
+    */                                             
+   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+   _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
+   _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+   _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+   _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+   _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+
+   // Store a memory checkpoint in the s1 memory-state structure
+   _CrtMemCheckpoint( &crm_memdbg_state_snapshot1 );
+
+   atexit(crm_report_mem_analysis);
+
+	// Get the current bits
+	i = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+
+   // Set the debug-heap flag so that freed blocks are kept on the
+   // linked list, to catch any inadvertent use of freed memory
+#if 0
+	i |= _CRTDBG_DELAY_FREE_MEM_DF;
+#endif
+
+   // Set the debug-heap flag so that memory leaks are reported when
+   // the process terminates. Then, exit.
+   //i |= _CRTDBG_LEAK_CHECK_DF;
+
+	// Clear the upper 16 bits and OR in the desired freqency
+	i = (i & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_16_DF;
+
+	// Set the new bits
+	_CrtSetDbgFlag(i);
+
+	// set a malloc marker we can use it in the leak dump at the end of the program:
+    bogus_ptr = _calloc_dbg( 1, 1, _CLIENT_BLOCK, __FILE__, __LINE__ );
+#endif
 
   //  printf (" args: %d \n", argc);
   //  for (i = 0; i < argc; i++)
@@ -234,6 +288,11 @@ int main(int argc, char **argv)
           fprintf (stderr, " --foo   creates var :foo: with value 'SET'\n");
           fprintf (stderr, " --x=y   creates var :x: with value 'y'\n");
           fprintf (stderr, " -in file   use file instead of stdin for input\n");
+		  fprintf (stderr, " -dbg    direct developer support: trigger the debugger when an internal\n"
+			               "         error is hit.\n");
+		  fprintf (stderr, " -memdump\n"
+			               "         direct developer support: dump all detected memory leaks\n");
+
           if (openparen > 0)
             {
               fprintf (stderr, "\n This program also claims to accept these command line args:" );
@@ -333,7 +392,7 @@ int main(int argc, char **argv)
                   }
             }
           if (user_trace)
-            fprintf (stderr, "Setting listing level to %ld \n",
+            fprintf (stderr, "Setting listing level to %ld\n",
                      prettyprint_listing);
           goto end_command_line_parse_loop;
         }
@@ -527,7 +586,9 @@ int main(int argc, char **argv)
               exit (engine_exit_base + 16);
             }
           else
+		  {
             exit( EXIT_SUCCESS );
+		  }
         }
 
       if (strncmp (argv[i], "-{", 2) == 0)  //  don't care about the "}"
@@ -633,7 +694,29 @@ int main(int argc, char **argv)
                      argv[i]);
           goto end_command_line_parse_loop;
         }
-
+      if (strncmp (argv[i], "-dbg", 4) == 0 && strlen(argv[i]) == 4)
+        {
+#ifndef CRM_DONT_ASSERT
+		  trigger_debugger = 1;
+		  if (user_trace)
+            fprintf (stderr, "Debugger trigger turned ON.\n");
+#else
+		  untrappableerror("Debugger support is not included in this binary. "
+			  "Please rebuild with debugger support if you require such.", "");
+#endif
+          goto end_command_line_parse_loop;
+        }
+      if (strncmp (argv[i], "-memdump", 8) == 0 && strlen(argv[i]) == 8)
+        {
+#if defined(WIN32) && defined(_DEBUG)
+		  trigger_memdump = 1;
+		  if (user_trace)
+            fprintf (stderr, "memory leak dump turned ON.\n");
+#else
+		  untrappableerror_ex(SRC_LOC(), "Memory leak dump support is not included in this binary.");
+#endif
+          goto end_command_line_parse_loop;
+        }
 
       //  that's all of the flags.  Anything left must be
       //  the name of the file we want to use as a program
@@ -736,8 +819,8 @@ int main(int argc, char **argv)
       csl->nchars = strlen (csl->filetext);
       csl->hash = strnhash (csl->filetext, csl->nchars);
       if (user_trace)
-        fprintf (stderr, "Hash of program: %lX, length is %ld bytes\n",
-                 csl->hash, csl->nchars);
+		  fprintf (stderr, "Hash of program: %lX, length is %ld bytes: %s\n-->\n%s",
+		  csl->hash, csl->nchars, csl->filename, csl->filetext);
     }
 
   //  We get another csl-like data structure,

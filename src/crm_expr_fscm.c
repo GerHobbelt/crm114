@@ -132,10 +132,10 @@ static long n_bytes = 1048576;
 // and mapped
 static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
 {
-  char *o;
+  SCM_HEADER_STRUCT *h = space;
+  char *o = space;
   long i;
 
-  SCM_HEADER_STRUCT *h = space;
   h->n_bytes = n_bytes;
   h->n_trains = 0;
   h->n_features = 0;
@@ -151,7 +151,6 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
   h->indeces_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes *
                                    (sizeof(long) + sizeof(HASH_STRUCT)
                                       + sizeof(PREFIX_STRUCT) + sizeof(char));
-  o = space;
   s->header = h;
   s->text_pos = &h->text_pos;
   s->n_bytes = h->n_bytes;
@@ -197,7 +196,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
                   sizeof(long)
                 );
     f = fopen(filename, "wb");
-          if ( f == 0 )
+          if ( f == NULL )
                 {
                   fatalerror ("For some reason, I was unable to write-open the file named ",
                           filename);
@@ -250,7 +249,9 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
 static void unmap_file(SCM_STATE_STRUCT *s)
 {
   crm_munmap_file ((void *) s->header);
-#ifdef POSIX
+
+#if 0  /* now touch-fixed inside the munmap call already! */
+#if defined(HAVE_MMAP) || defined(HAVE_MUNMAP)
   //    Because mmap/munmap doesn't set atime, nor set the "modified"
   //    flag, some network filesystems will fail to mark the file as
   //    modified and so their cacheing will make a mistake.
@@ -258,22 +259,8 @@ static void unmap_file(SCM_STATE_STRUCT *s)
   //    The fix is to do a trivial read/write on the .css ile, to force
   //    the filesystem to repropagate it's caches.
   //
-  {
-    int hfd;                  //  hashfile fd
-    FEATURE_HEADER_STRUCT foo;
-    hfd = open (s->learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
-        if (hfd < 0)
-    {
-      fprintf(stderr, "Couldn't reopen %s to touch\n", s->learnfilename);
-    }
-    else
-        {
-    read (hfd, &foo, sizeof(foo));
-    lseek (hfd, 0, SEEK_SET);
-    write (hfd, &foo, sizeof(foo));
-    close (hfd);
-        }
-  }
+  crm_touch(s->learnfilename);
+#endif
 #endif
 }
 
@@ -323,7 +310,7 @@ static void copy_prefix(SCM_STATE_STRUCT *s, long a, char *b)
 //check every global structure for consistency, if there's a bug, this will
 // find it! We just go into a loop on error here because the only apropriate
 // action to be taken is to attach the debugger
-static void audit_structs(SCM_STATE_STRUCT *s)
+static int audit_structs(SCM_STATE_STRUCT *s)
 {
   long i, j, k;
   long n_p = 0, n_h = 0;
@@ -332,37 +319,42 @@ static void audit_structs(SCM_STATE_STRUCT *s)
     {
       if(s->hashee[ s->hash_root[i] ].prev != -i - 1)
       {
-    /* while(1);     AARGH! inifinite loop! lockup! untrappableerror() instead then? */
-    untrappableerror("FSCM: INCONSISTENT STATE!", "");
-      };
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
       for(j = s->hash_root[i]; j != NULL_INDEX; j = s->hashee[j].next)
       {
         n_h++;
         if(s->hashee[j].next != NULL_INDEX &&
             s->hashee[ s->hashee[j].next ].prev != j)
         {
-    /* while(1);     AARGH! inifinite loop! lockup! untrappableerror() instead then? */
-    untrappableerror("FSCM: INCONSISTENT STATE!", "");
-        };
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
         if(s->prefix[ s->hashee[j].first ].prev != -j - 1)
         {
-    /* while(1);     AARGH! inifinite loop! lockup! untrappableerror() instead then? */
-    untrappableerror("FSCM: INCONSISTENT STATE!", "");
-        };
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
         for(k = s->hashee[j].first; k != NULL_INDEX; k = s->prefix[k].next)
         {
           n_p++;
           if(s->prefix[k].next != NULL_INDEX &&
               s->prefix[ s->prefix[k].next].prev != k)
           {
-    /* while(1);     AARGH! inifinite loop! lockup! untrappableerror() instead then? */
-    untrappableerror("FSCM: INCONSISTENT STATE!", "");
-          };
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
           if(!match_prefix(s, s->prefix[k].offset, s->hashee[j].prefix_text))
           {
-    /* while(1);     AARGH! inifinite loop! lockup! untrappableerror() instead then? */
-    untrappableerror("FSCM: INCONSISTENT STATE!", "");
-          };
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
         }
       }
     };
@@ -372,18 +364,21 @@ static void audit_structs(SCM_STATE_STRUCT *s)
     n_h++;
   if(n_h != s->n_bytes)
   {
-    /* while(1);     AARGH! inifinite loop! lockup! untrappableerror() instead then? */
-    untrappableerror("FSCM: INCONSISTENT STATE!", "");
-  };
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
   for(  i = *s->free_prefix_nodes;
         i != NULL_INDEX && n_p < s->n_bytes + 1;
         i = s->prefix[i].next )
     n_p++;
   if(n_p != s->n_bytes)
   {
-    /* while(1);     AARGH! inifinite loop! lockup! untrappableerror() instead then? */
-    untrappableerror("FSCM: INCONSISTENT STATE!", "");
-  }
+        fatalerror("FSCM: INCONSISTENT INTERNAL STATE!", "Please submit bug"
+                    " report");
+        return -1;
+      }
+  return 0;
 }
 
 //insert the three character prefix starting at postion t into the tables for
@@ -507,8 +502,8 @@ static void find_longest_match
         long *prefix,
         long *len   )
 {
-  long i, j, k;
   unsigned long key;
+  long i, j, k;
 
   if(max_len < 3)
   { //then we don't have enough text to lookup a three character prefix
@@ -678,7 +673,8 @@ int crm_expr_fscm_learn
         char *txtptr, long txtstart, long txtlen   )
 {
   char filename[MAX_PATTERN];
-  long filename_len;
+  char htext[MAX_PATTERN];
+  long htext_len;
 
   SCM_STATE_STRUCT S, *s = &S;
 
@@ -688,10 +684,17 @@ int crm_expr_fscm_learn
   if(internal_trace)
     fprintf(stderr, "entered crm_expr_fscm_learn (learn)\n");
   
-  //parse out .scm file name
-  crm_get_pgm_arg (filename, MAX_PATTERN, apb->p1start, apb->p1len);
-  filename_len = apb->p1len;
-  filename_len = crm_nexpandvar (filename, filename_len, MAX_PATTERN);
+  //parse out .fscm file name
+  crm_get_pgm_arg (htext, MAX_PATTERN, apb->p1start, apb->p1len);
+  htext_len = apb->p1len;
+  htext_len = crm_nexpandvar (htext, htext_len, MAX_PATTERN);
+  
+  i = 0;
+  while (htext[i] < 0x021) i++;
+  j = i;
+  while (htext[j] >= 0x021) j++;
+  htext[j] = '\000';
+  strcpy (filename, &htext[i]);
 
   //map it
   map_file(s, filename);
@@ -701,9 +704,10 @@ int crm_expr_fscm_learn
     return 0;
   }
 
-  if(internal_trace)
+   /* Shouldn't this go _without_ the 'only when internal_trace is ON' as we want to validate at _all_ times? */
+  if(internal_trace && audit_structs(s))
   {
-    audit_structs(s);
+    return 0;
   }
 
   txtptr += txtstart;
@@ -733,8 +737,10 @@ int crm_expr_fscm_learn
         *s->text_pos -= s->n_bytes;
     }
   
-  if(internal_trace)
-      audit_structs(s);
+  if(internal_trace && audit_structs(s))
+  {
+    return 0;
+  }
   
     //cache all the three character prefixes
     for(i = doc_start, j = txtlen; j > 2; i++, j--)
@@ -746,8 +752,10 @@ int crm_expr_fscm_learn
   }
   if(internal_trace)
     fprintf(stderr, "leaving crm_expr_fscm_learn (learn)\n");
-  if(internal_trace)
-    audit_structs(s);
+  if(internal_trace && audit_structs(s))
+  {
+    return 0;
+  }
   unmap_file(s);
   return 0;
 }
@@ -828,7 +836,6 @@ int crm_expr_fscm_classify
   for(i = 0, j = 0, k = 0; i < filenames_field_len && j < MAX_CLASSIFIERS; i++)
     if(filenames_field[i] == '\\') //allow escaped in case filename is wierd
       filenames[j][k++] = filenames_field[++i];
-    
     else if(crm_isspace(filenames_field[i]) && k > 0) 
     {//white space terminates filenames
       filenames[j][k] = '\0';
@@ -875,8 +882,10 @@ int crm_expr_fscm_classify
     n_features[i] = s->header->n_features;
     norms[i] = (double)s->header->n_trains;
     scores[i] = score_document(s, txtptr + txtstart, txtlen);
-    if(internal_trace)
-      audit_structs(s);
+  if(internal_trace && audit_structs(s))
+  {
+    return 0;
+  }
     unmap_file(s);
   }
 

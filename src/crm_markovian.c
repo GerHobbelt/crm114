@@ -157,12 +157,12 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //      fully 8-bit or wchar clean...
   i = 0;
   while (htext[i] < 0x021) i++;
-        assert(i < hlen);
+        CRM_ASSERT(i < hlen);
   j = i;
   while (htext[j] >= 0x021) j++;
 
   //             filename starts at i,  ends at j. null terminate it.
-        assert(j <= hlen);
+        CRM_ASSERT(j <= hlen);
   htext[j] = '\000';
         learnfilename = &htext[i];
 
@@ -207,6 +207,7 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
+	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
   //
   hfsize = statbuf.st_size;
@@ -755,13 +756,14 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
   //  and remember to let go of all the mmaps (full flush)
-  crm_munmap_all ();
+  crm_munmap_all();
 
   //   and let go of the seen_features array
   if (seen_features) free (seen_features);
   seen_features = NULL;
 
-
+#if 0  /* now touch-fixed inside the munmap call already! */
+#if defined(HAVE_MMAP) || defined(HAVE_MUNMAP)
   //    Because mmap/munmap doesn't set atime, nor set the "modified"
   //    flag, some network filesystems will fail to mark the file as
   //    modified and so their cacheing will make a mistake.
@@ -769,24 +771,10 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //    The fix is to do a trivial read/write on the .css ile, to force
   //    the filesystem to repropagate it's caches.
   //
-#ifdef POSIX
-  {
-    int hfd;                  //  hashfile fd
-    FEATURE_HEADER_STRUCT foo;
-    hfd = open (learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
-        if (hfd < 0)
-    {
-      fprintf(stderr, "Couldn't reopen %s to touch\n", learnfilename);
-    }
-    else
-        {
-    read (hfd, &foo, sizeof(foo));
-    lseek (hfd, 0, SEEK_SET);
-    write (hfd, &foo, sizeof(foo));
-    close (hfd);
-        }
-  }
+  crm_touch(learnfilename);
 #endif
+#endif
+
   return (0);
 }
 

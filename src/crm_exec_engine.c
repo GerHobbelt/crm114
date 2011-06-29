@@ -91,7 +91,7 @@ int crm_invoke (void)
       goto invoke_done;
     }
 
-  slen = (csl->mct[csl->cstmt+1]->fchar) - (csl->mct[csl->cstmt ]->fchar);
+  slen = (csl->mct[csl->cstmt+1]->fchar) - (csl->mct[csl->cstmt]->fchar);
 
   if (user_trace)
     {
@@ -802,7 +802,7 @@ int crm_invoke (void)
           oldcsl = csl;
           csl = newcsl;
           slen = (csl->mct[csl->cstmt+1]->fchar)
-            - (csl->mct[csl->cstmt ]->fchar);
+            - (csl->mct[csl->cstmt]->fchar);
 
           //
           //    At this point, the context is now "the callee".  Everything
@@ -825,7 +825,7 @@ int crm_invoke (void)
                                    "Stick a fork in us; we're _done_.\n");
               //  we now have the statement's apb allocated; we point
               //  the generic apb at the same place and run with it.
-              i = crm_statement_parse (
+              i = crm_statement_parse(
                        &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
                        slen,
                        csl->mct[csl->cstmt]->apb);
@@ -913,7 +913,7 @@ int crm_invoke (void)
         //     note- since vars never contain wchars, we're OK here.
         crm_get_pgm_arg (temp_vars, MAX_VARNAME, apb->b1start, apb->b1len);
         tvlen = crm_nexpandvar (temp_vars, apb->b1len, MAX_VARNAME);
-        assert(tvlen < MAX_VARNAME);
+        CRM_ASSERT(tvlen < MAX_VARNAME);
         if (internal_trace)
           {
             fprintf (stderr, "  Intersecting vars: ***%s***\n", temp_vars);

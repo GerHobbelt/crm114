@@ -1,27 +1,31 @@
 ## Process this file with automake to produce Makefile.in
 
-## $Id: Makefile.am,v 1.15 2004/08/18 09:03:29 vanbaal Exp $
-
 ## This script is free software; you can distribute it and/or modify it
 ## under the terms of the GNU GPL.  See the file COPYING.
 
 ## Copyright (C) 2003, 2004 Joost van Baal
+## Copyright (C) 2007 Ger Hobbelt
 
 
-
-
+#
 #    Makefile for CRM114
 #
 
 DISTCLEANFILES = 
 CLEANFILES = *.o *~ *.bak
 
+
+
+PACKAGE = @PACKAGE_TARNAME@
+TAR_FILENAME_POSTFIX = @TAR_FILENAME_POSTFIX@
+ARCHIVE_BASE_NAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-$(TAR_FILENAME_POSTFIX)
+
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
 #
 # e.g.: VER_SUFFIX=27B-6, then if you make install, you get crm-27b-6
 # 
-VER_SUFFIX=@VER_SUFFIX@ 
+VER_SUFFIX = @VER_SUFFIX@ 
 
 #
 #      The following forces the compiler to be GCC.  If you have trouble
@@ -48,6 +52,9 @@ VERSION = @VERSION@
 #PREV_VERSION = 20051001-BlameRaulMiller
 #PREV_VERSION = crm114-20050721-BlameNeilArmstrong
 # VERSION += [$(TRE_TARFILE)]
+
+SILENT = @SILENT@
+
 #
 #
 #      Are we compiling on a POSIX system or a Windows system?  NOTE:
@@ -225,13 +232,21 @@ bin_PROGRAMS = crm114 cssutil osbfutil cssdiff cssmerge
 
 crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
 
-cssutil_SOURCES = cssutil.c crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
+cssutil_SOURCES = cssutil.c \
+	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	$(HFILES)
 
-osbfutil_SOURCES = osbf-util.c crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
+osbfutil_SOURCES = osbf-util.c \
+	crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	$(HFILES)
 
-cssdiff_SOURCES = cssdiff.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
+cssdiff_SOURCES = cssdiff.c \
+	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	$(HFILES)
 
-cssmerge_SOURCES = cssmerge.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
+cssmerge_SOURCES = cssmerge.c \
+	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	$(HFILES)
 
 
 #
@@ -433,27 +448,34 @@ crm_generic_port.o: crm_generic_port.c  \
 
 
 
-cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o 
+cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o 
 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
 		crm_css_maintenance.o \
 		crm_util_errorhandlers.o \
-		crm_str_funcs.o -o cssutil
+		crm_str_funcs.o \
+		crm_generic_port.o \
+		-o cssutil
 
-osbfutil: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o 
+osbfutil: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
-		crm_osbf_maintenance.o -o osbfutil
+		crm_osbf_maintenance.o \
+		crm_generic_port.o \
+		-o osbfutil
 
-cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o 
+cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
 		crm_util_errorhandlers.o \
-		crm_str_funcs.o -o cssdiff
+		crm_str_funcs.o \
+		crm_generic_port.o \
+		-o cssdiff
 
-cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o 
+cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
+		crm_generic_port.o \
 		-o cssmerge
 
 
@@ -548,13 +570,13 @@ uninstall: FORCE
 #       install is broken (or you've found a bug).
 #
 megatest: FORCE
-	-cp $(srcdir)/*.crm ./           2>&1
-	-cp $(srcdir)/*.mfp ./           2>&1
-	-cp $(srcdir)/*.example ./       2>&1
-	-cp $(srcdir)/QUICKREF.txt ./    2>&1
-	-cp $(srcdir)/INTRO.txt ./       2>&1
-	-cp $(srcdir)/COLOPHON.txt ./    2>&1
-	-cp $(srcdir)/FAQ.txt ./         2>&1
+	-cp $(srcdir)/*.crm ./           2> /dev/null
+	-cp $(srcdir)/*.mfp ./           2> /dev/null
+	-cp $(srcdir)/*.example ./       2> /dev/null
+	-cp $(srcdir)/QUICKREF.txt ./    2> /dev/null
+	-cp $(srcdir)/INTRO.txt ./       2> /dev/null
+	-cp $(srcdir)/COLOPHON.txt ./    2> /dev/null
+	-cp $(srcdir)/FAQ.txt ./         2> /dev/null
 	$(srcdir)/megatest.sh > megatest_test.log 2>&1
 	diff -EbwBd $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 
@@ -665,6 +687,14 @@ rsync:  FORCE
 
 diff: FORCE
 	-(sh diff_em.sh );
+
+dist-diff: diff
+	7z a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).diff.7z diff/
+	tar -c diff/ | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.gz
+	tar -c diff/ | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.bz2
+	-rm -f $(ARCHIVE_BASE_NAME).diff.zip
+	zip -rq $(ARCHIVE_BASE_NAME).diff.zip diff/
+	mv $(ARCHIVE_BASE_NAME).diff.* ../
 
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h

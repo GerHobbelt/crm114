@@ -16,8 +16,6 @@
 #include "crm114_config.h"
 
 //  include the crm114 data structures file
-//    (but not the stmt table )
-#define BASE_COMPILER_TABLE_HERE
 #include "crm114_structs.h"
 
 //  and include the routine declarations file
@@ -26,7 +24,7 @@
 
 //     Here's the real statement description table.
 //
-STMT_TABLE_TYPE stmt_table[39] =
+static STMT_TABLE_TYPE stmt_table[39] =
   {
     /* *INDENT-OFF* */
 
@@ -119,24 +117,31 @@ int crm_load_csl (CSL_CELL *csl)
   if (internal_trace)
     fprintf (stderr, "file open on file descriptor %ld\n", csl->filedes);
 
+  csl->nchars = 0;
   // and stat the file descriptor
-  fstat (csl->filedes, &statbuf);
+  if (fstat(csl->filedes, &statbuf))
+  {
+	  untrappableerror_ex(SRC_LOC(), "Cannot stat file %s, error: %d(%s)", csl->filename, errno, errno_descr(errno));
+  }
+  else
+  {
   csl->nchars = statbuf.st_size;
   if (internal_trace)
     fprintf (stderr, "file is %ld bytes\n", csl->nchars);
   if (csl->nchars + 2048 > max_pgmsize)
   {
-          assert(csl->filedes >= 0);
+          CRM_ASSERT(csl->filedes >= 0);
           close(csl->filedes);
     untrappableerror ("Your program is too big.  ",
                       " You need to use smaller programs or the -P flag, ");
+  }
   }
 
   //   and read in the source file
   csl->filetext = (char *) calloc ( max_pgmsize , sizeof (csl->filetext[0]));
   if (csl->filetext == NULL)
   {
-          assert(csl->filedes >= 0);
+          CRM_ASSERT(csl->filedes >= 0);
           close(csl->filedes);
           untrappableerror ("malloc of the file text failed", csl->filename);
   }
@@ -152,7 +157,7 @@ int crm_load_csl (CSL_CELL *csl)
           csl->nchars = max_pgmsize - 1 - 3;
   }
   //     read the file in...
-  assert(csl->nchars + 1 + 3 <= max_pgmsize);
+  CRM_ASSERT(csl->nchars + 1 + 3 <= max_pgmsize);
   i = read (csl->filedes, &(csl->filetext[1]), csl->nchars);
   /*
      From the MS docs: If fd is invalid, the file is not open for reading,
@@ -162,7 +167,7 @@ int crm_load_csl (CSL_CELL *csl)
   */
   if (i < 0)
   {
-          assert(csl->filedes >= 0);
+          CRM_ASSERT(csl->filedes >= 0);
           close(csl->filedes);
           untrappableerror("Cannot read from file (it may be locked?): ", csl->filename);
   }
@@ -171,7 +176,7 @@ int crm_load_csl (CSL_CELL *csl)
      Close the file handle now we're done. (This is important when we have nested files:
      there's only so many file handles to go around.)
    */
-  assert(csl->filedes >= 0);
+  CRM_ASSERT(csl->filedes >= 0);
   close(csl->filedes);
 
   //     and put a cr and then a null at the end.
@@ -181,13 +186,13 @@ int crm_load_csl (CSL_CELL *csl)
   csl->filetext[i] = '\n';
   i++;
   csl->filetext[i] = '\000';
-  assert(i < max_pgmsize);
+  CRM_ASSERT(i < max_pgmsize);
   csl->nchars = i;
 
   csl->hash = strnhash (csl->filetext, csl->nchars);
   if (user_trace)
-    fprintf (stderr, "Hash of program: %lX, length %ld bytes\n",
-             csl->hash, csl->nchars );
+	  fprintf (stderr, "Hash of program: %lX, length %ld bytes: (%s)\n-->\n%s",
+	  csl->hash, csl->nchars, csl->filename, csl->filetext);
   }
 
   return 0;

@@ -111,7 +111,7 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fprintf (stderr, "Eval ihash = %lld\n", ihash);
     for (i = 0;  i < itercount; i++)
           {
-          assert(i < MAX_EVAL_ITERATIONS);
+          CRM_ASSERT(i < MAX_EVAL_ITERATIONS);
         if (ahash[i] == ihash)
           {
             loop_abort = 1;
@@ -119,7 +119,7 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
               loop_abort = 2;
           }
           }
-          /* assert(i < MAX_EVAL_ITERATIONS); ** [i_a] this one was triggered during the infiniteloop test */
+          /* CRM_ASSERT(i < MAX_EVAL_ITERATIONS); ** [i_a] this one was triggered during the infiniteloop test */
           if (i < MAX_EVAL_ITERATIONS)
         {
       ahash[i] = ihash;

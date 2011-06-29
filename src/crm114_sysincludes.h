@@ -1,6 +1,10 @@
 //
 //   Files that we include from the system.
 
+#ifndef __CRM114_SYSINCLUDES_H__
+#define __CRM114_SYSINCLUDES_H__
+
+
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #elif defined(WIN32)
@@ -17,20 +21,49 @@
    [i_a] GROT GROT GROT - cleanup the crm114 source to properly 'say' what this 
    is all about, because it has NOTHING to do with any POSIXness whatsoever!
  */
-#define POSIX
+// #define POSIX
 #endif
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
+#ifdef HAVE_MEMORY_H
+#include <memory.h>
 #endif
+#ifdef STDC_HEADERS
+
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <float.h>
+
+#else
+
+#ifdef HAVE_STDARG_H
+#include <stdarg.h>
+#elif defined(HAVE_VARARGS_H)
+#include <varargs.h>
+#endif
+#ifdef HAVE_FLOAT_H
+#include <float.h>
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#ifdef HAVE_MEMORY_H
+#include <memory.h>
+#endif
+#include <string.h>
+#endif
+
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #ifdef HAVE_CTYPE_H
 #include <ctype.h>
 #endif
@@ -52,14 +85,14 @@
 #ifdef HAVE_LIBINTL_H
 #include <libintl.h>
 #endif
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
 #ifdef HAVE_PROCESS_H
 #include <process.h>
-#endif
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
 #endif
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
@@ -67,17 +100,8 @@
 #ifdef HAVE_STDBOOL_H
 #include <stdbool.h>
 #endif
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
-#endif
-#if HAVE_STRING_H
-# if !STDC_HEADERS && HAVE_MEMORY_H
-#  include <memory.h>
-# endif
-# include <string.h>
 #endif
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
@@ -98,13 +122,27 @@
 #include <sys/types.h>
 #endif
 
-#ifdef HAVE_TIME_H
+#if defined(TIME_WITH_SYS_TIME)
+#include <sys/time.h>
+#include <time.h>
+#else
+#if defined(HAVE_SYS_TIME_H)
+#include <sys/time.h>
+#elif defined(HAVE_TIME_H)
 #include <time.h>
 #endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
 #endif
+
+#if defined(HAVE_SYS_WAIT_H)
+# include <sys/wait.h>
+#endif
+#ifndef WEXITSTATUS
+# define WEXITSTATUS(stat_val) ((unsigned)(stat_val) >> 8)
+#endif
+#ifndef WIFEXITED
+# define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
+#endif
+
 
 #ifdef HAVE_VFORK_H
 #include <vfork.h>
@@ -114,23 +152,37 @@
 #include <wchar.h>
 #endif
 
-#ifdef HAVE_NDIR_H
-#include <ndir.h> 
+#ifdef HAVE_UTIME_H
+#include <utime.h>
 #endif
-#ifdef HAVE_SYS_DIR_H
-#include <sys/dir.h> 
+#ifdef HAVE_SYS_UTIME_H
+#include <sys/utime.h>
 #endif
+
 #ifdef HAVE_DIRECT_H
 #include <direct.h>
 #endif
-#ifdef HAVE_DIRENT_H
-#include <dirent.h>
-#endif
-#ifdef HAVE_SYS_NDIR_H
-#include <sys/ndir.h> 
+#if HAVE_DIRENT_H
+# include <dirent.h>
+# define NAMLEN(dirent) strlen((dirent)->d_name)
+#else
+# define dirent direct
+# define NAMLEN(dirent) (dirent)->d_namlen
+# if HAVE_SYS_NDIR_H
+#  include <sys/ndir.h>
+# endif
+# if HAVE_SYS_DIR_H
+#  include <sys/dir.h>
+# endif
+# if HAVE_NDIR_H
+#  include <ndir.h>
+# endif
 #endif
 
 /* for fixed width C99 integer types for use as binary file storage units */
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
@@ -200,16 +252,51 @@
 #endif
 
 #if defined(HAVE__SNPRINTF) && !defined(HAVE_SNPRINTF)
+#undef snprintf 
 #define snprintf _snprintf
 #endif
 #if defined(HAVE__STAT) && !defined(HAVE_STAT)
-#define stat _stat
+#undef stat
+#define stat(path, buf) _stat(path, buf)
 #endif
 #if defined(HAVE_STRNICMP) && !defined(HAVE_STRNCASECMP)
+#undef strncasecmp
 #define strncasecmp(a,b,n) strnicmp((a), (b), (n))
 #endif
 #if defined(HAVE_STRICMP) && !defined(HAVE_STRCASECMP)
+#undef strcasecmp
 #define strcasecmp(a,b) stricmp((a), (b))
+#endif
+#if !defined(HAVE_UTIME) && defined(HAVE__UTIME)
+#undef utime
+#define utime(filename, timestruct)      _utime(filename, timestruct)
+#endif
+
+
+#if defined(PREFER_PORTABLE_MEMMOVE) || !defined(HAVE_MEMMOVE)
+void *crm_memmove(void *dst, const void *src, size_t len);
+#undef memmove
+#define memmove(dst, src, len)	crm_memmove(dst, src, len)
+#endif
+
+
+#if defined(PREFER_PORTABLE_SNPRINTF)
+#error "provide a proper snprintf() implementation, please"
+#endif
+
+
+#if defined(HAVE_STAT_EMPTY_STRING_BUG)
+static inline int crm_stat(const char *path, struct stat *buf)
+{
+  if (!path || !*path || !buf)
+  {
+    errno = EINVAL;
+    return -1;
+  }
+  return stat(path, buf);
+}
+#undef stat
+#define stat(path, buf)		crm_stat(path, buf)
 #endif
 
 
@@ -244,7 +331,6 @@ clock_t times(struct tms *buf);
 #define MAP_SHARED 1
 #define MAP_PRIVATE 2
 #endif
-
 
 
 
@@ -441,4 +527,19 @@ extern char **__environ;
 #define environ		_environ
 #endif
 
+
+
+
+/*
+   equivalent to touch(3).
+
+  Because mmap/munmap doesn't set atime, nor set the "modified"
+  flag, some network filesystems will fail to mark the file as
+  modified and so their cacheing will make a mistake.
+*/
+void crm_touch(const char *filename);
+
+
+
+#endif /* __CRM114_SYSINCLUDES_H__ */
 

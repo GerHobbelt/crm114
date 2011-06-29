@@ -29,6 +29,16 @@ long user_trace = 0;
 
 long internal_trace = 0;
 
+long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+                       //  the user programs can use lower numbers freely.
+
+
+//    the command line argc, argv
+int prog_argc = 0;
+char **prog_argv = NULL;
+
+
+
 
 
 static char version[] = "1.2";
@@ -60,7 +70,6 @@ helptext (void)
 int
 main (int argc, char **argv)
 {
-
   long i, k;                    //  some random counters, when we need a loop
   long v;
   long sparse_spectrum_file_length = DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
@@ -99,6 +108,10 @@ main (int argc, char **argv)
 
   char *newinputbuf;
   newinputbuf = (char *) &hfsize;
+
+  //   copy argc and argv into global statics...
+  prog_argc = argc;
+  prog_argv = argv;
 
   user_trace = DEFAULT_USER_TRACE_LEVEL;
   internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
@@ -215,7 +228,7 @@ main (int argc, char **argv)
       break;
           case 'v':
             fprintf (stderr, " This is cssutil, version %s\n", version);
-            fprintf (stderr, " Copyright 2001-2006 W.S.Yerazunis.\n");
+            fprintf (stderr, " Copyright 2001-2007 W.S.Yerazunis.\n");
             fprintf (stderr,
                      " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
             exit (EXIT_SUCCESS);
@@ -265,6 +278,7 @@ main (int argc, char **argv)
             (cssfile, sparse_spectrum_file_length, 0, 0, 0) != EXIT_SUCCESS)
           exit (EXIT_FAILURE);
         k = stat (cssfile, &statbuf);
+  	    CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
         hfsize = statbuf.st_size;
       }
     //

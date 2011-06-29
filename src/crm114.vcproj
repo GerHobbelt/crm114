@@ -372,13 +372,6 @@
 				RelativePath=".\crmregex_gnu.c"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -623,6 +616,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\configure"
+					>
+				</File>
+				<File
 					RelativePath="..\configure.ac"
 					>
 				</File>
@@ -636,6 +633,18 @@
 				</File>
 				<File
 					RelativePath="..\crm114.kdevelop"
+					>
+				</File>
+				<File
+					RelativePath="..\crm114.kdevelop.filelist"
+					>
+				</File>
+				<File
+					RelativePath="..\crm114.kdevses"
+					>
+				</File>
+				<File
+					RelativePath="..\crm114.lsm"
 					>
 				</File>
 				<File
@@ -671,6 +680,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\Makefile.in"
+					>
+				</File>
+				<File
+					RelativePath="..\mk_distros.sh"
+					>
+				</File>
+				<File
 					RelativePath="..\NEWS"
 					>
 				</File>
@@ -695,7 +712,55 @@
 					>
 				</File>
 				<File
+					RelativePath="..\stamp.day"
+					>
+				</File>
+				<File
+					RelativePath="..\stamp.month"
+					>
+				</File>
+				<File
+					RelativePath="..\stamp.year"
+					>
+				</File>
+				<File
 					RelativePath="..\TODO"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="M4"
+				>
+				<File
+					RelativePath="..\m4\ac_c_long_long.m4"
+					>
+				</File>
+				<File
+					RelativePath="..\m4\ac_environ.m4"
+					>
+				</File>
+				<File
+					RelativePath="..\m4\ac_func_memmove.m4"
+					>
+				</File>
+				<File
+					RelativePath="..\m4\ac_func_snprintf.m4"
+					>
+				</File>
+				<File
+					RelativePath="..\m4\ax_cflags_gcc_option.m4"
+					>
+				</File>
+				<File
+					RelativePath="..\m4\ax_cflags_warn_all.m4"
+					>
+				</File>
+				<File
+					RelativePath="..\m4\ax_cflags_warn_all_ansi.m4"
+					>
+				</File>
+				<File
+					RelativePath="..\m4\vl_lib_readline.m4"
 					>
 				</File>
 			</Filter>

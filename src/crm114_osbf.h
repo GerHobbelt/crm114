@@ -10,6 +10,10 @@
 //  by the OSBF-Bayes classifier.  -- Fidelis Assis - 2004/10/20
 //
 
+#ifndef __CRM114_OBSF_H__
+#define __CRM114_OBSF_H__
+
+
 typedef struct
 {
   unsigned long hash;
@@ -116,3 +120,6 @@ extern int crm_osbf_create_cssfile (char *cssfile, unsigned long buckets,
                                     unsigned long major, unsigned long minor,
                                     unsigned long spectrum_start);
 
+
+
+#endif /* __CRM114_OBSF_H__ */

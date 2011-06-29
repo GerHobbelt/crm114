@@ -1,7 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-## $Id: Makefile.am,v 1.4 2004/08/18 13:17:53 vanbaal Exp $
-
 ## This script is free software; you can distribute it and/or modify it
 ## under the terms of the GNU GPL.  See the file COPYING.
 
@@ -9,6 +7,9 @@
 
 PACKAGE = @PACKAGE_TARNAME@
 docdir = $(datadir)/doc/$(PACKAGE)
+
+SILENT = @SILENT@
+
 
 ## CRM autoconfiscation hackers: be sure to keep this list in sync with
 ## the "docs" list in tools/prebootstrap

@@ -1,6 +1,0 @@
-#! /usr/bin/crm
-{
-	match (:data:) /.*/
-	output /learning to file :*:_arg2: :*:_nl:/
-	learn <microgroom> (:*:_arg2:) [:data:] /[[:graph:]]+/  
-}

@@ -7,11 +7,17 @@
 
 ## Copyright (C) 2003, 2004 Joost van Baal
 
+
+
 cdir = $(datadir)/doc/$(PACKAGE)/examples/tests
 
 
 DISTCLEANFILES = 
 CLEANFILES = *~ *.bak
+
+
+SILENT = @SILENT@
+
 
 
 c_SCRIPTS = \
@@ -51,18 +57,18 @@ c_SCRIPTS = \
 
 
 megatest: FORCE
-	echo ""        
-	echo "    This runs a moderately interesting set of base tests"
-	echo "    to exercise much of CRM114 under TRE.  This takes about"
-	echo "    1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
-	echo "    be patient; you (hopefully) won't see anything till the"
-	echo "    full set of tests complete.  If you didn't use TRE, all"
-	echo "    bets are off."
-	echo ""
-	echo "    Lines of output that start with OK_IF_mumble are allowed"
-	echo "    to change values.  No other lines should.  If other lines"
-	echo "    do change, either your kit isn't quite right or your"
-	echo "    install is broken (or you've found a bug)."
-	echo ""
+	$(SILENT) echo ""        
+	$(SILENT) echo "    This runs a moderately interesting set of base tests"
+	$(SILENT) echo "    to exercise much of CRM114 under TRE.  This takes about"
+	$(SILENT) echo "    1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
+	$(SILENT) echo "    be patient; you (hopefully) won't see anything till the"
+	$(SILENT) echo "    full set of tests complete.  If you didn't use TRE, all"
+	$(SILENT) echo "    bets are off."
+	$(SILENT) echo ""
+	$(SILENT) echo "    Lines of output that start with OK_IF_mumble are allowed"
+	$(SILENT) echo "    to change values.  No other lines should.  If other lines"
+	$(SILENT) echo "    do change, either your kit isn't quite right or your"
+	$(SILENT) echo "    install is broken (or you've found a bug)."
+	$(SILENT) echo ""
 	$(srcdir)/megatest.sh > megatest_test.log 2>&1
 	diff -EbwBd megatest_knowngood.log megatest_test.log & sleep 1

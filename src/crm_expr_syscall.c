@@ -39,52 +39,10 @@ typedef struct
   int timeout;
 } suckerparams;
 
-/*
-   return a malloc()ed string containing both errorcode and [optional] description
- */
-static char *GetErrorString(const char *msg, DWORD errorcode)
-{
-          char *errstr = NULL;
-          DWORD fmtret;
-          LPSTR dstbuf = NULL;
-          int size;
-          int len;
 
-          fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER
-                  , NULL, errorcode, 0, (LPTSTR)&dstbuf, 0, NULL);
-          if (!msg || !*msg)
-          {
-                  msg = "%ld";
-          }
-          /* guestimate a proper buffer size here: */
-          size = 80 + strlen(msg) + ((fmtret > 0 && dstbuf != NULL) ? strlen(dstbuf) : 0);
-          errstr = calloc(size, sizeof(errstr[0]) );
-          if (errstr != NULL)
-          {
-          snprintf(errstr, size, msg, (long)errorcode);
-          errstr[size - 1] = 0;
-          len = strlen(errstr);
-          if (dstbuf != NULL && fmtret > 0 && size - len > 0)
-          {
-                  snprintf(errstr + len, size - len, " (%s)", dstbuf);
-          }
-          errstr[size - 1] = 0;
-          }
-          if (dstbuf)
-          {
-                  LocalFree(dstbuf);
-          }
-          return errstr;
-}
 
-void fatalerror_Win32(const char *msg)
-{
-        DWORD error = GetLastError();
-        char *errmsg = GetErrorString("error code %ld", error);
 
-        fatalerror(msg, errmsg);
-        free(errmsg);
-}
+
 
 
 unsigned int WINAPI pusher_proc(void *lpParameter)
@@ -166,12 +124,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   long done;
   int keep_proc;
   int async_mode;
-#ifdef WIN32
-  DWORD charsread;
-  HANDLE to_minion[2];
-  HANDLE from_minion[2];
-  char sys_cmd_2nd[MAX_PATTERN];
-#else
+#if defined(HAVE_WORKING_FORK) && defined(HAVE_FORK) && defined(HAVE_PIPE)
   long charsread;
   int to_minion[2];
   int from_minion[2];
@@ -179,6 +132,11 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   pid_t pusher;
   pid_t sucker;
   pid_t random_child;
+#elif defined(WIN32)
+  DWORD charsread;
+  HANDLE to_minion[2];
+  HANDLE from_minion[2];
+  char sys_cmd_2nd[MAX_PATTERN];
 #endif
   pid_t minion;
   int status;
@@ -189,10 +147,9 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   HANDLE hminion;
 #endif
 
-#ifdef POSIX
-
+#if defined(HAVE_WAITPID)
   if (user_trace)
-    fprintf (stderr, "executing an SYSCALL statement");
+    fprintf (stderr, "executing a SYSCALL statement");
 
   timeout = MINION_SLEEP_USEC;
 
@@ -202,8 +159,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //  no context to keep track of 'em.
   //
   while ( (random_child = waitpid ( 0, &status, WNOHANG)) > 0 );
-#endif
-#ifdef WIN32
+#elif defined(WIN32)
   timeout = MINION_SLEEP_USEC / 1000;   // need milliseconds for Sleep()
   if (MINION_SLEEP_USEC > 0 && timeout == 0)
     {
@@ -294,7 +250,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   strncat (exp_keep_buf, keep_buf, keep_len);
   exp_keep_len = crm_nexpandvar (exp_keep_buf, keep_len+2, MAX_PATTERN);
 
-#if defined(HAVE_DUP2) && defined(HAVE_WORKING_FORK) && defined(HAVE_PIPE)
+#if defined(HAVE_DUP2) && defined(HAVE_WORKING_FORK) && defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID) && defined(HAVE_SYSTEM)
   if (3 != sscanf (exp_keep_buf, "MINION PROC PID: %d from-pipe: %d to-pipe: %d",
           &minion,
           &from_minion[0],
@@ -376,7 +332,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 				if (user_trace)
                   fprintf (stderr, "My new PID is %s\n", pidstr);
 #endif
-#if defined(HAVE_GETPID)
+#if defined(HAVE_GETPPID)
                 pid = (long) getppid();
                 sprintf (pidstr, "%ld", pid);
                 crm_set_temp_var (":_ppid:", pidstr);
@@ -393,7 +349,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 if (vlen-1 >= MAX_PATTERN)
                                         vlen = MAX_PATTERN - 1+1;
                       strncpy (filename, &sys_cmd[vstart+1], vlen-1);
-                          assert(vlen-1 < MAX_PATTERN);
+                          CRM_ASSERT(vlen-1 < MAX_PATTERN);
                       filename[vlen-1] = '\0';
                       if (user_trace)
                         fprintf (stderr, "Redirecting minion stdin to %s\n",
@@ -408,7 +364,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 if (vlen-1 >= MAX_PATTERN)
                                         vlen = MAX_PATTERN - 1+1;
                           strncpy (filename, &sys_cmd[vstart+1], vlen-1);
-                          assert(vlen-1 < MAX_PATTERN);
+                          CRM_ASSERT(vlen-1 < MAX_PATTERN);
                           filename[vlen-1] = '\0';
                           if (user_trace)
                             fprintf (stderr,
@@ -422,7 +378,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 if (vlen-2 >= MAX_PATTERN)
                                         vlen = MAX_PATTERN - 1+2;
                           strncpy (filename, &sys_cmd[vstart+2], vlen-2);
-                          assert(vlen-2 < MAX_PATTERN);
+                          CRM_ASSERT(vlen-2 < MAX_PATTERN);
                           filename[vlen-2] = '\0';
                           if (user_trace)
                             fprintf (stderr,
@@ -450,14 +406,15 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
               //
               if (retcode == -1 )
                 {
-                  char errstr [4096];
-                  snprintf (errstr, WIDTHOF(errstr),
-                           "The command was >%s< and returned exit code %d.",
-                           sys_cmd, WEXITSTATUS (retcode));
-                  errstr[WIDTHOF(errstr) - 1] = 0;
-                  nonfatalerror ("This program tried a shell command that "
-                                 "didn't run correctly. ",
-                                 errstr);
+                  nonfatalerror_ex(SRC_LOC(), 
+                           "This program tried a shell command that "
+                           "didn't run correctly.\n"
+                           "The command was >%s< and returned exit code %d.\n"
+                           "errno = %d(%s)",
+                           sys_cmd, 
+                           WEXITSTATUS(retcode),
+                           errno,
+                           errno_descr(errno));
                   if (engine_exit_base != 0)
                     {
                       exit (engine_exit_base + 11);
@@ -771,24 +728,17 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
                           if (!retcode)
                                 {
-                                  char *errmsg = GetErrorString("error code %ld", error);
-                                  char *errstr;
-                                  int size;
-                                  int len;
-                                  const char *msgfmt = "command >>%s<< - CreateProcess returned %s";
+                                  char *errmsg = Win32_syserr_descr(error);
 
                                   // use the undamaged sys_cmd entry for error reporting...
-                                  size = 1 + strlen(errmsg) + strlen(sys_cmd_2nd) + strlen(msgfmt);
-                                  errstr = calloc(size, sizeof(errstr[0]) );
-                                  snprintf(errstr, size, msgfmt, sys_cmd_2nd, (long)error);
-                                  errstr[size - 1] = 0;
-
-                                  fatalerror("This program tried a shell command that "
-                                                          "didn't run correctly. ",
-                                                   errstr);
-                                  free(errstr);
-                                  free(errmsg);
-
+                                  fatalerror_ex(SRC_LOC(), "This program tried a shell command that "
+                                                          "didn't run correctly.\n"
+														  "command >>%s<< - CreateProcess returned %ld($%lx:%s)\n",
+                                                   sys_cmd_2nd,
+												   (long)error,
+												   (long)error,
+												   errmsg);
+						  
                            if (engine_exit_base != 0)
                           {
                                 exit(engine_exit_base + 13);
@@ -868,11 +818,11 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       pp.to_minion = to_minion[1];
           if (!_beginthreadex(NULL, 0, pusher_proc, &pp, 0, &hThread))
           {
-                  char errmsgbuf[256];
-
-                  snprintf(errmsgbuf, WIDTHOF(errmsgbuf), "error code %d (%s)", errno, strerror(errno));
-                        errmsgbuf[WIDTHOF(errmsgbuf) - 1] = 0;
-                  fatalerror("Failed to start the pusher thread", errmsgbuf);
+                  fatalerror_ex(SRC_LOC(),
+			"Failed to start the pusher thread: "
+			"error code %d (%s)", 
+			errno, 
+			errno_descr(errno));
           }
     }
 
@@ -940,12 +890,12 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             sp.timeout = timeout;
             if (!_beginthreadex(NULL, 0, sucker_proc, &sp, 0, &hThread))
                   {
-                          char errmsgbuf[256];
-
-                          snprintf(errmsgbuf, WIDTHOF(errmsgbuf), "error code %d (%s)", errno, strerror(errno));
-                                errmsgbuf[WIDTHOF(errmsgbuf) - 1] = 0;
-                                  fatalerror("Failed to start the sucker thread", errmsgbuf);
-                          }
+                  fatalerror_ex(SRC_LOC(),
+			"Failed to start the sucker thread: "
+			"error code %d (%s)", 
+			errno, 
+			errno_descr(errno));
+                  }
           }
 
           //  and set the returned value into from_var.

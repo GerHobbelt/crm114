@@ -502,9 +502,9 @@ long strpnmath (char *buf, long inlen, long maxlen, long *retstat)
 int math_formatter ( double value, char *format, char *buf, long buflen)
 {
   long outlen;
-  assert(buf != NULL);
-  assert(buflen > 0);
-  assert(format != NULL);
+  CRM_ASSERT(buf != NULL);
+  CRM_ASSERT(buflen > 0);
+  CRM_ASSERT(format != NULL);
 
   //  If the user supplied a format, use that.
   //
@@ -1062,8 +1062,8 @@ long stralmath (char *buf, long inlen, long maxlen, long *retstat)
   {
     long return_length;
     return_length = (math_formatter (leftarg[sp], outformat, buf, maxlen ));
-        assert(return_length >= 0);
-        assert(return_length < WIDTHOF(outformat));
+        CRM_ASSERT(return_length >= 0);
+        CRM_ASSERT(return_length < WIDTHOF(outformat));
     outformat [return_length] = '\000';
     return (return_length);
   }

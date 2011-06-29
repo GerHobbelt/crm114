@@ -479,8 +479,8 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
  regcomp_failed:
 
 
-        assert(hashcounts >= 0);
-		assert(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+        CRM_ASSERT(hashcounts >= 0);
+		CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
       //mark the end of a feature vector
       hashes[hashcounts].hash = 0;
 
@@ -501,9 +501,9 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   i = 0;
   j = 0;
 
-        assert(hashcounts >= 0);
-        assert(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-		  assert(hashes[hashcounts].hash == 0);
+        CRM_ASSERT(hashcounts >= 0);
+        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+		  CRM_ASSERT(hashes[hashcounts].hash == 0);
 
 		  while ( i < hashcounts )
       {
@@ -520,9 +520,9 @@ int crm_expr_osb_hyperspace_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  hashes[hashcounts].hash = 0;
     }
       
-        assert(hashcounts >= 0);
-        assert(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
-		  assert(hashes[hashcounts].hash == 0);
+        CRM_ASSERT(hashcounts >= 0);
+        CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
+		  CRM_ASSERT(hashes[hashcounts].hash == 0);
 
   if (user_trace)
     fprintf (stderr, "Unique hashes generated: %ld\n", hashcounts);
@@ -1307,8 +1307,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //     we can do fast comparisons against each document's hashes in
   //     the hyperspace vector files.
 
-	assert(unk_hashcount >= 0);
-		assert(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
+	CRM_ASSERT(unk_hashcount >= 0);
+		CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
       //mark the end of a feature vector
       unk_hashes[unk_hashcount].hash = 0;
 
@@ -1326,9 +1326,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   i = 1;
   j = 1;
 
-        assert(unk_hashcount >= 0);
-        assert(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
-		  assert(unk_hashes[unk_hashcount].hash == 0);
+        CRM_ASSERT(unk_hashcount >= 0);
+        CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
+		  CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
       while (i < unk_hashcount)
         {
           if (unk_hashes[i].hash != unk_hashes[i+1].hash)
@@ -1344,9 +1344,9 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  unk_hashes[unk_hashcount].hash = 0;
     }
 
-        assert(unk_hashcount >= 0);
-        assert(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
-		  assert(unk_hashes[unk_hashcount].hash == 0);
+        CRM_ASSERT(unk_hashcount >= 0);
+        CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
+		  CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
 
   if (user_trace)
     fprintf (stderr, "unique hashes generated: %ld\n", unk_hashcount);
@@ -1850,8 +1850,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             remainder = remainder + ptc[m];
           }
           }
-          assert(bestseen >= 0);
-          /* assert(bestseen < maxhash); ** [i_a] this one was triggered in a zero file error condition
+          CRM_ASSERT(bestseen >= 0);
+          /* CRM_ASSERT(bestseen < maxhash); ** [i_a] this one was triggered in a zero file error condition
                                                 due to the nonfatalness of the maxhash==0 error report. */
           buf[0] = 0;
           if (bestseen < maxhash)
@@ -1886,8 +1886,8 @@ int crm_expr_osb_hyperspace_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                   remainder = remainder + ptc[m];
                 }
           }
-          assert(k >= 0);
-          assert(k < maxhash);
+          CRM_ASSERT(k >= 0);
+          CRM_ASSERT(k < maxhash);
           snprintf (buf, WIDTHOF(buf),
                    "#%ld (%s):"
                    " features: %ld, hits: %ld, radiance: %3.2e, prob: %3.2e, pR: %6.2f\n",

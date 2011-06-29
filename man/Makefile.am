@@ -13,6 +13,9 @@
 TROFF = groff
 COL = col
 
+SILENT = @SILENT@
+
+
 ## Zoem is a an interpretive macro language, for creating mark-up languages, by
 ## Stijn van Dongen. Information about zoem can be found on the zoem webpage at
 ## http://micans.org/zoem/ .

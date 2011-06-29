@@ -14,15 +14,16 @@
 
 
 
+#
 #    Makefile for CRM114
 #
 
 srcdir = .
 top_srcdir = ..
 
-pkgdatadir = $(datadir)/CRM114
-pkglibdir = $(libdir)/CRM114
-pkgincludedir = $(includedir)/CRM114
+pkgdatadir = $(datadir)/crm114
+pkglibdir = $(libdir)/crm114
+pkgincludedir = $(includedir)/crm114
 top_builddir = ..
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = /usr/bin/install -c
@@ -85,23 +86,23 @@ crm114_OBJECTS = $(am_crm114_OBJECTS)
 crm114_LDADD = $(LDADD)
 am_cssdiff_OBJECTS = cssdiff.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	$(am__objects_2)
+	crm_generic_port.$(OBJEXT) $(am__objects_2)
 cssdiff_OBJECTS = $(am_cssdiff_OBJECTS)
 cssdiff_LDADD = $(LDADD)
 am_cssmerge_OBJECTS = cssmerge.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	$(am__objects_2)
+	crm_generic_port.$(OBJEXT) $(am__objects_2)
 cssmerge_OBJECTS = $(am_cssmerge_OBJECTS)
 cssmerge_LDADD = $(LDADD)
 am_cssutil_OBJECTS = cssutil.$(OBJEXT) crm_css_maintenance.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	$(am__objects_2)
+	crm_generic_port.$(OBJEXT) $(am__objects_2)
 cssutil_OBJECTS = $(am_cssutil_OBJECTS)
 cssutil_LDADD = $(LDADD)
 am_osbfutil_OBJECTS = osbf-util.$(OBJEXT) \
 	crm_osbf_maintenance.$(OBJEXT) \
 	crm_util_errorhandlers.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
-	$(am__objects_2)
+	crm_generic_port.$(OBJEXT) $(am__objects_2)
 osbfutil_OBJECTS = $(am_osbfutil_OBJECTS)
 osbfutil_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
@@ -122,22 +123,7 @@ ACLOCAL = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run aclocal-1.9
 AMDEP_FALSE = #
 AMDEP_TRUE = 
 AMTAR = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run tar
-#PREV_VERSION = 20070505-BlameIdiocy
-#PREV_VERSION = 20070428-BlameSpamConf
-#PREV_VERSION = 20061103-BlameDalkey
-#PREV_VERSION = 20061010-BlameBratko
-#PREV_VERSION = 20060920-BlameNico
-#PREV_VERSION = 20060704a-BlameRobert
-#PREV_VERSION = 20060619-MargarineBeast
-#PREV_VERSION = 20060611-ButterBeast
-#PREV_VERSION = 20060611-SomewhatTamedBeast
-#PREV_VERSION = 20060606-VersionOfTheBeast
-#PREV_VERSION = 20060429-ReaverReturn
-#PREV_VERSION = 20060118-BlameTheReavers
-#PREV_VERSION = 20051231a-BlameBarryAndPaoloa
-#PREV_VERSION = 20051001-BlameRaulMiller
-#PREV_VERSION = crm114-20050721-BlameNeilArmstrong
-# VERSION += [$(TRE_TARFILE)]
+
 #
 #
 #      Are we compiling on a POSIX system or a Windows system?  NOTE:
@@ -194,7 +180,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2007-08-04
+ISODATE = 2007-08-05
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -205,7 +191,7 @@ MAINTAINER_MODE_FALSE =
 MAINTAINER_MODE_TRUE = #
 MAKEINFO = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run makeinfo
 OBJEXT = o
-PACKAGE = CRM114
+PACKAGE = crm114
 PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
 PACKAGE_NAME = CRM114
 PACKAGE_STRING = CRM114 20070731-BlameTheInterns
@@ -215,11 +201,28 @@ PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 20070804T1728
 SED = /usr/bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
+#PREV_VERSION = 20070505-BlameIdiocy
+#PREV_VERSION = 20070428-BlameSpamConf
+#PREV_VERSION = 20061103-BlameDalkey
+#PREV_VERSION = 20061010-BlameBratko
+#PREV_VERSION = 20060920-BlameNico
+#PREV_VERSION = 20060704a-BlameRobert
+#PREV_VERSION = 20060619-MargarineBeast
+#PREV_VERSION = 20060611-ButterBeast
+#PREV_VERSION = 20060611-SomewhatTamedBeast
+#PREV_VERSION = 20060606-VersionOfTheBeast
+#PREV_VERSION = 20060429-ReaverReturn
+#PREV_VERSION = 20060118-BlameTheReavers
+#PREV_VERSION = 20051231a-BlameBarryAndPaoloa
+#PREV_VERSION = 20051001-BlameRaulMiller
+#PREV_VERSION = crm114-20050721-BlameNeilArmstrong
+# VERSION += [$(TRE_TARFILE)]
+SILENT = @
 STRIP = 
+TAR_FILENAME_POSTFIX = Ger-87
 TRE_CONFIG = no
 
 #
@@ -237,7 +240,7 @@ VERSION = 20070731-BlameTheInterns
 #
 # e.g.: VER_SUFFIX=27B-6, then if you make install, you get crm-27b-6
 # 
-VER_SUFFIX = 070804T1728 
+VER_SUFFIX =  
 ac_ct_CC = gcc
 am__fastdepCC_FALSE = #
 am__fastdepCC_TRUE = 
@@ -284,6 +287,7 @@ sysconfdir = ${prefix}/etc
 target_alias = 
 DISTCLEANFILES = 
 CLEANFILES = *.o *~ *.bak
+ARCHIVE_BASE_NAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-$(TAR_FILENAME_POSTFIX)
 #        uncomment the next line if you want to "strip" the debugger info 
 #        from the binaries when installing.  This speeds up load, but 
 #        you won't be able to submit meaningful CRM114 engine bug reports.
@@ -409,10 +413,22 @@ EXTRA_DIST = indent.sh diff_em.sh \
 	$(TEXTFILES)
 
 crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
-cssutil_SOURCES = cssutil.c crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
-osbfutil_SOURCES = osbf-util.c crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
-cssdiff_SOURCES = cssdiff.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
-cssmerge_SOURCES = cssmerge.c crm_util_errorhandlers.c crm_str_funcs.c $(HFILES)
+cssutil_SOURCES = cssutil.c \
+	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	$(HFILES)
+
+osbfutil_SOURCES = osbf-util.c \
+	crm_osbf_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	$(HFILES)
+
+cssdiff_SOURCES = cssdiff.c \
+	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	$(HFILES)
+
+cssmerge_SOURCES = cssmerge.c \
+	crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c \
+	$(HFILES)
+
 .SUFFIXES = .c .o
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -907,27 +923,34 @@ cssmerge.o: cssmerge.c  \
 crm_generic_port.o: crm_generic_port.c  \
 	$(HFILES)
 
-cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o 
+cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o 
 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
 		crm_css_maintenance.o \
 		crm_util_errorhandlers.o \
-		crm_str_funcs.o -o cssutil
+		crm_str_funcs.o \
+		crm_generic_port.o \
+		-o cssutil
 
-osbfutil: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o 
+osbfutil: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
-		crm_osbf_maintenance.o -o osbfutil
+		crm_osbf_maintenance.o \
+		crm_generic_port.o \
+		-o osbfutil
 
-cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o 
+cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
 		crm_util_errorhandlers.o \
-		crm_str_funcs.o -o cssdiff
+		crm_str_funcs.o \
+		crm_generic_port.o \
+		-o cssdiff
 
-cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o 
+cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
 		crm_str_funcs.o \
 		crm_util_errorhandlers.o \
+		crm_generic_port.o \
 		-o cssmerge
 
 clean:
@@ -1014,13 +1037,13 @@ uninstall: FORCE
 #       install is broken (or you've found a bug).
 #
 megatest: FORCE
-	-cp $(srcdir)/*.crm ./           2>&1
-	-cp $(srcdir)/*.mfp ./           2>&1
-	-cp $(srcdir)/*.example ./       2>&1
-	-cp $(srcdir)/QUICKREF.txt ./    2>&1
-	-cp $(srcdir)/INTRO.txt ./       2>&1
-	-cp $(srcdir)/COLOPHON.txt ./    2>&1
-	-cp $(srcdir)/FAQ.txt ./         2>&1
+	-cp $(srcdir)/*.crm ./           2> /dev/null
+	-cp $(srcdir)/*.mfp ./           2> /dev/null
+	-cp $(srcdir)/*.example ./       2> /dev/null
+	-cp $(srcdir)/QUICKREF.txt ./    2> /dev/null
+	-cp $(srcdir)/INTRO.txt ./       2> /dev/null
+	-cp $(srcdir)/COLOPHON.txt ./    2> /dev/null
+	-cp $(srcdir)/FAQ.txt ./         2> /dev/null
 	$(srcdir)/megatest.sh > megatest_test.log 2>&1
 	diff -EbwBd $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 
@@ -1128,6 +1151,14 @@ rsync:  FORCE
 
 diff: FORCE
 	-(sh diff_em.sh );
+
+dist-diff: diff
+	7z a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).diff.7z diff/
+	tar -c diff/ | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.gz
+	tar -c diff/ | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.bz2
+	-rm -f $(ARCHIVE_BASE_NAME).diff.zip
+	zip -rq $(ARCHIVE_BASE_NAME).diff.zip diff/
+	mv $(ARCHIVE_BASE_NAME).diff.* ../
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
 reindent:

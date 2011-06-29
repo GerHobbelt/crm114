@@ -208,6 +208,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\crm_generic_port.c"
+				>
+			</File>
+			<File
 				RelativePath=".\crm_osbf_maintenance.c"
 				>
 			</File>
@@ -217,6 +221,10 @@
 			</File>
 			<File
 				RelativePath=".\crm_util_errorhandlers.c"
+				>
+			</File>
+			<File
+				RelativePath=".\crm_win32_port.c"
 				>
 			</File>
 			<File

@@ -1,16 +1,22 @@
 # Process this file with automake to produce Makefile.in (in this,
 # and all subdirectories).
 
-## $Id: Makefile.am,v 1.14 2004/08/19 09:36:09 vanbaal Exp $
-
 ## This script is free software; you can distribute it and/or modify it
 ## under the terms of the GNU GPL.  See the file COPYING.
 
 ## Copyright (C) 2003, 2004 Joost van Baal
+## Copyright (C) 2007 Ger Hobbelt
 
 AUTOMAKE_OPTIONS = check-news
 
+
 PACKAGE = @PACKAGE_TARNAME@
+TAR_FILENAME_POSTFIX = @TAR_FILENAME_POSTFIX@
+VER_SUFFIX = @VER_SUFFIX@ 
+VERSION = @VERSION@
+ARCHIVE_BASE_NAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-$(TAR_FILENAME_POSTFIX)
+
+SILENT = @SILENT@
 
 SUBDIRS = docs examples mailfilter man src tests
 
@@ -27,7 +33,7 @@ EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
 	m4/ac_c_long_long.m4 m4/ac_environ.m4 m4/ac_func_memmove.m4 \
 	m4/ac_func_snprintf.m4 m4/ax_cflags_warn_all_ansi.m4 \
 	m4/ax_cflags_warn_all.m4 m4/vl_lib_readline.m4 \
-	m4/ax_cflags_gcc_option.m4 mk_distros.sh
+	m4/ax_cflags_gcc_option.m4 mk_distros.sh 
 
 
 if MAINTAINER_MODE
@@ -45,25 +51,32 @@ dist-7z: distdir
 	$(am__remove_distdir)
 
 dist-diff: 
-	(cd src && $(MAKE) $(AM_MAKEFLAGS) diff);
-	tar cvjf  $(distdir).diffs.tar.bz2 src/diff
-	7z a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(distdir).diffs.7z src/diff
+	$(SILENT) echo "Creating diff archives"; 
+	(cd src && $(MAKE) $(AM_MAKEFLAGS) dist-diff);
+
+dist-maint: distdir dist-diff
+	$(SILENT) echo "Creating src archives"; 
+	7z a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).src.7z $(distdir)
+	tar -c $(distdir) | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).src.tar.gz
+	tar -c $(distdir) | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).src.tar.bz2
+	-rm -f $(ARCHIVE_BASE_NAME).src.zip
+	zip -rq $(ARCHIVE_BASE_NAME).src.zip $(distdir)
+	$(am__remove_distdir)
 
 
-
-.PHONY: reindent depend dist-7z-all dist-diff
+.PHONY: reindent depend dist-7z-all dist-diff dist-maint
 
 
 reindent:
-	echo "Reformatting sources"; 
+	$(SILENT) echo "Reformatting sources"; 
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) reindent);
 
 depend:
-	echo "Calculating dependencies for the sources"; 
+	$(SILENT) echo "Calculating dependencies for the sources"; 
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) depend);
 
 megatest:
-	echo "Running the regression test:"; 
+	$(SILENT) echo "Running the regression test:"; 
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) megatest);
 
 

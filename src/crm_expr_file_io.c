@@ -159,7 +159,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
       //
       char vname[MAX_VARNAME];
       long ichar = 0;
-	  assert(vlen < MAX_VARNAME);
+	  CRM_ASSERT(vlen < MAX_VARNAME);
       memmove (vname, &(temp_vars[vstart]), vlen);
       vname [vlen] = '\000';
 

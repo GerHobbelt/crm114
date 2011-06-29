@@ -29,6 +29,16 @@ long user_trace = 0;
 
 long internal_trace = 0;
 
+long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+                       //  the user programs can use lower numbers freely.
+
+
+//    the command line argc, argv
+int prog_argc = 0;
+char **prog_argv = NULL;
+
+
+
 static char version[] = "1.2";
 
 
@@ -61,6 +71,10 @@ int main(int argc, char **argv)
   FEATUREBUCKET_TYPE *h1, *h2;              //  the text of the hash file
 
   int opt;
+
+  //   copy argc and argv into global statics...
+  prog_argc = argc;
+  prog_argv = argv;
 
   user_trace = DEFAULT_USER_TRACE_LEVEL;
   internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
@@ -132,7 +146,7 @@ int main(int argc, char **argv)
   if (h2 == MAP_FAILED )
     {
       fprintf (stderr, "\n Couldn't open file %s for reading; errno=%d(%s).\n",
-                 argv[optind + 1], errno, strerror(errno));
+                 argv[optind + 1], errno, errno_descr(errno));
       exit (EXIT_FAILURE);
     }
 
@@ -162,6 +176,7 @@ int main(int argc, char **argv)
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (argv[optind], &statbuf);
+	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
   //
   hfsize1 = statbuf.st_size;
@@ -174,7 +189,7 @@ int main(int argc, char **argv)
   if (h1 == MAP_FAILED )
     {
       fprintf (stderr, "\n Couldn't map file %s; errno=%d(%s).\n",
-               argv[optind], errno, strerror(errno));
+               argv[optind], errno, errno_descr(errno));
       exit (EXIT_FAILURE);
     }
 

@@ -7,6 +7,9 @@
 /* Define to 1 if you have the <assert.h> header file. */
 #define HAVE_ASSERT_H 1
 
+/* Define to 1 if you have the `bcopy' function. */
+#undef HAVE_BCOPY
+
 /* BSD REs */
 /* #undef HAVE_BSD_REGEX */
 
@@ -133,6 +136,9 @@
 /* Define if you have a readline compatible library */
 #undef HAVE_LIBREADLINE 
 
+/* Define to 1 if you have the <limits.h> header file. */
+#define HAVE_LIMITS_H 1
+
 /* Define to 1 if you have the <lmcons.h> header file. */
 #define HAVE_LMCONS_H 1
 
@@ -175,6 +181,9 @@
 
 /* Define to 1 if you have a working `mmap' system call. */
 #undef HAVE_MMAP  
+
+/* Define to 1 if the system has the type `mode_t'. */
+#define HAVE_MODE_T 1
 
 /* Define to 1 if you have the `msync' function. */
 #undef HAVE_MSYNC 
@@ -247,6 +256,9 @@
    zero-length file name argument. */
 /* #undef HAVE_STAT_EMPTY_STRING_BUG */
 
+/* Define to 1 if you have the <stdarg.h> header file. */
+#define HAVE_STDARG_H 1
+
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H 
 
@@ -280,6 +292,9 @@
 /* Define to 1 if you have the `stricmp' function. */
 #define HAVE_STRICMP 1
 
+/* Define to 1 if cpp supports the ANSI # stringizing operator. */
+#define HAVE_STRINGIZE 1
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H 
 
@@ -301,6 +316,9 @@
 /* Define to 1 if you have the `strstr' function. */
 #define HAVE_STRSTR 1
 
+/* Define to 1 if you have the `system' function. */
+#define HAVE_SYSTEM 1
+
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
    */
 #undef HAVE_SYS_DIR_H 
@@ -318,8 +336,14 @@
 /* Define to 1 if you have the <sys/times.h> header file. */
 #undef HAVE_SYS_TIMES_H 
 
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
+
+/* Define to 1 if you have the <sys/utime.h> header file. */
+#define HAVE_SYS_UTIME_H 1
 
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #undef HAVE_SYS_WAIT_H 
@@ -342,11 +366,20 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H 
 
+/* Define to 1 if you have the `utime' function. */
+#undef HAVE_UTIME
+
+/* Define to 1 if you have the <utime.h> header file. */
+#undef HAVE_UTIME_H
+
 /* SYSV 8 REs */
 /* #undef HAVE_V8_REGEX */
 
 /* SYSV 8 RE exports regsub */
 /* #undef HAVE_V8_REGSUB */
+
+/* Define to 1 if you have the <varargs.h> header file. */
+/* #undef HAVE_VARARGS_H */
 
 /* Define to 1 if you have the `vfork' function. */
 #undef HAVE_VFORK 
@@ -358,7 +391,7 @@
 #define HAVE_VSNPRINTF 1
 
 /* Define to 1 if you have the `waitpid' function. */
-#define HAVE_WAITPID 1
+#undef HAVE_WAITPID
 
 /* Define to 1 if you have the <wchar.h> header file. */
 #define HAVE_WCHAR_H 1
@@ -377,6 +410,15 @@
 
 /* Define to 1 if you have the `_stat' function. */
 #define HAVE__STAT 1
+
+/* Define to 1 if you have the `_utime' function. */
+#define HAVE__UTIME 1
+
+/* Define to 1 if you have the `_vsnprintf' function. */
+#define HAVE__VSNPRINTF 1
+
+/* Define to 1 if you have the `__debugbreak' function. */
+#define HAVE___DEBUGBREAK 1
 
 /* Define if you have the '__environ' global environment variable */
 #undef HAVE___ENVIRON 
@@ -415,34 +457,54 @@
 /* Define to 1 if the C compiler supports function prototypes. */
 #define PROTOTYPES 1
 
-/* revision code of the software */
-#define REVISION "20070803T1657"
-
 /* Define to 1 if the `setvbuf' function takes the buffering type as its
    second argument and the buffer pointer as the third, as on System V before
    release 3. */
 /* #undef SETVBUF_REVERSED */
 
-/* The size of `', as computed by sizeof. */
-#define SIZEOF_ 4
+/* The size of `long int', as computed by sizeof. */
+#define SIZEOF_LONG_INT 8
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
+
+/* distribution archive filename postfix code of the software */
+#define TAR_FILENAME_POSTFIX "Ger-0805T10"
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
 #define VERSION "20070731-BlameTheInterns"
 
 /* version suffix code of the software */
-#define VER_SUFFIX "070803T1657"
+#define VER_SUFFIX ""
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
 /* #undef WORDS_BIGENDIAN */
 
+/* Define to 1 if on AIX 3.
+   System headers sometimes define this.
+   We just want to avoid a redefinition error message.  */
+#ifndef _ALL_SOURCE
+/* # undef _ALL_SOURCE */
+#endif
+
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
 # undef _GNU_SOURCE 
 #endif
+
+/* Define to 1 if on MINIX. */
+/* #undef _MINIX */
+
+/* Define to 2 if the system does not provide POSIX.1 features except with
+   this defined. */
+/* #undef _POSIX_1_SOURCE */
+
+/* Define to 1 if you need to in order for `stat' and other things to work. */
+/* #undef _POSIX_SOURCE */
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef was allowed, the

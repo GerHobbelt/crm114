@@ -7,6 +7,10 @@
 //  www.fsf.org .  Other licenses may be negotiated; contact the
 //  author for details.
 
+#ifndef __CRM114_H__
+#define __CRM114_H__
+
+
 //
 //    Global variables
 
@@ -46,18 +50,12 @@ extern char *outbuf;
 extern char *tempbuf;
 
 
+
+
+
 //    the microcompiler
 int crm_microcompiler (CSL_CELL *csl,
                                VHT_CELL **vht);
-
-//  helper routine for untrappable errors
-void untrappableerror (const char *msg1, const char *msg2);
-
-//  helper routine for fatal errors
-long fatalerror (const char *msg1, const char *msg2);
-
-//  helper routine for nonfatal errors
-long nonfatalerror (const char *msg1, const char *msg2);
 
 
 //  hash function for variable tables
@@ -367,7 +365,7 @@ void crm_get_pgm_arg (char *to, long tolen, char *from, long fromlen) ;
 
 //     crm execution-time debugging environment - an interpreter unto itself
 //
-long crm_debugger ();
+long crm_debugger(void);
 
 //     expand a variable or string with known length (8-bit and null-safe)
 
@@ -464,7 +462,7 @@ void *crm_mmap_file (char *filename,
 
 void crm_munmap_file (void *where);
 void crm_munmap_file_internal ( void *map);
-void crm_munmap_all ();
+void crm_munmap_all(void);
 void crm_force_munmap_filename (char *filename);
 void crm_force_munmap_addr (void *addr);
 
@@ -477,7 +475,168 @@ double normalized_gauss(double x, double s);
 
 
 
-#if defined(WIN32)
-void fatalerror_Win32(const char *msg);
+
+/* for use with vxxxxerror_ex et al */
+#define SRC_LOC()		__LINE__, __FILE__
+
+#ifdef HAVE_STRINGIZE
+#define CRM_STRINGIFY(e)	#e
+#else
+#error "Comment this error line out if you are sure your system does not support the # preprocessor stringize operator. My Gawd, what system _is_ this?"
+#define CRM_STRINGIFY(e)	"---\?\?\?---" /* \?\? to prevent trigraph warnings by GCC 4 et al */
 #endif
 
+
+
+//  helper routine for untrappable errors
+#define untrappableerror(msg1, msg2)	\
+		untrappableerror_std(__LINE__, __FILE__, msg1, msg2)
+
+void untrappableerror_std(int lineno, const char *srcfile, const char *msg1, const char *msg2);
+void untrappableerror_ex(int lineno, const char *srcfile, const char *msg, ...);
+void untrappableerror_va(int lineno, const char *srcfile, const char *msg, va_list args);
+
+//  helper routine for fatal errors
+#define fatalerror(msg1, msg2)	\
+		fatalerror_std(__LINE__, __FILE__, msg1, msg2)
+
+long fatalerror_std(int lineno, const char *srcfile, const char *msg1, const char *msg2);
+long fatalerror_ex(int lineno, const char *srcfile, const char *msg, ...);
+long fatalerror_va(int lineno, const char *srcfile, const char *msg, va_list args);
+
+//  helper routine for nonfatal errors
+#define nonfatalerror(msg1, msg2)	\
+		nonfatalerror_std(__LINE__, __FILE__, msg1, msg2)
+
+long nonfatalerror_std(int lineno, const char *srcfile, const char *msg1, const char *msg2);
+long nonfatalerror_ex(int lineno, const char *srcfile, const char *msg, ...);
+long nonfatalerror_va(int lineno, const char *srcfile, const char *msg, va_list args);
+
+
+
+
+
+#ifndef CRM_DONT_ASSERT
+
+extern int trigger_debugger;
+
+void crm_show_assert_msg(int lineno, const char *srcfile, const char *msg);
+void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *msg, const char *extra_msg);
+
+#define CRM_ASSERT(expr)                                                        \
+  do                                                                            \
+  {                                                                             \
+    if (!(expr))                                                                \
+    {                                                                           \
+      crm_show_assert_msg(__LINE__, __FILE__, CRM_STRINGIFY(expr));             \
+    }                                                                           \
+  } while (0)
+
+#define CRM_ASSERT_EX(expr, msg)                                                \
+  do                                                                            \
+  {                                                                             \
+    if (!(expr))                                                                \
+    {                                                                           \
+      crm_show_assert_msg_ex(__LINE__, __FILE__, CRM_STRINGIFY(expr), (msg));   \
+    }                                                                           \
+  } while (0)
+
+#define CRM_VERIFY(expr)                                                        \
+  do                                                                            \
+  {                                                                             \
+    if (!(expr))                                                                \
+    {                                                                           \
+      crm_show_assert_msg(__LINE__, __FILE__, CRM_STRINGIFY(expr));             \
+    }                                                                           \
+  } while (0)
+
+#else
+
+#define CRM_ASSERT(expr)       /* do nothing */
+#define CRM_ASSERT_EX(expr, msg)   /* do nothing */                             
+
+#define CRM_VERIFY(expr)           (void)(expr)
+
+#endif
+
+
+
+/*
+   Error handling
+ */
+
+
+const char *errno_descr(int errno_number);
+const char *syserr_descr(int errno_number);
+
+#if defined(WIN32)
+/*
+   return a static string containing the errorcode description.
+
+   GROT GROT GROT:
+
+   This means this routine is NOT re-entrant and NOT threadsafe.
+   One could make it at least threadsafe by moving the static storage
+   to thread localstore, but that is rather system specific.
+
+   I thought about the alternative, i.e. using and returning a 
+   malloc/strdup-ed string, but then you'd suffer mem leakage when
+   using it like this:
+
+     printf("bla %s", Win32_syserr_descr(latest_Errcode));
+
+   so that option of making this routine threadsafe, etc. was ruled
+   out. For now.
+ */
+const char *Win32_syserr_descr(DWORD errorcode);
+
+
+#define fatalerror_Win32(msg)											\
+	fatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
+
+static inline void fatalerror_Win32_(int lineno, const char *file, const char *msg)
+{
+    DWORD error = GetLastError();				
+	const char *errmsg = Win32_syserr_descr(error);
+												
+	fatalerror_ex(lineno, file, msg, 			
+		(long)error, 													
+		(long)error, 													
+		errmsg);														
+}
+
+
+#define nonfatalerror_Win32(msg)											\
+	nonfatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
+
+static inline void nonfatalerror_Win32_(int lineno, const char *file, const char *msg)
+{
+    DWORD error = GetLastError();				
+	const char *errmsg = Win32_syserr_descr(error);
+												
+	nonfatalerror_ex(lineno, file, msg, 			
+		(long)error, 													
+		(long)error, 													
+		errmsg);														
+}
+
+
+#endif
+
+
+/*
+   Diagnostics: Memory checks / analysis
+ */
+
+#if defined(WIN32) && defined(_DEBUG)
+
+extern _CrtMemState crm_memdbg_state_snapshot1;
+extern int trigger_memdump;
+
+int crm_dbg_report_function(int reportType, char *userMessage, int *retVal);
+void crm_report_mem_analysis(void);
+
+#endif
+
+
+#endif /* __CRM114_H__ */

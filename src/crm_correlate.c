@@ -111,10 +111,10 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //      fully 8-bit or wchar clean...
   i = 0;
   while (htext[i] < 0x021) i++;
-  assert(i < hlen);
+  CRM_ASSERT(i < hlen);
   j = i;
   while (htext[j] >= 0x021) j++;
-  assert(j <= hlen);
+  CRM_ASSERT(j <= hlen);
 
   //             filename starts at i,  ends at j. null terminate it.
   htext[j] = 0;
@@ -157,6 +157,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
+	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
   //
   hfsize = statbuf.st_size;
@@ -197,7 +198,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       long q;
 
-          assert(hfd >= 0);
+          CRM_ASSERT(hfd >= 0);
           close(hfd);
       q = fatalerror (" Attempt to LEARN from a nonexistent variable ",
                   ltext);
@@ -211,7 +212,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (mdw == NULL)
     {
       long q;
-          assert(hfd >= 0);
+          CRM_ASSERT(hfd >= 0);
           close(hfd);
       q = fatalerror (" Bogus text block containing variable ", ltext);
       return (q);
@@ -233,14 +234,14 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   if (textlen != write(hfd, &(mdw->filetext[textoffset]), textlen))
   {
           long q;
-          assert(hfd >= 0);
+          CRM_ASSERT(hfd >= 0);
           close(hfd);
           q = fatalerror("Failed to append the 'learn' text to the correlation file '%s'\n",
                   learnfilename);
           return q;
   }
 
-  assert(hfd >= 0);
+  CRM_ASSERT(hfd >= 0);
   close (hfd);
 
   return (0);

@@ -212,11 +212,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\crm_generic_port.c"
+				>
+			</File>
+			<File
 				RelativePath=".\crm_str_funcs.c"
 				>
 			</File>
 			<File
 				RelativePath=".\crm_util_errorhandlers.c"
+				>
+			</File>
+			<File
+				RelativePath=".\crm_win32_port.c"
 				>
 			</File>
 			<File

@@ -28,6 +28,14 @@ long user_trace = 0;
 
 long internal_trace = 0;
 
+long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+                       //  the user programs can use lower numbers freely.
+
+
+//    the command line argc, argv
+int prog_argc = 0;
+char **prog_argv = NULL;
+
 
 
 static char version[] = "1.2";
@@ -57,6 +65,10 @@ int main (int argc, char **argv)
   long sim, diff, dom1, dom2, hclash, kclash;
 
   int opt;
+
+  //   copy argc and argv into global statics...
+  prog_argc = argc;
+  prog_argv = argv;
 
 
   user_trace = DEFAULT_USER_TRACE_LEVEL;
@@ -97,7 +109,7 @@ int main (int argc, char **argv)
     k = stat (argv[optind], &statbuf);
     if (k != 0)
       {
-        fprintf (stderr, "\n CSS file '%s' not found. \n", argv[optind]);
+        fprintf (stderr, "\n CSS file '%s' not found.\n", argv[optind]);
         exit (EXIT_FAILURE);
       }
     //

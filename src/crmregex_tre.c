@@ -318,21 +318,21 @@ size_t crm_regerror (int errorcode, regex_t *preg, char *errbuf,
   return (regerror (errorcode, preg, errbuf, errbuf_size));
 }
 
-void crm_regfree (regex_t *preg)
+void crm_regfree(regex_t *preg)
 {
 #if CRM_REGEX_CACHESIZE > 0
   //  nothing!  yes indeed, if we are using cacheing, we don't free
   //  till and unless we decache, so crm_regfree is a noop.
   return;
 #else
-   return (regfree (preg));
+   regfree (preg);
 #endif
 }
 
-char * crm_regversion (void)
+char * crm_regversion(void)
 {
   static char vs[129];
-  assert(strlen(tre_version()) < 129);
+  CRM_ASSERT(strlen(tre_version()) < 129);
   strcat (vs, (char *) tre_version ());
   return (vs);
 }

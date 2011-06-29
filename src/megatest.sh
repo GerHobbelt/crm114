@@ -445,7 +445,7 @@ rm -f q_test.css
 ./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO.txt
 ./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < sks > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF.txt
 #    build the actual hyperplanes
-./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < sks > /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ }'
+./crm114 '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks > /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ }'
 
 ./crm114 '-{ isolate (:s:); {classify < sks > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
@@ -462,7 +462,7 @@ rm -f q_test.css
 ./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (i_test.css) /[[:graph:]]+/ / 0 0 100 0.001 1 0.5 1 4/; liaf}' < INTRO.txt
 ./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/;  translate [:one_paragraph:] (:one_paragraph:) /.,!?@#$%^&*()/; learn [:one_paragraph:] < sks unique > (q_test.css) /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ ; liaf }' < QUICKREF.txt
 #    build the actual hyperplanes
-./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < sks unique > /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ }'
+./crm114 '-{window; learn ( i_test.css | q_test.css | i_vs_q_test.css ) < sks unique > /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ }'
 
 ./crm114 '-{ isolate (:s:);  translate /.,!?@#$%^&*()/; {classify < sks unique > ( i_test.css | q_test.css | i_vs_q_test.css ) (:s:) /[[:graph:]]+/ /0 0 100 0.001 1 0.5 1 4/ [:_dw:]   ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs

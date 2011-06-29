@@ -38,7 +38,7 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   long len;
   int retval;
   long saved_ssfl;
-  long long classifier_flags;
+  long long classifier_flags = 0;
 
   //            get start/length of the text we're going to learn:
   //
@@ -151,8 +151,8 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   char *txt;
   long start;
   long len;
-  long long classifier_flags;
   long retval;
+  long long classifier_flags = 0;
 
   //            get start/length of the text we're going to classify:
   //

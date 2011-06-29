@@ -316,6 +316,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
+	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
 
   //
@@ -580,31 +581,19 @@ regcomp_failed:
   //  crm_munmap_all ();
   crm_munmap_file ((void *) header);
 
-#ifdef POSIX
+#if 0  /* now touch-fixed inside the munmap call already! */
+#if defined(HAVE_MMAP) || defined(HAVE_MUNMAP)
   //    Because mmap/munmap doesn't set atime, nor set the "modified"
   //    flag, some network filesystems will fail to mark the file as
   //    modified and so their cacheing will make a mistake.
   //
-  //    The fix is to do a trivial read/write on the .cfc ile, to force
+  //    The fix is to do a trivial read/write on the .css ile, to force
   //    the filesystem to repropagate it's caches.
   //
-  {
-    int hfd;                    //  hashfile fd
-    OSBF_FEATURE_HEADER_STRUCT foo;
-    hfd = open (learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
-        if (hfd < 0)
-    {
-      fprintf(stderr, "Couldn't reopen %s to touch\n", learnfilename);
-    }
-    else
-        {
-    read (hfd, &foo, sizeof (foo));
-    lseek (hfd, 0, SEEK_SET);
-    write (hfd, &foo, sizeof (foo));
-    close (hfd);
-        }
-  }
+  crm_touch(learnfilename);
 #endif
+#endif
+
   if (ptext[0] != '\0')
     crm_regfree (&regcb);
   return (0);
@@ -1464,7 +1453,10 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   for (k = 0; k < maxhash; k++)
     {
       //  let go of the file, but allow caches to be retained
-      if (header[k]) crm_munmap_file ((void *) header[k]);
+      if (header[k]) 
+	{
+	  crm_munmap_file ((void *) header[k]);
+	}
       free (seen_features[k]);
     }
 

@@ -46,11 +46,10 @@ long crm_debugger(void)
       firsttime = 0;
       if (user_trace)
         fprintf (stderr, "Opening the user terminal for debugging I/O\n");
-#ifdef POSIX
-      mytty = fopen ("/dev/tty", "rb");
-#endif
-#ifdef WIN32
+#if defined(WIN32)
       mytty = fopen ("CON", "rb");
+#else
+      mytty = fopen ("/dev/tty", "rb");
 #endif
       clearerr (mytty);
     }

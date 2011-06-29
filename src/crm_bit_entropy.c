@@ -1496,6 +1496,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
           //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
+	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
     }
   //
   hfsize = statbuf.st_size;
@@ -2110,7 +2111,8 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //  and remember to let go of the mmap and the pattern bufffer
   crm_munmap_file ((void *) headers);
 
-#ifdef POSIX
+#if 0  /* now touch-fixed inside the munmap call already! */
+#if defined(HAVE_MMAP) || defined(HAVE_MUNMAP)
   //    Because mmap/munmap doesn't set atime, nor set the "modified"
   //    flag, some network filesystems will fail to mark the file as
   //    modified and so their cacheing will make a mistake.
@@ -2118,32 +2120,10 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //    The fix is to do a trivial read/write on the .css ile, to force
   //    the filesystem to repropagate it's caches.
   //
-  {
-    int hfd;                  //  hashfile fd
-    char foo;
-    hfd = open(learnfilename, O_RDWR | O_BINARY); /* [i_a] on MSwin/DOS, open() opens in CRLF text mode by default; this will corrupt those binary values! */
-        if (hfd < 0)
-    {
-      if (errno == ENAMETOOLONG)
-          {
-                  untrappableerror ("Couldn't open the file (filename too long): ",
-                          learnfilename );
-          }
-      else
-          {
-        untrappableerror ("Couldn't open the file: ",
-                          learnfilename );
-          }
-    }
-    else
-        {
-    read (hfd, &foo, sizeof(foo));
-    lseek (hfd, 0, SEEK_SET);
-    write (hfd, &foo, sizeof(foo));
-    close (hfd);
-        }
-  }
+  crm_touch(learnfilename);
 #endif
+#endif
+
   return (0);
 }
 
@@ -2831,7 +2811,8 @@ int crm_expr_bit_entropy_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //
 
 
-  for (i = 0; i < maxhash; i++) {
+  for (i = 0; i < maxhash; i++) 
+  {
     ///////////////////////////////////////
     //    ! XXX SPAMNIX HACK!
     //!                         -- by Barry Jaspan

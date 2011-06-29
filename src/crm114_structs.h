@@ -8,6 +8,10 @@
 //  author for details.
 //
 
+#ifndef __CRM114_STRUCTS_H__
+#define __CRM114_STRUCTS_H__
+
+
 
 /* [i_a] unsure if totalhits[] and hits[] should be floating point or integer count arrays ... */
 #if 0
@@ -349,12 +353,6 @@ typedef struct
 } STMT_TABLE_TYPE;
 
 
-//     The compiler file actually contains this "for real", the
-//      extern here is merely a reference to it.
-//
-#ifndef BASE_COMPILER_TABLE_HERE
-extern STMT_TABLE_TYPE stmt_table[];
-#endif
 
 
 //   these defines are for arg type... note that they must remain synched
@@ -393,5 +391,9 @@ extern STMT_TABLE_TYPE stmt_table[];
 #define CRM_MMAP_CACHE_RELEASE 2
 //   drop really unmaps
 #define CRM_MMAP_CACHE_DROP 3
+
+
+
+#endif /* __CRM114_STRUCTS_H__ */
 
 

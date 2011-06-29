@@ -17,6 +17,10 @@
 //    and that goes double.
 //
 ///////////////////////////////////////////////////////////////////
+
+#ifndef __CRM114_CONFIG_H__
+#define __CRM114_CONFIG_H__
+
 //
 //   default size of the variables hashtable (a.k.a. the VHT)
 #define DEFAULT_VHT_SIZE 4095
@@ -323,3 +327,6 @@
 
 //    End of configurable parameters.
 
+
+
+#endif /* __CRM114_CONFIG_H__ */

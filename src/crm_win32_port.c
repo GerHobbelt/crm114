@@ -91,5 +91,88 @@ clock_t times(struct tms *buf)
 
 
 
+
+
+#if defined(_DEBUG)
+
+_CrtMemState crm_memdbg_state_snapshot1;
+int trigger_memdump = 0;
+
+
+
+/* 
+ * Define our own reporting function.
+ * We'll hook it into the debug reporting
+ * process later using _CrtSetReportHook.
+ */
+int crm_dbg_report_function(int report_type, char *usermsg, int *retval)
+{
+   /*
+    * By setting retVal to zero, we are instructing _CrtDbgReport
+    * to continue with normal execution after generating the report.
+    * If we wanted _CrtDbgReport to start the debugger, we would set
+    * retVal to one.
+    */
+   *retval = !!trigger_debugger;
+	
+   /*
+    * When the report type is for an ASSERT,
+    * we'll report some information, but we also
+    * want _CrtDbgReport to get called - 
+    * so we'll return TRUE.
+    *
+    * When the report type is a WARNing or ERROR,
+    * we'll take care of all of the reporting. We don't
+    * want _CrtDbgReport to get called - 
+    * so we'll return FALSE.
+    */
+   switch (report_type)
+   {
+   default:
+   case _CRT_WARN:
+   case _CRT_ERROR:
+   case _CRT_ERRCNT:
+	   fputs(usermsg, stderr);
+      fflush(stderr);
+	   return FALSE;
+
+   case _CRT_ASSERT:
+	   fputs(usermsg, stderr);
+      fflush(stderr);
+		break;
+   }
+   return TRUE;
+}
+
+
+void crm_report_mem_analysis(void)
+{
+        _CrtMemState msNow;
+
+		if (!_CrtCheckMemory())
+	{
+		fprintf(stderr, ">>>Failed to validate memory heap<<<\n");
+	}
+
+		/* only dump leaks when there are in fact leaks */
+        _CrtMemCheckpoint(&msNow);
+
+        if (msNow.lCounts[_CLIENT_BLOCK] != 0 ||
+            msNow.lCounts[_NORMAL_BLOCK] != 0 ||
+            (_crtDbgFlag & _CRTDBG_CHECK_CRT_DF &&
+            msNow.lCounts[_CRT_BLOCK] != 0)
+           )
+        {
+            /* difference detected: dump objects since start. */
+            _RPT0(_CRT_WARN, "============== Detected memory leaks! ====================\n");
+
+            _CrtMemDumpAllObjectsSince(&crm_memdbg_state_snapshot1);
+			_CrtMemDumpStatistics(&crm_memdbg_state_snapshot1);
+        }
+}
+
+#endif
+
+
 #endif /* WIN32 */
 

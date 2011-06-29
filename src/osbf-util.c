@@ -37,6 +37,16 @@ long microgroom_chain_length = 0;
 
 long microgroom_stop_after = 0;
 
+long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+                       //  the user programs can use lower numbers freely.
+
+
+//    the command line argc, argv
+int prog_argc = 0;
+char **prog_argv = NULL;
+
+
+
 
 static char version[] = "1.1";
 
@@ -99,6 +109,10 @@ main (int argc, char **argv)
   //    the following for crm114.h's happiness
 
   char *newinputbuf;
+
+  //   copy argc and argv into global statics...
+  prog_argc = argc;
+  prog_argv = argv;
 
   user_trace = DEFAULT_USER_TRACE_LEVEL;
   internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
@@ -261,7 +275,7 @@ main (int argc, char **argv)
       break;
           case 'v':
             fprintf (stderr, " This is osbf-util, version %s\n", version);
-            fprintf (stderr, " Copyright 2004-2006 William S. Yerazunis.\n");
+            fprintf (stderr, " Copyright 2004-2007 William S. Yerazunis.\n");
             fprintf (stderr,
                      " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
             exit (EXIT_SUCCESS);
@@ -313,6 +327,7 @@ main (int argc, char **argv)
              OSBF_CSS_SPECTRA_START) != EXIT_SUCCESS)
           exit (EXIT_FAILURE);
         k = stat (cssfile, &statbuf);
+	  CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
         hfsize = statbuf.st_size;
       }
     //
@@ -326,7 +341,7 @@ main (int argc, char **argv)
       {
         fprintf (stderr,
                  "\n Couldn't mmap file %s into memory; errno=%d(%s).\n",
-                 cssfile, errno, strerror(errno));
+                 cssfile, errno, errno_descr(errno));
         exit (EXIT_FAILURE);
       }
     if (*((unsigned long *) (header->version)) != OSBF_VERSION)
@@ -342,7 +357,7 @@ main (int argc, char **argv)
     if (hashes == MAP_FAILED)
       {
         fprintf (stderr,
-                 "\n Couldn't open RW file %s; errno=%d(%s).\n", cssfile, errno, strerror(errno));
+                 "\n Couldn't open RW file %s; errno=%d(%s).\n", cssfile, errno, errno_descr(errno));
         exit (EXIT_FAILURE);
       }
     //   from now on, hfsize is buckets, not bytes.
@@ -374,7 +389,7 @@ main (int argc, char **argv)
         if ((f = fopen (csvfile, "rb")) == NULL)
           {
             fprintf (stderr, "\n Couldn't open csv file %s; errno=%d(%s).\n",
-                     csvfile, errno, strerror(errno));
+                     csvfile, errno, errno_descr(errno));
             exit (EXIT_FAILURE);
           }
         else

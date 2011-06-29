@@ -239,7 +239,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
                 //
                 //   file's read in, put in a trailing newline. And add a NUL sentinel too when we're at it! But DON'T count that one too!
                 ecsl->filetext[ecsl->nchars++] = '\n';
-                assert(ecsl->nchars < max_pgmsize);
+                CRM_ASSERT(ecsl->nchars < max_pgmsize);
                 ecsl->filetext[ecsl->nchars] = 0;
                 ecsl->filename = insertfilename;
                 //
