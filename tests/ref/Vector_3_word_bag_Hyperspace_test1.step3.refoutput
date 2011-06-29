@@ -8,7 +8,7 @@ STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
  type Q 
-CLASSIFY fails; (hyperspace) success probability: 0.0000  pR: -218.7768/0.0000
+CLASSIFY fails; (hyperspace) success probability: 0.0000  pR: -218.7768 / 0.0000
 Best match to file #1 (q_test.css) prob: 1.0000  pR: 218.7768  
 Total features in input file: 11
 #0 (i_test.css): features: 8810, hits: 0, radiance: 0.00e+00, prob: 1.33e-22, pR: -218.78

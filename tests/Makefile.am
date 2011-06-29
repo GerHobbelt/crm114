@@ -203,6 +203,8 @@ TEST_REFERENCE_FILES =                            \
 	$(refdir)/indirecttest.crm.refoutput \
 	$(refdir)/inserttest_a.crm.refoutput \
 	$(refdir)/isolatephenomenontest.crm.refoutput \
+	$(refdir)/lexer_sanity_check1.crm.refoutput \
+	$(refdir)/var_scope_check1.crm.refoutput \
 	$(refdir)/legal_eval_to_null_var1.crm.refoutput \
 	$(refdir)/legal_eval_var1.crm.refoutput \
 	$(refdir)/legal_indirect_alter1.crm.refoutput \
@@ -415,8 +417,8 @@ test_SCRIPTS = \
 	mathalgtest.crm mathrpntest.crm \
 	indirecttest.crm translate_tr.crm zz_translate_test.crm \
 	rewritetest.crm exec_async_leaktest1.crm \
-	randomiotest.crm isolate_reclaim_test.crm \
-	match_isolate_test.crm isolatephenomenontest.crm \
+	randomiotest.crm isolate_reclaim_test.crm var_scope_check1.crm \
+	match_isolate_test.crm isolatephenomenontest.crm lexer_sanity_check1.crm \
 	match_isolate_reclaim.crm match_attr_fromend_newend.crm \
 	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
 	quine.crm call_return_test2.crm call_return_test3.crm call_return_test4.crm \
@@ -767,6 +769,8 @@ initial_tests1:              \
 		paolo_ov3_test \
 		paolo_ov4_test \
 		paolo_ov5_test \
+		lexer_sanity_test1 \
+		var_scope_test1 \
 		print_binary2decimal_int32_test \
 		match_re_fringe1_test
 
@@ -1171,6 +1175,14 @@ isolatephenomenon_test: $(TEST_PREREQUISITES) isolatephenomenontest.crm test_tim
 match_isolate_reclaim_test: $(TEST_PREREQUISITES) match_isolate_reclaim.crm
 	$(SILENT)\
 	./testscript.sh match_isolate_reclaim.crm "" - "$(builddir)/crm114_isolate_test.filter.sh" -e
+
+lexer_sanity_test1: $(TEST_PREREQUISITES) lexer_sanity_check1.crm
+	$(SILENT)\
+	./testscript.sh lexer_sanity_check1.crm "" -
+
+var_scope_test1: $(TEST_PREREQUISITES) var_scope_check1.crm
+	$(SILENT)\
+	./testscript.sh var_scope_check1.crm "" -
 
 call_return_test1: $(TEST_PREREQUISITES) call_return_test.crm
 	$(SILENT)\

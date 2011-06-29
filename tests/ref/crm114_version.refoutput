@@ -7,7 +7,7 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
- This is CRM114, version 20081111-BlameBarack, rev 4629 (TRE 0.7.5 (LGPL, APPROX, WCHAR, MULTIBYTE)) (OS: linux-gnu)
+ This is CRM114, version 20081111-BlameBarack, rev 4648 (TRE 0.7.5 (LGPL, APPROX, WCHAR, MULTIBYTE)) (OS: linux-gnu)
  Copyright 2001-2009 William S. Yerazunis
  This software is licensed under the GPL with ABSOLUTELY NO WARRANTY
 
@@ -26,7 +26,7 @@ Script language:
 accept     
 alius      
 alter      (...) /.../ 
-call       (optional) [optional] /.../ 
+call       <keep> (optional) [optional] /.../ 
 cssmerge   <basic bychar string microgroom markovian markov osb correlate 
         winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
         default sks svm fscm neural auto autodetect alt.markovian alt.markov 
@@ -66,14 +66,14 @@ cssmigrate <basic bychar string microgroom markovian markov osb correlate
         winnow chi2 unique entropy entropic osbf hyperspace unigram crosslink 
         default sks svm fscm neural auto autodetect alt.markovian alt.markov 
         alt.osb alt.winnow alt.osbf alt.hyperspace> (...) [...] /optional/ 
-eval       (optional) /.../ 
+eval       <keep> (optional) /.../ 
 exit       /optional/ 
 fail       
 fault      /optional/ 
 hash       (...) /.../ 
-input      <nomultiline byline lineedit> (optional) [optional] 
-intersect  (...) [...] 
-isolate    <default> (...) /optional/ 
+input      <nomultiline byline keep lineedit> (optional) [optional] 
+intersect  <keep> (...) [...] 
+isolate    <keep default> (...) /optional/ 
 lazy       <default> (...) /optional/ 
 learn      <fromstart nocase absent basic literal nomultiline byline bychar 
         string bychunk append refute microgroom markovian markov osb correlate 
@@ -87,7 +87,8 @@ classify   <nocase basic literal nomultiline byline bychar string bychunk
         (...) (optional) [optional] /optional/ /optional/ 
 liaf       
 match      <fromstart fromnext fromend newend fromcurrent nocase absent basic 
-        backwards literal nomultiline byline> (optional) [optional] /.../ 
+        backwards literal nomultiline byline keep> (optional) [optional] /.../ 
+        
 mutate     <nocase absent basic nomultiline byline bychar string bychunk 
         unique default ...> (optional) [optional] /.../ 
 output     <append> [optional] /optional/ 
@@ -102,6 +103,6 @@ syscall    <keep async> (optional) (optional) (optional) [optional] /optional/
         
 translate  <literal unique> (optional) [optional] /optional/ /optional/ 
 trap       (optional) /.../ 
-union      (...) [...] 
+union      <keep> (...) [...] 
 window     <nocase literal bychar string bychunk byeof eofaccepts eofretry> 
         (optional) (optional) /optional/ /optional/ 

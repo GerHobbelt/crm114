@@ -170,7 +170,7 @@ BIN_PATH = /usr/local/bin
 BZIP2 = /usr/bin/bzip2
 CC = gcc -std=gnu99
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
+CFLAGS =  -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
 COL = /usr/bin/col
 COMPRESS = 
 CONFIG_STATUS_DEPENDENCIES = $(top_srcdir)/src/config_vanilla_UNIX_sys_defaults.h.in $(top_srcdir)/win32/config_win32.h.in
@@ -179,7 +179,7 @@ CPPFLAGS =
 CVS2CL = 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers 
+CXXFLAGS =  -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
 CYGPATH_W = echo
 DB2X_MANXML = /usr/local/bin/db2x_manxml
 DB2X_TEXIXML = /usr/local/bin/db2x_texixml
@@ -297,10 +297,9 @@ PACKAGE_STRING = CRM114 20081111-BlameBarack
 PACKAGE_TARNAME = crm114
 PACKAGE_VERSION = 20081111-BlameBarack
 PATH_SEPARATOR = :
-PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 4648
+REVISION = 4653
 RMAN = /usr/bin/rman
 SED = /usr/bin/sed
 SET_MAKE = 
@@ -310,7 +309,7 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-4648
+TAR_FILENAME_POSTFIX = Ger-4653
 TIME = /usr/bin/time
 TRE_CONFIG = no
 TROFF = /usr/bin/groff
@@ -381,7 +380,7 @@ top_srcdir = ..
 DISTCLEANFILES = diff/
 CLEANFILES = *.o *~ *.bak
 TAR_CMDLINE = ${TAR} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20081111-BlameBarack-Ger-4648
+ARCHIVE_BASE_NAME = crm114-20081111-BlameBarack-Ger-4653
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #

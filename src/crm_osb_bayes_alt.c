@@ -1935,13 +1935,13 @@ int crm_expr_alt_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 snprintf(stext_ptr, stext_maxlen,
                         "#%d (%s):"
                         " features: %d, hits: %d,"                 // exp: %d,"
-                        " chi2: %3.2e, pR: %6.2f \n",
-                        k,
-                        hashname[k],
-                        (int)info_block[k]->v.OSB_Bayes.features_learned,
-                        (int)totalhits[k],
-                        chi2[k],
-                        (log10(ptc[k]) - log10(remainder)));
+                        " chi2: %3.2e, pR: %6.2f\n",
+                        m,
+                        hashname[m],
+                        (int)info_block[m]->v.OSB_Bayes.features_learned,
+                        (int)totalhits[m],
+                        chi2[m],
+                        (log10(ptc[m]) - log10(remainder)));
                 stext_ptr[stext_maxlen - 1] = 0;
                 stext_maxlen -= (int)strlen(stext_ptr);
                 stext_ptr += strlen(stext_ptr);

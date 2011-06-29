@@ -1,0 +1,32 @@
+TEST SCRIPT + COMMANDLINE:
+var_scope_check1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+crm114: *WARNING*
+Attempt to alter the value of a nonexistent variable, so I'm creating an ISOLATED variable.  I hope that's OK.  The nonexistent variable is: 3/3: ':z:'/':z:'
+I'll try to keep working.
+This happened at line 46 of file /windows/G/prj/3actual/crm114/tests/var_scope_check1.crm:
+    alter (:z:) /ook! ook! banana!/
+(runtime system location: crm_var_hash_table.c(1206) in routine: crm_destructive_alter_nvariable)
+
+STDOUT TEST OUTPUT:
+1: :a: is def, :z: is abcdefghijklmnop, :b: is abcdef
+1: :a: is now, :z: is If it sprouts legs, I don't want to know about it., :b: is If it sprouts legs, I don't want to know
+0: :a: is now, :z: is :z:, :b: is If it sprouts legs, I don't want to know
+1: :a: is now, :z: is :z:, :b: is If it sprouts legs, I don't want to know
+1: :a: is now, :z: is yucky! no.1!, :b: is If it sprouts legs, I don't want to know
+0: :a: is now, :z: is :z:, :b: is If it sprouts legs, I don't want to know
+1: :a: is now, :z: is :z:, :b: is If it sprouts legs, I don't want to know
+1: :a: is yucky! no.2!, :z: is yucky! no.2!, :b: is If it sprouts legs, I don't want to know
+0: :a: is now, :z: is :z:, :b: is If it sprouts legs, I don't want to know
+1: :a: is now, :z: is :z:, :b: is If it sprouts legs, I don't want to know
+1: :a: is toodels, :z: is ook! ook! banana!, :b: is If it sprouts legs, I don't want to know
+0: :a: is now, :z: is :z:, :b: is If it sprouts legs, I don't want to know
+1: :a: is now, :z: is :z:, :b: is If it sprouts legs, I don't want to know
+1: :a: is now, :z: is yucky! no.2!, :b: is If it sprouts legs, I don't want to know
+0: :a: is now, :z: is :z:, :b: is If it sprouts legs, I don't want to know
+

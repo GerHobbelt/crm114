@@ -1,0 +1,14 @@
+#
+# code line about 'learn shouldn't b0rk, though it probably will on vanilla, thanks to b0rked lexer there.
+#
+window
+
+isolate (:article:) /yo ho ho and a bottle of rum!/
+call /:learn:/ [:*:article:]     # my ad-hoc learning function (simply looks at the url to find keywords):
+exit /0/
+
+
+
+:learn: (:urg:)
+output /:*:urg:\n/
+return

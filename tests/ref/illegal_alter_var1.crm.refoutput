@@ -13,6 +13,6 @@ Attempting to alter the value of an illegal variable 'abc'.
 Sorry, but this program is very sick and probably should be killed off.
 This happened at line 10 of file /windows/G/prj/3actual/crm114/tests/illegal_alter_var1.crm:
     alter (abc) /FUBAR/
-(runtime system location: crm_var_hash_table.c(1196) in routine: crm_destructive_alter_nvariable)
+(runtime system location: crm_var_hash_table.c(1198) in routine: crm_destructive_alter_nvariable)
 
 

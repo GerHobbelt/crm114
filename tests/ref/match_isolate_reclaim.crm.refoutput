@@ -12,25 +12,25 @@ Match-Isolate reclamation test.  If this program doesn't
 error out, the test is passed. (we allocate about 80 megs, 
 well past the window size, but in small (400K) chunks that
 alternately are allocated and become reclaimable) 
-OK_IF_SIZE_CHANGES: Size of isolation at start: 2075215
-Bytes used per pass: 2070606
+OK_IF_SIZE_CHANGES: Size of isolation at start: 1058330
+Bytes used per pass: 1053439
 Passes done: 10 
-Total flux through isolation:  41412120
-OK_IF_SIZE_CHANGES: Final isolation size: 2075230 
-OK_IF_LESS_THAN_10: Total growth: 15
-Bytes used per pass: 2070606
+Total flux through isolation:  21068780
+OK_IF_SIZE_CHANGES: Final isolation size: 1058338 
+OK_IF_LESS_THAN_10: Total growth: 8
+Bytes used per pass: 1053439
 Passes done: 20 
-Total flux through isolation:  82824240
-OK_IF_SIZE_CHANGES: Final isolation size: 2075236 
-OK_IF_LESS_THAN_20: Total growth: 21
-Bytes used per pass: 2070606
+Total flux through isolation:  42137560
+OK_IF_SIZE_CHANGES: Final isolation size: 1058343 
+OK_IF_LESS_THAN_20: Total growth: 13
+Bytes used per pass: 1053439
 Passes done: 30 
-Total flux through isolation:  124236360
-OK_IF_SIZE_CHANGES: Final isolation size: 2075237 
-OK_IF_LESS_THAN_30: Total growth: 22
-Bytes used per pass: 2070606
+Total flux through isolation:  63206340
+OK_IF_SIZE_CHANGES: Final isolation size: 1058344 
+OK_IF_LESS_THAN_30: Total growth: 14
+Bytes used per pass: 1053439
 Passes done: 40 
-Total flux through isolation:  165648480
-OK_IF_SIZE_CHANGES: Final isolation size: 2075237 
-OK_IF_LESS_THAN_40: Total growth: 22
+Total flux through isolation:  84275120
+OK_IF_SIZE_CHANGES: Final isolation size: 1058344 
+OK_IF_LESS_THAN_40: Total growth: 14
 

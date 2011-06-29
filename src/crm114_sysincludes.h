@@ -257,7 +257,7 @@
 /* REs support */
 #ifndef HAVE_REGEX
 #error \
-    "crm114 MUST be compiled with regex support. It's a regex mutilator, remember? Try to run './configure --disable-extended-compile-checks --with-regex=tre' and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+    "crm114 MUST be compiled with regex support. It's a regex mutilator, remember? Try to run './configure --disable-extended-compile-checks --with-regex=tre' and run 'make clean && make' again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net; make sure you mention you're working with a 'GerH build'"
 #endif
 
 #if defined (HAVE_TRE_REGEX)
@@ -268,7 +268,7 @@
 //#include <regex.h>            --       This also means this code now requires the libtre source distro as available on hebbut.net to compile out of the box on MSVC2005.
 #else
 #error \
-    "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Are you sure you installed the TRE and TRE-DEVEL packages on your UNIX box?   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+    "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Are you sure you installed the TRE and TRE-DEVEL packages on your UNIX box?   Try to add '--with-regex-includes=DIR' to your ./configure and run 'make clean && make' again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net; make sure you mention you're working with a 'GerH build'"
 #endif
 
 
@@ -283,112 +283,25 @@ typedef struct
     char   *pattern;
 } re_entry;
 
-
-#ifdef __cplusplus
-}
-#endif
-
-#elif defined (HAVE_POSIX_REGEX)
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-typedef struct
-{
-    regex_t preg;
-    char   *pattern;
-} re_entry;
-
-#ifdef __cplusplus
-}
-#endif
-
-#elif defined (HAVE_V8_REGEX)
-
-#ifndef NSUBEXP
-#include <regexp.h>
-#endif
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-typedef struct
-{
-    regexp *preg;
-    char   *pattern;
-} re_entry;
-
-#ifdef __cplusplus
-}
-#endif
-
-#elif defined (HAVE_BSD_REGEX)
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-typedef struct
-{
-    char *pattern;
-} re_entry;
-
-#ifdef __cplusplus
-}
-#endif
-
-#elif defined (HAVE_GNU_REGEX)
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-typedef struct
-{
-    struct re_pattern_buffer preg;
-    char *pattern;
-} re_entry;
-
-#ifdef __cplusplus
-}
-#endif
-
-#elif defined (HAVE_PCRE_REGEX)
-
-#include <pcre.h>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-typedef struct
-{
-    pcre       *preg;
-    pcre_extra *preg_extra;
-    char       *pattern;
-} re_entry;
 
 #ifdef __cplusplus
 }
 #endif
 
 #else
+#error \
+    "./configure does seem to have been able to locate the TRE regex library   :-S   Are you sure you installed the TRE and TRE-DEVEL packages on your UNIX box?   Try to add '--with-regex-includes=DIR' to your ./configure or alternatively try '--with-regex=tre' and run 'make clean && make' again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net; make sure you mention you're working with a 'GerH build'"
+#endif
 
+
+/*
 #if defined (HAVE_REGEX_H)
 #include <regex.h>
 #else
 #error \
-    "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+    "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net; make sure you mention you're working with a 'GerH build'"
 #endif
-
-#endif
+*/
 
 
 

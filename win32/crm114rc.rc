@@ -42,8 +42,8 @@ BEGIN
             VALUE "LegalTrademarks", "Released as Open Source"
             VALUE "OriginalFilename", "crm114"
             VALUE "ProductName", "crm114"
-            VALUE "ProductVersion", "2008, 11, 11, 4648"
-            VALUE "SpecialBuild", "20081111-BlameBarack GerH build 4648"
+            VALUE "ProductVersion", "2008, 11, 11, 4653"
+            VALUE "SpecialBuild", "20081111-BlameBarack GerH build 4653"
         END
     END
     BLOCK "VarFileInfo"

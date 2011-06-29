@@ -85,9 +85,6 @@
 /* Define to 1 if you have the `bcopy' function. */
 #undef HAVE_BCOPY
 
-/* BSD REs */
-#undef HAVE_BSD_REGEX
-
 /* Define to 1 if you have the `clock' function. */
 #undef HAVE_CLOCK
 
@@ -195,9 +192,6 @@
 
 /* Define to 1 if you have the `GetUserNameA' function. */
 #undef HAVE_GETUSERNAMEA
-
-/* GNU REs */
-#undef HAVE_GNU_REGEX
 
 /* Define to 1 if you have the <history.h> header file. */
 #undef HAVE_HISTORY_H
@@ -338,9 +332,6 @@
    stat:c/m/atim.tv_nsec. */
 #undef HAVE_NSEC_STAT_TIM_TV_NSEC
 
-/* PCRE REs */
-#undef HAVE_PCRE_REGEX
-
 /* Define to 1 if the system has the type `pid_t'. */
 #undef HAVE_PID_T
 
@@ -352,9 +343,6 @@
 
 /* Define to 1 if you have the `posix_madvise' function. */
 #undef HAVE_POSIX_MADVISE
-
-/* POSIX REs */
-#undef HAVE_POSIX_REGEX
 
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
@@ -575,12 +563,6 @@
 
 /* Define to 1 if you have the <utime.h> header file. */
 #undef HAVE_UTIME_H
-
-/* SYSV 8 REs */
-#undef HAVE_V8_REGEX
-
-/* SYSV 8 RE exports regsub */
-#undef HAVE_V8_REGSUB
 
 /* Define to 1 if you have the <varargs.h> header file. */
 #undef HAVE_VARARGS_H

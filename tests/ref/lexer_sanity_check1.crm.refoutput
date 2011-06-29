@@ -1,0 +1,11 @@
+TEST SCRIPT + COMMANDLINE:
+lexer_sanity_check1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+yo ho ho and a bottle of rum!
+

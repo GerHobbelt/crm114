@@ -1,7 +1,7 @@
 Name:           crm114
 Version:        20081111
 %define	vtag BlameBarack
-%define svnver Ger-4648
+%define svnver Ger-4653
 Release:        4%{?dist}
 Summary:        CRM114 - the Controllable Regex Mutilator
 

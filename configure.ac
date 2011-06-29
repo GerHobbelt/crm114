@@ -44,7 +44,7 @@ AC_SUBST(TAR_FILENAME_POSTFIX)
 
 #REVISION=`date +%Y%m%dT%H%M`
 REVISION=$buildnumber
-AC_DEFINE_UNQUOTED(REVISION, "$REVISION", [revision number of software])
+AC_DEFINE_UNQUOTED(REVISION, ["$REVISION"], [revision number of software])
 AC_SUBST(REVISION)
 
 # VER_SUFFIX=Ger-`date +%m%dT%H`
@@ -75,6 +75,46 @@ AC_SUBST(ISODATE)
 AC_COPYRIGHT([
 Copyright (C) Copyright 2001-2009  William S. Yerazunis
 ])
+
+
+
+
+
+
+
+# local use only (no caching)
+#
+# AX_ADD_OPTION(<var>, <option>)
+#
+# Only add option $2 to var $1 if it's not already in there.
+#
+# Note that the new option-to-be-added is added AT THE FRONT.
+# Sometimes it doesn't matter, but it MIGHT make a difference
+# for particular items, such as -I include paths and such...
+#
+AC_DEFUN([AX_ADD_OPTION],
+  [
+    # split option list up into separate part; then check each item
+    # once done, append AT FRONT of $1, but the order within $2 is
+    # kept intact!
+    ax_ao_list="$2"
+    ax_ao_accepted_set=""
+    for ax_ao_e in ${ax_ao_list}
+    do
+      case " [$]{$1} " in
+        *" ${ax_ao_e} "* )
+                   ;;
+        *        )
+                   if test -z "${ax_ao_accepted_set}" ; then
+                     ax_ao_accepted_set="${ax_ao_e}"
+                   else
+                     ax_ao_accepted_set="${ax_ao_accepted_set} ${ax_ao_e}"
+                   fi
+                   ;;
+      esac
+    done
+    $1="${ax_ao_accepted_set} [$]{$1}"
+  ])
 
 
 
@@ -267,10 +307,10 @@ AC_PATH_PROG([HTMLTIDY], [tidy], [])
 AC_PATH_PROG([DB2X_XSLTPROC], [db2x_xsltproc], [])
 AC_PATH_PROG([DB2X_MANXML], [db2x_manxml], [])
 AC_PATH_PROG([DB2X_TEXIXML], [db2x_texixml], [])
-AC_PATH_PROG([GZIP], [gzip], [])
 AC_PATH_PROG([BZIP2], [bzip2], [])
 AC_PATH_PROG([RMAN], [rman], [])
 AX_PROG_GNU_TIME()
+AC_PATH_PROG([GZIP], [gzip], [gzip])
 
 ## Zoem is a an interpretive macro language, for creating mark-up languages, by
 ## Stijn van Dongen. Information about zoem can be found on the zoem webpage at
@@ -422,7 +462,7 @@ CRM (debuggable) build. (default: debugging turned OFF)]),
        AX_CXXFLAGS_GCC_OPTION([-O2])
      fi
    fi
-   WITH_BUILD="default"
+  WITH_BUILD="release (default optimizations)"
    WITH_DEBUGGING=no
   ])
 
@@ -434,13 +474,13 @@ CRM (debuggable) build. (default: debugging turned OFF)]),
 WITH_GPROFILING="no"
 WITH_PROFILING="no"
 
-AC_MSG_CHECKING([if we want the instrument the build for profiling])
+AC_MSG_CHECKING([if we want to instrument the build for profiling])
 AC_ARG_ENABLE([profiling], AC_HELP_STRING([--enable-profiling],
-  [You can explicitly specify '--enable-profiling' to 
+  [You can explicitly specify '--enable-profiling' to
 create a CRM build which can be profiled with, for 
 example, gprof. (default: profiling turned OFF)]),
   [
-   AC_MSG_RESULT($enable_profiling)
+   AC_MSG_RESULT([$enable_profiling])
    ac_profiling_cc_flags=""
    AX_CFLAGS_GCC_OPTION([-pg], [ac_profiling_cc_flags],
     	[
@@ -471,7 +511,7 @@ example, gprof. (default: profiling turned OFF)]),
   [AC_MSG_RESULT([no])])
 
 #
-# maximum warning level for neurotic developers?
+# maximum warning level for neurotic developers? (default = yes)
 #
 AC_MSG_CHECKING([if we want maximum compiler warnings])
 AC_ARG_ENABLE([extended-compile-warnings],
@@ -479,7 +519,7 @@ AC_ARG_ENABLE([extended-compile-warnings],
     [turn maximum compiler/linker warnings level off
 (default: turn on all warnings)]),
   [
-   AC_MSG_RESULT($enable_extended_compile_warnings)
+   AC_MSG_RESULT([$enable_extended_compile_warnings])
    if eval "test x$enable_extended_compile_warnings = xyes"; then
      AX_CFLAGS_WARN_ALL([])
      AX_CXXFLAGS_WARN_ALL([])
@@ -602,7 +642,6 @@ AC_TYPE_INT32_T
 AC_TYPE_INT64_T
 AC_TYPE_INT8_T
 AC_TYPE_MODE_T
-AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_TYPE_OFF_T
@@ -611,6 +650,7 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
+AC_TYPE_PID_T
 AC_CHECK_TYPES([[clock_t], [pid_t], [mode_t], [struct stat], [struct timespec], [struct timeval], [struct tms]],
  [], [], [
 AC_INCLUDES_DEFAULT[
@@ -660,210 +700,76 @@ dnl regex libraries tests
 dnl *************************
 AC_ARG_WITH([regex-includes],
   AC_HELP_STRING([--with-regex-includes=DIR], [where you have regex includes]),
-  WITH_REGEX_INC="$withval")
+  [WITH_REGEX_INC="$withval"])
 if test -d "$WITH_REGEX_INC"; then
-  CFLAGS="$CFLAGS -I$WITH_REGEX_INC"
-  CXXFLAGS="$CXXFLAGS -I$WITH_REGEX_INC"
+  AX_ADD_OPTION([CPPFLAGS], [-I$WITH_REGEX_INC])
 fi
 
 AC_ARG_WITH([regex-libraries],
   AC_HELP_STRING([--with-regex-libraries=DIR], [where you have regex libraries]),
-  WITH_REGEX_LIB="$withval")
+  [WITH_REGEX_LIB="$withval"])
 if test -d "$WITH_REGEX_LIB"; then
-  LDFLAGS="$LDFLAGS -L$WITH_REGEX_LIB"
+  AX_ADD_OPTION([LDFLAGS], [-L$WITH_REGEX_LIB])
 fi
+
+
 
 dnl ********************************
 dnl all the various REGEX tests
 dnl ********************************
-AC_ARG_WITH([regex], 
-  AC_HELP_STRING([[--with-regex=[none/auto/posix/gnu/v8/bsd/pcre/lregex/tre]]],
-                 [select type of regular expressions you want to use]),
-  [WITH_REGEX="$withval"],
-  [WITH_REGEX="auto"])
+AC_ARG_WITH([regex],
+  AC_HELP_STRING([[--with-regex=[auto/tre]]],
+    [select type of regular expressions you want to use]),
+  [WITH_REGEX="$withval"], [WITH_REGEX="auto"])
 
 WITH_SELECTED_REGEX=""
-
 case "$WITH_REGEX" in
-  none | auto | posix | gnu | v8 | bsd | pcre | lregex | tre) ;;
+  auto | tre) ;;
   *) AC_MSG_ERROR("Bad selection in --with-regex option !");;
 esac
 
 
-if eval "test x$WITH_REGEX = xnone"; then
-  want_regex_impl=no
+if test "x$WITH_REGEX" = "xnone"; then
+  want_regex_impl="no"
 else
-  want_regex_impl=yes
-  AC_CHECK_HEADERS(regex.h)
+  want_regex_impl="yes"
+  AC_CHECK_HEADERS([regex.h])
 fi
 
+
+
 dnl ********************
-dnl test for TRE regex --- this configure section needs to be FIXED
+dnl test for TRE regex
 dnl ********************
 
-if eval "test x$want_regex_impl = xyes"; then
-  if eval "test x$WITH_REGEX = xauto -o x$WITH_REGEX = xtre"; then
-    AC_CHECK_HEADERS(tre/regex.h)
-    AC_CHECK_PROG(TRE_CONFIG, tre-config, "yes", "no")
-    if eval "test x$TRE_CONFIG = xyes"; then
+if test "x$want_regex_impl" = "xyes"; then
+  if test "x$WITH_REGEX" = "xauto" -o "x$WITH_REGEX" = "xtre"; then
+    AC_CHECK_HEADERS([tre/regex.h])
+    AC_CHECK_PROG([TRE_CONFIG], [tre-config], ["yes"], ["no"])
+    if test "x$TRE_CONFIG" = "xyes"; then
       tre_cflags=`tre-config --cflags`
       tre_libs=`tre-config --libs`
-      x_cflags="$x_cflags $tre_cflags"
-      AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-      AC_DEFINE_UNQUOTED(HAVE_TRE_REGEX, 1, [TRE REs])
-      LIBS="$LIBS $tre_libs"
-      want_regex_impl=no
+      AX_ADD_OPTION([CPPFLAGS], [$tre_cflags])
+      AC_DEFINE(HAVE_REGEX, 1, [REs support])
+      AC_DEFINE(HAVE_TRE_REGEX, 1, [TRE REs])
+      AX_ADD_OPTION([LIBS], [$tre_libs])
+      AX_ADD_OPTION([WITH_REGEX], [tre])
+      want_regex_impl="no"
       WITH_SELECTED_REGEX=TRE
     else
-      AC_SEARCH_LIBS([tre_compile], [tre], [
-        AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-        AC_DEFINE_UNQUOTED(HAVE_TRE_REGEX, 1, [TRE REs])
+      AC_CHECK_LIB([tre], [tre_compile], [
+        AC_DEFINE(HAVE_REGEX, 1, [REs support])
+        AC_DEFINE(HAVE_TRE_REGEX, 1,
+          [TRE REs])
+        AX_ADD_OPTION([LIBS], [-ltre])
+        AX_ADD_OPTION([WITH_REGEX], [tre])
         want_regex_impl="no"
-        WITH_SELECTED_REGEX=TRE
-        ])
-    fi
-  fi
-fi
-
-dnl ********************************
-dnl test for POSIX regex in libregex
-dnl ********************************
-
-if eval "test x$want_regex_impl = xyes"; then
-  if eval "test x$WITH_REGEX = xauto -o x$WITH_REGEX = xlregex"; then
-    AC_CHECK_LIB(regex, regcomp, [
-      AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-      AC_DEFINE_UNQUOTED(HAVE_POSIX_REGEX, 1, [POSIX REs])
-      LIBS="$LIBS -lregex"
-      want_regex_impl="no"
-      WITH_SELECTED_REGEX="POSIX (libregex)"
       ])
-  fi
-fi
-
-
-dnl ********************
-dnl test for POSIX regex
-dnl ********************
-
-if eval "test x$want_regex_impl = xyes"; then
-  if eval "test x$WITH_REGEX = xauto -o x$WITH_REGEX = xposix"; then
-    AC_MSG_CHECKING([for POSIX regcomp()])
-    AC_CHECK_HEADERS(regex.h)
-    ac_pregcomp="no"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-    @%:@include <sys/types.h>
-    @%:@include <regex.h>
-    ]], [[
-      regex_t pr;
-      regcomp(&pr , "" , 0);
-    ]])],[ac_pregcomp="yes"],[])
-    AC_MSG_RESULT($ac_pregcomp)
-    if eval "test x$ac_pregcomp = xyes"; then
-      AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-      AC_DEFINE_UNQUOTED(HAVE_POSIX_REGEX, 1, [POSIX REs])
-      want_regex_impl=no
-      WITH_SELECTED_REGEX=POSIX
     fi
   fi
 fi
 
-dnl ********************
-dnl test for PCRE regex
-dnl ********************
 
-if eval "test x$want_regex_impl = xyes"; then
-  if eval "test x$WITH_REGEX = xauto -o x$WITH_REGEX = xpcre"; then
-    AC_CHECK_PROG(PCRE_CONFIG, pcre-config, "yes", "no")
-    if eval "test x$PCRE_CONFIG = xyes"; then
-      pcre_cflags=`pcre-config --cflags`
-      pcre_libs=`pcre-config --libs`
-      x_cflags="$x_cflags $pcre_cflags"
-      AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-      AC_DEFINE_UNQUOTED(HAVE_PCRE_REGEX, 1, [PCRE REs])
-      LIBS="$LIBS $pcre_libs"
-      want_regex_impl=no
-      WITH_SELECTED_REGEX=PCRE
-    else
-      AC_CHECK_LIB(pcre, pcre_compile, [
-        AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-        AC_DEFINE_UNQUOTED(HAVE_PCRE_REGEX, 1,
-          [PCRE REs])
-        LIBS="$LIBS -lpcre"
-        want_regex_impl=no
-        WITH_SELECTED_REGEX=PCRE
-        ])
-    fi
-  fi
-fi
-
-dnl ********************
-dnl test for GNU regex
-dnl ********************
-
-if eval "test x$want_regex_impl = xyes"; then
-  if eval "test x$WITH_REGEX = xauto -o x$WITH_REGEX = xgnu"; then
-    AC_MSG_CHECKING([for GNU regular expressions])
-    ac_gnu_re="no"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[
-      re_compile_pattern();
-    ]])],[ac_gnu_re="yes"],[])
-    AC_MSG_RESULT($ac_gnu_re)
-    if eval "test x$ac_gnu_re = xyes"; then
-      AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-      AC_DEFINE_UNQUOTED(HAVE_GNU_REGEX, 1, [GNU REs])
-      want_regex_impl=no
-      WITH_SELECTED_REGEX=GNU
-    fi
-  fi
-fi
-
-dnl ********************
-dnl test for Bell V8 regex
-dnl ********************
-
-if eval "test x$want_regex_impl = xyes"; then
-  if eval "test x$WITH_REGEX = xauto -o x$WITH_REGEX = xv8"; then
-    AC_MSG_CHECKING([for Bell V8 regcomp()])
-    ac_v8regcomp="no"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <regexp.h>]], [[
-      regexp *pr;
-      pr = regcomp("");
-    ]])],[ac_v8regcomp="yes"],[])
-    AC_MSG_RESULT($ac_v8regcomp)
-    if eval "test x$ac_v8regcomp = xyes"; then
-      AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-      AC_DEFINE_UNQUOTED(HAVE_V8_REGEX, 1, [SYSV 8 REs])
-      AC_CHECK_FUNC(regsub,
-        AC_DEFINE_UNQUOTED(HAVE_V8_REGSUB, 1,
-          [SYSV 8 RE exports regsub]))
-      want_regex_impl=no
-      WITH_SELECTED_REGEX="Bell V8"
-    fi
-  fi
-fi
-
-dnl ********************
-dnl test for BSD regex
-dnl ********************
-
-if eval "test x$want_regex_impl = xyes"; then
-  if eval "test x$WITH_REGEX = xauto -o x$WITH_REGEX = xbsd"; then
-    AC_MSG_CHECKING([for BSD regular expressions])
-    ac_bsd_re="no"
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[
-      re_comp(".*");
-      re_exec(".*");
-    ]])],[ac_bsd_re="yes"],[])
-    AC_MSG_RESULT($ac_bsd_re)
-    if eval "test x$ac_bsd_re = xyes"; then
-      AC_DEFINE_UNQUOTED(HAVE_REGEX, 1, [REs support])
-      AC_DEFINE_UNQUOTED(HAVE_BSD_REGEX, 1, [BSD REs])
-      want_regex_impl=no
-      WITH_SELECTED_REGEX=BSD
-    fi
-  fi
-fi
 
 
 
@@ -958,9 +864,9 @@ AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/src/config_vanilla_UNIX_s
 
 
 # write delayed options into CFLAGS/LDFLAGS:
-CFLAGS="$CFLAGS $ac_profiling_cc_flags"
-CXXFLAGS="$CXXFLAGS $ac_profiling_cc_flags"
-LDFLAGS="$LDFLAGS $ac_profiling_cc_flags"
+AX_ADD_OPTION([CFLAGS], [$ac_profiling_cc_flags])
+AX_ADD_OPTION([CXXFLAGS], [$ac_profiling_cc_flags])
+AX_ADD_OPTION([LDFLAGS], [$ac_profiling_cc_flags])
 
 
 

@@ -125,7 +125,7 @@ static const STMT_TABLE_TYPE stmt_table[] =
     { "match",     CRM_MATCH,         5,  1,     0,    0,  1,     1,  1,    0,  1,   0,  1,
       CRM_ABSENT | CRM_NOCASE | CRM_LITERAL | CRM_FROMSTART
       | CRM_FROMCURRENT | CRM_FROMNEXT | CRM_FROMEND | CRM_NEWEND
-      | CRM_BACKWARDS | CRM_NOMULTILINE | CRM_BASIC },
+      | CRM_BACKWARDS | CRM_NOMULTILINE | CRM_BASIC | CRM_KEEP },
     { "mutate",    CRM_MUTATE,        7,  1,     1,    0,  1,     1,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_BYCHAR | CRM_NOMULTILINE | CRM_BYLINE |
       CRM_BYCHUNK | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT | CRM_STRING | CRM_ABSENT },
     { "output",    CRM_OUTPUT,        6,  1,     0,    0,  1,     0,  1,    0,  0,   0,  1,  CRM_APPEND },

@@ -86,9 +86,6 @@
 /* Define to 1 if you have the `bcopy' function. */
 #define HAVE_BCOPY 1
 
-/* BSD REs */
-/* #undef HAVE_BSD_REGEX */
-
 /* Define to 1 if you have the `clock' function. */
 #define HAVE_CLOCK 1
 
@@ -196,9 +193,6 @@
 
 /* Define to 1 if you have the `GetUserNameA' function. */
 /* #undef HAVE_GETUSERNAMEA */
-
-/* GNU REs */
-/* #undef HAVE_GNU_REGEX */
 
 /* Define to 1 if you have the <history.h> header file. */
 /* #undef HAVE_HISTORY_H */
@@ -339,9 +333,6 @@
    stat:c/m/atim.tv_nsec. */
 #define HAVE_NSEC_STAT_TIM_TV_NSEC 1
 
-/* PCRE REs */
-/* #undef HAVE_PCRE_REGEX */
-
 /* Define to 1 if the system has the type `pid_t'. */
 #define HAVE_PID_T 1
 
@@ -353,9 +344,6 @@
 
 /* Define to 1 if you have the `posix_madvise' function. */
 #define HAVE_POSIX_MADVISE 1
-
-/* POSIX REs */
-/* #undef HAVE_POSIX_REGEX */
 
 /* Define to 1 if you have the `pow' function. */
 #define HAVE_POW 1
@@ -577,12 +565,6 @@
 /* Define to 1 if you have the <utime.h> header file. */
 #define HAVE_UTIME_H 1
 
-/* SYSV 8 REs */
-/* #undef HAVE_V8_REGEX */
-
-/* SYSV 8 RE exports regsub */
-/* #undef HAVE_V8_REGSUB */
-
 /* Define to 1 if you have the <varargs.h> header file. */
 /* #undef HAVE_VARARGS_H */
 
@@ -703,7 +685,7 @@
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
 /* revision number of software */
-#define REVISION "4648"
+#define REVISION "4653"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 4
@@ -721,7 +703,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-4648"
+#define TAR_FILENAME_POSTFIX "Ger-4653"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
