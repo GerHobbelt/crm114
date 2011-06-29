@@ -1289,7 +1289,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                 if (user_trace)
                     fprintf(stderr, "Opening a sks file %s for append.\n", file1);
-                stringf = fopen(file1, "ab");
+                stringf = fopen(file1, "ab+");
                 if (stringf == NULL)
                 {
                     fatalerror("For some reason, I was unable to append-open the sks file named ",

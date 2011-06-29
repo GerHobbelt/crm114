@@ -29,14 +29,22 @@
 
 #if defined (HAVE_TRE_REGEX)
 
+#if 0
+#undef REGEX_CACHE_RANDOM_ACCESS
+#undef REGEX_CACHE_LINEAR_SEARCH
+//#define REGEX_CACHE_RANDOM_ACCESS
+#define REGEX_CACHE_LINEAR_SEARCH
+#endif
+
+
 #if CRM_REGEX_CACHESIZE > 0
 
 //  Cache for regex compilations
 typedef struct
 {
     char    *regex;
-    regex_t *preg; // ptr to struct of {int, void*}
-    int     regex_len;
+    regex_t *preg; // ptr to struct of {long, void*}
+    int      regex_len;
     int      cflags;
     int      status;
 } REGEX_CACHE_BLOCK;
@@ -134,8 +142,7 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
                 break;
             }
             i++;
-        };
-    }
+        }
 #elif defined (REGEX_CACHE_RANDOM_ACCESS)
         if (internal_trace)
         {
@@ -190,7 +197,7 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
         rlen_temp = regex_len;
         cflags_temp = cflags;
         if (internal_trace)
-            fprintf(stderr, "Compiling %s (len %d).\n", regex_temp, rlen_temp);
+            fprintf(stderr, "Compiling '%s' (len %d).\n", regex_temp, rlen_temp);
         ppreg_temp = (regex_t *)calloc(rtsize, sizeof(ppreg_temp[0]));
         if (ppreg_temp == NULL)
         {
@@ -242,7 +249,10 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
                 regex_cache[j].cflags    = regex_cache[j - 1].cflags;
                 regex_cache[j].status    = regex_cache[j - 1].status;
             }
+            i = 0;
         }
+
+        //   and always stuff the _temps (which are correct) in at [0]
 
 #elif defined (REGEX_CACHE_RANDOM_ACCESS)
         if (internal_trace)
@@ -266,25 +276,24 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
         regex_cache[i].regex_len = 0;
 
         //   and  stuff the _temps (which are correct) in at [i]
+#else
+#error "Must have #define'd ONE of these: REGEX_CACHE_RANDOM_ACCESS, REGEX_CACHE_LINEAR_SEARCH"
+#endif
         regex_cache[i].preg      = ppreg_temp;
         regex_cache[i].regex     = regex_temp;
         regex_cache[i].regex_len = rlen_temp;
         regex_cache[i].status    = status_temp;
         regex_cache[i].cflags    = cflags_temp;
     }
-    ;
-#else
-#error "Must have #define'd ONE of these: REGEX_CACHE_RANDOM_ACCESS, REGEX_CACHE_LINEAR_SEARCH"
-#endif
 
-        //  Just about done.  Set up the return preg..
-        memcpy(preg, ppreg_temp, rtsize);
-        if (internal_trace)
-            fprintf(stderr, " About to return:\n"
-                            " preg->re_nsub=%d preg->value=%p, i=%d, status=%d\n",
-                (int)preg->re_nsub, preg->value, i, regex_cache[i].status);
-        return regex_cache[i].status;
-    }
+    //  Just about done.  Set up the return preg..
+    memcpy(preg, ppreg_temp, rtsize);
+    if (internal_trace)
+        fprintf(stderr, " About to return:\n"
+                        " preg->re_nsub=%d preg->value=%p, i=%d, status=%d\n",
+            (int)preg->re_nsub, preg->value, i, regex_cache[i].status);
+    return regex_cache[i].status;
+}
 #endif //CRM_REGEX_CACHESIZE == 0
 }
 

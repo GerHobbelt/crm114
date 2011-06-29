@@ -8,7 +8,11 @@
 /* #undef CRM_DONT_ASSERT */
 
 /* do not include experimental classifiers in the build */
-/* #undef CRM_PRODUCTION_CLASSIFIERS_ONLY */
+//
+//     Do you want all the classifiers?  Or just the "production
+//     ready ones"?   Comment the next line out if you want everything.
+//
+//#define CRM_PRODUCTION_CLASSIFIERS_ONLY 1
 
 /* do not include the Bit-Entropy classifier in the build */
 /* #undef CRM_WITHOUT_BIT_ENTROPY */
@@ -591,7 +595,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1952"
+#define TAR_FILENAME_POSTFIX "Ger-1954"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME

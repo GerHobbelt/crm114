@@ -1,106 +1,111 @@
 2008-03-25 Ger Hobbelt
 
-    * 'int'ified ('INTifada') crm114 sources - finally got fed up and killed the 'long' fetish.
+    * 'int'ified ('INTifada') crm114 sources - finally got fed up and killed the 
+      'long' fetish.
 
-      INTifada: 'long' fetish has been removed from the code: now everything is an 'int'
-      like every good boy should, unless it specifically NEEDS to be something else.
-      
-      Process to redo this in a blunt way (I did it the hard way: code inspection):
+      INTifada: 'long' fetish has been removed from the code: now everything is 
+      an 'int' like every good boy should, unless it specifically NEEDS to be 
+      something else.
+
+      Process to redo this in a blunt way (I did it the hard way: partial code 
+      inspection):
 
         convert 'long long' to int64_t and unsigned long long to uint64_t
 
-        find timing code and make sure those clock_t derivatives are 'clock_t' instead of long
+        find timing code and make sure those clock_t derivatives are 'clock_t' 
+        instead of long
 
         s/\<long\>/int/g
 
-    * Added memnCdump() routine to report variables, etc. to stderr/stdout, so non-ascii
-      variables, mucked up scripts, etc. don't get a chance to blow up the console 
-      anymore.
+    * Added memnCdump() routine to report variables, etc. to stderr/stdout, so 
+      non-ascii variables, mucked up scripts, etc. don't get a chance to blow up 
+      the console anymore.
 
-	* Merged latest Neural Net code
-	
-	* Bugfixes in the crm language parser (variable hash storage)
-	
-	* Language parser could not cope with the line
-	
-	    alius   # line comment
-	    
-	  Nor would it handle
-	  
-	    # urgh \# alius
-	    
-	  correctly by processing - you wish - the 'alius' opcode in there.
-	  
-	  The new code can cope with series of comments and inter-command comments like these lines:
-	  
-	    # so? \#  output  # what? \#/checking for a foo.../#if we mingle comments with code? \# # like this?
-	    
-	  See alius_w_comment.crm for a few test cases.
-	
-	* Bugfix in 'file1 | file2 | file3' regexes in SKS and SVM: now correctly copes with
-	  megatest.sh's 
-	  
-  	    ./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }'
-  	    
-  	  Note that 'q_test.css|' in there: file2 will be decoded by the old regex, but no match
-  	  for file3 as the relevant part of the old regex said: 
-  	  
-  	    [[:space:]]+\\|[[:space:]]+([[:graph:]]+)
-  	    
-  	  Note the '+'-es in there following those [[:space:]] classes.
-  	
-  	
-  	  
-  
-  	  
+    * Merged latest Neural Net code
 
- 
-       
+    * Bugfixes in the crm language parser (variable hash storage)
+
+    * Language parser could not cope with the line
+
+        alius   # line comment
+
+      Nor would it handle
+
+        # urgh \# alius
+
+      correctly by processing - you wish - the 'alius' opcode in there.
+
+      The new code can cope with series of comments and inter-command comments 
+      like these lines:
+
+        # so? \#  output  # what? \#/checking for a foo.../#if we mingle comments with code? \# # like this?
+
+      See alius_w_comment.crm for a few test cases.
+
+    * Bugfix in 'file1 | file2 | file3' regexes in SKS and SVM: now correctly 
+      copes with megatest.sh's
+
+        ./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }'
+
+      Note that 'q_test.css|' in there: file2 will be decoded by the old regex, 
+      but no match for file3 as the relevant part of the old regex said:
+
+        [[:space:]]+\\|[[:space:]]+([[:graph:]]+)
+
+      Note the '+'-es in there following those [[:space:]] classes.
+
+
 
 2008-03-24 Ger Hobbelt
 
-    * Latest gcc versions recognize and handle trigraphs like you'd expect ;-) so all
-      "???" sequences have been converted to "\?\?\?" to keep GCC and other compilers
-      from unintentionally recognizing a trigraph there.
+    * Latest gcc versions recognize and handle trigraphs like you'd expect ;-) 
+      so all "???" sequences have been converted to "\?\?\?" to keep GCC and 
+      other compilers from unintentionally recognizing a trigraph there.
 
-    * added second // slash arg to the CRM 'syscall' cvommand to specify alternative
-      commands for other OS-es. This is intended to allow CRM114 and CRM script writers
-      to cope with the absolutely NON-portable syscall operation: this is only portable
-      across UNIX boxes - and then only to a degree.
+    * added second // slash arg to the CRM 'syscall' cvommand to specify 
+      alternative commands for other OS-es. This is intended to allow CRM114 and 
+      CRM script writers to cope with the absolutely NON-portable syscall 
+      operation: this is only portable across UNIX boxes - and then only to a 
+      degree.
 
       So the second slash arg has format:
 
         /[hoststring]commandline/
 
-      where 'hoststring' is the compile-time HOSTTYPE string, which, for example, for
-      the Win32 builds is 'Windows-MS'. BTW: hoststring-comparison is caseINSENSITIVE.
+      where 'hoststring' is the compile-time HOSTTYPE string, which, for 
+      example, for the Win32 builds is 'Windows-MS'. BTW: hoststring-comparison 
+      is caseINSENSITIVE.
 
-      The square brackets are used to delimit the hoststring, so when the 'hoststring'
-      matches the compile-time constant in your CRM114 binary, the 'commandline' will
-      be used to replace the commandline as specified in the first // slash arg.
+      The square brackets are used to delimit the hoststring, so when the 
+      'hoststring' matches the compile-time constant in your CRM114 binary, the 
+      'commandline' will be used to replace the commandline as specified in the 
+      first // slash arg.
 
       See randomiotest.crm for an example.
 
-    * Fixed OSBF/OSB/Markovian classify code when too many CSS databases to use for
-      classification have been specified - this prevents an array-overrun & out-of-bounds
-      memory access.
+    * Fixed OSBF/OSB/Markovian classify code when too many CSS databases to use 
+      for classification have been specified - this prevents an array-overrun & 
+      out-of-bounds memory access.
 
-    * Got fed up with the minor differences between Win32 and UNIX megatest: created
-      a copy in megatest_ng.sh, which should produce indentical results to megatest.sh, but
-      uses input files (*.input) instead of the UNIX shell <<-EOF...EOF code.
+    * Got fed up with the minor differences between Win32 and UNIX megatest: 
+      created a copy in megatest_ng.sh, which should produce indentical results 
+      to megatest.sh, but uses input files (*.input) instead of the UNIX shell 
+      <<-EOF...EOF code.
 
-      This is mirrored in the new megatest.bat, which can thus use the same input files;
-      I've found that the difference between a LF or CRLF line termination byte sequence
-      does lead to some significant differences in the test results.
+      This is mirrored in the new megatest.bat, which can thus use the same 
+      input files; I've found that the difference between a LF or CRLF line 
+      termination byte sequence does lead to some significant differences in the 
+      test results.
 
     * Major fixes to the Win32 syscall command; now
 
         exectest.crm
 
-      does actually run on Win32. Please note that UNIX commands still won't work allow
-      of a sudden on a Win32 box - unless you provide the proper binaries and environment -
-      but at least vanilla syscall, syscall <keep> and even syscall <async> now work async
-      expected: no crash or indefinite lockup anymore!
+      does actually run on Win32. Please note that UNIX commands still won't 
+      work allow of a sudden on a Win32 box - unless you provide the proper 
+      binaries and environment - but at least vanilla syscall, syscall <keep> 
+      and even syscall <async> now work async expected: no crash or indefinite 
+      lockup anymore!
 
       Note that this still applies:
         "Sorry, syscall to a label isn't implemented in this version "
@@ -109,11 +114,11 @@
 
         bill_style_errormessage
 
-      constant in crm_[util_]errorhandlers.c - maybe we'll make this run-time configurable
-      one day, instead of compile-time like it is today...
+      constant in crm_[util_]errorhandlers.c - maybe we'll make this run-time 
+      configurable one day, instead of compile-time like it is today...
 
-      Bill's format puts the code info at the end, instead of at the start, and looks
-      like this:
+      Bill's format puts the code info at the end, instead of at the start, and 
+      looks like this:
 
          (runtime system location: crm_expr_file_io.c(151) in routine: crm_expr_input)
 
@@ -134,10 +139,12 @@
 
           **** OSB Hyperspace classifier                  <-- matches better when you define
                     #define USE_FIXED_UNIQUE_MODE     0  /* zero! trurn OFF to match Bill's! */
-                WARNING: there's a VT bug in the 20080324 wget copy of CRM114, which reflects
-                         on the knowngood: it is NOT good in that regard. The GerH builds
-                         includes the fixes, but will differ from knowngood until the base has
-                         been fixed too.
+  
+                WARNING: there's a VT bug in the 20080324 wget copy of CRM114, 
+                         which reflects on the knowngood: it is NOT good in that 
+                         regard. The GerH builds includes the fixes, but will 
+                         differ from knowngood until the base has been fixed 
+                         too.
 
           **** OSB three-letter Hyperspace classifier     <-- as above
           **** Unigram Hyperspace classifier              <-- as above
@@ -179,16 +186,16 @@
               echo === TEST 014 ===
               .\crm114 matchtest.crm  < matchtest_mt_ng_1.input
 
-      still needs some medical attention IMHO, as CRM114 on Win32 is much more
-      'picky' about whitespace than its UNIX brethren.  Why? Don't know yet.
-      But it shown in line leading and trailing whitespace sometimes.
+      still needs some medical attention IMHO, as CRM114 on Win32 is much more 
+      'picky' about whitespace than its UNIX brethren.  Why? Don't know yet. But 
+      it shown in line leading and trailing whitespace sometimes.
 
       Probably due to the clunky whitespace skip loops in the CRM114 code.
 
 
-    * UNIX / GNU make now comes with a working 'test' target, which actually uses the new
-      megatest_ng.sh New Generation ;-) shell script. As before, a diff with Bill's
-      knowngood is provided when done. so now you can
+    * UNIX / GNU make now comes with a working 'test' target, which actually 
+      uses the new megatest_ng.sh New Generation ;-) shell script. As before, a 
+      diff with Bill's knowngood is provided when done. so now you can
 
         make test
 
@@ -198,11 +205,11 @@
 
          Hyperspace featurecounts Fixed
 
-         TRE interface/regex cache fixed (Paolo) -- I discarded my older fix,
-                                                    because I have not been able
-                                                    to guarantee that it
-                                                    would've worked, where
-                                                    Paolo's does - has been
+         TRE interface/regex cache fixed (Paolo) -- I discarded my older fix, 
+                                                    because I have not been able 
+                                                    to guarantee that it 
+                                                    would've worked, where 
+                                                    Paolo's does - has been 
                                                     tested on a victim.
 
     * Updated and reformatted (indent cleanup) QUICKREF.txt.
@@ -217,27 +224,27 @@
         cssmerge <flags> (:report:) (destfile) (:c1:...:cN:) /params/
         cssrestore <flags> (:report:) (:c1: :src:) /params/
 
-      These are intended to obsolete the external css* tools in due time and should
-      be able to handle each classifier (see the bottom of classifier sources for the
-      preliminary hooks/code).
+      These are intended to obsolete the external css* tools in due time and 
+      should be able to handle each classifier (see the bottom of classifier 
+      sources for the preliminary hooks/code).
 
 
 2008-01-28 Ger Hobbelt
 
-  * (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The others
-    will follow its lead in this.
+  * (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The 
+    others will follow its lead in this.
 
-  * Included qsort implementation by Michael Tokarev
-    (http://www.corpit.ru/mjt/qsort.html) for a bit of improved performance as
+  * Included qsort implementation by Michael Tokarev 
+    (http://www.corpit.ru/mjt/qsort.html) for a bit of improved performance as 
     suggested by Paolo.
 
-  * Fixed Makefile.am so standard ./bootstrap script works as expected, including
-    'make distcheck': that one doesn't fail anymore.
+  * Fixed Makefile.am so standard ./bootstrap script works as expected, 
+    including 'make distcheck': that one doesn't fail anymore.
 
-  * Included the original BillY makefile in src/: it is minimally patched to make
-    it behave as expected with the new GNU/autoconf enabled code in here.
+  * Included the original BillY makefile in src/: it is minimally patched to 
+    make it behave as expected with the new GNU/autoconf enabled code in here.
 
-    For those who like to compile this thing the old fashioned way on compatible
+    For those who like to compile this thing the old fashioned way on compatible 
     systems, please run
 
       cd src
@@ -253,29 +260,35 @@
     i.e. replace 'make' in Bill's documents with make_BillY.sh if you want to go
     down that road (you'll miss out on all the ./configure goodness though ;-) ).
 
-    Note that a special configuration headerfile (src/config_BillY.h) is
-    provided to help make_BillY compile on compatible UNIX systems. This headerfile
-    includes a toned down UNIX build configuration. Tested on SuSE Linux, but
-    should (hopefully) build on other UNIXes as well. If any compile time errors
-    occur here, please edit the src/config_BillY.h headerfile according and please
-    post the diffs/changes to the crm developer mailing list.
+    Note that a special configuration headerfile (src/config_BillY.h) is 
+    provided to help make_BillY compile on compatible UNIX systems. This 
+    headerfile includes a toned down UNIX build configuration. Tested on SuSE 
+    Linux, but should (hopefully) build on other UNIXes as well. If any compile 
+    time errors occur here, please edit the src/config_BillY.h headerfile 
+    according and please post the diffs/changes to the crm developer mailing 
+    list.
 
-    WARNING: src/make_BillY.sh et al are provided as a 'backwards compatible build
-         fix' ONLY and are NOT meant to replace the available ./configure-driven
-       build/install available in this or future GerXXXX crm distro/builds!
+    WARNING: src/make_BillY.sh et al are provided as a 'backwards compatible 
+        build fix' ONLY and are NOT meant to replace the available ./configure-
+        driven build/install available in this or future GerXXXX crm 
+        distro/builds!
 
-        * Made initial provisions to merge the crm tools with crm itself: added the
-          statements cssmerge / cssdiff / cssinfo / cssanalyze / cssbackup / cssrestore / csscreate.
+        * Made initial provisions to merge the crm tools with crm itself: added 
+          the statements cssmerge / cssdiff / cssinfo / cssanalyze / cssbackup / 
+          cssrestore / csscreate.
 
-          These statements should suffice to cover the functionality found in the
-          cssutil / osbf_util / cssmerge / cssdiff tools.
+          These statements should suffice to cover the functionality found in 
+          the cssutil / osbf_util / cssmerge / cssdiff tools.
 
-        * Improved the indent.sh shell script and src/Makefile a bit; the included uncrustify.cfg
-          config file is compatible with the latest uncrustify version today (jan/2008): v0.42
+        * Improved the indent.sh shell script and src/Makefile a bit; the 
+          included uncrustify.cfg config file is compatible with the latest 
+          uncrustify version today (jan/2008): v0.42
 
-        * KNOWN BUG: 'make reindent': uncrustify will not format the last few lines of crm_mjt_qsort.h
-                     in a suitable layout. The code will compile, but correct this one by hand
-                     to undo the damage there (until I find what's wrong with uncrustify :-( ).
+        * KNOWN BUG: 'make reindent': uncrustify will not format the last few 
+                     lines of crm_mjt_qsort.h in a suitable layout. The code 
+                     will compile, but correct this one by hand to undo the 
+                     damage there (until I find what's wrong with uncrustify :-( 
+                     ).
 
   * KNOWN BUG for clump/pmulc still applies! :-(
 

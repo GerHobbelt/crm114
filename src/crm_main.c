@@ -415,18 +415,19 @@ int main(int argc, char **argv)
             fprintf(stderr, " --foo   creates var :foo: with value 'SET'\n");
             fprintf(stderr, " --x=y   creates var :x: with value 'y'\n");
             fprintf(stderr, " -in file\n"
-                            "         use file instead of stdin for input. Note that '-in' may specify the\n"
-                            "         standard handle value '0' for stdin.\n");
+                            "         use file instead of stdin for input. Note that '-in' may\n"
+                            "         specify the standard handle value '0' for stdin.\n");
             fprintf(stderr, " -out file\n"
                             "         use file instead of stdout for output\n");
             fprintf(stderr, " -err file\n"
-                            "         use file instead of stderr for output. Note that '-out' may use the same\n"
-                            "         file as '-err'. Note also that '-out' and '-err' may specify the standard\n"
-                            "         handle values '1' for stdout and '2' for stderr. This implies that '-err 1'\n"
-                            "         is essentially identical to the UNIX shell '2>&1' redirection.\n");
+                            "         use file instead of stderr for output. Note that '-out' may\n"
+                            "         use the same file as '-err'. Note also that '-out' and '-err'\n"
+                            "         may specify the standard handle values '1' for stdout and '2'\n"
+                            "         for stderr. This implies that '-err 1' is essentially\n"
+							"         identical to the UNIX shell '2>&1' redirection.\n");
 #ifndef CRM_DONT_ASSERT
-            fprintf(stderr, " -Cdbg   direct developer support: trigger the C/IDE debugger when an internal\n"
-                            "         error is hit.\n");
+            fprintf(stderr, " -Cdbg   direct developer support: trigger the C/IDE debugger when an\n"
+                            "         internal error is hit.\n");
 #endif
 #if defined (WIN32) && defined (_DEBUG)
             fprintf(stderr, " -memdump\n"

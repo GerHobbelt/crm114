@@ -28,7 +28,10 @@
 
 // This will be defined in ./configure OR your own config_Billy.h/config_Win32.h
 //
-//#define CRM_PRODUCTION_CLASSIFIERS_ONLY
+//     Do you want all the classifiers?  Or just the "production
+//     ready ones"?   Comment the next line out if you want everything.
+//
+//#define CRM_PRODUCTION_CLASSIFIERS_ONLY 1
 
 //
 //   default size of the variables hashtable (a.k.a. the VHT)
@@ -266,7 +269,7 @@
 //   define maximum size of a pattern in bytes
 #define MAX_PATTERN 16384
 
-//    and how int can a variable name be
+//    and how long can a variable name be
 #define MAX_VARNAME 2048
 
 //   define the default number of bytes in a learning file hash table

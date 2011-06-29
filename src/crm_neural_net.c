@@ -2304,7 +2304,7 @@ int crm_neural_net_classify(
 
     out_pos += sprintf(outbuf + out_pos,
         "Total features in input file: %d\n",
-        n);
+      baglen  );
 
     for (i = 0; i < n_classifiers; i++)
     {

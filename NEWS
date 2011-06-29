@@ -8,13 +8,25 @@ version 20080325-BlameSentansoken
  * INTifada: 'long' fetish has been removed from the code: now everything is an 'int'
    like every good boy should, unless it specifically NEEDS to be something else.
    
- * Merged latest Neural Net code
+ * Merged latest Neural Net code from Da Boss: BillY  :-)
  
  * Bugfixes in the crm language parser (variable hash storage)
  
+ * Language parser now can cope with series of comments and inter-command comments 
+   like these lines:
+ 
+     # so? \#  output  # what? \#/checking for a foo.../#if we mingle comments with code? \# # like this?
+ 
+   See alius_w_comment.crm for a few test cases.
+ 
+ * Bugfix in 'file1 | file2 | file3' regexes in SKS and SVM: now correctly 
+   copes with megatest.sh's
+ 
+     ./crm114 '-{window; learn ( i_test.css | q_test.css| i_vs_q_test.css ) < svm unigram unique > /[[:graph:]]+/ /0 0 100 1e-3 1 0.5 1 1/ }'
 
+ 
 version 20080317-BlameJoeLangeway_VT
-
+ 
  * (BillY) Improved / Fixed VT code
 
  * (BillY) rewrite of Neural Net.
