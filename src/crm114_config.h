@@ -289,10 +289,10 @@
 
 // defaults to system's, if any
 #ifdef NAME_MAX
-  #define MAX_FILE_NAME_LEN NAME_MAX+1
+  #define MAX_FILE_NAME_LEN NAME_MAX + 1
 #else
   #ifdef FILENAME_MAX
-    #define MAX_FILE_NAME_LEN FILENAME_MAX+1
+    #define MAX_FILE_NAME_LEN FILENAME_MAX + 1
   #else
     #define MAX_FILE_NAME_LEN 256
   #endif
@@ -330,3 +330,4 @@
 
 
 #endif /* __CRM114_CONFIG_H__ */
+

@@ -24,193 +24,196 @@
 
 
 
-int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
+int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-  //      Here we evaluate the slash-string _repeatedly_, not just
-  //      once as in ALTER.
-  //
-  //      To prevent infinite loops (or at least many of them) we:
-  //      1) strictly limit the total number of loop iterations to
-  //         the compile-time parameter MAX_EVAL_ITERATIONS
-  //      2) we also keep an array of the hashes of the last 256 values,
-  //         if we see a repeat, we assume that it's a loop and we stop
-  //         right there.
+    //      Here we evaluate the slash-string _repeatedly_, not just
+    //      once as in ALTER.
+    //
+    //      To prevent infinite loops (or at least many of them) we:
+    //      1) strictly limit the total number of loop iterations to
+    //         the compile-time parameter MAX_EVAL_ITERATIONS
+    //      2) we also keep an array of the hashes of the last 256 values,
+    //         if we see a repeat, we assume that it's a loop and we stop
+    //         right there.
 
-  char varname[MAX_VARNAME];
-  long varnamelen = 0;
-  long newvallen;
-  crmhash64_t ahash[MAX_EVAL_ITERATIONS];
-  long ahindex;
-  int itercount;
-  long qex_stat;
-  long has_output_var;
-  // should use tempbuf for this instead.
-  //   char newstr [MAX_PATTERN];
-  if (user_trace)
-    fprintf (stderr, "Executing an EVALuation\n");
+    char varname[MAX_VARNAME];
+    long varnamelen = 0;
+    long newvallen;
+    crmhash64_t ahash[MAX_EVAL_ITERATIONS];
+    long ahindex;
+    int itercount;
+    long qex_stat;
+    long has_output_var;
 
-  qex_stat = 0;
-  has_output_var = 1;
+    // should use tempbuf for this instead.
+    //   char newstr [MAX_PATTERN];
+    if (user_trace)
+        fprintf(stderr, "Executing an EVALuation\n");
 
-  //     get the variable name
-  CRM_ASSERT(apb != NULL);
-  crm_get_pgm_arg (varname, MAX_VARNAME, apb->p1start, apb->p1len);
-  if (apb->p1len < 3)
+    qex_stat = 0;
+    has_output_var = 1;
+
+    //     get the variable name
+    CRM_ASSERT(apb != NULL);
+    crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
+    if (apb->p1len < 3)
     {
-      has_output_var = 0;
-      if (user_trace)
-        fprintf (stderr, "There's no output var for this EVAL, so we won't "
-                 "be assigning the result anywhere.\n  It better have a "
-                 "relational test, or you're just wasting CPU.\n");
+        has_output_var = 0;
+        if (user_trace)
+            fprintf(stderr, "There's no output var for this EVAL, so we won't "
+                            "be assigning the result anywhere.\n  It better have a "
+                            "relational test, or you're just wasting CPU.\n");
     }
 
-  if (has_output_var)
+    if (has_output_var)
     {
-      //      do variable substitution on the variable name
-      varnamelen = crm_nexpandvar (varname, apb->p1len, MAX_VARNAME);
-      if (varnamelen < 3)
+        //      do variable substitution on the variable name
+        varnamelen = crm_nexpandvar(varname, apb->p1len, MAX_VARNAME);
+        if (varnamelen < 3)
         {
-          nonfatalerror (
-                         "The variable you're asking me to alter has an utterly bogus name\n",
-                         "so I'll pretend it has no output variable.");
-          has_output_var = 0;
+            nonfatalerror(
+                "The variable you're asking me to alter has an utterly bogus name\n",
+                "so I'll pretend it has no output variable.");
+            has_output_var = 0;
         }
     }
-  //     get the new pattern, and expand it.
-  crm_get_pgm_arg (tempbuf, data_window_size, apb->s1start, apb->s1len);
+    //     get the new pattern, and expand it.
+    crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
 
 //  ihash = 0;
 //  itercount = 0;
 //  for (ahindex = 0; ahindex < MAX_EVAL_ITERATIONS; ahindex++)
 //    ahash[ahindex] = 0;
-  ahindex = 0;
+    ahindex = 0;
 //  loop_abort = 0;
-  //
-  //     Now, a loop - while it continues to change, keep looping.
-  //     But to try and detect infinite loops, we keep track of the
-  //     previous values (actually, their hashes) and if one of those
-  //     values recur, we stop evaluating and throw an error.
-  //
-  // Note also take into account the condition where the _calculated_
-  // hash may be zero: since all possible values of the crmhash64_t
-  // type can be produced (at lerast theoretically) by the hash function,
-  // we must check against the actual, i.e. current hash value, no
-  // matter what it's value is.
-  //
-  newvallen = apb->s1len;
-  for (itercount = 0; itercount < MAX_EVAL_ITERATIONS; itercount++)
+//
+//     Now, a loop - while it continues to change, keep looping.
+//     But to try and detect infinite loops, we keep track of the
+//     previous values (actually, their hashes) and if one of those
+//     values recur, we stop evaluating and throw an error.
+//
+// Note also take into account the condition where the _calculated_
+// hash may be zero: since all possible values of the crmhash64_t
+// type can be produced (at lerast theoretically) by the hash function,
+// we must check against the actual, i.e. current hash value, no
+// matter what it's value is.
+//
+    newvallen = apb->s1len;
+    for (itercount = 0; itercount < MAX_EVAL_ITERATIONS; itercount++)
     {
-      int i;
+        int i;
 
-          crmhash64_t ihash = strnhash64(tempbuf, newvallen);
-      ahash[itercount] = ihash;
-          if (internal_trace)
-        fprintf (stderr, "Eval ihash = %llu\n", (uint64_t)ihash);
+        crmhash64_t ihash = strnhash64(tempbuf, newvallen);
+        ahash[itercount] = ihash;
+        if (internal_trace)
+            fprintf(stderr, "Eval ihash = %llu\n", (uint64_t)ihash);
 
-                // scan down to see if we see any change: faster than up.
-            //
-            // note that the old 'value may have returned to same' code is
-            // still in here; when we can do without it, there's no need
-            // for a hash array, only a 'previous hash' value to have tag along.
-    for (i = itercount; --i >= 0; )
-          {
-          CRM_ASSERT(i < MAX_EVAL_ITERATIONS);
-        if (ahash[i] == ihash)
-          {
-            if (i != itercount - 1)
-    {
-      nonfatalerror ("The variable you're attempting to EVAL seemes to return "
-                     "to the same value after a number of iterations, "
-                     "so it is probably an "
-                     "infinite loop.  I think I should give up.  I got this "
-                     "far: ", tempbuf);
-      return (0);
-    }
-                        // indentical hash, so no more expansions.
-                        break;
+        // scan down to see if we see any change: faster than up.
+        //
+        // note that the old 'value may have returned to same' code is
+        // still in here; when we can do without it, there's no need
+        // for a hash array, only a 'previous hash' value to have tag along.
+        for (i = itercount; --i >= 0;)
+        {
+            CRM_ASSERT(i < MAX_EVAL_ITERATIONS);
+            if (ahash[i] == ihash)
+            {
+                if (i != itercount - 1)
+                {
+                    nonfatalerror("The variable you're attempting to EVAL seemes to return "
+                                  "to the same value after a number of iterations, "
+                                  "so it is probably an "
+                                  "infinite loop.  I think I should give up.  I got this "
+                                  "far: ", tempbuf);
+                    return 0;
                 }
+                // indentical hash, so no more expansions.
+                break;
+            }
         }
         if (i >= 0)
-                break;
+            break;
 
-      newvallen = crm_qexpandvar (tempbuf, newvallen,
-                                  data_window_size, &qex_stat);
+        newvallen = crm_qexpandvar(tempbuf, newvallen,
+                                   data_window_size, &qex_stat);
     }
 
-  if (itercount == MAX_EVAL_ITERATIONS)
+    if (itercount == MAX_EVAL_ITERATIONS)
     {
-      nonfatalerror ("The variable you're attempting to EVAL seems to eval "
-                     "infinitely, and hence I cannot compute it.  I did try "
-                     "a lot, though.  I got this far before I gave up: ",
-                     tempbuf);
-      return (0);
+        nonfatalerror("The variable you're attempting to EVAL seems to eval "
+                      "infinitely, and hence I cannot compute it.  I did try "
+                      "a lot, though.  I got this far before I gave up: ",
+                      tempbuf);
+        return 0;
     }
 
-  //     and shove it out to wherever it needs to be shoved.
-  //
-  if (has_output_var)
-    crm_destructive_alter_nvariable (varname, varnamelen,
-                                   tempbuf, newvallen);
-
-  if (internal_trace)
-    fprintf (stderr, "Final qex_stat was %ld\n", qex_stat);
-
-  //    for now, use the qex_stat that came back from qexpandvar.
-  if (qex_stat > 0)
-    {
-      if (user_trace)
-        fprintf (stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %ld\n", csl->cstmt);
-      csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-      csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
-    }
-  return (0);
-}
-
-int crm_expr_alter (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
-{
-  //      here's where we surgiclly alter a variable.  We have to
-  //      watch out in case a variable is not in the cdw (it might
-  //      be in tdw; that's legal as well.
-  //      syntax is to replace the contents of the variable in the
-  //      varlist with the evaluated string.
-  //      Syntax is "alter <flags> (var) /newvalue/
-
-        char varname[MAX_VARNAME];
-        long varnamestart;
-        long varnamelen;
-        long newvallen;
-        // should use tempbuf for this instead.
-        //   char newstr [MAX_PATTERN];
-        if (user_trace)
-          fprintf (stderr, "Executing an ALTERation\n");
-
-        //     get the variable name
-        CRM_ASSERT(apb != NULL);
-        crm_get_pgm_arg (varname, MAX_VARNAME, apb->p1start, apb->p1len);
-        if (apb->p1len < 3)
-          {
-            nonfatalerror (
-                     "This statement is missing the variable to alter,\n",
-                           "so I'll ignore the whole statement.");
-            return (0);
-          }
-
-        //      do variable substitution on the variable name
-        varnamelen = crm_nexpandvar (varname, apb->p1len, MAX_VARNAME);
-        crm_nextword (varname, varnamelen, 0, &varnamestart, &varnamelen);
-        if (varnamelen - varnamestart < 3)
-          {
-            nonfatalerror (
-          "The variable you're asking me to alter has an utterly bogus name\n",
-                "so I'll ignore the whole statement.");
-            return (0);
-          }
-
-        //     get the new pattern, and expand it.
-        crm_get_pgm_arg (tempbuf, data_window_size, apb->s1start, apb->s1len);
-        newvallen = crm_nexpandvar (tempbuf, apb->s1len, data_window_size);
-
-        crm_destructive_alter_nvariable (&varname[varnamestart], varnamelen,
+    //     and shove it out to wherever it needs to be shoved.
+    //
+    if (has_output_var)
+        crm_destructive_alter_nvariable(varname, varnamelen,
                                         tempbuf, newvallen);
-        return (0);
+
+    if (internal_trace)
+        fprintf(stderr, "Final qex_stat was %ld\n", qex_stat);
+
+    //    for now, use the qex_stat that came back from qexpandvar.
+    if (qex_stat > 0)
+    {
+        if (user_trace)
+            fprintf(stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %ld\n", csl->cstmt);
+        csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+        csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
+    }
+    return 0;
 }
+
+int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
+{
+    //      here's where we surgiclly alter a variable.  We have to
+    //      watch out in case a variable is not in the cdw (it might
+    //      be in tdw; that's legal as well.
+    //      syntax is to replace the contents of the variable in the
+    //      varlist with the evaluated string.
+    //      Syntax is "alter <flags> (var) /newvalue/
+
+    char varname[MAX_VARNAME];
+    long varnamestart;
+    long varnamelen;
+    long newvallen;
+
+    // should use tempbuf for this instead.
+    //   char newstr [MAX_PATTERN];
+    if (user_trace)
+        fprintf(stderr, "Executing an ALTERation\n");
+
+    //     get the variable name
+    CRM_ASSERT(apb != NULL);
+    crm_get_pgm_arg(varname, MAX_VARNAME, apb->p1start, apb->p1len);
+    if (apb->p1len < 3)
+    {
+        nonfatalerror(
+            "This statement is missing the variable to alter,\n",
+            "so I'll ignore the whole statement.");
+        return 0;
+    }
+
+    //      do variable substitution on the variable name
+    varnamelen = crm_nexpandvar(varname, apb->p1len, MAX_VARNAME);
+    crm_nextword(varname, varnamelen, 0, &varnamestart, &varnamelen);
+    if (varnamelen - varnamestart < 3)
+    {
+        nonfatalerror(
+            "The variable you're asking me to alter has an utterly bogus name\n",
+            "so I'll ignore the whole statement.");
+        return 0;
+    }
+
+    //     get the new pattern, and expand it.
+    crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
+    newvallen = crm_nexpandvar(tempbuf, apb->s1len, data_window_size);
+
+    crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,
+                                    tempbuf, newvallen);
+    return 0;
+}
+

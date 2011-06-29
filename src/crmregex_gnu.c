@@ -27,95 +27,97 @@
 #include "crm114.h"
 
 
-#if defined(HAVE_GNU_REGEX)
+#if defined (HAVE_GNU_REGEX)
 
 
 //
 //      How to do a register compilation
 //
-int crm_regcomp (regex_t *preg, char *regex, long regex_len, int cflags)
+int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
 {
-  static int null_errored = 0;
-  //   Gnu REGEX can't handle embedded NULs in the pattern
-  if (strlen (regex) < regex_len)
+    static int null_errored = 0;
+
+    //   Gnu REGEX can't handle embedded NULs in the pattern
+    if (strlen(regex) < regex_len)
     {
-      if (null_errored == 0)
+        if (null_errored == 0)
         {
-          fatalerror ("The regex contains a NUL inside the stated length,",
-                  "but your GNU regex library can't handle embedded NULs.  Therefore, treat all results WITH GREAT SUSPICION.");
-          null_errored = 1;
+            fatalerror("The regex contains a NUL inside the stated length,",
+                       "but your GNU regex library can't handle embedded NULs.  Therefore, treat all results WITH GREAT SUSPICION.");
+            null_errored = 1;
         }
     }
-  //
-  //   bug workaround for regex libraries that can't compile the null regex
-  if (regex_len == 0)
-    return (regcomp (preg, "()", cflags));
-  //
-  //   If we get here, we're OK on GNU Regex
-  return (regcomp ( preg, regex, cflags));
+    //
+    //   bug workaround for regex libraries that can't compile the null regex
+    if (regex_len == 0)
+        return regcomp(preg, "()", cflags);
+
+    //
+    //   If we get here, we're OK on GNU Regex
+    return regcomp(preg, regex, cflags);
 }
 //
 //
 //       How to do a regex execution from the compiled register
 //
-int crm_regexec ( regex_t *preg, char *string, long string_len,
-                 size_t nmatch, regmatch_t pmatch[], int eflags,
-                  char *aux_string)
+int crm_regexec(regex_t *preg, char *string, long string_len,
+                size_t nmatch, regmatch_t pmatch[], int eflags,
+                char *aux_string)
 {
-  static int null_errored = 0;
-  int savedcrockchar;
-  int regexresult;
+    static int null_errored = 0;
+    int savedcrockchar;
+    int regexresult;
 
-  //   GRODY GRODY GRODY !!!  If using the GNU (or other POSIX) regex
-  //   libraries, we have to crock in a NULL to end the regex search.
-  //   We have to insert a NULL because the GNU regex libraries are
-  //   set up on ASCIZ strings, not start/length strings.
+    //   GRODY GRODY GRODY !!!  If using the GNU (or other POSIX) regex
+    //   libraries, we have to crock in a NULL to end the regex search.
+    //   We have to insert a NULL because the GNU regex libraries are
+    //   set up on ASCIZ strings, not start/length strings.
 
-  savedcrockchar = string[ string_len +1 ];
-  string [ string_len + 1 ] = '\000';
-  if (internal_trace)
+    savedcrockchar = string[string_len + 1];
+    string[string_len + 1] = '\000';
+    if (internal_trace)
     {
-      fprintf (stderr, "    crocking in a NULL for the %c\n",
-             savedcrockchar);
+        fprintf(stderr, "    crocking in a NULL for the %c\n",
+                savedcrockchar);
     }
 
-  if (strlen (string) < string_len)
+    if (strlen(string) < string_len)
     {
-      if (null_errored == 0)
+        if (null_errored == 0)
         {
-          fprintf (stderr, "\nRegexec  strlen: %d, stated_len: %ld \n",
-                   strlen (string), string_len);
-          nonfatalerror ("Your data window contained a NUL inside the stated length,",
-                      "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");
-          null_errored = 1;
+            fprintf(stderr, "\nRegexec  strlen: %d, stated_len: %ld \n",
+                    strlen(string), string_len);
+            nonfatalerror("Your data window contained a NUL inside the stated length,",
+                          "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");
+            null_errored = 1;
         }
     }
-  regexresult = regexec ( preg, string, nmatch, pmatch, eflags);
+    regexresult = regexec(preg, string, nmatch, pmatch, eflags);
 
-  //    and de-crock the nulled character
-  string [ string_len + 1] = savedcrockchar;
+    //    and de-crock the nulled character
+    string[string_len + 1] = savedcrockchar;
 
-  return (regexresult);
+    return regexresult;
 }
 
 
-size_t crm_regerror (int errorcode, regex_t *preg, char *errbuf,
-                     size_t errbuf_size)
+size_t crm_regerror(int errorcode, regex_t *preg, char *errbuf,
+                    size_t errbuf_size)
 
 {
-  return (regerror (errorcode, preg, errbuf, errbuf_size));
+    return regerror(errorcode, preg, errbuf, errbuf_size);
 }
 
-void crm_regfree (regex_t *preg)
+void crm_regfree(regex_t *preg)
 {
-    regfree (preg);
+    regfree(preg);
 }
 
-char * crm_regversion (void)
+char *crm_regversion(void)
 {
-  static char verstr [128] = "Gnu Regex" ;
+    static char verstr[128] = "Gnu Regex";
 
-  return (verstr);
+    return verstr;
 }
 
 

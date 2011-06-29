@@ -65,7 +65,7 @@ extern long profile_execution;
 extern long prettyprint_listing;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
 
 extern long engine_exit_base;  /*  All internal errors will use this number or higher;
-                                   the user programs can use lower numbers freely. */
+                                *  the user programs can use lower numbers freely. */
 
 
 //        how should math be handled?
@@ -84,24 +84,25 @@ extern long q_expansion_mode;
 //  we do in-table overflowing (if a table entry is in use, we use the next
 //  available table entry, wrapping around.  It's easy to change in any case.
 //
-typedef struct mythical_vht_cell {
-  char *filename;        // file where defined (or NULL)
-  int filedesc;         // filedesc of defining file (or NULL)
-  char *nametxt;        // block of text that hosts the variable name
-  long nstart;          // index into nametxt to start of varname
-  long nlen;            // length of name
-  char *valtxt;         /* text block that hosts the captured value
-                           vstart, vlen, mstart, and mlen are all measured
-                           from the _start_ of valtxt, mstart relative to
-                           vstart, etc!!! */
-  long vstart;          // zero-base index of start of variable (inclusive)
-  long vlen;            /* length of captured value : this plus vstart is where
-                           you could put a NULL if you wanted to.*/
-  long mstart;          // zero-base start of most recent match of this var
-  long mlen;            /* length of most recent match against this var; this
-                           plus mstart is where you could put a NULL if you
-                           wanted to. */
-  long linenumber;      // linenumber of this variable (if known, else -1)
+typedef struct mythical_vht_cell
+{
+    char *filename;      // file where defined (or NULL)
+    int  filedesc;       // filedesc of defining file (or NULL)
+    char *nametxt;       // block of text that hosts the variable name
+    long nstart;         // index into nametxt to start of varname
+    long nlen;           // length of name
+    char *valtxt;       /* text block that hosts the captured value
+                         * vstart, vlen, mstart, and mlen are all measured
+                         * from the _start_ of valtxt, mstart relative to
+                         * vstart, etc!!! */
+    long vstart;        // zero-base index of start of variable (inclusive)
+    long vlen;          /* length of captured value : this plus vstart is where
+                         * you could put a NULL if you wanted to.*/
+    long mstart;        // zero-base start of most recent match of this var
+    long mlen;          /* length of most recent match against this var; this
+                         * plus mstart is where you could put a NULL if you
+                         * wanted to. */
+    long linenumber;    // linenumber of this variable (if known, else -1)
 } VHT_CELL;
 
 //   The argparse block is filled in at run time, though at least in
@@ -111,22 +112,23 @@ typedef struct mythical_vht_cell {
 //
 
 
-typedef struct mythical_argparse_block {
-  char *a1start;
-  long a1len;
-  char *p1start;
-  long p1len;
-  char *p2start;
-  long p2len;
-  char *p3start;
-  long p3len;
-  char *b1start;
-  long b1len;
-  char *s1start;
-  long s1len;
-  char *s2start;
-  long s2len;
-  long long sflags;
+typedef struct mythical_argparse_block
+{
+    char      *a1start;
+    long      a1len;
+    char      *p1start;
+    long      p1len;
+    char      *p2start;
+    long      p2len;
+    char      *p3start;
+    long      p3len;
+    char      *b1start;
+    long      b1len;
+    char      *s1start;
+    long      s1len;
+    char      *s2start;
+    long      s2len;
+    long long sflags;
 } ARGPARSE_BLOCK;
 
 
@@ -135,20 +137,21 @@ typedef struct mythical_argparse_block {
 //
 //  These table entries get filled in during microcompile operation.
 //
-typedef struct mythical_mct_cell {
-  char *hosttxt;         // text file this statement lives in.
-  ARGPARSE_BLOCK *apb;   // the argparse block for this statement
-  long start;            // zero-base index of start of statement (inclusive)
-  long fchar;            // zero-base index of non-blank stmt (for prettyprint)
-  long achar;            // zero-base index of start of args;
-  long stmt_utime;       // user time spent in this statement line;
-  long stmt_stime;       // system time spent in this statement line;
-  int stmt_type;         // statement type of this line
-  int nest_level;        // nesting level of this statement
-  int fail_index;        // if this statement failed, where would we go?
-  int liaf_index;        // if this statement liafed, where would we go?
-  int trap_index;        // if this statement faults, where would we go?
-  int stmt_break;        // 1 if "break" on this stmt, 0 otherwise.
+typedef struct mythical_mct_cell
+{
+    char           *hosttxt;   // text file this statement lives in.
+    ARGPARSE_BLOCK *apb;       // the argparse block for this statement
+    long           start;      // zero-base index of start of statement (inclusive)
+    long           fchar;      // zero-base index of non-blank stmt (for prettyprint)
+    long           achar;      // zero-base index of start of args;
+    long           stmt_utime; // user time spent in this statement line;
+    long           stmt_stime; // system time spent in this statement line;
+    int            stmt_type;  // statement type of this line
+    int            nest_level; // nesting level of this statement
+    int            fail_index; // if this statement failed, where would we go?
+    int            liaf_index; // if this statement liafed, where would we go?
+    int            trap_index; // if this statement faults, where would we go?
+    int            stmt_break; // 1 if "break" on this stmt, 0 otherwise.
 } MCT_CELL;
 
 // structure of a control stack level cell.
@@ -160,69 +163,76 @@ typedef struct mythical_mct_cell {
 //
 struct mythical_csl_cell;
 
-typedef struct mythical_csl_cell {
-  char *filename;        //filename if any
-  long rdwr;             // 0=readonly, 1=rdwr
-  long filedes;          //  file descriptor it's open on (if any)
-  char *filetext;        //  text buffer
-  long nchars;           //  characters of data we have
-  unsigned long hash;    //  hash of this data (if done)
-  MCT_CELL **mct;        //  microcompile (if compiled)
-  long nstmts;           //  how many statements in the microcompile
-  long preload_window;   //  do we preload the window or not?
-  long cstmt;            //  current executing statement of this file
-  struct mythical_csl_cell *caller;      //  pointer to this file's caller (if any)
-  long return_vht_cell;  //  index into the VHT to stick the return value
-  long calldepth;        //  how many calls deep is this stack frame
-  long aliusstk[MAX_BRACKETDEPTH]; // the status stack for ALIUS
+typedef struct mythical_csl_cell
+{
+    char          *filename;             //filename if any
+    long          rdwr;                  // 0=readonly, 1=rdwr
+    long          filedes;               //  file descriptor it's open on (if any)
+    char          *filetext;             //  text buffer
+    long          nchars;                //  characters of data we have
+    unsigned long hash;                  //  hash of this data (if done)
+    MCT_CELL      **mct;                 //  microcompile (if compiled)
+    long          nstmts;                //  how many statements in the microcompile
+    long          preload_window;        //  do we preload the window or not?
+    long          cstmt;                 //  current executing statement of this file
+    struct mythical_csl_cell *caller;    //  pointer to this file's caller (if any)
+    long return_vht_cell;                //  index into the VHT to stick the return value
+    long calldepth;                      //  how many calls deep is this stack frame
+    long aliusstk[MAX_BRACKETDEPTH];     // the status stack for ALIUS
 
-  unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
-  unsigned int filetext_allocated : 1; // if the filename was allocated on the heap.
-  unsigned int mct_allocated : 1; // if the filename was allocated on the heap.
+    unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
+    unsigned int filetext_allocated : 1; // if the filename was allocated on the heap.
+    unsigned int mct_allocated      : 1; // if the filename was allocated on the heap.
 } CSL_CELL;
 
-typedef struct {
-  unsigned long hash;
-  unsigned long key;
-  unsigned long value;
+typedef struct
+{
+    unsigned long hash;
+    unsigned long key;
+    unsigned long value;
 } FEATUREBUCKET_STRUCT;
 
 
-typedef struct {
-  unsigned char version[4];
-  unsigned long flags;
-  unsigned long skip_to;
+typedef struct
+{
+    unsigned char version[4];
+    unsigned long flags;
+    unsigned long skip_to;
 } FEATURE_HEADER_STRUCT;
 
 
-typedef struct {
-  unsigned long hash;
-  unsigned long key;
-  double value;
+typedef struct
+{
+    unsigned long hash;
+    unsigned long key;
+    double        value;
 } WINNOW_FEATUREBUCKET_STRUCT;
 
 #define ENTROPY_RESERVED_HEADER_LEN 1024
-typedef struct {
-  long firlatstart;
-  long firlatlen;
-  long nodestart;
-  long nodeslen;
-  long long totalbits;
+typedef struct
+{
+    long      firlatstart;
+    long      firlatlen;
+    long      nodestart;
+    long      nodeslen;
+    long long totalbits;
 } ENTROPY_HEADER_STRUCT;
 
-typedef struct mythical_entropy_alphabet_slot {
-  long count;
-  long nextcell;
+typedef struct mythical_entropy_alphabet_slot
+{
+    long count;
+    long nextcell;
 } ENTROPY_ALPHABET_SLOT;
 
 //  28 byte header, 24 bytes alph (52 tot).  Pare: 16 header, 16 alph (36 tot)
-typedef struct mythical_entropy_cell {
-  double fir_prior;
-  long fir_larger;
-  long fir_smaller;
-  long firlat_slot;
-  //  long total_count;
-  ENTROPY_ALPHABET_SLOT abet[ENTROPY_ALPHABET_SIZE];
+typedef struct mythical_entropy_cell
+{
+    double fir_prior;
+    long   fir_larger;
+    long   fir_smaller;
+    long   firlat_slot;
+    //  long total_count;
+    ENTROPY_ALPHABET_SLOT abet[ENTROPY_ALPHABET_SIZE];
 } ENTROPY_FEATUREBUCKET_STRUCT;
 
 
@@ -331,8 +341,8 @@ typedef struct mythical_entropy_cell {
 //     and a struct to put them in.
 typedef struct
 {
-  char * string;
-  unsigned long long value;
+    char               *string;
+    unsigned long long value;
 } FLAG_DEF;
 
 
@@ -350,17 +360,17 @@ typedef struct
 
 typedef struct
 {
-  char *stmt_name;
-  int stmt_code;
-  int namelen;
-  int is_executable;
-  int minslashes;
-  int maxslashes;
-  int minparens;
-  int maxparens;
-  int minboxes;
-  int maxboxes;
-  int flags_allowed_mask;
+    char *stmt_name;
+    int  stmt_code;
+    int  namelen;
+    int  is_executable;
+    int  minslashes;
+    int  maxslashes;
+    int  minparens;
+    int  maxparens;
+    int  minboxes;
+    int  maxboxes;
+    int  flags_allowed_mask;
 } STMT_TABLE_TYPE;
 
 
