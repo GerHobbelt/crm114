@@ -99,6 +99,7 @@
 //    files that use this standard header.
 #define STATISTICS_FILE_NCHUNKS 1024
 #define STATISTICS_FILE_IDENT_STRING_MAX 1024
+#define CLASSNAME_TAG_LENGTH 32
 
 //    do we use Sparse Binary Polynomial Hashing (sensitive to both
 //    sequence and spacing of individual words), Token Grab Bag, or
@@ -409,6 +410,8 @@
 //     Maximum number of different .CSS files in a CLASSIFY
 #define MAX_CLASSIFIERS 128
 
+//     how many classes can the library support?
+#define LIBCRM_MAX_CLASSES MAX_CLASSIFIERS
 //     Maximum length of a stored regex (ugly!  But we need a max length
 //     in the mapping.  GROT GROT GROT )
 #define MAX_REGEX 4096
@@ -417,7 +420,7 @@
 //     need a max length for easy mapping.  GROT GROT GROT )
 #define MAX_PIPECOEFFS 512
 
-#define MAX_CLASSIFIER_PARAMS 128
+#define MAX_CLASSIFIER_PARAMS 1024
 
 //     Define the type of a token.  This should be either 32-bit or
 //     64-bit.  Note that some (for now, all!) classifiers will ignore this.

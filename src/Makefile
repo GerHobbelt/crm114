@@ -27,8 +27,9 @@ CC=gcc
 #     to mess with my brain. - wsy)
 #
 CRM114_ARCHIVE = /homes/crm114/archive
-VERSION=20091209-BlameMichelson
-PREV_VERSION=20090914-BlameThorstenAndJenny
+VERSION=20100106-BlameMichelson
+PREV_VERSION=20091209-BlameMichelson
+#PREV_VERSION=20090914-BlameThorstenAndJenny
 #PREV_VERSION=20090806-LastOldSVM
 #PREV_VERSION=20090423-BlameSteveJobs
 #PREV_VERSION=20090120-BlameSteveJobs
@@ -248,6 +249,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	match_isolate_test.crm match_isolate_reclaim.crm \
 	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
 	shroud.crm quine.crm alternating_example_svm.crm \
+	alternating_example_pca.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	paolo_ov2.crm paolo_ov3.crm paolo_ov4.crm paolo_ov5.crm \
