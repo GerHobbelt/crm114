@@ -1,0 +1,881 @@
+TEST SCRIPT + COMMANDLINE:
+exectest.crm 
+
+RETURN CODE:
+0
+
+NOTE: this data is NOT valid; syscall is definitely b0rked in some weird way, so we
+      need to find out what's going wrong there first.
+      This NOTE will make sure no matter what you do, the test will always FAIL unless
+      you OVERRIDE
+
+
+STDERR TEST OUTPUT:
+ls: cannot access *.c: No such file or directory
+sh: exectest_s1.sh: command not found
+sh: ./exectest_s1.sh: No such file or directory
+ls: cannot access *.c: No such file or directory
+ls: cannot access *.c: No such file or directory
+ls: cannot access *.c: No such file or directory
+sh: ./exectest_s1.sh: No such file or directory
+ls: cannot access *.c: No such file or directory
+
+STDOUT TEST OUTPUT:
+
+ ----- executing an ls -----
+
+ ----- executing an ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing s1 script from current dir -----
+
+ ----- calculating 1 + 2 + 3 using bc -----
+
+ ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4n ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing an ls -----
+
+ ----- executing an ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing s1 script from current dir -----
+
+ ----- calculating 1 + 2 + 3 using bc -----
+
+ ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+n ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing an ls -----
+
+ ----- executing an ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing s1 script from current dir -----
+
+ ----- calculating 1 + 2 + 3 using bc -----
+
+ ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+--- got immediate : 
+n ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing an ls -----
+
+ ----- executing an ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing s1 script from current dir -----
+
+ ----- calculating 1 + 2 + 3 using bc -----
+
+ ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+n ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing an ls -----
+
+ ----- executing an ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing s1 script from current dir -----
+
+ ----- calculating 1 + 2 + 3 using bc -----
+
+ ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- s1 script: got immediate : 
+n ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing an ls -----
+
+ ----- executing an ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing s1 script from current dir -----
+
+ ----- calculating 1 + 2 + 3 using bc -----
+
+ ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+n ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing an ls -----
+
+ ----- executing an ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing s1 script from current dir -----
+
+ ----- calculating 1 + 2 + 3 using bc -----
+
+ ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+--- got immediate : 
+n ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing an ls -----
+
+ ----- executing an ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing s1 script from current dir -----
+
+ ----- calculating 1 + 2 + 3 using bc -----
+
+ ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+n ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing an ls -----
+
+ ----- executing an ls -----
+
+ ----- executing s1 script -----
+
+ ----- executing s1 script from current dir -----
+
+ ----- calculating 1 + 2 + 3 using bc -----
+
+ ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+fire and forget ls got: ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+ 
+proc = MINION PROC PID: 28121 from-pipe: 5 to-pipe: 4
+----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+fire and forget ls got: ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+ 
+proc = MINION PROC PID: 28121 from-pipe: 5 to-pipe: 4
+fire and forget s1 script for current dir got:  
+proc = MINION PROC PID: 28121 from-pipe: 5 to-pipe: 4
+----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+fire and forget ls got: ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+ 
+proc = MINION PROC PID: 28121 from-pipe: 5 to-pipe: 4
+----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+fire and forget ls got: ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+ 
+proc = MINION PROC PID: 28121 from-pipe: 5 to-pipe: 4
+fire and forget s1 script for current dir got:  
+proc = MINION PROC PID: 28121 from-pipe: 5 to-pipe: 4
+----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+fire and forget ls got: ----- executing another ls -----
+
+ ----- executing an ls -la -----
+
+ ----- outputting to a file using cat -----
+file contents:
+ This is a cat out 
+
+ ----- keeping a process around ----  
+
+ preparing... 
+ did one... MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ did it again...MINION PROC PID: 28097 from-pipe: 5 to-pipe: 4
+ and done ...DEAD MINION, EXIT CODE: 0 
+file contents:
+ .  a one 
+ .  and a two 
+ .  and a three 
+
+ ----- testing keep reads from proc -----
+ 
+ ---end-------- got this later : 
+--
+--- .1 sleep
+--- .1 sleep: got : 
+--
+--- 1 sleep
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+--- 3.0 sleep: got : 
+--
+proc = DEAD MINION, EXIT CODE: 0
+--- and finally synch/eof : 
+ 
+ ---end----- 
+ ---end-----proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- got this later : 
+--
+--- .1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- .1 sleep: got : 
+--
+--- 1 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 1.0 sleep: got : 
+--
+--- 3 sleep
+proc = MINION PROC PID: 28112 from-pipe: 5 to-pipe: 4
+--- 3.0 sleep: got : 
+--
+--- and finally synch/eof : 
+ 
+ ---end-----Testing fire-and-forget asynch 
+proc = DEAD MINION, EXIT CODE: 0
+ 
+proc = MINION PROC PID: 28121 from-pipe: 5 to-pipe: 4
+fire and forget s1 script for current dir got:  
+proc = MINION PROC PID: 28121 from-pipe: 5 to-pipe: 4
+fire and forget s1 script got:  
+proc = MINION PROC PID: 28121 from-pipe: 5 to-pipe: 4
+

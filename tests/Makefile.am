@@ -189,6 +189,7 @@ TEST_REFERENCE_FILES =                            \
         $(refdir)/beeptest.crm.refoutput \
         $(refdir)/SBPH_Markovian_test1.step1.refoutput \
         $(refdir)/statustest.crm.refoutput \
+        $(refdir)/exectest.crm.refoutput \
         $(refdir)/OSB_3_letter_Hyperspace_test1.step2.refoutput \
         $(refdir)/overalterisolatedtest.crm.refoutput \
         $(refdir)/match_isolate_reclaim.crm.refoutput \
@@ -546,6 +547,7 @@ initial_tests1:              \
 		rewritetest_test \
 		skudtest_test \
 		statustest_test \
+		exectest_test \
 		unionintersecttest_test \
 		beeptest_test \
 		defaulttest_test1 \
@@ -706,6 +708,11 @@ statustest_test: $(TEST_PREREQUISITES) statustest.crm
 	$(SILENT)\
 	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
 	./testscript.sh statustest.crm "" - "$(builddir)/statustest.filter.sh"
+
+exectest_test: $(TEST_PREREQUISITES) exectest.crm
+	$(SILENT)\
+	CRM114_CHECK_OVERRIDE=0; export CRM114_CHECK_OVERRIDE; \
+	./testscript.sh exectest.crm "" - "$(builddir)/statustest.filter.sh"
 
 unionintersecttest_test: $(TEST_PREREQUISITES) unionintersecttest.crm
 	$(SILENT)\
@@ -1329,7 +1336,7 @@ cleanup_test:
 #./tests/e2.out
 #./tests/whitelist.mfp.example
 
-clean: cleanup_test
+clean-local: cleanup_test
 
 
 

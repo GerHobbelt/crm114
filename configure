@@ -2598,7 +2598,7 @@ ISODATE=`date +%Y-%m-%d`
 
 
 
-ORIGINAL_BILLY_DISTRO_DIR="../../../1original/crm114/src/crm114.sourceforge.net/src"
+ORIGINAL_BILLY_DISTRO_DIR="/home/ger/prj/1original/crm114/src/crm114.sourceforge.net/src"
 
 cat >>confdefs.h <<_ACEOF
 #define ORIGINAL_BILLY_DISTRO_DIR "$ORIGINAL_BILLY_DISTRO_DIR"

@@ -7,26 +7,64 @@
 rm -rf diff
 mkdir diff 
 
-for f in *.[ch] megatest.sh *.crm *.mfp ; do
-	if [ -e @ORIGINAL_BILLY_DISTRO_DIR@/$f ] 
+nametemplate=`date +%Y%m%d`
+
+for f in * 
+do
+	if [ -f "@ORIGINAL_BILLY_DISTRO_DIR@/$f" ] 
 	then
-		rm -f diff/$f.`date +%Y%m%d`.normal.diff 2>&1
-		rm -f diff/$f.`date +%Y%m%d`.context.diff 2>&1
-		rm -f diff/$f.`date +%Y%m%d`.unified.diff 2>&1
-		@DIFF@ @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.normal.diff
+		rm -f "diff/$f.${nametemplate}.normal.diff" 2>&1
+		rm -f "diff/$f.${nametemplate}.context.diff" 2>&1
+		rm -f "diff/$f.${nametemplate}.unified.diff" 2>&1
+
+		@DIFF@ @DIFF_FLAGS@ \
+		  "@ORIGINAL_BILLY_DISTRO_DIR@/$f" \
+		  "$f" \
+		  -I "^[[:blank:]]*};\?[[:blank:]]*\$" \
+		  > "diff/$f.${nametemplate}.normal.diff"
+
 		# don't keep empty diffs around, that's clutter
-		if [ -s diff/$f.`date +%Y%m%d`.normal.diff ]
+		if [ -s "diff/$f.${nametemplate}.normal.diff" ]
 		then
-			@DIFF@ -c @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.context.diff
-			@DIFF@ -u @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/$f $f -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/$f.`date +%Y%m%d`.unified.diff
+			@DIFF@ -c @DIFF_FLAGS@ \
+			  "@ORIGINAL_BILLY_DISTRO_DIR@/$f" \
+			  "$f" \
+			  -I "^[[:blank:]]*};\?[[:blank:]]*\$" \
+			  > "diff/$f.${nametemplate}.context.diff"
+
+			@DIFF@ -u @DIFF_FLAGS@ \
+			  "@ORIGINAL_BILLY_DISTRO_DIR@/$f" \
+			  "$f" \
+			  -I "^[[:blank:]]*};\?[[:blank:]]*\$" \
+			  > "diff/$f.${nametemplate}.unified.diff"
 		else
-			rm -f diff/$f.`date +%Y%m%d`.normal.diff
+			rm -f "diff/$f.${nametemplate}.normal.diff"
 		fi
 	fi
 done
 
 # and produce a 'global spanning' diff
-@DIFF@ @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/ . -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/crm114.`date +%Y%m%d`.normal.diff
-@DIFF@ -c @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/ . -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/crm114.`date +%Y%m%d`.context.diff
-@DIFF@ -u @DIFF_FLAGS@ @ORIGINAL_BILLY_DISTRO_DIR@/ . -I "^[[:blank:]]*};\?[[:blank:]]*\$" > diff/crm114.`date +%Y%m%d`.unified.diff
+@DIFF@ @DIFF_FLAGS@ \
+  "@ORIGINAL_BILLY_DISTRO_DIR@/" \
+  . \
+  -I "^[[:blank:]]*};\?[[:blank:]]*\$" \
+  > "diff/crm114.${nametemplate}.normal.diff"
+
+# don't keep empty diffs around, that's clutter
+if [ -s "diff/crm114.${nametemplate}.normal.diff" ]
+then
+	@DIFF@ -c @DIFF_FLAGS@ \
+	  "@ORIGINAL_BILLY_DISTRO_DIR@/" \
+	  . \
+	  -I "^[[:blank:]]*};\?[[:blank:]]*\$" \
+	  > "diff/crm114.${nametemplate}.context.diff"
+
+	@DIFF@ -u @DIFF_FLAGS@ \
+	  "@ORIGINAL_BILLY_DISTRO_DIR@/" \
+	  . \
+	  -I "^[[:blank:]]*};\?[[:blank:]]*\$" \
+	  > "diff/crm114.${nametemplate}.unified.diff"
+else
+	rm -f "diff/crm114.${nametemplate}.normal.diff"
+fi
 

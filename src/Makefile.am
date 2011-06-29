@@ -11,7 +11,7 @@
 #    Makefile for CRM114
 #
 
-DISTCLEANFILES = 
+DISTCLEANFILES = diff/
 CLEANFILES = *.o *~ *.bak
 
 
@@ -699,10 +699,13 @@ clean-local:
 	-rm -f crm114_gnu
 	-rm -f crm114_tre
 	-rm -f *.o
+	-rm -rf diff/
 	$(E) "   if the next line doesn't work in your version of make,"
 	$(E) "    don't worry.  It just means you have TRE in another place."
 	$(E) "    You can cd to the TRE directory and 'make clean' manually"
 	-( [ "$(TRE_TARFILE)" ] && cd $(TRE_TARFILE) && make clean )
+
+
 
 
 install-exec-local: install_engine install_utils

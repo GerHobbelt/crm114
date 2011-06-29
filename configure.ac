@@ -82,7 +82,7 @@ Copyright (C) Copyright 2001-2008  William S. Yerazunis
 ])
 
 
-ORIGINAL_BILLY_DISTRO_DIR="../../../1original/crm114/src/crm114.sourceforge.net/src"
+ORIGINAL_BILLY_DISTRO_DIR="/home/ger/prj/1original/crm114/src/crm114.sourceforge.net/src"
 AC_DEFINE_UNQUOTED(ORIGINAL_BILLY_DISTRO_DIR, "$ORIGINAL_BILLY_DISTRO_DIR", [directory where BillY's original crm114 distro resides])
 AC_SUBST(ORIGINAL_BILLY_DISTRO_DIR)
 

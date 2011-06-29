@@ -215,7 +215,12 @@ diff:
 	$(SILENT) echo "Creating diff archives"; 
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) diff);
 	
-dist-diff: diff	
+
+# Note: the COPYING+ChangeLog in there is just to make sure the dist-diff
+#       archivers have something to archive; if not, they'll fail in 'make distcheck' at least.
+#       And not everyone has the same setup as me, so @ORIGINAL_BILLY_DISTRO_DIR@
+#       may point at a bogus directory for them!
+dist-diff: diff	COPYING ChangeLog
 	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.7z
 	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.gz
 	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
@@ -230,30 +235,30 @@ dist-diff: diff
 	-rm -f $(ARCHIVE_BASE_NAME).context.diff.zip
 if OS_HAS_TAR
 if OS_HAS_GZIP
-	$(TAR_BIN) -c src/diff/*.unified.* | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.gz
-	$(TAR_BIN) -c src/diff/*.normal.* | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.gz
-	$(TAR_BIN) -c src/diff/*.context.* | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.gz
+	$(TAR_BIN) -c src/diff/*.unified.* COPYING ChangeLog | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.gz
+	$(TAR_BIN) -c src/diff/*.normal.* COPYING ChangeLog | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.gz
+	$(TAR_BIN) -c src/diff/*.context.* COPYING ChangeLog | GZIP=$(GZIP_ENV) $(GZIP_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.gz
 endif
 if OS_HAS_BZIP2
-	$(TAR_BIN) -c src/diff/*.unified.* | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
-	$(TAR_BIN) -c src/diff/*.normal.* | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.bz2
-	$(TAR_BIN) -c src/diff/*.context.* | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).context.diff.tar.bz2
+	$(TAR_BIN) -c src/diff/*.unified.* COPYING ChangeLog | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
+	$(TAR_BIN) -c src/diff/*.normal.* COPYING ChangeLog | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.bz2
+	$(TAR_BIN) -c src/diff/*.context.* COPYING ChangeLog | $(BZIP2_BIN) -9 -c >$(ARCHIVE_BASE_NAME).context.diff.tar.bz2
 endif
 if OS_HAS_COMPRESS
-	$(TAR_BIN) -c src/diff/*.unified.* | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.Z
-	$(TAR_BIN) -c src/diff/*.normal.* | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.Z
-	$(TAR_BIN) -c src/diff/*.context.* | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.Z
+	$(TAR_BIN) -c src/diff/*.unified.* COPYING ChangeLog | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).unified.diff.tar.Z
+	$(TAR_BIN) -c src/diff/*.normal.* COPYING ChangeLog | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).normal.diff.tar.Z
+	$(TAR_BIN) -c src/diff/*.context.* COPYING ChangeLog | $(COMPRESS_BIN) -c >$(ARCHIVE_BASE_NAME).context.diff.tar.Z
 endif
 endif
 if OS_HAS_SEVENZIP
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).unified.diff.7z src/diff/*.unified.* 
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).normal.diff.7z src/diff/*.normal.* 
-	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).context.diff.7z src/diff/*.context.* 
+	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).unified.diff.7z src/diff/*.unified.* COPYING ChangeLog
+	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).normal.diff.7z src/diff/*.normal.* COPYING ChangeLog
+	$(SEVENZIP_BIN) $(SEVENZIP_OPTIONS) $(ARCHIVE_BASE_NAME).context.diff.7z src/diff/*.context.* COPYING ChangeLog
 endif
 if OS_HAS_ZIP
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).unified.diff.zip src/diff/*.unified.* 
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).normal.diff.zip src/diff/*.normal.* 
-	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).context.diff.zip src/diff/*.context.* 
+	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).unified.diff.zip src/diff/*.unified.* COPYING ChangeLog
+	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).normal.diff.zip src/diff/*.normal.* COPYING ChangeLog
+	$(ZIP_BIN) -rq $(ARCHIVE_BASE_NAME).context.diff.zip src/diff/*.context.* COPYING ChangeLog
 endif
 
 	
@@ -354,6 +359,9 @@ endif
 	
 
 
+clean-local:
+	-rm -f $(distdir).*
+	-rm -f $(ARCHIVE_BASE_NAME).*
 
 
 
@@ -361,12 +369,6 @@ distcheck-hook:
 	$(E) "   ************************************"
 	$(E) "   distcheck-hook!"
 	$(E) "   ************************************"
-
-#distcheck-local:
-#	-echo "distcheck-local!"
-# -- doesn't work as advertized in the manual :-(
-
-
 
 
 

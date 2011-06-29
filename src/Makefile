@@ -266,7 +266,7 @@ MAINT =
 MAKEINFO = ${SHELL} /windows/G/prj/3actual/crm114/m4/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
-ORIGINAL_BILLY_DISTRO_DIR = ../../../1original/crm114/src/crm114.sourceforge.net/src
+ORIGINAL_BILLY_DISTRO_DIR = /home/ger/prj/1original/crm114/src/crm114.sourceforge.net/src
 PACKAGE = crm114
 PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
 PACKAGE_NAME = CRM114
@@ -277,7 +277,7 @@ PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 2249
+REVISION = 2250
 SED = /usr/bin/sed
 SET_MAKE = 
 SEVEN_ZIP = /usr/bin/7z
@@ -286,7 +286,7 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-2249
+TAR_FILENAME_POSTFIX = Ger-2250
 TRE_CONFIG = no
 UNCRUSTIFY = /usr/local/bin/uncrustify
 VERSION = 20080326-BlameSentansoken
@@ -348,7 +348,7 @@ target_alias =
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-DISTCLEANFILES = 
+DISTCLEANFILES = diff/
 CLEANFILES = *.o *~ *.bak
 GZIP_BIN = /usr/bin/gzip
 COMPRESS_BIN = 
@@ -363,7 +363,7 @@ UNCRUSTIFY_BIN = /usr/local/bin/uncrustify
 DIFF_BIN = /usr/bin/diff
 HTMLTIDY_BIN = /usr/bin/tidy
 TAR_CMDLINE = ${TAR_BIN} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20080326-BlameSentansoken-Ger-2249
+ARCHIVE_BASE_NAME = crm114-20080326-BlameSentansoken-Ger-2250
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #
@@ -1396,6 +1396,7 @@ clean-local:
 	-rm -f crm114_gnu
 	-rm -f crm114_tre
 	-rm -f *.o
+	-rm -rf diff/
 	$(E) "   if the next line doesn't work in your version of make,"
 	$(E) "    don't worry.  It just means you have TRE in another place."
 	$(E) "    You can cd to the TRE directory and 'make clean' manually"
