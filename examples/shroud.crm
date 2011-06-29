@@ -1,4 +1,4 @@
-#! ${exec_prefix}/bin/crm114
+#! /usr/local/bin/crm114
 {
         {
                 match   < fromend >  ( :word: )   /[[:graph:]]+/

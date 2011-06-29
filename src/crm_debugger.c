@@ -1961,7 +1961,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
                             inside_debugger = 0;                     // signal the other code section we're now LEAVING the debugger!
 
-						    crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 1, "");
+                            crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 1, "");
                             return -1;
                         }
                         dbg_exec_nestlevel = current_crm_command->nest_level;
@@ -2007,6 +2007,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         if (crm_nextword(dbg_arg, (int)strlen(dbg_arg), 0,
                                     &tstart, &tlen))
                         {
+                            tlen = CRM_MIN(tlen, WIDTHOF(dbg_inbuf) - 1);
                             memmove(dbg_inbuf, &dbg_arg[tstart], tlen);
                             dbg_inbuf[tlen] = 0;
                             vindex = crm_vht_lookup(vht, dbg_inbuf, tlen);
@@ -2100,6 +2101,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                     if (crm_nextword(dbg_arg, (int)strlen(dbg_arg), 0,
                                 &vstart, &vlen))
                     {
+                        vlen = CRM_MIN(vlen, WIDTHOF(dbg_inbuf) - 1);
                         memmove(dbg_inbuf, &dbg_arg[vstart], vlen);
                         dbg_inbuf[vlen] = 0;
                         vindex = crm_vht_lookup(vht, dbg_inbuf, vlen);
@@ -2128,7 +2130,6 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
                         memmove(dbg_outbuf,
                                 &dbg_inbuf[ostart],
                                 oend - ostart);
-
                         dbg_outbuf[oend - ostart] = 0;
                         olen = crm_nexpandvar(dbg_outbuf, oend - ostart, dbg_iobuf_size, vht, tdw);
                         crm_destructive_alter_nvariable(dbg_inbuf, vlen, dbg_outbuf, olen);
@@ -2168,7 +2169,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
                 inside_debugger = 0;                 // signal the other code section we're now LEAVING the debugger!
 
-			    crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 2, "");
+                crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 2, "");
                 return -1;
             }
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
@@ -2204,7 +2205,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
 
                 inside_debugger = 0;                 // signal the other code section we're now LEAVING the debugger!
 
-			    crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 3, "");
+                crm_analysis_mark(&analysis_cfg, MARK_DEBUG_INTERACTION, 3, "");
                 return -1;
             }
             dbg_exec_nestlevel = current_crm_command->nest_level;
@@ -2438,7 +2439,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call, const ch
             int len = (int)strspn(dbg_inbuf + cmd_done_len, "; \t\r\n");
 
             cmd_done_len += len;
-            memmove(dbg_inbuf, dbg_inbuf + cmd_done_len, strlen(dbg_inbuf + cmd_done_len) + 1);
+            len = CRM_MIN(strlen(dbg_inbuf + cmd_done_len), WIDTHOF(dbg_inbuf) - 1);
+            memmove(dbg_inbuf, dbg_inbuf + cmd_done_len, strlen(dbg_inbuf + cmd_done_len));
+            dbg_inbuf[len] = 0;
         }
     }
 

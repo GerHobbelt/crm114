@@ -1,6 +1,9 @@
 #! /usr/local/bin/crm114
 #
 # can we handle an indirect isolate to a variable without the proper :: delimiters? We should report an error on this one.
+#
+# UPDATE 20081003: now GerH builds are even more strict and will error on illegal variables like that!
+#
 {
 	{
 		window 

@@ -119,7 +119,7 @@ char *tempbuf = NULL;
 
 
 #if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
-CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = {0};
+CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = { 0 };
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
 
@@ -221,9 +221,9 @@ static void crm_final_cleanup(void)
     free_regex_cache();
     cleanup_expandvar_allocations();
 
-    free(newinputbuf);
+	free(newinputbuf);
     newinputbuf = NULL;
-    free(inbuf);
+	free(inbuf);
     inbuf = NULL;
     free(outbuf);
     outbuf = NULL;
@@ -255,7 +255,7 @@ int main(int argc, char **argv)
     char *stdout_filename = "stdout (default)";
     char *stderr_filename = "stderr (default)";
 
-	char *profile_argset = NULL;
+    char *profile_argset = NULL;
 
     init_stdin_out_err_as_os_handles();
 #if 0
@@ -398,16 +398,16 @@ int main(int argc, char **argv)
     //internal_trace = 1;
 
 #if 01
-	profile_argset = getenv("CRM114_PROFILING");
-	if (profile_argset && profile_argset[0])
-	{
-		i = crm_init_analysis(&analysis_cfg, profile_argset, -1);
-		if (i)
-		{
-			untrappableerror_ex(SRC_LOC(), "Failed to init analysis code using env.var. CRM114_PROFILING settings: '%s': error code %d. Urck!",
-				profile_argset, i);
-		}
-	}
+    profile_argset = getenv("CRM114_PROFILING");
+    if (profile_argset && profile_argset[0])
+    {
+        i = crm_init_analysis(&analysis_cfg, profile_argset, -1);
+        if (i)
+        {
+            untrappableerror_ex(SRC_LOC(), "Failed to init analysis code using env.var. CRM114_PROFILING settings: '%s': error code %d. Urck!",
+                    profile_argset, i);
+        }
+    }
 #endif
 
 
@@ -420,10 +420,11 @@ int main(int argc, char **argv)
             || (strncmp(argv[i], "-h", 2) == 0)
             || (argc == 1))
         {
-            fprintf(stderr, " CRM114 version %s, rev %s (regex engine: %s)\n ",
+            fprintf(stderr, " CRM114 version %s, rev %s (regex engine: %s) (OS: %s)\n",
                     VERSION,
                     REVISION,
-                    crm_regversion());
+                    crm_regversion(),
+                    HOSTTYPE);
             fprintf(stderr, " Copyright 2001-2008 William S. Yerazunis\n");
             fprintf(stderr, " This software is licensed under the GPL "
                             "with ABSOLUTELY NO WARRANTY\n");
@@ -1373,7 +1374,11 @@ end_command_line_parse_loop:
     {
         if (argc <= 1)
         {
-            fprintf(stderr, "CRM114 version %s\n", VERSION);
+            fprintf(stderr, "CRM114 version %s, rev %s (regex engine: %s) (OS: %s)\n",
+                    VERSION,
+                    REVISION,
+                    crm_regversion(),
+                    HOSTTYPE);
             fprintf(stderr, "Try 'crm <progname>', or 'crm -h' for help\n");
             if (engine_exit_base != 0)
             {
@@ -1492,17 +1497,17 @@ end_command_line_parse_loop:
     //  let's get some data in.
 
     //    and preload the data window with stdin until we hit EOF
-    i = 0;
+	i = 0;
     if (csl->preload_window)
     {
         //     GROT GROT GROT  This is slow
         //
         //while (!feof (stdin) && i < data_window_size - 1)
-        //        {
-        //          cdw->filetext[i] = fgetc (stdin);
-        //          i++;
-        //        }
-        //i-- ;  //     get rid of the extra ++ on i from the loop; this is the
+        //{
+        //  cdw->filetext[i] = fgetc(stdin);
+        //  i++;
+        //}
+        //i--;  //    get rid of the extra ++ on i from the loop; this is the
         //            EOF "character" which prints like an umlauted-Y.
         //
         //
@@ -1510,24 +1515,26 @@ end_command_line_parse_loop:
         //
         //      i = fread (cdw->filetext, 1, data_window_size - 1, stdin);
         //
-        //          JesusFreke suggests this instead- retry with successively
-        //          smaller readsizes on systems that can't handle full
-        //          POSIX-style massive block transfers.
-        int readsize = data_window_size - 1;
+        //         JesusFreke suggests this instead- retry with successively
+        //         smaller readsizes on systems that can't handle full
+        //         POSIX-style massive block transfers.
+        size_t readsize = data_window_size - 1;
+		size_t targetsize = data_window_size - 1;
+		size_t offset;
+
 #if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
         readsize = CRM_MIN(16384, readsize);   // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
 #endif
-        while (!feof(stdin) && i < data_window_size - 1)
+        for (offset = 0; !feof(stdin) && offset < targetsize; )
         {
             //i += fread (cdw->filetext + i, 1, readsize-1, stdin);
-            int rs;
-            rs = i + readsize < data_window_size - 1 ?
-                 readsize : data_window_size - i - 1;
-            i += (int)fread(cdw->filetext + i, 1, rs, stdin);
-            if (feof(stdin))
-            {
-                break;
-            }
+            size_t rs;
+			size_t rr;
+
+            rs = offset + readsize < targetsize 
+					? readsize 
+					: targetsize - offset;
+            rr = fread(cdw->filetext + offset, 1, rs, stdin);
             if (ferror(stdin))
             {
                 if (errno == ENOMEM && readsize > 1) //  insufficient memory?
@@ -1543,7 +1550,9 @@ end_command_line_parse_loop:
                     break;
                 }
             }
+			offset += rr;
         }
+		i = offset;
     }
 
     //   data window is now preloaded (we hope), set the cdwo up.

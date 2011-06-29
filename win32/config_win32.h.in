@@ -669,11 +669,11 @@
 #define MACHINE_IS_LITTLE_ENDIAN 1
 
 /* Define to 1 if `major', `minor', and `makedev' are declared in <mkdev.h>.
-   */
+ */
 /* #undef MAJOR_IN_MKDEV */
 
 /* Define to 1 if `major', `minor', and `makedev' are declared in
-   <sysmacros.h>. */
+ * <sysmacros.h>. */
 /* #undef MAJOR_IN_SYSMACROS */
 
 /* directory where BillY's original crm114 distro resides */

@@ -29,8 +29,8 @@
 //     Dispatch a LEARN statement
 //
 int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-				   		VHT_CELL **vht,
-		CSL_CELL *tdw)
+        VHT_CELL **vht,
+        CSL_CELL *tdw)
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
@@ -136,7 +136,7 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
     else if (classifier_flags & CRM_FSCM)
     {
-      retval = crm_fast_substring_learn(csl, apb, vht, tdw, txt, start, len);
+        retval = crm_fast_substring_learn(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -181,10 +181,10 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 //      Dispatch a CLASSIFY statement
 //
-int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,		
-		VHT_CELL **vht,
-		CSL_CELL *tdw
-)
+int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        VHT_CELL **vht,
+        CSL_CELL *tdw
+                     )
 {
     char box_text[MAX_PATTERN];
     char errstr[MAX_PATTERN];
@@ -282,7 +282,7 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
     else if (classifier_flags & CRM_FSCM)
     {
-      retval = crm_fast_substring_classify (csl, apb, vht, tdw, txt, start, len);
+        retval = crm_fast_substring_classify(csl, apb, vht, tdw, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -318,7 +318,7 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         retval = crm_expr_markov_classify(csl, apb, vht, tdw, txt, start, len);
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 5, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 5, "L", (unsigned long long int)classifier_flags);
 
     return retval;
 }
@@ -433,7 +433,7 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_merge(csl, apb, txt, start, len);
     }
-     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
         retval = crm_expr_alt_osb_bayes_css_merge(csl, apb, txt, start, len);
     }
@@ -457,13 +457,13 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_expr_markov_css_merge(csl, apb, txt, start, len);
     }
-   else
+    else
     {
         apb->sflags |= CRM_AUTODETECT;
         retval = crm_expr_markov_css_merge(csl, apb, txt, start, len);
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 7, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 7, "L", (unsigned long long int)classifier_flags);
 
     return retval;
 }
@@ -538,7 +538,7 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 8, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 8, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -580,7 +580,7 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_diff(csl, apb, txt, start, len);
     }
-     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
         retval = crm_expr_alt_osb_bayes_css_diff(csl, apb, txt, start, len);
     }
@@ -610,7 +610,7 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         retval = crm_expr_markov_css_diff(csl, apb, txt, start, len);
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 9, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 9, "L", (unsigned long long int)classifier_flags);
 
     return retval;
 }
@@ -683,7 +683,7 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 10, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 10, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -725,7 +725,7 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_backup(csl, apb, txt, start, len);
     }
-     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
         retval = crm_expr_alt_osb_bayes_css_backup(csl, apb, txt, start, len);
     }
@@ -755,7 +755,7 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         retval = crm_expr_markov_css_backup(csl, apb, txt, start, len);
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 11, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 11, "L", (unsigned long long int)classifier_flags);
 
     return retval;
 }
@@ -827,7 +827,7 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 12, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 12, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -869,7 +869,7 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_restore(csl, apb, txt, start, len);
     }
-     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
         retval = crm_expr_alt_osb_bayes_css_restore(csl, apb, txt, start, len);
     }
@@ -899,7 +899,7 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         retval = crm_expr_markov_css_restore(csl, apb, txt, start, len);
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 13, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 13, "L", (unsigned long long int)classifier_flags);
 
     return retval;
 }
@@ -972,7 +972,7 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 14, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 14, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -1014,7 +1014,7 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_info(csl, apb, txt, start, len);
     }
-     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
         retval = crm_expr_alt_osb_bayes_css_info(csl, apb, txt, start, len);
     }
@@ -1045,7 +1045,7 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         retval = crm_expr_markov_css_info(csl, apb, txt, start, len);
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 15, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 15, "L", (unsigned long long int)classifier_flags);
 
     return retval;
 }
@@ -1118,7 +1118,7 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 16, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 16, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -1160,7 +1160,7 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_analyze(csl, apb, txt, start, len);
     }
-     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
         retval = crm_expr_alt_osb_bayes_css_analyze(csl, apb, txt, start, len);
     }
@@ -1191,7 +1191,7 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         retval = crm_expr_markov_css_analyze(csl, apb, txt, start, len);
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 17, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 17, "L", (unsigned long long int)classifier_flags);
 
     return retval;
 }
@@ -1265,7 +1265,7 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         | CRM_NEURAL_NET);
 
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 18, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 18, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -1307,7 +1307,7 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_create(csl, apb, txt, start, len);
     }
-     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
         retval = crm_expr_alt_osb_bayes_css_create(csl, apb, txt, start, len);
     }
@@ -1338,7 +1338,7 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         retval = crm_expr_markov_css_create(csl, apb, txt, start, len);
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 19, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 19, "L", (unsigned long long int)classifier_flags);
 
     return retval;
 }
@@ -1412,7 +1412,7 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
                         | CRM_NEURAL_NET);
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 20, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 20, "L", (unsigned long long int)classifier_flags);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -1454,7 +1454,7 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         retval = crm_neural_net_css_migrate(csl, apb, txt, start, len);
     }
-     else if (classifier_flags & CRM_ALT_OSB_BAYES)
+    else if (classifier_flags & CRM_ALT_OSB_BAYES)
     {
         retval = crm_expr_alt_osb_bayes_css_migrate(csl, apb, txt, start, len);
     }
@@ -1485,7 +1485,7 @@ int crm_expr_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         retval = crm_expr_markov_css_migrate(csl, apb, txt, start, len);
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 21, "L", (unsigned long long int)classifier_flags);
+    crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 21, "L", (unsigned long long int)classifier_flags);
 
     return retval;
 }

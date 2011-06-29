@@ -266,7 +266,10 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                 if (sp > 0)
                 {
                     sp--;
-                    if (stack[sp] == stack[sp + 1])
+                    /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
+                    if ((stack[sp] <= stack[sp + 1] + FLT_EPSILON)
+                        || (stack[sp] >= stack[sp + 1] - FLT_EPSILON))
+                    /* if (stack[sp] == stack[sp + 1]) */
                     {
                         if (retstat)
                             *retstat = 0;
@@ -289,7 +292,10 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                 {
                     ip++; // gobble up the equals sign
                     sp--;
-                    if (stack[sp] != stack[sp + 1])
+                    /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
+                    if ((stack[sp] > stack[sp + 1] + FLT_EPSILON)
+                        || (stack[sp] < stack[sp + 1] - FLT_EPSILON))
+                    /* if (stack[sp] != stack[sp + 1]) */
                     {
                         if (retstat)
                             *retstat = 0;
@@ -422,14 +428,30 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                         if (((int)stack[sp + 1]) <= stack[sp + 1] + FLT_EPSILON
                             && ((int)stack[sp + 1]) >= stack[sp + 1] - FLT_EPSILON)
                         {
-                            snprintf(outformat, WIDTHOF(outformat), "%%%.0gll%c",
-                                    stack[sp + 1], (short)buf[ip]);
+                            snprintf(outformat, WIDTHOF(outformat), "%%%.0g%s%c",
+                                    stack[sp + 1],
+#if defined (_MSC_VER)
+                                    "I64",
+#elif defined (HAVE_LONG_LONG_INT) && (SIZEOF_LONG_INT < 8)
+                                    "ll",
+#else
+                                    "l",
+#endif
+                                    (short)buf[ip]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                         else
                         {
-                            snprintf(outformat, WIDTHOF(outformat), "%%0%.0gll%c",
-                                    stack[sp + 1], (short)buf[ip]);
+                            snprintf(outformat, WIDTHOF(outformat), "%%0%.0g%s%c",
+                                    stack[sp + 1],
+#if defined (_MSC_VER)
+                                    "I64",
+#elif defined (HAVE_LONG_LONG_INT) && (SIZEOF_LONG_INT < 8)
+                                    "ll",
+#else
+                                    "l",
+#endif
+                                    (short)buf[ip]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                     }
@@ -463,8 +485,16 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                     }
                     else
                     {
+#if defined (_MSC_VER)
                         int64_t intpart;
                         intpart = (int64_t)stack[sp];
+#elif defined (HAVE_LONG_LONG_INT) && (SIZEOF_LONG_INT < 8)
+                        long long int intpart;
+                        intpart = (long long int)stack[sp];
+#else
+                        long int intpart;
+                        intpart = (long int)stack[sp];
+#endif
                         snprintf(tempstring, WIDTHOF(tempstring), outformat, intpart);
                         tempstring[WIDTHOF(tempstring) - 1] = 0;
                         if (internal_trace)

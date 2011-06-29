@@ -54,9 +54,9 @@ static const int hctable[] =
 //    How to learn Markovian style.
 //
 int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //     learn the sparse spectrum of this input window as
     //     belonging to a particular type.
@@ -79,7 +79,7 @@ VHT_CELL **vht,
     FEATUREBUCKET_TYPE *hashes; //  the text of the hash file
     crmhash_t hashpipe[MARKOVIAN_WINDOW_LEN + 1];
     //
-    regex_t regcb;
+	regex_t regcb = {0};
     regmatch_t match[5];    //  we only care about the outermost match
     int textoffset;
     int textmaxoffset;
@@ -176,7 +176,7 @@ VHT_CELL **vht,
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
-    learnfilename = strdup(&htext[i]);
+    learnfilename = &htext[i];
     if (!learnfilename)
     {
         untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -204,7 +204,6 @@ VHT_CELL **vht,
                     learnfilename,
                     errno,
                     errno_descr(errno));
-            free(learnfilename);
             return fev;
         }
         //       do we have a user-specified file size?
@@ -223,7 +222,6 @@ VHT_CELL **vht,
                     "\n Couldn't write header to file %s; errno=%d(%s)\n",
                     learnfilename, errno, errno_descr(errno));
             fclose(f);
-            free(learnfilename);
             return fev;
         }
 
@@ -235,7 +233,6 @@ VHT_CELL **vht,
                     "\n Couldn't write to file %s; errno=%d(%s)\n",
                     learnfilename, errno, errno_descr(errno));
             fclose(f);
-            free(learnfilename);
             return fev;
         }
 
@@ -262,7 +259,6 @@ VHT_CELL **vht,
     {
         fev = fatalerror("Couldn't get access to the statistics file named: ",
                 learnfilename);
-        free(learnfilename);
         return fev;
     }
 
@@ -447,7 +443,6 @@ VHT_CELL **vht,
         int q;
         q = fatalerror(" Attempt to LEARN from a nonexistent variable ",
                 ltext);
-        free(learnfilename);
         return q;
     }
     mdw = NULL;
@@ -459,7 +454,6 @@ VHT_CELL **vht,
     {
         int q;
         q = fatalerror(" Bogus text block containing variable ", ltext);
-        free(learnfilename);
         return q;
     }
     textoffset = vht[vhtindex]->vstart;
@@ -844,10 +838,6 @@ VHT_CELL **vht,
 
 learn_end_regex_loop:
 
-    //     free up the pattern buffer:
-    if (ptext[0] != 0)
-        crm_regfree(&regcb);
-
 regcomp_failed:
 
     //  and remember to let go of all the mmaps (full flush)
@@ -858,6 +848,9 @@ regcomp_failed:
     if (seen_features)
         free(seen_features);
     seen_features = NULL;
+
+    //     free up the pattern buffer:
+        crm_regfree(&regcb);
 
 #if 0  /* now touch-fixed inside the munmap call already! */
 #if defined (HAVE_MMAP) || defined (HAVE_MUNMAP)
@@ -872,7 +865,6 @@ regcomp_failed:
 #endif
 #endif
 
-    free(learnfilename);
     return 0;
 }
 
@@ -881,9 +873,9 @@ regcomp_failed:
 //      How to Markovian CLASSIFY some text.
 //
 int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -919,7 +911,7 @@ VHT_CELL **vht,
     struct stat statbuf;    //  for statting the hash file
                             //  longest association set in the hashing
     crmhash_t hashpipe[MARKOVIAN_WINDOW_LEN + 1];
-    regex_t regcb;
+	regex_t regcb = {0};
     regmatch_t match[5];    //  we only care about the outermost match
 
     unsigned int fcounts[MAX_CLASSIFIERS]; // total counts for feature normalize
@@ -1312,7 +1304,7 @@ VHT_CELL **vht,
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
-                      "for classify().\n", "Hope you know what are you doing.");
+                             "for classify().\n", "Hope you know what are you doing.");
     }
 
     {
@@ -1508,7 +1500,7 @@ VHT_CELL **vht,
             }
 
             //   account for the text we used up...
-        textoffset += match[0].rm_eo;
+            textoffset += match[0].rm_eo;
             i++;
 
             //        is the pipe full enough to do the hashing?
@@ -1994,9 +1986,9 @@ VHT_CELL **vht,
                             {
                                 //
                                 l = hashes[k][lh].value * feature_weight;
-                            totalhits[k] += l;                             // remember totalhits  /* [i_a] compare this code with elsewhere; here totalhits is counted different; should it be double type??? */
-                                hits[k] = l * cpcorr[k];         // remember corr. hits
-                        htf += hits[k];                         // and hits-this-feature
+                                totalhits[k] += l;                         // remember totalhits  /* [i_a] compare this code with elsewhere; here totalhits is counted different; should it be double type??? */
+                                hits[k] = l * cpcorr[k];                   // remember corr. hits
+                                htf += hits[k];                            // and hits-this-feature
                                 if (unique_mode)
                                 {
                                     if (seen_features[k][lh] > 0)
@@ -2233,9 +2225,9 @@ classify_end_regex_loop:
         //
         tprob = 0.0;
         for (k = 0; k < succhash; k++)
-    {
-        tprob += ptc[k];
-    }
+        {
+            tprob += ptc[k];
+        }
         //
         //      Do the calculations and format some output, which we may or may
         //      not use... but we need the calculated result anyway.
@@ -2243,13 +2235,13 @@ classify_end_regex_loop:
 
         if (1 /* svlen > 0 */)
         {
-        // char buf[1024];
+            // char buf[1024];
             double accumulator;
             double remainder;
             double overall_pR;
             int m;
 
-        // buf[0] = 0;
+            // buf[0] = 0;
             accumulator = 10 * DBL_MIN;
             for (m = 0; m < succhash; m++)
             {
@@ -2258,7 +2250,7 @@ classify_end_regex_loop:
             remainder = 10 * DBL_MIN;
             for (m = succhash; m < maxhash; m++)
             {
-                    remainder += ptc[m];
+                remainder += ptc[m];
             }
             overall_pR = log10(accumulator) - log10(remainder);
 
@@ -2266,17 +2258,17 @@ classify_end_regex_loop:
             //  There would be a possible buffer overflow except that _we_ control
             //   what gets written here.  So it's no biggie.
 
-        if (tprob > 0.5)
-        {
-            snprintf(stext_ptr, stext_maxlen, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
-        }
-        else
-        {
-            snprintf(stext_ptr, stext_maxlen, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
-        }
-		stext_ptr[stext_maxlen - 1] = 0;
-		stext_maxlen -= (int)strlen(stext_ptr);
-		stext_ptr += strlen(stext_ptr);
+            if (tprob > 0.5)
+            {
+                snprintf(stext_ptr, stext_maxlen, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            }
+            else
+            {
+                snprintf(stext_ptr, stext_maxlen, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
+            }
+            stext_ptr[stext_maxlen - 1] = 0;
+            stext_maxlen -= (int)strlen(stext_ptr);
+            stext_ptr += strlen(stext_ptr);
 
             //   find best single matching file
             //
@@ -2284,9 +2276,9 @@ classify_end_regex_loop:
             for (k = 0; k < maxhash; k++)
             {
                 if (ptc[k] > ptc[bestseen])
-				{
+                {
                     bestseen = k;
-				}
+                }
             }
 
             remainder = 10 * DBL_MIN;
@@ -2303,19 +2295,19 @@ classify_end_regex_loop:
             if (bestseen < maxhash)
             {
                 snprintf(stext_ptr, stext_maxlen, "Best match to file #%d (%s) "
-                                            "prob: %6.4f  pR: %6.4f  \n",
+                                                  "prob: %6.4f  pR: %6.4f  \n",
                         bestseen,
                         hashname[bestseen],
                         ptc[bestseen],
                         (log10(ptc[bestseen]) - log10(remainder)));
-		stext_ptr[stext_maxlen - 1] = 0;
-		stext_maxlen -= (int)strlen(stext_ptr);
-		stext_ptr += strlen(stext_ptr);
+                stext_ptr[stext_maxlen - 1] = 0;
+                stext_maxlen -= (int)strlen(stext_ptr);
+                stext_ptr += strlen(stext_ptr);
             }
             snprintf(stext_ptr, stext_maxlen, "Total features in input file: %d\n", totalfeatures);
-		stext_ptr[stext_maxlen - 1] = 0;
-		stext_maxlen -= (int)strlen(stext_ptr);
-		stext_ptr += strlen(stext_ptr);
+            stext_ptr[stext_maxlen - 1] = 0;
+            stext_maxlen -= (int)strlen(stext_ptr);
+            stext_ptr += strlen(stext_ptr);
 
             //     Now do the per-file breakdowns:
             //
@@ -2332,7 +2324,7 @@ classify_end_regex_loop:
                 }
                 CRM_ASSERT(k >= 0);
                 CRM_ASSERT(k < maxhash);
-                snprintf(stext_ptr, stext_maxlen, 
+                snprintf(stext_ptr, stext_maxlen,
                         "#%d (%s):"
                         " features: %d, hits: %d, prob: %3.2e, pR: %6.2f\n",
                         k,
@@ -2341,46 +2333,45 @@ classify_end_regex_loop:
                         (int)totalhits[k],
                         ptc[k],
                         (log10(ptc[k]) - log10(remainder)));
-		stext_ptr[stext_maxlen - 1] = 0;
-		stext_maxlen -= (int)strlen(stext_ptr);
-		stext_ptr += strlen(stext_ptr);
+                stext_ptr[stext_maxlen - 1] = 0;
+                stext_maxlen -= (int)strlen(stext_ptr);
+                stext_ptr += strlen(stext_ptr);
             }
         }
-            // check here if we got enough room in stext to stuff everything
-            // perhaps we'd better rise a nonfatalerror, instead of just
-            // whining on stderr
+        // check here if we got enough room in stext to stuff everything
+        // perhaps we'd better rise a nonfatalerror, instead of just
+        // whining on stderr
         if (stext_maxlen <= 1)
-            {
-                nonfatalerror("WARNING: not enough room in the buffer to create "
-                              "the statistics text.  Perhaps you could try bigger "
-                              "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-                        " ");
-            }
-            if (svlen > 0)
-            {
-                crm_destructive_alter_nvariable(svrbl, svlen,
-                        stext, (int)strlen(stext));
-    }
+        {
+            nonfatalerror("WARNING: not enough room in the buffer to create "
+                          "the statistics text.  Perhaps you could try bigger "
+                          "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+                    " ");
+        }
+        if (svlen > 0)
+        {
+            crm_destructive_alter_nvariable(svrbl, svlen,
+                    stext, (int)strlen(stext));
+        }
 
 
-    //  cleanup time!
-    //  remember to let go of the fd's and mmaps
-    for (k = 0; k < maxhash; k++)
-    {
-        //      close (hfds [k]);
-        crm_munmap_file((void *)hashes[k]);
-    }
-    //  and let go of the regex buffery
-    if (ptext[0] != 0)
-        crm_regfree(&regcb);
+        //  cleanup time!
+        //  remember to let go of the fd's and mmaps
+        for (k = 0; k < maxhash; k++)
+        {
+            //      close (hfds [k]);
+            crm_munmap_file((void *)hashes[k]);
+        }
+        //  and let go of the regex buffery
+            crm_regfree(&regcb);
 
         //
         //  Free the hashnames, to avoid a memory leak.
         //
         for (i = 0; i < maxhash; i++)
-    {
+        {
             free(hashname[i]);
-	}
+        }
         if (tprob <= 0.5)
         {
             if (user_trace)

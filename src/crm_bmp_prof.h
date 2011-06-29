@@ -555,181 +555,181 @@ int check_validity_of_expression(int lineno, const char *srcfile, const char *fu
 
 
 /*
-====================================================================
-
-Abstract Base Classes: basic hierarchy
-
-====================================================================
-*/
+ * ====================================================================
+ *
+ * Abstract Base Classes: basic hierarchy
+ *
+ * ====================================================================
+ */
 
 /*
-   Keeps track of profile data (input feed) and offers access to it
-   for perusal by the Collectors and DataFilters.
-  */
+ * Keeps track of profile data (input feed) and offers access to it
+ * for perusal by the Collectors and DataFilters.
+ */
 class AugmentedDataFeedBase
 {
 public:
-	virtual CRM_ANALYSIS_PROFILE_ELEMENT *NextElem() = 0;
-	virtual CRM_ANALYSIS_PROFILE_ELEMENT *RelativeElem(int offset) = 0;
-	virtual void ResetToStart() = 0;
+    virtual CRM_ANALYSIS_PROFILE_ELEMENT *NextElem() = 0;
+    virtual CRM_ANALYSIS_PROFILE_ELEMENT *RelativeElem(int offset) = 0;
+    virtual void ResetToStart() = 0;
 
 private:
-	AugmentedDataFeedBase() {};
-	virtual ~AugmentedDataFeedBase() {};
+    AugmentedDataFeedBase() { };
+    virtual ~AugmentedDataFeedBase() { };
 };
 
 
 class StatsCollectorBase;
 
 /*
-   When a Collector collects something (or a Filter detects a certain
-   transition) a ReportEvent occurs: this is fed to a ReportFilter
-   chain to see if any reports are interested in this event. If they
-   are, execute them.
-
-   Note that the Event does not pass along who triggered it, either
-   a collector or a DataFilter. This is not important anyhow, as
-   a report only needs to be 'set off': it will know which bits of data
-   to use, thanks to the data Collectors registered with each report.
+ * When a Collector collects something (or a Filter detects a certain
+ * transition) a ReportEvent occurs: this is fed to a ReportFilter
+ * chain to see if any reports are interested in this event. If they
+ * are, execute them.
+ *
+ * Note that the Event does not pass along who triggered it, either
+ * a collector or a DataFilter. This is not important anyhow, as
+ * a report only needs to be 'set off': it will know which bits of data
+ * to use, thanks to the data Collectors registered with each report.
  */
-class ReportEventBase 
+class ReportEventBase
 {
 public:
-	virtual int Event() = 0;
+    virtual int Event() = 0;
 
 private:
-	ReportEventBase() {};
-	virtual ~ReportEventBase() {};
+    ReportEventBase() { };
+    virtual ~ReportEventBase() { };
 };
 
 
 
 /*
-   A report can be produced at any time.
-
-   It requires a specific set of (processed) data sources: it will
-   retrieve any desired data from the registered Collectors.
+ * A report can be produced at any time.
+ *
+ * It requires a specific set of (processed) data sources: it will
+ * retrieve any desired data from the registered Collectors.
  */
-class ReportBase 
+class ReportBase
 {
 public:
-	virtual void Report() = 0;
+    virtual void Report() = 0;
 
-	virtual void RegisterRequiredCollection(StatsCollectorBase &collection, int purpose) = 0;
+    virtual void RegisterRequiredCollection(StatsCollectorBase&collection, int purpose) = 0;
 
 private:
-	ReportBase() {};
-	virtual ~ReportBase() {};
+    ReportBase() { };
+    virtual ~ReportBase() { };
 };
 
 
 /*
-   A Collector or DataFilter can trigger a ReportEvent, which is fed to this
-   chain of ReportEventFilters (which can be chained to create AND and OR constructs).
-
-   When a ReportEventFilter chain 'selects'/passes a ReportEvent, it will 
-   cause the registered Reports to be produced this time.
+ * A Collector or DataFilter can trigger a ReportEvent, which is fed to this
+ * chain of ReportEventFilters (which can be chained to create AND and OR constructs).
+ *
+ * When a ReportEventFilter chain 'selects'/passes a ReportEvent, it will
+ * cause the registered Reports to be produced this time.
  */
 class ReportEventFilterBase
 {
 public:
-	virtual int Report(ReportEventBase &report_event) = 0;
+    virtual int Report(ReportEventBase&report_event) = 0;
 
-	virtual void RegisterReport(ReportBase &report) = 0;
-	virtual void ChainFilter(ReportEventFilterBase &subsequent_filter) = 0;
+    virtual void RegisterReport(ReportBase&report) = 0;
+    virtual void ChainFilter(ReportEventFilterBase&subsequent_filter) = 0;
 
 private:
-	ReportEventFilterBase() {};
-	virtual ~ReportEventFilterBase() {};
+    ReportEventFilterBase() { };
+    virtual ~ReportEventFilterBase() { };
 };
 
 
 /*
-   Defines a collector, which will process and store this bit of profile data from the feed.
-
-   Note that Collectors MAY produce ReportEvents, which should be sent to
-   the registered ReportEventFilters to see if any reports have to be
-   produced this time. Reports can thus be 'triggered' by filters AND
-   collectors.
-
-   Reports use the Collectors registered with them to retrieve the data required
-   to produce that particular report.
-*/
+ * Defines a collector, which will process and store this bit of profile data from the feed.
+ *
+ * Note that Collectors MAY produce ReportEvents, which should be sent to
+ * the registered ReportEventFilters to see if any reports have to be
+ * produced this time. Reports can thus be 'triggered' by filters AND
+ * collectors.
+ *
+ * Reports use the Collectors registered with them to retrieve the data required
+ * to produce that particular report.
+ */
 class StatsCollectorBase
 {
 public:
-	virtual void Collect(AugmentedDataFeedBase &feed) = 0;
+    virtual void Collect(AugmentedDataFeedBase&feed) = 0;
 
-	virtual void RegisterReportEventFilter(ReportEventFilterBase &report_filter) = 0;
+    virtual void RegisterReportEventFilter(ReportEventFilterBase&report_filter) = 0;
 
 private:
-	StatsCollectorBase() {};
-	virtual ~StatsCollectorBase() {};
+    StatsCollectorBase() { };
+    virtual ~StatsCollectorBase() { };
 };
 
 /*
-   Defines a filter, which is fed profile data from the feed.
-
-   'Collectors' registered with this filter will receive any data which passes.
-
-   Also, filters may be chained to create AND and OR filter flow
-   structures. (OR is created using 'either-or' filters in the chain)
-
-   Note that Filters MAY produce ReportEvents, which should be sent to
-   the registered ReportEventFilters to see if any reports have to be
-   produced this time. Reports can thus be 'triggered' by filters AND
-   collectors.
-
-   The hierarchy of classes culminates in this the DataFilters:
-   given a feed, (through registered collectors, etc.) these pick the
-   interesting data elements, collect them, process them and 
-   immediately produce reports based on this (processed) data.
-
-   This input-is-driving-output hierarchy has been designed to maximize
-   collect and report flexibility.
-   This way, for instance, reports can be generated multiple times while 
-   processing a single feed: think report=image, where a new image is
-   produced following every LEARN operation, showing the new hash table
-   occupancy and chain lengths statistics. This image series can be 
-   postprocessed into a video, showing how the data is collected and spread
-   by CRM114 classifiers in semi-'real time'.
-
-   Why a data PUSH hierarchy instead of a output-to-input PULL
-   hierarchy? Because here we have ONE input and a (dynamic) large
-   number of parallel outputs: that means a PUSH system has its
-   hierarchy laid out in the same 'direction' (hierarchy = triangle; 
-   input is the top/root, a run-time determined number of leaves in the
-   tree represent the various types of requested reports).
-
-   When processes produce a single output, based on multiple inputs, a
-   PULL hierarchy is better (easier to implement and maintain), but that
-   is not the case here.
-*/
+ * Defines a filter, which is fed profile data from the feed.
+ *
+ * 'Collectors' registered with this filter will receive any data which passes.
+ *
+ * Also, filters may be chained to create AND and OR filter flow
+ * structures. (OR is created using 'either-or' filters in the chain)
+ *
+ * Note that Filters MAY produce ReportEvents, which should be sent to
+ * the registered ReportEventFilters to see if any reports have to be
+ * produced this time. Reports can thus be 'triggered' by filters AND
+ * collectors.
+ *
+ * The hierarchy of classes culminates in this the DataFilters:
+ * given a feed, (through registered collectors, etc.) these pick the
+ * interesting data elements, collect them, process them and
+ * immediately produce reports based on this (processed) data.
+ *
+ * This input-is-driving-output hierarchy has been designed to maximize
+ * collect and report flexibility.
+ * This way, for instance, reports can be generated multiple times while
+ * processing a single feed: think report=image, where a new image is
+ * produced following every LEARN operation, showing the new hash table
+ * occupancy and chain lengths statistics. This image series can be
+ * postprocessed into a video, showing how the data is collected and spread
+ * by CRM114 classifiers in semi-'real time'.
+ *
+ * Why a data PUSH hierarchy instead of a output-to-input PULL
+ * hierarchy? Because here we have ONE input and a (dynamic) large
+ * number of parallel outputs: that means a PUSH system has its
+ * hierarchy laid out in the same 'direction' (hierarchy = triangle;
+ * input is the top/root, a run-time determined number of leaves in the
+ * tree represent the various types of requested reports).
+ *
+ * When processes produce a single output, based on multiple inputs, a
+ * PULL hierarchy is better (easier to implement and maintain), but that
+ * is not the case here.
+ */
 class DataFilterBase
 {
 public:
-	virtual int Filter(AugmentedDataFeedBase &feed) = 0;
+    virtual int Filter(AugmentedDataFeedBase&feed) = 0;
 
-	virtual void RegisterCollector(StatsCollectorBase &collector) = 0;
-	virtual void ChainFilter(DataFilterBase &subsequent_filter) = 0;
+    virtual void RegisterCollector(StatsCollectorBase&collector) = 0;
+    virtual void ChainFilter(DataFilterBase&subsequent_filter) = 0;
 
-	virtual void RegisterReportEventFilter(ReportEventFilterBase &report_filter) = 0;
+    virtual void RegisterReportEventFilter(ReportEventFilterBase&report_filter) = 0;
 
 private:
-	DataFilterBase() {};
-	virtual ~DataFilterBase() {};
+    DataFilterBase() { };
+    virtual ~DataFilterBase() { };
 };
 
 
 
 
 /*
-====================================================================
-
-Derived Classes: particular implementations for multiple purposes
-
-====================================================================
-*/
+ * ====================================================================
+ *
+ * Derived Classes: particular implementations for multiple purposes
+ *
+ * ====================================================================
+ */
 
 
 

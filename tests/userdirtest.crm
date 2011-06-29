@@ -1,4 +1,4 @@
-#! /usr/local/bin/crm114
+#! /usr/local/bin/crm114 
 window
 output /:*:_nl: CRM114 - syscall test - 'ls' -- :*:_nl: :*:_nl:/
 {

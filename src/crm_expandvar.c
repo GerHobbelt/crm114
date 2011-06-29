@@ -78,8 +78,8 @@ int crm_nexpandvar(char *buf, int inlen, int maxlen, VHT_CELL **vht, CSL_CELL *t
             | CRM_EVAL_STRINGVAR
             | CRM_EVAL_REDIRECT
             | CRM_EVAL_STRINGLEN,                   // [i_a] VERY handy to have :#: available in 'output' statements and the like
-          vht,
-		  tdw);
+            vht,
+            tdw);
 }
 
 //
@@ -96,8 +96,8 @@ int crm_qexpandvar(char *buf, int inlen, int maxlen, int *qex_stat, VHT_CELL **v
             | CRM_EVAL_REDIRECT
             | CRM_EVAL_STRINGLEN
             | CRM_EVAL_MATH,
-			vht,
-			tdw);
+            vht,
+            tdw);
 }
 
 
@@ -149,8 +149,8 @@ int crm_zexpandvar(char *buf,
         int              maxlen,
         int             *retstat,
         int              exec_bitmask,
-		VHT_CELL **vht,
-		CSL_CELL *tdw)
+        VHT_CELL       **vht,
+        CSL_CELL        *tdw)
 {
     int is, id;
     int vht_index;
@@ -170,12 +170,6 @@ int crm_zexpandvar(char *buf,
     is = 0;
     id = 0;
 
-    if (internal_trace)
-    {
-        fprintf(stderr, "qexpandvar on =%s= len: %d bitmask: %d\n",
-                buf, inlen, exec_bitmask);
-    }
-
     //  GROT GROT GROT must fix this for 8-bit safe error messages
     if (inlen > maxlen)
     {
@@ -185,6 +179,13 @@ int crm_zexpandvar(char *buf,
         /* return (inlen); -- this is a serious buffer overflow risk as any
         * using routines will assume the maxlen will never be surpassed! */
         return maxlen - 1;         // warning: this 'maxlen' value must be 'fixed' by offsetting -1!
+    }
+
+    CRM_ASSERT(buf[inlen] == 0);
+    if (internal_trace)
+    {
+        fprintf(stderr, "zexpandvar on =%s= len: %d bitmask: %d\n",
+                buf, inlen, exec_bitmask);
     }
 
     //   First thing- do the ANSI \-Expansions
@@ -1079,6 +1080,14 @@ int crm_restrictvar(char *boxstring,
         fprintf(stderr, "Using variable '%s' for source.\n", varname);
 
     //      Got the varname.  Do a lookup.
+	if (!crm_is_legal_variable(varname, varnamelen))
+	{
+        snprintf(errstr, maxerrlen,
+                "This program wants to use an illegal variable named: '%.*s'",
+                varnamelen, varname);
+        errstr[maxerrlen - 1] = 0;
+        return -2;
+	}
     vmidx = crm_vht_lookup(vht, varname, varnamelen);
     //  fprintf(stderr, "vmidx = %d, vht[vmidx] = %lx\n", vmidx, vht[vmidx]);
     if (internal_trace)

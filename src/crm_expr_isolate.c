@@ -47,6 +47,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     CRM_ASSERT(apb != NULL);
     tvlen = crm_get_pgm_arg(temp_vars, MAX_VARNAME, apb->p1start, apb->p1len);
+    CRM_ASSERT(temp_vars[tvlen] == 0);
     tvlen = crm_nexpandvar(temp_vars, tvlen, MAX_VARNAME, vht, tdw);
     if (!crm_nextword(temp_vars, tvlen, 0, &vstart, &vlen)
         || vlen < 3)
@@ -106,6 +107,11 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
             else  //  OK- isolate this variable
             {
+	if (!crm_is_legal_variable(vname, vlen))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempt to ISOLATE an illegal variable '%.*s'. How very bizarre.", vlen, vname);
+		return -1;
+	}
                 vmidx = crm_vht_lookup(vht, vname, vlen);
                 //
                 //     Now, check these cases in order:
@@ -142,6 +148,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (internal_trace)
                             fprintf(stderr, "using the slash-value given.\n");
                         vallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
+                        CRM_ASSERT(tempbuf[vallen] == 0);
                         vallen = crm_nexpandvar(tempbuf, vallen, data_window_size - tdw->nchars, vht, tdw);
                     }
                 }
@@ -170,6 +177,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (internal_trace)
                             fprintf(stderr, "Using the provided slash-val.\n");
                         vallen = crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
+                        CRM_ASSERT(tempbuf[vallen] == 0);
                         vallen = crm_nexpandvar(tempbuf, vallen, data_window_size - tdw->nchars, vht, tdw);
                     }
                     else
@@ -187,7 +195,9 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         }
 
                         strcpy(tempbuf, ":*");
+                        vlen = CRM_MIN(data_window_size - 2 - 1, vlen);
                         memcpy(tempbuf + 2, vname, vlen);
+                        tempbuf[2 + vlen] = 0;
                         vallen = crm_nexpandvar(tempbuf, vlen + 2, data_window_size - tdw->nchars, vht, tdw);
                     }
                 }
@@ -254,6 +264,11 @@ int crm_isolate_this(int *vptr,
     }
     else
     {
+	if (!crm_is_legal_variable(&nametext[namestart], namelen))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempt to ISOLATE an illegal variable '%.*s'.", namelen, &nametext[namestart]);
+		return -1;
+	}
         vmidx = crm_vht_lookup(vht, &nametext[namestart], namelen);
     }
 

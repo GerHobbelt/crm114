@@ -121,7 +121,7 @@ char *tempbuf = NULL;
 
 
 #if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
-CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = {0};
+CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = { 0 };
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
 

@@ -259,7 +259,7 @@ int main(int argc, char **argv)
              "i:o:v::h::?::m:c",
              long_options, &option_index
 #if defined (HAVE_GETOPT_LONG_EX)
-            , (void (*)(void *, const char *, ...))fprintf, stderr
+            , (void(*) (void *, const char *, ...))fprintf, stderr
 #elif defined (HAVE_GETOPT_LONG_ONLY)
 #else
 #endif

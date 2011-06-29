@@ -383,32 +383,32 @@ char *mk_absolute_path(char *dst, int dst_size, const char *src_filepath)
  *
  *      (TODO: may even support multiple formats for easy debugging/code jumping)
  */
-void generate_err_reason_msg_va(char       *reason,
-        int         reason_bufsize,
-        int         srclineno,
-        const char *srcfile_full,
-        const char *funcname,
-        const char *errortype_str,
-        const char *encouraging_msg,
-        CSL_CELL   *csl,
-        int         script_codeline,
-        const char *fmt,
+void generate_err_reason_msg_va(char *reason,
+        int                           reason_bufsize,
+        int                           srclineno,
+        const char                   *srcfile_full,
+        const char                   *funcname,
+        const char                   *errortype_str,
+        const char                   *encouraging_msg,
+        CSL_CELL                     *csl,
+        int                           script_codeline,
+        const char                   *fmt,
         ...)
 {
     va_list args;
 
     va_start(args, fmt);
-	generate_err_reason_msg(reason,
-        reason_bufsize,
-        srclineno,
-        srcfile_full,
-        funcname,
-        errortype_str,
-        encouraging_msg,
-        csl,
-        script_codeline,
-        fmt,
-        args);
+    generate_err_reason_msg(reason,
+            reason_bufsize,
+            srclineno,
+            srcfile_full,
+            funcname,
+            errortype_str,
+            encouraging_msg,
+            csl,
+            script_codeline,
+            fmt,
+            args);
     va_end(args);
 }
 
@@ -424,7 +424,7 @@ void generate_err_reason_msg(
         int         script_codeline,
         const char *fmt,
         va_list     args
-                                   )
+                            )
 {
     int widthleft = reason_bufsize;
     int has_newline;
@@ -569,7 +569,7 @@ void generate_err_reason_msg(
     }
     widthleft = reason_bufsize - (int)(dst - reason);
 
-    if (!encouraging_msg || !*encouraging_msg)
+    if (!encouraging_msg || ! * encouraging_msg)
     {
         encouraging_msg = "Sorry, but this program is very sick and probably should be killed off.";
     }
@@ -702,7 +702,7 @@ static int check_for_trap_handler(CSL_CELL *csl, const char *reason)
         {
             fprintf(stderr,
                     "Couldn't alloc rbuf in 'fatalerror()'!\n"
-					"It's really bad when the error fixup routine gets an error!\n");
+                    "It's really bad when the error fixup routine gets an error!\n");
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 3);
@@ -1114,10 +1114,11 @@ void reset_nonfatalerrorreporting(void)
 void crm_output_profile(CSL_CELL *csl)
 {
     int i;
-	double ut, st, tt;
-  const char *unit = "seconds";
-  double freq;
-  int prec = 6;
+    double ut, st, tt;
+    const char *unit = "seconds";
+    double freq;
+    int prec = 6;
+
 #if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
     LARGE_INTEGER fr;
 
@@ -1129,10 +1130,10 @@ void crm_output_profile(CSL_CELL *csl)
     else
     {
         freq = 1;         // unknown
-	unit = NULL;
-	prec = 0;
+        unit = NULL;
+        prec = 0;
     }
-	freq = 1.0E9;
+    freq = 1.0E9;
 #elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
     struct timespec timer1;
     if (!clock_getres(CLOCK_REALTIME, &timer1))
@@ -1145,100 +1146,100 @@ void crm_output_profile(CSL_CELL *csl)
     else
     {
         freq = 1;         // unknown
-	unit = NULL;
-	prec = 0;
+        unit = NULL;
+        prec = 0;
     }
-	freq = 1.0E9;
+    freq = 1.0E9;
 #elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
     freq = 1.0E6;     // usecs
-	prec = 3;
-#elif defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS) && defined(_SC_CLK_TCK) && defined(HAVE_SYSCONF)
+    prec = 3;
+#elif defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS) && defined (_SC_CLK_TCK) && defined (HAVE_SYSCONF)
     // from the man page: Applications should use sysconf(_SC_CLK_TCK) to determine the number of clock ticks per second as it may vary from system to system.
     long int fr = sysconf(_SC_CLK_TCK);
     if (fr == -1)
     {
         freq = 1;         // unknown
-	unit = NULL;
-	prec = 0;
+        unit = NULL;
+        prec = 0;
     }
-	else
-{
-    freq = fr;
-	prec = log10(fr);
-}
+    else
+    {
+        freq = fr;
+        prec = log10(fr);
+    }
 #elif defined (HAVE_CLOCK)
     freq = CLOCKS_PER_SEC;     // this is the divisor, NOT the actual accuracy!
-	unit = NULL;
-	prec = 0;
+    unit = NULL;
+    prec = 0;
 #else
-        freq = 1;         // unknown
-	unit = NULL;
-	prec = 0;
+    freq = 1;             // unknown
+    unit = NULL;
+    prec = 0;
 #endif
 
     fprintf(stderr, "\n         Execution Profile Results");
     if (unit)
-	{
-	fprintf(stderr, " (freq = %.0f Hz) (Units: %s)", freq, unit);
-	}
+    {
+        fprintf(stderr, " (freq = %.0f Hz) (Units: %s)", freq, unit);
+    }
     fprintf(stderr,            "\n"
-		"\n"
-		"  Memory usage at completion: %10d window, %10d isolated\n",
+                               "\n"
+                               "  Memory usage at completion: %10d window, %10d isolated\n",
             cdw->nchars, tdw->nchars);
     fprintf(stderr, "\n"
-		"  Statement Execution Time Profiling (0 times suppressed)\n");
+                    "  Statement Execution Time Profiling (0 times suppressed)\n");
     fprintf(stderr,
-		"  line:     usertime   systemtime    totaltime    exec #    time/one    code\n");
-	ut = st = tt = 0.0;
+            "  line:     usertime   systemtime    totaltime    exec #    time/one    code\n");
+    ut = st = tt = 0.0;
     for (i = 0; i < csl->nstmts; i++)
     {
-            const STMT_TABLE_TYPE *stmt_def;
+        const STMT_TABLE_TYPE *stmt_def;
 
-            stmt_def = csl->mct[i]->stmt_def;
+        stmt_def = csl->mct[i]->stmt_def;
 
-		// print each executable line of code, plus braces and labels:
-            if ((stmt_def && (stmt_def->is_executable 
-		|| stmt_def->stmt_code == CRM_LABEL
-		|| stmt_def->stmt_code == CRM_OPENBRACKET
-		|| stmt_def->stmt_code == CRM_CLOSEBRACKET))
-         || (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime > 0))
+        // print each executable line of code, plus braces and labels:
+        if ((stmt_def && (stmt_def->is_executable
+                          || stmt_def->stmt_code == CRM_LABEL
+                          || stmt_def->stmt_code == CRM_OPENBRACKET
+                          || stmt_def->stmt_code == CRM_CLOSEBRACKET))
+            || (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime > 0))
         {
-		char line[1024];
+            char line[1024];
 
-        	dump_error_script_line(line, WIDTHOF(line), csl, i, 0);
-        	CRM_ASSERT(WIDTHOF(line) > (int)strlen(line));
-		if (strchr(line, '\n'))
-{
-			strchr(line, '\n')[0] = 0;
-}
+            dump_error_script_line(line, WIDTHOF(line), csl, i, 0);
+            CRM_ASSERT(WIDTHOF(line) > (int)strlen(line));
+            if (strchr(line, '\n'))
+            {
+                strchr(line, '\n')[0] = 0;
+            }
             fprintf(stderr, " %5d: %12.*f %12.*f %12.*f %9d %11.*f  %s\n",
                     i,
-			prec,
+                    prec,
                     csl->mct[i]->stmt_utime / freq,
-			prec,
+                    prec,
                     csl->mct[i]->stmt_stime / freq,
-			prec,
+                    prec,
                     (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime) / freq,
                     csl->mct[i]->stmt_exec_count,
-			prec,
-                    (csl->mct[i]->stmt_exec_count 
-			? (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime) / (freq * csl->mct[i]->stmt_exec_count)
-			: 0.0),
-			line);
-                    ut += csl->mct[i]->stmt_utime / freq;
-			st += csl->mct[i]->stmt_stime / freq;
-			tt += (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime) / freq;
+                    prec,
+                    (csl->mct[i]->stmt_exec_count
+                     ? (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime) / (freq * csl->mct[i]->stmt_exec_count)
+                     : 0.0),
+                    line);
+            ut += csl->mct[i]->stmt_utime / freq;
+            st += csl->mct[i]->stmt_stime / freq;
+            tt += (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime) / freq;
         }
     }
-            fprintf(stderr, "-------------------- Grand Total ----------------------\n"
-			" %5d: %12.*f %12.*f %12.*f\n",
-                    csl->nstmts,
-			prec,
-                    ut,
-			prec,
-                    st,
-			prec,
-                    tt);
+    fprintf(stderr, "-------------------- Grand Total ----------------------\n"
+                    " %5d: %12.*f %12.*f %12.*f\n",
+            csl->nstmts,
+            prec,
+            ut,
+            prec,
+            st,
+            prec,
+            tt);
 }
 
 

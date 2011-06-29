@@ -26,12 +26,12 @@
 #if !CRM_WITHOUT_OSB_BAYES
 
 
-static int collect_obj_bayes_statistics(const char *cssfile, 
-								 FEATUREBUCKET_TYPE *hashes,
-								 int hfsize, /* unit: number of features! */
-								 CRM_DECODED_PORTA_HEADER_INFO *header,
-								 int histbins,
-								 FILE *report_out);
+static int collect_obj_bayes_statistics(const char *cssfile,
+        FEATUREBUCKET_TYPE                         *hashes,
+        int                                         hfsize,                  /* unit: number of features! */
+        CRM_DECODED_PORTA_HEADER_INFO              *header,
+        int                                         histbins,
+        FILE                                       *report_out);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -102,9 +102,9 @@ static unsigned int spectra_start = 1;
 //
 
 int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //     learn the osb_bayes transform spectrum of this input window as
     //     belonging to a particular type.
@@ -133,7 +133,7 @@ VHT_CELL **vht,
     int made_new_file;
 
     CRM_DECODED_PORTA_HEADER_INFO hdr = { 0 };
-	int histbins;
+    int histbins;
 
 #ifdef OLD_STYLE_LEARNCOUNTS
     crmhash_t learns_index = 0;
@@ -213,7 +213,7 @@ VHT_CELL **vht,
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
-    learnfilename = strdup(&htext[i]);
+    learnfilename = &htext[i];
     if (!learnfilename)
     {
         untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -240,7 +240,6 @@ VHT_CELL **vht,
                     learnfilename,
                     errno,
                     errno_descr(errno));
-            free(learnfilename);
             return fev;
         }
         //       did we get a value for sparse_spectrum_file_length?
@@ -264,7 +263,6 @@ VHT_CELL **vht,
                         "\n Couldn't write header to file %s; errno=%d(%s)\n",
                         learnfilename, errno, errno_descr(errno));
                 fclose(f);
-                free(learnfilename);
                 return fev;
             }
 
@@ -276,7 +274,6 @@ VHT_CELL **vht,
                         "\n Couldn't write to file %s; errno=%d(%s)\n",
                         learnfilename, errno, errno_descr(errno));
                 fclose(f);
-                free(learnfilename);
                 return fev;
             }
 
@@ -305,7 +302,6 @@ VHT_CELL **vht,
     {
         fev = fatalerror("Couldn't get to the statistic file named: ",
                 learnfilename);
-        free(learnfilename);
         return fev;
     }
 
@@ -364,7 +360,6 @@ VHT_CELL **vht,
         {
             untrappableerror(" Couldn't allocate enough memory to keep track",
                     "of nonunique features.  This is deadly");
-            free(learnfilename);
             return 1;
         }
     }
@@ -471,7 +466,8 @@ VHT_CELL **vht,
     // info in the binary header section instead, just to make sure we do not clutter the hash table
     // with useless stuff.
 #if defined (CRM_WITHOUT_VERSIONING_HEADER)
-#error "This code is not meant to compile without version header support. Absence of such support in legacy CSS databases is supported as best we can for backwards compatibility reasons ONLY"
+#error \
+    "This code is not meant to compile without version header support. Absence of such support in legacy CSS databases is supported as best we can for backwards compatibility reasons ONLY"
 #else
     {
         void *hdr_ptr = crm_get_header_for_mmap_file(hashes);
@@ -486,7 +482,6 @@ VHT_CELL **vht,
                                               "a non-native format. Migrate this database to native versioning-headered format "
                                               "for optimum performance.",
                     learnfilename);
-            free(learnfilename);
             return fev;
         }
         hdr_check = crm_decode_header(hdr_ptr, CRM_OSB_BAYES, TRUE, &hdr);
@@ -498,7 +493,6 @@ VHT_CELL **vht,
                     "OSB Bayes",
                     hdr_check,
                     crm_decode_header_err2msg(hdr_check));
-            free(learnfilename);
             return fev;
         }
 
@@ -514,7 +508,6 @@ VHT_CELL **vht,
         {
             fev = fatalerror("You have hit the 1 in an million chance of selecting a database size which will not work due to special requirements.",
                     "Please use another database size, thank you!");
-            free(learnfilename);
             return fev;
         }
 
@@ -531,7 +524,6 @@ VHT_CELL **vht,
             {
                 fev = fatalerror(" This file should have learncounts, but doesn't!",
                         " The slot is busy, too.  It's hosed.  Time to die.");
-                free(learnfilename);
                 return fev;
             }
         }
@@ -577,7 +569,6 @@ VHT_CELL **vht,
             {
                 fev = fatalerror(" This file should have learncounts, but doesn't!",
                         " The slot is busy, too.  It's hosed.  Time to die.");
-                free(learnfilename);
                 return fev;
             }
         }
@@ -951,13 +942,14 @@ VHT_CELL **vht,
                                 seen_features[hindex]);
                     }
                     //     let the embedded feature counter sorta keep up...
-#ifdef OLD_STYLE_LEARNCOUNTS
-                    hashes[features_index].value += sense;
-#else
-                    info_block->v.OSB_Bayes.features_learned += sense;
-#endif
                     if (sense > 0)
                     {
+#ifdef OLD_STYLE_LEARNCOUNTS
+                        hashes[features_index].value += sense;
+#else
+                        info_block->v.OSB_Bayes.features_learned += sense;
+#endif
+
                         //     Right slot, set it up
                         //
                         hashes[hindex].hash = h1;
@@ -983,10 +975,20 @@ VHT_CELL **vht,
                     {
                         if (hashes[hindex].value <= -sense)
                         {
+#ifdef OLD_STYLE_LEARNCOUNTS
+                            hashes[features_index].value -= hashes[hindex].value;
+#else
+                            info_block->v.OSB_Bayes.features_learned -= hashes[hindex].value;
+#endif
                             hashes[hindex].value = 0;
                         }
                         else
                         {
+#ifdef OLD_STYLE_LEARNCOUNTS
+                            hashes[features_index].value += sense;
+#else
+                            info_block->v.OSB_Bayes.features_learned += sense;
+#endif
                             hashes[hindex].value += sense;
                         }
 
@@ -1003,23 +1005,23 @@ learn_end_regex_loop:
         crm_regfree(&regcb);
 
 regcomp_failed:
-	//
-	// This bit of code can cause a significant performance hit for a learn, so we run
-	// it only when we need it.
-	//
-	if (user_trace || analysis_cfg.instruments[MARK_CSS_STATS_GROUP])
-	{
-		histbins = FEATUREBUCKET_VALUE_MAX;
-		if (histbins > FEATUREBUCKET_HISTOGRAM_MAX)
-			histbins = FEATUREBUCKET_HISTOGRAM_MAX;
+    //
+    // This bit of code can cause a significant performance hit for a learn, so we run
+    // it only when we need it.
+    //
+    if (user_trace || analysis_cfg.instruments[MARK_CSS_STATS_GROUP])
+    {
+        histbins = FEATUREBUCKET_VALUE_MAX;
+        if (histbins > FEATUREBUCKET_HISTOGRAM_MAX)
+            histbins = FEATUREBUCKET_HISTOGRAM_MAX;
 
-		collect_obj_bayes_statistics(learnfilename, 
-									 hashes,
-									 hfsize, /* unit: number of features! */
-									 &hdr,
-									 histbins,
-									 stderr);
-	}
+        collect_obj_bayes_statistics(learnfilename,
+                hashes,
+                hfsize,                                                          /* unit: number of features! */
+                &hdr,
+                histbins,
+                stderr);
+    }
 
 
     //  and remember to let go of the mmap and the pattern bufffer
@@ -1046,7 +1048,6 @@ regcomp_failed:
 #endif
 #endif
 
-    free(learnfilename);
     return 0;
 }
 
@@ -1054,9 +1055,9 @@ regcomp_failed:
 //      How to do a Osb_Bayes CLASSIFY some text.
 //
 int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -1437,18 +1438,18 @@ VHT_CELL **vht,
                             //     Check to see if this file is the right version
                             //
                             int fev;
-                            if (hashes[maxhash][0].hash != 0 ||
-                                      hashes[maxhash][0].key  != 0)
+                            if (hashes[maxhash][0].hash != 0
+                                || hashes[maxhash][0].key  != 0)
                             {
-                              fev =fatalerror ("The .css file is the wrong version!  Filename is: ",
-                                               fname);
-                              return (fev);
+                                fev = fatalerror("The .css file is the wrong version!  Filename is: ",
+                                        fname);
+                                return fev;
                             }
 #endif
 
 #if defined (REDICULOUS_CODE) /* [i_a] */
-                            //     grab the start of the actual spectrum data.
-                            //
+                              //     grab the start of the actual spectrum data.
+                              //
                             spectra_start = hashes[maxhash][0].value;
 #endif
 
@@ -1456,7 +1457,8 @@ VHT_CELL **vht,
                             //  of the length in bytes.
                             hashlens[maxhash] /= sizeof(FEATUREBUCKET_TYPE);
 
-							crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 2, "Lii", (unsigned long long int)apb->sflags, (int)hashlens[maxhash], (int)maxhash);
+                            crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER, 2, "Lii", (unsigned long long int)apb->sflags, (int)hashlens[maxhash],
+                                    (int)maxhash);
 
                             hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
                             if (!hashname[maxhash])
@@ -1501,7 +1503,7 @@ VHT_CELL **vht,
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
-                      "for classify().\n", "Hope you know what are you doing.");
+                             "for classify().\n", "Hope you know what are you doing.");
     }
 
     {
@@ -1610,7 +1612,8 @@ VHT_CELL **vht,
             // info in the binary header section instead, just to make sure we do not clutter the hash table
             // with useless stuff.
 #if defined (CRM_WITHOUT_VERSIONING_HEADER)
-#error "This code is not meant to compile without version header support. Absence of such support in legacy CSS databases is supported as best we can for backwards compatibility reasons ONLY"
+#error \
+            "This code is not meant to compile without version header support. Absence of such support in legacy CSS databases is supported as best we can for backwards compatibility reasons ONLY"
 #else
             {
                 void *hdr_ptr;
@@ -1651,9 +1654,9 @@ VHT_CELL **vht,
 
                 if (h1 == h2)
                 {
-     			    fev = fatalerror("You have hit the 1 in an million chance of selecting a database size which will not work due to special requirements.",
+                    fev = fatalerror(
+                            "You have hit the 1 in an million chance of selecting a database size which will not work due to special requirements.",
                             "Please use another database size, thank you! If this is an existing database, it is hosed.");
-                    free(learnfilename);
                     return fev;
                 }
 
@@ -1747,7 +1750,8 @@ VHT_CELL **vht,
         total_learns += info_block[ifile]->v.OSB_Bayes.learncount;
         total_features += info_block[ifile]->v.OSB_Bayes.features_learned;
 
-        crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_DB_TOTALS, ifile, "ii", (int)info_block[ifile]->v.OSB_Bayes.learncount, (int)info_block[ifile]->v.OSB_Bayes.features_learned);
+        crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_DB_TOTALS, ifile, "ii", (int)info_block[ifile]->v.OSB_Bayes.learncount,
+                (int)info_block[ifile]->v.OSB_Bayes.features_learned);
 #endif
     }
 
@@ -1764,10 +1768,10 @@ VHT_CELL **vht,
 #else
         cpcorr[ifile] = total_learns / ((double)maxhash * (double)info_block[ifile]->v.OSB_Bayes.learncount);
 #endif
-        
-		crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 1, "idi", (int)ifile, (double)cpcorr[ifile], (int)total_learns);
 
-		if (use_chisquared)
+        crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 1, "idi", (int)ifile, (double)cpcorr[ifile], (int)total_learns);
+
+        if (use_chisquared)
             cpcorr[ifile] = 1.0;
     }
 
@@ -1924,7 +1928,7 @@ VHT_CELL **vht,
         if (1)         //  we init with 0xDEADBEEF, so the pipe is always full (i >=5)
         {
             int j, k;
-                unsigned int th = 0;  //  a counter used only in TSS hashing
+            unsigned int th = 0;      //  a counter used only in TSS hashing
             crmhash_t hindex;
             crmhash_t h1, h2;
             int skip_this_feature = 0;
@@ -1983,16 +1987,18 @@ VHT_CELL **vht,
                     {
                         0, 125, 64, 27, 8, 1, 0
                     };
+                    CRM_ASSERT(OSB_BAYES_WINDOW_LEN <= WIDTHOF(chi_feature_weight) - 2);
+                    CRM_ASSERT(OSB_BAYES_WINDOW_LEN <= WIDTHOF(fw) - 2);
                     feature_weight = fw[j];
                     if (use_chisquared)
                     {
 #if 0
-						feature_weight = chi_feature_weight[j];
+                        feature_weight = chi_feature_weight[j];
 #else
-						//  turn off weighting?
+                        //  turn off weighting?
                         feature_weight = 1;
 #endif
-					}
+                    }
                 }
 
                 //       tally another feature
@@ -2138,7 +2144,7 @@ VHT_CELL **vht,
                 //
                 //   calculate renormalizer (the Bayesian formula's denomenator)
 
-		        crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 2, "iii", (int)htf, (int)skip_this_feature, (int)feature_weight);
+                crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 2, "iii", (int)htf, (int)skip_this_feature, (int)feature_weight);
 
                 if (!skip_this_feature)
                 {
@@ -2213,22 +2219,22 @@ VHT_CELL **vht,
 #if 0
                         for (k = 0; k < maxhash; k++)
                         {
-							pltc[k] = 0.5 +
+                            pltc[k] = 0.5 +
                                       ((hits[k] - (htf - hits[k]))
                                        / (LOCAL_PROB_DENOM * (htf + 1.0)));
-						}
+                        }
 
                         //   Calculate the per-ptc renormalization numerators
                         renorm = 0.0;
                         for (k = 0; k < maxhash; k++)
-						{
+                        {
                             renorm += (ptc[k] * pltc[k]);
-						}
+                        }
 
                         for (k = 0; k < maxhash; k++)
-						{
+                        {
                             ptc[k] = (ptc[k] * pltc[k]) / renorm;
-						}
+                        }
 
                         //   if we have underflow (any probability == 0.0 ) then
                         //   bump the probability back up to 10^-308, or
@@ -2246,13 +2252,13 @@ VHT_CELL **vht,
                         //
                         renorm = 0.0;
                         for (k = 0; k < maxhash; k++)
-						{
+                        {
                             renorm += ptc[k];
-						}
+                        }
                         for (k = 0; k < maxhash; k++)
-						{
+                        {
                             ptc[k] /= renorm;
-						}
+                        }
 
                         for (k = 0; k < maxhash; k++)
                         {
@@ -2260,49 +2266,49 @@ VHT_CELL **vht,
                                 ptc[k] = 1000 * DBL_MIN;
                         }
 #else
-						if (htf > 0)
-						{
-                        renorm = 0.0;
-                        for (k = 0; k < maxhash; k++)
+                        if (htf > 0)
                         {
-							//pltc[k] = 0.5 +
-                            //          ((hits[k] - (htf - hits[k]))
-                            //           / (LOCAL_PROB_DENOM * (htf + 1.0)));
-							pltc[k] = ((2 * hits[k] - htf) / (LOCAL_PROB_DENOM * htf));
+                            renorm = 0.0;
+                            for (k = 0; k < maxhash; k++)
+                            {
+                                //pltc[k] = 0.5 +
+                                //          ((hits[k] - (htf - hits[k]))
+                                //           / (LOCAL_PROB_DENOM * (htf + 1.0)));
+                                pltc[k] = ((2 * hits[k] - htf) / (LOCAL_PROB_DENOM * htf));
 
-	                        //   Calculate the per-ptc renormalization numerators
-                            ptc[k] *= 0.5 + pltc[k];
-                        //
-                        //      part 2) renormalize to sum probabilities to 1.0
-                        //
-                            renorm += ptc[k];
-						}
+                                //   Calculate the per-ptc renormalization numerators
+                                ptc[k] *= 0.5 + pltc[k];
+                                //
+                                //      part 2) renormalize to sum probabilities to 1.0
+                                //
+                                renorm += ptc[k];
+                            }
 
-                        //   if we have underflow (any probability == 0.0 ) then
-                        //   bump the probability back up to 10^-308, or
-                        //   whatever a small multiple of the minimum double
-                        //   precision value is on the current platform.
-                        //
-                        //for (k = 0; k < maxhash; k++)
-                        //{
-                        //    if (ptc[k] < 1000 * DBL_MIN)
-                        //        ptc[k] = 1000 * DBL_MIN;
-                        //}
-                        if (renorm < 1000 * DBL_MIN)
-						{
-							renorm = 1000 * DBL_MIN;
-						}
+                            //   if we have underflow (any probability == 0.0 ) then
+                            //   bump the probability back up to 10^-308, or
+                            //   whatever a small multiple of the minimum double
+                            //   precision value is on the current platform.
+                            //
+                            //for (k = 0; k < maxhash; k++)
+                            //{
+                            //    if (ptc[k] < 1000 * DBL_MIN)
+                            //        ptc[k] = 1000 * DBL_MIN;
+                            //}
+                            if (renorm < 1000 * DBL_MIN)
+                            {
+                                renorm = 1000 * DBL_MIN;
+                            }
 
-                        for (k = 0; k < maxhash; k++)
-						{
-					        crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 3, "idd", (int)k, ptc[k], pltc[k]);
-					        crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 4, "ddd", renorm, (double)hits[k], (double)htf);
+                            for (k = 0; k < maxhash; k++)
+                            {
+                                crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 3, "idd", (int)k, ptc[k], pltc[k]);
+                                crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 4, "ddd", renorm, (double)hits[k], (double)htf);
 
-                            ptc[k] /= renorm;
-						}
-						}
+                                ptc[k] /= renorm;
+                            }
+                        }
 #endif
-					}
+                    }
                 }
                 if (internal_trace)
                 {
@@ -2336,7 +2342,7 @@ classify_end_regex_loop:
 #if defined (GER) || 10
         double /* hitcount_t */ actual;  // must be floating point type to ensure proper chi2 calculation
 #else
-		double actual;
+        double actual;
 #endif
 
         //    The next statement appears stupid, but we don't have a
@@ -2350,17 +2356,17 @@ classify_end_regex_loop:
         for (k = 0; k < maxhash; k++)
         {
             if (totalhits[k] > expected)
-			{
+            {
                 expected = totalhits[k] + 1;
-			}
-			if (internal_trace)
+            }
+            if (internal_trace)
             {
                 fprintf(stderr,
-					"expected[%d]: %d, totalhist[%d] = %d\n",
+                        "expected[%d]: %d, totalhist[%d] = %d\n",
                         k,
                         (int)expected,
-						k,
-						(int)totalhits[k]);
+                        k,
+                        (int)totalhits[k]);
             }
         }
 
@@ -2385,10 +2391,10 @@ classify_end_regex_loop:
             //     for government work.
             ptc[k] = 1.0 / pow(chi2[k], 2);
 
-			crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 5, "idd", (int)k, ptc[k], chi2[k]);
-			crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 6, "did", (double)expected, (int)unk_features, actual);
+            crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 5, "idd", (int)k, ptc[k], chi2[k]);
+            crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 6, "did", (double)expected, (int)unk_features, actual);
 
-			if (user_trace)
+            if (user_trace)
             {
                 fprintf(stderr,
                         "CHI2: k: %d, feats: %f, learns: %f, avg fea/doc: %f, rel_len: %f, exp: %d, act: %f, chi2: %f, p: %f\n",
@@ -2406,7 +2412,7 @@ classify_end_regex_loop:
     }
 
 #if 0
-	//  One last chance to force probabilities into the non-stuck zone
+    //  One last chance to force probabilities into the non-stuck zone
     for (k = 0; k < maxhash; k++)
     {
         if (ptc[k] < 1000 * DBL_MIN)
@@ -2426,7 +2432,7 @@ classify_end_regex_loop:
         ptc[k] /= renorm;
     }
 #else
-	//  One last chance to force probabilities into the non-stuck zone
+    //  One last chance to force probabilities into the non-stuck zone
     //  and one last renormalize for both bayes and chisquared
     renorm = 0.0;
     for (k = 0; k < maxhash; k++)
@@ -2434,9 +2440,9 @@ classify_end_regex_loop:
         renorm += ptc[k];
     }
     if (renorm < 1000 * DBL_MIN)
-	{
-		renorm = 1000 * DBL_MIN;
-	}
+    {
+        renorm = 1000 * DBL_MIN;
+    }
     for (k = 0; k < maxhash; k++)
     {
         ptc[k] /= renorm;
@@ -2458,13 +2464,13 @@ classify_end_regex_loop:
     }
 
 #if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
-        for (k = 0; k < maxhash; k++)
-        {
-			crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 7, "idd", (int)k, tprob, ptc[k]);
-        }
+    for (k = 0; k < maxhash; k++)
+    {
+        crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 7, "idd", (int)k, tprob, ptc[k]);
+    }
 #endif
 
-        if (1 /* svlen > 0 */)
+    if (1 /* svlen > 0 */)
     {
         // char buf[1024];
         double accumulator;
@@ -2474,34 +2480,34 @@ classify_end_regex_loop:
 
         // buf[0] = 0;
 #if 0
-		accumulator = 1000 * DBL_MIN;
+        accumulator = 1000 * DBL_MIN;
         for (m = 0; m < succhash; m++)
         {
             accumulator += ptc[m];
         }
 #else
-		accumulator = tprob;
+        accumulator = tprob;
 #endif
-		CRM_ASSERT(bestseen == 0);
-		CRM_ASSERT(succhash >= 1);
+        CRM_ASSERT(bestseen == 0);
+        CRM_ASSERT(succhash >= 1);
 #if 0
-		remainder = 1000 * DBL_MIN;
+        remainder = 1000 * DBL_MIN;
         for (m = succhash; m < maxhash; m++)
         {
-                remainder += ptc[m];
+            remainder += ptc[m];
         }
 #else
-		remainder = 0.0;
+        remainder = 0.0;
         for (m = succhash; m < maxhash; m++)
         {
-	          remainder += ptc[m];
+            remainder += ptc[m];
         }
 #endif
-		if (remainder < 1000 * DBL_MIN)
-			remainder = 1000 * DBL_MIN;
-		if (accumulator < 1000 * DBL_MIN)
-			accumulator = 1000 * DBL_MIN;
-		overall_pR = log10(accumulator) - log10(remainder);
+        if (remainder < 1000 * DBL_MIN)
+            remainder = 1000 * DBL_MIN;
+        if (accumulator < 1000 * DBL_MIN)
+            accumulator = 1000 * DBL_MIN;
+        overall_pR = log10(accumulator) - log10(remainder);
 
         //   note also that strcat _accumulates_ in stext.
         //  There would be a possible buffer overflow except that _we_ control
@@ -2515,13 +2521,13 @@ classify_end_regex_loop:
         {
             snprintf(stext_ptr, stext_maxlen, "CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR);
         }
-		stext_ptr[stext_maxlen - 1] = 0;
-		stext_maxlen -= (int)strlen(stext_ptr);
-		stext_ptr += strlen(stext_ptr);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
 
-	crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 8, "dd", tprob, overall_pR);
+        crm_analysis_mark(&analysis_cfg, MARK_CLASSIFIER_PARAMS, 8, "dd", tprob, overall_pR);
 
-		bestseen = 0;
+        bestseen = 0;
         for (k = 0; k < maxhash; k++)
         {
             if (ptc[k] > ptc[bestseen])
@@ -2531,54 +2537,54 @@ classify_end_regex_loop:
         }
 
 #if 0
-		remainder = 1000 * DBL_MIN;
+        remainder = 1000 * DBL_MIN;
 #else
-		remainder = 0.0;
+        remainder = 0.0;
 #endif
-		for (m = 0; m < maxhash; m++)
+        for (m = 0; m < maxhash; m++)
         {
             if (bestseen != m)
             {
                 remainder += ptc[m];
             }
         }
-		if (remainder < 1000 * DBL_MIN)
-			remainder = 1000 * DBL_MIN;
+        if (remainder < 1000 * DBL_MIN)
+            remainder = 1000 * DBL_MIN;
         snprintf(stext_ptr, stext_maxlen, "Best match to file #%d (%s) "
-                                    "prob: %6.4f  pR: %6.4f\n",
+                                          "prob: %6.4f  pR: %6.4f\n",
                 bestseen,
                 hashname[bestseen],
                 ptc[bestseen],
                 (log10(ptc[bestseen]) - log10(remainder)));
-		stext_ptr[stext_maxlen - 1] = 0;
-		stext_maxlen -= (int)strlen(stext_ptr);
-		stext_ptr += strlen(stext_ptr);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
 
-		snprintf(stext_ptr, stext_maxlen, "Total features in input file: %d\n", unk_features);
-		stext_ptr[stext_maxlen - 1] = 0;
-		stext_maxlen -= (int)strlen(stext_ptr);
-		stext_ptr += strlen(stext_ptr);
+        snprintf(stext_ptr, stext_maxlen, "Total features in input file: %d\n", unk_features);
+        stext_ptr[stext_maxlen - 1] = 0;
+        stext_maxlen -= (int)strlen(stext_ptr);
+        stext_ptr += strlen(stext_ptr);
 
-		if (use_chisquared)
+        if (use_chisquared)
         {
             for (k = 0; k < maxhash; k++)
             {
                 int m;
 #if 0
-				remainder = 1000 * DBL_MIN;
+                remainder = 1000 * DBL_MIN;
 #else
-				remainder = 0.0;
+                remainder = 0.0;
 #endif
-				for (m = 0; m < maxhash; m++)
+                for (m = 0; m < maxhash; m++)
                 {
                     if (k != m)
                     {
                         remainder += ptc[m];
                     }
                 }
-		if (remainder < 1000 * DBL_MIN)
-			remainder = 1000 * DBL_MIN;
-                snprintf(stext_ptr, stext_maxlen, 
+                if (remainder < 1000 * DBL_MIN)
+                    remainder = 1000 * DBL_MIN;
+                snprintf(stext_ptr, stext_maxlen,
                         "#%d (%s):"
                         " features: %d, hits: %d,"                 // exp: %d,"
                         " chi2: %3.2e, pR: %6.2f \n",
@@ -2593,9 +2599,9 @@ classify_end_regex_loop:
                         ,                  //       (int)expected,
                         chi2[k],
                         (log10(ptc[k]) - log10(remainder)));
-		stext_ptr[stext_maxlen - 1] = 0;
-		stext_maxlen -= (int)strlen(stext_ptr);
-		stext_ptr += strlen(stext_ptr);
+                stext_ptr[stext_maxlen - 1] = 0;
+                stext_maxlen -= (int)strlen(stext_ptr);
+                stext_ptr += strlen(stext_ptr);
             }
         }
         else
@@ -2604,9 +2610,9 @@ classify_end_regex_loop:
             {
                 int m;
 #if 0
-				remainder = 1000 * DBL_MIN;
+                remainder = 1000 * DBL_MIN;
 #else
-				remainder = 0.0;
+                remainder = 0.0;
 #endif
                 for (m = 0; m < maxhash; m++)
                 {
@@ -2615,7 +2621,7 @@ classify_end_regex_loop:
                         remainder += ptc[m];
                     }
                 }
-                snprintf(stext_ptr, stext_maxlen, 
+                snprintf(stext_ptr, stext_maxlen,
                         "#%d (%s):"
                         " features: %d, hits: %d, prob: %3.2e, pR: %6.2f\n",
                         k,
@@ -2628,25 +2634,25 @@ classify_end_regex_loop:
                         (int)totalhits[k],
                         ptc[k],
                         (log10(ptc[k]) - log10(remainder)));
-		stext_ptr[stext_maxlen - 1] = 0;
-		stext_maxlen -= (int)strlen(stext_ptr);
-		stext_ptr += strlen(stext_ptr);
+                stext_ptr[stext_maxlen - 1] = 0;
+                stext_maxlen -= (int)strlen(stext_ptr);
+                stext_ptr += strlen(stext_ptr);
             }
         }
-	}
+    }
 
-        // check here if we got enough room in stext to stuff everything
-        // perhaps we'd better rise a nonfatalerror, instead of just
-        // whining on stderr
-        if (stext_maxlen <= 1)
-        {
-            nonfatalerror("WARNING: not enough room in the buffer to create "
-                          "the statistics text.  Perhaps you could try bigger "
-                          "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
-                    " ");
-        }
-            if (svlen > 0)
-            {
+    // check here if we got enough room in stext to stuff everything
+    // perhaps we'd better rise a nonfatalerror, instead of just
+    // whining on stderr
+    if (stext_maxlen <= 1)
+    {
+        nonfatalerror("WARNING: not enough room in the buffer to create "
+                      "the statistics text.  Perhaps you could try bigger "
+                      "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+                " ");
+    }
+    if (svlen > 0)
+    {
         crm_destructive_alter_nvariable(svrbl, svlen,
                 stext, (int)strlen(stext));
     }
@@ -2692,17 +2698,17 @@ classify_end_regex_loop:
         k = i;
         free(hashname[i]);
         if (use_unique)
-		{
+        {
             free(seen_features[i]);
-		}
-	}
+        }
+    }
 
     if (tprob <= 0.5)
     {
         if (user_trace)
-		{
+        {
             fprintf(stderr, "CLASSIFY was a FAIL, skipping forward.\n");
-		}
+        }
         //    and do what we do for a FAIL here
 #if defined (TOLERATE_FAIL_AND_OTHER_CASCADES)
         csl->next_stmt_due_to_fail = csl->mct[csl->cstmt]->fail_index;
@@ -2831,93 +2837,93 @@ int crm_expr_osb_bayes_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 
-static int collect_obj_bayes_statistics(const char *cssfile, 
-								 FEATUREBUCKET_TYPE *hashes,
-								 int hfsize, /* unit: number of features! */
-								 CRM_DECODED_PORTA_HEADER_INFO *header,
-								 int histbins,
-								 FILE *report_out)
+static int collect_obj_bayes_statistics(const char *cssfile,
+        FEATUREBUCKET_TYPE                         *hashes,
+        int                                         hfsize,                  /* unit: number of features! */
+        CRM_DECODED_PORTA_HEADER_INFO              *header,
+        int                                         histbins,
+        FILE                                       *report_out)
 {
-	int i;
-	int *bcounts;
-	int docs_learned;
-	int features_learned;
+    int i;
+    int *bcounts;
+    int docs_learned;
+    int features_learned;
     double avg_datums_per_bucket;
     double avg_ovchain_length;
-	double avg_pack_density;
+    double avg_pack_density;
 
-    int64_t sum = 0;		// summed stored weights 
-    int maxchain = 0;	// absolute maximum chain length
-    int curchain = 0;	
-    int totchain = 0;	// summed chain lengths for average calc
-    int fbuckets = 0;   // number of occupied feature buckets
-    int nchains = 0;    // number of chains
-    int zvbins = 0;     // number of zeroed, yet occupied feature bins
-    int ofbins = 0;     // number of feature bins which have an overflowing weight
-	int specials = 1;   // number of 'special markers' in the hash table; we count the header as one of them.
-	int specials_in_chains = 0;
-	int brief = 0;
+    int64_t sum = 0;            // summed stored weights
+    int maxchain = 0;           // absolute maximum chain length
+    int curchain = 0;
+    int totchain = 0;       // summed chain lengths for average calc
+    int fbuckets = 0;       // number of occupied feature buckets
+    int nchains = 0;        // number of chains
+    int zvbins = 0;         // number of zeroed, yet occupied feature bins
+    int ofbins = 0;         // number of feature bins which have an overflowing weight
+    int specials = 1;       // number of 'special markers' in the hash table; we count the header as one of them.
+    int specials_in_chains = 0;
+    int brief = 0;
 
-	if (!header || !hashes || !cssfile || !report_out || !hfsize)
-		return -1;
+    if (!header || !hashes || !cssfile || !report_out || !hfsize)
+        return -1;
 
-	docs_learned = header->binary_section.classifier_info.v.OSB_Bayes.learncount;
-	features_learned = header->binary_section.classifier_info.v.OSB_Bayes.features_learned;
+    docs_learned = header->binary_section.classifier_info.v.OSB_Bayes.learncount;
+    features_learned = header->binary_section.classifier_info.v.OSB_Bayes.features_learned;
 
-	if (histbins == 0)
-	{
-		brief = 1;
-		histbins = 3;
-	}
+    if (histbins == 0)
+    {
+        brief = 1;
+        histbins = 3;
+    }
 
-	if (histbins <= 2)
-		return -1;
+    if (histbins <= 2)
+        return -1;
 
     // set up histogram
-	bcounts = calloc(histbins, sizeof(bcounts[0]));
-	histbins--;
+    bcounts = calloc(histbins, sizeof(bcounts[0]));
+    histbins--;
 
-	//   calculate maximum overflow chain length; skip header feature at index 0
+    //   calculate maximum overflow chain length; skip header feature at index 0
     for (i = 1; i < hfsize; i++)
     {
-		if (hashes[i].hash != 0)
-		{
-			if (hashes[i].key != 0)
-			{
-				//  only count the non-special buckets for feature count
-				sum += hashes[i].value;
+        if (hashes[i].hash != 0)
+        {
+            if (hashes[i].key != 0)
+            {
+                //  only count the non-special buckets for feature count
+                sum += hashes[i].value;
 
-				if (hashes[i].value < histbins)
-				{
-					bcounts[hashes[i].value]++;
-				}
-				else
-				{
-					bcounts[histbins]++; // note that bcounts is len(histbins+1)
-				}
+                if (hashes[i].value < histbins)
+                {
+                    bcounts[hashes[i].value]++;
+                }
+                else
+                {
+                    bcounts[histbins]++;                     // note that bcounts is len(histbins+1)
+                }
 
-				fbuckets++;
-				curchain++;
-				if (hashes[i].value == 0)
-				{
-					zvbins++;
-				}
-				if (hashes[i].value >= FEATUREBUCKET_VALUE_MAX)
-				{
-					ofbins++;
-				}
-			}
-			else
-			{
-				// hash != 0, key == 0: special!
-				specials++;
-				if (curchain > 0)
-				{
-					specials_in_chains++;
-					curchain++;
-				}
-			}
-		}
+                fbuckets++;
+                curchain++;
+                if (hashes[i].value == 0)
+                {
+                    zvbins++;
+                }
+                if (hashes[i].value >= FEATUREBUCKET_VALUE_MAX)
+                {
+                    ofbins++;
+                }
+            }
+            else
+            {
+                // hash != 0, key == 0: special!
+                specials++;
+                if (curchain > 0)
+                {
+                    specials_in_chains++;
+                    curchain++;
+                }
+            }
+        }
         else
         {
             if (curchain > 0)
@@ -2925,114 +2931,115 @@ static int collect_obj_bayes_statistics(const char *cssfile,
                 nchains++;
                 totchain += curchain;
                 if (curchain > maxchain)
-				{
+                {
                     maxchain = curchain;
-				}
+                }
                 curchain = 0;
             }
         }
     }
-	histbins++; // restore real bcounts[] size now.
+    histbins++;     // restore real bcounts[] size now.
 
     avg_datums_per_bucket = ((fbuckets > 0) ? sum / (fbuckets * 1.0) : 0);
     avg_ovchain_length = ((nchains > 0) ? totchain / (nchains * 1.0) : 0);
-	avg_pack_density = (fbuckets + specials) / (hfsize * 1.0);
+    avg_pack_density = (fbuckets + specials) / (hfsize * 1.0);
 
     if (user_trace)
-	{
-		fprintf(report_out, "\n"
-						"Sparse spectra file %s statistics:\n", 
-				cssfile);
-		fprintf(report_out, "Total available buckets          : %12d\n",
-				hfsize);
-		fprintf(report_out, "Total buckets in use             : %12d\n",
-				fbuckets);
-		fprintf(report_out, "Total in-use zero-count buckets  : %12d\n",
-				zvbins);
-		fprintf(report_out, "Total buckets with value >= max  : %12d\n",
-				ofbins);
-		fprintf(report_out, "Total hashed datums in file      : %12lld\n", 
-				(long long int)sum);
-		fprintf(report_out, "Documents learned                : %12d\n",
-				docs_learned);
-		fprintf(report_out, "Features learned                 : %12d\n",
-				features_learned);
-		fprintf(report_out, "Average datums per bucket        : %12.2f\n",
-				avg_datums_per_bucket);
-		fprintf(report_out, "Maximum length of overflow chain : %12d\n",
-				maxchain);
-		fprintf(report_out, "Average length of overflow chain : %12.2f\n",
-				avg_ovchain_length);
-		fprintf(report_out, "Average packing density          : %12.2f\n",
-				avg_pack_density);
-		fprintf(report_out, "Number of special slots          : %12d\n",
-				specials);
-		fprintf(report_out, "# Special slots in a chain       : %12d\n",
-				specials_in_chains);
+    {
+        fprintf(report_out, "\n"
+                            "Sparse spectra file %s statistics:\n",
+                cssfile);
+        fprintf(report_out, "Total available buckets          : %12d\n",
+                hfsize);
+        fprintf(report_out, "Total buckets in use             : %12d\n",
+                fbuckets);
+        fprintf(report_out, "Total in-use zero-count buckets  : %12d\n",
+                zvbins);
+        fprintf(report_out, "Total buckets with value >= max  : %12d\n",
+                ofbins);
+        fprintf(report_out, "Total hashed datums in file      : %12lld\n",
+                (long long int)sum);
+        fprintf(report_out, "Documents learned                : %12d\n",
+                docs_learned);
+        fprintf(report_out, "Features learned                 : %12d\n",
+                features_learned);
+        fprintf(report_out, "Average datums per bucket        : %12.2f\n",
+                avg_datums_per_bucket);
+        fprintf(report_out, "Maximum length of overflow chain : %12d\n",
+                maxchain);
+        fprintf(report_out, "Average length of overflow chain : %12.2f\n",
+                avg_ovchain_length);
+        fprintf(report_out, "Average packing density          : %12.2f\n",
+                avg_pack_density);
+        fprintf(report_out, "Number of special slots          : %12d\n",
+                specials);
+        fprintf(report_out, "# Special slots in a chain       : %12d\n",
+                specials_in_chains);
 
-		if (!brief)
-		{
-			fprintf(report_out, "\n"
-				"Histogram:\n");
-			for (i = 0; i < histbins; i++)
-			{
-				if (bcounts[i] > 0)
-				{
-					if (i < histbins)
-					{
-						fprintf(report_out, "bin value %8d found %9d times\n",
-								i, bcounts[i]);
-					}
-					else
-					{
-						fprintf(report_out, "bin value %8d or more found %9d times\n",
-								i, bcounts[i]);
-					}
-				}
-			}
-		}
-		fprintf(report_out, "--- end ---\n");
-	}
+        if (!brief)
+        {
+            fprintf(report_out, "\n"
+                                "Histogram:\n");
+            for (i = 0; i < histbins; i++)
+            {
+                if (bcounts[i] > 0)
+                {
+                    if (i < histbins)
+                    {
+                        fprintf(report_out, "bin value %8d found %9d times\n",
+                                i, bcounts[i]);
+                    }
+                    else
+                    {
+                        fprintf(report_out, "bin value %8d or more found %9d times\n",
+                                i, bcounts[i]);
+                    }
+                }
+            }
+        }
+        fprintf(report_out, "--- end ---\n");
+    }
 
-	crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 1, "iii", hfsize, fbuckets, zvbins);
-	crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 2, "iii", ofbins, docs_learned, features_learned);
-	crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 3, "Ldd", (long long int)sum, avg_datums_per_bucket, avg_pack_density);
-	crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 4, "idi", maxchain, avg_ovchain_length, specials);
-	crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 5, "i", specials_in_chains);
+    crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 1, "iii", hfsize, fbuckets, zvbins);
+    crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 2, "iii", ofbins, docs_learned, features_learned);
+    crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 3, "Ldd", (long long int)sum, avg_datums_per_bucket, avg_pack_density);
+    crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 4, "idi", maxchain, avg_ovchain_length, specials);
+    crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 5, "i", specials_in_chains);
 
-	// write histogram data: pack it in the markers: as we now the 'extra' value can carry 48 bits and
-	// histograms are shorter than 16-bit (65536) items or less anyhow, we can pack 3 indices in the 'extra'
-	// and their values in the args...
-	{
-		uint64_t ev = 0;
-		int val[3];
-		int vc = 0;
-			for (i = 0; i < histbins; i++)
-			{
-				if (bcounts[i] > 0)
-				{
-					val[vc++] = bcounts[i];
-					if (vc == 1)
-					{
-						ev = i;
-					}
-					else
-					{
-						ev <<= 16;
-						ev |= (i & 0xFFFFU);
-					}
-					if (vc == 3)
-					{
-						crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_HISTOGRAM, ev, "iii", val[0], val[1], val[2]);
-						vc = 0;
-					}
-				}
-			}
+    // write histogram data: pack it in the markers: as we now the 'extra' value can carry 48 bits and
+    // histograms are shorter than 16-bit (65536) items or less anyhow, we can pack 3 indices in the 'extra'
+    // and their values in the args...
+    {
+        uint64_t ev = 0;
+        int val[3];
+        int vc = 0;
+        for (i = 0; i < histbins; i++)
+        {
+            if (bcounts[i] > 0)
+            {
+                val[vc++] = bcounts[i];
+                if (vc == 1)
+                {
+                    ev = i;
+                }
+                else
+                {
+                    ev <<= 16;
+                    ev |= (i & 0xFFFFU);
+                }
+                if (vc == 3)
+                {
+                    crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_HISTOGRAM, ev, "iii", val[0], val[1], val[2]);
+                    vc = 0;
+                }
+            }
+        }
 
-			if (vc > 0)
-			{
-				crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_HISTOGRAM, ev, (vc == 2 ? "ii" : "i"), val[0], val[1]);
-			}
-	}
-	return 0;
+        if (vc > 0)
+        {
+            crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_HISTOGRAM, ev, (vc == 2 ? "ii" : "i"), val[0], val[1]);
+        }
+    }
+    return 0;
 }
+

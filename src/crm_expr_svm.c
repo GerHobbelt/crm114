@@ -1000,9 +1000,9 @@ static double sigmoid_predict(double decision_value, double A, double B)
 
 
 int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     int i, j, k, h;
     char ftext[MAX_PATTERN];
@@ -1022,7 +1022,7 @@ VHT_CELL **vht,
     int use_unigram_features;
     char ptext[MAX_PATTERN]; //the regrex pattern
     int plen;
-    regex_t regcb;
+	regex_t regcb = {0};
     regmatch_t match[5];
     struct stat statbuf1;    //  for statting the hash file1
     struct stat statbuf2;    //  for statting the hash file2
@@ -1125,14 +1125,13 @@ VHT_CELL **vht,
     else
     {
         //only has one input file
-        if (ptext[0] != 0)
-            crm_regfree(&regcb);
         if (!crm_nextword(ftext, flen, 0, &i, &j) || j == 0)
         {
             int fev = nonfatalerror_ex(SRC_LOC(),
                     "\nYou didn't specify a valid filename: '%.*s'\n",
                     (int)flen,
                     ftext);
+            crm_regfree(&regcb);
             return fev;
         }
         CRM_ASSERT(i + j <= flen);
@@ -1143,6 +1142,7 @@ VHT_CELL **vht,
         file3[0] = 0;
     }
     //    if (|Text|>0) hide the text into the .svm file
+        crm_regfree(&regcb);
 
     //     get the "this is a word" regex
     plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
@@ -1154,10 +1154,10 @@ VHT_CELL **vht,
         fprintf(stderr, "\nWordmatch pattern is %s", ptext);
 
     i = crm_regcomp(&regcb, ptext, plen, cflags);
-
     if (i != 0)
     {
         crm_regerror(i, &regcb, tempbuf, data_window_size);
+            crm_regfree(&regcb);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
         goto regcomp_failed;
     }
@@ -1307,8 +1307,6 @@ VHT_CELL **vht,
             }
             else
             {
-                if (ptext[0] != 0)
-                    crm_regfree(&regcb);
                 k = 1;
             }
         }   //   end the while k==0
@@ -1589,9 +1587,11 @@ VHT_CELL **vht,
             //  file between beststart and bestend.
 
             if (user_trace)
+            {
                 fprintf(stderr,
                         "Deleting feature from %d to %d (rad %f) of file %s\n",
                         beststart, bestend, bestrad, file1);
+            }
 
             //   Deletion time - move the remaining stuff in the file
             //   up to fill the hole, then msync the file, munmap it, and
@@ -1619,7 +1619,9 @@ VHT_CELL **vht,
     }
     //  let go of the hashes.
     free(hashes);
-    if (sense < 0)
+    crm_regfree(&regcb);
+    
+	if (sense < 0)
     {
         // finish refuting....
         return 0;
@@ -2287,10 +2289,10 @@ VHT_CELL **vht,
                             file3);
                 }
 
-	//  Now a nasty bit.  Because there might be data of the 
-	//  file retained, we need to force an unmap-by-name which will allow a remap
-	//  with the new file length later on.
-	crm_force_munmap_filename(file3);
+                //  Now a nasty bit.  Because there might be data of the
+                //  file retained, we need to force an unmap-by-name which will allow a remap
+                //  with the new file length later on.
+                crm_force_munmap_filename(file3);
 
                 hashf = fopen(file3, "wb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
                 if (hashf == NULL)
@@ -2371,9 +2373,9 @@ regcomp_failed:
 
 
 int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     int i, j, k, h;
     char ftext[MAX_PATTERN];
@@ -2383,7 +2385,7 @@ VHT_CELL **vht,
     char file1[MAX_PATTERN];
     char file2[MAX_PATTERN];
     char file3[MAX_PATTERN];
-    regex_t regcb;
+	regex_t regcb = {0};
     regmatch_t match[5];
     int textoffset;
     int textmaxoffset;
@@ -2461,7 +2463,7 @@ VHT_CELL **vht,
         /////////////////////////////////////
         //    Take this out when we finally support refutation
         ////////////////////////////////////
-        //      fprintf(stderr, "Hyperspace Refute is NOT SUPPORTED YET\n");
+        //      fprintf(stderr, "SVM Refute is NOT SUPPORTED YET\n");
         //return (0);
         if (user_trace)
             fprintf(stderr, " refuting learning\n");
@@ -2559,6 +2561,7 @@ VHT_CELL **vht,
     if (i != 0)
     {
         crm_regerror(i, &regcb, tempbuf, data_window_size);
+        crm_regfree(&regcb);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
         goto regcomp_failed;
     }
@@ -2691,8 +2694,6 @@ VHT_CELL **vht,
             }
             else
             {
-                if (ptext[0] != 0)
-                    crm_regfree(&regcb);
                 k = 1;
             }
         }   //   end the while k==0
@@ -2748,9 +2749,11 @@ VHT_CELL **vht,
     }
     else
     {
+                    crm_regfree(&regcb);
         nonfatalerror("Sorry, but I can't classify the null string.", "");
         return 0;
     }
+                    crm_regfree(&regcb);
 
     if (user_trace)
     {
@@ -2796,6 +2799,8 @@ VHT_CELL **vht,
         file3[match[3].rm_eo - match[3].rm_so] = 0;
         if (internal_trace)
             fprintf(stderr, "file1=%s\tfile2=%s\tfile3=%s\n", file1, file2, file3);
+
+                    crm_regfree(&regcb);
 
         // open all files,
         // first check whether file3 is the current version solution.
@@ -3163,6 +3168,7 @@ VHT_CELL **vht,
     }       //end (k==0)
     else
     {
+                    crm_regfree(&regcb);
         nonfatalerror(
                 "You need to input (file1.svm | file2.svm | f1vsf2.svmhyp)\n", "");
         return 0;

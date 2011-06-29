@@ -11,7 +11,7 @@ nametemplate=`date +%Y%m%d`
 
 for f in * 
 do
-	if [ -f "@ORIGINAL_BILLY_DISTRO_DIR@/$f" ] 
+	if [ -f "@ORIGINAL_BILLY_DISTRO_DIR@/$f" ]
 	then
 		rm -f "diff/$f.${nametemplate}.normal.diff" 2>&1
 		rm -f "diff/$f.${nametemplate}.context.diff" 2>&1

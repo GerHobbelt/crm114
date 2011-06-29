@@ -1,0 +1,68 @@
+#! @BIN_PATH@/crm114
+#
+window
+#
+# Test <fromend newend> match attributes (in 'verbosity' function)
+#
+isolate (:verbose:) /SET/
+
+goto /:main:/
+
+#
+# print text to stderr for verbose display of events
+#
+:verbosity: (:verbose_text:)
+{
+    match [:verbose:] /SET/
+
+    isolate (:verbose_text:)  /\n:*:verbose_text:/ 
+    # ^^^ extra NL is needed for <newend> to recognize any NL at the start of :verbose_text:
+    isolate (:verbose_text_ln:) //
+
+    # we'll automatically loose the optional terminating NEWLINE anyway, so no need to trim at end
+
+    isolate (:verbose_logfile:) <default> //
+
+    match [:verbose_text:] <fromstart nomultiline> //
+    {
+        # fetch one line and print; abort when it's an empty '.*' match at
+        # the end of the content: <fromend newend>
+        match [:verbose_text:] <fromend newend nomultiline> /.*/ (:verbose_text_ln:)
+        output <append> [:*:verbose_logfile:] /VERBOSE: :*:verbose_text_ln:\n/
+
+        liaf
+    }
+}
+return
+
+:main:
+
+call /:verbosity:/ [\n1 Lorem ipsum te vix doctus sanctus oportere1\n]
+
+call /:verbosity:/ [0Lorem ipsum te vix doctus sanctus oportere,\n\
+solum liberavisse delicatissimi est ne. Qui verear nominavi apeirian\n\
+ad, ut quo dolorum vituperatoribus impedit, quo possim comprehensam ei.\n\
+\n\
+\n\
+Et audiam persius quo, quo congue docendi mediocrem no.\n\
+Sea ne ferri summo accusamus, duo nonummy suscipit officiis no. Ornatus\n\
+assentior nec id.1\n]
+
+# make sure only ONE newline at the end there is stripped (and regenerated!)
+call /:verbosity:/ [0Lorem ipsum te vix doctus sanctus oportere0]
+call /:verbosity:/ [0Lorem ipsum te vix doctus sanctus oportere0]
+# and a newline is auto-added to the line above...
+call /:verbosity:/ [0Lorem ipsum te vix doctus sanctus oportere1\n]
+call /:verbosity:/ [0Lorem ipsum te vix doctus sanctus oportere1\n]
+call /:verbosity:/ [0Lorem ipsum te vix doctus sanctus oportere1\n]
+call /:verbosity:/ [0Lorem ipsum te vix doctus sanctus oportere2\n\n]
+call /:verbosity:/ [0extra newline - end test0]
+call /:verbosity:/ [\n1 Lorem ipsum te vix doctus sanctus oportere0]
+call /:verbosity:/ [\n1 Lorem ipsum te vix doctus sanctus oportere0]
+call /:verbosity:/ [\n1 Lorem ipsum te vix doctus sanctus oportere1\n]
+call /:verbosity:/ [\n1 Lorem ipsum te vix doctus sanctus oportere1\n]
+call /:verbosity:/ [\n1 Lorem ipsum te vix doctus sanctus oportere1\n]
+call /:verbosity:/ [\n\n2 Lorem ipsum te vix doctus sanctus oportere0]
+call /:verbosity:/ [0Lorem ipsum te vix doctus sanctus oportere1\n]
+call /:verbosity:/ [0Lorem ipsum te vix doctus sanctus oportere1\n]
+call /:verbosity:/ [1 + 2 start newlines above - end test]

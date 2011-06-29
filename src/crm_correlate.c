@@ -30,9 +30,9 @@
 //
 
 int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //     learn the given text as correlative text
     //     belonging to a particular type.
@@ -124,7 +124,7 @@ VHT_CELL **vht,
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
-    learnfilename = strdup(&(htext[i]));
+    learnfilename = &htext[i];
     if (!learnfilename)
     {
         untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -155,7 +155,6 @@ VHT_CELL **vht,
                     learnfilename,
                     errno,
                     errno_descr(errno));
-            free(learnfilename);
             return fev;
         }
 
@@ -168,7 +167,6 @@ VHT_CELL **vht,
                     "\n Couldn't write header to file %s; errno=%d(%s)\n",
                     learnfilename, errno, errno_descr(errno));
             fclose(f);
-            free(learnfilename);
             return fev;
         }
 
@@ -184,14 +182,14 @@ VHT_CELL **vht,
             fprintf(stderr, "Opening correlate file %s for append\n", learnfilename);
         }
 
-	//  Now a nasty bit.  Because there might be data of the 
-	//  file retained, we need to force an unmap-by-name which will allow a remap
-	//  with the new file length later on.
-	if (internal_trace)
-	{
-	  fprintf (stderr, "un-mmap-ping file %s for known state\n", learnfilename);
-	}
-	crm_force_munmap_filename(learnfilename);
+        //  Now a nasty bit.  Because there might be data of the
+        //  file retained, we need to force an unmap-by-name which will allow a remap
+        //  with the new file length later on.
+        if (internal_trace)
+        {
+            fprintf(stderr, "un-mmap-ping file %s for known state\n", learnfilename);
+        }
+        crm_force_munmap_filename(learnfilename);
 
         f = fopen(learnfilename, "ab+");
         if (!f)
@@ -201,7 +199,6 @@ VHT_CELL **vht,
                     learnfilename,
                     errno,
                     errno_descr(errno));
-            free(learnfilename);
             return fev;
         }
 
@@ -229,7 +226,6 @@ VHT_CELL **vht,
                         learnfilename,
                         err,
                         errno_descr(err));
-                free(learnfilename);
                 return fev;
             }
 
@@ -255,6 +251,11 @@ VHT_CELL **vht,
 
     if (llen > 0)
     {
+	if (!crm_is_legal_variable(ltext, llen))
+	{
+		int q = fatalerror_ex(SRC_LOC(), "Attempt to LEARN from an illegal variable '%.*s'. How very bizarre.", llen, ltext);
+        return q;
+	}
         vhtindex = crm_vht_lookup(vht, ltext, llen);
     }
     else
@@ -270,7 +271,6 @@ VHT_CELL **vht,
         fclose(f);
         q = nonfatalerror(" Attempt to LEARN from a nonexistent variable ",
                 ltext);
-        free(learnfilename);
         return q;
     }
     mdw = NULL;
@@ -284,7 +284,6 @@ VHT_CELL **vht,
         CRM_ASSERT(f != NULL);
         fclose(f);
         q = nonfatalerror(" Bogus text block containing variable ", ltext);
-        free(learnfilename);
         return q;
     }
     else
@@ -319,7 +318,6 @@ VHT_CELL **vht,
                     learnfilename,
                     err,
                     errno_descr(err));
-            free(learnfilename);
             return fev;
         }
     }
@@ -327,7 +325,6 @@ VHT_CELL **vht,
     CRM_ASSERT(f != NULL);
     fclose(f);
 
-    free(learnfilename);
     return 0;
 }
 
@@ -335,9 +332,9 @@ VHT_CELL **vht,
 //      How to do a correlate-style CLASSIFY on some text.
 //
 int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -622,7 +619,7 @@ VHT_CELL **vht,
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
-                      "for classify().\n", "Hope you know what are you doing.");
+                             "for classify().\n", "Hope you know what are you doing.");
     }
 
     //
@@ -848,7 +845,7 @@ VHT_CELL **vht,
         remainder = 10 * DBL_MIN;
         for (m = succhash; m < maxhash; m++)
         {
-                remainder += ptc[m];
+            remainder += ptc[m];
         }
         overall_pR = log10(accumulator) - log10(remainder);
 
@@ -873,9 +870,9 @@ VHT_CELL **vht,
         for (k = 0; k < maxhash; k++)
         {
             if (ptc[k] > ptc[bestseen])
-			{
+            {
                 bestseen = k;
-			}
+            }
         }
         remainder = 10 * DBL_MIN;
         for (m = 0; m < maxhash; m++)

@@ -73,6 +73,14 @@
 #:cache_dupe_command: /copy/
 
 
+#
+# specify your system's 'mail' command:
+#
+# Should support the commandline
+#   <to_address> -s <subject>
+# and content via stdin.
+:mail: /mail/
+
 
 ###########################################################################
 #
@@ -213,6 +221,13 @@
 :log_all_mail_to_file: //
 #:log_all_mail_to_file: /my_personal_mail_log_file_name.txt/
 
+# mailfilter log options:
+:log_to_nonspamtext: /yes/
+#:log_to_nonspamtext: //
+:log_to_spamtext: /yes/
+#:log_to_spamtext: //
+
+
 #     --------- When we log messages, should we use a mail separator?
 #      --------- And, if so, what?
 :mail_separator: /\n-=-=-=-=-=-=- cut here -=-=-=-=-=-=-\n/
@@ -242,12 +257,13 @@
 #
 #     -- use this next one if you have installed CRM114 with "make install"
 #     -- (This is preferred and is the default)
-#:trainer_invoke_command: /.\/mailtrainer.crm/
-:trainer_invoke_command: /crm114 mailtrainer.crm/
+#:trainer_invoke_command: /:*:fileprefix:mailtrainer.crm/
+#:trainer_invoke_command: /.\/crm114 :*:fileprefix:mailtrainer.crm/
+:trainer_invoke_command: /.\/crm114 :*:fileprefix:mailtrainer.crm --verbose/
 #
 #     -- use this one if you can't do a "make install" and so must run the
 #     --- crm114_tre binary directly out of the current working directory.
-# :trainer_invoke_command: /.\/crm114_tre mailtrainer.crm /
+# :trainer_invoke_command: /.\/crm114_tre :*:fileprefix:mailtrainer.crm /
 
 
 #    ------  If we're cacheing for retraining, we're probably using
@@ -261,8 +277,8 @@
 #            ------  options to shuffle.crm will work fine.  Alternatively,
 #             ------  you can use the "sort --key 1.2" on date-named files to
 #              -----   achieve chronological training
-:trainer_randomizer_command: /.\/shuffle.crm/
-#:trainer_randomizer_command: /.\/crm114 shuffle.crm/
+:trainer_randomizer_command: /:*:fileprefix:shuffle.crm/
+#:trainer_randomizer_command: /.\/crm114 :*:fileprefix:shuffle.crm/
 #:trainer_randomizer_command: /sort --key 1.2/
 
 
@@ -358,13 +374,14 @@
 #:clf: /microgroom/
 #:clf: /osb/
 #:clf: /osb microgroom/
-:clf: /osb unique microgroom/
+###:clf: /osb unique microgroom/
 #:clf: /correlate/
 #:clf: /winnow/
 #:clf: /osbf/
 #:clf: /osbf microgroom/
 #:clf: /hyperspace/
 #:clf: /hyperspace unique/
+:clf: /hyperspace/
 #
 #
 #
@@ -423,20 +440,18 @@
 #
 #
 #
-# ------------ HIGHLY EXPERIMENTAL - automatic training!
-#             enable this only if you really want to live VERY dangerously!
-#              "Do you feel lucky today, punk?  Well, do ya?"
 #
-:automatic_training: /no/
+# [i_a]
+# Set to empty // if you do not want mailtrainer to also 'refute'-train messages
+# when initial (regular) training didn't deliver the desired result (yet).
 #
-#       ---- if you are living dangerously and have turned on autotraining,
-#            you should also set the following to point to an address that
-#            will get read on a quick basis, becuause this is where autotrain
-#            verifications will go.
+# Default when not specified: SET.
 #
-#:autotrain_address: /root/
-#
+:do_refute_training: /SET/
+#:do_refute_training: //
 
 
-:verbose_logfile: /mail_crm_verbose.log/
+
+# :verbose_logfile: /mail_crm_verbose.log/
+:verbose_logfile: //
 

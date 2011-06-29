@@ -406,17 +406,25 @@ int crm_nextword(const char *input,
     *start = starthere;
     *len = 0;
     //   find start of string (if it exists)
-    while (*start < inlen && input[*start] <= 0x20)
+#if 10
+    *start = skip_blanks(input, *start, inlen);
+#else
+    while (*start < inlen && input[*start] < 0x21)
         *start += 1;
+#endif
 
     //  check - did we hit the end and still be invalid?  If so, return 0
     if (*start == inlen)
         return 0;
 
     //    if we get to here, then we have a valid string.
+#if 10
+    *len = skip_nonblanks(input, *start, inlen) - *start;
+#else
     while ((*start + *len) < inlen
-           && input[*start + *len] > 0x20)
+           && input[*start + *len] >= 0x21)
         *len += 1;
+#endif
 
     return (*len) > 0;
 }
@@ -1111,6 +1119,7 @@ int crm_generic_parse_line(
 
 //    and to avoid all the mumbo-jumbo, an easy way to get a copy of
 //    an arg found by the declensional parser.
+//
 int crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen)
 {
     int len;
@@ -1125,9 +1134,7 @@ int crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen)
     }
     else
     {
-        len = tolen - 1;
-        if (len > fromlen)
-            len = fromlen;
+        len = CRM_MIN(tolen - 1, fromlen);
         memmove(to, from, len);
         to[len] = 0;
         return len;

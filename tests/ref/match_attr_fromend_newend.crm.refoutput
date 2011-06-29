@@ -1,0 +1,55 @@
+TEST SCRIPT + COMMANDLINE:
+match_attr_fromend_newend.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+VERBOSE: 
+VERBOSE: 1 Lorem ipsum te vix doctus sanctus oportere1
+VERBOSE: 
+VERBOSE: 0Lorem ipsum te vix doctus sanctus oportere,
+VERBOSE: solum liberavisse delicatissimi est ne. Qui verear nominavi apeirian
+VERBOSE: ad, ut quo dolorum vituperatoribus impedit, quo possim comprehensam ei.
+VERBOSE: 
+VERBOSE: 
+VERBOSE: Et audiam persius quo, quo congue docendi mediocrem no.
+VERBOSE: Sea ne ferri summo accusamus, duo nonummy suscipit officiis no. Ornatus
+VERBOSE: assentior nec id.1
+VERBOSE: 
+VERBOSE: 0Lorem ipsum te vix doctus sanctus oportere0
+VERBOSE: 0Lorem ipsum te vix doctus sanctus oportere0
+VERBOSE: 0Lorem ipsum te vix doctus sanctus oportere1
+VERBOSE: 
+VERBOSE: 0Lorem ipsum te vix doctus sanctus oportere1
+VERBOSE: 
+VERBOSE: 0Lorem ipsum te vix doctus sanctus oportere1
+VERBOSE: 
+VERBOSE: 0Lorem ipsum te vix doctus sanctus oportere2
+VERBOSE: 
+VERBOSE: 
+VERBOSE: 0extra newline - end test0
+VERBOSE: 
+VERBOSE: 1 Lorem ipsum te vix doctus sanctus oportere0
+VERBOSE: 
+VERBOSE: 1 Lorem ipsum te vix doctus sanctus oportere0
+VERBOSE: 
+VERBOSE: 1 Lorem ipsum te vix doctus sanctus oportere1
+VERBOSE: 
+VERBOSE: 
+VERBOSE: 1 Lorem ipsum te vix doctus sanctus oportere1
+VERBOSE: 
+VERBOSE: 
+VERBOSE: 1 Lorem ipsum te vix doctus sanctus oportere1
+VERBOSE: 
+VERBOSE: 
+VERBOSE: 
+VERBOSE: 2 Lorem ipsum te vix doctus sanctus oportere0
+VERBOSE: 0Lorem ipsum te vix doctus sanctus oportere1
+VERBOSE: 
+VERBOSE: 0Lorem ipsum te vix doctus sanctus oportere1
+VERBOSE: 
+VERBOSE: 1 + 2 start newlines above - end test
+

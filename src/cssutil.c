@@ -121,7 +121,7 @@ char *tempbuf = NULL;
 
 
 #if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
-CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = {0};
+CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = { 0 };
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
 
@@ -192,13 +192,7 @@ int main(int argc, char **argv)
     int docs_learned = -1;
     int features_learned = -1;
 
-    //    the following for crm114.h's happiness
-
-    char *newinputbuf;
-
     init_stdin_out_err_as_os_handles();
-
-    newinputbuf = (char *)&hfsize;
 
     //   copy app path/name into global static...
     prog_argv0 = argv[0];
@@ -456,11 +450,11 @@ int main(int argc, char **argv)
                     //fatalerror (" This file should have learncounts, but doesn't!",
                     //  " The slot is busy, too.  It's hosed.  Time to die.");
                     //goto regcomp_failed ;
-                    fprintf(stderr
-                           ,"\n"
-						   "Minor Caution - this file has the featurecount slot in use.\n"
-						   "This is not a problem for Markovian classification, but it will have some\n"
-						   "issues with an OSB classfier.\n");
+                    fprintf(stderr,
+                            "\n"
+                            "Minor Caution - this file has the featurecount slot in use.\n"
+                            "This is not a problem for Markovian classification, but it will have some\n"
+                            "issues with an OSB classfier.\n");
                 }
             }
             //fprintf(stderr, "This file has had %d features learned!\n",

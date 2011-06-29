@@ -125,7 +125,7 @@ char *tempbuf = NULL;
 
 
 #if !defined (CRM_WITHOUT_BMP_ASSISTED_ANALYSIS)
-CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = {0};
+CRM_ANALYSIS_PROFILE_CONFIG analysis_cfg = { 0 };
 #endif /* CRM_WITHOUT_BMP_ASSISTED_ANALYSIS */
 
 
@@ -191,8 +191,6 @@ int main(int argc, char **argv)
 
     //    the following for crm114.h's happiness
 
-    char *newinputbuf;
-
     init_stdin_out_err_as_os_handles();
 
     //   copy app path/name into global static...
@@ -200,8 +198,6 @@ int main(int argc, char **argv)
 
     user_trace = DEFAULT_USER_TRACE_LEVEL;
     internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
-
-    newinputbuf = (char *)&hfsize;
 
     bcounts = calloc(OSBF_FEATUREBUCKET_VALUE_MAX, sizeof(bcounts[0]));
 

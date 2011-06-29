@@ -1,3 +1,148 @@
+2008-10-04 Ger Hobbelt
+
+    * Added a few extra test cases to 'make check': alius_w_comment2, ...
+
+    * Updated the makefiles to make sure that all MSVC/Windows required files are included in the
+      distro (some projects were lacking). (NOTE: mandatory libraries are not included; there available
+      as separate downloads at http://hebbut.net/ )
+
+
+2008-10-02 / 2008-09-** Ger Hobbelt
+
+    * Full review of mailreaver/mailtrainer/mailfilter/maillib.crm and user request resulted in a new version
+      with several fixes to both scripts and C source code. Script fixes include the important upgrade for
+      mailtrainer, which now uses the exact mail preprocessing code as mailreaver, so that mailtrainer does
+      NOT use a message with its content duplicated for learning and re-classification.
+      
+    * Added '--dontstore' non-cached classification and training support to mailreaver + mailtrainer.
+    
+    * Integrated almost all still missing mailfilter features (e.g. forwarding to error-handling email address)
+      to mailreaver. NOT INCLUDED: special 'secured' command mail processing; '--learn' handling, '--unlearn' handling,
+      'automatic' training.
+
+      Extra mailfilter.CF options:
+      
+        # mailfilter log options:
+        :log_to_nonspamtext: /yes/
+        :log_to_spamtext: /yes/
+
+        
+    * mail***.crm '--help' command line option now always is detected and processed, no matter its position on the
+      command line.
+      
+    * Fixed Makefiles, scripts and ./configure to properly support 'make install'; now bang lines will ensure
+      the *installed* crm114 binary will be used to execute them. When you want to use a different crm114 binary,
+      you should run the script as
+      
+        path-to/crm114 your_script.crm
+        
+    * Extra mailfilter.CF configuration parameters added:
+
+            #
+            # specify your system's 'mail' command:
+            #
+            # Should support the commandline
+            #   <to_address> -s <subject>
+            # and content via stdin.
+            :mail: /mail/
+
+      and
+
+            :do_refute_training: /SET/ 
+
+    * Made darn sure the message content passed to crm*expand() functions is NUL terminated, no matter what.
+
+      This prevents spurious crashes and extra weird character output when running in -t and/or -T mode.
+      
+    * Fix for crm script 'input' statement when filename is constructed using a crm expression which is itself
+      larger than the maximum allowed filepath on your OS.
+      
+    * FAILED ATTEMPT to get rid of the global variables; tdw and vht are now generally passed as extra arguments,
+      but this not sufficient; there are a zillion spots in the code which require almost all globals (error
+      handling/reporting routines), which will bloat the call interfaces tremendously when we'd continued with this particular
+      effort. 
+      
+      ABORTED EFFORT.
+      
+    * Fix for fringe case in 'isolate' statement regarding buffer overruns.
+    
+    * script 'match' fix for <newend>.
+    
+    * script 'match' addition: now <fromend>/<fromstart>, etc. can all be mixed instead of only the last one being used with warning that
+      extra (previous) attributes would be discarded.
+      
+      Provisional fix for <backwards> as well, but this has not been tested yet.
+      
+    * Fix for failing 'syscall': serious application invoke errors are now non-trappable as the system state is undeterminable by then anyhow.
+    
+    * Fix for fringe case buffer overrun error in 'window' script statement where one would specify illegally large variable names.
+    
+    * Important FIX for FSCM: now with corrected VT invocation. The existing situation would produce extremely corrupted hash feature series 
+      and core dumps in particular circumstances.
+    
+    * Fix for several fringe case buffer overrun errors in Markovian classifier.
+    
+    * Fix memory mapped access request for the Markovian classify statement: read-only access - as 
+      it should be.
+    
+    * Fix for memory and resource leaks in Markovian classifier.
+    
+    * Update for the crm script :@: operator: the '=' equality compare operation will try to cope with the slight errors which will occur in classifiers as they use
+      floating point arithmatic. The equal operator will now compare the values within a band of FLT_EPSILON.
+      
+    * Fix for Win64 versus Linux 64-bit printf() operations in the crm114 script math operator :@:
+    
+    * Fix for OSB <refute> learncount updates in the CSS databases; before, illegal NEGATIVE values could easily occur, thus destroying your CSS databases 
+      completely.
+    
+    * Fixes for Markovian repeated for OSB Bayes, Winnow and OSBF classifiers.
+    
+    * Important FIX for Hyperspace VT: same as for FSCM (see above).
+    
+    * Fixed Hyperspace 'learn': would always print some '-t' output, even when '-t' was NOT enabled.
+    
+    * Fixed bug where script statements such as 'input' would try to store too much data into a variable: now such failures are properly 
+      trappable, as originally intended.
+      
+    * VERSIONING HEADER *update* now also stores the 'REVISION' to assist future migration operations. This BREAKS the current
+      versioned CSS format, but we can better break it now, when few people use it, then later when folks truely depend on it.
+      
+    * TESTS: added several script tests which verify additional normal and illegal behaviours.
+    
+    * configure: now also reports the install directory when done. This is done to help users who compile crm114 GerH 
+      from source and wish to know where their binaries are going to end up.
+      
+    * Fixed the distribute_files_from_src_dir.sh script which redistributes Bill's scripts in ./src/
+    
+    * configure: added the [sub]category testset make targets to the main 'make' file for ease of use:
+    
+            megatest_ng:
+            timing_tests:
+            test_megatest:
+            test_megatest_ng:
+            test_basics:
+            test_other:
+            test_mailfilter:
+            test_mailreaver:
+            test_classifiers:
+            script:
+            initial_tests1:
+            fringe_cases_compiler_tests1:
+            initial_tests2:
+            further_tests:
+            all_classifier_tests:
+            markovian_classifier_tests:
+            OSBF_classifier_tests:
+            OSB_classifier_tests:
+            Hyperspace_classifier_tests:
+            Bit_Entropy_classifier_tests:
+            FSCM_classifier_tests:
+            Neural_Net_classifier_tests:
+            SVM_SKS_classifier_tests:
+            Correlator_classifier_tests:
+            CLUMP_classifier_tests:
+
+
 2008-07-17 Ger Hobbelt
 
     * Fixed Makefiles, scripts and ./configure to fully support VPATH: e.g. you can now

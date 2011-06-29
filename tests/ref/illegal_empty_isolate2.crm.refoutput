@@ -13,6 +13,6 @@ crm114: *WARNING*
 I'll try to keep working.
 This happened at line 8 of file illegal_empty_isolate2.crm:
     isolate (:*:dst:) /FUBAR/
-(runtime system location: crm_expr_isolate.c(55) in routine: crm_expr_isolate)
+(runtime system location: crm_expr_isolate.c(56) in routine: crm_expr_isolate)
 
 

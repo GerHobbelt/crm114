@@ -669,11 +669,11 @@
 #define MACHINE_IS_LITTLE_ENDIAN 1
 
 /* Define to 1 if `major', `minor', and `makedev' are declared in <mkdev.h>.
-   */
+ */
 /* #undef MAJOR_IN_MKDEV */
 
 /* Define to 1 if `major', `minor', and `makedev' are declared in
-   <sysmacros.h>. */
+ * <sysmacros.h>. */
 /* #undef MAJOR_IN_SYSMACROS */
 
 /* directory where BillY's original crm114 distro resides */
@@ -707,7 +707,7 @@
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
 /* revision number of software */
-#define REVISION "3366"
+#define REVISION "3495"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT sizeof(int)  /* 4 */
@@ -725,7 +725,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-3366"
+#define TAR_FILENAME_POSTFIX "Ger-3495"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME

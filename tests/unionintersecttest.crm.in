@@ -1,4 +1,4 @@
-#! @BIN_PATH@/crm114
+#! @BIN_PATH@/crm114 
 window
 output /:*:_nl: CRM114: Testing union and intersection :*:_nl: :*:_nl:/
 {

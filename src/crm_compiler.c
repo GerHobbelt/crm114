@@ -42,16 +42,49 @@ static const STMT_TABLE_TYPE stmt_table[] =
     { "alius",     CRM_ALIUS,         5,  1,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "alter",     CRM_ALTER,         5,  1,     0,    0,  0,     1,  1,    1,  1,   0,  0,    0 },
     { "call",      CRM_CALL,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  1,    0 },
-    { "cssmerge",  CRM_CSS_MERGE,     8,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_UNIQUE | CRM_MICROGROOM },
+    { "cssmerge",  CRM_CSS_MERGE,     8,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_UNIQUE | CRM_MICROGROOM | CRM_BASIC
+      | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+      | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+      | CRM_NEURAL_NET | CRM_AUTODETECT },
     //  text         internal       nlen exec special  min max   min max   min max  min max  flags
     //   rep           code               ?    flags   angles   slashargs  parens    boxes
-    { "cssdiff",   CRM_CSS_DIFF,      7,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_UNIQUE },
-    { "cssbackup", CRM_CSS_BACKUP,    9,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT },
-    { "cssrestore", CRM_CSS_RESTORE, 10,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT },
-    { "cssinfo",   CRM_CSS_INFO,      7,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT },
-    { "cssanalyze", CRM_CSS_ANALYZE, 10,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC },
-    { "csscreate", CRM_CSS_CREATE,    9,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT },
-    { "cssmigrate", CRM_CSS_MIGRATE, 10,  1,     0,    0,  0,     0,  1,    1,  1,   1,  1,    0 },
+    { "cssdiff",   CRM_CSS_DIFF,      7,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_UNIQUE | CRM_BASIC
+      | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+      | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+      | CRM_NEURAL_NET | CRM_AUTODETECT },
+    { "cssbackup", CRM_CSS_BACKUP,    9,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
+      | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+      | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+      | CRM_NEURAL_NET | CRM_AUTODETECT },
+    { "cssrestore", CRM_CSS_RESTORE, 10,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
+      | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+      | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+      | CRM_NEURAL_NET | CRM_AUTODETECT },
+    { "cssinfo",   CRM_CSS_INFO,      7,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
+      | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+      | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+      | CRM_NEURAL_NET | CRM_AUTODETECT },
+    { "cssanalyze", CRM_CSS_ANALYZE, 10,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_BASIC
+      | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+      | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+      | CRM_NEURAL_NET | CRM_AUTODETECT },
+    { "csscreate", CRM_CSS_CREATE,    9,  1,     1,    0,  1,     0,  1,    1,  2,   0,  1,  CRM_DEFAULT | CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE |
+      CRM_LITERAL | CRM_BYCHUNK
+      | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+      | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+      | CRM_NEURAL_NET },
+    { "cssmigrate", CRM_CSS_MIGRATE, 10,  1,     0,    0,  0,     0,  1,    1,  1,   1,  1,  CRM_DEFAULT | CRM_BASIC
+      | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+      | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+      | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+      | CRM_NEURAL_NET | CRM_AUTODETECT },
     { "debug",     CRM_DEBUG,         5,  0,     0,    0,  0,     0,  0,    0,  0,   0,  0,    0 },
     { "eval",      CRM_EVAL,          4,  1,     0,    0,  0,     1,  1,    0,  1,   0,  0,    0 },
     { "exit",      CRM_EXIT,          4,  1,     0,    0,  0,     0,  1,    0,  0,   0,  0,    0 },
@@ -65,13 +98,15 @@ static const STMT_TABLE_TYPE stmt_table[] =
     { "intersect", CRM_INTERSECT,     9,  1,     0,    0,  0,     0,  0,    1,  1,   1,  1,    0 },
     { "isolate",   CRM_ISOLATE,       7,  1,     0,    0,  1,     0,  1,    1,  1,   0,  0,  CRM_DEFAULT },
     { "lazy",      CRM_LAZY,          4,  1,     0,    0,  1,     0,  1,    1,  1,   0,  0,  CRM_DEFAULT },
-    { "learn",     CRM_LEARN,         5,  1,     0,    0,  1,     0,  2,    1,  1,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL | CRM_BYCHUNK
+    { "learn",     CRM_LEARN,         5,  1,     0,    0,  1,     0,  2,    1,  1,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL |
+      CRM_BYCHUNK
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
       | CRM_REFUTE | CRM_APPEND
       | CRM_NEURAL_NET | CRM_FROMSTART },
-    { "classify",  CRM_CLASSIFY,      8,  1,     0,    0,  1,     0,  2,    1,  2,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL | CRM_BYCHUNK
+    { "classify",  CRM_CLASSIFY,      8,  1,     0,    0,  1,     0,  2,    1,  2,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL |
+      CRM_BYCHUNK
       | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
       | CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
       | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
@@ -426,7 +461,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         csl->mct[stmtnum + 1]->start = sindex + slength + 1;
         csl->mct[stmtnum]->stmt_utime = 0;
         csl->mct[stmtnum]->stmt_stime = 0;
-      csl->mct[stmtnum]->stmt_exec_count = 0;
+        csl->mct[stmtnum]->stmt_exec_count = 0;
         csl->mct[stmtnum]->stmt_type = CRM_BOGUS;
         csl->mct[stmtnum]->stmt_def = &stmt_table[0];
         csl->mct[stmtnum]->nest_level = bracketlevel;
@@ -576,7 +611,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                 if (bracketlevel <= 0)
                 {
                     fatalerror_ex(SRC_LOC(),
-                            "Your program doesn't have a { } bracket-group surrrounding the '%s' command. "
+                            "Your program doesn't have a { } bracket-group surrounding the '%s' command. "
                             "Check your source code.",
                             stmt_table[stab_index].stmt_name);
                 }

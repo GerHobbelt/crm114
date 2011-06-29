@@ -1,6 +1,9 @@
 #! /usr/local/bin/crm114
 #
 # should pass variable decoder length checks; only when we check for the :: var delimiters, will this one be detected.
+#
+# UPDATE 20081003: now GerH builds are even more strict and will error on illegal variables like that!
+#
 {
 	{
 		window 

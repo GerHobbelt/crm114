@@ -355,12 +355,12 @@ void print_histogram_float(float *f, int n, int n_buckets)
     }
     min = max = f[0];
     for (i = 1; i < n; i++)
-	{
+    {
         if (f[i] > max)
             max = f[i];
         else if (f[i] < min)
             min = f[i];
-	}
+    }
     s = (n_buckets - 0.01) / (max - min);
     for (i = 0; i < n_buckets; i++)
         buckets[i] = 0;

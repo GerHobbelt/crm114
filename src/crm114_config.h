@@ -94,9 +94,9 @@
 //    do reuse the same regexes tens or hundreds of times (say, lots of
 //    LIAF-loops) then cacheing can accelerate your program significantly.
 //
-//#define CRM_REGEX_CACHESIZE 0
+#define CRM_REGEX_CACHESIZE 0
 //#define CRM_REGEX_CACHESIZE 10
-#define CRM_REGEX_CACHESIZE 1024
+//#define CRM_REGEX_CACHESIZE 1024
 //
 //    and how do we want the regex cache to work?  RANDOM_ACCESS can
 //    keep more things around, but is only 1 LRU deep for each slot so
@@ -408,7 +408,7 @@
 //  How many times to allow a punt?
 #define NN_FROMSTART_PUNTING 1000000
 //  After how many "not needed" cycles do we microgroom this doc away?
-#define NN_MICROGROOM_THRESHOLD 1000000      
+#define NN_MICROGROOM_THRESHOLD 1000000
 //  use the sparse retina design?  No, it's not good.
 #define NN_SPARSE_RETINA 0
 

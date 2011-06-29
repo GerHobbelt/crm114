@@ -206,17 +206,21 @@ Builtin variables:
           :_crm_version:       - the version of the CRM system
           :_cd:                - the current call depth
           :_cs:                - the current statement number
-          :_pgm_hash:          - hash of the current program - for version verification
+          :_pgm_hash:          - hash of the current program - for version 
+                                 verification
           :_pgm_text:          - copy of post-processed source code - matchable
           :_pid:               - process ID of the current process.
-          :_ppid:              - process ID of the parent of the current process.
-          :_dw:                - the current data window contents (usually the default arg)
-          :_iso:               - the current isolated data block (change at your own peril!)
+          :_ppid:              - process ID of the parent of the current 
+                                 process.
+          :_dw:                - the current data window contents (usually the 
+                                 default arg)
+          :_iso:               - the current isolated data block (change at 
+                                 your own peril!)
 
           :_?:                 - watchable variable: last (trappable) failure
-                                 report message; ONLY AVAILABLE when the debugger
-                                 will be used (-d commandline switch / 'debug'
-                                 statement in script)
+                                 report message; ONLY AVAILABLE when the 
+                                 debugger will be used (-d commandline 
+                                 switch / 'debug' statement in script)
 
 ----  VARIABLE EXPANSION  ----
 
@@ -338,10 +342,11 @@ noop                              - no-op statement
 :label: (:arg:)                   - define a CALLable label.  The args in
                                     the CALL statement are concatenated and
                                     put into the freshly ISOLATEd var :arg:
-:label: (:arg1:) (:arg2:)         - define a CALLable label.  The args are
+:label: (:arg1:) (:arg2:)         - define a CALLable label.  The args are               /* EXPERIMENTAL */
                                     produced by the CALL or SORT statement and
                                     put into the freshly ISOLATEd var :arg1:
                                     and :arg2:.
+                                    VERY EXPERIMENTAL!!!
    (:arg:)                        - var-expanded varname to receive the
                                     caller's arguments (usually a MATCH is
                                     then done to put locally convenient
@@ -371,7 +376,8 @@ alter (:var:) /new-val/           - surgically change value of var to new-val
 call /:entrypoint_label:/
 call /:entrypoint_label:/ [:arg1: :arg2:... ]
 call /:entrypoint_label:/ [:arg1: :arg2:... ] (:ret_arg:)
-call /:entrypoint_label:/ [:arg1: :arg2:... ] [:2nd_arg1: :2nd_arg2:... ] (:ret_arg:)
+call /:entrypoint_label:/ [:arg1: :arg2:... ] [:2nd_arg1: :2nd_arg2:... ] (:ret_arg:)   /* EXPERIMENTAL */
+                                    VERY EXPERIMENTAL!!!
                                   - do a routine call on the
                                     specified (var-expanded) entrypoint label.
                                     Note that the called routine shares
@@ -801,8 +807,8 @@ learn <flags> (:class:) [:in:] /word-pat/ /svm-specific controls/
                                   - learn the statistics of the :in:
                                     var (or the input window if no var)
                                     as an example of class :class:
-      <refute>                    - flag this is as an anti-example of this
-                                    class- unlearn it!
+      <refute>                    - flag this as an anti-example of this
+                                    class -- unlearn it!
       <nocase>                    - ignore case in word-pat, does not
                                     ignore case in actual text (use tr()
                                     or the TRANSLATE command
@@ -1106,7 +1112,8 @@ sort <flags> (:dest:) [:src:] /line-pat/ /line-merge-text/ /:compare-label:/
                                      
                                     :arg2: < :arg1:  ==> return value <= -0.5
                                      
-                                    :arg2: == :arg1:  ==> return value ~ 0 (i.e. within the range
+                                    :arg2: == :arg1:  ==> return value ~ 0 
+                                                          (i.e. within the range
                                                           <-0.5 .. 0.5>)
                                                           
                                     Note that there is no point in specifying the flag
@@ -1300,7 +1307,7 @@ window <flags> (:w-var:) (:s-var:) /cut-regex/ /add-regex/
                                     the _first_ _executable_ statement in
                                     the program, then the WINDOW statement
                                     configures CRM114 to _not_ wait
-                                    to read a anything from standard input
+                                    to read anything from standard input
                                     input before starting program execution.
 
 

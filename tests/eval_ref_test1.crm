@@ -1,0 +1,21 @@
+window
+
+isolate (:a:) /A/
+isolate (:v1:) /V1-value/
+isolate (:v2:) //
+isolate (:b:) /:a:/
+
+eval (:*:b:) /:*:v1:/
+
+output /A1 = ':*:a:'\n/
+
+eval (:*:b:) /:*:v2:/
+
+output /A2 = ':*:a:'\n/
+
+
+trap (:ex:) //
+
+output /EXCEPTION: :*:ex:\n/
+
+

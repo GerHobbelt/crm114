@@ -51,6 +51,7 @@ debug_msg()
 write2ref=0
 
 scriptfile="$1"
+scriptpath="${scriptfile}"
 inputdata="$2"
 expected="$3"
 diffscript="$4"
@@ -68,9 +69,13 @@ if [ ! -f "${scriptfile}" ]; then
   if [ "x`echo "${scriptfile}" | sed -e "s/^-{.*} */-{/" `" = "x-{" ]; then
     debug_msg "going to use '${scriptfile}' as literal test script"
     literalscript=1
-  else
-    report_error "crm114 test script '${scriptfile}' does not exist"
-    exit 66
+  else 
+    if [ -f "${SRCDIR}/${scriptfile}" ]; then
+      scriptpath="${SRCDIR}/${scriptfile}"
+    else
+      report_error "crm114 test script '${scriptfile}' does not exist"
+      exit 66
+    fi
   fi
 fi
 
@@ -122,26 +127,26 @@ rm -f "${filtout}"
 
 # see if inputfile is a nonempty string; run CRM test scenario accordingly
 
-echo "test: CRM114 '${scriptfile}' ${args}"
+echo "test: CRM114 '${scriptpath}' ${args}"
 
-debug_msg "going to run CRM114 '${scriptfile}' with commandline: '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
+debug_msg "going to run CRM114 '${scriptpath}' with commandline: '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
 
 retcode=65536
 if [ -z "${inputdata}" ]; then
   debug_msg "input is nil/empty"
-  debug_msg ": crm114 ${scriptfile} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
-  ${CRM_BIN} "${scriptfile}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" 2> "${tmperr}" > "${tmpout}"
+  debug_msg ": crm114 ${scriptpath} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
+  ${CRM_BIN} "${scriptpath}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" 2> "${tmperr}" > "${tmpout}"
   retcode=$?
 else
   # see if file exists; if not, assume input to be literal text
   if [ -f "${inputdata}" ]; then
     # run test:
-    debug_msg ": crm114 ${scriptfile} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
-    ${CRM_BIN} "${scriptfile}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" < "${inputdata}" 2> "${tmperr}" > "${tmpout}"
+    debug_msg ": crm114 ${scriptpath} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
+    ${CRM_BIN} "${scriptpath}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" < "${inputdata}" 2> "${tmperr}" > "${tmpout}"
     retcode=$?
   else
-    debug_msg ": echo '${inputdata}' | crm114 ${scriptfile} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
-    echo "${inputdata}" | ${CRM_BIN} "${scriptfile}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" 2> "${tmperr}" > "${tmpout}"
+    debug_msg ": echo '${inputdata}' | crm114 ${scriptpath} '$1' '$2' '$3' '$4' '$5' '$6' '$7' '$8' '$9'"
+    echo "${inputdata}" | ${CRM_BIN} "${scriptpath}" "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" 2> "${tmperr}" > "${tmpout}"
     retcode=$?
   fi
 fi
@@ -190,8 +195,8 @@ else
 fi
 
 debug_msg "CRM114_TEST_GEN = ${CRM114_TEST_GEN}"
-debug_msg "srcdir = ${srcdir}"
-debug_msg "home = ${HOME}"
+debug_msg "SRCDIR = ${SRCDIR}"
+debug_msg "HOME = ${HOME}"
 debug_msg "CRM114_CHECK_OVERRIDE = ${CRM114_CHECK_OVERRIDE}"
 debug_msg "exit ${CRM114_CHECK_OVERRIDE} vs. retcode = ${retcode}"
 debug_msg "CRM114_CHECK_QUIET = ${CRM114_CHECK_QUIET}"

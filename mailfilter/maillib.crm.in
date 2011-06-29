@@ -17,20 +17,20 @@
 #
 ###########################################################
 #
-#       Load in the specified .cf file.  The .cf file needs
-#      to be in the format
-#      :varname: /value/
+# Load in the specified .cf file.  The .cf file needs
+# to be in the format
+#   :varname: /value/
 #
-#      Blank lines and lines starting with a # are ignored
+# Blank lines and lines starting with a # are ignored
 #
-#       Note that because this happens during the run, stuff set in
-#       a .cf file will _override_ any comand line arguments that get set.
-#       This could (and should) probably be changed.
+# Note that because this happens during the run, stuff set in
+# a .cf file will _override_ any comand line arguments that get set.
+# This could (and should) probably be changed.
 #
 :load_cf_file: (:cf_filename:)
 {
-    isolate (:option_txt:)
-    isolate (:ev:)
+    isolate (:option_txt:) //
+    # isolate (:ev:)                   -- unused
     isolate (:verbose_startup:)
     #
     #    Part 1  - read in the options/configuration file
@@ -45,13 +45,19 @@
     #
     #
     #   reset loop for matching to start of :option_txt:
-            match [:option_txt:] //
+    #
+    match [:option_txt:] //
 
     #   and loop till there are no more options.
     {
         #   find a line that looks like a parameter setting...
-        match < fromend nomultiline > (:line: :name: :value:) \
-          [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
+        match <fromend nomultiline> (:line: :name: :value:) \
+                [:option_txt:] /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
+        {
+            #     Verbose startup?
+            match [:verbose_startup:] /SET/
+            output / config file line:         :*:line:\n/
+        }
         {
             #    don't execute the assign if there's
             #    a # at the start of the line.
@@ -59,14 +65,34 @@
             {
                 #     Verbose startup?
                 match [:verbose_startup:] /SET/
-                output / :*:name:\n    :*:value:\n/
+                output /  :*:name: := ':*:value:'\n/
             }
-            isolate (:*:name:) /:*:value:/
+            # isolate (:*:name:) /:*:value:/
+            # output /-->  :*:name: := ':+:name:'\n/
+
+            # [i_a] the code below allows the use of :*:xyz: expressions inside
+            # the mailfilter.cf option values, e.g.:
+            #
+            #:trainer_invoke_command: /crm114 :*:fileprefix:mailtrainer.crm/
+
+            isolate (:*:name:) //
+            eval (:*:name:) /:*:value:/
+
+            {
+                #     Verbose startup?
+                match [:verbose_startup:] /SET/
+                output /-->  :*:name: := ':+:name:'\n/
+            }
         }
         liaf
     }
+    {
+        #     Verbose startup?
+        match [:verbose_startup:] /SET/
+        output /=== processing config file done! ===\n/
+    }
 }
-#    All done, return.
+# All done, return.
 return
 
 
@@ -76,7 +102,7 @@ return
 #        :mail_preprocess:
 #
 #     Calling Sequence:
-#        call /:mail_preprocess:/ [text to be preprocessed]
+#        call /:mail_preprocess:/ [variable containing text to be preprocessed]
 #
 #     Returns:
 #        the processed text
@@ -97,16 +123,9 @@ return
 #      We clip m_text to be the first :decision_length: characters of
 #      the incoming text
 #
-match (:m_text:) [:mutilation_input: 0 :*:decision_length:] /.*/
+match (:m_text:) [:*:mutilation_input: 0 :*:decision_length:] /.*/
 isolate (:m_text:)
-#
-#      :b_text: is the text with base64's expanded.
-isolate (:b_text:) /:*:m_text:/
-#
-#      :i_text: is the text with Hypertextus Interruptus removed.
-isolate (:i_text:) /:*:m_text:/
-#
-        isolate (:commentbin:) //
+isolate (:commentbin:) //
 #
 #
 #       do we do any expansions?
@@ -119,7 +138,7 @@ isolate (:i_text:) /:*:m_text:/
             #  yes, expand base64's if there are any
             #
             #    Note: some spams don't even bother to use
-            #    a 'Content-Transfer-Encoding marker,
+            #    a 'Content-Transfer-Encoding' marker,
             #    and even fewer use Content-Type: text/whatever
             #    so we have to sort of wing it, when to expand
             #    what _might_ be base64 and when to ignore it.
@@ -195,7 +214,7 @@ isolate (:i_text:) /:*:m_text:/
 #
 {
     alter (:m_text:) \
-      /:*:m_text: \n :*:commentbin: \n\n/
+            /:*:m_text: \n :*:commentbin: \n\n/
 }
 
 #########################################################
@@ -275,8 +294,10 @@ return /:*:m_text:/
     #     Grab the current headers
     call /:mungmail_grab_current_headers:/
     alter (:current_headers:) /:*:current_headers::*:new_header:\n/
-    return
 }
+return
+
+
 #
 #          extract a header (first of them found)
 #
@@ -292,8 +313,10 @@ return /:*:m_text:/
                 /(?:^|\n)(:*:header_name: *: ([^\n]|\n[[:space:]])*)/
         return /:*:desired_header:/
     }
-    return //
 }
+return
+
+
 #
 #          delete all current headers of this type
 #
@@ -316,6 +339,7 @@ return /:*:m_text:/
 }
 return
 
+
 #          delete all current headers of this type, insert ours instead.
 #
 :mungmail_unique: (:new_header:)
@@ -328,6 +352,7 @@ return
     call /:mungmail_add:/ [:*:new_header:]
 }
 return
+
 
 #
 #  Helper routine to get the current mail headers of :_dw:
@@ -360,6 +385,7 @@ return
 }
 return
 
+
 #
 # find header arg1, append comment arg2-n.  If no
 # such header, create it, and add the comment.  Note that
@@ -383,11 +409,12 @@ return
 }
 return
 
+
 #
 # change_subject_line
 #
-:mungmail_mung_subject: (:new_tag:)
 # get the Subject: line.  If none, make one.
+:mungmail_mung_subject: (:new_tag:)
 {
     {
         match (:subject_line: :subj_text:) <nocase nomultiline> \
@@ -435,10 +462,15 @@ return
 #
 :mungmail_add_cache_info: (:cid:)
 {
-    call /:mungmail_unique:/ [X-CRM114-CacheID: sfid-:*:cid: ]
-    # [i_a] GROT GROT GROT: doesn't replacing the next one screw up mail reader conversation trees by adding a second Message-Id to the message? (mail readers might not like that...)
+    call /:mungmail_unique:/ [X-CRM114-CacheID: sfid-:*:cid:]
+    # [i_a]
+    # Now doesn't replacing the next one screw up mail reader
+    # conversation trees by appending to the Message-Id to the
+    # message? (mail readers might not like altered Mesage-Id's...)
     call /:mungmail_add_comment:/ [Message-Id: sfid-:*:cid:]
 }
+return
+
 
 ###############################################################
 #
@@ -492,44 +524,59 @@ return
 }
 return
 
+
 #
-#      Put some text into the cache;
-#      side effect:
-#      variable :reaver_cacheid: to the filename (no directory)
-#      variable :long_cacheid: is set to the file alone (no directory) name
+# Generate a suitable CacheID for the given message.
 #
-:reavercache_store:  (:text:)
+:mk_cacheid:  (:text:)
 {
-    match [:text_cache:] /./   # Don't store it if no reavercache desired
-    call /:verbosity:/ [reavercache_store: going to store mail (flag: :*:text_cache:)]
+    isolate (:cacheid:) <default> //
+    match [:cacheid:] <absent> /./   # Don't create a new CacheID when we already got one
+
     isolate (:system_time: :msg_hash:) //
     {
         match [:_hosttype:] /Windows-MS/
-        call /:verbosity:/ [reavercache_store: date determine for Win32]
+        call /:verbosity:/ [mk_cacheid: date determine for Win32]
         syscall () (:system_time:) /date \/T && time \/T / [timeout=2.0]  # Win32: GROT GROT GROT!
-        call /:verbosity:/ [reavercache_store: date determined @ ':*:system_time:']
+        call /:verbosity:/ [mk_cacheid: date determined @ ':*:system_time:']
         match [:system_time:] ( :: :cacheid: :cacheid2nd: ) /([[:graph:]]+)[^[:graph:]]*([[:graph:]]*)/
-        call /:verbosity:/ [reavercache_store: of which remains: ':*:cacheid:' + ':*:cacheid2nd:' ]
-        call /:verbosity:/ [reavercache_store: going to merge date and time into one line now for MS Windows]
+        call /:verbosity:/ [mk_cacheid: of which remains: ':*:cacheid:' + ':*:cacheid2nd:' ]
+        call /:verbosity:/ [mk_cacheid: going to merge date and time into one line now for MS Windows]
         alter (:cacheid:) /:*:cacheid:_:*:cacheid2nd:/
-        call /:verbosity:/ [reavercache_store: before correction: ':*:cacheid:']
+        call /:verbosity:/ [mk_cacheid: before correction: ':*:cacheid:']
         translate (:cacheid:) [:cacheid:] /^0-9_-/ //
-        call /:verbosity:/ [reavercache_store: after correction: ':*:cacheid:']
+        call /:verbosity:/ [mk_cacheid: after correction: ':*:cacheid:']
     }
     alius
     {
         syscall () (:system_time:) /date +%Y%m%d_%H%M%S_%N /
-        call /:verbosity:/ [reavercache_store: date determined @ ':*:system_time:']
+        call /:verbosity:/ [mk_cacheid: date determined @ ':*:system_time:']
         match [:system_time:] ( :: :cacheid: ) /([[:graph:]]+)..../
-        call /:verbosity:/ [reavercache_store: UNIX time: ':*:cacheid:']
+        call /:verbosity:/ [mk_cacheid: UNIX time: ':*:cacheid:']
     }
-    call /:verbosity:/ [reavercache_store: cacheid: ':*:cacheid:']
+    call /:verbosity:/ [mk_cacheid: cacheid: ':*:cacheid:']
     hash (:msg_hash:) /:*:text:/
-    call /:verbosity:/ [reavercache_store: hash determined @ ':*:msg_hash:']
-    isolate (:cacheid:) /:*:cacheid:/
-    #       It's unclear if the following increases security at all.
+    call /:verbosity:/ [mk_cacheid: hash determined @ ':*:msg_hash:']
+    # It's unclear if the following increases security at all.
     isolate (:cacheid:) /:*:cacheid:_:*:msg_hash:/
-    isolate (:long_cacheid:) /:*:text_cache:\/texts\/:*:cacheid:/
+    call /:verbosity:/ [mk_cacheid: CacheID has been determined: ':*:cacheid:']
+}
+return /:*:cacheid:/
+
+
+#
+#      Put some text into the cache;
+#
+#      Extra inputs:
+#          - variable :text_cache: must be a non-empty directory
+#          - variable :long_cacheid: is set to the file alone (no directory) name
+#
+:reavercache_store: (:text:)
+{
+    match [:text_cache:] /./   # Don't store it if no reavercache desired
+    match [:long_cacheid:] /./
+
+    call /:verbosity:/ [reavercache_store: going to store mail (flag: :*:text_cache:)]
     output [:*:long_cacheid:] /:*:text:/
     call /:verbosity:/ [reavercache_store: mail stored in file: ':*:long_cacheid:']
 }
@@ -542,10 +589,56 @@ return
 :verbosity: (:verbose_text:)
 {
     match [:verbose:] /SET/
-    output <append> [:*:verbose_logfile:] /VERBOSE: :*:verbose_text:\n/
+
+    isolate (:verbose_text:)  /\n:*:verbose_text:/ 
+    # ^^^ extra NL is needed for <newend> to recognize any NL at the start of :verbose_text:
+    isolate (:verbose_text_ln:) //
+
+    # we'll automatically loose the optional terminating NEWLINE anyway, so no need to trim at end
+
+    isolate (:verbose_logfile:) <default> //
+
+    match [:verbose_text:] <fromstart nomultiline> //
+    {
+        # fetch one line and print; abort when it's an empty '.*' match at
+        # the end of the content: <fromend newend>
+        match [:verbose_text:] <fromend newend nomultiline> /.*/ (:verbose_text_ln:)
+        output <append> [:*:verbose_logfile:] /VERBOSE: :*:verbose_text_ln:\n/
+
+        liaf
+    }
 }
 return
 
+
+#############################################################
+#       Get the pR of whatever (passed in)
+#############################################################
+#
+:get_pr: (:text:)
+{
+    isolate (:classify_status:) //
+
+    call /:verbosity:/ [Classify:\n\
+Good css:    ':*:fileprefix::*:goodcss:'\n\
+spam css:    ':*:fileprefix::*:spamcss:'\n\
+lcr:         ':*:lcr:'\n\
+clf:         ':*:clf:'\n\
+text:        ':*:text:'\n]  # for content: :+:text:
+
+    # next brace set because classify will branch based on pR!
+    {
+        classify <:*:clf:> [:*:text:] /:*:lcr:/ \
+                 (:*:fileprefix::*:goodcss: | :*:fileprefix::*:spamcss: ) \
+                 (:classify_status:)
+    }
+
+    call /:verbosity:/ [classify_status: ':*:classify_status:'\n]
+
+    match [:classify_status:] <nomultiline> \
+         /^#0.* pR: *([-+0-9.]+)/ (:: :pr:)
+}
+return /:*:pr:/
 
 
 #
@@ -559,9 +652,8 @@ return
     # make sure all double occurrences (thanks to \/ escaped config lines) are stripped
     # down to single occurrences of \
     translate <unique> (:dospath:) [:dospath:] /\\/ /\\/
-    return /:*:dospath:/
 }
-
+return /:*:dospath:/
 
 
 #

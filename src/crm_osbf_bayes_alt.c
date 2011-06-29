@@ -188,9 +188,9 @@ static int get_next_hash(struct token_search *pts)
 //
 
 int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //     learn the osb_bayes transform spectrum of this input window as
     //     belonging to a particular type.
@@ -211,7 +211,7 @@ VHT_CELL **vht,
     //char *seen_features;
     crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
 
-    regex_t regcb;
+	regex_t regcb = {0};
     int textoffset;
     int textmaxoffset;
     int sense;
@@ -298,7 +298,7 @@ VHT_CELL **vht,
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
-    learnfilename = strdup(&htext[i]);
+    learnfilename = &htext[i];
     if (!learnfilename)
     {
         untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -322,8 +322,7 @@ VHT_CELL **vht,
                     learnfilename,
                     errno,
                     errno_descr(errno));
-            // return fev;
-            exit(EXIT_FAILURE);
+            return fev;
         }
 
         //    and reset the statbuf to be correct
@@ -346,7 +345,6 @@ VHT_CELL **vht,
     {
         fev =
             fatalerror("Couldn't memory-map the .cfc file named: ", learnfilename);
-        free(learnfilename);
         return fev;
     }
 
@@ -371,8 +369,6 @@ VHT_CELL **vht,
             fatalerror
             ("The .cfc file is the wrong type!  We're expecting "
              "a OSBF_Bayes-spectrum file.  The filename is: ", learnfilename);
-
-        free(learnfilename);
         return fev;
     }
 
@@ -388,8 +384,6 @@ VHT_CELL **vht,
     }
 
     // compile regex if not empty - empty regex means "plain regex"
-    if (ptext[0] != 0)
-    {
         i = crm_regcomp(&regcb, ptext, plen, cflags);
         if (i != 0)
         {
@@ -397,7 +391,6 @@ VHT_CELL **vht,
             nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
             goto regcomp_failed;
         }
-    }
 
 
     //   Start by priming the pipe... we will shift to the left next.
@@ -613,19 +606,17 @@ regcomp_failed:
 #endif
 #endif
 
-    if (ptext[0] != 0)
         crm_regfree(&regcb);
 
-    free(learnfilename);
     return 0;
 }
 
 //      How to do a Osb_Bayes CLASSIFY some text.
 //
 int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -661,7 +652,7 @@ VHT_CELL **vht,
     int not_microgroom = 1;
 
     struct stat statbuf;        //  for statting the hash file
-    regex_t regcb;
+	regex_t regcb = {0};
 
 #if defined (GER) || 10
     crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
@@ -808,8 +799,6 @@ VHT_CELL **vht,
     }
 
     //   compile the word regex if not empty
-    if (ptext[0] != 0)
-    {
         if (internal_trace)
             fprintf(stderr, "\nWordmatch pattern is |%s|", ptext);
         i = crm_regcomp(&regcb, ptext, plen, cflags);
@@ -819,7 +808,6 @@ VHT_CELL **vht,
             nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
             goto regcomp_failed;
         }
-    }
 
 
     //       Now, the loop to open the files.
@@ -969,11 +957,11 @@ VHT_CELL **vht,
                             //     Check to see if this file is the right version
                             //
                             int fev;
-                            if (*((unsigned int *)header[maxhash]->version) != OSBF_VERSION 
-								|| header[maxhash]->flags != 0)
+                            if (*((unsigned int *)header[maxhash]->version) != OSBF_VERSION
+                                || header[maxhash]->flags != 0)
                             {
                                 fev = fatalerror("The .cfc file is the wrong version!  Filename is: ",
-                                            fname);
+                                        fname);
                                 return fev;
                             }
 #endif
@@ -1058,7 +1046,7 @@ VHT_CELL **vht,
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
-                      "for classify().\n", "Hope you know what are you doing.");
+                             "for classify().\n", "Hope you know what are you doing.");
     }
 
     //
@@ -1529,10 +1517,7 @@ VHT_CELL **vht,
     }
 
     //  and let go of the regex buffery
-    if (ptext[0] != 0)
-    {
         crm_regfree(&regcb);
-    }
 
     //   and one last chance to force probabilities into the non-stuck zone
     //
@@ -1574,7 +1559,7 @@ VHT_CELL **vht,
         remainder = 10 * DBL_MIN;
         for (m = succhash; m < maxhash; m++)
         {
-                remainder += ptc[m];
+            remainder += ptc[m];
         }
         overall_pR = log10(accumulator) - log10(remainder);
 
@@ -1622,9 +1607,9 @@ VHT_CELL **vht,
         for (k = 0; k < maxhash; k++)
         {
             if (ptc[k] > ptc[bestseen])
-			{
+            {
                 bestseen = k;
-			}
+            }
         }
         remainder = 10 * DBL_MIN;
         for (m = 0; m < maxhash; m++)

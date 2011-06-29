@@ -1,4 +1,4 @@
-#! @bindir@/crm114 -(help file delete)
+#! @BIN_PATH@/crm114 -(help file delete)
 #    
 #    Program for Associative Data - PAD
 #

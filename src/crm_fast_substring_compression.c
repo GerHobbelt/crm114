@@ -547,8 +547,8 @@ static int hash_compare(const unsigned int *a, const unsigned int *b)
 //
 
 int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txtptr, int txtstart, int txtlen)
 {
     //     learn the compression version of this input window as
@@ -597,8 +597,7 @@ VHT_CELL **vht,
 
 
     //           extract the hash file name
-    crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
-    hlen = apb->p1len;
+    hlen = crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN, vht, tdw);
 
     ///////////////////////////////////////////////////////
@@ -624,8 +623,8 @@ VHT_CELL **vht,
         /////////////////////////////////////
         //    Take this out when we finally support refutation
         ////////////////////////////////////
-        fprintf(stderr, "FSCM Refute is NOT SUPPORTED YET\n");
-        return 0;
+        fev = fatalerror("FSCM Refute is NOT SUPPORTED YET\n", "");
+        return fev;
 
 #if 0 // unreachable code
         if (user_trace)
@@ -846,16 +845,16 @@ VHT_CELL **vht,
             //   Generate the hashes.
             crm_vector_tokenize_selector
             (apb,                                             // the APB
-			vht,
-			tdw,
-                    txtptr,                                   // intput string
-                    txtlen,                                   // how many bytes
-                    txtstart,                                 // starting offset
-                    NULL,                                     // custom tokenizer
-                    NULL,                                     // custom matrix
-                    unk_hashes,                               // where to put the hashed results
-                    data_window_size / sizeof(unk_hashes[0]), //  max number of hashes
-                    &unk_hashcount);                          // how many hashes we actually got
+                    vht,
+                    tdw,
+                    txtptr + txtstart,                                   // intput string
+                    txtlen,                                              // how many bytes
+                    0,                                                   // starting offset
+                    NULL,                                                // custom tokenizer
+                    NULL,                                                // custom matrix
+                    unk_hashes,                                          // where to put the hashed results
+                    data_window_size / sizeof(unk_hashes[0]),            //  max number of hashes
+                    &unk_hashcount);                                     // how many hashes we actually got
 
             if (internal_trace)
             {
@@ -905,7 +904,7 @@ VHT_CELL **vht,
                 if (user_trace)
                     fprintf(stderr, "Writing to hash file %s\n", hashfilename);
                 my_zero.next = 0;
-	//     Note the "+ 2" here - to put in a sentinel in the output file 
+                //     Note the "+ 2" here - to put in a sentinel in the output file
                 for (i = 0; i < unk_hashcount + 2; i++)
                 {
                     if (1 != fwrite(&my_zero,
@@ -950,19 +949,19 @@ VHT_CELL **vht,
         //    of this next chain.
         //
         //      Our new start here !
-      newchainstart = 
-	( file_header->chunks[4].start 
-	  + file_header->chunks[4].length)
-	/ sizeof (FSCM_HASH_CHAIN_CELL);
+        newchainstart =
+            (file_header->chunks[4].start
+             + file_header->chunks[4].length)
+            / sizeof(FSCM_HASH_CHAIN_CELL);
         if (internal_trace)
-	fprintf (stderr, 
-		 "Chain field: %u (entries %u) new chainstart offset %u\n", 
-		 (unsigned int)(file_header->chunks[4].start 
-		 / sizeof (FSCM_HASH_CHAIN_CELL)), 
-		 (unsigned int)(file_header->chunks[4].length
-		 / sizeof (FSCM_HASH_CHAIN_CELL)), 
-		 newchainstart );
-      
+            fprintf(stderr,
+                    "Chain field: %u (entries %u) new chainstart offset %u\n",
+                    (unsigned int)(file_header->chunks[4].start
+                                   / sizeof(FSCM_HASH_CHAIN_CELL)),
+                    (unsigned int)(file_header->chunks[4].length
+                                   / sizeof(FSCM_HASH_CHAIN_CELL)),
+                    newchainstart);
+
         newchains = (FSCM_HASH_CHAIN_CELL *)
                     &chains[newchainstart];
 
@@ -1336,29 +1335,29 @@ static double compress_me
     unsigned int current_symbol, this_run_length;
     double total_score, incr_score;
 
-  int blast_lookback;   // Only use if BLAST is desired.
-  
+    int blast_lookback; // Only use if BLAST is desired.
+
     total_score = 0.0;
     current_symbol = 0;
-  blast_lookback = 0;
+    blast_lookback = 0;
 
     while (current_symbol < unk_len)
     {
         this_run_length = longest_run_starting_here
                           (chains, unk_indexes, unk_len, current_symbol);
         incr_score = 0;
-      if (this_run_length > 1)
-	{
-	  //this_run_length += blast_lookback;
-	  incr_score = pow (this_run_length, q_exponent);
-	  //blast_lookback = this_run_length;
-	}
-      //blast_lookback --;
-      //if (blast_lookback < 0) blast_lookback = 0;
-      //if (this_run_length > 2) 
-      //	fprintf (stderr, " %ld", this_run_length);
-      //else
-      //	fprintf (stderr, "_");
+        if (this_run_length > 1)
+        {
+            //this_run_length += blast_lookback;
+            incr_score = pow(this_run_length, q_exponent);
+            //blast_lookback = this_run_length;
+        }
+        //blast_lookback --;
+        //if (blast_lookback < 0) blast_lookback = 0;
+        //if (this_run_length > 2)
+        //	fprintf (stderr, " %ld", this_run_length);
+        //else
+        //	fprintf (stderr, "_");
         total_score = total_score + incr_score;
         if (internal_trace)
             fprintf(stderr,  "Offset %u compresses %u score %lf\n",
@@ -1374,8 +1373,8 @@ static double compress_me
 //      How to do an Improved FSCM CLASSIFY of some text.
 //
 int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txtptr, int txtstart, int txtlen)
 {
     //      classify the compressed version of this text
@@ -1435,7 +1434,7 @@ VHT_CELL **vht,
     int fnstart, fnlen;
     char hashfilenames[MAX_CLASSIFIERS][MAX_FILE_NAME_LEN]; //  names (parsed)
     int hashfilebytelens[MAX_CLASSIFIERS];
-  int hashfilechainentries [MAX_CLASSIFIERS];
+    int hashfilechainentries[MAX_CLASSIFIERS];
     int succhash;       // how many hashfilenames are "success" files?
     int vbar_seen;      // did we see '|' in classify's args?
     int maxhash;
@@ -1535,16 +1534,16 @@ VHT_CELL **vht,
 
     crm_vector_tokenize_selector
     (apb,                                             // the APB
-	vht,
-	tdw,
-            txtptr,                                   // intput string
-            txtlen,                                   // how many bytes
-            txtstart,                                 // starting offset
-            NULL,                                     // custom tokenizer
-            NULL,                                     // custom coeff matrix
-            unk_hashes,                               // where to put the hashed results
-            data_window_size / sizeof(unk_hashes[0]), //  max number of hashes
-            &unk_hashcount);                          // how many hashes we actually got
+            vht,
+            tdw,
+            txtptr + txtstart,                                   // intput string
+            txtlen,                                              // how many bytes
+            0,                                                   // starting offset
+            NULL,                                                // custom tokenizer
+            NULL,                                                // custom coeff matrix
+            unk_hashes,                                          // where to put the hashed results
+            data_window_size / sizeof(unk_hashes[0]),            //  max number of hashes
+            &unk_hashcount);                                     // how many hashes we actually got
 
     if (internal_trace)
     {
@@ -1671,10 +1670,10 @@ VHT_CELL **vht,
                         chains = (FSCM_HASH_CHAIN_CELL *)
                                  &file_pointer[file_header->chunks[4].start];
 
-		      //  GROT GROT GROT  pointer arithmetic is gross!!! 
-		      hashfilechainentries[maxhash] = 
-			file_header->chunks[4].length 
-			/ sizeof (FSCM_HASH_CHAIN_CELL);
+                        //  GROT GROT GROT  pointer arithmetic is gross!!!
+                        hashfilechainentries[maxhash] =
+                            file_header->chunks[4].length
+                            / sizeof(FSCM_HASH_CHAIN_CELL);
 
                         if (internal_trace)
                             fprintf(stderr,
@@ -1739,7 +1738,7 @@ VHT_CELL **vht,
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
-                      "for classify().\n", "Hope you know what are you doing.");
+                             "for classify().\n", "Hope you know what are you doing.");
     }
 
     ///////////////////////////////////////////////////////////
@@ -1762,34 +1761,34 @@ VHT_CELL **vht,
     }
     //     Renormalize probabilities
     for (i = 0; i < maxhash; i++)
-	{
+    {
         ptc[i] /= tprob;
-	}
+    }
 
     if (user_trace)
     {
         for (k = 0; k < maxhash; k++)
-		{
+        {
             fprintf(stderr, "Match for file %d: compress: %f prob: %f\n",
                     k, scores[k], ptc[k]);
-		}
-	}
+        }
+    }
 
     bestseen = 0;
     for (i = 0; i < maxhash; i++)
-	{
+    {
         if (ptc[i] > ptc[bestseen])
-		{
-			bestseen = i;
-		}
-	}
+        {
+            bestseen = i;
+        }
+    }
 
     //     Reset tprob to contain sum of probabilities of success classes.
     tprob = 0.0;
     for (k = 0; k < succhash; k++)
-	{
-		tprob += ptc[k];
-	}
+    {
+        tprob += ptc[k];
+    }
 
     if (svlen > 0)
     {
@@ -1811,10 +1810,10 @@ VHT_CELL **vht,
         }
 
         if (internal_trace)
-		{
+        {
             fprintf(stderr, "succ: %d, max: %d, acc: %lf, rem: %lf\n",
                     succhash, maxhash, accumulator, remainder);
-		}
+        }
 
         overall_pR = 10 * (log10(accumulator) - log10(remainder));
 
@@ -1835,12 +1834,12 @@ VHT_CELL **vht,
 
         remainder = 1000 * DBL_MIN;
         for (m = 0; m < maxhash; m++)
-		{
+        {
             if (bestseen != m)
             {
                 remainder += ptc[m];
             }
-		}
+        }
 
         sprintf(buf,
                 "Best match to file #%d (%s) prob: %6.4f  pR: %6.4f \n",
@@ -1860,18 +1859,18 @@ VHT_CELL **vht,
             // int m; -- 'local 'm' hides decl of the same name in outer scope, so says MSVC. And we don't need this one to do that, so use the outer scope one.
             remainder = 1000 * DBL_MIN;
             for (m = 0; m < maxhash; m++)
-			{
-				if (k != m)
+            {
+                if (k != m)
                 {
                     remainder += ptc[m];
                 }
-			}
+            }
             sprintf(buf,
                     "#%d (%s):"
-		   " features: %d, chcs: %6.2f, prob: %3.2e, pR: %6.2f\n", 
+                    " features: %d, chcs: %6.2f, prob: %3.2e, pR: %6.2f\n",
                     k,
                     hashfilenames[k],
-		   hashfilechainentries[k],
+                    hashfilechainentries[k],
                     scores[k],
                     ptc[k],
                     10 * (log10(ptc[k]) - log10(remainder)));
@@ -2032,17 +2031,17 @@ int crm_expr_fscm_css_migrate(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 /*
-|
-|      to:     %c      %d/%u        %ld/%lu   %lld/%llu
-|             %02x    %04x/%08x      %08x      %016llx
-|             char       int        long      long long
-|from: 
-| [u]int8_t    X         X            X           X
-| [u]int16_t   .         X            X           X
-| [u]int32_t   .         X            X           X
-| [u]int64_t   .         .            .           X
-|
-*/ 
+ |
+ |      to:     %c      %d/%u        %ld/%lu   %lld/%llu
+ |             %02x    %04x/%08x      %08x      %016llx
+ |             char       int        long      long long
+ |from:
+ | [u]int8_t    X         X            X           X
+ | [u]int16_t   .         X            X           X
+ | [u]int32_t   .         X            X           X
+ | [u]int64_t   .         .            .           X
+ |
+ */
 
 
 

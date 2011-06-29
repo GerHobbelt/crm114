@@ -1752,17 +1752,21 @@ crmhash_t strnhash(const char *str, size_t len)
         break;
     }
 
-	/* save the complete 'raw' hashed text by using as many 'continuation' records as necessary */
-	crm_analysis_mark(&analysis_cfg, MARK_HASH_VALUE, len, "iLL", (unsigned int)h, (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
-	if (len > 16)
-	{
-		for (len -= 16, str += 16; ; len -= 3 * 8, str += 3 * 8)
-		{
-			crm_analysis_mark(&analysis_cfg, MARK_HASH_CONTINUATION, len, "LLL", (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
-			if (len <= 3 * 8)
-				break;
-		}
-	}
+    /* save the complete 'raw' hashed text by using as many 'continuation' records as necessary */
+    crm_analysis_mark(&analysis_cfg, MARK_HASH_VALUE, len, "iLL", (unsigned int)h, (long long int)cvt_chars2int64(str,
+                    len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
+    if (len > 16)
+    {
+        for (len -= 16, str += 16; ; len -= 3 * 8, str += 3 * 8)
+        {
+            crm_analysis_mark(&analysis_cfg, MARK_HASH_CONTINUATION, len, "LLL", (long long int)cvt_chars2int64(str,
+                            len),
+                    (long long int)cvt_chars2int64(str + 8,
+                            (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
+            if (len <= 3 * 8)
+                break;
+        }
+    }
 
     return h;
 }
@@ -1788,16 +1792,20 @@ crmhash64_t strnhash64(const char *str, size_t len)
         break;
     }
 
-	crm_analysis_mark(&analysis_cfg, MARK_HASH64_VALUE, len, "LLL", (unsigned long long int)h, (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
-	if (len > 16)
-	{
-		for (len -= 16, str += 16; ; len -= 3 * 8, str += 3 * 8)
-		{
-			crm_analysis_mark(&analysis_cfg, MARK_HASH_CONTINUATION, len, "LLL", (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
-			if (len <= 3 * 8)
-				break;
-		}
-	}
+    crm_analysis_mark(&analysis_cfg, MARK_HASH64_VALUE, len, "LLL", (unsigned long long int)h,
+            (long long int)cvt_chars2int64(str, len), (long long int)cvt_chars2int64(str + 8, (len > 8 ? len - 8 : 0)));
+    if (len > 16)
+    {
+        for (len -= 16, str += 16; ; len -= 3 * 8, str += 3 * 8)
+        {
+            crm_analysis_mark(&analysis_cfg, MARK_HASH_CONTINUATION, len, "LLL", (long long int)cvt_chars2int64(str,
+                            len),
+                    (long long int)cvt_chars2int64(str + 8,
+                            (len > 8 ? len - 8 : 0)), (long long int)cvt_chars2int64(str + 2 * 8, (len > 2 * 8 ? len - 2 * 8 : 0)));
+            if (len <= 3 * 8)
+                break;
+        }
+    }
 
     return h;
 }
@@ -2146,8 +2154,8 @@ void crm_munmap_file(void *addr)
     if (!p)
     {
         nonfatalerror("Internal fault - this code has tried to unmap memory "
-		     "that either was never mapped in the first place, or "
-                     "has already been unmapped.  ",
+                      "that either was never mapped in the first place, or "
+                      "has already been unmapped.  ",
                 "Please file a bug report. ");
         return;
     }

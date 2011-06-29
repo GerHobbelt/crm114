@@ -11,7 +11,7 @@ crm114: *WARNING*
 I'll try to keep working.
 This happened at line 14 of file illegal_isolate_null_var2.crm:
     trap (:r:) //
-(runtime system location: crm_expr_isolate.c(98) in routine: crm_expr_isolate)
+(runtime system location: crm_expr_isolate.c(99) in routine: crm_expr_isolate)
 
 STDOUT TEST OUTPUT:
 TRAP:
@@ -20,6 +20,6 @@ crm114: *WARNING*
 I'll try to keep working.
 This happened at line 7 of file illegal_isolate_null_var2.crm:
     isolate (::) /FUBAR/
-(runtime system location: crm_expr_isolate.c(55) in routine: crm_expr_isolate)
+(runtime system location: crm_expr_isolate.c(56) in routine: crm_expr_isolate)
 
 

@@ -187,8 +187,8 @@ static int hash_compare(void const *a, void const *b)
 //
 
 int crm_expr_alt_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-								  		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txtptr, int txtstart, int txtlen)
 {
     //     learn the osb_hyperspace transform  of this input window as
@@ -339,16 +339,16 @@ int crm_expr_alt_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector
     (apb,                                  // the APB
-	vht,
-	tdw,
-            txtptr,                        // intput string
-            txtlen,                        // how many bytes
-            txtstart,                      // starting offset
-            NULL,                          // tokenizer
-            NULL,                          // coeff array
-            (crmhash_t *)hashes,           // where to put the hashed results
-            HYPERSPACE_MAX_FEATURE_COUNT,  //  max number of hashes
-            &hashcounts                    // how many hashes we actually got
+            vht,
+            tdw,
+            txtptr + txtstart,                        // intput string
+            txtlen,                                   // how many bytes
+            0,                                        // starting offset
+            NULL,                                     // tokenizer
+            NULL,                                     // coeff array
+            (crmhash_t *)hashes,                      // where to put the hashed results
+            HYPERSPACE_MAX_FEATURE_COUNT,             //  max number of hashes
+            &hashcounts                               // how many hashes we actually got
     );
     CRM_ASSERT(hashcounts >= 0);
     CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
@@ -517,6 +517,9 @@ int crm_expr_alt_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (ftell(hashf) == 0)
             {
                 CRM_PORTA_HEADER_INFO classifier_info = { 0 };
+
+                if (user_trace)
+                    fprintf(stderr, "Writing header block to hash file %s\n", hashfilename);
 
                 classifier_info.classifier_bits = CRM_HYPERSPACE;
                 classifier_info.hash_version_in_use = selected_hashfunction;
@@ -735,10 +738,12 @@ int crm_expr_alt_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //  end of the per-document stuff - now chop out the part of the
         //  file between beststart and bestend.
 
-        //      if (user_trace)
-        fprintf(stderr,
-                "Deleting feature from %d to %d (rad %f) of file %s\n",
-                beststart, bestend, bestrad, hashfilename);
+        if (user_trace)
+        {
+            fprintf(stderr,
+                    "Deleting feature from %d to %d (rad %f) of file %s\n",
+                    beststart, bestend, bestrad, hashfilename);
+        }
 
         //   Deletion time - move the remaining stuff in the file
         //   up to fill the hole, then msync the file, munmap it, and
@@ -774,9 +779,9 @@ int crm_expr_alt_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 //      How to do a Osb_Hyperspace CLASSIFY some text.
 //
 int crm_expr_alt_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -1195,7 +1200,7 @@ VHT_CELL **vht,
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
-                      "for classify().\n", "Hope you know what are you doing.");
+                             "for classify().\n", "Hope you know what are you doing.");
     }
 
 
@@ -1209,16 +1214,16 @@ VHT_CELL **vht,
 
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector(apb,                             // the APB
-		vht,
-		tdw,
-            txtptr,                                               // intput string
-            txtlen,                                               // how many bytes
-            txtstart,                                             // starting offset
-            NULL,                                                 // tokenizer
-            NULL,                                                 // coeff array
-            (crmhash_t *)unk_hashes,                              // where to put the hashed results
-            HYPERSPACE_MAX_FEATURE_COUNT,                         //  max number of hashes
-            &unk_hashcount                                        // how many hashes we actually got
+            vht,
+            tdw,
+            txtptr + txtstart,                                               // intput string
+            txtlen,                                                          // how many bytes
+            0,                                                               // starting offset
+            NULL,                                                            // tokenizer
+            NULL,                                                            // coeff array
+            (crmhash_t *)unk_hashes,                                         // where to put the hashed results
+            HYPERSPACE_MAX_FEATURE_COUNT,                                    //  max number of hashes
+            &unk_hashcount                                                   // how many hashes we actually got
                                 );
     CRM_ASSERT(unk_hashcount >= 0);
     CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
@@ -1766,7 +1771,7 @@ VHT_CELL **vht,
         remainder = 10 * DBL_MIN;
         for (m = succhash; m < maxhash; m++)
         {
-                remainder += ptc[m];
+            remainder += ptc[m];
         }
 
         //  overall_pR = 10 * (log10 (accumulator) - log10 (remainder));

@@ -101,11 +101,11 @@ void crm_vht_init(int argc, char **argv)
     //   put the version string in as a variable.
     {
         char verstr[1025];
-        verstr[0] = 0;
-        strcat(verstr, VERSION);
-        strcat(verstr, " ( ");
-        strcat(verstr, crm_regversion());
-        strcat(verstr, " )");
+        snprintf(verstr, WIDTHOF(verstr), "%s, rev %s (%s)",
+                VERSION,
+                REVISION,
+                crm_regversion());
+        verstr[WIDTHOF(verstr) - 1] = 0;
         crm_set_temp_var(":_crm_version:", verstr);
     }
 
@@ -138,9 +138,8 @@ void crm_vht_init(int argc, char **argv)
                     fprintf(stderr, "Resetting uvstart counter to 2\n");
                 uvstart = i + 1;
             }
-            ;
         }
-    };
+    }
 
     //       The user variables start at argv[uvstart]
     {
@@ -154,7 +153,6 @@ void crm_vht_init(int argc, char **argv)
             crm_set_temp_var(anamebuf, argv[i]);
             j++;
         }
-        ;
         //
         //    and put the "user-visible" argc into a var as well.
         sprintf(anamebuf, "%d", j);
@@ -216,7 +214,7 @@ void crm_vht_init(int argc, char **argv)
             crm_set_temp_var(":_ppid:", pidstr);
 #endif
         }
-    };
+    }
 
     //      now, we shove the whole contents of the ENVIRON
     //      vector into the VHT.
@@ -617,18 +615,16 @@ void crm_set_temp_nvar(const char *varname, const char *value, int vallen)
                    "area with a variable that's just too big.  "
                    "The bad variable was named: ",
                 varname);
-        if (engine_exit_base != 0)
-        {
-            exit(engine_exit_base + 22);
-        }
-        else
-        {
-            exit(EXIT_FAILURE);
-        }
+        return;
     }
 
     //       check- is this the first time we've seen this variable?  Or
     //       are we re-assigning a previous variable?
+	if (!crm_is_legal_variable(&varname[vnidx], vnlen))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempting to assign a value to an illegal variable '%.*s'.", vnlen, &varname[vnidx]);
+		return;
+	}
     i = crm_vht_lookup(vht, &varname[vnidx], vnlen);
     if (vht[i] == NULL)
     {
@@ -730,6 +726,11 @@ void crm_set_windowed_nvar(char *varname,
     }
 
     //    check and see if the variable is already in the VHT
+	if (!crm_is_legal_variable(varname, varlen))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempting to alter the value of an illegal windowed variable '%.*s'.", varlen, varname);
+		return;
+	}
     i = crm_vht_lookup(vht, varname, varlen);
     if (vht[i] == NULL)
     {
@@ -811,6 +812,7 @@ int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend)
     return crm_recursive_compress_tdw_section
            (tdw->filetext, 0, tdw->nchars + 1);
 }
+
 int crm_recursive_compress_tdw_section
 (char *oldtext, int oldstart, int oldend)
 #else
@@ -1218,7 +1220,12 @@ void crm_destructive_alter_nvariable(const char *varname, int varlen,
     //       inspect code using it and get rid of this.
     if (crm_nextword(varname, varlen, 0, &i, &vlen))
     {
-        vhtindex = crm_vht_lookup(vht, &(varname[i]), vlen);
+	if (!crm_is_legal_variable(&varname[i], vlen))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempting to alter the value of an illegal variable '%.*s'.", vlen, &varname[i]);
+		return;
+	}
+        vhtindex = crm_vht_lookup(vht, &varname[i], vlen);
         if (vht[vhtindex] == NULL)
         {
             // IGNORE FOR NOW
@@ -1397,6 +1404,7 @@ while (delta + mdw->nchars > data_window_size - 1)
     //   and update the outstanding pointers, like the ones in the
     //   vht...
     for (i = 0; i < vht_size; i++)
+    {
         if (vht[i] != NULL)
         {
             if (vht[i]->nametxt == mdw->filetext)
@@ -1404,6 +1412,7 @@ while (delta + mdw->nchars > data_window_size - 1)
             if (vht[i]->valtxt == mdw->filetext)
                 vht[i]->valtxt = ndw;
         }
+    }
 
     //    and lastly, point the cdw or tdw to the new larger window.
     free(mdw->filetext);
@@ -1655,9 +1664,12 @@ void crm_setvar(
 
     //  first off, see if the variable is already stored.
 
-    i = crm_vht_lookup(vht, &(nametxt[nstart]), nlen);
-
-
+	if (!crm_is_legal_variable(&nametxt[nstart], nlen))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempting to set the value of an illegal variable '%.*s'.", nlen, &nametxt[nstart]);
+		return;
+	}
+    i = crm_vht_lookup(vht, &nametxt[nstart], nlen);
     if (vht[i] == NULL)
     {
         //    Nope, this is an empty VHT slot
@@ -1737,6 +1749,8 @@ int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len)
 {
     int i;   // some indices to bang on
 
+	// [i_a] Tolerate 'illegal' variables here: some callers of 
+	// lookupvarinline() expect reasonable results for those.
     i = crm_vht_lookup(vht, &(text[start]), len);
 
 
@@ -2036,4 +2050,29 @@ void free_hash_table(VHT_CELL **vht, size_t vht_size)
     }
     free(vht);
 }
+
+
+// Return !0 when this is a legal variable: starting and ending with a colon, and no colon in there
+int crm_is_legal_variable(const char *vname, size_t vlen)
+{
+	if (vlen < 2)
+	{
+		return 0;
+	}
+	if (vname[0] != ':')
+	{
+		return 0;
+	}
+	if (vname[vlen - 1] != ':')
+	{
+		return 0;
+	}
+	// by now, we know we WILL find a ':'; only matter now is wehen the first one will pop up:
+	if (((const char *)memchr(vname + 1, ':', vlen - 1)) - vname != vlen - 1)
+	{
+		return 0;
+	}
+	return 1;
+}	
+
 

@@ -979,9 +979,9 @@ static double sigmoid_predict(double decision_value, double A, double B)
 
 
 int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     int cflags, eflags;
     int sense;
@@ -995,7 +995,7 @@ VHT_CELL **vht,
     char ptext[MAX_PATTERN]; //the regrex pattern
     int plen;
     int i, j, k;
-    regex_t regcb;
+	regex_t regcb = {0};
     regmatch_t match[5];
     int textoffset;
     int textmaxoffset;
@@ -1095,14 +1095,13 @@ VHT_CELL **vht,
     else
     {
         //only has one input file
-        if (ptext[0] != 0)
-            crm_regfree(&regcb);
         if (!crm_nextword(ftext, flen, 0, &i, &j) || j == 0)
         {
             int fev = nonfatalerror_ex(SRC_LOC(),
                     "\nYou didn't specify a valid filename: '%.*s'\n",
                     (int)flen,
                     ftext);
+         crm_regfree(&regcb);
             return fev;
         }
         j += i;
@@ -1115,29 +1114,8 @@ VHT_CELL **vht,
         file3[0] = 0;
     }
     //    if (|Text|>0) hide the text into the .svm file
+    crm_regfree(&regcb);
 
-#ifdef GET_RID_OF_PUNCTUATION
-    //get rid of all punctuation
-    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
-    if (plen == 0)
-    {
-        strcpy(ptext, "[^[:punct:]]+");
-        plen = strlen(ptext);
-        //strcpy(ptext, "[[:graph:]]+");        //plen = strlen(ptext);    }
-        //   compile the word regex
-        //
-        if (internal_trace)
-            fprintf(stderr, "\nWordmatch pattern is %s", ptext);
-
-        i = crm_regcomp(&regcb, ptext, plen, cflags);
-        if (i != 0)
-        {
-            crm_regerror(i, &regcb, tempbuf, data_window_size);
-            nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
-            goto regcomp_failed;
-        }
-#endif
 
     file_string = calloc((txtlen + 10), sizeof(file_string[0]));
     if (!file_string)
@@ -1159,76 +1137,8 @@ VHT_CELL **vht,
     // if [Text]>0 hide it and append to the file1
     if (txtlen > 0)
     {
-#ifdef GET_RID_OF_PUNCTUATION
-        while (k == 0 && textoffset <= textmaxoffset
-               && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT)
-        {
-            int wlen;
-            int slen = textmaxoffset - textoffset;
-            // if pattern is empty, extract non graph delimited tokens
-            // directly ([[graph]]+) instead of calling regexec  (8% faster)
-            if (ptext[0] != 0)
-            {
-                k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                        slen, WIDTHOF(match), match, 0, NULL);
-            }
-            else
-            {
-                k = 0;
-                //         skip non-graphical characters
-                match[0].rm_so = 0;
-                while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                       && textoffset + match[0].rm_so < textmaxoffset)
-                    match[0].rm_so++;
-                match[0].rm_eo = match[0].rm_so;
-                while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                       && textoffset + match[0].rm_eo < textmaxoffset)
-                    match[0].rm_eo++;
-                if (match[0].rm_so == match[0].rm_eo)
-                    k = 1;
-            }
-            if (!(k != 0 || textoffset > textmaxoffset))
-            {
-                wlen = match[0].rm_eo - match[0].rm_so;
-                memmove(tempbuf,
-                        &(txtptr[textoffset + match[0].rm_so]),
-                        wlen);
-                tempbuf[wlen] = 0;
-                if (strlen(file_string) + strlen(tempbuf) <= txtlen)
-                    strcat(file_string, tempbuf);
-                if (internal_trace)
-                {
-                    fprintf(stderr,
-                            "  Learn #%d t.o. %d strt %d end %d len %d is -%s-\n",
-                            i,
-                            textoffset,
-                            (int)match[0].rm_so,
-                            (int)match[0].rm_eo,
-                            wlen,
-                            tempbuf);
-                }
-                if (match[0].rm_eo == 0)
-                {
-                    nonfatalerror("The LEARN pattern matched zero length! ",
-                            "\n Forcing an increment to avoid an infinite loop.");
-                    match[0].rm_eo = 1;
-                }
-
-                //  and account for the text used up.
-                textoffset = textoffset + match[0].rm_eo;
-                i++;
-            }
-            else
-            {
-                if (ptext[0] != 0)
-                    crm_regfree(&regcb);
-                k = 1;
-            }
-        }   //   end the while k==0
-#else
         strncpy(file_string, &txtptr[txtstart], txtlen);
         file_string[txtlen] = 0;
-#endif
 
         if (strlen(file_string) > 0)
         {
@@ -1505,9 +1415,11 @@ VHT_CELL **vht,
                 //  file between beststart and bestend.
 
                 if (user_trace)
+                {
                     fprintf(stderr,
                             "Deleting feature from %d to %d (rad %f) of file %s\n",
                             beststart, bestend, bestrad, file1);
+                }
 
                 //   Deletion time - move the remaining stuff in the file
                 //   up to fill the hole, then msync the file, munmap it, and
@@ -1837,16 +1749,16 @@ VHT_CELL **vht,
 
                 //  write solver to file3
                 if (user_trace)
-				{
+                {
                     fprintf(stderr,
                             "Opening a solution file %s for writing alpha and b.\n",
                             file3);
-				}
+                }
 
-	//  Now a nasty bit.  Because there might be data of the 
-	//  file retained, we need to force an unmap-by-name which will allow a remap
-	//  with the new file length later on.
-	crm_force_munmap_filename(file3);
+                //  Now a nasty bit.  Because there might be data of the
+                //  file retained, we need to force an unmap-by-name which will allow a remap
+                //  with the new file length later on.
+                crm_force_munmap_filename(file3);
 
                 stringf = fopen(file3, "wb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
                 if (stringf == NULL)
@@ -1926,9 +1838,9 @@ regcomp_failed:
 
 
 int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     int i, j, k;
     char ftext[MAX_PATTERN];
@@ -1938,7 +1850,7 @@ VHT_CELL **vht,
     char file1[MAX_PATTERN];
     char file2[MAX_PATTERN];
     char file3[MAX_PATTERN];
-    regex_t regcb;
+	regex_t regcb = {0};
     regmatch_t match[5];
     int textoffset;
     int textmaxoffset;
@@ -2094,29 +2006,6 @@ VHT_CELL **vht,
     }
 #endif
 
-#ifdef GET_RID_OF_PUNCTUATION
-    //get rid of all punctuation
-    plen = crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN, vht, tdw);
-    if (plen == 0)
-    {
-        strcpy(ptext, "[^[:punct:]]+");
-        plen = strlen(ptext);
-        //strcpy(ptext, "[[:graph:]]+");        //plen = strlen(ptext);    }
-        //   compile the word regex
-        //
-        if (internal_trace)
-            fprintf(stderr, "\nWordmatch pattern is %s", ptext);
-
-        i = crm_regcomp(&regcb, ptext, plen, cflags);
-        if (i != 0)
-        {
-            crm_regerror(i, &regcb, tempbuf, data_window_size);
-            nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
-            goto regcomp_failed;
-        }
-#endif
-
     file_string = calloc((txtlen + 10), sizeof(file_string[0]));
     if (!file_string)
     {
@@ -2137,59 +2026,8 @@ VHT_CELL **vht,
     {
         CRM_ASSERT(hashcounts == 0);
 
-#ifdef GET_RID_OF_PUNCTUATION
-        while (k == 0 && textoffset <= textmaxoffset
-               && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT)
-        {
-            int wlen;
-            int slen = textmaxoffset - textoffset;
-            // if pattern is empty, extract non graph delimited tokens
-            // directly ([[graph]]+) instead of calling regexec  (8% faster)
-            if (ptext[0] != 0)
-            {
-                k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                        slen, WIDTHOF(match), match, 0, NULL);
-            }
-            else
-            {
-                k = 0;
-                //         skip non-graphical characters
-                match[0].rm_so = 0;
-                while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                       && textoffset + match[0].rm_so < textmaxoffset)
-                    match[0].rm_so++;
-                match[0].rm_eo = match[0].rm_so;
-                while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                       && textoffset + match[0].rm_eo < textmaxoffset)
-                    match[0].rm_eo++;
-                if (match[0].rm_so == match[0].rm_eo)
-                    k = 1;
-            }
-            if (!(k != 0 || textoffset > textmaxoffset))
-            {
-                wlen = match[0].rm_eo - match[0].rm_so;
-                memmove(tempbuf,
-                        &(txtptr[textoffset + match[0].rm_so]),
-                        wlen);
-                tempbuf[wlen] = 0;
-                if (strlen(file_string) + strlen(tempbuf) <= txtlen)
-                    strcat(file_string, tempbuf);
-                if (match[0].rm_eo == 0)
-                {
-                    nonfatalerror("The LEARN pattern matched zero length! ",
-                            "\n Forcing an increment to avoid an infinite loop.");
-                    match[0].rm_eo = 1;
-                }
-
-                //  and account for the text used up.
-                textoffset = textoffset + match[0].rm_eo;
-                i++;
-            }
-        }
-#else
         strncpy(file_string, &txtptr[txtstart], txtlen);
         file_string[txtlen] = 0;
-#endif
 
         if (strlen(file_string) > 0)
         {
@@ -2296,6 +2134,8 @@ VHT_CELL **vht,
         k2 = stat(file2, &statbuf2);
         k3 = stat(file3, &statbuf3);
 
+         crm_regfree(&regcb);
+
         if (k1 != 0)
         {
             nonfatalerror("Sorry, We can't classify with empty .svm file"
@@ -2315,7 +2155,7 @@ VHT_CELL **vht,
             k1 = 0;
             k2 = 0;
 
-            file1_lens = statbuf1.st_size;
+			file1_lens = statbuf1.st_size;
             crm_force_munmap_filename(file1);
             crm_force_munmap_filename(file2);
 
@@ -2619,9 +2459,12 @@ VHT_CELL **vht,
     {
         nonfatalerror("You need to input (file1.svm | file2.svm | f1vsf2.svmhyp)\n", "");
         free(file_string);
+         crm_regfree(&regcb);
         return 0;
     }
-    free(hashes);
+         crm_regfree(&regcb);
+
+		 free(hashes);
     hashes = NULL;
 
 

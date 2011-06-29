@@ -1,4 +1,4 @@
-#! @bindir@/crm114
+#! @BIN_PATH@/crm114
 {
         {
                 match   < fromend >  ( :word: )   /[[:graph:]]+/

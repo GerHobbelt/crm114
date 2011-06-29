@@ -12,7 +12,7 @@ failures
 Sorry, but this program is very sick and probably should be killed off.
 This happened at line 41 of file exec_async_leaktest1.crm:
     failures -----\n/
-(runtime system location: crm_compiler.c(637) in routine: crm_microcompiler)
+(runtime system location: crm_compiler.c(672) in routine: crm_microcompiler)
 
 STDOUT TEST OUTPUT:
 

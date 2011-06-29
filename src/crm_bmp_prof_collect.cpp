@@ -349,9 +349,9 @@ int collect_and_display_requested_data(FILE *inf, int read_size, CRM_ANALYSIS_PR
 
                 case MARK_VT_HASH_VALUE:
                 case MARK_HASH_CONTINUATION:
-					// TBD
-					// TODO
-					break;
+                    // TBD
+                    // TODO
+                    break;
 
                 case MARK_OPERATION:
                     // crm_analysis_mark(&analysis_cfg, MARK_OPERATION, csl->cstmt, "iL", csl->mct[csl->cstmt]->stmt_type, (unsigned long long int)csl->mct[csl->cstmt]->apb.sflags);
@@ -365,16 +365,16 @@ int collect_and_display_requested_data(FILE *inf, int read_size, CRM_ANALYSIS_PR
                         timing_operation_start = elem->time_mark;
 
 #if 0
-						if (active_opcode >= 0 && active_opcode <= CRM_UNIMPLEMENTED)
+                        if (active_opcode >= 0 && active_opcode <= CRM_UNIMPLEMENTED)
                         {
                             report_data.opcode_counts[active_opcode]++;
                         }
                         else
                         {
-                            report_data.opcode_counts[CRM_UNIMPLEMENTED+1]++;
+                            report_data.opcode_counts[CRM_UNIMPLEMENTED + 1]++;
                         }
 #endif
-						//UPDATE_MINMAX(prof_minmax.operation.statement_no, (int)extra_val);
+                        //UPDATE_MINMAX(prof_minmax.operation.statement_no, (int)extra_val);
 
                         opcode_flags = elem->value[1].as_int;
 
@@ -401,13 +401,13 @@ int collect_and_display_requested_data(FILE *inf, int read_size, CRM_ANALYSIS_PR
                         }
                         else
                         {
-							// fake it: we've got corrupted timing anyhow!
-	                        dt = elem->time_mark - timing_operation_start;
-							if (dt > 1000000000)
-								dt = 1000000;
+                            // fake it: we've got corrupted timing anyhow!
+                            dt = elem->time_mark - timing_operation_start;
+                            if (dt > 1000000000)
+                                dt = 1000000;
 
-                            report_data.opcode_times[CRM_UNIMPLEMENTED+1] += counter2nsecs(active_clock_freq, dt);
-                            report_data.opcode_counts[CRM_UNIMPLEMENTED+1]++;
+                            report_data.opcode_times[CRM_UNIMPLEMENTED + 1] += counter2nsecs(active_clock_freq, dt);
+                            report_data.opcode_counts[CRM_UNIMPLEMENTED + 1]++;
                         }
                     }
                     break;
@@ -666,22 +666,22 @@ int collect_and_display_requested_data(FILE *inf, int read_size, CRM_ANALYSIS_PR
                     }
                     break;
 
-				case MARK_CSS_STATS_GROUP:
-					// crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 1, "iii", hfsize, fbuckets, zvbins);
-					// crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 2, "iii", ofbins, docs_learned, features_learned);
-					// crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 3, "Ldd", (long long int)sum, avg_datums_per_bucket, avg_pack_density);
-					// crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 4, "idi", maxchain, avg_ovchain_length, specials);
-					// crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 5, "i", specials_in_chains);
+                case MARK_CSS_STATS_GROUP:
+                    // crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 1, "iii", hfsize, fbuckets, zvbins);
+                    // crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 2, "iii", ofbins, docs_learned, features_learned);
+                    // crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 3, "Ldd", (long long int)sum, avg_datums_per_bucket, avg_pack_density);
+                    // crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 4, "idi", maxchain, avg_ovchain_length, specials);
+                    // crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_GROUP, 5, "i", specials_in_chains);
                     ENSURE(value_cnt >= 1);
                     ENSURE(extra_val >= 1);
                     ENSURE(extra_val <= 5);
-					break;
+                    break;
 
-				case MARK_CSS_STATS_HISTOGRAM:
-					// crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_HISTOGRAM, ev, "iii", val[0], val[1], val[2]);
-					// crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_HISTOGRAM, ev, (vc == 2 ? "ii" : "i"), val[0], val[1]);
+                case MARK_CSS_STATS_HISTOGRAM:
+                    // crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_HISTOGRAM, ev, "iii", val[0], val[1], val[2]);
+                    // crm_analysis_mark(&analysis_cfg, MARK_CSS_STATS_HISTOGRAM, ev, (vc == 2 ? "ii" : "i"), val[0], val[1]);
                     ENSURE(value_cnt >= 1);
-					break;
+                    break;
                 }
 
                 if (hit_valid_store_elem)

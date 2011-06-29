@@ -102,10 +102,11 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //
         // note that the old 'value may have returned to same' code is
         // still in here; when we can do without it, there's no need
-        // for a hash array, only a 'previous hash' value to have tag along.
+        // for a hash array, only a 'previous hash' value to tag along.
         for (i = itercount; --i >= 0;)
         {
             CRM_ASSERT(i < MAX_EVAL_ITERATIONS);
+            CRM_ASSERT(i < itercount);
             if (ahash[i] == ihash)
             {
                 if (i != itercount - 1)
@@ -126,6 +127,8 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
         newvallen = crm_qexpandvar(tempbuf, newvallen,
                 data_window_size, &qex_stat, vht, tdw);
+        CRM_ASSERT(newvallen < data_window_size);
+        tempbuf[newvallen] = 0;
     }
 
     if (itercount == MAX_EVAL_ITERATIONS)

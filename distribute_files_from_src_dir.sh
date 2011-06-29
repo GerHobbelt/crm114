@@ -9,7 +9,7 @@
 
 check_file()
 {
-    echo "copying             : src/$2 -- $1/$2$3"
+    echo "copying                  : src/$2 -- $1/$2$3"
     if [ -f src/$2 ]
     then
         cp src/$2 $1/$2$3
@@ -18,26 +18,36 @@ check_file()
 
 process_crm()
 {
-    echo "copying[processed]  : src/$2 -- $1/$2$3"
+    echo "copying[processed]       : src/$2 -- $1/$2$3"
     if [ -f src/$2 ]
     then
-        cat src/$2 | sed -e 's,#!.*\/crm,#! @abs_top_builddir@/src/crm114,g' > $1/$2$3
+        cat src/$2 | sed -e 's,#!.*\/crm114,#! @BIN_PATH@/crm,g' -e 's,#!.*\/crm,#! @BIN_PATH@/crm114,g' -e 's,\([-A-Za-z0-9_]*\.input\),@abs_srcdir@\/\1,g' > $1/$2$3
     fi
 }
 
 process_shfile()
 {
-    echo "copying[procd/shell]: src/$2 -- $1/$2$3"
+    echo "copying[procd/shell]     : src/$2 -- $1/$2$3"
     if [ -f src/$2 ]
     then
-        cat src/$2 | sed -e 's,\./crm114,@abs_top_builddir@/src/crm114,g' > $1/$2$3
+        cat src/$2 | sed -e 's,[[:graph:]]*\/crm114,#! @BIN_PATH@/crm,g' -e 's,[[:graph:]]*\/crm,#! @BIN_PATH@/crm114,g' -e 's,\([-A-Za-z0-9_]*\.input\),@abs_srcdir@\/\1,g' > $1/$2$3
+        chmod a+x $1/$2$3
+    fi
+}
+
+process_test_shfile()
+{
+    echo "copying[procd/shell.test]: src/$2 -- $1/$2$3"
+    if [ -f src/$2 ]
+    then
+        cat src/$2 | sed -e 's,[[:graph:]]*\/crm114,@abs_top_builddir@/src/crm,g' -e 's,[[:graph:]]*\/crm,@abs_top_builddir@/src/crm114,g' -e 's,\([-A-Za-z0-9_]*\.input\),@abs_srcdir@\/\1,g' > $1/$2$3
         chmod a+x $1/$2$3
     fi
 }
 
 process_cf()
 {
-    echo "copying[processed]  : src/$2 -- $1/$2$3"
+    echo "copying[processed]       : src/$2 -- $1/$2$3"
     if [ -f src/$2 ]
     then
 	# TODO: replace mime, etc. commands with something dug up by the configure script
@@ -173,8 +183,8 @@ check_file          tests                INTRO_mt_ng_reference_2.input
 check_file          tests                QUICKREF_mt_ng_reference_1.input
 
 
-process_shfile      tests                megatest.sh                        .in
-process_shfile      tests                megatest_ng.sh                     .in
+process_test_shfile tests                megatest.sh                        .in
+process_test_shfile tests                megatest_ng.sh                     .in
 
 check_file          tests                whitelist.mfp.example
 

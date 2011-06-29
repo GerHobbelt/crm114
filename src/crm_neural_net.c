@@ -603,7 +603,7 @@ static void unmap_file(NEURAL_NET_STRUCT *nn, char *filename)
     //    The fix is to do a trivial read/write on the .css ile, to force
     //    the filesystem to repropagate it's caches.
     //
-    crm_touch(learnfilename);
+    crm_touch(filename);
 #endif
 #endif
 }
@@ -624,7 +624,7 @@ static void force_unmap_file(NEURAL_NET_STRUCT *nn, char *filename)
     //    The fix is to do a trivial read/write on the .css ile, to force
     //    the filesystem to repropagate it's caches.
     //
-    crm_touch(learnfilename);
+    crm_touch(filename);
 #endif
 #endif
 }
@@ -738,17 +738,17 @@ static double get_pR(double p)
 
 #endif
 
-static double get_pR2 (double icnr, double ocnr)
+static double get_pR2(double icnr, double ocnr)
 {
-  double sum;
-  double diff;
-  double output;
+    double sum;
+    double diff;
+    double output;
 
-  sum = icnr + ocnr;
-  diff = icnr - ocnr;
+    sum = icnr + ocnr;
+    diff = icnr - ocnr;
 
-  output = 100 * sum * diff;
-  return output;
+    output = 100 * sum * diff;
+    return output;
 }
 
 
@@ -780,9 +780,9 @@ static void do_net(NEURAL_NET_STRUCT *nn, crmhash_t *bag, int baglen)
     //    as well as projected feature bags, by inclusion of the modulo on
     //    the retina size.
     //
-  //    Note that the sentinel to "stop" is a 0 or 1 in the bag array,
-  //    which is the marker for "next featureset" (and "in-class" v.
-  //    "out of class").  
+    //    Note that the sentinel to "stop" is a 0 or 1 in the bag array,
+    //    which is the marker for "next featureset" (and "in-class" v.
+    //    "out of class").
 
     if (internal_trace)
     {
@@ -956,8 +956,8 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     //     vector_tokenize_selector to get the "right" parse regex from the
     //     user program's APB.
     crm_vector_tokenize_selector(apb,                     // the APB
-		vht,
-		tdw,
+            vht,
+            tdw,
             text,                                         // intput string
             text_len,                                     // how many bytes
             0,                                            // starting offset
@@ -1050,12 +1050,12 @@ static void nuke(NEURAL_NET_STRUCT *nn, int flag)
 //    Basically, we use gradient descent.
 //
 int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     NEURAL_NET_STRUCT my_nn, *nn = &my_nn;
-    char filename[MAX_PATTERN];
+    char *filename = NULL;
     char htext[MAX_PATTERN];
     int htext_len;
     struct stat statbuf;
@@ -1117,7 +1117,7 @@ VHT_CELL **vht,
     CRM_ASSERT(j <= htext_len);
 
     htext[j] = 0;
-    strcpy(filename, &htext[i]);
+    filename = &htext[i];
     //     Set a nominal epoch cycle limiter
     //
     soft_cycle_limit = NN_MAX_TRAINING_CYCLES;
@@ -2258,9 +2258,9 @@ VHT_CELL **vht,
 
 int crm_neural_net_classify(
         CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     char filenames_field[MAX_PATTERN];
     int filenames_field_len;
@@ -2277,7 +2277,7 @@ VHT_CELL **vht,
     int fail_on = MAX_CLASSIFIERS;
 
     float output[MAX_CLASSIFIERS][2];
-  double total_icnr, total_ocnr;
+    double total_icnr, total_ocnr;
     double p[MAX_CLASSIFIERS], pR[MAX_CLASSIFIERS], suc_p, suc_pR, tot;
 
     char out_var[MAX_PATTERN];
@@ -2424,15 +2424,15 @@ VHT_CELL **vht,
     }
 
     //      Calculate pR's for all of the classifiers.
-  total_icnr = 0;
-  total_ocnr = 0;
-  for(i = 0; i < n_classifiers; i++)
+    total_icnr = 0;
+    total_ocnr = 0;
+    for (i = 0; i < n_classifiers; i++)
     {
-      pR[i] = get_pR2 (output[i][0], output[i][1]);
-      total_icnr = i < fail_on ? output[i][0] : output[i][1];
-      total_ocnr = i < fail_on ? output[i][1] : output[i][0];
+        pR[i] = get_pR2(output[i][0], output[i][1]);
+        total_icnr = i < fail_on ? output[i][0] : output[i][1];
+        total_ocnr = i < fail_on ? output[i][1] : output[i][0];
     }
-  suc_pR = get_pR2 (total_icnr, total_ocnr);
+    suc_pR = get_pR2(total_icnr, total_ocnr);
     out_pos = 0;
 
     //test for nan as well ??? where
@@ -2462,8 +2462,8 @@ VHT_CELL **vht,
     for (i = 0; i < n_classifiers; i++)
     {
         out_pos += sprintf(outbuf + out_pos,
-	"#%d (%s): icnr: %3.2f ocnr: %3.2f prob: %3.2e, pR: %6.2f\n",
-	i, filenames[i], output [i][0], output[i][1], p[i], pR[i] );
+                "#%d (%s): icnr: %3.2f ocnr: %3.2f prob: %3.2e, pR: %6.2f\n",
+                i, filenames[i], output[i][0], output[i][1], p[i], pR[i]);
     }
 
     if (out_var_len)

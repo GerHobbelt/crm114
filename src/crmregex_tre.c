@@ -382,56 +382,59 @@ void crm_regfree(regex_t *preg)
 #else
     regfree(preg);
 #endif
+
+	memset(preg, 0, sizeof(preg[0]));
 }
 
 char *crm_regversion(void)
 {
     static char vs[256];
-	int cfg_approx = 0;
-	int cfg_wchar = 0;
-	int cfg_mb = 0;
-	int cfg_abi = 0;
-	char *cfg_ver = NULL;
-	int cfg_mb_cur_max = 1;
+    int cfg_approx = 0;
+    int cfg_wchar = 0;
+    int cfg_mb = 0;
+    int cfg_abi = 0;
+    char *cfg_ver = NULL;
+    int cfg_mb_cur_max = 1;
 
-	tre_config(TRE_CONFIG_APPROX, &cfg_approx);
-	tre_config(TRE_CONFIG_WCHAR, &cfg_wchar);
-	tre_config(TRE_CONFIG_MULTIBYTE, &cfg_mb);
-	tre_config(TRE_CONFIG_SYSTEM_ABI, &cfg_abi);
-	tre_config(TRE_CONFIG_VERSION, &cfg_ver);
+    tre_config(TRE_CONFIG_APPROX, &cfg_approx);
+    tre_config(TRE_CONFIG_WCHAR, &cfg_wchar);
+    tre_config(TRE_CONFIG_MULTIBYTE, &cfg_mb);
+    tre_config(TRE_CONFIG_SYSTEM_ABI, &cfg_abi);
+    tre_config(TRE_CONFIG_VERSION, &cfg_ver);
 #if 0
-	tre_config(TRE_MB_CUR_MAX_VALUE, &cfg_mb_cur_max);
+    tre_config(TRE_MB_CUR_MAX_VALUE, &cfg_mb_cur_max);
 #else
 #ifdef TRE_WCHAR
 #ifdef TRE_MULTIBYTE
-	cfg_mb_cur_max = MB_CUR_MAX;
+    cfg_mb_cur_max = MB_CUR_MAX;
 #else /* !TRE_MULTIBYTE */
-	cfg_mb_cur_max = 1;
+    cfg_mb_cur_max = 1;
 #endif /* !TRE_MULTIBYTE */
-#else 
-	cfg_mb_cur_max = 1;
+#else
+    cfg_mb_cur_max = 1;
 #endif
 #endif
 
     snprintf(vs, WIDTHOF(vs), "TRE %s (LGPL%s%s%s%s%s%s%s%s%s%s)",
-		cfg_ver,
-		(cfg_approx ? ", ": ""),
-		(cfg_approx ? "APPROX": ""),
-		(cfg_wchar ? ", ": ""),
-		(cfg_wchar ? "WCHAR": ""),
-		(cfg_mb ? ", ": ""),
-		(cfg_mb ? "MULTIBYTE": ""),
-		(cfg_abi ? ", ": ""),
-		(cfg_abi ? "ABI": ""),
-		(cfg_mb_cur_max != 1 ? ", ": ""),
-		(cfg_mb_cur_max != 1 ? "AUTO_MULTIBYTE": ""));
+            cfg_ver,
+            (cfg_approx ? ", " : ""),
+            (cfg_approx ? "APPROX" : ""),
+            (cfg_wchar ? ", " : ""),
+            (cfg_wchar ? "WCHAR" : ""),
+            (cfg_mb ? ", " : ""),
+            (cfg_mb ? "MULTIBYTE" : ""),
+            (cfg_abi ? ", " : ""),
+            (cfg_abi ? "ABI" : ""),
+            (cfg_mb_cur_max != 1 ? ", " : ""),
+            (cfg_mb_cur_max != 1 ? "AUTO_MULTIBYTE" : ""));
 
-return vs;
+    return vs;
 }
 
 
 void free_regex_cache(void)
 {
+#if CRM_REGEX_CACHESIZE > 0
     int i;
 
     for (i = 0; i < WIDTHOF(regex_cache); i++)
@@ -447,6 +450,7 @@ void free_regex_cache(void)
         }
     }
     memset(regex_cache, 0, sizeof(regex_cache));
+#endif
 }
 
 

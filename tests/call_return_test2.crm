@@ -1,0 +1,21 @@
+window
+
+isolate (:c:) /ABC/
+
+call /:func:/ (:*:c:)
+
+output /C = :*:c:\n/
+
+alter (:c:) /123/
+call /:func:/ (:c:)
+
+output /C = :*:c:\n/
+
+exit /0/
+
+:func:
+return /XYZ/
+
+trap (:ex:) //
+output /EXCEPTION: :*:ex:\n/
+

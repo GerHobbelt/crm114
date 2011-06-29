@@ -120,160 +120,164 @@ MEGATEST_INPUT_FILES = \
 
 TEST_REFERENCE_FILES =                            \
 	$(refdir)/String_Hyperspace_test1.step4.refoutput \
-    $(refdir)/OSBF_Local_Confidence_test1.step2.refoutput \
-    $(refdir)/Neural_Network_test1.step2.refoutput \
-    $(refdir)/Bit_Entropy_Toroid_test1.step4.refoutput \
-    $(refdir)/Support_Vector_Machine_test1.step4.refoutput \
-    $(refdir)/Support_Vector_Machine_Unigram_test1.step1.refoutput \
-    $(refdir)/OSB_Markovian_test1.step3.refoutput \
-    $(refdir)/Unigram_Winnow_test1.step4.refoutput \
-    $(refdir)/String_Unigram_Hyperspace_test1.step1.refoutput \
-    $(refdir)/Support_Vector_Machine_test1.step1.refoutput \
-    $(refdir)/OSB_Markovian_test1.step1.refoutput \
-    $(refdir)/syscall_exit_test.refoutput \
-    $(refdir)/Unigram_Winnow_test1.step3.refoutput \
-    $(refdir)/OSB_Winnow_test1.step1.refoutput \
-    $(refdir)/windowtest_fromvar.crm.refoutput \
-    $(refdir)/Neural_Network_test1.step4.refoutput \
-    $(refdir)/OSB_Markov_Chisquared_Unique_test1.step2.refoutput \
-    $(refdir)/backwardstest.crm.2.refoutput \
-    $(refdir)/rewritetest.crm.refoutput \
-    $(refdir)/Unigram_Winnow_test1.step1.refoutput \
-    $(refdir)/quine.crm.refoutput \
-    $(refdir)/Vector_3_word_bag_Hyperspace_test1.step1.refoutput \
-    $(refdir)/OSB_Winnow_test1.step9.refoutput \
-    $(refdir)/match_isolate_test.crm.refoutput \
-    $(refdir)/isolatephenomenontest.crm.refoutput \
-    $(refdir)/paolo_ov2.crm.refoutput \
-    $(refdir)/mathrpntest.crm.refoutput \
-    $(refdir)/Fast_Substring_Compression_Match_test1.step4.refoutput \
-    $(refdir)/Vector_3_word_bag_Hyperspace_test1.step2.refoutput \
-    $(refdir)/OSB_Markov_Unique_test1.step3.refoutput \
-    $(refdir)/String_Kernel_SVM_Unique_test1.step5.refoutput \
-    $(refdir)/paolo_ov3.crm.refoutput \
-    $(refdir)/bracktest.crm.refoutput \
-    $(refdir)/OSB_Winnow_test1.step6.refoutput \
-    $(refdir)/windowtest.crm.refoutput \
-    $(refdir)/Unigram_Hyperspace_test1.step2.refoutput \
-    $(refdir)/paolo_ov4.crm.refoutput \
-    $(refdir)/Bit_Entropy_Toroid_test1.step1.refoutput \
-    $(refdir)/escapetest.crm.refoutput \
-    $(refdir)/Support_Vector_Machine_test1.step5.refoutput \
-    $(refdir)/OSB_Winnow_test1.step5.refoutput \
-    $(refdir)/Unigram_Bayesian_test1.step2.refoutput \
-    $(refdir)/String_Hyperspace_test1.step3.refoutput \
-    $(refdir)/Unigram_Bayesian_test1.step4.refoutput \
-    $(refdir)/defaulttest.crm.refoutput \
-    $(refdir)/syscall123_test.refoutput \
-    $(refdir)/inserttest_a.crm.refoutput \
-    $(refdir)/OSBF_Local_Confidence_test1.step3.refoutput \
-    $(refdir)/SBPH_Markovian_test1.step2.refoutput \
-    $(refdir)/OSBF_Local_Confidence_test1.step1.refoutput \
-    $(refdir)/OSB_Hyperspace_test1.step2.refoutput \
-    $(refdir)/Unigram_Bayesian_test1.step1.refoutput \
-    $(refdir)/Clump_Pmulc_test1.step1.refoutput \
-    $(refdir)/OSB_Markovian_test1.step4.refoutput \
-    $(refdir)/Clump_Pmulc_test1.step2.refoutput \
-    $(refdir)/matchtest.crm.refoutput \
-    $(refdir)/Unigram_Hyperspace_test1.step3.refoutput \
-    $(refdir)/Clump_Pmulc_test1.step3.refoutput \
-    $(refdir)/Bit_Entropy_test1.step3.refoutput \
-    $(refdir)/skudtest.crm.refoutput \
-    $(refdir)/beeptest.crm.refoutput \
-    $(refdir)/SBPH_Markovian_test1.step1.refoutput \
-    $(refdir)/statustest.crm.refoutput \
-    $(refdir)/exectest.crm.refoutput \
-    $(refdir)/OSB_3_letter_Hyperspace_test1.step2.refoutput \
-    $(refdir)/overalterisolatedtest.crm.refoutput \
-    $(refdir)/match_isolate_reclaim.crm.refoutput \
-    $(refdir)/Unigram_Winnow_test1.step2.refoutput \
-    $(refdir)/OSB_Markov_Chisquared_Unique_test1.step3.refoutput \
-    $(refdir)/Bit_Entropy_test1.step4.refoutput \
-    $(refdir)/SBPH_Markovian_test1.step3.refoutput \
-    $(refdir)/call_return_test.crm.refoutput \
-    $(refdir)/Fast_Substring_Compression_Match_test1.step2.refoutput \
-    $(refdir)/unionintersecttest.crm.refoutput \
-    $(refdir)/Neural_Network_test1.step6.refoutput \
-    $(refdir)/approxtest.crm.refoutput \
-    $(refdir)/randomiotest.crm.refoutput \
-    $(refdir)/String_Unigram_Hyperspace_test1.step3.refoutput \
-    $(refdir)/Clump_Pmulc_test1.step5.refoutput \
-    $(refdir)/OSB_Hyperspace_test1.step3.refoutput \
-    $(refdir)/String_Unigram_Hyperspace_test1.step2.refoutput \
-    $(refdir)/paolo_overvars.crm.refoutput \
-    $(refdir)/String_Kernel_SVM_test1.step2.refoutput \
-    $(refdir)/Unigram_Bayesian_test1.step3.refoutput \
-    $(refdir)/OSBF_Local_Confidence_test1.step4.refoutput \
-    $(refdir)/OSB_Markov_Unique_test1.step4.refoutput \
-    $(refdir)/OSB_Markov_Chisquared_Unique_test1.step1.refoutput \
-    $(refdir)/eval_infiniteloop.crm.refoutput \
-    $(refdir)/Fast_Substring_Compression_Match_test1.step3.refoutput \
-    $(refdir)/Bit_Entropy_test1.step2.refoutput \
-    $(refdir)/String_Kernel_SVM_Unique_test1.step3.refoutput \
-    $(refdir)/zz_translate_test.crm.refoutput \
-    $(refdir)/String_Hyperspace_test1.step1.refoutput \
-    $(refdir)/OSB_Markov_Unique_test1.step2.refoutput \
-    $(refdir)/Clump_Pmulc_test1.step4.refoutput \
-    $(refdir)/Vector_3_word_bag_Hyperspace_test1.step3.refoutput \
-    $(refdir)/Unigram_Hyperspace_test1.step4.refoutput \
-    $(refdir)/String_Kernel_SVM_test1.step1.refoutput \
-    $(refdir)/fataltraptest.crm.refoutput \
-    $(refdir)/fataltrapprogramerr.crm.refoutput \
-    $(refdir)/Neural_Network_test1.step1.refoutput \
-    $(refdir)/paolo_ov5.crm.refoutput \
-    $(refdir)/print_binary2decimal_int32.crm.refoutput \
-    $(refdir)/match_re_fringe1.crm.refoutput \
-    $(refdir)/String_Unigram_Hyperspace_test1.step4.refoutput \
-    $(refdir)/String_Kernel_SVM_Unique_test1.step2.refoutput \
-    $(refdir)/OSB_3_letter_Hyperspace_test1.step1.refoutput \
-    $(refdir)/String_Kernel_SVM_test1.step5.refoutput \
-    $(refdir)/Support_Vector_Machine_test1.step2.refoutput \
-    $(refdir)/SBPH_Markovian_test1.step4.refoutput \
-    $(refdir)/crm114_version.refoutput \
-    $(refdir)/syscall_jibber_test.refoutput \
-    $(refdir)/Unigram_Hyperspace_test1.step1.refoutput \
-    $(refdir)/OSB_Winnow_test1.step2.refoutput \
-    $(refdir)/Support_Vector_Machine_Unigram_test1.step2.refoutput \
-    $(refdir)/OSB_Winnow_test1.step10.refoutput \
-    $(refdir)/Unigram_Winnow_test1.step6.refoutput \
-    $(refdir)/translate_tr.crm.refoutput \
-    $(refdir)/Neural_Network_test1.step5.refoutput \
-    $(refdir)/Unigram_Winnow_test1.step5.refoutput \
-    $(refdir)/alternating_example_neural.crm.refoutput \
-    $(refdir)/Support_Vector_Machine_Unigram_test1.step5.refoutput \
-    $(refdir)/Bytewise_Correlation_test1.step1.refoutput \
-    $(refdir)/Bit_Entropy_Toroid_test1.step3.refoutput \
-    $(refdir)/OSB_Markov_Unique_test1.step1.refoutput \
-    $(refdir)/Bit_Entropy_Toroid_test1.step2.refoutput \
-    $(refdir)/Support_Vector_Machine_test1.step3.refoutput \
-    $(refdir)/String_Kernel_SVM_test1.step3.refoutput \
-    $(refdir)/Support_Vector_Machine_Unigram_test1.step4.refoutput \
-    $(refdir)/OSB_Winnow_test1.step7.refoutput \
-    $(refdir)/backwardstest.crm.refoutput \
-    $(refdir)/OSB_3_letter_Hyperspace_test1.step4.refoutput \
-    $(refdir)/Bytewise_Correlation_test1.step2.refoutput \
-    $(refdir)/indirecttest.crm.refoutput \
-    $(refdir)/exec_async_leaktest1.crm.refoutput \
-    $(refdir)/Neural_Network_test1.step3.refoutput \
-    $(refdir)/defaulttest.crm.2.refoutput \
-    $(refdir)/String_Kernel_SVM_Unique_test1.step1.refoutput \
-    $(refdir)/Vector_3_word_bag_Hyperspace_test1.step4.refoutput \
-    $(refdir)/OSB_Winnow_test1.step8.refoutput \
-    $(refdir)/Bit_Entropy_test1.step1.refoutput \
-    $(refdir)/String_Kernel_SVM_Unique_test1.step4.refoutput \
-    $(refdir)/mathalgtest.crm.refoutput \
-    $(refdir)/Fast_Substring_Compression_Match_test1.step1.refoutput \
-    $(refdir)/String_Hyperspace_test1.step2.refoutput \
-    $(refdir)/String_Kernel_SVM_test1.step4.refoutput \
-    $(refdir)/OSB_Winnow_test1.step4.refoutput \
-    $(refdir)/OSB_Winnow_test1.step3.refoutput \
-    $(refdir)/OSB_Markov_Chisquared_Unique_test1.step4.refoutput \
-    $(refdir)/Support_Vector_Machine_Unigram_test1.step3.refoutput \
-    $(refdir)/OSB_Hyperspace_test1.step4.refoutput \
-    $(refdir)/OSB_Hyperspace_test1.step1.refoutput \
-    $(refdir)/OSB_3_letter_Hyperspace_test1.step3.refoutput \
-    $(refdir)/OSB_Markovian_test1.step2.refoutput \
+	$(refdir)/OSBF_Local_Confidence_test1.step2.refoutput \
+	$(refdir)/Neural_Network_test1.step2.refoutput \
+	$(refdir)/Bit_Entropy_Toroid_test1.step4.refoutput \
+	$(refdir)/Support_Vector_Machine_test1.step4.refoutput \
+	$(refdir)/Support_Vector_Machine_Unigram_test1.step1.refoutput \
+	$(refdir)/OSB_Markovian_test1.step3.refoutput \
+	$(refdir)/Unigram_Winnow_test1.step4.refoutput \
+	$(refdir)/String_Unigram_Hyperspace_test1.step1.refoutput \
+	$(refdir)/Support_Vector_Machine_test1.step1.refoutput \
+	$(refdir)/OSB_Markovian_test1.step1.refoutput \
+	$(refdir)/syscall_exit_test.refoutput \
+	$(refdir)/Unigram_Winnow_test1.step3.refoutput \
+	$(refdir)/OSB_Winnow_test1.step1.refoutput \
+	$(refdir)/windowtest_fromvar.crm.refoutput \
+	$(refdir)/Neural_Network_test1.step4.refoutput \
+	$(refdir)/OSB_Markov_Chisquared_Unique_test1.step2.refoutput \
+	$(refdir)/backwardstest.crm.2.refoutput \
+	$(refdir)/rewritetest.crm.refoutput \
+	$(refdir)/Unigram_Winnow_test1.step1.refoutput \
+	$(refdir)/quine.crm.refoutput \
+	$(refdir)/Vector_3_word_bag_Hyperspace_test1.step1.refoutput \
+	$(refdir)/OSB_Winnow_test1.step9.refoutput \
+	$(refdir)/match_isolate_test.crm.refoutput \
+	$(refdir)/match_attr_fromend_newend.crm.refoutput \
+	$(refdir)/isolatephenomenontest.crm.refoutput \
+	$(refdir)/paolo_ov2.crm.refoutput \
+	$(refdir)/mathrpntest.crm.refoutput \
+	$(refdir)/Fast_Substring_Compression_Match_test1.step4.refoutput \
+	$(refdir)/Vector_3_word_bag_Hyperspace_test1.step2.refoutput \
+	$(refdir)/OSB_Markov_Unique_test1.step3.refoutput \
+	$(refdir)/String_Kernel_SVM_Unique_test1.step5.refoutput \
+	$(refdir)/paolo_ov3.crm.refoutput \
+	$(refdir)/bracktest.crm.refoutput \
+	$(refdir)/OSB_Winnow_test1.step6.refoutput \
+	$(refdir)/windowtest.crm.refoutput \
+	$(refdir)/Unigram_Hyperspace_test1.step2.refoutput \
+	$(refdir)/paolo_ov4.crm.refoutput \
+	$(refdir)/Bit_Entropy_Toroid_test1.step1.refoutput \
+	$(refdir)/escapetest.crm.refoutput \
+	$(refdir)/Support_Vector_Machine_test1.step5.refoutput \
+	$(refdir)/OSB_Winnow_test1.step5.refoutput \
+	$(refdir)/Unigram_Bayesian_test1.step2.refoutput \
+	$(refdir)/String_Hyperspace_test1.step3.refoutput \
+	$(refdir)/Unigram_Bayesian_test1.step4.refoutput \
+	$(refdir)/defaulttest.crm.refoutput \
+	$(refdir)/syscall123_test.refoutput \
+	$(refdir)/inserttest_a.crm.refoutput \
+	$(refdir)/OSBF_Local_Confidence_test1.step3.refoutput \
+	$(refdir)/SBPH_Markovian_test1.step2.refoutput \
+	$(refdir)/OSBF_Local_Confidence_test1.step1.refoutput \
+	$(refdir)/OSB_Hyperspace_test1.step2.refoutput \
+	$(refdir)/Unigram_Bayesian_test1.step1.refoutput \
+	$(refdir)/Clump_Pmulc_test1.step1.refoutput \
+	$(refdir)/OSB_Markovian_test1.step4.refoutput \
+	$(refdir)/Clump_Pmulc_test1.step2.refoutput \
+	$(refdir)/matchtest.crm.refoutput \
+	$(refdir)/Unigram_Hyperspace_test1.step3.refoutput \
+	$(refdir)/Clump_Pmulc_test1.step3.refoutput \
+	$(refdir)/Bit_Entropy_test1.step3.refoutput \
+	$(refdir)/skudtest.crm.refoutput \
+	$(refdir)/beeptest.crm.refoutput \
+	$(refdir)/SBPH_Markovian_test1.step1.refoutput \
+	$(refdir)/statustest.crm.refoutput \
+	$(refdir)/exectest.crm.refoutput \
+	$(refdir)/OSB_3_letter_Hyperspace_test1.step2.refoutput \
+	$(refdir)/overalterisolatedtest.crm.refoutput \
+	$(refdir)/match_isolate_reclaim.crm.refoutput \
+	$(refdir)/Unigram_Winnow_test1.step2.refoutput \
+	$(refdir)/OSB_Markov_Chisquared_Unique_test1.step3.refoutput \
+	$(refdir)/Bit_Entropy_test1.step4.refoutput \
+	$(refdir)/SBPH_Markovian_test1.step3.refoutput \
+	$(refdir)/call_return_test.crm.refoutput \
+	$(refdir)/call_return_test2.crm.refoutput \
+	$(refdir)/Fast_Substring_Compression_Match_test1.step2.refoutput \
+	$(refdir)/unionintersecttest.crm.refoutput \
+	$(refdir)/Neural_Network_test1.step6.refoutput \
+	$(refdir)/approxtest.crm.refoutput \
+	$(refdir)/randomiotest.crm.refoutput \
+	$(refdir)/String_Unigram_Hyperspace_test1.step3.refoutput \
+	$(refdir)/Clump_Pmulc_test1.step5.refoutput \
+	$(refdir)/OSB_Hyperspace_test1.step3.refoutput \
+	$(refdir)/String_Unigram_Hyperspace_test1.step2.refoutput \
+	$(refdir)/paolo_overvars.crm.refoutput \
+	$(refdir)/String_Kernel_SVM_test1.step2.refoutput \
+	$(refdir)/Unigram_Bayesian_test1.step3.refoutput \
+	$(refdir)/OSBF_Local_Confidence_test1.step4.refoutput \
+	$(refdir)/OSB_Markov_Unique_test1.step4.refoutput \
+	$(refdir)/OSB_Markov_Chisquared_Unique_test1.step1.refoutput \
+	$(refdir)/eval_infiniteloop.crm.refoutput \
+	$(refdir)/eval_ref_test1.crm.refoutput \
+	$(refdir)/Fast_Substring_Compression_Match_test1.step3.refoutput \
+	$(refdir)/Bit_Entropy_test1.step2.refoutput \
+	$(refdir)/String_Kernel_SVM_Unique_test1.step3.refoutput \
+	$(refdir)/zz_translate_test.crm.refoutput \
+	$(refdir)/String_Hyperspace_test1.step1.refoutput \
+	$(refdir)/OSB_Markov_Unique_test1.step2.refoutput \
+	$(refdir)/Clump_Pmulc_test1.step4.refoutput \
+	$(refdir)/Vector_3_word_bag_Hyperspace_test1.step3.refoutput \
+	$(refdir)/Unigram_Hyperspace_test1.step4.refoutput \
+	$(refdir)/String_Kernel_SVM_test1.step1.refoutput \
+	$(refdir)/fataltraptest.crm.refoutput \
+	$(refdir)/fataltrapprogramerr.crm.refoutput \
+	$(refdir)/Neural_Network_test1.step1.refoutput \
+	$(refdir)/paolo_ov5.crm.refoutput \
+	$(refdir)/print_binary2decimal_int32.crm.refoutput \
+	$(refdir)/match_re_fringe1.crm.refoutput \
+	$(refdir)/String_Unigram_Hyperspace_test1.step4.refoutput \
+	$(refdir)/String_Kernel_SVM_Unique_test1.step2.refoutput \
+	$(refdir)/OSB_3_letter_Hyperspace_test1.step1.refoutput \
+	$(refdir)/String_Kernel_SVM_test1.step5.refoutput \
+	$(refdir)/Support_Vector_Machine_test1.step2.refoutput \
+	$(refdir)/SBPH_Markovian_test1.step4.refoutput \
+	$(refdir)/crm114_version.refoutput \
+	$(refdir)/syscall_jibber_test.refoutput \
+	$(refdir)/Unigram_Hyperspace_test1.step1.refoutput \
+	$(refdir)/OSB_Winnow_test1.step2.refoutput \
+	$(refdir)/Support_Vector_Machine_Unigram_test1.step2.refoutput \
+	$(refdir)/OSB_Winnow_test1.step10.refoutput \
+	$(refdir)/Unigram_Winnow_test1.step6.refoutput \
+	$(refdir)/translate_tr.crm.refoutput \
+	$(refdir)/Neural_Network_test1.step5.refoutput \
+	$(refdir)/Unigram_Winnow_test1.step5.refoutput \
+	$(refdir)/alternating_example_neural.crm.refoutput \
+	$(refdir)/Support_Vector_Machine_Unigram_test1.step5.refoutput \
+	$(refdir)/Bytewise_Correlation_test1.step1.refoutput \
+	$(refdir)/Bit_Entropy_Toroid_test1.step3.refoutput \
+	$(refdir)/OSB_Markov_Unique_test1.step1.refoutput \
+	$(refdir)/Bit_Entropy_Toroid_test1.step2.refoutput \
+	$(refdir)/Support_Vector_Machine_test1.step3.refoutput \
+	$(refdir)/String_Kernel_SVM_test1.step3.refoutput \
+	$(refdir)/Support_Vector_Machine_Unigram_test1.step4.refoutput \
+	$(refdir)/OSB_Winnow_test1.step7.refoutput \
+	$(refdir)/backwardstest.crm.refoutput \
+	$(refdir)/OSB_3_letter_Hyperspace_test1.step4.refoutput \
+	$(refdir)/Bytewise_Correlation_test1.step2.refoutput \
+	$(refdir)/indirecttest.crm.refoutput \
+	$(refdir)/exec_async_leaktest1.crm.refoutput \
+	$(refdir)/Neural_Network_test1.step3.refoutput \
+	$(refdir)/defaulttest.crm.2.refoutput \
+	$(refdir)/String_Kernel_SVM_Unique_test1.step1.refoutput \
+	$(refdir)/Vector_3_word_bag_Hyperspace_test1.step4.refoutput \
+	$(refdir)/OSB_Winnow_test1.step8.refoutput \
+	$(refdir)/Bit_Entropy_test1.step1.refoutput \
+	$(refdir)/String_Kernel_SVM_Unique_test1.step4.refoutput \
+	$(refdir)/mathalgtest.crm.refoutput \
+	$(refdir)/Fast_Substring_Compression_Match_test1.step1.refoutput \
+	$(refdir)/String_Hyperspace_test1.step2.refoutput \
+	$(refdir)/String_Kernel_SVM_test1.step4.refoutput \
+	$(refdir)/OSB_Winnow_test1.step4.refoutput \
+	$(refdir)/OSB_Winnow_test1.step3.refoutput \
+	$(refdir)/OSB_Markov_Chisquared_Unique_test1.step4.refoutput \
+	$(refdir)/Support_Vector_Machine_Unigram_test1.step3.refoutput \
+	$(refdir)/OSB_Hyperspace_test1.step4.refoutput \
+	$(refdir)/OSB_Hyperspace_test1.step1.refoutput \
+	$(refdir)/OSB_3_letter_Hyperspace_test1.step3.refoutput \
+	$(refdir)/OSB_Markovian_test1.step2.refoutput \
 	$(refdir)/alius_w_comment.crm.refoutput \
+	$(refdir)/alius_w_comment2.crm.refoutput \
 	$(refdir)/legal_eval_to_null_var1.crm.refoutput \
 	$(refdir)/legal_show_null_var1.crm.refoutput \
 	$(refdir)/illegal_stmt1.crm.refoutput \
@@ -307,7 +311,7 @@ test_SCRIPTS = \
 	exectimingtest1.crm exectimingtest2.crm \
 	learntest.crm classifytest.crm \
 	escapetest.crm argtest.crm beeptest.crm skudtest.crm aliustest.crm \
-	nestaliustest.crm eval_infiniteloop.crm \
+	nestaliustest.crm eval_infiniteloop.crm eval_ref_test1.crm \
 	traptest.crm fataltraptest.crm uncaughttraptest.crm \
 	fataltrapprogramerr.crm \
 	inserttest_a.crm inserttest_b.crm inserttest_c.crm \
@@ -317,15 +321,16 @@ test_SCRIPTS = \
 	rewritetest.crm exec_async_leaktest1.crm \
 	randomiotest.crm isolate_reclaim_test.crm \
 	match_isolate_test.crm isolatephenomenontest.crm \
-	match_isolate_reclaim.crm \
+	match_isolate_reclaim.crm match_attr_fromend_newend.crm \
 	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
-	quine.crm \
+	quine.crm call_return_test2.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	tenfold_validate.crm \
 	tokendelimiterbugtest.crm bracesbugtest.crm \
 	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
 	alius_w_comment.crm \
+	alius_w_comment2.crm \
 	userdirtest.crm \
 	paolo_ov2.crm \
 	paolo_ov3.crm \
@@ -575,7 +580,8 @@ script:                      \
 initial_tests1:              \
 		version_test \
 		bracktest_test \
-		alius_w_comment_test \
+		alius_w_comment2_test \
+		alius_w_comment1_test \
 		escapetest_test \
 		fataltraptest_test \
 		fataltrapprogramerr_test \
@@ -587,7 +593,6 @@ initial_tests1:              \
 		rewritetest_test \
 		skudtest_test \
 		statustest_test \
-		exectest_test \
 		unionintersecttest_test \
 		beeptest_test \
 		defaulttest_test1 \
@@ -598,6 +603,7 @@ initial_tests1:              \
 		mathalgtest_test \
 		mathrpntest_test \
 		eval_infiniteloop_test \
+		eval_ref_test1 \
 		randomiotest_test \
 		paolo_overvars_test \
 		paolo_ov2_test \
@@ -636,19 +642,22 @@ fringe_cases_compiler_tests1:	\
 
 # slower tests:
 initial_tests2:              \
-		match_isolate_test \
+		indirecttest_test \
 		isolatephenomenon_test \
 		match_isolate_reclaim_test \
-		call_return_test \
+		match_attr_fromend_newend_test \
+		call_return_test1 \
+		call_return_test2 \
 		translate_tr_test \
 		zz_translate_test \
 		quine_test
 
 further_tests:                            \
+		match_isolate_test \
+		exectest_test \
 		syscall123_test \
 		syscall_exit_test \
 		syscall_jibber_test \
-		indirecttest_test \
 		exec_async_leaktest1
 
 all_classifier_tests:                        \
@@ -735,9 +744,13 @@ version_test: $(TEST_PREREQUISITES)
 	$(SILENT)\
 	./testscript.sh '-{}' "" "$(refdir)/crm114_version.refoutput" "$(builddir)/crm114_versiontest.filter.sh" -v
 
-alius_w_comment_test: $(TEST_PREREQUISITES) alius_w_comment.crm
+alius_w_comment1_test: $(TEST_PREREQUISITES) alius_w_comment.crm
 	$(SILENT)\
 	./testscript.sh alius_w_comment.crm "" -
+
+alius_w_comment2_test: $(TEST_PREREQUISITES) alius_w_comment2.crm
+	$(SILENT)\
+	./testscript.sh alius_w_comment2.crm "" -
 
 bracktest_test: $(TEST_PREREQUISITES) bracktest.crm
 	$(SILENT)\
@@ -857,6 +870,10 @@ eval_infiniteloop_test: $(TEST_PREREQUISITES) eval_infiniteloop.crm
 	$(SILENT)\
 	./testscript.sh eval_infiniteloop.crm "" - "$(builddir)/crm114_error_report.filter.sh"
 
+eval_ref_test1: $(TEST_PREREQUISITES) eval_ref_test1.crm
+	$(SILENT)\
+	./testscript.sh eval_ref_test1.crm "" - "$(builddir)/crm114_error_report.filter.sh"
+
 randomiotest_test: $(TEST_PREREQUISITES) randomiotest.crm
 	$(SILENT)\
 	./testscript.sh randomiotest.crm "" -
@@ -893,6 +910,10 @@ match_isolate_test: $(TEST_PREREQUISITES) match_isolate_test.crm test_timing_sec
 	$(SILENT)\
 	./testscript.sh match_isolate_test.crm "" - "$(builddir)/crm114_isolate_test.filter.sh" -e
 
+match_attr_fromend_newend_test: $(TEST_PREREQUISITES) match_attr_fromend_newend.crm test_timing_seconds_announcement
+	$(SILENT)\
+	./testscript.sh match_attr_fromend_newend.crm "" -
+
 isolatephenomenon_test: $(TEST_PREREQUISITES) isolatephenomenontest.crm test_timing_seconds_announcement
 	$(SILENT)\
 	./testscript.sh isolatephenomenontest.crm "" - "$(builddir)/crm114_isolate_test.filter.sh" -e
@@ -901,9 +922,13 @@ match_isolate_reclaim_test: $(TEST_PREREQUISITES) match_isolate_reclaim.crm
 	$(SILENT)\
 	./testscript.sh match_isolate_reclaim.crm "" - "$(builddir)/crm114_isolate_test.filter.sh" -e
 
-call_return_test: $(TEST_PREREQUISITES) call_return_test.crm
+call_return_test1: $(TEST_PREREQUISITES) call_return_test.crm
 	$(SILENT)\
 	./testscript.sh call_return_test.crm "" -
+
+call_return_test2: $(TEST_PREREQUISITES) call_return_test2.crm
+	$(SILENT)\
+	./testscript.sh call_return_test2.crm "" - "$(builddir)/crm114_error_report.filter.sh"
 
 translate_tr_test: $(TEST_PREREQUISITES) translate_tr.crm
 	$(SILENT)\
@@ -941,7 +966,7 @@ indirecttest_test: $(TEST_PREREQUISITES) indirecttest.crm
 # test for no more pipe handle leaks as reported by Trevel L. Adams, july 2008
 exec_async_leaktest1: $(TEST_PREREQUISITES) exec_async_leaktest1.crm
 	$(SILENT)\
-	./testscript.sh exec_async_leaktest1.crm "" -
+	./testscript.sh exec_async_leaktest1.crm "" - "$(builddir)/crm114_error_report.filter.sh"
 
 
 

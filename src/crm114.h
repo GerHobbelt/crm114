@@ -188,6 +188,10 @@ int crm_expandvar(char *buf, int maxlen);
 int crm_vht_lookup(VHT_CELL **vht, const char *vname, size_t vlen);
 
 
+int crm_is_legal_variable(const char *vname, size_t vlen);
+
+
+
 //     crm_extractflag - given an arbitrary string cmd (start/len)
 //     with words delimited by spaces, and a second string "flag"
 //     (start/len).
@@ -273,150 +277,150 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 //   the learner... in variant forms...
 int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-				   		VHT_CELL **vht,
-		CSL_CELL *tdw);
+        VHT_CELL **vht,
+        CSL_CELL *tdw);
 int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_neural_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
-int crm_fast_substring_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
-		char *txt, int start, int len);
+int crm_fast_substring_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txt, int start, int len);
 int crm_expr_alt_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_alt_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_alt_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_alt_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_alt_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 
 
 
 //   The bigger one - classifying...
-int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,		
-		VHT_CELL **vht,
-		CSL_CELL *tdw);
+int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        VHT_CELL **vht,
+        CSL_CELL *tdw);
 int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_neural_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
-int crm_fast_substring_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
-		char *txt, int start, int len);
+int crm_fast_substring_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txt, int start, int len);
 int crm_expr_alt_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_alt_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_alt_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_alt_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 int crm_expr_alt_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txt, int start, int len);
 
 
@@ -858,12 +862,12 @@ typedef struct magical_VT_userdef_tokenizer
 
     int max_big_token_count;                            // maximum number of 'big' tokens allowed to be merged into a single 'feature' a la OSBF
     int max_token_length;                               /* merge tokens longer than this with the next one into a single feature a la OSBF.
-    // Set to 0 to select the DEFAULT 'big token merge' tokenizer behaviour.
-    // Set to -1 to DISABLE any 'big token merge' tokenizer behaviour.
-    // Setting this value to a non-zero value helps 'gobble' otherwise undecipherable blocks
-    // of input such as base64 images. This 'merging/globbing' is done in the OSBF classifier
-    // among others.
-	*/
+                                                         * // Set to 0 to select the DEFAULT 'big token merge' tokenizer behaviour.
+                                                         * // Set to -1 to DISABLE any 'big token merge' tokenizer behaviour.
+                                                         * // Setting this value to a non-zero value helps 'gobble' otherwise undecipherable blocks
+                                                         * // of input such as base64 images. This 'merging/globbing' is done in the OSBF classifier
+                                                         * // among others.
+                                                         */
     VT_tokenizer_func *tokenizer;               // The place to provide your own custom tokenizer function. If you don't, the VT will
     // apply the default here.
     VT_tokenizer_cleanup_func *cleanup;     // call this when done; may be used to free() data when applicable.
@@ -931,16 +935,16 @@ int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // t
         const char *src, int srclen);
 int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,
         const ARGPARSE_BLOCK                 *apb,                                        // The args for this line of code
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL                            **vht,
+        CSL_CELL                             *tdw,
         const char                           *regex,
         int                                   regex_len,
         int                                   regex_compiler_flags_override);
 int config_vt_coeff_matrix_and_tokenizer
 (
         ARGPARSE_BLOCK          *apb,           // The args for this line of code
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL               **vht,
+        CSL_CELL                *tdw,
         VT_USERDEF_TOKENIZER    *tokenizer,     // the parsing regex (might be ignored)
         VT_USERDEF_COEFF_MATRIX *our_coeff      // the pipeline coefficient control array, etc.
 );
@@ -953,8 +957,8 @@ int config_vt_coeff_matrix_and_tokenizer
 int crm_vector_tokenize_selector
 (
         ARGPARSE_BLOCK          *apb,            // The args for this line of code
-		VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL               **vht,
+        CSL_CELL                *tdw,
         const char              *text,           // input string (null-safe!)
         int                      textlen,        //   how many bytes of input.
         int                      start_offset,   //     start tokenizing at this byte.
@@ -1050,8 +1054,8 @@ int crm_zexpandvar(char *buf,
         int              maxlen,
         int             *retstat,
         int              exec_bitmask,
-		VHT_CELL **vht,
-		CSL_CELL *tdw);
+        VHT_CELL       **vht,
+        CSL_CELL        *tdw);
 
 //       Var-restriction operators  (do []-vars, like subscript and regex )
 int crm_restrictvar(char *boxstring,
@@ -1150,33 +1154,34 @@ int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, cons
 __attribute__((__format__(__printf__, 4, 0)));
 
 
+
 /*
  * Reset the nonfatalerror counters/handlers. This is useful when you run multiple scripts
  * one after the other from within a single crm app, such as crm_test.
  */
 void reset_nonfatalerrorreporting(void);
 
-void generate_err_reason_msg(char       *reason,
-        int         reason_bufsize,
-        int         srclineno,
-        const char *srcfile_full,
-        const char *funcname,
-        const char *errortype_str,
-        const char *encouraging_msg,
-        CSL_CELL   *csl,
-        int         script_codeline,
-        const char *fmt,
-        va_list     args);
-void generate_err_reason_msg_va(char       *reason,
-        int         reason_bufsize,
-        int         srclineno,
-        const char *srcfile_full,
-        const char *funcname,
-        const char *errortype_str,
-        const char *encouraging_msg,
-        CSL_CELL   *csl,
-        int         script_codeline,
-        const char *fmt,
+void generate_err_reason_msg(char *reason,
+        int                        reason_bufsize,
+        int                        srclineno,
+        const char                *srcfile_full,
+        const char                *funcname,
+        const char                *errortype_str,
+        const char                *encouraging_msg,
+        CSL_CELL                  *csl,
+        int                        script_codeline,
+        const char                *fmt,
+        va_list                    args);
+void generate_err_reason_msg_va(char *reason,
+        int                           reason_bufsize,
+        int                           srclineno,
+        const char                   *srcfile_full,
+        const char                   *funcname,
+        const char                   *errortype_str,
+        const char                   *encouraging_msg,
+        CSL_CELL                     *csl,
+        int                           script_codeline,
+        const char                   *fmt,
         ...);
 
 
@@ -1393,7 +1398,7 @@ static /* inline */ int64_t cvt_chars2int64(const char *str, size_t len)
     {
         char    c[8];
         int64_t ll;
-    } v = {{ 0 }};
+    } v = { { 0 } };
     if (len > 8)
     {
         len = 8;

@@ -1612,8 +1612,8 @@ static int lattice_lookahead_score(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
 //
 
 int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txtptr, int txtstart, int txtlen)
 {
     //     learn the osb_bayes transform spectrum of this input window as
@@ -1711,7 +1711,7 @@ VHT_CELL **vht,
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
-    learnfilename = strdup(&(htext[i]));
+    learnfilename = &htext[i];
     if (!learnfilename)
     {
         untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -1735,7 +1735,7 @@ VHT_CELL **vht,
             fprintf(stderr, "Opening %s for BEN file creation\n", learnfilename);
         }
 
-		f = fopen(learnfilename, "wb");
+        f = fopen(learnfilename, "wb");
         if (!f)
         {
             fev = nonfatalerror_ex(SRC_LOC(),
@@ -1743,7 +1743,6 @@ VHT_CELL **vht,
                     learnfilename,
                     errno,
                     errno_descr(errno));
-            free(learnfilename);
             return fev;
         }
 
@@ -1795,7 +1794,6 @@ VHT_CELL **vht,
                     "\n Couldn't write header to file %s; errno=%d(%s)\n",
                     learnfilename, errno, errno_descr(errno));
             fclose(f);
-            free(learnfilename);
             return fev;
         }
 
@@ -1808,7 +1806,6 @@ VHT_CELL **vht,
                     "\n Couldn't write to file %s; errno=%d(%s)\n",
                     learnfilename, errno, errno_descr(errno));
             fclose(f);
-            free(learnfilename);
             return fev;
         }
 
@@ -1833,7 +1830,6 @@ VHT_CELL **vht,
     {
         fev = nonfatalerror("Couldn't get to the bit-entropic file named: ",
                 learnfilename);
-        free(learnfilename);
         return fev;
     }
 
@@ -2439,14 +2435,13 @@ VHT_CELL **vht,
     crm_touch(learnfilename);
 #endif
 #endif
-    free(learnfilename);
     return 0;
 }
 
 
 int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
@@ -2754,7 +2749,7 @@ VHT_CELL **vht,
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
-                      "for classify().\n", "Hope you know what are you doing.");
+                             "for classify().\n", "Hope you know what are you doing.");
     }
 
     //   now all of the files are mmapped into memory,
@@ -3037,7 +3032,7 @@ VHT_CELL **vht,
         //     FIR-hop
         //       TOE  7914/92189 and ?/96/60 minutes
         //       Fixed 5109/92189 and 378/153/63 minutes (with some suspiciously
-    //              long delays during a few messages)
+        //              long delays during a few messages)
         //   2048x2048 lattice:
         //     no FIR-hop
         //       TOE  3780 / 92189 318/87/60 min
@@ -3153,7 +3148,7 @@ VHT_CELL **vht,
             remainder = 1000 * DBL_MIN;
             for (m = succhash; m < maxhash; m++)
             {
-                    remainder += ptc[m];
+                remainder += ptc[m];
             }
             overall_pR = (log10(accumulator) - log10(remainder));
 
@@ -3176,12 +3171,12 @@ VHT_CELL **vht,
                 strcat(stext, buf);
             bestseen = 0;
             for (k = 0; k < maxhash; k++)
-			{
+            {
                 if (ptc[k] > ptc[bestseen])
-				{
+                {
                     bestseen = k;
-				}
-			}
+                }
+            }
             remainder = 1000 * DBL_MIN;
             for (m = 0; m < maxhash; m++)
             {

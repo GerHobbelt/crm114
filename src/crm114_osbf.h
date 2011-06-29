@@ -103,13 +103,13 @@ extern char *CSS_version_name[];
 #define OSBF_MAX_LONG_TOKENS 1000
 
 extern int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txtptr, int txtoffset, int txtlen);
 extern int crm_expr_osbf_bayes_classify(CSL_CELL *csl,
         ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
         char *txtptr, int txtoffset, int txtlen);
 
 extern int crm_expr_osbf_bayes_css_merge(CSL_CELL *csl,

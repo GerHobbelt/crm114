@@ -71,9 +71,9 @@ static const struct crm_analysis_marker
     { MARK_HASHPROBE_HIT_REFUTE, "HASHPROBE_HIT_REFUTE" },
     { MARK_HASHPROBE_MISS, "HASHPROBE_MISS" },
     { MARK_MICROGROOM, "MICROGROOM" },
-	{ MARK_CLASSIFIER_PARAMS, "MARK_CLASSIFIER_PARAMS" },
-	{ MARK_CSS_STATS_GROUP, "MARK_CSS_STATS_GROUP"}, 
-	{ MARK_CSS_STATS_HISTOGRAM, "MARK_CSS_STATS_HISTOGRAM" },
+    { MARK_CLASSIFIER_PARAMS, "MARK_CLASSIFIER_PARAMS" },
+    { MARK_CSS_STATS_GROUP, "MARK_CSS_STATS_GROUP" },
+    { MARK_CSS_STATS_HISTOGRAM, "MARK_CSS_STATS_HISTOGRAM" },
 };
 
 
@@ -144,7 +144,7 @@ void crm_analysis_mark(CRM_ANALYSIS_PROFILE_CONFIG *cfg, crm_analysis_instrument
 #elif defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
     struct tms timer1;
     timer2 = times(&timer1);
-    if (times2 == (clock)-1)
+    if (times2 == (clock) - 1)
     {
         store.time_mark = 0; // unknown; due to error
     }
@@ -273,10 +273,11 @@ static int64_t crm_analysis_get_timer_freq(int64_t *clock_rez)
     if (ret == -1)
     {
         ret = 0;         // unknown
-	return 0;     // unknown
+        return 0;        // unknown
     }
     *clock_rez = ret;
     return ret;
+
 #else
 
     *clock_rez = 0;
@@ -385,7 +386,8 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
             // next are the markers to enable:
             if (len >= 40 || len < 1)
             {
-				nonfatalerror_ex(SRC_LOC(), "Illegal analysis marker specified: '%.*s'. "
+                nonfatalerror_ex(
+                        SRC_LOC(), "Illegal analysis marker specified: '%.*s'. "
                                    "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
                         len,
                         wp);
@@ -425,60 +427,61 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
                 str[i] = 0;
 
                 // decode special case:
-                if (!*str)
+                if (! * str)
                 {
                     for (i = WIDTHOF(crm_analysis_marker_identifiers); --i >= 0;)
                     {
                         char *p = &cfg->instruments[crm_analysis_marker_identifiers[i].e];
 
                         // hit: ENABLE/DISABLE/TOGGLE that flag!
-                        *p = (char)((enable >> 1) | (enable & !*p));                       // couldn't keep from this little play :-)
+                        *p = (char)((enable >> 1) | (enable & ! * p));                       // couldn't keep from this little play :-)
                     }
                 }
                 else
                 {
                     // individual marker requested
-					int matchcount = 0;
-					char *p = NULL;
+                    int matchcount = 0;
+                    char *p = NULL;
 
                     for (i = WIDTHOF(crm_analysis_marker_identifiers); --i >= 0;)
                     {
                         if (!strncasecmp(str, crm_analysis_marker_identifiers[i].id, len))
                         {
                             p = &cfg->instruments[crm_analysis_marker_identifiers[i].e];
-							if (strlen(crm_analysis_marker_identifiers[i].id) == len)
-							{
-							// if it's a full length match, set it to unique anyhow:
-								matchcount = 1;
-								break;
-							}
-							else
-							{
-								// count partial hits: when only one hit, it's unambiguous
-							matchcount++;
-							}
-						}
-					}
-					if (matchcount == 1)
-					{
-                            // hit: ENABLE/DISABLE/TOGGLE that flag!
-                            *p = (char)((enable >> 1) | (enable & !*p));                   // couldn't keep from this little play :-)
+                            if (strlen(crm_analysis_marker_identifiers[i].id) == len)
+                            {
+                                // if it's a full length match, set it to unique anyhow:
+                                matchcount = 1;
+                                break;
+                            }
+                            else
+                            {
+                                // count partial hits: when only one hit, it's unambiguous
+                                matchcount++;
+                            }
+                        }
                     }
-					else if (matchcount == 0)
-					{
-				nonfatalerror_ex(SRC_LOC(), "Unidentified analysis marker specified: '%.*s'. "
-                                   "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
-                        len,
-                        wp);
-					}
-					else
-					{
-										nonfatalerror_ex(SRC_LOC(), "Ambiguous analysis marker shorthand specified: '%.*s'. "
-                                   "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
-                        len,
-                        wp);
-
-					}
+                    if (matchcount == 1)
+                    {
+                        // hit: ENABLE/DISABLE/TOGGLE that flag!
+                        *p = (char)((enable >> 1) | (enable & ! * p));                     // couldn't keep from this little play :-)
+                    }
+                    else if (matchcount == 0)
+                    {
+                        nonfatalerror_ex(
+                                SRC_LOC(), "Unidentified analysis marker specified: '%.*s'. "
+                                           "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
+                                len,
+                                wp);
+                    }
+                    else
+                    {
+                        nonfatalerror_ex(
+                                SRC_LOC(), "Ambiguous analysis marker shorthand specified: '%.*s'. "
+                                           "Check the documentation for a list of recognized markers. We'll continue with the rest if you don't mind.",
+                                len,
+                                wp);
+                    }
                 }
             }
             break;
@@ -577,49 +580,49 @@ int crm_init_analysis(CRM_ANALYSIS_PROFILE_CONFIG *cfg, const char *args, int ar
         return 1;
     }
 
-	// to ensure we can 'sync' to another INIT header again, even when the profile file we're appending to is corrupted
-	// due to a previous CRM114 crash when not all profile data was written, we 'pad' the existing file with NUL bytes
-	// for AT LEAST one FULL profile element, then we write another header.
-	//
-	// We even do this when the file is okay - we don't check - just to make sure it ALWAYS works.
+    // to ensure we can 'sync' to another INIT header again, even when the profile file we're appending to is corrupted
+    // due to a previous CRM114 crash when not all profile data was written, we 'pad' the existing file with NUL bytes
+    // for AT LEAST one FULL profile element, then we write another header.
+    //
+    // We even do this when the file is okay - we don't check - just to make sure it ALWAYS works.
     {
         CRM_ANALYSIS_PROFILE_ELEMENT store;
 
         memset(&store, 0, sizeof(store));     // memset() is 'better' than 'store={0} init', because on MSVC at least the latter does not touch the alignment bytes between the fields and having 'random data' in there may complicate header decoding
 
-    if (st.st_size != 0)
-	{
-		int padding = sizeof(store) - (st.st_size % sizeof(store));
-
-		// pad to store element boundary:
-		if (padding > 0)
-		{
-        if (1 != fwrite(&store, padding, 1, cfg->fd))
+        if (st.st_size != 0)
         {
-            fclose(cfg->fd);
-            cfg->fd = NULL;
-            untrappableerror_ex(SRC_LOC(), "Cannot pad existing analysis profile file '%s'! We're pooped. Error %d(%s)",
-                    cfg->filepath,
-                    errno,
-                    errno_descr(errno));
-            return 1;
-        }
-		}
+            int padding = sizeof(store) - (st.st_size % sizeof(store));
 
-		// now write a NUL store element:
-        if (1 != fwrite(&store, sizeof(store), 1, cfg->fd))
-        {
-            fclose(cfg->fd);
-            cfg->fd = NULL;
-            untrappableerror_ex(SRC_LOC(), "Cannot write NUL session sentinel to existing analysis profile file '%s'! We're pooped. Error %d(%s)",
-                    cfg->filepath,
-                    errno,
-                    errno_descr(errno));
-            return 1;
-        }
-	}
+            // pad to store element boundary:
+            if (padding > 0)
+            {
+                if (1 != fwrite(&store, padding, 1, cfg->fd))
+                {
+                    fclose(cfg->fd);
+                    cfg->fd = NULL;
+                    untrappableerror_ex(SRC_LOC(), "Cannot pad existing analysis profile file '%s'! We're pooped. Error %d(%s)",
+                            cfg->filepath,
+                            errno,
+                            errno_descr(errno));
+                    return 1;
+                }
+            }
 
-	// write header itself:
+            // now write a NUL store element:
+            if (1 != fwrite(&store, sizeof(store), 1, cfg->fd))
+            {
+                fclose(cfg->fd);
+                cfg->fd = NULL;
+                untrappableerror_ex(SRC_LOC(), "Cannot write NUL session sentinel to existing analysis profile file '%s'! We're pooped. Error %d(%s)",
+                        cfg->filepath,
+                        errno,
+                        errno_descr(errno));
+                return 1;
+            }
+        }
+
+        // write header itself:
         store.marker = 0x123456789ABCDEF0ULL;
         store.value[0].as_int = 0x8081828384858687ULL;
         store.value[1].as_float = 1.0;

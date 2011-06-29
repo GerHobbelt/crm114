@@ -30,12 +30,12 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     char temp_vars[MAX_PATTERN];
     int tvlen;
     int tvstart;
-    char filename[MAX_FILE_NAME_LEN];
+    char filename_plus_args[MAX_PATTERN];
     int fnlen;
-    char ifn[MAX_FILE_NAME_LEN];
-    char fileoffset[MAX_FILE_NAME_LEN];
+    char ifn[MAX_PATTERN];
+    char fileoffset[MAX_PATTERN];
     int fileoffsetlen;
-    char fileiolen[MAX_FILE_NAME_LEN];
+    char fileiolen[MAX_PATTERN];
     int fileiolenlen;
     int offset, iolen;
     //int vstart;
@@ -99,21 +99,23 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     //   and what file to get it from...
     //
-    filesectlen = crm_get_pgm_arg(filename, MAX_FILE_NAME_LEN, apb->b1start, apb->b1len);
-    if (crm_nextword(filename, filesectlen, 0, &i, &j))
+    ifn[0] = 0;
+    filesectlen = crm_get_pgm_arg(filename_plus_args, WIDTHOF(filename_plus_args), apb->b1start, apb->b1len);
+    if (crm_nextword(filename_plus_args, filesectlen, 0, &i, &j) && j > 0)
     {
-        if (j >= MAX_FILE_NAME_LEN)
+        memmove(ifn, &filename_plus_args[i], j);
+        ifn[j] = 0;
+        fnlen = crm_nexpandvar(ifn, j, MAX_PATTERN, vht, tdw);
+        CRM_ASSERT(fnlen < MAX_PATTERN);
+        ifn[fnlen] = 0;
+        if (fnlen >= MAX_FILE_NAME_LEN)
         {
             nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a filename which is too long (len = %d) "
                                         "while the maximum allowed size is %d.",
-                    j,
+                    fnlen,
                     MAX_FILE_NAME_LEN - 1);
             return -1;
         }
-        memmove(ifn, &filename[i], j);
-        fnlen = crm_nexpandvar(ifn, j, MAX_FILE_NAME_LEN, vht, tdw);
-        CRM_ASSERT(fnlen < MAX_FILE_NAME_LEN);
-        ifn[fnlen] = 0;
         if (user_trace)
             fprintf(stderr, "  from filename >>>%s<<<\n", ifn);
     }
@@ -128,26 +130,19 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //   and what offset we need to do before the I/O...
     //
     offset = 0;
-    fileoffset[0] = 0;
-    fileoffsetlen = 0;
-    if (crm_nextword(filename, filesectlen, i + j, &i, &j))
+    if (crm_nextword(filename_plus_args, filesectlen, i + j, &i, &j) && j > 0)
     {
-        if (j >= MAX_FILE_NAME_LEN)
-        {
-            nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a fileoffset expression which is too long (len = %d) "
-                                        "while the maximum allowed size is %d.",
-                    j,
-                    MAX_FILE_NAME_LEN - 1);
-            return -1;
-        }
-        memmove(fileoffset, &filename[i], j);
-        fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
+        memmove(fileoffset, &filename_plus_args[i], j);
+        fileoffset[j] = 0;
+        fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_PATTERN, NULL, vht, tdw);
         fileoffset[fileoffsetlen] = 0;
         if (1 != sscanf(fileoffset, "%d", &offset))
         {
             nonfatalerror_ex(SRC_LOC(), "Failed to decode the input expression pre-IO file offset number '%s'.",
                     fileoffset);
         }
+        if (offset < 0)
+            offset = 0;
         if (user_trace)
         {
             fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
@@ -159,18 +154,11 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //   and how many bytes to read
     //
     iolen = 0;
-    if (crm_nextword(filename, filesectlen, i + j, &i, &j))
+    if (crm_nextword(filename_plus_args, filesectlen, i + j, &i, &j) && j > 0)
     {
-        if (j >= MAX_FILE_NAME_LEN)
-        {
-            nonfatalerror_ex(SRC_LOC(), "INPUT statement comes with a length expression which is too long (len = %d) "
-                                        "while the maximum allowed size is %d.",
-                    j,
-                    MAX_FILE_NAME_LEN - 1);
-            return -1;
-        }
-        memmove(fileiolen, &filename[i], j);
-        fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
+        memmove(fileiolen, &filename_plus_args[i], j);
+        fileiolen[j] = 0;
+        fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_PATTERN, NULL, vht, tdw);
         fileiolen[fileiolenlen] = 0;
         CRM_ASSERT(*fileiolen != 0);
         if (1 != sscanf(fileiolen, "%d", &iolen))
@@ -179,16 +167,18 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         }
         if (iolen < 0)
             iolen = 0;
-        else if (iolen > data_window_size)
-            iolen = data_window_size;
+        else if (iolen >= data_window_size)
+            iolen = data_window_size - 1;
         if (user_trace)
+        {
             fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
                     fileiolen, iolen);
+        }
     }
     else
     {
         // default:
-        iolen = data_window_size;
+        iolen = data_window_size - 1;
     }
 
     // [i_a] GROT GROT GROT: no checks if there's any cruft beyond the third param! :-(
@@ -200,7 +190,9 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     file_was_fopened = 0;
     if (fnlen > 0)
     {
-        if (strcmp(ifn, "stdin") == 0
+                if (strcmp(ifn, "0") == 0
+                    || strcmp(ifn, "-") == 0
+                    || strcmp(ifn, "stdin") == 0
             || strcmp(ifn, "/dev/stdin") == 0
             || strcmp(ifn, "CON:") == 0
             || strcmp(ifn, "/dev/tty") == 0)
@@ -217,7 +209,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 fatalerror_ex(SRC_LOC(),
                         "For some reason, I was unable to read-open the file named '%s' (expanded from '%s'): error = %d(%s)",
                         ifn,
-                        filename,
+                        filename_plus_args,
                         errno,
                         errno_descr(errno));
                 goto input_no_open_bailout;
@@ -297,14 +289,16 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             {
                 if (errno == EBADF)
                 {
-                    nonfatalerror_ex(SRC_LOC(), "Dang, seems that this file '%s' isn't fseek()able!",
-                            filename);
+                    nonfatalerror_ex(SRC_LOC(), "Dang, seems that this file '%s' (expanded from '%s') isn't fseek()able!",
+                            ifn,
+                            filename_plus_args);
                 }
                 else
                 {
                     nonfatalerror_ex(SRC_LOC(),
-                            "Dang, seems that this file '%s' isn't fseek()able: error = %d(%s)",
-                            filename,
+                            "Dang, seems that this file '%s' (expanded from '%s') isn't fseek()able: error = %d(%s)",
+                            ifn,
+                            filename_plus_args,
                             errno,
                             errno_descr(errno));
                 }
@@ -321,20 +315,22 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             {
                 chartemp = strdup("");        // see the UNIX man page: readline() MAY return NULL!
             }
-            if (strlen(chartemp) > data_window_size - 1)
+            if (strlen(chartemp) > iolen)
             {
                 nonfatalerror("Dang, this line of text is way too long: ",
                         chartemp);
             }
-            strncpy(inbuf, chartemp, data_window_size);
-            inbuf[data_window_size - 1] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
+            strncpy(inbuf, chartemp, iolen);
+            CRM_ASSERT(iolen <= data_window_size - 1);
+            inbuf[iolen] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
             free(chartemp);
         }
 #else
         if (use_readline && is_stdin_or_null(fp))
         {
-            fgets(inbuf, data_window_size - 1, (fp ? fp : stdin));
-            inbuf[data_window_size - 1] = 0;
+            fgets(inbuf, iolen, (fp ? fp : stdin));
+            CRM_ASSERT(iolen <= data_window_size - 1);
+            inbuf[iolen] = 0;
         }
 #endif
         else
@@ -346,10 +342,11 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 ichar = 0;
                 if (feof(fp))
                     clearerr(fp);
+                CRM_ASSERT(iolen <= data_window_size - 1);
                 while (!feof(fp)
                        && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
                        // [i_a] how about MAC and PC (CR and CRLF instead of LF as line terminators)? Quick fix here: */
-                       && (till_eof || (ichar == 0 || (inbuf[ichar - 1] != '\r' && inbuf[ichar - 1] != '\n')))
+                       && (ichar == 0 || (inbuf[ichar - 1] != '\r' && inbuf[ichar - 1] != '\n'))
                        && ichar <= iolen)
                 {
                     int c = fgetc(fp);
@@ -364,17 +361,57 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 // [i_a] how about MAC and PC (CR and CRLF instead of LF as line terminators)? Quick fix here: */
                 if (ichar > 0 && inbuf[ichar] == '\r')
                     ichar--;      //   get rid of any present carriage return too (CRLF for MSDOS)
+                CRM_ASSERT(ichar <= data_window_size - 1);
                 inbuf[ichar] = 0; // and put a null on the end of it.
             }
             else
             {
+        size_t readsize = iolen;
+		size_t offset;
+
                 //    Nope, we are in full-block mode, read the whole block in
                 //    a single I/O if we can.
                 ichar = 0;
                 if (feof(fp))
                     clearerr(fp);                        // reset any EOF
-                ichar = (int)fread(inbuf, 1, iolen, fp); // do a block I/O
-                if (ferror(fp))
+
+            // ichar = (int)fread(inbuf, 1, iolen, fp); // do a block I/O
+#if (defined (WIN32) || defined (_WIN32) || defined (_WIN64) || defined (WIN64))
+        readsize = CRM_MIN(16384, readsize);   // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
+#endif
+        for (offset = 0; !feof(fp) && offset < iolen; )
+        {
+            size_t rs;
+			size_t rr;
+
+            rs = offset + readsize < iolen
+					? readsize 
+					: iolen - offset;
+            rr = fread(inbuf + offset, 1, rs, fp);
+            if (ferror(fp))
+            {
+                if (errno == ENOMEM && readsize > 1) //  insufficient memory?
+                {
+                    nonfatalerror("Insufficient Memory Error while trying to get startup input.",
+                                    "This is usually pretty much hopeless, but "
+                                    "I'll try to keep running anyway.");
+
+                    readsize = readsize / 2; //  try a smaller block
+                    clearerr(fp);
+                }
+                else
+                {
+                    //fatalerror("Error while trying to get startup input.",
+                    //           "This is usually pretty much hopeless, but "
+                    //           "I'll try to keep running anyway.");
+                    break;
+                }
+            }
+			offset += rr;
+        }
+                ichar = offset;
+
+		        if (ferror(fp))
                 {
                     //     and close the input file if it's not stdin.
                     if (file_was_fopened)
@@ -387,7 +424,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     fatalerror_ex(SRC_LOC(),
                             "For some reason, I got an error while trying to read data from the file named '%s' (expanded from '%s'): error = %d(%s)",
                             ifn,
-                            filename,
+                            filename_plus_args,
                             errno,
                             errno_descr(errno));
                     goto input_no_open_bailout;
@@ -471,6 +508,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             return -1;
         }
         memmove(fnam, &filename[i], j);
+        fnam[j] = 0;
         fnlen = crm_nexpandvar(fnam, j, MAX_FILE_NAME_LEN, vht, tdw);
         CRM_ASSERT(fnlen < MAX_FILE_NAME_LEN);
         fnam[fnlen] = 0;
@@ -490,6 +528,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 return -1;
             }
             memmove(fileoffset, &filename[i], j);
+            fileoffset[j] = 0;
             fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
             fileoffset[fileoffsetlen] = 0;
             if (*fileoffset && 1 != sscanf(fileoffset, "%d", &offset))
@@ -516,6 +555,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     return -1;
                 }
                 memmove(fileiolen, &filename[i], j);
+                fileiolen[j] = 0;
                 fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL, vht, tdw);
                 fileiolen[fileiolenlen] = 0;
                 if (*fileiolen && 1 != sscanf(fileiolen, "%d", &iolen))

@@ -1,0 +1,22 @@
+#   test the alius statement with trailing comment: 
+#   the CONTENT of the content can break vanilla CRM114! :-((
+#
+# (the slash in there is gonna make you go... HNNNNN-N-N-N-NG...)
+{
+	window
+	{
+		{
+			match /foo/
+			output /Found a foo :*:_nl:/
+		}
+		alius  # what to do if we don't use/have a cache:
+		{
+			match /bar/
+			output /no foo... checking for bar...\n/
+		}
+	}
+	output /continuing  :*:_nl:/
+}
+
+trap (:ex:) //
+output /EXCEPTION: :*:ex:\n/

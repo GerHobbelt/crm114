@@ -171,7 +171,7 @@ typedef struct mythical_mct_cell
     int     achar;                                  // zero-base index of start of args;
     int64_t stmt_utime;                             // user time spent in this statement line;
     int64_t stmt_stime;                             // system time spent in this statement line;
-    int stmt_exec_count;                            // number of times this line was executed
+    int     stmt_exec_count;                        // number of times this line was executed
     int     stmt_type;                              // statement type of this line
     const struct mythical_stmt_type *stmt_def;      // statement type definition of this line
     int nest_level;                                 // nesting level of this statement
@@ -755,15 +755,15 @@ typedef struct
 
 typedef enum
 {
-	MARK_NUL_SENTINEL = 0, // special purpose: represents the NUL sentinel written to a profile file when sessions are appended.
-    MARK_INIT,              // register a 'session start'
+    MARK_NUL_SENTINEL = 0,      // special purpose: represents the NUL sentinel written to a profile file when sessions are appended.
+    MARK_INIT,                  // register a 'session start'
     MARK_SWITCH_CONTEXT,        // see below: for some reason CRM114 switches profile dumps halfway.
     MARK_TERMINATION,           // mark end of crm114 run / atexit. NOT necessarily there in failure conditions, so cave canem.
     MARK_DEBUG_INTERACTION,     // mark human interaction so we know what went down as it took so long
     MARK_HASH_VALUE,            // register hash values
     MARK_HASH64_VALUE,          // register hash values
     MARK_HASH_CONTINUATION,     // continuation of the preceding MARK_HASH[64]_VALUE: stores remainder of the hashed string
-    MARK_VT_HASH_VALUE,	        // register VT-based hash values
+    MARK_VT_HASH_VALUE,         // register VT-based hash values
     MARK_OPERATION,             // register the executing opcode; this includes the classifier used using an extra MARK_CLASSIFIER marker, etc.
     MARK_CLASSIFIER,            // register the classifier used + its settings as attrribute
     MARK_CLASSIFIER_DB_TOTALS,
@@ -774,9 +774,9 @@ typedef enum
     MARK_HASHPROBE_HIT_REFUTE,
     MARK_HASHPROBE_MISS,
     MARK_MICROGROOM,     // marker to signal classifier decided to perform a microgroom operation
-	MARK_CLASSIFIER_PARAMS,
-	MARK_CSS_STATS_GROUP,		// dump CSS file statistics
-	MARK_CSS_STATS_HISTOGRAM,   // dump CSS file histogram
+    MARK_CLASSIFIER_PARAMS,
+    MARK_CSS_STATS_GROUP,               // dump CSS file statistics
+    MARK_CSS_STATS_HISTOGRAM,           // dump CSS file histogram
 
     TOTAL_NUMBER_OF_MARKERS
 } crm_analysis_instrument_t;

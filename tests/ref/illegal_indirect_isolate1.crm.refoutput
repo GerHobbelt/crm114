@@ -7,8 +7,12 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
-yo!
-dst = 'abc'
-abc = ':abc:'
-indirect(dst) = 'FUBAR'
+TRAP:
+crm114: *ERROR*
+Attempt to ISOLATE an illegal variable 'abc'. How very bizarre.
+Sorry, but this program is very sick and probably should be killed off.
+This happened at line 11 of file illegal_indirect_isolate1.crm:
+    isolate (:*:dst:) /FUBAR/
+(runtime system location: crm_expr_isolate.c(112) in routine: crm_expr_isolate)
+
 

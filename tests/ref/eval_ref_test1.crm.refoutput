@@ -1,0 +1,12 @@
+TEST SCRIPT + COMMANDLINE:
+eval_ref_test1.crm 
+
+RETURN CODE:
+0
+
+STDERR TEST OUTPUT:
+
+STDOUT TEST OUTPUT:
+A1 = 'V1-value'
+A2 = ''
+

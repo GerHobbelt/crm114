@@ -1,4 +1,3 @@
-
 #include "crm_bmp_prof.h"
 
 
@@ -11,8 +10,8 @@ int produce_opcode_coverage_report(CRM_ANALYSIS_REPORT_DATA *report_data, FILE *
 {
     int i;
     double total_time = 0.0;
-	double total_time_per_piece = 0.0;
-	int total_count = 0;
+    double total_time_per_piece = 0.0;
+    int total_count = 0;
 
     fprintf(of, "CRM script opcode test coverage%s:\n"
                 "===============================%s=\n"
@@ -25,16 +24,16 @@ int produce_opcode_coverage_report(CRM_ANALYSIS_REPORT_DATA *report_data, FILE *
     {
         const STMT_DEF_TYPE *stmt_def = get_stmt_def(i);
 
-        if ((report_data->opcode_counts[i] > 0 && i != CRM_UNIMPLEMENTED+1) 
-			|| (!compressed_report && stmt_def->stmt_code != CRM_BOGUS))
-		{
-        total_time += report_data->opcode_times[i];
-		if (report_data->opcode_counts[i] > 0)
-		{
-		total_time_per_piece += ((double)report_data->opcode_times[i]) / report_data->opcode_counts[i];
-		}
-		total_count += report_data->opcode_counts[i];
-		}
+        if ((report_data->opcode_counts[i] > 0 && i != CRM_UNIMPLEMENTED + 1)
+            || (!compressed_report && stmt_def->stmt_code != CRM_BOGUS))
+        {
+            total_time += report_data->opcode_times[i];
+            if (report_data->opcode_counts[i] > 0)
+            {
+                total_time_per_piece += ((double)report_data->opcode_times[i]) / report_data->opcode_counts[i];
+            }
+            total_count += report_data->opcode_counts[i];
+        }
     }
     total_time /= 100.0;
     total_time_per_piece /= 100.0;
@@ -43,10 +42,10 @@ int produce_opcode_coverage_report(CRM_ANALYSIS_REPORT_DATA *report_data, FILE *
         const STMT_DEF_TYPE *stmt_def = get_stmt_def(i);
 
         // in uncompressed report, only show the bogus/unknown lines when there's actually some time spent to report there.
-        if ((report_data->opcode_counts[i] > 0 && i != CRM_UNIMPLEMENTED+1) 
-			|| (!compressed_report && stmt_def->stmt_code != CRM_BOGUS))
-		{
-    fprintf(of, "%11.11s %13d ", stmt_def->stmt_name, report_data->opcode_counts[i]);
+        if ((report_data->opcode_counts[i] > 0 && i != CRM_UNIMPLEMENTED + 1)
+            || (!compressed_report && stmt_def->stmt_code != CRM_BOGUS))
+        {
+            fprintf(of, "%11.11s %13d ", stmt_def->stmt_name, report_data->opcode_counts[i]);
             if (report_data->opcode_counts[i] > 0)
             {
                 fprintf_nsecs2dhmsss(of, 5, 6, report_data->opcode_times[i]);
@@ -61,9 +60,9 @@ int produce_opcode_coverage_report(CRM_ANALYSIS_REPORT_DATA *report_data, FILE *
         }
     }
     fprintf(of, "-----------------------------------------------------------------------------------\n");
-	fprintf(of, "%11s %13d ", "Totals:", total_count);
-                fprintf_nsecs2dhmsss(of, 5, 6, (int64_t)(total_time * 100.0));
-                fprintf(of, " %7.3f %19s %7s\n\n\n", 100.0, "(N.A.)", "(N.A.)");
+    fprintf(of, "%11s %13d ", "Totals:", total_count);
+    fprintf_nsecs2dhmsss(of, 5, 6, (int64_t)(total_time * 100.0));
+    fprintf(of, " %7.3f %19s %7s\n\n\n", 100.0, "(N.A.)", "(N.A.)");
 
     return 0;
 }
@@ -117,7 +116,7 @@ int produce_hash_distribution_report(CRM_ANALYSIS_REPORT_DATA *report_data, FILE
             max_max_count = max_img[i];
         }
     }
-    avg_quantize_divisor = (avg_max_count + 1) / 12.0;              // sizeof(".-0123456789#") - 2
+    avg_quantize_divisor = (avg_max_count + 1) / 12.0;                // sizeof(".-0123456789#") - 2
     avg_log2_quantize_divisor = log2(avg_max_count + 1.0) / 12.0;     // sizeof(".-0123456789#") - 2
 
     fprintf(of, "AVG: max: %d, quantize divisor: %f\n", avg_max_count, (double)avg_quantize_divisor);
@@ -174,7 +173,7 @@ int produce_hash_distribution_report(CRM_ANALYSIS_REPORT_DATA *report_data, FILE
         }
     }
 
-    max_quantize_divisor = (max_max_count + 1) / 12.0;              // sizeof(".-0123456789#") - 2
+    max_quantize_divisor = (max_max_count + 1) / 12.0;                // sizeof(".-0123456789#") - 2
     max_log2_quantize_divisor = log2(max_max_count + 1.0) / 12.0;     // sizeof(".-0123456789#") - 2
 
     fprintf(of, "\n"

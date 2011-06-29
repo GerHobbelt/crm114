@@ -460,7 +460,7 @@ char *my_strnchr(const char *str, int c, size_t len);
 #undef utime
 #define utime(filename, timestruct)      _utime(filename, timestruct)
 #endif
-#if !defined(HAVE_MEMMEM) || defined(PREFER_PORTABLE_MEMMEM)
+#if !defined (HAVE_MEMMEM) || defined (PREFER_PORTABLE_MEMMEM)
 
 #ifdef __cplusplus
 extern "C"
@@ -468,7 +468,7 @@ extern "C"
 #endif
 
 #undef memmem
-#define memmem(h, hl, n, nl)	my_memmem(h, hl, n, nl)
+#define memmem(h, hl, n, nl)    my_memmem(h, hl, n, nl)
 void *my_memmem(const void *haystack, size_t haystack_len, const void *needle, size_t needle_len);
 
 #ifdef __cplusplus
@@ -559,16 +559,16 @@ int getpagesize(void); /* see crm_port_win32.c */
 #endif
 
 #else
-#if defined (_SC_PAGESIZE) && defined(HAVE_SYSCONF)
+#if defined (_SC_PAGESIZE) && defined (HAVE_SYSCONF)
 #define getpagesize() sysconf(_SC_PAGESIZE)
 #else /* no _SC_PAGESIZE */
-#if defined(HAVE_SYS_PARAM_H)
+#if defined (HAVE_SYS_PARAM_H)
 /* #   include <sys/param.h> -- already done before in this file */
 #ifdef EXEC_PAGESIZE
 #define getpagesize() EXEC_PAGESIZE
 #else /* no EXEC_PAGESIZE */
 #ifdef NBPG
-#define getpagesize() NBPG *CLSIZE
+#define getpagesize() NBPG * CLSIZE
 #ifndef CLSIZE
 #define CLSIZE 1
 #endif /* no CLSIZE */
@@ -1061,7 +1061,7 @@ void *crm114_realloc(void *ptr, size_t count);
 void *crm114_calloc(size_t count, size_t elem_size);
 void crm114_free(void **ptrref);
 
-#define strdup(s)		crm114_strdup(s)
+#define strdup(s)               crm114_strdup(s)
 #define malloc(c)       crm114_malloc(c)
 #define realloc(p, c)   crm114_realloc(p, c)
 #define calloc(c, s)    crm114_calloc(c, s)

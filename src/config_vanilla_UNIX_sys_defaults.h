@@ -50,8 +50,8 @@
 /* #undef CRM_WITHOUT_MJT_INLINED_QSORT */
 
 /* #define as 1: do NOT include the Neural-Net classifier in the build.
-#define as 0: explicitly request INclusion in the build. #undef: assume
-*  INclusion in the build (i.e. use the default set in crm114_config.h) */
+ #define as 0: explicitly request INclusion in the build. #undef: assume
+ *  INclusion in the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_NEURAL_NET */
 
 /* #define as 1: do NOT include the OSBF classifier in the build. #define as
@@ -70,8 +70,8 @@
 /* #undef CRM_WITHOUT_OSB_HYPERSPACE */
 
 /* #define as 1: do NOT include the OSB-Winnow classifier in the build.
-#define as 0: explicitly request INclusion in the build. #undef: assume
-*  INclusion in the build (i.e. use the default set in crm114_config.h) */
+ #define as 0: explicitly request INclusion in the build. #undef: assume
+ *  INclusion in the build (i.e. use the default set in crm114_config.h) */
 /* #undef CRM_WITHOUT_OSB_WINNOW */
 
 /* #define as 1: do NOT include the SKS classifier in the build. #define as 0:
@@ -666,11 +666,11 @@
 #define MACHINE_IS_LITTLE_ENDIAN 1
 
 /* Define to 1 if `major', `minor', and `makedev' are declared in <mkdev.h>.
-   */
+ */
 /* #undef MAJOR_IN_MKDEV */
 
 /* Define to 1 if `major', `minor', and `makedev' are declared in
-   <sysmacros.h>. */
+ * <sysmacros.h>. */
 /* #undef MAJOR_IN_SYSMACROS */
 
 /* directory where BillY's original crm114 distro resides */
@@ -704,7 +704,7 @@
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
 /* revision number of software */
-#define REVISION "3366"
+#define REVISION "3495"
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT sizeof(int)
@@ -722,7 +722,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-3366"
+#define TAR_FILENAME_POSTFIX "Ger-3495"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME

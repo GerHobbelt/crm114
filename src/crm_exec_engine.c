@@ -41,18 +41,18 @@ int crm_invoke(CSL_CELL *csl)
     //     timer1 and timer2 are for time profiling.
     //
 #if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
-	int64_t timer1 = 0;
+    int64_t timer1 = 0;
 #elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
-	int64_t timer1 = 0;
+    int64_t timer1 = 0;
 #elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
-	int64_t timer1 = 0;
+    int64_t timer1 = 0;
 #elif defined (HAVE_CLOCK)
-	int64_t timer1 = 0;
+    int64_t timer1 = 0;
 #else
     // nada
 #endif
 #if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
-    struct tms timer1a = {0};
+    struct tms timer1a = { 0 };
 #endif
 
     int tstmt;
@@ -85,88 +85,88 @@ int crm_invoke(CSL_CELL *csl)
     }
 
     if (user_trace)
-	{
+    {
         fprintf(stderr, "Starting to execute %s at line %d\n",
                 csl->filename, csl->cstmt);
-	}
+    }
 
     //   initialize timers ?
-	//
-	// [i_a] for better timing results (timers have a resolution which is definitely
-	//       (far) less than required to accurately time instructions by measuring
-	//       start to end as was done by Bill: this will result in significant time
-	//       losses as start and end times both contain something akin to 
-        //       'rounding errors' (inaccuricies due to low timer frequency).
-        //       To prevent 'rounding losses' in the timing measurements here, we measure
-        //       end to end; only at the start do we init the timer once for a
-        //       start to end measurement. This way, no time is 'lost' and when executing
-        //       lines repetively, the inaccuracies due to 'time overflowing into the next
-        //       statement' will average out.
+    //
+    // [i_a] for better timing results (timers have a resolution which is definitely
+    //       (far) less than required to accurately time instructions by measuring
+    //       start to end as was done by Bill: this will result in significant time
+    //       losses as start and end times both contain something akin to
+    //       'rounding errors' (inaccuricies due to low timer frequency).
+    //       To prevent 'rounding losses' in the timing measurements here, we measure
+    //       end to end; only at the start do we init the timer once for a
+    //       start to end measurement. This way, no time is 'lost' and when executing
+    //       lines repetively, the inaccuracies due to 'time overflowing into the next
+    //       statement' will average out.
     if (profile_execution)
     {
 #if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
-    LARGE_INTEGER t1;
+        LARGE_INTEGER t1;
 #elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
-    struct timespec t1;
+        struct timespec t1;
 #elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
-    struct timeval t1;
+        struct timeval t1;
 #elif defined (HAVE_CLOCK)
-    clock_t t1;
+        clock_t t1;
 #else
-    // nada
+        // nada
 #endif
 #if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
-    struct tms t1a;
-    clock_t t2a;
+        struct tms t1a;
+        clock_t t2a;
 #endif
 
 #if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
-    if (!QueryPerformanceCounter(&t1))
-    {
-        t1.QuadPart = 0;
-    }
-    timer1 = t1.QuadPart;
+        if (!QueryPerformanceCounter(&t1))
+        {
+            t1.QuadPart = 0;
+        }
+        timer1 = t1.QuadPart;
 #elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
-    if (!clock_gettime(CLOCK_REALTIME, &t1))
-    {
-        timer1 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
-    }
-    else
-    {
-        timer1 = 0; // unknown; due to error
-    }
+        if (!clock_gettime(CLOCK_REALTIME, &t1))
+        {
+            timer1 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
+        }
+        else
+        {
+            timer1 = 0; // unknown; due to error
+        }
 #elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
-    if (!gettimeofday(&t1))
-    {
-        timer1 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
-    }
-    else
-    {
-        timer1 = 0; // unknown; due to error
-    }
+        if (!gettimeofday(&t1))
+        {
+            timer1 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
+        }
+        else
+        {
+            timer1 = 0; // unknown; due to error
+        }
 #elif defined (HAVE_CLOCK)
-    t1 = clock();
-    if (t1 == (clock) -1)
-    {
-        timer1 = 0; // unknown; due to error
-    }
-    else
-    {
-        timer1 = t1;
-    }
+        t1 = clock();
+        if (t1 == (clock) - 1)
+        {
+            timer1 = 0; // unknown; due to error
+        }
+        else
+        {
+            timer1 = t1;
+        }
 #else
 #endif
 
 #if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
-    t2a = times(&t1a);
-    if (t2a == (clock)-1)
-    {
-        memset(&timer1a, 0, sizeof(timer1a)); // unknown; due to error
-    }
-    else
-    {
-        timer1a = t1a;
-    }
+        t2a = times(&t1a);
+        if (t2a == (clock) - 1)
+        {
+            memset(&timer1a, 0, sizeof(timer1a)); // unknown; due to error
+        }
+        else
+        {
+            timer1a = t1a;
+        }
 #endif
     }
 
@@ -318,7 +318,12 @@ invoke_top:
     CRM_ASSERT(csl->mct[csl->cstmt] != NULL);
     CRM_ASSERT(csl->mct[csl->cstmt + 1] != NULL);
 
-	crm_analysis_mark(&analysis_cfg, MARK_OPERATION, csl->cstmt, "iL", csl->mct[csl->cstmt]->stmt_type, (unsigned long long int)csl->mct[csl->cstmt]->apb.sflags);
+    crm_analysis_mark(&analysis_cfg,
+            MARK_OPERATION,
+            csl->cstmt,
+            "iL",
+            csl->mct[csl->cstmt]->stmt_type,
+            (unsigned long long int)csl->mct[csl->cstmt]->apb.sflags);
 
     switch (csl->mct[csl->cstmt]->stmt_type)
     {
@@ -368,7 +373,6 @@ invoke_top:
                      ? "(...truncated)"
                      : "")
                          );
-            goto invoke_bailout;
         }
         break;
 
@@ -564,7 +568,6 @@ invoke_top:
                         //   execution right to the BREAK.
                         fatalerror(" Can't GOTO the nonexistent label/line: ",
                                 target);
-                        goto invoke_bailout;
                     }
                 }
             }
@@ -705,8 +708,6 @@ invoke_top:
             {
                 fatalerror("Your program has no TRAP for the user defined fault:",
                         reason);
-                free(reason);
-                goto invoke_bailout;
             }
             free(reason);
         }
@@ -732,7 +733,6 @@ invoke_top:
             {
                 fatalerror("This is very strange... there is no data window!",
                         "As such, death is our only option.");
-                goto invoke_bailout;
             }
             else
             {
@@ -768,12 +768,7 @@ invoke_top:
         break;
 
     case CRM_WINDOW:
-        {
-            int i;
-            i = crm_expr_window(csl, apb);
-            if (i == 1)
-                goto invoke_bailout;
-        }
+            crm_expr_window(csl, apb);
         break;
 
     case CRM_ALTER:
@@ -907,21 +902,15 @@ invoke_top:
 
     case CRM_ISOLATE:
         //    nonzero return means "bad things happened"...
-        if (crm_expr_isolate(csl, apb))
-            goto invoke_bailout;
+        crm_expr_isolate(csl, apb);
         break;
 
     case CRM_INPUT:
-        {
             crm_expr_input(csl, apb);
-        }
         break;
 
     case CRM_SYSCALL:
-        {
-            if (crm_expr_syscall(csl, apb))
-                goto invoke_bailout;
-        }
+            crm_expr_syscall(csl, apb);
         break;
 
     case CRM_CALL:
@@ -961,7 +950,7 @@ invoke_top:
                 //    aw, crud.  No such label known.  But it _is_ continuable
                 //    if there is a trap for it.
                 fatalerror(" Can't CALL the nonexistent label: ", target);
-                goto invoke_bailout;
+                break;
             }
             newcsl = (CSL_CELL *)calloc(1, sizeof(newcsl[0]));
             if (!newcsl)
@@ -1041,16 +1030,20 @@ invoke_top:
                     CRM_ASSERT(retnamelen < data_window_size);
                     if (crm_nextword(outbuf, retnamelen, 0, &retname_start, &retnamelen))
                     {
+	if (!crm_is_legal_variable(&outbuf[retname_start], retnamelen))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempt to store a CALL return value into an illegal variable '%.*s'. How very bizarre.", retnamelen, &outbuf[retname_start]);
+                        break;
+	}
                         ret_idx = crm_vht_lookup(vht, &outbuf[retname_start], retnamelen);
                         if (vht[ret_idx] == NULL)
                         {
                             CRM_ASSERT(retname_start + retnamelen <= data_window_size - 1);
                             outbuf[retname_start + retnamelen] = 0;
-                            // nonfatalerror
-                            // ("Your call statement wants to return a value "
-                            // "to a nonexistent variable; I'll created an "
-                            //"isolated one.  Hope that's OK. Varname was",
-                            //             outbuf);
+                            nonfatalerror_ex(SRC_LOC(), "Your call statement wants to return a value "
+                                          "to a nonexistent variable; I'll created an "
+                                          "isolated one.  Hope that's OK. Varname was '%.*s'",
+                                          retnamelen, &outbuf[retname_start]);
                             if (user_trace)
                             {
                                 fprintf(stderr,
@@ -1158,6 +1151,11 @@ invoke_top:
                         //  GROT GROT GROT but for now, we'll reuse the same code as
                         //  GROT GROT GROT it does, releasing the old memory.
                         //
+	if (!crm_is_legal_variable(outbuf, vnl))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempt to CALL with an illegal variable '%.*s' argument. How very bizarre.", vnl, outbuf);
+                        break;
+	}
                         vmidx = crm_vht_lookup(vht, outbuf, vnl);
                         if (vht[vmidx] && vht[vmidx]->valtxt == tdw->filetext)
                         {
@@ -1241,6 +1239,11 @@ invoke_top:
                     int vht_index;
                     //
                     //        look up the variable
+	if (!crm_is_legal_variable(&temp_vars[vstart], vlen))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempt to INTERSECT with an illegal variable '%.*s'. How very bizarre.", vlen, &temp_vars[vstart]);
+                        goto invoke_bailout;
+	}
                     vht_index = crm_vht_lookup(vht, &temp_vars[vstart], vlen);
                     if (vht[vht_index] == NULL)
                     {
@@ -1371,6 +1374,11 @@ invoke_top:
                     int vht_index;
                     //
                     //        look up the variable
+	if (!crm_is_legal_variable(&temp_vars[vstart], vlen))
+	{
+		fatalerror_ex(SRC_LOC(), "Attempt to UNION with an illegal variable '%.*s'. How very bizarre.", vlen, &temp_vars[vstart]);
+                        goto invoke_bailout;
+	}
                     vht_index = crm_vht_lookup(vht, &temp_vars[vstart], vlen);
                     if (vht[vht_index] == NULL)
                     {
@@ -1482,7 +1490,6 @@ invoke_top:
                      ? "(...truncated)"
                      : "")
                          );
-            goto invoke_bailout;
         }
         break;
 
@@ -1499,120 +1506,120 @@ invoke_top:
                      ? "(...truncated)"
                      : "")
                          );
-            goto invoke_bailout;
         }
+		break;
     }
 
     //    If we're in some sort of strange abort mode, and we just need to move
     //    on to the next statement, we branch here.
 invoke_bailout:
 
-	crm_analysis_mark(&analysis_cfg, MARK_OPERATION, tstmt, "");
+    crm_analysis_mark(&analysis_cfg, MARK_OPERATION, tstmt, "");
 
     //  grab end-of-statement timers ?
     if (profile_execution)
     {
 #if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
-    LARGE_INTEGER t1;
-	int64_t timer2;
+        LARGE_INTEGER t1;
+        int64_t timer2;
 #elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
-    struct timespec t1;
-	int64_t timer2;
+        struct timespec t1;
+        int64_t timer2;
 #elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
-    struct timeval t1;
-	int64_t timer2;
+        struct timeval t1;
+        int64_t timer2;
 #elif defined (HAVE_CLOCK)
-    clock_t t1;
+        clock_t t1;
 #else
-    // nada
+        // nada
 #endif
 #if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
-    struct tms t1a;
-    clock_t t2a;
+        struct tms t1a;
+        clock_t t2a;
 #endif
-	int64_t w = 0;
+        int64_t w = 0;
 
-      csl->mct[tstmt]->stmt_exec_count++;
+        csl->mct[tstmt]->stmt_exec_count++;
 
 #if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
-    if (!QueryPerformanceCounter(&t1))
-    {
-        // unknown; due to error
-    }
-	else
-{
-    timer2 = t1.QuadPart;
+        if (!QueryPerformanceCounter(&t1))
+        {
+            // unknown; due to error
+        }
+        else
+        {
+            timer2 = t1.QuadPart;
 
-	w = (timer2 - timer1);
-        csl->mct[tstmt]->stmt_utime += w;
-        // csl->mct[tstmt]->stmt_stime += 0;
-        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
-}
+            w = (timer2 - timer1);
+            csl->mct[tstmt]->stmt_utime += w;
+            // csl->mct[tstmt]->stmt_stime += 0;
+            timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+        }
 #elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
-    if (!clock_gettime(CLOCK_REALTIME, &t1))
-    {
-        timer2 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
+        if (!clock_gettime(CLOCK_REALTIME, &t1))
+        {
+            timer2 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
 
-	w = (timer2 - timer1);
-        csl->mct[tstmt]->stmt_utime += w;
-        // csl->mct[tstmt]->stmt_stime += 0;
-        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
-    }
-    else
-    {
-        // unknown; due to error
-    }
+            w = (timer2 - timer1);
+            csl->mct[tstmt]->stmt_utime += w;
+            // csl->mct[tstmt]->stmt_stime += 0;
+            timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+        }
+        else
+        {
+            // unknown; due to error
+        }
 #elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
-    if (!gettimeofday(&t1))
-    {
-        timer2 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
+        if (!gettimeofday(&t1))
+        {
+            timer2 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
 
-	w = (timer2 - timer1);
-        csl->mct[tstmt]->stmt_utime += w;
-        // csl->mct[tstmt]->stmt_stime += 0;
-        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
-    }
-    else
-    {
-        // unknown; due to error
-    }
+            w = (timer2 - timer1);
+            csl->mct[tstmt]->stmt_utime += w;
+            // csl->mct[tstmt]->stmt_stime += 0;
+            timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+        }
+        else
+        {
+            // unknown; due to error
+        }
 #elif defined (HAVE_CLOCK)
-    t1 = clock();
-    if (t1 == (clock) -1)
-    {
-        // unknown; due to error
-    }
-    else
-    {
-	w = (t1 - timer1);
-        csl->mct[tstmt]->stmt_utime += w;
-        // csl->mct[tstmt]->stmt_stime += 0;
-        timer1 = t1; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
-    }
+        t1 = clock();
+        if (t1 == (clock) - 1)
+        {
+            // unknown; due to error
+        }
+        else
+        {
+            w = (t1 - timer1);
+            csl->mct[tstmt]->stmt_utime += w;
+            // csl->mct[tstmt]->stmt_stime += 0;
+            timer1 = t1; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+        }
 #else
 #endif
 
 #if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
-    t2a = times(&t1a);
-    if (t2a == (clock)-1)
-    {
-        // unknown; due to error
-    }
-    else
-    {
-	int64_t d = ((t1a.tms_utime - timer1a.tms_utime) + (t1a.tms_stime - timer1a.tms_stime));
-        double ratio;
+        t2a = times(&t1a);
+        if (t2a == (clock) - 1)
+        {
+            // unknown; due to error
+        }
+        else
+        {
+            int64_t d = ((t1a.tms_utime - timer1a.tms_utime) + (t1a.tms_stime - timer1a.tms_stime));
+            double ratio;
 
-	if (d > 0)
-	{
-		ratio = d;
-		ratio = (t1a.tms_stime - timer1a.tms_stime) / ratio;
-		d = ratio * w;
-        	csl->mct[tstmt]->stmt_stime += d;
-        	csl->mct[tstmt]->stmt_utime -= d;
-	}
-	timer1a = t1a;
-    }
+            if (d > 0)
+            {
+                ratio = d;
+                ratio = (t1a.tms_stime - timer1a.tms_stime) / ratio;
+                d = ratio * w;
+                csl->mct[tstmt]->stmt_stime += d;
+                csl->mct[tstmt]->stmt_utime -= d;
+            }
+            timer1a = t1a;
+        }
 #endif
     }
 
@@ -1624,112 +1631,112 @@ invoke_bailout:
 
 invoke_done:
 
-	crm_analysis_mark(&analysis_cfg, MARK_OPERATION, tstmt, "");
+    crm_analysis_mark(&analysis_cfg, MARK_OPERATION, tstmt, "");
 
     //  grab end-of-statement timers ?
     if (profile_execution)
     {
 #if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
-    LARGE_INTEGER t1;
-	int64_t timer2;
+        LARGE_INTEGER t1;
+        int64_t timer2;
 #elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
-    struct timespec t1;
-	int64_t timer2;
+        struct timespec t1;
+        int64_t timer2;
 #elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
-    struct timeval t1;
-	int64_t timer2;
+        struct timeval t1;
+        int64_t timer2;
 #elif defined (HAVE_CLOCK)
-    clock_t t1;
+        clock_t t1;
 #else
-    // nada
+        // nada
 #endif
 #if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
-    struct tms t1a;
-    clock_t t2a;
+        struct tms t1a;
+        clock_t t2a;
 #endif
-	int64_t w = 0;
+        int64_t w = 0;
 
-      csl->mct[tstmt]->stmt_exec_count++;
+        csl->mct[tstmt]->stmt_exec_count++;
 
 #if defined (HAVE_QUERYPERFORMANCECOUNTER) && defined (HAVE_QUERYPERFORMANCEFREQUENCY)
-    if (!QueryPerformanceCounter(&t1))
-    {
-        // unknown; due to error
-    }
-	else
-{
-    timer2 = t1.QuadPart;
+        if (!QueryPerformanceCounter(&t1))
+        {
+            // unknown; due to error
+        }
+        else
+        {
+            timer2 = t1.QuadPart;
 
-	w = (timer2 - timer1);
-        csl->mct[tstmt]->stmt_utime += w;
-        // csl->mct[tstmt]->stmt_stime += 0;
-        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
-}
+            w = (timer2 - timer1);
+            csl->mct[tstmt]->stmt_utime += w;
+            // csl->mct[tstmt]->stmt_stime += 0;
+            timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+        }
 #elif defined (HAVE_CLOCK_GETTIME) && defined (HAVE_STRUCT_TIMESPEC)
-    if (!clock_gettime(CLOCK_REALTIME, &t1))
-    {
-        timer2 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
+        if (!clock_gettime(CLOCK_REALTIME, &t1))
+        {
+            timer2 = ((int64_t)t1.tv_sec) * 1000000000LL + t1.tv_nsec;
 
-	w = (timer2 - timer1);
-        csl->mct[tstmt]->stmt_utime += w;
-        // csl->mct[tstmt]->stmt_stime += 0;
-        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
-    }
-    else
-    {
-        // unknown; due to error
-    }
+            w = (timer2 - timer1);
+            csl->mct[tstmt]->stmt_utime += w;
+            // csl->mct[tstmt]->stmt_stime += 0;
+            timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+        }
+        else
+        {
+            // unknown; due to error
+        }
 #elif defined (HAVE_GETTIMEOFDAY) && defined (HAVE_STRUCT_TIMEVAL)
-    if (!gettimeofday(&t1))
-    {
-        timer2 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
+        if (!gettimeofday(&t1))
+        {
+            timer2 = ((int64_t)t1.tv_sec) * 1000000LL + t1.tv_usec;
 
-	w = (timer2 - timer1);
-        csl->mct[tstmt]->stmt_utime += w;
-        // csl->mct[tstmt]->stmt_stime += 0;
-        timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
-    }
-    else
-    {
-        // unknown; due to error
-    }
+            w = (timer2 - timer1);
+            csl->mct[tstmt]->stmt_utime += w;
+            // csl->mct[tstmt]->stmt_stime += 0;
+            timer1 = timer2; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+        }
+        else
+        {
+            // unknown; due to error
+        }
 #elif defined (HAVE_CLOCK)
-    t1 = clock();
-    if (t1 == (clock) -1)
-    {
-        // unknown; due to error
-    }
-    else
-    {
-	w = (t1 - timer1);
-        csl->mct[tstmt]->stmt_utime += w;
-        // csl->mct[tstmt]->stmt_stime += 0;
-        timer1 = t1; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
-    }
+        t1 = clock();
+        if (t1 == (clock) - 1)
+        {
+            // unknown; due to error
+        }
+        else
+        {
+            w = (t1 - timer1);
+            csl->mct[tstmt]->stmt_utime += w;
+            // csl->mct[tstmt]->stmt_stime += 0;
+            timer1 = t1; // [i_a] set as new start time for next opcode: prevent time loss by measuring end-to-end.
+        }
 #else
 #endif
 
 #if defined (HAVE_TIMES) && defined (HAVE_STRUCT_TMS)
-    t2a = times(&t1a);
-    if (t2a == (clock)-1)
-    {
-        // unknown; due to error
-    }
-    else
-    {
-	int64_t d = ((t1a.tms_utime - timer1a.tms_utime) + (t1a.tms_stime - timer1a.tms_stime));
-        double ratio;
+        t2a = times(&t1a);
+        if (t2a == (clock) - 1)
+        {
+            // unknown; due to error
+        }
+        else
+        {
+            int64_t d = ((t1a.tms_utime - timer1a.tms_utime) + (t1a.tms_stime - timer1a.tms_stime));
+            double ratio;
 
-	if (d > 0)
-	{
-		ratio = d;
-		ratio = (t1a.tms_stime - timer1a.tms_stime) / ratio;
-		d = ratio * w;
-        	csl->mct[tstmt]->stmt_stime += d;
-        	csl->mct[tstmt]->stmt_utime -= d;
-	}
-	timer1a = t1a;
-    }
+            if (d > 0)
+            {
+                ratio = d;
+                ratio = (t1a.tms_stime - timer1a.tms_stime) / ratio;
+                d = ratio * w;
+                csl->mct[tstmt]->stmt_stime += d;
+                csl->mct[tstmt]->stmt_utime -= d;
+            }
+            timer1a = t1a;
+        }
 #endif
     }
 
@@ -1763,9 +1770,9 @@ invoke_done:
 
     //     if we asked for an output profile, give it to us.
     if (profile_execution)
-	{
+    {
         crm_output_profile(csl);
-	}
+    }
 
     return status;
 }

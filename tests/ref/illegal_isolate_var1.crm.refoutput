@@ -7,5 +7,12 @@ RETURN CODE:
 STDERR TEST OUTPUT:
 
 STDOUT TEST OUTPUT:
-yo!
+TRAP:
+crm114: *ERROR*
+Attempt to ISOLATE an illegal variable 'abc'. How very bizarre.
+Sorry, but this program is very sick and probably should be killed off.
+This happened at line 10 of file illegal_isolate_var1.crm:
+    isolate (abc) /FUBAR/
+(runtime system location: crm_expr_isolate.c(112) in routine: crm_expr_isolate)
+
 

@@ -184,8 +184,10 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
             //   gaskets on the filesystem or not:
             //
             if (filenamelen > MAX_FILE_NAME_LEN - 1)
+			{
                 untrappableerror("INSERT Filename was too long!  Here's the"
                                  "first part of it: ", insertfilename);
+			}
 
 #if 0
             //   To keep the matcher from looping, we change the string
@@ -306,8 +308,10 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 //   will it fit?
                 //
                 if ((csl->nchars + ecsl->nchars + 64) > max_pgmsize)
+				{
                     untrappableerror(" Program file buffer overflow when "
                                      "INSERTing file ", insertfilename);
+				}
 
                 //   Does the result end with a newline?  If not, fix it.
                 if (ecsl->filetext[ecsl->nchars - 1] != '\n')
@@ -440,7 +444,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
 
     ///   GROT GROT GROT  for some reason, Gnu Regex segfaults if it
     //    tries to free this register.
-    //  crm_regfree (&preg);
+    crm_regfree (&preg);
     //fprintf(stderr, "returning\n");
     return 0;
 }

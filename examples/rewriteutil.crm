@@ -1,4 +1,4 @@
-#! ${exec_prefix}/bin/crm114
+#! /usr/local/bin/crm114
 #   do rewriting, based on rewrite rules in rewrites.mfp
 #
 {

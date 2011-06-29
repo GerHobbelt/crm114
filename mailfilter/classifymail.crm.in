@@ -1,4 +1,4 @@
-#! @bindir@/crm114
+#! @BIN_PATH@/crm114
 #                      a quick classify only.
 #
 #      this ISOLATE will guarantee that :fileprefix: exists, and keep it's

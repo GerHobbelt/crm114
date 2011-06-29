@@ -33,7 +33,7 @@ fi
 # input
 #
 
-sed -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]\+\):\?/ERR 1: This happened at line \1 of file \2:/' \
+sed -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]*[\\\/]\?\)\([^ :\\\/]\+\):\?/ERR 1: This happened at line \1 of file \3:/' \
     -e 's/.*crm114: \*\([A-Z]\+\)\*/ERR 3: crm114: *\1*/' \
     -e '/ERR 1/{' \
     -e ':a' \
@@ -49,7 +49,7 @@ sed -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]\+\):\?/ERR 1: Thi
     -e 's:@BIN_PATH@:abs_top_builddir:g' \
     -e 's:/usr/local/bin:abs_top_builddir:g' \
     > "${targetname}.refout"
-sed -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]\+\):\?/ERR 1: This happened at line \1 of file \2:/'  \
+sed -n -e 's/This happened at line \([0-9]\+\) of file \([^ :]*[\\\/]\?\)\([^ :]\+\):\?/ERR 1: This happened at line \1 of file \3:/'  \
     -e 's/.*crm114: \*\([A-Z]\+\)\*/ERR 3: crm114: *\1*/' \
     -e '/ERR 1/{' \
     -e ':a' \

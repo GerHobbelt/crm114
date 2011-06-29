@@ -1,4 +1,4 @@
-#!./crm114
+#! /usr/local/bin/crm114
  
 window
 alter (:_dw:) /HHHH\nC-T: mpt; by="--0123"\nhhhh\n\nMIME.\n----0123\nC-T: txt\nC-T-E: 7\n\nTTTT\n\n----0123\nC-T: img\n name="clonic.GIF"\nC-T-E: b64\niiii\n\noooo\noooo\n\n----0123--\n\n\n/

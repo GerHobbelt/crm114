@@ -335,7 +335,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int cmd_len;
     char keep_buf[MAX_PATTERN];
     int keep_len;
-    char exp_keep_buf[MAX_PATTERN + 2];
+    char exp_keep_buf[MAX_PATTERN + 2 + 1];
     int exp_keep_len;
     int vstart;
     int vlen;
@@ -522,8 +522,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (keep_buf[0])
     {
         CRM_ASSERT(WIDTHOF(exp_keep_buf) >= MAX_PATTERN + 2 /* space for ":*" */);
+        CRM_ASSERT(WIDTHOF(exp_keep_buf) > keep_len + 2);
         strcpy(exp_keep_buf, ":*");
         memmove(exp_keep_buf + 2, keep_buf, keep_len);
+        exp_keep_buf[2 + keep_len] = 0;
         exp_keep_len = crm_nexpandvar(exp_keep_buf, keep_len + 2, MAX_PATTERN, vht, tdw);
         CRM_ASSERT(exp_keep_len < MAX_PATTERN);
         exp_keep_buf[exp_keep_len] = 0;
@@ -755,7 +757,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         "bogus",
                         "LSB"
                     };
-                    nonfatalerror_ex(SRC_LOC(),
+                    untrappableerror_ex(SRC_LOC(),
                             "This program tried a shell command that "
                             "didn't run correctly.\n"
                             "The command was >%s< and returned code %d "
@@ -772,15 +774,6 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             WTERMSIG(retcode),
                             errno,
                             errno_descr(errno));
-
-                    if (engine_exit_base != 0)
-                    {
-                        exit(engine_exit_base + 11);
-                    }
-                    else
-                    {
-                        exit(WEXITSTATUS(retcode));
-                    }
                 }
                 exit(WEXITSTATUS(retcode));
             }
@@ -962,6 +955,11 @@ readloop:
         //
         close(from_minion[0]);
 
+	// [i_a] we tolerate illegal variable names here; if they occur, we simply ignore them... 
+	if (strlen(keep_buf) > 0 && !crm_is_legal_variable(keep_buf, strlen(keep_buf)))
+	{
+		nonfatalerror_ex(SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?", keep_buf);
+	}
         if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf)))
         {
             char exit_value_string[MAX_VARNAME];
@@ -1632,6 +1630,12 @@ readloop:
                 {
                     fatalerror_Win32("Failed to grab the exit code from the system call", sys_cmd);
                 }
+
+	// [i_a] we tolerate illegal variable names here; if they occur, we simply ignore them... 
+	if (strlen(keep_buf) > 0 && !crm_is_legal_variable(keep_buf, strlen(keep_buf)))
+	{
+		nonfatalerror_ex(SRC_LOC(), "Attempt to store SYSCALL results into an illegal variable '%s'. You sure you're doing the right thing here?", keep_buf);
+	}
                 if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf)))
                 {
                     char exit_value_string[MAX_VARNAME];

@@ -1019,6 +1019,7 @@ AC_CONFIG_FILES([Makefile
                  tests/exec_async_leaktest1.crm
                  tests/isolate_reclaim_test.crm
                  tests/match_isolate_reclaim.crm
+                 tests/match_attr_fromend_newend.crm
                  tests/slashbugtest.crm
                  tests/trapseqbugtest.crm
                  tests/translate_tr.crm

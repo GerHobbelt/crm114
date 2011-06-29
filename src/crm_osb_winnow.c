@@ -60,9 +60,9 @@ static int spectra_start = 0;
 //
 
 int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //     learn the osb_winnow transform spectrum of this input window as
     //     belonging to a particular type.
@@ -82,7 +82,7 @@ VHT_CELL **vht,
     unsigned char *xhashes = NULL;                    //  and the mask of what we've seen
     crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
     //
-    regex_t regcb;
+	regex_t regcb = {0};
     regmatch_t match[5];    //  we only care about the outermost match
     int textoffset;
     int textmaxoffset;
@@ -177,7 +177,7 @@ VHT_CELL **vht,
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
-    learnfilename = strdup(&htext[i]);
+    learnfilename = &htext[i];
     if (!learnfilename)
     {
         untrappableerror("Cannot allocate classifier memory", "Stick a fork in us; we're _done_.");
@@ -326,8 +326,6 @@ VHT_CELL **vht,
     }
 
     // compile regex if not empty - empty regex means "plain regex"
-    if (ptext[0] != 0)
-    {
         i = crm_regcomp(&regcb, ptext, plen, cflags);
         if (i != 0)
         {
@@ -335,7 +333,6 @@ VHT_CELL **vht,
             nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
             goto regcomp_failed;
         }
-    }
 
 
     //   Start by priming the pipe... we will shift to the left next.
@@ -656,10 +653,8 @@ fail_dramatically:
 #endif
 #endif
 
-    if (ptext[0] != 0)
         crm_regfree(&regcb);
 
-    free(learnfilename);
     return 0;
 }
 
@@ -668,9 +663,9 @@ fail_dramatically:
 //      How to do a Osb_Winnow CLASSIFY some text.
 //
 int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-VHT_CELL **vht,
-		CSL_CELL *tdw,
-                char *txtptr, int txtstart, int txtlen)
+        VHT_CELL **vht,
+        CSL_CELL *tdw,
+        char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -701,7 +696,7 @@ VHT_CELL **vht,
 
     struct stat statbuf;    //  for statting the hash file
     crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
-    regex_t regcb;
+	regex_t regcb = {0};
     regmatch_t match[5];    //  we only care about the outermost match
 
     double fcounts[MAX_CLASSIFIERS]; // total counts for feature normalize
@@ -1045,7 +1040,7 @@ VHT_CELL **vht,
     if (!vbar_seen || succhash <= 0 || (maxhash <= succhash))
     {
         return nonfatalerror("Couldn't open at least 1 .css file per SUCC | FAIL category "
-                      "for classify().\n", "Hope you know what are you doing.");
+                             "for classify().\n", "Hope you know what are you doing.");
     }
 
     {
@@ -1346,10 +1341,7 @@ classify_end_regex_loop:
         free(xhashes[k]);
     }
     //  and let go of the regex buffery
-    if (ptext[0] != 0)
-    {
         crm_regfree(&regcb);
-    }
 
     if (user_trace)
     {
@@ -1387,7 +1379,7 @@ classify_end_regex_loop:
         remainder = 10 * DBL_MIN;
         for (m = succhash; m < maxhash; m++)
         {
-                remainder += totalweights[m];
+            remainder += totalweights[m];
         }
 
         tprob = (accumulator) / (accumulator + remainder);
@@ -1499,7 +1491,10 @@ classify_end_regex_loop:
     //  Free the hashnames, to avoid a memory leak.
     //
     for (i = 0; i < maxhash; i++)
+	{
         free(hashname[i]);
+	}
+
     if (tprob <= 0.5)
     {
         if (user_trace)
