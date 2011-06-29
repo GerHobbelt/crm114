@@ -91,11 +91,14 @@ VAR,[VAR="no, unknown"
  ac_save_[]FLAGS="$[]FLAGS"
  ac_save_c_werror_flag=$ac_c_werror_flag
  ac_c_werror_flag=yes
+ # [i_a] next line is a hotfix for automake 1.10/autoconf 2.62
+ AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS]) 
 for ac_arg dnl
 in "-pass-exit-codes -pedantic -Werror % m4_ifval($1,$1,-option)"  dnl   GCC
    "-pass-exit-codes -pedantic % m4_ifval($1,$1,-option) %% no, obsolete"  dnl new GCC
    #
-do FLAGS="$ac_save_[]FLAGS "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,%,,'`
+do 
+   FLAGS="$ac_save_[]FLAGS "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,%,,'`
    AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
    [VAR=`echo $ac_arg | sed -e 's,.*% *,,'`
     break])
@@ -132,6 +135,8 @@ VAR,[VAR="no, unknown"
  ac_save_[]FLAGS="$[]FLAGS"
  ac_save_c_werror_flag=$ac_c_werror_flag
  ac_c_werror_flag=yes
+ # [i_a] next line is a hotfix for automake 1.10/autoconf 2.62
+ AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS]) 
 for ac_arg dnl
 in "-pass-exit-codes -pedantic -Werror % m4_ifval($1,$1,-option)"  dnl   GCC
    "-pass-exit-codes -pedantic % m4_ifval($1,$1,-option) %% no, obsolete"  dnl new GCC

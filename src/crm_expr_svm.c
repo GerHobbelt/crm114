@@ -1091,7 +1091,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         goto regcomp_failed;
     }
     k = crm_regexec(&regcb, ftext,
-            flen, 5, match, 0, NULL);
+            flen, WIDTHOF(match), match, 0, NULL);
     if (k == 0)
     {
         // get three input files.
@@ -1185,7 +1185,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (ptext[0] != 0)
             {
                 k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                        slen, 5, match, 0, NULL);
+                        slen, WIDTHOF(match), match, 0, NULL);
             }
             else
             {
@@ -2536,7 +2536,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (ptext[0] != 0)
             {
                 k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                        slen, 5, match, 0, NULL);
+                        slen, WIDTHOF(match), match, 0, NULL);
             }
             else
             {
@@ -2701,7 +2701,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       fprintf(stderr,"sorted hashes:\n");
       for (i=0;i<hashcounts;i++)
 	{
-	  fprintf(stderr, "hashes[%ld]=%lud\n",i,hashes[i].hash);
+	  fprintf(stderr, "hashes[%d]=%lud\n",i,(unsigned long int)hashes[i].hash);
 	}
         fprintf(stderr, "Total unique hashes generated: %d\n", hashcounts);
     }
@@ -2723,7 +2723,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         goto regcomp_failed;
     }
     k = crm_regexec(&regcb, ftext,
-            flen, 5, match, 0, NULL);
+            flen, WIDTHOF(match), match, 0, NULL);
     if (k == 0)
     {
         int file1_hashlens;
@@ -2844,8 +2844,10 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             hashf = fopen(file3, "rb+"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
             if (hashf == NULL)
             {
-                nonfatalerror("For some reason, I was unable to read-open the SVM 1vs2 solution file file named ",
-                        file3);
+                nonfatalerror_ex(SRC_LOC(), "For some reason, I was unable to read-open the SVM 1vs2 solution file file named '%s': error = %d(%s)",
+                        file3,
+                    errno,
+                    errno_descr(errno));
             }
             // else
             {

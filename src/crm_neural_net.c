@@ -925,7 +925,6 @@ static int eat_document(ARGPARSE_BLOCK *apb,
     int i, j;
 
     int unigram, unique, string;
-    int next_offset;
 
     unique = !!(apb->sflags & CRM_UNIQUE); /* convert 64-bit flag to boolean */
     unigram = !!(apb->sflags & CRM_UNIGRAM);
@@ -944,15 +943,12 @@ static int eat_document(ARGPARSE_BLOCK *apb,
         text,                 // intput string
         text_len,             // how many bytes
         0,                    // starting offset
-        NULL,                 // parser regex
-        0,                    // parser regex len
-        NULL,                 // tokenizer coeff array
-        0,                    // tokenizer pipeline len
-        0,                    // tokenizer pipeline iterations
+        NULL,                 // tokenizer
+        NULL,                 // coeff array
         feature_space,        // where to put the hashed results
         max_features - 1,     //  max number of hashes
-        &n_features,          // how many hashes we actually got
-        &next_offset);        // where to start again for more hashes
+        &n_features          // how many hashes we actually got
+        );     
 
     //     GROT GROT GROT
     //     maybe we should force a constant into one column of input

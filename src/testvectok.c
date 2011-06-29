@@ -128,26 +128,35 @@ char *tempbuf = NULL;
 int main(void)
 {
     char input[1024];
+    char arg[8192];
     int i, j;
     int ret;
     int k;
     crmhash_t feavec[2048];
+    ARGPARSE_BLOCK apb = { 0 };
+    VT_USERDEF_TOKENIZER tokenizer = { 0 };
+    VT_USERDEF_COEFF_MATRIX our_coeff = { 0 };
 
     char my_regex[256];
 
     static const crmhash_t coeff[] =
     {
-        1, 3, 0, 0, 0
-        , 1, 0, 5, 0, 0
-        , 1, 0, 0, 11, 0
-        , 1, 0, 0, 0, 23
+        1, 3, 0, 0, 0,
+        1, 0, 5, 0, 0,
+        1, 0, 0, 11, 0,
+        1, 0, 0, 0, 23
     };
 
     stdout = os_stdout();
     stderr = os_stderr();
     stdin = os_stdin();
 
+	user_trace = 1;
+
+	internal_trace = 1;
+
     strcpy(my_regex, "[[:alpha:]]+");
+
     fprintf(stdout, "Enter a test string: ");
     fgets(input, sizeof(input), stdin);
     input[sizeof(input) - 1] = 0;
@@ -155,28 +164,55 @@ int main(void)
     // fscanf(stdin, "%1023s", input);
     // fprintf(stdout, "Input = '%s'\n", input);
 
-    ret = crm_vector_tokenize(
-            input
-                             , strlen(input)
-                             , 0
-                             , my_regex
-                             , strlen(my_regex)
-                             , coeff
-                             , 5
-                             , 4
-                             , feavec
-                             , 2048
-                             , 1
-                             , &j
-                             , &i);
+	fprintf(stdout, "Enter optional 'vector: ...' arg (don't forget the 'vector: prefix in there!): ");
+    fgets(arg, sizeof(arg), stdin);
+    arg[sizeof(arg) - 1] = 0;
+    fprintf(stdout, "Args = '%s'\n", arg);
+	
+	apb.s1start = my_regex;
+	apb.s1len = strlen(my_regex);
+
+	apb.s2start = arg;
+	apb.s2len = strlen(arg);
+
+	fprintf(stdout, "Optional OSBF style token globbing: type integer values for max_token_size and count (must specify both!): ");
+    k = fscanf(stdin, "%d %d", &i, &j);
+	if (k == 2)
+	{
+		fprintf(stdout, "using max_token_size %d and count %d.\n", i, j);
+
+		tokenizer.max_token_length = i;
+		tokenizer.max_big_token_count = j;
+	}
+
+    tokenizer.regex = my_regex;
+    tokenizer.regexlen = strlen(my_regex);
+
+	if (strlen(arg) < 3)
+	{
+		memcpy(our_coeff.coeff_array, coeff, sizeof(coeff));
+		our_coeff.output_stride = 1;
+		our_coeff.pipe_iters = 4;
+		our_coeff.pipe_len = 5;
+	}
+
+    ret = crm_vector_tokenize_selector(&apb,
+        input,
+        strlen(input),
+        0,
+        &tokenizer,
+        &our_coeff,
+        feavec,
+        WIDTHOF(feavec),
+        &j);
 
     for (k = 0; k < j; k++)
     {
         fprintf(stdout, "feature[%4d] = %12lu (%08lX)\n", k, (unsigned long int)feavec[k], (unsigned long int)feavec[k]);
     }
 
-    fprintf(stdout, "... and next_offset is %d\n", i);
-    return ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+    fprintf(stdout, "... and next_offset is %d\n", tokenizer.input_next_offset);
+    return ret >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 

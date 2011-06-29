@@ -272,7 +272,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     i = crm_regexec(&preg,
             &(vht[vmidx]->valtxt[vht[vmidx]->vstart]),
             vht[vmidx]->vlen,
-            1, matches, 0, NULL);
+            WIDTHOF(matches), matches, 0, NULL);
     crm_regfree(&preg);
 
     //       starting offset of the "keep section" is at matches[0].rm.eo
@@ -567,7 +567,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         i = crm_regexec(&preg,
                 newinputbuf,
                 newbuflen,
-                1, matches, 0, NULL);
+                WIDTHOF(matches), matches, 0, NULL);
 
         //
         //        Now we deal with the result of the regex matching (or not

@@ -26,7 +26,7 @@
 int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
     //           Allow input of text from stdin.
-    FILE *fp;
+    FILE *fp = NULL;
     char temp_vars[MAX_PATTERN];
     int tvlen;
     char filename[MAX_FILE_NAME_LEN];
@@ -186,6 +186,45 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         }
     }
 
+    if (user_trace)
+	{
+		struct stat st = {0};
+		int stret;
+
+		stret = fstat(fileno(fp), &st);
+		fprintf(stderr, "Opened file '%s' for file I/O (reading): handle %d (%s) (%d) - "
+			"stat.stret = %ld, "
+        "stat.st_dev = %ld, "
+        "stat.st_ino = %ld, "
+        "stat.st_mode = %ld, "
+        "stat.st_nlink = %ld, "
+        "stat.st_uid = %ld, "
+        "stat.st_gid = %ld, "
+        "stat.st_rdev = %ld, "
+        "stat.st_size = %ld, "
+        "stat.st_atime = %ld, "
+        "stat.st_mtime = %ld, "
+        "stat.st_ctim = %ld"
+			"\n", 
+			ifn,
+			fileno(fp),
+			(fp == os_stdin() ? "! stdin !" : "FILE"),
+			file_was_fopened,
+			(long)stret,
+        (long)st.st_dev,
+        (long)st.st_ino,
+        (long)st.st_mode,
+        (long)st.st_nlink,
+        (long)st.st_uid,
+        (long)st.st_gid,
+        (long)st.st_rdev,
+        (long)st.st_size,
+        (long)st.st_atime,
+        (long)st.st_mtime,
+        (long)st.st_ctime
+			);
+	}
+
     done = 0;
 
     //   get the variable name
@@ -267,7 +306,8 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     clearerr(fp);
                 while (!feof(fp)
                        && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
-                       && (till_eof || (ichar == 0 || inbuf[ichar - 1] != '\n'))
+		                // [i_a] how about MAC and PC (CR and CRLF instead of LF as line terminators)? Quick fix here: */
+                       && (till_eof || (ichar == 0 || (inbuf[ichar - 1] != '\r' && inbuf[ichar - 1] != '\n')))
                        && ichar <= iolen)
                 {
                     int c = fgetc(fp);
@@ -279,7 +319,9 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 }
                 if (ichar > 0 && inbuf[ichar] == '\n')
                     ichar--; //   get rid of any present newline
-                // [i_a] GROT GROT GROT: how about MAC and PC (CR and CRLF instead of LF as line terminators) */
+                // [i_a] how about MAC and PC (CR and CRLF instead of LF as line terminators)? Quick fix here: */
+                if (ichar > 0 && inbuf[ichar] == '\r')
+                    ichar--; //   get rid of any present carriage return too (CRLF for MSDOS)
                 inbuf[ichar] = 0; // and put a null on the end of it.
             }
             else
@@ -290,6 +332,23 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 if (feof(fp))
                     clearerr(fp);                   // reset any EOF
                 ichar = fread(inbuf, 1, iolen, fp); // do a block I/O
+				if (ferror(fp))
+				{
+					//     and close the input file if it's not stdin.
+					if (file_was_fopened)
+					{
+						fclose(fp);
+						fp = NULL;
+					}
+
+					fatalerror_ex(SRC_LOC(),
+						"For some reason, I got an error while trying to read data from the file named '%s' (expanded from '%s'): error = %d(%s)",
+						ifn,
+						filename,
+						errno,
+						errno_descr(errno));
+					goto input_no_open_bailout;
+				}
                 inbuf[ichar] = 0;                   // null at the end
             }
         }
@@ -302,7 +361,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fclose(fp);
     }
 
-    input_no_open_bailout:
+input_no_open_bailout:
     return 0;
 }
 

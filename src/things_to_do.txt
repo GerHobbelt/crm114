@@ -316,4 +316,4 @@ double lookups.
 72) Make full CAMRAM in native mode work (window size limit?)
 
 73) the final arguments to crm_nextword really should be unsigned... but
-    this isn;t high priority.
+    this isn't high priority.

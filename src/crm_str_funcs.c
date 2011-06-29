@@ -2786,7 +2786,7 @@ int strntrn(
     int j, k, last;
 
     //               If tostrlen == 0, we're deleting, except if
-    //                 ASLO fromstrlen == 0, in which case we're possibly
+    //                 ALSO fromstrlen == 0, in which case we're possibly
     //                   just uniquing or maybe not even that.
     //
     int replace = tostrlen;
@@ -2812,16 +2812,20 @@ int strntrn(
         //       Else - we're in literal mode; just copy the
         //       strings.
         from = calloc(fromstrlen, sizeof(from[0]));
+        if (from == NULL || fromstr == NULL)
+            return -1;
         strncpy((char *)from,  (char *)fromstr, fromstrlen);
         flen = fromstrlen;
         to = calloc(tostrlen, sizeof(to[0]));
+        if (to == NULL || tostr == NULL)
+            return -1;
         strncpy((char *)to, (char *)tostr, tostrlen);
         tlen = tostrlen;
-        if (from == NULL || to == NULL)
-            return -1;
     }
     else
     {
+		if (fromstr != NULL)
+		{
         //  Build the expanded from-string
         if (fromstr[0] != '^')
         {
@@ -2833,7 +2837,8 @@ int strntrn(
         {
             unsigned char *temp;
             int templen;
-            temp = crm_strntrn_expand_hyphens(fromstr + 1, fromstrlen - 1, &templen);
+            
+			temp = crm_strntrn_expand_hyphens(fromstr + 1, fromstrlen - 1, &templen);
             if (!temp)
                 return -1;
 
@@ -2843,7 +2848,10 @@ int strntrn(
 
             free(temp);
         }
+		}
 
+		if (tostr != NULL)
+		{
         //     Build the expanded to-string
         //
         if (tostr[0] != '^')
@@ -2856,7 +2864,8 @@ int strntrn(
         {
             unsigned char *temp;
             int templen;
-            temp = crm_strntrn_expand_hyphens(tostr + 1, tostrlen - 1, &templen);
+            
+			temp = crm_strntrn_expand_hyphens(tostr + 1, tostrlen - 1, &templen);
             if (!temp)
                 return -1;
 
@@ -2866,6 +2875,7 @@ int strntrn(
 
             free(temp);
         }
+		}
     }
 
     //  If we're in <unique> mode, squish out any duplicated
@@ -2876,6 +2886,9 @@ int strntrn(
     if (CRM_UNIQUE & flags)
     {
         unsigned char unique_map[256];
+
+		if (from == NULL)
+			return -1;
 
         //                        build the map of the uniqueable characters
         //
@@ -2899,12 +2912,15 @@ int strntrn(
     }
     CRM_ASSERT(len < maxdatastrlen);
 
-    //     Minor optimization - if we're just uniquing, we don't need
+    //     Minor optimization - if we're just uniquing, we don't need to:
 
-    //     Build the mapping array
+	//     Build the mapping array
     //
     if (replace)
     {
+		if (from == NULL || to == NULL)
+			return -1;
+
         //  This is replacement mode (not deletion mode) so we need
         //   to build the character map.  We
         //    initialize the map as each character maps to itself.
@@ -2941,6 +2957,9 @@ int strntrn(
     }
     else
     {
+		if (from == NULL)
+			return -1;
+
         //  No, we are not in replace mode, rather we are in delete mode
         //  so the map now says whether we're keeping the character or
         //  deleting the character.

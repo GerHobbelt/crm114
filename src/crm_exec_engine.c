@@ -106,7 +106,7 @@ invoke_top:
             fprintf(stderr, "%c",
                     csl->filetext[csl->mct[csl->cstmt]->fchar + i]);
 #else
-			memnCdump(stderr, 
+			fwrite_ASCII_Cfied(stderr, 
 csl->filetext + csl->mct[csl->cstmt]->fchar,
 	slen);
 #endif
@@ -210,7 +210,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             fprintf(stderr, "%c",
                     csl->filetext[csl->mct[csl->cstmt]->fchar + i]);
 #else
-			memnCdump(stderr, 
+			fwrite_ASCII_Cfied(stderr, 
 csl->filetext + csl->mct[csl->cstmt]->fchar,
 	slen);
 #endif
@@ -355,7 +355,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
                         for (i = 0; i < namelen; i++)
                             fprintf(stderr, "%c", namestart[i]);
 #else
-			memnCdump(stderr, namestart, namelen);
+			fwrite_ASCII_Cfied(stderr, namestart, namelen);
 #endif
                         fprintf(stderr, "<\n");
                     }

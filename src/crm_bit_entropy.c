@@ -885,11 +885,11 @@ static void firlat_sanity_scan(int32_t *firlat, int firlatlen,
 //    routine is now just an efficiency firewall.  It never should
 //    have been; but hey... it's here.
 //
-static int firlat_find_smallest_larger(ENTROPY_FEATUREBUCKET_STRUCT                  *nodes,
-        int                                                                           nodeslen,
-        int32_t                                                                       *firlat,
-        int                                                                           firlatlen,
-        double                                                                         my_fir)
+static int firlat_find_smallest_larger(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+        int                                                          nodeslen,
+        int32_t                                                     *firlat,
+        int                                                          firlatlen,
+        double                                                       my_fir)
 {
     int hit_node;
     int firlat_entry;
@@ -1037,11 +1037,11 @@ static int firlat_find_smallest_larger(ENTROPY_FEATUREBUCKET_STRUCT             
     return hit_node;
 }
 
-static int firlat_find_closest_node(ENTROPY_FEATUREBUCKET_STRUCT               *nodes,
-        int                                                                     nodeslen,
-        int32_t                                                                 *firlat,
-        int                                                                     firlatlen,
-        double                                                                   currentfir)
+static int firlat_find_closest_node(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+        int                                                       nodeslen,
+        int32_t                                                  *firlat,
+        int                                                       firlatlen,
+        double                                                    currentfir)
 {
     int larger;
     int smaller;
@@ -1088,11 +1088,11 @@ static int firlat_find_closest_node(ENTROPY_FEATUREBUCKET_STRUCT               *
 }
 
 //      How we remove a node from the FIR chain and firlat
-static void firlat_remove_node(ENTROPY_FEATUREBUCKET_STRUCT               *nodes,
-        int                                                               nodeslen,
-        int32_t                                                           *firlat,
-        int                                                               firlatlen,
-        int                                                               curnode)
+static void firlat_remove_node(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+        int                                                  nodeslen,
+        int32_t                                             *firlat,
+        int                                                  firlatlen,
+        int                                                  curnode)
 {
     //   cut it out of the chain first
     int smaller_node, larger_node;
@@ -1170,11 +1170,11 @@ static void firlat_remove_node(ENTROPY_FEATUREBUCKET_STRUCT               *nodes
 }
 
 //     insert a node into the FIR chain and firlat
-static void firlat_insert_node(ENTROPY_FEATUREBUCKET_STRUCT               *nodes,
-        int                                                               nodeslen,
-        int32_t                                                           *firlat,
-        int                                                               firlatlen,
-        int                                                               curnode)
+static void firlat_insert_node(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+        int                                                  nodeslen,
+        int32_t                                             *firlat,
+        int                                                  firlatlen,
+        int                                                  curnode)
 {
     int smaller_node, larger_node;
     int current_occupant, firlat_slot;
@@ -1268,10 +1268,10 @@ static void firlat_insert_node(ENTROPY_FEATUREBUCKET_STRUCT               *nodes
 //
 //      Routine to dump what's in the node set and lookaside table
 //
-static void dump_bit_entropy_data(ENTROPY_FEATUREBUCKET_STRUCT               *nodes,
-        int                                                                  nodeslen,
-        int32_t                                                              *firlat,
-        int                                                                  firlatlen)
+static void dump_bit_entropy_data(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
+        int                                                     nodeslen,
+        int32_t                                                *firlat,
+        int                                                     firlatlen)
 {
     int i;
 
@@ -1994,7 +1994,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     nodebytes = nodeslen * sizeof(nodes[0]);
 
     // headers [4] and [5] are for the int64_t totalbits.
-    //  totalbits = (int int *) &headers[4];
+  //  totalbits = (long long *) &headers[4];    
     totalbits = &(headers->totalbits);
 
     //     In this format, the first BIT_ENTROPIC_FIR_LOOKASIDE_FRACTION
@@ -2043,9 +2043,9 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //    Running 1 megaslot at 1E-7 thresh overflows TREC06 public.
     //    Running 2 megaslot at 1E-7 thresh uses up 76% of TREC06 public, but
-    //     with lousy TER (36/10000, 24/1000) and 5140 total errors
+    //    with lousy TER (36/10000, 24/1000) and 5140 total errors
 
-    //     even better might be an _adaptive_ threshold, that looks at the
+    //    even better might be an _adaptive_ threshold, that looks at the
     //    available freelist length and modulates according to that.
     //    Boundary conditions: with empty file, threshold is very small.
     //    and with a full file, threshold is 10/nodeslen.
@@ -2693,7 +2693,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                               &(fmaps[maxhash][headers[maxhash]->nodestart]);
                         //nodelens[maxhash] = headers[maxhash][3];
                         nodelens[maxhash] = headers[maxhash]->nodeslen;
-                        // totalbits[maxhash] = (int int *) &headers[4];
+		      // totalbits[maxhash] = (long long *) &headers[4];
                         totalbits[maxhash] = &(headers[maxhash]->totalbits);
 
                         if (internal_trace)
@@ -2898,12 +2898,12 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             txtptr, textoffset, bitnum);
 
                     upscore = lattice_lookahead_score
-                              (nodes, nextnode, localfir, crosslink_mincount,
+                              (nodes, oneup, localfir, crosslink_mincount,   /* [i_a] !!! */
                             0.00001,
                             txtptr, textoffset, bitnum);
 
                     downscore = lattice_lookahead_score
-                                (nodes, nextnode, localfir, crosslink_mincount,
+                                (nodes, onedown, localfir, crosslink_mincount,   /* [i_a] !!! */
                             0.00001,
                             txtptr, textoffset, bitnum);
 

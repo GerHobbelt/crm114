@@ -22,6 +22,8 @@
 #include "crm114.h"
 
 
+
+
 //     Here's the real statement description table.
 //
 static const STMT_TABLE_TYPE stmt_table[] =
@@ -50,11 +52,14 @@ static const STMT_TABLE_TYPE stmt_table[] =
     { "output",    CRM_OUTPUT,        6,  1,     0,  1,    0,  0,   0,  1,  CRM_APPEND },
     { "window",    CRM_WINDOW,        6,  1,     0,  2,    0,  2,   0,  0,  CRM_NOCASE | CRM_BYCHAR | CRM_BYCHUNK | CRM_BYEOF | CRM_EOFACCEPTS | CRM_EOFRETRY | CRM_LITERAL },
     { "alter",     CRM_ALTER,         5,  1,     1,  1,    1,  1,   0,  0,    0 },
-    { "learn",     CRM_LEARN,         5,  1,     1,  1,    1,  1,   0,  1,  CRM_NOCASE | CRM_REFUTE | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CROSSLINK | CRM_STRING | CRM_APPEND
+    { "learn",     CRM_LEARN,         5,  1,     1,  1,    1,  1,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL 
+	    | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
 		| CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+        | CRM_REFUTE | CRM_APPEND
         | CRM_NEURAL_NET },
-    { "classify",  CRM_CLASSIFY,      8,  1,     1,  1,    1,  2,   0,  1,  CRM_NOCASE | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+    { "classify",  CRM_CLASSIFY,      8,  1,     1,  1,    1,  2,   0,  1,  CRM_NOCASE | CRM_BASIC | CRM_NOMULTILINE | CRM_LITERAL 
+	    | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
 		| CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
         | CRM_NEURAL_NET },
@@ -386,7 +391,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //      explicit newline).  Fortunately, the preprocessor fixes the
         //      former and the latter is explicitly prohibited by the language.
         //
-        slength = strcspn(&pgmtext[sindex], "\n");
+        slength = strcspn(&pgmtext[sindex], "\r\n");
 
 		CRM_ASSERT(stmtnum < csl->mct_size);
         // allocate and fill in the mct table entry for this line
@@ -613,7 +618,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         {
             fprintf(stderr, "\nStmt %3d type %2d ",
                     stmtnum, csl->mct[stmtnum]->stmt_type);
-		memnCdump(stderr, 
+		fwrite_ASCII_Cfied(stderr, 
 pgmtext + csl->mct[stmtnum]->start,
 		(csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->start);
         }
@@ -830,7 +835,7 @@ pgmtext + csl->mct[stmtnum]->start,
 #else
 				        k = skip_command_token(pgmtext, k, csl->mct[stmtnum]->achar);
 #endif
-		memnCdump(stderr, 
+		fwrite_ASCII_Cfied(stderr, 
 pgmtext + csl->mct[stmtnum]->fchar,
 			k - csl->mct[stmtnum]->fchar);
 
@@ -848,7 +853,7 @@ pgmtext + csl->mct[stmtnum]->fchar,
                          k < csl->mct[stmtnum + 1]->start - 1; k++)
                         fprintf(stderr, "%c", pgmtext[k]);
 #else
-			memnCdump(stderr, 
+			fwrite_ASCII_Cfied(stderr, 
 pgmtext + csl->mct[stmtnum]->achar,
 	(csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->achar);
 #endif

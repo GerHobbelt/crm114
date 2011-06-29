@@ -242,7 +242,8 @@
 #
 #     -- use this next one if you have installed CRM114 with "make install"
 #     -- (This is preferred and is the default)
-:trainer_invoke_command: /.\/mailtrainer.crm/
+#:trainer_invoke_command: /.\/mailtrainer.crm/
+:trainer_invoke_command: /crm114 mailtrainer.crm/
 #
 #     -- use this one if you can't do a "make install" and so must run the
 #     --- crm114_tre binary directly out of the current working directory.

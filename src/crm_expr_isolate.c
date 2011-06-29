@@ -98,10 +98,6 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             {
                 vmidx = crm_vht_lookup(vht, vname, vlen);
                 //
-                //        get initial value - that's the slashed value.
-                crm_get_pgm_arg(tempbuf, data_window_size,
-                        apb->s1start, apb->s1len);
-                //
                 //     Now, check these cases in order:
                 //
                 //     not preexisting, no /value/ -  isolate, set to ""
@@ -139,8 +135,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 data_window_size - tdw->nchars);
                     }
                 }
-                else
-                //      it IS preexisting
+                else                //      it IS preexisting
                 {
                     //   It is preexisting, maybe in isolation, maybe
                     //   not but we're isolating again.  So we need to

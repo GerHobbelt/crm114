@@ -2,7 +2,7 @@
 #
 # SYNOPSIS
 #
-#   AC_FUNC_MEMMOVE
+#   AX_FUNC_MEMMOVE
 #
 # DESCRIPTION
 #
@@ -22,7 +22,7 @@
 #   modification, are permitted in any medium without royalty provided
 #   the copyright notice and this notice are preserved.
 
-AC_DEFUN([AC_FUNC_MEMMOVE],
+AC_DEFUN([AX_FUNC_MEMMOVE],
 [AC_CHECK_FUNCS(memmove)
 AC_MSG_CHECKING(for working memmove)
 AC_CACHE_VAL(ac_cv_have_working_memmove,

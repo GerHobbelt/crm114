@@ -585,38 +585,94 @@ int skip_command_token(const char *buf, int start, int bufsize);
 ///////////////////////////////////////////////////////////////////////////
 
 
+struct magical_VT_userdef_tokenizer;
+
 ///////////////////////////////////////////////////////////////////////////
 //
-// Returns the number of characters consumed in text[]; token itself is
-// returned in *match.
+// Returns the number of tokens produced (in *tokenhash_dest).
+//
+// Returns 0 when the complete input text (obj->input_text) has been tokenized and 
+// no token could be produced anymore.
 // 
 // Negative return values signal errors.
 //
-struct magical_VT_userdef_tokenizer;
-
+// Note that *obj elements will/may be updated too, to make sure the
+// next call to this function will produce the next token.
+//
 typedef int VT_tokenizer_func(struct magical_VT_userdef_tokenizer *obj, // 'this' reference
-							  regmatch_t *match, // output
-						  regex_t *regcb,    // i/o
-						  const char *text,
-						  int textlen);
+							  crmhash_t *tokenhash_dest,
+							  int tokenhash_dest_size);
 
+//
+// As the VT_tokenizer_func may use additional custom info stored in
+// *obj, such info items may need to be released/free()d once the tokenizer
+// is done.
+//
+// For instance in the case or the regular regex-based tokenizer, the regex compiled
+// during the initial run of the tokenizer and used thereafter, will need to be
+// properly released (regfree(), etc.)
+//
+// As the VT code may keep on calling VT_tokenizer_func() once the end of the
+// token stream has been reached already, it is NOT advisable to have the last
+// occurence of VT_tokenizer_func() do the cleanup. Besides, when properly cleaned,
+// VT_tokenizer_func() may not be able to differentiate between being called
+// again at the end of a completed run, OR at the beginning of a NEW run with all
+// parameters set to their default value (NULL/0)! For that, the 'initial_setup_done'
+// flag is provided to help the tokenizer functions check if they need to set up
+// their environment or not.
+//
+// Returns 0 when success.
+// 
+// Negative return values signal errors.
+//
 typedef int VT_tokenizer_cleanup_func(struct magical_VT_userdef_tokenizer *obj); // 'this' reference
 
 ///////////////////////////////////////////////////////////////////////////
 //
 // The struct which defines the tokenizer as used by the Vector Tokenizer.
 //
-// Any of its member may be zero: those will be assumed to be the default then.
+// Any of its members may be zero: those will be assumed to be the default then.
 //
 typedef struct magical_VT_userdef_tokenizer
 {
-        const char           *regex;        // the parsing regex (might be ignored)
-        int                   regexlen;     //   length of the parsing regex
-		VT_tokenizer_func    *tokenizer;
+	const char *input_text;				// used to remember the input text to tokenize ...
+	int input_textlen;					// ... and its length in bytes
+	int input_next_offset;				// position where to continue grabbing the next token
 
-		VT_tokenizer_cleanup_func *cleanup; // call this when done; may be used to free() regex when applicable.
+	int max_big_token_count;			// maximum number of 'big' tokens allowed to be merged into a single 'feature' a la OSBF
+	int max_token_length;				// merge tokens longer than this with the next one into a single feature a la OSBF.
+										// Set to 0 to select the DEFAULT 'big token merge' tokenizer behaviour.
+										// Set to -1 to DISABLE any 'big token merge' tokenizer behaviour.
+										// Setting this value to a non-zero value helps 'gobble' otherwise undecipherable blocks
+										// of input such as base64 images. This 'merging/globbing' is done in the OSBF classifier
+										// among others.
+	VT_tokenizer_func    *tokenizer;	// The place to provide your own custom tokenizer function. If you don't, the VT will 
+										// apply the default here.
+	VT_tokenizer_cleanup_func *cleanup; // call this when done; may be used to free() data when applicable.
+
+	///////////// regex-only tokenizers; others may abuse this too /////////////////
+
+	const char           *regex;        // the parsing regex (might be ignored)
+    int                   regexlen;     // length of the parsing regex
+	int regex_compiler_flags;			// set of regcomp() flags, e.g. REG_ICASE
+
+	/////////////// support flags, to be used by tokenizer() and cleanup()
+
+	unsigned regex_compiler_flags_are_set: 1; // !0 when 'regex_compiler_flags' has been properly initialized
+
+	unsigned regex_malloced: 1;			// !0 when regex is strdup()ed or otherwise malloc()ed and must be free()d
+
+	unsigned initial_setup_done: 1;		// !0 when the internals have been configured by tokenizer() for its use.
+	unsigned eos_reached: 1;			// !0 when tokenizer() has signalled that the end of the input stream 
+										// has been reached: no more tokens to produce.
+
+	/////////////// internal use: stores the compiled regex and additional info to step through the input
+    regex_t regcb;                      // the compiled regex
+    regmatch_t match[7];                // nevertheless, we PROBABLY only care about the outermost match
 }
 VT_USERDEF_TOKENIZER;
+
+
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -642,20 +698,30 @@ typedef int VT_coeff_matrix_cleanup_func(struct magical_VT_userdef_coeff_matrix 
 
 typedef struct magical_VT_userdef_coeff_matrix
 {
-        const crmhash_t      *coeff_array;    // the pipeline coefficient control array
-        int                   pipe_len;       // how long a pipeline (== coeff_array col length)
-        int                   pipe_iters;     // how many rows are there in coeff_array
-        int                   output_stride;  // how many matrices (rows x cols) are there in coeff_array
+    crmhash_t coeff_array[UNIFIED_VECTOR_STRIDE * UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];    // the pipeline coefficient control array
+    int             pipe_len;       // how long a pipeline (== coeff_array col count)
+    int             pipe_iters;     // how many rows are there in coeff_array
+    int             output_stride;  // how many matrices (rows x cols) are there in coeff_array
 
-		VT_coeff_matrix_cleanup_func *cleanup; // call this when done; may be used to free() coeff_matrix when applicable.
+	VT_coeff_matrix_cleanup_func *cleanup; // call this when done; may be used to free() coeff_matrix when applicable.
 }
 VT_USERDEF_COEFF_MATRIX;
 
 
 
-int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX **userdefs_ref,  // the pipeline coefficient control array, etc.
-					const char *src, int srclen,
-					char *errmsg, int errmsgsize);
+int decode_userdefd_vt_coeff_matrix(VT_USERDEF_COEFF_MATRIX *coeff_matrix,  // the pipeline coefficient control array, etc.
+									const char *src, int srclen);
+int config_vt_tokenizer(VT_USERDEF_TOKENIZER *tokenizer,    
+					        const ARGPARSE_BLOCK       *apb,          // The args for this line of code
+						const char *regex,   
+						int regex_len,
+						int		regex_compiler_flags_override);
+int config_vt_coeff_matrix_and_tokenizer
+(
+        ARGPARSE_BLOCK       *apb,          // The args for this line of code
+        VT_USERDEF_TOKENIZER *tokenizer,        // the parsing regex (might be ignored)
+        VT_USERDEF_COEFF_MATRIX *our_coeff  // the pipeline coefficient control array, etc.
+);
 
 
 
@@ -668,12 +734,11 @@ int crm_vector_tokenize_selector
         const char           *text,         // input string (null-safe!)
         int                   textlen,      //   how many bytes of input.
         int                   start_offset, //     start tokenizing at this byte.
-        const VT_USERDEF_TOKENIZER *tokenizer,        // the parsing regex (might be ignored)
-        const VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
+        VT_USERDEF_TOKENIZER *tokenizer,        // the parsing regex (might be ignored)
+        VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
         crmhash_t            *features,     // where the output features go
         int                   featureslen,  //   how many output features (max)
-        int                  *features_out, // how many longs did we actually use up
-        int                  *next_offset   // next invocation should start at this offset
+        int                  *features_out   // how many feature-slots did we actually use up
 );
 
 // this interface method is provided only for those that 'know what they're doing',
@@ -683,13 +748,12 @@ int crm_vector_tokenize
         const char          *text,            // input string (null-safe!)
         int                  textlen,         //   how many bytes of input.
         int                  start_offset,    //     start tokenizing at this byte.
-        const VT_USERDEF_TOKENIZER *tokenizer,   // the parsing regex (might be ignored)
-        const VT_USERDEF_COEFF_MATRIX *userdef_coeff,  // the pipeline coefficient control array, etc.
-        crmhash_t           *features,        // where the output features go
-        int                  featureslen,     //   how many output features (max)
-        int                  features_stride, //   Spacing (in words) between features
-        int                 *features_out,    // how many longs did we actually use up
-        int                 *next_offset      // next invocation should start at this offset
+        VT_USERDEF_TOKENIZER *tokenizer,           // the regex tokenizer (elements in struct MAY be changed)
+        const VT_USERDEF_COEFF_MATRIX *our_coeff,  // the pipeline coefficient control array, etc.
+        crmhash_t           *features_buffer,        // where the output features go
+        int                  features_bufferlen,     //   how many output features (max)
+        int                  features_stride, //   Spacing (in hashes) between features
+        int                 *features_out    // how many longs did we actually use up
 );
 
 
@@ -1011,7 +1075,7 @@ int file_memset(FILE *dst, unsigned char val, int count);
 const char *skip_path(const char *srcfile);
 
 // dump var/string/... in src to dst
-int memnCdump(FILE *dst, const char *src, int len);
+int fwrite_ASCII_Cfied(FILE *dst, const char *src, int len);
 
 
 

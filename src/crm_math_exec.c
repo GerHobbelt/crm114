@@ -423,15 +423,26 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                     //  to the format string so we get integer output.
                     if (buf[ip] == 'x' || buf[ip] == 'X')
                     {
-                        snprintf(outformat, WIDTHOF(outformat), "%%%g.0ll%c",
+                        if (((int)stack[sp + 1]) <= stack[sp + 1] + FLT_EPSILON
+							&& ((int)stack[sp + 1]) >= stack[sp + 1] - FLT_EPSILON)
+                        {
+                        snprintf(outformat, WIDTHOF(outformat), "%%%.0gll%c",
                                 stack[sp + 1], (short)buf[ip]);
                         outformat[WIDTHOF(outformat) - 1] = 0;
+						}
+						else
+						{
+                        snprintf(outformat, WIDTHOF(outformat), "%%0%.0gll%c",
+                                stack[sp + 1], (short)buf[ip]);
+                        outformat[WIDTHOF(outformat) - 1] = 0;
+						}
                     }
                     else
                     {
-                        if (((int)stack[sp + 1]) / 1 == stack[sp + 1])
+                        if (((int)stack[sp + 1]) <= stack[sp + 1] + FLT_EPSILON
+							&& ((int)stack[sp + 1]) >= stack[sp + 1] - FLT_EPSILON)
                         {
-                            snprintf(outformat, WIDTHOF(outformat), "%%%g.0%c", stack[sp + 1], buf[ip]);
+                            snprintf(outformat, WIDTHOF(outformat), "%%%.0g.0%c", stack[sp + 1], buf[ip]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                         else
@@ -523,6 +534,8 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
     //      now the top of stack contains the result of the calculation.
     //      fprintf it into the output buffer, and we're done.
     outstringlen = math_formatter(stack[sp], outformat, buf, maxlen);
+        CRM_ASSERT(outstringlen >= 0);
+        CRM_ASSERT(outstringlen < maxlen);
     return outstringlen;
 }
 
@@ -865,7 +878,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
             //  left arg and op are both valid; right now we can have
             //   an enhanced operator (next char is also an op)
             if (internal_trace)
-                fprintf(stderr, "left + opvalid \n");
+                fprintf(stderr, "left + opvalid\n");
             switch (buf[ip])
             {
             case '(':
@@ -1076,22 +1089,33 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
 
                     if (internal_trace)
 					{
-                        fprintf(stderr, "Formatting operator %c \n",
+                        fprintf(stderr, "Formatting operator '%c'\n",
                                 (short)opstack[sp]);
 					}
                     // char tempstring [2048];
                     //     Do we have a float or an int format?
                     if (opstack[sp] == 'x' || opstack[sp] == 'X')
                     {
-                        snprintf(outformat, WIDTHOF(outformat), "%%%g.0ll%c",
+                        if (((int)rightarg) <= rightarg + FLT_EPSILON
+							&& ((int)rightarg) >= rightarg - FLT_EPSILON)
+                        {
+                        snprintf(outformat, WIDTHOF(outformat), "%%%.0gll%c",
                                 rightarg, (short)opstack[sp]);
                         outformat[WIDTHOF(outformat) - 1] = 0;
+						}
+						else
+						{
+                        snprintf(outformat, WIDTHOF(outformat), "%%0%.0gll%c",
+                                rightarg, (short)opstack[sp]);
+                        outformat[WIDTHOF(outformat) - 1] = 0;
+						}
                     }
                     else
                     {
-                        if (((int)rightarg) / 1 == rightarg)
+                        if (((int)rightarg) <= rightarg + FLT_EPSILON
+							&& ((int)rightarg) >= rightarg - FLT_EPSILON)
                         {
-                            snprintf(outformat, WIDTHOF(outformat), "%%%g.0%c",
+                            snprintf(outformat, WIDTHOF(outformat), "%%%.0g.0%c",
                                     rightarg, (short)opstack[sp]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
@@ -1180,8 +1204,7 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
         int return_length;
         return_length = math_formatter(leftarg[sp], outformat, buf, maxlen);
         CRM_ASSERT(return_length >= 0);
-        CRM_ASSERT(return_length < WIDTHOF(outformat));
-        outformat[return_length] = 0;
+        CRM_ASSERT(return_length < maxlen);
         return return_length;
     }
 }

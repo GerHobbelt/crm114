@@ -115,19 +115,22 @@ to update all the files in
         ./docs/
         ./examples/
         ./mailfilter/
-               
-WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING:
-hence it is assumed that the crm/input/... files in ./src/ are LEADING and
-those DO OVERRIDE the copies which you kept in the directories listed above.
+
+:WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING:
+: hence it is assumed that the crm/input/... files in ./src/ are        :
+: LEADING and those DO OVERRIDE the copies which you kept in the        :
+: directories listed above.                                             :
+:WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING:
+
 
 The transfer uses the shell script
 
         distribute_files_from_src_dir.sh
-        
+
 which performs some mandatory processing on the files while copying them
-into their designated directories.        
- 
-                
+into their designated directories.
+
+
 
 
 Notes / Misc
@@ -166,7 +169,7 @@ as obtained through 'cvs checkout'):
   cvs -d:ext:i_a@crm114.cvs.sourceforge.net:/cvsroot/crm114 -z3 add -m "new files that come with the GerHobbelt Win32 port of crm114" ` find . -maxdepth 1 -type f`
 
   NOTE that you MUST 'cd' to each subdir and do this when you are loading a directory TREE into CVS.
-       Of course that should/could be scripted. ;-)
+       Of course that should/could be scripted too. ;-)
 
 
 

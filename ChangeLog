@@ -1,3 +1,17 @@
+2008-04-13 Ger Hobbelt
+
+    * COLOPHON.txt fixed (Debian bug #471554: typo in COLOPHON.txt)
+    
+    * Vector Tokenizer changes to allow full custom 3D vector matrices; also included additional return value for use
+      with the v2.0 classifier diagnostics code.
+      
+      DIAG v2.0 is not published yet; this stuff is related to the 'cssanalyze' command and
+      is thus able to report which strings were used to produced what hashes; the VT diag feedback is required to
+      allow cssanalyze to report which tokens (character sequences) were merged together (and how) to create the
+      recorded 'feature' (== derived hash). This allows one to VERY closely inspect which 'original words' were
+      used to produce the pR classification in the end.
+      
+
 2008-03-31 Ger Hobbelt
 
     * Fixes in -err/-out handling; also fixed the 'output' script command: 
@@ -86,7 +100,7 @@
 
         s/\<long\>/int/g
 
-    * Added memnCdump() routine to report variables, etc. to stderr/stdout, so 
+    * Added fwrite_ASCII_Cfied() routine to report variables, etc. to stderr/stdout, so 
       non-ascii variables, mucked up scripts, etc. don't get a chance to blow up 
       the console anymore.
 

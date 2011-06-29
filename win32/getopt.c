@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <getopt.h>
+#include "getopt.h"
 
 
 int getopt(int argc, char *const *argv, const char *optstring)

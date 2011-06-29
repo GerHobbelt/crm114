@@ -621,7 +621,7 @@ void crm_set_windowed_nvar(char *varname,
         for (i = start; i < start + len; i++)
             fprintf(stderr, "%c", valtext[i]);
 #else
-        memnCdump(stderr, valtext + start, len);
+        fwrite_ASCII_Cfied(stderr, valtext + start, len);
 #endif
         fprintf(stderr, "\n");
     }
@@ -1127,7 +1127,7 @@ void crm_destructive_alter_nvariable(char *varname, int varlen,
     {
         // IGNORE FOR NOW
         crm_set_temp_nvar(&varname[i], newstr, newlen);
-        nonfatalerror_ex(SRC_LOC(), " Attempt to alter the value of a nonexistent "
+        nonfatalerror_ex(SRC_LOC(), "Attempt to alter the value of a nonexistent "
                                     "variable, so I'm creating an ISOLATED variable.  "
                                     "I hope that's OK.  The nonexistent variable is: "
                                     "%d/%d: '%.*s'/'%.*s'",
@@ -1159,7 +1159,7 @@ void crm_destructive_alter_nvariable(char *varname, int varlen,
         for (i = 0; i < varlen; i++)
             fprintf(stderr, "%c", varname[i]);
 #else
-        memnCdump(stderr, varname, varlen);
+        fwrite_ASCII_Cfied(stderr, varname, varlen);
 #endif
         fprintf(stderr, "<\n");
         //fprintf(stderr, "new value is: \n***%s***\n", newstr);
@@ -1168,7 +1168,7 @@ void crm_destructive_alter_nvariable(char *varname, int varlen,
         for (i = 0; i < newlen; i++)
             fprintf(stderr, "%c", newstr[i]);
 #else
-        memnCdump(stderr, newstr, newlen);
+        fwrite_ASCII_Cfied(stderr, newstr, newlen);
 #endif
         fprintf(stderr, "<***\n");
     }
@@ -1357,7 +1357,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
                         fprintf(stderr, "%c",
                             vht[i]->nametxt[vht[i]->nstart + j]);
 #else
-                    memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+                    fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
                     fprintf(stderr, "'\n");
                 }
@@ -1374,7 +1374,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
         for (k = vsidx; k < vsidx + vslen; k++)
             fprintf(stderr, "%c", vname[k]);
 #else
-        memnCdump(stderr, vname + vsidx, vslen);
+        fwrite_ASCII_Cfied(stderr, vname + vsidx, vslen);
 #endif
 
         fprintf(stderr, "- .\n");
@@ -1408,7 +1408,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
                 for (ic = 0; ic < vlen; ic++)
                     fprintf(stderr, "%c", vname[ic]);
 #else
-                memnCdump(stderr, vname, vlen);
+                fwrite_ASCII_Cfied(stderr, vname, vlen);
 #endif
                 fprintf(stderr, "(len %d) not at %d (empty)\n", vlen, i);
                 fprintf(stderr, "Returning the index where it belonged.\n");
@@ -1431,7 +1431,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
                 for (ic = 0; ic < vht[i]->nlen; ic++)
                     fprintf(stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
 #else
-                memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+                fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
                 fprintf(stderr, " (len %d) found at %d (",
                     vlen, i);
@@ -1460,7 +1460,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
                 for (ic = 0; ic < vht[i]->nlen; ic++)
                     fprintf(stderr, "%c", (vht[i]->nametxt)[ic + vht[i]->nstart]);
 #else
-                memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+                fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
                 fprintf(stderr, "' instead.");
             }
@@ -1497,7 +1497,7 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen)
                             (vht[index]->nametxt)[ic + vht[index]->nstart]);
                     }
 #else
-                    memnCdump(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
+                    fwrite_ASCII_Cfied(stderr, vht[index]->nametxt + vht[index]->nstart, vht[index]->nlen);
 #endif
                     fprintf(stderr, "'[%d] found at %d (",
                         vht[index]->nlen,  index);
@@ -1599,7 +1599,7 @@ void crm_setvar(
         //        fprintf(stderr, "%c", vht[i]->nametxt[vht[i]->nstart+j]);
         fwrite(&(vht[i]->nametxt[vht[i]->nstart]), 1, vht[i]->nlen, stderr);
 #else
-        memnCdump(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
+        fwrite_ASCII_Cfied(stderr, vht[i]->nametxt + vht[i]->nstart, vht[i]->nlen);
 #endif
 
         fprintf(stderr, " at vht entry %d ", i);
@@ -1610,7 +1610,7 @@ void crm_setvar(
         //        fprintf(stderr, "%c", vht[i]->valtxt[vht[i]->vstart+j]);
         fwrite(&(vht[i]->valtxt[vht[i]->vstart]), 1, vht[i]->vlen, stderr);
 #else
-        memnCdump(stderr, vht[i]->valtxt + vht[i]->vstart, vht[i]->vlen);
+        fwrite_ASCII_Cfied(stderr, vht[i]->valtxt + vht[i]->vstart, vht[i]->vlen);
 #endif
 
         fprintf(stderr, "- (start %d, length %d)",
@@ -1701,7 +1701,7 @@ void crm_updatecaptures(char *text, int loc, int delta)
                         fprintf(stderr, "%c",
                             vht[vht_index]->nametxt[vht[vht_index]->nstart + i]);
 #else
-                    memnCdump(stderr, vht[vht_index]->nametxt + vht[vht_index]->nstart,  vht[vht_index]->nlen);
+                    fwrite_ASCII_Cfied(stderr, vht[vht_index]->nametxt + vht[vht_index]->nstart,  vht[vht_index]->nlen);
 #endif
                     fprintf(stderr, " ");
                     fprintf(stderr, " s: %d, l:%d/%d, e:%d n:%d ~ %d ...",

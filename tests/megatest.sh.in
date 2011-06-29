@@ -459,10 +459,10 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do @top_builddir@/src/crm114 '-{window; output /\n**** Neural Network Classifier \n/}' ; done
-@top_builddir@/src/crm114 -s 32768 '-{learn < neural append > (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
-@top_builddir@/src/crm114 -s 32768 '-{learn < neural append > (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
-@top_builddir@/src/crm114 '-{learn < neural refute fromstart > (q_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
-@top_builddir@/src/crm114 '-{learn < neural refute fromstart > (i_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+@top_builddir@/src/crm114 '-{learn < neural append > (q_test.css) /[[:graph:]]+/}' < QUICKREF_mt_ng_reference_1.input
+@top_builddir@/src/crm114 '-{learn < neural append > (i_test.css) /[[:graph:]]+/}' < INTRO_mt_ng_reference_2.input
+@top_builddir@/src/crm114 '-{learn < neural refute fromstart > (q_test.css) }' < INTRO_mt_ng_reference_2.input
+@top_builddir@/src/crm114 '-{learn < neural refute fromstart > (i_test.css) }' < QUICKREF_mt_ng_reference_1.input
 
 @top_builddir@/src/crm114 '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 You can use CRM114 flags on the shell-standard invocation line, and

@@ -168,10 +168,10 @@ for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Vector 3-word-bag Hyperspa
 #    then the number of iterations of the pipe, then pipelen * iters 
 #    integer coefficients.  Missing coefficients are taken as zero, 
 #    extra coefficients are disregarded.
-./crm114 '-{learn < hyperspace > (q_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 / }' < QUICKREF_mt_ng_reference_1.input
-./crm114 '-{learn < hyperspace > (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1/}' < INTRO_mt_ng_reference_2.input
-./crm114 '-{ isolate (:s:); {classify < hyperspace > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ /vector: 3 1 1 1 1  /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' < mt_ng_Vector_3_word_bag_Hyperspace_1.input
-./crm114 '-{ isolate (:s:); {classify <hyperspace > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ /vector: 3 1 1 1 1 /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' < mt_ng_Vector_3_word_bag_Hyperspace_2.input
+./crm114 '-{learn < hyperspace > (q_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 1 / }' < QUICKREF_mt_ng_reference_1.input
+./crm114 '-{learn < hyperspace > (i_test.css) /[[:graph:]]+/ /vector: 3 1 1 1 1 1/}' < INTRO_mt_ng_reference_2.input
+./crm114 '-{ isolate (:s:); {classify < hyperspace > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ /vector: 3 1 1 1 1 1  /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' < mt_ng_Vector_3_word_bag_Hyperspace_1.input
+./crm114 '-{ isolate (:s:); {classify <hyperspace > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ /vector: 3 1 1 1 1 1 /; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' < mt_ng_Vector_3_word_bag_Hyperspace_2.input
 
 
 rm -f i_test.css 

@@ -72,6 +72,8 @@ VAR,[VAR="no, unknown"
  ac_save_[]FLAGS="$[]FLAGS"
  ac_save_c_werror_flag=$ac_c_werror_flag
  ac_c_werror_flag=yes
+ # [i_a] next line is a hotfix for automake 1.10/autoconf 2.62
+ AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS]) 
 for ac_arg dnl
 in "-pass-exit-codes -pedantic -Werror -Wno-unused-parameter -Wno-missing-field-initializers % -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers"    dnl   GCC 3/4 - NOTE that I explicitly DISABLE two 'extra' warnings here as I find those annoying most of the time
    "-pass-exit-codes -pedantic -Werror % -Wall"             dnl   GCC
@@ -119,6 +121,8 @@ VAR,[VAR="no, unknown"
  ac_save_[]FLAGS="$[]FLAGS"
  ac_save_c_werror_flag=$ac_c_werror_flag
  ac_c_werror_flag=yes
+ # [i_a] next line is a hotfix for automake 1.10/autoconf 2.62
+ AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS]) 
 for ac_arg dnl
 in "-pass-exit-codes -pedantic -Werror % -Wall -Wextra "    dnl   GCC
    "-pass-exit-codes -pedantic -Werror % -Wall"             dnl   GCC

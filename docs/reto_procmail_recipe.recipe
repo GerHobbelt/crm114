@@ -7,7 +7,7 @@
 #
 # NOTE: This recipe invokes crm114 on a message. It does NOT filter
 # the message to a spam folder.  How you choose to manage that task
-# up to you.    
+# is up to you.    
 #
 
 CRM="/usr/local/bin/crm"

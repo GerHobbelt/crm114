@@ -109,9 +109,12 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			WIDTHOF(errstr));
 
     if (internal_trace)
+	{
         fprintf(stderr,
                 "restriction out: vmidx: %d  mdw: %p   start: %d  len: %d\n",
                 vmidx, mdwptr, offset, len);
+	}
+
     if (i < 0)
     {
         int curstmt;
@@ -142,11 +145,15 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     if not LITERAL, then expand them as well
     fromset_len = apb->s1len;
     if (!(strntrn_flags & CRM_LITERAL))
+	{
         fromset_len = crm_nexpandvar(fromset, apb->s1len, MAX_PATTERN);
+	}
 
     if (user_trace)
+	{
         fprintf(stderr, " from-charset expands to =%s= len %d\n",
                 fromset, fromset_len);
+	}
 
 
     //    get the TO charset out of the second // slashes
@@ -195,7 +202,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         for (i2 = 0; i2 < retlen; i2++)
             fputc(tempbuf[i2], stderr);
 #else
-		memnCdump(stderr, tempbuf, retlen);
+		fwrite_ASCII_Cfied(stderr, tempbuf, retlen);
 #endif
         fprintf(stderr, "- len %d\n", retlen);
     }

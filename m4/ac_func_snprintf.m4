@@ -2,7 +2,7 @@
 #
 # SYNOPSIS
 #
-#   AC_FUNC_SNPRINTF
+#   AX_FUNC_SNPRINTF
 #
 # DESCRIPTION
 #
@@ -19,13 +19,13 @@
 #
 # COPYLEFT
 #
-#   Copyright (c) 2006 Rüdiger Kuhlmann <info@ruediger-kuhlmann.de>
+#   Copyright (c) 2006 Rï¿½diger Kuhlmann <info@ruediger-kuhlmann.de>
 #
 #   Copying and distribution of this file, with or without
 #   modification, are permitted in any medium without royalty provided
 #   the copyright notice and this notice are preserved.
 
-AC_DEFUN([AC_FUNC_SNPRINTF],
+AC_DEFUN([AX_FUNC_SNPRINTF],
 [AC_CHECK_FUNCS(snprintf vsnprintf)
 AC_MSG_CHECKING(for working snprintf)
 AC_CACHE_VAL(ac_cv_have_working_snprintf,

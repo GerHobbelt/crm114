@@ -37,6 +37,7 @@ isolate <default> (:initial_text:) \
 	/The quick brown fox jumped over the lazy dog's back 012345679/
 #
 #    get the index file
+output /Reading from index file :*:_arg2:\n/
 input [:*:_arg2:] (:index_file:)
 #
 #    Scan the index file for classnames and .stat file names

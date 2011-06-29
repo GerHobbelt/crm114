@@ -1082,7 +1082,14 @@ int main(int argc, char **argv)
                 }
                 else
                 {
+					int appending = 0;
+
                     stdout_filename = argv[i];
+					if (stdout_filename[0] == '@')
+					{
+						stdout_filename++;
+						appending = 1;
+					}
                     if (strcmp(stdout_filename, stderr_filename) != 0)
                     {
                         //
@@ -1090,7 +1097,7 @@ int main(int argc, char **argv)
                         // relative and/or absolute paths for both.
                         // For now, the user won't be protected against his own 'smartness' here.
                         //
-                        stdout = fopen(stdout_filename, "wb"); // open in BINARY mode!
+						stdout = fopen(stdout_filename, (appending ? "ab" : "wb")); // open in BINARY mode!
                         if (stdout == NULL)
                         {
 							stdout = os_stdout(); // reset stdout before the error report is sent out!
@@ -1102,6 +1109,8 @@ int main(int argc, char **argv)
                         // same file for both.
 						if (stderr != NULL)
                         stdout = stderr;
+											if (appending)
+												(void)fseek(stdout, 0, SEEK_END);
                     }
                 }
             }
@@ -1142,7 +1151,14 @@ int main(int argc, char **argv)
                 }
                 else
                 {
+					int appending = 0;
+
                     stderr_filename = argv[i];
+					if (stderr_filename[0] == '@')
+					{
+						stderr_filename++;
+						appending = 1;
+					}
                     if (strcmp(stdout_filename, stderr_filename) != 0)
                     {
                         //
@@ -1150,7 +1166,7 @@ int main(int argc, char **argv)
                         // relative and/or absolute paths for both.
                         // For now, the user won't be protected against his own 'smartness' here.
                         //
-                        stderr = fopen(stderr_filename, "wb"); // open in BINARY mode!
+						stderr = fopen(stderr_filename, (appending ? "ab" : "wb")); // open in BINARY mode!
                         if (stderr == NULL)
                         {
 							stderr = os_stderr(); // reset stderr before the error report is sent out!
@@ -1162,6 +1178,8 @@ int main(int argc, char **argv)
                         // same file for both.
 						if (stdout != NULL)
                         stderr = stdout;
+											if (appending)
+												(void)fseek(stderr, 0, SEEK_END);
                     }
                 }
             }

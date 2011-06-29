@@ -12,11 +12,41 @@ DISTCLEANFILES =
 CLEANFILES = *~ *.bak
 
 
+GZIP_BIN       = @GZIP@
+COMPRESS_BIN   = @COMPRESS@
+LZMA_BIN       = @LZMA@
+SEVENZIP_BIN   = @SEVEN_ZIP@
+TAR_BIN        = @TAR@
+SHAR_BIN       = @SHAR@
+BZIP2_BIN      = @BZIP2@
+ZIP_BIN        = @ZIP@
+CVS2CL_BIN     = @CVS2CL@
+UNCRUSTIFY_BIN = @UNCRUSTIFY@
+DIFF_BIN       = @DIFF@
+HTMLTIDY_BIN   = @HTMLTIDY@
+DB2X_XSLTPROC  = @DB2X_XSLTPROC@
+DB2X_MANXML    = @DB2X_MANXML@
+DB2X_TEXIXML   = @DB2X_TEXIXML@
+
+
+TAR_CMDLINE  = ${TAR_BIN} cf - "$$tardir"
+
+
 
 PACKAGE = @PACKAGE_TARNAME@
+TAR_FILENAME_POSTFIX = @TAR_FILENAME_POSTFIX@
+# VER_SUFFIX defines a version suffix for our installed executables, 
+# handy when you want many versions of CRM114 coexisting.
+#
+# e.g.: VER_SUFFIX=27B-6, then if you make install, you get crm-27b-6
+# 
 VER_SUFFIX = @VER_SUFFIX@ 
 VERSION = @VERSION@
+ARCHIVE_BASE_NAME = @PACKAGE_TARNAME@-@PACKAGE_VERSION@-@TAR_FILENAME_POSTFIX@
+
 SILENT = @SILENT@
+DIFF_FLAGS = @DIFF_FLAGS@
+
 
 
 
@@ -25,7 +55,6 @@ testdir = $(datadir)/doc/$(PACKAGE)/examples/tests
 
 
 
-DIFF_FLAGS = @DIFF_FLAGS@
 
 ECHO = echo
 E = $(SILENT) $(ECHO)
@@ -134,6 +163,7 @@ EXTRA_DIST = megatest_knowngood.log \
 
 TESTS = test_basics test_other test_megatest_ng test_mailfilter test_mailreaver
 
+# original BillY test script:
 test_megatest: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest.sh
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
@@ -148,19 +178,20 @@ test_megatest: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest.
 	$(E) "   do change, either your kit isn't quite right or your"
 	$(E) "   install is broken (or you've found a bug)."
 	$(E) ""
-	megatest.sh 2 > megatest_test.log 2>&1
+	./megatest.sh 2 > megatest_test.log 2>&1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="
 	$(E) "=============================================================="
-	$(diff) -u $(DIFF_FLAGS) megatest_knowngood.log megatest_test.log & sleep 1
+	$(DIFF_BIN) -u $(DIFF_FLAGS) megatest_knowngood.log megatest_test.log & sleep 1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
-	$(diff) $(DIFF_FLAGS) megatest_knowngood.log megatest_test.log & sleep 1
+	$(DIFF_BIN) $(DIFF_FLAGS) megatest_knowngood.log megatest_test.log & sleep 1
 
 
+# 'NextGen', i.e. an edited ('improved') version of BillY's test script:
 test_megatest_ng: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest_ng.sh
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
@@ -175,17 +206,17 @@ test_megatest_ng: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megate
 	$(E) "   do change, either your kit isn't quite right or your"
 	$(E) "   install is broken (or you've found a bug)."
 	$(E) ""
-	megatest_ng.sh 2 > megatest_ng_test.log 2>&1
+	./megatest_ng.sh 2 > megatest_ng_test.log 2>&1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="
 	$(E) "=============================================================="
-	$(diff) -u $(DIFF_FLAGS) megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(DIFF_BIN) -u $(DIFF_FLAGS) megatest_knowngood.log megatest_ng_test.log & sleep 1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
-	$(diff) $(DIFF_FLAGS) megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(DIFF_BIN) $(DIFF_FLAGS) megatest_knowngood.log megatest_ng_test.log & sleep 1
 
 
 
@@ -195,24 +226,24 @@ test: test_basics test_other test_megatest_ng test_mailfilter test_mailreaver
 
 # series of basic regression tests for CRM114:
 test_basics:
+	$(E) "test_basics CALLED"
 
 
 # test more complex CRM scripts in ../src
 test_other:
-
-
-# run the BillY regression test script
-test_megatest: megatest_ng
+	$(E) "test_other CALLED"
 
 
 # test the mailfilter script
 test_mailfilter:
+	$(E) "test_mailfilter CALLED"
 
 
 # test the mailreaver script
 test_mailreaver:
+	$(E) "test_mailreaver CALLED"
 
 
 
-.PHONY: test test_basics test_other test_megatest test_mailfilter test_mailreaver megatest megatest_ng
+.PHONY: test test_basics test_other test_megatest test_megatest_ng test_mailfilter test_mailreaver megatest megatest_ng
 

@@ -105,10 +105,13 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
             fprintf(stderr, "Checking the regex cache for '%s'\n", regex);
             for (j = 0; j < CRM_REGEX_CACHESIZE; j++)
             {
-                if (regex_cache[j].regex_len > 0) fprintf(stderr,
+                if (regex_cache[j].regex_len > 0) 
+				{
+					fprintf(stderr,
                         "  regex[%d]:'%s' cf=%#x(%#x) len=%d(%d)\n",
                         j, regex_cache[j].regex, regex_cache[j].cflags, cflags,
                         (int)regex_cache[j].regex_len, regex_len);
+				}
             }
         }
 
@@ -289,10 +292,12 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
     //  Just about done.  Set up the return preg..
     memcpy(preg, ppreg_temp, rtsize);
     if (internal_trace)
+	{
         fprintf(stderr, " About to return:\n"
                         " preg->re_nsub=%d preg->value=%p, i=%d, status=%d\n",
             (int)preg->re_nsub, preg->value, i, regex_cache[i].status);
-    return regex_cache[i].status;
+	}
+	return regex_cache[i].status;
 }
 #endif //CRM_REGEX_CACHESIZE == 0
 }
@@ -339,12 +344,14 @@ int crm_regexec(regex_t *preg, const char *string, int string_len,
                 aux_string);
         }
         if (user_trace)
+		{
             fprintf(stderr,
                 "Using approximate match.  Costs: Subst %d Ins %d Max %d Del %d\n",
                 pblock.cost_subst,
                 pblock.cost_ins,
                 pblock.max_cost,
                 pblock.cost_del);
+		}
 
         //  now we can run the actual match
         i = reganexec(preg, string, string_len, &mblock, pblock, eflags);

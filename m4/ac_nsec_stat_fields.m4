@@ -2,7 +2,7 @@
 #
 # SYNOPSIS
 #
-#   AC_NSEC_STAT_FIELDS
+#   AX_NSEC_STAT_FIELDS
 #
 # DESCRIPTION
 #
@@ -23,7 +23,7 @@
 #   modification, are permitted in any medium without royalty provided
 #   the copyright notice and this notice are preserved.
 
-AC_DEFUN([AC_NSEC_STAT_FIELDS],
+AC_DEFUN([AX_NSEC_STAT_FIELDS],
 [AC_CHECK_TYPES([struct stat])
 AC_MSG_CHECKING([for nanosecond 'struct stat' timestamps: mtimensec])
 AC_CACHE_VAL(ac_cv_have_nsec_stat_mtimensec,

@@ -100,7 +100,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     {
         int filenamelen;
         j  = crm_regexec(&preg, csl->filetext, csl->nchars,
-                3, matches, lflag, NULL);
+                WIDTHOF(matches), matches, lflag, NULL);
         if (j != 0)
         {
             if (internal_trace)

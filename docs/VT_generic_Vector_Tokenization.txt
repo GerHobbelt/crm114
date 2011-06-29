@@ -127,5 +127,5 @@ vectorsets following; the first feature output is token 1 in the first place
 and token 2 in the second and disregard token 3.  The second feature will 
 have token 1 in the first place, token three in the second place, and will 
 disregard token 2.  Note that this means that the same word appearing in 
-position 2 of the pipeline or position 3 of the pipeline WILL GENERATE THE 
+position 2 of the pipeline and position 3 of the pipeline WILL GENERATE THE 
 SAME FEATURE.

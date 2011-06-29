@@ -6,7 +6,7 @@ dnl derived from:
 dnl
 dnl   http://svn.osc.edu/browse/mpiexec/trunk/configure.in?view=markup&rev=187
 
-AC_DEFUN([AC_ENVIRON], [
+AC_DEFUN([AX_ENVIRON], [
 	AC_MSG_CHECKING([for environment access])
 	AC_TRY_COMPILE([#include <unistd.h>],
 	[char **cp = __environ], has=yes, has=no)

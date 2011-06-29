@@ -1134,7 +1134,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         nonfatalerror("Problem compiling regex to grab params:", regex_text);
         return 0;
     }
-    if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
+    if (!crm_regexec(&regee, param_text, param_text_len, WIDTHOF(matchee), matchee, 0, NULL))
     {
 		CRM_ASSERT(regee.re_nsub == 1);
         param_text[matchee[1].rm_eo + 1] = 0;
@@ -1153,7 +1153,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         nonfatalerror("Problem compiling regex to grab params:", regex_text);
         return 0;
     }
-    if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
+    if (!crm_regexec(&regee, param_text, param_text_len, WIDTHOF(matchee), matchee, 0, NULL))
     {
         param_text[matchee[1].rm_eo] = 0;
         strncpy(tag, &param_text[matchee[1].rm_so], sizeof(tag));
@@ -1168,7 +1168,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         return nonfatalerror("Problem compiling regex to grab params:", regex_text);
     }
-    if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
+    if (!crm_regexec(&regee, param_text, param_text_len, WIDTHOF(matchee), matchee, 0, NULL))
     {
         param_text[matchee[1].rm_eo] = 0;
         strncpy(classv, &param_text[matchee[1].rm_so], sizeof(classv));
@@ -1185,7 +1185,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         nonfatalerror("Problem compiling regex to grab params:", regex_text);
         return 0;
     }
-    if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
+    if (!crm_regexec(&regee, param_text, param_text_len, WIDTHOF(matchee), matchee, 0, NULL))
     {
         param_text[matchee[1].rm_eo] = 0;
         max_documents = atol(&param_text[matchee[1].rm_so]);

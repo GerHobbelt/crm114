@@ -568,9 +568,6 @@
 /* "enable replacement (v)snprintf if system (v)snprintf is broken" */
 /* #undef PREFER_PORTABLE_SNPRINTF */
 
-/* Define to 1 if the C compiler supports function prototypes. */
-#define PROTOTYPES 1
-
 /* revision code of the software */
 #define REVISION "1960"
 
@@ -606,16 +603,12 @@
 /* version suffix code of the software */
 #define VER_SUFFIX ""
 
-/* Define to 1 if on AIX 3.
- * System headers sometimes define this.
- * We just want to avoid a redefinition error message.  */
-#ifndef _ALL_SOURCE
-/* # undef _ALL_SOURCE */
-#endif
-
-/* Enable GNU extensions on systems that have them.  */
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel and VAX). */
+#if defined __BIG_ENDIAN__
+# define WORDS_BIGENDIAN 1
+#elif ! defined __LITTLE_ENDIAN__
+/* # undef WORDS_BIGENDIAN */
 #endif
 
 /* Define to 1 if on MINIX. */
@@ -648,8 +641,27 @@
 /* # undef __CHAR_UNSIGNED__ */
 #endif
 
-/* Define like PROTOTYPES; this can be used by system headers. */
-#define __PROTOTYPES 1
+/* Enable extensions on AIX 3, Interix.  */
+#ifndef _ALL_SOURCE
+# define _ALL_SOURCE 1
+#endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE 1
+#endif
+/* Enable threading extensions on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# define _POSIX_PTHREAD_SEMANTICS 1
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# define _TANDEM_SOURCE 1
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# define __EXTENSIONS__ 1
+#endif
+
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
@@ -681,6 +693,9 @@
 
 /* Define to `int' if <sys/types.h> does not define. */
 /* #undef mode_t */
+
+/* Define to `long int' if <sys/types.h> does not define. */
+/* #undef off_t */
 
 /* Define to `int' if <sys/types.h> does not define. */
 /* #undef pid_t */

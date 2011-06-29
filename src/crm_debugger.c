@@ -149,7 +149,7 @@ int dbg_decode_step_mode(char **arg)
             // assume the command has another argument (or more): prepare to point at it
             dbg_arg += strspn(dbg_arg, "; \t\r\n");
 
-            cmd_done_len = dbg_arg - *arg;
+            cmd_done_len = (int)(dbg_arg - *arg);
 
             if (*dbg_arg == ';' || *dbg_arg == 0 || *dbg_arg == '\r' || *dbg_arg == '\n')
             {
@@ -167,9 +167,9 @@ int dbg_decode_step_mode(char **arg)
 
 
 /*
-   Return 0 on success, non-zero on failure.
-
-   *dst will point to a strdup()ped string when succesful; *arg will have been updated too.
+ * Return 0 on success, non-zero on failure.
+ *
+ *dst will point to a strdup()ped string when succesful; *arg will have been updated too.
  */
 int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *current_crm_command)
 {
@@ -190,9 +190,9 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
         //
         //   N is a number signifying a line number (statement number in the source, corresponding to the line
         //     number as reported in a 'v' program listing.
-        //   N can alos be simply '.', which is the current statement.
+        //   N can also be simply '.', which is the current statement.
         //
-        //   B is the type of argument delimier we're looking for: /, <, [ or (
+        //   B is the type of argument delimiter we're looking for: /, <, [ or (
         //
         //   I is the number of this particular braced element: 1 by default.
         //
@@ -253,17 +253,17 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
             {
                 switch (*dbg_arg)
                 {
-				case '\r':
-				case '\n':
-					// end of format string
-					break;
+                case '\r':
+                case '\n':
+                    // end of format string
+                    break;
 
                 case '\\':
                     dbg_arg++;
-					
-					// fall through
 
-				default:
+                    // fall through
+
+                default:
                     buf[i++] = *dbg_arg;
                     continue;
 
@@ -281,7 +281,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                     else
                     {
                         // okay, expand...
-                        int expr_len = strlen(show_expr_list[idx - 1]);
+                        int expr_len = (int)strlen(show_expr_list[idx - 1]);
 
                         if (expr_len > WIDTHOF(buf) - 1 - i)
                         {
@@ -325,7 +325,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
             {
                 // format error: must be a number!
                 fprintf(stderr, "Indirection format error: '<' must be followed by another '<', a '.' dot or a statement number.\n"
-                    "I cannot decode '%s'\n",
+                                "I cannot decode '%s'\n",
                     dbg_arg);
                 return -1;
             }
@@ -375,7 +375,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
                 if (*end && !strchr("\r\n", *end))
                 {
                     fprintf(stderr, "Indirection format error: only an index number may follow the argument type indicator in the '<' format.\n"
-                        "I do not understand why this is here: '%s'\n",
+                                    "I do not understand why this is here: '%s'\n",
                         end);
                     return -1;
                 }
@@ -443,7 +443,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
 
             default:
                 fprintf(stderr, "Indirection format error: only a VALID type indicator ('<', '[', '(' or '/') may be specified in the '<' format.\n"
-                    "I do not understand why this is here: '%s'\n",
+                                "I do not understand why this is here: '%s'\n",
                     dbg_arg);
                 return -1;
             }
@@ -451,7 +451,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
             if (start_idx == NULL || len < 0)
             {
                 fprintf(stderr, "Indirection format error: only a VALID index number may follow the argument type indicator '%c' in the '<' format.\n"
-                    "I do not understand why the index %d was specified.\n",
+                                "I do not understand why the index %d was specified.\n",
                     *dbg_arg,
                     idx);
                 return -1;
@@ -469,7 +469,7 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
     else
     {
         // literal arg until EOL:
-        len = strspn(dbg_arg, "\n");
+        len = (int)strcspn(dbg_arg, "\r\n");
 
         len = CRM_MIN(len, WIDTHOF(buf) - 1);
         memmove(buf, dbg_arg, len);
@@ -495,19 +495,19 @@ int dbg_fetch_expression(char **dst, char **arg, CSL_CELL *csl, MCT_CELL *curren
 
 static int dbg_vht_compare(const void *a, const void *b)
 {
-	return strncmp((*(VHT_CELL **)a)->nametxt + (*(VHT_CELL **)a)->nstart, 
-		(*(VHT_CELL **)b)->nametxt + (*(VHT_CELL **)b)->nstart, 
-		CRM_MAX((*(VHT_CELL **)a)->nlen, 
-		(*(VHT_CELL **)b)->nlen));
+    return strncmp((*(VHT_CELL **)a)->nametxt + (*(VHT_CELL **)a)->nstart,
+        (*(VHT_CELL **)b)->nametxt + (*(VHT_CELL **)b)->nstart,
+        CRM_MAX((*(VHT_CELL **)a)->nlen,
+            (*(VHT_CELL **)b)->nlen));
 }
 
 #else
 
 #define dbg_vht_compare(a, b)                      \
-	(strncmp(a[0]->nametxt + a[0]->nstart,         \
-		b[0]->nametxt + b[0]->nstart,              \
-		CRM_MAX(a[0]->nlen,                        \
-		b[0]->nlen)) < 0)
+    (strncmp(a[0]->nametxt + a[0]->nstart,         \
+         b[0]->nametxt + b[0]->nstart,              \
+         CRM_MAX(a[0]->nlen,                        \
+             b[0]->nlen)) < 0)
 
 #endif
 
@@ -700,6 +700,17 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
         if (show_watched_expr && show_expr_list && show_expr_list[0])
         {
+            // store the user+internal trace values and reset them for the duration we're
+            // printing watched variables as the routines we use for that will contain
+            // code which produces extra output when those traces are enabled, and
+            // we do NOT want that screen clutter while we're trying to dump the watched
+            // vars here using :@: math expansion!
+            int old_user_trace = user_trace;
+            int old_internal_trace = internal_trace;
+
+            user_trace = 0;
+            internal_trace = 0;
+
             show_watched_expr = 0;
 
             if (!show_expr_buffer)
@@ -707,6 +718,9 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 show_expr_buffer = calloc(data_window_size, sizeof(show_expr_buffer[0]));
                 if (!show_expr_buffer)
                 {
+                    // reset traces to stored setting
+                    user_trace = old_user_trace;
+                    internal_trace = old_internal_trace;
                     untrappableerror("cannot allocate buffer to display watched expressions.", "");
                 }
             }
@@ -716,16 +730,20 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 int retval = 0;
 
                 strcpy(show_expr_buffer, show_expr_list[watch]);
-                crm_zexpandvar(show_expr_buffer, strlen(show_expr_buffer), data_window_size,
+                crm_zexpandvar(show_expr_buffer, (int)strlen(show_expr_buffer), data_window_size,
                     &retval,
                     CRM_EVAL_ANSI
                     | CRM_EVAL_STRINGVAR
                     | CRM_EVAL_REDIRECT
                     | CRM_EVAL_STRINGLEN
-                    | CRM_EVAL_MATH);
+                    | (strstr(show_expr_buffer, ":@") ? CRM_EVAL_MATH : 0));
 
                 fprintf(stderr, "[#%2d]: '%s' (%d) /%s/\n", watch + 1, show_expr_list[watch], retval, show_expr_buffer);
             }
+
+            // reset traces to stored setting
+            user_trace = old_user_trace;
+            internal_trace = old_internal_trace;
         }
 
         //    let the user know they're in the debugger
@@ -766,7 +784,23 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 step_mode_str[1] = 'F';
                 break;
             }
-            step_mode_str[2] = 0;
+                step_mode_str[2] = '-';
+    if (reason_for_the_call == CRM_DBG_REASON_DEBUG_STATEMENT)
+    {
+        // programmed breakpoint detected ('debug' statement): allow the debugger to pop up on the NEXT statement!
+                step_mode_str[2] = 'B';
+    }
+    else if (reason_for_the_call == CRM_DBG_REASON_BREAKPOINT)
+    {
+        // configured/set breakpoint detected: allow the debugger to pop up NOW!
+                step_mode_str[2] = 'b';
+    }
+    else if (reason_for_the_call == CRM_DBG_REASON_DEBUG_END_OF_PROGRAM)
+    {
+        // end of program detected: allow the debugger to pop up NOW, because this is very last time we will get a chance!
+                step_mode_str[2] = '$';
+    }
+            step_mode_str[3] = 0;
 
             fprintf(stderr, "\ncrm-dbg[%d|%s]> ", csl->calldepth, step_mode_str);
         }
@@ -829,7 +863,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
             // EACH of those is executed again!
             {
                 char *dst = dbg_inbuf + 1;
-                int len = strlen(dst);
+                int len = (int)strlen(dst);
 
                 ichar = dbg_iobuf_size - 1;
                 ichar -= len;
@@ -864,7 +898,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
             if (dbg_arg)
             {
-                cmd_done_len = dbg_arg - dbg_inbuf;
+                cmd_done_len = (int)(dbg_arg - dbg_inbuf);
 
                 cmd_done_len += dbg_decode_step_mode(&dbg_arg);
             }
@@ -878,7 +912,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
             if (dbg_arg)
             {
-                cmd_done_len = dbg_arg - dbg_inbuf;
+                cmd_done_len = (int)(dbg_arg - dbg_inbuf);
 
                 cmd_done_len += dbg_decode_step_mode(&dbg_arg);
             }
@@ -896,7 +930,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
             if (dbg_arg)
             {
-                cmd_done_len = dbg_arg - dbg_inbuf;
+                cmd_done_len = (int)(dbg_arg - dbg_inbuf);
 
                 cmd_done_len += dbg_decode_step_mode(&dbg_arg);
 
@@ -911,7 +945,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                                         "Assume 0: 'continue'.\n", dbg_arg);
                         debug_countdown = 0;
                     }
-                    cmd_done_len = end - dbg_inbuf;
+                    cmd_done_len = (int)(end - dbg_inbuf);
                 }
             }
 
@@ -970,25 +1004,25 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
             {
                 if (last_e_expression)
                     free(last_e_expression);
-		        last_e_expression = NULL;
-				if (dbg_fetch_expression(&last_e_expression, &dbg_arg, csl, current_crm_command))
-				{
-					fprintf(stderr, "'e' statement line is rejected.\n");
-					cmd_done_len = strlen(dbg_inbuf);
-					break;
-				}
+                last_e_expression = NULL;
+                if (dbg_fetch_expression(&last_e_expression, &dbg_arg, csl, current_crm_command))
+                {
+                    fprintf(stderr, "'e' statement line is rejected.\n");
+                    cmd_done_len = (int)strlen(dbg_inbuf);
+                    break;
+                }
                 CRM_ASSERT(last_e_expression != NULL);
 
-                cmd_done_len = (dbg_arg - dbg_inbuf);
+                cmd_done_len = (int)(dbg_arg - dbg_inbuf);
             }
 
             if (last_e_expression)
             {
                 strcpy(dbg_outbuf, last_e_expression);
 
-                crm_nexpandvar(dbg_outbuf, strlen(dbg_outbuf), dbg_iobuf_size);
+                crm_nexpandvar(dbg_outbuf, (int)strlen(dbg_outbuf), dbg_iobuf_size);
 
-                fprintf(stderr, "expression '%s' ==> (len: %d)\n%s", last_e_expression, strlen(dbg_outbuf), dbg_outbuf);
+                fprintf(stderr, "expression '%s' ==> (len: %d)\n%s", last_e_expression, (int)strlen(dbg_outbuf), dbg_outbuf);
             }
             else
             {
@@ -1009,45 +1043,202 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
             {
                 if (last_e_expression)
                     free(last_e_expression);
-		        last_e_expression = NULL;
-				if (dbg_fetch_expression(&last_e_expression, &dbg_arg, csl, current_crm_command))
-				{
-					fprintf(stderr, "'+' statement line is rejected.\n");
-					cmd_done_len = strlen(dbg_inbuf);
-					break;
-				}
-				CRM_ASSERT(last_e_expression != NULL);
+                last_e_expression = NULL;
+                if (dbg_fetch_expression(&last_e_expression, &dbg_arg, csl, current_crm_command))
+                {
+                    fprintf(stderr, "'+' statement line is rejected.\n");
+                    cmd_done_len = (int)strlen(dbg_inbuf);
+                    break;
+                }
+                CRM_ASSERT(last_e_expression != NULL);
 
-                cmd_done_len = (dbg_arg - dbg_inbuf);
+                cmd_done_len = (int)(dbg_arg - dbg_inbuf);
             }
 
             if (last_e_expression)
             {
-                int j;
-
-                // make sure the expression isn't in the list already:
-                for (j = 0; show_expr_list[j]; j++)
+                // handle special watch requests here: any watched expression that doesn't contain
+                // any :@:/:+:/:+:/:@: is considered a regex into the variables collection.
+                //
+                // With a 'thank you' to 'C' boolean evauation preventing crashes in the conditional :-)
+                if (!strchr(last_e_expression, ':')
+                    || !strchr("*+#@", strchr(last_e_expression, ':')[1])
+                    || ':' != strchr(last_e_expression, ':')[2])
                 {
-                    if (strcmp(show_expr_list[j], last_e_expression) == 0)
-                        break;
-                }
-                // add to list if not already in it:
-                if (show_expr_list[j] == NULL)
-                {
-                    show_expr_list = realloc(show_expr_list, (j + 2) * sizeof(show_expr_list[0]));
-                    show_expr_list[j] = strdup(last_e_expression);
-                    show_expr_list[j + 1] = NULL;
+                    // add every variable matching the specified regex
+                    int i;
+                    int len;
+                    int maxlen;
+                    int status;
+                    regex_t preg;
+                    int add_system_vars_too = 0;
 
-                    fprintf(stderr, "'e' expression added to the watch list:\n"
-                                    "    %s\n",
-                        last_e_expression);
+					char *arg = last_e_expression; 
+					int arglen = (int)strcspn(arg, "\r\n");
 
-                    show_watched_expr = 1;
+                        for (arglen--; arglen >= 0 && !crm_isgraph(arg[arglen]); arglen--)
+                            ;
+                        arglen++;
+
+                        if (!strncmp(arg, "*", arglen))
+                        {
+                            // kill 'em all!
+                            arg = ".*";
+                            arglen = (int)strlen(arg);
+                        }
+
+                    // ONLY add system variables into the mix when they SEEM explicitly addressed:
+                    // we don't check the precise regex, but the mention of an underscore in there
+                    // is good enough for us. Debuggers are smart people, right? ;-)
+                    add_system_vars_too = !!strchr(arg, '_');
+
+                    //       compile the regex
+                    status = crm_regcomp(&preg, arg, arglen, REG_EXTENDED);
+                    if (status != 0)
+                    {
+                        CRM_ASSERT(dbg_outbuf);
+                        CRM_ASSERT(dbg_iobuf_size > 0);
+
+                        crm_regerror(status, &preg, dbg_outbuf, dbg_iobuf_size);
+                        fprintf(stderr,
+                            "\n\n"
+                            "ERROR: Regular Expression Compilation Problem in variable search pattern '%.*s' "
+                            "while trying to add those matching variables to the watch list: %s\n\n",
+                            arglen, arg,
+                            dbg_outbuf);
+                    }
+                    else
+                    {
+                        regmatch_t match[2];
+                        VHT_CELL **vht_ref;
+
+                        maxlen = 0;
+                        vht_ref = calloc(vht_size, sizeof(vht_ref[0]));
+
+                        len = 0;
+                        for (i = 0; i < vht_size; i++)
+                        {
+                            if (vht[i] == NULL)
+                                continue;
+                            /*
+                             * Note that, when :label:s have been isolate'd, the code in there
+                             * MAY have modified the VHT record to look like any other regular variable;
+                             * in that case, the only way to detect if we're talking about a :label:
+                             * instead of a :variable: is by its usage in the code. :-(
+                             */
+                            if (vht[i]->valtxt == NULL)
+                                continue; // don't add labels to the watch list, that's useless!
+                            if (vht[i]->nlen > 0)
+                            {
+                                const char *varname = vht[i]->nametxt + vht[i]->nstart;
+                                int varlen = vht[i]->nlen;
+
+                                // see if this variable matches our regex:
+                                status = crm_regexec(&preg,
+                                    varname, varlen,
+                                    WIDTHOF(match), match,
+                                    0, NULL);
+                                if (status != REG_OK && status != REG_NOMATCH)
+                                {
+                                    CRM_ASSERT(dbg_outbuf);
+                                    CRM_ASSERT(dbg_iobuf_size > 0);
+
+                                    crm_regerror(status, &preg, dbg_outbuf, dbg_iobuf_size);
+                                    fprintf(stderr,
+                                        "\n\n"
+                                        "ERROR: Regular Expression Execution Problem in variable search pattern '%.*s' "
+                                        "while trying to check variable '%.*s'(len: %d) for adding to the watch list: %s\n\n",
+                                        arglen, arg,
+                                        varlen, varname, varlen,
+                                        dbg_outbuf);
+
+                                    break;
+                                }
+                                else if (status == REG_OK)
+                                {
+                                    // regex matches the variable - at least part of the variable and that's good enough for us.
+                                    CRM_ASSERT(match[0].rm_eo >= 0);
+                                    CRM_ASSERT(match[0].rm_so >= 0);
+
+                                    if (!add_system_vars_too && varlen > 0 && varname[1] == '_')
+                                        continue; // do not include system vars this time around
+
+                                    vht_ref[len++] = vht[i];
+                                    maxlen = CRM_MAX(maxlen, varlen);
+                                }
+                            }
+                        }
+
+                        // done with the regex
+                        crm_regfree(&preg);
+
+                        QSORT(VHT_CELL *, vht_ref, len, dbg_vht_compare);
+
+                        for (i = 0; i < len; i++)
+                        {
+                            int j;
+
+                            CRM_ASSERT(vht_ref[i]->valtxt != NULL);     // no labels in this list
+                            CRM_ASSERT(dbg_outbuf);
+                            CRM_ASSERT(dbg_iobuf_size > 0);
+
+                            // note that the variable comes with its own ':' delimiters already!
+                            snprintf(dbg_outbuf, dbg_iobuf_size, ":*%.*s",
+                                vht_ref[i]->nlen, vht_ref[i]->nametxt + vht_ref[i]->nstart);
+                            dbg_outbuf[dbg_iobuf_size - 1] = 0;
+
+                            // make sure the expression isn't in the list already:
+                            for (j = 0; show_expr_list[j]; j++)
+                            {
+                                if (strcmp(show_expr_list[j], dbg_outbuf) == 0)
+                                    break;
+                            }
+                            // add to list if not already in it:
+                            if (show_expr_list[j] == NULL)
+                            {
+                                show_expr_list = realloc(show_expr_list, (j + 2) * sizeof(show_expr_list[0]));
+                                show_expr_list[j] = strdup(dbg_outbuf);
+                                show_expr_list[j + 1] = NULL;
+
+                                fprintf(stderr, "'e' expression added to the watch list:\n"
+                                                "    %s\n",
+                                    dbg_outbuf);
+
+                                show_watched_expr = 1;
+                            }
+                            // else: expression not added to watch list: expression already exists in watch list!
+                        }
+						free(vht_ref);
+                    }
                 }
                 else
                 {
-                    fprintf(stderr,
-                        "expression not added to watch list: expression already exists in watch list!\n");
+                    int j;
+
+                    // make sure the expression isn't in the list already:
+                    for (j = 0; show_expr_list[j]; j++)
+                    {
+                        if (strcmp(show_expr_list[j], last_e_expression) == 0)
+                            break;
+                    }
+                    // add to list if not already in it:
+                    if (show_expr_list[j] == NULL)
+                    {
+                        show_expr_list = realloc(show_expr_list, (j + 2) * sizeof(show_expr_list[0]));
+                        show_expr_list[j] = strdup(last_e_expression);
+                        show_expr_list[j + 1] = NULL;
+
+                        fprintf(stderr, "'e' expression added to the watch list:\n"
+                                        "    %s\n",
+                            last_e_expression);
+
+                        show_watched_expr = 1;
+                    }
+                    else
+                    {
+                        fprintf(stderr,
+                            "expression not added to watch list: expression already exists in watch list!\n");
+                    }
                 }
             }
             else
@@ -1064,18 +1255,12 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
                 if (!dbg_arg)
                 {
-                    // assume 'remove all':
-                    for (j = 0; show_expr_list[j]; j++)
-                    {
-                        free(show_expr_list[j]);
-                    }
-                    show_expr_list[0] = NULL;
-
-                    fprintf(stderr, "removed all watched expressions\n");
+                    fprintf(stderr, "You should specify either a number or a regex to "
+                                    "identify the watched expressions you wish to see removed.\n");
                 }
                 else
                 {
-                    cmd_done_len = (dbg_arg - dbg_inbuf) + strcspn(dbg_arg, " \t\r\n;");
+                    cmd_done_len = (int)(dbg_arg - dbg_inbuf) + (int)strcspn(dbg_arg, "; \t\r\n");
 
                     j = sscanf(dbg_arg, "%d", &expr_number);
                     if (j == 1)
@@ -1118,10 +1303,107 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                     }
                     else
                     {
-                        fprintf(
-                            stderr,
-                            "You specified an illegal watched expression '%s' which could not be decyphered as being an integer number; command ignored.\n",
-                            dbg_arg);
+                        // else, it's a regex to ditch expressions: any expression matching the regex is TOAST!
+                        regex_t preg;
+                        int status;
+                        int arglen = (int)strcspn(dbg_arg, "\r\n");
+
+                        cmd_done_len = (int)(dbg_arg - dbg_inbuf) + arglen;
+                        for (arglen--; arglen >= 0 && !crm_isgraph(dbg_arg[arglen]); arglen--)
+                            ;
+                        arglen++;
+
+                        if (!strncmp(dbg_arg, "*", arglen))
+                        {
+                            // kill 'em all!
+                            dbg_arg = ".*";
+                            arglen = (int)strlen(dbg_arg);
+                        }
+
+                        //       compile the regex
+                        status = crm_regcomp(&preg, dbg_arg, arglen, REG_EXTENDED);
+                        if (status != 0)
+                        {
+                            CRM_ASSERT(dbg_outbuf);
+                            CRM_ASSERT(dbg_iobuf_size > 0);
+
+                            crm_regerror(status, &preg, dbg_outbuf, dbg_iobuf_size);
+                            fprintf(stderr,
+                                "\n\n"
+                                "ERROR: Regular Expression Compilation Problem in variable search pattern '%.*s' "
+                                "while trying to remove those matching variables from the watch list: %s\n\n",
+                                arglen, dbg_arg,
+                                dbg_outbuf);
+                        }
+                        else
+                        {
+                            regmatch_t match[2];
+                            int count = 0;
+							int k;
+
+                            for (k = j = 0; show_expr_list[j]; j++)
+                            {
+                                const char *varname = show_expr_list[j];
+                                int varlen = (int)strlen(varname);
+
+                                // see if this variable matches our regex:
+                                status = crm_regexec(&preg,
+                                    varname, varlen,
+                                    WIDTHOF(match), match,
+                                    0, NULL);
+                                if (status != REG_OK && status != REG_NOMATCH)
+                                {
+                                    CRM_ASSERT(dbg_outbuf);
+                                    CRM_ASSERT(dbg_iobuf_size > 0);
+
+                                    crm_regerror(status, &preg, dbg_outbuf, dbg_iobuf_size);
+                                    fprintf(stderr,
+                                        "\n\n"
+                                        "ERROR: Regular Expression Execution Problem in variable search pattern '%.*s' "
+                                        "while trying to check variable '%.*s'(len: %d) for removal from the watch list: %s\n\n",
+                                        arglen, dbg_arg,
+                                        varlen, varname, varlen,
+                                        dbg_outbuf);
+
+                                    break;
+                                }
+                                else if (status == REG_OK)
+                                {
+                                    // regex matches the variable - at least part of the variable and that's good enough for us.
+                                    CRM_ASSERT(match[0].rm_eo >= 0);
+                                    CRM_ASSERT(match[0].rm_so >= 0);
+
+                                    fprintf(stderr, "removed watched expression #%d: %s\n",
+                                        j + 1, show_expr_list[j]);
+                                    free(show_expr_list[j]);
+                                    show_expr_list[j] = NULL;
+
+                                    count++;
+
+                                    show_watched_expr = 1;
+                                }
+								else
+								{
+									// shift other expressions one down in the list to close the gap: including NULL sentinel
+
+									show_expr_list[k++] = show_expr_list[j];
+                                }
+                            }
+							// when we get here, all valid remaining expressions are there, yet the NULL sentinel is missing:
+							show_expr_list[k] = NULL;
+
+
+                            // done with the regex
+                            crm_regfree(&preg);
+
+
+                            if (count == 0)
+                            {
+                                fprintf(stderr, "You specified a watched regex expression '%.*s' which "
+                                                "did not match any of the watched expressions. None were removed.\n",
+                                    arglen, dbg_arg);
+                            }
+                        }
                     }
                 }
             }
@@ -1129,7 +1411,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
         case 'i':
             // skip until ';' seperator or newline:
-            cmd_done_len = strcspn(dbg_inbuf, ";\n");
+            cmd_done_len = (int)strcspn(dbg_inbuf, ";\r\n");
 
             fprintf(stderr, "Isolating %s", &dbg_inbuf[1]);
             fprintf(stderr, "NOT YET IMPLEMENTED!  Sorry.\n");
@@ -1143,10 +1425,10 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 int stmtnum;
                 int endstmtnum;
 
-	            show_watched_expr = 1;
+                show_watched_expr = 1;
 
                 // skip until ';' seperator or newline:
-                cmd_done_len = strcspn(dbg_inbuf, ";\n");
+                cmd_done_len = (int)strcspn(dbg_inbuf, ";\r\n");
 
                 i = sscanf(&dbg_inbuf[1], " %d.%d", &stmtnum, &endstmtnum);
                 if (i <= 0)
@@ -1246,8 +1528,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 int vindex;
 
                 // skip until ';' seperator or newline:
-                cmd_done_len = dbg_arg - dbg_inbuf;
-                cmd_done_len += strcspn(dbg_arg, "; \t\r\n");
+                cmd_done_len = (int)(dbg_arg - dbg_inbuf);
+                cmd_done_len += (int)strcspn(dbg_arg, "; \t\r\n");
 
                 i = sscanf(&dbg_inbuf[1], "%d", &nextstmt);
                 if (i == 0)
@@ -1255,7 +1537,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                     //    maybe the user put in a label?
                     int tstart;
                     int tlen;
-                    crm_nextword(&dbg_inbuf[1], strlen(&dbg_inbuf[1]), 0,
+                    crm_nextword(&dbg_inbuf[1], (int)strlen(&dbg_inbuf[1]), 0,
                         &tstart, &tlen);
                     memmove(dbg_inbuf, &dbg_inbuf[1 + tstart], tlen);
                     dbg_inbuf[tlen] = 0;
@@ -1318,8 +1600,8 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 breakstmt = -1;
 
                 // skip until ';' seperator or whitespace/newline:
-                cmd_done_len = dbg_arg - dbg_inbuf;
-                cmd_done_len += strcspn(dbg_arg, "; \t\r\n");
+                cmd_done_len = (int)(dbg_arg - dbg_inbuf);
+                cmd_done_len += (int)strcspn(dbg_arg, "; \t\r\n");
 
                 i = sscanf(&dbg_inbuf[1], "%d", &breakstmt);
                 if (i == 0)
@@ -1327,7 +1609,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                     //    maybe the user put in a label?
                     int tstart;
                     int tlen;
-                    crm_nextword(&dbg_inbuf[1], strlen(&dbg_inbuf[1]), 0,
+                    crm_nextword(&dbg_inbuf[1], (int)strlen(&dbg_inbuf[1]), 0,
                         &tstart, &tlen);
                     memmove(dbg_inbuf, &dbg_inbuf[1 + tstart], tlen);
                     dbg_inbuf[tlen] = 0;
@@ -1377,10 +1659,10 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 int vindex;
                 int ostart, oend, olen;
 
-                // skip until ';' seperator or newline:
-                cmd_done_len = strcspn(dbg_arg, "\n");
+                // skip until newline (';' seperator is not accepted as end of this command):
+                cmd_done_len = (int)strcspn(dbg_arg, "\r\n");
 
-                crm_nextword(dbg_arg, strlen(dbg_arg), 0,
+                crm_nextword(dbg_arg, (int)strlen(dbg_arg), 0,
                     &vstart, &vlen);
                 memmove(dbg_inbuf, &dbg_arg[vstart], vlen);
                 dbg_inbuf[vlen] = 0;
@@ -1392,7 +1674,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
 
                 //     now grab what's left of the input as the value to set
                 //
-                ostart = (dbg_arg - dbg_inbuf) + vlen;
+                ostart = (int)(dbg_arg - dbg_inbuf) + vlen;
                 while (dbg_inbuf[ostart] != '/' && dbg_inbuf[ostart] != 0)
                     ostart++;
                 ostart++;
@@ -1468,51 +1750,53 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
             show_watched_expr = 1;
             break;
 
-		case 'd':
-			// dump a list of all variables
-    {
-        int i;
-		int len;
-		int maxlen = 0;
-		int len_decades;
-		int width_decades;
-		VHT_CELL **vht_ref = calloc(vht_size, sizeof(vht_ref[0]));
-
-
-		len = 0;
-        for (i = 0; i < vht_size; i++)
-        {
-			if (vht[i] == NULL)
-				continue;
-            if (vht[i]->nlen > 0)
+        case 'd':
+            // dump a list of all variables
             {
-				vht_ref[len++] = vht[i];
-				maxlen = CRM_MAX(maxlen, vht[i]->nlen);
-			}
-		}
+                int i;
+                int len;
+                int maxlen = 0;
+                int len_decades;
+                int width_decades;
+                VHT_CELL **vht_ref = calloc(vht_size, sizeof(vht_ref[0]));
 
-		QSORT(VHT_CELL *, vht_ref, len, dbg_vht_compare);
 
-		len_decades = (int)ceil(log10(len));
-		width_decades = (int)ceil(log10(maxlen));
+                len = 0;
+                for (i = 0; i < vht_size; i++)
+                {
+                    if (vht[i] == NULL)
+                        continue;
+                    if (vht[i]->nlen > 0)
+                    {
+                        vht_ref[len++] = vht[i];
+                        maxlen = CRM_MAX(maxlen, vht[i]->nlen);
+                    }
+                }
 
-		for (i = 0; i < len; i++)
-        {
-			/*
-			   Note that, when :label:s have been isolate'd, the code in there
-			   MAY have moified the VHT record to look like any other regular variable;
-			   in that case, the only way to detect if we're talking about a :label:
-			   instead of a :variable: is by its usage in the code. :-(
-		   */
-				fprintf(stderr, "var[%*d]: (len=%*d; type=%s) name='",
-                        len_decades , i, 
-						width_decades, vht_ref[i]->nlen,
-						(vht_ref[i]->valtxt == NULL ? "LABEL" : "?VAR?"));
-				memnCdump(stderr, vht_ref[i]->nametxt + vht_ref[i]->nstart, vht_ref[i]->nlen);
-				fprintf(stderr, "'\n");
-    }
-	}
-			break;
+                QSORT(VHT_CELL *, vht_ref, len, dbg_vht_compare);
+
+                len_decades = (int)ceil(log10(len));
+                width_decades = (int)ceil(log10(maxlen));
+
+                for (i = 0; i < len; i++)
+                {
+                    /*
+                     * Note that, when :label:s have been isolate'd, the code in there
+                     * MAY have modified the VHT record to look like any other regular variable;
+                     * in that case, the only way to detect if we're talking about a :label:
+                     * instead of a :variable: is by its usage in the code. :-(
+                     */
+                    fprintf(stderr, "var[%*d]: (len=%*d; type=%s) name='",
+                        len_decades, i,
+                        width_decades, vht_ref[i]->nlen,
+                        (vht_ref[i]->valtxt == NULL ? "LABEL" : "?VAR?"));
+                    fwrite_ASCII_Cfied(stderr, vht_ref[i]->nametxt + vht_ref[i]->nstart, vht_ref[i]->nlen);
+                    fprintf(stderr, "'\n");
+                }
+				
+				free(vht_ref);
+            }
+            break;
 
         case '?':
         case 'h':
@@ -1535,9 +1819,13 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
             fprintf(stderr, "d     - dump a list of all variables known to the program.\n");
             fprintf(stderr, "e <e> - expand expression <e>; if none specified, show the previous one again.\n");
             fprintf(stderr, "+ <e> - watch the expanded expression <e>.\n"
-                            "        No arg? -> add last 'e' expr to show list\n");
+                            "        No arg? -> add last 'e' expr to show list\n"
+							"        Is <e> not a :@:, :#:, :+: or :@: expression? Assume it to be a regex\n"
+							"        which will select any (partially) matching existing variable to the watch\n"
+							"        list. Make sure an '_' is in there when you want to add system vars too.\n");
             fprintf(stderr, "- <n> - remove the watched expression #<n> from the show list.\n"
-                            "        No <n> given: remove all\n");
+                            "        <n> not a number? Treat as a regex and remove any (partially) matching\n"
+                            "        watched expression.\n");
             fprintf(stderr, "f     - fail forward to block-closing '}'\n");
             fprintf(stderr, "h     - show this on-line help. Add extra 'h' or '?' for list of examples\n");
             fprintf(stderr, "?     - same as 'h'.\n");
@@ -1584,7 +1872,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 fprintf(stderr, "        Execute previous 'debugger macro' again. A 'debugger macro' is just the\n");
                 fprintf(stderr, "        last line you typed in the debugger, which did NOT start with a '.'\n");
                 fprintf(stderr, "        dot. By hitting ENTER on the debugger prompt, you 'erase' any 'macro'\n");
-				fprintf(stderr, "        in memory and '.' will do nothing.\n");
+                fprintf(stderr, "        in memory and '.' will do nothing.\n");
                 fprintf(stderr, "\n");
                 fprintf(stderr, "...\n");
                 fprintf(stderr, "\n");
@@ -1605,9 +1893,22 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 fprintf(stderr, "        ignored: anything following the '+' is considered part of the\n");
                 fprintf(stderr, "        expression to be watched.\n");
                 fprintf(stderr, "\n");
+				fprintf(stderr, "+ :_.*HOME\n");
+                fprintf(stderr, "\n");
+				fprintf(stderr, "        Add any system variable (i.e. variable which starts with an '_'\n");
+				fprintf(stderr, "        underscore) matching the ':_.*HOME' regex. This means a variable\n");
+                fprintf(stderr, "        called ':_HOME_VAR:' will be added to the watch list too as partial\n");
+                fprintf(stderr, "        matches are accepted!\n");
+                fprintf(stderr, "\n");
                 fprintf(stderr, "- 4\n");
                 fprintf(stderr, "\n");
                 fprintf(stderr, "        remove the 4th watched expression\n");
+                fprintf(stderr, "\n");
+                fprintf(stderr, "\n");
+                fprintf(stderr, "- *\n");
+                fprintf(stderr, "\n");
+                fprintf(stderr, "        Special case, identical to '- .*' which remove all watched expressions\n");
+                fprintf(stderr, "        as each will match the '.*' regex.\n");
                 fprintf(stderr, "\n");
                 fprintf(stderr, "\n");
                 fprintf(stderr, "Extended examples\n");
@@ -1629,14 +1930,14 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                 fprintf(stderr, "        mode is 'E' (executable statements only) and the breakpoint is located\n");
                 fprintf(stderr, "        at a brace or comment line.\n");
 
-                cmd_done_len = strcspn(dbg_inbuf, "\r\n");
+                cmd_done_len = (int)strcspn(dbg_inbuf, "\r\n");
             }
             break;
 
         default:
             {
                 // skip whitespace:
-                int len = strspn(dbg_inbuf, " \t\r\n");
+                int len = (int)strspn(dbg_inbuf, " \t\r\n");
 
                 cmd_done_len = len;
                 if (cmd_done_len == 0)
@@ -1644,7 +1945,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
                     fprintf(stderr, "Command '%c' unrecognized - type \"h\" for help.\n", dbg_inbuf[0]);
 
                     // skip until ';' seperator or newline:
-                    cmd_done_len = strcspn(dbg_inbuf, ";\n");
+                    cmd_done_len = (int)strcspn(dbg_inbuf, ";\r\n");
                 }
             }
             break;
@@ -1658,7 +1959,7 @@ int crm_debugger(CSL_CELL *csl, crm_debug_reason_t reason_for_the_call)
         if (cmd_done_len > 0)
         {
             // skip additional whitespace and separator semicolons:
-            int len = strspn(dbg_inbuf + cmd_done_len, "; \t\r\n");
+            int len = (int)strspn(dbg_inbuf + cmd_done_len, "; \t\r\n");
 
             cmd_done_len += len;
             memmove(dbg_inbuf, dbg_inbuf + cmd_done_len, strlen(dbg_inbuf + cmd_done_len) + 1);

@@ -149,9 +149,9 @@ int file_memset(FILE *dst, unsigned char val, int count)
 
    Return value: the number of bytes written to FILE*.
 
-                 return -1 when an error occurred (check 'errno' for more info then)
+   return -1 when an error occurred (check 'errno' for more info then)
 */
-int memnCdump(FILE *dst, const char *src, int len)
+int fwrite_ASCII_Cfied(FILE *dst, const char *src, int len)
 {
 	char buf[2048+4];
 	int i;

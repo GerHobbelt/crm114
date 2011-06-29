@@ -130,38 +130,38 @@ isolate (:mailtrainer_output:) //
     #
     {
         {
-                match [:config:] /.+/
-                input [:*:config:] (:option_txt:)
+            match [:config:] /.+/
+            input [:*:config:] (:option_txt:)
         }
         alius
         {
-                #      read in the standard mail filter configuration file.
-               input [:*:fileprefix:mailfilter.cf] (:option_txt:)
+            #      read in the standard mail filter configuration file.
+           input [:*:fileprefix:mailfilter.cf] (:option_txt:)
         }
     }
 #
 #
-#   reset loop for matching to start of :option_txt:
+# reset loop for matching to start of :option_txt:
         match [:option_txt:] //
 
-#   and loop till there are no more options.
+# and loop till there are no more options.
+    {
+        # find a line that looks like a parameter setting...
+        match < fromend nomultiline > (:line: :name: :value:) \
+          [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
         {
-                #   find a line that looks like a parameter setting...
-                match < fromend nomultiline > (:line: :name: :value:) \
-                  [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
-                {
-                        #    don't execute the assign if there's
-                        #    a # at the start of the line.
-                        match <absent> [:name:] /^\x23/
-                        {
-                                #     Verbose startup?
-                                match [:verbose_startup:] /SET/
-                                output / :*:name:\n    :*:value:\n/
-                        }
-                        isolate (:*:name:) /:*:value:/
-                }
-                liaf
+            # don't execute the assign if there's
+            # a # at the start of the line.
+            match <absent> [:name:] /^\x23/
+            {
+                # Verbose startup?
+                match [:verbose_startup:] /SET/
+                output / :*:name:\n    :*:value:\n/
+            }
+            isolate (:*:name:) /:*:value:/
         }
+        liaf
+    }
 }
 #
 #     Now, a tricky bit - we need to add "unlearn" to the :clf:
@@ -169,8 +169,8 @@ isolate (:mailtrainer_output:) //
 #     because :clf: (CLassfier Flags) also contains the classifier we use.
 #
 {
-        match [:unlearn:] /SET/
-        alter (:clf:) /:*:clf: refute/
+    match [:unlearn:] /SET/
+    alter (:clf:) /:*:clf: refute/
 }
 
 
@@ -181,75 +181,60 @@ isolate (:mailtrainer_output:) //
 #    (esp. since it will contain recieved headers that the sender cannot
 #    see nor control.)
 {
-        match [:spw:] /DEFAULT-PASSWORD/
-        #  yes, it's the same as default.  So we scramble it just so
-        #  nobody can hack in
-        hash (:spw:) /:*:_env_string::*:_dw:/
+    match [:spw:] /DEFAULT-PASSWORD/
+    #  yes, it's the same as default.  So we scramble it just so
+    #  nobody can hack in
+    hash (:spw:) /:*:_env_string::*:_dw:/
 }
 
 #############################################################
 #
-#         Set up the addresses that we might need to mail to
+#     Set up the addresses that we might need to mail to
 #
 isolate (:reject_address:) /:*:general_fails_to:/
 {
-        match [:fail_priority_mail_to:] <absent> /[[:graph:]]/
-        alter (:fail_priority_mail_to:) /:*:general_fails_to:/
+    match [:fail_priority_mail_to:] <absent> /[[:graph:]]/
+    alter (:fail_priority_mail_to:) /:*:general_fails_to:/
 }
 {
-        match [:fail_blacklist_mail_to:] <absent> /[[:graph:]]/
-        alter (:fail_blacklist_mail_to:) /:*:general_fails_to:/
+    match [:fail_blacklist_mail_to:] <absent> /[[:graph:]]/
+    alter (:fail_blacklist_mail_to:) /:*:general_fails_to:/
 }
 {
-        match [:fail_SSM_mail_to:] <absent> /[[:graph:]]/
-        alter (:fail_SSM_mail_to:) /:*:general_fails_to:/
+    match [:fail_SSM_mail_to:] <absent> /[[:graph:]]/
+    alter (:fail_SSM_mail_to:) /:*:general_fails_to:/
 }
 ###############################################################
 #      Does the user want us to log all incoming mail?  This is handy for
 #      testing and auditing purposes.
 {
-        match [:log_to_allmail.txt:] /yes/
-        output [:*:fileprefix:allmail.txt] <append> /:*:_dw:/
+    match [:log_to_allmail.txt:] /yes/
+    output [:*:fileprefix:allmail.txt] <append> /:*:_dw:/
 }
 
 ###############################################################
 #
 #      Is text cacheing turned on?
 {
-        match [:text_cache:] /./
-        {
-                ###       If the text_cache dir isn't there, create it
-                #         and it's subdirectories.
-                #
-                isolate (:tmp:) //
-                syscall () (:tmp:) /ls :*:text_cache: 2>&1 / /[Windows-MS]dir /b :*:text_cache:/
-                match [:tmp:] <absent> /texts/
-                syscall () () /mkdir -p :*:text_cache: / /[Windows-MS]mkdir :*:text_cache: /
-                syscall () () /mkdir -p :*:text_cache:\/texts / /[Windows-MS]mkdir :*:text_cache:\\texts /
-                syscall () () /mkdir :*:text_cache:\/prob_good / /[Windows-MS]mkdir :*:text_cache:\\prob_good /
-                syscall () () /mkdir :*:text_cache:\/prob_spam / /[Windows-MS]mkdir :*:text_cache:\\prob_spam /
-                syscall () () /mkdir :*:text_cache:\/known_good / /[Windows-MS]mkdir :*:text_cache:\\known_good /
-                syscall () () /mkdir :*:text_cache:\/known_spam / /[Windows-MS]mkdir :*:text_cache:\\known_spam /
-                syscall () () /mkdir :*:text_cache:\/empty / /[Windows-MS]mkdir :*:text_cache:\\empty /
-        }
-        #
-        #    Yes, text cacheing is on.  Save the input as is in the cache.
-        #
-        isolate (:system_time:) //
-        syscall () (:system_time:) /date +%Y%m%d_%H%M%S_%N /
-        match [:system_time:] (:: :cacheid:) /([[:graph:]]+)..../
-        hash (:msg_hash:) /:*:_dw:/
-        alter (:cacheid:) /sfid-:*:cacheid:_:*:msg_hash:/
-        #  As long as this isn't a "learn" run, nor a "stats-only" run,
-        #  we should save the text of this message in the text cache directory.
-        #   Note to self: eventually this should also work with the
-        #    command <password> spam nonspam stuff
-        {
-                match <absent> [:stats_only:] /SET/
-                match <absent> [:learnspam:] /SET/
-                match <absent> [:learnnonspam:] /SET/
-                output [:*:text_cache:\/texts\/:*:cacheid:] /:*:_dw:/
-        }
+	call /:reavercache_init:/
+    #
+    #    Yes, text cacheing is on.  Save the input as is in the cache.
+    #
+    isolate (:system_time:) //
+    syscall () (:system_time:) /date +%Y%m%d_%H%M%S_%N /
+    match [:system_time:] (:: :cacheid:) /([[:graph:]]+)..../
+    hash (:msg_hash:) /:*:_dw:/
+    alter (:cacheid:) /sfid-:*:cacheid:_:*:msg_hash:/
+    #  As long as this isn't a "learn" run, nor a "stats-only" run,
+    #  we should save the text of this message in the text cache directory.
+    #   Note to self: eventually this should also work with the
+    #    command <password> spam nonspam stuff
+    {
+        match <absent> [:stats_only:] /SET/
+        match <absent> [:learnspam:] /SET/
+        match <absent> [:learnnonspam:] /SET/
+        output [:*:text_cache:\/texts\/:*:cacheid:] /:*:_dw:/
+    }
 }
 
 
@@ -289,36 +274,36 @@ isolate (:i_text:) /:*:m_text:/
 
     #   expansion 1: - do we perform base64 expansions?
     {
-          {
-                match [:do_base64:] /yes/
-                {
-                    #  yes, expand base64's if there are any
-                    #
-                    #    Note: some spams don't even bother to use
-                    #    a 'Content-Transfer-Encoding' marker,
-                    #    and even fewer use Content-Type: text/whatever
-                    #    so we have to sort of wing it, when to expand
-                    #    what _might_ be base64 and when to ignore it.
-                    #    For now, if it says it's a base64, it gets
-                    #    expanded, no matter what the type.  Maybe
-                    #    someday someone will put in a lockout for
-                    #    things like .jpg files, .doc files, etc.
-                    #
-                    isolate (:exp_text:)
-                    match [:b_text:] <nocase> (:a: :h: :b:) \
-                        /(Content-Transfer-Encoding): base64(.*)/
-                    match (:c:) [:b:]  \
-                        /([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
-                    #
-                    syscall (:*:c:) (:exp_text:) /:*:mime_decoder: /
-                    #   and stuff the result back into b_text for
-                    #   classification right in context.
-                    alter (:c:) /:*:exp_text:/
-                    #   and mark this piece of mime as "prior".
-                    alter (:h:) /Content-Transfer-Prior-Encoding/
-                    #   repeat till no more Mime base64 encodings
-                    liaf
-                }
+		{
+			match [:do_base64:] /yes/
+			{
+				#  yes, expand base64's if there are any
+				#
+				#    Note: some spams don't even bother to use
+				#    a 'Content-Transfer-Encoding' marker,
+				#    and even fewer use Content-Type: text/whatever
+				#    so we have to sort of wing it, when to expand
+				#    what _might_ be base64 and when to ignore it.
+				#    For now, if it says it's a base64, it gets
+				#    expanded, no matter what the type.  Maybe
+				#    someday someone will put in a lockout for
+				#    things like .jpg files, .doc files, etc.
+				#
+				isolate (:exp_text:)
+				match [:b_text:] <nocase> (:a: :h: :b:) \
+					/(Content-Transfer-Encoding): base64(.*)/
+				match (:c:) [:b:]  \
+					/([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
+				#
+				syscall (:*:c:) (:exp_text:) /:*:mime_decoder: /
+				#   and stuff the result back into b_text for
+				#   classification right in context.
+				alter (:c:) /:*:exp_text:/
+				#   and mark this piece of mime as "prior".
+				alter (:h:) /Content-Transfer-Prior-Encoding/
+				#   repeat till no more Mime base64 encodings
+				liaf
+			}
         }
         alius
         {
@@ -337,7 +322,7 @@ isolate (:i_text:) /:*:m_text:/
         }
         alius
         {
-            #   if :b_text: _didn't_ have a base64, it's useless
+            # if :b_text: _didn't_ have a base64, it's useless
             alter (:b_text:) //
         }
     }
@@ -436,24 +421,24 @@ match (:text:) [:m_text:] /.*/
 isolate (:c:) //
 isolate ( :spamcss: :nonspamcss: )
 {
-        match <absent> [:spamcss:] /./
-        alter (:spamcss:) /spam.css/
+    match <absent> [:spamcss:] /./
+    alter (:spamcss:) /spam.css/
 }
 {
-        match <absent> [:nonspamcss:] /./
-        alter (:nonspamcss:) /nonspam.css/
+    match <absent> [:nonspamcss:] /./
+    alter (:nonspamcss:) /nonspam.css/
 }
 {
-        match [:learnspam:] /SET/
-        goto /:learnspamhere:/
+    match [:learnspam:] /SET/
+    goto /:learnspamhere:/
 }
 {
-        match [:learnnonspam:] /SET/
-        goto /:learnnonspamhere:/
+    match [:learnnonspam:] /SET/
+    goto /:learnnonspamhere:/
 }
 {
-        match (:trash: :file:) [:learnfile:] /(.+)/
-        goto /:learntofilehere:/
+    match (:trash: :file:) [:learnfile:] /(.+)/
+    goto /:learntofilehere:/
 }
 
 #
@@ -536,9 +521,9 @@ isolate ( :spamcss: :nonspamcss: )
         accept
         exit /:*:accepted_mail_exit_code:/
     }
-   #
-   #    Did the user specify command "force"?
-   #
+	#
+	#    Did the user specify command "force"?
+	#
     {
         match <nomultiline> [:c:] /force/
         #
@@ -546,118 +531,118 @@ isolate ( :spamcss: :nonspamcss: )
         alter (:force:) /SET/
     }
 
-   #
-   #    Did the user specify command "unlearn"?
-   #
+	#
+	#    Did the user specify command "unlearn"?
+	#
     {
         match <nomultiline> [:c:] /unlearn/
         #
         #    yep, so we set the "force" on.
         alter (:unlearn:) /SET/
     }
-   #
-   #     Now, if :unlearn: is set, by either bashline or command, we
-   #     set the :clf: flag to be "refute".   Otherwise, we set it to
-   #     be what it was before.
-   #
+	#
+	#     Now, if :unlearn: is set, by either bashline or command, we
+	#     set the :clf: flag to be "refute".   Otherwise, we set it to
+	#     be what it was before.
+	#
     {
         match [:unlearn:] /SET/
         alter (:clf:) /:*:clf: refute/
     }
 
-   #
-   #     Now, the big mahonka.  Learn as nonspam, or as spam
-   #      (note the three subpaths - one each for non-forced, forced, and
-   #      non-forced error messages)
-   #
+	#
+	#     Now, the big mahonka.  Learn as nonspam, or as spam
+	#      (note the three subpaths - one each for non-forced, forced, and
+	#      non-forced error messages)
+	#
 
     {
         #     was it a command to learn something as nonspam?
         match [:c:] /nonspam/
         match (:z: :text:) [:m_text:] /:*:_nl:command [[:graph:]]+ nonspam(.*)/
         #      and learn it as nonspam
- :learnnonspamhere:
+:learnnonspamhere:
         {
-                #     Are we supposed to use the cached version?
-                {
-                        match [:c:] /cache/
-                        alter (:cache:) /SET/
-                }
-                match [:cache:] /SET/        # can also be set on command line
-                #      yes - so we use mailtrainer.crm to do the training
-                {
-                    match (:: :fileid:) /X-CRM114-CacheID: ([[:graph:]]+)/
-                    #      check- does the cached file exist?
-                    syscall () (:tmp:) /ls :*:text_cache:\/texts\/:*:fileid:/ /[Windows-MS]dir /b :*:text_cache:\\texts\\:*:fileid:/
-                    match [:tmp:] /:*:fileid:/
-                    #   yes, it exists - go on with the learning method
-                    #      and remember this file on a permanent basis
-                    syscall /ln :*:text_cache:\/texts\/:*:fileid: :*:text_cache:\/known_good\/:*:fileid: /
-                    # output / \n DOING: crm mailtrainer.crm --good=:*:text_cache:\/texts\/:*:fileid: --spam=:*:text_cache:\/empty\/ \n / () (:mailtrainer_output:)
-                    syscall /crm mailtrainer.crm --fileprefix :*:fileprefix: --good=:*:text_cache:\/texts\/:*:fileid: --spam=:*:text_cache:\/empty\/ / () (:mailtrainer_output:)
-                    # output /mailtrainer output:  ':*:mailtrainer_output:'\n/
-                    #      and remove it from the prob_* directories, as
-                    #      now it's known
-                    syscall /rm -rf  :*:text_cache:\/prob_spam\/:*:fileid:/
-                    syscall /rm -rf  :*:text_cache:\/prob_good\/:*:fileid:/
-                    #
-                    #      now it's trained; put in a marker in the headers
-                    call /:mungmail_delete:/ [X-CRM114-Status: ]
-                    call /:mungmail_delete:/ [X-CRM114-Unsure: ]
-                    call /:mungmail_add:/ [X-CRM114-Action: LEARNED AND CACHED NONSPAM ]
-                    #   Insert the training report into the msgbody if desired
-                    {
-                        match [:add_mailtrainer_report:] /yes/
-                        match (:: :firstline:) /.*(.)/
-                        match (:: :firstline:) /\n\n()/
-                        alter (:firstline:) / :*:mailtrainer_output:\n-----\n/
-                    }
-                    accept
-                    exit /:*:accepted_mail_exit_code:/
-                }
-                {
-                    #   No, it didn't exist.  Add an error message header.
-                    call /:mungmail_add:/ [X-CRM114-ERROR: No cached text with that cacheID, so nothing done!]
-                    accept
-                    exit /:*:accepted_mail_exit_code:/
-                }
-        }
-        {     #  No cacheing, so we learn "natively"
+            #     Are we supposed to use the cached version?
+            {
+                    match [:c:] /cache/
+                    alter (:cache:) /SET/
+            }
+            match [:cache:] /SET/        # can also be set on command line
+            #      yes - so we use mailtrainer.crm to do the training
+            {
+                match (:: :fileid:) /X-CRM114-CacheID: ([[:graph:]]+)/
+                #      check- does the cached file exist?
+                syscall () (:tmp:) /ls :*:text_cache:\/texts\/:*:fileid:/ /[Windows-MS]dir /b :*:text_cache:\\texts\\:*:fileid:/
+                match [:tmp:] /:*:fileid:/
+                #   yes, it exists - go on with the learning method
+                #      and remember this file on a permanent basis
+                syscall /ln :*:text_cache:\/texts\/:*:fileid: :*:text_cache:\/known_good\/:*:fileid: /
+                # output / \n DOING: crm mailtrainer.crm --good=:*:text_cache:\/texts\/:*:fileid: --spam=:*:text_cache:\/empty\/ \n / () (:mailtrainer_output:)
+                syscall /crm mailtrainer.crm --fileprefix :*:fileprefix: --good=:*:text_cache:\/texts\/:*:fileid: --spam=:*:text_cache:\/empty\/ / () (:mailtrainer_output:)
+                # output /mailtrainer output:  ':*:mailtrainer_output:'\n/
+                #      and remove it from the prob_* directories, as
+                #      now it's known
+                syscall /rm -rf  :*:text_cache:\/prob_spam\/:*:fileid:/
+                syscall /rm -rf  :*:text_cache:\/prob_good\/:*:fileid:/
                 #
-                #    Verify that we need to learn this first (TOE strategy)
-                classify <:*:clf:> [:text:] /:*:lcr:/ \
-                  (:*:fileprefix::*:nonspamcss: :*:fileprefix::*:spamcss: ) \
-                  (:classify_status:)
-                match [:classify_status:] <nomultiline> \
-                        /^#0.* pR: ([-. 0-9]+)/ (:: :pr:)
-                eval /:@: :*:pr: < :*:good_threshold: :/    # was comparison against 'think_threshold'
-                output [:*:fileprefix:nonspamtext.txt] \
-                        <append> /\n\n:*:cmd_txt:\n/
-                #
-                #     write out the pre-mutilation text, with newlines
-                #
-                learn <:*:clf:> (:*:fileprefix::*:nonspamcss:) [:text:] /:*:lcr:/
-                call /:mungmail_add:/ [X-CRM114-Action: LEARNED NONSPAM]
-                call /:mungmail_unique:/ [X-CRM114-Status: Good (Learn)]
+                #      now it's trained; put in a marker in the headers
+                call /:mungmail_delete:/ [X-CRM114-Status: ]
+                call /:mungmail_delete:/ [X-CRM114-Unsure: ]
+                call /:mungmail_add:/ [X-CRM114-Action: LEARNED AND CACHED NONSPAM ]
+                #   Insert the training report into the msgbody if desired
+                {
+                    match [:add_mailtrainer_report:] /yes/
+                    match (:: :firstline:) /.*(.)/
+                    match (:: :firstline:) /\n\n()/
+                    alter (:firstline:) / :*:mailtrainer_output:\n-----\n/
+                }
                 accept
                 exit /:*:accepted_mail_exit_code:/
+            }
+            {
+                #   No, it didn't exist.  Add an error message header.
+                call /:mungmail_add:/ [X-CRM114-ERROR: No cached text with that cacheID, so nothing done!]
+                accept
+                exit /:*:accepted_mail_exit_code:/
+            }
+        }
+        {     #  No cacheing, so we learn "natively"
+            #
+            #    Verify that we need to learn this first (TOE strategy)
+            classify <:*:clf:> [:text:] /:*:lcr:/ \
+              (:*:fileprefix::*:nonspamcss: :*:fileprefix::*:spamcss: ) \
+              (:classify_status:)
+            match [:classify_status:] <nomultiline> \
+                    /^#0.* pR: ([-. 0-9]+)/ (:: :pr:)
+            eval /:@: :*:pr: < :*:good_threshold: :/    # was comparison against 'think_threshold'
+            output [:*:fileprefix:nonspamtext.txt] \
+                    <append> /\n\n:*:cmd_txt:\n/
+            #
+            #     write out the pre-mutilation text, with newlines
+            #
+            learn <:*:clf:> (:*:fileprefix::*:nonspamcss:) [:text:] /:*:lcr:/
+            call /:mungmail_add:/ [X-CRM114-Action: LEARNED NONSPAM]
+            call /:mungmail_unique:/ [X-CRM114-Status: Good (Learn)]
+            accept
+            exit /:*:accepted_mail_exit_code:/
         }
         alius
         {
-                #
-                #    Did the user specify "--force" on the command line?
-                match [:force:] /SET/
-                output [:*:fileprefix:nonspamtext.txt] <append> /\n\n:*:cmd_txt:\n/
-                #
-                #     write out the pre-mutilation text, with newlines
-                #
-                learn < :*:clf: > (:*:fileprefix::*:nonspamcss:) [:text:] /:*:lcr:/
-                #  syscall (:*:_dw:) (:_dw:) \
-                #   /formail -A "X-CRM114-Action: LEARNED NONSPAM (FORCED) :*:clf:"/
-                call /:mungmail_add:/ [X-CRM114-Action: LEARNED NONSPAM (FORCED)]
-                call /:mungmail_unique:/ [X-CRM114-Status: Good (Learn)]
-                accept
-                exit /:*:accepted_mail_exit_code:/
+            #
+            #    Did the user specify "--force" on the command line?
+            match [:force:] /SET/
+            output [:*:fileprefix:nonspamtext.txt] <append> /\n\n:*:cmd_txt:\n/
+            #
+            #     write out the pre-mutilation text, with newlines
+            #
+            learn < :*:clf: > (:*:fileprefix::*:nonspamcss:) [:text:] /:*:lcr:/
+            #  syscall (:*:_dw:) (:_dw:) \
+            #   /formail -A "X-CRM114-Action: LEARNED NONSPAM (FORCED) :*:clf:"/
+            call /:mungmail_add:/ [X-CRM114-Action: LEARNED NONSPAM (FORCED)]
+            call /:mungmail_unique:/ [X-CRM114-Status: Good (Learn)]
+            accept
+            exit /:*:accepted_mail_exit_code:/
         }
         alius
         {
@@ -725,8 +710,8 @@ isolate ( :spamcss: :nonspamcss: )
                     (:classify_status:)
             match [:classify_status:] <nomultiline> \
                     /^#0.* pR: ([-. 0-9]+)/ (:: :pr:)
-            # eval /:@: :*:pr: < (0 - :*:thick_threshold:) : /
-            eval /:@: :*:pr: < :*:spam_threshold: : /
+            # eval /:@: :*:pr: > (0 - :*:thick_threshold:) : /
+            eval /:@: :*:pr: > :*:spam_threshold: : /
             #
             #     write out the pre-mutilation text, with newlines
             #
@@ -818,44 +803,44 @@ match [:priolist:] //
 #
 #
 {
-        #... Grab the next regexturn the one-per-line patterns into a regex
-        match <fromend nomultiline> (:w: :pm: :pat:) [:priolist:]  /(.)(.+)/
-        #... see if this regex matches the incoming mail
+    #... Grab the next regexturn the one-per-line patterns into a regex
+    match <fromend nomultiline> (:w: :pm: :pat:) [:priolist:]  /(.)(.+)/
+    #... see if this regex matches the incoming mail
+    {
+        match <nomultiline> (:reason:) /:*:pat:/
+        #  Yep, it matched... branch based on pm
+        #
         {
-                match <nomultiline> (:reason:) /:*:pat:/
-                #  Yep, it matched... branch based on pm
-                #
-                {
-                        match [:pm:] /[+]/
-                        # put in a little tag saying why prio-listed
-                        alter (:classifier_reason:) /** ACCEPT: CRM114 Priority Whitelisted by: :*:reason: **:*:_nl:/
-                        alter (:stats:) / pR: 999.99 /
-                        goto /:looks_good:/
-                }
-                #   No, we didn't have a +, was it a '-'?
-                {
-                        match [:pm:] /[-]/
-                        alter (:classifier_reason:) /** REJECT: CRM114 Priority Blacklisted by: :*:reason: **:*:_nl:/
-                        alter (:reject_address:) /:*:fail_priority_mail_to:/
-                        {
-                              match [:log_rejections:] /yes/
-                              output [:*:fileprefix:rejected_by_blacklist.txt] <append> /:*:_dw:/
-                        }
-                        alter (:stats:) / pR: -999.99 /
-                        goto /:looks_bad:/
-                }
+            match [:pm:] /[+]/
+            # put in a little tag saying why prio-listed
+            alter (:classifier_reason:) /** ACCEPT: CRM114 Priority Whitelisted by: :*:reason: **:*:_nl:/
+            alter (:stats:) / pR: 999.99 /
+            goto /:looks_good:/
         }
-        #   Nope, didn't match as a priority... grab the next regex
-        liaf
+        #   No, we didn't have a +, was it a '-'?
+        {
+            match [:pm:] /[-]/
+            alter (:classifier_reason:) /** REJECT: CRM114 Priority Blacklisted by: :*:reason: **:*:_nl:/
+            alter (:reject_address:) /:*:fail_priority_mail_to:/
+            {
+				match [:log_rejections:] /yes/
+				output [:*:fileprefix:rejected_by_blacklist.txt] <append> /:*:_dw:/
+            }
+            alter (:stats:) / pR: -999.99 /
+            goto /:looks_bad:/
+        }
+    }
+    #   Nope, didn't match as a priority... grab the next regex
+    liaf
 }
 #
 #
 #     check it against the whitelist... load the whitelist...
 {
-        isolate (:whitelist:)
-        input (:whitelist:) [:*:fileprefix:whitelist.mfp]
-        #    reset matching on whitelist to start of string
-        match [:whitelist:] //
+    isolate (:whitelist:)
+    input (:whitelist:) [:*:fileprefix:whitelist.mfp]
+    #    reset matching on whitelist to start of string
+    match [:whitelist:] //
 }
 #
 #
@@ -882,32 +867,32 @@ match [:priolist:] //
 #
 #     check it against the blacklist
 {
-        isolate (:blacklist:)
-        input (:blacklist:) [:*:fileprefix:blacklist.mfp]
-        #    reset matching on blacklist to start of string
-        match [:blacklist:] //
+    isolate (:blacklist:)
+    input (:blacklist:) [:*:fileprefix:blacklist.mfp]
+    #    reset matching on blacklist to start of string
+    match [:blacklist:] //
 }
 #
 {
-        #... Grab the next regexturn the one-per-line patterns into a regex
-        match <fromend nomultiline> (:waste: :blregex:) [:blacklist:]  /(.+)/
-        #... see if this regex matches the incoming mail
+    #... Grab the next regexturn the one-per-line patterns into a regex
+    match <fromend nomultiline> (:waste: :blregex:) [:blacklist:]  /(.+)/
+    #... see if this regex matches the incoming mail
+    {
+        match <nomultiline> (:reason:) /:*:blregex:/
+        #  Yep, it matched... blacklist this email
+        #
+        # put in a little tag saying why blacklisted
+        alter (:classifier_reason:) /** REJECT: CRM114 Blacklisted by: :*:reason: ** :*:_nl:/
+        alter (:reject_address:) /:*:fail_blacklist_mail_to:/
         {
-                match <nomultiline> (:reason:) /:*:blregex:/
-                #  Yep, it matched... blacklist this email
-                #
-                # put in a little tag saying why blacklisted
-                alter (:classifier_reason:) /** REJECT: CRM114 Blacklisted by: :*:reason: ** :*:_nl:/
-                alter (:reject_address:) /:*:fail_blacklist_mail_to:/
-                                {
-                        match [:log_rejections:] /yes/
-                        output [:*:fileprefix:rejected_by_blacklist.txt] <append> /:*:_dw:/
-                }
-                alter (:stats:) / pR: -999.99 /
-                goto /:looks_bad:/
+            match [:log_rejections:] /yes/
+            output [:*:fileprefix:rejected_by_blacklist.txt] <append> /:*:_dw:/
         }
-        #   Nope, didn't match... grab the next regex and try again
-        liaf
+        alter (:stats:) / pR: -999.99 /
+        goto /:looks_bad:/
+    }
+    #   Nope, didn't match... grab the next regex and try again
+    liaf
 }
 #
 #
@@ -920,175 +905,175 @@ match [:priolist:] //
 #
 #
 {
-        # Run the CSS classifier against the "expanded" text -
-        # if it classifies as SPAM
-        #   then reject it as SPAM.
-        #
-        {
-                classify <:*:clf:> ( :*:fileprefix::*:nonspamcss: | :*:fileprefix::*:spamcss: ) ( :stats: ) [:m_text:] /:*:lcr:/
-        }
-        #       Now we grab the pR and if it's greater than the minus
-        #       threshold, we send it to "good".  Otherwise, it goes to bad.
-        {
-                match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
-                eval /:@: :*:pval: > ( 0.0 - :*:thick_threshold: ) : /
-                alter (:classifier_reason:) /** ACCEPT: CRM114 PASS :*:clf: Matcher ** :*:_nl::*:stats:/
-                goto /:looks_good:/
-        }
-        alter (:classifier_reason:) /** REJECT: CRM114 FAIL :*:clf: Matcher ** :*:_nl::*:stats:/
-        alter (:reject_address:) /:*:fail_SSM_mail_to:/
-        {
-                match [:log_rejections:] /yes/
-                output [:*:fileprefix:rejected_by_css.txt] <append> /:*:_dw:/
-        }
-        goto /:looks_bad:/
+    # Run the CSS classifier against the "expanded" text -
+    # if it classifies as SPAM
+    #   then reject it as SPAM.
+    #
+    {
+	    classify <:*:clf:> ( :*:fileprefix::*:nonspamcss: | :*:fileprefix::*:spamcss: ) ( :stats: ) [:m_text:] /:*:lcr:/
+    }
+    #       Now we grab the pR and if it's greater than the minus
+    #       threshold, we send it to "good".  Otherwise, it goes to bad.
+    {
+        match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
+        eval /:@: :*:pval: > ( 0.0 - :*:thick_threshold: ) : /
+        alter (:classifier_reason:) /** ACCEPT: CRM114 PASS :*:clf: Matcher ** :*:_nl::*:stats:/
+        goto /:looks_good:/
+    }
+    alter (:classifier_reason:) /** REJECT: CRM114 FAIL :*:clf: Matcher ** :*:_nl::*:stats:/
+    alter (:reject_address:) /:*:fail_SSM_mail_to:/
+    {
+        match [:log_rejections:] /yes/
+        output [:*:fileprefix:rejected_by_css.txt] <append> /:*:_dw:/
+    }
+    goto /:looks_bad:/
 }
 #
 #
 #         Final wrap-up routines - dispose of the mail as appropriate.
 #
 {
-        :looks_bad:
-        #   is this a :stats_only: run (i.e. for CAMRAM)
-        {
-                match [:stats_only:] /SET/
-                match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
-                output /:*:pval: :*:_nl:/
-                alter (:our_exit_code:) /:*:rejected_mail_exit_code:/
-                goto /:finish_up:/
-        }
+:looks_bad:
+    #   is this a :stats_only: run (i.e. for CAMRAM)
+    {
+        match [:stats_only:] /SET/
+        match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
+        output /:*:pval: :*:_nl:/
+        alter (:our_exit_code:) /:*:rejected_mail_exit_code:/
+        goto /:finish_up:/
+    }
 
-        #    not stats_only.... we're doing major output.
+    #    not stats_only.... we're doing major output.
 
-        #       save unprocessed text by symlink in the text cache if needed.
-        {
-                match [:text_cache:] /./
-                syscall () () /ln :*:text_cache:\/texts\/:*:cacheid: :*:text_cache:\/prob_spam\/:*:cacheid:/
-        }
+    #       save unprocessed text by symlink in the text cache if needed.
+    {
+        match [:text_cache:] /./
+        syscall () () /ln :*:text_cache:\/texts\/:*:cacheid: :*:text_cache:\/prob_spam\/:*:cacheid:/
+    }
 
-        #     and write out the long-form message too.
-        {
-           {
-                match [:add_headers:] /yes/
-                {
-                        match <nomultiline> [:stats:] (:pr:) /pR: .*$/
-                }
-                call /:mungmail_add:/ [X-CRM114-Version: :*:_crm_version: MF-:*:_pgm_hash: ]
-                call /:mungmail_unique:/ [X-CRM114-CacheID: :*:cacheid: ]
-                call /:mungmail_unique:/ [X-CRM114-Status: SPAM  ( :*:pr: )]
-           }
-           #
-           #            Now, get the Subject: line.  If none, make one.
-           {
-                {
-                    match (:subject_line: :subj_text:) <nocase nomultiline> \
-                         /^Subject: (.*)/
-                }
-                alius
-                {
-                        match (:end_of_headers:) /\n\n/
-                        alter (:end_of_headers:) /\nSubject: (none)\n\n/
-                        match (:subject_line: :subj_text:) <nomultiline> /^Subject: (.*)/       }
-           }
-           {
-                #
-                #   If we are re-sending this, we want to de-fang the
-                #   subject, otherwise we don't.
-                match [:reject_address:]  /[a-zA-Z0-9]/
-                #   Paolo P. suggests this alteration to avoid subversion
-                #   by enclosing an alternate target in "marks".  We always
-                #   have to do this.
-                {
-                        match (:dq:) [:subj_text:] /\$/
-                        alter (:dq:) /USD/
-                        liaf
-                }
-                {
-                        match (:dq:) [:subj_text:] /[^-a-zA-Z0-9!., ]/
-                        alter (:dq:) //
-                        liaf
-                }
-                #
-                #     We isolate subj_text here, so if later syscalls move
-                #     things, the subject text used in "mail" is still OK.
-                isolate (:subj_text:)
-           }
-           #
-           #     If the user asked for a spam-flagging string, put the flagging
-           #     string into the subject.
-           #
-           {
-                match [:spam_flag_subject_string:] /./
-                alter (:subj_text:) \
-                /:*:spam_flag_subject_string: :*:subj_text:/
-           }
-           {
-                match [:add_extra_stuff:] /text/
-                #   get rid of any first-column 'From's as they are message breaks!
-                #   this isn't necessary if we're mailing to someplace else...
-                {
-                        match (:f:) <nomultiline> [:m_text:] /^From/
-                        alter (:f:) />:*:f:/
-                        liaf
-                }
-                alter (:_dw:) /:*:_dw:-=-Extra Stuff-=-\n\n:*:m_text: -0-0-0- :*:_nl:/
-          }
-          {
-                match [:add_extra_stuff:] /attachment/
-                #   get rid of any first-column 'From's as they are message breaks!
-                #   this isn't necessary if we're mailing to someplace else...
-                {
-                        match (:f:) <nomultiline> [:m_text:] /^From/
-                        alter (:f:) / :*:f:/
-                        liaf
-                }
+    #     and write out the long-form message too.
+    {
+		{
+			match [:add_headers:] /yes/
+			{
+				match <nomultiline> [:stats:] (:pr:) /pR: .*$/
+			}
+			call /:mungmail_add:/ [X-CRM114-Version: :*:_crm_version: MF-:*:_pgm_hash: ]
+			call /:mungmail_unique:/ [X-CRM114-CacheID: :*:cacheid: ]
+			call /:mungmail_unique:/ [X-CRM114-Status: SPAM  ( :*:pr: )]
+		}
+		#
+		#            Now, get the Subject: line.  If none, make one.
+		{
+			{
+				match (:subject_line: :subj_text:) <nocase nomultiline> \
+					 /^Subject: (.*)/
+			}
+			alius
+			{
+				match (:end_of_headers:) /\n\n/
+				alter (:end_of_headers:) /\nSubject: (none)\n\n/
+				match (:subject_line: :subj_text:) <nomultiline> /^Subject: (.*)/       }
+		}
+		{
+			#
+			#   If we are re-sending this, we want to de-fang the
+			#   subject, otherwise we don't.
+			match [:reject_address:]  /[a-zA-Z0-9]/
+			#   Paolo P. suggests this alteration to avoid subversion
+			#   by enclosing an alternate target in "marks".  We always
+			#   have to do this.
+			{
+				match (:dq:) [:subj_text:] /\$/
+				alter (:dq:) /USD/
+				liaf
+			}
+			{
+				match (:dq:) [:subj_text:] /[^-a-zA-Z0-9!., ]/
+				alter (:dq:) //
+				liaf
+			}
+			#
+			#     We isolate subj_text here, so if later syscalls move
+			#     things, the subject text used in "mail" is still OK.
+			isolate (:subj_text:)
+		}
+		#
+		#     If the user asked for a spam-flagging string, put the flagging
+		#     string into the subject.
+		#
+		{
+			match [:spam_flag_subject_string:] /./
+			alter (:subj_text:) \
+			/:*:spam_flag_subject_string: :*:subj_text:/
+		}
+		{
+			match [:add_extra_stuff:] /text/
+			#   get rid of any first-column 'From's as they are message breaks!
+			#   this isn't necessary if we're mailing to someplace else...
+			{
+				match (:f:) <nomultiline> [:m_text:] /^From/
+				alter (:f:) />:*:f:/
+				liaf
+			}
+			alter (:_dw:) /:*:_dw:-=-Extra Stuff-=-\n\n:*:m_text: -0-0-0- :*:_nl:/
+		}
+		{
+			match [:add_extra_stuff:] /attachment/
+			#   get rid of any first-column 'From's as they are message breaks!
+			#   this isn't necessary if we're mailing to someplace else...
+			{
+				match (:f:) <nomultiline> [:m_text:] /^From/
+				alter (:f:) / :*:f:/
+				liaf
+			}
 
 
-                isolate (:content_type:) //
-                # syscall (:*:_dw:) (:content_type:) /formail -X "Content-Type"/
-                call /:mungmail_extract:/ [Content-type] (:content_type:)
-                isolate (:content_transfer_encoding:) //
-                # syscall (:*:_dw:) (:content_transfer_encoding:) /formail -X "Content-Transfer-Encoding"/
-                call /:mungmail_extract:/ [Content-Transfer-Encoding] (:content_transfer_encoding:)
-                # syscall (:*:_dw:) (:_dw:) /formail -A "MIME-Version: 1.0"/
-                # syscall (:*:_dw:) (:_dw:) /formail -A "Content-Type: multipart\/mixed\; boundary=Attachment_Quote_Boundary_1234567890\n--Attachment_Quote_Boundary_1234567890\n:*:content_type::*:content_transfer_encoding:"/
-                call /:mungmail_add:/ ["Content-Type: multipart\/mixed\; boundary=Attachment_Quote_Boundary_1234567890\n--Attachment_Quote_Boundary_1234567890\n:*:content_type::*:content_transfer_encoding:]
-                alter (:_dw:) /:*:_dw::*:_nl:\
+			isolate (:content_type:) //
+			# syscall (:*:_dw:) (:content_type:) /formail -X "Content-Type"/
+			call /:mungmail_extract:/ [Content-type] (:content_type:)
+			isolate (:content_transfer_encoding:) //
+			# syscall (:*:_dw:) (:content_transfer_encoding:) /formail -X "Content-Transfer-Encoding"/
+			call /:mungmail_extract:/ [Content-Transfer-Encoding] (:content_transfer_encoding:)
+			# syscall (:*:_dw:) (:_dw:) /formail -A "MIME-Version: 1.0"/
+			# syscall (:*:_dw:) (:_dw:) /formail -A "Content-Type: multipart\/mixed\; boundary=Attachment_Quote_Boundary_1234567890\n--Attachment_Quote_Boundary_1234567890\n:*:content_type::*:content_transfer_encoding:"/
+			call /:mungmail_add:/ ["Content-Type: multipart\/mixed\; boundary=Attachment_Quote_Boundary_1234567890\n--Attachment_Quote_Boundary_1234567890\n:*:content_type::*:content_transfer_encoding:]
+			alter (:_dw:) /:*:_dw::*:_nl:\
 --Attachment_Quote_Boundary_1234567890 :*:_nl:\
 Content-Type: text\/plain :*:_nl:\
 Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 \n--Attachment_Quote_Boundary_1234567890--\n/
-            }
+        }
 
 #
 #
 #     Decide if we forward or if we just output it.
-           {
-               {
-                #   if this match succeeds, we should forward-to-an-address?
-                # Yes, but only if we _have_ a forward-to address.
-                match [:reject_address:]  /[a-zA-Z0-9]/
-                {
-                  #  -- put the classifier reason in as the first thing!
-                  match [:add_verbose_stats:] /yes/
-                  alter (:_dw:) /:*:_nl: :*:classifier_reason::*:_nl: :*:_dw: /
-                }
-                syscall (:*:_dw:) /mail :*:reject_address: -s ':*:subj_text:'/
-             }
-             alius
-             {
-               {
-                 # -- put the classifier reason in at the end of the headers
-                 match [:add_verbose_stats:] /yes/
-                 match (:start_of_data:) /\n\n/
-                 alter (:start_of_data:) /\n\n :*:classifier_reason: \n /
-               }
-               accept
-             }
-           }
-        }
-        alter (:our_exit_code:) /:*:rejected_mail_exit_code:/
-        goto /:finish_up:/
+		{
+			{
+				#   if this match succeeds, we should forward-to-an-address?
+				# Yes, but only if we _have_ a forward-to address.
+				match [:reject_address:]  /[a-zA-Z0-9]/
+				{
+					#  -- put the classifier reason in as the first thing!
+					match [:add_verbose_stats:] /yes/
+					alter (:_dw:) /:*:_nl: :*:classifier_reason::*:_nl: :*:_dw: /
+				}
+				syscall (:*:_dw:) /mail :*:reject_address: -s ':*:subj_text:'/
+			}
+			alius
+			{
+				{
+					# -- put the classifier reason in at the end of the headers
+					match [:add_verbose_stats:] /yes/
+					match (:start_of_data:) /\n\n/
+					alter (:start_of_data:) /\n\n :*:classifier_reason: \n /
+				}
+				accept
+			}
+		}
+    }
+    alter (:our_exit_code:) /:*:rejected_mail_exit_code:/
+    goto /:finish_up:/
 }
 #
 #          and here's where we accept something as good email.
@@ -1096,11 +1081,11 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
     :looks_good:
     #   is this a :stats_only: run (i.e. for CAMRAM)
     {
-                match [:stats_only:] /SET/
-                match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
-                output /:*:pval: :*:_nl:/
-                alter (:our_exit_code:) /:*:accepted_mail_exit_code:/
-                goto /:finish_up:/
+        match [:stats_only:] /SET/
+        match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
+        output /:*:pval: :*:_nl:/
+        alter (:our_exit_code:) /:*:accepted_mail_exit_code:/
+        goto /:finish_up:/
     }
 
     #   Not stats-only; do the full output thing.
@@ -1120,19 +1105,19 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
     {
         match [:add_headers:] /yes/
         {
-                match <nomultiline> [:stats:] (:pr:) /pR: .*$/
+            match <nomultiline> [:stats:] (:pr:) /pR: .*$/
         }
         # syscall (:*:_dw:) (:_dw:) /formail -A "X-CRM114-Version: :*:_crm_version: MF-:*:_pgm_hash: " -A "X-CRM114-Status: Good  ( :*:pr: \)"/
         call /:mungmail_add:/ [X-CRM114-Version: :*:_crm_version: MF-:*:_pgm_hash: [:*:pr:]]
         call /:mungmail_unique:/ [X-CRM114-CacheID: :*:cacheid: ]
         call /:mungmail_unique:/ [X-CRM114-Status: Good  ( :*:pr: )]
         {
-        #    Maybe we need to tag it as unsure?  Note that since mail
-        #  that scores > -thresh (but still < 0)goes out the "good" pipe,
-        #  some "spammy" email might come through here.
-                match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
-                eval /:@: :*:pval: < :*:thick_threshold: :/
-                call /:mungmail_unique:/ [X-CRM114-Status: UNSURE (:*:pval:) This message is 'unsure'; please train it! ]
+			#    Maybe we need to tag it as unsure?  Note that since mail
+			#  that scores > -thresh (but still < 0)goes out the "good" pipe,
+			#  some "spammy" email might come through here.
+            match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
+            eval /:@: :*:pval: < :*:thick_threshold: :/
+            call /:mungmail_unique:/ [X-CRM114-Status: UNSURE (:*:pval:) This message is 'unsure'; please train it! ]
         }
     }
     {
@@ -1140,19 +1125,19 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
         #   get rid of any first-column 'From's as they are message breaks!
         #   this isn't necessary if we're mailing to someplace else...
         {
-                match (:f:) <nomultiline> [:m_text:] /^From/
-                alter (:f:) / :*:f:/
-                liaf
+            match (:f:) <nomultiline> [:m_text:] /^From/
+            alter (:f:) / :*:f:/
+            liaf
         }
         alter (:_dw:) /:*:_dw:-=-Extra Stuff-=-\n\n :*:m_text: -0-0-0- \n/
-     }
-     {
+	}
+	{
         match [:add_extra_stuff:] /attachment/
         #   get rid of any first-column 'From's as they are message breaks!     #   this isn't necessary if we're mailing to someplace else...
         {
-                match (:f:) <nomultiline> [:m_text:] /^From/
-                alter (:f:) / :*:f:/
-                liaf
+            match (:f:) <nomultiline> [:m_text:] /^From/
+            alter (:f:) / :*:f:/
+            liaf
         }
         isolate (:content_type:) //
         # syscall (:*:_dw:) (:content_type:) /formail -X "Content-Type"/
@@ -1170,7 +1155,7 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 Content-Type: text\/plain :*:_nl:\
 Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 \n--Attachment_Quote_Boundary_1234567890--\n/
-     }
+	}
 
     accept
     alter (:our_exit_code:) /:*:accepted_mail_exit_code:/
@@ -1181,48 +1166,48 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 #
 :finish_up:
 {
-#    ---- should we consider automatic training?
-        match [:automatic_training:] /yes/
-        # bounce out if we've already auto-trained this email
-        match <absent> /AUTO-TRAINED/
-        isolate (:msghash:)
-        hash (:msghash:) /:*:_dw:/
-        #        pick one in 16- here, if the second-to-last digit is a 0
-        match [:msghash:] /......0./
-        #
-        # out put autotraining...
-        #       Yep... we should use this for autotraining
-        #       do we auto-train on acceptance?
-        {
-                match [:classifier_reason:] /ACCEPT/
-                #   it wasn't spam... autotrain it "nonspam"
-                output [:*:fileprefix:nonspamtext.txt] <append> /:*:text:/
-                learn <microgroom>  (:*:fileprefix::*:nonspamcss:) [:m_text:]  /:*:lcr:/
-                goto /:autotrain_finish:/
-        }
+	#    ---- should we consider automatic training?
+    match [:automatic_training:] /yes/
+    # bounce out if we've already auto-trained this email
+    match <absent> /AUTO-TRAINED/
+    isolate (:msghash:)
+    hash (:msghash:) /:*:_dw:/
+    #        pick one in 16- here, if the second-to-last digit is a 0
+    match [:msghash:] /......0./
+    #
+    # out put autotraining...
+    #       Yep... we should use this for autotraining
+    #       do we auto-train on acceptance?
+    {
+        match [:classifier_reason:] /ACCEPT/
+        #   it wasn't spam... autotrain it "nonspam"
+        output [:*:fileprefix:nonspamtext.txt] <append> /:*:text:/
+        learn <microgroom>  (:*:fileprefix::*:nonspamcss:) [:m_text:]  /:*:lcr:/
+        goto /:autotrain_finish:/
+    }
 
-        #      or do we autotran on rejection
-        {
-                match [:classifier_reason:] /REJECT/
-                #   it was spam... autotrain it "spam"
-                output [:*:fileprefix:spamtext.txt] <append> /:*:text:/
-                learn <microgroom> (:*:fileprefix::*:spamcss:) [:m_text:] /:*:lcr:/
-                goto /:autotrain_finish:/
-        }
-        :autotrain_finish:
-        {
-           {
-                match [:autotrain_address:] /../
-                # syscall (:*:classifier_reason: :*:_nl: :*:_dw:) /mail -s "AUTO-TRAINED email - please check" :*:autotrain_address:/
-           }
-           alius
-           {
-                # there was no autotrain address, so we just accept it.
-                match (:subj:) /Subject:/
-                alter (:subj:) /Subject:  AUTO_TRAINED- please check! .../
-                accept
-           }
-        }
+    #      or do we autotran on rejection
+    {
+        match [:classifier_reason:] /REJECT/
+        #   it was spam... autotrain it "spam"
+        output [:*:fileprefix:spamtext.txt] <append> /:*:text:/
+        learn <microgroom> (:*:fileprefix::*:spamcss:) [:m_text:] /:*:lcr:/
+        goto /:autotrain_finish:/
+    }
+    :autotrain_finish:
+    {
+		{
+			match [:autotrain_address:] /../
+			# syscall (:*:classifier_reason: :*:_nl: :*:_dw:) /mail -s "AUTO-TRAINED email - please check" :*:autotrain_address:/
+		}
+		alius
+		{
+			# there was no autotrain address, so we just accept it.
+			match (:subj:) /Subject:/
+			alter (:subj:) /Subject:  AUTO_TRAINED- please check! .../
+			accept
+		}
+    }
 }
 :exit_here:
 exit /:*:our_exit_code:/
@@ -1330,14 +1315,21 @@ exit /:*:our_exit_code:/
 
 trap (:broken_program_message:) /.*/
 {
-        accept
-        output /:*:_nl: Aw, crud.  mailfilter.crm broke.  Here's the error: :*:_nl:/
-        output /:*:broken_program_message:/
-        output [stderr] /:*:_nl: ERROR: mailfilter.crm broke.  Here's the error: :*:_nl:/
-        output [stderr] /ERROR: :*:broken_program_message:/
+    accept
+    output /:*:_nl: Aw, crud.  mailfilter.crm broke.  Here's the error: :*:_nl:/
+    output /:*:broken_program_message:/
+    output [stderr] /:*:_nl: ERROR: mailfilter.crm broke.  Here's the error: :*:_nl:/
+    output [stderr] /ERROR: :*:broken_program_message:/
 }
 exit /:*:program_fault_exit_code:/
 
 
 
+
+
+
+######################################################################3
+#
+#              Library insertions start here.
+insert maillib.crm
 

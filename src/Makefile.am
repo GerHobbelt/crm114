@@ -15,18 +15,47 @@ DISTCLEANFILES =
 CLEANFILES = *.o *~ *.bak
 
 
+GZIP_BIN       = @GZIP@
+COMPRESS_BIN   = @COMPRESS@
+LZMA_BIN       = @LZMA@
+SEVENZIP_BIN   = @SEVEN_ZIP@
+TAR_BIN        = @TAR@
+SHAR_BIN       = @SHAR@
+BZIP2_BIN      = @BZIP2@
+ZIP_BIN        = @ZIP@
+CVS2CL_BIN     = @CVS2CL@
+UNCRUSTIFY_BIN = @UNCRUSTIFY@
+DIFF_BIN       = @DIFF@
+HTMLTIDY_BIN   = @HTMLTIDY@
+DB2X_XSLTPROC  = @DB2X_XSLTPROC@
+DB2X_MANXML    = @DB2X_MANXML@
+DB2X_TEXIXML   = @DB2X_TEXIXML@
+
+
+TAR_CMDLINE  = ${TAR_BIN} cf - "$$tardir"
+
+
+
 
 PACKAGE = @PACKAGE_TARNAME@
 TAR_FILENAME_POSTFIX = @TAR_FILENAME_POSTFIX@
-ARCHIVE_BASE_NAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-$(TAR_FILENAME_POSTFIX)
-
-
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
 #
 # e.g.: VER_SUFFIX=27B-6, then if you make install, you get crm-27b-6
 # 
 VER_SUFFIX = @VER_SUFFIX@ 
+VERSION = @VERSION@
+ARCHIVE_BASE_NAME = @PACKAGE_TARNAME@-@PACKAGE_VERSION@-@TAR_FILENAME_POSTFIX@
+
+SILENT = @SILENT@
+DIFF_FLAGS = @DIFF_FLAGS@
+
+
+
+
+
+DATE=`date +%Y_%m_%d_%H_%M_%S`
 
 #
 #      The following forces the compiler to be GCC.  If you have trouble
@@ -36,7 +65,7 @@ VER_SUFFIX = @VER_SUFFIX@
 #     What version is this software (PLEASE don't change this just 
 #     to mess with my brain. - wsy)
 #
-VERSION = @VERSION@
+#VERSION = @VERSION@
 PREV_VERSION=20080317-BlameJoeLangeway_VT
 #PREV_VERSION=20080217-BlameJoeLangeway_VT
 #PREV_VERSION=20071201-BlameLittleStevie_VT
@@ -66,8 +95,6 @@ PREV_VERSION=20080317-BlameJoeLangeway_VT
 #PREV_VERSION = 20051001-BlameRaulMiller
 #PREV_VERSION = crm114-20050721-BlameNeilArmstrong
 # VERSION += [$(TRE_TARFILE)]
-
-SILENT = @SILENT@
 
 #
 #
@@ -109,7 +136,7 @@ AM_LDFLAGS = @AM_LDFLAGS@
 #
 #   Any standard install flags?  We nominally use protection 755
 INSTALLFLAGS = @INSTALLFLAGS@
-INSTALLFLAGS += -m 755
+#INSTALLFLAGS += -m 755
 #
 #        uncomment the next line if you want to "strip" the debugger info 
 #        from the binaries when installing.  This speeds up load, but 
@@ -162,7 +189,6 @@ TRE_TARFILE = tre-0.7.5
 #
 #
 
-DIFF_FLAGS = @DIFF_FLAGS@
 
 ECHO = echo
 E = $(SILENT) $(ECHO)
@@ -269,7 +295,7 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_expr_window.o crm_expr_isolate.o crm_expr_file_io.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
-	crm_preprocessor.o \
+	crm_preprocessor.o crmregex_gnu.o crmregex_tre.o \
 	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
 	crm_generic_port.o crm_stdio_port.o \
 	crm_versioning.o
@@ -318,7 +344,6 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	procmailrc.recipe reto_procmail_recipe.recipe \
 	priolist.mfp blacklist.mfp whitelist.mfp rewrites.mfp \
 	priolist.mfp.example blacklist.mfp.example whitelist.mfp.example \
-	crm114-mode.el \
 	crm114.spec \
 	inoc_passwd.txt \
 	GPL-License.txt \
@@ -336,14 +361,15 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(TEXTFILES) 
 
 
-TESTS = megatest_ng
+TESTS =
 
 
 
-bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge testvectok crm_test_hashes
+bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge
+noinst_PROGRAMS = testvectok crm_test_hashes
 
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
 
 
 cssutil_SOURCES = cssutil.c \
@@ -371,6 +397,12 @@ testvectok_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) testvectok.c
 crm_test_hashes_SOURCES = $(HFILES) $(EXTRA_DEPS) crm_test_hashes.c
 
 
+# see for 'ELCFILES=' the documentation at http://www.gnu.org/software/automake/manual/automake.html#Emacs-Lisp
+dist_lisp_LISP = crm114-mode.el
+ELCFILES =
+
+
+
 
 #
 #
@@ -388,8 +420,6 @@ help:
 	$(E) ""
 	$(E) "    make   -or-   make all   - builds the binaries.  This uses the"
 	$(E) "                               TRE regex library"
-	$(E) "    make crm114_gnu          - builds version with GNU regex instead"
-	$(E) "                               of the TRE library."
 	$(E) "    make install             - builds and installs the binaries."
 	$(E) "                               You must be root to do this."
 	$(E) "    make uninstall           - uninstalls the binaries.  You must"
@@ -403,46 +433,29 @@ help:
 	$(E) "    make distribution        - builds the .gzballs for distribution"
 	$(E) "                               of with your mods built in."
 
-#
-#   Note:  You've chosen to make a GNU regex library CRM114.  
-#       Although CRM114 will work mostly correctly when
-#	linked against the GNU regex library, a lot of functionality
-#       won't be available, and "make megatest" will fail.
-#
-crm114_gnu: $(OFILES) crmregex_gnu.o crm_main.o
-	$(E) ""
-	$(E) "   Note:  You've chosen to make a GNU regex library CRM114."
-	$(E) "       Although CRM114 will work mostly correctly when"
-	$(E) "       linked against the GNU regex library, a lot of functionality"
-	$(E) "       won't be available, and \"make megatest\" will fail."
-	$(E) ""
-	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
-	  crmregex_gnu.o \
-	  -o crm114_gnu
 
 
-#   
-#   Now building the TRE regex version of CRM114.  If you don't have
-#   TRE already, you will need to fetch it from the website and
-#   then ./configure --enable-static to get the static TRE libs,
-#   then build TRE, add /usr/local/lib to /etc/ld.so.conf, then 
-#   to set the library up.  Then you can build CRM114 itself.
-#
-crm114: $(OFILES) crmregex_tre.o crm_main.o
-	$(E) ""
-	$(E) "   Now building the TRE regex version of CRM114.  If you don't have"
-	$(E) "   TRE already, you will need to fetch it from the website and"
-	$(E) "   then ./configure --enable-static to get the static TRE libs,"
-	$(E) "   then build TRE, add /usr/local/lib to /etc/ld.so.conf, then"
-	$(E) "   to set the library up.  Then you can build CRM114 itself."
-	$(E) ""
-	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
-	  crmregex_tre.o \
-	  -o crm114
-	$(E) ""
-	$(E) "   Done.  Type \"make help\" to see what else you can make."
-	$(E) ""
-
+# #   
+# #   Now building the TRE regex version of CRM114.  If you don't have
+# #   TRE already, you will need to fetch it from the website and
+# #   then ./configure --enable-static to get the static TRE libs,
+# #   then build TRE, add /usr/local/lib to /etc/ld.so.conf, then 
+# #   to set the library up.  Then you can build CRM114 itself.
+# #
+# crm114$(EXEEXT): $(OFILES) crm_main.o
+# 	$(E) ""
+# 	$(E) "   Now building the TRE regex version of CRM114.  If you don't have"
+# 	$(E) "   TRE already, you will need to fetch it from the website and"
+# 	$(E) "   then ./configure --enable-static to get the static TRE libs,"
+# 	$(E) "   then build TRE, add /usr/local/lib to /etc/ld.so.conf, then"
+# 	$(E) "   to set the library up.  Then you can build CRM114 itself."
+# 	$(E) ""
+# 	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
+# 	  -o crm114$(EXEEXT)
+# 	$(E) ""
+# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
+# 	$(E) ""
+# 
 
 
 #
@@ -598,76 +611,84 @@ crm_versioning.o: crm_versioning.c \
 	$(HFILES) $(EXTRA_DEPS)
 
 
-cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
-		crm_css_maintenance.o \
-		crm_util_errorhandlers.o \
-		crm_str_funcs.o \
-		crm_generic_port.o \
-		crm_stdio_port.o \
-		crm_versioning.o \
-		-o cssutil
-	$(E) ""
-	$(E) "   Done.  Type \"make help\" to see what else you can make."
-	$(E) ""
+# cssutil$(EXEEXT): cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# 	$(CC) $(LDFLAGS) $(LIBS) cssutil.o \
+# 		crm_css_maintenance.o \
+# 		crm_util_errorhandlers.o \
+# 		crm_str_funcs.o \
+# 		crm_generic_port.o \
+# 		crm_stdio_port.o \
+# 		crm_versioning.o \
+# 		-o cssutil$(EXEEXT)
+# 	$(E) ""
+# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
+# 	$(E) ""
+# 
+# osbf-util$(EXEEXT): osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
+# 		crm_str_funcs.o \
+# 		crm_util_errorhandlers.o \
+# 		crm_osbf_maintenance.o \
+# 		crm_generic_port.o \
+# 		crm_stdio_port.o \
+# 		crm_versioning.o \
+# 		-o osbf-util$(EXEEXT)
+# 	$(E) ""
+# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
+# 	$(E) ""
+# 
+# cssdiff$(EXEEXT): cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
+# 		crm_util_errorhandlers.o \
+# 		crm_str_funcs.o \
+# 		crm_generic_port.o \
+# 		crm_stdio_port.o \
+# 		crm_versioning.o \
+# 		-o cssdiff$(EXEEXT)
+# 	$(E) ""
+# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
+# 	$(E) ""
+# 
+# cssmerge$(EXEEXT): cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
+# 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
+# 		crm_str_funcs.o \
+# 		crm_util_errorhandlers.o \
+# 		crm_generic_port.o \
+# 		crm_stdio_port.o \
+# 		crm_versioning.o \
+# 		-o cssmerge$(EXEEXT)
+# 	$(E) ""
+# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
+# 	$(E) ""
+# 
+# 
+# testvectok$(EXEEXT): testvectok.o $(OFILES)
+# 	$(CC) $(LDFLAGS) $(LIBS) testvectok.o \
+# 		$(OFILES) \
+# 		-o testvectok$(EXEEXT)
+# 	$(E) ""
+# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
+# 	$(E) ""
+# 
+# 
+# crm_test_hashes$(EXEEXT): crm_test_hashes.o 
+# 	$(CC) $(LDFLAGS) $(LIBS) crm_test_hashes.o \
+# 		-o crm_test_hashes$(EXEEXT)
+# 	$(E) ""
+# 	$(E) "   Done.  Type \"make help\" to see what else you can make."
+# 	$(E) ""
+# 
 
-osbf-util: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
-		crm_str_funcs.o \
-		crm_util_errorhandlers.o \
-		crm_osbf_maintenance.o \
-		crm_generic_port.o \
-		crm_stdio_port.o \
-		crm_versioning.o \
-		-o osbf-util
-	$(E) ""
-	$(E) "   Done.  Type \"make help\" to see what else you can make."
-	$(E) ""
-
-cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
-		crm_util_errorhandlers.o \
-		crm_str_funcs.o \
-		crm_generic_port.o \
-		crm_stdio_port.o \
-		crm_versioning.o \
-		-o cssdiff
-	$(E) ""
-	$(E) "   Done.  Type \"make help\" to see what else you can make."
-	$(E) ""
-
-cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o crm_stdio_port.o crm_versioning.o
-	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
-		crm_str_funcs.o \
-		crm_util_errorhandlers.o \
-		crm_generic_port.o \
-		crm_stdio_port.o \
-		crm_versioning.o \
-		-o cssmerge
-	$(E) ""
-	$(E) "   Done.  Type \"make help\" to see what else you can make."
-	$(E) ""
-
-
-testvectok: testvectok.o $(OFILES) crmregex_tre.o
-	$(CC) $(LDFLAGS) $(LIBS) testvectok.o \
-		$(OFILES) \
-		crmregex_tre.o \
-		-o testvectok
-	$(E) ""
-	$(E) "   Done.  Type \"make help\" to see what else you can make."
-	$(E) ""
-
-
-crm_test_hashes: crm_test_hashes.o 
-	$(CC) $(LDFLAGS) $(LIBS) crm_test_hashes.o \
-		-o crm_test_hashes
-	$(E) ""
-	$(E) "   Done.  Type \"make help\" to see what else you can make."
-	$(E) ""
-
-
-clean:
+clean-local:
+	-rm -f crm114$(EXEEXT)
+	-rm -f cssutil$(EXEEXT)
+	-rm -f osbf-util$(EXEEXT)
+	-rm -f cssdiff$(EXEEXT)
+	-rm -f cssmerge$(EXEEXT)
+	-rm -f testvectok$(EXEEXT)
+	-rm -f crm_test_hashes$(EXEEXT)
+	-rm -f crm114_gnu$(EXEEXT)
+	-rm -f crm114_tre$(EXEEXT)
 	-rm -f crm114
 	-rm -f cssutil
 	-rm -f osbf-util
@@ -675,7 +696,6 @@ clean:
 	-rm -f cssmerge
 	-rm -f testvectok
 	-rm -f crm_test_hashes
-	-rm -f crm114
 	-rm -f crm114_gnu
 	-rm -f crm114_tre
 	-rm -f *.o
@@ -694,44 +714,46 @@ install: install_engine install_utils
 #
 #    Installing Utilities
 #	
-install_utils: cssmerge cssutil cssdiff osbf-util
+install_utils: cssmerge$(EXEEXT) cssutil$(EXEEXT) cssdiff$(EXEEXT) osbf-util$(EXEEXT)
 	$(E) ""
 	$(E) "    Installing Utilities"
 	$(E) ""
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	install $(INSTALLFLAGS) cssdiff $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssmerge $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssutil $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)
-	install $(INSTALLFLAGS) osbf-util $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)
+	install $(INSTALLFLAGS) cssdiff$(EXEEXT)   $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) cssmerge$(EXEEXT)  $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) cssutil$(EXEEXT)   $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) osbf-util$(EXEEXT) $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)$(EXEEXT)
 	$(E) "   if you don't have EMACS installed in the default place, you"
 	$(E) "   won't get the crm114-mode.el automatically."
-	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
+
+#	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 
 
 # use different name so we can keep it around along with default one
 # and same VER_SUFFIX postfix 
 
-install_engine: crm114
+install_engine: crm114$(EXEEXT)
 	$(E) ""
 	$(E) "    Installing engine"
 	$(E) ""
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	install $(INSTALLFLAGS) crm114 $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)
+	install $(INSTALLFLAGS) crm114$(EXEEXT) $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
 
 
-install_binary_only: crm114 cssdiff cssmerge cssutil osbf-util
+install_binary_only: crm114$(EXEEXT) cssdiff$(EXEEXT) cssmerge$(EXEEXT) cssutil$(EXEEXT) osbf-util$(EXEEXT)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	install $(INSTALLFLAGS) crm114 $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssdiff $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssmerge $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)
-	install $(INSTALLFLAGS) cssutil $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)	
-	install $(INSTALLFLAGS) osbf-util $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)
-	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
+	install $(INSTALLFLAGS) crm114$(EXEEXT)    $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) cssdiff$(EXEEXT)   $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) cssmerge$(EXEEXT)  $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) cssutil$(EXEEXT)   $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)$(EXEEXT)
+	install $(INSTALLFLAGS) osbf-util$(EXEEXT) $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)$(EXEEXT)
+
+#	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 
-install-exec-hook: crm114
-	cd $(DESTDIR)$(bindir) && $(LN_S) crm114 crm
+install-exec-hook: crm114$(EXEEXT)
+	cd $(DESTDIR)$(bindir) && $(LN_S) crm114$(VER_SUFFIX)$(EXEEXT) crm
 
 
 uninstall-hook:
@@ -739,14 +761,15 @@ uninstall-hook:
 
 
 uninstall:
-	-rm -rf $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)
-	-rm -rf $(DESTDIR)$(bindir)/crmg$(VER_SUFFIX)
-	-rm -rf $(DESTDIR)$(bindir)/crma$(VER_SUFFIX)
-	-rm -rf $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)
-	-rm -rf $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)
-	-rm -rf $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)
-	-rm -rf $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)
-	-rm -rf $(DESTDIR)$(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
+	-rm -rf $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
+	-rm -rf $(DESTDIR)$(bindir)/crmg$(VER_SUFFIX)$(EXEEXT)
+	-rm -rf $(DESTDIR)$(bindir)/crma$(VER_SUFFIX)$(EXEEXT)
+	-rm -rf $(DESTDIR)$(bindir)/cssdiff$(VER_SUFFIX)$(EXEEXT)
+	-rm -rf $(DESTDIR)$(bindir)/cssmerge$(VER_SUFFIX)$(EXEEXT)
+	-rm -rf $(DESTDIR)$(bindir)/cssutil$(VER_SUFFIX)$(EXEEXT)
+	-rm -rf $(DESTDIR)$(bindir)/osbf-util$(VER_SUFFIX)$(EXEEXT)
+
+#	-rm -rf $(DESTDIR)$(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 
 #
@@ -762,7 +785,7 @@ uninstall:
 #       do change, either your kit isn't quite right or your
 #       install is broken (or you've found a bug).
 #
-megatest: crm114 megatest.sh megatest_knowngood.log $(MEGATESTFILES) 
+megatest: crm114$(EXEEXT) megatest.sh megatest_knowngood.log $(MEGATESTFILES) 
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
 	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
@@ -784,16 +807,16 @@ megatest: crm114 megatest.sh megatest_knowngood.log $(MEGATESTFILES)
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="
 	$(E) "=============================================================="
-	$(diff) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+	$(DIFF_BIN) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
-	$(diff) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+	$(DIFF_BIN) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
 
 
 
-megatest_ng: crm114 megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.log
+megatest_ng: crm114$(EXEEXT) megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.log
 	$(E) ""
 	$(E) "   This runs a moderately interesting set of base tests"
 	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
@@ -815,16 +838,15 @@ megatest_ng: crm114 megatest_ng.sh $(MEGATESTFILES) megatest_knowngood.log
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (unified)       ====================="
 	$(E) "=============================================================="
-	$(diff) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(DIFF_BIN) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
 	$(E) "=============================================================="
 	$(E) "=================== MEGATEST DIFF REPORT ====================="
 	$(E) "===================      (regular)       ===================="
 	$(E) "=============================================================="
-	$(diff) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
+	$(DIFF_BIN) $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_ng_test.log & sleep 1
 
 
 
-test: megatest_ng
 
 
 
@@ -847,7 +869,6 @@ cssfiles: spam.dir good.dir
 	sleep 5
 	$(E) "   Here we go..."
 	$(E) ""
-	export DATE $(date +%Y_%m_%d_%H_%M_%S)
 	$(E) "   MUCH STUFF DEPRECATED!!!  Use mailreaver.crm instead..."
 	cssutil -b -r spam.css
 	cssutil -b -r nonspam.css
@@ -878,7 +899,7 @@ tarfile: all
 	$(TEXTFILES) \
 	crm114-$(VERSION).src
 	cp -a BSD_build_files crm114-$(VERSION).src
-	$(tar) -cvf crm114-$(VERSION).src.tar crm114-$(VERSION).src
+	tar -cvf crm114-$(VERSION).src.tar crm114-$(VERSION).src
 	rm -rf crm114-$(VERSION).src
 
 src_gzip: tarfile
@@ -902,7 +923,7 @@ i386_tarfile: all
 	crm114-mode.el \
 	GPL-License.txt \
 	crm114-$(VERSION).i386
-	$(tar) -cvf crm114-$(VERSION).i386.tar crm114-$(VERSION).i386
+	tar -cvf crm114-$(VERSION).i386.tar crm114-$(VERSION).i386
 	rm -rf crm114-$(VERSION).i386
 
 i386_gzip: i386_tarfile
@@ -914,7 +935,7 @@ css_tarfile: spam.css nonspam.css
 	mkdir crm114-$(VERSION).css
 	cp spam.css nonspam.css \
 	crm114-$(VERSION).css
-	$(tar) -cvf crm114-$(VERSION).css.tar crm114-$(VERSION).css
+	tar -cvf crm114-$(VERSION).css.tar crm114-$(VERSION).css
 	rm -rf crm114-$(VERSION).css
 
 css_gzip: css_tarfile
@@ -932,32 +953,6 @@ rsync:
 diff: diff_em.sh
 	-(sh ./diff_em.sh );
 
-dist-diff: diff
-	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.7z
-	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.gz
-	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
-	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).unified.diff.7z diff/*.unified.* )
-	( test "X$(tar)" != "X" && $(tar) -c diff/*.unified.* | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).unified.diff.tar.gz )
-	( test "X$(tar)" != "X" && $(tar) -c diff/*.unified.* | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).unified.diff.tar.bz2 )
-	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.zip
-	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).unified.diff.zip diff/*.unified.* )
-	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.7z
-	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.tar.gz
-	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.tar.bz2
-	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).normal.diff.7z diff/*.normal.* )
-	( test "X$(tar)" != "X" && $(tar) -c diff/*.normal.* | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).normal.diff.tar.gz )
-	( test "X$(tar)" != "X" && $(tar) -c diff/*.normal.* | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).normal.diff.tar.bz2 )
-	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.zip
-	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).normal.diff.zip diff/*.normal.* )
-	-rm -f $(ARCHIVE_BASE_NAME).context.diff.7z
-	-rm -f $(ARCHIVE_BASE_NAME).context.diff.tar.gz
-	-rm -f $(ARCHIVE_BASE_NAME).context.diff.tar.bz2
-	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).context.diff.7z diff/*.context.* )
-	( test "X$(tar)" != "X" && $(tar) -c diff/*.context.* | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).context.diff.tar.gz )
-	( test "X$(tar)" != "X" && $(tar) -c diff/*.context.* | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).context.diff.tar.bz2 )
-	-rm -f $(ARCHIVE_BASE_NAME).context.diff.zip
-	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).context.diff.zip diff/*.context.* )
-	mv $(ARCHIVE_BASE_NAME).*.diff.* ../
 
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
@@ -968,8 +963,8 @@ reindent: indent.sh
 
 .SUFFIXES = .c .o
 
-.c.o:
-	$(COMPILE) -c $< -o $@
+#.c.o:
+#	$(COMPILE) -c $< -o $@
 
 
 

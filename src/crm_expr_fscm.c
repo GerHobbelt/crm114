@@ -951,7 +951,7 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //This should never ever happen
         fprintf(stderr, "regex compilation problem! I'm about to segfault!\n");
     }
-    else if (!crm_regexec(&regee, params, params_len, 2, pp, 0, NULL))
+    else if (!crm_regexec(&regee, params, params_len, WIDTHOF(pp), pp, 0, NULL))
     {
         params[pp[1].rm_eo] = 0;
         n_bytes = atol(params + pp[1].rm_so);

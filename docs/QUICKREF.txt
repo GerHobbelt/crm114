@@ -936,7 +936,7 @@ return /returnval/                - return from a CALL.  Note that since
 routine                           - WARNING: reserved for future use
                                  
                                  
-syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ /[match_OS]alt_command/ [timeout pollcycle]
+syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
                                   - execute a shell command or fork
                                     to the specified label.  This happens
                                     in a fresh copy of the environment;
@@ -996,22 +996,9 @@ syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ /[match_OS]alt_comm
                                     word is not a :label:, then the entire
                                     string is handed off to the shell to
                                     be executed as a shell command.
-         /[match_OS]alt_command/  - specifies an alternative command for the
-                                    given OS: the string match_OS must match
-                                    your compiled HOSTTYPE (see 'crm -v'
-                                    output: the '(OS: XXX)' part of the first
-                                    line) in which case CRM114 will use the
-                                    alt_command instead.
-
-                                    NOTE: this feature has been added to
-                                    provide CRM script writers with a way to
-                                    specify the correct commands for each
-                                    supported Operating System, as OS commands
-                                    are highly nonportable (especially outside
-                                    the UNIX realm).
 
 
-translate <flags> (:dest:) [:src] /from_charset/ /to_charset/
+translate <flags> (:dest:) [:src:] /from_charset/ /to_charset/
                                   - do a tr()-like translation of 8-bit
                                     characters in the from_charset to the
                                     corresponding characters in the to_charset.
@@ -1050,8 +1037,8 @@ translate <flags> (:dest:) [:src] /from_charset/ /to_charset/
 
 trap (:reason:) /trap_regex/      - traps faults from both FAULT statements
                                     and program errors occurring anywhere in
-                                    the preceding bracket-block.  If no fault
-                                    exists, TRAP does a SKIP to end of block.
+                                    the preceding bracket-block or single executable statement.
+                                    If no fault exists, TRAP does a SKIP to end of block.
                                     If there is a fault and the fault reason
                                     string matches the trap_regex, the fault
                                     is trapped, and execution continues with

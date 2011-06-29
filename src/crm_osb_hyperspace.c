@@ -149,35 +149,6 @@ typedef struct mythical_hyperspace_cell
 } HYPERSPACE_FEATUREBUCKET_STRUCT;
 
 
-////////////////////////////////////////////////////////////////////
-//
-//     the hash coefficient table (hctable) should be full of relatively
-//     prime numbers, and preferably superincreasing, though both of those
-//     are not strict requirements.
-//
-
-#define VECTOR_TOKENIZER 1
-
-#ifndef VECTOR_TOKENIZER
-
-static const int hctable[] =
-{
-    1, 7,
-    3, 13,
-    5, 29,
-    11, 51,
-    23, 101,
-    47, 203,
-    97, 407,
-    197, 817,
-    397, 1637,
-    797, 3277
-};
-
-#endif
-
-
-
 
 
 #if defined (CRM_WITHOUT_MJT_INLINED_QSORT)
@@ -220,11 +191,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     int i, j, k;
     int h;                  //  h is our counter in the hashpipe;
-    char ptext[MAX_PATTERN]; //  the regex pattern
-    int plen;
     char htext[MAX_PATTERN];        //  the hash name
     char hashfilename[MAX_PATTERN]; // the hashfile name
-    FILE *hashf;                    // stream of the hashfile
     int hlen;
     int cflags;
 	int eflags;
@@ -235,10 +203,6 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //
 
-#ifndef VECTOR_TOKENIZER
-    regex_t regcb;
-#endif
-    regmatch_t match[5];    //  we only care about the outermost match
     int textoffset;
     int textmaxoffset;
     int sense;
@@ -247,7 +211,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int use_unigram_features;
     int fev;
 
-    int next_offset;      //  UNUSED in the current code
+    // int next_offset;      //  UNUSED in the current code
 
     //  int made_new_file;
     //
@@ -268,10 +232,6 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     hlen = apb->p1len;
     hlen = crm_nexpandvar(htext, hlen, MAX_PATTERN);
 
-    //     get the "this is a word" regex
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = apb->s1len;
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
 
     //            set our cflags, if needed.  The defaults are
     //            "case" and "affirm", (both zero valued).
@@ -369,266 +329,10 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     textmaxoffset = txtstart + txtlen;
 
 
-#ifndef VECTOR_TOKENIZER
-
-    //  The Old Feature Generator - now supplanted with the vector
-    //   tokenizer feature generator.  THIS CODE NOW INACTIVE
-
-    //   compile the word regex
-    //
-    if (internal_trace)
-        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
-    i = crm_regcomp(&regcb, ptext, plen, cflags);
-    if (i > 0)
-    {
-        crm_regerror(i, &regcb, tempbuf, data_window_size);
-        nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
-        goto regcomp_failed;
-    }
-
-
-    //   Start by priming the pipe... we will shift to the left next.
-    //     sliding, hashing, xoring, moduloing, and incrmenting the
-    //     hashes till there are no more.
-    k = 0;
-    j = 0;
-    i = 0;
-
-
-    //   init the hashpipe with 0xDEADBEEF
-    for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-    {
-        hashpipe[h] = 0xDEADBEEF;
-    }
-
-    //    and the big feature-generator loop... go through all of the text.
-    i = 0;
-    while (k == 0 && textoffset <= textmaxoffset
-           && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT)
-    {
-        int wlen;
-        int slen;
-
-        //  do the regex
-        //  slen = endpoint (= start + len)
-        //        - startpoint (= curr textoffset)
-        //      slen = txtlen;
-        slen = textmaxoffset - textoffset;
-
-        // if pattern is empty, extract non graph delimited tokens
-        // directly ([[graph]]+) instead of calling regexec  (8% faster)
-        if (ptext[0] != 0)
-        {
-            k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                    slen, 5, match, 0, NULL);
-        }
-        else
-        {
-            k = 0;
-            //         skip non-graphical characthers
-            match[0].rm_so = 0;
-            while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                   && textoffset + match[0].rm_so < textmaxoffset)
-                match[0].rm_so++;
-            match[0].rm_eo = match[0].rm_so;
-            while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                   && textoffset + match[0].rm_eo < textmaxoffset)
-                match[0].rm_eo++;
-            if (match[0].rm_so == match[0].rm_eo)
-                k = 1;
-        }
-
-        if (k != 0 || textoffset > textmaxoffset)
-            goto learn_end_regex_loop;
-
-        wlen = match[0].rm_eo - match[0].rm_so;
-        memmove(tempbuf,
-                &(txtptr[textoffset + match[0].rm_so]),
-                wlen);
-        tempbuf[wlen] = 0;
-
-        if (internal_trace)
-        {
-            fprintf(stderr,
-                    "  Learn #%d t.o. %d strt %d end %d len %d is -%s-\n",
-                    i,
-                    textoffset,
-                    (int)match[0].rm_so,
-                    (int)match[0].rm_eo,
-                    wlen,
-                    tempbuf);
-        }
-        if (match[0].rm_eo == 0)
-        {
-            nonfatalerror("The LEARN pattern matched zero length! ",
-                    "\n Forcing an increment to avoid an infinite loop.");
-            match[0].rm_eo = 1;
-        }
-
-
-        //      Shift the hash pipe down one
-        //
-        for (h = OSB_BAYES_WINDOW_LEN - 1; h > 0; h--)
-        {
-            hashpipe[h] = hashpipe[h - 1];
-        }
-
-
-        //  and put new hash into pipeline
-        hashpipe[0] = strnhash(tempbuf, wlen);
-
-        if (internal_trace)
-        {
-            fprintf(stderr, "  Hashpipe contents: ");
-            for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " 0x%08lX", (unsigned int)hashpipe[h]);
-            fprintf(stderr, "\n");
-        }
-
-
-        //  and account for the text used up.
-        textoffset = textoffset + match[0].rm_eo;
-        i++;
-
-        //        is the pipe full enough to do the hashing?
-        if (1)     //  we always run the hashpipe now, even if it's
-                   //  just full of 0xDEADBEEF.  (was i >=5)
-        {
-            crmhash_t h1;
-            crmhash_t h2;
-            // int th = 0;               // a counter used for TSS tokenizing
-            int j;
-            //
-            //     old Hash polynomial: h0 + 3h1 + 5h2 +11h3 +23h4
-            //     (coefficients chosen by requiring superincreasing,
-            //     as well as prime)
-            //
-            // th = 0;
-            //
-            if (use_unigram_features == 1)
-            {
-                h1 = hashpipe[0];
-                if (h1 == 0)
-                    h1 = 0xdeadbeef;
-                h2 = 0xdeadbeef;
-                if (internal_trace)
-                    fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned int)h1);
-                hashes[hashcounts].hash = h1;
-                hashcounts++;
-            }
-            else
-            {
-                for (j = 1;
-                     j < OSB_BAYES_WINDOW_LEN;
-                     j++)
-                {
-                    h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
-                    if (h1 == 0)
-                        h1 = 0xdeadbeef;
-                    // h2 = hashpipe[0]*hctable[1] + hashpipe[j] * hctable[(j<<1)-1];
-                    //if (h2 == 0) h2 = 0xdeadbeef;
-                    h2 = 0xdeadbeef;
-                    if (internal_trace)
-                        fprintf(stderr, "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n",
-                                j, (unsigned int)h1, (unsigned int)h2);
-
-                    hashes[hashcounts].hash = h1;
-                    //          hashes[hashcounts].key = h2;
-                    hashcounts++;
-                }
-            }
-        }
-    }   //   end the while k==0
-
-learn_end_regex_loop:
-
-    if (ptext[0] != 0)
-        crm_regfree(&regcb);
-
-regcomp_failed:
-
-#else
     //   Use the flagged vector tokenizer.
 
-#ifdef NotInAMillionYears
-
-    //   First, get any optional
-    //   tokenizer pipeline setups (defined by the keyword "pipeline",
-    //   followed by the number of pipeline vectors, followed by the length
-    //   of the pipeline vectors, followed by the pipeline weight (must
-    //   be integers)  one pipeline worth at a time.
-    {
-        char s2text[MAX_PATTERN];
-        int s2len;
-        crmhash_t coeff_array[UNIFIED_WINDOW_LEN * UNIFIED_VECTOR_LIMIT];
-        crmhash_t *ca;
-        int pipelen;
-        int pipe_iters;
-        char *vt_weight_regex = "vector: ([ 0-9]*)";
-        int regex_status;
-        regmatch_t match[5]; //  We'll only care about the second match
-
-        ca = NULL;
-        pipelen = 0;
-        pipe_iters = 0;
-
-        //     get the second slash parameter (if used at all)
-        crm_get_pgm_arg(s2text, MAX_PATTERN, apb->s2start, apb->s2len);
-        s2len = apb->s2len;
-        s2len = crm_nexpandvar(ptext, plen, MAX_PATTERN);
-
-        //   Compile up the regex to find the vector tokenizer weights
-        crm_regcomp
-        (&regcb, vt_weight_regex, strlen(vt_weight_regex),
-                REG_ICASE | REG_EXTENDED);
-
-        //   Use the regex to find the vector tokenizer weights
-        regex_status =  crm_regexec(&regcb,
-                s2text,
-                s2len,
-                5,
-                match,
-                REG_EXTENDED,
-                NULL);
-
-        //   Did we actually get a match for the extended parameters?
-        // if (regex_status == 0)
-        if (0)
-        {
-            char *conv_ptr;
-            int i;
-            //  Yes, it matched.  Set up the pipeline coeffs specially.
-            //   The first parameter is the pipe length
-            conv_ptr = &s2text[match[1].rm_so];
-            pipelen = strtol(conv_ptr, &conv_ptr, 0);
-            fprintf(stderr, "pipelen = %d\n", pipelen);
-            //   The second parameter is the number of repeats
-            pipe_iters = strtol(conv_ptr, &conv_ptr, 0);
-            fprintf(stderr, "pipe_iters = %d\n", pipe_iters);
-            for (i = 0; i < pipelen * pipe_iters; i++)
-                coeff_array[i] = strtol(conv_ptr, &conv_ptr, 0);
-            ca = coeff_array;
-        }
-
-        crm_vector_tokenize_selector
-        (apb,                                 // the APB
-                txtptr,                       // intput string
-                txtlen,                       // how many bytes
-                txtstart,                     // starting offset
-                ptext,                        // parser regex
-                plen,                         // parser regex len
-                ca,                           // tokenizer coeff array
-                pipelen,                      // tokenizer pipeline len
-                pipe_iters,                   // tokenizer pipeline iterations
-                (crmhash_t *)hashes,          // where to put the hashed results
-                HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
-                &hashcounts,                  // how many hashes we actually got
-                &next_offset);                // where to start again for more hashes
-    }
-#endif
 
     //   keep the compiler happy...
-    match[0].rm_so = 0;
     hashpipe[0] = 0;
     h = 0;
     k = 0;
@@ -642,17 +346,13 @@ regcomp_failed:
             txtptr,                        // intput string
             txtlen,                        // how many bytes
             txtstart,                      // starting offset
-            ptext,                         // parser regex
-            plen,                          // parser regex len
-            NULL,                          // tokenizer coeff array
-            0,                             // tokenizer pipeline len
-            0,                             // tokenizer pipeline iterations
+            NULL,                         // tokenizer
+            NULL,                          // coeff array
             (crmhash_t *)hashes,           // where to put the hashed results
             HYPERSPACE_MAX_FEATURE_COUNT,  //  max number of hashes
-            &hashcounts,                   // how many hashes we actually got
-            &next_offset);                 // where to start again for more hashes
+            &hashcounts                   // how many hashes we actually got
+            );
 
-#endif
 
 
 #if USE_FIXED_UNIQUE_MODE
@@ -719,6 +419,9 @@ regcomp_failed:
     if (user_trace)
         fprintf(stderr, "Total hashes generated: %d\n", hashcounts);
 
+  //   And uniqueify the hashes array
+  //
+  
   i = 0;
   j = 0;
 
@@ -783,6 +486,8 @@ regcomp_failed:
 
     if (sense > 0)
     {
+        FILE *hashf;                    // stream of the hashfile
+
         /////////////////
         //    THIS PATH TO LEARN A TEXT - just append the hashes.
         //     and open the output file
@@ -796,7 +501,7 @@ regcomp_failed:
         if (user_trace)
             fprintf(stderr, "Opening hyperspace file %s for append.\n",
                     hashfilename);
-        hashf = fopen(hashfilename, "ab+");
+        hashf = fopen(hashfilename, "ab");
         if (hashf == 0)
         {
             fatalerror("For some reason, I was unable to append-open the file named ",
@@ -1082,8 +787,6 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     int i, j, k;
     int h;                  //  we use h for our hashpipe counter, as needed.
-    char ptext[MAX_PATTERN]; //  the regex pattern
-    int plen;
     //  char ltext[MAX_PATTERN];  //  the variable to classify
     //int llen;
     //  the hash file names
@@ -1109,12 +812,10 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     HYPERSPACE_FEATUREBUCKET_STRUCT *unk_hashes;
     int unk_hashcount;
 
-    int next_offset; // UNUSED for now!
+    // int next_offset; // UNUSED for now!
 
     struct stat statbuf;    //  for statting the hash file
     crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
-    regex_t regcb;
-    regmatch_t match[5];    //  we only care about the outermost match
 
 #if defined (GER)
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
@@ -1270,12 +971,6 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     hlen = apb->p1len;
     hlen = crm_nexpandvar(htext, hlen, htext_maxlen);
 
-    //           extract the "this is a word" regex
-    //
-    crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
-    plen = apb->s1len;
-    plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
-
     //            extract the optional "match statistics" variable
     //
     crm_get_pgm_arg(svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
@@ -1336,16 +1031,6 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, " using only unigram features. \n");
     }
 
-    //   compile the word regex
-    if (internal_trace)
-        fprintf(stderr, "\nWordmatch pattern is %s", ptext);
-    i = crm_regcomp(&regcb, ptext, plen, cflags);
-    if (i > 0)
-    {
-        crm_regerror(i, &regcb, tempbuf, data_window_size);
-        nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
-        goto regcomp_failed;
-    }
 
 
 
@@ -1448,34 +1133,6 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //         return (fev);
                         //     }
 
-                        //    read it in (this does not work either);
-                        if (0)
-                        {
-                            FILE *hashf;
-                            if (user_trace)
-                                fprintf(stderr, "Read-opening file %s\n", fname);
-                            hashf = fopen(fname, "rb");
-                            if (hashf == 0)
-                            {
-                                fatalerror("For some reason, I was unable to read-open the Hyperspace file named ",
-                                        fname);
-                            }
-                            else
-                            {
-                                if (is_crm_headered_file(hashf))
-                                {
-                                    if (fseek(hashf, CRM114_HEADERBLOCK_SIZE, SEEK_SET))
-                                    {
-                                        fatalerror("For some reason, I was unable to skip the CRM header for the file named ",
-                                                fname);
-                                    }
-                                }
-
-                                fread(hashes[maxhash], 1, hashlens[maxhash], hashf);
-                                fclose(hashf);
-                            }
-                        }
-
                         //  set this hashlens to the length in features instead
                         //  of the length in bytes.
                         hashlens[maxhash] /= sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
@@ -1534,161 +1191,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 
-#ifndef VECTOR_TOKENIZER
-
-    //
-    //   now all of the files are mmapped into memory,
-    //   and we can do the polynomials and add up points.
-    i = 0;
-    j = 0;
-    k = 0;
-    thistotal = 0;
-
-    //   we get txtstart and txtlen from the caller.
-
-    textoffset = txtstart;
-    textmaxoffset = txtstart + txtlen;
-
-    //   init the hashpipe with 0xDEADBEEF
-    for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-    {
-        hashpipe[h] = 0xDEADBEEF;
-    }
-
-    totalfeatures = 0;
-
-    //  stop when we no longer get any regex matches
-    //   possible edge effect here- last character must be matchable, yet
-    //    it's also the "end of buffer".
-    while (k == 0 && textoffset <= textmaxoffset
-           && unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT)
-    {
-        int wlen;
-        int slen;
-
-        //  do the regex
-        //
-        slen = textmaxoffset - textoffset;
-
-        // if pattern is empty, extract non graph delimited tokens
-        // directly ([[graph]]+) instead of calling regexec  (8% faster)
-        if (ptext[0] != 0)
-        {
-            k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                    slen, 5, match, 0, NULL);
-        }
-        else
-        {
-            k = 0;
-            //         skip non-graphical characters
-            match[0].rm_so = 0;
-            while (!crm_isgraph(txtptr[textoffset + match[0].rm_so])
-                   && textoffset + match[0].rm_so < textmaxoffset)
-                match[0].rm_so++;
-            match[0].rm_eo = match[0].rm_so;
-            while (crm_isgraph(txtptr[textoffset + match[0].rm_eo])
-                   && textoffset + match[0].rm_eo < textmaxoffset)
-                match[0].rm_eo++;
-            if (match[0].rm_so == match[0].rm_eo)
-                k = 1;
-        }
-
-        if (k != 0 || textoffset > textmaxoffset)
-            goto classify_end_regex_loop;
-
-        wlen = match[0].rm_eo - match[0].rm_so;
-        memmove(tempbuf,
-                &(txtptr[textoffset + match[0].rm_so]),
-                wlen);
-        tempbuf[wlen] = 0;
-
-        if (internal_trace)
-        {
-            fprintf(stderr,
-                    "  Classify #%d t.o. %d strt %d end %d len %d is -%s-\n",
-                    i,
-                    textoffset,
-                    (int)match[0].rm_so,
-                    (int)match[0].rm_eo,
-                    wlen,
-                    tempbuf);
-        }
-        if (match[0].rm_eo == 0)
-        {
-            nonfatalerror("The CLASSIFY pattern matched zero length! ",
-                    "\n Forcing an increment to avoid an infinite loop.");
-            match[0].rm_eo = 1;
-        }
-        //  slide previous hashes up 1
-        for (h = OSB_BAYES_WINDOW_LEN - 1; h > 0; h--)
-        {
-            hashpipe[h] = hashpipe[h - 1];
-        }
-
-
-        //  and put new hash into pipeline
-        hashpipe[0] = strnhash(tempbuf, wlen);
-
-        if (0)
-        {
-            fprintf(stderr, "  Hashpipe contents: ");
-            for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " 0x%08lX", (unsigned int)hashpipe[h]);
-            fprintf(stderr, "\n");
-        }
-
-        //   account for the text we used up...
-        textoffset = textoffset + match[0].rm_eo;
-        i++;
-
-        //        is the pipe full enough to do the hashing?
-        if (1) //  we init with 0xDEADBEEF, so the pipe is always full (i >=5)
-        {
-            int j;
-            //unsigned th = 0;            //  a counter used only in TSS hashing
-            crmhash_t hindex;
-            crmhash_t h1;
-            //
-            //th = 0;
-            //
-            if (use_unigram_features == 1)
-            {
-                h1 = hashpipe[0];
-                if (h1 == 0)
-                    h1 = 0xdeadbeef;
-                if  (internal_trace)
-                    fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned int)h1);
-                unk_hashes[unk_hashcount].hash = h1;
-                unk_hashcount++;
-            }
-            else
-            {
-                for (j = 1;
-                     j < OSB_BAYES_WINDOW_LEN;
-                     j++)
-                {
-                    h1 = hashpipe[0] * hctable[0] + hashpipe[j] * hctable[j << 1];
-                    if (h1 == 0)
-                        h1 = 0xdeadbeef;
-                    //              h2 = hashpipe[0]*hctable[1] + hashpipe[j] * hctable[(j<<1)-1];
-                    //if (h2 == 0) h2 = 0xdeadbeef;
-                    hindex = h1;
-
-                    if (internal_trace)
-                        fprintf(stderr, "Polynomial %d has h1:0x%08lX\n",
-                                j, (unsigned int)h1);
-
-                    unk_hashes[unk_hashcount].hash = h1;
-                    unk_hashcount++;
-                }
-            }
-        }
-    }      //  end of repeat-the-regex loop
-classify_end_regex_loop:
-
-#else
     //   keep the compiler happy...
-    match[0].rm_so = 0;
     hashpipe[0] = 0;
     h = 0;
     k = 0;
@@ -1700,17 +1203,13 @@ classify_end_regex_loop:
             txtptr,                                               // intput string
             txtlen,                                               // how many bytes
             txtstart,                                             // starting offset
-            ptext,                                                // parser regex
-            plen,                                                 // parser regex len
-            NULL,                                                 // tokenizer coeff array
-            0,                                                    // tokenizer pipeline len
-            0,                                                    // tokenizer pipeline iterations
+            NULL,                                                // tokenizer
+            NULL,                                                 // coeff array
             (crmhash_t *)unk_hashes,                              // where to put the hashed results
             HYPERSPACE_MAX_FEATURE_COUNT,                         //  max number of hashes
-            &unk_hashcount,                                       // how many hashes we actually got
-            &next_offset);                                        // where to start again for more hashes
+            &unk_hashcount                                       // how many hashes we actually got
+            );                                        
 
-#endif
 
 
     ////////////////////////////////////////////////////////////
@@ -2395,9 +1894,6 @@ classify_end_regex_loop:
         //      close (hfds [k]);
         crm_munmap_file((void *)hashes[k]);
     }
-    //  and let go of the regex buffery
-    if (ptext[0] != 0)
-        crm_regfree(&regcb);
 
     //   and drop the list of unknown hashes
     free(unk_hashes);
@@ -2449,7 +1945,6 @@ classify_end_regex_loop:
         return 0;
     }
   //    
-regcomp_failed:
     return 0;
 }
 

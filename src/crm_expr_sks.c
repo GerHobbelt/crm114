@@ -1061,7 +1061,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         goto regcomp_failed;
     }
     k = crm_regexec(&regcb, ftext,
-            flen, 5, match, 0, NULL);
+            flen, WIDTHOF(match), match, 0, NULL);
     if (k == 0)
     {
         //get three input files.
@@ -1160,7 +1160,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (ptext[0] != 0)
             {
                 k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                        slen, 5, match, 0, NULL);
+                        slen, WIDTHOF(match), match, 0, NULL);
             }
             else
             {
@@ -2107,7 +2107,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (ptext[0] != 0)
             {
                 k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                        slen, 5, match, 0, NULL);
+                        slen, WIDTHOF(match), match, 0, NULL);
             }
             else
             {
@@ -2231,7 +2231,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         goto regcomp_failed;
     }
     k = crm_regexec(&regcb, ftext,
-            flen, 5, match, 0, NULL);
+            flen, WIDTHOF(match), match, 0, NULL);
     if (k == 0)
     {
         int file1_lens;
@@ -2346,8 +2346,10 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             stringf = fopen(file3, "rb"); /* [i_a] on MSwin/DOS, fopen() opens in CRLF text mode by default; this will corrupt those binary values! */
             if (stringf == NULL)
             {
-                nonfatalerror_ex(SRC_LOC(), "For some reason, I was unable to read-open the SKS 1vs2 solution file named '%s'",
-                        file3);
+                nonfatalerror_ex(SRC_LOC(), "For some reason, I was unable to read-open the SKS 1vs2 solution file named '%s': error = %d(%s)",
+                        file3,
+                    errno,
+                    errno_descr(errno));
             }
             // else
             {

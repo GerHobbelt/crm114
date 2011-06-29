@@ -1017,7 +1017,7 @@ int crm_trigger_fault(char *reason)
                 }
             }
 #else
-            memnCdump(stderr,
+            fwrite_ASCII_Cfied(stderr,
                 csl->filetext + csl->mct[trapline]->fchar,
                 csl->mct[trapline + 1]->fchar - csl->mct[trapline]->fchar);
 #endif

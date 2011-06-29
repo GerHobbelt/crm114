@@ -86,6 +86,11 @@
 
 window
 
+match [:load_cf_file:] /./ 
+
+isolate <default> (:load_cf_file:) /bugger/
+isolate (:load_cf_file:) /bomb/
+
 #
 #    ---  uncomment this if you want to include a "forced"
 #         configuration file  ---
@@ -476,23 +481,17 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
 		{
 			# [i_a] TBD!
 			
-			
 			#      remember this file on a temporary basis 
-			output [by linking it into
-			#      the known-spam directory.
-			syscall /:*:cache_dupe_command: :*:text_cache:\/texts\/:*:cacheid: :*:text_cache:\/known_spam\/:*:cacheid: / [0.1]
-			#
+
 			#      Now run mailtrainer.crm on the new copy
 			isolate (:mailtrainer_output:)
-			syscall /:*:fileprefix::*:trainer_invoke_command: --fileprefix=:*:fileprefix: --spam=:*:text_cache:\/known_spam\/:*:cacheid: --good=:*:text_cache:\/empty\/ / () (:mailtrainer_output:) [0.1]
+			syscall /:*:fileprefix::*:trainer_invoke_command: --fileprefix=:*:fileprefix: --spam=:*:text_cache:\/texts\/:*:cacheid: --good=:*:text_cache:\/empty\/ / () (:mailtrainer_output:) [0.1]
+			call /:verbosity:/ [mailtrainer output:  ':*:mailtrainer_output:'\n]
 			#output /mailtrainer output:  ':*:mailtrainer_output:'\n/
-			#      and remove it from the prob_* directories, as
-			#      now it's known
-			syscall /\/bin\/rm -rf  :*:text_cache:\/prob_spam\/:*:cacheid:/ [0.1]
-			syscall /\/bin\/rm -rf  :*:text_cache:\/prob_good\/:*:cacheid:/ [0.1]
 		}
         #
         #      now it's trained; put in a marker in the headers
+		call /:verbosity:/ [patching in headers\n]
         call /:mungmail_delete:/ [X-CRM114-Status: ]
         call /:mungmail_delete:/ [X-CRM114-Unsure: ]
         call /:mungmail_add:/ [X-CRM114-Action: LEARNED AND CACHED SPAM]
@@ -553,8 +552,7 @@ call /:verbosity:/ [PREPROCESS RESULT:\n:*:mail_separator:\n:*:in_text:\n:*:mail
 		alius  # what to do if we don't use/have a cache:
 		{
 			# [i_a] TBD!
-			
-			
+						
 			isolate (:tmp:) //
 			syscall () (:tmp:) /\/bin\/ls :*:long_cacheid:/ [0.1]
 			match [:tmp:] /:*:cacheid:/

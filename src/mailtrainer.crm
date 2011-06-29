@@ -124,7 +124,7 @@ isolate (:clf:) //
     output /    --thick=N.N  (TTT value; default 10.0 for OSB is good)\n/
     output /    --reload     (if not randomizing, whenever one set of files \n/
     output /                 is exhausted, reload it.  Default- don't.)\n/
-    output /    --collaspe   (collapse intermediate reporting lines)\n/
+    output /    --collapse   (collapse intermediate reporting lines)\n/
     output /    --report_header='string' (include string in the header)\n/
     output /    --config=file (set config file.  Default is mailfilter.cf)\n/
     output /    --fileprefix=dir (expect all files in "fileprefix")\n/
@@ -900,7 +900,8 @@ return (:*:pr:)
     #   Classify the text
     call /:get_pr:/ [:m_text:]
     {
-        eval /:@: :*:pr: < :*:thick_threshold: : /
+        # eval /:@: :*:pr: < :*:thick_threshold: : /
+        eval /:@: :*:pr: < :*:good_threshold: : /    # [i_a]
         {
             {
                 eval /:@: :*:pr: > 0 :/
@@ -931,6 +932,8 @@ return (:*:pr:)
             }
             alius
             {
+                # [i_a] given the --repeat parameter, which loops through the complete mail directories,
+                #       this will give you a maximum of repeat * 2 'learn' operations per email in worst-case.
                 output /& repeat /
                 alter (:report:) /:*:report: & repeat/
                 learn [:m_text:] <:*:clf:> /:*:lcr:/  \
@@ -954,7 +957,8 @@ return
     #   Classify the text
     call /:get_pr:/ [:m_text:]
     {
-        eval /:@: :*:pr: > (0 - :*:thick_threshold:) : /
+        # eval /:@: :*:pr: > (0 - :*:thick_threshold:) : /
+        eval /:@: :*:pr: > :*:spam_threshold: : /     # [i_a]
         {
             {
                 eval /:@: :*:pr: < 0 :/
@@ -984,6 +988,8 @@ return
             }
             alius
             {
+                # [i_a] given the --repeat parameter, which loops through the complete mail directories,
+                #       this will give you a maximum of repeat * 2 'learn' operations per email in worst-case.
                 output /& repeat /
                 alter (:report:) /:*:report: & repeat/
                 learn [:m_text:] <:*:clf:> /:*:lcr:/  \
@@ -1175,7 +1181,7 @@ isolate (:stl:) /:*:spamfiles:/
 			input [:*:spamdir::*:filename: 0 :*:decision_length:]
 			call /:do_mutilations:/
 			call /:get_pr:/ [:m_text:]
-			eval (:pr:) /:@: 0 - :*:pr: f 10.4:/
+			eval (:pr:) /:@: (0 - :*:pr:) f 10.4:/
 			alter (:worst_results:) \
 					/:*:worst_results:\n:*:pr: S :*:spamdir::*:filename:/
 			output \

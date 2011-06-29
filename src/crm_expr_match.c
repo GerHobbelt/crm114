@@ -44,7 +44,6 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int bindable_vars_len;
     char box_text[MAX_PATTERN];
     regmatch_t matches[MAX_SUBREGEX];
-    int nmatches;
     int source_start;
     int source_len;
     int vtextoffset, vtextend, vtextstartlimit;
@@ -182,9 +181,6 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 
     //     here's where we look for a [] var-restriction
-    //
-    //     Experimentally, we're adding [ :foo: 123 456 ] to
-    //     allow an externally specified start and length.
     crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
     //  Use crm_restrictvar to get start & length to look at.
@@ -376,7 +372,6 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //       Here is the crux.  Do the REGEX match, maybe in a loop
     //       if we're iterating to find a result with a different end
     //       point than previous matches.
-    nmatches = MAX_SUBREGEX;
     matches[0].rm_so = 0;
     matches[0].rm_eo = 0;
     switch (fromp)
@@ -397,7 +392,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 mtextlen--;
                 mtext = &mdw->filetext[textoffset];
                 i = crm_regexec(&preg, mtext, mtextlen,
-                        nmatches, matches, eflags, NULL);
+                        WIDTHOF(matches), matches, eflags, NULL);
                 j = matches[0].rm_eo;
                 if (((textoffset + j) > oldend) && (i == 0))
                     done = 1;
@@ -421,7 +416,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 mtextlen++;
                 mtext = &mdw->filetext[textoffset];
                 i = crm_regexec(&preg, mtext, mtextlen,
-                        nmatches, matches, eflags, NULL);
+                        WIDTHOF(matches), matches, eflags, NULL);
                 j = matches[0].rm_so;
             }
         }
@@ -430,7 +425,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         {
             mtext = &mdw->filetext[textoffset];
             i = crm_regexec(&preg, mtext, mtextlen,
-                    nmatches, matches, eflags, NULL);
+                    WIDTHOF(matches), matches, eflags, NULL);
         }
     }
 
@@ -520,14 +515,14 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     if (internal_trace)
                     {
                         fprintf(stderr, "variable -");
-			memnCdump(stderr, bindable_vars + vstart, vlen);
+			fwrite_ASCII_Cfied(stderr, bindable_vars + vstart, vlen);
                         fprintf(stderr, "- will be assigned from var offsets %d to %d "
                                         "(origin offsets %d to %d), value ",
                                 (int)matches[mc].rm_so,
                                 (int)matches[mc].rm_eo,
                                 (int)(matches[mc].rm_so + textoffset),
                                 (int)(matches[mc].rm_eo + textoffset));
-			memnCdump(stderr, 
+			fwrite_ASCII_Cfied(stderr, 
 				mdw->filetext + matches[mc].rm_so + textoffset,
 				(matches[mc].rm_so + textoffset) - (matches[mc].rm_eo + textoffset));
                         fprintf(stderr, "\n");

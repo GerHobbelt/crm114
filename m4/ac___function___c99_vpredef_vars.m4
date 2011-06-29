@@ -2,7 +2,7 @@
 #
 # SYNOPSIS
 #
-#   AC_C_PREDEF___FUNCTION__
+#   AX_C_PREDEF___FUNCTION__
 #
 # DESCRIPTION
 #
@@ -23,7 +23,7 @@
 #   modification, are permitted in any medium without royalty provided
 #   the copyright notice and this notice are preserved.
 
-AC_DEFUN([AC_C_PREDEF___FUNCTION__],
+AC_DEFUN([AX_C_PREDEF___FUNCTION__],
 [AC_CHECK_FUNCS(strcmp)
 AC_MSG_CHECKING(for working C99 __func__)
 AC_CACHE_VAL(ac_cv_have_working___func__,

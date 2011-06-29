@@ -67,7 +67,7 @@ struct token_search
     unsigned char *max_ptok;
     const char    *pattern;
     regex_t       *regcb;
-    unsigned       max_long_tokens;
+    unsigned int   max_long_tokens;
 };
 
 /************************************************************/
@@ -84,7 +84,7 @@ static int get_next_token(struct token_search *pts)
         if (pts->ptok < pts->max_ptok)
         {
             error = crm_regexec(pts->regcb, (char *)pts->ptok,
-                pts->max_ptok - pts->ptok, 5, match, 0, NULL);
+                pts->max_ptok - pts->ptok, WIDTHOF(match), match, 0, NULL);
             if (error == REG_NOMATCH)
             {
                 match[0].rm_so = 0;
@@ -149,7 +149,7 @@ static int get_next_hash(struct token_search *pts)
     /* get next token */
     error = get_next_token(pts);
 
-    /* int tokens, probably base64 lines */
+    /* long tokens, probably base64 lines */
     while (error == 0 && pts->toklen > OSBF_MAX_TOKEN_SIZE
            && count_long_tokens < pts->max_long_tokens)
     {

@@ -503,7 +503,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (ptext[0] != 0)
         {
             k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                    slen, 5, match, 0, NULL);
+                    slen, WIDTHOF(match), match, 0, NULL);
         }
         else
         {
@@ -1438,7 +1438,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (ptext[0] != 0)
             {
                 k = crm_regexec(&regcb, &(txtptr[textoffset]),
-                        slen, 5, match, 0, NULL);
+                        slen, WIDTHOF(match), match, 0, NULL);
             }
             else
             {

@@ -31,7 +31,7 @@ process_shfile()
     if [ -f src/$2 ]
     then
         cat src/$2 | sed -e 's,\./crm114,@top_builddir@/src/crm114,g' > $1/$2$3
-        chmod +x $1/$2$3
+        chmod a+x $1/$2$3
     fi
 }
 
