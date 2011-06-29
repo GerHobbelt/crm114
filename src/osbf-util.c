@@ -504,7 +504,7 @@ int main(int argc, char **argv)
             while (!report_only && cmdloop)
             {
                 // clear command buffer
-                cmdchr[0] = '\0';
+                cmdchr[0] = 0;
                 fprintf(stdout, "Options:\n");
                 fprintf(stdout, "   Z n - zero bins at or below a value\n");
                 fprintf(stdout, "   S n - subtract a constant from all bins\n");

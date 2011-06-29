@@ -363,12 +363,12 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
     memmove(svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
-    svrbl[vlen] = '\000';
+    svrbl[vlen] = 0;
   }
 
   //     status variable's text (used for output stats)
   //
-  stext[0] = '\000';
+  stext[0] = 0;
   slen = 0;
 
   //            set our flags, if needed.  The defaults are
@@ -504,7 +504,7 @@ int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             else
             {
               strncpy(hashname[maxhash], fname, fnlen);
-              hashname[maxhash][fnlen] = '\000';
+              hashname[maxhash][fnlen] = 0;
             }
             maxhash++;
           }

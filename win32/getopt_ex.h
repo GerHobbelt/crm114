@@ -134,7 +134,7 @@ struct option
  * options.
  *
  * If OPTS begins with `--', then non-option arguments are treated as
- * arguments to the option '\0'.  This behavior is specific to the GNU
+ * arguments to the option 0.  This behavior is specific to the GNU
  * `getopt'.
  */
 int getopt_ex(int argc, char *const *argv, const char *optstring, void (*print_error)(void *, const char *, ...), void *propagate);

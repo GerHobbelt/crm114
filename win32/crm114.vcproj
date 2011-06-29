@@ -387,6 +387,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\crm_versioning.c"
+				>
+			</File>
+			<File
 				RelativePath=".\crm_win32_port.c"
 				>
 			</File>
@@ -475,19 +479,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\COLOPHON.txt"
-				>
-			</File>
-			<File
 				RelativePath="..\docs\COLOPHON.txt"
 				>
 			</File>
 			<File
-				RelativePath="..\src\CRM114_Mailfilter_HOWTO.txt"
+				RelativePath="..\src\COLOPHON.txt"
 				>
 			</File>
 			<File
 				RelativePath="..\docs\CRM114_Mailfilter_HOWTO.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CRM114_Mailfilter_HOWTO.txt"
 				>
 			</File>
 			<File
@@ -499,11 +503,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\FAQ.txt"
+				RelativePath="..\docs\FAQ.txt"
 				>
 			</File>
 			<File
-				RelativePath="..\docs\FAQ.txt"
+				RelativePath="..\src\FAQ.txt"
 				>
 			</File>
 			<File
@@ -511,11 +515,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\docs\INTRO.txt"
+				RelativePath="..\src\INTRO.txt"
 				>
 			</File>
 			<File
-				RelativePath="..\src\INTRO.txt"
+				RelativePath="..\docs\INTRO.txt"
 				>
 			</File>
 			<File
@@ -527,11 +531,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\docs\QUICKREF.txt"
+				RelativePath="..\src\QUICKREF.txt"
 				>
 			</File>
 			<File
-				RelativePath="..\src\QUICKREF.txt"
+				RelativePath="..\docs\QUICKREF.txt"
 				>
 			</File>
 			<File
@@ -831,6 +835,10 @@
 				</File>
 				<File
 					RelativePath="..\src\Makefile.am"
+					>
+				</File>
+				<File
+					RelativePath="..\src\Makefile.BillY"
 					>
 				</File>
 				<File

@@ -49,7 +49,7 @@ long strmath(char *buf, long inlen, long maxlen, long *retstat)
     if (buf[0] == 'A')
     {
         memmove(buf, &buf[1], inlen - 1);
-        buf[inlen - 1] = '\0';
+        buf[inlen - 1] = 0;
         status = stralmath(buf, inlen - 1, maxlen, retstat);
         internal_trace = old_internal_trace;
         return status;
@@ -58,7 +58,7 @@ long strmath(char *buf, long inlen, long maxlen, long *retstat)
     {
         //      Do we want to do selective tracing?
         memmove(buf, &buf[1], inlen - 1);
-        buf[inlen - 1] = '\0';
+        buf[inlen - 1] = 0;
         status = strpnmath(buf, inlen - 1, maxlen, retstat);
         internal_trace = old_internal_trace;
         return status;
@@ -98,7 +98,7 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
     sp = 0;   // still at the top of the stack
     od = 0;   // no decimals seen yet, so no flag to output in decimal
     sinc = 0; // no autopush.
-    outformat[0] = '\0';
+    outformat[0] = 0;
 
     //     now our number-inputting hacks
     stack[sp] = 0.0;
@@ -403,7 +403,7 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
                 if (sp > 0)
                 {
                     char tempstring[2048];
-                    tempstring[0] = '\0';
+                    tempstring[0] = 0;
                     sp--;
                     //  Special case - if the format is an integer, add a ".0"
                     //  to the format string so we get integer output.
@@ -486,7 +486,7 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
             {
                 char bogus[4];
                 bogus[0] = buf[ip];
-                bogus[1] = '\000';
+                bogus[1] = 0;
                 nonfatalerror(" Sorry, but I can't do RPN math on the un-mathy "
                               "character found: ", bogus);
                 sinc = 1;
@@ -529,7 +529,7 @@ int math_formatter(double value, char *format, char *buf, long buflen)
 
     //  If the user supplied a format, use that.
     //
-    if (format && format[0] != '\0')
+    if (format && format[0] != 0)
     {
         //
         //  special case - if the user supplied an x or X-format, that's
@@ -664,14 +664,14 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
     ip = 0;
     op = 0;
     sp = 0;
-    outformat[0] = '\0';
+    outformat[0] = 0;
     state = 0;
 
     //     Set up the stacks
     //
     leftarg[0] = 0.0;
     rightarg = 0.0;
-    opstack[0] = '\0';
+    opstack[0] = 0;
     validstack[0] = 0;
 
     //  initialization done... begin the work.

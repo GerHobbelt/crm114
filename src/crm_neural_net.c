@@ -190,7 +190,7 @@ static int make_new_backing_file(char *filename)
   h.hidden_layer_size = hidden_layer_size;
   fwrite(&h, 1, sizeof(NEURAL_NET_HEAD_STRUCT), f);
   for (i = sizeof(NEURAL_NET_HEAD_STRUCT); i < HEADER_SIZE; i++)
-    fputc('\0', f);
+    fputc(0, f);
 
   //   the actual size required for the neural network coeffs.  Note that
   //   this leaves ZERO padding between the coeffs and the "stored texts".
@@ -947,7 +947,7 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     strcpy(regex_text, "[[:graph:]]+");
     regex_text_len = strlen(regex_text);
   }
-  regex_text[regex_text_len] = '\0';
+  regex_text[regex_text_len] = 0;
   regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
   if (crm_regcomp(&regee, regex_text, regex_text_len, REG_EXTENDED))
   {
@@ -1255,7 +1255,7 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     strcpy(regex_text, "[[:graph:]]+");
     regex_text_len = strlen(regex_text);
   }
-  regex_text[regex_text_len] = '\0';
+  regex_text[regex_text_len] = 0;
   regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
   if (crm_regcomp(&regee, regex_text, regex_text_len, REG_EXTENDED))
   {
@@ -1275,7 +1275,7 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     else if (crm_isspace(filenames_field[i]) && k > 0)
     {
       //white space terminates filenames
-      filenames[j][k] = '\0';
+      filenames[j][k] = 0;
       k = 0;
       j++;
     }
@@ -1297,7 +1297,7 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   }
 
   if (j < MAX_CLASSIFIERS)
-    filenames[j][k] = '\0';
+    filenames[j][k] = 0;
   if (k > 0)
     n_classifiers = j + 1;
   else

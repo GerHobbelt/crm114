@@ -153,7 +153,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   while (htext[j] >= 0x021) j++;
 
   //             filename starts at i,  ends at j. null terminate it.
-  htext[j] = '\000';
+  htext[j] = 0;
   learnfilename = strdup(&htext[i]);
 
   //             and stat it to get it's length
@@ -434,7 +434,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     // if pattern is empty, extract non graph delimited tokens
     // directly ([[graph]]+) instead of calling regexec  (8% faster)
-    if (ptext[0] != '\0')
+    if (ptext[0] != 0)
     {
       k = crm_regexec(&regcb, &(txtptr[textoffset]),
                       slen, 5, match, 0, NULL);
@@ -462,7 +462,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     memmove(tempbuf,
             &(txtptr[textoffset + match[0].rm_so]),
             wlen);
-    tempbuf[wlen] = '\000';
+    tempbuf[wlen] = 0;
 
     if (internal_trace)
     {
@@ -698,7 +698,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   learn_end_regex_loop:
 
-  if (ptext[0] != '\0') crm_regfree(&regcb);
+  if (ptext[0] != 0) crm_regfree(&regcb);
 
   regcomp_failed:
 
@@ -858,12 +858,12 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
     memmove(svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
-    svrbl[vlen] = '\000';
+    svrbl[vlen] = 0;
   }
 
   //     status variable's text (used for output stats)
   //
-  stext[0] = '\000';
+  stext[0] = 0;
   slen = 0;
 
   //            set our flags, if needed.  The defaults are
@@ -1031,12 +1031,12 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       strncpy(fname, &htext[fnstart], fnlen);
       fn_start_here = fnstart + fnlen + 1;
-      fname[fnlen] = '\000';
+      fname[fnlen] = 0;
       if (user_trace)
         fprintf(stderr, "Classifying with file -%s- " \
                         "succhash=%ld, maxhash=%ld\n",
                 fname, succhash, maxhash);
-      if (fname[0] == '|' && fname[1] == '\000')
+      if (fname[0] == '|' && fname[1] == 0)
       {
         if (vbar_seen)
         {
@@ -1106,7 +1106,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 "Couldn't malloc hashname[maxhash]\n",
                 "We need that part later, so we're stuck.  Sorry.");
             strncpy(hashname[maxhash], fname, fnlen);
-            hashname[maxhash][fnlen] = '\000';
+            hashname[maxhash][fnlen] = 0;
             maxhash++;
           }
         }
@@ -1325,7 +1325,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     // if pattern is empty, extract non graph delimited tokens
     // directly ([[graph]]+) instead of calling regexec  (8% faster)
-    if (ptext[0] != '\0')
+    if (ptext[0] != 0)
     {
       k = crm_regexec(&regcb, &(txtptr[textoffset]),
                       slen, 5, match, 0, NULL);
@@ -1353,7 +1353,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     memmove(tempbuf,
             &(txtptr[textoffset + match[0].rm_so]),
             wlen);
-    tempbuf[wlen] = '\000';
+    tempbuf[wlen] = 0;
 
     if (internal_trace)
     {
@@ -1790,7 +1790,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     double remainder;
     double overall_pR;
     long m;
-    buf[0] = '\000';
+    buf[0] = 0;
     accumulator = 1000 * DBL_MIN;
     for (m = 0; m < succhash; m++)
     {
@@ -1931,7 +1931,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     crm_munmap_file((void *)hashes[k]);
   }
   //  and let go of the regex buffery
-  if (ptext[0] != '\0') crm_regfree(&regcb);
+  if (ptext[0] != 0) crm_regfree(&regcb);
 
   //
   //  Free the hashnames, to avoid a memory leak.

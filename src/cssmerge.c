@@ -174,7 +174,7 @@ int main(int argc, char **argv)
         {
             //       put in  bytes of NULL
 
-                        // fputc(0, f);/* [i_a] fprintf(f, "%c", '\0'); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
+                        // fputc(0, f);/* [i_a] fprintf(f, "%c", 0); will write ZERO bytes on some systems: read: NO BYTES AT ALL! */
                 if (file_memset(f, 0,
         sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
         {

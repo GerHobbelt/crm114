@@ -239,7 +239,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     while (from_var[vstart + vlen] >= 0x021)
         vlen++;
     memmove(from_var, &from_var[vstart], vlen);
-    from_var[vlen] = '\000';
+    from_var[vlen] = 0;
     if (user_trace)
         fprintf(stderr, "   command output will overwrite var ***%s***\n",
                 from_var);
@@ -266,7 +266,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     minion = 0;
     to_minion[0] = 0;
     from_minion[1] = 0;
-    exp_keep_buf[0] = '\000';
+    exp_keep_buf[0] = 0;
     //  this is 8-bit-safe because vars are never wchars.
     strcat(exp_keep_buf, ":*");
     strncat(exp_keep_buf, keep_buf, keep_len);
@@ -340,7 +340,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             varline = crm_lookupvarline(vht, sys_cmd, vstart, vlen);
             if (varline > 0)
             {
-                //              sys_cmd[vstart+vlen] = '\0';
+                //              sys_cmd[vstart+vlen] = 0;
                 if (user_trace)
                     fprintf(stderr, "FORK transferring control to line %s\n",
                             &sys_cmd[vstart]);
@@ -374,7 +374,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             vlen = MAX_PATTERN - 1 + 1;
                         strncpy(filename, &sys_cmd[vstart + 1], vlen - 1);
                         CRM_ASSERT(vlen - 1 < MAX_PATTERN);
-                        filename[vlen - 1] = '\0';
+                        filename[vlen - 1] = 0;
                         if (user_trace)
                             fprintf(stderr, "Redirecting minion stdin to %s\n",
                                     filename);
@@ -389,7 +389,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 vlen = MAX_PATTERN - 1 + 1;
                             strncpy(filename, &sys_cmd[vstart + 1], vlen - 1);
                             CRM_ASSERT(vlen - 1 < MAX_PATTERN);
-                            filename[vlen - 1] = '\0';
+                            filename[vlen - 1] = 0;
                             if (user_trace)
                                 fprintf(stderr,
                                         "Redirecting minion stdout to %s\n",
@@ -403,7 +403,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 vlen = MAX_PATTERN - 1 + 2;
                             strncpy(filename, &sys_cmd[vstart + 2], vlen - 2);
                             CRM_ASSERT(vlen - 2 < MAX_PATTERN);
-                            filename[vlen - 2] = '\0';
+                            filename[vlen - 2] = 0;
                             if (user_trace)
                                 fprintf(stderr,
                                         "Appending minion stdout to %s\n",
@@ -503,7 +503,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     //   and see what is in the pipe for us.
-    outbuf[0] = '\000';
+    outbuf[0] = 0;
     done = 0;
     outlen = 0;
     //   grot grot grot this only works if varnames are not widechars
@@ -526,7 +526,7 @@ readloop:
                 && done + 2 < (data_window_size >> SYSCALL_WINDOW_RATIO))
                 goto readloop;
             if (done < 0) done = 0;
-            outbuf[done] = '\000';
+            outbuf[done] = 0;
             outlen = done;
         }
         if (keep_proc == 1 || async_mode == 1)
@@ -540,7 +540,7 @@ readloop:
                              (data_window_size >> SYSCALL_WINDOW_RATIO));
             done = charsread;
             if (done < 0) done = 0;
-            outbuf[done] = '\000';
+            outbuf[done] = 0;
             outlen = done;
             //fcntl (from_minion[0], F_SETFL, 0);
         }
@@ -922,7 +922,7 @@ readloop:
             }
 
             //   and see what is in the pipe for us.
-            outbuf[0] = '\000';
+            outbuf[0] = 0;
             done = 0;
             outlen = 0;
 
@@ -951,7 +951,7 @@ readloop:
                     if (charsread > 0 && done + 2 < (data_window_size >> SYSCALL_WINDOW_RATIO))
                         goto readloop;
                     if (done < 0) done = 0;
-                    outbuf[done] = '\000';
+                    outbuf[done] = 0;
                     outlen = done;
                 }
                 else
@@ -966,7 +966,7 @@ readloop:
 
                     done = charsread;
                     if (done < 0) done = 0;
-                    outbuf[done] = '\000';
+                    outbuf[done] = 0;
                     outlen = done;
                 }
 

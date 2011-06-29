@@ -81,7 +81,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             char vname[MAX_VARNAME];
             long vmidx;
             memmove(vname, &(temp_vars[vstart]), vlen);
-            vname[vlen] = '\000';
+            vname[vlen] = 0;
             if (vlen < 3)
             {
                 nonfatalerror("The variable you're asking me to ISOLATE "
@@ -125,7 +125,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (internal_trace)
                             fprintf(stderr, "No initialization value given, using"
                                             " a zero-length string.\n");
-                        tempbuf[0] = '\0';
+                        tempbuf[0] = 0;
                         vallen = 0;
                     }
                     else
@@ -199,7 +199,7 @@ no_isolate_action:
             ;
         }
         vstart = vstart + vlen;
-        if (temp_vars[vstart] == '\000'
+        if (temp_vars[vstart] == 0
             || vstart >= tvlen)
             done = 1;
     }

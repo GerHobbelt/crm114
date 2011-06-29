@@ -2130,7 +2130,7 @@ static long copy_and_escape(char *out, const char *in, const char *escape_these)
   {
     const char *m;
 
-    for (m = escape_these; *m != '\0'; m++)
+    for (m = escape_these; *m != 0; m++)
     {
       if (*i == *m)
         break;
@@ -2140,7 +2140,7 @@ static long copy_and_escape(char *out, const char *in, const char *escape_these)
       *o++ = '\\';
     *o++ = *i++;
   }
-  *o++ = '\0';
+  *o++ = 0;
 
   if (internal_trace)
     fprintf(stderr, "produced string: %s\n", out);
@@ -2201,7 +2201,7 @@ static void parse_monster(char *text, long len, const char **keys, double *value
           *b = text[i];
         }
         CRM_ASSERT(b - bufee < MAX_PATTERN);
-        *b = '\0';
+        *b = 0;
         *values = atof(bufee);
       }
     }
@@ -2302,7 +2302,7 @@ int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     strcpy(regex_text, "[[:graph:]]+");
     regex_text_len = strlen(regex_text);
   }
-  regex_text[regex_text_len] = '\0';  //only nessicary for debug print later
+  regex_text[regex_text_len] = 0;  //only nessicary for debug print later
   regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
   //  THIS IS WHERE REGEX FLAGS GO FOR THINGS LIKE CASE INSENSITIVITY
   if (internal_trace)

@@ -173,7 +173,7 @@ AWK = gawk
 BIN_PATH = /usr/local/bin
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O0
+CFLAGS = -g -O3
 CPP = gcc -E
 CPPFLAGS = 
 CRM = :|crm
@@ -222,7 +222,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2007-10-09
+ISODATE = 2007-10-15
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -270,7 +270,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-606
+TAR_FILENAME_POSTFIX = Ger-650
 TRE_CONFIG = no
 
 #
@@ -441,7 +441,7 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(CRMFILES) \
 	$(TEXTFILES)
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	$(HFILES)

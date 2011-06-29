@@ -56,6 +56,9 @@
 
 
 
+#if !defined (CRM_WITHOUT_CLUMP)
+
+
 
 #define MAX_CLUSTERS 4096
 #define CLUSTER_LABEL_LEN 32
@@ -1591,6 +1594,25 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 }
 
 
+#else
 
+int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
+{
+  fatalerror_ex(SRC_LOC(),
+                "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                "You may want to run 'crm -v' to see which classifiers are available.\n",
+                "CLUMP");
+}
+
+
+int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
+{
+  fatalerror_ex(SRC_LOC(),
+                "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+                "You may want to run 'crm -v' to see which classifiers are available.\n",
+                "CLUMP");
+}
+
+#endif /* !CRM_WITHOUT_CLUMP */
 
 

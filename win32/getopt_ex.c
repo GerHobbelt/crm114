@@ -695,7 +695,7 @@ static void exchange(char **argv)
         else
         {
             memset(__mempcpy(new_str, __getopt_nonoption_flags, nonoption_flags_max_len),
-                   '\0', top + 1 - nonoption_flags_max_len);
+                   0, top + 1 - nonoption_flags_max_len);
             nonoption_flags_max_len = top + 1;
             __getopt_nonoption_flags = new_str;
         }
@@ -790,7 +790,7 @@ static const char *_getopt_initialize(int argc, char *const *argv, const char *o
         if (nonoption_flags_max_len == 0)
         {
             if (__getopt_nonoption_flags == NULL
-                || __getopt_nonoption_flags[0] == '\0')
+                || __getopt_nonoption_flags[0] == 0)
             {
                 nonoption_flags_max_len = -1;
             }
@@ -805,7 +805,7 @@ static const char *_getopt_initialize(int argc, char *const *argv, const char *o
                     nonoption_flags_max_len = -1;
                 else
                     memset(__mempcpy(__getopt_nonoption_flags, orig_str, len),
-                           '\0', nonoption_flags_max_len - len);
+                           0, nonoption_flags_max_len - len);
             }
         }
         nonoption_flags_len = nonoption_flags_max_len;
@@ -900,18 +900,18 @@ int _getopt_internal(int argc, char *const *argv, const char *optstring, const s
 #if defined (BASH2_SUPPORT)
 
 #define NONOPTION_P                                             \
-    (argv[optind][0] != '-' || argv[optind][1] == '\0'          \
+    (argv[optind][0] != '-' || argv[optind][1] == 0          \
      || (optind < nonoption_flags_len                           \
          && __getopt_nonoption_flags[optind] == '1'))
 
 #else
 
 #define NONOPTION_P                                             \
-    (argv[optind][0] != '-' || argv[optind][1] == '\0')
+    (argv[optind][0] != '-' || argv[optind][1] == 0)
 
 #endif
 
-    if (nextchar == NULL || *nextchar == '\0')
+    if (nextchar == NULL || *nextchar == 0)
     {
         /* Advance to the next ARGV-element.  */
 
@@ -1164,7 +1164,7 @@ int _getopt_internal(int argc, char *const *argv, const char *optstring, const s
         char *temp = my_index(optstring, c);
 
         /* Increment `optind' when we start to process its last character.  */
-        if (*nextchar == '\0')
+        if (*nextchar == 0)
             ++optind;
 
         if (temp == NULL || c == ':')
@@ -1194,7 +1194,7 @@ int _getopt_internal(int argc, char *const *argv, const char *optstring, const s
             int option_index;
 
             /* This is an option that requires an argument.  */
-            if (*nextchar != '\0')
+            if (*nextchar != 0)
             {
                 optarg = nextchar;
                 /* If we end this ARGV-element by taking the rest as an arg,
@@ -1326,7 +1326,7 @@ int _getopt_internal(int argc, char *const *argv, const char *optstring, const s
             if (temp[2] == ':')
             {
                 /* This is an option that accepts an argument optionally.  */
-                if (*nextchar != '\0')
+                if (*nextchar != 0)
                 {
                     optarg = nextchar;
                     optind++;
@@ -1340,7 +1340,7 @@ int _getopt_internal(int argc, char *const *argv, const char *optstring, const s
             else
             {
                 /* This is an option that requires an argument.  */
-                if (*nextchar != '\0')
+                if (*nextchar != 0)
                 {
                     optarg = nextchar;
                     /* If we end this ARGV-element by taking the rest as an arg,

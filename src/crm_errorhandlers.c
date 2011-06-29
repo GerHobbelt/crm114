@@ -27,7 +27,10 @@
 //
 
 
-#ifdef CRM_ASSERT_IS_UNTRAPPABLE
+#ifndef CRM_ASSERT_IS_UNTRAPPABLE
+#error "config is corrupted; check config.h"
+#endif
+#if CRM_ASSERT_IS_UNTRAPPABLE
 #define CRM_ASSERT_MESSENGER            untrappableerror_ex
 #else
 #define CRM_ASSERT_MESSENGER            fatalerror_ex

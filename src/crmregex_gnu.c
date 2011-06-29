@@ -302,7 +302,7 @@ int crm_regexec(regex_t *preg, char *string, long string_len,
     //   set up on ASCIZ strings, not start/length strings.
 
     savedcrockchar = string[string_len + 1];
-    string[string_len + 1] = '\000';
+    string[string_len + 1] = 0;
     if (internal_trace)
     {
         fprintf(stderr, "    crocking in a NULL for the %c\n",

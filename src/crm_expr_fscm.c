@@ -169,7 +169,7 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
     for (i = 0; i < n_bytes; i++)
     {
         s->hash_root[i] = NULL_INDEX;
-        s->text[i] = '\0';
+        s->text[i] = 0;
         s->hashee[i].key = 0;
         s->hashee[i].next = i + 1;
         s->hashee[i].first = NULL_INDEX;
@@ -755,7 +755,7 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (htext[i] < 0x021) i++;
     j = i;
     while (htext[j] >= 0x021) j++;
-    htext[j] = '\000';
+    htext[j] = 0;
     strcpy(filename, &htext[i]);
 
     //   Check to see if user specified the file length
@@ -896,7 +896,7 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     crm_get_pgm_arg(params, MAX_PATTERN, apb->s2start, apb->s2len);
     params_len = apb->s2len;
     params_len = crm_nexpandvar(params, params_len, MAX_PATTERN);
-    params[params_len] = '\0';
+    params[params_len] = 0;
     if (crm_regcomp(&regee, "n_bytes[[:space:]]*=[[:space:]]*([0-9]+)",
                     40, REG_EXTENDED))
     {
@@ -905,7 +905,7 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
     else if (!crm_regexec(&regee, params, params_len, 2, pp, 0, NULL))
     {
-        params[pp[1].rm_eo] = '\0';
+        params[pp[1].rm_eo] = 0;
         n_bytes = atol(params + pp[1].rm_so);
     }
 
@@ -920,7 +920,7 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         else if (crm_isspace(filenames_field[i]) && k > 0)
         {
             //white space terminates filenames
-            filenames[j][k] = '\0';
+            filenames[j][k] = 0;
             k = 0;
             j++;
         }
@@ -941,7 +941,7 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
     if (j < MAX_CLASSIFIERS)
-        filenames[j][k] = '\0';
+        filenames[j][k] = 0;
     if (k > 0)
         n_classifiers = j + 1;
     else

@@ -857,6 +857,16 @@ int main(int argc, char **argv)
       all_included = 0;
 #endif
 
+#if !defined (CRM_WITHOUT_CLUMP)
+      snprintf(dst, len, "  CLUMP\n");
+      dst[len - 1] = 0;
+      partlen = strlen(dst);
+      dst += partlen;
+      len -= partlen;
+#else
+      all_included = 0;
+#endif
+
       if (all_included)
       {
         fprintf(stdout, "  all of 'em\n");
@@ -1385,7 +1395,7 @@ int main(int argc, char **argv)
 
   //   data window is now preloaded (we hope), set the cdwo up.
 
-  cdw->filetext[i] = '\000';
+  cdw->filetext[i] = 0;
   cdw->nchars = i;
   cdw->hash = strnhash(cdw->filetext, cdw->nchars);
   cdw->mct = NULL;

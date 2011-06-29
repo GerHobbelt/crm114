@@ -119,7 +119,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                  && j < MAX_FILE_NAME_LEN;
                  j++)
                 insertfilename[j] = csl->filetext[matches[2].rm_so + j];
-            insertfilename[j] = '\000';
+            insertfilename[j] = 0;
 
             //   Check to see if this was a "delimited" insertfile name
             //   that is, wrapped in [filename] rather than plaintext -
@@ -134,14 +134,14 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 filenamelen = filenamelen - 2;
                 for (j = 0; j < filenamelen; j++)
                     insertfilename[j] = insertfilename[j + 1];
-                insertfilename[filenamelen] = '\000';
+                insertfilename[filenamelen] = 0;
                 filenamelen = crm_nexpandvar(insertfilename,
                                              filenamelen,
                                              MAX_FILE_NAME_LEN);
                 if (user_trace)
                     fprintf(stderr, " to '%s'\n", insertfilename);
             }
-            insertfilename[filenamelen] = '\000';
+            insertfilename[filenamelen] = 0;
 
             //   We have a filename; check to see if it will blow the
             //   gaskets on the filesystem or not:
@@ -293,7 +293,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 //
                 memmove(&(csl->filetext[matches[0].rm_eo + ecsl->nchars]),
                         &(csl->filetext[matches[0].rm_eo]),
-                        csl->nchars - matches[0].rm_eo + 1);  // +1 for '\0'!
+                        csl->nchars - matches[0].rm_eo + 1);  // +1 for 0!
                 //
                 //   and put the new text into that hole
                 //
@@ -388,7 +388,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     {
         char myhash[32];
         sprintf(myhash, "%08lX", (unsigned long)strnhash(csl->filetext, csl->nchars));
-        myhash[8] = '\0';
+        myhash[8] = 0;
         crm_set_temp_var(":_pgm_hash:", myhash);
     }
 

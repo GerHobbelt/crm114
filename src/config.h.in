@@ -9,6 +9,9 @@
 /* do not include the Bit-Entropy classifier in the build */
 #undef CRM_WITHOUT_BIT_ENTROPY
 
+/* do not include the CLUMP classifier in the build */
+#undef CRM_WITHOUT_CLUMP
+
 /* do not include the Correlate classifier in the build */
 #undef CRM_WITHOUT_CORRELATE
 

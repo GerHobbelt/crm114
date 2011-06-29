@@ -371,7 +371,7 @@ static void simple_string_hide(char                            *s,
   for (i = 0; i <= (len - param.k) && i < HYPERSPACE_MAX_FEATURE_COUNT; i++)
   {
     memmove(tempbuf, &(s[i]), param.k);
-    tempbuf[param.k] = '\000';
+    tempbuf[param.k] = 0;
     if (internal_trace)
     {
       fprintf(stderr,
@@ -737,7 +737,7 @@ static void solve(void)
 //    Calculate b (hyperplane offset in
 //      SUM (y[i] alpha[i] kernel (x[i],x)) + b form)
 //    after calculating error margin alpha
-static double calc_b()
+static double calc_b(void)
 {
   int count = 0;
   double upper = HUGE_VAL;
@@ -1057,26 +1057,26 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   {
     //get three input files.
     memmove(file1, &ftext[match[1].rm_so], (match[1].rm_eo - match[1].rm_so));
-    file1[match[1].rm_eo - match[1].rm_so] = '\000';
+    file1[match[1].rm_eo - match[1].rm_so] = 0;
     memmove(file2, &ftext[match[2].rm_so], (match[2].rm_eo - match[2].rm_so));
-    file2[match[2].rm_eo - match[2].rm_so] = '\000';
+    file2[match[2].rm_eo - match[2].rm_so] = 0;
     memmove(file3, &ftext[match[3].rm_so], (match[3].rm_eo - match[3].rm_so));
-    file3[match[3].rm_eo - match[3].rm_so] = '\000';
+    file3[match[3].rm_eo - match[3].rm_so] = 0;
     if (internal_trace)
       fprintf(stderr, "file1=%s\tfile2=%s\tfile3=%s\n", file1, file2, file3);
   }
   else
   {
     //only has one input file
-    if (ptext[0] != '\0') crm_regfree(&regcb);
+    if (ptext[0] != 0) crm_regfree(&regcb);
     i = 0;
     while (ftext[i] < 0x021) i++;
     j = i;
     while (ftext[j] >= 0x021) j++;
-    ftext[j] = '\000';
+    ftext[j] = 0;
     strcpy(file1, &ftext[i]);
-    file2[0] = '\000';
-    file3[0] = '\000';
+    file2[0] = 0;
+    file3[0] = 0;
   }
   //    if (|Text|>0) hide the text into the .svm file
 
@@ -1128,7 +1128,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       long slen = textmaxoffset - textoffset;
       // if pattern is empty, extract non graph delimited tokens
       // directly ([[graph]]+) instead of calling regexec  (8% faster)
-      if (ptext[0] != '\0')
+      if (ptext[0] != 0)
       {
         k = crm_regexec(&regcb, &(txtptr[textoffset]),
                         slen, 5, match, 0, NULL);
@@ -1154,7 +1154,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         memmove(tempbuf,
                 &(txtptr[textoffset + match[0].rm_so]),
                 wlen);
-        tempbuf[wlen] = '\000';
+        tempbuf[wlen] = 0;
         if (strlen(file_string) + strlen(tempbuf) <= txtlen)
           strcat(file_string, tempbuf);
         if (internal_trace)
@@ -1181,7 +1181,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       }
       else
       {
-        if (ptext[0] != '\0') crm_regfree(&regcb);
+        if (ptext[0] != 0) crm_regfree(&regcb);
         k = 1;
       }
     }       //   end the while k==0
@@ -1610,7 +1610,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   // If file2 is not empty, open file1 and file2, calculate hyperplane,
   // and write the solution to file3
-  if (file2[0] != '\000' && file3[0] != '\000')
+  if (file2[0] != 0 && file3[0] != 0)
   {
     long file1_lens;
     HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
@@ -1864,12 +1864,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
     memmove(svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
-    svrbl[vlen] = '\000';
+    svrbl[vlen] = 0;
   }
 
   //     status variable's text (used for output stats)
   //
-  stext[0] = '\000';
+  stext[0] = 0;
   slen = 0;
 
   //            set our cflags, if needed.  The defaults are
@@ -2003,7 +2003,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       long slen = textmaxoffset - textoffset;
       // if pattern is empty, extract non graph delimited tokens
       // directly ([[graph]]+) instead of calling regexec  (8% faster)
-      if (ptext[0] != '\0')
+      if (ptext[0] != 0)
       {
         k = crm_regexec(&regcb, &(txtptr[textoffset]),
                         slen, 5, match, 0, NULL);
@@ -2029,7 +2029,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         memmove(tempbuf,
                 &(txtptr[textoffset + match[0].rm_so]),
                 wlen);
-        tempbuf[wlen] = '\000';
+        tempbuf[wlen] = 0;
         if (strlen(file_string) + strlen(tempbuf) <= txtlen)
           strcat(file_string, tempbuf);
         if (match[0].rm_eo == 0)
@@ -2141,11 +2141,11 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     HYPERSPACE_FEATUREBUCKET_STRUCT *file2_hashes;
     //get three input files.
     memmove(file1, &ftext[match[1].rm_so], (match[1].rm_eo - match[1].rm_so));
-    file1[match[1].rm_eo - match[1].rm_so] = '\000';
+    file1[match[1].rm_eo - match[1].rm_so] = 0;
     memmove(file2, &ftext[match[2].rm_so], (match[2].rm_eo - match[2].rm_so));
-    file2[match[2].rm_eo - match[2].rm_so] = '\000';
+    file2[match[2].rm_eo - match[2].rm_so] = 0;
     memmove(file3, &ftext[match[3].rm_so], (match[3].rm_eo - match[3].rm_so));
-    file3[match[3].rm_eo - match[3].rm_so] = '\000';
+    file3[match[3].rm_eo - match[3].rm_so] = 0;
     if (internal_trace)
       fprintf(stderr, "file1=%s\tfile2=%s\tfile3=%s\n", file1, file2, file3);
 

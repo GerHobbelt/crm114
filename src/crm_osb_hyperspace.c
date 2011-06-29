@@ -362,7 +362,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     // if pattern is empty, extract non graph delimited tokens
     // directly ([[graph]]+) instead of calling regexec  (8% faster)
-    if (ptext[0] != '\0')
+    if (ptext[0] != 0)
     {
       k = crm_regexec(&regcb, &(txtptr[textoffset]),
                       slen, 5, match, 0, NULL);
@@ -390,7 +390,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     memmove(tempbuf,
             &(txtptr[textoffset + match[0].rm_so]),
             wlen);
-    tempbuf[wlen] = '\000';
+    tempbuf[wlen] = 0;
 
     if (internal_trace)
     {
@@ -485,7 +485,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   learn_end_regex_loop:
 
-  if (ptext[0] != '\0') crm_regfree(&regcb);
+  if (ptext[0] != 0) crm_regfree(&regcb);
 
   regcomp_failed:
 
@@ -1040,7 +1040,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
     memmove(svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
-    svrbl[vlen] = '\000';
+    svrbl[vlen] = 0;
   }
   if (user_trace)
     fprintf(stderr, "Status out var %s (len %ld)\n",
@@ -1048,7 +1048,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //     status variable's text (used for output stats)
   //
-  stext[0] = '\000';
+  stext[0] = 0;
   slen = 0;
 
   //            set our flags, if needed.  The defaults are
@@ -1229,7 +1229,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             else
             {
               strncpy(hashname[maxhash], fname, fnlen);
-              hashname[maxhash][fnlen] = '\000';
+              hashname[maxhash][fnlen] = 0;
             }
             maxhash++;
           }
@@ -1310,7 +1310,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     // if pattern is empty, extract non graph delimited tokens
     // directly ([[graph]]+) instead of calling regexec  (8% faster)
-    if (ptext[0] != '\0')
+    if (ptext[0] != 0)
     {
       k = crm_regexec(&regcb, &(txtptr[textoffset]),
                       slen, 5, match, 0, NULL);
@@ -1338,7 +1338,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     memmove(tempbuf,
             &(txtptr[textoffset + match[0].rm_so]),
             wlen);
-    tempbuf[wlen] = '\000';
+    tempbuf[wlen] = 0;
 
     if (internal_trace)
     {
@@ -2101,7 +2101,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     crm_munmap_file((void *)hashes[k]);
   }
   //  and let go of the regex buffery
-  if (ptext[0] != '\0') crm_regfree(&regcb);
+  if (ptext[0] != 0) crm_regfree(&regcb);
 
   //   and drop the list of unknown hashes
   free(unk_hashes);

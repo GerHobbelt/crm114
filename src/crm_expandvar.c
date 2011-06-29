@@ -187,7 +187,7 @@ long crm_zexpandvar(char *buf,
                 case '0':
                     {
                         //   it's a NULL.
-                        buf[id] = '\0';
+                        buf[id] = 0;
                         id++;
                     }
                     break;
@@ -256,7 +256,7 @@ long crm_zexpandvar(char *buf,
                         unsigned int value;
                         int conv_count;
                         conv_count = 0;
-                        value = '\000';
+                        value = 0;
                         if (is + 2 < inlen)  // watch out for end-of-string
                             conv_count = sscanf(&buf[is + 1], "%2X", &value);
                         if (conv_count == 1)
@@ -281,7 +281,7 @@ long crm_zexpandvar(char *buf,
                         unsigned int value;
                         int conv_count;
                         conv_count = 0;
-                        value = '\000';
+                        value = 0;
                         if (is + 3 < inlen)  // watch out for end-of-string
                             conv_count = sscanf(&buf[is + 1], "%3o", &value);
                         if (conv_count == 1)
@@ -332,7 +332,7 @@ long crm_zexpandvar(char *buf,
             }
         }
         //     and update the new inlen
-        buf[id] = '\000'; // needed because slimy old GNU REGEX needs it.
+        buf[id] = 0; // needed because slimy old GNU REGEX needs it.
         //   and take one off for inlen, because it always gets incremented one
         //   extra time
         inlen = id - 1;
@@ -445,7 +445,7 @@ long crm_zexpandvar(char *buf,
                     vname[vlen] = ':';
                     vlen++;
                 }
-                vname[vlen] = '\000';
+                vname[vlen] = 0;
 
                 //
                 //      Now we've got the variable name in vname, we can
@@ -499,7 +499,7 @@ long crm_zexpandvar(char *buf,
                             //   if this was :_cs:, update the current line num
                             char lcstring[32];
                             long lclen;
-                            lcstring[0] = '\0';
+                            lcstring[0] = 0;
                             lclen = sprintf(lcstring, "%ld", csl->cstmt);
                             crm_set_temp_nvar(":_cs:", lcstring, lclen);
                         }
@@ -531,7 +531,7 @@ long crm_zexpandvar(char *buf,
 
         //    and put our results back into buf
         memcpy(buf, tbuf, id);
-        buf[id] = '\000';
+        buf[id] = 0;
         inlen = id - 1;
 
         if (internal_trace)
@@ -583,7 +583,7 @@ long crm_zexpandvar(char *buf,
                     vname[vlen] = ':';
                     vlen++;
                 }
-                vname[vlen] = '\000';
+                vname[vlen] = 0;
 
                 //
                 //      Now we've got the variable name in vname, we can
@@ -669,7 +669,7 @@ long crm_zexpandvar(char *buf,
         }
         //    and put our results back into buf
         memcpy(buf, tbuf, id);
-        buf[id] = '\000';
+        buf[id] = 0;
         inlen = id - 1;
         if (internal_trace)
             fprintf(stderr, "indirection :+: expansion yields: =%s= len %ld \n", buf, inlen);
@@ -687,7 +687,7 @@ long crm_zexpandvar(char *buf,
         if (internal_trace)
             fprintf(stderr, "Doing stringlength expansion\n");
 
-        buf[id] = '\000';
+        buf[id] = 0;
         if (internal_trace)
             fprintf(stderr, " var-expand yields: =%s= len %ld\n", buf, inlen);
         id = 0;
@@ -721,7 +721,7 @@ long crm_zexpandvar(char *buf,
                     vname[vlen] = ':';
                     vlen++;
                 }
-                vname[vlen] = '\000';
+                vname[vlen] = 0;
 
                 //
                 //      Now we've got the variable name in vname, we can
@@ -797,7 +797,7 @@ long crm_zexpandvar(char *buf,
         }
         //    and put our results back into buf
         memcpy(buf, tbuf, id);
-        buf[id] = '\000';
+        buf[id] = 0;
         //    and because id always gets an extra increment...
         inlen = id - 1;
         if (internal_trace)
@@ -816,7 +816,7 @@ long crm_zexpandvar(char *buf,
         if (internal_trace)
             fprintf(stderr, "Doing math expansion\n");
 
-        buf[id] = '\000';
+        buf[id] = 0;
         if (internal_trace)
             fprintf(stderr, " length-expand yields: =%s= len %ld\n", buf, inlen);
         id = 0;
@@ -855,7 +855,7 @@ long crm_zexpandvar(char *buf,
                     nonfatalerror("This math eval didn't end with a ':' which is",
                                   " often an error...  check it sometime? ");
                 }
-                vname[vlen] = '\000';
+                vname[vlen] = 0;
 
                 //
                 //      Now we've got the variable name in vname, we can
@@ -874,7 +874,7 @@ long crm_zexpandvar(char *buf,
                             char mathtext[MAX_VARNAME];
                             int m, mm;
                             memcpy(mathtext, &vname[1], vlen - 2);
-                            mathtext[vlen - 2] = '\000';
+                            mathtext[vlen - 2] = 0;
                             if (internal_trace)
                                 fprintf(stderr, "In-Mathtext is -'%s'-\n", mathtext);
                             m = strmath(mathtext, vlen - 2, MAX_VARNAME, retstat);
@@ -925,7 +925,7 @@ long crm_zexpandvar(char *buf,
                                               [(vht[vht_index]->vstart) + q];
                                 m++;
                             }
-                            mathtext[vlen - 1] = '\000';
+                            mathtext[vlen - 1] = 0;
                             m = strmath(mathtext, vlen - 2, MAX_VARNAME, retstat);
                             if (retstat && *retstat < 0)
                             {
@@ -957,7 +957,7 @@ long crm_zexpandvar(char *buf,
         }
         //    and put our results back into buf
         memcpy(buf, tbuf, id);
-        buf[id] = '\000';
+        buf[id] = 0;
         inlen = id - 1;
 
         if (internal_trace)
@@ -968,7 +968,7 @@ long crm_zexpandvar(char *buf,
 
     //    That's all, folks!  Clean up the temporary buffer.  We null-terminate
     //    it in case we need to do stupid non-8-bit-clean IO on it.
-    tbuf[inlen + 1] = '\000';
+    tbuf[inlen + 1] = 0;
 
     //     We reuse tbuf and vname from now on.
     // free (tbuf);
@@ -1040,7 +1040,7 @@ long crm_restrictvar(char *boxstring,
     //     Expand the string we were handed.
     CRM_ASSERT(boxstrlen < MAX_PATTERN);
     memcpy(datastring, boxstring, boxstrlen);
-    datastring[boxstrlen] = '\0';
+    datastring[boxstrlen] = 0;
 
     if (user_trace)
         fprintf(stderr, "Variable before expansion '%s' len %ld\n",
@@ -1059,7 +1059,7 @@ long crm_restrictvar(char *boxstring,
     if (nw_len > 0)
     {
         memcpy(varname, &datastring[nw_start], nw_len);
-        varname[nw_len] = '\0';
+        varname[nw_len] = 0;
         varnamelen = nw_len;
     }
     else
@@ -1093,7 +1093,7 @@ long crm_restrictvar(char *boxstring,
     if (vht[vmidx]->valtxt != tdw->filetext
         && vht[vmidx]->valtxt != cdw->filetext)
     {
-        errstr[0] = '\0';
+        errstr[0] = 0;
         strcat(errstr, "Bogus text block (neither cdw nor tdw) on var ");
         strcat(errstr, varname);
         strcat(errstr, "\n");
@@ -1142,7 +1142,7 @@ long crm_restrictvar(char *boxstring,
         //      use sscanf on it )
         memcpy(scanbuf, &datastring[nw_start], nw_len);
         scanbuflen = nw_len;
-        scanbuf[scanbuflen] = '\0';
+        scanbuf[scanbuflen] = 0;
 
         if (internal_trace)
                 {
@@ -1222,7 +1222,7 @@ long crm_restrictvar(char *boxstring,
                     nw_len++;
                     regex_start++;
                 }
-                scanbuf[nw_len] = '\0';
+                scanbuf[nw_len] = 0;
                 if (user_trace)
                                 {
                                         fprintf(stderr, "Var restriction with regex '%s' len %ld\n",

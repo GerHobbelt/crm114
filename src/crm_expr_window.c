@@ -80,10 +80,10 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int firsttime;
 
 
-    inputsrcname[0] = '\000';
+    inputsrcname[0] = 0;
     inputsrclen = 0;
 
-    //    wvname[0] = '\000';
+    //    wvname[0] = 0;
     //wvnamelen = 0;
 
     srcidx = 0;
@@ -433,7 +433,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 strncpy(newinputbuf,
                         &vht[srcidx]->valtxt[vht[srcidx]->vstart],
                         vht[srcidx]->vlen);
-                newinputbuf[vht[srcidx]->vlen] = '\000';
+                newinputbuf[vht[srcidx]->vlen] = 0;
                 newbuflen = vht[srcidx]->vlen;
                 //
                 //    and there we have it - newintputbuf has all we will
@@ -543,7 +543,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 if (icount > 0)
                 {
                     newbuflen = newbuflen + icount;
-                    newinputbuf[newbuflen] = '\000'; // put on the terminator
+                    newinputbuf[newbuflen] = 0; // put on the terminator
                 }
                 //              icount < 0 means an error occurred
                 if (icount < 0)
@@ -668,7 +668,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 &(newinputbuf[matches[0].rm_eo]),
                 newbuflen - matches[0].rm_eo + 1);
     newbuflen = newbuflen - matches[0].rm_eo;
-    newinputbuf[newbuflen] = '\000';
+    newinputbuf[newbuflen] = 0;
 
 
     //       Now, if we had EOFFAILS, and we hit the fail condition,

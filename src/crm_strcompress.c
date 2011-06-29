@@ -134,7 +134,7 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
     for (i = 0; i < n_bytes; i++)
     {
         s->hash_root[i] = NULL_INDEX;
-        s->text[i] = '\0';
+        s->text[i] = 0;
     }
     for (i = 0; i < n_hash; i++)
     {
@@ -175,7 +175,7 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         {
             i = filesize + 1024;
             while (i--)
-                fputc('\0', f);
+                fputc(0, f);
             fclose(f);
         }
         space =
@@ -620,7 +620,7 @@ int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
             filenames[j][k++] = filenames_field[++i];
         else if (crm_isspace(filenames_field[i]) && k > 0)
         {
-            filenames[j][k] = '\0';
+            filenames[j][k] = 0;
             k = 0;
             j++;
         }
@@ -636,7 +636,7 @@ int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
         else if (crm_isgraph(filenames_field[i]))
             filenames[j][k++] = filenames_field[i];
 
-    filenames[j][k] = '\0';
+    filenames[j][k] = 0;
     n_classifiers = j + 1;
 
     if (joe_trace)

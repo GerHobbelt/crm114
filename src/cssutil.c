@@ -278,10 +278,12 @@ int main(int argc, char **argv)
             }
             hfsize = statbuf.st_size;
             if (!quiet && user_set_css_length)
-                fprintf(stderr,
+			{
+				fprintf(stderr,
                         "\n.CSS file %s exists; -s, -S options ignored.\n",
                         cssfile);
-        }
+			}
+		}
         else
         {
             //      file didn't exist... create it
@@ -499,6 +501,7 @@ unsigned long v;
             }
 
             if (!brief)
+			{
                 for (i = 0; i < histbins; i++)
                 {
                     if (bcounts[i] > 0)
@@ -515,13 +518,14 @@ unsigned long v;
                         }
                     }
                 }
+			}
 
             fprintf(stdout, "\n");
             cmdloop = 1;
             while (!report_only && cmdloop)
             {
                 // clear command buffer
-                cmdchr[0] = '\0';
+                cmdchr[0] = 0;
                 fprintf(stdout, "Options:\n");
                 fprintf(stdout, "   Z n - zero bins at or below a value\n");
                 fprintf(stdout, "   S n - subtract a constant from all bins\n");
@@ -543,9 +547,11 @@ unsigned long v;
                 {
                 case 'z':
                     if (fields != 2)
+					{
                         fprintf(stdout,
                                 "Z command requires a numeric argument!\n");
-                    else
+					}
+					else
                     {
                         val = (long)cmdval;
                         fprintf(stdout, "Working...");
@@ -562,9 +568,11 @@ unsigned long v;
 
                 case 's':
                     if (fields != 2)
+					{
                         fprintf(stdout,
                                 "S command requires a numeric argument!\n");
-                    else
+					}
+					else
                     {
                         val = (long)cmdval;
                         fprintf(stdout, "Working...");
@@ -586,11 +594,15 @@ unsigned long v;
                 case 'd':
                     val = (long)cmdval;
                     if (fields != 2)
-                        fprintf(stdout,
+					{
+						fprintf(stdout,
                                 "D command requires a numeric argument!\n");
-                    else if (val == 0)
-                        fprintf(stdout, "You can't divide by zero, nimrod!\n");
-                    else
+					}
+					else if (val == 0)
+					{
+						fprintf(stdout, "You can't divide by zero, nimrod!\n");
+					}
+					else
                     {
                         fprintf(stdout, "Working...");
                         for (i = 1; i < hfsize; i++)
@@ -614,7 +626,7 @@ unsigned long v;
                     break;
 
                 case 'q':
-                    fprintf(stdout, "Bye! \n");
+                    fprintf(stdout, "Bye!\n");
                     cmdloop = 0;
                     break;
 

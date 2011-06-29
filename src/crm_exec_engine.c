@@ -540,7 +540,7 @@ int crm_invoke(void)
         fprintf(stderr, "Executing an ACCEPT\n");
       //
       //
-      varname[0] = '\0';
+      varname[0] = 0;
       strcpy(varname, ":_dw:");
       varidx = crm_vht_lookup(vht, varname, strlen(varname));
       if (varidx == 0
@@ -764,7 +764,7 @@ int crm_invoke(void)
         argvallen = apb->b1len;
         argvallen = crm_nexpandvar(tempbuf, argvallen, data_window_size);
 
-        tempbuf[argvallen] = '\0';
+        tempbuf[argvallen] = 0;
 
         //   Stuff the new csl with the return-value-locations'
         //   vht index - if it's -1, then we don't have a return
@@ -866,7 +866,7 @@ int crm_invoke(void)
         //      get the generalized argument name (first varname)
         crm_nextword(outbuf, argnamelen, 0, &vns, &vnl);
         memmove(outbuf, &outbuf[vns], vnl);
-        outbuf[vnl] = '\0';
+        outbuf[vnl] = 0;
         if (vnl > 0)
         {
           //
@@ -951,7 +951,7 @@ int crm_invoke(void)
       while (!done)
       {
         while (temp_vars[vstart] < 0x021
-               && vstart < tvlen)          //  was temp_vars[vstart] != '\000')
+               && vstart < tvlen)          //  was temp_vars[vstart] != 0)
           vstart++;
         vlen = 0;
         while (temp_vars[vstart + vlen] >= 0x021
@@ -971,7 +971,7 @@ int crm_invoke(void)
           {
             char varname[MAX_VARNAME];
             strncpy(varname, &temp_vars[vstart], vlen);
-            varname[vlen] = '\000';
+            varname[vlen] = 0;
             nonfatalerror("can't intersection a nonexistent variable.",
                           varname);
             goto invoke_bailout;
@@ -984,7 +984,7 @@ int crm_invoke(void)
             {
               char varname[MAX_VARNAME];
               strncpy(varname, &temp_vars[vstart], vlen);
-              varname[vlen] = '\000';
+              varname[vlen] = 0;
               nonfatalerror("can't intersect isolated variable.",
                             varname);
               goto invoke_bailout;
@@ -1001,7 +1001,7 @@ int crm_invoke(void)
           }
         }
         vstart = vstart + vlen;
-        if (temp_vars[vstart] == '\000')
+        if (temp_vars[vstart] == 0)
           done = 1;
       }
       //
@@ -1063,7 +1063,7 @@ int crm_invoke(void)
       while (!done)
       {
         while (temp_vars[vstart] < 0x021
-               && vstart < tvlen)          //  was temp_vars[vstart] != '\000')
+               && vstart < tvlen)          //  was temp_vars[vstart] != 0)
           vstart++;
         vlen = 0;
         while (temp_vars[vstart + vlen] >= 0x021
@@ -1083,7 +1083,7 @@ int crm_invoke(void)
           {
             char varname[MAX_VARNAME];
             strncpy(varname, &temp_vars[vstart], vlen);
-            varname[vlen] = '\000';
+            varname[vlen] = 0;
             nonfatalerror("can't intersect a nonexistent variable.",
                           varname);
             goto invoke_bailout;
@@ -1096,7 +1096,7 @@ int crm_invoke(void)
             {
               char varname[MAX_VARNAME];
               strncpy(varname, &temp_vars[vstart], vlen);
-              varname[vlen] = '\000';
+              varname[vlen] = 0;
               nonfatalerror("can't intersect isolated variable.",
                             varname);
               goto invoke_bailout;
@@ -1113,7 +1113,7 @@ int crm_invoke(void)
           }
         }
         vstart = vstart + vlen;
-        if (temp_vars[vstart] == '\000')
+        if (temp_vars[vstart] == 0)
           done = 1;
       }
       //
@@ -1146,6 +1146,7 @@ int crm_invoke(void)
   case CRM_PMULC:
 	crm_expr_pmulc (csl, apb);
     break;
+
   case CRM_UNIMPLEMENTED:
     {
       int width = CRM_MIN(1024, csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start);

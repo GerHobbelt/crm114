@@ -1692,7 +1692,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   while (htext[j] >= 0x021) j++;
 
   //             filename starts at i,  ends at j. null terminate it.
-  htext[j] = '\000';
+  htext[j] = 0;
   learnfilename = strdup(&(htext[i]));
 
   //             and stat it to get it's length
@@ -2487,12 +2487,12 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
     memmove(svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
-    svrbl[vlen] = '\000';
+    svrbl[vlen] = 0;
   }
 
   //     status variable's text (used for output stats)
   //
-  stext[0] = '\000';
+  stext[0] = 0;
   slen = 0;
 
   //            set our flags, if needed.  The defaults are
@@ -2561,14 +2561,14 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       strncpy(fname, &htext[fnstart], fnlen);
       fn_start_here = fnstart + fnlen + 1;
-      fname[fnlen] = '\000';
+      fname[fnlen] = 0;
       if (user_trace)
       {
         fprintf(stderr, "Classifying with file -%s- "
                         "succhash=%ld, maxhash=%ld\n",
                 fname, succhash, maxhash);
       }
-      if (fname[0] == '|' && fname[1] == '\000')
+      if (fname[0] == '|' && fname[1] == 0)
       {
         if (vbar_seen)
         {
@@ -3077,7 +3077,7 @@ int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       double overall_pR;
       long m;
 
-      buf[0] = '\000';
+      buf[0] = 0;
       accumulator = 1000 * DBL_MIN;
       for (m = 0; m < succhash; m++)
       {

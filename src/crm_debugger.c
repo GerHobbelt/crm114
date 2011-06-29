@@ -139,7 +139,7 @@ long crm_debugger(void)
         inbuf[ichar] = fgetc(mytty);
         ichar++;
     }
-    inbuf[ichar] = '\000';
+    inbuf[ichar] = 0;
 
     if (feof(mytty))
     {
@@ -407,7 +407,7 @@ break;
                 crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
                              &tstart, &tlen);
                 memmove(inbuf, &inbuf[1 + tstart], tlen);
-                inbuf[tlen] = '\000';
+                inbuf[tlen] = 0;
                 vindex = crm_vht_lookup(vht, inbuf, tlen);
                 if (vht[vindex] == NULL)
                 {
@@ -454,7 +454,7 @@ break;
                 crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
                              &tstart, &tlen);
                 memmove(inbuf, &inbuf[1 + tstart], tlen);
-                inbuf[tlen] = '\000';
+                inbuf[tlen] = 0;
                 vindex = crm_vht_lookup(vht, inbuf, tlen);
                 fprintf(stderr, "vindex = %ld\n", vindex);
                 if (vht[vindex] == NULL)
@@ -501,7 +501,7 @@ break;
             crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
                          &vstart, &vlen);
             memmove(inbuf, &inbuf[1 + vstart], vlen);
-            inbuf[vlen] = '\000';
+            inbuf[vlen] = 0;
             vindex = crm_vht_lookup(vht, inbuf, vlen);
             if (vht[vindex] == NULL)
             {
@@ -511,16 +511,16 @@ break;
             //     now grab what's left of the input as the value to set
             //
             ostart = vlen + 1;
-            while (inbuf[ostart] != '/' && inbuf[ostart] != '\000') ostart++;
+            while (inbuf[ostart] != '/' && inbuf[ostart] != 0) ostart++;
             ostart++;
             oend = ostart + 1;
-            while (inbuf[oend] != '/' && inbuf[oend] != '\000') oend++;
+            while (inbuf[oend] != '/' && inbuf[oend] != 0) oend++;
 
             memmove(outbuf,
                     &inbuf[ostart],
                     oend - ostart);
 
-            outbuf[oend - ostart] = '\000';
+            outbuf[oend - ostart] = 0;
             olen = crm_nexpandvar(outbuf, oend - ostart, data_window_size);
             crm_destructive_alter_nvariable(inbuf, vlen, outbuf, olen);
         }

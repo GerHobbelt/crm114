@@ -179,7 +179,7 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //    OK, we have final result and a valid length.  Now push that
     //    back into the destination.
-    //tempbuf[retlen] = '\0';
+    //tempbuf[retlen] = 0;
     //if (user_trace)
     //  fprintf(stderr, "Result of TRANSLATE: %s len %ld\n",
     //         tempbuf, retlen);

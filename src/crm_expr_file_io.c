@@ -175,7 +175,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         long ichar = 0;
         CRM_ASSERT(vlen < MAX_VARNAME);
         memmove(vname, &(temp_vars[vstart]), vlen);
-        vname[vlen] = '\000';
+        vname[vlen] = 0;
 
         //        If we have a seek requested, do an fseek.
         //        (Annoying But True: fseek on stdin does NOT error, it's
@@ -242,7 +242,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
             if (ichar > 0 && inbuf[ichar] == '\n') ichar--; //   get rid of any present newline
             // [i_a] GROT GROT GROT: how about MAC and PC (CR and CRLF instead of LF as line terminators) */
-            inbuf[ichar] = '\000';   // and put a null on the end of it.
+            inbuf[ichar] = 0;   // and put a null on the end of it.
         }
         else
         {
@@ -251,7 +251,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             ichar = 0;
             if (feof(fp)) clearerr(fp);            // reset any EOF
             ichar = fread(inbuf, 1, iolen, fp);    // do a block I/O
-            inbuf[ichar] = '\000';                 // null at the end
+            inbuf[ichar] = 0;                 // null at the end
         }
         crm_set_temp_nvar(vname, inbuf, ichar);
     }
@@ -308,7 +308,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_nextword(filename, apb->b1len, 0, &i, &j);
     memmove(fnam, &filename[i], j);
     fnlen = crm_nexpandvar(fnam, j, MAX_FILE_NAME_LEN);
-    fnam[fnlen] = '\0';
+    fnam[fnlen] = 0;
     if (user_trace)
         fprintf(stderr, "  filename >>>%s<<<\n", fnam);
 
@@ -318,7 +318,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_nextword(filename, apb->b1len, i + j, &i, &j);
     memmove(fileoffset, &filename[i], j);
     fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
-    fileoffset[fileoffsetlen] = '\0';
+    fileoffset[fileoffsetlen] = 0;
     if (*fileoffset && 1 != sscanf(fileoffset, "%ld", &offset))
     {
         if (user_trace)
@@ -336,7 +336,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_nextword(filename, apb->b1len, i + j, &i, &j);
     memmove(fileiolen, &filename[i], j);
     fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
-    fileiolen[fileiolenlen] = '\0';
+    fileiolen[fileiolenlen] = 0;
     if (*fileiolen && 1 != sscanf(fileiolen, "%ld", &iolen))
     {
         if (user_trace)

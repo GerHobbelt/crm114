@@ -111,7 +111,7 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
 
   if (inlen >= MAX_PATTERN) inlen = MAX_PATTERN - 1;
   memmove(flagtext, input, inlen);
-  flagtext[inlen] = '\000';
+  flagtext[inlen] = 0;
 
   if (internal_trace)
     fprintf(stderr, "Flag string: %s\n", flagtext);
@@ -173,7 +173,7 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
         long q;
         char foo[129];
         strncpy(foo, wtext, wlen < 128 ? wlen : 128);
-        foo[wlen < 128 ? wlen : 128] = '\000';
+        foo[wlen < 128 ? wlen : 128] = 0;
         q = nonfatalerror("Darn...  unrecognized flag :", foo);
       }
 
@@ -806,14 +806,14 @@ void crm_get_pgm_arg(char *to, long tolen, char *from, long fromlen)
 
   if (from == NULL)
   {
-    to[0] = '\000';
+    to[0] = 0;
   }
   else
   {
     len = tolen - 1;
     if (len > fromlen) len = fromlen;
     memmove(to, from, len);
-    to[len] = '\000';
+    to[len] = 0;
   }
 }
 

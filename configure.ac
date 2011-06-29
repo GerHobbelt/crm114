@@ -65,111 +65,311 @@ AM_MAINTAINER_MODE
 # include/exclude specific sections of CRM114 (e.g. experimental classifiers)
 #
 #
+AC_MSG_CHECKING([if we don't want any experimental classifiers])
 AC_ARG_ENABLE([experimental-classifiers],
   AC_HELP_STRING([--disable-experimental-classifiers],
     [do not include any experimental classifiers.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use these experimental classifiers.
 (default: experimental classifiers are ENABLED)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS, 1, [do not include experimental classifiers in the build])
-  )
+  [
+   if eval "test x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS, 1, [do not include experimental classifiers in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
 
+#
+# WARNING!
+#
+# This code assumes these classifiers are 'experimental':
+#
+#   NEURAL_NET
+#   SCM
+#   SKS
+#   SVM
+#   CLUMP
+#
+# The code below must be changed when some of these are NOT experimental anymore!
+#
+
+
+AC_MSG_CHECKING([if we don't want the OSB-Bayes classifier])
 AC_ARG_ENABLE([OSB-Bayes],
   AC_HELP_STRING([--disable-OSB-Bayes],
     [do not include the OSB-Bayes classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: OSB-Bayes classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_BAYES, 1, [do not include the OSB-Bayes classifier in the build])
-  )
+  [
+   if eval "test x$enable_OSB_Bayes = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_BAYES, 1, [do not include the OSB-Bayes classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
+
+AC_MSG_CHECKING([if we don't want the OSB-Winnow classifier])
 AC_ARG_ENABLE([OSB-Winnow],
   AC_HELP_STRING([--disable-OSB-Winnow],
     [do not include the OSB-Winnow classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: OSB-Winnow classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_WINNOW, 1, [do not include the OSB-Winnow classifier in the build])
-  )
+  [
+   if eval "test x$enable_OSB_Winnow = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_WINNOW, 1, [do not include the OSB-Winnow classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
+
+AC_MSG_CHECKING([if we don't want the OSBF classifier])
 AC_ARG_ENABLE([OSBF],
   AC_HELP_STRING([--disable-OSBF],
     [do not include the OSBF classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: OSBF classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSBF, 1, [do not include the OSBF classifier in the build])
-  )
+  [
+   if eval "test x$enable_OSBF = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSBF, 1, [do not include the OSBF classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
+
+AC_MSG_CHECKING([if we don't want the OSB-Hyperspace classifier])
 AC_ARG_ENABLE([OSB-Hyperspace],
   AC_HELP_STRING([--disable-OSB-Hyperspace],
     [do not include the OSB-Hyperspace classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: OSB-Hyperspace classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_HYPERSPACE, 1, [do not include the OSB-Hyperspace classifier in the build])
-  )
+  [
+   if eval "test x$enable_OSB_Hyperspace = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_HYPERSPACE, 1, [do not include the OSB-Hyperspace classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
+
+AC_MSG_CHECKING([if we don't want the Correlate classifier])
 AC_ARG_ENABLE([Correlate],
   AC_HELP_STRING([--disable-Correlate],
     [do not include the Correlate classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: Correlate classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_CORRELATE, 1, [do not include the Correlate classifier in the build])
-  )
+  [
+   if eval "test x$enable_Correlate = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_CORRELATE, 1, [do not include the Correlate classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
+
+AC_MSG_CHECKING([if we don't want the Bit-Entropy classifier])
 AC_ARG_ENABLE([Bit-Entropy],
   AC_HELP_STRING([--disable-Bit-Entropy],
     [do not include the Bit-Entropy classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: Bit-Entropy classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_BIT_ENTROPY, 1, [do not include the Bit-Entropy classifier in the build])
-  )
+  [
+   if eval "test x$enable_Bit_Entropy = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_BIT_ENTROPY, 1, [do not include the Bit-Entropy classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
+
+AC_MSG_CHECKING([if we don't want the SVM classifier])
 AC_ARG_ENABLE([SVM],
   AC_HELP_STRING([--disable-SVM],
     [do not include the SVM classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: SVM classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_SVM, 1, [do not include the SVM classifier in the build])
-  )
+  [
+   if eval "test x$enable_SVM = xno -o x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SVM, 1, [do not include the SVM classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   if eval "test x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SVM, 1, [do not include the SVM classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ])
+
+AC_MSG_CHECKING([if we don't want the SKS classifier])
 AC_ARG_ENABLE([SKS],
   AC_HELP_STRING([--disable-SKS],
     [do not include the SKS classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: SKS classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_SKS, 1, [do not include the SKS classifier in the build])
-  )
+  [
+   if eval "test x$enable_SKS = xno -o x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SKS, 1, [do not include the SKS classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   if eval "test x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SKS, 1, [do not include the SKS classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ])
+
+AC_MSG_CHECKING([if we don't want the FSCM classifier])
 AC_ARG_ENABLE([FSCM],
   AC_HELP_STRING([--disable-FSCM],
     [do not include the FSCM classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: FSCM classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_FSCM, 1, [do not include the FSCM classifier in the build])
-  )
+  [
+   if eval "test x$enable_FSCM = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_FSCM, 1, [do not include the FSCM classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
+
+AC_MSG_CHECKING([if we don't want the SCM classifier])
 AC_ARG_ENABLE([SCM],
   AC_HELP_STRING([--disable-SCM],
     [do not include the SCM classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: SCM classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_SCM, 1, [do not include the SCM classifier in the build])
-  )
+  [
+   if eval "test x$enable_SCM = xno -o x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SCM, 1, [do not include the SCM classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   if eval "test x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_SCM, 1, [do not include the SCM classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ])
+
+AC_MSG_CHECKING([if we don't want the Neural-Net classifier])
 AC_ARG_ENABLE([Neural-Net],
   AC_HELP_STRING([--disable-Neural-Net],
     [do not include the Neural-Net classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: Neural-Net classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_NEURAL_NET, 1, [do not include the Neural-Net classifier in the build])
-  )
+  [
+   if eval "test x$enable_Neural_Net = xno -o x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_NEURAL_NET, 1, [do not include the Neural-Net classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   if eval "test x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_NEURAL_NET, 1, [do not include the Neural-Net classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ])
+
+AC_MSG_CHECKING([if we don't want the Markov classifier])
 AC_ARG_ENABLE([Markov],
   AC_HELP_STRING([--disable-Markov],
     [do not include the Markov classifier.
 This will produce a smaller executable, which will report an error
 when your scripts attempt to use this classifier.
 (default: Markov classifier is build-in)]),
-  AC_DEFINE_UNQUOTED(CRM_WITHOUT_MARKOV, 1, [do not include the Markov classifier in the build])
-  )
+  [
+   if eval "test x$enable_Markov = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_MARKOV, 1, [do not include the Markov classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([au contraire, mon ami, we want it!])
+  ])
+
+AC_MSG_CHECKING([if we don't want the CLUMP classifier])
+AC_ARG_ENABLE([CLUMP],
+  AC_HELP_STRING([--disable-CLUMP],
+    [do not include the CLUMP classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: CLUMP classifier is build-in)]),
+  [
+   if eval "test x$enable_CLUMP = xno -o x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_CLUMP, 1, [do not include the CLUMP classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ],
+  [
+   if eval "test x$enable_experimental_classifiers = xno"; then
+     AC_MSG_RESULT([no, we don't])
+     AC_DEFINE_UNQUOTED(CRM_WITHOUT_CLUMP, 1, [do not include the CLUMP classifier in the build])
+   else
+     AC_MSG_RESULT([au contraire, mon ami, we want it!])
+   fi
+  ])
 
 # ##################################################################
 #
@@ -217,23 +417,57 @@ AX_DIFF_OPTION([-strip-trailing-cr])
 if test ! -z "$SED"; then
   CFLAGS=`echo $CFLAGS | $SED -e 's/ -O2//'`
 fi
+
+AC_MSG_CHECKING([if we want a debug or release build])
 AC_ARG_ENABLE([debug], AC_HELP_STRING([--disable-debug],
   [Specify to create a so-called 'production' or 'release build'.
 You can explicitly specify '--enable-debug' to create a standard
-CRM (debuggable) build. (default: debugging turned ON)]),
-  [AX_CFLAGS_GCC_OPTION([-O0])],
-  [AX_CFLAGS_GCC_OPTION([-O3])]
+CRM (debuggable) build. (default: debugging turned OFF)]),
+  [
+   if eval "test x$enable_debug = xyes"; then
+     AC_MSG_RESULT([debug])
+     AX_CFLAGS_GCC_OPTION([-O0])
+   else
+     AC_MSG_RESULT([release])
+     AX_CFLAGS_GCC_OPTION([-O3])
+   fi
+  ],
+  [AC_MSG_RESULT([release])
+   AX_CFLAGS_GCC_OPTION([-O3])]
   )
 
+AC_MSG_CHECKING([if we want a build for profiling])
+AC_ARG_ENABLE([profiling], AC_HELP_STRING([--enable-profiling],
+  [You can explicitly specify '--enable-profiling' to 
+create a CRM build which can be profiled with, for 
+example, gprof. (default: profiling turned OFF)]),
+  [
+   AC_MSG_RESULT($enable_profiling)
+   if eval "test x$enable_profiling = xyes"; then
+     AX_CFLAGS_GCC_OPTION([-pg])
+   fi
+  ],
+  [AC_MSG_RESULT([no])])
+
+AC_MSG_CHECKING([if we want maximum compiler warnings])
 AC_ARG_ENABLE([extended-compile-warnings],
   AC_HELP_STRING([--disable-extended-compile-warnings],
     [turn maximum compiler/linker warnings level off
 (default: turn on all warnings)]),
-  [],
-  [AX_CFLAGS_WARN_ALL(AM_CFLAGS)
+  [
+   AC_MSG_RESULT($enable_extended_compile_warnings)
+   if eval "test x$enable_extended_compile_warnings = xyes"; then
+     AX_CFLAGS_WARN_ALL(AM_CFLAGS)
+dnl  AX_CFLAGS_WARN_ALL_ANSI(AM_CFLAGS)
+   fi
+  ],
+  [
+   AC_MSG_RESULT([yes])
+   AX_CFLAGS_WARN_ALL(AM_CFLAGS)
 dnl  AX_CFLAGS_WARN_ALL_ANSI(AM_CFLAGS)
   ])
 
+AC_MSG_CHECKING([if we want run-time assertions])
 AC_ARG_ENABLE([assertions],
   AC_HELP_STRING([--disable-assertions],
     [turn assertion checks off.
@@ -241,9 +475,18 @@ This will produce a faster running executable but such at the cost
 of lacking a specific type of 'developer' checks. These SHOULD not
 get triggered EVER, so you MAY assume specifying this option is
 a 'free speedup'. (default: assertions are ENABLED)]),
-  AC_DEFINE_UNQUOTED(CRM_DONT_ASSERT, 1, [DISable ASSERT/VERIFY checks])
-  )
+  [
+   AC_MSG_RESULT($enable_assertions)
+   if eval "test x$enable_assertions = xyes"; then
+     AC_DEFINE_UNQUOTED(CRM_DONT_ASSERT, 1, [DISable ASSERT/VERIFY checks])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([yes])
+   AC_DEFINE_UNQUOTED(CRM_DONT_ASSERT, 1, [DISable ASSERT/VERIFY checks])
+  ])
 
+AC_MSG_CHECKING([if we want run-time trappable assertions])
 AC_ARG_ENABLE([trappable-asserts],
   AC_HELP_STRING([--enable-trappable-assertions],
     [make assertion checks trappable (instead of being a
@@ -253,9 +496,18 @@ specific (rather theoretical) circumstances you may now be greeted
 by a coredump due to an inifinite loop caused by assertion failures
 within the CRM114 trap handler. Can't say you haven't been warned!
 (default: assertions are 'untrappable')]),
-  AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 0, [TRAPPABLE(!) ASSERT/VERIFY checks - (this is dangerous!)]),
-  AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 1, [untrappable ASSERT/VERIFY checks])
-  )
+  [
+   AC_MSG_RESULT($enable_trappable_assertions)
+   if eval "test x$enable_trappable_assertions = xyes"; then
+     AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 0, [TRAPPABLE(!) ASSERT/VERIFY checks - (this is dangerous!)])
+   else
+     AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 1, [untrappable ASSERT/VERIFY checks])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([no])
+   AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 1, [untrappable ASSERT/VERIFY checks])
+  ])
 
 
 

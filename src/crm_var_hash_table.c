@@ -63,7 +63,7 @@ void crm_vht_init(int argc, char **argv)
         untrappableerror("Couldn't alloc tdw->filetext.\n"
                          "Without this space, you can't have any isolated "
                          "variables,\n and we're stuck.  Sorry.", "");
-    tdw->filetext[0] = '\000';
+    tdw->filetext[0] = 0;
     tdw->nchars = 0;
     tdw->hash = 0;
     tdw->mct = NULL;
@@ -131,7 +131,7 @@ void crm_vht_init(int argc, char **argv)
     //   :_pos2: and so on are the command line args.
     //
     //    prepare to treasure up the positional args
-    posvars[0] = '\000';
+    posvars[0] = 0;
     j = 0;
 
     for (i = uvstart; i < argc; i++)
@@ -179,7 +179,7 @@ void crm_vht_init(int argc, char **argv)
 
     i = 0;
     CRM_ASSERT(tempbuf != NULL);
-    tempbuf[0] = '\000';
+    tempbuf[0] = 0;
     if (!ignore_environment_vars)
     {
 #if defined (WIN32)
@@ -342,7 +342,7 @@ void crm_vht_init(int argc, char **argv)
         strncat(uvset, &argv[1][2], strlen(argv[1]) - 3);
         //   nuke the closing paren
         closepos = 2;
-        while (uvset[closepos] != ')' && uvset[closepos] != '\000')
+        while (uvset[closepos] != ')' && uvset[closepos] != 0)
             closepos++;
         uvset[closepos] = 0;
         strcat(uvset, " ");
@@ -371,7 +371,7 @@ void crm_vht_init(int argc, char **argv)
                     //   build a testable name out of the -- flagname
                     strcpy(anamebuf, " ");
                     j = 2; k = 1;
-                    while (argv[i][j] != '\000' && argv[i][j] != '=')
+                    while (argv[i][j] != 0 && argv[i][j] != '=')
                     {
                         anamebuf[k] = argv[i][j];
                         j++;
@@ -400,7 +400,7 @@ void crm_vht_init(int argc, char **argv)
                     //  copy the varname into anamebuf
                     anamebuf[k] = ':';
                     k++;
-                    while (argv[i][j] != '\000' && argv[i][j] != '=')
+                    while (argv[i][j] != 0 && argv[i][j] != '=')
                     {
                         anamebuf[k] = argv[i][j];
                         j++;
@@ -408,18 +408,18 @@ void crm_vht_init(int argc, char **argv)
                     }
                     anamebuf[k] = ':';
                     k++;
-                    anamebuf[k] = '\000';
+                    anamebuf[k] = 0;
                     if (argv[i][j] == '=')
                     {
                         j++;  //  skip over the = sign
                         k = 0;
-                        while (argv[i][j] != '\000')
+                        while (argv[i][j] != 0)
                         {
                             avalbuf[k] = argv[i][j];
                             j++;
                             k++;
                         }
-                        avalbuf[k] = '\000';
+                        avalbuf[k] = 0;
                     }
                     if (user_trace)
                         fprintf(stderr, "\n Setting cmdline var '%s' to '%s'\n",
@@ -516,7 +516,7 @@ void crm_set_temp_nvar(char *varname, char *value, long vallen)
         //
         //        and put a NUL at the end of the tdw, so debuggers won't get
         //       all bent out of shape.
-        tdw->filetext[tdw->nchars] = '\000';
+        tdw->filetext[tdw->nchars] = 0;
         //
         //      now, we whack the actual VHT.
         crm_setvar(NULL, 0,

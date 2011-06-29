@@ -77,7 +77,7 @@ static int get_next_token(struct token_search *pts)
   unsigned char *p_end = NULL;   /* points to end of the token */
   int error = 0;                 /* default: no error */
 
-  if (pts->pattern[0] != '\0')
+  if (pts->pattern[0] != 0)
   {
     regmatch_t match[5];
 
@@ -237,7 +237,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //llen = crm_nexpandvar (ltext, llen, MAX_PATTERN);
 
   //     get the "this is a word" regex
-  ptext[0] = '\0';          // start with empty regex
+  ptext[0] = 0;          // start with empty regex
   crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
   plen = apb->s1len;
   plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
@@ -294,7 +294,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     j++;
 
   //             filename starts at i,  ends at j. null terminate it.
-  htext[j] = '\000';
+  htext[j] = 0;
   learnfilename = strdup(&htext[i]);
 
   //             and stat it to get it's length
@@ -378,7 +378,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   }
 
   // compile regex if not empty - empty regex means "plain regex"
-  if (ptext[0] != '\0')
+  if (ptext[0] != 0)
   {
     i = crm_regcomp(&regcb, ptext, plen, cflags);
     if (i > 0)
@@ -453,7 +453,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (internal_trace)
     {
       memmove(tempbuf, ts.ptok, ts.toklen);
-      tempbuf[ts.toklen] = '\000';
+      tempbuf[ts.toklen] = 0;
       fprintf(stderr,
               "  Learn #%ld t.o. %ld strt %ld end %ld len %lu is -%s-\n",
               i,
@@ -602,7 +602,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #endif
 #endif
 
-  if (ptext[0] != '\0')
+  if (ptext[0] != 0)
     crm_regfree(&regcb);
   free(learnfilename);
   return 0;
@@ -732,7 +732,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //           extract the "this is a word" regex
   //
-  ptext[0] = '\0';          // assume empty regex
+  ptext[0] = 0;          // assume empty regex
   crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
   plen = apb->s1len;
   plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
@@ -760,12 +760,12 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     crm_nextword(svrbl, svlen, 0, &vstart, &vlen);
     memmove(svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
-    svrbl[vlen] = '\000';
+    svrbl[vlen] = 0;
   }
 
   //     status variable's text (used for output stats)
   //
-  stext[0] = '\000';
+  stext[0] = 0;
   slen = 0;
 
   //            set our flags, if needed.  The defaults are
@@ -788,7 +788,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   }
 
   //   compile the word regex if not empty
-  if (ptext[0] != '\0')
+  if (ptext[0] != 0)
   {
     if (internal_trace)
       fprintf(stderr, "\nWordmatch pattern is |%s|", ptext);
@@ -889,11 +889,11 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       strncpy(fname, &htext[fnstart], fnlen);
       fn_start_here = fnstart + fnlen + 1;
-      fname[fnlen] = '\000';
+      fname[fnlen] = 0;
       if (user_trace)
         fprintf(stderr, "Classifying with file -%s- "
                         "succhash=%ld, maxhash=%ld\n", fname, succhash, maxhash);
-      if (fname[0] == '|' && fname[1] == '\000')
+      if (fname[0] == '|' && fname[1] == 0)
       {
         if (vbar_seen)
         {
@@ -977,7 +977,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                "We need that part later, so we're stuck. Sorry.");
             }
             strncpy(hashname[maxhash], fname, fnlen);
-            hashname[maxhash][fnlen] = '\000';
+            hashname[maxhash][fnlen] = 0;
             maxhash++;
           }
         }
@@ -1104,7 +1104,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (internal_trace)
     {
       memmove(tempbuf, ts.ptok, ts.toklen);
-      tempbuf[ts.toklen] = '\000';
+      tempbuf[ts.toklen] = 0;
       fprintf(stderr,
               "  Classify #%ld t.o. %ld strt %ld end %ld len %lu is -%s-\n",
               i,
@@ -1506,7 +1506,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   }
 
   //  and let go of the regex buffery
-  if (ptext[0] != '\0')
+  if (ptext[0] != 0)
     crm_regfree(&regcb);
 
   //   and one last chance to force probabilities into the non-stuck zone
@@ -1537,7 +1537,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     double remainder;
     double overall_pR;
     long m;
-    buf[0] = '\000';
+    buf[0] = 0;
     accumulator = 10 * DBL_MIN;
     for (m = 0; m < succhash; m++)
     {

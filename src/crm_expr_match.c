@@ -555,7 +555,7 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (!vn)
                             untrappableerror("Couldn't alloc vn.\n Can't fix that.", "");
                         strncpy(vn, &(bindable_vars[vstart]), vlen);
-                        vn[vlen] = '\000';
+                        vn[vlen] = 0;
                         if (strcmp(vn, ":_dw:") != 0)
                         {
                             {
