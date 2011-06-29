@@ -25,19 +25,19 @@
 //
 //    Global variables
 
-long user_trace = 0;
+int user_trace = 0;
 
-long internal_trace = 0;
+int internal_trace = 0;
 
-long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+int engine_exit_base = 0;  //  All internal errors will use this number or higher;
 //  the user programs can use lower numbers freely.
 
 int selected_hashfunction = 0;  //  0 = default
 
 
-//    the command line argc, argv
-int prog_argc = 0;
-char **prog_argv = NULL;
+//    the app path/name
+char *prog_argv0 = NULL;
+
 
 
 
@@ -64,12 +64,12 @@ static void helptext(void)
 
 int main(int argc, char **argv)
 {
-    long i, k; //  some random counters, when we need a loop
-    long hfsize1, hfsize2;
-    long new_outfile = 0;
+    int i, k; //  some random counters, when we need a loop
+    int hfsize1, hfsize2;
+    int new_outfile = 0;
     FILE *f;
     int verbose;
-    long sparse_spectrum_file_length = DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
+    int sparse_spectrum_file_length = DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
 
     struct stat statbuf;                    //  filestat buffer
     FEATUREBUCKET_TYPE *h1, *h2;            //  the text of the hash file
@@ -78,9 +78,8 @@ int main(int argc, char **argv)
 
     init_stdin_out_err_as_os_handles();
 
-    //   copy argc and argv into global statics...
-    prog_argc = argc;
-    prog_argv = argv;
+    //   copy app path/name into global static...
+    prog_argv0 = argv[0];
 
     user_trace = DEFAULT_USER_TRACE_LEVEL;
     internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
@@ -99,7 +98,7 @@ int main(int argc, char **argv)
 
         case 's':
             //  override css file length?
-            if (!optarg || 1 != sscanf(optarg, "%ld", &sparse_spectrum_file_length))
+            if (!optarg || 1 != sscanf(optarg, "%d", &sparse_spectrum_file_length))
             {
                 fprintf(stderr, "You must specify a numeric argument for the "
                                 "'-s' commandline option (overriding new-create length).\n");
@@ -107,7 +106,7 @@ int main(int argc, char **argv)
             }
             else
             {
-                fprintf(stderr, "\nOverriding new-create length to %ld\n"
+                fprintf(stderr, "\nOverriding new-create length to %d\n"
                        , sparse_spectrum_file_length);
             }
             break;
@@ -203,7 +202,7 @@ int main(int argc, char **argv)
 
             if (0 != fwrite_crm_headerblock(f, &classifier_info, user_msg))
             {
-                fatalerror("Couldn't write the header to the .CSS file named "
+                nonfatalerror("Couldn't write the header to the .CSS file named "
                           , argv[optind]);
                 fclose(f);
                 free((void *)user_msg);
@@ -246,11 +245,11 @@ int main(int argc, char **argv)
 
     //
     hfsize1 = hfsize1 / sizeof(FEATUREBUCKET_TYPE);
-    fprintf(stderr, "\nOutput sparse spectra file %s has %ld bins total\n"
+    fprintf(stderr, "\nOutput sparse spectra file %s has %d bins total\n"
            , argv[optind], hfsize1);
 
     hfsize2 = hfsize2 / sizeof(FEATUREBUCKET_TYPE);
-    fprintf(stderr, "\nInput sparse spectra file %s has %ld bins total\n"
+    fprintf(stderr, "\nInput sparse spectra file %s has %d bins total\n"
            , argv[optind + 1], hfsize2);
 
 
@@ -287,9 +286,9 @@ int main(int argc, char **argv)
     for (i = 1; i < hfsize2; i++)
     {
         crmhash_t hash;
-        unsigned long key;
-        unsigned long value;
-        unsigned long incrs;
+        unsigned int key;
+        unsigned int value;
+        unsigned int incrs;
         //  grab that feature bucket out of h2,
         //  and add it's hashes and data to h1.
         hash = h2[i].hash;
@@ -301,10 +300,10 @@ int main(int argc, char **argv)
 
         if (value != 0)
         {
-            long hindex;
+            int hindex;
 
             if (verbose)
-                fprintf(stderr, "0x%08lX:%lud ", (unsigned long)hash, value);
+                fprintf(stderr, "0x%08lX:%d ", (unsigned long int)hash, value);
             //
             //  this bucket has real data!  :)
             hindex = hash % hfsize1;
@@ -327,7 +326,7 @@ int main(int argc, char **argv)
                 {
                     fprintf(stdout, "\n\n ****** FATAL ERROR ******\n"
                                     "There are too many features to fit into a css file of this size.\n"
-                                    "Operation aborted at input bucket offset %lud .\n"
+                                    "Operation aborted at input bucket offset %d.\n"
                            , i);
                     exit(EXIT_FAILURE);
                 }

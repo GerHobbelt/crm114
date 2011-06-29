@@ -817,6 +817,7 @@ AC_TYPE_INT8_T
 AC_TYPE_MODE_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
 AC_HEADER_STDBOOL
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
@@ -866,7 +867,7 @@ AC_CHECK_FUNCS(floor fabs pow log logl log10 sqrt log2 isnan _isnan)
 AC_CHECK_FUNCS(isalnum isalpha isascii isblank iscntrl isdigit isgraph islower isprint ispunct isspace isupper isxdigit)
 AC_CHECK_FUNCS(setlocale)
 AC_CHECK_FUNCS(getopt getopt_long)
-AC_CHECK_FUNCS(__debugbreak _set_output_format)
+AC_CHECK_FUNCS(__debugbreak _set_output_format _setmode _fileno)
 AC_CHECK_FUNCS(sysconf)
 AC_CHECK_FUNCS(madvise posix_madvise)
 

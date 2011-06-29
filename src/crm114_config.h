@@ -28,6 +28,10 @@
 
 //
 //   default size of the variables hashtable (a.k.a. the VHT)
+//
+//   ADVICE: this should be a prime number for good performance.
+//           depending on the hash function used, a 2^N number may work too.
+//
 #define DEFAULT_VHT_SIZE 4095
 
 //   default limit on the control stack (for catching infinite loops,
@@ -258,7 +262,7 @@
 //   define maximum size of a pattern in bytes
 #define MAX_PATTERN 16384
 
-//    and how long can a variable name be
+//    and how int can a variable name be
 #define MAX_VARNAME 2048
 
 //   define the default number of bytes in a learning file hash table
@@ -329,7 +333,7 @@
 //     cookies on a fatal error
 #define MAX_NONFATAL_ERRORS 100
 
-//     How big is a feature bucket?  Is it a byte, a short, a long,
+//     How big is a feature bucket?  Is it a byte, a short, a int,
 //     a float, whatever.  :)
 #define FEATUREBUCKET_TYPE FEATUREBUCKET_STRUCT
 //#define FEATUREBUCKET_VALUE_MAX 32767

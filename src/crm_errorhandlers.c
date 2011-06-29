@@ -168,13 +168,13 @@ static void generate_err_reason_msg(
     /*
      *         some OS's include the complete path with the programname; we're not interested in that part here...
      */
-    const char *progname = skip_path(prog_argv[0]);
+    const char *progname = skip_path(prog_argv0);
     /* some compilers include the full path: strip if off! */
     const char *srcfile = skip_path(srcfile_full);
 
     //
     //   Create our reason string.  Note that some reason text can be VERY
-    //   long, so we put out only the first 2048+40  characters
+    //   int, so we put out only the first 2048+40  characters
     //
 
     if (!reason || reason_bufsize <= 0)
@@ -188,7 +188,7 @@ static void generate_err_reason_msg(
 
 
     if (widthleft > (12 + WIDTHOF("(truncated...)\n")                     /* see at the end of the code; buffer should be large enough to cope with it all */
-                     + (lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 0)      /* guestimate the worst case length upper limit for printf(%ld) */
+                     + (lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 0)      /* guestimate the worst case length upper limit for printf(%d) */
                      + (progname ? strlen(progname) : strlen("CRM114"))
                      + (srcfile ? strlen(srcfile) : 0)
                      + (funcname ? strlen(funcname) : 0)
@@ -309,7 +309,7 @@ static void generate_err_reason_msg(
     encouragment_length = strlen(encouraging_msg) + 1;
 
     if (widthleft > encouragment_length
-        + WIDTHOF("This happened at line %ld of file %s\n") + 40)
+        + WIDTHOF("This happened at line %d of file %s\n") + 40)
     {
         dst = strmov(dst, encouraging_msg);
         has_newline = (dst[-1] == '\n');
@@ -322,14 +322,14 @@ static void generate_err_reason_msg(
     }
     widthleft = reason_bufsize - (dst - reason);
 
-    if (widthleft > (WIDTHOF("This happened at line %ld of file %s\n")
-                     + (SIZEOF_LONG_INT * 12) / 4          /* guestimate the worst case length upper limit for printf(%ld) */
+    if (widthleft > (WIDTHOF("This happened at line %d of file %s\n")
+                     + (SIZEOF_LONG_INT * 12) / 4          /* guestimate the worst case length upper limit for printf(%d) */
                      + (csl && csl->filename ? strlen(csl->filename) : 0))
         && csl && csl->filename)
     {
         int len;
 
-        snprintf(dst, widthleft, "This happened at line %ld of file %s\n",
+        snprintf(dst, widthleft, "This happened at line %d of file %s\n",
             csl->cstmt, csl->filename);
         dst[widthleft - 1] = 0;
         len = strlen(dst);
@@ -344,7 +344,7 @@ static void generate_err_reason_msg(
      */
     if (bill_style_errormessage)
     {
-        if (widthleft > ((lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 1)  /* guestimate the worst case length upper limit for printf(%ld) */
+        if (widthleft > ((lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 1)  /* guestimate the worst case length upper limit for printf(%d) */
                          + (srcfile ? strlen(srcfile) : 3)
                          + (funcname ? strlen(funcname) : 3)
                          + WIDTHOF("(runtime system location: X(X) in routine: X)\n")
@@ -416,13 +416,13 @@ static void generate_err_reason_msg(
  *
  *       Return -1 when no trap whatsoever was found.
  */
-static long check_for_trap_handler(CSL_CELL *csl, const char *reason)
+static int check_for_trap_handler(CSL_CELL *csl, const char *reason)
 {
     if (csl && csl->nstmts > 0 && csl->mct
         && csl->cstmt >= 0 && csl->cstmt < csl->nstmts && csl->mct[csl->cstmt]
         && csl->mct[csl->cstmt]->trap_index < csl->nstmts)
     {
-        long ret;
+        int ret;
         char *rbuf = strdup(reason);
         if (!rbuf)
         {
@@ -666,11 +666,11 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
 
 
 //     fatalerror - print a fatal error on stdout, trap if we can, else exit
-long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
+int fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     //
     //   Note that some reason text2's can be VERY
-    //   long, so we put out only the first 1024 characters
+    //   int, so we put out only the first 1024 characters
     //
 
     return fatalerror_ex(lineno, srcfile, funcname,
@@ -680,10 +680,10 @@ long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const
         text1, text2);
 }
 
-long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
+int fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
 {
     va_list args;
-    long ret;
+    int ret;
 
     va_start(args, fmt);
     ret = fatalerror_va(lineno, srcfile, funcname, fmt, args);
@@ -691,11 +691,11 @@ long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const 
     return ret;
 }
 
-long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)
+int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)
 {
     char reason[MAX_PATTERN];
-    long trap_catch;
-    long original_statement_line = (csl != NULL ? csl->cstmt : -1);
+    int trap_catch;
+    int original_statement_line = (csl != NULL ? csl->cstmt : -1);
 
     generate_err_reason_msg(
         reason,
@@ -728,7 +728,7 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
     }
 }
 
-long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
+int nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     return nonfatalerror_ex(lineno, srcfile, funcname,
         (text2 && strlen(text2) <= 1024 ?
@@ -737,10 +737,10 @@ long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, co
         text1, text2);
 }
 
-long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
+int nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
 {
     va_list args;
-    long ret;
+    int ret;
 
     va_start(args, fmt);
     ret = nonfatalerror_va(lineno, srcfile, funcname, fmt, args);
@@ -748,14 +748,14 @@ long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, con
     return ret;
 }
 
-static long nonfatalerrorcount = 0;
+static int nonfatalerrorcount = 0;
 static int nonfatalerrorcount_max_reported = 0;
 
-long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)
+int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)
 {
     char reason[MAX_PATTERN];
-    long trap_catch;
-    long original_statement_line = (csl != NULL ? csl->cstmt : -1);
+    int trap_catch;
+    int original_statement_line = (csl != NULL ? csl->cstmt : -1);
 
     generate_err_reason_msg(
         reason,
@@ -806,12 +806,12 @@ void reset_nonfatalerrorreporting(void)
 //     print out timings of each statement
 void crm_output_profile(CSL_CELL *csl)
 {
-    long i;
+    int i;
 
     fprintf(stderr,
         "\n         Execution Profile Results\n");
     fprintf(stderr,
-        "\n  Memory usage at completion: %10ld window, %10ld isolated\n",
+        "\n  Memory usage at completion: %10d window, %10d isolated\n",
         cdw->nchars, tdw->nchars);
     fprintf(stderr,
         "\n  Statement Execution Time Profiling (0 times suppressed)");
@@ -821,11 +821,11 @@ void crm_output_profile(CSL_CELL *csl)
     {
         if (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime > 0)
         {
-            fprintf(stderr, " %5ld:   %10ld   %10ld   %10ld\n",
+            fprintf(stderr, " %5d:   %10ld   %10ld   %10ld\n",
                 i,
-                csl->mct[i]->stmt_utime,
-                csl->mct[i]->stmt_stime,
-                csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime);
+                (long int)csl->mct[i]->stmt_utime,
+                (long int)csl->mct[i]->stmt_stime,
+                (long int)(csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime));
         }
     }
 }
@@ -852,27 +852,27 @@ void crm_output_profile(CSL_CELL *csl)
 //  and branch to the chosen location -1 (due to the increment in the
 //  main invocation loop)
 
-long crm_trigger_fault(char *reason)
+int crm_trigger_fault(char *reason)
 {
     //
     //    and if the fault is correctly trapped, this is the fixup.
     //
     char trap_pat[MAX_PATTERN];
-    long pat_len;
+    int pat_len;
     regex_t preg;
-    long i, j;
+    int i, j;
     ARGPARSE_BLOCK apb;
-    long slen;
-    long done;
-    long trapline;
-    long original_statement;
+    int slen;
+    int done;
+    int trapline;
+    int original_statement;
 
     CRM_ASSERT(csl != NULL);
 
     //  Non null fault_text rstring -we'll take the trap
     if (user_trace)
     {
-        fprintf(stderr, "Catching FAULT generated on line %ld\n",
+        fprintf(stderr, "Catching FAULT generated on line %d\n",
             csl->cstmt);
         fprintf(stderr, "FAULT reason:\n%s\n",
             reason);
@@ -915,13 +915,19 @@ long crm_trigger_fault(char *reason)
             &apb);
         if (user_trace)
         {
-            fprintf(stderr, "Trying trap at line %ld:\n", trapline);
+            fprintf(stderr, "Trying trap at line %d:\n", trapline);
+#if 0
             for (j =  (csl->mct[trapline]->fchar);
                  j < (csl->mct[trapline + 1]->fchar);
                  j++)
             {
                 fprintf(stderr, "%c", csl->filetext[j]);
             }
+#else
+			memnCdump(stderr, 
+			csl->filetext + csl->mct[trapline]->fchar,
+csl->mct[trapline + 1]->fchar - csl->mct[trapline]->fchar);
+#endif
             fprintf(stderr, "\n");
         }
 
@@ -971,7 +977,7 @@ long crm_trigger_fault(char *reason)
             if (user_trace)
             {
                 fprintf(stderr, "TRAP matched.\n");
-                fprintf(stderr, "Next statement will be %ld\n",
+                fprintf(stderr, "Next statement will be %d\n",
                     trapline);
             }
             //
@@ -988,7 +994,7 @@ long crm_trigger_fault(char *reason)
             //     If there's a trap variable, modify it.
             {
                 char reasonname[MAX_VARNAME];
-                long rnlen;
+                int rnlen;
                 crm_get_pgm_arg(reasonname, MAX_VARNAME, apb.p1start, apb.p1len);
                 if (apb.p1len > 2)
                 {

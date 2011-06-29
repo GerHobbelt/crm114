@@ -37,7 +37,11 @@ VER_SUFFIX = @VER_SUFFIX@
 #     to mess with my brain. - wsy)
 #
 VERSION = @VERSION@
-PREV_VERSION=20070917-BlameGerHobbelt
+PREV_VERSION=20080217-BlameJoeLangeway_VT
+#PREV_VERSION=20071201-BlameLittleStevie_VT
+#PREV_VERSION=20071126-BlameGerHobbelt
+#PREV_VERSION=20071015-BlameGerHobbelt
+#PREV_VERSION=20070917-BlameGerHobbelt
 #PREV_VERSION=20070830-BlameGerHobbelt
 #PREV_VERSION=20070828-BlameGerHobbelt
 #PREV_VERSION=20070827-BlameGerHobbelt
@@ -131,13 +135,25 @@ TRE_TARFILE = tre-0.7.5
 #CFLAGS += -I/usr/local/include -I${HOME}/include
 #LDFLAGS += -L/usr/local/lib -L${HOME}/lib
 #LIBS += -lintl -liconv
-#
-
-
-
-#
-#
 # ------------------ end of *BSD stuff
+#
+# ------------------For Mac OSX, try this---------------
+#
+#    Yimin Wu (of the SVMx classifiers) suggests that to get
+#    a good compile on the Mac OSX machines, try:
+#
+#   COMMENT OUT all the above "LDFLAGS += -static -static-libgcc -pg"
+#
+#    and add
+#
+#CFLAGS += -I/usr/local/include
+#LDFLAGS += -l/usr/local/lib
+#
+#  and change final options on the main link line from:
+#
+#   "-lm -ltre -o crm114" to "-ltre -o crm114"
+#
+# --------------End of Mac OSX stuff -----------------------
 #
 #
 #    End of user-configurable options... if you modify anything below
@@ -232,12 +248,11 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
 	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
 	crm_expr_svm.c crm_expr_fscm.c \
-	crm_strcompress.c crm_expr_clump_nn.c \
 	crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c
 
 HFILES = crm114_sysincludes.h crm114_structs.h crm114_config.h \
-	crm114.h crm114_osbf.h crm_expr_clump_nn.h config.h \
+	crm114.h crm114_osbf.h config.h \
 	config_BillY.h crm_mjt_qsort.h
 
 EXTRA_DEPS = Makefile
@@ -255,7 +270,6 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
 	crm_preprocessor.o \
 	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
-	crm_strcompress.o crm_expr_clump_nn.o \
 	crm_generic_port.o crm_stdio_port.o \
 	crm_versioning.o
 
@@ -306,7 +320,7 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	inoc_passwd.txt \
 	GPL-License.txt \
 	rename-gz \
-	megatest.sh megatest_knowngood.log megatest_knowngood.orginal.log \
+	megatest.sh megatest_knowngood.log \
 	make_BillY.sh Makefile.BillY \
 	exectest_s1.sh \
 	$(MEGATESTFILES) megatest_ng.sh 
@@ -406,16 +420,16 @@ crm114_gnu: $(OFILES) crmregex_gnu.o crm_main.o
 #   Now building the TRE regex version of CRM114.  If you don't have
 #   TRE already, you will need to fetch it from the website and
 #   then ./configure --enable-static to get the static TRE libs,
-#   then build it, add /usr/local/lib to /etc/ld.so.conf, then 
-#   to set the library up.
+#   then build TRE, add /usr/local/lib to /etc/ld.so.conf, then 
+#   to set the library up.  Then you can build CRM114 itself.
 #
 crm114: $(OFILES) crmregex_tre.o crm_main.o
 	$(E) ""
 	$(E) "   Now building the TRE regex version of CRM114.  If you don't have"
 	$(E) "   TRE already, you will need to fetch it from the website and"
 	$(E) "   then ./configure --enable-static to get the static TRE libs,"
-	$(E) "   then build it, add /usr/local/lib to /etc/ld.so.conf, then"
-	$(E) "   to set the library up."
+	$(E) "   then build TRE, add /usr/local/lib to /etc/ld.so.conf, then"
+	$(E) "   to set the library up.  Then you can build CRM114 itself."
 	$(E) ""
 	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
 	  crmregex_tre.o \
@@ -476,9 +490,6 @@ crm_expr_syscall.o: crm_expr_syscall.c \
 crm_expr_classify.o: crm_expr_classify.c \
 	$(HFILES) $(EXTRA_DEPS)
 
-crm_expr_clump_nn.o: crm_expr_clump_nn.c \
-	$(HFILES) $(EXTRA_DEPS)
-
 crm_expr_translate.o: crm_expr_translate.c \
 	$(HFILES) $(EXTRA_DEPS)
 
@@ -509,9 +520,6 @@ crm_osbf_bayes.o: crm_osbf_bayes.c \
 crm_osb_hyperspace.o: crm_osb_hyperspace.c \
 	$(HFILES) $(EXTRA_DEPS)
 
-crm_strcompress.o: crm_strcompress.c \
-	$(HFILES) $(EXTRA_DEPS)
-
 crm_expr_sks.o: crm_expr_sks.c \
 	$(HFILES) $(EXTRA_DEPS)
 
@@ -529,9 +537,6 @@ crm_stats.o: crm_stats.c \
 
 crm_neural_net.o: crm_neural_net.c \
 	$(HFILES) $(EXTRA_DEPS)
-
-#crm_osb_neural.o: crm_osb_neural.c \
-#	$(HFILES) $(EXTRA_DEPS)
 
 crm_bit_entropy.o: crm_bit_entropy.c \
 	$(HFILES) $(EXTRA_DEPS)
@@ -661,7 +666,6 @@ clean:
 	-rm -f crm114
 	-rm -f cssutil
 	-rm -f osbf-util
-	-rm -f osbfutil
 	-rm -f cssdiff
 	-rm -f cssmerge
 	-rm -f testvectok
@@ -671,7 +675,8 @@ clean:
 	-rm -f crm114_tre
 	-rm -f *.o
 	$(E) "   if the next line doesn't work in your version of make,"
-	$(E) "   don't worry.  cd down into the TRE directory and 'make clean' manually"
+	$(E) "    don't worry.  It just means you have TRE in another place."
+	$(E) "    You can cd to the TRE directory and 'make clean' manually"
 	-( [ "$(TRE_TARFILE)" ] && cd $(TRE_TARFILE) && make clean )
 
 
@@ -843,7 +848,7 @@ cssfiles: spam.dir good.dir
 	$(E) "   Here we go..."
 	$(E) ""
 	export DATE $(date +%Y_%m_%d_%H_%M_%S)
-	$(E) "   MUCH STUFF DEPRECATED!!!  Use mailtrainer.crm instead..."
+	$(E) "   MUCH STUFF DEPRECATED!!!  Use mailreaver.crm instead..."
 	cssutil -b -r spam.css
 	cssutil -b -r nonspam.css
 	cp spam.css spam__$(DATE).txt
@@ -873,7 +878,7 @@ tarfile: all
 	$(TEXTFILES) \
 	crm114-$(VERSION).src
 	cp -a BSD_build_files crm114-$(VERSION).src
-	tar -cvf crm114-$(VERSION).src.tar crm114-$(VERSION).src
+	$(tar) -cvf crm114-$(VERSION).src.tar crm114-$(VERSION).src
 	rm -rf crm114-$(VERSION).src
 
 src_gzip: tarfile
@@ -916,10 +921,10 @@ css_gzip: css_tarfile
 	rm -rf crm114-$(VERSION).css.tar.gz
 	gzip crm114-$(VERSION).css.tar
 
-distribution: install src_gzip i386_gzip css_gzip
+distribution: src_gzip i386_gzip css_gzip
 	md5sum crm114-$(VERSION).*.tar.gz
 
-rsync:  FORCE
+rsync:  
 	rsync -zrltDv \
 	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) \
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
@@ -967,7 +972,6 @@ reindent: indent.sh
 	$(COMPILE) -c $< -o $@
 
 
-FORCE:
 
 .PHONY: reindent depend rsync done_all megatest help clean install uninstall-hook uninstall
 

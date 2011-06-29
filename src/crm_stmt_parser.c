@@ -71,7 +71,6 @@ const FLAG_DEF crm_flags[] =
     { "sks", CRM_SKS },
     { "svm", CRM_SVM },
     { "fscm", CRM_FSCM },
-    { "scm", CRM_SCM },
     { "neural", CRM_NEURAL_NET },
     { "flat", CRM_FLAT },
     { "auto", CRM_AUTODETECT },
@@ -92,11 +91,11 @@ const FLAG_DEF crm_flags[] =
 //    Note that since flags (like variables) are always ASCII, we don't
 //    need to worry about 8-bit-safety.
 //
-uint64_t crm_flagparse(char *input, long inlen)  //  the user input
+uint64_t crm_flagparse(char *input, int inlen)  //  the user input
 {
     char flagtext[MAX_PATTERN];
     char *remtext;
-    long remlen;
+    int remlen;
     char *wtext;
     int flagsearch_start_here;
     int wstart;
@@ -136,7 +135,7 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
             wtext = &(remtext[wstart]);
             if (internal_trace)
             {
-                fprintf(stderr, "found flag, len %ld: %.*s\n",
+                fprintf(stderr, "found flag, len %d: %.*s\n",
                         wlen, (int)wlen, wtext);
             }
 
@@ -144,7 +143,7 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
             recog_flag = 0;
             for (j = 0; crm_flags[j].string != NULL; j++) /* [i_a] loop until we've hit the sentinel at the end of the table */
             {
-                // fprintf(stderr, " Trying %s (%ld) at pos = %d\n", crm_flags[j].string, crm_flags[j].value, j );
+                // fprintf(stderr, " Trying %s (%d) at pos = %d\n", crm_flags[j].string, crm_flags[j].value, j );
 
                 // make sure the flags are ordered properly; must match with crm114_structs.h defs, but that's kinda hard to check
                 CRM_ASSERT(crm_flags[j].value > 0);
@@ -173,7 +172,7 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
             //   check to see if we need to squalk an error condition
             if (recog_flag == 0)
             {
-                long q;
+                int q;
                 char foo[129];
                 strncpy(foo, wtext, wlen < 128 ? wlen : 128);
                 foo[wlen < 128 ? wlen : 128] = 0;
@@ -191,7 +190,7 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
     }
 
     if (internal_trace)
-        fprintf(stderr, "Flag code is : %llx\n", (unsigned long long)outcode);
+        fprintf(stderr, "Flag code is : %llx\n", (unsigned long long int)outcode);
 
     return outcode;
 }
@@ -225,7 +224,7 @@ int crm_nextword(const char *input,
 
     //    if we get to here, then we have a valid string.
     *len = 0;
-    while ((*start + *len) < inlen
+    while ((*start + *len) <= inlen  /* [i_a] */
            && input[*start + *len] > 0x20)
         *len += 1;
 
@@ -240,12 +239,12 @@ int crm_nextword(const char *input,
 //   detection.
 
 int crm_profiled_statement_parse(char *in,
-        long slen,
+        int slen,
         ARGPARSE_BLOCK *apb,
-        long amin, long amax,
-        long pmin, long pmax,
-        long bmin, long bmax,
-        long smin, long smax)
+        int amin, int amax,
+        int pmin, int pmax,
+        int bmin, int bmax,
+        int smin, int smax)
 {
     return 0;
 }
@@ -254,7 +253,7 @@ int crm_profiled_statement_parse(char *in,
 //     the generic parser.
 
 int crm_statement_parse(char           *in,
-        long                            slen,
+        int                            slen,
         ARGPARSE_BLOCK                 *apb)
 {
 #define CRM_STATEMENT_PARSE_MAXARG 10
@@ -411,7 +410,7 @@ int crm_statement_parse(char           *in,
 //
 int crm_generic_parse_line(
         char *txt,                       //   the start of the program line
-        int   len,                       //   how long is the line
+        int   len,                       //   how int is the line
         int   maxargs,                   //   howm many things to search for (max)
         int  *ftype,                     //   type of thing found (index by schars)
         int  *fstart,                    //   starting location of found arg
@@ -804,9 +803,9 @@ int crm_generic_parse_line(
 
 //    and to avoid all the mumbo-jumbo, an easy way to get a copy of
 //    an arg found by the declensional parser.
-void crm_get_pgm_arg(char *to, long tolen, char *from, long fromlen)
+void crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen)
 {
-    long len;
+    int len;
 
     if (to == NULL || tolen == 0)
         return;

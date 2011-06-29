@@ -15,7 +15,7 @@
 
 /* [i_a] unsure if totalhits[] and hits[] should be floating point or integer count arrays ... */
 #if 10
-// from OSBF Hayes: hmmm, unsigned long gives better precision than float...
+// from OSBF Hayes: hmmm, unsigned int gives better precision than float...
 typedef int64_t hitcount_t;
 #else
 typedef double hitcount_t;
@@ -26,49 +26,49 @@ typedef double hitcount_t;
 #if 10
 typedef uint32_t crmhash_t;
 #else
-typedef unsigned long crmhash_t;
+typedef unsigned int crmhash_t;
 #endif
 typedef uint64_t crmhash64_t;
 
 
 /* [i_a] no variable instantiation in a common header file */
-extern long vht_size;
+extern int vht_size;
 
-extern long cstk_limit;
+extern int cstk_limit;
 
-extern long max_pgmlines;
+extern int max_pgmlines;
 
-extern long max_pgmsize;
+extern int max_pgmsize;
 
-/* extern long max_pgmsize; [i_a] */
+/* extern int max_pgmsize; [i_a] */
 
-extern long user_trace;
+extern int user_trace;
 
-extern long internal_trace;
+extern int internal_trace;
 
 extern int debug_countdown;
 
-extern long cmdline_break;
+extern int cmdline_break;
 
-extern long cycle_counter;
+extern int cycle_counter;
 
-extern long ignore_environment_vars;
+extern int ignore_environment_vars;
 
-extern long data_window_size;
+extern int data_window_size;
 
-extern long sparse_spectrum_file_length;
+extern int sparse_spectrum_file_length;
 
-extern long microgroom_chain_length;
+extern int microgroom_chain_length;
 
-extern long microgroom_stop_after;
+extern int microgroom_stop_after;
 
 extern double min_pmax_pmin_ratio;
 
-extern long profile_execution;
+extern int profile_execution;
 
-extern long prettyprint_listing;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
+extern int prettyprint_listing;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
 
-extern long engine_exit_base;  //  All internal errors will use this number or higher;
+extern int engine_exit_base;  //  All internal errors will use this number or higher;
 //  the user programs can use lower numbers freely.
 
 
@@ -77,7 +77,7 @@ extern long engine_exit_base;  //  All internal errors will use this number or h
 //        = 1 no extended (non-EVAL) math, use RPN
 //        = 2 extended (everywhere) math, use algebraic notation
 //        = 3 extended (everywhere) math, use RPN
-extern long q_expansion_mode;
+extern int q_expansion_mode;
 
 extern int selected_hashfunction;  //  0 = default
 
@@ -95,21 +95,21 @@ typedef struct mythical_vht_cell
     char *filename;      // file where defined (or NULL)
     int   filedesc;      // filedesc of defining file (or NULL)
     char *nametxt;       // block of text that hosts the variable name
-    long  nstart;        // index into nametxt to start of varname
-    long  nlen;          // length of name
+    int nstart;        // index into nametxt to start of varname
+    int  nlen;          // length of name
     char *valtxt;        // text block that hosts the captured value
                          // vstart, vlen, mstart, and mlen are all measured
                          // from the _start_ of valtxt, mstart relative to
                          // vstart, etc!!!
-    long vstart;        // zero-base index of start of variable (inclusive)
-    long vlen;          // length of captured value : this plus vstart is where
+    int vstart;        // zero-base index of start of variable (inclusive)
+    int vlen;          // length of captured value : this plus vstart is where
                         //  you could put a NULL if you wanted to.
-    long mstart;        // zero-base start of most recent match of this var
-    long mlen;          // length of most recent match against this var; this
+    int mstart;        // zero-base start of most recent match of this var
+    int mlen;          // length of most recent match against this var; this
                         //   plus mstart is where you could put a NULL if you
                         //    wanted to.
-    long linenumber;     // linenumber of this variable (if known, else -1)
-    long lazy_redirects; // how many lazy redirects are allowed (0 by default);
+    int linenumber;     // linenumber of this variable (if known, else -1)
+    int lazy_redirects; // how many lazy redirects are allowed (0 by default);
 } VHT_CELL;
 
 //   The argparse block is filled in at run time, though at least in
@@ -122,19 +122,19 @@ typedef struct mythical_vht_cell
 typedef struct mythical_argparse_block
 {
     char      *a1start;  // '<>' angle delimited field: options
-    long       a1len;
+    int       a1len;
     char      *p1start;  // '()' parentheses delimited field: varlist #1
-    long       p1len;
+    int       p1len;
     char      *p2start;  // '()' parentheses delimited field: varlist #2
-    long       p2len;
+    int       p2len;
     char      *p3start;  // '()' parentheses delimited field: varlist #3
-    long       p3len;
+    int       p3len;
     char      *b1start;  // '[]' boxes delimited field: domain limits
-    long       b1len;
+    int       b1len;
     char      *s1start;  // '//' slash delimited field: regex set #1
-    long       s1len;
+    int       s1len;
     char      *s2start;  // '//' slash delimited field: regex set #2
-    long       s2len;
+    int       s2len;
     uint64_t   sflags;
 } ARGPARSE_BLOCK;
 
@@ -148,11 +148,11 @@ typedef struct mythical_mct_cell
 {
     char           *hosttxt;    // text file this statement lives in.
     ARGPARSE_BLOCK *apb;        // the argparse block for this statement
-    long            start;      // zero-base index of start of statement (inclusive)
-    long            fchar;      // zero-base index of non-blank stmt (for prettyprint)
-    long            achar;      // zero-base index of start of args;
-    long            stmt_utime; // user time spent in this statement line;
-    long            stmt_stime; // system time spent in this statement line;
+    int            start;      // zero-base index of start of statement (inclusive)
+    int            fchar;      // zero-base index of non-blank stmt (for prettyprint)
+    int            achar;      // zero-base index of start of args;
+    clock_t   stmt_utime; // user time spent in this statement line;
+    clock_t   stmt_stime; // system time spent in this statement line;
     int             stmt_type;  // statement type of this line
     int             nest_level; // nesting level of this statement
     int             fail_index; // if this statement failed, where would we go?
@@ -173,20 +173,20 @@ struct mythical_csl_cell;
 typedef struct mythical_csl_cell
 {
     char           *filename;                                //filename if any
-    long            rdwr;                                    // 0=readonly, 1=rdwr
-    long            filedes;                                 //  file descriptor it's open on (if any)
+    int            rdwr;                                    // 0=readonly, 1=rdwr
+    int            filedes;                                 //  file descriptor it's open on (if any)
     char           *filetext;                                //  text buffer
-    long            nchars;                                  //  characters of data we have
+    int            nchars;                                  //  characters of data we have
     crmhash_t       hash;                                    //  hash of this data (if done)
     MCT_CELL      **mct;                                     //  microcompile (if compiled)
-    long            mct_size;                                // number of slots available in the MCT
-    long            nstmts;                                  //  how many statements in the microcompile
-    long            preload_window;                          //  do we preload the window or not?
-    long            cstmt;                                   //  current executing statement of this file
+    int            mct_size;                                // number of slots available in the MCT
+    int            nstmts;                                  //  how many statements in the microcompile
+    int            preload_window;                          //  do we preload the window or not?
+    int            cstmt;                                   //  current executing statement of this file
     struct mythical_csl_cell *caller;                        //  pointer to this file's caller (if any)
-    long return_vht_cell;                                    //  index into the VHT to stick the return value
-    long calldepth;                                          //  how many calls deep is this stack frame
-    long aliusstk[MAX_BRACKETDEPTH];                         // the status stack for ALIUS
+    int return_vht_cell;                                    //  index into the VHT to stick the return value
+    int calldepth;                                          //  how many calls deep is this stack frame
+    int aliusstk[MAX_BRACKETDEPTH];                         // the status stack for ALIUS
 
     unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
     unsigned int filetext_allocated : 1; // if the filetext was allocated on the heap.
@@ -197,15 +197,15 @@ typedef struct
 {
     crmhash_t     hash;
     crmhash_t     key;
-    unsigned long value;
+    uint32_t  value;
 } FEATUREBUCKET_STRUCT;
 
 
 typedef struct
 {
     unsigned char version[4];
-    unsigned long flags;
-    unsigned long skip_to;
+    uint32_t flags;
+    uint32_t skip_to;
 } FEATURE_HEADER_STRUCT;
 
 
@@ -213,7 +213,7 @@ typedef struct
 {
     crmhash_t hash;
     crmhash_t key;
-#if defined (GER)
+#if defined (GER) && 0   // will be stored on disc! fixed format!
     double value;
 #else
     float value;
@@ -243,7 +243,7 @@ typedef struct mythical_entropy_cell
     int32_t fir_larger;
     int32_t fir_smaller;
     int32_t firlat_slot;
-    //  long total_count;
+    //  uint32_t total_count;
     ENTROPY_ALPHABET_SLOT abet[ENTROPY_ALPHABET_SIZE];
 } ENTROPY_FEATUREBUCKET_STRUCT;
 
@@ -361,14 +361,12 @@ typedef struct mythical_entropy_cell
 #define CRM_SVM           (1LL << 35)
 //           FSCM classifier
 #define CRM_FSCM          (1LL << 36)
-//           SCM classifier
-#define CRM_SCM           (1LL << 37)
 //           Neural Net classifier
-#define CRM_NEURAL_NET    (1LL << 38)
+#define CRM_NEURAL_NET    (1LL << 37)
 
-#define CRM_FLAT          (1LL << 39)
+#define CRM_FLAT          (1LL << 38)
 
-#define CRM_AUTODETECT    (1LL << 40)
+#define CRM_AUTODETECT    (1LL << 39)
 
 
 //
@@ -607,10 +605,10 @@ typedef struct
 
     //    INT Word Size   4                 4 --> sizeof(int)
     i32_arg_t int_size;
-    //    LONG Size       4                 8 --> sizeof(long)
+    //    LONG Size       4                 8 --> sizeof(int)
     i32_arg_t long_size;
-    //    LONG LONG Size  4                 8 --> sizeof(long long)
-    //                                      0 --> 'long long' is unknown type on this box
+    //    LONG LONG Size  4                 8 --> sizeof(int int)
+    //                                      0 --> 'int int' is unknown type on this box
     i32_arg_t long_long_size;
     //    INT32 Size      4                 4 --> sizeof(int32_t)
     i32_arg_t i32_size;

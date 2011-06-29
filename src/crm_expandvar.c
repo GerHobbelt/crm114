@@ -57,7 +57,7 @@
 //     8) go to 2 (modulo last two chars need copying)
 //
 
-long crm_nexpandvar(char *buf, long inlen, long maxlen)
+int crm_nexpandvar(char *buf, int inlen, int maxlen)
 {
     return crm_zexpandvar(buf,
             inlen,
@@ -72,7 +72,7 @@ long crm_nexpandvar(char *buf, long inlen, long maxlen)
 //
 // crm_qexpandvar is the "full evaluate one pass of everything" mode.
 
-long crm_qexpandvar(char *buf, long inlen, long maxlen, long *qex_stat)
+int crm_qexpandvar(char *buf, int inlen, int maxlen, int *qex_stat)
 {
     return crm_zexpandvar(buf,
             inlen,
@@ -92,7 +92,7 @@ long crm_qexpandvar(char *buf, long inlen, long maxlen, long *qex_stat)
 */
 
 //  the maximum length allocated so far for these random buffers...
-static long current_maxlen = 0;
+static int current_maxlen = 0;
 //  a temporary work buffer...
 static char *tbuf = NULL;
 //  and another for variable names...
@@ -123,18 +123,18 @@ static char *vname = NULL;
 //     7) set from-index to third colon index + 1
 //     8) go to 2 (modulo last two chars need copying)
 //
-long crm_zexpandvar(char *buf,
-        long              inlen,
-        long              maxlen,
-        long             *retstat,
-        long              exec_bitmask)
+int crm_zexpandvar(char *buf,
+        int              inlen,
+        int              maxlen,
+        int             *retstat,
+        int              exec_bitmask)
 {
-    long is, id;
-    long vht_index;
-    long q;
+    int is, id;
+    int vht_index;
+    int q;
 
     char *cp;
-    long vlen;
+    int vlen;
 
     char opchar;
 
@@ -148,7 +148,7 @@ long crm_zexpandvar(char *buf,
     id = 0;
 
     if (internal_trace)
-        fprintf(stderr, "qexpandvar on =%s= len: %ld bitmask: %ld\n",
+        fprintf(stderr, "qexpandvar on =%s= len: %d bitmask: %d\n",
                 buf, inlen, exec_bitmask);
 
     //  GROT GROT GROT must fix this for 8-bit safe error messages
@@ -348,7 +348,7 @@ long crm_zexpandvar(char *buf,
         inlen = id;
 
         if (internal_trace)
-            fprintf(stderr, "backslash expansion yields: =%s= len %ld\n", buf, inlen);
+            fprintf(stderr, "backslash expansion yields: =%s= len %d\n", buf, inlen);
     }
     //    END OF ANSI \-EXPANSIONS
 
@@ -508,9 +508,9 @@ long crm_zexpandvar(char *buf,
                         {
                             //   if this was :_cs:, update the current line num
                             char lcstring[32];
-                            long lclen;
+                            int lclen;
                             lcstring[0] = 0;
-                            lclen = sprintf(lcstring, "%ld", csl->cstmt);
+                            lclen = sprintf(lcstring, "%d", csl->cstmt);
                             crm_set_temp_nvar(":_cs:", lcstring, lclen);
                         }
                     }
@@ -545,7 +545,7 @@ long crm_zexpandvar(char *buf,
         inlen = id - 1;
 
         if (internal_trace)
-            fprintf(stderr, " :*: var-expansion yields: =%s= len %ld \n", buf, inlen);
+            fprintf(stderr, " :*: var-expansion yields: =%s= len %d \n", buf, inlen);
     }
 
     //     END OF :*: EXPANSIONS
@@ -680,7 +680,7 @@ long crm_zexpandvar(char *buf,
         buf[id] = 0;
         inlen = id - 1;
         if (internal_trace)
-            fprintf(stderr, "indirection :+: expansion yields: =%s= len %ld \n", buf, inlen);
+            fprintf(stderr, "indirection :+: expansion yields: =%s= len %d \n", buf, inlen);
     }
 
     //     END OF :+: EXPANSIONS
@@ -697,7 +697,7 @@ long crm_zexpandvar(char *buf,
 
         // buf[id] = 0; [i_a]
         if (internal_trace)
-            fprintf(stderr, " var-expand yields: =%s= len %ld\n", buf, inlen);
+            fprintf(stderr, " var-expand yields: =%s= len %d\n", buf, inlen);
         id = 0;
         for (is = 0; is <= inlen && id < maxlen; is++)
         {
@@ -750,7 +750,7 @@ long crm_zexpandvar(char *buf,
                             int m, mm;
                             //   the vlen-2 is because we need to get
                             //    rid of the ':'
-                            sprintf(lentext, "%ld", vlen - 2);
+                            sprintf(lentext, "%d", vlen - 2);
                             mm = strlen(lentext);
                             for (m = 0; m < mm && id < maxlen; m++)
                             {
@@ -783,7 +783,7 @@ long crm_zexpandvar(char *buf,
                             //
                             char lentext[MAX_VARNAME];
                             int m, mm;
-                            sprintf(lentext, "%ld", vht[vht_index]->vlen);
+                            sprintf(lentext, "%d", vht[vht_index]->vlen);
                             mm = strlen(lentext);
                             for (m = 0; m < mm && id < maxlen; m++)
                             {
@@ -809,7 +809,7 @@ long crm_zexpandvar(char *buf,
         //    and because id always gets an extra increment...
         inlen = id - 1;
         if (internal_trace)
-            fprintf(stderr, " strlen :#: expansion yields: =%s= len %ld \n", buf, inlen);
+            fprintf(stderr, " strlen :#: expansion yields: =%s= len %d \n", buf, inlen);
     }
     //       END OF :#: STRING LENGTH EXPANSIONS
 
@@ -826,7 +826,7 @@ long crm_zexpandvar(char *buf,
 
         buf[id] = 0;
         if (internal_trace)
-            fprintf(stderr, " length-expand yields: =%s= len %ld\n", buf, inlen);
+            fprintf(stderr, " length-expand yields: =%s= len %d\n", buf, inlen);
         id = 0;
         for (is = 0; is <= inlen && id < maxlen; is++)
         {
@@ -969,7 +969,7 @@ long crm_zexpandvar(char *buf,
         inlen = id - 1;
 
         if (internal_trace)
-            fprintf(stderr, " math-expand yields: =%s= len %ld\n", buf, inlen);
+            fprintf(stderr, " math-expand yields: =%s= len %d\n", buf, inlen);
     }
 
     //    END OF :@: MATH EXPANSIONS
@@ -983,9 +983,9 @@ long crm_zexpandvar(char *buf,
     //free (vname);
     if (internal_trace)
     {
-        fprintf(stderr, " Returned length from qexpandvar is %ld\n", inlen);
+        fprintf(stderr, " Returned length from qexpandvar is %d\n", inlen);
         if (retstat)
-            fprintf(stderr, "retstat was: %ld\n", *retstat);
+            fprintf(stderr, "retstat was: %d\n", *retstat);
     }
     return inlen;
 
@@ -1051,17 +1051,17 @@ int crm_restrictvar(char  *boxstring,
     datastring[boxstrlen] = 0;
 
     if (user_trace)
-        fprintf(stderr, "Variable before expansion '%s' len %ld\n",
+        fprintf(stderr, "Variable before expansion '%s' len %d\n",
                 datastring, boxstrlen);
     datastringlen = crm_qexpandvar(datastring, boxstrlen, MAX_PATTERN, NULL);
     if (user_trace)
-        fprintf(stderr, "Variable after expansion: '%s' len %ld\n",
+        fprintf(stderr, "Variable after expansion: '%s' len %d\n",
                 datastring, datastringlen);
 
     //     Get the variable name.
     crm_nextword(datastring, datastringlen, nw_start, &nw_start, &nw_len);
     if (internal_trace)
-        fprintf(stderr, "box-parsing varname got start: %ld, len: %ld .\n",
+        fprintf(stderr, "box-parsing varname got start: %d, len: %d .\n",
                 nw_start, nw_len);
 
     if (nw_len > 0)
@@ -1081,7 +1081,7 @@ int crm_restrictvar(char  *boxstring,
 
     //      Got the varname.  Do a lookup.
     vmidx = crm_vht_lookup(vht, varname, varnamelen);
-    //  fprintf(stderr, "vmidx = %ld, vht[vmidx] = %lx\n", vmidx, vht[vmidx]);
+    //  fprintf(stderr, "vmidx = %d, vht[vmidx] = %lx\n", vmidx, vht[vmidx]);
   if (internal_trace)
     {
 		fprintf (stderr, "vmidx = %d, vht[vmidx] = %p\n", 
@@ -1107,7 +1107,7 @@ int crm_restrictvar(char  *boxstring,
     {
         errstr[0] = 0;
         strcat(errstr, "Bogus text block (neither cdw nor tdw) on var ");
-        strcat(errstr, varname);
+        strncat(errstr, varname, MAX_PATTERN - 128);
         strcat(errstr, "\n");
         return -2;
     }
@@ -1126,7 +1126,7 @@ int crm_restrictvar(char  *boxstring,
         if (user_trace)
         {
             fprintf(stderr,
-                    "Checking restriction at start %ld len %ld (subscr=%ld)\n",
+                    "Checking restriction at start %d len %d (subscr=%d)\n",
                     nw_start + nw_len,
                     (datastringlen - (nw_start + nw_len)),
                     in_subscript);
@@ -1138,7 +1138,7 @@ int crm_restrictvar(char  *boxstring,
 
         if (internal_trace)
         {
-            fprintf(stderr, "box-parsing left returned start: %ld, len: %ld .\n",
+            fprintf(stderr, "box-parsing left returned start: %d, len: %d\n",
                     nw_start, nw_len);
         }
 
@@ -1158,12 +1158,12 @@ int crm_restrictvar(char  *boxstring,
 
         if (internal_trace)
         {
-            fprintf(stderr, "  var restrict clause was '%s' len %ld \n",
+            fprintf(stderr, "  var restrict clause was '%s' len %d\n",
                     scanbuf, scanbuflen);
         }
 
         //      Is it int-able?
-        i = sscanf(scanbuf, "%ld", &j);
+        i = sscanf(scanbuf, "%d", &j);
         if (i > 0)
         {
             //   Check for a negative value of j; negative j would allow
@@ -1181,12 +1181,12 @@ int crm_restrictvar(char  *boxstring,
                 if (actual_len <= j)
                 {
                     if (user_trace)
-                        fprintf(stderr, "Clipping start to %ld",
+                        fprintf(stderr, "Clipping start to %d",
                                 actual_len);
                     j = actual_len;
                 }
                 if (user_trace)
-                    fprintf(stderr, "Variable starting offset: %ld\n", j);
+                    fprintf(stderr, "Variable starting offset: %d\n", j);
                 actual_offset = actual_offset + j;
                 actual_len = actual_len - j;
                 in_subscript = 1;
@@ -1197,13 +1197,13 @@ int crm_restrictvar(char  *boxstring,
                 {
                     if (user_trace)
                     {
-                        fprintf(stderr, "Clipping length to %ld\n",
+                        fprintf(stderr, "Clipping length to %d\n",
                                 actual_len);
                     }
                     j = actual_len;
                 }
                 if (user_trace)
-                    fprintf(stderr, "Variable starting offset: %ld\n", j);
+                    fprintf(stderr, "Variable starting offset: %d\n", j);
                 actual_len = j;
                 in_subscript = 0;
             }
@@ -1238,7 +1238,7 @@ int crm_restrictvar(char  *boxstring,
                 scanbuf[nw_len] = 0;
                 if (user_trace)
                 {
-                    fprintf(stderr, "Var restriction with regex '%s' len %ld\n",
+                    fprintf(stderr, "Var restriction with regex '%s' len %d\n",
                             scanbuf, nw_len);
                 }
 
@@ -1251,14 +1251,14 @@ int crm_restrictvar(char  *boxstring,
                     curstmt = csl->cstmt;
                     crm_regerror(i, &preg, tempbuf, data_window_size);
                     strcpy(errstr,
-                            "Regular Expression Compilation Problem on:");
+                            "Regular Expression Compilation Problem on: ");
                     strncat(errstr, tempbuf, MAX_PATTERN - 128);
                     return -2;
                 }
 
                 if (internal_trace)
                 {
-                    fprintf(stderr, " Running regexec, start at %ld\n",
+                    fprintf(stderr, " Running regexec, start at %d\n",
                             actual_offset);
                 }
                 //    Time to run the match
@@ -1284,8 +1284,8 @@ int crm_restrictvar(char  *boxstring,
                     if (user_trace)
                     {
                         fprintf(stderr, " Var restrict regex matched, "
-                                        "new start offset %ld, new length %ld\n",
-                                (long)matches[i].rm_so, (long)matches[i].rm_eo);
+                                        "new start offset %d, new length %d\n",
+                                (int)matches[i].rm_so, (int)matches[i].rm_eo);
                     }
                 }
                 else

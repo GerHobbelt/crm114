@@ -32,41 +32,41 @@
 
 
 /* [i_a] no variable instantiation in a common header file */
-long vht_size = 0;
+int vht_size = 0;
 
-long cstk_limit = 0;
+int cstk_limit = 0;
 
-long max_pgmlines = 0;
+int max_pgmlines = 0;
 
-long max_pgmsize = 0;
+int max_pgmsize = 0;
 
-long user_trace = 0;
+int user_trace = 0;
 
-long internal_trace = 0;
+int internal_trace = 0;
 
 int debug_countdown = 0;
 
-long cmdline_break = 0;
+int cmdline_break = 0;
 
-long cycle_counter = 0;
+int cycle_counter = 0;
 
-long ignore_environment_vars = 0;
+int ignore_environment_vars = 0;
 
-long data_window_size = 0;
+int data_window_size = 0;
 
-long sparse_spectrum_file_length = 0;
+int sparse_spectrum_file_length = 0;
 
-long microgroom_chain_length = 0;
+int microgroom_chain_length = 0;
 
-long microgroom_stop_after = 0;
+int microgroom_stop_after = 0;
 
 double min_pmax_pmin_ratio = 0.0;
 
-long profile_execution = 0;
+int profile_execution = 0;
 
-long prettyprint_listing = 0;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
+int prettyprint_listing = 0;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
 
-long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+int engine_exit_base = 0;  //  All internal errors will use this number or higher;
 //  the user programs can use lower numbers freely.
 
 
@@ -75,7 +75,7 @@ long engine_exit_base = 0;  //  All internal errors will use this number or high
 //        = 1 no extended (non-EVAL) math, use RPN
 //        = 2 extended (everywhere) math, use algebraic notation
 //        = 3 extended (everywhere) math, use RPN
-long q_expansion_mode = 0;
+int q_expansion_mode = 0;
 
 int selected_hashfunction = 0;  //  0 = default
 
@@ -107,9 +107,9 @@ CSL_CELL *mdw = NULL;
 
 
 
-//    the command line argc, argv
-int prog_argc = 0;
-char **prog_argv = NULL;
+//    the app path/name
+char *prog_argv0 = NULL;
+
 
 //    the auxilliary input buffer (for WINDOW input)
 char *newinputbuf = NULL;
@@ -172,7 +172,7 @@ int main(void)
 
     for (k = 0; k < j; k++)
     {
-        fprintf(stdout, "feature[%4d] = %12ld (%08lX)\n", k, (long)feavec[k], (long)feavec[k]);
+        fprintf(stdout, "feature[%4d] = %12lu (%08lX)\n", k, (unsigned long int)feavec[k], (unsigned long int)feavec[k]);
     }
 
     fprintf(stdout, "... and next_offset is %d\n", i);

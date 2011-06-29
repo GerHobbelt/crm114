@@ -56,10 +56,6 @@ void init_stdin_out_err_as_os_handles(void)
     crm_stdin = os_stdin();
     crm_stdout = os_stdout();
     crm_stderr = os_stderr();
-
-#if defined (WIN32)
-	_setmode(_fileno(crm_stdin), O_BINARY);
-#endif
 }
 
 

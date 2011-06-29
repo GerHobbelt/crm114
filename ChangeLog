@@ -1,3 +1,20 @@
+2008-03-25 Ger Hobbelt
+
+    * 'int'ified crm114 sources - finally got fed up and killed the 'long' fetish.
+
+      Process to redo this in a blunt way (I did it the hard way: code inspection):
+
+        convert 'long long' to int64_t and unsigned long long to uint64_t
+
+        find timing code and make sure those clock_t derivatives are 'clock_t' instead of long
+
+        s/\<long\>/int/g
+
+    * Added memnCdump() routine to report variables, etc. to stderr/stdout, so non-ascii
+      variables, mucked up scripts, etc. don't get a chance to blow up the console 
+      anymore.
+      
+
 2008-03-24 Ger Hobbelt
 
     * Latest gcc versions recognize and handle trigraphs like you'd expect ;-) so all

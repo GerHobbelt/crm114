@@ -47,7 +47,7 @@
  * function: truncate file to the spcified filesize. Return 0 on success, otherwise
  *          return failure code in errno.
  */
-int truncate(const char *filepath, long filesize)
+int truncate(const char *filepath, long int filesize)
 {
     int ret = 0;
     HANDLE f = CreateFileA(filepath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);

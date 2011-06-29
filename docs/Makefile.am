@@ -15,18 +15,18 @@ SILENT = @SILENT@
 ## the "docs" list in tools/prebootstrap
 
 doc_DATA = classify_details.txt \
- COLOPHON.txt \
- CRM114_Mailfilter_HOWTO.txt \
- FAQ.txt \
- inoc_passwd.txt \
- INTRO.txt \
- knownbugs.txt \
- procmailrc.recipe \
- QUICKREF.txt \
- reto_procmail_recipe.recipe \
- things_to_do.txt \
- README \
- VT_generic_Vector_Tokenization.txt
+	COLOPHON.txt \
+	CRM114_Mailfilter_HOWTO.txt \
+	FAQ.txt \
+	inoc_passwd.txt \
+	INTRO.txt \
+	knownbugs.txt \
+	procmailrc.recipe \
+	QUICKREF.txt \
+	reto_procmail_recipe.recipe \
+	things_to_do.txt \
+	README \
+	VT_generic_Vector_Tokenization.txt
  
 
 EXTRA_DIST = $(doc_DATA)

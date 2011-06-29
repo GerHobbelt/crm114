@@ -37,13 +37,13 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //         right there.
 
     char varname[MAX_VARNAME];
-    long varnamelen = 0;
-    long newvallen;
+    int varnamelen = 0;
+    int newvallen;
     crmhash64_t ahash[MAX_EVAL_ITERATIONS];
-    long ahindex;
+    int ahindex;
     int itercount;
-    long qex_stat;
-    long has_output_var;
+    int qex_stat;
+    int has_output_var;
 
     // should use tempbuf for this instead.
     //   char newstr [MAX_PATTERN];
@@ -106,7 +106,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
         ahash[itercount] = ihash;
         if (internal_trace)
-            fprintf(stderr, "Eval ihash = %016llX\n", (unsigned long long)ihash);
+            fprintf(stderr, "Eval ihash = %016llX\n", (unsigned long long int)ihash);
 
         // scan down to see if we see any change: faster than up.
         //
@@ -154,13 +154,13 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 tempbuf, newvallen);
 
     if (internal_trace)
-        fprintf(stderr, "Final qex_stat was %ld\n", qex_stat);
+        fprintf(stderr, "Final qex_stat was %d\n", qex_stat);
 
     //    for now, use the qex_stat that came back from qexpandvar.
     if (qex_stat > 0)
     {
         if (user_trace)
-            fprintf(stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %ld\n", csl->cstmt);
+            fprintf(stderr, "Mathematical expression at line was not satisfied, doing a FAIL at line %d\n", csl->cstmt);
         csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
         csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
     }

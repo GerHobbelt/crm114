@@ -109,7 +109,7 @@ static const double norm_cdf_lookup[] =
 //there is currently no interpolation
 double crm_norm_cdf(double x)
 {
-    long i;
+    int i;
 
     if (x < -6.0)
         return 0.0;
@@ -117,7 +117,7 @@ double crm_norm_cdf(double x)
     if (x >= 6.0)
         return 1.0;
 
-    i = (long)((x + 6.0) * 32.0);
+    i = (int)((x + 6.0) * 32.0);
     return norm_cdf_lookup[i];
 }
 

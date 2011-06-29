@@ -94,13 +94,13 @@ static void generate_err_reason_msg(
     /*
      *         some OS's include the complete path with the programname; we're not interested in that part here...
      */
-    const char *progname = skip_path(prog_argv[0]);
+    const char *progname = skip_path(prog_argv0);
     /* some compilers include the full path: strip if off! */
     const char *srcfile = skip_path(srcfile_full);
 
     //
     //   Create our reason string.  Note that some reason text can be VERY
-    //   long, so we put out only the first 2048+40  characters
+    //   int, so we put out only the first 2048+40  characters
     //
 
     if (!reason || reason_bufsize <= 0)
@@ -114,7 +114,7 @@ static void generate_err_reason_msg(
 
 
     if (widthleft > (12 + WIDTHOF("(truncated...)\n")                     /* see at the end of the code; buffer should be large enough to cope with it all */
-                     + (lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 0)      /* guestimate the worst case length upper limit for printf(%ld) */
+                     + (lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 0)      /* guestimate the worst case length upper limit for printf(%d) */
                      + (progname ? strlen(progname) : strlen("CRM114"))
                      + (srcfile ? strlen(srcfile) : 0)
                      + (funcname ? strlen(funcname) : 0)
@@ -235,7 +235,7 @@ static void generate_err_reason_msg(
     encouragment_length = strlen(encouraging_msg) + 1;
 
     if (widthleft > encouragment_length
-        + WIDTHOF("This happened at line %ld of file %s\n") + 40)
+        + WIDTHOF("This happened at line %d of file %s\n") + 40)
     {
         dst = strmov(dst, encouraging_msg);
         has_newline = (dst[-1] == '\n');
@@ -256,7 +256,7 @@ static void generate_err_reason_msg(
      */
     if (bill_style_errormessage)
     {
-        if (widthleft > ((lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 1)  /* guestimate the worst case length upper limit for printf(%ld) */
+        if (widthleft > ((lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 1)  /* guestimate the worst case length upper limit for printf(%d) */
                          + (srcfile ? strlen(srcfile) : 3)
                          + (funcname ? strlen(funcname) : 3)
                          + WIDTHOF("(runtime system location: X(X) in routine: X)\n")
@@ -534,11 +534,11 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
 
 
 //     fatalerror - print a fatal error on stdout, trap if we can, else exit
-long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
+int fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     //
     //   Note that some reason text2's can be VERY
-    //   long, so we put out only the first 1024 characters
+    //   int, so we put out only the first 1024 characters
     //
 
     return fatalerror_ex(lineno, srcfile, funcname,
@@ -548,10 +548,10 @@ long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const
         text1, text2);
 }
 
-long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
+int fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
 {
     va_list args;
-    long ret;
+    int ret;
 
     va_start(args, fmt);
     ret = fatalerror_va(lineno, srcfile, funcname, fmt, args);
@@ -559,7 +559,7 @@ long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const 
     return ret;
 }
 
-long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)
+int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)
 {
     char reason[MAX_PATTERN];
 
@@ -587,7 +587,7 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
     }
 }
 
-long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
+int nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
     return nonfatalerror_ex(lineno, srcfile, funcname,
         (text2 && strlen(text2) <= 1024 ?
@@ -596,10 +596,10 @@ long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, co
         text1, text2);
 }
 
-long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
+int nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
 {
     va_list args;
-    long ret;
+    int ret;
 
     va_start(args, fmt);
     ret = nonfatalerror_va(lineno, srcfile, funcname, fmt, args);
@@ -607,10 +607,10 @@ long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, con
     return ret;
 }
 
-static long nonfatalerrorcount = 0;
+static int nonfatalerrorcount = 0;
 static int nonfatalerrorcount_max_reported = 0;
 
-long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)
+int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *fmt, va_list args)
 {
     char reason[MAX_PATTERN];
 

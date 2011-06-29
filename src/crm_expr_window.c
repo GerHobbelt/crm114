@@ -302,7 +302,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     if (user_trace)
-        fprintf(stderr, "  cut completed, variable length after cut is %ld\n",
+        fprintf(stderr, "  cut completed, variable length after cut is %d\n",
                 vht[vmidx]->vlen);
 
     //**************************************************************

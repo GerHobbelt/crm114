@@ -57,8 +57,13 @@ EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
 
 
 if MAINTAINER_MODE
+
 ChangeLog: NEWS
 	-( test "X$(cvs2cl)" != "X" && $(cvs2cl) --prune --accum -U ../CVSROOT/users )
+	
+BillY-sync:
+	$(SILENT) distribute_files_from_src_dir.sh 
+
 endif 
 
 stamp.year stamp.day stamp.month: ChangeLog configure.ac
@@ -77,17 +82,6 @@ dist-diff:
 	$(SILENT) echo "Creating diff archives"; 
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) dist-diff);
 
-dist-msvc: distdir
-	$(SILENT) echo "Creating MSVC project archives"; 
-	-rm -f $(ARCHIVE_BASE_NAME).Win32.project.7z
-	-rm -f $(ARCHIVE_BASE_NAME).Win32.project.tar.gz
-	-rm -f $(ARCHIVE_BASE_NAME).Win32.project.tar.bz2
-	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).Win32.project.7z $(distdir) )
-	( test "X$(tar)" != "X" && $(tar) -c $(distdir) | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).Win32.project.tar.gz )
-	( test "X$(tar)" != "X" && $(tar) -c $(distdir) | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).Win32.project.tar.bz2 )
-	-rm -f $(ARCHIVE_BASE_NAME).Win32.project.zip
-	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).Win32.project.zip $(distdir) )
-
 dist-win32-bin: distdir
 	$(SILENT) echo "Creating MSVC binary archives from `pwd`"; 
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.7z
@@ -99,7 +93,7 @@ dist-win32-bin: distdir
 	-rm -f $(ARCHIVE_BASE_NAME).Win32.bin.zip
 	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).Win32.bin.zip  win32/bin/*.exe win32/bin/*.dll )
 
-distribution: distdir dist-diff
+distribution: distdir dist-diff dist-win32-bin
 	$(SILENT) echo "Creating src archives"; 
 	-rm -f $(ARCHIVE_BASE_NAME).src.7z
 	-rm -f $(ARCHIVE_BASE_NAME).src.tar.gz
@@ -113,7 +107,7 @@ distribution: distdir dist-diff
 
 
 
-dist-all: distribution dist-win32-bin
+dist-all: distribution
 
 
 

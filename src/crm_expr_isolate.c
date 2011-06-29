@@ -79,7 +79,7 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         {
             //        must make a copy of the varname.
             char vname[MAX_VARNAME];
-            long vmidx;
+            int vmidx;
             memmove(vname, &(temp_vars[vstart]), vlen);
             vname[vlen] = 0;
             if (vlen < 3)
@@ -219,18 +219,18 @@ no_isolate_action:
 //      it gets handed data that's already in the TDW.  Best not to do
 //      that if you can avoid it; that is an efficiency speedup
 //
-int crm_isolate_this(long *vptr,
-        char *nametext, long namestart, long namelen,
-        char *valuetext, long valuestart, long valuelen)
+int crm_isolate_this(int *vptr,
+        char *nametext, int namestart, int namelen,
+        char *valuetext, int valuestart, int valuelen)
 
 {
-    long is_old;
-    long is_old_isolated;
-    long vmidx;
-    long oldvstart = 0;
-    long oldvlen = 0;
+    int is_old;
+    int is_old_isolated;
+    int vmidx;
+    int oldvstart = 0;
+    int oldvlen = 0;
 
-    long neededlen;
+    int neededlen;
 
     if (internal_trace)
     {
@@ -311,7 +311,7 @@ int crm_isolate_this(long *vptr,
     {
         //  nope, never seen this var before, add it into the VHT
         //       namestart is where we are now.
-        long nstart, vstart;
+        int nstart, vstart;
         if (internal_trace)
             fprintf(stderr, "... this is a new isolated var\n");
         //
@@ -352,7 +352,7 @@ int crm_isolate_this(long *vptr,
         fprintf(stderr, "Resetting valtxt to point at tdw.\n");
     vht[vmidx]->valtxt = tdw->filetext;
     if (internal_trace)
-        fprintf(stderr, "Fresh start: offset %ld length %ld.\n",
+        fprintf(stderr, "Fresh start: offset %d length %d.\n",
                 tdw->nchars, valuelen);
     //
     //

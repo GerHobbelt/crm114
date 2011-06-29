@@ -149,6 +149,74 @@ TRE_TARFILE = tre-0.7.5
 #    this line, you risk early insanity and blindness.
 #
 #
+
+
+
+MEGATESTFILES = \
+	mt_ng_Bit_Entropy_2.input \
+	mt_ng_OSB_Markov_Chisquared_Unique_2.input \
+	mt_ng_OSB_Markovian_1.input \
+	mt_ng_OSB_Markov_Chisquared_Unique_1.input \
+	mt_ng_String_Unigram_Hyperspace_2.input \
+	mt_ng_String_Kernel_SVM_SKS_Unique_1.input \
+	mt_ng_Support_Vector_Machine_SVM_1.input \
+	mt_ng_Bit_Entropy_1.input \
+	mt_ng_unigram_Winnow_1.input \
+	mt_ng_Bytewise_Correlation_2.input \
+	mt_ng_OSB_Winnow_1.input \
+	mt_ng_Bit_Entropy_Toroid_1.input \
+	mt_ng_Neural_Network_1.input \
+	mt_ng_String_Kernel_SVM_SKS_1.input \
+	mt_ng_OSB_3_letter_Hyperspace_1.input \
+	mt_ng_Support_Vector_Machine_SVM_2.input \
+	windowtest_fromvar_mt_ng_1.input \
+	mt_ng_Neural_Network_2.input \
+	mt_ng_Fast_Substring_Compression_Match_1.input \
+	backwardstest_mt_ng_1.input \
+	mt_ng_Unigram_Bayesian_2.input \
+	mt_ng_Support_Vector_Machine_SVM_unigram_2.input \
+	mt_ng_String_Hyperspace_2.input \
+	mt_ng_SBPH_Markovian_1.input \
+	mt_ng_OSB_Markov_Unique_2.input \
+	mt_ng_Unigram_Hyperspace_1.input \
+	mt_ng_Unigram_Bayesian_1.input \
+	mt_ng_OSBF_Local_Confidence_Fidelis_2.input \
+	mt_ng_String_Kernel_SVM_SKS_2.input \
+	matchtest_mt_ng_1.input \
+	mt_ng_OSB_Markovian_2.input \
+	mt_ng_String_Unigram_Hyperspace_1.input \
+	mt_ng_Unigram_Hyperspace_2.input \
+	matchtest_mt_ng.input \
+	mt_ng_Vector_3_word_bag_Hyperspace_1.input \
+	mt_ng_String_Hyperspace_1.input \
+	approxtest_mt_ng_1.input \
+	mt_ng_Clump_Pmulc_3.input \
+	approxtest_mt_ng_2.input \
+	backwardstest_mt_ng.input \
+	mt_ng_OSB_Hyperspace_1.input \
+	mt_ng_OSB_3_letter_Hyperspace_2.input \
+	mt_ng_OSB_Hyperspace_2.input \
+	mt_ng_Vector_3_word_bag_Hyperspace_2.input \
+	mt_ng_Bit_Entropy_Toroid_2.input \
+	windowtest_mt_ng_1.input \
+	mt_ng_OSB_Markov_Unique_1.input \
+	mt_ng_OSBF_Local_Confidence_Fidelis_1.input \
+	mt_ng_unigram_Winnow_2.input \
+	mt_ng_Fast_Substring_Compression_Match_2.input \
+	backwardstest_mt_ng_2.input \
+	mt_ng_Bytewise_Correlation_1.input \
+	mt_ng_String_Kernel_SVM_SKS_Unique_2.input \
+	mt_ng_Clump_Pmulc_1.input \
+	mt_ng_OSB_Winnow_2.input \
+	mt_ng_Clump_Pmulc_2.input \
+	mt_ng_SBPH_Markovian_2.input \
+	mt_ng_Support_Vector_Machine_SVM_unigram_1.input \
+	COLOPHON_mt_ng_reference_3.input \
+	FAQ_mt_ng_reference_4.input
+
+
+#
+#
 #   These are the files needed to build the CRM114 engine; they don't 
 #   include the side utilities
 #
@@ -166,12 +234,12 @@ CFILES = crm_main.c crm_compiler.c crm_errorhandlers.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
 	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
 	crm_expr_svm.c crm_expr_fscm.c \
-	crm_strcompress.c crm_expr_clump_nn.c \
 	crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c
 
 HFILES = $(MAKEFILE) crm114_sysincludes.h crm114_structs.h crm114_config.h \
-	crm114.h regex.h crm_expr_clump_nn.h crm114_osbf.h 
+	crm114.h regex.h crm114_osbf.h \
+	crm_mjt_qsort.h
 
 # extra dependencies to make the code build with both the 'new' autoconf'd
 # and 'old' BillY makefile (this one):
@@ -190,7 +258,6 @@ OFILES = crm_main.o crm_compiler.o crm_errorhandlers.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
 	crm_preprocessor.o \
 	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
-	crm_strcompress.o crm_expr_clump_nn.o \
 	crm_generic_port.o crm_stdio_port.o \
 	crm_versioning.o
 #  NOTE - no crm_util_errorhandlers, crmregex_gnu or crmregex_tre here!
@@ -214,7 +281,7 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	rewritetest.crm test_rewrites.mfp \
 	randomiotest.crm isolate_reclaim_test.crm \
 	match_isolate_test.crm match_isolate_reclaim.crm \
-	call_return_test.crm defaulttest.crm\
+	call_return_test.crm defaulttest.crm \
 	shroud.crm quine.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
@@ -223,7 +290,8 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	gatlingsort.crm tenfold_validate.crm \
 	test_svm.crm \
 	classifymail.crm \
-	tokendelimiterbugtest.crm bracesbugtest.crm
+	tokendelimiterbugtest.crm bracesbugtest.crm \
+	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm
 
 
 TEXTFILES = COLOPHON.txt pad.dat \
@@ -238,7 +306,10 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	GPL-License.txt \
 	rename-gz \
 	megatest.sh megatest_knowngood.log \
-        make_BillY.sh
+	$(MAKEFILE) Makefile.BillY \
+	exectest_s1.sh \
+	$(MEGATESTFILES) megatest_ng.sh 
+
 
 
 #
@@ -363,10 +434,6 @@ crm_expr_classify.o: crm_expr_classify.c \
 	$(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_classify.c -o crm_expr_classify.o
 
-crm_expr_clump_nn.o: crm_expr_clump_nn.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_clump_nn.c -o crm_expr_clump_nn.o
-
 crm_expr_translate.o: crm_expr_translate.c \
 	$(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_expr_translate.c -o crm_expr_translate.o
@@ -406,10 +473,6 @@ crm_osbf_bayes.o: crm_osbf_bayes.c \
 crm_osb_hyperspace.o: crm_osb_hyperspace.c \
 	$(HFILES)
 	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_osb_hyperspace.c -o crm_osb_hyperspace.o
-
-crm_strcompress.o: crm_strcompress.c \
-	$(HFILES)
-	$(CC)  $(CFLAGS) -D$(SYSTEMTYPE) -DVERSION='"$(VERSION)"' -c crm_strcompress.c -o crm_strcompress.o
 
 crm_expr_sks.o: crm_expr_sks.c \
 	$(HFILES)
@@ -706,7 +769,7 @@ css_gzip: css_tarfile
 	rm -rf crm114-$(VERSION).css.tar.gz
 	gzip crm114-$(VERSION).css.tar
 
-distribution: install src_gzip i386_gzip css_gzip
+distribution: src_gzip i386_gzip css_gzip
 	md5sum crm114-$(VERSION).*.tar.gz
 
 rsync:  FORCE

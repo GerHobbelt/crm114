@@ -25,19 +25,19 @@
 //
 //    Global variables
 
-long user_trace = 0;
+int user_trace = 0;
 
-long internal_trace = 0;
+int internal_trace = 0;
 
-long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+int engine_exit_base = 0;  //  All internal errors will use this number or higher;
 //  the user programs can use lower numbers freely.
 
 int selected_hashfunction = 0;  //  0 = default
 
 
-//    the command line argc, argv
-int prog_argc = 0;
-char **prog_argv = NULL;
+//    the app path/name
+char *prog_argv0 = NULL;
+
 
 
 
@@ -72,27 +72,27 @@ void helptext(void)
 
 int main(int argc, char **argv)
 {
-    long i, k;                  //  some random counters, when we need a loop
-    long v;
-    long sparse_spectrum_file_length = DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
-    long user_set_css_length = 0;
-    long hfsize;
-    long long sum;              // sum of the hits... can be _big_.
+    int i, k;                  //  some random counters, when we need a loop
+    int v;
+    int sparse_spectrum_file_length = DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
+    int user_set_css_length = 0;
+    int hfsize;
+    int64_t sum;              // sum of the hits... can be _big_.
     // int hfd;
     int brief = 0, quiet = 0, dump = 0, restore = 0;
     int opt, fields;
     int report_only = 0;
 
-    long *bcounts;
-    long maxchain;
-    long curchain;
-    long totchain;
-    long fbuckets;
-    long nchains;
-    long zvbins;
-    long ofbins;
+    int *bcounts;
+    int maxchain;
+    int curchain;
+    int totchain;
+    int fbuckets;
+    int nchains;
+    int zvbins;
+    int ofbins;
 
-    long histbins; // how many bins for the histogram
+    int histbins; // how many bins for the histogram
 
     char cmdstr[255];
     char cssfile[255];
@@ -100,11 +100,11 @@ int main(int argc, char **argv)
     unsigned char cmdchr[2];
     char crapchr[2];
     double cmdval;
-    long val;
+    int val;
     int zloop, cmdloop;
-    long learns_index, features_index;
-    long docs_learned = -1;
-    long features_learned = -1;
+    int learns_index, features_index;
+    int docs_learned = -1;
+    int features_learned = -1;
 
     //    the following for crm114.h's happiness
 
@@ -114,9 +114,8 @@ int main(int argc, char **argv)
 
     newinputbuf = (char *)&hfsize;
 
-    //   copy argc and argv into global statics...
-    prog_argc = argc;
-    prog_argv = argv;
+    //   copy app path/name into global static...
+    prog_argv0 = argv[0];
 
     user_trace = DEFAULT_USER_TRACE_LEVEL;
     internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
@@ -150,14 +149,14 @@ int main(int argc, char **argv)
             case 'R':
                 {
                     FILE *f;
-                    unsigned long key, hash, value;
+                    unsigned int key, hash, value;
 
                     // count lines to determine number of buckets and check CSV format
                     if ((f = fopen(optarg, "rb")) != NULL)
                     {
                         sparse_spectrum_file_length = 0;
                         while (!feof(f))
-                            if (fscanf(f, "%lu;%lu;%lu\n", &key, &hash, &value) == 3)
+                            if (fscanf(f, "%u;%u;%u\n", &key, &hash, &value) == 3)
                                 sparse_spectrum_file_length++;
                             else
                             {
@@ -186,11 +185,11 @@ int main(int argc, char **argv)
 
             case 's':        // set css size to option value
             case 'S':        // same as above but round up to next 2^n+1
-                if (sscanf(optarg, "%ld", &sparse_spectrum_file_length))
+                if (sscanf(optarg, "%d", &sparse_spectrum_file_length))
                 {
                     if (!quiet)
                         fprintf(stderr
-                               , "\nOverride css creation length to %ld\n"
+                               , "\nOverride css creation length to %d\n"
                                , sparse_spectrum_file_length);
                     user_set_css_length = 1;
                 }
@@ -205,7 +204,7 @@ int main(int argc, char **argv)
                 {
                     int k;
 
-                    k = (long)floor(log2(sparse_spectrum_file_length - 1));
+                    k = (int)floor(log2(sparse_spectrum_file_length - 1));
                     while ((2 << k) + 1 < sparse_spectrum_file_length)
                         k++;
                     sparse_spectrum_file_length = (2 << k) + 1;
@@ -350,7 +349,7 @@ int main(int argc, char **argv)
                             "\n Minor Caution - this file has the learncount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");
                 }
             }
-            //      fprintf(stderr, "This file has had %ld documents learned!\n",
+            //      fprintf(stderr, "This file has had %d documents learned!\n",
             //               hashes[h1].value);
             docs_learned = hashes[h1].value;
             hcode = strnhash(fitf, strlen(fitf));
@@ -377,7 +376,7 @@ int main(int argc, char **argv)
                             "\n Minor Caution - this file has the featurecount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");
                 }
             }
-            //fprintf(stderr, "This file has had %ld features learned!\n",
+            //fprintf(stderr, "This file has had %d features learned!\n",
             //               hashes[h1].value);
             features_learned = hashes[h1].value;
         }
@@ -390,7 +389,7 @@ int main(int argc, char **argv)
             for (i = 0; i < hfsize; i++)
             {
                 fprintf(stdout, "%lu;%lu;%lu\n"
-                       , (unsigned long)hashes[i].key, (unsigned long)hashes[i].hash, hashes[i].value);
+                       , (unsigned long int)hashes[i].key, (unsigned long int)hashes[i].hash, (unsigned long int)hashes[i].value);
             }
         }
 
@@ -411,12 +410,12 @@ int main(int argc, char **argv)
             {
                 for (i = 0; i < hfsize; i++)
                 {
-                    unsigned long k;
-                    unsigned long h;
-                    unsigned long v;
-                    if (3 != fscanf(f, "%lu;%lu;%lu\n", &k, &h, &v))
+                    unsigned int k;
+                    unsigned int h;
+                    unsigned int v;
+                    if (3 != fscanf(f, "%u;%u;%u\n", &k, &h, &v))
                     {
-                        fprintf(stderr, "\n Couldn't parse csv file %s at line %ld\n"
+                        fprintf(stderr, "\n Couldn't parse csv file %s at line %d\n"
                                , csvfile, i);
                         exit(EXIT_FAILURE);
                     }
@@ -470,22 +469,22 @@ int main(int argc, char **argv)
             }
 
             fprintf(stdout, "\n Sparse spectra file %s statistics: \n", cssfile);
-            fprintf(stdout, "\n Total available buckets          : %12ld "
+            fprintf(stdout, "\n Total available buckets          : %12d "
                    , hfsize);
-            fprintf(stdout, "\n Total buckets in use             : %12ld  "
+            fprintf(stdout, "\n Total buckets in use             : %12d  "
                    , fbuckets);
-            fprintf(stdout, "\n Total in-use zero-count buckets  : %12ld  "
+            fprintf(stdout, "\n Total in-use zero-count buckets  : %12d  "
                    , zvbins);
-            fprintf(stdout, "\n Total buckets with value >= max  : %12ld  "
+            fprintf(stdout, "\n Total buckets with value >= max  : %12d  "
                    , ofbins);
-            fprintf(stdout, "\n Total hashed datums in file      : %12lld", sum);
-            fprintf(stdout, "\n Documents learned                : %12ld  "
+            fprintf(stdout, "\n Total hashed datums in file      : %12lld", (long long int)sum);
+            fprintf(stdout, "\n Documents learned                : %12d  "
                    , docs_learned);
-            fprintf(stdout, "\n Features learned                 : %12ld  "
+            fprintf(stdout, "\n Features learned                 : %12d  "
                    , features_learned);
             fprintf(stdout, "\n Average datums per bucket        : %12.2f"
                    , (fbuckets > 0) ? (sum * 1.0) / (fbuckets * 1.0) : 0);
-            fprintf(stdout, "\n Maximum length of overflow chain : %12ld  "
+            fprintf(stdout, "\n Maximum length of overflow chain : %12d  "
                    , maxchain);
             fprintf(stdout, "\n Average length of overflow chain : %12.2f "
                    , (nchains > 0) ? (totchain * 1.0) / (nchains * 1.0) : 0);
@@ -515,12 +514,12 @@ int main(int argc, char **argv)
                     {
                         if (i < histbins)
                         {
-                            fprintf(stdout, "\n bin value %8ld found %9ld times"
+                            fprintf(stdout, "\n bin value %8d found %9d times"
                                    , i, bcounts[i]);
                         }
                         else
                         {
-                            fprintf(stdout, "\n bin value %8ld or more found %9ld times"
+                            fprintf(stdout, "\n bin value %8d or more found %9d times"
                                    , i, bcounts[i]);
                         }
                     }
@@ -560,7 +559,7 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        val = (long)cmdval;
+                        val = (int)cmdval;
                         fprintf(stdout, "Working...");
                         for (i = 1; i < hfsize; i++)
                         {
@@ -581,7 +580,7 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        val = (long)cmdval;
+                        val = (int)cmdval;
                         fprintf(stdout, "Working...");
                         for (i = 1; i < hfsize; i++)
                         {
@@ -599,7 +598,7 @@ int main(int argc, char **argv)
                     break;
 
                 case 'd':
-                    val = (long)cmdval;
+                    val = (int)cmdval;
                     if (fields != 2)
                     {
                         fprintf(stdout

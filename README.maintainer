@@ -28,7 +28,7 @@ To regenerate the configure script, proper Makefile.in, et al, execute the
 sequence:
 
         ./bootstrap
-	./configure
+        ./configure
 
 and you may wish to run the suggested
 
@@ -100,6 +100,34 @@ residing in this directory tree will surely have been destroyed by
 ./fix_crlf.sh !
 
 
+
+
+When you've synced sources or otherwise with BillY's ./src/ wget distro
+-----------------------------------------------------------------------
+
+After merging your ./src/ with the wget copy, run
+
+        make BillY-sync
+        
+to update all the files in 
+
+        ./tests/
+        ./docs/
+        ./examples/
+        ./mailfilter/
+               
+WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING:
+hence it is assumed that the crm/input/... files in ./src/ are LEADING and
+those DO OVERRIDE the copies which you kept in the directories listed above.
+
+The transfer uses the shell script
+
+        distribute_files_from_src_dir.sh
+        
+which performs some mandatory processing on the files while copying them
+into their designated directories.        
+ 
+                
 
 
 Notes / Misc

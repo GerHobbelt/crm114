@@ -29,23 +29,23 @@
 //
 //    Global variables
 
-long user_trace = 0;
+int user_trace = 0;
 
-long internal_trace = 0;
+int internal_trace = 0;
 
-long microgroom_chain_length = 0;
+int microgroom_chain_length = 0;
 
-long microgroom_stop_after = 0;
+int microgroom_stop_after = 0;
 
-long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+int engine_exit_base = 0;  //  All internal errors will use this number or higher;
 //  the user programs can use lower numbers freely.
 
 int selected_hashfunction = 0;  //  0 = default
 
 
-//    the command line argc, argv
-int prog_argc = 0;
-char **prog_argv = NULL;
+//    the app path/name
+char *prog_argv0 = NULL;
+
 
 
 
@@ -81,23 +81,23 @@ void helptext(void)
 
 int main(int argc, char **argv)
 {
-    long i, k;                  //  some random counters, when we need a loop
-    long v;
-    long sparse_spectrum_file_length = OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
-    long user_set_css_length = 0;
-    long hfsize;
-    long long sum;              // sum of the hits... can be _big_.
+    int i, k;                  //  some random counters, when we need a loop
+    int v;
+    int sparse_spectrum_file_length = OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
+    int user_set_css_length = 0;
+    int hfsize;
+    int64_t sum;              // sum of the hits... can be _big_.
     int brief = 0, quiet = 0, dump = 0, restore = 0;
     int opt, fields;
     int report_only = 0;
 
-    long *bcounts;
-    long maxchain;
-    long curchain;
-    long totchain;
-    long fbuckets;
-    long nchains;
-    long ofbins;
+    int *bcounts;
+    int maxchain;
+    int curchain;
+    int totchain;
+    int fbuckets;
+    int nchains;
+    int ofbins;
 
     char cmdstr[255];
     char cssfile[255];
@@ -113,9 +113,8 @@ int main(int argc, char **argv)
 
     init_stdin_out_err_as_os_handles();
 
-    //   copy argc and argv into global statics...
-    prog_argc = argc;
-    prog_argv = argv;
+    //   copy app path/name into global static...
+    prog_argv0 = argv[0];
 
     user_trace = DEFAULT_USER_TRACE_LEVEL;
     internal_trace = DEFAULT_INTERNAL_TRACE_LEVEL;
@@ -149,7 +148,7 @@ int main(int argc, char **argv)
             case 'R':
                 {
                     FILE *f;
-                    unsigned long key, hash, value;
+                    unsigned int key, hash, value;
                     OSBF_FEATURE_HEADER_STRUCT h;
 
                     // count lines to determine the number of buckets and check CSV format
@@ -159,7 +158,7 @@ int main(int argc, char **argv)
                     {
                         // try to find the header reading first 2 "buckets"
                         if (fscanf
-                            (f, "%lu;%lu;%lu\n", (unsigned long *)h.version
+                            (f, "%u;%u;%u\n", (unsigned int *)h.version
                             , &(h.flags), &(h.buckets_start)) != 3)
                         {
                             fprintf(stderr
@@ -167,14 +166,14 @@ int main(int argc, char **argv)
                                    , optarg);
                             exit(EXIT_FAILURE);
                         }
-                        if (*((unsigned long *)h.version) != OSBF_VERSION)
+                        if (*((unsigned int *)h.version) != OSBF_VERSION)
                         {
                             fprintf(stderr
                                    , "\n %s is not an OSBF CSV file.\n", optarg);
                             fclose(f);
                             exit(EXIT_FAILURE);
                         }
-                        if (fscanf(f, "%lu;%lu;%lu\n", &(h.buckets), &hash, &value)
+                        if (fscanf(f, "%u;%u;%u\n", &(h.buckets), &hash, &value)
                             != 3)
                         {
                             fprintf(stderr
@@ -187,7 +186,7 @@ int main(int argc, char **argv)
                         sparse_spectrum_file_length = 2 - h.buckets_start;
 
                         while (!feof(f))
-                            if (fscanf(f, "%lu;%lu;%lu\n", &key, &hash, &value) == 3)
+                            if (fscanf(f, "%u;%u;%u\n", &key, &hash, &value) == 3)
                                 sparse_spectrum_file_length++;
                             else
                             {
@@ -231,11 +230,11 @@ int main(int argc, char **argv)
                            , "\nOptions -s, -S ignored when restoring.\n");
                     break;
                 }
-                if (sscanf(optarg, "%ld", &sparse_spectrum_file_length))
+                if (sscanf(optarg, "%d", &sparse_spectrum_file_length))
                 {
                     if (!quiet)
                         fprintf(stderr
-                               , "\nOverride css creation length to %ld\n"
+                               , "\nOverride css creation length to %d\n"
                                , sparse_spectrum_file_length);
                     user_set_css_length = 1;
                 }
@@ -250,7 +249,7 @@ int main(int argc, char **argv)
                 {
                     int k;
 
-                    k = (long)floor(log2(sparse_spectrum_file_length - 1));
+                    k = (int)floor(log2(sparse_spectrum_file_length - 1));
                     while ((2 << k) + 1 < sparse_spectrum_file_length)
                         k++;
                     sparse_spectrum_file_length = (2 << k) + 1;
@@ -331,7 +330,7 @@ int main(int argc, char **argv)
         {
             //      file didn't exist... create it
             if (!quiet && !restore)
-                fprintf(stdout, "\nHad to create .CSS file %s with %lu buckets\n"
+                fprintf(stdout, "\nHad to create .CSS file %s with %u buckets\n"
                        , cssfile, sparse_spectrum_file_length);
             if (crm_osbf_create_cssfile(cssfile
                                        , sparse_spectrum_file_length
@@ -361,7 +360,7 @@ int main(int argc, char **argv)
                    , cssfile, errno, errno_descr(errno));
             exit(EXIT_FAILURE);
         }
-        if (*((unsigned long *)(header->version)) != OSBF_VERSION)
+        if (*((unsigned int *)(header->version)) != OSBF_VERSION)
         {
             fprintf(stderr
                    , "\n %s is the wrong version. We're expecting a %s css file.\n"
@@ -385,13 +384,18 @@ int main(int argc, char **argv)
         {
             /* dump the css file */
             OSBF_FEATUREBUCKET_STRUCT *bucket;
-            unsigned long *p;
 
             bucket = (OSBF_FEATUREBUCKET_STRUCT *)header;
             for (i = 0; i < hfsize; i++)
             {
-                p = (unsigned long *)&bucket[i];
-                fprintf(stdout, "%lu;%lu;%lu\n", p[0], p[1], p[2]);
+                    unsigned long int k;
+                    unsigned long int h;
+                    unsigned long int v;
+                    k = bucket[i].key;
+                    h = bucket[i].hash;
+                    v = bucket[i].value;
+
+                fprintf(stdout, "%lu;%lu;%lu\n", k, h, v);
             }
         }
 
@@ -399,7 +403,6 @@ int main(int argc, char **argv)
         {
             FILE *f;
             OSBF_FEATUREBUCKET_STRUCT *bucket;
-            unsigned long *p;
 
             // restore the css file  - note that if we DIDN'T create
             // it already, then this will fail.
@@ -415,8 +418,15 @@ int main(int argc, char **argv)
                 bucket = (OSBF_FEATUREBUCKET_STRUCT *)header;
                 for (i = 0; i < hfsize; i++)
                 {
-                    p = (unsigned long *)&bucket[i];
-                    fscanf(f, "%lu;%lu;%lu\n", &p[0], &p[1], &p[2]);
+                    unsigned int k;
+                    unsigned int h;
+                    unsigned int v;
+
+                    fscanf(f, "%u;%u;%u\n", &k, &h, &v);
+		// [i_a] GROT GROT GROT error checking (as always :-( )!!!!!!!
+                    bucket[i].key = k;
+                    bucket[i].hash = h;
+                    bucket[i].value = v;
                 }
                 fclose(f);
             }
@@ -457,30 +467,30 @@ int main(int argc, char **argv)
                 }
             }
 
-            version_index = *((unsigned long *)header->version);
+            version_index = *((unsigned int *)header->version);
             if (version_index < 0 || version_index > UNKNOWN_VERSION)
                 version_index = UNKNOWN_VERSION;
             fprintf(stdout, "\n Sparse spectra file %s statistics:\n", cssfile);
             fprintf(stdout, "\n CSS file version                 : %12s"
                    , CSS_version_name[version_index]);
-            fprintf(stdout, "\n Header size (bytes)              : %12ld"
-                   , header->buckets_start * sizeof(OSBF_FEATUREBUCKET_STRUCT));
-            fprintf(stdout, "\n Bucket size (bytes)              : %12ld"
-                   , (long)sizeof(OSBF_FEATUREBUCKET_STRUCT));
-            fprintf(stdout, "\n Total available buckets          : %12ld"
+            fprintf(stdout, "\n Header size (bytes)              : %12d"
+                   , (int)(header->buckets_start * sizeof(OSBF_FEATUREBUCKET_STRUCT)));
+            fprintf(stdout, "\n Bucket size (bytes)              : %12d"
+                   , (int)sizeof(OSBF_FEATUREBUCKET_STRUCT));
+            fprintf(stdout, "\n Total available buckets          : %12d"
                    , header->buckets);
-            fprintf(stdout, "\n Total buckets in use             : %12ld"
+            fprintf(stdout, "\n Total buckets in use             : %12d"
                    , fbuckets);
-            fprintf(stdout, "\n Number of trainings              : %12lu"
-                   , header->learnings);
-            fprintf(stdout, "\n Total buckets with value >= max  : %12ld"
+            fprintf(stdout, "\n Number of trainings              : %12ld"
+                   , (long int)header->learnings);
+            fprintf(stdout, "\n Total buckets with value >= max  : %12d"
                    , ofbins);
-            fprintf(stdout, "\n Total hashed datums in file      : %12lld", sum);
+            fprintf(stdout, "\n Total hashed datums in file      : %12lld", (long long int)sum);
             fprintf(stdout, "\n Average datums per bucket        : %12.2f"
                    , (fbuckets > 0) ? (sum * 1.0) / (fbuckets * 1.0) : 0.0);
-            fprintf(stdout, "\n Number of chains                 : %12ld"
+            fprintf(stdout, "\n Number of chains                 : %12d"
                    , nchains);
-            fprintf(stdout, "\n Maximum length of overflow chain : %12ld"
+            fprintf(stdout, "\n Maximum length of overflow chain : %12d"
                    , maxchain);
             fprintf(stdout, "\n Average length of overflow chain : %12.2f"
                    , nchains > 0 ? (totchain * 1.0) / (nchains * 1.0) : 0.0);
@@ -500,7 +510,7 @@ int main(int argc, char **argv)
                 {
                     if (bcounts[i] > 0)
                     {
-                        fprintf(stdout, "\n bin value %8ld found %9ld times"
+                        fprintf(stdout, "\n bin value %8d found %9d times"
                                , i, bcounts[i]);
                     }
                 }
@@ -559,7 +569,7 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        long val = (long)cmdval;
+                        int val = (int)cmdval;
                         fprintf(stdout, "Working...");
                         for (i = 0; i < header->buckets; i++)
                         {
@@ -579,7 +589,7 @@ int main(int argc, char **argv)
 
                 case 'd':
                     {
-                        long val = (long)cmdval;
+                        int val = (int)cmdval;
                         if (fields != 2)
                         {
                             fprintf(stdout

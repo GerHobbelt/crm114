@@ -36,9 +36,8 @@ extern CSL_CELL *mdw;
 //extern ARGPARSE_BLOCK *apb;
 
 
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
+//    the command line argv[0]: the application path/name
+extern char *prog_argv0;
 
 //    the auxilliary input buffer (for WINDOW input)
 extern char *newinputbuf;
@@ -76,13 +75,13 @@ int strntrn(
 
 
 //   basic math evaluator top function
-long strmath(char *buf, long inlen, long maxlen, long *retstat);
+int strmath(char *buf, int inlen, int maxlen, int *retstat);
 
 //   basic math evaluator in RPN
-long strpnmath(char *buf, long inlen, long maxlen, long *retstat);
+int strpnmath(char *buf, int inlen, int maxlen, int *retstat);
 
 //   basic math evaluator in RPN
-long stralmath(char *buf, long inlen, long maxlen, long *retstat);
+int stralmath(char *buf, int inlen, int maxlen, int *retstat);
 
 //   load a file with info in a partially filled out csl cell.
 int crm_load_csl(CSL_CELL *csl);
@@ -97,13 +96,13 @@ void crm_setvar(
         char *filename,                 // file where first defined (or NULL)
         int   filedesc,                 // filedesc of defining file (or NULL)
         char *nametxt,                  // block of text hosting variable name
-        long  nstart,                   // index into nametxt to start varname
-        long  nlen,                     // length of name
+        int nstart,                   // index into nametxt to start varname
+        int nlen,                     // length of name
         char *valtxt,                   // text block hosts the captured value
-        long  vstart,                   // index of start of cap. value
-        long  vlen,                     // length of captured value
-        long  linenumber,               // linenumber (if pgm, else -1)
-        long  lazy_redirects            // if nonzero, this is a lazy redirect
+        int vstart,                   // index of start of cap. value
+        int vlen,                     // length of captured value
+        int linenumber,               // linenumber (if pgm, else -1)
+        int lazy_redirects            // if nonzero, this is a lazy redirect
                );
 
 //   put a variable and a value into the temporary area
@@ -113,26 +112,26 @@ void crm_set_temp_var(char *varname, char *value);
 //   put a variable and a window-based value into the temp area
 void crm_set_windowed_var(char *varname,
         char                   *text,
-        long                    start,
-        long                    len,
-        long                    stmtnum);
+        int                    start,
+        int                    len,
+        int                    stmtnum);
 
 //   put a counted-length var and a data-window-based value into the temp area.
 void crm_set_windowed_nvar(char *varname,
-        long                     varlen,
+        int                     varlen,
         char                    *valtext,
-        long                     start,
-        long                     len,
-        long                     stmtnum);
+        int                     start,
+        int                     len,
+        int                     stmtnum);
 
 //    set a program label.
-void crm_setpgmlabel(long start, long end, long stmtnum);
+void crm_setpgmlabel(int start, int end, int stmtnum);
 
 
 //     preprocess the program... including fixing up semicolons.
 int crm_preprocessor(CSL_CELL *csl, int flags);
 
-void crm_break_statements(long ini, long nchars, CSL_CELL *csl);
+void crm_break_statements(int ini, int nchars, CSL_CELL *csl);
 
 
 //     suck on a stream and put it into a buffer.
@@ -144,7 +143,7 @@ char *crm_mapstream(FILE *instream); // read from instream till
 int crm_invoke(void);
 
 //     look up a variable line number (for GOTOs among other things)
-long crm_lookupvarline(VHT_CELL **vht, char *text, long start, long len);
+int crm_lookupvarline(VHT_CELL **vht, char *text, int start, int len);
 
 
 //      grab_delim_string looks thru char *in for the first occurrence
@@ -161,11 +160,11 @@ long crm_lookupvarline(VHT_CELL **vht, char *text, long start, long len);
 //
 
 char *grab_delimited_string(char *res, char *in, char *delim,
-        long inlen, long reslen, long flags);
+        int inlen, int reslen, int flags);
 
 
 //   expand the variable in the input buffer (according to the :*: operator
-long crm_expandvar(char *buf, long maxlen);
+int crm_expandvar(char *buf, int maxlen);
 
 
 //   look up a vht cell, from a variable name.  Returns the VHT cell
@@ -188,8 +187,8 @@ int crm_vht_lookup(VHT_CELL **vht, const char *vname, int vlen);
 //     unnecessary to return the length of flag, as we already know
 //     what it is.  also modifies nextarg start and length.
 
-long crm_extractflag(const char *cmd, long cmdl, const char *flag, long flagl,
-        long *next, long *nextl);
+int crm_extractflag(const char *cmd, int cmdl, const char *flag, int flagl,
+        int *next, int *nextl);
 
 //      initialize the vht, insert some some useful variables
 void crm_vht_init(int argc, char **argv);
@@ -199,24 +198,24 @@ void crm_vht_init(int argc, char **argv);
 //      mdw gets delta extra characters added or cut at "where".  If the
 //      allocated length is not enough, additional space can be malloced.
 //      Finally, the vht is fixed up so everything still points "correctly".
-void crm_slice_and_splice_window(CSL_CELL *mdw, long where, long delta);
+void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta);
 
 //      Update the start and length of all captured variables whenever
 //      the input buffer gets mangled.  Mangles are all expressed in
 //      the form of a start point, and a delta.
-void crm_updatecaptures(char *text, long loc, long delta);
+void crm_updatecaptures(char *text, int loc, int delta);
 
 //      A helper function to calculate what the proper changes are for
 //      any marked point, given a dot and a delta on that dot.  (sl is
 //      0 for a start, and 1 for an end mark).
-long crm_mangle_offset(long mark, long dot, long delta, long sl);
+int crm_mangle_offset(int mark, int dot, int delta, int sl);
 
 //      Possibly reclaim storage in the given zone.
-long crm_compress_tdw_section(char *oldtext, long oldstart, long oldend);
+int crm_compress_tdw_section(char *oldtext, int oldstart, int oldend);
 
 //      create a new .css file
-int crm_create_cssfile(char *cssfile, long buckets,
-        long major, long minor, long spectrum_start);
+int crm_create_cssfile(char *cssfile, int buckets,
+        int major, int minor, int spectrum_start);
 
 
 //      argslice - given a string, destructively slice it up on whitespace
@@ -226,7 +225,7 @@ int crm_create_cssfile(char *cssfile, long buckets,
 //      the usual ways.  Argc should be initialized with the length
 //      of argv, it is clobbered with the number of args actually used.
 
-long crm_argslice(char *input, int *argc, char **argv);
+int crm_argslice(char *input, int *argc, char **argv);
 
 //    The magic flag parser.  Given a string of input, and the builtin
 //    crm_flags array, returns the flags that are set.
@@ -239,9 +238,9 @@ long crm_argslice(char *input, int *argc, char **argv);
 //
 //      This makes it easy to parse a flag set for presence
 //
-//      Note that this is a long long- which limits us to no more than
+//      Note that this is a uint64_t- which limits us to no more than
 //      64 discrete flags.
-uint64_t crm_flagparse(char *input, long inlen); //  the user input
+uint64_t crm_flagparse(char *input, int inlen); //  the user input
 
 
 //     get the next word in the input.  (note- the regex stops only when
@@ -261,60 +260,56 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 //   the learner... in variant forms...
 int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_neural_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_correlate_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_alt_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
-int crm_expr_scm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
-        long txtstart, long txtlen);
+        char *txt, int start, int len);
 int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 
 
 
 //   The bigger one - classifying...
 int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_neural_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_correlate_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
-int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
-        long txtstart, long txtlen);
+        char *txt, int start, int len);
 int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 
 
 
@@ -322,29 +317,27 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 //   Additional tooling - css_mergeing...
 int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_markov_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_bayes_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_neural_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_correlate_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_winnow_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_hyperspace_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_bit_entropy_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_svm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_sks_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_fscm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
-int crm_expr_scm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
-        long txtstart, long txtlen);
+        char *txt, int start, int len);
 int crm_neural_net_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 
 
 
@@ -352,29 +345,27 @@ int crm_neural_net_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 //   Additional tooling - css_diffing...
 int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_markov_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_bayes_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_neural_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_correlate_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_winnow_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_hyperspace_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_bit_entropy_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_svm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_sks_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_fscm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
-int crm_expr_scm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
-        long txtstart, long txtlen);
+        char *txt, int start, int len);
 int crm_neural_net_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 
 
 
@@ -382,29 +373,27 @@ int crm_neural_net_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 //   Additional tooling - css_backuping...
 int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_markov_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_bayes_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_neural_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_correlate_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_winnow_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_hyperspace_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_bit_entropy_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_svm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_sks_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_fscm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
-int crm_expr_scm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
-        long txtstart, long txtlen);
+        char *txt, int start, int len);
 int crm_neural_net_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 
 
 
@@ -412,29 +401,27 @@ int crm_neural_net_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 //   Additional tooling - css_restoreing...
 int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_markov_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_bayes_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_neural_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_correlate_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_winnow_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_hyperspace_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_bit_entropy_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_svm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_sks_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_fscm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
-int crm_expr_scm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
-        long txtstart, long txtlen);
+        char *txt, int start, int len);
 int crm_neural_net_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 
 
 
@@ -442,29 +429,27 @@ int crm_neural_net_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 //   Additional tooling - css_infoing...
 int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_markov_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_bayes_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_neural_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_correlate_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_winnow_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_hyperspace_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_bit_entropy_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_svm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_sks_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_fscm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
-int crm_expr_scm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
-        long txtstart, long txtlen);
+        char *txt, int start, int len);
 int crm_neural_net_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 
 
 
@@ -472,29 +457,27 @@ int crm_neural_net_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 //   Additional tooling - css_analyzeing...
 int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_markov_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_bayes_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_neural_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_correlate_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_winnow_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_hyperspace_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_bit_entropy_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_svm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_sks_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_fscm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
-int crm_expr_scm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
-        long txtstart, long txtlen);
+        char *txt, int start, int len);
 int crm_neural_net_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 
 
 
@@ -502,29 +485,27 @@ int crm_neural_net_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 //   Additional tooling - css_createing...
 int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_markov_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_bayes_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_neural_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_correlate_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_winnow_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_osb_hyperspace_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_bit_entropy_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_svm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_sks_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 int crm_expr_fscm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
-int crm_expr_scm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
-        long txtstart, long txtlen);
+        char *txt, int start, int len);
 int crm_neural_net_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txt, long start, long len);
+        char *txt, int start, int len);
 
 
 
@@ -541,9 +522,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 //  ISOLATE - do an isolation
 int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
-int crm_isolate_this(long *vptr,
-        char *nametext, long namestart, long namelen,
-        char *valuetext, long valuestart, long valuelen);
+int crm_isolate_this(int *vptr,
+        char *nametext, int namestart, int namelen,
+        char *valuetext, int valuestart, int valuelen);
 
 //  INPUT - do input
 int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -568,7 +549,7 @@ int crm_expr_reduce(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 //      parse a CRM114 statement; this is mostly a setup routine for
 //     the generic parser.
 int crm_statement_parse(char           *in,
-        long                            slen,
+        int                            slen,
         ARGPARSE_BLOCK                 *apb);
 
 
@@ -576,7 +557,7 @@ int crm_statement_parse(char           *in,
 //    to the type of quoting done.
 int crm_generic_parse_line(
         char *txt,                       //   the start of the program line
-        int   len,                       //   how long is the line
+        int   len,                       //   how int is the line
         int   maxargs,                   //   howm many things to search for (max)
         int  *ftype,                     //   type of thing found (index by schars)
         int  *fstart,                    //   starting location of found arg
@@ -585,7 +566,7 @@ int crm_generic_parse_line(
 
 //    and to avoid all the mumbo-jumbo, an easy way to get a copy of
 //    an arg found by the declensional parser.
-void crm_get_pgm_arg(char *to, long tolen, char *from, long fromlen);
+void crm_get_pgm_arg(char *to, int tolen, char *from, int fromlen);
 
 
 
@@ -601,7 +582,7 @@ int crm_vector_tokenize_selector
         const char           *regex,        // the parsing regex (might be ignored)
         int                   regexlen,     //   length of the parsing regex
         const crmhash_t      *coeff_array,  // the pipeline coefficient control array
-        int                   pipe_len,     //  how long a pipeline (== coeff_array row length)
+        int                   pipe_len,     //  how int a pipeline (== coeff_array row length)
         int                   pipe_iters,   //  how many rows are there in coeff_array
         crmhash_t            *features,     // where the output features go
         int                   featureslen,  //   how many output features (max)
@@ -619,7 +600,7 @@ int crm_vector_tokenize
         const char          *regex,           // the parsing regex (might be ignored)
         int                  regexlen,        //   length of the parsing regex
         const crmhash_t     *coeff_array,     // the pipeline coefficient control array
-        int                  pipe_len,        //  how long a pipeline (== coeff_array col height)
+        int                  pipe_len,        //  how int a pipeline (== coeff_array col height)
         int                  pipe_iters,      //  how many rows are there in coeff_array
         crmhash_t           *features,        // where the output features go
         int                  featureslen,     //   how many output features (max)
@@ -631,39 +612,39 @@ int crm_vector_tokenize
 
 //     crm execution-time debugging environment - an interpreter unto itself
 //
-long crm_debugger(void);
+int crm_debugger(void);
 
 //     expand a variable or string with known length (8-bit and null-safe)
 
-long crm_nexpandvar(char *buf, long inlen, long maxlen);
+int crm_nexpandvar(char *buf, int inlen, int maxlen);
 
 //     execute a FAULT triggering.
-long crm_trigger_fault(char *reason);
+int crm_trigger_fault(char *reason);
 
 //     do an microgroom of a hashed file.
-long crm_microgroom(FEATUREBUCKET_TYPE *h,
+int crm_microgroom(FEATUREBUCKET_TYPE *h,
         unsigned char                  *seen_features,
-        long                            hs,
-        unsigned long                   hindex);
+        int                            hs,
+        unsigned int                   hindex);
 void crm_packcss(FEATUREBUCKET_TYPE *h,
         unsigned char *seen_features,
-        long hs, long packstart, long packlen);
+        int hs, int packstart, int packlen);
 void crm_packseg(FEATUREBUCKET_TYPE *h,
         unsigned char *seen_features,
-        long hs, long packstart, long packlen);
+        int hs, int packstart, int packlen);
 //
 //     and microgrooming for winnow files
-long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
+int crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
         unsigned char                                  *seen_features,
-        unsigned long                                   hfsize,
-        unsigned long                                   hindex);
+        unsigned int                                   hfsize,
+        unsigned int                                   hindex);
 
 void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
         unsigned char *xhashes,
-        long hs, long packstart, long packlen);
+        int hs, int packstart, int packlen);
 void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
         unsigned char *xhashes,
-        long hs, long packstart, long packlen);
+        int hs, int packstart, int packlen);
 
 
 
@@ -671,23 +652,23 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
 void crm_output_profile(CSL_CELL *csl);
 
 //     do basic math expressions
-long crm_expr_math(char *instr, unsigned long inlen,
-        char *outstr, unsigned long max_outlen,
-        long *status_p);
+int crm_expr_math(char *instr, unsigned int inlen,
+        char *outstr, unsigned int max_outlen,
+        int *status_p);
 
 //      var-expansion operators
 //             simple (escapes and vars) expansion
-long crm_nexpandvar(char *buf, long inlen, long maxlen);
+int crm_nexpandvar(char *buf, int inlen, int maxlen);
 
 //             complex (escapes, vars, strlens, and maths) expansion
-long crm_qexpandvar(char *buf, long inlen, long maxlen, long *retstat);
+int crm_qexpandvar(char *buf, int inlen, int maxlen, int *retstat);
 
 //              generic (everything, as you want it, bitmasked) expansion
-long crm_zexpandvar(char *buf,
-        long              inlen,
-        long              maxlen,
-        long             *retstat,
-        long              exec_bitmask);
+int crm_zexpandvar(char *buf,
+        int              inlen,
+        int              maxlen,
+        int             *retstat,
+        int              exec_bitmask);
 
 //       Var-restriction operators  (do []-vars, like subscript and regex )
 int crm_restrictvar(char *boxstring,
@@ -719,7 +700,7 @@ char *crm_regversion(void);
 //
 
 
-void *crm_mmap_file(char *filename, long start, long len, long prot, long mode, int advise, long *actual_len);
+void *crm_mmap_file(char *filename, int start, int len, int prot, int mode, int advise, int *actual_len);
 
 void crm_munmap_file(void *where);
 void crm_munmap_file_internal(void *map);
@@ -767,20 +748,20 @@ __attribute__((__noreturn__, __format__(__printf__, 4, 0)));
 #define fatalerror(msg1, msg2) \
     fatalerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
 
-long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2);
-long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
+int fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2);
+int fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
 __attribute__((__format__(__printf__, 4, 5)));
-long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
+int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
 __attribute__((__format__(__printf__, 4, 0)));
 
 //  helper routine for nonfatal errors
 #define nonfatalerror(msg1, msg2) \
     nonfatalerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
 
-long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2);
-long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
+int nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2);
+int nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
 __attribute__((__format__(__printf__, 4, 5)));
-long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
+int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
 __attribute__((__format__(__printf__, 4, 0)));
 
 
@@ -857,7 +838,7 @@ void Win32_syserr_descr(char **dst, size_t max_dst_len, DWORD errorcode, const c
 
 
 #define fatalerror_Win32(msg, arg) \
-    fatalerror_Win32_(SRC_LOC(), msg ": system error %ld(0x%08lx:%s)", arg)
+    fatalerror_Win32_(SRC_LOC(), msg ": system error %d(0x%08x:%s)", arg)
 
 static inline void fatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg, const char *arg)
 {
@@ -868,16 +849,16 @@ static inline void fatalerror_Win32_(int lineno, const char *file, const char *f
 	Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
 
     fatalerror_ex(lineno, file, funcname, msg,
-            (long)error,
-            (long)error,
+            (int)error,
+            (int)error,
             errmsg);
 }
 
 
 #define nonfatalerror_Win32(msg, arg) \
-    nonfatalerror_Win32_(SRC_LOC(), msg ": system error %ld(0x%08lx:%s)", arg)
+    nonfatalerror_Win32_(SRC_LOC(), msg ": system error %d(0x%08x:%s)", arg)
 
-static inline void nonfatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg, const char *arg)
+static inline int nonfatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg, const char *arg)
 {
     DWORD error = GetLastError();
     char errbuf[MAX_PATTERN];
@@ -885,9 +866,9 @@ static inline void nonfatalerror_Win32_(int lineno, const char *file, const char
 	
 	Win32_syserr_descr(&errmsg, MAX_PATTERN, error, arg);
 
-    nonfatalerror_ex(lineno, file, funcname, msg,
-            (long)error,
-            (long)error,
+    return nonfatalerror_ex(lineno, file, funcname, msg,
+            (int)error,
+            (int)error,
             errmsg);
 }
 
@@ -936,6 +917,9 @@ int file_memset(FILE *dst, unsigned char val, int count);
 
 const char *skip_path(const char *srcfile);
 
+// dump var/string/... in src to dst
+int memnCdump(FILE *dst, const char *src, int len);
+
 
 
 void init_stdin_out_err_as_os_handles(void);
@@ -953,7 +937,7 @@ int is_stdout_err_or_null(FILE *f);
  */
 int is_crm_headered_file(FILE *f);
 int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, const char *human_readable_message);
-int crm_correct_for_version_header(void **ptr, long *len);
+int crm_correct_for_version_header(void **ptr, int *len);
 int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_native, CRM_DECODED_PORTA_HEADER_INFO *dst);
 
 

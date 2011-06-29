@@ -1442,10 +1442,10 @@ int hash_selftest(void)
 
 /*****    OLD VERSION NOT 64-BIT PORTABLE DON'T USE ME *********/
 #if 0
-long strnhash(const char *str, long len)
+int strnhash(const char *str, int len)
 {
-    long i;
-    long hval;
+    int i;
+    int hval;
     char *hstr;
     char chtmp;
 
@@ -1490,18 +1490,18 @@ long strnhash(const char *str, long len)
 
 // This is a more portable hash function, compatible with the original.
 // It should return the same value both on 32 and 64 bit architectures.
-// The return type was changed to unsigned long hashes, and the other
+// The return type was changed to unsigned int hashes, and the other
 // parts of the code updated accordingly.
 // -- Fidelis
 
 
 #if 0
-crmhash_t strnhash(const char *str, long len)
+crmhash_t strnhash(const char *str, int len)
 #endif
 static crmhash_t old_crm114_strnhash(const char *str, size_t len)
 {
     size_t i;
-    // unsigned long hval;
+    // unsigned int hval;
     int32_t hval;
     crmhash_t tmp;
 
@@ -1536,7 +1536,7 @@ static crmhash_t old_crm114_strnhash(const char *str, size_t len)
 
 
 
-static crmhash_t old_crm114_fixed_strnhash(const char *str, long len)
+static crmhash_t old_crm114_fixed_strnhash(const char *str, int len)
 {
     size_t i;
     crmhash_t hval;
@@ -1693,14 +1693,14 @@ crmhash64_t strnhash64(const char *str, size_t len)
 typedef struct prototype_crm_mmap_cell
 {
     char       *name;
-    long        start;
-    long        requested_len;
-    long        actual_len;
+    int        start;
+    int        requested_len;
+    int        actual_len;
     crmhash64_t modification_time_hash; // st_mtime - time last modified
     void       *addr;
-    long        prot;   //    prot flags to be used, in the mmap() form
+    int        prot;   //    prot flags to be used, in the mmap() form
                         //    that is, PROT_*, rather than O_*
-    long mode;          //   Mode is things like MAP_SHARED or MAP_LOCKED
+    int mode;          //   Mode is things like MAP_SHARED or MAP_LOCKED
 
     int unmap_count;       //  counter - unmap this after UNMAP_COUNT_MAX
     struct prototype_crm_mmap_cell *next, *prev;
@@ -1709,7 +1709,7 @@ typedef struct prototype_crm_mmap_cell
 #else
     int fd;
 #endif
-    long        user_actual_len;
+    int        user_actual_len;
     void       *user_addr;
 } CRM_MMAP_CELL;
 
@@ -1853,7 +1853,7 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
                 errno_descr(errno)
                      );
     }
-    //  fprintf(stderr, "Munmap_status is %ld\n", munmap_status);
+    //  fprintf(stderr, "Munmap_status is %d\n", munmap_status);
 
 #if 0
     //    Because mmap/munmap doesn't set atime, nor set the "modified"
@@ -2120,10 +2120,10 @@ void crm_munmap_all(void)
 //     prot flags are in the mmap() format - that is, PROT_, not O_ like open.
 //      (it would be nice if length could be self-generated...)
 
-void *crm_mmap_file(char *filename, long start, long requested_len, long prot, long mode, int advise, long *actual_len)
+void *crm_mmap_file(char *filename, int start, int requested_len, int prot, int mode, int advise, int *actual_len)
 {
     CRM_MMAP_CELL *p;
-    long pagesize = 0;
+    int pagesize = 0;
     struct stat statbuf = { 0 };
 
 #if defined (HAVE_MMAP)
@@ -2140,7 +2140,7 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
     {
         untrappableerror_ex(SRC_LOC(),
                 "The system cannot memory map (mmap) any file when "
-                "the requested offset %ld is not on a system page "
+                "the requested offset %d is not on a system page "
                 "boundary.   Tough luck for file '%s'.",
                 start,
                 filename);
@@ -2205,7 +2205,7 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
         open_flags = O_WRONLY;
     open_flags |= O_BINARY;
     if (internal_trace)
-        fprintf(stderr, "MMAP file open mode: %ld\n", (long)open_flags);
+        fprintf(stderr, "MMAP file open mode: %d\n", (int)open_flags);
 
     CRM_ASSERT(strcmp(p->name, filename) == 0);
 
@@ -2337,7 +2337,7 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
         }
     }
     if (internal_trace)
-        fprintf(stderr, "MMAP file open mode: %ld\n", (long)open_flags);
+        fprintf(stderr, "MMAP file open mode: %d\n", (int)open_flags);
 
     CRM_ASSERT(strcmp(p->name, filename) == 0);
 
@@ -2403,7 +2403,7 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
         char one_byte;
 
         char *addr = (char *)p->addr;
-        long i;
+        int i;
         for (i = 0; i < p->actual_len; i += pagesize)
             one_byte = addr[i];
     }
@@ -2567,7 +2567,7 @@ unsigned char *crm_strntrn_invert_string(unsigned char *str,
         }
     CRM_ASSERT(j <= 256);
 
-    //    The final string length is j characters long, in outstr.
+    //    The final string length is j characters int, in outstr.
     //    Don't forget to free() it later.  :-)
 
     //  fprintf(stdout, "Inversion: '%s' RLEN: %d\n", outstr, *rlen);
@@ -2668,7 +2668,7 @@ unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
 //      so "^" and "-" regain their literal meaning
 //
 //      The modification is "in place", and datastrlen gets modified.
-//       This routine returns a long >=0 strlen on success,
+//       This routine returns a int >=0 strlen on success,
 //        and a negative number on failure.
 
 int strntrn(

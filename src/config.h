@@ -492,8 +492,14 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
 
+/* Define to 1 if you have the `_fileno' function. */
+/* #undef HAVE__FILENO */
+
 /* Define to 1 if you have the `_isnan' function. */
 /* #undef HAVE__ISNAN */
+
+/* Define to 1 if you have the `_setmode' function. */
+/* #undef HAVE__SETMODE */
 
 /* Define to 1 if you have the `_set_output_format' function. */
 /* #undef HAVE__SET_OUTPUT_FORMAT */
@@ -585,7 +591,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1945"
+#define TAR_FILENAME_POSTFIX "Ger-1951"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
@@ -680,6 +686,9 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
+
+/* Define to `int' if <sys/types.h> does not define. */
+/* #undef ssize_t */
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if
    such a type exists and the standard includes do not define it. */

@@ -35,8 +35,8 @@
 typedef struct
 {
     char    *regex;
-    regex_t *preg; // ptr to struct of {long, void*}
-    long     regex_len;
+    regex_t *preg; // ptr to struct of {int, void*}
+    int     regex_len;
     int      cflags;
     int      status;
 } REGEX_CACHE_BLOCK;

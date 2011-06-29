@@ -135,3 +135,114 @@ int file_memset(FILE *dst, unsigned char val, int count)
 
 
 
+/*
+   ASCII/C dump a byte sequence to FILE* (probably stdout/stderr).
+
+   This routine is a high-speed (buffered I/O) method for writing out
+   binary data as ASCII 'C' data.
+
+   Use this, for instance, to dump variable names and other tidbits
+   to stderr while diagnosing CRM114 behaviour: it will prevent CRM114
+   from screwing up your console window config (which it would otherwise
+   be capable of doing by spewing binary data to it, including 
+   undesirable ESC/byte sequences).
+
+   Return value: the number of bytes written to FILE*.
+
+                 return -1 when an error occurred (check 'errno' for more info then)
+*/
+int memnCdump(FILE *dst, const char *src, int len)
+{
+	char buf[2048+4];
+	int i;
+	int cnt = 0;
+	int j;
+
+	for (j = i = 0; i < len; i++)
+{
+	int c = (unsigned char)src[i];
+	
+		switch (c)
+{
+case '\\':
+	buf[j++] = '\\';
+	buf[j++] = 'n';
+	break;
+
+	
+case '\n':
+	buf[j++] = '\\';
+	buf[j++] = 'n';
+	break;
+
+case '\r':
+	buf[j++] = '\\';
+	buf[j++] = 'r';
+	break;
+
+case '\t':
+	buf[j++] = '\\';
+	buf[j++] = 't';
+	break;
+
+case '\a':
+	buf[j++] = '\\';
+	buf[j++] = 'a';
+	break;
+
+case '\b':
+	buf[j++] = '\\';
+	buf[j++] = 'b';
+	break;
+
+case '\v':
+	buf[j++] = '\\';
+	buf[j++] = 'v';
+	break;
+
+case '\f':
+	buf[j++] = '\\';
+	buf[j++] = 'f';
+	break;
+
+default:
+	if (crm_isascii(c) && crm_isprint(c))
+	{
+		buf[j++] = c;
+	}
+	else
+	{
+		buf[j++] = '\\';
+		buf[j++] = 'x';
+		CRM_ASSERT((c >> 4) >= 0 && (c >> 4) <= 0xF);
+		buf[j++] = "0123456789abcdef"[c >> 4];
+		buf[j++] = "0123456789abcdef"[c & 0xF];
+	}
+break;
+}
+
+ // biggest chunk to be dumped per char is the HEX escape @ 4 chars
+if (j > WIDTHOF(buf) - 4)
+{
+	if (1 != fwrite(buf, 1, j, dst))
+	{
+		// error!
+		return -1;
+}
+	cnt += j;
+j = 0;
+}
+}
+ // dump remainder of buffer to dst
+if (j > 0)
+{
+	if (1 != fwrite(buf, 1, j, dst))
+	{
+		// error!
+		return -1;
+}
+	cnt += j;
+}
+return cnt;
+}
+

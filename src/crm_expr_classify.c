@@ -88,7 +88,7 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET | CRM_SCM);
+                        | CRM_NEURAL_NET);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -125,10 +125,6 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_learn(csl, apb, txt, start, len);
-    }
-    else if (classifier_flags & CRM_SCM)
-    {
-        retval = crm_expr_scm_learn(csl, apb, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -200,7 +196,7 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET | CRM_SCM);
+                        | CRM_NEURAL_NET);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -237,10 +233,6 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_classify(csl, apb, txt, start, len);
-    }
-    else if (classifier_flags & CRM_SCM)
-    {
-        retval = crm_expr_scm_classify(csl, apb, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -313,7 +305,7 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET | CRM_SCM);
+                        | CRM_NEURAL_NET);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -350,10 +342,6 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_css_merge(csl, apb, txt, start, len);
-    }
-    else if (classifier_flags & CRM_SCM)
-    {
-        retval = crm_expr_scm_css_merge(csl, apb, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -428,7 +416,7 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET | CRM_SCM);
+                        | CRM_NEURAL_NET);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -465,10 +453,6 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_css_diff(csl, apb, txt, start, len);
-    }
-    else if (classifier_flags & CRM_SCM)
-    {
-        retval = crm_expr_scm_css_diff(csl, apb, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -541,7 +525,7 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET | CRM_SCM);
+                        | CRM_NEURAL_NET);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -578,10 +562,6 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_css_backup(csl, apb, txt, start, len);
-    }
-    else if (classifier_flags & CRM_SCM)
-    {
-        retval = crm_expr_scm_css_backup(csl, apb, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -653,7 +633,7 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET | CRM_SCM);
+                        | CRM_NEURAL_NET);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -690,10 +670,6 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_css_restore(csl, apb, txt, start, len);
-    }
-    else if (classifier_flags & CRM_SCM)
-    {
-        retval = crm_expr_scm_css_restore(csl, apb, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -766,7 +742,7 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET | CRM_SCM);
+                        | CRM_NEURAL_NET);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -803,10 +779,6 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_css_info(csl, apb, txt, start, len);
-    }
-    else if (classifier_flags & CRM_SCM)
-    {
-        retval = crm_expr_scm_css_info(csl, apb, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -879,7 +851,7 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET | CRM_SCM);
+                        | CRM_NEURAL_NET);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -916,10 +888,6 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_css_analyze(csl, apb, txt, start, len);
-    }
-    else if (classifier_flags & CRM_SCM)
-    {
-        retval = crm_expr_scm_css_analyze(csl, apb, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {
@@ -992,7 +960,7 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
                         | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
-                        | CRM_NEURAL_NET | CRM_SCM);
+                        | CRM_NEURAL_NET);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
@@ -1029,10 +997,6 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_css_create(csl, apb, txt, start, len);
-    }
-    else if (classifier_flags & CRM_SCM)
-    {
-        retval = crm_expr_scm_css_create(csl, apb, txt, start, len);
     }
     else if (classifier_flags & CRM_NEURAL_NET)
     {

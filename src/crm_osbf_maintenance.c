@@ -67,14 +67,14 @@ void crm_osbf_set_microgroom(int value)
 //     already too full, we execute a 'zero unity bins'.
 //
 void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long                                hindex)
+        unsigned int                                hindex)
 {
-    long i, j, k;
-    static long microgroom_count = 0;
-    long packstart;
-    long packlen;
-    long zeroed_countdown, max_zeroed_buckets;
-    long min_value, min_value_any, distance, max_distance;
+    int i, j, k;
+    static int microgroom_count = 0;
+    int packstart;
+    int packlen;
+    int zeroed_countdown, max_zeroed_buckets;
+    int min_value, min_value_any, distance, max_distance;
     int groom_any = 0;
     OSBF_FEATUREBUCKET_STRUCT *h;
 
@@ -96,7 +96,7 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
     {
         if (microgroom_count == 1)
             fprintf(stderr, "CSS file too full: microgrooming this css chain: ");
-        fprintf(stderr, " %ld ", microgroom_count);
+        fprintf(stderr, " %d ", microgroom_count);
     }
 
     //   micropack - start at initial chain start, move to back of
@@ -225,18 +225,18 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
     max_distance = 1;
 
     /* zero up to 50% of packlen */
-    /* max_zeroed_buckets = (long) (0.5 * packlen + 0.5); */
+    /* max_zeroed_buckets = (int) (0.5 * packlen + 0.5); */
     max_zeroed_buckets =  microgroom_stop_after;
     zeroed_countdown = max_zeroed_buckets;
 
-    /*fprintf(stderr, "packstart: %ld,  packlen: %ld, max_zeroed_buckets: %ld\n",
+    /*fprintf(stderr, "packstart: %d,  packlen: %d, max_zeroed_buckets: %d\n",
      *  packstart, packlen, max_zeroed_buckets); */
 
     // while no bucket is zeroed...
     while (zeroed_countdown == max_zeroed_buckets)
     {
         /*
-         * fprintf(stderr, "Start: %ld, stop_after: %ld, max_distance: %ld\n", packstart, microgroom_stop_after, max_distance);
+         * fprintf(stderr, "Start: %d, stop_after: %d, max_distance: %d\n", packstart, microgroom_stop_after, max_distance);
          */
         i = packstart;
         while (BUCKET_IN_CHAIN(h[i]) && zeroed_countdown > 0)
@@ -268,7 +268,7 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
     }
 
     /*
-     * fprintf(stderr, "Leaving microgroom: %ld buckets zeroed at distance %ld\n", microgroom_stop_after - zeroed_countdown, max_distance - 1);
+     * fprintf(stderr, "Leaving microgroom: %d buckets zeroed at distance %d\n", microgroom_stop_after - zeroed_countdown, max_distance - 1);
      */
 
     //   now we pack the buckets
@@ -276,7 +276,7 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
 }
 
 void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long packstart, unsigned long packlen)
+        unsigned int packstart, unsigned int packlen)
 {
 //    How we pack...
 //
@@ -305,9 +305,9 @@ void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *header,
 }
 
 void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long packstart, unsigned long packlen)
+        unsigned int packstart, unsigned int packlen)
 {
-    unsigned long ifrom, ito;
+    unsigned int ifrom, ito;
     crmhash_t thash, tkey;
     OSBF_FEATUREBUCKET_STRUCT *h;
 
@@ -315,7 +315,7 @@ void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *header,
     h = (OSBF_FEATUREBUCKET_STRUCT *)header + header->buckets_start;
 
     if (internal_trace)
-        fprintf(stderr, " < %ld %ld >", packstart, packlen);
+        fprintf(stderr, " < %d %d >", packstart, packlen);
 
     // Our slot values are now somewhat in disorder because empty
     // buckets may now have been inserted into a chain where there used
@@ -336,7 +336,7 @@ void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *header,
         else
         {
             ito = thash % header->buckets;
-            // fprintf(stderr, "a %ld", ito);
+            // fprintf(stderr, "a %d", ito);
 
             while (BUCKET_IN_CHAIN(h[ito])
                    && !BUCKET_HASH_COMPARE(h[ito], thash, tkey))
@@ -376,8 +376,8 @@ void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *header,
 }
 
 /* get next bucket index */
-unsigned long crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long                                          hindex)
+unsigned int crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned int                                          hindex)
 {
     hindex++;
     if (hindex >= header->buckets)
@@ -386,10 +386,10 @@ unsigned long crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
 }
 
 /* get index of the last bucket in a chain */
-unsigned long crm_osbf_last_in_chain(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long                                            hindex)
+unsigned int crm_osbf_last_in_chain(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned int                                            hindex)
 {
-    unsigned long wraparound;
+    unsigned int wraparound;
     OSBF_FEATUREBUCKET_STRUCT *hashes;
 
     hashes = (OSBF_FEATUREBUCKET_STRUCT *)header + header->buckets_start;
@@ -419,8 +419,8 @@ unsigned long crm_osbf_last_in_chain(OSBF_FEATURE_HEADER_STRUCT *header,
 
 
 /* get previous bucket index */
-unsigned long crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long                                          hindex)
+unsigned int crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned int                                          hindex)
 {
     if (hindex == 0)
         hindex = header->buckets - 1;
@@ -430,10 +430,10 @@ unsigned long crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
 }
 
 /* get index of the first bucket in a chain */
-unsigned long crm_osbf_first_in_chain(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long                                             hindex)
+unsigned int crm_osbf_first_in_chain(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned int                                             hindex)
 {
-    unsigned long wraparound;
+    unsigned int wraparound;
     OSBF_FEATUREBUCKET_STRUCT *hashes;
 
     hashes = (OSBF_FEATUREBUCKET_STRUCT *)header + header->buckets_start;
@@ -461,11 +461,11 @@ unsigned long crm_osbf_first_in_chain(OSBF_FEATURE_HEADER_STRUCT *header,
     return crm_osbf_next_bindex(header, hindex);
 }
 
-unsigned long crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long hash, unsigned long key)
+unsigned int crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned int hash, unsigned int key)
 {
     OSBF_FEATUREBUCKET_STRUCT *hashes;
-    unsigned long hindex, start;
+    unsigned int hindex, start;
 
     hashes = (OSBF_FEATUREBUCKET_STRUCT *)header + header->buckets_start;
     hindex = start = hash % header->buckets;
@@ -486,7 +486,7 @@ unsigned long crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
 }
 
 void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long bindex, int delta)
+        unsigned int bindex, int delta)
 {
     OSBF_FEATUREBUCKET_STRUCT *hashes;
 
@@ -502,7 +502,7 @@ void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
     }
     else if (delta < 0 && GET_BUCKET_VALUE(hashes[bindex]) <= -delta)
     {
-        long i, j, packlen;
+        int i, j, packlen;
 
         BUCKET_RAW_VALUE(hashes[bindex]) = 0;
         BUCKET_HASH(hashes[bindex]) = 0;
@@ -530,10 +530,10 @@ void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
 }
 
 void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
-        unsigned long bindex, unsigned long hash,
-        unsigned long key, int value)
+        unsigned int bindex, unsigned int hash,
+        unsigned int key, int value)
 {
-    unsigned long hindex, distance;
+    unsigned int hindex, distance;
     OSBF_FEATUREBUCKET_STRUCT *hashes;
 
     if (microgroom_chain_length == 0)
@@ -574,12 +574,12 @@ void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
 
 static OSBF_HEADER_UNION hu = { { { 0 } } };
 
-int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets,
-        unsigned long major, unsigned long minor,
-        unsigned long spectrum_start)
+int crm_osbf_create_cssfile(char *cssfile, unsigned int buckets,
+        unsigned int major, unsigned int minor,
+        unsigned int spectrum_start)
 {
     FILE *f;
-    long i;
+    int i;
     OSBF_FEATUREBUCKET_STRUCT feature = { 0, 0, 0 };
 
     if (user_trace)
@@ -587,7 +587,7 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets,
     f = fopen(cssfile, "wb");
     if (!f)
     {
-        long q;
+        int q;
         q = fatalerror("Couldn't open the new .cfc file for writing; file = ",
                 cssfile);
         return q;
@@ -605,7 +605,7 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets,
         }
 
         // Set the header.
-        *((unsigned long *)hu.header.version) = major;  // quick hack for now...
+        *((unsigned int *)hu.header.version) = major;  // quick hack for now...
         hu.header.flags = minor;
         hu.header.learnings = 0;
         hu.header.buckets = buckets;

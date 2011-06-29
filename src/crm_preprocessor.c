@@ -29,8 +29,8 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
 {
     int lflag;
     int status;
-    long i, j;
-    long done;
+    int i, j;
+    int done;
     regex_t preg;
     int numinserts = 0;
     int maxinserts = DEFAULT_MAX_INSERTS;
@@ -92,13 +92,13 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     if (internal_trace)
     {
         fprintf(stderr,
-                "After first pass, breaking statements we have -->>%s<<--\nlength %ld\n",
+                "After first pass, breaking statements we have -->>%s<<--\nlength %d\n",
                 csl->filetext, csl->nchars);
     }
 
     while (!done)
     {
-        long filenamelen;
+        int filenamelen;
         j  = crm_regexec(&preg, csl->filetext, csl->nchars,
                 3, matches, lflag, NULL);
         if (j != 0)
@@ -147,7 +147,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
             //   gaskets on the filesystem or not:
             //
             if (filenamelen > MAX_FILE_NAME_LEN - 1)
-                untrappableerror("INSERT Filename was too long!  Here's the"
+                untrappableerror("INSERT Filename was too int!  Here's the"
                                  "first part of it: ", insertfilename);
 
 #if 0
@@ -303,10 +303,10 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
 
                 //   Mark the new length of the csl text.
                 if (internal_trace)
-                    fprintf(stderr, "Old length: %ld, ", csl->nchars);
+                    fprintf(stderr, "Old length: %d, ", csl->nchars);
                 csl->nchars += ecsl->nchars;
                 if (internal_trace)
-                    fprintf(stderr, "new length: %ld\n ", csl->nchars);
+                    fprintf(stderr, "new length: %d\n ", csl->nchars);
 
                 //    Now we clean up (de-malloc all that memory)
                 free_stack_item(ecsl);
@@ -332,7 +332,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 //                insertfilename);
                 //
                 char faulttext[MAX_VARNAME];
-                long textlen;
+                int textlen;
 
                 if (user_trace)
                 {
@@ -372,7 +372,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                         textlen);
                 //   Mark the new length of the csl text.
                 if (internal_trace)
-                    fprintf(stderr, "Added %ld chars to crmprogram\n",
+                    fprintf(stderr, "Added %d chars to crmprogram\n",
                             textlen);
                 csl->nchars += textlen;
             }
@@ -390,7 +390,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
     //
     {
         char myhash[32];
-        sprintf(myhash, "%08lX", (unsigned long)strnhash(csl->filetext, csl->nchars));
+        sprintf(myhash, "%08lX", (unsigned long int)strnhash(csl->filetext, csl->nchars));
         myhash[8] = 0;
         crm_set_temp_var(":_pgm_hash:", myhash);
     }
@@ -415,7 +415,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
 //     Note that this is an "in-place" mutilation, not a copying mutilation.
 //
 
-void crm_break_statements(long ini, long nchars, CSL_CELL *csl)
+void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
 {
     int seennewline;
     int in_comment;
@@ -423,7 +423,7 @@ void crm_break_statements(long ini, long nchars, CSL_CELL *csl)
     int paren_nest, angle_nest, box_nest, slash_nest;
     int var_delim;
     int statement_state;
-    long i;
+    int i;
 
     seennewline = 1;
     neednewline = 0;

@@ -211,7 +211,7 @@
 /* Define to 1 if you have the `logl' function. */
 #define HAVE_LOGL 1
 
-/* compiler understands long long */
+/* compiler understands int int */
 #define HAVE_LONG_LONG 1
 
 /* Define to 1 if you have the `madvise' function. */
@@ -492,8 +492,14 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
 
+/* Define to 1 if you have the `_fileno' function. */
+/* #undef HAVE__FILENO */
+
 /* Define to 1 if you have the `_isnan' function. */
 /* #undef HAVE__ISNAN */
+
+/* Define to 1 if you have the `_setmode' function. */
+/* #undef HAVE__SETMODE */
 
 /* Define to 1 if you have the `_set_output_format' function. */
 /* #undef HAVE__SET_OUTPUT_FORMAT */
@@ -680,6 +686,9 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
+
+/* Define to `int' if <sys/types.h> does not define. */
+/* #undef ssize_t */
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if
  * such a type exists and the standard includes do not define it. */

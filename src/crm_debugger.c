@@ -68,9 +68,9 @@ void free_debugger_data(void)
 //         -1: exit immediately
 //         0: continue
 
-long crm_debugger(void)
+int crm_debugger(void)
 {
-    long ichar;
+    int ichar;
 
     if (!mytty)
     {
@@ -97,7 +97,7 @@ long crm_debugger(void)
     }
 
     if (csl->mct[csl->cstmt]->stmt_break > 0)
-        fprintf(stderr, "Breakpoint tripped at statement %ld\n", csl->cstmt);
+        fprintf(stderr, "Breakpoint tripped at statement %d\n", csl->cstmt);
 
     for ( ; ;)
     {
@@ -424,10 +424,9 @@ long crm_debugger(void)
 
                         j = csl->mct[stmtnum]->start;
                         stmt_len = csl->mct[stmtnum + 1]->start - j;
-                        if (stmt_len > 0)
-                        {
-                            fprintf(stderr, "%.*s", stmt_len, &csl->filetext[j]);
-                        }
+			memnCdump(stderr, 
+				csl->filetext + j,
+				stmt_len);
 #endif
                     }
                 }
@@ -436,10 +435,10 @@ long crm_debugger(void)
 
         case 'j':
             {
-                long nextstmt;
-                long i;
-                long vindex;
-                i = sscanf(&inbuf[1], "%ld", &nextstmt);
+                int nextstmt;
+                int i;
+                int vindex;
+                i = sscanf(&inbuf[1], "%d", &nextstmt);
                 if (i == 0)
                 {
                     //    maybe the user put in a label?
@@ -453,7 +452,7 @@ long crm_debugger(void)
                     if (vht[vindex] == NULL)
                     {
                         fprintf(stderr, "No label '%s' in this program.  ", inbuf);
-                        fprintf(stderr, "Staying at line %ld\n", csl->cstmt);
+                        fprintf(stderr, "Staying at line %d\n", csl->cstmt);
                         nextstmt = csl->cstmt;
                     }
                     else
@@ -468,12 +467,12 @@ long crm_debugger(void)
                 if (nextstmt >= csl->nstmts)
                 {
                     nextstmt = csl->nstmts;
-                    fprintf(stderr, "last statement is %ld, assume you meant that.\n",
+                    fprintf(stderr, "last statement is %d, assume you meant that.\n",
                             csl->nstmts);
                 }
                 if (csl->cstmt != nextstmt)
                 {
-                    fprintf(stderr, "Next statement is statement %ld\n", nextstmt);
+                    fprintf(stderr, "Next statement is statement %d\n", nextstmt);
                 }
                 csl->cstmt = nextstmt;
             }
@@ -482,11 +481,11 @@ long crm_debugger(void)
         case 'b':
             {
                 //  is there a breakpoint to make?
-                long breakstmt;
-                long i;
-                long vindex;
+                int breakstmt;
+                int i;
+                int vindex;
                 breakstmt = -1;
-                i = sscanf(&inbuf[1], "%ld", &breakstmt);
+                i = sscanf(&inbuf[1], "%d", &breakstmt);
                 if (i == 0)
                 {
                     //    maybe the user put in a label?
@@ -497,7 +496,7 @@ long crm_debugger(void)
                     memmove(inbuf, &inbuf[1 + tstart], tlen);
                     inbuf[tlen] = 0;
                     vindex = crm_vht_lookup(vht, inbuf, tlen);
-                    fprintf(stderr, "vindex = %ld\n", vindex);
+                    fprintf(stderr, "vindex = %d\n", vindex);
                     if (vht[vindex] == NULL)
                     {
                         fprintf(stderr, "No label '%s' in this program.  ", inbuf);
@@ -515,18 +514,18 @@ long crm_debugger(void)
                 if (breakstmt >= csl->nstmts)
                 {
                     breakstmt = csl->nstmts;
-                    fprintf(stderr, "last statement is %ld, assume you meant that.\n",
+                    fprintf(stderr, "last statement is %d, assume you meant that.\n",
                             csl->nstmts);
                 }
                 csl->mct[breakstmt]->stmt_break = 1 - csl->mct[breakstmt]->stmt_break;
                 if (csl->mct[breakstmt]->stmt_break == 1)
                 {
-                    fprintf(stderr, "Setting breakpoint at statement %ld\n",
+                    fprintf(stderr, "Setting breakpoint at statement %d\n",
                             breakstmt);
                 }
                 else
                 {
-                    fprintf(stderr, "Clearing breakpoint at statement %ld\n",
+                    fprintf(stderr, "Clearing breakpoint at statement %d\n",
                             breakstmt);
                 }
             }
@@ -571,14 +570,14 @@ long crm_debugger(void)
 
         case 'f':
             csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-            fprintf(stderr, "Forward to }, next statement : %ld\n", csl->cstmt);
+            fprintf(stderr, "Forward to }, next statement : %d\n", csl->cstmt);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
 
             return 1;
 
         case 'l':
             csl->cstmt = csl->mct[csl->cstmt]->liaf_index;
-            fprintf(stderr, "Backward to {, next statement : %ld\n", csl->cstmt);
+            fprintf(stderr, "Backward to {, next statement : %d\n", csl->cstmt);
 
             return 1;
 

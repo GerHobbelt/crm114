@@ -255,10 +255,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\crm_expr_clump_nn.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\crm_expr_file_io.c"
 				>
 			</File>
@@ -355,10 +351,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\crm_strcompress.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\crm_util_errorhandlers.c"
 				>
 				<FileConfiguration
@@ -422,6 +414,10 @@
 			>
 			<File
 				RelativePath="..\src\config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\config_BillY.h"
 				>
 			</File>
 			<File
@@ -933,6 +929,38 @@
 			<Filter
 				Name="win32"
 				>
+			</Filter>
+			<Filter
+				Name="docs"
+				>
+				<File
+					RelativePath="..\docs\Makefile.am"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="examples"
+				>
+				<File
+					RelativePath="..\examples\Makefile.am"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="tests"
+				>
+				<File
+					RelativePath="..\tests\Makefile.am"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="mailfilter"
+				>
+				<File
+					RelativePath="..\mailfilter\Makefile.am"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter

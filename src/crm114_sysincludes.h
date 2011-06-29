@@ -538,7 +538,7 @@ clock_t times(struct tms *buf);
 #endif
 
 #ifndef HAVE_TRUNCATE
-int truncate(const char *filepath, long filesize); /* [i_a] Win32 doesn't come with a truncate() function! */
+int truncate(const char *filepath, long int filesize); /* [i_a] Win32 doesn't come with a truncate() function! */
 #endif
 
 

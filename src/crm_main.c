@@ -30,41 +30,41 @@
 
 
 /* [i_a] no variable instantiation in a common header file */
-long vht_size = 0;
+int vht_size = 0;
 
-long cstk_limit = 0;
+int cstk_limit = 0;
 
-long max_pgmlines = 0;
+int max_pgmlines = 0;
 
-long max_pgmsize = 0;
+int max_pgmsize = 0;
 
-long user_trace = 0;
+int user_trace = 0;
 
-long internal_trace = 0;
+int internal_trace = 0;
 
 int debug_countdown = 0;
 
-long cmdline_break = 0;
+int cmdline_break = 0;
 
-long cycle_counter = 0;
+int cycle_counter = 0;
 
-long ignore_environment_vars = 0;
+int ignore_environment_vars = 0;
 
-long data_window_size = 0;
+int data_window_size = 0;
 
-long sparse_spectrum_file_length = 0;
+int sparse_spectrum_file_length = 0;
 
-long microgroom_chain_length = 0;
+int microgroom_chain_length = 0;
 
-long microgroom_stop_after = 0;
+int microgroom_stop_after = 0;
 
 double min_pmax_pmin_ratio = 0.0;
 
-long profile_execution = 0;
+int profile_execution = 0;
 
-long prettyprint_listing = 0;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
+int prettyprint_listing = 0;  //  0= none, 1 = basic, 2 = expanded, 3 = parsecode
 
-long engine_exit_base = 0;  //  All internal errors will use this number or higher;
+int engine_exit_base = 0;  //  All internal errors will use this number or higher;
 //  the user programs can use lower numbers freely.
 
 
@@ -73,7 +73,7 @@ long engine_exit_base = 0;  //  All internal errors will use this number or high
 //        = 1 no extended (non-EVAL) math, use RPN
 //        = 2 extended (everywhere) math, use algebraic notation
 //        = 3 extended (everywhere) math, use RPN
-long q_expansion_mode = 0;
+int q_expansion_mode = 0;
 
 int selected_hashfunction = 0;  //  0 = default
 
@@ -105,9 +105,8 @@ CSL_CELL *mdw = NULL;
 
 
 
-//    the command line argc, argv
-int prog_argc = 0;
-char **prog_argv = NULL;
+//    the app path/name
+char *prog_argv0 = NULL;
 
 //    the auxilliary input buffer (for WINDOW input)
 char *newinputbuf = NULL;
@@ -309,9 +308,13 @@ int main(int argc, char **argv)
     _set_output_format(_TWO_DIGIT_EXPONENT);     // force MSVC (& others?) to produce floating point %f with 2 digits for power component instead of 3 for easier comparison with 'knowngood'.
 #endif
 
-    //   copy argc and argv into global statics...
-    prog_argc = argc;
-    prog_argv = argv;
+	// force MSwin/Win32 console I/O into binary mode: treat \r\n and \n as completely different - like it is on *NIX boxes!
+#if defined(HAVE__SETMODE) && defined(HAVE__FILENO) && defined(O_BINARY)
+	_setmode(_fileno(crm_stdin), O_BINARY);
+#endif
+
+    //   copy program path/name into global static...
+    prog_argv0 = argv[0];
 
     vht_size = DEFAULT_VHT_SIZE;
     cstk_limit = DEFAULT_CSTK_LIMIT;
@@ -527,7 +530,7 @@ int main(int argc, char **argv)
             i++;  // move to the next arg
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%ld", &max_pgmlines))
+                if (1 != sscanf(argv[i], "%d", &max_pgmlines))
                 {
                     untrappableerror("Failed to decode the numeric -P argument [number of program lines]: ", argv[i]);
                 }
@@ -535,8 +538,8 @@ int main(int argc, char **argv)
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting max prog lines to %ld (%ld bytes)\n"
-                       , max_pgmlines, sizeof(char) * max_pgmsize);
+                fprintf(stderr, "Setting max prog lines to %d (%d bytes)\n"
+                       , max_pgmlines, (int)(sizeof(char) * max_pgmsize));
             }
             goto end_command_line_parse_loop;
         }
@@ -547,14 +550,14 @@ int main(int argc, char **argv)
             i++;  // move to the next arg
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%ld", &prettyprint_listing))
+                if (1 != sscanf(argv[i], "%d", &prettyprint_listing))
                 {
                     untrappableerror("Failed to decode the numeric -l argument [listing level]: ", argv[i]);
                 }
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting listing level to %ld\n"
+                fprintf(stderr, "Setting listing level to %d\n"
                        , prettyprint_listing);
             }
             goto end_command_line_parse_loop;
@@ -576,7 +579,7 @@ int main(int argc, char **argv)
             i++;  // move to the next arg
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%ld", &q_expansion_mode))
+                if (1 != sscanf(argv[i], "%d", &q_expansion_mode))
                 {
                     untrappableerror("Failed to decode the numeric -q argument [expansion mode]: ", argv[i]);
                 }
@@ -589,7 +592,7 @@ int main(int argc, char **argv)
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting math mode to %ld ", q_expansion_mode);
+                fprintf(stderr, "Setting math mode to %d ", q_expansion_mode);
                 if (q_expansion_mode == 0)
                     fprintf(stderr, "(algebraic, only in EVAL\n");
                 else if (q_expansion_mode == 1)
@@ -608,7 +611,7 @@ int main(int argc, char **argv)
             i++; // move to the next arg
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%ld", &data_window_size))
+                if (1 != sscanf(argv[i], "%d", &data_window_size))
                 {
                     untrappableerror("Failed to decode the numeric -w argument [data windows size]: ", argv[i]);
                 }
@@ -620,7 +623,7 @@ int main(int argc, char **argv)
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting max data window to %ld chars\n"
+                fprintf(stderr, "Setting max data window to %d chars\n"
                        , data_window_size);
             }
             goto end_command_line_parse_loop;
@@ -631,13 +634,13 @@ int main(int argc, char **argv)
         {
             i++;  // move to the next arg
             if (i < argc
-                && sscanf(argv[i], "%ld", &sparse_spectrum_file_length))
+                && sscanf(argv[i], "%d", &sparse_spectrum_file_length))
             {
                 if (strcmp(argv[i - 1], "-S") == 0)
                 {
-                    long k;
+                    int k;
 
-                    k = (long)floor(log2(sparse_spectrum_file_length - 1));
+                    k = (int)floor(log2(sparse_spectrum_file_length - 1));
                     while ((2 << k) + 1 < sparse_spectrum_file_length)
                     {
                         k++;
@@ -661,7 +664,7 @@ int main(int argc, char **argv)
 
             if (user_trace)
             {
-                fprintf(stderr, "Setting sparse spectrum length to %ld bins\n"
+                fprintf(stderr, "Setting sparse spectrum length to %d bins\n"
                        , sparse_spectrum_file_length);
             }
             goto end_command_line_parse_loop;
@@ -673,14 +676,14 @@ int main(int argc, char **argv)
             i++;  // move to the next arg
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%ld", &cmdline_break))
+                if (1 != sscanf(argv[i], "%d", &cmdline_break))
                 {
                     untrappableerror("Failed to decode the numeric -b argument [breakpoint line #]: ", argv[i]);
                 }
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting the command-line break to line %ld\n"
+                fprintf(stderr, "Setting the command-line break to line %d\n"
                        , cmdline_break);
             }
             goto end_command_line_parse_loop;
@@ -692,14 +695,14 @@ int main(int argc, char **argv)
             i++;  // move to the next arg
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%ld", &engine_exit_base))
+                if (1 != sscanf(argv[i], "%d", &engine_exit_base))
                 {
                     untrappableerror("Failed to decode the numeric -E argument [engine exit base value]: ", argv[i]);
                 }
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting the engine exit base value to %ld\n"
+                fprintf(stderr, "Setting the engine exit base value to %d\n"
                        , engine_exit_base);
             }
             goto end_command_line_parse_loop;
@@ -957,14 +960,14 @@ int main(int argc, char **argv)
             i++;  // move to the next arg
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%ld", &microgroom_stop_after))
+                if (1 != sscanf(argv[i], "%d", &microgroom_stop_after))
                 {
                     untrappableerror("Failed to decode the numeric -m argument [microgroom stop after #]: ", argv[i]);
                 }
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting microgroom_stop_after to %ld\n"
+                fprintf(stderr, "Setting microgroom_stop_after to %d\n"
                        , microgroom_stop_after);
             }
             if (microgroom_stop_after <= 0)  //  if value <= 0 set it to default
@@ -978,14 +981,14 @@ int main(int argc, char **argv)
             i++;  // move to the next arg
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%ld", &microgroom_chain_length))
+                if (1 != sscanf(argv[i], "%d", &microgroom_chain_length))
                 {
                     untrappableerror("Failed to decode the numeric -M argument [microgroom chain length]: ", argv[i]);
                 }
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting microgroom_chain_length to %ld\n"
+                fprintf(stderr, "Setting microgroom_chain_length to %d\n"
                        , microgroom_chain_length);
             }
             if (microgroom_chain_length < 5)  //  if value <= 5 set it to default
@@ -1197,7 +1200,7 @@ int main(int argc, char **argv)
         if (csl->filename == NULL)
         {
             if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
-                untrappableerror("Invalid filename, ", "filename too long.");
+                untrappableerror("Invalid filename, ", "filename too int.");
             csl->filename = argv[i];
             csl->filename_allocated = 0;
             if (user_trace)
@@ -1227,7 +1230,7 @@ end_command_line_parse_loop:
             {
                 if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
                     untrappableerror("Couldn't open the file, "
-                                    , "filename too long.");
+                                    , "filename too int.");
                 csl->filename = argv[i];
                 csl->filename_allocated = 0;
                 i = argc;
@@ -1308,8 +1311,8 @@ end_command_line_parse_loop:
         csl->hash = strnhash(csl->filetext, csl->nchars);
         if (user_trace)
         {
-            fprintf(stderr, "Hash of program: 0x%08lX, length is %ld bytes: %s\n-->\n%s"
-                   , (unsigned long)csl->hash, csl->nchars, csl->filename, csl->filetext);
+            fprintf(stderr, "Hash of program: 0x%08lX, length is %d bytes: %s\n-->\n%s"
+                   , (unsigned long int)csl->hash, csl->nchars, csl->filename, csl->filetext);
         }
     }
 
@@ -1444,8 +1447,8 @@ end_command_line_parse_loop:
     //   we don't want to merge these areas.
     //
     {
-        long dwname;
-        long dwlen;
+        int dwname;
+        int dwlen;
         tdw->filetext[tdw->nchars] = '\n';
         tdw->nchars++;
         dwlen = strlen(":_dw:");
@@ -1478,8 +1481,8 @@ end_command_line_parse_loop:
 #define USE_COLON_ISO_COLON
 #ifdef USE_COLON_ISO_COLON
     {
-        long isoname;
-        long isolen;
+        int isoname;
+        int isolen;
         isolen = strlen(":_iso:");
         isoname = tdw->nchars;
         //strcat (tdw->filetext, ":_dw:");

@@ -23,10 +23,10 @@
 
 
 
-static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
-        unsigned long                                       hs,
-        unsigned long                                       start,
-        unsigned long                                       end);
+static int crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
+        unsigned int                                       hs,
+        unsigned int                                       start,
+        unsigned int                                       end);
 
 //     How to microgroom a .css file that's getting full
 //
@@ -44,22 +44,22 @@ static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
 //     how the file looks, and if necessary, we get rid of some data.
 //     R is the "MICROGROOM_RESCALE_FACTOR"
 //
-long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
+int crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
         unsigned char                                  *seen_features,
-        unsigned long                                   hs,
-        unsigned long                                   hindex)
+        unsigned int                                   hs,
+        unsigned int                                   hindex)
 {
-    long i, j, k;
-    static long microgroom_count = 0;
-    long steps;
-    long packstart;   // first used bucket in the chain
-    long packlen;     // # of used buckets in the chain
-    long packend;     // last used bucket in the chain
+    int i, j, k;
+    static int microgroom_count = 0;
+    int steps;
+    int packstart;   // first used bucket in the chain
+    int packlen;     // # of used buckets in the chain
+    int packend;     // last used bucket in the chain
     //  for stochastic grooming we need a place for the random...
-    unsigned long randy;
-    long zeroed_countdown;
-    long actually_zeroed;
-    long force_rescale;
+    unsigned int randy;
+    int zeroed_countdown;
+    int actually_zeroed;
+    int force_rescale;
 
     j = 0;
     k = 0;
@@ -74,7 +74,7 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
     {
         if (microgroom_count == 1)
             fprintf(stderr, "CSS Winnow file too full: microgrooming chain: ");
-        fprintf(stderr, " %ld ",
+        fprintf(stderr, " %d ",
                 microgroom_count);
     }
 
@@ -259,10 +259,10 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
 //
 //      crm_zap_winnow_css - the distance-heuristic microgroomer core.
 
-static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
-        unsigned long                                       hs,
-        unsigned long                                       start,
-        unsigned long                                       end)
+static int crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
+        unsigned int                                       hs,
+        unsigned int                                       start,
+        unsigned int                                       end)
 {
     //     A question- what's the ratio deprecation ratio between
     //     "distance from original" vs. low point value?  The original
@@ -288,15 +288,15 @@ static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
 #define DWEIGHT2 0.0
 
     double vcut, vcmin;
-    long zcountdown;
-    unsigned long packlen;
-    unsigned long k;
-    long actually_zeroed;
+    int zcountdown;
+    unsigned int packlen;
+    unsigned int k;
+    int actually_zeroed;
 
     vcmin = 1000000.0;
     vcut = 1.0;
     packlen = end - start;
-    //  fprintf(stderr, " S: %ld, E: %ld, L: %ld ", start, end, packlen );
+    //  fprintf(stderr, " S: %d, E: %d, L: %d ", start, end, packlen );
     zcountdown = packlen / 32; //   get rid of about 3% of the data
     actually_zeroed = 0;
     while (zcountdown > 0)
@@ -350,7 +350,7 @@ static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
 
 void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
         unsigned char *seen_features,
-        long hs, long packstart, long packlen)
+        int hs, int packstart, int packlen)
 {
     //    How we pack...
     //
@@ -361,7 +361,7 @@ void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
     //    back up past us (since the file must contain at least one empty)
     //    and so it's still below us in the file.
 
-    //fprintf(stderr, "Packing %ld len %ld total %ld",
+    //fprintf(stderr, "Packing %d len %d total %d",
     //       packstart, packlen, packstart+packlen);
     //  if (packstart+packlen >= hs)
     //  fprintf(stderr, " BLORTTTTTT ");
@@ -378,9 +378,9 @@ void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
 
 void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
         unsigned char *seen_features,
-        long hs, long packstart, long packlen)
+        int hs, int packstart, int packlen)
 {
-    unsigned long ifrom, ito;
+    unsigned int ifrom, ito;
     crmhash_t thash, tkey;
     unsigned char tseen;
     float tvalue;
@@ -390,7 +390,7 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
     tseen = 0;
 
     if (internal_trace)
-        fprintf(stderr, " < %ld %ld >", packstart, packlen);
+        fprintf(stderr, " < %d %d >", packstart, packlen);
 
     for (ifrom = packstart; ifrom < packstart + packlen; ifrom++)
     {
@@ -441,7 +441,7 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
             ito = thash % hs;
             if (ito == 0)
                 ito = 1;
-            // fprintf(stderr, "a %ld", ito);
+            // fprintf(stderr, "a %d", ito);
 
             while (!((h[ito].value == 0.0)
                      || (h[ito].hash == thash
@@ -450,7 +450,7 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
                 ito++;
                 if (ito >= hs)
                     ito = 1;
-                // fprintf(stderr, "a %ld", ito);
+                // fprintf(stderr, "a %d", ito);
             }
 
             //
@@ -482,11 +482,11 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
     }
 }
 
-int crm_create_winnow_cssfile(char *cssfile, long buckets,
-        long major, long minor, long spectrum_start)
+int crm_create_winnow_cssfile(char *cssfile, int buckets,
+        int major, int minor, int spectrum_start)
 {
     FILE *f;
-    long i;
+    int i;
     FEATUREBUCKET_STRUCT feature = { 0 };
 
     if (user_trace)

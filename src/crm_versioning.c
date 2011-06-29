@@ -468,10 +468,10 @@
 //
 //    INT Word Size   4                 4 --> sizeof(int)
 //
-//    LONG Size       4                 8 --> sizeof(long)
+//    LONG Size       4                 8 --> sizeof(long int)
 //
-//    LONG LONG Size  4                 8 --> sizeof(long long)
-//                                      0 --> 'long long' is unknown type on
+//    LONG LONG Size  4                 8 --> sizeof(long long int)
+//                                      0 --> 'long long int' is unknown type on
 //                                            this box
 //
 //    INT32 Size      4                 4 --> sizeof(int32_t)
@@ -557,7 +557,7 @@ typedef union
  */
 int is_crm_headered_file(FILE *f)
 {
-    long old_pos;
+    int old_pos;
     char sequence[CRM_PORTABILITY_HEADER_SEQUENCE_LENGTH + 1];
     int ret = 0;
 
@@ -699,10 +699,6 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
     {
         class_id = "FSCM";
     }
-    else if (classifier_info->classifier_bits & CRM_SCM)
-    {
-        class_id = "SCM";
-    }
     else if (classifier_info->classifier_bits & CRM_MARKOVIAN)
     {
         class_id = "MARKOV";
@@ -819,11 +815,11 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
 
     //    INT Word Size   4                 4 --> sizeof(int)
     binhdr.int_size.i32 = sizeof(int);
-    //    LONG Size       4                 8 --> sizeof(long)
-    binhdr.long_size.i32 = sizeof(long);
-    //    LONG LONG Size  4                 8 --> sizeof(long long)
-    //                                      0 --> 'long long' is unknown type on this box
-    binhdr.long_long_size.i32 = sizeof(long long);
+    //    LONG Size       4                 8 --> sizeof(long int)
+    binhdr.long_size.i32 = sizeof(long int);
+    //    LONG LONG Size  4                 8 --> sizeof(long long int)
+    //                                      0 --> 'long long int' is unknown type on this box
+    binhdr.long_long_size.i32 = sizeof(long long int);
     //    INT32 Size      4                 4 --> sizeof(int32_t)
     binhdr.i32_size.i32 = sizeof(int32_t);
     //    INT64 Size      4                 8 --> sizeof(int64_t)
@@ -882,7 +878,7 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
  *
  * NOTE: 'len' MAY be NULL. 'ptr' MUST NOT be NULL.
  */
-int crm_correct_for_version_header(void **ptr, long *len)
+int crm_correct_for_version_header(void **ptr, int *len)
 {
     char *s;
     int ret;
@@ -1045,20 +1041,20 @@ int crm_decode_header(void *src, int64_t acceptable_classifiers, int fast_only_n
         if (d->int_size.i32 != sizeof(int))
             return 9;
 
-        //    LONG Size       4                 8 --> sizeof(long)
-        if (d->long_size.i32 != sizeof(long))
+        //    LONG Size       8                 8 --> sizeof(long int)
+        if (d->long_size.i32 != sizeof(long int))
             return 9;
 
-        //    LONG LONG Size  4                 8 --> sizeof(long long)
-        //                                      0 --> 'long long' is unknown type on this box
-        if (d->long_long_size.i32 != sizeof(long long))
+        //    LONG LONG Size  8                 8 --> sizeof(long long int)
+        //                                      0 --> 'long long int' is unknown type on this box
+        if (d->long_long_size.i32 != sizeof(long long int))
             return 9;
 
         //    INT32 Size      4                 4 --> sizeof(int32_t)
         if (d->i32_size.i32 != sizeof(int32_t))
             return 9;
 
-        //    INT64 Size      4                 8 --> sizeof(int64_t)
+        //    INT64 Size      8                 8 --> sizeof(int64_t)
         if (d->i64_size.i32 != sizeof(int64_t))
             return 9;
 

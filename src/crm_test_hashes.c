@@ -657,7 +657,9 @@ void driver3(strnhash_f hashfunc)
 void driver4(strnhash_f hashfunc)
 {
     uint8_t buf[1];
-    uint32_t h, i, state2[HASHSTATE];
+    uint32_t h;
+int i;
+uint32_t state2[HASHSTATE];
 
 
     buf[0] = ~0;
@@ -667,7 +669,7 @@ void driver4(strnhash_f hashfunc)
     for (i = 0, h = 0; i < 8; ++i)
     {
         h = hashfunc(buf, 0, h);
-        printf("%2ld  0-byte strings, hash is  %.8lx\n", (long)i, (long)h);
+        printf("%2d  0-byte strings, hash is  %.8lx\n", i, (unsigned long int)h);
     }
 }
 
@@ -981,8 +983,8 @@ void test_avalanche(strnhash_f hashfunc)
 
 crmhash_t old_crm114_hash(const unsigned char *str, int len, crmhash_t seed)
 {
-    long i;
-    // unsigned long hval;
+    int i;
+    // unsigned int hval;
     int32_t hval;
     crmhash_t tmp;
 
@@ -2124,8 +2126,8 @@ crmhash_t mult5_hash(const unsigned char *str, int len, crmhash_t seed)
  */
 typedef struct
 {
-    unsigned long total[2];     /*!< number of bytes processed  */
-    unsigned long state[4];     /*!< intermediate digest state  */
+    unsigned int total[2];     /*!< number of bytes processed  */
+    unsigned int state[4];     /*!< intermediate digest state  */
     unsigned char buffer[64];   /*!< data block being processed */
 
     unsigned char ipad[64];     /*!< HMAC: inner padding        */
@@ -2140,10 +2142,10 @@ md5_context;
 #ifndef GET_ULONG_LE
 #define GET_ULONG_LE(n,b,i)                             \
 {                                                       \
-    (n) = ( (unsigned long) (b)[(i)    ]       )        \
-        | ( (unsigned long) (b)[(i) + 1] <<  8 )        \
-        | ( (unsigned long) (b)[(i) + 2] << 16 )        \
-        | ( (unsigned long) (b)[(i) + 3] << 24 );       \
+    (n) = ( (unsigned int) (b)[(i)    ]       )        \
+        | ( (unsigned int) (b)[(i) + 1] <<  8 )        \
+        | ( (unsigned int) (b)[(i) + 2] << 16 )        \
+        | ( (unsigned int) (b)[(i) + 3] << 24 );       \
 }
 #endif
 
@@ -2173,7 +2175,7 @@ void md5_starts( md5_context *ctx )
 
 static void md5_process( md5_context *ctx, const unsigned char data[64] )
 {
-    unsigned long X[16], A, B, C, D;
+    unsigned int X[16], A, B, C, D;
 
     GET_ULONG_LE( X[ 0], data,  0 );
     GET_ULONG_LE( X[ 1], data,  4 );
@@ -2300,7 +2302,7 @@ static void md5_process( md5_context *ctx, const unsigned char data[64] )
 void md5_update( md5_context *ctx, const unsigned char *input, int ilen )
 {
     int fill;
-    unsigned long left;
+    unsigned int left;
 
     if( ilen <= 0 )
         return;
@@ -2311,7 +2313,7 @@ void md5_update( md5_context *ctx, const unsigned char *input, int ilen )
     ctx->total[0] += ilen;
     ctx->total[0] &= 0xFFFFFFFF;
 
-    if( ctx->total[0] < (unsigned long) ilen )
+    if( ctx->total[0] < (unsigned int) ilen )
         ctx->total[1]++;
 
     if( left && ilen >= fill )
@@ -2351,8 +2353,8 @@ static const unsigned char md5_padding[64] =
  */
 void md5_finish( md5_context *ctx, unsigned char output[16] )
 {
-    unsigned long last, padn;
-    unsigned long high, low;
+    unsigned int last, padn;
+    unsigned int high, low;
     unsigned char msglen[8];
 
     high = ( ctx->total[0] >> 29 )
@@ -2841,11 +2843,11 @@ crmhash_t fake9_hash(const unsigned char *str, int len, crmhash_t seed)
 #define UPPER_MASK 0x80000000UL /* most significant w-r bits */
 #define LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
-//static unsigned long mt[N]; /* the array for the state vector  */
+//static unsigned int mt[N]; /* the array for the state vector  */
 //static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
 
 /* initializes mt[N] with a seed */
-void init_genrand(unsigned long *mt, unsigned long s)
+void init_genrand(unsigned int *mt, unsigned int s)
 {
 	int mti;
 
@@ -2866,7 +2868,7 @@ void init_genrand(unsigned long *mt, unsigned long s)
 /* init_key is the array for initializing keys */
 /* key_length is its length */
 /* slight change for C++, 2004/2/26 */
-void init_by_array(unsigned long *mt, const unsigned char *init_key, int key_length)
+void init_by_array(unsigned int *mt, const unsigned char *init_key, int key_length)
 {
     int i, j, k;
     init_genrand(mt, 19650218UL);
@@ -2935,10 +2937,10 @@ void init_by_array(unsigned long *mt, const unsigned char *init_key, int key_len
 }
 
 /* generates a random number on [0,0xffffffff]-interval */
-unsigned long genrand_int32(unsigned long *mt, int *mti)
+unsigned int genrand_int32(unsigned int *mt, int *mti)
 {
-    unsigned long y;
-    static unsigned long mag01[2]={0x0UL, MATRIX_A};
+    unsigned int y;
+    static unsigned int mag01[2]={0x0UL, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
 	if (*mti >= N) { /* generate N words at one time */
@@ -2978,7 +2980,7 @@ crmhash_t fake10_hash(const unsigned char *str, int len, crmhash_t seed)
 {
 	int i;
 	crmhash_t ret;
- unsigned long mt[N]; /* the array for the state vector  */
+ unsigned int mt[N]; /* the array for the state vector  */
 int mti=N+1; /* run MT once more; act as if uninitialized... */
 
 init_by_array(mt, str, len);

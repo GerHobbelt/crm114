@@ -36,7 +36,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int fileoffsetlen;
     char fileiolen[MAX_FILE_NAME_LEN];
     int fileiolenlen;
-    long offset, iolen;
+    int offset, iolen;
     int  vstart;
     int vlen;
     int done;
@@ -102,14 +102,14 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     memmove(fileoffset, &filename[i], j);
     fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
     fileoffset[fileoffsetlen] = 0;
-    if (1 != sscanf(fileoffset, "%ld", &offset))
+    if (1 != sscanf(fileoffset, "%d", &offset))
     {
         if (user_trace)
             nonfatalerror("Failed to decode the input expression pre-IO file offset number: ",
                     fileoffset);
     }
     if (user_trace)
-        fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %ld \n",
+        fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
                 fileoffset, offset);
 
     //   and how many bytes to read
@@ -119,7 +119,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     memmove(fileiolen, &filename[i], j);
     fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
     fileiolen[fileiolenlen] = 0;
-    if (*fileiolen && 1 != sscanf(fileiolen, "%ld", &iolen))
+    if (*fileiolen && 1 != sscanf(fileiolen, "%d", &iolen))
     {
         if (user_trace)
             nonfatalerror("Failed to decode the input expression number of bytes to read: ", fileiolen);
@@ -129,7 +129,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else if (!*fileiolen || iolen > data_window_size)
         iolen = data_window_size;
     if (user_trace)
-        fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %ld\n",
+        fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
                 fileiolen, iolen);
 
     if (user_trace)
@@ -178,7 +178,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //        must make a copy of the varname.
         //
         char vname[MAX_VARNAME];
-        long ichar = 0;
+        int ichar = 0;
         CRM_ASSERT(vlen < MAX_VARNAME);
         memmove(vname, &(temp_vars[vstart]), vlen);
         vname[vlen] = 0;
@@ -220,7 +220,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             chartemp = readline("");
             if (strlen(chartemp) > data_window_size - 1)
             {
-                nonfatalerror("Dang, this line of text is way too long: ",
+                nonfatalerror("Dang, this line of text is way too int: ",
                         chartemp);
             }
             strncpy(inbuf, chartemp, data_window_size);
@@ -289,9 +289,9 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //    We do variable substitutions here....
     //  char outfile[MAX_VARNAME];
-    //long outfilelen;
+    //int outfilelen;
     //char ofn[MAX_VARNAME];
-    long outtextlen;
+    int outtextlen;
     FILE *outf;
 
     char filename[MAX_FILE_NAME_LEN];
@@ -301,7 +301,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int fileoffsetlen;
     char fileiolen[MAX_FILE_NAME_LEN];
     int fileiolenlen;
-    long offset, iolen;
+    int offset, iolen;
     int file_was_fopened;
 
 
@@ -329,7 +329,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     memmove(fileoffset, &filename[i], j);
     fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
     fileoffset[fileoffsetlen] = 0;
-    if (*fileoffset && 1 != sscanf(fileoffset, "%ld", &offset))
+    if (*fileoffset && 1 != sscanf(fileoffset, "%d", &offset))
     {
         if (user_trace)
             nonfatalerror("Failed to decode the output expression pre-IO file offset number: ",
@@ -337,7 +337,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
     if (user_trace)
     {
-        fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %ld \n",
+        fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
                 fileoffset, offset);
     }
 
@@ -348,7 +348,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     memmove(fileiolen, &filename[i], j);
     fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
     fileiolen[fileiolenlen] = 0;
-    if (*fileiolen && 1 != sscanf(fileiolen, "%ld", &iolen))
+    if (*fileiolen && 1 != sscanf(fileiolen, "%d", &iolen))
     {
         if (user_trace)
             nonfatalerror("Failed to decode the output expression number of bytes to read: ", fileiolen);
@@ -359,7 +359,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         iolen = data_window_size;
     if (user_trace)
     {
-        fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %ld\n",
+        fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
                 fileiolen, iolen);
     }
 
@@ -443,7 +443,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
             else
             {
-                //      fprintf(stderr, "SEEKING to %ld\n", offset);
+                //      fprintf(stderr, "SEEKING to %d\n", offset);
                 rewind(outf);
                 (void)fseek(outf, offset, SEEK_SET);
             }
@@ -465,7 +465,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (ret != outtextlen)
             {
                 fatalerror_ex(SRC_LOC(),
-                        "Could not write %ld bytes to file %s\n",
+                        "Could not write %d bytes to file %s\n",
                         outtextlen,
                         fnam);
             }

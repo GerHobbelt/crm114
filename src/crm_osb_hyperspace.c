@@ -66,7 +66,7 @@
 //     weaker implication of class membership.
 //
 //     2A) Dominance can be modulated by length normalization as well,
-//     so a very long document that contains lots of features will not
+//     so a very int document that contains lots of features will not
 //     dominate a short document very much at all.
 //
 //     3) Radiance:  use a non-linear match such as radiance to determine
@@ -102,7 +102,7 @@
 //    Option A2 - inline valued - Store the 32-bit sorted hashes as
 //      { hashcode, float_Weight } structs.  This allows merging of
 //      multiple close features into a single feature vector when the
-//      file gets too long. (foreach feature vec pair, measure dominant
+//      file gets too int. (foreach feature vec pair, measure dominant
 //      overlaps or distances, and merge the two with either the closest
 //      match or the smallest dominant overlap)
 //
@@ -160,7 +160,7 @@ typedef struct mythical_hyperspace_cell
 
 #ifndef VECTOR_TOKENIZER
 
-static const long hctable[] =
+static const int hctable[] =
 {
     1, 7,
     3, 13,
@@ -212,20 +212,20 @@ static int hash_compare(void const *a, void const *b)
 //
 
 int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
     //     learn the osb_hyperspace transform  of this input window as
     //     belonging to a particular type.
     //     learn <flags> (classname) /word/
     //
     int i, j, k;
-    long h;                  //  h is our counter in the hashpipe;
+    int h;                  //  h is our counter in the hashpipe;
     char ptext[MAX_PATTERN]; //  the regex pattern
     int plen;
     char htext[MAX_PATTERN];        //  the hash name
     char hashfilename[MAX_PATTERN]; // the hashfile name
     FILE *hashf;                    // stream of the hashfile
-    long hlen;
+    int hlen;
     int cflags;
 	int eflags;
     struct stat statbuf;                     //  for statting the hash file
@@ -239,8 +239,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     regex_t regcb;
 #endif
     regmatch_t match[5];    //  we only care about the outermost match
-    long textoffset;
-    long textmaxoffset;
+    int textoffset;
+    int textmaxoffset;
     int sense;
     int microgroom;
     int unique;
@@ -249,10 +249,10 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     int next_offset;      //  UNUSED in the current code
 
-    //  long made_new_file;
+    //  int made_new_file;
     //
-    //  unsigned long learns_index = 0;
-    //  unsigned long features_index = 0;
+    //  unsigned int learns_index = 0;
+    //  unsigned int features_index = 0;
 
     statbuf.st_size = 0;
     fev = 0;
@@ -406,8 +406,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (k == 0 && textoffset <= textmaxoffset
            && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT)
     {
-        long wlen;
-        long slen;
+        int wlen;
+        int slen;
 
         //  do the regex
         //  slen = endpoint (= start + len)
@@ -450,11 +450,11 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (internal_trace)
         {
             fprintf(stderr,
-                    "  Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
+                    "  Learn #%d t.o. %d strt %d end %d len %d is -%s-\n",
                     i,
                     textoffset,
-                    (long)match[0].rm_so,
-                    (long)match[0].rm_eo,
+                    (int)match[0].rm_so,
+                    (int)match[0].rm_eo,
                     wlen,
                     tempbuf);
         }
@@ -481,7 +481,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             fprintf(stderr, "  Hashpipe contents: ");
             for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
+                fprintf(stderr, " 0x%08lX", (unsigned int)hashpipe[h]);
             fprintf(stderr, "\n");
         }
 
@@ -496,7 +496,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             crmhash_t h1;
             crmhash_t h2;
-            // long th = 0;               // a counter used for TSS tokenizing
+            // int th = 0;               // a counter used for TSS tokenizing
             int j;
             //
             //     old Hash polynomial: h0 + 3h1 + 5h2 +11h3 +23h4
@@ -512,7 +512,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     h1 = 0xdeadbeef;
                 h2 = 0xdeadbeef;
                 if (internal_trace)
-                    fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned long)h1);
+                    fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned int)h1);
                 hashes[hashcounts].hash = h1;
                 hashcounts++;
             }
@@ -530,7 +530,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     h2 = 0xdeadbeef;
                     if (internal_trace)
                         fprintf(stderr, "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n",
-                                j, (unsigned long)h1, (unsigned long)h2);
+                                j, (unsigned int)h1, (unsigned int)h2);
 
                     hashes[hashcounts].hash = h1;
                     //          hashes[hashcounts].key = h2;
@@ -663,7 +663,7 @@ regcomp_failed:
         fprintf(stderr, "Total unsorted hashes generated: %d\n", hashcounts);
 		for (i = 0; i < hashcounts; i++)
 		{
-			fprintf(stderr, "hash[%6d] = %08lx\n", (int)i, (long)hashes[i].hash);
+			fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
 		}
 	}
 
@@ -677,7 +677,7 @@ regcomp_failed:
         fprintf(stderr, "Total hashes generated: %d\n", hashcounts);
 		for (i = 0; i < hashcounts; i++)
 		{
-			fprintf(stderr, "hash[%6d] = %08lx\n", (int)i, (long)hashes[i].hash);
+			fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
 		}
 	}
 
@@ -746,7 +746,7 @@ regcomp_failed:
         fprintf(stderr, "Unique hashes generated: %d\n", hashcounts);
 		for (i = 0; i < hashcounts; i++)
 		{
-			fprintf(stderr, "hash[%6d] = %08lx\n", (int)i, (long)hashes[i].hash);
+			fprintf(stderr, "hash[%6d] = %08lx\n", i, (unsigned long int)hashes[i].hash);
 		}
 	}
     //    store hash count of this document in the first bucket's .key slot
@@ -834,20 +834,20 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
         //     end of the "best match" segment.
         /////////////////
 
-        long beststart, bestend;
-        long thisstart, thislen, thisend;
+        int beststart, bestend;
+        int thisstart, thislen, thisend;
         double bestrad;
-        long wrapup;
+        int wrapup;
 #if 10 && defined (GER)
-        long kandu;
-        long unotk, knotu;
+        int kandu;
+        int unotk, knotu;
 #else
         double kandu;
         double unotk, knotu;
 #endif
         double dist, radiance;
-        long k, u;
-        long file_hashlens;
+        int k, u;
+        int file_hashlens;
         HYPERSPACE_FEATUREBUCKET_STRUCT *file_hashes;
 
         //   Get the file mmapped so we can find the closest match
@@ -888,7 +888,7 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
         bestrad = 0.0;
         while (k < file_hashlens)
         {
-            //long cmp;
+            //int cmp;
 
             //   Except on the first iteration, we're looking one cell
             //   past the 0x0 start marker.
@@ -899,9 +899,9 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
             if (internal_trace)
 			{
                 fprintf(stderr,
-                        "At featstart, looking at %ld (next bucket value is %ld)\n",
-                        (long)file_hashes[thisstart].hash,
-						(thisstart + 1 < file_hashlens ? (long)file_hashes[thisstart + 1].hash : 0));
+                        "At featstart, looking at %d (next bucket value is %d)\n",
+                        (int)file_hashes[thisstart].hash,
+						(thisstart + 1 < file_hashlens ? (int)file_hashes[thisstart + 1].hash : 0));
 			}
 			while (wrapup == 0)
             {
@@ -968,9 +968,9 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
             if (internal_trace)
 			{
                 fprintf(stderr,
-                        "At featend, looking at %ld (next bucket value is %ld)\n",
-                        (long)file_hashes[thisend].hash,
-						(thisend + 1 < file_hashlens ? (long)file_hashes[thisend + 1].hash : 0));
+                        "At featend, looking at %d (next bucket value is %d)\n",
+                        (int)file_hashes[thisend].hash,
+						(thisend + 1 < file_hashlens ? (int)file_hashes[thisend + 1].hash : 0));
 			}
 
             //  end of a document- process accumulations
@@ -992,7 +992,7 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
             //radiance = radiance * kandu;
 
             if (user_trace)
-                fprintf(stderr, "Feature Radiance %f at %ld to %ld\n",
+                fprintf(stderr, "Feature Radiance %f at %d to %d\n",
                         radiance, thisstart, thisend);
             if (radiance >= bestrad)
             {
@@ -1006,14 +1006,14 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
 
         //      if (user_trace)
         fprintf(stderr,
-                "Deleting feature from %ld to %ld (rad %f) of file %s\n",
+                "Deleting feature from %d to %d (rad %f) of file %s\n",
                 beststart, bestend, bestrad, hashfilename);
 
         //   Deletion time - move the remaining stuff in the file
         //   up to fill the hole, then msync the file, munmap it, and
         //   then truncate it to the new, correct length.
         {
-            long newhashlen, newhashlenbytes;
+            int newhashlen, newhashlenbytes;
             newhashlen = file_hashlens - (bestend + 1 - beststart);
             newhashlenbytes = newhashlen * sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
 
@@ -1027,12 +1027,12 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
             crm_force_munmap_filename(hashfilename);
 
             if (internal_trace)
-                fprintf(stderr, "Truncating file to %ld cells ( %ld bytes)\n",
+                fprintf(stderr, "Truncating file to %d cells ( %d bytes)\n",
                         newhashlen,
                         newhashlenbytes);
             k = truncate(hashfilename,
                     newhashlenbytes);
-            //      fprintf(stderr, "Return from truncate is %ld\n", k);
+            //      fprintf(stderr, "Return from truncate is %d\n", k);
         }
     }
     // end of deletion path.
@@ -1043,7 +1043,7 @@ hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just 
 //      How to do a Osb_Hyperspace CLASSIFY some text.
 //
 int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -1051,24 +1051,24 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //       This code should look very familiar- it's cribbed from
     //       the code for LEARN
     //
-    long i, j, k;
-    long h;                  //  we use h for our hashpipe counter, as needed.
+    int i, j, k;
+    int h;                  //  we use h for our hashpipe counter, as needed.
     char ptext[MAX_PATTERN]; //  the regex pattern
-    long plen;
+    int plen;
     //  char ltext[MAX_PATTERN];  //  the variable to classify
-    //long llen;
+    //int llen;
     //  the hash file names
     char htext[MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN];
-    long htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
-    long hlen;
+    int htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
+    int hlen;
     //  the match statistics variable
     char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
-    long stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
+    int stext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
 
-    long slen;
+    int slen;
     char svrbl[MAX_PATTERN]; //  the match statistics text buffer
-    long svlen;
-    long fnameoffset;
+    int svlen;
+    int fnameoffset;
     char fname[MAX_FILE_NAME_LEN];
     int eflags;
     int cflags;
@@ -1090,38 +1090,38 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #if defined (GER)
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
 #else
-    long totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
+    int totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
 #endif
-    long totalfeatures;                    //  total features
+    int totalfeatures;                    //  total features
     double tprob;                          //  total probability in the "success" domain.
 
     double ptc[MAX_CLASSIFIERS]; // current running probability of this class
 
     HYPERSPACE_FEATUREBUCKET_STRUCT *hashes[MAX_CLASSIFIERS];
-    long hashlens[MAX_CLASSIFIERS];
+    int hashlens[MAX_CLASSIFIERS];
     char *hashname[MAX_CLASSIFIERS];
-    long succhash;
+    int succhash;
     int vbar_seen;     // did we see '|' in classify's args?
-    long maxhash;
+    int maxhash;
     int fnstart, fnlen;
     int fn_start_here;
-    long textoffset;
-    long textmaxoffset;
-    long bestseen;
-    long thistotal;
+    int textoffset;
+    int textmaxoffset;
+    int bestseen;
+    int thistotal;
 
-    long cls;
-    long nfeats;  //  total features
-    long ufeats;  // features in this unknown
-    long kfeats;  // features in the known
+    int cls;
+    int nfeats;  //  total features
+    int ufeats;  // features in this unknown
+    int kfeats;  // features in the known
 
     //     Basic match parameters
     //     These are computed intra-document, other stuff is only done
     //     at the end of the document.
 #if 10 && defined (GER)
-    long knotu; // features in known doc, not in unknown
-    long unotk; // features in unknown doc, not in known
-    long kandu; // feature in both known and unknown
+    int knotu; // features in known doc, not in unknown
+    int unotk; // features in unknown doc, not in known
+    int kandu; // feature in both known and unknown
 
     //     Distance is the pythagorean distance (sqrt) between the
     //     unknown and a known-class text; we choose closest.  (this
@@ -1146,15 +1146,15 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #ifdef KNN_ON
 #define KNN_NEIGHBORHOOD_SIZE 21
     double top_n_val[KNN_NEIGHBORHOOD_SIZE];
-    long top_n_class[KNN_NEIGHBORHOOD_SIZE];
+    int top_n_class[KNN_NEIGHBORHOOD_SIZE];
 #endif
 
     //      The collapse vector is a low-dimensioned hyperspace
     //      that uses the low-order N bits of the hash to
     //      collapse the 2^32 dimensions into a reasonable space..
     //
-    long collapse_vec_same[256];
-    long collapse_vec_diff[256];
+    int collapse_vec_same[256];
+    int collapse_vec_diff[256];
 
     //  Dominance and Submission are related to Distance:
     //  -  Dominance is per-known - how many of the features of the
@@ -1261,7 +1261,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
     if (user_trace)
 	{
-        fprintf(stderr, "Status out var %s (len %ld)\n",
+        fprintf(stderr, "Status out var %s (len %d)\n",
                 svrbl, svlen);
 	}
 
@@ -1348,11 +1348,11 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             strncpy(fname, &htext[fnstart], fnlen);
             fname[fnlen] = 0;
-            //      fprintf(stderr, "fname is '%s' len %ld\n", fname, fnlen);
+            //      fprintf(stderr, "fname is '%s' len %d\n", fname, fnlen);
             fn_start_here = fnstart + fnlen + 1;
             if (user_trace)
                 fprintf(stderr, "Classifying with file -%s- "
-                                "succhash=%ld, maxhash=%ld\n",
+                                "succhash=%d, maxhash=%d\n",
                         fname, succhash, maxhash);
             if (fname[0] == '|' && fname[1] == 0)
             {
@@ -1410,7 +1410,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //
                         //     Check to see if this file is the right version
                         //
-                        // long fev;
+                        // int fev;
                         //     if (hashes[maxhash][0].hash != 0 ||
                         //         hashes[maxhash][0].key  != 0)
                         //     {
@@ -1480,7 +1480,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         succhash = maxhash;
 
     if (user_trace)
-        fprintf(stderr, "Running with %ld files for success out of %ld files\n",
+        fprintf(stderr, "Running with %d files for success out of %d files\n",
                 succhash, maxhash);
 
     // sanity checks...  Uncomment for super-strict CLASSIFY.
@@ -1533,8 +1533,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     while (k == 0 && textoffset <= textmaxoffset
            && unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT)
     {
-        long wlen;
-        long slen;
+        int wlen;
+        int slen;
 
         //  do the regex
         //
@@ -1575,11 +1575,11 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (internal_trace)
         {
             fprintf(stderr,
-                    "  Classify #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
+                    "  Classify #%d t.o. %d strt %d end %d len %d is -%s-\n",
                     i,
                     textoffset,
-                    (long)match[0].rm_so,
-                    (long)match[0].rm_eo,
+                    (int)match[0].rm_so,
+                    (int)match[0].rm_eo,
                     wlen,
                     tempbuf);
         }
@@ -1603,7 +1603,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             fprintf(stderr, "  Hashpipe contents: ");
             for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
+                fprintf(stderr, " 0x%08lX", (unsigned int)hashpipe[h]);
             fprintf(stderr, "\n");
         }
 
@@ -1627,7 +1627,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (h1 == 0)
                     h1 = 0xdeadbeef;
                 if  (internal_trace)
-                    fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned long)h1);
+                    fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned int)h1);
                 unk_hashes[unk_hashcount].hash = h1;
                 unk_hashcount++;
             }
@@ -1646,7 +1646,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                     if (internal_trace)
                         fprintf(stderr, "Polynomial %d has h1:0x%08lX\n",
-                                j, (unsigned long)h1);
+                                j, (unsigned int)h1);
 
                     unk_hashes[unk_hashcount].hash = h1;
                     unk_hashcount++;
@@ -1802,20 +1802,20 @@ classify_end_regex_loop:
 #endif
 
         if (internal_trace)
-            fprintf(stderr, "About to run classify loop with %ld files\n",
+            fprintf(stderr, "About to run classify loop with %d files\n",
                     maxhash);
 
         //    Now run through each of the classifier maps
         for (cls = 0; cls < maxhash; cls++)
         {
-            unsigned long u, k, wrapup;
+            unsigned int u, k, wrapup;
             // int cmp;
 
             //       Prepare for a new file
             k = 0;
             u = 0;
             wrapup = 0;
-            //      fprintf(stderr, "Header: %ld %lx %lx %lx %lx %lx %lx\n",
+            //      fprintf(stderr, "Header: %d %lx %lx %lx %lx %lx %lx\n",
             //       cls,
             //       hashes[cls][0].hash,
             //       hashes[cls][0].key,
@@ -1826,8 +1826,8 @@ classify_end_regex_loop:
 
             if (user_trace)
             {
-                fprintf(stderr, "now processing file %ld\n", cls);
-                fprintf(stderr, "Hashlens = %ld\n", hashlens[cls]);
+                fprintf(stderr, "now processing file %d\n", cls);
+                fprintf(stderr, "Hashlens = %d\n", hashlens[cls]);
             }
 
             while (k < hashlens[cls] && hashes[cls][k].hash == 0)
@@ -1989,7 +1989,7 @@ classify_end_regex_loop:
 
                     //     Collapse-vector-based distance:
                     //{
-                    //  long i;
+                    //  int i;
                     //  float num, denom;
                     //  num = 0;
                     //  denom = 0;
@@ -2104,7 +2104,7 @@ classify_end_regex_loop:
                         float local_class;
                         float temp_val;
                         float temp_class;
-                        long i;
+                        int i;
                         local_val = 1 / (dist + 0.000000001);
                         local_class = cls;
                         for (i = 0; i < KNN_NEIGHBORHOOD_SIZE - 1; i++)
@@ -2123,7 +2123,7 @@ classify_end_regex_loop:
 #endif
                 }
             } //  end per-document stuff
-              // fprintf(stderr, "exit K = %ld\n", k);
+              // fprintf(stderr, "exit K = %d\n", k);
         }
 
         //    TURN THIS ON IF YOU WANT TO SEE ALL OF THE HUMILIATING DEAD
@@ -2133,7 +2133,7 @@ classify_end_regex_loop:
             for (i = 0; i < maxhash; i++)
             {
                 fprintf(stderr,
-                        "f: %ld  dist %f %f\n"
+                        "f: %d  dist %f %f\n"
                         "dom: %f %f  equ: %f %f sub: %f %f\n"
                         "DES: %f %f\nrad: %f %f  flux: %f %f\n\n",
                         i,
@@ -2154,8 +2154,8 @@ classify_end_regex_loop:
     //
 #ifdef KNN_ON
     {
-        long i;
-        long j;
+        int i;
+        int j;
         for (i = 0; i < maxhash; i++)
         {
             class_radiance[i] = 0.0;
@@ -2199,7 +2199,7 @@ classify_end_regex_loop:
         {
             for (k = 0; k < maxhash; k++)
             {
-                fprintf(stderr, "Match for file %ld:  radiance: %f  prob: %f\n",
+                fprintf(stderr, "Match for file %d:  radiance: %f  prob: %f\n",
                         k, class_radiance[k], ptc[k]);
             }
         }
@@ -2218,7 +2218,7 @@ classify_end_regex_loop:
         double accumulator;
         double remainder;
         double overall_pR;
-        long m;
+        int m;
         buf[0] = 0;
         accumulator = 10 * DBL_MIN;
         for (m = 0; m < succhash; m++)
@@ -2283,7 +2283,7 @@ classify_end_regex_loop:
         buf[0] = 0;
         if (bestseen < maxhash)
         {
-            snprintf(buf, WIDTHOF(buf), "Best match to file #%ld (%s) "
+            snprintf(buf, WIDTHOF(buf), "Best match to file #%d (%s) "
                                         "prob: %6.4f  pR: %6.4f  \n",
                     bestseen,
                     hashname[bestseen],
@@ -2299,7 +2299,7 @@ classify_end_regex_loop:
         }
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
-        sprintf(buf, "Total features in input file: %ld\n", totalfeatures);
+        sprintf(buf, "Total features in input file: %d\n", totalfeatures);
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
 
@@ -2307,7 +2307,7 @@ classify_end_regex_loop:
         //
         for (k = 0; k < maxhash; k++)
         {
-            long m;
+            int m;
             remainder = 10 * DBL_MIN;
             for (m = 0; m < maxhash; m++)
             {
@@ -2319,12 +2319,12 @@ classify_end_regex_loop:
             CRM_ASSERT(k >= 0);
             CRM_ASSERT(k < maxhash);
             snprintf(buf, WIDTHOF(buf),
-                    "#%ld (%s):"
-                    " features: %ld, hits: %ld, radiance: %3.2e, prob: %3.2e, pR: %6.2f\n",
+                    "#%d (%s):"
+                    " features: %d, hits: %d, radiance: %3.2e, prob: %3.2e, pR: %6.2f\n",
                     k,
                     hashname[k],
                     hashlens[k],
-                    (long)totalhits[k],
+                    (int)totalhits[k],
                     class_radiance[k],
                     ptc[k],
                     10.0 * (log10(ptc[k]) - log10(remainder)));
@@ -2423,9 +2423,9 @@ regcomp_failed:
 #else /* CRM_WITHOUT_OSB_HYPERSPACE */
 
 int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");
@@ -2433,9 +2433,9 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");
@@ -2447,9 +2447,9 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_osb_hyperspace_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");
@@ -2457,9 +2457,9 @@ int crm_expr_osb_hyperspace_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_osb_hyperspace_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");
@@ -2467,9 +2467,9 @@ int crm_expr_osb_hyperspace_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_osb_hyperspace_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");
@@ -2477,9 +2477,9 @@ int crm_expr_osb_hyperspace_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_osb_hyperspace_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");
@@ -2487,9 +2487,9 @@ int crm_expr_osb_hyperspace_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_osb_hyperspace_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");
@@ -2497,9 +2497,9 @@ int crm_expr_osb_hyperspace_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_osb_hyperspace_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");
@@ -2507,9 +2507,9 @@ int crm_expr_osb_hyperspace_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_osb_hyperspace_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "OSB-Hyperspace");

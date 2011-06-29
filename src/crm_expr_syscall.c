@@ -30,9 +30,9 @@ typedef struct
     void  *my_ptr;
     HANDLE to_minion;
     char  *inbuf;
-    long   inlen;
-    long   internal_trace;
-    long   keep_proc;
+    int   inlen;
+    int   internal_trace;
+    int   keep_proc;
 } pusherparams;
 
 typedef struct
@@ -40,8 +40,8 @@ typedef struct
     void  *my_ptr;
     HANDLE from_minion;
     int    timeout;
-    long   internal_trace;
-    long   keep_proc;
+    int   internal_trace;
+    int   keep_proc;
 } suckerparams;
 
 
@@ -63,8 +63,8 @@ unsigned int WINAPI pusher_proc(void *lpParameter)
 		Win32_syserr_descr(&s, 512, GetLastError(), NULL);
 
         fprintf(stderr,
-            "The pusher failed to send %ld input bytes to the minion: %d(%s)\n",
-            (long)p->inlen, GetLastError(), s);
+            "The pusher failed to send %d input bytes to the minion: %d(%s)\n",
+            (int)p->inlen, GetLastError(), s);
     }
     free(p->inbuf);
     p->inbuf = NULL;
@@ -122,13 +122,13 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
         status = GetExitCodeProcess(p->from_minion, &exit_code);
         error = GetLastError();
         if (internal_trace)
-            fprintf(stderr, "GetExitCodeProcess() = %d/%d, %ld\n", status, error, exit_code);
+            fprintf(stderr, "GetExitCodeProcess() = %d/%d, %d\n", status, error, exit_code);
 
         memset(&large_int, 0, sizeof(large_int));
         status = GetFileSizeEx(p->from_minion, &large_int);
         error = GetLastError();
         if (internal_trace)
-            fprintf(stderr, "GetFileSizeEx() = %d/%d, %ld:%ld\n", status, error, large_int.HighPart, large_int.LowPart);
+            fprintf(stderr, "GetFileSizeEx() = %d/%d, %d:%d\n", status, error, large_int.HighPart, large_int.LowPart);
 
         if ( /* status && error == ERROR_SUCCESS && */ !large_int.HighPart && !large_int.LowPart)
         {
@@ -248,8 +248,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //           syntax is:
     //               syscall (:to:) (:from:) (:ctl:) /commandline/ /[alt-OS]alt-commandline/ ...
-    long inlen;
-    long outlen;
+    int inlen;
+    int outlen;
     char from_var[MAX_VARNAME];
     char sys_cmd[MAX_PATTERN];
     int cmd_len;
@@ -264,7 +264,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int async_mode;
 
 #if defined (HAVE_WORKING_FORK) && defined (HAVE_FORK) && defined (HAVE_PIPE)
-    long charsread;
+    int charsread;
     int to_minion[2];
     int from_minion[2];
     int minion_exit_status;
@@ -279,7 +279,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #endif
     pid_t minion;
     int status;
-    long timeout;
+    int timeout;
     int cnt;
 
 #if defined (HAVE_WAITPID)
@@ -391,7 +391,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (apb->s2start != NULL)
     {
         char alt_sys_cmd[MAX_PATTERN];
-        long alt_cmd_len;
+        int alt_cmd_len;
         char *p;
         char *os;
 
@@ -476,7 +476,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     if (minion == 0)
     {
-        long status1, status2;
+        int status1, status2;
         if (user_trace)
             fprintf(stderr, "  Must start a new minion.\n");
         status1 = pipe(to_minion);
@@ -502,8 +502,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //
             //    if minion == 0, then We're in the minion here
             int retcode;
-            long vstart, vlen;
-            long varline;
+            int vstart, vlen;
+            int varline;
             //    close the ends of the pipes we don't need.
             //
             //    NOTE: if this gets messed up, you end up with a race
@@ -535,17 +535,17 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //    set the current pid and parent pid.
                 {
                     char pidstr[32];
-                    long pid;
+                    int pid;
 #if defined (HAVE_GETPID)
-                    pid = (long)getpid();
-                    sprintf(pidstr, "%ld", pid);
+                    pid = (int)getpid();
+                    sprintf(pidstr, "%d", pid);
                     crm_set_temp_var(":_pid:", pidstr);
                     if (user_trace)
                         fprintf(stderr, "My new PID is %s\n", pidstr);
 #endif
 #if defined (HAVE_GETPPID)
-                    pid = (long)getppid();
-                    sprintf(pidstr, "%ld", pid);
+                    pid = (int)getppid();
+                    sprintf(pidstr, "%d", pid);
                     crm_set_temp_var(":_ppid:", pidstr);
 #endif
                 }
@@ -766,7 +766,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
         //  and set the returned value into from_var.
         if (user_trace)
-            fprintf(stderr, "SYSCALL output: %ld chars ---%s---.\n ",
+            fprintf(stderr, "SYSCALL output: %d chars ---%s---.\n ",
                 outlen, outbuf);
         if (internal_trace)
             fprintf(stderr, "  storing return str in var %s\n", from_var);
@@ -988,10 +988,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     nonfatalerror_ex(
                         SRC_LOC(), "This program tried a shell command that "
                                    "didn't run correctly.\n"
-                                   "command >>%s<< - CreateProcess returned %ld(0x%08lx:%s)\n",
+                                   "command >>%s<< - CreateProcess returned %d(0x%08lx:%s)\n",
                         sys_cmd_2nd,
-                        (long)error,
-                        (long)error,
+                        (int)error,
+                        (int)error,
                         errmsg);
                 }
                 else
@@ -1160,7 +1160,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 if (async_mode == 0)
                 {
                     int eof = FALSE;
-                    long readlen;
+                    int readlen;
                     LARGE_INTEGER large_int;
                     DWORD file_flags;
                     DWORD chars_available;
@@ -1200,7 +1200,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         status = GetExitCodeProcess(hminion, &exit_code);
                         error = GetLastError();
                         if (internal_trace)
-                            fprintf(stderr, "GetExitCodeProcess() = %d/%d, %ld\n", status, error, exit_code);
+                            fprintf(stderr, "GetExitCodeProcess() = %d/%d, %d\n", status, error, exit_code);
 #if 0
                         if (status && error == ERROR_SUCCESS && exit_code == STILL_ACTIVE)
                         {
@@ -1213,7 +1213,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         error = GetLastError();
                         if (internal_trace)
                             fprintf(stderr,
-                                "GetFileSizeEx() = %d/%d, %ld:%ld\n",
+                                "GetFileSizeEx() = %d/%d, %d:%d\n",
                                 status,
                                 error,
                                 large_int.HighPart,
@@ -1246,7 +1246,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             &chars_avail_in_this_message);
                         error = GetLastError();
                         if (internal_trace)
-                            fprintf(stderr, "PeekNamedPipe() = %d/%d, read:%ld, avail: %ld, in msg: %ld\n", status, error,
+                            fprintf(stderr, "PeekNamedPipe() = %d/%d, read:%d, avail: %d, in msg: %d\n", status, error,
                                 charsread,
                                 chars_available,
                                 chars_avail_in_this_message);
@@ -1332,14 +1332,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     status = GetExitCodeProcess(hminion, &exit_code);
                     error = GetLastError();
                     if (internal_trace)
-                        fprintf(stderr, "GetExitCodeProcess() = %d/%d, %ld\n", status, error, exit_code);
+                        fprintf(stderr, "GetExitCodeProcess() = %d/%d, %d\n", status, error, exit_code);
 
                     memset(&large_int, 0, sizeof(large_int));
                     status = GetFileSizeEx(from_minion[0], &large_int);
                     error = GetLastError();
                     if (internal_trace)
                         fprintf(stderr,
-                            "GetFileSizeEx() = %d/%d, %ld:%ld\n",
+                            "GetFileSizeEx() = %d/%d, %d:%d\n",
                             status,
                             error,
                             large_int.HighPart,
@@ -1435,7 +1435,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
                 //  and set the returned value into from_var.
                 if (user_trace)
-                    fprintf(stderr, "SYSCALL output: %ld chars ---%s---.\n ",
+                    fprintf(stderr, "SYSCALL output: %d chars ---%s---.\n ",
                         outlen, outbuf);
                 if (internal_trace)
                     fprintf(stderr, "  storing return str in var %s\n", from_var);

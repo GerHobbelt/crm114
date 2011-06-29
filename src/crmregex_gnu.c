@@ -34,8 +34,8 @@
 typedef struct
 {
     char    *regex;
-    regex_t *preg; // ptr to struct of {long, void*}
-    long     regex_len;
+    regex_t *preg; // ptr to struct of {int, void*}
+    int     regex_len;
     int      cflags;
     int      status;
 } REGEX_CACHE_BLOCK;
@@ -49,7 +49,7 @@ static REGEX_CACHE_BLOCK regex_cache[CRM_REGEX_CACHESIZE] = { { NULL, NULL, 0, 0
 //
 //      How to do a register compilation
 //
-int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
+int crm_regcomp(regex_t *preg, char *regex, int regex_len, int cflags)
 {
     //       compile it with the GNU regex compiler
     //
@@ -79,7 +79,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
     if (internal_trace)
     {
         int i;
-        fprintf(stderr, "\ncompiling regex '%s', len %ld, in hex: ",
+        fprintf(stderr, "\ncompiling regex '%s', len %d, in hex: ",
                 regex, regex_len);
         for (i = 0; i < regex_len; i++)
         {
@@ -97,10 +97,10 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
     //   of this regex.  Note that a length of 0 means "empty bucket".
     {
         int i, j, found_it;
-        long rtsize = sizeof(regex_t);
+        int rtsize = sizeof(regex_t);
         regex_t *ppreg_temp = NULL;
         char *regex_temp = NULL;
-        long rlen_temp = 0;
+        int rlen_temp = 0;
         int cflags_temp = 0;
         int status_temp = 0;
 
@@ -173,7 +173,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
             rlen_temp = regex_len;
             cflags_temp = cflags;
             if (internal_trace)
-                fprintf(stderr, "Compiling %s (len %ld).\n", regex_temp, rlen_temp);
+                fprintf(stderr, "Compiling %s (len %d).\n", regex_temp, rlen_temp);
             ppreg_temp = (regex_t *)calloc(rtsize, sizeof(ppreg_temp[0]));
             if (ppreg_temp == NULL)
             {
@@ -318,7 +318,7 @@ int crm_regexec(regex_t *preg, const char *string, int string_len,
     {
         if (null_errored == 0)
         {
-            fprintf(stderr, "\nRegexec  strlen: %d, stated_len: %ld \n",
+            fprintf(stderr, "\nRegexec  strlen: %d, stated_len: %d \n",
                     strlen(string), string_len);
             nonfatalerror("Your data window contained a NUL inside the stated length,",
                     "and the GNU regex libraries can't handle embedded NULs.  Treat all results with GREAT SUSPICION.");

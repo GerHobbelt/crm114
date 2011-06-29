@@ -203,7 +203,7 @@ int crm_load_csl(CSL_CELL *csl)
     {
         if (errno == ENAMETOOLONG)
         {
-            untrappableerror("Couldn't open the file (filename too long): ",
+            untrappableerror("Couldn't open the file (filename too int): ",
                     csl->filename);
         }
         else
@@ -215,7 +215,7 @@ int crm_load_csl(CSL_CELL *csl)
     else
     {
         if (internal_trace)
-            fprintf(stderr, "file open on file descriptor %ld\n", csl->filedes);
+            fprintf(stderr, "file open on file descriptor %d\n", csl->filedes);
 
         csl->nchars = 0;
         // and stat the file descriptor
@@ -227,7 +227,7 @@ int crm_load_csl(CSL_CELL *csl)
         {
             csl->nchars = statbuf.st_size;
             if (internal_trace)
-                fprintf(stderr, "file is %ld bytes\n", csl->nchars);
+                fprintf(stderr, "file is %d bytes\n", csl->nchars);
             if (csl->nchars + 2048 > max_pgmsize)
             {
                 CRM_ASSERT(csl->filedes >= 0);
@@ -293,8 +293,8 @@ int crm_load_csl(CSL_CELL *csl)
         csl->hash = strnhash(csl->filetext, csl->nchars);
         if (user_trace)
 		{
-            fprintf(stderr, "Hash of program: 0x%08lX, length %ld bytes: (%s)\n-->\n%s",
-                    (unsigned long)csl->hash, csl->nchars, csl->filename, csl->filetext);
+            fprintf(stderr, "Hash of program: 0x%08lX, length %d bytes: (%s)\n-->\n%s",
+                    (unsigned long int)csl->hash, csl->nchars, csl->filename, csl->filetext);
 		}
 	}
 
@@ -340,45 +340,45 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
 
 
     //  i, j, and k are random beat-upon-me longs
-    long i, j, k;
+    int i, j, k;
 
     //  a counter to use when iterating thru statements
-    long stmtnum;
+    int stmtnum;
 
     //  number of statements actually used
-    long numstmts;
+    int numstmts;
 
     //   how many chars in this program
-    long pgmlength;
+    int pgmlength;
 
     //   pointer to the chars
     char *pgmtext;
 
     // how deep a nesting of brackets does this file have?
-    long bracketlevel;
+    int bracketlevel;
 
     // index of first char of this statement
-    long sindex;
+    int sindex;
 
     // index of first nonblank character in the line?
-    long nbindex;
+    int nbindex;
 
     // length of the first nonblank string on the line?
-    long nblength;
+    int nblength;
 
     // index of first character in the arguments to any particular statement
-    long aindex;
+    int aindex;
 
     // length of this statement
-    long slength;
+    int slength;
 
     //  have we seen an action statement yet?
-    long seenaction;
+    int seenaction;
 
     //   counters for looking through the statemt archetype table.
-    long stab_idx;
+    int stab_idx;
 
-    /* long stab_max; */
+    /* int stab_max; */
 
     if (internal_trace)
         fprintf(stderr, "Starting phase 1 of microcompile.\n");
@@ -405,7 +405,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
 
     //  now, allocate the microcompile table
     if (user_trace)
-        fprintf(stderr, "Program statements: %ld, program length %ld\n",
+        fprintf(stderr, "Program statements: %d, program length %d\n",
                 j, pgmlength);
 
     csl->mct_size = csl->nstmts + 10;
@@ -469,7 +469,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     while (stmtnum <= csl->nstmts && sindex < pgmlength)
     {
         int stab_stmtcode;
-        // long stab_done;
+        // int stab_done;
 
         //      the strcspan below will fail if there's an unescaped
         //      semicolon embedded in a string (or, for that matter, an
@@ -657,7 +657,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             int width = CRM_MIN(1024, nblength);
 
             fatalerror_ex(SRC_LOC(),
-                    "Statement %ld NOT YET IMPLEMENTED !!! Check your source code. "
+                    "Statement %d NOT YET IMPLEMENTED !!! Check your source code. "
                     "Here's the text:\n%.*s%s",
                     csl->cstmt,
                     width,
@@ -686,15 +686,11 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
 
         if (0) // (internal_trace)
         {
-            fprintf(stderr, "\nStmt %3ld type %2d ",
+            fprintf(stderr, "\nStmt %3d type %2d ",
                     stmtnum, csl->mct[stmtnum]->stmt_type);
-            {
-                long ic;
-                for (ic = csl->mct[stmtnum]->start;
-                     ic < csl->mct[stmtnum + 1]->start - 1;
-                     ic++)
-                    fprintf(stderr, "%c", pgmtext[ic]);
-            }
+		memnCdump(stderr, 
+pgmtext + csl->mct[stmtnum]->start,
+		(csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->start);
         }
 
 #ifdef STAB_TEST
@@ -703,7 +699,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             fprintf(stderr, "Darn!  Microcompiler stab error (not your fault!)\n"
                             "Please file a bug report if you can.  The data is:\n");
             fprintf(stderr,
-                    "Stab got %ld, Ifstats got %d, on line %ld with len %ld\n",
+                    "Stab got %d, Ifstats got %d, on line %d with len %d\n",
                     stab_stmtcode,
                     csl->mct[stmtnum]->stmt_type,
                     stmtnum,
@@ -713,7 +709,6 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             fprintf(stderr, "<<<\n\n");
         }
 #endif
-
 
         //    check for bracket level underflow....
         if (bracketlevel < 0)
@@ -732,7 +727,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     //  check to be sure that the brackets close!
 
     if (bracketlevel != 0)
-        nonfatalerror("\nDang!  The curly braces don't match up!\n",
+        fatalerror("\nDang!  The curly braces don't match up!\n",
                 "Check your source code. ");
 
 
@@ -740,8 +735,8 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     //  in the MCT.
 
     {
-        long stack[MAX_BRACKETDEPTH];
-        long sdx;
+        int stack[MAX_BRACKETDEPTH];
+        int sdx;
 
         if (internal_trace)
             fprintf(stderr, "Starting phase 3 of microcompile.\n");
@@ -875,7 +870,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             {
                 fprintf(stderr, "\n");
                 if (prettyprint_listing > 1)
-                    fprintf(stderr, "%4.4ld ", stmtnum);
+                    fprintf(stderr, "%4.4d ", stmtnum);
                 if (prettyprint_listing > 2)
                     fprintf(stderr, "{%2.2d}", csl->mct[stmtnum]->nest_level);
 
@@ -902,9 +897,13 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                 k = csl->mct[stmtnum]->fchar;
                 while (pgmtext[k] > 0x021 && k < csl->mct[stmtnum]->achar)
                 {
-                    fprintf(stderr, "%c", pgmtext[k]);
+                    //fprintf(stderr, "%c", pgmtext[k]);
                     k++;
                 }
+		memnCdump(stderr, 
+pgmtext + csl->mct[stmtnum]->fchar,
+			k - csl->mct[stmtnum]->fchar);
+
                 if (prettyprint_listing > 4)
                     fprintf(stderr, "-");
 
@@ -914,9 +913,15 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                 {
                     if (prettyprint_listing > 4)
                         fprintf(stderr, "=");
+#if 0
                     for (k = csl->mct[stmtnum]->achar;
                          k < csl->mct[stmtnum + 1]->start - 1; k++)
                         fprintf(stderr, "%c", pgmtext[k]);
+#else
+			memnCdump(stderr, 
+pgmtext + csl->mct[stmtnum]->achar,
+	(csl->mct[stmtnum + 1]->start - 1) - csl->mct[stmtnum]->achar);
+#endif
                     if (prettyprint_listing > 4)
                         fprintf(stderr, "=");
                 }

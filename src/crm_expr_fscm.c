@@ -29,7 +29,7 @@
  * This file is part of on going research and should not be considered
  * a finished product, a reliable tool, an example of good software
  * engineering, or a reflection of any quality of Joe's besides his
- * tendancy towards long hours.
+ * tendancy towards int hours.
  *
  * Here's what's going on:
  *
@@ -72,36 +72,36 @@
 
 typedef struct mythical_scm_header
 {
-    long n_bytes;           //this is the length of rememebred text, the number
+    int n_bytes;           //this is the length of rememebred text, the number
                             //of hashbuckets, and the size of the hash root
-    long n_trains;          //how many times have we had to train this guy
-    long n_features;        //number of bytes we've eaten up to n_bytes
-    long free_hash_nodes;   //index of first in free chain
-    long free_prefix_nodes; //index of first in free chain
-    long hash_root_offset;
-    long hash_offset;
-    long prefix_offset;
-    long text_offset;
-    long text_pos;          //we wrap around when we fill the buffer
-    long indeces_offset;
+    int n_trains;          //how many times have we had to train this guy
+    int n_features;        //number of bytes we've eaten up to n_bytes
+    int free_hash_nodes;   //index of first in free chain
+    int free_prefix_nodes; //index of first in free chain
+    int hash_root_offset;
+    int hash_offset;
+    int prefix_offset;
+    int text_offset;
+    int text_pos;          //we wrap around when we fill the buffer
+    int indeces_offset;
 } SCM_HEADER_STRUCT;
 
 //nodes for our hash table of three character prefixes
 typedef struct mythical_hash
 {
     char          prefix_text[4]; //we make it 4 bytes so thing align nicely
-    unsigned long key;            //hash key of the three charactor prefix
-    long          next;           //in hash chain
-    long          prev;
-    long          first; //first prefix node
+    unsigned int key;            //hash key of the three charactor prefix
+    int          next;           //in hash chain
+    int          prev;
+    int          first; //first prefix node
 } HASH_STRUCT;
 
 //one node for every contiguous three characters in stored text
 typedef struct mythical_prefix
 {
-    long offset;
-    long prev;
-    long next;
+    int offset;
+    int prev;
+    int next;
 } PREFIX_STRUCT;
 
 //pointers to runtime structures to pass around so that we don't have a
@@ -110,17 +110,17 @@ typedef struct mythical_scm_state
 {
     SCM_HEADER_STRUCT *header;
     //we dup some stuff from the header to shorten things up
-    long *text_pos, n_bytes, *free_hash_nodes, *free_prefix_nodes;
+    int *text_pos, n_bytes, *free_hash_nodes, *free_prefix_nodes;
     //s->hash_root[key % n_bytes] is the first hash_node in the chain that key
     //would be in
-    long *hash_root;
+    int *hash_root;
     //s->hashee[i] is the ith hash node
     HASH_STRUCT *hashee;
     //and so forth...
     PREFIX_STRUCT *prefix;
     char          *text;
     char          *learnfilename; //the classifier file we're working on
-    long          *indeces;
+    int          *indeces;
 } SCM_STATE_STRUCT;
 
 
@@ -128,7 +128,7 @@ typedef struct mythical_scm_state
 //it determines the amount of previous text we remember
 //1 megabyte gives good accuracy and enough speed for TREC
 //512K is twice as fast but ever so slightly less accurate
-static long n_bytes = 1048576;
+static int n_bytes = 1048576;
 
 
 //fill in a fresh classifier state assuming that the space is already allocated
@@ -137,7 +137,7 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
 {
     SCM_HEADER_STRUCT *h = space;
     char *o = space;
-    long i;
+    int i;
 
     h->n_bytes = n_bytes;
     h->n_trains = 0;
@@ -145,26 +145,26 @@ static void make_scm_state(SCM_STATE_STRUCT *s, void *space)
     h->free_prefix_nodes = 0;
     h->free_hash_nodes = 0;
     h->hash_root_offset = sizeof(SCM_HEADER_STRUCT);
-    h->hash_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes * sizeof(long);
+    h->hash_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes * sizeof(int);
     h->prefix_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes *
-                       (sizeof(long) + sizeof(HASH_STRUCT));
+                       (sizeof(int) + sizeof(HASH_STRUCT));
     h->text_offset = sizeof(SCM_HEADER_STRUCT) +
-                     n_bytes * (sizeof(long) + sizeof(HASH_STRUCT)
+                     n_bytes * (sizeof(int) + sizeof(HASH_STRUCT)
                                 + sizeof(PREFIX_STRUCT));
     h->text_pos = 0;
     h->indeces_offset = sizeof(SCM_HEADER_STRUCT) + n_bytes *
-                        (sizeof(long) + sizeof(HASH_STRUCT)
+                        (sizeof(int) + sizeof(HASH_STRUCT)
                          + sizeof(PREFIX_STRUCT) + sizeof(char));
     s->header = h;
     s->text_pos = &h->text_pos;
     s->n_bytes = h->n_bytes;
     s->free_hash_nodes = &h->free_hash_nodes;
     s->free_prefix_nodes = &h->free_prefix_nodes;
-    s->hash_root = (long *)&o[h->hash_root_offset];
+    s->hash_root = (int *)&o[h->hash_root_offset];
     s->hashee = (HASH_STRUCT *)&o[h->hash_offset];
     s->prefix = (PREFIX_STRUCT *)&o[h->prefix_offset];
     s->text =   (char *)&o[h->text_offset];
-    s->indeces = (long *)&o[h->indeces_offset];
+    s->indeces = (int *)&o[h->indeces_offset];
 
     for (i = 0; i < n_bytes; i++)
     {
@@ -190,17 +190,17 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
 
     if (stat(filename, &statbuf))
     {
-        long filesize;
+        int filesize;
         FILE *f;
         void *space;
 
         filesize = sizeof(SCM_HEADER_STRUCT) +
                    n_bytes *
-                   (sizeof(long) +
+                   (sizeof(int) +
                     sizeof(HASH_STRUCT) +
                     sizeof(PREFIX_STRUCT) +
                     sizeof(char) +
-                    sizeof(long)
+                    sizeof(int)
                    );
         f = fopen(filename, "wb");
         if (f == NULL)
@@ -278,11 +278,11 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         s->n_bytes = h->n_bytes;
         s->free_hash_nodes = &h->free_hash_nodes;
         s->free_prefix_nodes = &h->free_prefix_nodes;
-        s->hash_root = (long *)&o[h->hash_root_offset];
+        s->hash_root = (int *)&o[h->hash_root_offset];
         s->hashee = (HASH_STRUCT *)&o[h->hash_offset];
         s->prefix = (PREFIX_STRUCT *)&o[h->prefix_offset];
         s->text = (char *)&o[h->text_offset];
-        s->indeces = (long *)&o[h->indeces_offset];
+        s->indeces = (int *)&o[h->indeces_offset];
     }
     s->learnfilename = filename;
 }
@@ -307,7 +307,7 @@ static void unmap_file(SCM_STATE_STRUCT *s)
 
 //are the three charecters at b the same as the three characters in the stored
 // text? wrapping around the stored text buffer if need be
-static int match_prefix(SCM_STATE_STRUCT *s, long a, char *b)
+static int match_prefix(SCM_STATE_STRUCT *s, int a, char *b)
 {
     if (s->text[a++] != b[0])
         return 0;
@@ -326,7 +326,7 @@ static int match_prefix(SCM_STATE_STRUCT *s, long a, char *b)
 }
 
 //whats the hashcode of the three characters at spot a in the stored text
-static crmhash_t get_text_hash(SCM_STATE_STRUCT *s, long a)
+static crmhash_t get_text_hash(SCM_STATE_STRUCT *s, int a)
 {
     char b[3];
 
@@ -341,7 +341,7 @@ static crmhash_t get_text_hash(SCM_STATE_STRUCT *s, long a)
 }
 
 //get the three characters from the stored text
-static void copy_prefix(SCM_STATE_STRUCT *s, long a, char *b)
+static void copy_prefix(SCM_STATE_STRUCT *s, int a, char *b)
 {
     b[0] = s->text[a++];
     if (a == s->n_bytes)
@@ -357,8 +357,8 @@ static void copy_prefix(SCM_STATE_STRUCT *s, long a, char *b)
 // action to be taken is to attach the debugger
 static int audit_structs(SCM_STATE_STRUCT *s)
 {
-    long i, j, k;
-    long n_p = 0, n_h = 0;
+    int i, j, k;
+    int n_p = 0, n_h = 0;
 
     for (i = 0; i < s->n_bytes; i++)
     {
@@ -438,10 +438,10 @@ static int audit_structs(SCM_STATE_STRUCT *s)
 // in a document during learning, right after concatenating it into the stored
 // text
 //
-static long add_prefix(SCM_STATE_STRUCT *s, long t)
+static int add_prefix(SCM_STATE_STRUCT *s, int t)
 {
-    unsigned long key = get_text_hash(s, t);
-    long i = s->hash_root[key % s->n_bytes], j;
+    unsigned int key = get_text_hash(s, t);
+    int i = s->hash_root[key % s->n_bytes], j;
 
     //find the proper hashnode or set i to NULL_INDEX
     while (!(i == NULL_INDEX
@@ -501,9 +501,9 @@ static long add_prefix(SCM_STATE_STRUCT *s, long t)
 
 //we're writing over the position in the text corresponding to this prefix, so
 // remove it from tables or we'll have big trouble!
-static void delete_prefix(SCM_STATE_STRUCT *s, long p)
+static void delete_prefix(SCM_STATE_STRUCT *s, int p)
 {
-    long i;
+    int i;
 
     if (s->prefix[p].prev < 0)
     {
@@ -565,12 +565,12 @@ static void delete_prefix(SCM_STATE_STRUCT *s, long p)
 //find the longest match of contiguous characters to *text in stored text
 static void find_longest_match(SCM_STATE_STRUCT *s,
         char                                    *text,
-        long                                     max_len,
-        long                                    *prefix,
-        long                                    *len)
+        int                                     max_len,
+        int                                    *prefix,
+        int                                    *len)
 {
     crmhash_t key;
-    long i, j, k;
+    int i, j, k;
 
     if (max_len < 3)
     {
@@ -630,16 +630,16 @@ static void find_longest_match(SCM_STATE_STRUCT *s,
 // into *locals and the lengths of those matches into *lens, return the number
 // of matches
 //
-static int deflate(SCM_STATE_STRUCT *s, char *t, long len, long *starts, long
-        *locals, long *lens, long max_n)
+static int deflate(SCM_STATE_STRUCT *s, char *t, int len, int *starts, int
+        *locals, int *lens, int max_n)
 {
     //at each place in *t remember the best match found so far, bmi[...] is a
     // prefix node index, bml[...] is a length, open[..] is whether or not we can
     // still make a match at this spot
-    long *bmi = (long *)inbuf;
-    long *bml = (long *)outbuf;
+    int *bmi = (int *)inbuf;
+    int *bml = (int *)outbuf;
     int *open = (int *)tempbuf;
-    long i, j, k, n;
+    int i, j, k, n;
 
     //fill arrays
     for (i = 0; i < len; i++)
@@ -693,7 +693,7 @@ static int deflate(SCM_STATE_STRUCT *s, char *t, long len, long *starts, long
 static int pow_table2_init = 1;
 static double pow_table2[256];
 
-static double power2(long i)
+static double power2(int i)
 {
     double pow2 = 1.5;
 
@@ -709,7 +709,7 @@ static double power2(long i)
 
     if (pow_table2_init)
     {
-        long j;
+        int j;
 
         pow_table2_init = 0;
         for (j = 0; j < 256; j++)
@@ -727,11 +727,11 @@ static double power2(long i)
 #define MAX_N 1065
 
 //deflate document and give points for each substring match
-static double score_document(SCM_STATE_STRUCT *s, char *doc, long len)
+static double score_document(SCM_STATE_STRUCT *s, char *doc, int len)
 {
     double score = 0.0;
-    long i, n;
-    long starts[MAX_N], locals[MAX_N], lens[MAX_N];
+    int i, n;
+    int starts[MAX_N], locals[MAX_N], lens[MAX_N];
 
     n = deflate(s, doc, len, starts, locals, lens, MAX_N);
     for (i = 0; i < n; i++)
@@ -739,9 +739,9 @@ static double score_document(SCM_STATE_STRUCT *s, char *doc, long len)
     return score;
 }
 
-static void refute_document(SCM_STATE_STRUCT *s, char *doc, long len)
+static void refute_document(SCM_STATE_STRUCT *s, char *doc, int len)
 {
-    long starts[MAX_N], locals[MAX_N], lens[MAX_N], i, j, k, n;
+    int starts[MAX_N], locals[MAX_N], lens[MAX_N], i, j, k, n;
 
     n = deflate(s, doc, len, starts, locals, lens, MAX_N);
     for (i = 0; i < n; i++)
@@ -761,7 +761,7 @@ static void refute_document(SCM_STATE_STRUCT *s, char *doc, long len)
 
 //entry point for learning
 int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
     char filename[MAX_PATTERN];
     char htext[MAX_PATTERN];
@@ -770,7 +770,7 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     SCM_STATE_STRUCT S, *s = &S;
 
     int i, j;
-    long doc_start;
+    int doc_start;
 
     if (internal_trace)
         fprintf(stderr, "entered crm_expr_fscm_learn (learn)\n");
@@ -897,36 +897,36 @@ static double calc_pR(double p)
 
 //entry point for classifying
 int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
     SCM_STATE_STRUCT S, *s = &S;
 
     char filenames_field[MAX_PATTERN];
-    long filenames_field_len;
+    int filenames_field_len;
     char filenames[MAX_CLASSIFIERS][MAX_FILE_NAME_LEN];
 
     char out_var[MAX_PATTERN];
-    long out_var_len;
+    int out_var_len;
 
     char params[MAX_PATTERN];
-    long params_len;
+    int params_len;
 
     regex_t regee; //for extracting params
     regmatch_t pp[2];
 
-    long i, j, k, n_classifiers;
+    int i, j, k, n_classifiers;
 
-    long fail_on = MAX_CLASSIFIERS; //depending on where the vbar is
+    int fail_on = MAX_CLASSIFIERS; //depending on where the vbar is
 
     double scores[MAX_CLASSIFIERS],
            probs[MAX_CLASSIFIERS],
            norms[MAX_CLASSIFIERS],
            bn, pR[MAX_CLASSIFIERS];
-    long n_features[MAX_CLASSIFIERS];
-    long out_pos;
+    int n_features[MAX_CLASSIFIERS];
+    int out_pos;
 
     double tot_score = 0.0, suc_prob = 0.0, suc_pR;
-    long max_scorer, min_scorer;
+    int max_scorer, min_scorer;
 
     //grab filenames field
     crm_get_pgm_arg(filenames_field, MAX_PATTERN, apb->p1start, apb->p1len);
@@ -996,9 +996,9 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     if (internal_trace)
     {
-        fprintf(stderr, "fail_on = %ld\n", fail_on);
+        fprintf(stderr, "fail_on = %d\n", fail_on);
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "filenames[%ld] = %s\n", i, filenames[i]);
+            fprintf(stderr, "filenames[%d] = %s\n", i, filenames[i]);
     }
     ;
 
@@ -1028,7 +1028,7 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (internal_trace)
     {
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "scores[%ld] = %f\n", i, scores[i]);
+            fprintf(stderr, "scores[%d] = %f\n", i, scores[i]);
     }
 
 
@@ -1086,7 +1086,7 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         fprintf(stderr, "suc_prob = %f\n", suc_prob);
         fprintf(stderr, "tot_score = %f\n", tot_score);
         for (i = 0; i < n_classifiers; i++)
-            fprintf(stderr, "scores[%ld] = %f\n", i, scores[i]);
+            fprintf(stderr, "scores[%d] = %f\n", i, scores[i]);
     }
 
     if (suc_prob > 0.5)  //test for nan as well
@@ -1104,20 +1104,20 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     /* [i_a] GROT GROT GROT: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
     out_pos += sprintf(outbuf + out_pos,
-            "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f\n",
+            "Best match to file #%d (%s) prob: %6.4f  pR: %6.4f\n",
             max_scorer,
             filenames[max_scorer],
             probs[max_scorer], pR[max_scorer]);
 
     out_pos += sprintf(outbuf + out_pos,
-            "Total features in input file: %ld\n",
+            "Total features in input file: %d\n",
             txtlen);
 
     for (i = 0; i < n_classifiers; i++)
     {
         /* [i_a] GROT GROT GROT: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
         out_pos += sprintf(outbuf + out_pos,
-                "#%ld (%s): features: %ld, score:%3.2e, prob: %3.2e,"
+                "#%d (%s): features: %d, score:%3.2e, prob: %3.2e,"
                 "pR: %6.2f\n",
                 i, filenames[i],
                 n_features[i], scores[i],
@@ -1139,9 +1139,9 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #else /* CRM_WITHOUT_FSCM */
 
 int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");
@@ -1149,9 +1149,9 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");
@@ -1163,9 +1163,9 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_fscm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");
@@ -1173,9 +1173,9 @@ int crm_expr_fscm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_fscm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");
@@ -1183,9 +1183,9 @@ int crm_expr_fscm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_fscm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");
@@ -1193,9 +1193,9 @@ int crm_expr_fscm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_fscm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");
@@ -1203,9 +1203,9 @@ int crm_expr_fscm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_fscm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");
@@ -1213,9 +1213,9 @@ int crm_expr_fscm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_fscm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");
@@ -1223,9 +1223,9 @@ int crm_expr_fscm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
 int crm_expr_fscm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-        char *txtptr, long txtstart, long txtlen)
+        char *txtptr, int txtstart, int txtlen)
 {
-    return fatalerror_ex(SRC_LOC(),
+    return nonfatalerror_ex(SRC_LOC(),
             "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
             "You may want to run 'crm -v' to see which classifiers are available.\n",
             "FSCM");

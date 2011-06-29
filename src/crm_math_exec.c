@@ -23,17 +23,17 @@
 
 
 
-static int math_formatter(double value, char *format, char *buf, long buflen);
+static int math_formatter(double value, char *format, char *buf, int buflen);
 
 
 //
 //           strmath - evaluate a string for the mathematical result,
 //            returning the length of the valid string.
 //
-long strmath(char *buf, long inlen, long maxlen, long *retstat)
+int strmath(char *buf, int inlen, int maxlen, int *retstat)
 {
-    long status;
-    long old_internal_trace;
+    int status;
+    int old_internal_trace;
 
     old_internal_trace = internal_trace;
 
@@ -79,18 +79,18 @@ long strmath(char *buf, long inlen, long maxlen, long *retstat)
 //
 //    This does math, in RPN, on a string, and returns a string value.
 //
-long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
+int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
 {
     double stack[DEFAULT_MATHSTK_LIMIT];    // the evaluation stack
     double sd;                              //  how many 10^n's we've seen since a decimal
-    long od;                                //  output decimal flag
-    long ip, op;                            //  in string pointer, out string pointer
-    long sp;                                //  stack pointer - points to next (vacant) space
-    long sinc;                              //  stack incrment enable - do we start a new number
-    long errstat;                           //  error status
+    int od;                                //  output decimal flag
+    int ip, op;                            //  in string pointer, out string pointer
+    int sp;                                //  stack pointer - points to next (vacant) space
+    int sinc;                              //  stack incrment enable - do we start a new number
+    int errstat;                           //  error status
 
     char outformat[64];  // output format
-    long outstringlen;
+    int outstringlen;
 
     //    start off by initializing things
     ip = 0;   //  in pointer is zero
@@ -107,14 +107,14 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
     //      all initialized... let's begin.
 
     if (internal_trace)
-        fprintf(stderr, "Math on '%s' len %ld retstat %p\n",
+        fprintf(stderr, "Math on '%s' len %d retstat %p\n",
                 buf, inlen, (void *)retstat);
 
     for (ip = 0; ip < inlen; ip++)
     {
         if (internal_trace)
-            fprintf(stderr, "ip = %ld, sp = %ld, stack[sp] = %f, ch='%c'\n",
-                    ip, sp, stack[sp], buf[ip]);
+            fprintf(stderr, "ip = %d, sp = %d, stack[sp] = %f, ch='%c'\n",
+                    ip, sp, stack[sp], (crm_isascii(buf[ip]) && crm_isprint(buf[ip]) ? buf[ip] : '.'));
 
         if (sp < 0)
         {
@@ -183,7 +183,7 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
                 //    Now, move [ip] over to accomodate characters used.
                 //    (the -1 is because there's an auto-increment in the big
                 //    FOR-loop)
-                ip = (long)(frejected - buf) - 1;
+                ip = (int)(frejected - buf) - 1;
             }
             break;
 
@@ -221,7 +221,7 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
 #ifdef CRM_SUPPORT_FMOD
                     stack[sp] = fmod(stack[sp], stack[sp + 1]);
 #else
-                    stack[sp] = ((long long)stack[sp]) % ((long long)stack[sp + 1]);
+                    stack[sp] = ((int64_t)stack[sp]) % ((int64_t)stack[sp + 1]);
 #endif
                     sinc = 1;
                 }
@@ -234,8 +234,8 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
                 sp--;
                 if (stack[sp] < 0.0
                     /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
-                    && ((long long)(stack[sp + 1])) > stack[sp + 1] - FLT_EPSILON
-                    && ((long long)(stack[sp + 1])) < stack[sp + 1] + FLT_EPSILON)
+                    && ((int64_t)(stack[sp + 1])) > stack[sp + 1] - FLT_EPSILON
+                    && ((int64_t)(stack[sp + 1])) < stack[sp + 1] + FLT_EPSILON)
                 {
                     stack[sp] = stack[sp] / 0.0;
                 }
@@ -427,7 +427,7 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
                     }
                     else
                     {
-                        if (((long)stack[sp + 1]) / 1 == stack[sp + 1])
+                        if (((int)stack[sp + 1]) / 1 == stack[sp + 1])
                         {
                             snprintf(outformat, WIDTHOF(outformat), "%%%g.0%c", stack[sp + 1], buf[ip]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
@@ -510,10 +510,10 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
     if (internal_trace)
     {
         fprintf(stderr,
-                "Final qexpand state:  ip = %ld, sp = %ld, stack[sp] = %f, ch='%c'\n",
-                ip, sp, stack[sp], buf[ip]);
+                "Final qexpand state:  ip = %d, sp = %d, stack[sp] = %f, ch='%c'\n",
+                ip, sp, stack[sp], (crm_isascii(buf[ip]) && crm_isprint(buf[ip]) ? buf[ip] : '.'));
         if (retstat)
-            fprintf(stderr, "retstat = %ld\n", *retstat);
+            fprintf(stderr, "retstat = %d\n", *retstat);
     }
 
     //      now the top of stack contains the result of the calculation.
@@ -531,9 +531,9 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
 //     formatting on the number itself.
 //
 //
-int math_formatter(double value, char *format, char *buf, long buflen)
+int math_formatter(double value, char *format, char *buf, int buflen)
 {
-    long outlen;
+    int outlen;
 
     CRM_ASSERT(buf != NULL);
     CRM_ASSERT(buflen > 0);
@@ -624,7 +624,7 @@ int math_formatter(double value, char *format, char *buf, long buflen)
     //
     //       if an integer value, print with 0 precision
     //
-    if (((long)(value * 2.0) / 2) == value)
+    if (((int)(value * 2.0) / 2) == value)
     {
         outlen = snprintf(buf, buflen, "%.0f", value);
         buf[buflen - 1] = 0;
@@ -640,7 +640,7 @@ int math_formatter(double value, char *format, char *buf, long buflen)
     //         one way or another, once we're here, we've sprinted it.
 formatdone:
     if (internal_trace)
-        fprintf(stderr, "math_formatter outlen = %ld / %ld\n", outlen, strlen(buf));
+        fprintf(stderr, "math_formatter outlen = %d / %d\n", outlen, (int)strlen(buf));
     /* return (outlen); ** [i_a] */
     return strlen(buf);
 }
@@ -658,18 +658,18 @@ formatdone:
 #define OPVALID 0x2
 #define RIGHTVALID 0x4
 
-long stralmath(char *buf, long inlen, long maxlen, long *retstat)
+int stralmath(char *buf, int inlen, int maxlen, int *retstat)
 {
     double leftarg[DEFAULT_MATHSTK_LIMIT];        // left float arg
-    long opstack[DEFAULT_MATHSTK_LIMIT];          // operand
+    int opstack[DEFAULT_MATHSTK_LIMIT];          // operand
     double rightarg;                              // right float arg
-    long validstack[DEFAULT_MATHSTK_LIMIT];       // validity markers
+    int validstack[DEFAULT_MATHSTK_LIMIT];       // validity markers
     int sp;                                       // stack pointer
-    long ip, op;                                  // input and output pointer
-    long errstat;                                 //  error status
+    int ip, op;                                  // input and output pointer
+    int errstat;                                 //  error status
     char *frejected;                              //  done loc. for a strtod.
     char outformat[256];                          //  how to format our result
-    long state;                                   // Local copy of state, in case
+    int state;                                   // Local copy of state, in case
 
     // retstat is NULL (not used)
     //   Start off by initializing things
@@ -688,7 +688,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
 
     //  initialization done... begin the work.
     if (internal_trace)
-        fprintf(stderr, "Starting Algebraic Math on '%s' (len %ld)\n",
+        fprintf(stderr, "Starting Algebraic Math on '%s' (len %d)\n",
                 buf, inlen);
 
     for (ip = 0; ip < inlen; ip++)
@@ -696,11 +696,11 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
         //   Debugging trace
         if (internal_trace)
             fprintf(stderr,
-                    "ip = %ld, sp = %d, L=%f, Op=%c, R=%f, V=%x next='%c'\n",
+                    "ip = %d, sp = %d, L=%f, Op=%c, R=%f, V=%x next='%c'\n",
                     ip, sp,
                     leftarg[sp], (short)opstack[sp],
                     rightarg, (short)validstack[sp],
-                    buf[ip]);
+                    (crm_isascii(buf[ip]) && crm_isprint(buf[ip]) ? buf[ip] : '.'));
 
         //    Top of the loop- we're a state machine driven by the top of
         //    the stack's validity.
@@ -745,7 +745,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                     leftarg[sp] = strtod(&buf[ip], &frejected);
                     if (user_trace)
                         fprintf(stderr, " Got left arg %e\n", leftarg[sp]);
-                    ip = (long)(frejected - buf) - 1;
+                    ip = (int)(frejected - buf) - 1;
                     validstack[sp] = LEFTVALID;
                 }
                 break;
@@ -892,7 +892,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                     rightarg = strtod(&buf[ip], &frejected);
                     if (internal_trace)
                         fprintf(stderr, " Got right arg %e\n", rightarg);
-                    ip = (long)(frejected - buf) - 1;
+                    ip = (int)(frejected - buf) - 1;
                     validstack[sp] = validstack[sp] | RIGHTVALID;
                 }
 
@@ -940,7 +940,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
 #ifdef CRM_SUPPORT_FMOD
                 leftarg[sp] = fmod(leftarg[sp], rightarg);
 #else
-                leftarg[sp] = (long long)leftarg[sp] % (long long)rightarg;
+                leftarg[sp] = (int64_t)leftarg[sp] % (int64_t)rightarg;
 #endif
                 break;
 
@@ -948,8 +948,8 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                 //    since we don't do complex numbers (yet) handle as NaN
                 if (leftarg[sp] < 0.0
                     /* use FLT_EPSILON to compensate for added inaccuracy due to previous calculations */
-                    && ((long long)(leftarg[sp])) > leftarg[sp] - FLT_EPSILON
-                    && ((long long)(leftarg[sp])) < leftarg[sp] + FLT_EPSILON)
+                    && ((int64_t)(leftarg[sp])) > leftarg[sp] - FLT_EPSILON
+                    && ((int64_t)(leftarg[sp])) < leftarg[sp] + FLT_EPSILON)
                 {
                     leftarg[sp] /= 0.0;
                 }
@@ -1075,7 +1075,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                     }
                     else
                     {
-                        if (((long)rightarg) / 1 == rightarg)
+                        if (((int)rightarg) / 1 == rightarg)
                         {
                             snprintf(outformat, WIDTHOF(outformat), "%%%g.0%c",
                                     rightarg, (short)opstack[sp]);

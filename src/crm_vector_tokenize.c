@@ -55,7 +55,7 @@
 //    The feature building is controlled via the pipeline coefficient
 //    arrays as described in the paper "A Unified Approach To Spam
 //    Filtration".  In short, each row of an array describes one
-//    rendition of an arbitrarily long pipeline of hashed token
+//    rendition of an arbitrarily int pipeline of hashed token
 //    values; each row of the array supplies one output value.  Thus,
 //    the 1x1 array {1} yields unigrams, the 5x6 array
 //
@@ -99,7 +99,7 @@ int crm_vector_tokenize
         const char          *regex,           // the parsing regex (might be ignored)
         int                  regexlen,        //   length of the parsing regex
         const crmhash_t     *coeff_array,     // the pipeline coefficient control array
-        int                  pipe_len,        //  how long a pipeline (== coeff_array col height)
+        int                  pipe_len,        //  how int a pipeline (== coeff_array col height)
         int                  pipe_iters,      //  how many rows are there in coeff_array
         crmhash_t           *features,        // where the output features go
         int                  featureslen,     //   how many output features (max)
@@ -185,15 +185,21 @@ int crm_vector_tokenize
                 fprintf(stderr, "Token; k: %d T.O: %d len %d ( %d %d on >",
                         k,
                         text_offset,
-                        match[0].rm_eo - match[0].rm_so,
-                        match[0].rm_so,
-                        match[0].rm_eo);
+                        (int)(match[0].rm_eo - match[0].rm_so),
+                        (int)match[0].rm_so,
+                        (int)match[0].rm_eo);
+#if 0
                 for (k = match[0].rm_so + text_offset;
                      k < match[0].rm_eo + text_offset;
                      k++)
 				{
                     fprintf(stderr, "%c", text[k]);
 				}
+#else
+		memnCdump(stderr, 
+	text + match[0].rm_so + text_offset,
+		(match[0].rm_eo + text_offset) - (match[0].rm_so + text_offset));
+#endif
 				fprintf(stderr, "< )\n");
             }
 
@@ -227,7 +233,7 @@ int crm_vector_tokenize
                 features[*features_out] = ihash;
                 if (internal_trace)
                     fprintf(stderr,
-                            "New Feature: %08lX at %d\n", (unsigned long)ihash, *features_out);
+                            "New Feature: %08lX at %d\n", (unsigned long int)ihash, *features_out);
                 *features_out += features_stride;
             }
 
@@ -376,7 +382,7 @@ int crm_vector_tokenize_selector
         const char           *regex,        // the parsing regex (might be ignored)
         int                   regexlen,     //   length of the parsing regex
         const crmhash_t      *coeff_array,  // the pipeline coefficient control array
-        int                   pipe_len,     //  how long a pipeline (== coeff_array col length)
+        int                   pipe_len,     //  how int a pipeline (== coeff_array col length)
         int                   pipe_iters,   //  how many rows are there in coeff_array
         crmhash_t            *features,     // where the output features go
         int                   featureslen,  //   how many output features (max)
@@ -564,10 +570,10 @@ int crm_vector_tokenize_selector
                 if (local_pipe_len > UNIFIED_WINDOW_LEN)
                 {
                     nonfatalerror("You've specified a tokenizer pipe length "
-                                  "that is too long.", "  I'll trim it.");
+                                  "that is too int.", "  I'll trim it.");
                     local_pipe_len = UNIFIED_WINDOW_LEN;
                 }
-                //fprintf (stderr, "local_pipe_len = %ld\n", local_pipe_len);
+                //fprintf (stderr, "local_pipe_len = %d\n", local_pipe_len);
                 //   The second parameter is the number of repeats
                 local_pipe_iters = strtol(conv_ptr, &conv_ptr, 0);
                 if (local_pipe_iters > UNIFIED_VECTOR_LIMIT)
@@ -576,13 +582,13 @@ int crm_vector_tokenize_selector
                                   "iteration count.", "  I'll trim it.");
                     local_pipe_iters = UNIFIED_VECTOR_LIMIT;
                 }
-                //fprintf (stderr, "pipe_iters = %ld\n", local_pipe_iters);
+                //fprintf (stderr, "pipe_iters = %d\n", local_pipe_iters);
 
                 //    Now, get the coefficients.
                 for (i = 0; i < local_pipe_len * local_pipe_iters; i++)
                 {
                     ca[i] = strtol(conv_ptr, &conv_ptr, 0);
-                    //  fprintf (stderr, "coeff: %ld\n", ca[i]);
+                    //  fprintf (stderr, "coeff: %d\n", ca[i]);
                 }
 
                 //   If there was a numeric coeff array, use that, else
@@ -643,7 +649,7 @@ int crm_vector_tokenize_selector
     }
     else
     {
-        //        We're doing the 64-bit-long features for Markov/OSB
+        //        We're doing the 64-bit-int features for Markov/OSB
         crm_vector_tokenize(
                 text,
                 textlen,

@@ -211,7 +211,7 @@
 /* Define to 1 if you have the `logl' function. */
 #define HAVE_LOGL 1
 
-/* compiler understands long long */
+/* compiler understands int int */
 #define HAVE_LONG_LONG 1
 
 /* Define to 1 if you have the `madvise' function. */
@@ -492,8 +492,14 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
 
+/* Define to 1 if you have the `_fileno' function. */
+#define HAVE__FILENO 1
+
 /* Define to 1 if you have the `_isnan' function. */
 #define HAVE__ISNAN 1
+
+/* Define to 1 if you have the `_setmode' function. */
+#define HAVE__SETMODE 1
 
 /* Define to 1 if you have the `_set_output_format' function. */
 #define HAVE__SET_OUTPUT_FORMAT 1
@@ -585,7 +591,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1935"
+#define TAR_FILENAME_POSTFIX "Ger-1949"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
@@ -690,6 +696,9 @@ typedef int pid_t;
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
+
+/* Define to `int' if <sys/types.h> does not define. */
+typedef int ssize_t;
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if
  * such a type exists and the standard includes do not define it. */
