@@ -1,4 +1,4 @@
-#!/usr/bin/crm
+#! /windows/G/prj/3actual/crm114/src/crm114
 #
 #    Random I/O test - test lseeking I/O
 #

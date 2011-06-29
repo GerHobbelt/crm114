@@ -26,7 +26,7 @@
 #endif
 
 
-// This will be defined in ./configure OR your own config_Billy.h/config_Win32.h
+// This will be defined in ./configure OR your own config_vanilla_UNIX_sys_defaults.h/config_Win32.h
 //
 //     Do you want all the classifiers?  Or just the "production
 //     ready ones"?   Comment the next line out if you want everything.

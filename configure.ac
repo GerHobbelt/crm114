@@ -18,11 +18,11 @@ AC_CONFIG_AUX_DIR([m4])
 AM_INIT_AUTOMAKE([1.10 check-news dist-bzip2 dist-zip dist-tarZ]) 
 
 # Minimum Autoconf version required.
-AC_PREREQ(2.60)
+AC_PREREQ([2.60])
 
 # Where to generate output; srcdir location.
-AC_CONFIG_SRCDIR(src/crm_main.c)
-AC_CONFIG_HEADERS(src/config.h)
+AC_CONFIG_SRCDIR([src/crm_main.c])
+AC_CONFIG_HEADERS([src/config.h])
 
 
 
@@ -55,7 +55,7 @@ AC_SUBST(VER_SUFFIX)
 
 
 
-AC_PREFIX_DEFAULT(/usr/local)
+AC_PREFIX_DEFAULT([/usr/local])
 
 
 # for crm114.lsm
@@ -66,6 +66,8 @@ AC_COPYRIGHT([
 Copyright (C) Copyright 2001-2008  William S. Yerazunis
 ])
 
+
+AC_DEFINE_UNQUOTED([ORIGINAL_BILLY_DISTRO_DIR], [../../../1original/crm114/src/crm114.sourceforge.net/src], [directory where BillY's original crm114 distro resides])
 
 
 
@@ -347,7 +349,7 @@ when your scripts attempt to use this classifier.
 # Checks for programs.
 #
 
-AC_PROG_CC(gcc egcs cl cc lcc)
+AC_PROG_CC([gcc egcs cl cc lcc])
 AC_USE_SYSTEM_EXTENSIONS
 # AC_GNU_SOURCE -- obsolete
 # AC_AIX -- obsolete
@@ -373,18 +375,18 @@ AC_PROG_LD
 AC_PROG_NM
 AC_PATH_PROG([CVS2CL], [cvs2cl])
 AC_PATH_PROG([UNCRUSTIFY], [uncrustify])
-AC_PATH_PROG(DIFF, [diff], [])
-AC_PATH_PROG(SEVEN_ZIP, [7z], [])
-AC_PATH_PROG(LZMA, [lzma], [])
-AC_PATH_PROG(ZIP, [zip], [])
-AC_PATH_PROG(TAR, [tar], [])
-AC_PATH_PROG(COMPRESS, [compress], [])
-AC_PATH_PROG(SHAR, [shar], [])
-AC_PATH_PROG(HTMLTIDY, [tidy], [])
-AC_PATH_PROG(DB2X_XSLTPROC, [db2x_xsltproc], [])
-AC_PATH_PROG(DB2X_MANXML, [db2x_manxml], [])
-AC_PATH_PROG(DB2X_TEXIXML, [db2x_texixml], [])
-AC_PATH_PROG(BZIP2, [bzip2], [])
+AC_PATH_PROG([DIFF], [diff], [])
+AC_PATH_PROG([SEVEN_ZIP], [7z], [])
+AC_PATH_PROG([LZMA], [lzma], [])
+AC_PATH_PROG([ZIP], [zip], [])
+AC_PATH_PROG([TAR], [tar], [])
+AC_PATH_PROG([COMPRESS], [compress], [])
+AC_PATH_PROG([SHAR], [shar], [])
+AC_PATH_PROG([HTMLTIDY], [tidy], [])
+AC_PATH_PROG([DB2X_XSLTPROC], [db2x_xsltproc], [])
+AC_PATH_PROG([DB2X_MANXML], [db2x_manxml], [])
+AC_PATH_PROG([DB2X_TEXIXML], [db2x_texixml], [])
+AC_PATH_PROG([BZIP2], [bzip2], [])
 
 
 AX_DIFF_OPTION([E])
@@ -397,20 +399,20 @@ AX_DIFF_OPTION([-strip-trailing-cr])
 
 
 
-AM_CONDITIONAL(OS_HAS_DIFF, [test -n "$DIFF"])
-AM_CONDITIONAL(OS_HAS_SEVENZIP, [test -n "$SEVEN_TAR"])
-AM_CONDITIONAL(OS_HAS_LZMA, [test -n "$LZMA"])
-AM_CONDITIONAL(OS_HAS_ZIP, [test -n "$ZIP"])
-AM_CONDITIONAL(OS_HAS_TAR, [test -n "$TAR"])
-AM_CONDITIONAL(OS_HAS_COMPRESS, [test -n "$COMPRESS"])
-AM_CONDITIONAL(OS_HAS_SHAR, [test -n "$SHAR"])
-AM_CONDITIONAL(OS_HAS_RMAN, [test -n "$RMAN"])
-AM_CONDITIONAL(OS_HAS_HTMLTIDY, [test -n "$HTMLTIDY"])
-AM_CONDITIONAL(OS_HAS_DB2X_XSLTPROC, [test -n "$DB2X_XSLTPROC"])
-AM_CONDITIONAL(OS_HAS_DB2X_MANXML, [test -n "$DB2X_MANXML"])
-AM_CONDITIONAL(OS_HAS_DB2X_TEXIXML, [test -n "$DB2X_TEXIXML"])
-AM_CONDITIONAL(OS_HAS_GZIP, [test -n "$GZIP"])
-AM_CONDITIONAL(OS_HAS_BZIP2, [test -n "$BZIP2"])
+AM_CONDITIONAL([OS_HAS_DIFF], [test -n "$DIFF"])
+AM_CONDITIONAL([OS_HAS_SEVENZIP], [test -n "$SEVEN_TAR"])
+AM_CONDITIONAL([OS_HAS_LZMA], [test -n "$LZMA"])
+AM_CONDITIONAL([OS_HAS_ZIP], [test -n "$ZIP"])
+AM_CONDITIONAL([OS_HAS_TAR], [test -n "$TAR"])
+AM_CONDITIONAL([OS_HAS_COMPRESS], [test -n "$COMPRESS"])
+AM_CONDITIONAL([OS_HAS_SHAR], [test -n "$SHAR"])
+AM_CONDITIONAL([OS_HAS_RMAN], [test -n "$RMAN"])
+AM_CONDITIONAL([OS_HAS_HTMLTIDY], [test -n "$HTMLTIDY"])
+AM_CONDITIONAL([OS_HAS_DB2X_XSLTPROC], [test -n "$DB2X_XSLTPROC"])
+AM_CONDITIONAL([OS_HAS_DB2X_MANXML], [test -n "$DB2X_MANXML"])
+AM_CONDITIONAL([OS_HAS_DB2X_TEXIXML], [test -n "$DB2X_TEXIXML"])
+AM_CONDITIONAL([OS_HAS_GZIP], [test -n "$GZIP"])
+AM_CONDITIONAL([OS_HAS_BZIP2], [test -n "$BZIP2"])
 
 
 
@@ -590,10 +592,6 @@ within the CRM114 trap handler. Can't say you haven't been warned!
 
 
 
-AC_CANONICAL_HOST
-AC_DEFINE_UNQUOTED(HOSTTYPE, "$host_os", [Set host type])
-
-
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -655,9 +653,9 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
-AC_CHECK_TYPES(clock_t)
-AC_CHECK_TYPES(pid_t)
-AC_CHECK_TYPES(mode_t)
+AC_CHECK_TYPES([clock_t])
+AC_CHECK_TYPES([pid_t])
+AC_CHECK_TYPES([mode_t])
 AC_CHECK_TYPES([struct stat])
 AX_NSEC_STAT_FIELDS
 
@@ -1021,6 +1019,7 @@ AC_CONFIG_FILES([Makefile
                  tests/zz_translate_test.crm
                  tests/quine.crm
                  tests/defaulttest.crm
+                 tests/print_binary2decimal_int32.crm
                  examples/pad.crm
                  examples/shroud.crm
                  mailfilter/classifymail.crm
@@ -1033,9 +1032,14 @@ AC_CONFIG_FILES([Makefile
 
 AC_OUTPUT
 
-
-
-
+#
+# and when we finally have produced the files, make sure the generated sheel scripts are executable:
+#
+chmod a+x src/*.sh
+chmod a+x tests/*.sh
+chmod a+x tests/*.crm
+chmod a+x examples/*.crm
+chmod a+x mailfilter/*.crm
 
 
 dnl Print configuration summary

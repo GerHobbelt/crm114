@@ -9,8 +9,8 @@
 #include "config.h"
 #elif defined (WIN32)
 #include "config_win32.h"
-#elif defined (ORIGINAL_BILL_Y_MAKEFILE)
-#include "config_BillY.h"
+#elif defined (ORIGINAL_VANILLA_UNIX_MAKEFILE)
+#include "config_vanilla_UNIX_sys_defaults.h"
 #else
 #error \
     "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."

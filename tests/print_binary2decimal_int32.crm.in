@@ -1,0 +1,364 @@
+#
+# crm114 script to convert raw input bytes to decimal byte values which are human readable:
+#
+# the idea is to convert the bytes using this sequence:
+#
+# - duplicate each byte so we get one nibble per byte
+# - transform the 'nibble bytes' - which are not really nibbles - to hex digits
+# - eval-print this stuff to decimal numbers.
+#
+# Unfortunately the :@: math operator does not accept hexadecimal values,
+# so the code below does not work as expected: very weird results are your share.
+# so we provide an 'octet' based approach, which _does_ work (at least on a GerH build).
+#
+
+
+
+isolate (:little-endian:)    # run with commandline argument --little-endian to see the little endian version at work...
+
+isolate (:endianess:) /BIG ENDIAN/
+{
+    {
+        match [:little-endian:] /SET/
+        alter (:endianess:) /LITTLE ENDIAN/
+    }
+    output /hexdumping the stdin input as :*:endianess: 32-bit integer values. If you know ASCII tables, that's a pre now. ;-)\n/
+    {
+        fail  # because the easier hex approach wouldn't work as :@: doesn't eat hex values...
+
+        ##################################################################################################
+        ##################################################################################################
+        #
+        # This was the original setup, but hexadecimal values are not recognized as such
+        # by 'eval', instead 0x69666A6D is treated as '0 x 69666A6D' which is a wickedly large
+        # hexdumped string of the value 0 and LOTS of leading space, while the remaining part
+        # 'A6D' didn't make the math parser scream about errors in its input either :-S
+        #
+        ##################################################################################################
+
+        match <fromend> (:bytes:) /..../    # for 4-byte integers; <fromend> is needed to step through the input at 4 bytes a piece/match.
+        # nibble-yze the bytes
+        isolate (:msn:) /:*:bytes:/
+        isolate (:lsn:) /:*:bytes:/
+
+        isolate (:msnhex:)
+        isolate (:lsnhex:)
+
+        # now convert those nibbles to HEX digits:
+        translate (:msnhex:) [:msn:] /\x00-\xFF/ /\
+0000000000000000\
+1111111111111111\
+2222222222222222\
+3333333333333333\
+4444444444444444\
+5555555555555555\
+6666666666666666\
+7777777777777777\
+8888888888888888\
+9999999999999999\
+AAAAAAAAAAAAAAAA\
+BBBBBBBBBBBBBBBB\
+CCCCCCCCCCCCCCCC\
+DDDDDDDDDDDDDDDD\
+EEEEEEEEEEEEEEEE\
+FFFFFFFFFFFFFFFF\
+/
+        translate (:lsnhex:) [:lsn:] /\x00-\xFF/ /\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+0-9A-F\
+/
+
+        # now mix the nibbles into a valid hex number:
+        match (:ful: :n0: :n2: :n4: :n6: ) [:msnhex:] /(.)(.)(.)(.)/
+        match (:ful: :n1: :n3: :n5: :n7: ) [:lsnhex:] /(.)(.)(.)(.)/
+
+        isolate (:hexword:) /0x:*:n0::*:n1::*:n2::*:n3::*:n4::*:n5::*:n6::*:n7:/
+        isolate (:hexval:)
+        eval (:hexval:) /:@: 0 + 0x:*:n0::*:n1::*:n2::*:n3::*:n4::*:n5::*:n6::*:n7: :/
+
+        output /:*:hexval:/
+
+        liaf
+    }
+    alius
+    {
+        ##################################################################################################
+        ##################################################################################################
+        #
+        # This is the new octal-based setup, which works on GerH build 2100
+        #
+        ##################################################################################################
+
+        match <fromend> (:bytes:) /..../    # for 4-byte integers; <fromend> is needed to step through the input at 4 bytes a piece/match.
+        # octet-yze the bytes: three octets per byte - high, middle and low
+        isolate (:hsn:) /:*:bytes:/
+        isolate (:msn:) /:*:bytes:/
+        isolate (:lsn:) /:*:bytes:/
+
+        isolate (:hsnhex:)
+        isolate (:msnhex:)
+        isolate (:lsnhex:)
+
+        # now convert those octets to decimal digits:
+        translate (:hsnhex:) [:hsn:] /\x00-\xFF/ /\
+00000000\
+00000000\
+00000000\
+00000000\
+00000000\
+00000000\
+00000000\
+00000000\
+11111111\
+11111111\
+11111111\
+11111111\
+11111111\
+11111111\
+11111111\
+11111111\
+22222222\
+22222222\
+22222222\
+22222222\
+22222222\
+22222222\
+22222222\
+22222222\
+33333333\
+33333333\
+33333333\
+33333333\
+33333333\
+33333333\
+33333333\
+33333333\
+44444444\
+44444444\
+44444444\
+44444444\
+44444444\
+44444444\
+44444444\
+44444444\
+55555555\
+55555555\
+55555555\
+55555555\
+55555555\
+55555555\
+55555555\
+55555555\
+66666666\
+66666666\
+66666666\
+66666666\
+66666666\
+66666666\
+66666666\
+66666666\
+77777777\
+77777777\
+77777777\
+77777777\
+77777777\
+77777777\
+77777777\
+77777777\
+/
+        translate (:msnhex:) [:msn:] /\x00-\xFF/ /\
+00000000\
+11111111\
+22222222\
+33333333\
+44444444\
+55555555\
+66666666\
+77777777\
+00000000\
+11111111\
+22222222\
+33333333\
+44444444\
+55555555\
+66666666\
+77777777\
+00000000\
+11111111\
+22222222\
+33333333\
+44444444\
+55555555\
+66666666\
+77777777\
+00000000\
+11111111\
+22222222\
+33333333\
+44444444\
+55555555\
+66666666\
+77777777\
+00000000\
+11111111\
+22222222\
+33333333\
+44444444\
+55555555\
+66666666\
+77777777\
+00000000\
+11111111\
+22222222\
+33333333\
+44444444\
+55555555\
+66666666\
+77777777\
+00000000\
+11111111\
+22222222\
+33333333\
+44444444\
+55555555\
+66666666\
+77777777\
+00000000\
+11111111\
+22222222\
+33333333\
+44444444\
+55555555\
+66666666\
+77777777\
+00000000\
+11111111\
+22222222\
+33333333\
+44444444\
+55555555\
+66666666\
+77777777\
+/
+        translate (:lsnhex:) [:lsn:] /\x00-\xFF/ /\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+0-7\
+/
+
+        #
+        # now mix the octets into a valid decimal(!) number:
+        #
+        # the order in which you those nX variables determines the perceived Endianess.
+        # With this layout, it's 32-bit BIG ENDIAN.
+        #
+        match (:ful: :n0: :n3: :n6: :n9: ) [:hsnhex:] /(.)(.)(.)(.)/
+        match (:ful: :n1: :n4: :n7: :nA: ) [:msnhex:] /(.)(.)(.)(.)/
+        match (:ful: :n2: :n5: :n8: :nB: ) [:lsnhex:] /(.)(.)(.)(.)/
+
+        {
+            match [:little-endian:] /SET/
+
+            # 32-bit little Endian sample:
+            match (:ful: :n9: :n6: :n3: :n0: ) [:hsnhex:] /(.)(.)(.)(.)/
+            match (:ful: :nA: :n7: :n4: :n1: ) [:msnhex:] /(.)(.)(.)(.)/
+            match (:ful: :nB: :n8: :n5: :n2: ) [:lsnhex:] /(.)(.)(.)(.)/
+        }
+
+        isolate (:octword:) /:*:n0::*:n1::*:n2: :*:n3::*:n4::*:n5: :*:n6::*:n7::*:n8: :*:n9::*:nA::*:nB:/
+        isolate (:hexval:)
+        eval (:hexval:)    /:@: ( ( 65536 *                                                       \
+                                       ( ( 256 * ((((:*:n0: * 8) + :*:n1:) * 8) + :*:n2:) )       \
+                                         +       ((((:*:n3: * 8) + :*:n4:) * 8) + :*:n5:)         \
+                                       )                                                          \
+                                  )  + ( ( 256 * ((((:*:n6: * 8) + :*:n7:) * 8) + :*:n8:) )       \
+                                         +       ((((:*:n9: * 8) + :*:nA:) * 8) + :*:nB:)         \
+                                       )                                                          \
+                                ) x 8.1                                                           \
+                            :/
+
+        output /hexval = :*:hexval: \n/
+
+        liaf
+    }
+}
+
+
+
+
+

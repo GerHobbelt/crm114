@@ -417,18 +417,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\src\config.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\config_BillY.h"
-				>
-			</File>
-			<File
-				RelativePath=".\config_win32.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\crm114.h"
 				>
 			</File>
@@ -448,10 +436,30 @@
 				RelativePath="..\src\crm114_sysincludes.h"
 				>
 			</File>
-			<File
-				RelativePath="..\src\crm_expr_clump_nn.h"
+			<Filter
+				Name="vanilla UNIX defaults"
 				>
-			</File>
+				<File
+					RelativePath="..\src\config_vanilla_UNIX_sys_defaults.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Win32 specific"
+				>
+				<File
+					RelativePath=".\config_win32.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="autoconf/make generated"
+				>
+				<File
+					RelativePath="..\src\config.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -862,7 +870,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\Makefile.BillY"
+					RelativePath="..\src\Makefile.vanilla"
 					>
 				</File>
 				<File
@@ -1129,6 +1137,10 @@
 			</File>
 			<File
 				RelativePath="..\src\paolo_overvars.crm"
+				>
+			</File>
+			<File
+				RelativePath="..\src\print_binary2decimal_int32.crm"
 				>
 			</File>
 			<File

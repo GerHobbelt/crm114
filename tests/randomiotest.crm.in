@@ -1,4 +1,4 @@
-#!/usr/bin/crm
+#! @abs_top_builddir@/src/crm114
 #
 #    Random I/O test - test lseeking I/O
 #

@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! @abs_top_builddir@/src/crm114
 window
 output /\nStart of insert processor testing \n/
 output / start here .../

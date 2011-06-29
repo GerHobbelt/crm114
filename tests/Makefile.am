@@ -143,14 +143,14 @@ test_SCRIPTS = \
 	tokendelimiterbugtest.crm bracesbugtest.crm \
 	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
 	alius_w_comment.crm \
-	userdirtest.crm
-
+	userdirtest.crm \
+	print_binary2decimal_int32.crm
 
 
 
 test_UBERSCRIPTS = megatest.sh \
-    megatest.bat \
-    megatest_ng.sh \
+    	megatest.bat \
+    	megatest_ng.sh \
 	testscript.sh
 
 
@@ -162,6 +162,8 @@ EXTRA_DIST = megatest_knowngood.log \
 
 
 TESTS = test_basics test_other test_megatest_ng test_mailfilter test_mailreaver
+
+
 
 # original BillY test script:
 test_megatest: $(test_SCRIPTS) $(MEGATESTFILES) megatest_knowngood.log megatest.sh
@@ -226,22 +228,30 @@ test: test_basics test_other test_megatest_ng test_mailfilter test_mailreaver
 
 # series of basic regression tests for CRM114:
 test_basics:
+	$(E) "   ************************************"
 	$(E) "test_basics CALLED"
+	$(E) "   ************************************"
 
 
 # test more complex CRM scripts in ../src
 test_other:
+	$(E) "   ************************************"
 	$(E) "test_other CALLED"
+	$(E) "   ************************************"
 
 
 # test the mailfilter script
 test_mailfilter:
+	$(E) "   ************************************"
 	$(E) "test_mailfilter CALLED"
+	$(E) "   ************************************"
 
 
 # test the mailreaver script
 test_mailreaver:
+	$(E) "   ************************************"
 	$(E) "test_mailreaver CALLED"
+	$(E) "   ************************************"
 
 
 

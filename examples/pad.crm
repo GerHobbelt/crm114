@@ -1,4 +1,4 @@
-#!/usr/bin/crm -(help file delete)
+#! /windows/G/prj/3actual/crm114/src/crm114 -(help file delete)
 #    
 #    Program for Associative Data - PAD
 #

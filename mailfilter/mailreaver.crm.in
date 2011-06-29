@@ -1,4 +1,4 @@
-#! /usr/bin/crm 
+#! @abs_top_builddir@/src/crm114 
 #  **** bangline argument config commented out for better system portability
 # -( spam good cache dontstore stats_only outbound undo verbose maxprio minprio delprio fileprefix config)
 #

@@ -23,6 +23,9 @@ DB2X_XSLTPROC  = @DB2X_XSLTPROC@
 DB2X_MANXML    = @DB2X_MANXML@
 DB2X_TEXIXML   = @DB2X_TEXIXML@
 
+# [i_a] override AC_LOCAL so the tool will correctly include the ./m4 directory too
+#       (bug in aclocal 1.xx?)
+ACLOCAL = @ACLOCAL@ -I $(top_srcdir)/m4
 
 SEVENZIP_OPTIONS=a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on
 # SEVENZIP_OPTIONS=a -si
@@ -39,18 +42,28 @@ ARCHIVE_BASE_NAME = @PACKAGE_TARNAME@-@PACKAGE_VERSION@-@TAR_FILENAME_POSTFIX@
 SILENT = @SILENT@
 DIFF_FLAGS = @DIFF_FLAGS@
 
+ECHO = echo
+E = $(SILENT) $(ECHO)
 
 
+
+#
+# [i_a] WARNING: do NOT name these other than $(distdir).tar.* as other names, e.g.
+#         $(ARCHIVE_BASE_NAME).src.tar.*
+#       will NOT work as the generated makefile code cannot cope with this flexibility (yet).
+#
+#       It's that or I have overlooked a autoconf/automake/auto-whatever option... :-S
+#
 DIST_ARCHIVES =
 if OS_HAS_TAR
 if OS_HAS_GZIP
-DIST_ARCHIVES += $(ARCHIVE_BASE_NAME).src.tar.gz
+DIST_ARCHIVES += $(distdir).tar.gz
 endif
 if OS_HAS_BZIP2
-DIST_ARCHIVES += $(ARCHIVE_BASE_NAME).src.tar.bz2
+DIST_ARCHIVES += $(distdir).tar.bz2
 endif
 if OS_HAS_COMPRESS
-DIST_ARCHIVES += $(ARCHIVE_BASE_NAME).src.tar.Z
+DIST_ARCHIVES += $(distdir).tar.Z
 endif
 endif
 
@@ -66,6 +79,8 @@ doc_DATA = AUTHORS COPYING ChangeLog HACKING README TODO NEWS README.1st
 
 DISTCLEANFILES = 
 CLEANFILES = *~ *.bak
+MAINTAINERCLEANFILES = configure.in aclocal.m4 Makefile.in
+
 
 MSVC_PRJ_FILES = win32/config_win32.h \
 	win32/crm114.sln win32/crm114.vcproj win32/cssdiff.vcproj win32/osbf-util.vcproj \
@@ -284,16 +299,47 @@ endif
 
 
 
-
+#
+# [i_a] see the comment at 'DIST_ARCHIVES' why we need to copy the archives to the 'regular'
+#       $(distdir).tar.* name(s) here -- if we don't 'make distcheck' will fail very quickly.
+#
 dist dist-all: distribution
 
+
+
+#
+# when hook is called, configure has not yet run in the dist dir...
+#
+dist-hook:
+	cd $(top_distdir) 
+	$(E) "   ************************************"
+	$(E) "   dist-hook"
+	$(E) "   ************************************"
+	$(SILENT) echo "Copying the archive(s) to standard $(distdir).tar.xxx' names suitable for distcheck"; 
+	-rm -f $(distdir).tar.gz
+	-rm -f $(distdir).tar.bz2
+	-rm -f $(distdir).tar.Z
+if OS_HAS_TAR
+if OS_HAS_GZIP
+	$(LN_S) $(ARCHIVE_BASE_NAME).src.tar.gz $(distdir).tar.gz
+endif
+if OS_HAS_BZIP2
+	$(LN_S) $(ARCHIVE_BASE_NAME).src.tar.bz2 $(distdir).tar.bz2
+endif
+if OS_HAS_COMPRESS
+	$(LN_S) $(ARCHIVE_BASE_NAME).src.tar.Z $(distdir).tar.Z
+endif
+endif
+	
 
 
 
 
 
 distcheck-hook:
-	-echo "distcheck-hook!"
+	$(E) "   ************************************"
+	$(E) "   distcheck-hook!"
+	$(E) "   ************************************"
 
 #distcheck-local:
 #	-echo "distcheck-local!"

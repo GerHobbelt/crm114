@@ -21,7 +21,7 @@ process_crm()
     echo "copying[processed]  : src/$2 -- $1/$2$3"
     if [ -f src/$2 ]
     then
-        cat src/$2 | sed -e 's,#! \*\/usr\/bin\/crm,#! @CRM@,g' > $1/$2$3
+        cat src/$2 | sed -e 's,#! *\/usr\/bin\/crm,#! @abs_top_builddir@/src/crm114,g' > $1/$2$3
     fi
 }
 
@@ -30,7 +30,7 @@ process_shfile()
     echo "copying[procd/shell]: src/$2 -- $1/$2$3"
     if [ -f src/$2 ]
     then
-        cat src/$2 | sed -e 's,\./crm114,@top_builddir@/src/crm114,g' > $1/$2$3
+        cat src/$2 | sed -e 's,\./crm114,@abs_top_builddir@/src/crm114,g' > $1/$2$3
         chmod a+x $1/$2$3
     fi
 }
@@ -84,6 +84,7 @@ process_crm         tests                defaulttest.crm                   .in
 process_crm         tests                alius_w_comment.crm               .in
 process_crm         tests                zz_translate_test.crm             .in
 process_crm         tests                quine.crm                         .in
+process_crm         tests                print_binary2decimal_int32.crm    .in
 
 
 check_file          tests                megatest_knowngood.log

@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! @abs_top_builddir@/src/crm114
 #   test the tokenizer: previous version were extremely dependent
 #   on the 'right kind of whitespace' everywhere.
 #

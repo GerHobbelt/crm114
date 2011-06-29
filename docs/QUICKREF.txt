@@ -16,7 +16,7 @@ Command Line Options:
 
  -{statements}  - execute the statements inside the {} brackets
 
- -b N           - sets a breakpoint on stmt N
+ -b N           - sets a breakpoint on statement N
 
  -d N           - run N cycles, then drop into debugger. If no N, debug
                   immediately
@@ -40,7 +40,7 @@ Command Line Options:
 
  -P N           - max program lines @ 128 chars/line
 
- -q N           - mathmode (0,1 alg/RPN in EVAL,2,3 alg/RPN everywhere)
+ -q N           - math mode (0,1 alg/RPN in EVAL,2,3 alg/RPN everywhere)
 
  -r N           - set OSBF min pmax/pmin ratio (default=9)
 
@@ -50,11 +50,11 @@ Command Line Options:
  -S N           - new feature file (.css) size is N rounded up to 2^I+1
                   featureslots
 
- -C             - use env. locale (default POSIX)
+ -C             - use environment locale (default POSIX)
 
  -t             - give user level execution trace output
 
- -T             - implementors trace output (only for the masochistic!)
+ -T             - implementers trace output (only for the masochistic!)
 
  -u dir         - chdir to directory dir before starting execution
 
@@ -87,7 +87,7 @@ Command Line Options:
 
 Absent the -{ program } flag, the first arg is taken to be the name of
 a file containing a crm114 program, subsequent args are merely supplied
-as :_argN: values.  Use single quotes around commandline programs
+as :_argN: values.  Use single quotes around command line programs
 '-{ like this }' to prevent the shell from doing odd things to your
 command-line programs.
 
@@ -161,7 +161,7 @@ Builtin variables:
           :_argc:              - how many command line arguments there were
           :_pos0: thru :_posN: - positional args ('-' or '--' args deleted)
           :_posc:              - how many positional arguments there were
-          :_pos_str:           - all positional arguments concatented
+          :_pos_str:           - all positional arguments concatenated
           :_env_whatever:      - environment value 'whatever'
           :_env_string:        - all environmental arguments concatenated
           :_crm_version:       - the version of the CRM system
@@ -177,7 +177,7 @@ Builtin variables:
 ----  VARIABLE EXPANSION  ----
 
 You can use the standard C char constant '\' characters, such as "\n"
-for newline, as well as excaped hexadecimal and octal characters like
+for newline, as well as escaped hexadecimal and octal characters like
 \xHH and \oOOO but these are constants, not variables, and cannot be
 redefined.
 
@@ -206,7 +206,7 @@ below for more details.
 
 Default behavior is to read all of standard input till EOF into the
 default data window (named :_dw:), then execute the program (this is
-overridden if first executable statement is a WINDOW stmt).
+overridden if first executable statement is a WINDOW statement).
 
 Variables don't get their own storage unless you ISOLATE them (see
 below), instead variables are start/length pairs indexing into the
@@ -296,7 +296,7 @@ noop                              - no-op statement
 :label: (:arg:)                   - define a CALLable label.  The args in
                                     the CALL statement are concatenated and
                                     put into the freshly ISOLATEd var :arg:
-   (:arg:)                        - var-expanded varname to recieve the
+   (:arg:)                        - var-expanded varname to receive the
                                     caller's arguments (usually a MATCH is
                                     then done to put locally convenient
                                     labels on the args).
@@ -313,7 +313,7 @@ alius                             - if the last bracket-group succeeded, ALIUS
                                     an ELSE clause and a CASE statement.
 
 
-alter (:var:) /new-val/           - surgically change value of var to newval
+alter (:var:) /new-val/           - surgically change value of var to new-val
       (:var:)                     - var to change (var-expanded)
               /new-val/           - value to change to (var-expanded)
 
@@ -371,26 +371,26 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ // /svm-specific 
       <osb>                       - use orthogonal sparse bigram (OSB)
                                     features and Markovian classification
                                     instead of Markovian SBPH features.
-                                    OSB uses a subset of SBPH featuers
+                                    OSB uses a subset of SBPH features
                                     with about 1/4 the memory and disk needs,
                                     and about 4x the speed of full Markovian,
                                     with basically the same accuracy.
       <osbf>                      - use the Fidelis Confidence Factor
                                     local probability generator.  This
                                     format is not compatible with the default,
-                                    but with singlesided threshold training
+                                    but with single-sided threshold training
                                     ( typically pR of 10-30 ) achieves the best
                                     accuracy yet.
-      <winnow>                    - use the Winnow nonstatistical classifier
-                                    and the OSB frontend feature generator.
+      <winnow>                    - use the Winnow non-statistical classifier
+                                    and the OSB front-end feature generator.
                                     Winnow uses .cow files, which are not
                                     compatible with the .css files for
-                                    the Markovian (default) and OSB classifers.
+                                    the Markovian (default) and OSB classifiers.
       <hyperspace>                - use hyperspace matching; each learned
                                     document represents a light source in a
                                     4-billion-dimensional hyperspace, and the
                                     set of sources that shines most brightly onto
-                                    the unknown document's hyperspatial location
+                                    the unknown document's hyper-spatial location
                                     is the matching class.  EXPERIMENTAL!!!
       <entropy>                   - use the bit-entropy classifier.  This uses
                                     compressibility of the unknown given the
@@ -440,7 +440,7 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ // /svm-specific 
                    [:in: /regex/] - take a substring of :in: that
                                     matches the regex
                      /word-pat/   - regex to describe what a
-                                    parseable word is.  Default is
+                                    parse-able word is.  Default is
                                     /[[:graph:]]+/
                       /pR_offset/ - OSBF: change the classify threshold;
                                     with this optional parameter the
@@ -468,7 +468,7 @@ clump [:text:] (clumpfile) (status) <flags> /regex/ /params/
                                     and refute are supported, with the same
                                     meanings as in LEARN and CLASSIFY.  Default
                                     clustering is by document-to-document
-                                    nearest-neighbor hyperspatial distance.
+                                    nearest-neighbor hyper-spatial distance.
                                     If you add the bychunk flag, then the
                                     distance is to the cluster's centroid.
       /regex/                     - optional tokenization regex; default is
@@ -743,14 +743,14 @@ learn <flags> (:class:) [:in:] /word-pat/ // /svm-specific controls/
       <osbf>                      - use the Fidelis Confidence Factor
                                     local probability generator.  This
                                     format is not compatible with the default,
-                                    but with singlesided threshold training
+                                    but with single-sided threshold training
                                     ( typically pR of 10-30 ) achieves the best
                                     accuracy yet.
-      <winnow>                    - use the Winnow nonstatistical classifier
-                                    and the OSB frontend feature generator.
+      <winnow>                    - use the Winnow non-statistical classifier
+                                    and the OSB front-end feature generator.
                                     Winnow uses .cow files, which are not
                                     compatible with the .css files for
-                                    the Markovian (default) and OSB classifers.
+                                    the Markovian (default) and OSB classifiers.
                                     Remember that for Winnow to be at it's best
                                     in accuracy, it has to be trained both with
                                     positive cases that failed to make a minimum
@@ -764,7 +764,7 @@ learn <flags> (:class:) [:in:] /word-pat/ // /svm-specific controls/
                                     document represents a light source in a
                                     4-billion-dimensional hyperspace, and the
                                     set of sources that shines most brightly onto
-                                    the unknown document's hyperspatial location
+                                    the unknown document's hyper-spatial location
                                     is the matching class.  EXPERIMENTAL!!!
       <unigram>                   - use single-word features only; using this
                                     this makes CRM114 almost exactly
@@ -809,7 +809,7 @@ learn <flags> (:class:) [:in:] /word-pat/ // /svm-specific controls/
     /word-pat/                    - regex that defines a "word".  Things
                                     that aren't "words" are ignored.
                                     Default is /[[:graph:]]+/.  Ignored
-                                    in correllation and bit-entropy.
+                                    in correlation and bit-entropy.
     /entropy_fuzz/                  Bit-entropy: this number is the
                                     "fuzz" factor in determining when to
                                     loop back the compression algorithm
@@ -832,16 +832,16 @@ match <flags> (:var1: ...) [:in:] /regex/
 match <flags> (:var1: ...) [:in: start len] /regex/
 match <flags> (:var1: ...) [:in: /inregex/] /regex/
                                   - Attempt to match the given regex;
-                                    if match succeds, variables are bound;
+                                    if match succeeds, variables are bound;
                                     if match fails, program skips to the
                                     closing '}' of this block
       <absent>                    - statement succeeds if match not present
       <nocase>                    - ignore case when matching
-      <literal>                          - No special characters in regex (only
+      <literal>                   - No special characters in regex (only
                                     supported with TREregex, not GNUregex.)
                                     Think of this as WYSIWYG matching.
       <fromstart>                 - start match at start of the [:in:] var
-      <fromcurrent>                  - start match at start of previous
+      <fromcurrent>               - start match at start of previous
                                     successful match on the [:in:] var
       <fromnext>                  - start match at one character past
                                     the start of the previous successful
@@ -862,8 +862,8 @@ match <flags> (:var1: ...) [:in: /inregex/] /regex/
                                     var gets the text matched by the
                                     full regex.  The second, third, etc.
                                     vars get each subsequent parenthesized
-                                    subexpression, in left-to-right order
-                                    of the subexpression's left parenthesis.
+                                    sub-expression, in left-to-right order
+                                    of the sub-expression's left parenthesis.
                                     These are "captures", not ALTERs, so
                                     text overlapping prior :var: values is
                                     left unchanged.
@@ -908,10 +908,10 @@ output <flags> [filename] /output-text/
                                     the write is the length of the
                                     expansion of /output-text/
               /output-text/       - string to output (var-expanded)
-                                 
-                                 
+
+
 pmulc (clumpfile) [:text:] <flags> /regex/
-                                  - use the clumpfile as a lookup
+                                  - use the clumpfile as a look-up
                                     to translate documents to their
                                     appropriate clusters.  The text does
                                     not get added into the clumpfile.
@@ -922,8 +922,8 @@ pmulc (clumpfile) [:text:] <flags> /regex/
       <flags>                     - The optional flags are bychunk, unique,
                                     and unigram, with the same functions
                                     as under clump.
-                                 
-                                 
+
+
 return /returnval/                - return from a CALL.  Note that since
                                     CALL executes in shared space with the
                                     caller, all changes made in the CALLed
@@ -931,11 +931,11 @@ return /returnval/                - return from a CALL.  Note that since
       /returnval/                 - this (var-expanded) value is returned
                                     to the caller (or if the caller doesn't
                                     accept return values, it's discarded).
-                                 
-                                 
+
+
 routine                           - WARNING: reserved for future use
-                                 
-                                 
+
+
 syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
                                   - execute a shell command or fork
                                     to the specified label.  This happens
@@ -951,7 +951,7 @@ syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ [timeout pollcycle]
                                     syscalled process around).  Later
                                     syscalls with the same :status:
                                     var will continue feeding to and
-                                    reading from the kept proc.
+                                    reading from the kept process.
         <async>                   - don't wait for process to output an
                                     EOF; just grab what's available in
                                     the process's output pipe and proceed
@@ -1072,14 +1072,14 @@ window <flags> (:w-var:) (:s-var:) /cut-regex/ /add-regex/
                                     data window), then reads adds from std.
                                     input till we find add-regex (inclusive).
        <nocase>                   - ignore case when matching cut- and add-
-                                    regexes
+                                    regexes.
        <bychar>                   - (default) read one char at a time and
                                     check input for add-regex every character,
-                                    so never reads "too much" from stdin..
+                                    so never reads "too much" from stdin.
        <bychunk>                  - reads as much data as available, then
-                                    checks with the regex. ( unused
+                                    checks with the regex. (unused
                                     characters are kept around for later)
-       <byeof>                    - wait for EOF to check add-regex (unused
+       <byeof>                    - wait for EOF to check add-regex. (unused
                                     characters are kept around for later)
        <eofaccepts>               - accept an EOF as being a successful
                                     regex match ( default is only a successful
@@ -1122,7 +1122,7 @@ longest match possible that can fit".
 
   a through z
   A through Z   - all match themselves
-  0 thorugh 9
+  0 through 9
 
   most punctuation - matches itself, but check below!
 
@@ -1208,15 +1208,15 @@ guess they'd do from their names.
               1-or-more, 0-or-1, or n-to-m times, but _shortest_ match
               that fits, given the already-selected start point of the
               regex. This is an "anti-greedy" match, unlike the normal
-              match that wants to have the longest possible resultiing match
+              match that wants to have the longest possible resulting match
 
   \N        - where N is 1 through 9 - matches the N'th parenthesized
-              previous subexpression.  You don't have to backslash-escape
+              previous sub-expression.  You don't have to backslash-escape
               the backslash (e.g. write this as \1 or as \\1, either will
               work)
 
   \Q        - start verbatim quoting - all following characters represent
-              exactly themselves; no repcounts or wildcards apply.  This is
+              exactly themselves; no repeat counts or wildcards apply.  This is
               _only_ terminated by a \E or the end of the regex.
 
   \E        - end of verbatim quoting.
@@ -1239,8 +1239,8 @@ guess they'd do from their names.
 
 
   (?:some-regex)
-            - parenthesize a subexpression, but _don't_ capture a
-              submatch for it.
+            - parenthesize a sub-expression, but _don't_ capture a
+              sub-match for it.
 
   (?inr-inr:regex)
             - Let you turn on or off case independence, nomultiline,
@@ -1256,7 +1256,7 @@ guess they'd do from their names.
 
               n - don't match newlines with wildcards such as .* or with
                   anti-wildcards like [^j-z].  "-n" _allows_ matching of
-                  newlines (this is slightly counterintuitive).  eg:
+                  newlines (this is slightly counter-intuitive).  e.g.:
 
                   /(?n:a.*z)/             matches 'abcxyz' but not
                                            'abc
@@ -1281,15 +1281,15 @@ guess they'd do from their names.
 By default, CRM114 supports string length and mathematical evaluation
 only in an EVAL statement, although it can be set to allow these in
 any place where a var-expanded variable is allowed (see the -q flag).
-The default value ( zero ) allows stringlength and math evaluation
+The default value ( zero ) allows string length and math evaluation
 only in EVAL statements, and uses non-precedence (that is, strict
 left-to-right unless parenthesis are used) algebraic notation.  -q 1
-uses RPN instead of algebraic, again allowing stringlength and math
-evaluation only in EVAL expressions.  Modes 2 and 3 allow stringlength
+uses RPN instead of algebraic, again allowing string length and math
+evaluation only in EVAL expressions.  Modes 2 and 3 allow string length
 and math evaluation in _any_ var-expanded expression, with
 non-precedence algebraic notation and RPN notation respectively.
 
-You can overide whether to use Algebraic or RPN precedence of any
+You can override whether to use Algebraic or RPN precedence of any
 math evaluation by using an A or an R as the first character of the
 math evaluation string.
 
@@ -1301,7 +1301,7 @@ The evaluation is done in four sequential passes:
  1)   \-constants like \n, \o377 and \x3F are substituted.  You must
       use three digits for octal and two digits for hex.  To write something
       that will literally appear as one of these constants, escape the
-      backslasn with another backslash, i.e. to output '\o075' use '\\o075'.
+      backslash with another backslash, i.e. to output '\o075' use '\\o075'.
 
  2)   :*:var: variables are substituted (note the difference between
       a constant like '\n' and a variable like ":*:_nl:" here - constants
@@ -1332,7 +1332,9 @@ The evaluation is done in four sequential passes:
 
       Allowed operators are:
 
-             + - * / % ^ v > < = >= <= != e E f F g G x X only.
+             + - * / % ^ v > < = >= <= != e E f F g G x X 
+             
+      only.
 
       The '^' operator is exponentiation; A ^ B is A raised to the B power.
       The 'v' operator is any-base log; A v B is the log of B in logbase
@@ -1350,14 +1352,13 @@ The evaluation is done in four sequential passes:
          a > 3 and c > 9
          b > 5 and c > 9
 
-      Formatting operators: e E f F g G x X - the left side value is
-      unchanged, but the right side value is used as a formatting
-      precision value (note that x and X do not change precision),
-      (i.e. the speed of light expressed in E 7.2 precision such as by
-      299792458 E 7.2 is 3.00E+08) The operators e, E, f, F, g, G, x,
-      and X operators have the same meaning as in C.  (beware a
-      precision after the decimal of 10 though; and note that an x or X
-      format is limited to 32 bits.)
+      Formatting operators: e E f F g G x X - the left side value is unchanged, 
+      but the right side value is used as a formatting precision value (note 
+      that x and X do not change precision), (i.e. the speed of light expressed 
+      in E 7.2 precision such as by 299792458 E 7.2 is 3.00E+08) The operators 
+      e, E, f, F, g, G, x, and X have the same meaning as in C. (beware a 
+      precision after the decimal of 10 though; and note that an x or X format 
+      is limited to 32 bits.)
 
 
     -------------- Notes on Approximate REGEX matching ---------
@@ -1368,7 +1369,7 @@ matching.
 
 Approximate matching is specified similarly to a "repetition count" in
 a regular regex, using brackets.  This approximation applies to the
-previous parenthesized expression (again, just like repetion counts).
+previous parenthesized expression (again, just like repitition counts).
 You can specify maximum total changes, and how many inserts, deletes,
 and substitutions you wish to allow.  The minimum-error match is found
 and reported, if it exists within the bounds you state.
@@ -1439,16 +1440,16 @@ slides over to them).
 
 The Markovian classifier is quite fast; more than fast enough for a
 single user or even a small office.  Filtering speed varies- with no
-optimization and overflow safegaurding (that is, with <microgroom>
+optimization and overflow safeguarding (that is, with <microgroom>
 enabled) filtering speed is usually in excess of what a fractional
 T1 line can downlink.
 
 The Markovian filter can be sped up considerably by turning off
-overflow safegaurding by not using <microgroom>; this optimization
+overflow safeguarding by not using <microgroom>; this optimization
 speeds up learning significantly, but it means that learning is
 unsafe.  System operators must instead manually monitor the fullness
 of the .css files and either manually groom them or expand them as
-required (or a script must be used to atomate this maintenance, which
+required (or a script must be used to automate this maintenance, which
 can be done "in flight").
 
 [ This classifier is the original CRM114 classifier and should be
@@ -1459,7 +1460,7 @@ OSBF. ]
 The next generation filter (and one of the two recommended for
 new production work] is the OSB filter, based on orthogonal sparse
 bigrams.  OSB is natively about 4x faster than full Markovian, but
-loses some of this advantage if overflow safegaurding (no
+loses some of this advantage if overflow safeguarding (no
 <microgroom>) is used.  OSB is almost as accurate as Markovian if disk
 space is unlimited, and more accurate than Markovian if disk space is
 limited.  OSB is the recommended default for new users because
@@ -1509,11 +1510,11 @@ The correlative filter is not recommended for general production work.
 
 A semi-experimental filter is the Hyperspace filter; this uses a
 variation on the K-Nearest-Neighbor method.  It's usually not quite
-as accurate as OSB, but it can filter againts very high levels of
+as accurate as OSB, but it can filter against very high levels of
 intentional obfuscation.  Hyperspace uses a different (and self-growing)
 file format.  Hyperspace usually trains best with a small thick-threshold
 training, similar to Winnow; as of 20061101 the factors have been
-renormalized so that Hyperspace values within +/- 10 pR units give a
+re-normalized so that Hyperspace values within +/- 10 pR units give a
 good thick-threshold for training.
 
 The bit-entropy filter is a different *kind* of filter; instead of
@@ -1525,7 +1526,7 @@ is that it works at all- and it actually works very well.  Because
 there's no tokenizer, the entropy filter can work against languages
 that don't use spaces to delimit words, such as some Asian languages.
 It works quite well against spam.  This filter is still experimental
-and noncompatible upgrades may occur - keep your training data if you
+and non-compatible upgrades may occur - keep your training data if you
 use this filter!
 
 
@@ -1548,7 +1549,7 @@ consecutive.
 The parts of a CRM114 statement are:
 
           ACTION             - the verb.  This is at the start of the
-                               statment.
+                               statement.
 
           /pattern/          - the overall pattern the verb should
                                use, analogous to the "subject" of the

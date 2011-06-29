@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! /windows/G/prj/3actual/crm114/src/crm114
  {                 
         {
                 match   < fromend >  ( :word: )   /[[:graph:]]+/

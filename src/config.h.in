@@ -539,6 +539,9 @@
    first (like Intel and VAX). */
 #undef MACHINE_IS_LITTLE_ENDIAN
 
+/* directory where BillY's original crm114 distro resides */
+#undef ORIGINAL_BILLY_DISTRO_DIR
+
 /* Name of package */
 #undef PACKAGE
 

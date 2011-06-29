@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! @abs_top_builddir@/src/crm114
 #   do rewriting, based on rewrite rules in rewrites.mfp
 #
 #   Start with some data in the :_dw:

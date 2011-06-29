@@ -80,11 +80,10 @@ am__objects_1 = crm_compiler.$(OBJEXT) crm_errorhandlers.$(OBJEXT) \
 	crm_expr_translate.$(OBJEXT) crm_exec_engine.$(OBJEXT) \
 	crm_debugger.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
 	crm_preprocessor.$(OBJEXT) crmregex_gnu.$(OBJEXT) \
-	crmregex_tre.$(OBJEXT) crm_util_errorhandlers.$(OBJEXT) \
-	crm_stats.$(OBJEXT) crm_expr_sks.$(OBJEXT) \
-	crm_expr_svm.$(OBJEXT) crm_expr_fscm.$(OBJEXT) \
-	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
-	crm_versioning.$(OBJEXT)
+	crmregex_tre.$(OBJEXT) crm_stats.$(OBJEXT) \
+	crm_expr_sks.$(OBJEXT) crm_expr_svm.$(OBJEXT) \
+	crm_expr_fscm.$(OBJEXT) crm_generic_port.$(OBJEXT) \
+	crm_stdio_port.$(OBJEXT) crm_versioning.$(OBJEXT)
 am__objects_2 =
 am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	crm_main.$(OBJEXT)
@@ -276,7 +275,7 @@ PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 2221
+REVISION = 2222
 SED = /usr/bin/sed
 SET_MAKE = 
 SEVEN_ZIP = /usr/bin/7z
@@ -285,7 +284,7 @@ SHELL = /bin/sh
 SILENT = @
 STRIP = 
 TAR = /bin/tar
-TAR_FILENAME_POSTFIX = Ger-2221
+TAR_FILENAME_POSTFIX = Ger-2222
 TRE_CONFIG = no
 UNCRUSTIFY = /usr/local/bin/uncrustify
 VERSION = 20080326-BlameSentansoken
@@ -362,7 +361,7 @@ UNCRUSTIFY_BIN = /usr/local/bin/uncrustify
 DIFF_BIN = /usr/bin/diff
 HTMLTIDY_BIN = /usr/bin/tidy
 TAR_CMDLINE = ${TAR_BIN} cf - "$$tardir"
-ARCHIVE_BASE_NAME = crm114-20080326-BlameSentansoken-Ger-2221
+ARCHIVE_BASE_NAME = crm114-20080326-BlameSentansoken-Ger-2222
 DATE = `date +%Y_%m_%d_%H_%M_%S`
 
 #
@@ -493,8 +492,7 @@ MEGATESTFILES = \
 
 
 #
-#
-#   These are the files needed to build the CRM114 engine; they don't 
+#   These are the files needed to build the CRM114 engine; they don't
 #   include the side utilities
 #
 CFILES = crm_compiler.c crm_errorhandlers.c \
@@ -509,14 +507,14 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_expr_syscall.c crm_expr_classify.c crm_expr_translate.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
-	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
+	crm_stats.c crm_expr_sks.c \
 	crm_expr_svm.c crm_expr_fscm.c \
 	crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c
 
 HFILES = crm114_sysincludes.h crm114_structs.h crm114_config.h \
 	crm114.h crm114_osbf.h config.h \
-	config_BillY.h crm_mjt_qsort.h
+	config_vanilla_UNIX_sys_defaults.h crm_mjt_qsort.h
 
 EXTRA_DEPS = Makefile
 OFILES = crm_compiler.o crm_errorhandlers.o \
@@ -567,7 +565,8 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	tokendelimiterbugtest.crm bracesbugtest.crm \
 	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
 	alius_w_comment.crm \
-	userdirtest.crm
+	userdirtest.crm \
+	print_binary2decimal_int32.crm
 
 TEXTFILES = COLOPHON.txt pad.dat \
 	QUICKREF.txt INTRO.txt knownbugs.txt FAQ.txt things_to_do.txt \
@@ -580,7 +579,7 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	GPL-License.txt \
 	rename-gz \
 	megatest.sh megatest_knowngood.log \
-	make_BillY.sh Makefile.BillY \
+	make_vanilla_UNIX.sh Makefile.vanilla \
 	exectest_s1.sh \
 	$(MEGATESTFILES) megatest_ng.sh 
 
@@ -997,8 +996,10 @@ installdirs:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lispdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
+uninstall: uninstall-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
@@ -1046,7 +1047,7 @@ install-data-am: install-dist_lispLISP
 
 install-dvi: install-dvi-am
 
-install-exec-am: install-binPROGRAMS
+install-exec-am: install-binPROGRAMS install-exec-local
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 
@@ -1079,7 +1080,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-dist_lispLISP
+uninstall-am: uninstall-binPROGRAMS uninstall-dist_lispLISP \
+	uninstall-local
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 
@@ -1092,14 +1094,14 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_lispLISP
 	dvi-am html html-am info info-am install install-am \
 	install-binPROGRAMS install-data install-data-am \
 	install-dist_lispLISP install-dvi install-dvi-am install-exec \
-	install-exec-am install-exec-hook install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-dist_lispLISP \
-	uninstall-hook
+	install-exec-am install-exec-hook install-exec-local \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-dist_lispLISP uninstall-hook uninstall-local
 
 
 #
@@ -1397,7 +1399,7 @@ clean-local:
 	$(E) "    You can cd to the TRE directory and 'make clean' manually"
 	-( [ "$(TRE_TARFILE)" ] && cd $(TRE_TARFILE) && make clean )
 
-install: install_engine install_utils
+install-exec-local: install_engine install_utils
 	$(E) ""
 	$(E) "    Done.  Type "make help" to see what else you can make."
 	$(E) ""
@@ -1445,7 +1447,7 @@ install-exec-hook: crm114$(EXEEXT)
 uninstall-hook:
 	rm $(DESTDIR)$(bindir)/crm
 
-uninstall:
+uninstall-local:
 	-rm -rf $(DESTDIR)$(bindir)/crm$(VER_SUFFIX)$(EXEEXT)
 	-rm -rf $(DESTDIR)$(bindir)/crmg$(VER_SUFFIX)$(EXEEXT)
 	-rm -rf $(DESTDIR)$(bindir)/crma$(VER_SUFFIX)$(EXEEXT)
@@ -1547,13 +1549,13 @@ cssfiles: spam.dir good.dir
 	$(E) "   Here we go..."
 	$(E) ""
 	$(E) "   MUCH STUFF DEPRECATED!!!  Use mailreaver.crm instead..."
-	cssutil -b -r spam.css
-	cssutil -b -r nonspam.css
+	$(srcdir)/cssutil -b -r spam.css
+	$(srcdir)/cssutil -b -r nonspam.css
 	cp spam.css spam__$(DATE).txt
 	cp nonspam.css nonspam__$(DATE).txt
 	$(E) ""
 	$(E) "   run mailtrainer.crm on the spam.dir and good.dir directories."
-	mailtrainer.crm \
+	$(srcdir)/mailtrainer.crm \
 		--good=./good.dir/ \
 		--spam=./spam.dir/ \
 		--repeat=5 \
@@ -1563,68 +1565,12 @@ cssfiles: spam.dir good.dir
 	$(E) "   You may now delete these files with impunity, or you may "
 	$(E) "   choose to keep them around as backup."
 
-tarfile: all
-	rm -rf crm114-$(VERSION).src
-	mkdir crm114-$(VERSION).src
-	cp $(CFILES) \
-	$(HFILES) \
-	$(UTILFILES) \
-	$(CRMFILES) \
-	$(TEXTFILES) \
-	crm114-$(VERSION).src
-	cp -a BSD_build_files crm114-$(VERSION).src
-	tar -cvf crm114-$(VERSION).src.tar crm114-$(VERSION).src
-	rm -rf crm114-$(VERSION).src
-
-src_gzip: tarfile
-	rm -rf crm114-$(VERSION).src.tar.gz
-	gzip crm114-$(VERSION).src.tar
-
-i386_tarfile: all
-	rm -rf crm114-$(VERSION).i386
-	mkdir crm114-$(VERSION).i386
-	cp crm114 cssutil cssdiff cssmerge osbf-util \
-	Makefile \
-	CRM114_Mailfilter_HOWTO.txt \
-	COLOPHON.txt \
-	QUICKREF.txt INTRO.txt knownbugs.txt FAQ.txt things_to_do.txt \
-	mailfilter.crm mailfilter.cf \
-	mailreaver.crm mailtrainer.crm \
-	maillib.crm shuffle.crm \
-	rewriteutil.crm rewrites.mfp \
-	whitelist.mfp blacklist.mfp priolist.mfp \
-	priolist.mfp.example blacklist.mfp.example whitelist.mfp.example \
-	crm114-mode.el \
-	GPL-License.txt \
-	crm114-$(VERSION).i386
-	tar -cvf crm114-$(VERSION).i386.tar crm114-$(VERSION).i386
-	rm -rf crm114-$(VERSION).i386
-
-i386_gzip: i386_tarfile
-	rm -rf crm114-$(VERSION).i386.tar.gz
-	gzip crm114-$(VERSION).i386.tar
-
-css_tarfile: spam.css nonspam.css
-	rm -rf crm114-$(VERSION).css
-	mkdir crm114-$(VERSION).css
-	cp spam.css nonspam.css \
-	crm114-$(VERSION).css
-	tar -cvf crm114-$(VERSION).css.tar crm114-$(VERSION).css
-	rm -rf crm114-$(VERSION).css
-
-css_gzip: css_tarfile
-	rm -rf crm114-$(VERSION).css.tar.gz
-	gzip crm114-$(VERSION).css.tar
-
-distribution: src_gzip i386_gzip css_gzip
-	md5sum crm114-$(VERSION).*.tar.gz
-
 rsync:  
 	rsync -zrltDv \
 	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) \
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
 
-diff: diff_em.sh
+diff: diff_em.sh $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) $(EXTRA_DIST) crm_main.c
 	-(sh ./diff_em.sh );
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h

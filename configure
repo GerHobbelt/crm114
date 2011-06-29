@@ -2596,6 +2596,12 @@ ISODATE=`date +%Y-%m-%d`
 
 
 
+cat >>confdefs.h <<_ACEOF
+#define ORIGINAL_BILLY_DISTRO_DIR ../../../1original/crm114/src/crm114.sourceforge.net/src
+_ACEOF
+
+
+
 
 
 
@@ -7252,50 +7258,6 @@ fi
 
 
 
-
-
-
-{ $as_echo "$as_me:$LINENO: checking host system type" >&5
-$as_echo_n "checking host system type... " >&6; }
-if test "${ac_cv_host+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  if test "x$host_alias" = x; then
-  ac_cv_host=$ac_cv_build
-else
-  ac_cv_host=`$SHELL "$ac_aux_dir/config.sub" $host_alias` ||
-    { { $as_echo "$as_me:$LINENO: error: $SHELL $ac_aux_dir/config.sub $host_alias failed" >&5
-$as_echo "$as_me: error: $SHELL $ac_aux_dir/config.sub $host_alias failed" >&2;}
-   { (exit 1); exit 1; }; }
-fi
-
-fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_host" >&5
-$as_echo "$ac_cv_host" >&6; }
-case $ac_cv_host in
-*-*-*) ;;
-*) { { $as_echo "$as_me:$LINENO: error: invalid value of canonical host" >&5
-$as_echo "$as_me: error: invalid value of canonical host" >&2;}
-   { (exit 1); exit 1; }; };;
-esac
-host=$ac_cv_host
-ac_save_IFS=$IFS; IFS='-'
-set x $ac_cv_host
-shift
-host_cpu=$1
-host_vendor=$2
-shift; shift
-# Remember, the first character of IFS is used to create $*,
-# except with old shells:
-host_os=$*
-IFS=$ac_save_IFS
-case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define HOSTTYPE "$host_os"
-_ACEOF
 
 
 
@@ -21266,7 +21228,7 @@ INSTALLFLAGS="-m 755"
 
 
 
-ac_config_files="$ac_config_files Makefile crm114.lsm docs/Makefile examples/Makefile mailfilter/Makefile man/Makefile man/include.zmm src/Makefile src/diff_em.sh src/indent.sh tests/Makefile tests/megatest.sh tests/megatest_ng.sh tests/aliustest.crm tests/approxtest.crm tests/argtest.crm tests/backwardstest.crm tests/beeptest.crm tests/bracktest.crm tests/classifytest.crm tests/escapetest.crm tests/eval_infiniteloop.crm tests/exectest.crm tests/fataltraptest.crm tests/inserttest_a.crm tests/inserttest_b.crm tests/inserttest_c.crm tests/learntest.crm tests/match_isolate_test.crm tests/matchtest.crm tests/mathalgtest.crm tests/mathrpntest.crm tests/nestaliustest.crm tests/overalterisolatedtest.crm tests/paolo_overvars.crm tests/randomiotest.crm tests/rewritetest.crm tests/skudtest.crm tests/statustest.crm tests/traptest.crm tests/uncaughttraptest.crm tests/unionintersecttest.crm tests/userdirtest.crm tests/windowtest.crm tests/windowtest_fromvar.crm tests/tenfold_validate.crm tests/tokendelimiterbugtest.crm tests/bracesbugtest.crm tests/blowuptrapbugtest.crm tests/indirecttest.crm tests/isolate_reclaim_test.crm tests/match_isolate_reclaim.crm tests/slashbugtest.crm tests/trapseqbugtest.crm tests/translate_tr.crm tests/call_return_test.crm tests/alternating_example_neural.crm tests/alius_w_comment.crm tests/zz_translate_test.crm tests/quine.crm tests/defaulttest.crm examples/pad.crm examples/shroud.crm mailfilter/classifymail.crm mailfilter/mailfilter.crm mailfilter/maillib.crm mailfilter/mailreaver.crm mailfilter/mailtrainer.crm mailfilter/rewriteutil.crm"
+ac_config_files="$ac_config_files Makefile crm114.lsm docs/Makefile examples/Makefile mailfilter/Makefile man/Makefile man/include.zmm src/Makefile src/diff_em.sh src/indent.sh tests/Makefile tests/megatest.sh tests/megatest_ng.sh tests/aliustest.crm tests/approxtest.crm tests/argtest.crm tests/backwardstest.crm tests/beeptest.crm tests/bracktest.crm tests/classifytest.crm tests/escapetest.crm tests/eval_infiniteloop.crm tests/exectest.crm tests/fataltraptest.crm tests/inserttest_a.crm tests/inserttest_b.crm tests/inserttest_c.crm tests/learntest.crm tests/match_isolate_test.crm tests/matchtest.crm tests/mathalgtest.crm tests/mathrpntest.crm tests/nestaliustest.crm tests/overalterisolatedtest.crm tests/paolo_overvars.crm tests/randomiotest.crm tests/rewritetest.crm tests/skudtest.crm tests/statustest.crm tests/traptest.crm tests/uncaughttraptest.crm tests/unionintersecttest.crm tests/userdirtest.crm tests/windowtest.crm tests/windowtest_fromvar.crm tests/tenfold_validate.crm tests/tokendelimiterbugtest.crm tests/bracesbugtest.crm tests/blowuptrapbugtest.crm tests/indirecttest.crm tests/isolate_reclaim_test.crm tests/match_isolate_reclaim.crm tests/slashbugtest.crm tests/trapseqbugtest.crm tests/translate_tr.crm tests/call_return_test.crm tests/alternating_example_neural.crm tests/alius_w_comment.crm tests/zz_translate_test.crm tests/quine.crm tests/defaulttest.crm tests/print_binary2decimal_int32.crm examples/pad.crm examples/shroud.crm mailfilter/classifymail.crm mailfilter/mailfilter.crm mailfilter/maillib.crm mailfilter/mailreaver.crm mailfilter/mailtrainer.crm mailfilter/rewriteutil.crm"
 
 
 cat >confcache <<\_ACEOF
@@ -22046,6 +22008,7 @@ do
     "tests/zz_translate_test.crm") CONFIG_FILES="$CONFIG_FILES tests/zz_translate_test.crm" ;;
     "tests/quine.crm") CONFIG_FILES="$CONFIG_FILES tests/quine.crm" ;;
     "tests/defaulttest.crm") CONFIG_FILES="$CONFIG_FILES tests/defaulttest.crm" ;;
+    "tests/print_binary2decimal_int32.crm") CONFIG_FILES="$CONFIG_FILES tests/print_binary2decimal_int32.crm" ;;
     "examples/pad.crm") CONFIG_FILES="$CONFIG_FILES examples/pad.crm" ;;
     "examples/shroud.crm") CONFIG_FILES="$CONFIG_FILES examples/shroud.crm" ;;
     "mailfilter/classifymail.crm") CONFIG_FILES="$CONFIG_FILES mailfilter/classifymail.crm" ;;
@@ -22873,9 +22836,14 @@ $as_echo "$as_me: WARNING: Unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
-
-
-
+#
+# and when we finally have produced the files, make sure the generated sheel scripts are executable:
+#
+chmod a+x src/*.sh
+chmod a+x tests/*.sh
+chmod a+x tests/*.crm
+chmod a+x examples/*.crm
+chmod a+x mailfilter/*.crm
 
 
 

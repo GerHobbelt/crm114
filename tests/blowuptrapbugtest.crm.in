@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! @abs_top_builddir@/src/crm114
 #   inifinite loop within the trap/error handling: badaBOOM!
 #
 {   

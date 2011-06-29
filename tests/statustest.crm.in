@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! @abs_top_builddir@/src/crm114
 window
 output /:*:_nl: CRM114 testing outcall and status codes :*:_nl:/
 {

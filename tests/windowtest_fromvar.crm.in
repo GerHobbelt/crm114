@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! @abs_top_builddir@/src/crm114
 {
 	output /:*:_nl: CRM114: testing windowing on windows from a variable :*:_nl: :*:_nl:/
 	isolate  (:instuff:) /:*:_dw:/

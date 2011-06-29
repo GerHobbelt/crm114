@@ -1,4 +1,4 @@
-#! /usr/bin/crm
+#! @abs_top_builddir@/src/crm114
 #   test the alius statement 
 {
 	# test comment to skip \# window

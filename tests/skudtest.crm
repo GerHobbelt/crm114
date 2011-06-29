@@ -1,4 +1,4 @@
-#! /usr/bin/crm 
+#! /windows/G/prj/3actual/crm114/src/crm114 
 #!    this little regression test by Jskud verifies match start/length works
 window
 output /:*:_nl: CRM114 testing that start \/ length works in matches :*:_nl: :*:_nl:/
