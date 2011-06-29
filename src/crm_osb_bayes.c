@@ -617,7 +617,7 @@ int crm_expr_osb_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     incrs++;
                     //
                     //       If microgrooming is enabled, and we've found a
-                    //       chain that's too int, we groom it down.
+                    //       chain that's too long, we groom it down.
                     //
                     if (microgroom && (incrs > MICROGROOM_CHAIN_LENGTH))
                     {
@@ -1065,9 +1065,11 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fn_start_here = fnstart + fnlen + 1;
             fname[fnlen] = 0;
             if (user_trace)
-                fprintf(stderr, "Classifying with file -%s- " \
+			{
+                fprintf(stderr, "Classifying with file -%s- " 
                                 "succhash=%d, maxhash=%d\n",
                         fname, succhash, maxhash);
+			}
             if (fname[0] == '|' && fname[1] == 0)
             {
                 if (vbar_seen)
@@ -1089,7 +1091,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //             quick check- does the file even exist?
                 if (k != 0)
                 {
-                    nonfatalerror("Nonexistent Classify table named: ",
+                    return nonfatalerror("Nonexistent Classify table named: ",
                             fname);
                 }
                 else
@@ -1116,7 +1118,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             &hashlens[maxhash]);
                     if (hashes[maxhash] == MAP_FAILED)
                     {
-                        nonfatalerror("Couldn't memory-map the table file",
+                        return nonfatalerror("Couldn't memory-map the table file",
                                 fname);
                     }
                     else
@@ -1176,7 +1178,7 @@ int crm_expr_osb_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //    do we have at least 1 valid .css files?
     if (maxhash == 0)
     {
-        fatalerror("Couldn't open at least 2 .css files for classify().", "");
+        return nonfatalerror("Couldn't open at least 2 .css files for classify().", "");
     }
     //    do we have at least 1 valid .css file at both sides of '|'?
     //if (!vbar_seen || succhash < 0 || (maxhash < succhash + 2))

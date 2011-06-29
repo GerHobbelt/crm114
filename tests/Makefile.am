@@ -88,7 +88,9 @@ MEGATESTFILES = \
 	mt_ng_SBPH_Markovian_2.input \
 	mt_ng_Support_Vector_Machine_SVM_unigram_1.input \
 	COLOPHON_mt_ng_reference_3.input \
-	FAQ_mt_ng_reference_4.input
+	FAQ_mt_ng_reference_4.input \
+	INTRO_mt_ng_reference_2.input \
+	QUICKREF_mt_ng_reference_1.input
 
 
 test_SCRIPTS = \
@@ -105,12 +107,14 @@ test_SCRIPTS = \
 	randomiotest.crm isolate_reclaim_test.crm \
 	match_isolate_test.crm match_isolate_reclaim.crm \
 	call_return_test.crm defaulttest.crm alternating_example_neural.crm \
+	quine.crm \
 	bracktest.crm unionintersecttest.crm \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	tenfold_validate.crm \
 	tokendelimiterbugtest.crm bracesbugtest.crm \
 	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
-	alius_w_comment.crm
+	alius_w_comment.crm \
+	userdirtest.crm
 
 
 

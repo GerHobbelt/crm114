@@ -966,6 +966,7 @@ AC_CONFIG_FILES([Makefile
                  tests/alternating_example_neural.crm
                  tests/alius_w_comment.crm
                  tests/zz_translate_test.crm
+                 tests/quine.crm
                  tests/defaulttest.crm
                  examples/pad.crm
                  examples/shroud.crm

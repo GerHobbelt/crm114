@@ -1,5 +1,5 @@
 #  maillib.crm - handy library for mail whacking - wsy 2006
-#   
+#
 #    Copyright (C) 2002-2007 William S. Yerazunis; licensed under the
 #    GNU Public License (GPL) version 2.  A copy of this license is included
 #    in the distribution media, or obtain one from www.fsf.org .
@@ -16,7 +16,7 @@
 #        nothing.  This routine ONLY sets up variables from the .cf file
 #
 ###########################################################
-#  
+#
 #       Load in the specified .cf file.  The .cf file needs
 #      to be in the format
 #      :varname: /value/
@@ -32,39 +32,39 @@
     isolate (:option_txt:)
     isolate (:ev:)
     isolate (:verbose_startup:)
-    #   
+    #
     #    Part 1  - read in the options/configuration file
-    #	
+    #
     {
         {
                 match <absent> [:cf_filename:] /.+/
-		return
-	}
-	input [:*:cf_filename:] (:option_txt:)
+                return
+        }
+        input [:*:cf_filename:] (:option_txt:)
     }
 #
 #
 #   reset loop for matching to start of :option_txt:
-	match [:option_txt:] //
+        match [:option_txt:] //
 
 #   and loop till there are no more options.
-	{
-		#   find a line that looks like a parameter setting...
-		match < fromend nomultiline > (:line: :name: :value:) \
-		  [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
-		{
-			#    don't execute the assign if there's 
-			#    a # at the start of the line.
-			match <absent> [:name:] /^\x23/
-			{
-				#     Verbose startup?
-				match [:verbose_startup:] /SET/
-				output / :*:name:\n    :*:value:\n/
-			}
-			isolate (:*:name:) /:*:value:/
-		}
-		liaf
-	} 
+        {
+                #   find a line that looks like a parameter setting...
+                match < fromend nomultiline > (:line: :name: :value:) \
+                  [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
+                {
+                        #    don't execute the assign if there's
+                        #    a # at the start of the line.
+                        match <absent> [:name:] /^\x23/
+                        {
+                                #     Verbose startup?
+                                match [:verbose_startup:] /SET/
+                                output / :*:name:\n    :*:value:\n/
+                        }
+                        isolate (:*:name:) /:*:value:/
+                }
+                liaf
+        }
 }
 #    All done, return.
 return
@@ -76,7 +76,7 @@ return
 #        :mail_preprocess:
 #
 #     Calling Sequence:
-#	 call /:mail_preprocess:/ [text to be preprocessed]
+#        call /:mail_preprocess:/ [text to be preprocessed]
 #
 #     Returns:
 #        the processed text
@@ -87,11 +87,11 @@ return
 
 :mail_preprocess:  (:mutilation_input:)
 
-#    
+#
 #      We take the input and create a mutilated, annotated copy
-#      of the incoming text.  The mutilations are defined by 
+#      of the incoming text.  The mutilations are defined by
 #      whatever the .cf file has set up.
-#      will become an annotated _copy_  of the incoming text, 
+#      will become an annotated _copy_  of the incoming text,
 #      with whatever changes we think will help us classify better.
 #
 #      We clip m_text to be the first :decision_length: characters of
@@ -103,90 +103,90 @@ isolate (:m_text:)
 #      :b_text: is the text with base64's expanded.
 isolate (:b_text:) /:*:m_text:/
 #
-#      :i_text: is the text with Hypertextus Interruptus removed. 
+#      :i_text: is the text with Hypertextus Interruptus removed.
 isolate (:i_text:) /:*:m_text:/
 #
         isolate (:commentbin:) //
 #
 #
-#	do we do any expansions?
+#       do we do any expansions?
 {
 
     #   expansion 1: - do we perform base64 expansions?
     {
-	match [:do_base64:] /yes/
-	{
-	    #  yes, expand base64's if there are any
-	    #
-	    #    Note: some spams don't even bother to use
-	    #    a 'Content-Transfer-Encoding marker,
-	    #    and even fewer use Content-Type: text/whatever
-	    #    so we have to sort of wing it, when to expand
-	    #    what _might_ be base64 and when to ignore it.
-	    #    For now, if it says it's a base64, it gets
-	    #    expanded, no matter what the type.  Maybe
-	    #    someday someone will put in a lockout for
-	    #    things like .jpg files, .doc files, etc.
-	    # 
-	    match [:m_text:] <nocase> (:a: :h: :b:) \
-		    /(Content-Transfer-Encoding): base64(.*)/
-	    match (:c:) [:b:]  \
-		    /([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
-	    isolate (:exp_text:) //
-	    syscall (:*:c:) (:exp_text:) /:*:mime_decoder: /
-	    
-	    #   and stuff the result back into m_text for
-	    #   classification right in context.
-	    alter (:c:) /:*:exp_text:/
-	    #   and mark this piece of mime as "prior".
-	    alter (:h:) /Content-Transfer-Prior-Encoding/
-	    #   repeat till no more Mime base64 encodings 
-	    liaf
-	}
+        match [:do_base64:] /yes/
+        {
+            #  yes, expand base64's if there are any
+            #
+            #    Note: some spams don't even bother to use
+            #    a 'Content-Transfer-Encoding marker,
+            #    and even fewer use Content-Type: text/whatever
+            #    so we have to sort of wing it, when to expand
+            #    what _might_ be base64 and when to ignore it.
+            #    For now, if it says it's a base64, it gets
+            #    expanded, no matter what the type.  Maybe
+            #    someday someone will put in a lockout for
+            #    things like .jpg files, .doc files, etc.
+            #
+            match [:m_text:] <nocase> (:a: :h: :b:) \
+                    /(Content-Transfer-Encoding): base64(.*)/
+            match (:c:) [:b:]  \
+                    /([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
+            isolate (:exp_text:) //
+            syscall (:*:c:) (:exp_text:) /:*:mime_decoder: / [0.1]
+
+            #   and stuff the result back into m_text for
+            #   classification right in context.
+            alter (:c:) /:*:exp_text:/
+            #   and mark this piece of mime as "prior".
+            alter (:h:) /Content-Transfer-Prior-Encoding/
+            #   repeat till no more Mime base64 encodings
+            liaf
+        }
     }
 
 
     #   Expansion 2 - fetch and insert URLs into the stream for further
     #   analysis.  BUG NOTE: as originally written, this was fully recursive
     #   without limit, and might concieveably spider the entire web.  The
-    #   EVAL statement limits total fetched length to not more than 
+    #   EVAL statement limits total fetched length to not more than
     #   one fetch more than :decision_length:
 
     {
-	match [:expand_urls:] /yes/
-	{
-	    match [:m_text:] (:url:) /http:\/\/[[:graph:]]+/
-	    isolate (:wget_output:) //
-	    syscall /:*:url_fetch_cmd: :*:url: | :*:url_trim_cmd: / \
-		    () (:wget_output:)
-	    alter (:url:) /:*:url:\n  :*:wget_output:  \n/
-	    eval /:@: :#:m_text: < (:*:decision_length: / 4) :/
-	    liaf
-	}
+        match [:expand_urls:] /yes/
+        {
+            match [:m_text:] (:url:) /http:\/\/[[:graph:]]+/
+            isolate (:wget_output:) //
+            syscall /:*:url_fetch_cmd: :*:url: | :*:url_trim_cmd: / \
+                    () (:wget_output:) [0.1]
+            alter (:url:) /:*:url:\n  :*:wget_output:  \n/
+            eval /:@: :#:m_text: < (:*:decision_length: / 4) :/
+            liaf
+        }
     }
 
-    #   expansion 3 :  do we bust HTML comments ( a.k.a. 
+    #   expansion 3 :  do we bust HTML comments ( a.k.a.
     #    hypertextus interruptus) out?
     {
-	match [:undo_interruptus:] /yes/
-	{
-	    match [:m_text:] (:comment:) /<!--([^-]|-[^-]|--[^>])*-->/
-	    alter (:commentbin:) /:*:commentbin: :*:comment:/
-	    alter ( :comment: ) //
-	    liaf
-	}
-	#     if we had at least 80 characters worth of comments, then
-	#     it's worth using the decommented text, else not.
-	#     (this my personal judgement call)
-	{
-	    {
-		match [:commentbin:] /(.){80,}/
-	    }
-	    alius
-	    {
-		alter (:commentbin:) //
-	    }
-	}
+        match [:undo_interruptus:] /yes/
+        {
+            match [:m_text:] (:comment:) /<!--([^-]|-[^-]|--[^>])*-->/
+            alter (:commentbin:) /:*:commentbin: :*:comment:/
+            alter ( :comment: ) //
+            liaf
+        }
+        #     if we had at least 80 characters worth of comments, then
+        #     it's worth using the decommented text, else not.
+        #     (this my personal judgement call)
+        {
+            {
+                match [:commentbin:] /(.){80,}/
+            }
+            alius
+            {
+                alter (:commentbin:) //
+            }
+        }
     }
 }
 
@@ -198,10 +198,10 @@ isolate (:i_text:) /:*:m_text:/
       /:*:m_text: \n :*:commentbin: \n\n/
 }
 
-#########################################################   
+#########################################################
 #
-#   Do we want to do any rewrites before running?  
-#    
+#   Do we want to do any rewrites before running?
+#
 {
    match [:rewrites_enabled:] /yes/
 #
@@ -216,18 +216,18 @@ isolate (:i_text:) /:*:m_text:/
    #
    #
    {
-       #    Grab the next regex; turn the one-per-line patterns into a 
+       #    Grab the next regex; turn the one-per-line patterns into a
        #    regex and a replacement string.
        #    First, do the line-spanning regexes.
        match <fromend nomultiline> (:ch: :fr1: :to:) [:rewrites:] /(.+)>-->(.*)/
        #    see if the "fr" regex matches anywhere
        match [:m_text:] //
        {
-	   match [:m_text:] <fromend> (:place:) /:*:fr1:/
-	   #  Yep, it matched... alter it and do it again
-	   #
-	   alter (:place:) /:*:to:/
-	   liaf
+           match [:m_text:] <fromend> (:place:) /:*:fr1:/
+           #  Yep, it matched... alter it and do it again
+           #
+           alter (:place:) /:*:to:/
+           liaf
        }
        #   Nope, didn't match... grab the next regex and try again,
        liaf
@@ -244,11 +244,11 @@ isolate (:i_text:) /:*:m_text:/
        match <fromend nomultiline> (:ch: :fr2: :to:) [:rewrites:] /(.+)>->(.*)/
        #    see if the "fr" regex matches anywhere
        {
-	   match [:m_text:] <nomultiline> (:place:) /:*:fr2:/
-	   #  Yep, it matched... alter it and do it again
-	   #
-	   alter (:place:) /:*:to:/
-	   liaf
+           match [:m_text:] <nomultiline> (:place:) /:*:fr2:/
+           #  Yep, it matched... alter it and do it again
+           #
+           alter (:place:) /:*:to:/
+           liaf
        }
        #   Nope, didn't match... grab the next regex and try again,
        liaf
@@ -256,7 +256,7 @@ isolate (:i_text:) /:*:m_text:/
 }    #  done with rewrites.
 
 
-	#  all done; m_text now has the fully mutilated text.
+        #  all done; m_text now has the fully mutilated text.
 return /:*:m_text:/
 
 
@@ -302,8 +302,9 @@ return /:*:m_text:/
         match (:new_header_type:) [:new_header:] /[[:graph:]]+/
     }
     #
-    # a  LIAF-loop to delete any header (including continuations) that
-    #  has a type that matches the new_header_type.
+    # a LIAF-loop to delete any header (including continuations) that
+    # has a type that matches the new_header_type.
+    #
     {
         match [:current_headers:] (:kill_this_line:) \
                 /:*:new_header_type: ([^\n]|\n[[:space:]])*\n/
@@ -337,16 +338,16 @@ return
         #        output /-A-->:*:current_headers:<---\n/
         return
     }
-    #    if we got here, it wasn't a real message (void body, and/or no
-    #   doubled newline) but it might still have useful text anyway.
-    #   Is there a final newline?
+    # if we got here, it wasn't a real message (void body, and/or no
+    # doubled newline) but it might still have useful text anyway.
+    # Is there a final newline?
     {
         match (:current_headers:) /^.*\n$/
         #          output /-B-->:*:current_headers:<---\n/
         return
     }
-    #    if we got to here, then there wasn't even a final newline.
-    #    That's a violation of RFC, we'll add it.
+    # if we got to here, then there wasn't even a final newline.
+    # That's a violation of RFC, we'll add it.
     {
         alter (:_dw:) /:*:_dw:\n/
         match (:current_headers:) /.+/
@@ -368,16 +369,16 @@ return
     #    parse input args to this routine
     match [:ac_args:] (:: :header: :comment:) /([[:graph:]]+) ([[:graph:]]+)/
     {
-	#    find the header if it exists
-	match (:found: :hd: :tail:) <nomultiline nocase> /^(:*:header:) (.*)/
-	alter (:tail:) /:*:tail: (:*:comment:)/
+        #    find the header if it exists
+        match (:found: :hd: :tail:) <nomultiline nocase> /^(:*:header:) (.*)/
+        alter (:tail:) /:*:tail: (:*:comment:)/
     }
     alius
     {
-	#    no such header.  make one.
-	call /:mungmail_add:/ [:*:header: (:*:comment:)]
+        #    no such header.  make one.
+        call /:mungmail_add:/ [:*:header: (:*:comment:)]
     }
-}	
+}
 return
 
 #
@@ -387,28 +388,28 @@ return
 #            get the Subject: line.  If none, make one.
 {
     {
-	match (:subject_line: :subj_text:) <nocase nomultiline> \
-		/^Subject: (.*)/
+        match (:subject_line: :subj_text:) <nocase nomultiline> \
+                /^Subject: (.*)/
     }
     alius
     {
-	match (:end_of_headers:) /\n\n/
-	alter (:end_of_headers:) /\nSubject: ( none supplied in original message )\n\n/
-	match (:subject_line: :subj_text:) <nomultiline> /^Subject: (.*)/
+        match (:end_of_headers:) /\n\n/
+        alter (:end_of_headers:) /\nSubject: ( none supplied in original message )\n\n/
+        match (:subject_line: :subj_text:) <nomultiline> /^Subject: (.*)/
     }
 }
 {
     #
-    #   If we are re-sending this, we want to de-fang the
-    #   subject, otherwise we don't.
+    # If we are re-sending this, we want to de-fang the
+    # subject, otherwise we don't.
     match [:reject_address:]  /[a-zA-Z0-9]/
-    #   Paolo P. suggests this alteration to avoid subversion
-    #   by enclosing an alternate target in "marks".  We always
-    #   have to do this.
+    # Paolo P. suggests this alteration to avoid subversion
+    # by enclosing an alternate target in "marks".  We always
+    # have to do this.
     {
-	match (:dq:) [:subj_text:] /\$/
-	alter (:dq:) /USD/
-	liaf
+        match (:dq:) [:subj_text:] /\$/
+        alter (:dq:) /USD/
+        liaf
     }
     #
     #   and translate away anything that might be a shell subterfuge
@@ -421,7 +422,7 @@ return
 {
     match [:new_tag:] /./
     alter (:subj_text:) \
-	    /:*:new_tag: :*:subj_text:/
+            /:*:new_tag: :*:subj_text:/
 }
 return
 
@@ -433,6 +434,7 @@ return
 :mungmail_add_cache_info: (:cid:)
 {
     call /:mungmail_unique:/ [X-CRM114-CacheID: sfid-:*:cid: ]
+    # [i_a] GROT GROT GROT: doesn't replacing the next one screw up mail reader conversation trees by adding a second Message-Id to the message? (mail readers might not like that...)
     call /:mungmail_add_comment:/ [Message-Id: sfid-:*:cid:]
 }
 
@@ -446,45 +448,74 @@ return
 #      Assure that the text cache exists
 :reavercache_init:
 {
-        match [:text_cache:] /./
-        {
-                ###       If the text_cache dir isn't there, create it
-                #         and it's subdirectories.
-                #
-                isolate (:tmp:) //
-                syscall () (:tmp:) /ls :*:text_cache: 2>&1 /
-                match [:tmp:] <absent> /texts/
-                syscall () () /mkdir :*:text_cache: /
-                syscall () () /mkdir :*:text_cache:\/texts /
-                syscall () () /mkdir :*:text_cache:\/prob_good /
-                syscall () () /mkdir :*:text_cache:\/prob_spam /
-                syscall () () /mkdir :*:text_cache:\/known_good /
-                syscall () () /mkdir :*:text_cache:\/known_spam /
-                syscall () () /mkdir :*:text_cache:\/empty /
-        }
+    match [:text_cache:] /./
+    {
+        ###       If the text_cache dir isn't there, create it
+        #         and it's subdirectories.
+        #
+        isolate (:tmp:) //
+		call /:verbosity:/ [reavercache_init: check if subtree exists already]
+        syscall () (:tmp:) /ls :*:text_cache: 2>&1 / [0.1]   # [i_a] why the redirect? both stdout and stderr are captured?
+        match [:tmp:] <absent> /texts/
+		call /:verbosity:/ [reavercache_init: create subdirectories]
+        syscall () () /mkdir :*:text_cache: / [0.1]
+        syscall () () /mkdir :*:text_cache:\/texts / [0.1]
+        syscall () () /mkdir :*:text_cache:\/prob_good / [0.1]
+        syscall () () /mkdir :*:text_cache:\/prob_spam / [0.1]
+        syscall () () /mkdir :*:text_cache:\/known_good / [0.1]
+        syscall () () /mkdir :*:text_cache:\/known_spam / [0.1]
+        syscall () () /mkdir :*:text_cache:\/empty / [0.1]
+    }
 }
 return
 
 #
-#      Put some text into the cache; 
+#      Put some text into the cache;
 #      side effect:
 #      variable :reaver_cacheid: to the filename (no directory)
 #      variable :long_cacheid: is set to the file alone (no directory) name
 #
 :reavercache_store:  (:text:)
 {
-   match [:text_cache:] /./   # Don't store it if no reavercache desired
-   isolate (:system_time: :msg_hash:) //
-   syscall () (:system_time:) /date +%Y%m%d_%H%M%S_%N /
-   match [:system_time:] ( :: :cacheid: ) /([[:graph:]]+)..../
-   hash (:msg_hash:) /:*:text:/
-   isolate (:cacheid:) /:*:cacheid:/
-#       It's unclear if the following increases security at all.
-   isolate (:cacheid:) /:*:cacheid:_:*:msg_hash:/
-   isolate (:long_cacheid:) /:*:text_cache:\/texts\/:*:cacheid:/
-   output [:*:long_cacheid:] /:*:text:/
+	match [:text_cache:] /./   # Don't store it if no reavercache desired
+	call /:verbosity:/ [reavercache_store: going to store mail (flag: :*:text_cache:)]
+	isolate (:system_time: :msg_hash:) //
+	syscall () (:system_time:) /date +%Y%m%d_%H%M%S_%N / /[Windows-MS] date \/T && time \/T / [0.1]  # Win32: GROT GROT GROT!
+	call /:verbosity:/ [reavercache_store: date determined @ ':*:system_time:']
+	match [:system_time:] ( :: :cacheid: :cacheid2nd: ) /([[:graph:]]+)[^[:graph:]]*([[:graph:]]*)/
+	call /:verbosity:/ [reavercache_store: of which remains: ':*:cacheid:' + ':*:cacheid2nd:' ]
+	{
+		eval /:@: :#:cacheid2nd: > 0 /
+		call /:verbosity:/ [reavercache_store: going to merge date and time into one line now for MS Windows]
+		alter (:cacheid:) /:*:cacheid::@:_:*:cacheid2nd:/
+		call /:verbosity:/ [reavercache_store: before correction: ':*:cacheid:']
+		translate (:cacheid:) [:cacheid:] /^0-9_-/ //
+		call /:verbosity:/ [reavercache_store: after correction: ':*:cacheid:']
+	}
+	call /:verbosity:/ [reavercache_store: cacheid: ':*:cacheid:']
+	hash (:msg_hash:) /:*:text:/
+	call /:verbosity:/ [reavercache_store: hash determined @ ':*:msg_hash:']
+	isolate (:cacheid:) /:*:cacheid:/
+	#       It's unclear if the following increases security at all.
+	isolate (:cacheid:) /:*:cacheid:_:*:msg_hash:/
+	isolate (:long_cacheid:) /:*:text_cache:\/texts\/:*:cacheid:/
+	output [:*:long_cacheid:] /:*:text:/
+	call /:verbosity:/ [reavercache_store: mail stored in file: ':*:long_cacheid:']
 }
 return
+
+
+#
+# print text to stderr for verbose display of events
+#
+:verbosity: (:verbose_text:)
+{
+   	match [:verbose:] /SET/
+	output <append> [:*:verbose_logfile:] /VERBOSE: :*:verbose_text:\n/
+}
+return
+
+
 
 #
 #     And the mother of all traps...
@@ -493,11 +524,13 @@ return
 
 trap (:broken_program_message:) /.*/
 {
-        accept
-        output /:*:_nl: Aw, crud.  maillib.crm broke.  Here's the error: :*:_nl:/
-        output /:*:broken_program_message:/
-        output [stderr] /:*:_nl: ERROR: maillib.crm broke.  Here's the error\: :*:_nl:/
-        output [stderr] /ERROR: :*:broken_program_message:/
+    #accept
+    output [:*:mailout:] /:*:_dw:/
+
+    output /:*:_nl: Aw, crud.  maillib.crm broke.  Here's the error: :*:_nl:/
+    output /:*:broken_program_message:/
+    output [stderr] /:*:_nl: ERROR: maillib.crm broke.  Here's the error: :*:_nl:/
+    output [stderr] /ERROR: :*:broken_program_message:/
 }
 exit /:*:program_fault_exit_code:/
 

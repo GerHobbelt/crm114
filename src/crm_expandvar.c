@@ -858,8 +858,8 @@ int crm_zexpandvar(char *buf,
                 }
                 else
                 {
-                    nonfatalerror("This math eval didn't end with a ':' which is",
-                            " often an error...  check it sometime? ");
+                    nonfatalerror("This math eval didn't end with a ':' which is"
+                            " often an error... ", "Check it sometime? ");
                 }
                 vname[vlen] = 0;
 
@@ -1005,7 +1005,6 @@ bailout:
 //     On each one, do successive regexing/indexranging.  When no more
 //     nextwords, you're done.
 //
-
 int crm_restrictvar(char  *boxstring,
         int boxstrlen,
         int *vht_idx,
@@ -1169,7 +1168,7 @@ int crm_restrictvar(char  *boxstring,
             if (j < 0)
             {
                 j = 0;
-                fprintf(stderr, "Var-restriction has negative start or length."
+                nonfatalerror("Var-restriction has negative start or length.",
                                 "  Sorry, but negative start/lengths are not "
                                 "allowed, as it's a possible security exploit.");
             }
@@ -1209,8 +1208,8 @@ int crm_restrictvar(char  *boxstring,
         else
         {
             //      it's not an int; see if it's a /regex/
-
         int regex_start;
+
             in_subscript = 0; //  no longer in subscript-length mode.
             if (datastring[nw_start] == '/')
             {
@@ -1263,7 +1262,6 @@ int crm_restrictvar(char  *boxstring,
                 start_ptr = &(mdw[actual_offset]);
                 j = crm_regexec(&preg, start_ptr, actual_len,
                         MAX_SUBREGEX, matches, 0, NULL);
-                crm_regfree(&preg);
                 if (j == 0)
                 {
                     //    Yes, the regex matched.  Find the innermost
@@ -1271,9 +1269,14 @@ int crm_restrictvar(char  *boxstring,
                     int i;
 
                     i = 0;
-                    while (matches[i].rm_so >= 0)
+#if 0 // [i_a] this makes use of undocumented behaviour of TRE
+					while (matches[i].rm_so >= 0)
                         i++;
-                    i--;
+					i--;
+#else
+					i = preg.re_nsub - 1;
+#endif
+	                crm_regfree(&preg);
                     CRM_ASSERT(i >= 0);
                     //     Now use the stuff in matches[i] as
                     //    data to seet the new limits to our var
@@ -1288,6 +1291,7 @@ int crm_restrictvar(char  *boxstring,
                 }
                 else
                 {
+	                crm_regfree(&preg);
                     //    The regex didn't match.  We're done.  Length
                     //    is now zero.
                     actual_len = 0;

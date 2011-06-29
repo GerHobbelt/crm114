@@ -25,6 +25,78 @@
 
 #ifdef WIN32
 
+/*
+   Win32 - new syscall handling per 20080401 - no April 1st joke! -:
+
+   The syscall is terminable by a specified timeout; this to prevent
+   indefinite lockup in a syscall, especially useful in those syscalls
+   that try to run UNIX commands in a Windows environment where the
+   UNIX command 'exists' though has a _completely_ different use.
+
+   Example:
+
+   Try running mailreaver's 'syscall /date +%Y%m%d_%H%M%S_%N /' without
+   an extra /[Windows-MS].../ alternative specified and you can twiddle
+   your thumbs until you've died of old age as Windows 'date.exe' will
+   accept NOTHING ELSE but one of these:
+   
+   - a valid input date (date.exe does not understand the commanline arg
+     there, so it assumes you want to TYPE iN a new system date instead :-(( )
+
+   - an abort (Ctrl-C or other console app abort operation, like taskmgr's
+     'End Process')
+
+   
+   Given this new setup and the fact that the old code, which mimicked 
+   the fork()ing UNIX code at least in _some_ way, would take up significant
+   CPU time polling for output and application termination when low latency
+   timeouts were specified, the code now sees it second major overhaul in
+   less than a month, only to end up at its -hopefully- final incarnation,
+   using OPERLAPPED I/O and a WAITABLE TIMER to provide both the desired
+   sync/async I/O mode without ANY use of polling ANYWHERE, while the timer
+   is there to provide syscall 'abortability' for when the executed commands
+   simply take too long and have become irritants to your operation.
+   
+   For further reading on the technicalities concerned OPERLAPPED ASYNC I/O
+   and WAITABLE TIMERS, please refer to the Microsoft/MSDN documentation.
+
+
+   As a closing note, I'd like to mention that this new approach MIGHT work
+   on Windows ME/98/95, but it has NOT been designed TO DO SO. This means?
+   It means you're VERY probably screwed if you try to run CRM114 on any of 
+   those. But then again, MEMORY MAPPED I/O, used everywhere else in CRM114,
+   is not really featured on those would-be OS's anyhow.
+
+   As we speak, according to Microsoft, Windows 95/98/ME have been gone the 
+   Way Of The Dodo for so long it would be amazing if you even remember there's
+   ever been a thing like that. So there.
+
+
+   DESIGN CONSIDERATIONS:
+
+   This time around, we're ALWAYS going to do ASYNC I/O in syscall. When
+   syscall was specified by the script compiler as being SYNCHRONOUS (no
+   <async> flag specified) it ONLY means, we're going to wait for the ASYNC
+   operation to finish. I.e. when <async> was specified, we'll start the
+   ASYNC I/O operation as usual and then we'll let it rip, while _we_ go
+   on looking for some _new_ stuff to do.
+
+   <keep> will mean we're going to try and keep the handles and process
+   alive, just like in ASYNC mode, but this time, we'll try to remember
+   it's still there the next time we're around this place.
+   
+   <keep> with <async> is apparently not supported on the UNIX side of things
+   today, but on Win32, it could be simply done by queueing the ASYNC I/O
+   operations: extra input specified with a subsequent <keep> call, while
+   any output available is fed into the presented output variable. Ah well...
+*/
+
+#define CRM_USE_OLD_WIN32_SYCALL_CODE 1
+
+
+
+#if defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
+
 typedef struct
 {
     void  *my_ptr;
@@ -40,6 +112,7 @@ typedef struct
     void  *my_ptr;
     HANDLE from_minion;
     int    timeout;
+    int    abort_timeout;
     int   internal_trace;
     int   keep_proc;
 } suckerparams;
@@ -193,13 +266,6 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
                     eof = TRUE;
                     break;
                 }
-
-#if 0
-                if (bytesRead < OUTBUF_SIZE)
-                {
-                    eof = TRUE; // <-- this cinches it: since ReadFile() will not return until completed when in sync read mode.
-                }
-#endif
             }
         }
 
@@ -237,7 +303,18 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
 
 #undef OUTBUF_SIZE
 }
-#endif
+
+#else // !defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
+
+
+
+
+
+#endif // defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
+
+#endif // WIN32
+
+
 
 int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
@@ -280,7 +357,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     pid_t minion;
     int status;
     int timeout;
+	time_t abort_timeout;
     int cnt;
+	double pollcycle_setting = 0.0;
+	double run_timeout_setting = 0.0;
 
 #if defined (HAVE_WAITPID)
     if (user_trace)
@@ -302,6 +382,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         timeout = 1;
     }
 #endif
+	abort_timeout = 0;
 
     //    get the flags
     //
@@ -320,6 +401,36 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             fprintf(stderr, "Letting the process go off on it's own");
         async_mode = 1;
     }
+
+    CRM_ASSERT(apb != NULL);
+    crm_get_pgm_arg(keep_buf, WIDTHOF(keep_buf), apb->a1start, apb->a1len);
+    inlen = crm_nexpandvar(keep_buf, apb->a1len, MAX_PATTERN-1);
+	CRM_ASSERT(inlen <= MAX_PATTERN-1); 
+	keep_buf[inlen] = 0;
+
+	done = sscanf(keep_buf, "%lf %lf", &pollcycle_setting, &run_timeout_setting);
+	switch (done)
+	{
+	default:
+		nonfatalerror("Unable to decode pollcycle or abort_timeout for syscall: ", keep_buf);
+		break;
+
+	case 0:
+	case -1:
+		break;
+
+	case 1:
+		run_timeout_setting = 0.0;
+	case 2:
+			timeout = (int)ceil(pollcycle_setting * 1000);
+			if (timeout < 1)
+				timeout = 1;
+			abort_timeout = (int)ceil(run_timeout_setting * 1000);
+			if (abort_timeout <= 0)
+				abort_timeout = 0;
+			break;
+	}
+
 
     //     Sanity check - <async> is incompatible with <keep>
     //
@@ -821,10 +932,11 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         }
     }
 #elif defined (WIN32)
+#if defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
+
     if (0)
     {
-        fatalerror(" Sorry, syscall is completely b0rked in this version", "");
-        return 1;
+        return nonfatalerror(" Sorry, syscall is completely b0rked in this version", "");
     }
     else
     {
@@ -844,8 +956,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (!(cnt == 3
               || (cnt == 0 && (*exp_keep_buf == 0 || strncmp(exp_keep_buf, "DEAD MINION", WIDTHOF("DEAD MINION") - 1) == 0))))
         {
-            nonfatalerror("Failed to decode the syscall minion setup: ", exp_keep_buf);
-            return 1;
+            return nonfatalerror("Failed to decode the syscall minion setup: ", exp_keep_buf);
         }
 
         status = 1;
@@ -1227,6 +1338,14 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 eof = TRUE;
                             }
                         }
+						else if (error != ERROR_SUCCESS)
+						{
+							eof = TRUE;
+                            if (exit_code == STILL_ACTIVE)
+                            {
+								TerminateProcess(hminion, 260);
+							}
+						}
                         // else: eof = FALSE
 
 #if 0
@@ -1399,6 +1518,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     sp->my_ptr = sp;
                     sp->from_minion = from_minion[0];
                     sp->timeout = timeout;
+                    sp->abort_timeout = abort_timeout;
                     sp->internal_trace = internal_trace;
                     sp->keep_proc = keep_proc;
 
@@ -1505,8 +1625,15 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
         }
     }
+#else // !defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
+
+
+        return nonfatalerror(" Sorry, syscall is completely b0rked in this version", "");
+
+#endif // defined(CRM_USE_OLD_WIN32_SYCALL_CODE)
+
 #else
-    fatalerror(" Sorry, syscall is not supported in this version", "");
+    return nonfatalerror(" Sorry, syscall is not supported in this version", "");
 #endif
     return 0;
 }

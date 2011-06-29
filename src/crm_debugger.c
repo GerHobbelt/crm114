@@ -27,6 +27,10 @@ static FILE *mytty = NULL;
 static char **show_expr_list = NULL;
 static char *last_e_expression = NULL;
 static char *show_expr_buffer = NULL;
+static char *dbg_inbuf = NULL;
+static char *dbg_outbuf = NULL;
+static int dbg_iobuf_size = MAX_PATTERN + MAX_VARNAME + 256;
+static char *dbg_last_command = NULL;
 
 
 void free_debugger_data(void)
@@ -52,12 +56,28 @@ void free_debugger_data(void)
         free(last_e_expression);
         last_e_expression = NULL;
     }
+    if (dbg_last_command)
+    {
+        free(dbg_last_command);
+        dbg_last_command = NULL;
+    }
     if (mytty)
     {
         fclose(mytty);
         mytty = NULL;
     }
+    if (dbg_inbuf)
+    {
+        free(dbg_inbuf);
+        dbg_inbuf = NULL;
+    }
+    if (dbg_outbuf)
+    {
+        free(dbg_outbuf);
+        dbg_outbuf = NULL;
+    }
 }
+
 
 
 //         If we got to here, we need to run some user-interfacing
@@ -71,6 +91,8 @@ void free_debugger_data(void)
 int crm_debugger(void)
 {
     int ichar;
+    int ret_code = 0;
+    int parsing_done = 0;
 
     if (!mytty)
     {
@@ -95,14 +117,41 @@ int crm_debugger(void)
         }
         show_expr_list[0] = NULL;
     }
+    if (!dbg_inbuf)
+    {
+        dbg_inbuf = calloc(dbg_iobuf_size, sizeof(dbg_inbuf[0]));
+        if (!dbg_inbuf)
+        {
+            untrappableerror("Cannot allocate debugger input buffer", "");
+        }
+        dbg_inbuf[0] = 0;
 
-    if (csl->mct[csl->cstmt]->stmt_break > 0)
+        dbg_outbuf = calloc(dbg_iobuf_size, sizeof(dbg_outbuf[0]));
+        if (!dbg_outbuf)
+        {
+            untrappableerror("Cannot allocate debugger output buffer", "");
+        }
+        dbg_outbuf[0] = 0;
+
+        dbg_last_command = calloc(dbg_iobuf_size, sizeof(dbg_last_command[0]));
+        if (!dbg_last_command)
+        {
+            untrappableerror("Cannot allocate debugger input recall buffer", "");
+        }
+        dbg_last_command[0] = 0;
+    }
+    CRM_ASSERT(dbg_outbuf != NULL);
+    CRM_ASSERT(dbg_last_command != NULL);
+
+    if (csl->mct[csl->cstmt]->stmt_break)
         fprintf(stderr, "Breakpoint tripped at statement %d\n", csl->cstmt);
 
-    for ( ; ;)
+    for ( ; !parsing_done;)
     {
         // show watched expressions:
         int watch;
+        int cmd_done_len = 1;
+        int remember_cmd = 0;
 
         if (show_expr_list && show_expr_list[0])
         {
@@ -130,34 +179,40 @@ int crm_debugger(void)
 
         //    find out what they want to do
         //
-        ichar = 0;
-
-        while (!feof(mytty)
-               && ichar < data_window_size - 1
-               && (inbuf[ichar - 1] != '\n'))
+        //    if there's still a command waiting in the buffer, handle that one first.
+        if (!dbg_inbuf[0])
         {
-            inbuf[ichar] = fgetc(mytty);
-            ichar++;
-        }
-        inbuf[ichar] = 0;
+            ichar = 0;
 
-        if (feof(mytty))
-        {
-            fprintf(stderr, "Quitting\n");
-            if (engine_exit_base != 0)
+            while (!feof(mytty)
+                   && ichar < dbg_iobuf_size - 1
+                   && (dbg_inbuf[ichar - 1] != '\n'))
             {
-                exit(engine_exit_base + 8);
+                dbg_inbuf[ichar] = fgetc(mytty);
+                ichar++;
             }
-            else
+            dbg_inbuf[ichar] = 0;
+
+            remember_cmd = 1;
+
+            if (feof(mytty))
             {
-                exit(EXIT_SUCCESS);
+                fprintf(stderr, "Quitting\n");
+                if (engine_exit_base != 0)
+                {
+                    exit(engine_exit_base + 8);
+                }
+                else
+                {
+                    exit(EXIT_SUCCESS);
+                }
             }
         }
 
 
         //   now a big switch statement on the first character of the command
         //
-        switch (inbuf[0])
+        switch (dbg_inbuf[0])
         {
         case 'q':
         case 'Q':
@@ -173,30 +228,85 @@ int crm_debugger(void)
             }
             break;
 
+        case ';':
+            // act as optional command seperator for commands which use arguments, when these are used in a command sequence
+            break;
+
+        case '.':
+            // repeat last run command
+            //
+            // Note that if the previous command was a line containing mutiple commands,
+            // EACH of those is executed again!
+            {
+                char *dst = dbg_inbuf + 1;
+                int len = strlen(dst);
+
+                ichar = dbg_iobuf_size - 1;
+                ichar -= len;
+                dst += len;
+                snprintf(dst, ichar, "\n%s", dbg_last_command);
+                dbg_inbuf[dbg_iobuf_size - 1] = 0;
+            }
+            //
+            // disable storing this new command buffer to prevent infinite loops
+            //
+            // CAVEAT: note however, that a commandline like this:
+            //
+            //   n . c
+            //
+            // WILL cause the complete line to be duplicated once the '.' is hit, to look
+            // like this:
+            //
+            //   . c n . c
+            //
+            // thus introducing another '.' automagically, leading to an infinitely
+            // repeating pattern (or until the complete CRM script has been executed).
+            //
+            // Though this is at least 'sneaky', it IS allowed, as I _like_ sneaky like this ;-)
+            //
+            // -- Ger '[i_a]' Hobbelt
+            //
+            remember_cmd = 0;
+            break;
+
         case 'n':
         case 'N':
             debug_countdown = 0;
-            return 0;
+
+            ret_code = 0;
+            parsing_done = 1;
+            break;
 
         case 'c':
         case 'C':
-            debug_countdown = 0;
-            if (1 != sscanf(&inbuf[1], "%d", &debug_countdown))
+            debug_countdown = 1;
             {
-                fprintf(stderr, "Failed to decode the debug 'C' "
-                                "command countdown number '%s'. "
-                                "Assume 0: 'continue'.\n", &inbuf[1]);
+                char *end = NULL;
+
+                debug_countdown = strtol(dbg_inbuf + 1, &end, 0);
+                if (end == dbg_inbuf + 1)
+                {
+                    fprintf(stderr, "Failed to decode the debug 'C' "
+                                    "command countdown number '%s'. "
+                                    "Assume 0: 'continue'.\n", &dbg_inbuf[1]);
+                    debug_countdown = 0;
+                }
+                if (debug_countdown <= 0)
+                {
+                    debug_countdown = -1;
+                    fprintf(stderr, "continuing execution...\n");
+                }
+                else
+                {
+                    fprintf(stderr, "continuing %d cycles...\n", debug_countdown);
+                }
+
+                cmd_done_len = end - dbg_inbuf;
             }
-            if (debug_countdown <= 0)
-            {
-                debug_countdown = -1;
-                fprintf(stderr, "continuing execution...\n");
-            }
-            else
-            {
-                fprintf(stderr, "continuing %d cycles...\n", debug_countdown);
-            }
-            return 0;
+            CRM_ASSERT(cmd_done_len > 0);
+            ret_code = 0;
+            parsing_done = 1;
+            break;
 
         case 't':
             if (user_trace == 0)
@@ -226,24 +336,53 @@ int crm_debugger(void)
 
         case 'e':
             fprintf(stderr, "expanding:\n");
-            memmove(inbuf, &inbuf[1], strlen(inbuf) - 1);
-            if (last_e_expression)
-                free(last_e_expression);
-            last_e_expression = strdup(inbuf);
-            crm_nexpandvar(inbuf, strlen(inbuf) - 1, data_window_size);
-            fprintf(stderr, "%s", inbuf);
+                    //
+                    // GROT GROT GROT
+                    //
+                    // when an arg is given, it MAY contain semicolons
+                    // That means this command can NOT be used in a command sequence!
+			//
+            if (dbg_inbuf[strspn(dbg_inbuf, " \t\r\n")])
+            {
+                if (last_e_expression)
+                    free(last_e_expression);
+                last_e_expression = strdup(dbg_inbuf + 1);
+				last_e_expression[strcspn(last_e_expression, "\r\n")] = 0;
+
+                cmd_done_len = strcspn(dbg_inbuf, "\r\n");
+            }
+
+			if (last_e_expression)
+			{
+                    strcpy(dbg_outbuf, last_e_expression);
+
+                    crm_nexpandvar(dbg_outbuf, strlen(dbg_outbuf), dbg_iobuf_size);
+
+                fprintf(stderr, "expression '%s' ==>\n%s", last_e_expression, dbg_outbuf);
+}
+			else
+            {
+				fprintf(stderr, "no 'e' expression specified: not now and never before\n");
+            }
             break;
 
         case '+':
             // add expression to watch list
 
             // check if an expression has been specified; if none, re-use the last e expression if _that_ one exists.
-            memmove(inbuf, &inbuf[1], strlen(inbuf) - 1);
-            if (inbuf[strspn(inbuf, " \t\r\n")])
+                    //
+                    // GROT GROT GROT
+                    //
+                    // when an arg is given, it MAY contain semicolons
+                    // That means this command can NOT be used in a command sequence!
+            if (dbg_inbuf[strspn(dbg_inbuf, " \t\r\n")])
             {
                 if (last_e_expression)
                     free(last_e_expression);
-                last_e_expression = strdup(inbuf);
+                last_e_expression = strdup(dbg_inbuf + 1);
+				last_e_expression[strcspn(last_e_expression, "\r\n")] = 0;
+
+                cmd_done_len = strcspn(dbg_inbuf, "\r\n");
             }
 
             if (last_e_expression)
@@ -265,12 +404,12 @@ int crm_debugger(void)
 
                     fprintf(stderr, "'e' expression added to the watch list:\n"
                                     "    %s\n",
-                            last_e_expression);
+                        last_e_expression);
                 }
                 else
                 {
                     fprintf(stderr,
-                            "expression not added to watch list: expression already exists in watch list!\n");
+                        "expression not added to watch list: expression already exists in watch list!\n");
                 }
             }
             else
@@ -285,7 +424,7 @@ int crm_debugger(void)
                 int j;
                 int expr_number = 0;
 
-                j = sscanf(&inbuf[1], "%d", &expr_number);
+                j = sscanf(&dbg_inbuf[1], "%d", &expr_number);
                 if (j == 0)
                 {
                     // assume 'remove all':
@@ -308,7 +447,7 @@ int crm_debugger(void)
                             if (j == expr_number)
                             {
                                 fprintf(stderr, "removed watched expression #%d: %s\n",
-                                        j + 1, show_expr_list[j]);
+                                    j + 1, show_expr_list[j]);
                                 free(show_expr_list[j]);
                             }
                             // shift other expressions one down in the list to close the gap:
@@ -321,22 +460,22 @@ int crm_debugger(void)
                         if (j <= expr_number)
                         {
                             fprintf(stderr,
-                                    "cannot remove watched expression #%d as there are only %d expressions.\n",
-                                    expr_number + 1,
-                                    j);
+                                "cannot remove watched expression #%d as there are only %d expressions.\n",
+                                expr_number + 1,
+                                j);
                         }
                     }
                     else
                     {
                         fprintf(stderr, "You specified an illegal watched expression #%d; command ignored.\n",
-                                expr_number + 1);
+                            expr_number + 1);
                     }
                 }
             }
             break;
 
         case 'i':
-            fprintf(stderr, "Isolating %s", &inbuf[1]);
+            fprintf(stderr, "Isolating %s", &dbg_inbuf[1]);
             fprintf(stderr, "NOT YET IMPLEMENTED!  Sorry.\n");
             break;
 
@@ -346,7 +485,7 @@ int crm_debugger(void)
                 int stmtnum;
                 int endstmtnum;
 
-                i = sscanf(&inbuf[1], " %d.%d", &stmtnum, &endstmtnum);
+                i = sscanf(&dbg_inbuf[1], " %d.%d", &stmtnum, &endstmtnum);
                 if (i <= 0)
                 {
                     stmtnum = csl->cstmt;
@@ -354,7 +493,7 @@ int crm_debugger(void)
                     endstmtnum = stmtnum;
 
                     // +N = show current + N subsequent statements
-                    i = sscanf(&inbuf[1], " >%d", &j);
+                    i = sscanf(&dbg_inbuf[1], " >%d", &j);
                     if (i == 1)
                     {
                         endstmtnum = stmtnum + j;
@@ -369,7 +508,7 @@ int crm_debugger(void)
                     else
                     {
                         // ~N: show a 'context' of +/- N statements around the current statement
-                        i = sscanf(&inbuf[1], " ~%d", &j);
+                        i = sscanf(&dbg_inbuf[1], " ~%d", &j);
                         if (i == 1)
                         {
                             endstmtnum = stmtnum + j;
@@ -424,9 +563,9 @@ int crm_debugger(void)
 
                         j = csl->mct[stmtnum]->start;
                         stmt_len = csl->mct[stmtnum + 1]->start - j;
-			memnCdump(stderr, 
-				csl->filetext + j,
-				stmt_len);
+                        memnCdump(stderr,
+                            csl->filetext + j,
+                            stmt_len);
 #endif
                     }
                 }
@@ -438,20 +577,20 @@ int crm_debugger(void)
                 int nextstmt;
                 int i;
                 int vindex;
-                i = sscanf(&inbuf[1], "%d", &nextstmt);
+                i = sscanf(&dbg_inbuf[1], "%d", &nextstmt);
                 if (i == 0)
                 {
                     //    maybe the user put in a label?
                     int tstart;
                     int tlen;
-                    crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
-                            &tstart, &tlen);
-                    memmove(inbuf, &inbuf[1 + tstart], tlen);
-                    inbuf[tlen] = 0;
-                    vindex = crm_vht_lookup(vht, inbuf, tlen);
+                    crm_nextword(&dbg_inbuf[1], strlen(&dbg_inbuf[1]), 0,
+                        &tstart, &tlen);
+                    memmove(dbg_inbuf, &dbg_inbuf[1 + tstart], tlen);
+                    dbg_inbuf[tlen] = 0;
+                    vindex = crm_vht_lookup(vht, dbg_inbuf, tlen);
                     if (vht[vindex] == NULL)
                     {
-                        fprintf(stderr, "No label '%s' in this program.  ", inbuf);
+                        fprintf(stderr, "No label '%s' in this program.  ", dbg_inbuf);
                         fprintf(stderr, "Staying at line %d\n", csl->cstmt);
                         nextstmt = csl->cstmt;
                     }
@@ -468,7 +607,7 @@ int crm_debugger(void)
                 {
                     nextstmt = csl->nstmts;
                     fprintf(stderr, "last statement is %d, assume you meant that.\n",
-                            csl->nstmts);
+                        csl->nstmts);
                 }
                 if (csl->cstmt != nextstmt)
                 {
@@ -476,7 +615,9 @@ int crm_debugger(void)
                 }
                 csl->cstmt = nextstmt;
             }
-            return 1;
+            ret_code = 1;
+            parsing_done = 1;
+            break;
 
         case 'b':
             {
@@ -485,21 +626,21 @@ int crm_debugger(void)
                 int i;
                 int vindex;
                 breakstmt = -1;
-                i = sscanf(&inbuf[1], "%d", &breakstmt);
+                i = sscanf(&dbg_inbuf[1], "%d", &breakstmt);
                 if (i == 0)
                 {
                     //    maybe the user put in a label?
                     int tstart;
                     int tlen;
-                    crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
-                            &tstart, &tlen);
-                    memmove(inbuf, &inbuf[1 + tstart], tlen);
-                    inbuf[tlen] = 0;
-                    vindex = crm_vht_lookup(vht, inbuf, tlen);
+                    crm_nextword(&dbg_inbuf[1], strlen(&dbg_inbuf[1]), 0,
+                        &tstart, &tlen);
+                    memmove(dbg_inbuf, &dbg_inbuf[1 + tstart], tlen);
+                    dbg_inbuf[tlen] = 0;
+                    vindex = crm_vht_lookup(vht, dbg_inbuf, tlen);
                     fprintf(stderr, "vindex = %d\n", vindex);
                     if (vht[vindex] == NULL)
                     {
-                        fprintf(stderr, "No label '%s' in this program.  ", inbuf);
+                        fprintf(stderr, "No label '%s' in this program.  ", dbg_inbuf);
                         fprintf(stderr, "No breakpoint change made.\n");
                     }
                     else
@@ -515,21 +656,23 @@ int crm_debugger(void)
                 {
                     breakstmt = csl->nstmts;
                     fprintf(stderr, "last statement is %d, assume you meant that.\n",
-                            csl->nstmts);
+                        csl->nstmts);
                 }
-                csl->mct[breakstmt]->stmt_break = 1 - csl->mct[breakstmt]->stmt_break;
-                if (csl->mct[breakstmt]->stmt_break == 1)
+                csl->mct[breakstmt]->stmt_break = !csl->mct[breakstmt]->stmt_break;
+                if (csl->mct[breakstmt]->stmt_break)
                 {
                     fprintf(stderr, "Setting breakpoint at statement %d\n",
-                            breakstmt);
+                        breakstmt);
                 }
                 else
                 {
                     fprintf(stderr, "Clearing breakpoint at statement %d\n",
-                            breakstmt);
+                        breakstmt);
                 }
             }
-            return 1;
+            ret_code = 1;
+            parsing_done = 1;
+            break;
 
         case 'a':
             {
@@ -538,33 +681,34 @@ int crm_debugger(void)
                 int vstart, vlen;
                 int vindex;
                 int ostart, oend, olen;
-                crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
-                        &vstart, &vlen);
-                memmove(inbuf, &inbuf[1 + vstart], vlen);
-                inbuf[vlen] = 0;
-                vindex = crm_vht_lookup(vht, inbuf, vlen);
+                crm_nextword(&dbg_inbuf[1], strlen(&dbg_inbuf[1]), 0,
+                    &vstart, &vlen);
+                memmove(dbg_inbuf, &dbg_inbuf[1 + vstart], vlen);
+                dbg_inbuf[vlen] = 0;
+                vindex = crm_vht_lookup(vht, dbg_inbuf, vlen);
                 if (vht[vindex] == NULL)
                 {
-                    fprintf(stderr, "No variable '%s' in this program.  ", inbuf);
+                    fprintf(stderr, "No variable '%s' in this program.  ", dbg_inbuf);
                 }
 
                 //     now grab what's left of the input as the value to set
                 //
                 ostart = vlen + 1;
-                while (inbuf[ostart] != '/' && inbuf[ostart] != 0)
+                while (dbg_inbuf[ostart] != '/' && dbg_inbuf[ostart] != 0)
                     ostart++;
                 ostart++;
                 oend = ostart + 1;
-                while (inbuf[oend] != '/' && inbuf[oend] != 0)
+                while (dbg_inbuf[oend] != '/' && dbg_inbuf[oend] != 0)
                     oend++;
 
-                memmove(outbuf,
-                        &inbuf[ostart],
-                        oend - ostart);
+                CRM_ASSERT(oend - ostart < dbg_iobuf_size - 1);
+                memmove(dbg_outbuf,
+                    &dbg_inbuf[ostart],
+                    oend - ostart);
 
-                outbuf[oend - ostart] = 0;
-                olen = crm_nexpandvar(outbuf, oend - ostart, data_window_size);
-                crm_destructive_alter_nvariable(inbuf, vlen, outbuf, olen);
+                dbg_outbuf[oend - ostart] = 0;
+                olen = crm_nexpandvar(dbg_outbuf, oend - ostart, dbg_iobuf_size);
+                crm_destructive_alter_nvariable(dbg_inbuf, vlen, dbg_outbuf, olen);
             }
             break;
 
@@ -573,13 +717,17 @@ int crm_debugger(void)
             fprintf(stderr, "Forward to }, next statement : %d\n", csl->cstmt);
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
 
-            return 1;
+            ret_code = 1;
+            parsing_done = 1;
+            break;
 
         case 'l':
             csl->cstmt = csl->mct[csl->cstmt]->liaf_index;
             fprintf(stderr, "Backward to {, next statement : %d\n", csl->cstmt);
 
-            return 1;
+            ret_code = 1;
+            parsing_done = 1;
+            break;
 
         case 'h':
         case '?':
@@ -609,9 +757,33 @@ int crm_debugger(void)
             break;
 
         default:
-            fprintf(stderr, "Command unrecognized - type \"h\" for help.\n");
+            {
+                // skip whitespace:
+                int len = strspn(dbg_inbuf, " \t\r\n");
+
+                cmd_done_len = len;
+                if (cmd_done_len == 0)
+                {
+                    fprintf(stderr, "Command '%c' unrecognized - type \"h\" for help.\n", dbg_inbuf[0]);
+
+                    // skip until ';' seperator or newline:
+                    cmd_done_len = strcspn(dbg_inbuf, ";\n");
+                }
+            }
             break;
         }
+
+        if (remember_cmd)
+        {
+            strcpy(dbg_last_command, dbg_inbuf);
+        }
+
+        if (cmd_done_len > 0)
+        {
+            memmove(dbg_inbuf, dbg_inbuf + cmd_done_len, strlen(dbg_inbuf + cmd_done_len) + 1);
+        }
     }
+
+    return ret_code;
 }
 

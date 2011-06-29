@@ -152,27 +152,27 @@ Examples :here: , :ThErE:, :every-where_0123+45%6789: ,
 :this_is_a_very_very_long_var_name_that_does_not_tell_us_much: .
 
 Builtin variables:
-          :_nl: - newline
-          :_ht: - horizontal tab
-          :_bs: - backspace
-          :_sl: - a slash
-          :_sc: - a semicolon
+          :_nl:                - newline
+          :_ht:                - horizontal tab
+          :_bs:                - backspace
+          :_sl:                - a slash
+          :_sc:                - a semicolon
           :_arg0: thru :_argN: - command-line args, including _all_ flags
-          :_argc: - how many command line arguments there were
+          :_argc:              - how many command line arguments there were
           :_pos0: thru :_posN: - positional args ('-' or '--' args deleted)
-          :_posc: - how many positional arguments there were
-          :_pos_str:  - all positional arguments concatented
-          :_env_whatever: - environment value 'whatever'
-          :_env_string:  - all environmental arguments concatenated
-          :_crm_version: - the version of the CRM system
-          :_cd: - the current call depth
-          :_cs: - the current statement number
-          :_pgm_hash: - hash of the current program - for version verification
-          :_pgm_text: - copy of post-processed source code - matchable
-          :_pid: - process ID of the current process.
-          :_ppid: - process ID of the parent of the current process.
-          :_dw: - the current data window contents (usually the default arg)
-          :_iso: - the current isolated data block (change at your own peril!)
+          :_posc:              - how many positional arguments there were
+          :_pos_str:           - all positional arguments concatented
+          :_env_whatever:      - environment value 'whatever'
+          :_env_string:        - all environmental arguments concatenated
+          :_crm_version:       - the version of the CRM system
+          :_cd:                - the current call depth
+          :_cs:                - the current statement number
+          :_pgm_hash:          - hash of the current program - for version verification
+          :_pgm_text:          - copy of post-processed source code - matchable
+          :_pid:               - process ID of the current process.
+          :_ppid:              - process ID of the parent of the current process.
+          :_dw:                - the current data window contents (usually the default arg)
+          :_iso:               - the current isolated data block (change at your own peril!)
 
 ----  VARIABLE EXPANSION  ----
 
@@ -250,8 +250,19 @@ so use it only for good, and never for evil.
                                     sugar - it is a -statement- and ends at
                                     the newline or at "\#"
 
+                                    However, comments _can_ be added to lead
+                                    or trail other commands as in-line
+                                    documentation without the need to use
+                                    a ';' semicolon to separate the statements,
+                                    e.g.:
 
-insert filename                   - inserts the file verbatim at this
+                                      alius   # comment for the alius action here
+                                      # leading comment \#    output /hello/
+
+
+insert filename
+insert [expanded_filename]
+                                  - inserts the file verbatim at this
                                     line at compile time.  If the file
                                     can't be INSERTed, a system-generated
                                     FAULT statement is inserted.  Use a TRAP
@@ -263,14 +274,14 @@ insert filename                   - inserts the file verbatim at this
                                     command-line and environment variables.
 
 
-  ;                               - semicolon is a statement separator -
+;                                 - semicolon is a statement separator -
                                     unless it's inside delimiters
                                     it must be escaped as \; or else
                                     it _will_ mark the end of the
                                     statement.
 
 
-{ and }                           - start and end blocks of
+{  }                              - start and end blocks of
                                     statements. Must always be '\'
                                     escaped or inside delimiters or
                                     these will mark the start/end of a
@@ -307,6 +318,8 @@ alter (:var:) /new-val/           - surgically change value of var to newval
               /new-val/           - value to change to (var-expanded)
 
 
+call /:entrypoint_label:/
+call /:entrypoint_label:/ [:arg1: :arg2:... ]
 call /:entrypoint_label:/ [:arg1: :arg2:... ] (:ret_arg:)
                                   - do a routine call on the
                                     specified (var-expanded) entrypoint label.
@@ -332,7 +345,9 @@ call /:entrypoint_label:/ [:arg1: :arg2:... ] (:ret_arg:)
                                     anything).  If it had a previous value,
                                     that value is overwritten on return.
 
+classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/
 classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
+classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ // /svm-specific controls/
                                   - compare the statistics of the current data
                                     window buffer with classfiles c1...cN .
                                     In general, class statistics files are
@@ -438,7 +453,7 @@ classify <flags> (:c1:...|...:cN:) (:stats:) [:in:] /word-pat/ /pR_offset/
                                   - a vector of seven parameters for
                                     SVM-classifiers
 
-clump [:text:] (clumpfile) (stat) <flags> /regex/ /params/
+clump [:text:] (clumpfile) (status) <flags> /regex/ /params/
                                   - does incremental parametric clustering of
                                     documents to generate document groups.  No
                                     pre-judged corpus is required.
@@ -468,10 +483,10 @@ clump [:text:] (clumpfile) (stat) <flags> /regex/ /params/
                                     If N < 0 the number of clusters is
                                     determined automatically.
 
-cssanalyze <flags> (:report:) (:c1:) /params/
-                                  - analyze the CRM database
-                                    :c1: and report into :report:. The analysis
-                                    may include extensive integrity checks.
+cssanalyze <flags> (:c1:) (:report:) /params/
+                                  - analyze the CRM database :c1: and report
+                                    into :report:. The analysis may include
+                                    extensive integrity checks.
 
       <flags>                     - special control flags; default and basic
                                     are supported.
@@ -484,7 +499,7 @@ cssanalyze <flags> (:report:) (:c1:) /params/
                                     in due time.
 
 
-cssbackup <flags> (:report:) (:dst: :c1:) /params/
+cssbackup <flags> (:dst: :c1:) (:report:) /params/
                                   - export/backup the CRM database :c1: into
                                     file :dst:. The output format is CSV.
                                     Messages are written to :report:.
@@ -500,7 +515,7 @@ cssbackup <flags> (:report:) (:dst: :c1:) /params/
                                     in due time.
 
 
-csscreate <flags> (:report:) (:c1:) /params/
+csscreate <flags> (:c1:) (:report:) /params/
                                   - create a new CRM database :c1: as specified
                                     by /params/. This command can be used to
                                     create new/empty CRM databases for any
@@ -518,7 +533,7 @@ csscreate <flags> (:report:) (:c1:) /params/
                                     in due time.
 
 
-cssdiff <flags> (:report:) (:c1: :c2:) /params/
+cssdiff <flags> (:c1: :c2:) (:report:) /params/
                                   - report differences between the CRM
                                     databases :c1: and :c2: into :report:.
 
@@ -533,7 +548,7 @@ cssdiff <flags> (:report:) (:c1: :c2:) /params/
                                     in due time.
 
 
-cssinfo <flags> (:report:) (:c1:) /params/
+cssinfo <flags> (:c1:) (:report:) /params/
                                   - list information about the CRM database
                                     :c1: into :report:.
 
@@ -548,7 +563,7 @@ cssinfo <flags> (:report:) (:c1:) /params/
                                     in due time.
 
 
-cssmerge <flags> (:report:) (destfile) (:c1:...:cN:) /params/
+cssmerge <flags> (:destfile: :c1:...:cN:) (:report:) /params/
                                   - merge the CRM databases :c1: ... :cN: into
                                     destfile.
                                     Messages are written to :report:.
@@ -564,7 +579,7 @@ cssmerge <flags> (:report:) (destfile) (:c1:...:cN:) /params/
                                     in due time.
 
 
-cssrestore <flags> (:report:) (:c1: :src:) /params/
+cssrestore <flags> (:c1: :src:) (:report:) /params/
                                   - import/restore the CRM database :c1: from
                                     file :src:. The input format is CSV.
                                     Messages are written to :report:.
@@ -654,7 +669,10 @@ intersect (:out:) [:var1: :var2: ...]
                                     window.
 
 
+isolate (:var:)
+isolate (:var:) /initial-value/
 isolate (:var:) <flags> /initial-value/
+isolate (:var1: :var2: ... :varN:)
                                   - puts :var: into a data area
                                     outside of the default data window
                                     buffer; subsequent changes to this
@@ -672,12 +690,18 @@ isolate (:var:) <flags> /initial-value/
                                     supplied, the previous value is
                                     retained/copied.
 
+input <flags> [:filename:]
 input <flags> (:result:) [:filename:]
+input <flags> (:result:) [:filename: offset len]
                                   - read in the content of filename
                                     if no filename, then read stdin
     <byline>                      - read one line only
+    <readline>                    - read one line only, using the history-aware
+                                    readline library
      (:result:)                   - var that gets the input value
                                     (surgical overwrite).
+                                    When no :result: variable has been specified,
+                                    the default :_dw: input window is assumed.
       [:filename:]                - the file to read.  The first
                                     blank-delimited word is taken and
                                     var-expanded; the result is the filename,
@@ -694,6 +718,8 @@ input <flags> (:result:) [:filename:]
 
 
 learn <flags> (:class:) [:in:] /word-pat/
+learn <flags> (:class:) [:in:] /word-pat/ /entropy_fuzz/
+learn <flags> (:class:) [:in:] /word-pat/ // /svm-specific controls/
                                   - learn the statistics of the :in:
                                     var (or the input window if no var)
                                     as an example of class :class:
@@ -753,6 +779,19 @@ learn <flags> (:class:) [:in:] /word-pat/
                                     tokenizer regex is ignored; the second //
                                     argument can hold an optional "fuzz factor"
                                     for how close an approximation is allowed.
+      <svm>                       - use the SVM classifier.  This uses SVM
+                                    (support vector machine) techniques.  NB:
+                                    for now VERY EXPERIMENTAL; OSB or unigram
+                                    features (default OSB features),
+                                    2-class only, generates A_vs_B files.
+      <sks>                       - use the String Kernel SVM.  String kernels
+                                    take one character at a time as token
+                                    features, but don't use omitted subsections
+                                    like the OSB feature set.  VERY EXPERIMENTAL.
+                                    2-class only, generates A_vs_B files.
+      <neural>                    - use a three-layer neural network with
+                                    stochastic back-propagation training.
+                                    VERY EXPERIMENTAL!!!
       <correlate>                 - use the full correlative matcher.  Very
                                     slow, but capable of matching stemmed words
                                     in any language and of matching binary files.
@@ -785,7 +824,13 @@ liaf                              - skips UP to START of the current {} block
                                     (LIAF is FAIL spelled backwards)
 
 
+match <flags> /regex/
+match <flags> [:in:] /regex/
+match <flags> [:in: start len] /regex/
+match <flags> [:in: /inregex/] /regex/
 match <flags> (:var1: ...) [:in:] /regex/
+match <flags> (:var1: ...) [:in: start len] /regex/
+match <flags> (:var1: ...) [:in: /inregex/] /regex/
                                   - Attempt to match the given regex;
                                     if match succeds, variables are bound;
                                     if match fails, program skips to the
@@ -825,13 +870,17 @@ match <flags> (:var1: ...) [:in:] /regex/
          [:in:]                   - search only in the variable specified;
                                     if omitted, :_dw: (the full input data
                                     window) is used
-         [:in: :start: :len:]     - search in the :in: input var, limiting
-                                    the area searched to :start: to :len:
+         [:in: start len]         - search in the :in: input var, limiting
+                                    the area searched to start to len
                                     (zero-origin counted)
          [:in: /inregex/ ]        - search in the :in: input var, limiting
                                     the searched area to whatever matches
                                     the inregex (this doesn't use or affect
                                     previous successful match values)
+                                    If the /inregex/ contain subregexes, the
+                                    last subregex will be used to produce
+                                    the limited :in: content to be matched
+                                    against.
                 /regex/           - POSIX regex (with \ escapes as needed)
 
           NB: If you build CRM114 to use the GNU regex library for MATCHing,
@@ -859,7 +908,8 @@ output <flags> [filename] /output-text/
                                     the write is the length of the
                                     expansion of /output-text/
               /output-text/       - string to output (var-expanded)
-
+                                 
+                                 
 pmulc (clumpfile) [:text:] <flags> /regex/
                                   - use the clumpfile as a lookup
                                     to translate documents to their
@@ -872,7 +922,8 @@ pmulc (clumpfile) [:text:] <flags> /regex/
       <flags>                     - The optional flags are bychunk, unique,
                                     and unigram, with the same functions
                                     as under clump.
-
+                                 
+                                 
 return /returnval/                - return from a CALL.  Note that since
                                     CALL executes in shared space with the
                                     caller, all changes made in the CALLed
@@ -880,76 +931,84 @@ return /returnval/                - return from a CALL.  Note that since
       /returnval/                 - this (var-expanded) value is returned
                                     to the caller (or if the caller doesn't
                                     accept return values, it's discarded).
-
+                                 
+                                 
 routine                           - WARNING: reserved for future use
+                                 
+                                 
+syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ /[match_OS]alt_command/ [timeout pollcycle]
+                                  - execute a shell command or fork
+                                    to the specified label.  This happens
+                                    in a fresh copy of the environment;
+                                    there is no communication with the main
+                                    program except via the :in:, :out:,
+                                    and :status: vars.
+                                    Output over the buffer length is
+                                    discarded unless you <keep> the process
+                                    around for multiple readings.
+        <keep>                    - don't send an EOF after feeding the
+                                    full input (this will usually keep the
+                                    syscalled process around).  Later
+                                    syscalls with the same :status:
+                                    var will continue feeding to and
+                                    reading from the kept proc.
+        <async>                   - don't wait for process to output an
+                                    EOF; just grab what's available in
+                                    the process's output pipe and proceed
+                                    (default limit per syscall is 256 Kb).
+                                    The process then runs to completion
+                                    independently and asynchronously.
+                                    (This is "fire and forget" mode, and
+                                    is mutually exclusive with <keep>. )
+        [timeout]                 - only allow the called process to run for N
+                                    seconds. (0 = unlimited)
+        [pollcycle]               - set the I/O poll cycle to N seconds. Use
+                                    to reduce CPU/OS load (higher N) or increase
+                                    response speed for long running processes
+                                    which produce very little output.
+         (:in:)                   - var-expanded string to feed to command
+                                    as input (can be null if you don't want
+                                    to send the process something.)  You
+                                    _MUST_ specify this if you want to
+                                    specify an :out: variable.
+          (:out:)                 - var-expanded varname to place results
+                                    into (MUST pre-exist, can be null if
+                                    you don't want to read the process's
+                                    output (yet, or at all).  Limit per
+                                    syscall is 256 Kbytes.  You _MUST_
+                                    specify this if you want to use the
+                                    :status: variable).  This is
+                                    a surgical alter.
+           (:status:)             - if you want to keep a minion proc
+                                    around, or catch the exit status
+                                    of the process, specify a varname here.
+                                    The minion process's PID and pipes
+                                    will be stored here.  The program
+                                    can access the proc again with
+                                    another syscall by using this var again.
+                                    When the process exits, it's exit code
+                                    will be surgically stored here (unless
+                                    you specified <async>)
+            /command_or_label/    - the command or entrypoint you want to
+                                    run.  This arg is var-expanded; if the
+                                    first word is a :label:, the fork begins
+                                    execution at the label.  If the first
+                                    word is not a :label:, then the entire
+                                    string is handed off to the shell to
+                                    be executed as a shell command.
+         /[match_OS]alt_command/  - specifies an alternative command for the
+                                    given OS: the string match_OS must match
+                                    your compiled HOSTTYPE (see 'crm -v'
+                                    output: the '(OS: XXX)' part of the first
+                                    line) in which case CRM114 will use the
+                                    alt_command instead.
 
-syscall <flags> (:in:) (:out:) (:status:) /command_or_label/ /[match_OS]alt_command/
-                                   - execute a shell command or fork
-                                     to the specified label.  This happens
-                                     in a fresh copy of the environment;
-                                     there is no communication with the main
-                                     program except via the :in:, :out:,
-                                     and :status: vars.
-                                     Output over the buffer length is
-                                     discarded unless you <keep> the process
-                                     around for multiple readings.
-        <keep>                     - don't send an EOF after feeding the
-                                     full input (this will usually keep the
-                                     syscalled process around).  Later
-                                     syscalls with the same :status:
-                                     var will continue feeding to and
-                                     reading from the kept proc.
-        <async>                    - don't wait for process to output an
-                                     EOF; just grab what's available in
-                                     the process's output pipe and proceed
-                                     (default limit per syscall is 256 Kb).
-                                     The process then runs to completion
-                                     independently and asynchronously.
-                                     (This is "fire and forget" mode, and
-                                     is mutually exclusive with <keep>. )
-         (:in:)                    - var-expanded string to feed to command
-                                     as input (can be null if you don't want
-                                     to send the process something.)  You
-                                     _MUST_ specify this if you want to
-                                     specify an :out: variable.
-          (:out:)                  - var-expanded varname to place results
-                                     into (MUST pre-exist, can be null if
-                                     you don't want to read the process's
-                                     output (yet, or at all).  Limit per
-                                     syscall is 256 Kbytes.  You _MUST_
-                                     specify this if you want to use the
-                                     :status: variable).  This is
-                                     a surgical alter.
-           (:status:)              - if you want to keep a minion proc
-                                     around, or catch the exit status
-                                     of the process, specify a varname here.
-                                     The minion process's PID and pipes
-                                     will be stored here.  The program
-                                     can access the proc again with
-                                     another syscall by using this var again.
-                                     When the process exits, it's exit code
-                                     will be surgically stored here (unless
-                                     you specified <async>)
-            /command_or_label/     - the command or entrypoint you want to
-                                     run.  This arg is var-expanded; if the
-                                     first word is a :label:, the fork begins
-                                     execution at the label.  If the first
-                                     word is not a :label:, then the entire
-                                     string is handed off to the shell to
-                                     be executed as a shell command.
-         /[match_OS]alt_command/   - specifies an alternative command for the
-                                     given OS: the string match_OS must match
-                                     your compiled HOSTTYPE (see 'crm -v'
-                                     output: the '(OS: XXX)' part of the first
-                                     line) in which case CRM114 will use the
-                                     alt_command instead.
-
-                                     NOTE: this feature has been added to
-                                     provide CRM script writers with a way to
-                                     specify the correct commands for each
-                                     supported Operating System, as OS commands
-                                     are highly nonportable (especially outside
-                                     the UNIX realm).
+                                    NOTE: this feature has been added to
+                                    provide CRM script writers with a way to
+                                    specify the correct commands for each
+                                    supported Operating System, as OS commands
+                                    are highly nonportable (especially outside
+                                    the UNIX realm).
 
 
 translate <flags> (:dest:) [:src] /from_charset/ /to_charset/
@@ -968,8 +1027,8 @@ translate <flags> (:dest:) [:src] /from_charset/ /to_charset/
                                     the default data window :_dw:
   /from_charset/                  - var-expanded charset of characters to
                                     be translated from.  Use hyphens for ranges
-                                    like a-e meaning abcde .  Reversed ranges
-                                    such as e-a meaning edcba work.  (this is
+                                    like a-e meaning 'abcde'.  Reversed ranges
+                                    such as e-a, meaning 'edcba', work. (this is
                                     different than tr() !)  Set inversion
                                     as in ^a-z mean all characters that
                                     aren't lower case characters works.
@@ -1252,7 +1311,7 @@ operators beyond the sequential passes noted below.
 
 The evaluation is done in four sequential passes:
 
- 1)   \-constants like \n, \o377 and \x3F are substituted in.  You must
+ 1)   \-constants like \n, \o377 and \x3F are substituted.  You must
       use three digits for octal and two digits for hex.  To write something
       that will literally appear as one of these constants, escape the
       backslasn with another backslash, i.e. to output '\o075' use '\\o075'.
@@ -1261,11 +1320,12 @@ The evaluation is done in four sequential passes:
       a constant like '\n' and a variable like ":*:_nl:" here - constants
       are substituted first, then variables are substituted.).  If there
       is no such variable, then the 'variable name' is it's own result, so
-      :*:I_am_not_defined: yields "I_am_not_defined".
+      :*:I_am_not_defined: yields ":I_am_not_defined:".
 
  3)   :+:var: indirection variables are substituted.  This is equivalent
-      to taking :*: twice immediately ( note that :*::*:foo: does not
-      do this!)  Note that if a regular variable is indirected, the
+      to taking :*: twice immediately ( note that :*::*:foo:: does not
+      do this as :*: cannot be nested - unless executed within an 'eval'
+      command!)  Note that if a regular variable is indirected, the
       result is unchanged (just as if a non-variable is :*:
       substituted; the result is the input)
 

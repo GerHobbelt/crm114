@@ -1212,7 +1212,7 @@ void crm_slice_and_splice_window(CSL_CELL *mdw, int where, int delta)
 
     if (delta + mdw->nchars > data_window_size - 10)
     {
-        fatalerror(" Data window trying to get too int.",
+        fatalerror(" Data window trying to get too long.",
                 " Try increasing the data window maximum size.");
         goto bailout;
     }
@@ -1280,7 +1280,7 @@ while (delta + mdw->nchars > data_window_size - 1)
     int odws, i;
     odws = data_window_size;
     data_window_size = 4 * data_window_size;
-    nonfatalerror(" Data window trying to get too int.",
+    nonfatalerror(" Data window trying to get too long.",
             " increasing data window... ");
     ndw = (char *)calloc(data_window_size, sizeof(ndw[0]));
     if (!ndw)

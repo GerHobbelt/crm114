@@ -82,6 +82,11 @@ extern int q_expansion_mode;
 extern int selected_hashfunction;  //  0 = default
 
 
+// forward reference for CSL
+struct mythical_stmt_type;
+
+
+
 //   structure of a vht cell
 //  note - each file gets an entry, with the name of the file
 //  being the name of the variable - no colons!
@@ -146,14 +151,15 @@ typedef struct mythical_argparse_block
 //
 typedef struct mythical_mct_cell
 {
-    char           *hosttxt;    // text file this statement lives in.
+    char           *hosttxt;    // text buffer this statement lives in.
     ARGPARSE_BLOCK *apb;        // the argparse block for this statement
-    int            start;      // zero-base index of start of statement (inclusive)
-    int            fchar;      // zero-base index of non-blank stmt (for prettyprint)
-    int            achar;      // zero-base index of start of args;
-    clock_t   stmt_utime; // user time spent in this statement line;
-    clock_t   stmt_stime; // system time spent in this statement line;
+    int             start;      // zero-base index of start of statement (inclusive)
+    int             fchar;      // zero-base index of non-blank stmt (for prettyprint)
+    int             achar;      // zero-base index of start of args;
+    clock_t         stmt_utime; // user time spent in this statement line;
+    clock_t         stmt_stime; // system time spent in this statement line;
     int             stmt_type;  // statement type of this line
+	const struct mythical_stmt_type *stmt_def;  // statement type definition of this line
     int             nest_level; // nesting level of this statement
     int             fail_index; // if this statement failed, where would we go?
     int             liaf_index; // if this statement liafed, where would we go?
@@ -172,20 +178,20 @@ struct mythical_csl_cell;
 
 typedef struct mythical_csl_cell
 {
-    char           *filename;                                //filename if any
+    char          *filename;                                // filename if any
     int            rdwr;                                    // 0=readonly, 1=rdwr
-    int            filedes;                                 //  file descriptor it's open on (if any)
-    char           *filetext;                                //  text buffer
-    int            nchars;                                  //  characters of data we have
-    crmhash_t       hash;                                    //  hash of this data (if done)
-    MCT_CELL      **mct;                                     //  microcompile (if compiled)
+    int            filedes;                                 // file descriptor it's open on (if any)
+    char          *filetext;                                // text buffer
+    int            nchars;                                  // characters of data we have
+    crmhash_t      hash;                                    // hash of this data (if done)
+    MCT_CELL      **mct;                                    // microcompile (if compiled)
     int            mct_size;                                // number of slots available in the MCT
-    int            nstmts;                                  //  how many statements in the microcompile
-    int            preload_window;                          //  do we preload the window or not?
-    int            cstmt;                                   //  current executing statement of this file
-    struct mythical_csl_cell *caller;                        //  pointer to this file's caller (if any)
-    int return_vht_cell;                                    //  index into the VHT to stick the return value
-    int calldepth;                                          //  how many calls deep is this stack frame
+    int            nstmts;                                  // how many statements in the microcompile
+    int            preload_window;                          // do we preload the window or not?
+    int            cstmt;                                   // current executing statement of this file
+    struct mythical_csl_cell *caller;                       // pointer to this file's caller (if any)
+    int return_vht_cell;                                    // index into the VHT to stick the return value
+    int calldepth;                                          // how many calls deep is this stack frame
     int aliusstk[MAX_BRACKETDEPTH];                         // the status stack for ALIUS
 
     unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
@@ -286,7 +292,7 @@ typedef struct mythical_entropy_cell
 #define CRM_CLUMP 31         // make clusters out of tokens
 #define CRM_PMULC 32         // pmulc translates tokens to cluster names
 #define CRM_LAZY 33          // makes a "lazy" variable.  // [i_a] NOT IMPLEMENTED
-#define CRM_REDUCE 34
+#define CRM_MUTATE 34
 #define CRM_CSS_MERGE 35
 #define CRM_CSS_DIFF 36
 #define CRM_CSS_BACKUP 37
@@ -388,7 +394,7 @@ typedef struct
 //      for that statement.
 //
 
-typedef struct
+typedef struct mythical_stmt_type
 {
     char    *stmt_name;
     int      stmt_code;

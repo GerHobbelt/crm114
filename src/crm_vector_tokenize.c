@@ -382,7 +382,7 @@ int crm_vector_tokenize_selector
         const char           *regex,        // the parsing regex (might be ignored)
         int                   regexlen,     //   length of the parsing regex
         const crmhash_t      *coeff_array,  // the pipeline coefficient control array
-        int                   pipe_len,     //  how int a pipeline (== coeff_array col length)
+        int                   pipe_len,     //  how long a pipeline (== coeff_array col length)
         int                   pipe_iters,   //  how many rows are there in coeff_array
         crmhash_t            *features,     // where the output features go
         int                   featureslen,  //   how many output features (max)

@@ -38,83 +38,160 @@
 
 
 
-static void dump_error_script_line(CSL_CELL *csl, int iline)
+static void dump_error_script_line(char *dst, int maxdstlen, CSL_CELL *csl, int stmtnum)
 {
+    char *orig_dst = dst;
+    int orig_maxdstlen = maxdstlen;
+
     //     Check to see - is there a trap available or is this a non-trap
     //     program?
     //
-    if (csl && csl->nstmts > 0 && csl->mct && csl->filetext
-        && iline >= 0 && iline < csl->nstmts && csl->mct[iline]
-        && csl->mct[iline + 1])
-    {
-        int maxchar;
+    if (!dst || maxdstlen <= 1)
+        return;
 
-        fprintf(stderr, "The line was:\n--> ");
-        maxchar = csl->mct[iline + 1]->fchar;
-        // maxchar == 0: this may happen when there's a fatalerror in the compiler
-        if (maxchar < csl->mct[iline]->fchar)
+    maxdstlen--;     // reserve space for the NUL sentinel at the end...
+
+    // current statement where the error occurred:
+    if (csl && csl->nstmts > 0 && csl->mct && csl->filetext
+        && stmtnum >= 0 && stmtnum < csl->nstmts
+		&& stmtnum + 1 < csl->mct_size
+        && csl->filetext)
+    {
+        MCT_CELL *stmt = csl->mct[stmtnum];
+        MCT_CELL *next_stmt = csl->mct[stmtnum + 1];
+
+        if (stmt && next_stmt
+            && stmt->start >= 0
+            && next_stmt->start >= 0)
         {
-            // find EOL
-            for (maxchar = csl->mct[iline]->fchar; maxchar < csl->nchars; maxchar++)
+            int maxchar = csl->mct[stmtnum + 1]->fchar;
+            int startchar = csl->mct[stmtnum]->fchar;
+            unsigned char *sourcedata = (unsigned char *)(stmt->hosttxt ? stmt->hosttxt : csl->filetext);
+
+            int ichar;
+            int has_nonprintable_chars_on_board = 0;
+            int last_was_LF = 0;
+
+            // maxchar == 0: this may happen when there's a fatalerror in the compiler
+            if (maxchar < startchar || !stmt->hosttxt || maxchar > csl->nchars)
             {
-                switch (csl->filetext[maxchar])
+                // find EOL
+                for (maxchar = startchar; maxchar < csl->nchars; maxchar++)
                 {
-                case 0:
-                case '\r':
+                    switch (sourcedata[maxchar])
+                    {
+                    case 0:
+                    case '\r':
+                    case '\n':
+                        break;
+
+                    default:
+                        continue;
+                    }
+                    break;
+                }
+                // now maxchar points to EOL or EOS
+            }
+			else
+			{
+				//
+				// the compiler/preprocessor has a tendency to include the leading whitespace of the next line
+				// with _this_ line, so we'll get rid of any trailing whitespace now to make sure it all'll
+				// look mighty pretty right there.
+				//
+                for (; --maxchar >= startchar; )
+				{
+					if (!crm_isspace(sourcedata[maxchar]))
+					{
+						maxchar++;
+						break;
+					}
+				}
+			}
+
+            // try to preserve our sanity whn the line length numbers are weird: heuristical fix for something that's probably utterly FUBAR.
+            if (maxchar > startchar + 255)
+            {
+                maxchar = startchar + 255;
+            }
+
+            for (ichar = startchar;
+                 ichar < maxchar && maxdstlen > 0;
+                 ichar++)
+            {
+                int c = sourcedata[ichar];
+                switch (c)
+                {
                 case '\n':
+                    last_was_LF = 1;
+
+                case '\r':
+                    *dst++ = c;
+                    maxdstlen--;
+                    break;
+
+                case '\t':
+                    *dst++ = ' ';
+                    maxdstlen--;
+                    if (maxdstlen >= 7 + 1)
+                    {
+                        dst = strmov(dst, "       ");
+                        maxdstlen -= 7;
+                    }
                     break;
 
                 default:
-                    continue;
-                }
-                break;
-            }
-            // now maxchar points to EOL or EOS
-        }
-
-        if (maxchar > csl->mct[iline]->fchar + 255)
-        {
-            maxchar = csl->mct[iline]->fchar + 255;
-        }
-        if (iline > 0)
-        {
-            int ichar;
-            int has_nonprintable_chars_on_board = 0;
-
-            for (ichar = csl->mct[iline]->fchar;
-                 ichar < maxchar;
-                 ichar++)
-            {
-                int c = ((unsigned char *)csl->filetext)[ichar];
-                if (crm_isprint(c))
-                {
-                    fprintf(stderr, "%c", c);
-                }
-                else
-                {
-                    has_nonprintable_chars_on_board = 1;
-                    fputc('.', stderr);
+                    if (crm_isprint(c))
+                    {
+                        *dst++ = c;
+                        maxdstlen--;
+                    }
+                    else
+                    {
+                        has_nonprintable_chars_on_board = 1;
+                        *dst++ = '.';
+                        maxdstlen--;
+                    }
+                    break;
                 }
             }
-            fprintf(stderr, "\n");
-
-            if (has_nonprintable_chars_on_board)
+            if (!last_was_LF && maxdstlen > 0)
             {
-                fprintf(stderr, "The line was (in HEX bytes):\n-->");
-                for (ichar = csl->mct[iline]->fchar;
-                     ichar < maxchar;
+                *dst++ = '\n';
+                maxdstlen--;
+            }
+
+            if (has_nonprintable_chars_on_board
+                && maxdstlen > WIDTHOF("The line was (in HEX bytes):\n-->") + 40 /* heuristic padding */)
+            {
+                dst = strmov(dst, "The line was (in HEX bytes):\n-->");
+                maxdstlen -= WIDTHOF("The line was (in HEX bytes):\n-->") - 1;             // don't count the NUL sentinel in there.
+
+                for (ichar = startchar;
+                     ichar < maxchar && maxdstlen > 3;
                      ichar++)
                 {
-                    int c = ((unsigned char *)csl->filetext)[ichar];
-                    fprintf(stderr, " %02x", c);
+                    int c = sourcedata[ichar];
+                    sprintf(dst, " %02x", c);
+                    c = strlen(dst);
+                    dst += c;
+                    maxdstlen -= c;
+                }
+                if (maxdstlen > 0)
+                {
+                    *dst++ = '\n';
+                    maxdstlen--;
                 }
             }
-            fprintf(stderr, "\n");
         }
     }
-    else
+    CRM_ASSERT(maxdstlen >= 0);
+    CRM_ASSERT(maxdstlen == orig_maxdstlen - 1 - (dst - orig_dst));
+    dst[0] = 0;
+
+    if (!orig_dst[0] && orig_maxdstlen >= WIDTHOF("\n<<< no compiled statements yet >>>\n"))
     {
-        fprintf(stderr, "\n<<< no compiled statements yet >>>\n");
+        strcpy(dst, "\n<<< no compiled statements yet >>>\n");
     }
 }
 
@@ -150,11 +227,13 @@ const char *skip_path(const char *srcfile)
 static void generate_err_reason_msg(
     char       *reason,
     int         reason_bufsize,
-    int         lineno,
+    int         srclineno,
     const char *srcfile_full,
     const char *funcname,
     const char *errortype_str,
     const char *encouraging_msg,
+    CSL_CELL   *csl,
+    int         script_codeline,
     const char *fmt,
     va_list     args
     )
@@ -187,8 +266,8 @@ static void generate_err_reason_msg(
     /* now anything is going to better than _that_ */
 
 
-    if (widthleft > (12 + WIDTHOF("(truncated...)\n")                     /* see at the end of the code; buffer should be large enough to cope with it all */
-                     + (lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 0)      /* guestimate the worst case length upper limit for printf(%d) */
+    if (widthleft > (12 + WIDTHOF("(truncated...)\n")                        /* see at the end of the code; buffer should be large enough to cope with it all */
+                     + (srclineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 0)      /* guestimate the worst case length upper limit for printf(%d) */
                      + (progname ? strlen(progname) : strlen("CRM114"))
                      + (srcfile ? strlen(srcfile) : 0)
                      + (funcname ? strlen(funcname) : 0)
@@ -241,9 +320,9 @@ static void generate_err_reason_msg(
                 break;
             }
             dst = strmov(dst, ":");
-            if (lineno > 0)
+            if (srclineno > 0)
             {
-                sprintf(dst, "%d:", lineno);
+                sprintf(dst, "%d:", srclineno);
                 dst += strlen(dst);
             }
             else
@@ -322,19 +401,26 @@ static void generate_err_reason_msg(
     }
     widthleft = reason_bufsize - (dst - reason);
 
-    if (widthleft > (WIDTHOF("This happened at line %d of file %s\n")
+    if (widthleft > (WIDTHOF("This happened at line %d of file %s:\n")
                      + (SIZEOF_LONG_INT * 12) / 4          /* guestimate the worst case length upper limit for printf(%d) */
                      + (csl && csl->filename ? strlen(csl->filename) : 0))
         && csl && csl->filename)
     {
         int len;
 
-        snprintf(dst, widthleft, "This happened at line %d of file %s\n",
+        snprintf(dst, widthleft, "This happened at line %d of file %s:\n    ",
             csl->cstmt, csl->filename);
         dst[widthleft - 1] = 0;
         len = strlen(dst);
         dst += len;
+        widthleft -= len;
+
+        dump_error_script_line(dst, widthleft, csl, script_codeline);
+        len = strlen(dst);
+        dst += len;
+        widthleft -= len;
     }
+
 
     /*
      * If we want/have to, add the BillY style of source location error reporting here.
@@ -344,7 +430,7 @@ static void generate_err_reason_msg(
      */
     if (bill_style_errormessage)
     {
-        if (widthleft > ((lineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 1)  /* guestimate the worst case length upper limit for printf(%d) */
+        if (widthleft > ((srclineno > 0 ? (SIZEOF_LONG_INT * 12) / 4 : 1)  /* guestimate the worst case length upper limit for printf(%d) */
                          + (srcfile ? strlen(srcfile) : 3)
                          + (funcname ? strlen(funcname) : 3)
                          + WIDTHOF("(runtime system location: X(X) in routine: X)\n")
@@ -359,7 +445,7 @@ static void generate_err_reason_msg(
 
             snprintf(dst, widthleft, "(runtime system location: %s(%d) in routine: ",
                 ((srcfile && *srcfile) ? srcfile : "---"),
-                lineno);
+                srclineno);
             dst[widthleft - 1] = 0;
             len = strlen(dst);
             dst += len;
@@ -540,8 +626,8 @@ void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, cons
     CRM_ASSERT(max_dst_len > WIDTHOF("(...truncated)"));
     dst = *dstptr;
     dst[0] = 0;
-	max_dst_len--;  // lazy, so we don't have to offset by '-1' every time when we while a NUL sentinel below.
-	dst[max_dst_len] = 0; // this now does NOT write out-of-bounds :-)
+    max_dst_len--;            // lazy, so we don't have to offset by '-1' every time when we while a NUL sentinel below.
+    dst[max_dst_len] = 0;     // this now does NOT write out-of-bounds :-)
 
     fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
         NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
@@ -649,10 +735,11 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
         funcname,
         " *UNTRAPPABLE ERROR*",
         NULL,
+        csl,
+        csl->cstmt,
         fmt,
         args);
     fputs(reason, stderr);
-    dump_error_script_line(csl, csl->cstmt);
 
     if (engine_exit_base != 0)
     {
@@ -705,6 +792,8 @@ int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const c
         funcname,
         " *ERROR*",
         NULL,
+        csl,
+        original_statement_line,
         fmt,
         args);
 
@@ -716,7 +805,6 @@ int fatalerror_va(int lineno, const char *srcfile, const char *funcname, const c
     }
 
     fputs(reason, stderr);
-    dump_error_script_line(csl, original_statement_line);
 
     if (engine_exit_base != 0)
     {
@@ -765,6 +853,8 @@ int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, cons
         funcname,
         " *WARNING*",
         "I'll try to keep working.\n",
+        csl,
+        original_statement_line,
         fmt,
         args);
 
@@ -776,7 +866,6 @@ int nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, cons
     }
 
     fputs(reason, stderr);
-    dump_error_script_line(csl, original_statement_line);
 
     nonfatalerrorcount++;
 
@@ -860,7 +949,7 @@ int crm_trigger_fault(char *reason)
     char trap_pat[MAX_PATTERN];
     int pat_len;
     regex_t preg;
-    int i, j;
+    int i;
     ARGPARSE_BLOCK apb;
     int slen;
     int done;
@@ -917,16 +1006,20 @@ int crm_trigger_fault(char *reason)
         {
             fprintf(stderr, "Trying trap at line %d:\n", trapline);
 #if 0
-            for (j =  (csl->mct[trapline]->fchar);
-                 j < (csl->mct[trapline + 1]->fchar);
-                 j++)
             {
-                fprintf(stderr, "%c", csl->filetext[j]);
+                int j;
+
+                for (j =  (csl->mct[trapline]->fchar);
+                     j < (csl->mct[trapline + 1]->fchar);
+                     j++)
+                {
+                    fprintf(stderr, "%c", csl->filetext[j]);
+                }
             }
 #else
-			memnCdump(stderr, 
-			csl->filetext + csl->mct[trapline]->fchar,
-csl->mct[trapline + 1]->fchar - csl->mct[trapline]->fchar);
+            memnCdump(stderr,
+                csl->filetext + csl->mct[trapline]->fchar,
+                csl->mct[trapline + 1]->fchar - csl->mct[trapline]->fchar);
 #endif
             fprintf(stderr, "\n");
         }

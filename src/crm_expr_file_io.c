@@ -37,7 +37,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     char fileiolen[MAX_FILE_NAME_LEN];
     int fileiolenlen;
     int offset, iolen;
-    int  vstart;
+    int vstart;
     int vlen;
     int done;
     int till_eof;
@@ -45,7 +45,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     int file_was_fopened;
 
     //         a couple of vars to bash upon
-    int  i, j;
+    int i, j;
 
     if (user_trace)
         fprintf(stderr, "executing an INPUT statement\n");
@@ -88,49 +88,71 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //   and what file to get it from...
     //
     crm_get_pgm_arg(filename, MAX_FILE_NAME_LEN, apb->b1start, apb->b1len);
-    crm_nextword(filename, apb->b1len, 0, &i, &j);
-    memmove(ifn, &filename[i], j);
-    fnlen = crm_nexpandvar(ifn, j, MAX_FILE_NAME_LEN);
-    ifn[fnlen] = 0;
-    if (user_trace)
-        fprintf(stderr, "  from filename >>>%s<<<\n", ifn);
+    if (crm_nextword(filename, apb->b1len, 0, &i, &j))
+    {
+        memmove(ifn, &filename[i], j);
+        fnlen = crm_nexpandvar(ifn, j, MAX_FILE_NAME_LEN);
+        ifn[fnlen] = 0;
+        if (user_trace)
+            fprintf(stderr, "  from filename >>>%s<<<\n", ifn);
+    }
+    else
+    {
+        fnlen = 0;
+        if (user_trace)
+            fprintf(stderr, "  from default: stdin\n");
+    }
+
 
     //   and what offset we need to do before the I/O...
     //
     offset = 0;
-    crm_nextword(filename, apb->b1len, i + j, &i, &j);
-    memmove(fileoffset, &filename[i], j);
-    fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
-    fileoffset[fileoffsetlen] = 0;
-    if (1 != sscanf(fileoffset, "%d", &offset))
+    if (crm_nextword(filename, apb->b1len, i + j, &i, &j))
     {
-        if (user_trace)
-            nonfatalerror("Failed to decode the input expression pre-IO file offset number: ",
-                    fileoffset);
+        memmove(fileoffset, &filename[i], j);
+        fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
+        fileoffset[fileoffsetlen] = 0;
+        if (1 != sscanf(fileoffset, "%d", &offset))
+        {
+            nonfatalerror_ex(SRC_LOC(), "Failed to decode the input expression pre-IO file offset number '%s'.",
+                fileoffset);
+        }
+		if (user_trace)
+			fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
+				fileoffset, offset);
     }
-    if (user_trace)
-        fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
-                fileoffset, offset);
+    else
+    {
+        // default: 0
+        offset = 0;
+    }
 
     //   and how many bytes to read
     //
     iolen = 0;
-    crm_nextword(filename, apb->b1len, i + j, &i, &j);
-    memmove(fileiolen, &filename[i], j);
-    fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
-    fileiolen[fileiolenlen] = 0;
-    if (*fileiolen && 1 != sscanf(fileiolen, "%d", &iolen))
+    if (crm_nextword(filename, apb->b1len, i + j, &i, &j))
     {
-        if (user_trace)
-            nonfatalerror("Failed to decode the input expression number of bytes to read: ", fileiolen);
+        memmove(fileiolen, &filename[i], j);
+        fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
+        fileiolen[fileiolenlen] = 0;
+        CRM_ASSERT(*fileiolen != 0);
+        if (1 != sscanf(fileiolen, "%d", &iolen))
+        {
+            nonfatalerror_ex(SRC_LOC(), "Failed to decode the input expression number of bytes to read: '%s'", fileiolen);
+        }
+        if (iolen < 0)
+            iolen = 0;
+        else if (iolen > data_window_size)
+            iolen = data_window_size;
+		if (user_trace)
+			fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
+				fileiolen, iolen);
     }
-    if (iolen < 0)
-        iolen = 0;
-    else if (!*fileiolen || iolen > data_window_size)
+    else
+    {
+        // default:
         iolen = data_window_size;
-    if (user_trace)
-        fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
-                fileiolen, iolen);
+    }
 
     if (user_trace)
         fprintf(stderr, "Opening file %s for file I/O (reading)\n", ifn);
@@ -154,11 +176,11 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (fp == NULL)
             {
                 fatalerror_ex(SRC_LOC(),
-                        "For some reason, I was unable to read-open the file named '%s' (expanded from '%s'): error = %d(%s)",
-                            ifn,
-							filename,
-                            errno,
-                            errno_descr(errno));
+                    "For some reason, I was unable to read-open the file named '%s' (expanded from '%s'): error = %d(%s)",
+                    ifn,
+                    filename,
+                    errno,
+                    errno_descr(errno));
                 goto input_no_open_bailout;
             }
         }
@@ -190,7 +212,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
              || isatty(fileno(fp))) && offset != 0)
         {
             nonfatalerror("Hmmm, a file offset on stdin or tty won't do much. ",
-                    "I'll ignore it for now. ");
+                "I'll ignore it for now. ");
         }
         else if (offset != 0)
         {
@@ -199,15 +221,15 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 if (errno == EBADF)
                 {
                     nonfatalerror("Dang, seems that this file isn't fseek()able: ",
-                            filename);
+                        filename);
                 }
                 else
                 {
                     nonfatalerror_ex(SRC_LOC(),
-                            "Dang, seems that this file '%s' isn't fseek()able: error = %d(%s)",
-                            filename,
-                            errno,
-                            errno_descr(errno));
+                        "Dang, seems that this file '%s' isn't fseek()able: error = %d(%s)",
+                        filename,
+                        errno,
+                        errno_descr(errno));
                 }
             }
         }
@@ -220,15 +242,22 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             chartemp = readline("");
             if (strlen(chartemp) > data_window_size - 1)
             {
-                nonfatalerror("Dang, this line of text is way too int: ",
-                        chartemp);
+                nonfatalerror("Dang, this line of text is way too long: ",
+                    chartemp);
             }
             strncpy(inbuf, chartemp, data_window_size);
             inbuf[data_window_size - 1] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
             free(chartemp);
         }
-        else
+#else
+        if (use_readline && is_stdin_or_null(fp))
+        {
+			fgets(inbuf, data_window_size - 1, (fp ? fp : stdin));
+            inbuf[data_window_size - 1] = 0; 
+        }
 #endif
+		else
+		{
         //        Are we in <byline> mode?  If so, read one char at a time.
         if (!till_eof)
         {
@@ -263,6 +292,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             ichar = fread(inbuf, 1, iolen, fp);    // do a block I/O
             inbuf[ichar] = 0;                      // null at the end
         }
+		}
         crm_set_temp_nvar(vname, inbuf, ichar);
     }
 
@@ -272,7 +302,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         fclose(fp);
     }
 
-input_no_open_bailout:
+    input_no_open_bailout:
     return 0;
 }
 
@@ -282,7 +312,7 @@ input_no_open_bailout:
 
 int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-    int  i, j;
+    int i, j;
 
     //    output a string, usually to stdout unless otherwise
     //    specified in the output statement.
@@ -296,7 +326,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     char filename[MAX_FILE_NAME_LEN];
     char fnam[MAX_FILE_NAME_LEN];
-    int  fnlen;
+    int fnlen;
     char fileoffset[MAX_FILE_NAME_LEN];
     int fileoffsetlen;
     char fileiolen[MAX_FILE_NAME_LEN];
@@ -333,12 +363,12 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         if (user_trace)
             nonfatalerror("Failed to decode the output expression pre-IO file offset number: ",
-                    fileoffset);
+                fileoffset);
     }
     if (user_trace)
     {
         fprintf(stderr, "  pre-IO seek to >>>%s<<< --> %d \n",
-                fileoffset, offset);
+            fileoffset, offset);
     }
 
     //   and how many bytes to read
@@ -355,12 +385,12 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
     if (iolen < 0)
         iolen = 0;
-    else if (!*fileiolen || iolen > data_window_size)
+    else if (! * fileiolen || iolen > data_window_size)
         iolen = data_window_size;
     if (user_trace)
     {
         fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %d\n",
-                fileiolen, iolen);
+            fileiolen, iolen);
     }
 
 
@@ -373,7 +403,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (strcmp(fnam, "stderr") == 0
             || strcmp(fnam, "/dev/stderr") == 0)
         {
-            outf = os_stderr();
+            outf = stderr; // [i_a] intentional: append to our possibly redirected stderr FILE handle, don't close it as we go on using it!
             file_was_fopened = 0;
         }
         else if (strcmp(fnam, "stdout") == 0
@@ -381,7 +411,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                  || strcmp(fnam, "/dev/tty") == 0
                  || strcmp(fnam, "/dev/stdout") == 0)
         {
-            outf = os_stdout();
+            outf = stdout; // [i_a] intentional: append to our possibly redirected stdout FILE handle, don't close it as we go on using it!
             file_was_fopened = 0;
         }
         else
@@ -390,12 +420,12 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (apb->sflags & CRM_APPEND
                 || fileoffsetlen > 0)
             {
-                outf = fopen(fnam, "r+b");
+                outf = fopen(fnam, "rb+");
                 //
                 //    If the file didn't exist already, that open would fail.
                 //     so we retry with "w+".
                 if (!outf)
-                    outf = fopen(fnam, "w+b");
+                    outf = fopen(fnam, "wb+");
                 //
                 //     And make sure the file pointer is at EOF.
                 if (outf != 0)
@@ -416,14 +446,14 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (outf == 0)
     {
         fatalerror("For some reason, I was unable to write-open the file named",
-                fnam);
+            fnam);
     }
     else
     {
         //   Yep, file is open, go for the writing.
         //
         crm_get_pgm_arg(outbuf, data_window_size,
-                apb->s1start, apb->s1len);
+            apb->s1start, apb->s1len);
         outtextlen = apb->s1len;
         if (internal_trace)
             fprintf(stderr, "  outputting with pattern %s\n", outbuf);
@@ -439,7 +469,7 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if ((!file_was_fopened || isatty(fileno(outf))) && offset != 0)
             {
                 nonfatalerror("Hmmm, a file offset on stdout/stderr or tty won't do much. ",
-                        "I'll ignore it for now. ");
+                    "I'll ignore it for now. ");
             }
             else
             {
@@ -465,13 +495,18 @@ int crm_expr_output(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             if (ret != outtextlen)
             {
                 fatalerror_ex(SRC_LOC(),
-                        "Could not write %d bytes to file %s\n",
-                        outtextlen,
-                        fnam);
+                    "Could not write %d bytes to file %s\n",
+                    outtextlen,
+                    fnam);
             }
         }
-        fflush(outf);
-        if (file_was_fopened)
+		 // [i_a] not needed to flush each time if the output is not stdout/stderr: this is faster
+		if (isatty(fileno(outf)))
+		{
+			CRM_ASSERT(!file_was_fopened);
+			fflush(outf);
+		}
+		if (file_was_fopened)
         {
             fclose(outf);
         }

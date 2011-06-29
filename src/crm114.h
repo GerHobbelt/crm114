@@ -240,7 +240,7 @@ int crm_argslice(char *input, int *argc, char **argv);
 //
 //      Note that this is a uint64_t- which limits us to no more than
 //      64 discrete flags.
-uint64_t crm_flagparse(char *input, int inlen); //  the user input
+uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_definition); //  the user input
 
 
 //     get the next word in the input.  (note- the regex stops only when
@@ -542,8 +542,8 @@ int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
-// REDUCE - translate text to a phonetic/visual reduced/deobfuscated format
-int crm_expr_reduce(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+// MUTATE - translate text to/from a phonetic/visual reduced/deobfuscated/C/MIME/UUencoded format
+int crm_expr_mutate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 
 //      parse a CRM114 statement; this is mostly a setup routine for
@@ -557,7 +557,7 @@ int crm_statement_parse(char           *in,
 //    to the type of quoting done.
 int crm_generic_parse_line(
         char *txt,                       //   the start of the program line
-        int   len,                       //   how int is the line
+        int   len,                       //   how long is the line
         int   maxargs,                   //   howm many things to search for (max)
         int  *ftype,                     //   type of thing found (index by schars)
         int  *fstart,                    //   starting location of found arg
@@ -590,7 +590,7 @@ int crm_vector_tokenize_selector
         const char           *regex,        // the parsing regex (might be ignored)
         int                   regexlen,     //   length of the parsing regex
         const crmhash_t      *coeff_array,  // the pipeline coefficient control array
-        int                   pipe_len,     //  how int a pipeline (== coeff_array row length)
+        int                   pipe_len,     //  how long a pipeline (== coeff_array row length)
         int                   pipe_iters,   //  how many rows are there in coeff_array
         crmhash_t            *features,     // where the output features go
         int                   featureslen,  //   how many output features (max)
@@ -608,7 +608,7 @@ int crm_vector_tokenize
         const char          *regex,           // the parsing regex (might be ignored)
         int                  regexlen,        //   length of the parsing regex
         const crmhash_t     *coeff_array,     // the pipeline coefficient control array
-        int                  pipe_len,        //  how int a pipeline (== coeff_array col height)
+        int                  pipe_len,        //  how long a pipeline (== coeff_array col height)
         int                  pipe_iters,      //  how many rows are there in coeff_array
         crmhash_t           *features,        // where the output features go
         int                  featureslen,     //   how many output features (max)

@@ -568,7 +568,7 @@
 #define PROTOTYPES 1
 
 /* revision code of the software */
-#define REVISION "1960"
+#define REVISION "1995"
 
 /* Define to 1 if the `setvbuf' function takes the buffering type as its
    second argument and the buffer pointer as the third, as on System V before
@@ -591,7 +591,7 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-1960"
+#define TAR_FILENAME_POSTFIX "Ger-1995"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1

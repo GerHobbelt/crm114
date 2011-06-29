@@ -1490,9 +1490,9 @@ int strnhash(const char *str, int len)
 
 // This is a more portable hash function, compatible with the original.
 // It should return the same value both on 32 and 64 bit architectures.
-// The return type was changed to unsigned int hashes, and the other
+// The return type was changed to crmhash_t (32-bit unsigned int), and the other
 // parts of the code updated accordingly.
-// -- Fidelis
+// -- Fidelis (updated by GerH)
 
 
 #if 0

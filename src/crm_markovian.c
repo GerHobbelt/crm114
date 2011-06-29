@@ -762,7 +762,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     incrs++;
                     //
                     //       If microgrooming is enabled, and we've found a
-                    //       chain that's too int, we groom it down.
+                    //       chain that's too long, we groom it down.
                     //
                     if (microgroom && (incrs > MICROGROOM_CHAIN_LENGTH))
                     {

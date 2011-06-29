@@ -719,9 +719,11 @@ int main(int argc, char **argv)
             {
                 if (1 != sscanf(argv[i], "%d", &debug_countdown))
                 {
-                    untrappableerror("Failed to decode the numeric -d argument [debug statement countdown]: ", argv[i]);
-			//  if next arg wasn't numeric, back up
-				i--;
+#if 0
+					untrappableerror("Failed to decode the numeric -d argument [debug statement countdown]: ", argv[i]);
+#endif
+					//  if next arg wasn't numeric, back up
+					i--;
                 }
             }
             if (user_trace)
@@ -1090,22 +1092,24 @@ int main(int argc, char **argv)
                 else
                 {
                     stdout_filename = argv[i];
-                    if (strcmp(stdout_filename, stderr_filename) == 0)
+                    if (strcmp(stdout_filename, stderr_filename) != 0)
                     {
-                        // same file for both.
                         //
                         // GROT GROT GROT: Win32 is case insensitive; besides, you could screw up by using different
                         // relative and/or absolute paths for both.
                         // For now, the user won't be protected against his own 'smartness' here.
                         //
-                        stdout = fopen(stdout_filename, "rb"); // open in BINARY mode!
+                        stdout = fopen(stdout_filename, "wb"); // open in BINARY mode!
                         if (stdout == NULL)
                         {
+							stdout = os_stdout(); // reset stdout before the error report is sent out!
                             untrappableerror("Failed to open stdout input replacement file: ", stdout_filename);
                         }
                     }
                     else
                     {
+                        // same file for both.
+						if (stderr != NULL)
                         stdout = stderr;
                     }
                 }
@@ -1148,22 +1152,24 @@ int main(int argc, char **argv)
                 else
                 {
                     stderr_filename = argv[i];
-                    if (strcmp(stdout_filename, stderr_filename) == 0)
+                    if (strcmp(stdout_filename, stderr_filename) != 0)
                     {
-                        // same file for both.
                         //
                         // GROT GROT GROT: Win32 is case insensitive; besides, you could screw up by using different
                         // relative and/or absolute paths for both.
                         // For now, the user won't be protected against his own 'smartness' here.
                         //
-                        stderr = fopen(stderr_filename, "rb"); // open in BINARY mode!
+                        stderr = fopen(stderr_filename, "wb"); // open in BINARY mode!
                         if (stderr == NULL)
                         {
+							stderr = os_stderr(); // reset stderr before the error report is sent out!
                             untrappableerror("Failed to open stderr input replacement file: ", stderr_filename);
                         }
                     }
                     else
                     {
+                        // same file for both.
+						if (stdout != NULL)
                         stderr = stdout;
                     }
                 }
@@ -1203,7 +1209,7 @@ int main(int argc, char **argv)
         if (csl->filename == NULL)
         {
             if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
-                untrappableerror("Invalid filename, ", "filename too int.");
+                untrappableerror("Invalid filename, ", "filename too long.");
             csl->filename = argv[i];
             csl->filename_allocated = 0;
             if (user_trace)
@@ -1233,7 +1239,7 @@ end_command_line_parse_loop:
             {
                 if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
                     untrappableerror("Couldn't open the file, "
-                                    , "filename too int.");
+                                    , "filename too long.");
                 csl->filename = argv[i];
                 csl->filename_allocated = 0;
                 i = argc;

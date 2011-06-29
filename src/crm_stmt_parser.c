@@ -236,7 +236,7 @@ int skip_comments_and_blanks(const char *buf, int start, int bufsize)
 //    Note that since flags (like variables) are always ASCII, we don't
 //    need to worry about 8-bit-safety.
 //
-uint64_t crm_flagparse(char *input, int inlen)  //  the user input
+uint64_t crm_flagparse(char *input, int inlen, const STMT_TABLE_TYPE *stmt_definition)  //  the user input
 {
     char flagtext[MAX_PATTERN];
     char *remtext;
@@ -311,20 +311,29 @@ uint64_t crm_flagparse(char *input, int inlen)  //  the user input
                                 j,
                                 crm_flags[j].string);
                     }
+					break;
                 }
             }
 
             //   check to see if we need to squalk an error condition
-            if (recog_flag == 0)
+			if (recog_flag == 0)
             {
-                int q;
                 char foo[129];
-                strncpy(foo, wtext, wlen < 128 ? wlen : 128);
-                foo[wlen < 128 ? wlen : 128] = 0;
-                q = nonfatalerror("Darn...  unrecognized flag :", foo);
+                strncpy(foo, wtext, CRM_MIN(wlen, 128));
+                foo[CRM_MIN(wlen, 128)] = 0;
+                nonfatalerror("Darn...  unrecognized flag: ", foo);
             }
 
-            //  and finally,  move sch up to point at the remaining string
+			//   check to see if we need to squalk an error condition for unsupported options:
+			if (outcode & (stmt_definition ? ~stmt_definition->flags_allowed_mask : 0))
+			{
+				char foo[129];
+                strncpy(foo, wtext, CRM_MIN(wlen, 128));
+                foo[CRM_MIN(wlen, 128)] = 0;
+				nonfatalerror("Darn...  unsupported flag: ", foo);
+			}
+
+			//  and finally,  move sch up to point at the remaining string
             if (remlen <= 0)
                 done = 1;
         }

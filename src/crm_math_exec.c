@@ -258,7 +258,9 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                     stack[sp] = stack[sp] / 0.0;
                 }
                 else
+				{
                     stack[sp] = log(stack[sp + 1]) / log(stack[sp]);
+				}
                 sinc = 1;
             }
             break;
@@ -467,7 +469,9 @@ int strpnmath(char *buf, int inlen, int maxlen, int *retstat)
                     //   format string for later.
                     if (buf[ip] != 'x'
                         && buf[ip] != 'X')
+					{
                         stack[sp] = strtod(tempstring, NULL);
+					}
                 }
             }
             break;
@@ -688,19 +692,23 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
 
     //  initialization done... begin the work.
     if (internal_trace)
+	{
         fprintf(stderr, "Starting Algebraic Math on '%s' (len %d)\n",
                 buf, inlen);
+	}
 
     for (ip = 0; ip < inlen; ip++)
     {
         //   Debugging trace
         if (internal_trace)
+		{
             fprintf(stderr,
                     "ip = %d, sp = %d, L=%f, Op=%c, R=%f, V=%x next='%c'\n",
                     ip, sp,
                     leftarg[sp], (short)opstack[sp],
                     rightarg, (short)validstack[sp],
                     (crm_isascii(buf[ip]) && crm_isprint(buf[ip]) ? buf[ip] : '.'));
+		}
 
         //    Top of the loop- we're a state machine driven by the top of
         //    the stack's validity.
@@ -863,9 +871,11 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
             case '(':
                 {
                     if (internal_trace)
+					{
                         fprintf(stderr,
                                 "Open Paren - start new math stack level\n");
-                    sp++;
+					}
+					sp++;
                     leftarg[sp] = 0.0;
                     rightarg = 0.0;
                     opstack[sp] = 0;
@@ -968,7 +978,9 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                     leftarg[sp] /= 0.0;
                 }
                 else
+				{
                     leftarg[sp] = log(rightarg) / log(leftarg[sp]);
+				}
                 break;
 
                 //      Relational operators
@@ -1063,8 +1075,10 @@ int stralmath(char *buf, int inlen, int maxlen, int *retstat)
                     char tempstring[2048];
 
                     if (internal_trace)
+					{
                         fprintf(stderr, "Formatting operator %c \n",
                                 (short)opstack[sp]);
+					}
                     // char tempstring [2048];
                     //     Do we have a float or an int format?
                     if (opstack[sp] == 'x' || opstack[sp] == 'X')

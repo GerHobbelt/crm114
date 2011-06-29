@@ -173,7 +173,7 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             fl = crm_nexpandvar(flagz, apb->a1len, MAX_PATTERN);
             //    fprintf(stderr,
             //           "flagz --%s-- len %d\n", flagz, strlen(flagz));
-            apb->sflags = crm_flagparse(flagz, fl);
+			apb->sflags = crm_flagparse(flagz, fl, csl->mct[csl->cstmt]->stmt_def);
         }
         break;
     }
@@ -358,8 +358,10 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             //     release the current csl cell back to the free memory pool.
             old_csl = csl;
             csl = csl->caller;
-            if (csl->filename == old_csl->filename)
+#if 0
+			if (csl->filename == old_csl->filename)
                 csl->filename_allocated = old_csl->filename_allocated;
+#endif
             free_stack_item(old_csl);
             /* free (old_csl); */
             {
@@ -665,11 +667,13 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
         crm_expr_translate(csl, apb);
         break;
 
-    case CRM_REDUCE:
+    case CRM_MUTATE:
 #if 0
-        crm_expr_reduce(csl, apb);
+		crm_expr_mutate(csl, apb);
+#else
+		fatalerror("Shucks, this version, like, does not (yet) support the MUTATE command, like, you know? ", "This is _so_ unfair!");
 #endif
-        break;
+		break;
 
     case CRM_LEARN:
         crm_expr_learn(csl, apb);
@@ -761,13 +765,17 @@ csl->filetext + csl->mct[csl->cstmt]->fchar,
             }
             newcsl = (CSL_CELL *)calloc(1, sizeof(newcsl[0]));
             newcsl->filename = csl->filename;
+			newcsl->filename_allocated = 0;
             newcsl->filetext = csl->filetext;
+			newcsl->filetext_allocated = 0;
             newcsl->filedes = csl->filedes;
             newcsl->rdwr = csl->rdwr;
             newcsl->nchars = csl->nchars;
             newcsl->hash = csl->hash;
             newcsl->mct = csl->mct;
             newcsl->nstmts = csl->nstmts;
+			newcsl->mct_size = csl->mct_size;
+			newcsl->mct_allocated = 0;
             newcsl->preload_window = csl->preload_window;
             newcsl->caller = csl;
             newcsl->calldepth = csl->calldepth + 1;

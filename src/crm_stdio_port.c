@@ -64,17 +64,17 @@ void cleanup_stdin_out_err_as_os_handles(void)
     if (crm_stdin != NULL && crm_stdin != os_stdin())
     {
         fclose(crm_stdin);
-        crm_stdin = NULL;
+        crm_stdin = os_stdin();
     }
     if (crm_stdout != NULL && crm_stdout != os_stdout() && crm_stdout != os_stderr() && crm_stdout != crm_stderr)
     {
         fclose(crm_stdout);
-        crm_stdout = NULL;
+        crm_stdout = os_stdout();
     }
     if (crm_stderr != NULL && crm_stderr != os_stdout() && crm_stderr != os_stderr())
     {
         fclose(crm_stderr);
-        crm_stderr = NULL;
+        crm_stderr = os_stderr();
     }
 }
 

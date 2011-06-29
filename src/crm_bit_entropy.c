@@ -1326,7 +1326,7 @@ static int nodes_init_shufflenet(ENTROPY_FEATUREBUCKET_STRUCT *nodes,
     int node, target, f;
 
     // int trow, tcol;
-    f = firstnode;                   // because firstnode is too int!
+    f = firstnode;                   // because firstnode is too long!
     for (w = 0; w < width; w++)      // zero to width-1
     {
         for (h = 0; h < height; h++) // zero to height-1
@@ -1626,7 +1626,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     int32_t *firlat;                                       //  the FIR prior lookaside table
     ENTROPY_HEADER_STRUCT *headers;                        //  the what-is-where headers.
     int32_t *fmap;                                         //  catcher for where the file gets mapped.
-    int firlatlen = -1;                                   //  how int is the FIR lookaside table?
+    int firlatlen = -1;                                   //  how long is the FIR lookaside table?
     int firlatbytes;                                      //  how many bytes of firlat
     int64_t *totalbits;                                    //  How many total feature bits in this file
     double localfir;                                       //  the FIR value we've accumulated on this path
@@ -1870,7 +1870,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //     and the number of nodes is...
         headers->nodeslen = nodeslen;
         //
-        // headers [4] and [5] are for the int int totalbits.
+        // headers [4] and [5] are for the int64_t totalbits.
         headers->totalbits = 0;
 
         //   initialize the FIR lookaside to contain the metanode (node 0) as
@@ -1992,7 +1992,7 @@ int crm_expr_bit_entropy_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     nodeslen = headers->nodeslen;
     nodebytes = nodeslen * sizeof(nodes[0]);
 
-    // headers [4] and [5] are for the int int totalbits.
+    // headers [4] and [5] are for the int64_t totalbits.
     //  totalbits = (int int *) &headers[4];
     totalbits = &(headers->totalbits);
 

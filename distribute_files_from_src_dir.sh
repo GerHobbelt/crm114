@@ -64,25 +64,26 @@ process_crm         tests                skudtest.crm                      .in
 process_crm         tests                statustest.crm                    .in
 process_crm         tests                traptest.crm                      .in
 process_crm         tests                uncaughttraptest.crm              .in
-process_crm         tests                unionintersecttest.crm                .in
-process_crm         tests                userdirtest.crm                        .in
-process_crm         tests                windowtest.crm                        .in
-process_crm         tests                windowtest_fromvar.crm                .in
-process_crm         tests                tenfold_validate.crm                .in
-process_crm         tests                tokendelimiterbugtest.crm        .in
-process_crm         tests                bracesbugtest.crm                .in
-process_crm         tests                blowuptrapbugtest.crm                .in
-process_crm         tests                indirecttest.crm                .in
-process_crm         tests                isolate_reclaim_test.crm        .in
-process_crm         tests                match_isolate_reclaim.crm        .in
-process_crm         tests                slashbugtest.crm                .in
+process_crm         tests                unionintersecttest.crm            .in
+process_crm         tests                userdirtest.crm                   .in
+process_crm         tests                windowtest.crm                    .in
+process_crm         tests                windowtest_fromvar.crm            .in
+process_crm         tests                tenfold_validate.crm              .in
+process_crm         tests                tokendelimiterbugtest.crm         .in
+process_crm         tests                bracesbugtest.crm                 .in
+process_crm         tests                blowuptrapbugtest.crm             .in
+process_crm         tests                indirecttest.crm                  .in
+process_crm         tests                isolate_reclaim_test.crm          .in
+process_crm         tests                match_isolate_reclaim.crm         .in
+process_crm         tests                slashbugtest.crm                  .in
 process_crm         tests                trapseqbugtest.crm                .in
-process_crm         tests                translate_tr.crm                .in
-process_crm         tests                call_return_test.crm                .in
-process_crm         tests                alternating_example_neural.crm        .in
-process_crm         tests                defaulttest.crm                        .in
-process_crm         tests                alius_w_comment.crm                .in
-process_crm         tests                zz_translate_test.crm           .in
+process_crm         tests                translate_tr.crm                  .in
+process_crm         tests                call_return_test.crm              .in
+process_crm         tests                alternating_example_neural.crm    .in
+process_crm         tests                defaulttest.crm                   .in
+process_crm         tests                alius_w_comment.crm               .in
+process_crm         tests                zz_translate_test.crm             .in
+process_crm         tests                quine.crm                         .in
 
 
 check_file          tests                megatest_knowngood.log
@@ -148,17 +149,20 @@ check_file                tests                mt_ng_SBPH_Markovian_2.input
 check_file                tests                mt_ng_Support_Vector_Machine_SVM_unigram_1.input
 check_file                tests                COLOPHON_mt_ng_reference_3.input
 check_file                tests                FAQ_mt_ng_reference_4.input
+check_file                tests                INTRO_mt_ng_reference_2.input
+check_file                tests                QUICKREF_mt_ng_reference_1.input
+
 
 process_shfile      tests                megatest.sh                        .in
 process_shfile      tests                megatest_ng.sh                     .in
 
 
 process_crm         mailfilter        classifymail.crm        .in
-process_crm         mailfilter        mailfilter.crm                .in
-process_crm         mailfilter        rewriteutil.crm                .in
-process_crm         mailfilter        maillib.crm                .in
-process_crm         mailfilter        mailreaver.crm                .in
-process_crm         mailfilter        mailtrainer.crm                .in
+process_crm         mailfilter        mailfilter.crm          .in
+process_crm         mailfilter        rewriteutil.crm         .in
+process_crm         mailfilter        maillib.crm             .in
+process_crm         mailfilter        mailreaver.crm          .in
+process_crm         mailfilter        mailtrainer.crm         .in
 
 check_file        mailfilter        mailfilter.cf
 
@@ -180,7 +184,7 @@ check_file        docs                VT_generic_Vector_Tokenization.txt
 
 
 
-process_crm         examples        pad.crm                                .in
+process_crm         examples        pad.crm                           .in
 process_crm         examples        shroud.crm                        .in
 
 check_file        examples        blacklist.mfp

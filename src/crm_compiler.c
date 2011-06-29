@@ -24,57 +24,63 @@
 
 //     Here's the real statement description table.
 //
-static STMT_TABLE_TYPE stmt_table[] =
+static const STMT_TABLE_TYPE stmt_table[] =
 {
     //  text         internal       nlen exec?  min max   min max  min max  flags
-    //   rep           code                    slashargs  parens    boxes
+    //   rep           code                    slashargs  parens    boxes   
     //
-    { "\n",        CRM_NOOP,          0,  0,     0,  0,    0,  0,  0,  0,   0 },
-    { ";",         CRM_NOOP,          0,  0,     0,  0,    0,  0,  0,  0,   0 }, /* [i_a] added */
-    { "#",         CRM_NOOP,          1,  0,     0,  0,    0,  0,  0,  0,   0 },
-    { "insert",    CRM_NOOP,          6,  0,     0,  0,    0,  0,  0,  0,   0 },
-    { "noop",      CRM_NOOP,          0,  0,     0,  0,    0,  0,  0,  0,   0 },
-    { "exit",      CRM_EXIT,          0,  1,     0,  0,    0,  1,  0,  0,   0 },
-    { "{",   CRM_OPENBRACKET,         0,  0,     0,  0,    0,  0,  0,  0,   0 },
-    { "}",   CRM_CLOSEBRACKET,        0,  0,     0,  0,    0,  0,  0,  0,   0 },
-    { "goto",      CRM_GOTO,          0,  0,     1,  1,    0,  0,  0,  0,   0 },
-    { "match",     CRM_MATCH,         0,  1,     1,  1,    0,  1,  0,  1,
-      CRM_ABSENT | CRM_NOCASE | CRM_LITERAL | CRM_FROMSTART
-      | CRM_FROMCURRENT | CRM_FROMNEXT | CRM_FROMEND | CRM_NEWEND
-      | CRM_BACKWARDS | CRM_NOMULTILINE                          },
-    { "fail",      CRM_FAIL,          0,  1,     0,  0,    0,  0,  0,  0,   0 },
-    { "liaf",      CRM_LIAF,          0,  1,     0,  0,    0,  0,  0,  0,   0 },
-    { "accept",    CRM_ACCEPT,        0,  1,     0,  0,    0,  0,  0,  0,   0 },
-    { "trap",      CRM_TRAP,          0,  1,     1,  1,    0,  1,  0,  0,   0 },
-    { "fault",     CRM_FAULT,         0,  1,     0,  1,    0,  0,  0,  0,   0 },
-    { "output",    CRM_OUTPUT,        0,  1,     0,  1,    0,  0,  0,  1, CRM_APPEND },
-    { "window",    CRM_WINDOW,        0,  1,     0,  2,    0,  2,  0,  0, CRM_NOCASE | CRM_BYCHAR | CRM_BYEOF | CRM_EOFACCEPTS | CRM_EOFRETRY },
-    { "alter",     CRM_ALTER,         0,  1,     1,  1,    1,  1,  0,  0,   0 },
-    { "learn",     CRM_LEARN,         0,  1,     1,  1,    1,  1,  0,  1, CRM_NOCASE | CRM_REFUTE | CRM_MICROGROOM },
-    { "classify",  CRM_CLASSIFY,      0,  1,     1,  1,    1,  2,  0,  1, CRM_NOCASE },
-    { "isolate",   CRM_ISOLATE,       0,  1,     0,  1,    1,  1,  0,  0,   0 },
-    { "input",     CRM_INPUT,         0,  1,     0,  0,    1,  1,  0,  1, CRM_BYLINE },
-    { "syscall",   CRM_SYSCALL,       0,  1,     1,  1,    0,  3,  0,  0, CRM_KEEP | CRM_ASYNC },
-    { "hash",      CRM_HASH,          0,  1,     1,  1,    1,  1,  0,  0,   0 },
-    { "translate", CRM_TRANSLATE,     0,  1,     0,  2,    0,  1,  0,  1, CRM_UNIQUE | CRM_LITERAL },
-    { "intersect", CRM_INTERSECT,     0,  1,     0,  0,    1,  1,  1,  1,   0 },
-    { "union",     CRM_UNION,         0,  1,     0,  0,    1,  1,  1,  1,   0 },
-    { "eval",      CRM_EVAL,          0,  1,     1,  1,    1,  1,  0,  0,   0 },
-    { "alius",     CRM_ALIUS,         0,  1,     0,  0,    0,  0,  0,  0,   0 },
-    { "call",      CRM_CALL,          0,  1,     0,  0,    0,  0,  0,  0,   0 },
-    { "routine",   CRM_ROUTINE,       0,  1,     0,  0,    0,  0,  0,  0,   0 },
-    { "return",    CRM_RETURN,        0,  1,     0,  1,    0,  0,  0,  0,   0 },
-    { "debug",     CRM_DEBUG,         0,  0,     0,  0,    0,  0,  0,  0,   0 },
-    { "clump",     CRM_CLUMP,         0,  1,     0,  1,    1,  1,  0,  1, CRM_UNIQUE | CRM_UNIGRAM | CRM_BYCHUNK | CRM_REFUTE },
-    { "pmulc",     CRM_PMULC,         0,  1,     0,  1,    0,  0,  0,  1, CRM_UNIQUE | CRM_UNIGRAM | CRM_BYCHUNK | CRM_REFUTE },
-    { "reduce",    CRM_REDUCE,        0,  1,     0,  1,    0,  1,  0,  1, CRM_NOCASE | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT },
-    { "cssmerge",  CRM_CSS_MERGE,     0,  1,     1,  1,    1,  1,  0,  1, CRM_DEFAULT | CRM_UNIQUE | CRM_MICROGROOM },
-    { "cssdiff",   CRM_CSS_DIFF,      0,  1,     1,  1,    1,  1,  0,  1, CRM_DEFAULT | CRM_UNIQUE },
-    { "cssbackup", CRM_CSS_BACKUP,    0,  1,     1,  1,    1,  1,  0,  1, CRM_DEFAULT },
-    { "cssrestore", CRM_CSS_RESTORE,  0,  1,     1,  1,    1,  1,  0,  1, CRM_DEFAULT },
-    { "cssinfo",   CRM_CSS_INFO,      0,  1,     1,  1,    1,  1,  0,  1, CRM_DEFAULT },
-    { "cssanalyze", CRM_CSS_ANALYZE,  0,  1,     1,  1,    1,  1,  0,  1, CRM_DEFAULT | CRM_BASIC },
-    { "csscreate", CRM_CSS_CREATE,    0,  1,     1,  1,    1,  1,  0,  1, CRM_DEFAULT },
+    { "\n",        CRM_NOOP,          1,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { ";",         CRM_NOOP,          1,  0,     0,  0,    0,  0,   0,  0,    0 }, /* [i_a] added */
+    { "#",         CRM_NOOP,          1,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { "insert",    CRM_NOOP,          6,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { "noop",      CRM_NOOP,          4,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { "exit",      CRM_EXIT,          4,  1,     0,  0,    0,  1,   0,  0,    0 },
+    { "{",   CRM_OPENBRACKET,         1,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { "}",   CRM_CLOSEBRACKET,        1,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { "goto",      CRM_GOTO,          4,  0,     1,  1,    0,  0,   0,  0,    0 },
+    { "match",     CRM_MATCH,         5,  1,     1,  1,    0,  1,   0,  1,    
+      CRM_ABSENT | CRM_NOCASE | CRM_LITERAL | CRM_FROMSTART                 
+      | CRM_FROMCURRENT | CRM_FROMNEXT | CRM_FROMEND | CRM_NEWEND           
+      | CRM_BACKWARDS | CRM_NOMULTILINE | CRM_BASIC                         },         
+    { "fail",      CRM_FAIL,          4,  1,     0,  0,    0,  0,   0,  0,    0 },
+    { "liaf",      CRM_LIAF,          4,  1,     0,  0,    0,  0,   0,  0,    0 },
+    { "accept",    CRM_ACCEPT,        6,  1,     0,  0,    0,  0,   0,  0,    0 },
+    { "trap",      CRM_TRAP,          4,  1,     1,  1,    0,  1,   0,  0,    0 },
+    { "fault",     CRM_FAULT,         5,  1,     0,  1,    0,  0,   0,  0,    0 },
+    { "output",    CRM_OUTPUT,        6,  1,     0,  1,    0,  0,   0,  1,  CRM_APPEND },
+    { "window",    CRM_WINDOW,        6,  1,     0,  2,    0,  2,   0,  0,  CRM_NOCASE | CRM_BYCHAR | CRM_BYCHUNK | CRM_BYEOF | CRM_EOFACCEPTS | CRM_EOFRETRY | CRM_LITERAL },
+    { "alter",     CRM_ALTER,         5,  1,     1,  1,    1,  1,   0,  0,    0 },
+    { "learn",     CRM_LEARN,         5,  1,     1,  1,    1,  1,   0,  1,  CRM_NOCASE | CRM_REFUTE | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CROSSLINK | CRM_STRING | CRM_APPEND
+		| CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+        | CRM_NEURAL_NET },
+    { "classify",  CRM_CLASSIFY,      8,  1,     1,  1,    1,  2,   0,  1,  CRM_NOCASE | CRM_MICROGROOM | CRM_UNIQUE | CRM_UNIGRAM | CRM_CHI2 | CRM_CROSSLINK | CRM_STRING
+		| CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
+        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+        | CRM_NEURAL_NET },
+    { "isolate",   CRM_ISOLATE,       7,  1,     0,  1,    1,  1,   0,  0,  CRM_DEFAULT },
+    { "input",     CRM_INPUT,         5,  1,     0,  0,    1,  1,   0,  1,  CRM_BYLINE | CRM_READLINE },
+    { "syscall",   CRM_SYSCALL,       7,  1,     1,  1,    0,  3,   0,  0,  CRM_KEEP | CRM_ASYNC },
+    { "hash",      CRM_HASH,          4,  1,     1,  1,    1,  1,   0,  0,    0 },
+    { "translate", CRM_TRANSLATE,     9,  1,     0,  2,    0,  1,   0,  1,  CRM_UNIQUE | CRM_LITERAL },
+    { "intersect", CRM_INTERSECT,     9,  1,     0,  0,    1,  1,   1,  1,    0 },
+    { "union",     CRM_UNION,         5,  1,     0,  0,    1,  1,   1,  1,    0 },
+    { "eval",      CRM_EVAL,          4,  1,     1,  1,    1,  1,   0,  0,    0 },
+    { "alius",     CRM_ALIUS,         5,  1,     0,  0,    0,  0,   0,  0,    0 },
+    { "call",      CRM_CALL,          4,  1,     0,  0,    0,  0,   0,  0,    0 },
+    { "routine",   CRM_ROUTINE,       7,  1,     0,  0,    0,  0,   0,  0,    0 },
+    { "return",    CRM_RETURN,        6,  1,     0,  1,    0,  0,   0,  0,    0 },
+    { "debug",     CRM_DEBUG,         5,  0,     0,  0,    0,  0,   0,  0,    0 },
+    { "clump",     CRM_CLUMP,         5,  1,     0,  1,    1,  1,   0,  1,  CRM_UNIQUE | CRM_UNIGRAM | CRM_BYCHUNK | CRM_REFUTE },
+    { "pmulc",     CRM_PMULC,         5,  1,     0,  1,    0,  0,   0,  1,  CRM_UNIQUE | CRM_UNIGRAM | CRM_BYCHUNK | CRM_REFUTE },
+    { "mutate",    CRM_MUTATE,        7,  1,     0,  1,    0,  1,   0,  1,  CRM_NOCASE | CRM_UNIQUE | CRM_BASIC | CRM_DEFAULT },
+    { "cssmerge",  CRM_CSS_MERGE,     8,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT | CRM_UNIQUE | CRM_MICROGROOM },
+    { "cssdiff",   CRM_CSS_DIFF,      7,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT | CRM_UNIQUE },
+    { "cssbackup", CRM_CSS_BACKUP,    9,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT },
+    { "cssrestore", CRM_CSS_RESTORE, 10,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT },
+    { "cssinfo",   CRM_CSS_INFO,      7,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT },
+    { "cssanalyze", CRM_CSS_ANALYZE, 10,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT | CRM_BASIC },
+    { "csscreate", CRM_CSS_CREATE,    9,  1,     1,  1,    1,  1,   0,  1,  CRM_DEFAULT },
     { NULL }   /* [i_a] sentinel */
 };
 
@@ -105,7 +111,7 @@ int crm_load_csl(CSL_CELL *csl)
     {
         if (errno == ENAMETOOLONG)
         {
-            untrappableerror("Couldn't open the file (filename too int): ",
+            untrappableerror("Couldn't open the file (filename too long): ",
                     csl->filename);
         }
         else
@@ -353,16 +359,15 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
 
 
     //    Since we don't know how big the stmt_table actually is,
-    //    we go through it once, looking for the "NoMoreStmts" statement,
-    //    with operation code of CRM_BOGUS.  This tells us how many
-    //    entries there are; we also set up the namelens for the
-    //    statement types.
+    //    we go through it once, looking for the NULL sentinel statement.
+    //    This tells us how many entries there are; we also set up the 
+	//    namelens for the statement types.
     //
-    for (stab_idx = 0; stmt_table[stab_idx].stmt_name != NULL; stab_idx++)
-    {
-        if (stmt_table[stab_idx].namelen == 0)
-            stmt_table[stab_idx].namelen = strlen(stmt_table[stab_idx].stmt_name);
-    }
+//    for (stab_idx = 0; stmt_table[stab_idx].stmt_name != NULL; stab_idx++)
+//    {
+//        if (stmt_table[stab_idx].namelen == 0)
+//            stmt_table[stab_idx].namelen = strlen(stmt_table[stab_idx].stmt_name);
+//    }
     /* stab_max = stab_idx; */
 
     //
@@ -372,6 +377,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     {
         int stab_stmtcode;
         // int stab_done;
+		int stab_index = -1;
 
         //      the strcspan below will fail if there's an unescaped
         //      semicolon embedded in a string (or, for that matter, an
@@ -447,7 +453,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //    to stab_max and compare the strlens and strings themselves.
         //
         //stab_done = 0;
-        stab_stmtcode = 0;
+        stab_stmtcode = CRM_BOGUS;
 
         if (nblength == 0)
         {
@@ -500,13 +506,14 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
                 {
                     /* stab_done = 1; */
                     stab_stmtcode = stmt_table[i].stmt_code;
+					stab_index = i;
                     //   Deal with executable statements and WINDOW
                     if (stab_stmtcode == CRM_WINDOW && !seenaction)
                         csl->preload_window = 0;
                     //   and mark off the executable statements
                     if (stmt_table[i].is_executable)
                         seenaction = 1;
-                    break;
+                   break;
                 }
                 //if (i >= stab_max)
                 //  stab_done = 1;
@@ -523,7 +530,8 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             //
             // update: nope, crm is at least LR(2) due to the ':#:' string length
             //         expansion, which collides with the '#' comment operator at
-            //         lookahead < 2 characters.
+            //         lookahead < 2 characters. Or you can fix that sorta thing with
+			//         lexer who supports modes...
             if (stab_stmtcode == CRM_ALIUS)
             {
                 // make sure a {} precedes this opcode
@@ -569,9 +577,10 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             int width = CRM_MIN(1024, nblength);
 
             fatalerror_ex(SRC_LOC(),
-                    "Statement %d NOT YET IMPLEMENTED !!! Check your source code. "
+				"Statement %d(%s) NOT YET IMPLEMENTED !!! Check your source code. "
                     "Here's the text:\n%.*s%s",
                     csl->cstmt,
+					(csl->filename ? csl->filename : "\?\?\?"),
                     width,
                     &pgmtext[nbindex],
                     (nblength > width
@@ -584,6 +593,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //            Fill in the MCT entry with what we've learned.
         //
         csl->mct[stmtnum]->stmt_type = stab_stmtcode;
+		csl->mct[stmtnum]->stmt_def = (stab_index >= 0 ? &stmt_table[stab_index] : NULL);
         if (stab_stmtcode == CRM_OPENBRACKET)
         {
             bracketlevel++;

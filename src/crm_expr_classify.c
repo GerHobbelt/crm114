@@ -244,7 +244,7 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         apb->sflags = apb->sflags | CRM_MARKOVIAN;
         retval = crm_expr_markov_classify(csl, apb, txt, start, len);
     }
-    return 0;
+    return retval;
 }
 
 
@@ -353,7 +353,7 @@ int crm_expr_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         apb->sflags = apb->sflags | CRM_MARKOVIAN;
         retval = crm_expr_markov_css_merge(csl, apb, txt, start, len);
     }
-    return 0;
+    return retval;
 }
 
 
@@ -464,7 +464,7 @@ int crm_expr_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         apb->sflags = apb->sflags | CRM_MARKOVIAN;
         retval = crm_expr_markov_css_diff(csl, apb, txt, start, len);
     }
-    return 0;
+    return retval;
 }
 
 
@@ -573,7 +573,7 @@ int crm_expr_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         apb->sflags = apb->sflags | CRM_MARKOVIAN;
         retval = crm_expr_markov_css_backup(csl, apb, txt, start, len);
     }
-    return 0;
+    return retval;
 }
 
 
@@ -681,7 +681,7 @@ int crm_expr_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         apb->sflags = apb->sflags | CRM_MARKOVIAN;
         retval = crm_expr_markov_css_restore(csl, apb, txt, start, len);
     }
-    return 0;
+    return retval;
 }
 
 
@@ -787,10 +787,10 @@ int crm_expr_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else
     {
         //    Default with no classifier specified
-        apb->sflags = apb->sflags | CRM_AUTODETECT;
+        apb->sflags |= CRM_AUTODETECT;
         retval = crm_expr_markov_css_info(csl, apb, txt, start, len);
     }
-    return 0;
+    return retval;
 }
 
 
@@ -896,10 +896,10 @@ int crm_expr_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else
     {
         //    Default with no classifier specified
-        apb->sflags = apb->sflags | CRM_AUTODETECT;
+        apb->sflags |= CRM_AUTODETECT;
         retval = crm_expr_markov_css_analyze(csl, apb, txt, start, len);
     }
-    return 0;
+    return retval;
 }
 
 
@@ -1005,10 +1005,10 @@ int crm_expr_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     else
     {
         //    Default with no classifier specified
-        apb->sflags = apb->sflags | CRM_AUTODETECT;
+        apb->sflags |= CRM_AUTODETECT;
         retval = crm_expr_markov_css_create(csl, apb, txt, start, len);
     }
-    return 0;
+    return retval;
 }
 
 

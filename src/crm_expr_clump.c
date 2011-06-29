@@ -1134,6 +1134,7 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
     if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
     {
+		CRM_ASSERT(regee.re_nsub == 1);
         param_text[matchee[1].rm_eo + 1] = 0;
         if (internal_trace)
         {

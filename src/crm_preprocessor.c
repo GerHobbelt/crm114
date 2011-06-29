@@ -147,7 +147,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
             //   gaskets on the filesystem or not:
             //
             if (filenamelen > MAX_FILE_NAME_LEN - 1)
-                untrappableerror("INSERT Filename was too int!  Here's the"
+                untrappableerror("INSERT Filename was too long!  Here's the"
                                  "first part of it: ", insertfilename);
 
 #if 0
@@ -422,7 +422,15 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
     int neednewline;
     int paren_nest, angle_nest, box_nest, slash_nest;
     int var_delim;
-    int statement_state;
+    enum
+	{
+		PP_UNKNOWN = 0,
+		PP_LABEL_START,
+		PP_LABEL_END,
+		PP_ACTION_START,
+		PP_ACTION_END,
+		PP_ARGUMENT_SECTION_START,
+	} statement_state;
     int i;
 
     seennewline = 1;
@@ -439,7 +447,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
     // 3: parsing an action/command (terminated by whitespace or argument sections or ...)
     // 4: end of action/command: expecting whitespace + argument sections
     // 5: parsing argument section(s)
-    statement_state = 0;
+    statement_state = PP_UNKNOWN;
 
     paren_nest = slash_nest = angle_nest = box_nest = 0;
 
@@ -452,9 +460,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
         //   are we looking at a nonprinting character?
         if (csl->filetext[i] < 0x021)
         {
-            if (statement_state == 3)
+            if (statement_state == PP_ACTION_START)
             {
-                statement_state = 4;
+                statement_state = PP_ACTION_END;
             }
 
             if (csl->filetext[i] == '\n'
@@ -466,7 +474,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                 seennewline = 1;
                 neednewline = 0;
                 in_comment = 0;
-                statement_state = 0;
+                statement_state = PP_UNKNOWN;
                 //    Userbug containment - a newline closes all nests
                 paren_nest = slash_nest = angle_nest = box_nest = 0;
             }
@@ -490,7 +498,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     seennewline = 0;
 #endif
 					in_comment = 0;
-                    statement_state = 0;
+                    statement_state = PP_UNKNOWN;
                 }
             }
             else
@@ -514,7 +522,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     nchars++;
                     neednewline = 0;
                     seennewline = 1;
-                    statement_state = 0;
+                    statement_state = PP_UNKNOWN;
                 }
                 //
                 switch (csl->filetext[i])
@@ -602,7 +610,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                         //   and mark that we need a newline before any more
                         //   printable characters come through.
                         neednewline = 1;
-                        statement_state = 0;
+                        statement_state = PP_UNKNOWN;
                     }
                     break;
 
@@ -629,7 +637,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                             i--;
                             neednewline = 0;
                             seennewline = 1;
-                            statement_state = 0;
+                            statement_state = PP_UNKNOWN;
                         }
                         else
                         {
@@ -642,7 +650,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                             csl->filetext[i] = '\n';
                             neednewline = 0;
                             seennewline = 1;
-                            statement_state = 0;
+                            statement_state = PP_UNKNOWN;
                         }
                     }
                     break;
@@ -667,7 +675,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                         && slash_nest == 0)
                     {
                         paren_nest = 1;
-                        statement_state = 5;
+                        statement_state = PP_ARGUMENT_SECTION_START;
                     }
                     break;
 
@@ -690,7 +698,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                         && slash_nest == 0)
                     {
                         angle_nest = 1;
-                        statement_state = 5;
+                        statement_state = PP_ARGUMENT_SECTION_START;
                     }
                     break;
 
@@ -714,7 +722,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     {
                         box_nest = 1;
                         var_delim = 0;
-                        statement_state = 5;
+                        statement_state = PP_ARGUMENT_SECTION_START;
                     }
                     break;
 
@@ -743,13 +751,13 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                              && box_nest == 0
                              && slash_nest == 0)
                     {
-                        if (statement_state == 0)
+                        if (statement_state == PP_UNKNOWN)
                         {
-                            statement_state = 1;
+                            statement_state = PP_LABEL_START;
                         }
-                        else if (statement_state == 1)
+                        else if (statement_state == PP_LABEL_START)
                         {
-                            statement_state = 2;
+                            statement_state = PP_LABEL_END;
                         }
                     }
                     break;
@@ -761,7 +769,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                         && box_nest == 0)
                     {
                         slash_nest = !slash_nest;
-                        statement_state = 5;
+                        statement_state = PP_ARGUMENT_SECTION_START;
                     }
                     else if (paren_nest == 0
                              && angle_nest == 0
@@ -770,7 +778,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                     {
                         //      see also crm_generic_parse_line(): handle the special case [:var: /regex/]
                         slash_nest = !slash_nest;
-                        statement_state = 5;
+                        statement_state = PP_ARGUMENT_SECTION_START;
                     }
                     break;
 
@@ -786,7 +794,7 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                         && box_nest == 0
                         && slash_nest == 0)
                     {
-                        if (statement_state >= 5 /* 4 */)
+                        if (statement_state >= PP_ARGUMENT_SECTION_START /* PP_ACTION_END */)
                         {
                             // detected the start of another command on the same line
                             // or the end of the list of args for the previous cmd, e.g.
@@ -801,9 +809,9 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                             //   insert filename
                             // we've decided NOT to cope with the (rather illegal) 'cmd1 cmd2' sequence
                             // if there are no argument sections in between the two. Hence the condition
-                            //  (statement_state >= 5)
+                            //  (statement_state >= PP_ARGUMENT_SECTION_START)
                             // instead of
-                            //  (statement_state >= 4)
+                            //  (statement_state >= PP_ACTION_END)
                             // above.
 
                             if (!seennewline)
@@ -822,12 +830,12 @@ void crm_break_statements(int ini, int nchars, CSL_CELL *csl)
                                 nchars++;
                                 i++;
                             }
-                            statement_state = 0;
+                            statement_state = PP_UNKNOWN;
                         }
                         // start of a new action/command?
-                        if (statement_state == 0)
+                        if (statement_state == PP_UNKNOWN)
                         {
-                            statement_state = 3;
+                            statement_state = PP_ACTION_START;
                         }
                     }
                     break;

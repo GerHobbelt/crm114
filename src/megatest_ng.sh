@@ -190,6 +190,7 @@ for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Bit-Entropy Toroid classif
 ./crm114 '-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' < mt_ng_Bit_Entropy_Toroid_1.input
 ./crm114 '-{ isolate (:s:); {classify < entropy > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' < mt_ng_Bit_Entropy_Toroid_2.input
 
+
 rm -f i_test.css 
 rm -f q_test.css
 for i in 1 $1 ; do ./crm114 '-{window; output /\n**** Fast Substring Compression Match Classifier \n/}' ; done

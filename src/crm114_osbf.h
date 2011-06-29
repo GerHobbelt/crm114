@@ -91,9 +91,9 @@ extern char *CSS_version_name[];
 #define OSBF_MICROGROOM_STOP_AFTER 128
 /* minimum ratio between max and min P(F|C) */
 #define OSBF_MIN_PMAX_PMIN_RATIO 1
-/* max token size before starting "accumulation" of int tokens */
+/* max token size before starting "accumulation" of tokens */
 #define OSBF_MAX_TOKEN_SIZE 60
-/* accumulate hashes up to this many int tokens */
+/* accumulate hashes up to this many tokens */
 #define OSBF_MAX_LONG_TOKENS 1000
 
 extern int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,

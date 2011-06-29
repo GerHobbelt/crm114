@@ -1,3 +1,65 @@
+2008-03-31 Ger Hobbelt
+
+    * Fixes in -err/-out handling; also fixed the 'output' script command: 
+    
+        output [stderr]
+        
+      will _still_ go to the '-err filename' redirected stderr, just like it would when you'd called crm114 using
+      
+        crm114 .... 2> filename
+        
+      instead.
+      
+    * Fixes in crm114 parser/compiler to properly run mailreaver.crm et al.
+    
+    * Added stricter checks (now checks at all ;-) ) in the compiler: decoded flags in <arg>
+      element are checked against the predefined allowed flag set (in crm_compiler.c). If any
+      flag is NOT in the allowed set, an error will be reported.
+      
+      This resulted in a significant update of the stmt_table[] flag set definitions for each command to match the rest of the code.
+      
+      QUICKREF.txt has been updated too in several places to mimic these.
+      
+    * mailreaver et al contained a few \: escapes in their trap handlers which
+      shouldn't be there. Removed.
+      
+    * fixed the fault/trap handlers: now the offending source line itself is included in the error 
+      report.
+      
+      Yes, this is a kinda kludgy fix for another nasty issue: the line numbers reported by CRM14 
+      are 'nearby' at best, due to the fact that the [errorhandling] code is not aware of the modifications performed
+      by the preprocessor: line breaking, 'insert' processing, line merging ('\' continuation char at end of line pulls next line up).
+      In fact, the code does NEVER track 'original source line/position/filename' info for the script sources.
+      This also means that 'insert' will cause crm14 to report some really fancy linenumbers in the _main_ source file when the offending line is in the insert-ed code or follows that 'insert' statement
+      in the main source file.
+      
+      This will not be fixed until we introduce 'sourceinfo' tracking code which 'remembers' where the source code
+      came from on a per-char basis: filename/line/position -- remember the preprocessor does line breaking, triggered by comments, semicolons and the recognition of another 'token' outside []()//<> braces anyway!
+      
+    * Fixed a nonfatal OSB Bayes file access failure report: 
+    
+      WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING 
+      
+      The complete code should be inspected to 
+      
+      (a) determine which errors are _really_ fatal, as the code is littered with fatalerror()s which at least look like they're not 
+          all that fatal anyhow: nothing a trap handler in the script can't handle.
+          
+      (b) nonfatalerror()s should probably abort the current command.
+          
+      An example for (b) which was changed in the code: when one of the CSS databases cannot be opened for some reason, the classify run
+      should be aborted immediately, because that file will be lacking from the evaluation, thus - at the very least - inadvertentedly skewing the pR results to numbers which might lead to wrong conclusions.
+      
+      In this particular case, the good.css was missing, but the code continued on, was _lucky_ to find spam.css was also lacking, or spam.css would've been used to find the 'good guys' this way. This is not a severe issue for classify calls which include only 2 files - though the validation for this is also lacking, so you still get weird results at times - but it is harder to tolerate when the classify should run across multiple CSS files: if one is missing from the action for some reason, the 'pR' output cannot be trusted.
+      
+      Hence, such nonfatalerror() issues should abort the command by returning to caller immediately.
+      
+      
+      GROT GROT GROT: Currently there's also been [almost] no checking if all memory and handles are
+                      correctly freed/released when aborting a command due to a nonfatalerror().
+
+        
+
 2008-03-26 Ger Hobbelt
 
     * updated to Bill's latest release (20080326)

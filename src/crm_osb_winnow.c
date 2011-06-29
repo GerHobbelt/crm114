@@ -528,7 +528,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     //
                     //
                     //       If microgrooming is enabled, and we've found a
-                    //       chain that's too int, we groom it down.
+                    //       chain that's too long, we groom it down.
                     //
                     if (microgroom && (incrs > MICROGROOM_CHAIN_LENGTH))
                     {

@@ -188,12 +188,6 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             fprintf(stderr, "  no case matching turned on\n ");
         regexflags = regexflags | REG_ICASE;
     }
-    if (apb->sflags & CRM_NOCASE)
-    {
-        if (user_trace)
-            fprintf(stderr, "  no case matching turned on\n ");
-        regexflags = regexflags | REG_ICASE;
-    }
     if (apb->sflags & CRM_LITERAL)
     {
         if (user_trace)

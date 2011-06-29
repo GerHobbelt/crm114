@@ -252,7 +252,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2008-03-27
+ISODATE = 2008-03-31
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -ltre -lm  -lreadline
@@ -273,7 +273,7 @@ PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
 RANLIB = ranlib
-REVISION = 1960
+REVISION = 1995
 SED = /usr/bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
@@ -307,7 +307,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-1960
+TAR_FILENAME_POSTFIX = Ger-1995
 TRE_CONFIG = no
 
 #
@@ -449,7 +449,9 @@ MEGATESTFILES = \
 	mt_ng_SBPH_Markovian_2.input \
 	mt_ng_Support_Vector_Machine_SVM_unigram_1.input \
 	COLOPHON_mt_ng_reference_3.input \
-	FAQ_mt_ng_reference_4.input
+	FAQ_mt_ng_reference_4.input \
+	INTRO_mt_ng_reference_2.input \
+	QUICKREF_mt_ng_reference_1.input
 
 
 #
@@ -526,7 +528,8 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	classifymail.crm \
 	tokendelimiterbugtest.crm bracesbugtest.crm \
 	blowuptrapbugtest.crm trapseqbugtest.crm slashbugtest.crm \
-	alius_w_comment.crm
+	alius_w_comment.crm \
+	userdirtest.crm
 
 TEXTFILES = COLOPHON.txt pad.dat \
 	QUICKREF.txt INTRO.txt knownbugs.txt FAQ.txt things_to_do.txt \

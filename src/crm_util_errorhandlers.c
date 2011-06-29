@@ -393,7 +393,7 @@ void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, cons
     LPSTR dstbuf = NULL;
     char *dst;
 
-    if (dstptr == NULL || max_dst_len <= WIDTHOF("(...truncated)"))
+    if (dstptr == NULL || max_dst_len <= WIDTHOF("(...truncated)") + 1)
         return;
 
     if (*dstptr == NULL)
@@ -411,6 +411,8 @@ void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, cons
     CRM_ASSERT(max_dst_len > WIDTHOF("(...truncated)"));
     dst = *dstptr;
     dst[0] = 0;
+	max_dst_len--;  // lazy, so we don't have to offset by '-1' every time when we while a NUL sentinel below.
+	dst[max_dst_len] = 0; // this now does NOT write out-of-bounds :-)
 
     fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
         NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
@@ -470,10 +472,10 @@ void Win32_syserr_descr(char **dstptr, size_t max_dst_len, DWORD errorcode, cons
             strcpy(dst, "(...truncated)");
         }
     }
-    if (!dst[0])
+    if (!dstptr[0][0])
     {
-        snprintf(dst, max_dst_len, "\?\?\?");
-        dst[max_dst_len] = 0;
+        snprintf(*dstptr, max_dst_len, "\?\?\?");
+        *dstptr[max_dst_len] = 0;
     }
     if (dstbuf)
     {

@@ -28,7 +28,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="copy $(TargetFileName) to bin directory"
-				CommandLine="mkdir $(SolutionDir)bin&#x0D;&#x0A;copy $(TargetPath) $(SolutionDir)bin\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(TargetFileName)&quot;&#x0D;&#x0A;"
 				Outputs="$(SolutionDir)bin\$(TargetFileName)"
 			/>
 			<Tool
@@ -118,7 +118,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="copy $(TargetFileName) to bin directory"
-				CommandLine="mkdir $(SolutionDir)bin&#x0D;&#x0A;copy $(TargetPath) $(SolutionDir)bin\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine="mkdir &quot;$(SolutionDir)bin&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(TargetFileName)&quot;&#x0D;&#x0A;"
 				Outputs="$(SolutionDir)bin\$(TargetFileName)"
 			/>
 			<Tool
