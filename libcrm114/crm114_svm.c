@@ -79,6 +79,13 @@ extern int CRM114__SVM_DEBUG_MODE;         //defined in crm114_svm_lib_fncts.h
                                                        --KH
 */
 
+/////////// Data Structures requried for LIBSVM ////////////////////////////////////////////////////////////////////////
+
+struct svm_parameter param;		// set by parse_command_line
+struct svm_problem prob;	//added by Huseyin. Required for Libsvm
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 typedef struct
 {
   char firstbits[SVM_FIRST_NBIT]; // ID string, not NUL-terminated
@@ -193,6 +200,69 @@ static int svm_smart_mode = 0;
  *   features by their label and adding a column if SVM_ADD_CONSTANT
  *   is set.
  *******************************************************************/
+ 
+ /******************* utility ******************/
+
+// Return the sum of a vector's values, excluding class label in
+// column 0, if present.  That is, return the number of features in a
+// document, including multiple occurrences.
+static double nfeat(Vector *doc) {
+  VectorIterator vit;
+  double sum;
+
+  for (vectorit_set_at_beg(&vit, doc), sum = 0.0;
+       !vectorit_past_end(vit, doc);
+       vectorit_next(&vit, doc))
+#if SVM_ADD_CONSTANT
+    if (vectorit_curr_col(vit, doc) != 0)
+#endif
+      sum += vectorit_curr_val(vit, doc);
+
+  return sum;
+}
+ 
+ 
+ 
+ 
+ static void convertBlockToProblem(svm_block *blck)
+ 
+ {
+ 	int i;
+ 	int inc = 0, offset = 0, n_ex = 0, lim;
+  	double d;
+  	PreciseSparseElement *thetaval = NULL;
+  	Vector *row;
+ 	
+ 	if (!blck->newXy && !blck->sol) {
+    //reset the block
+    svm_block_free_data(*blck);
+    svm_block_init(blck);
+    return;
+  }
+
+  //update n0, n1, n0f, n1f
+  if (blck->newXy) {
+    for (i = 0; i < blck->newXy->rows; i++) {
+      row = matr_get_row(blck->newXy, i);
+      if (!row) {
+	//this would be weird
+	continue;
+      }
+      d = nfeat(row);
+      if (d >= 0) {
+	blck->n0++;
+	blck->n0f += (int)d;
+      } else {
+	blck->n1++;
+	blck->n1f += (int)fabs(d);
+      }
+    }
+  }
+ 	
+ 	
+ }
+ 
+ 
 static Vector *convert_document(int crm114_class,
 				const struct crm114_feature_row features[],
 				long n_features) {
@@ -1875,25 +1945,7 @@ void crm114__init_block_svm(CRM114_DATABLOCK *db, int c)
   }
 }
 
-/******************* utility ******************/
 
-// Return the sum of a vector's values, excluding class label in
-// column 0, if present.  That is, return the number of features in a
-// document, including multiple occurrences.
-static double nfeat(Vector *doc) {
-  VectorIterator vit;
-  double sum;
-
-  for (vectorit_set_at_beg(&vit, doc), sum = 0.0;
-       !vectorit_past_end(vit, doc);
-       vectorit_next(&vit, doc))
-#if SVM_ADD_CONSTANT
-    if (vectorit_curr_col(vit, doc) != 0)
-#endif
-      sum += vectorit_curr_val(vit, doc);
-
-  return sum;
-}
 
 /***************************LEARNING FUNCTIONS********************************/
 
@@ -2150,6 +2202,8 @@ CRM114_ERR crm114_learn_features_svm(CRM114_DATABLOCK **db,
   Vector *nex, *row;
   int read_file = 0, do_learn = 1, lim = 0;
 
+	
+
   if (crm114__user_trace) {
     svm_trace = 1;
   }
@@ -2302,40 +2356,56 @@ CRM114_ERR crm114_learn_features_svm(CRM114_DATABLOCK **db,
   }
 
   if (!(classifier_flags & CRM114_APPEND) && do_learn) {
+   
     if (!read_file) {
       if (!map_svm_db(&blck, *db)) {
-	do_learn = 0;
-      } else {
-	read_file = 1;
-      }
-    }
+			do_learn = 0;
+      	} 
+      else {
+			read_file = 1;
+      		}	
+    	}
+    
     //do we actually want to do this learn?
     //let's consult smart mode
-    if (read_file && svm_smart_mode) {
+    if (read_file && svm_smart_mode) 
+    {
       //wait until we have a good base of examples to learn
       if (!blck.has_solution && (!blck.newXy ||
-				 blck.newXy->rows < SVM_BASE_EXAMPLES)) {
-	if (svm_trace) {
-	  fprintf(stderr, "Running under smart_mode: postponing learn until we have enough examples.\n");
-	}
-	do_learn = 0;
-      }
+				 blck.newXy->rows < SVM_BASE_EXAMPLES)) 
+		{
+			if (svm_trace) {
+	  			fprintf(stderr, "Running under smart_mode: postponing learn until we have enough examples.\n");
+			}
+			do_learn = 0;
+      	}
 
       //if we have more than SVM_INCR_FRAC examples we haven't yet
       //learned on, do a fromstart
       if (blck.sol && blck.sol->SV && blck.oldXy && blck.newXy &&
-	  blck.newXy->rows >=
-	  SVM_INCR_FRAC*(blck.oldXy->rows + blck.sol->SV->rows)) {
-	if (svm_trace) {
-	  fprintf(stderr, "Running under smart_mode: Doing a fromstart to incorporate new examples.\n");
-	}
-	crm114__matr_append_matr(&(blck.newXy), blck.oldXy);
-	crm114__matr_free(blck.oldXy);
-	blck.oldXy = NULL;
-	blck.n_old = 0;
+	  		blck.newXy->rows >=
+	  		SVM_INCR_FRAC*(blck.oldXy->rows + blck.sol->SV->rows)) 
+	  {
+			if (svm_trace) {
+	  				fprintf(stderr, "Running under smart_mode: Doing a fromstart to incorporate new examples.\n");
+			}
+		crm114__matr_append_matr(&(blck.newXy), blck.oldXy);
+		crm114__matr_free(blck.oldXy);
+		blck.oldXy = NULL;
+		blck.n_old = 0;
       }
     }
+    
     if (do_learn) {
+    	
+    	//Right here convert the block into a problem that is compatible with libsvm
+    	//Then call the libsvm functions to train the problem
+    	
+    	convertBlockToProblem(&blck);
+    //	test_connection();
+    	
+    	svm_train(&prob,&param);
+    	
       svm_learn_new_examples(&blck,
 			     //CRM114_MICROGROOM might not fit in an int.
 			     //Don't look it up and tell me it fits.

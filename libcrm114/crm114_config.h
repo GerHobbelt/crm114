@@ -40,8 +40,11 @@
 #define STATISTICS_FILE_IDENT_STRING_MAX 1024
 #define CLASSNAME_LENGTH 31
 #define DEFAULT_HOW_MANY_CLASSES 2
+//  #define HOW_MANY_CLASSES 2
 #define DEFAULT_CLASS_SIZE (1<<23)   // 8 megabytes
-
+#define DIRECTORY_NAME_LENGTH 456
+#define FEATURE_SIZE 1000000 
+#define MAX_EMAIL_SIZE 100000
 
 
 // Markov family config

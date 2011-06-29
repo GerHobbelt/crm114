@@ -83,6 +83,7 @@ crm114_markov.o					\
 crm114_markov_microgroom.o			\
 crm114_bit_entropy.o				\
 crm114_hyperspace.o				\
+crm114_libsvm.o					\
 crm114_svm.o					\
 crm114_svm_lib_fncts.o				\
 crm114_svm_quad_prog.o				\
@@ -98,17 +99,33 @@ crm114_util.o					\
 crm114_regex_tre.o
 
 
-all: test simple_demo
+all: test simple_demo tenfold_validate connectLibsvm testFiles 
+#all: test  connectLibsvm 
 
-test: test.o libcrm114.a
-	$(CC) -o test $(LDFLAGS) -Wl,-M -Wl,--cref test.o libcrm114.a -ltre -lm >test.map
+testFiles: testFiles.o libcrm114.a libsvm/libsvm-2.91/svm.o
+	$(CXX) libsvm/libsvm-2.91/svm.o -o testFiles $(LDFLAGS) -Wl,-M -Wl,--cref testFiles.o libcrm114.a -ltre -lm >testFiles.map
+
+test: test.o libcrm114.a libsvm/libsvm-2.91/svm.o
+	$(CXX) libsvm/libsvm-2.91/svm.o -o test $(LDFLAGS) -Wl,-M -Wl,--cref test.o libcrm114.a -ltre -lm >test.map
 
 test.o: texts.h $(LIBHDRS)
 
-simple_demo: simple_demo.o libcrm114.a
-	$(CC) -o simple_demo $(LDFLAGS) -Wl,-M -Wl,--cref simple_demo.o libcrm114.a -ltre -lm >simple_demo.map
+simple_demo_working: simple_demo_working.o libcrm114.a libsvm/libsvm-2.91/svm.o
+	$(CXX) libsvm/libsvm-2.91/svm.o -o simple_demo_working $(LDFLAGS) -Wl,-M -Wl,--cref simple_demo_working.o libcrm114.a -ltre -lm >simple_demo_working.map
+	
+	
+simple_demo_working.o: texts.h $(LIBHDRS)
+
+simple_demo: simple_demo.o libcrm114.a libsvm/libsvm-2.91/svm.o
+	$(CXX) libsvm/libsvm-2.91/svm.o -o simple_demo $(LDFLAGS) -Wl,-M -Wl,--cref simple_demo.o libcrm114.a -ltre -lm >simple_demo.map
 
 simple_demo.o: texts.h $(LIBHDRS)
+
+tenfold_validate: tenfold_validate.o libcrm114.a libsvm/libsvm-2.91/svm.o
+	$(CXX) libsvm/libsvm-2.91/svm.o -o tenfold_validate $(LDFLAGS) -Wl,-M -Wl,--cref tenfold_validate.o libcrm114.a -ltre -lm >tenfold_validate.map
+
+connectLibsvm: connectLibsvm.c libcrm114.a libsvm/libsvm-2.91/svm.o
+	$(CXX) $(CFLAGS) connectLibsvm.c libsvm/libsvm-2.91/svm.o -o connectLibsvm -lm
 
 #ar cmd below has no s modifier (like ranlib).  Not needed now, partly
 #because LIBOBJS is in the right order.
@@ -117,16 +134,19 @@ libcrm114.a: $(LIBOBJS) Makefile
 
 $(LIBOBJS): $(LIBHDRS)
 
-clean: clean_test clean_simple_demo clean_lib clean_profiling
+clean: clean_test clean_simple_demo clean_lib clean_profiling clean_tenfold_validate
 
 clean_test:
 	rm -f test test.map test.o
 
 clean_simple_demo:
-	rm -f simple_demo simple_demo.map simple_demo.o simple_demo_datablock.txt
+	rm -f simple_demo simple_demo.map simple_demo.o simple_demo_datablock.txt 
 
 clean_lib:
 	rm -f libcrm114.a $(LIBOBJS)
 
 clean_profiling:
 	rm -f gmon.out *.gcov *.gcno *.gcda
+
+clean_tenfold_validate:
+	rm -f tenfold_validate tenfold_validate.map tenfold_validate.o tenfold_validate_datablock.txt

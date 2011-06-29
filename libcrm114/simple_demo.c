@@ -26,6 +26,7 @@
 #include "crm114_internal.h"
 
 #include "texts.h"		/* large megatest texts, ~100KB total */
+#include "libsvm/libsvm-2.91/svm.h"
 
 //     TIMECHECK lets you run timings on the things going on inside
 //     this demo.  You probably want to leave it turned on; it does little harm.
@@ -51,7 +52,6 @@ static const char Alice_frag[] =
     "close by her.\n"
   };
 
-
 static const char Hound_frag[] =
   {
     "\"Well, Watson, what do you make of it?\"\n"
@@ -62,7 +62,7 @@ static const char Hound_frag[] =
     "\"How did you know what I was doing?  I believe you have eyes in\n"
     "the back of your head.\"\n"
   };
-
+//
 static const char Macbeth_frag[] =
   {
 "    Double, double, toil and trouble;\n"
@@ -79,6 +79,11 @@ static const char Macbeth_frag[] =
 "    Like a hell-broth boil and bubble.\n"
   };
 
+/*static const char Macbeth_frag[] =
+  {
+	"Another test string!\n"
+  };*/
+
 static const char Willows_frag[] =
   {
     "'This is fine!' he said to himself. 'This is better than whitewashing!'\n"
@@ -88,7 +93,7 @@ static const char Willows_frag[] =
   };
 
 
-int main (void)
+int main (int argc, char *argv[])
 {
 
   //
@@ -99,16 +104,38 @@ int main (void)
   CRM114_MATCHRESULT result;
   CRM114_ERR err;
 
-  //    Here's the classifier flags we can use (optionally)
-  //*************PICK ONE PICK ONE PICK ONE PICK ONE ******************
-  // static const long long my_classifier_flags = CRM114_OSB;
-  // static const long long my_classifier_flags = CRM114_SVM;
-   static const long long my_classifier_flags = (CRM114_SVM | CRM114_STRING);
-  // static const long long my_classifier_flags = CRM114_FSCM;
-  // static const long long my_classifier_flags = CRM114_HYPERSPACE;
-  // static const long long my_classifier_flags = CRM114_ENTROPY;            // toroid
-  // static const long long my_classifier_flags = (CRM114_ENTROPY | CRM114_UNIQUE );  // dynamic mesh
-  // static const long long my_classifier_flags = (CRM114_ENTROPY | CRM114_UNIQUE | CRM114_CROSSLINK);  // dynamic mesh + reuse
+
+  // **************************************************************
+  //
+  //    Parse the command line
+  //
+
+  long long my_classifier_flags = CRM114_OSB;  // default is OSB
+  int timechecker = 0;
+  int savefile = 0;
+  int iarg;
+  for (iarg = 1; iarg < argc; iarg++)
+    {
+      //    baseline classifier flags
+      if (strncmp (argv[iarg],"osb", 3) == 0 ) my_classifier_flags = CRM114_OSB;
+      if (strncmp (argv[iarg],"svm", 3) == 0 ) my_classifier_flags = CRM114_SVM;
+      if (strncmp (argv[iarg],"libsvm", 6) == 0 ) my_classifier_flags = CRM114_LIBSVM;
+      if (strncmp (argv[iarg],"hyp", 3) == 0 ) my_classifier_flags = CRM114_HYPERSPACE;
+      if (strncmp (argv[iarg],"hyperspace", 10) == 0 ) my_classifier_flags = CRM114_HYPERSPACE;
+      if (strncmp (argv[iarg],"fscm", 4) == 0 ) my_classifier_flags = CRM114_FSCM;
+      if (strncmp (argv[iarg],"entropy", 7) == 0 ) my_classifier_flags = CRM114_ENTROPY;
+      //    ...and optional classifier modifiers.
+      if (strncmp (argv[iarg],"string", 6) == 0 ) my_classifier_flags = my_classifier_flags | CRM114_STRING;
+      if (strncmp (argv[iarg],"unique", 6) == 0 ) my_classifier_flags = my_classifier_flags | CRM114_UNIQUE;
+      if (strncmp (argv[iarg],"crosslink", 9) == 0 ) my_classifier_flags = my_classifier_flags | CRM114_CROSSLINK;
+      if (strncmp (argv[iarg],"append", 6) == 0 ) my_classifier_flags = my_classifier_flags | CRM114_APPEND;
+      if (strncmp (argv[iarg],"entropy", 7) == 0 ) my_classifier_flags = CRM114_ENTROPY;
+      //   ... and optional behavioral modifiers.
+      if (strncmp (argv[iarg],"time", 4) == 0 ) timechecker = 1;
+      if (strncmp (argv[iarg],"save", 4) == 0 ) savefile = 1;
+
+    };
+
 
   //     Here's a regex we'll use, just for demonstration sake
   //static const char my_regex[] =
@@ -116,7 +143,6 @@ int main (void)
   //  "[a-zA-Z]+"
   //  ""          //  use this to get default regex
   //};
-
 
   //    Here's a valid pipeline (3 words in succession)
   //static const int my_pipeline[UNIFIED_ITERS_MAX][UNIFIED_WINDOW_MAX] =
@@ -141,15 +167,15 @@ int main (void)
   //    *** OPTIONAL *** Change the classifier type
   printf (" Setting the classifier flags and style. \n");
   if ( crm114_cb_setflags (p_cb, my_classifier_flags ) != CRM114_OK)
-      {
+    {
       printf ("Couldn't set flags!  Must exit!\n");
       exit(0);
     };
-
+  
 
   printf (" Setting the classifier defaults for this style classifier.\n");
   crm114_cb_setclassdefaults (p_cb);
-
+  
   //   *** OPTIONAL ***  Change the default regex
   //printf (" Override the default regex to '[a-zA-Z]+' (in my_regex) \n");
   //if (crm114_cb_setregex (p_cb, my_regex, strlen (my_regex)) != CRM114_OK)
@@ -157,9 +183,8 @@ int main (void)
   //    printf ("Couldn't set regex!  Must exit!\n");
   //    exit(0);
   //  };
-
-
-
+  
+  
   //   *** OPTIONAL *** Change the pipeline from the default
   //printf (" Override the pipeline to be 1 phase of 3 successive words\n");
   //if (crm114_cb_setpipeline (p_cb, 3, 1, my_pipeline) != CRM114_OK)
@@ -173,19 +198,19 @@ int main (void)
   //   *** OPTIONAL *** Increase the number of classes
   //printf (" Setting the number of classes to 3\n");
   //p_cb->how_many_classes = 2;
-
+  
   printf (" Setting the class names to 'Alice' and 'Macbeth'\n");
   strcpy (p_cb->class[0].name, "Alice");
   strcpy (p_cb->class[1].name, "Macbeth");
   //strcpy (p_cb->class[2].name, "Hound");
-
-  printf (" Setting our desired space to a total of 8 megabytes \n");
-  p_cb->datablock_size = 8000000;
-
-
+  
+  printf (" Setting our initial desired space to a total of 1 megabytes \n");
+  p_cb->datablock_size = 1000000;
+  
+  
   printf (" Set up the CB internal state for this configuration \n");
   crm114_cb_setblockdefaults(p_cb);
-
+  
   printf (" Use the CB to create a DB (data block) \n");
   if ((p_db = crm114_new_db (p_cb)) == NULL)
     { printf ("Couldn't create the datablock!  Must exit!\n");
@@ -195,33 +220,51 @@ int main (void)
 #if TIMECHECK
   times ((void *) &end_time);
   gettimeofday ((void *) &end_val, NULL);
-  printf (
-     "Elapsed time: %9.6f total, %6.3f user, %6.3f system.\n",
-     end_val.tv_sec - start_val.tv_sec + (0.000001 * (end_val.tv_usec - start_val.tv_usec)),
-     (end_time.tms_utime - start_time.tms_utime) / (1.000 * sysconf (_SC_CLK_TCK)),
-     (end_time.tms_stime - start_time.tms_stime) / (1.000 * sysconf (_SC_CLK_TCK)));
+  if (timechecker)
+    printf (
+	    "Elapsed time: %9.6f total, %6.3f user, %6.3f system.\n",
+	    end_val.tv_sec - start_val.tv_sec + (0.000001 * (end_val.tv_usec - start_val.tv_usec)),
+	    (end_time.tms_utime - start_time.tms_utime) / (1.000 * sysconf (_SC_CLK_TCK)),
+	    (end_time.tms_stime - start_time.tms_stime) / (1.000 * sysconf (_SC_CLK_TCK)));
 #endif
+
 
   printf (" Starting to learn the 'Alice in Wonderland' text\n");
   err = crm114_learn_text(&p_db, 0,
 			  Alice,
 			  strlen (Alice) );
-
+  
   printf (" Starting to learn the 'MacBeth' text\n");
   err = crm114_learn_text(&p_db, 1,
 			  Macbeth,
 			  strlen (Macbeth) );
+  
 
+  //   If we've been CRM114_APPENDing, in learns, now we need to run one more
+  //   LEARN to actually execute the solver.
+  if ( my_classifier_flags & CRM114_APPEND )
+    {
+      printf (" Running a deferred solver\n");
+      p_db->cb.classifier_flags = my_classifier_flags & (~ CRM114_APPEND) ; 
+      err = crm114_learn_text (&p_db, 0, "", strlen (""));
+      if (err != CRM114_OK)
+	{
+	  printf ("Solver failed!  Must exit!\n");
+	  exit(0);
+	}
+    };
+	 
 #if TIMECHECK
   times ((void *) &end_time);
   gettimeofday ((void *) &end_val, NULL);
-  printf (
-     "Elapsed time: %9.6f total, %6.3f user, %6.3f system.\n",
-     end_val.tv_sec - start_val.tv_sec + (0.000001 * (end_val.tv_usec - start_val.tv_usec)),
-     (end_time.tms_utime - start_time.tms_utime) / (1.000 * sysconf (_SC_CLK_TCK)),
-     (end_time.tms_stime - start_time.tms_stime) / (1.000 * sysconf (_SC_CLK_TCK)));
+  if (timechecker)
+    printf (
+	    "Elapsed time: %9.6f total, %6.3f user, %6.3f system.\n",
+	    end_val.tv_sec - start_val.tv_sec + (0.000001 * (end_val.tv_usec - start_val.tv_usec)),
+	    (end_time.tms_utime - start_time.tms_utime) / (1.000 * sysconf (_SC_CLK_TCK)),
+	    (end_time.tms_stime - start_time.tms_stime) / (1.000 * sysconf (_SC_CLK_TCK)));
 #endif
-
+  
 
   //    *** OPTIONAL *** Here's how to read and write the datablocks as 
   //    ASCII text files.  This is NOT recommended for storage (it's ~5x bigger
@@ -237,37 +280,41 @@ int main (void)
 
 #define READ_WRITE_TEXT
 #ifdef READ_WRITE_TEXT
-  printf (" Writing our datablock as 'simple_demo_datablock.txt'.\n");
-  crm114_db_write_text (p_db, "simple_demo_datablock.txt");
-  
-  //  printf (" Freeing the old datablock memory space\n");
 
-  printf ("Zeroing old datablock!  Address was %ld\n", (unsigned long) p_db);
-  { 
-    int i;
-    for (i = 0; i < p_db->cb.datablock_size; i++)
-      ((char *)p_db)[i] = 0;
-  }
-  
-  //  free (p_db);
-
-  printf (" Reading the text form back in.\n");
-  p_db = crm114_db_read_text ("simple_demo_datablock.txt");
-  printf ("Created new datablock.  Datablock address is now %ld\n", (unsigned long) p_db);
-
+  if (savefile)
+    {
+      printf (" Writing our datablock as 'simple_demo_datablock.txt'.\n");
+      crm114_db_write_text (p_db, "simple_demo_datablock.txt");
+      
+      //  printf (" Freeing the old datablock memory space\n");
+      
+      printf ("Zeroing old datablock!  Address was %ld\n", (unsigned long) p_db);
+      { 
+	int i;
+	for (i = 0; i < p_db->cb.datablock_size; i++)
+	  ((char *)p_db)[i] = 0;
+      }
+      
+      //  free (p_db);
+      
+      printf (" Reading the text form back in.\n");
+      p_db = crm114_db_read_text ("simple_demo_datablock.txt");
+      printf ("Created new datablock.  Datablock address is now %ld\n", (unsigned long) p_db);
+    };
   
 
 #if TIMECHECK
   times ((void *) &end_time);
   gettimeofday ((void *) &end_val, NULL);
-  printf (
+  if (timechecker)
+    printf (
      "Elapsed time: %9.6f total, %6.3f user, %6.3f system.\n",
      end_val.tv_sec - start_val.tv_sec + (0.000001 * (end_val.tv_usec - start_val.tv_usec)),
      (end_time.tms_utime - start_time.tms_utime) / (1.000 * sysconf (_SC_CLK_TCK)),
      (end_time.tms_stime - start_time.tms_stime) / (1.000 * sysconf (_SC_CLK_TCK)));
 #endif 
 #endif 
-
+  
 
 
 
@@ -283,7 +330,7 @@ int main (void)
 				  strlen (Alice_frag),
 				  &result))
       == CRM114_OK)
-    { crm114_show_result("Alice fragment results", &result); }
+    { crm114_show_result("Alice fragment results:\n", &result); }
     else exit (err);
 
   printf ("\n Classifying the 'Macbeth' text.\n");
@@ -292,7 +339,7 @@ int main (void)
 				  strlen (Macbeth_frag),
 				  &result))
       == CRM114_OK)
-    { crm114_show_result( "Macbeth fragment results", &result); }
+    { crm114_show_result( "Macbeth fragment results:\n", &result); }
     else exit (err);
 
 
@@ -302,7 +349,7 @@ int main (void)
 				  strlen (Hound_frag),
 				  &result))
       == CRM114_OK)
-    { crm114_show_result("Hound fragment results", &result); }
+    { crm114_show_result("Hound fragment results:\n", &result); }
     else exit (err);
 
   printf ("\n Classifying the 'Wind in the Willows' text.\n");
@@ -311,22 +358,23 @@ int main (void)
 				  strlen (Willows_frag),
 				  &result))
       == CRM114_OK)
-    { crm114_show_result( "Wind in the Willows fragment results", &result);}
+    { crm114_show_result( "Wind in the Willows fragment results:\n", &result);}
     else exit (err);
 
 #if TIMECHECK
   times ((void *) &end_time);
   gettimeofday ((void *) &end_val, NULL);
-  printf (
-     "Elapsed time: %9.6f total, %6.3f user, %6.3f system.\n",
-     end_val.tv_sec - start_val.tv_sec + (0.000001 * (end_val.tv_usec - start_val.tv_usec)),
-     (end_time.tms_utime - start_time.tms_utime) / (1.000 * sysconf (_SC_CLK_TCK)),
-     (end_time.tms_stime - start_time.tms_stime) / (1.000 * sysconf (_SC_CLK_TCK)));
+  if (timechecker)
+    printf (
+	    "Elapsed time: %9.6f total, %6.3f user, %6.3f system.\n",
+	    end_val.tv_sec - start_val.tv_sec + (0.000001 * (end_val.tv_usec - start_val.tv_usec)),
+	    (end_time.tms_utime - start_time.tms_utime) / (1.000 * sysconf (_SC_CLK_TCK)),
+	    (end_time.tms_stime - start_time.tms_stime) / (1.000 * sysconf (_SC_CLK_TCK)));
 #endif
-
+  
   printf (" Freeing the data block and control block\n");
   free (p_db);
   free (p_cb);
-
+  
   exit (err);
 }

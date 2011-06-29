@@ -20,6 +20,7 @@
 #ifndef __CRM114_STRUCTS_H__
 #define __CRM114_STRUCTS_H__
 
+#include "libsvm/libsvm-2.91/svm.h"
 
 // Markov family hash table bucket, to hold a feature and its value.
 typedef struct {
@@ -92,6 +93,34 @@ typedef struct {
   double prsum;        // what is the pR sum of this element (one-vs-others)
   double prob;         // what cumulative probability of this (one-vs-others)
 } BOOST_INDEX_CELL;
+
+
+
+//
+// svm_model
+// 
+struct svm_model
+{
+	struct svm_parameter param;	/* parameter */
+	int nr_class;		/* number of classes, = 2 in regression/one class svm */
+	int l;			/* total #SV */
+	struct svm_node **SV;		/* SVs (SV[l]) */
+	double **sv_coef;	/* coefficients for SVs in decision functions (sv_coef[k-1][l]) */
+	double *rho;		/* constants in decision functions (rho[k*(k-1)/2]) */
+	double *probA;		/* pariwise probability information */
+	double *probB;
+
+	/* for classification only */
+
+	int *label;		/* label of each class (label[k]) */
+	int *nSV;		/* number of SVs for each class (nSV[k]) */
+				/* nSV[0] + nSV[1] + ... + nSV[k-1] = l */
+	/* XXX */
+	int free_sv;		/* 1 if svm_model is created by svm_load_model*/
+				/* 0 if svm_model is created by svm_train */
+};
+
+
 
 
 //      FLAGS FLAGS FLAGS
@@ -189,6 +218,8 @@ typedef struct {
 #define CRM114_PCA           ((unsigned long long)1 << 39)
 // Statistical Boosting meta-classifier
 #define CRM114_BOOST         ((unsigned long long)1 << 40)
+//LIBSVM package
+#define CRM114_LIBSVM         ((unsigned long long)1 << 41)
 
 // keep this in sync with flag definitions
 #define CRM114_FLAGS_CLASSIFIERS_MASK		\
@@ -202,8 +233,9 @@ typedef struct {
     | CRM114_SVM				\
     | CRM114_FSCM				\
     | CRM114_NEURAL_NET				\
-    | CRM114_PCA                               \
-    | CRM114_BOOST )
+    | CRM114_PCA                                \
+    | CRM114_BOOST 	      			\
+    | CRM114_LIBSVM)
 
 
 #endif	// !__CRM114_STRUCTS_H__

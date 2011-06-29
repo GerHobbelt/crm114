@@ -23,7 +23,12 @@
 //   You should have received a copy of the GNU Lesser General Public License
 //   along with the CRM114 Library.  If not, see <http://www.gnu.org/licenses/>.
 
+static const char Text1[] =
+  {"xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx xxxxx"};
 
+static const char Text2[] =
+  {"zzzzz zzzzz zzzzz zzzzz zzzzz zzzzz zzzzz zzzzz zzzzz zzzzz zzzzz zzzzz"};
+  
 static const char Alice[] =
   {
 "CHAPTER I. Down the Rabbit-Hole\n"

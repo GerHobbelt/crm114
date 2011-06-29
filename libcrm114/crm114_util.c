@@ -243,6 +243,7 @@ void crm114__result_do_common(CRM114_MATCHRESULT *r,
 
 void crm114_show_result_class(const CRM114_MATCHRESULT *r, int icls)
 {
+	
   printf(" %3d %c (%-8s): documents: %d  features: %d  hits: %5d  prob: %.3f  pR: % .3f",
 	 icls,
 	 (r->class[icls].success) ? 'S' : 'F',

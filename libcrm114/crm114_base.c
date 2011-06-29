@@ -28,6 +28,8 @@
 #include "crm114_lib.h"
 #include "crm114_internal.h"
 
+#include "libsvm/libsvm-2.91/svm.h"
+
 
 // Whether to sort/unique features before handing them to
 // classifiers. Optimistic: assumes that all feature classifiers have
@@ -55,6 +57,7 @@ static const struct
     {CRM114_OSB_BAYES,  U, U},
     {CRM114_OSB_WINNOW, U, U},	// !!! changed by Bill 1/20/10 was A A
     {CRM114_HYPERSPACE, A, U},
+    {CRM114_LIBSVM,     A, A},		//added by Huseyin
 #ifndef PRODUCTION_CLASSIFIERS_ONLY
     {CRM114_SVM,        A, U},
     {CRM114_FSCM,       N, N},
@@ -62,6 +65,9 @@ static const struct
     {CRM114_PCA,        A, U},
 #endif
   };
+
+  
+
 
 // Find whether to sort and/or unique features for a features
 // classifier.  Input arg flags is the usual; this function needs
@@ -124,6 +130,7 @@ CRM114_ERR crm114_learn_text (CRM114_DATABLOCK **db, int whichclass,
     case CRM114_SVM:
     case CRM114_PCA:
     case CRM114_FSCM:
+    case CRM114_LIBSVM:
 #if 0	// after classifiers converted
     case CRM114_NEURAL_NET:
 #endif	// 0
@@ -216,7 +223,11 @@ CRM114_ERR crm114_learn_features (CRM114_DATABLOCK **db,
 	case CRM114_SVM:
 	  err = crm114_learn_features_svm(db, whichclass, fr, *nfr);
 	  break;
-
+	
+	case CRM114_LIBSVM:
+	  err = crm114_learn_features_libsvm (db, whichclass, fr, *nfr);
+	  break;
+	  
 	case CRM114_PCA:
 	  err = crm114_learn_features_pca(db, whichclass, fr, *nfr);
 	  break;
@@ -268,6 +279,7 @@ CRM114_ERR crm114_classify_text (CRM114_DATABLOCK *db, const char text[],
     case CRM114_HYPERSPACE:
 #ifndef PRODUCTION_CLASSIFIERS_ONLY
     case CRM114_SVM:
+    case CRM114_LIBSVM:
     case CRM114_PCA:
     case CRM114_FSCM:
 #if 0	// after classifiers converted
@@ -356,6 +368,11 @@ CRM114_ERR crm114_classify_features (CRM114_DATABLOCK *db,
 	case CRM114_HYPERSPACE:
 	  err = crm114_classify_features_hyperspace(db, fr, *nfr, result);
 	  break;
+	
+	case CRM114_LIBSVM:
+	  err = crm114_classify_features_libsvm(db, fr, *nfr, result);
+	  break;  
+
 #ifndef PRODUCTION_CLASSIFIERS_ONLY
 	case CRM114_SVM:
 	  err = crm114_classify_features_svm(db, fr, *nfr, result);
@@ -536,6 +553,10 @@ void crm114_cb_setblockdefaults(CRM114_CONTROLBLOCK *p_cb)
     case CRM114_PCA:
       p_cb->how_many_blocks = 1;   // SVM and PCA use one block only
       break;
+    case CRM114_LIBSVM:
+    	p_cb->how_many_blocks=p_cb->how_many_classes+2; //1 for saving the learned model
+    													//1 for saving the traslation table
+    	break;
     case CRM114_FSCM:
       // fscm uses two blocks per class
       p_cb->how_many_blocks = p_cb->how_many_classes * 2;
@@ -588,6 +609,10 @@ void crm114_cb_setblockdefaults(CRM114_CONTROLBLOCK *p_cb)
       // Expands automatically.
       block_size = 100000;
       break;
+    case CRM114_LIBSVM:
+      // Expands automatically.
+      block_size = DEFAULT_CLASS_SIZE*1;
+      break;
     case CRM114_FSCM:
       //  Eventually will expand automagically, but for now
       //  provide 1 megaslot of index space and 2 megaslots of chain
@@ -634,6 +659,9 @@ void crm114_cb_setclassdefaults(CRM114_CONTROLBLOCK *p_cb)
       p_cb->class[0].success = 1;
       p_cb->class[1].success = 0;
       break;
+    case CRM114_LIBSVM:
+    	 p_cb->how_many_blocks = p_cb->how_many_classes +2;
+    	break;
     default:
       p_cb->how_many_blocks = p_cb->how_many_classes = DEFAULT_HOW_MANY_CLASSES;
       // ??? default: first class success, all others failure
@@ -851,6 +879,7 @@ CRM114_ERR crm114_cb_setflags(CRM114_CONTROLBLOCK *p_cb,
     case CRM114_OSB_WINNOW:
     case CRM114_HYPERSPACE:
     case CRM114_SVM:
+    case CRM114_LIBSVM:
     case CRM114_PCA:
     case CRM114_NEURAL_NET:
       // no regex, tokenizer defaults
@@ -1232,6 +1261,10 @@ int crm114_db_write_text_fp(const CRM114_DATABLOCK *db, FILE *fp)
       // this doesn't modify *db, but hard to declare it so
       (void)crm114__svm_learned_write_text_fp((CRM114_DATABLOCK *)db, fp);
       break;
+    case CRM114_LIBSVM:
+     // this doesn't modify *db, but hard to declare it so
+     (void)crm114__libsvm_learned_write_text_fp((CRM114_DATABLOCK *)db, fp);
+     break;
     case CRM114_PCA:
       // this doesn't modify *db, but hard to declare it so
       (void)crm114__pca_learned_write_text_fp((CRM114_DATABLOCK *)db, fp);
@@ -1404,6 +1437,9 @@ CRM114_DATABLOCK *crm114_db_read_text_fp(FILE *fp)
 	    {
 	    case CRM114_SVM:
 	      ok = crm114__svm_learned_read_text_fp(&db, fp);
+	      break;
+	     case CRM114_LIBSVM:
+	      ok = crm114__libsvm_learned_read_text_fp(&db, fp);
 	      break;
 	    case CRM114_PCA:
 	      ok = crm114__pca_learned_read_text_fp(&db, fp);

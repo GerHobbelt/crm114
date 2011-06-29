@@ -225,9 +225,10 @@ typedef struct
   double tsprob;		// total success probability
   double overall_pR;
   int bestmatch_index;
-  int unk_features;
+  int unk_features; 
   int how_many_classes;
-  // array of class results parallels array of class headers in CB
+
+  int documentNumber;
   struct
   {
     double pR;
@@ -236,6 +237,7 @@ typedef struct
     int features;
     int hits;
     int success;
+    
     // GROT GROT GROT
     // should be counted bytes
     char name[CLASSNAME_LENGTH + 1];
@@ -252,6 +254,15 @@ typedef struct
       {
 	float radiance;
       } hyperspace;
+      
+     struct			// One-NN
+      {
+		float distance;
+		int unotk;
+		int knotu;
+		int kandu;
+      } onenn;
+      
       struct			// Bit entropy
       {
 	int jumps;
@@ -371,6 +382,16 @@ CRM114_ERR crm114_learn_features_svm(CRM114_DATABLOCK **db,
 				     const struct crm114_feature_row features[],
 				     long featurecount);
 CRM114_ERR crm114_classify_features_svm(CRM114_DATABLOCK *db,
+					const struct crm114_feature_row features[], long nfr,
+					CRM114_MATCHRESULT *result);
+					
+// LIBSVM
+CRM114_ERR crm114_learn_features_libsvm(CRM114_DATABLOCK **db,
+				     int class,
+				     const struct crm114_feature_row features[],
+				     long featurecount);
+				     
+CRM114_ERR crm114_classify_features_libsvm(CRM114_DATABLOCK *db,
 					const struct crm114_feature_row features[], long nfr,
 					CRM114_MATCHRESULT *result);
 

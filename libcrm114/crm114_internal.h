@@ -151,6 +151,10 @@ int crm114__tf_read_text_fp(int *val, const char tstr[], const char fstr[],
 			    FILE *fp);
 int crm114__svm_learned_write_text_fp(CRM114_DATABLOCK *db, FILE *fp);
 int crm114__svm_learned_read_text_fp(CRM114_DATABLOCK **db, FILE *fp);
+
+int crm114__libsvm_learned_write_text_fp(const CRM114_DATABLOCK *db, FILE *fp);
+int crm114__libsvm_learned_read_text_fp(CRM114_DATABLOCK **db, FILE *fp);
+
 int crm114__pca_learned_write_text_fp(CRM114_DATABLOCK *db, FILE *fp);
 int crm114__pca_learned_read_text_fp(CRM114_DATABLOCK **db, FILE *fp);
 int crm114__hyperspace_learned_write_text_fp(const CRM114_DATABLOCK *db,

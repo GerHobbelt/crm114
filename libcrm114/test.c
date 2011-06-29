@@ -24,6 +24,7 @@
 #include "crm114_structs.h"
 #include "crm114_lib.h"
 #include "crm114_internal.h"
+#include "libsvm/libsvm-2.91/svm.h"
 
 #include "texts.h"		/* large megatest texts, ~100KB total */
 
@@ -999,5 +1000,7 @@ int main(void)
   (void)test_list(animal,            learn_round_robin);
   (void)test_list(unbalanced_animal, learn_round_robin);
 
+	//test_connection();
+	
   return 0;
 }

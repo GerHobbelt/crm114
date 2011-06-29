@@ -37,6 +37,7 @@
 #include "crm114_svm_lib_fncts.h"
 #include "crm114_datalib.h"
 
+#include "libsvm/libsvm-2.91/svm.h" //added by Huseyin
 
 //this is the full SVM block we use while learning
 //for classifying, appending, etc, we usually only
