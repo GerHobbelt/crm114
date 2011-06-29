@@ -40,7 +40,7 @@ void crm_vht_init(int argc, char **argv)
     //   create the variable hash table (one big one, shared )
     vht = (VHT_CELL **)calloc(vht_size, sizeof(vht[0]));
     if (!vht)
-        untrappableerror("Couldn't malloc VHT cell.\n",
+        untrappableerror("Couldn't alloc VHT cell.\n",
                          "No VHT cells, no variables, so no can run.  Sorry.");
 #ifndef CRM_DONT_ASSERT
     for (i = 0; i < vht_size; i++)
@@ -51,7 +51,7 @@ void crm_vht_init(int argc, char **argv)
     //    initialize the temporary (non-data-window) area...
     tdw = calloc(1, sizeof(tdw[0]));
     if (!tdw)
-        untrappableerror("Couldn't malloc tdw.\n"
+        untrappableerror("Couldn't alloc tdw.\n"
                          "We need the TDW for isolated variables."
                          "Can't continue.  Sorry.\n", "");
     tdw->filename = NULL;
@@ -60,7 +60,7 @@ void crm_vht_init(int argc, char **argv)
     tdw->filetext = calloc(data_window_size, sizeof(tdw->filetext[0]));
     tdw->filetext_allocated = 1;
     if (!tdw->filetext)
-        untrappableerror("Couldn't malloc tdw->filetext.\n"
+        untrappableerror("Couldn't alloc tdw->filetext.\n"
                          "Without this space, you can't have any isolated "
                          "variables,\n and we're stuck.  Sorry.", "");
     tdw->filetext[0] = '\000';
@@ -225,7 +225,7 @@ void crm_vht_init(int argc, char **argv)
             name = (char *)calloc((j + 200), sizeof(name[0]));
             if (!name)
             {
-                untrappableerror("Couldn't malloc :_env_ space."
+                untrappableerror("Couldn't alloc :_env_ space."
                                  "Can't continue.\n", "");
             }
             s = strmov(name, ":_env_");
@@ -1218,7 +1218,7 @@ while (delta + mdw->nchars > data_window_size - 1)
                   " increasing data window... ");
     ndw = (char *)calloc(data_window_size, sizeof(ndw[0]));
     if (!ndw)
-        untrappableerror("Couldn't malloc ndw.  This is bad too.\n", "");
+        untrappableerror("Couldn't alloc ndw.  This is bad too.\n", "");
 
     //  now copy the old data window into the new one
     memmove(ndw, mdw->filetext, odws);
@@ -1462,7 +1462,7 @@ void crm_setvar(
         //  allocate a fresh, empty VHT cell
         vht[i] = (VHT_CELL *)calloc(1, sizeof(vht[i][0]));
         if (!vht[i])
-            untrappableerror("Couldn't malloc space for VHT cell.  We need VHT cells for variables.  We can't continue.", "");
+            untrappableerror("Couldn't alloc space for VHT cell.  We need VHT cells for variables.  We can't continue.", "");
 
         //  fill in the name info data
         vht[i]->filename = filename;
@@ -1541,7 +1541,7 @@ long crm_lookupvarline(VHT_CELL **vht, char *text, long start, long len)
         char *deathfu;
         deathfu = (char *)calloc((len + 10), sizeof(deathfu[0]));
         if (!deathfu)
-            untrappableerror("Couldn't malloc 'deathfu'.\n  Time to die. ", "");
+            untrappableerror("Couldn't alloc 'deathfu'.\n  Time to die. ", "");
         strncpy(deathfu, &(csl->filetext[start]), len);
         deathfu[len] = 0;
         q = fatalerror("Control Referencinge a non-existent variable- this"

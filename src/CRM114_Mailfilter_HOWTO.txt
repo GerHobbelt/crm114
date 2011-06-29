@@ -397,7 +397,8 @@ mailfilter.cf in the initial directory.  If you want to change that,
 use "--fileprefix=/some/where/else/" on the command line, so these
 filters will look for mailfilter.cf (and the other runtime filtering
 files!)  in the "/some/where/else/" directory.  This --fileprefix mode
-is handy when you are setting up many users.
+is handy when you are setting up many users.  (remember to use a final
+closing slash on the directory name or you will end up nowhere)
 
 The format of mailfilter.cf itself is pretty simple.
 
@@ -1334,6 +1335,12 @@ The command options you have available in mailreaver command line are:
 
   --fileprefix=dir       Assume that the config file "mailfilter.cf" 
                          and the .css files are in directory "dir".
+			 Remember to use a final closing slash on the
+			 directory name, e.g. /my/home/dir1/ instead
+			 of /my/home/dir1.  Otherwise, the filename will
+			 be spliced together from the last component
+			 of your --fileprefix and the nominal names,
+			 and you almost certainly don't want that.
  
   --config=file          Don't use mailfilter.cf as the configuration
                          file; instead use the file so noted.

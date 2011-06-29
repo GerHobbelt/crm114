@@ -356,7 +356,7 @@ static long check_for_trap_handler(CSL_CELL *csl, const char *reason)
         if (!rbuf)
         {
             fprintf(stderr,
-                    "Couldn't malloc rbuf in 'fatalerror()'!\nIt's really bad when the error fixup routine gets an error!\n");
+                    "Couldn't alloc rbuf in 'fatalerror()'!\nIt's really bad when the error fixup routine gets an error!\n");
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 3);

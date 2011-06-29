@@ -546,14 +546,14 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     {
                         char *vn;
 
-                        //   DANGER here - we malloc the var, use it
+                        //   DANGER here - we calloc the var, use it
                         //   in crm_set_windowed_nvar, and then free it.
                         //   Otherwise, we'd have a memory leak.
                         //
                         // if (!vn)
                             vn = (char *)calloc((MAX_VARNAME + 16), sizeof(vn[0]));
                         if (!vn)
-                            untrappableerror("Couldn't malloc vn.\n Can't fix that.", "");
+                            untrappableerror("Couldn't alloc vn.\n Can't fix that.", "");
                         strncpy(vn, &(bindable_vars[vstart]), vlen);
                         vn[vlen] = '\000';
                         if (strcmp(vn, ":_dw:") != 0)

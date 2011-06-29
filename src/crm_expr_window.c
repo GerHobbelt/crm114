@@ -409,7 +409,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 }
                 //
                 //
-                //    malloc up some temporary space to keep the static input
+                //   alloc up some temporary space to keep the static input
                 //   buffer's stored text
                 savedinputtxt = (char *)
                                 calloc((32 + newbuflen), sizeof(savedinputtxt[0]));

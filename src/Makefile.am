@@ -37,7 +37,12 @@ VER_SUFFIX = @VER_SUFFIX@
 #     to mess with my brain. - wsy)
 #
 VERSION = @VERSION@
-PREV_VERSION = 20070810-BlameTheSegfault
+PREV_VERSION=20070830-BlameGerHobbelt
+#PREV_VERSION=20070828-BlameGerHobbelt
+#PREV_VERSION=20070827-BlameGerHobbelt
+#PREV_VERSION=20070826-BlameGerHobbelt
+#PREV_VERSION = 20070815-BlameBadData
+#PREV_VERSION = 20070810-BlameTheSegfault
 #PREV_VERSION = 20070807-BlameTheInterns
 #PREV_VERSION = 20070505-BlameIdiocy
 #PREV_VERSION = 20070428-BlameSpamConf
@@ -51,7 +56,7 @@ PREV_VERSION = 20070810-BlameTheSegfault
 #PREV_VERSION = 20060606-VersionOfTheBeast
 #PREV_VERSION = 20060429-ReaverReturn
 #PREV_VERSION = 20060118-BlameTheReavers
-#PREV_VERSION = 20051231a-BlameBarryAndPaoloa
+#PREV_VERSION = 20051231a-BlameBarryAndPaolo
 #PREV_VERSION = 20051001-BlameRaulMiller
 #PREV_VERSION = crm114-20050721-BlameNeilArmstrong
 # VERSION += [$(TRE_TARFILE)]
@@ -74,8 +79,8 @@ SILENT = @SILENT@
 #  
 AM_CFLAGS = @AM_CFLAGS@
 # AM_CFLAGS += -g -O3
-#     turn this one on for no optimization debugging.
-#AM_CFLAGS += -g -O0 -Wall 
+#     turn this one on for no optimization, but debugging and time profiling.
+#AM_CFLAGS += -g -O0 -Wall -pg
 #     turn this one on for really picayune debugging.
 
 AM_CPPFLAGS = @AM_CPPFLAGS@
@@ -89,7 +94,7 @@ AM_CPPFLAGS = @AM_CPPFLAGS@
 #
 #    BSD users - do NOT use -static-libgcc!!!
 AM_LDFLAGS = @AM_LDFLAGS@
-AM_LDFLAGS += -static -static-libgcc
+#AM_LDFLAGS += -static -static-libgcc -pg
 #
 #   Any standard install flags?  We nominally use protection 755
 INSTALLFLAGS = @INSTALLFLAGS@
@@ -151,6 +156,7 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_markovian.c crm_osb_bayes.c crm_osb_hyperspace.c \
 	crm_correlate.c crm_osb_winnow.c crm_winnow_maintenance.c \
 	crm_osbf_bayes.c crm_osbf_maintenance.c crm_bit_entropy.c \
+	crm_neural_net.c crm_expr_clump.c \
 	crm_expr_window.c crm_expr_isolate.c crm_expr_file_io.c \
 	crm_expr_syscall.c crm_expr_classify.c crm_expr_translate.c \
 	crm_exec_engine.c crm_debugger.c crm_str_funcs.c \
@@ -170,6 +176,7 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_markovian.o crm_osb_bayes.o crm_osb_hyperspace.o \
 	crm_correlate.o crm_osb_winnow.o crm_winnow_maintenance.o \
 	crm_osbf_bayes.o crm_osbf_maintenance.o crm_bit_entropy.o \
+	crm_neural_net.o crm_expr_clump.o \
 	crm_expr_window.o crm_expr_isolate.o crm_expr_file_io.o \
 	crm_expr_syscall.o crm_expr_classify.o crm_expr_translate.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
@@ -236,7 +243,7 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge
 
 
-crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt
 
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
@@ -423,7 +430,13 @@ crm_expr_svm.o: crm_expr_svm.c \
 crm_expr_fscm.o: crm_expr_fscm.c \
 	$(HFILES)
 
+crm_expr_clump.o: crm_expr_clump.c \
+	$(HFILES)
+
 crm_stats.o: crm_stats.c \
+	$(HFILES)
+
+crm_neural_net.o: crm_neural_net.c \
 	$(HFILES)
 
 #crm_osb_neural.o: crm_osb_neural.c \

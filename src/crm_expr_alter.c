@@ -169,7 +169,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-    //      here's where we surgiclly alter a variable.  We have to
+    //      here's where we surgically alter a variable.  We have to
     //      watch out in case a variable is not in the cdw (it might
     //      be in tdw; that's legal as well.
     //      syntax is to replace the contents of the variable in the

@@ -289,6 +289,10 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         char *txt, long start, long len);
 int crm_expr_scm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
                        long txtstart, long txtlen);
+int crm_neural_net_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				    char *txt, long start, long len);
+
+
 
 //   The bigger one - classifying...
 int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -314,6 +318,9 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                            char *txt, long start, long len);
 int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
                           long txtstart, long txtlen);
+int crm_neural_net_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+				       char *txt, long start, long len);
+
 //  surgically alter a variable
 int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
@@ -341,6 +348,10 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 //  TRANSLATE - translate character sets
 int crm_expr_translate(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+
+//  CLUMP and PMULC
+int crm_expr_clump (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+int crm_expr_pmulc (CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 
 //      parse a CRM114 statement; this is mostly a setup routine for
@@ -476,6 +487,7 @@ double crm_norm_cdf(double x);
 double crm_log(double x);
 double norm_pdf(double x);
 double normalized_gauss(double x, double s);
+double crm_frand(void);
 
 
 

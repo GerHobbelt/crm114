@@ -678,7 +678,6 @@ readloop:
                 STARTUPINFO si;
                 PROCESS_INFORMATION pi = { 0 };
                 HANDLE stdout_save, stdin_save;
-                HANDLE to_minion_write, from_minion_read;
                 DWORD error = 0;
 
                 pipeSecAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -716,8 +715,10 @@ readloop:
                 }
 
                 if (user_trace)
+				{
                     fprintf(stderr, "systemcalling on shell command %s\n",
                             sys_cmd);
+				}
 
                 ZeroMemory(&si, sizeof(si));
                 si.cb = sizeof(si);

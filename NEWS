@@ -3,6 +3,17 @@ Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
 
+Version 20070917-BlameGerHobbelt
+
+* merged with latest from BillY again
+
+* statistics for 'make megatest' seem fine, EXCEPT clump/pmulc classifiers, which
+  are way off
+
+* KNOWN BUG: pmulc/clump should not be used, until I find what makes those behave
+  so badly on 64-bit (in both BillY WGET and these 'Ger-whatever' releases)
+
+
 Version 20070815-BlameBadData
 
 * merged with latest from BillY again

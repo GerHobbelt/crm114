@@ -46,6 +46,10 @@
 
 
 
+#if !defined(CRM_WITHOUT_SCM)
+
+
+
 #define NULL_INDEX 2147483647
 
 typedef struct mythical_scm_header
@@ -745,3 +749,25 @@ int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
     return 0;
 }
 
+#else /* CRM_WITHOUT_SCM */
+
+int crm_expr_scm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
+                       long txtstart, long txtlen)
+{
+                fatalerror_ex(SRC_LOC()
+		, "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+			"You may want to run 'crm -v' to see which classifiers are available.\n"
+		, "SCM");
+}
+
+
+int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
+                          long txtstart, long txtlen)
+{
+                fatalerror_ex(SRC_LOC()
+		, "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+			"You may want to run 'crm -v' to see which classifiers are available.\n"
+		, "SCM");
+}
+
+#endif /* CRM_WITHOUT_SCM */

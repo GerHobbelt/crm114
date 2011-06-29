@@ -232,7 +232,7 @@ pipelined operations.  The pipeline has these stages (as of the
     "wins".
 
 
-There you have it.  Previous plynomial sets (using only H0 thorugh H3 of
+There you have it.  Previous polynomial sets (using only H0 thorugh H3 of
 the hash pipeline, with prime-number coefficients) have reached over
 99.87% accuracy.   The best that the 5-stage pipeline
 has reached for me is 99.984%, and it averages around 99.95% 

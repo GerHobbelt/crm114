@@ -26,55 +26,47 @@
 //
 static STMT_TABLE_TYPE stmt_table[] =
 {
-    //  text      internal    nlen exec?   min max  min max  min max  flags
-    //   rep        code                  slashargs  parens  boxes
+    //  text         internal       nlen exec?  min max   min max  min max  flags
+    //   rep           code                    slashargs  parens    boxes
     //
-    { "\n",          CRM_NOOP,   0,  0,      0,   0,  0,  0,  0,  0,  0 },
-    { "#",          CRM_NOOP,   1,  0,      0,   0,  0,  0,  0,  0,  0 },
-    { "insertx",    CRM_NOOP,   7,  0,      0,   0,  0,  0,  0,  0,  0 },
-    { "noop",       CRM_NOOP,   0,  0,      0,   0,  0,  0,  0,  0,  0 },
-    { "exit",       CRM_EXIT,   0,  1,      0,   0,  0,  1,  0,  0,  0 },
-    { "{",   CRM_OPENBRACKET,   0,  0,      0,   0,  0,  0,  0,  0,  0 },
-    { "}",  CRM_CLOSEBRACKET,   0,  0,      0,   0,  0,  0,  0,  0,  0 },
-    { "goto",       CRM_GOTO,   0,  0,      1,   1,  0,  0,  0,  0,  0 },
-    { "match",     CRM_MATCH,   0,  1,      1,   1,  0,  1,  0,  1,
+    { "\n",        CRM_NOOP,          0,  0,     0,  0,    0,  0,  0,  0,   0 },
+    { ";",         CRM_NOOP,          0,  0,     0,  0,    0,  0,  0,  0,   0 }, /* [i_a] added */
+    { "#",         CRM_NOOP,          1,  0,     0,  0,    0,  0,  0,  0,   0 },
+    { "insert",    CRM_NOOP,          6,  0,     0,  0,    0,  0,  0,  0,   0 },
+    { "noop",      CRM_NOOP,          0,  0,     0,  0,    0,  0,  0,  0,   0 },
+    { "exit",      CRM_EXIT,          0,  1,     0,  0,    0,  1,  0,  0,   0 },
+    { "{",   CRM_OPENBRACKET,         0,  0,     0,  0,    0,  0,  0,  0,   0 },
+    { "}",   CRM_CLOSEBRACKET,        0,  0,     0,  0,    0,  0,  0,  0,   0 },
+    { "goto",      CRM_GOTO,          0,  0,     1,  1,    0,  0,  0,  0,   0 },
+    { "match",     CRM_MATCH,         0,  1,     1,  1,    0,  1,  0,  1,
       CRM_ABSENT | CRM_NOCASE | CRM_LITERAL | CRM_FROMSTART
       | CRM_FROMCURRENT | CRM_FROMNEXT | CRM_FROMEND | CRM_NEWEND
       | CRM_BACKWARDS | CRM_NOMULTILINE                          },
-    { "fail",       CRM_FAIL,   0,  1,      0,   0,  0,  0,  0,  0,  0 },
-    { "liaf",       CRM_LIAF,   0,  1,      0,   0,  0,  0,  0,  0,  0 },
-    { "accept",   CRM_ACCEPT,   0,  1,      0,   0,  0,  0,  0,  0,  0 },
-    { "trap",       CRM_TRAP,   0,  1,      1,   1,  0,  1,  0,  0,  0 },
-    { "fault",     CRM_FAULT,   0,  1,      0,   1,  0,  0,  0,  0,  0 },
-    { "output",   CRM_OUTPUT,   0,  1,      0,   1,  0,  0,  0,  1,
-      CRM_APPEND                                                 },
-    { "window",   CRM_WINDOW,   0,  1,       0,  2,  0,  2,  0,  0,
-      CRM_NOCASE | CRM_BYCHAR | CRM_BYEOF | CRM_EOFACCEPTS
-      | CRM_EOFRETRY                                             },
-    { "alter",     CRM_ALTER,   0,  1,       1,  1,  1,  1,  0,  0,  0 },
-    { "learn",     CRM_LEARN,   0,  1,       1,  1,  1,  1,  0,  1,
-      CRM_NOCASE | CRM_REFUTE | CRM_MICROGROOM                   },
-    { "classify", CRM_CLASSIFY,  0,  1,       1,  1,  1,  2,  0,  1,
-      CRM_NOCASE                                                 },
-    { "isolate", CRM_ISOLATE,   0,  1,       0,  1,  1,  1,  0,  0,  0 },
-    { "input",     CRM_INPUT,   0,  1,       0,  0,  1,  1,  0,  1,
-      CRM_BYLINE                                                 },
-    { "syscall", CRM_SYSCALL,   0,  1,       1,  1,  0,  3,  0,  0,
-      CRM_KEEP | CRM_ASYNC                                       },
-    { "hash",       CRM_HASH,   0,  1,       1,  1,  1,  1,  0,  0,  0 },
-    { "translate", CRM_TRANSLATE, 0,  1,       0,  2,  0,  1,  0,  1,
-      CRM_UNIQUE | CRM_LITERAL                               },
-    { "intersect", CRM_INTERSECT, 0,  1,       0,  0,  1,  1,  1,  1,  0 },
-    { "union",    CRM_UNION,    0,  1,       0,  0,  1,  1,  1,  1,  0 },
-    { "eval",     CRM_EVAL,     0,  1,       1,  1,  1,  1,  0,  0,  0 },
-    { "alius",    CRM_ALIUS,    0,  1,       0,  0,  0,  0,  0,  0,  0 },
-    { "call",     CRM_CALL,     0,  1,       0,  0,  0,  0,  0,  0,  0 },
-    { "routine",  CRM_ROUTINE,  0,  1,       0,  0,  0,  0,  0,  0,  0 },
-    { "return",   CRM_RETURN,   0,  1,       0,  1,  0,  0,  0,  0,  0 },
-    { "debug",    CRM_DEBUG,   0,  0,       0,  0,  0,  0,  0,  0,  0 },
-    { "clump",    CRM_CLUMP,    0,  1,       0,  1,  1,  1,  0,  1,  CRM_FLAT | CRM_REFUTE },
-    { "pmulc",    CRM_PMULC,    0,  1,       0,  1,  0,  0,  0,  1,  CRM_FLAT | CRM_REFUTE },
-    /* { "NoMoreStmts",CRM_UNIMPLEMENTED,0,0,   0,  0,  0,  0,  0,  0,  0}, */
+    { "fail",      CRM_FAIL,          0,  1,     0,  0,    0,  0,  0,  0,   0 },
+    { "liaf",      CRM_LIAF,          0,  1,     0,  0,    0,  0,  0,  0,   0 },
+    { "accept",    CRM_ACCEPT,        0,  1,     0,  0,    0,  0,  0,  0,   0 },
+    { "trap",      CRM_TRAP,          0,  1,     1,  1,    0,  1,  0,  0,   0 },
+    { "fault",     CRM_FAULT,         0,  1,     0,  1,    0,  0,  0,  0,   0 },
+    { "output",    CRM_OUTPUT,        0,  1,     0,  1,    0,  0,  0,  1, CRM_APPEND },
+    { "window",    CRM_WINDOW,        0,  1,     0,  2,    0,  2,  0,  0, CRM_NOCASE | CRM_BYCHAR | CRM_BYEOF | CRM_EOFACCEPTS | CRM_EOFRETRY },
+    { "alter",     CRM_ALTER,         0,  1,     1,  1,    1,  1,  0,  0,   0 },
+    { "learn",     CRM_LEARN,         0,  1,     1,  1,    1,  1,  0,  1, CRM_NOCASE | CRM_REFUTE | CRM_MICROGROOM },
+    { "classify",  CRM_CLASSIFY,      0,  1,     1,  1,    1,  2,  0,  1, CRM_NOCASE },
+    { "isolate",   CRM_ISOLATE,       0,  1,     0,  1,    1,  1,  0,  0,   0 },
+    { "input",     CRM_INPUT,         0,  1,     0,  0,    1,  1,  0,  1, CRM_BYLINE },
+    { "syscall",   CRM_SYSCALL,       0,  1,     1,  1,    0,  3,  0,  0, CRM_KEEP | CRM_ASYNC },
+    { "hash",      CRM_HASH,          0,  1,     1,  1,    1,  1,  0,  0,   0 },
+    { "translate", CRM_TRANSLATE,     0,  1,     0,  2,    0,  1,  0,  1, CRM_UNIQUE | CRM_LITERAL },
+    { "intersect", CRM_INTERSECT,     0,  1,     0,  0,    1,  1,  1,  1,   0 },
+    { "union",     CRM_UNION,         0,  1,     0,  0,    1,  1,  1,  1,   0 },
+    { "eval",      CRM_EVAL,          0,  1,     1,  1,    1,  1,  0,  0,   0 },
+    { "alius",     CRM_ALIUS,         0,  1,     0,  0,    0,  0,  0,  0,   0 },
+    { "call",      CRM_CALL,          0,  1,     0,  0,    0,  0,  0,  0,   0 },
+    { "routine",   CRM_ROUTINE,       0,  1,     0,  0,    0,  0,  0,  0,   0 },
+    { "return",    CRM_RETURN,        0,  1,     0,  1,    0,  0,  0,  0,   0 },
+    { "debug",     CRM_DEBUG,         0,  0,     0,  0,    0,  0,  0,  0,   0 },
+    { "clump",     CRM_CLUMP,         0,  1,     0,  1,    1,  1,  0,  1, CRM_FLAT | CRM_REFUTE },
+    { "pmulc",     CRM_PMULC,         0,  1,     0,  1,    0,  0,  0,  1, CRM_FLAT | CRM_REFUTE },
     { NULL } /* [i_a] sentinel */
 };
 
@@ -226,10 +218,10 @@ int crm_load_csl(CSL_CELL *csl)
         {
             CRM_ASSERT(csl->filedes >= 0);
             close(csl->filedes);
-            untrappableerror("malloc of the file text failed", csl->filename);
+            untrappableerror("alloc of the file text failed", csl->filename);
         }
         if (internal_trace)
-            fprintf(stderr, "File text malloc'd at %p\n", csl->filetext);
+            fprintf(stderr, "File text alloc'd at %p\n", csl->filetext);
 
         //    put in a newline at the beginning
         csl->filetext[0] = '\n';
@@ -388,26 +380,26 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         fprintf(stderr, "Program statements: %ld, program length %ld\n",
                 j, pgmlength);
 
-        csl->mct_size = csl->nstmts + 10;
+    csl->mct_size = csl->nstmts + 10;
     csl->mct = (MCT_CELL **)calloc(csl->mct_size, sizeof(csl->mct[0]));
     csl->mct_allocated = 1;
     if (!csl->mct)
-        untrappableerror("Couldn't malloc MCT table.\n"
+        untrappableerror("Couldn't alloc MCT table.\n"
                          "This is where your compilation results go, "
                          "so if we can't compile, we can't run.  Sorry.", "");
 
     if (internal_trace)
         fprintf(stderr, "microcompile table at %p\n", (void *)csl->mct);
 
-    //  malloc all of the statement cells.
+    //  alloc all of the statement cells.
     for (i = 0; i < csl->nstmts + 10; i++)
     {
         csl->mct[i] = (MCT_CELL *)calloc(1, sizeof(csl->mct[i][0]));
         if (!csl->mct[i])
-                {
+        {
             untrappableerror(
-                "Couldn't malloc MCT cell. This is very bad.\n", "");
-                }
+                "Couldn't alloc MCT cell. This is very bad.\n", "");
+        }
     }
 
     // ***  Microcompile phase 2 - set statement types
@@ -587,10 +579,10 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
             // comments are treated as opcodes so that means it's LR(k) or LL(k)
             // after all. (--> not YACC/LEX but use PCCTS or ANTLR instead. Trouble
             // there is that ANTLR is very nice but doesn't have a 'C' target yet, IIRC
-			//
-			// update: nope, crm is at least LR(2) due to the ':#:' string length 
-			//         expansion, which collides with the '#' comment operator at
-			//         lookahead < 2 characters.
+            //
+            // update: nope, crm is at least LR(2) due to the ':#:' string length
+            //         expansion, which collides with the '#' comment operator at
+            //         lookahead < 2 characters.
             if (stab_stmtcode == CRM_ALIUS)
             {
                 // make sure a {} precedes this opcode
@@ -706,12 +698,12 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     }
 
     numstmts = stmtnum - 1;
-        CRM_ASSERT(numstmts <= csl->mct_size);
+    CRM_ASSERT(numstmts <= csl->mct_size);
 
     //  check to be sure that the brackets close!
 
     if (bracketlevel != 0)
-    nonfatalerror ("\nDang!  The curly braces don't match up!\n",
+        nonfatalerror("\nDang!  The curly braces don't match up!\n",
                       "Check your source code. ");
 
 
@@ -766,7 +758,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //   Work upwards next, assigning the fail targets
         sdx = 0;
         stack[sdx] = numstmts + 1;
-                CRM_ASSERT(numstmts <= csl->mct_size);
+        CRM_ASSERT(numstmts <= csl->mct_size);
         for (stmtnum = numstmts; stmtnum >= 0; stmtnum--)
         {
             switch (csl->mct[stmtnum]->stmt_type)
@@ -804,7 +796,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //   Work upwards again, assigning the TRAP targets
         sdx = 0;
         stack[sdx] = numstmts + 1;
-                CRM_ASSERT(numstmts <= csl->mct_size);
+        CRM_ASSERT(numstmts <= csl->mct_size);
         for (stmtnum = numstmts; stmtnum >= 0; stmtnum--)
         {
             switch (csl->mct[stmtnum]->stmt_type)
@@ -906,7 +898,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
         //    Finally got to the end.  Fill in the last bits of the CSL
         //  with the new information, and return.
 
-                CRM_ASSERT(numstmts <= csl->mct_size);
+        CRM_ASSERT(numstmts <= csl->mct_size);
         csl->nstmts = numstmts;
 
         if (internal_trace)

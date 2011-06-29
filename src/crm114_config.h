@@ -332,12 +332,49 @@
 #define FEATUREBUCKET_HISTOGRAM_MAX 4096
 //#define FEATUREBUCKET_TYPE unsigned short
 
+
+//     Neural Net parameters
+//
+#define NN_RETINA_SIZE 65536
+#define NN_FIRST_LAYER_SIZE 64
+#define NN_HIDDEN_LAYER_SIZE 64
+
+//     Neural Net training setups
+//   Threshold for back propagation
+#define NN_INTERNAL_TRAINING_THRESHOLD 0.3
+//  Just use 1 neuron excitation per token coming in. 
+#define NN_N_PUMPS 1
+//  How many training cycles before we punt out 
+#define NN_MAX_TRAINING_CYCLES 100
+//  When doing a "nuke and retry", allow this many training cycles.
+#define NN_MAX_TRAINING_CYCLES_FROMSTART 2000
+//  After how many "not needed" cycles do we microgroom this doc away?
+#define NN_MICROGROOM_THRESHOLD 10      
+//  use the sparse retina design?  No, it's not good.
+#define NN_SPARSE_RETINA 0 
+
 //    End of configurable parameters.
 
-
-
-
 #define CRM_WITH_OLD_HASH_FUNCTION 1
+
+// which classifiers are 'experimental' for this release?
+#if defined(CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS)
+
+#undef CRM_WITHOUT_NEURAL_NET
+#define CRM_WITHOUT_NEURAL_NET 1
+
+#undef CRM_WITHOUT_SCM
+#define CRM_WITHOUT_SCM 1
+
+#undef CRM_WITHOUT_SKS
+#define CRM_WITHOUT_SKS 1
+
+#undef CRM_WITHOUT_SVM
+#define CRM_WITHOUT_SVM 1
+
+#endif /* CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS */
+
+
 
 #endif /* __CRM114_CONFIG_H__ */
 

@@ -238,6 +238,58 @@
 #error "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
+typedef struct
+{
+  regex_t preg;
+  char *pattern;
+} re_entry;
+
+#elif defined(HAVE_POSIX_REGEX)
+
+typedef struct
+{
+  regex_t preg;
+  char *pattern;
+} re_entry;
+
+#elif defined(HAVE_V8_REGEX)
+
+#ifndef NSUBEXP
+#include <regexp.h>
+#endif
+
+typedef struct
+{
+  regexp *preg;
+  char *pattern;
+} re_entry;
+
+#elif defined(HAVE_BSD_REGEX)
+
+typedef struct
+{
+  char *pattern;
+} re_entry;
+
+#elif defined(HAVE_GNU_REGEX)
+
+typedef struct
+{
+  struct re_pattern_buffer preg;
+  char *pattern;
+} re_entry;
+
+#elif defined(HAVE_PCRE_REGEX)
+
+#include <pcre.h>
+
+typedef struct
+{
+  pcre *preg;
+  pcre_extra *preg_extra;
+  char *pattern;
+} re_entry;
+
 #else
 
 #if defined (HAVE_REGEX_H)

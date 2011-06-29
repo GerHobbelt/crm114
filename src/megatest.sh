@@ -392,8 +392,8 @@ EOF
 rm -f i_test.css 
 rm -f q_test.css
 ./crm114 '-{window; output /\n**** Fast Substring Compression Match Classifier \n/}'
-./crm114 '-{learn < fscm > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
-./crm114 '-{learn < fscm > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 -s 200000 '-{learn < fscm > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
+./crm114 -s 200000 '-{learn < fscm > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
 ./crm114 '-{ isolate (:s:); {classify < fscm > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
 to do basic mathematics and inequality testing, either only in EVALs
 EOF
@@ -401,7 +401,71 @@ EOF
 But fear not, we _do_ have the document you want. 
 EOF
 
+rm -f i_test.css 
+rm -f q_test.css
+./crm114 '-{window; output /\n**** Neural Network Classifier \n/}'
+./crm114 -s 32768 '-{learn < neural append > (q_test.css) /[[:graph:]]+/}' < QUICKREF.txt
+./crm114 -s 32768 '-{learn < neural append > (i_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn < neural refute fromstart > (q_test.css) /[[:graph:]]+/}' < INTRO.txt
+./crm114 '-{learn < neural refute fromstart > (i_test.css) /[[:graph:]]+/}' < QUICKREF.txt
 
+./crm114 '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+You can use CRM114 flags on the shell-standard invocation line, and
+hide them with '--' from the program itself; '--' incidentally prevents
+the invoking user from changing any CRM114 invocation flags.
+
+Flags should be located after any positional variables on the command
+line.  Flags _are_ visible as :_argN: variables, so you can create
+your own flags for your own programs (separate CRM114 and user flags
+with '--').
+EOF
+./crm114 '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+CRM114 also sports a very powerful subprocess control facility, and
+a unique syntax and program structure that puts the fun back in
+programming (OK, you can run away screaming now).  The syntax is
+declensional rather than positional; the type of quote marks around
+an argument determine what that argument will be used for.
+
+The typical CRM114 program uses regex operations more often
+than addition (in fact, math was only added to TRE in the waning
+days of 2003, well after CRM114 had been in daily use for over
+a year and a half).
+EOF
+
+rm -f i_test.css 
+rm -f q_test.css
+./crm114 '-{window; output /\n**** Neural Net by Paragraphs Classifier*****\n/}'
+./crm114 -s 32768 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < neural append > (i_test.css) /[[:graph:]]+/; liaf}' < INTRO.txt
+./crm114 -s 32768 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < neural append > (q_test.css) /[[:graph:]]+/; liaf }' < QUICKREF.txt
+./crm114  '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < neural refute append> (i_test.css) /[[:graph:]]+/; liaf}' < QUICKREF.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /[[:graph:]]+.*?\n\n/; learn [:one_paragraph:] < neural refute append> (q_test.css) /[[:graph:]]+/; liaf }' < INTRO.txt
+./crm114 '-{ window; learn <neural fromstart> (i_test.css); learn <neural fromstart> (q_test.css) }'
+./crm114 '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:)/[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ } }' <<-EOF
+You can use CRM114 flags on the shell-standard invocation line, and
+hide them with '--' from the program itself; '--' incidentally prevents
+the invoking user from changing any CRM114 invocation flags.
+
+Flags should be located after any positional variables on the command
+line.  Flags _are_ visible as :_argN: variables, so you can create
+your own flags for your own programs (separate CRM114 and user flags
+with '--').
+EOF
+./crm114 '-{ isolate (:s:); {classify < neural > ( i_test.css | q_test.css ) (:s:) /[[:graph:]]+/ ; output / type I \n:*:s:\n/} alius { output / type Q \n:*:s:\n/ }}' <<-EOF
+CRM114 also sports a very powerful subprocess control facility, and
+a unique syntax and program structure that puts the fun back in
+programming (OK, you can run away screaming now).  The syntax is
+declensional rather than positional; the type of quote marks around
+an argument determine what that argument will be used for.
+
+The typical CRM114 program uses regex operations more often
+than addition (in fact, math was only added to TRE in the waning
+days of 2003, well after CRM114 had been in daily use for over
+a year and a half).
+EOF
+
+
+
+rm -f i_vs_q_test.css
 rm -f i_test.css 
 rm -f q_test.css
 ./crm114 '-{window; output /\n**** Support Vector Machine (SVM) unigram classifier \n/}'
@@ -486,6 +550,37 @@ CRM114 is a language designed to write filters in.  It caters to
 filtering email, system log streams, html, and other marginally
 human-readable ASCII that may occasion to grace your computer.
 EOF
+
 rm -f i_test.css 
 rm -f q_test.css
 
+./crm114 '-{window; output /\n**** Clump \/ Pmulc Test \n/}'
+./crm114 '-{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump <bychunk> [:one_paragraph:] (i_test.css) /[[:graph:]]+/; output /./ ; liaf}' < INTRO.txt
+./crm114 '-{ match <fromend> (:one_paragraph:) /([[:graph:]]+.*?\n\n){5}/; clump [:one_paragraph:] <bychunk> (i_test.css) /[[:graph:]]+/; output /./; liaf }' < QUICKREF.txt
+
+#    Now see where our paragraphs go to
+./crm114 '-{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: \n:*:s:\n/} alius { output / Unsure result \n:*:s:\n/ } }' <<-EOF
+You can use CRM114 flags on the shell-standard invocation line, and
+hide them with '--' from the program itself; '--' incidentally prevents
+the invoking user from changing any CRM114 invocation flags.
+
+Flags should be located after any positional variables on the command
+line.  Flags _are_ visible as :_argN: variables, so you can create
+your own flags for your own programs (separate CRM114 and user flags
+with '--').
+EOF
+
+./crm114 '-{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: \n:*:s:\n/} alius { output / Unsure result \n:*:s:\n/ } }' <<-EOF
+CRM114's unique strengths are the data structure (everything is
+a string and a string can overlap another string), it's ability
+to work on truly infinitely long input streams, it's ability to
+use extremely advanced classifiers to sort text, and the ability
+to do approximate regular expressions (that is, regexes that
+don't quite match) via the TRE regex library.
+EOF
+
+./crm114 '-{ isolate (:s:); { pmulc  ( i_test.css) (:s:) <bychunk> /[[:graph:]]+/  [:_dw:]   ; output /Likely result: \n:*:s:\n/} alius { output / Unsure result \n:*:s:\n/ } }' <<-EOF
+EOF
+
+rm -f i_test.css 
+rm -f q_test.css

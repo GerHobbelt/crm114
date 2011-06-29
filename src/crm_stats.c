@@ -218,11 +218,13 @@ double crm_log(double x)
 
     while (x >= 2.0)
     {
-        r += log_lookup_table[768];         //this is (log(2)
+        r += log_lookup_table[768];         //this is log(2)
         x /= 2.0;
     }
     i = (int)(x * 384.0);
     g = x - ((double)i) / 384.0;
+	CRM_ASSERT(i < 768);
+	CRM_ASSERT(WIDTHOF(log_lookup_table) == 768);
     r += (1.0 - g) * log_lookup_table[i] + g * log_lookup_table[i + 1];
     return r;
 }
@@ -242,3 +244,32 @@ double normalized_gauss(double x, double s)
     return exp(-0.5 * x * x / (s * s));
 }
 
+double crm_frand(void)
+{
+  return (double)rand() / (double)RAND_MAX;
+}
+
+void print_histogram_float(float *f, int n, int n_buckets)
+{
+  int *buckets, i;
+  double min, max, s;
+  buckets = calloc(n_buckets, sizeof(buckets[0]));
+  min = max = f[0];
+  for(i = 1; i < n; i++)
+    if(f[i] > max)
+      max = f[i];
+    else if(f[i] < min)
+      min = f[i];
+  s = (n_buckets - 0.01 ) / ( max - min);
+  for(i = 0; i < n_buckets; i++)
+    buckets[i] = 0;
+  for(i = 0; i < n; i++)
+    buckets[ (int)( s * (f[i] - min) ) ]++;
+  fprintf(stderr, "min: %0.4f, max: %0.4f\n", min, max);
+  for(i = 0; i < n_buckets; i++)
+  {
+    fprintf(stderr, "( %0.4f - %0.4f ): %d\n",
+        i / s + min, i / s + min + 1.0 / s, buckets[i]);
+  }
+  free(buckets);
+}

@@ -43,6 +43,7 @@ const FLAG_DEF crm_flags[] =
   { "nomultiline", CRM_BYLINE },    /* bit 10 */
   { "byline", CRM_BYLINE },         /* bit 10 */
   { "bychar", CRM_BYCHAR },
+  { "string", CRM_BYCHAR },
   { "bychunk", CRM_BYCHUNK },
   { "byeof", CRM_BYEOF },
   { "eofaccepts", CRM_EOFACCEPTS },
@@ -53,6 +54,7 @@ const FLAG_DEF crm_flags[] =
   { "refute", CRM_REFUTE },
   { "microgroom", CRM_MICROGROOM },    /* bit 20 */
   { "markovian", CRM_MARKOVIAN },
+  { "markov", CRM_MARKOVIAN },
   { "osb", CRM_OSB_BAYES },
   { "correlate", CRM_CORRELATE },
   { "winnow", CRM_OSB_WINNOW },
@@ -70,11 +72,12 @@ const FLAG_DEF crm_flags[] =
   { "svm", CRM_SVM },
   { "fscm", CRM_FSCM },
   { "scm", CRM_SCM },
+  { "neural", CRM_NEURAL_NET },
   { "flat", CRM_FLAT },
   { NULL, 0 }     /* [i_a] sentinel */
 };
 
-/* #define CRM_MAXFLAGS 37   [i_a] unused in the new code */
+/* #define CRM_MAXFLAGS 42   [i_a] unused in the new code */
 
 
 
@@ -143,7 +146,8 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
         // make sure the flags are ordered properly; must match with crm114_structs.h defs, but that's kinda hard to check
         CRM_ASSERT(crm_flags[j].value > 0);
         CRM_ASSERT(j > 0 ? crm_flags[j].value >= crm_flags[j - 1].value : 1);
-        CRM_ASSERT(j > 0 ? crm_flags[j].value == crm_flags[j - 1].value ? 1 : crm_flags[j].value == (crm_flags[j - 1].value << 1LL) : 1);
+        CRM_ASSERT(j > 0 ? crm_flags[j].value == crm_flags[j - 1].value ? 1 : crm_flags[j].value ==
+                   (crm_flags[j - 1].value << 1LL) : 1);
         CRM_ASSERT(j == 0 ? crm_flags[j].value == 1 : 1);
 
         k = strlen(crm_flags[j].string);
@@ -458,8 +462,9 @@ int crm_generic_parse_line(
 
     switch (itype)
     {
-default:
-CRM_ASSERT_EX(0, "Should never get here while parsing a statement");
+    default:
+      CRM_ASSERT_EX(0, "Should never get here while parsing a statement");
+
     case CRM_FIND_ACTION:
       // we need to decode the command (ACTION) itself:
       // allowed are:
@@ -480,7 +485,8 @@ CRM_ASSERT_EX(0, "Should never get here while parsing a statement");
         {
           if (!crm_isspace(txt[chidx]))
           {
-            nonfatalerror_ex(SRC_LOC(),
+            nonfatalerror_ex(SRC_LOC(
+                             ),
                              " Curly braces delineate code sections. Is a action/command missing here?\n Bug in statement?\n --> %.*s%s",
                              (len > 1024 ? 1024 : len),
                              txt,
@@ -493,9 +499,9 @@ CRM_ASSERT_EX(0, "Should never get here while parsing a statement");
       case ':':
         // scan the label; we're lazy so we just track down the
         // terminating ':' there.
-          itype = CRM_PARSE_LABEL;
-	submode = 1;
-break;
+        itype = CRM_PARSE_LABEL;
+        submode = 1;
+        break;
 
       default:
         if (crm_isalpha(curchar))
@@ -517,24 +523,24 @@ break;
       }
       break;
 
-	case CRM_PARSE_LABEL:
+    case CRM_PARSE_LABEL:
       switch (curchar)
       {
       case ':':
         submode++;
         if (submode == 2)
         {
-			// counted both start and end ':' --> label has now been scanned
+          // counted both start and end ':' --> label has now been scanned
 
-          submode = 0; // reset submode
+          submode = 0;                  // reset submode
           itype = CRM_FIND_ARG_SECTION; // start to parse arg sections now.
         }
         break;
 
       default:
         break;
-}
-break;
+      }
+      break;
 
     case CRM_PARSE_ACTION:
       // parsing the command; when it ends, it may be followed by any of the <>[]()// sections
@@ -566,8 +572,9 @@ break;
         }
         continue;
       }
+
       // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // fallthrough! fallthrough! fallthrough! fallthrough! fallthrough! 
+      // fallthrough! fallthrough! fallthrough! fallthrough! fallthrough!
       // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     case CRM_FIND_ARG_SECTION:
       //    is curchar one of the start chars?  (this is 8-bit-safe,
@@ -607,14 +614,14 @@ break;
                            (len > 1024 ? 1024 : len),
                            txt,
                            (len > 1024 ? "(...truncated)" : ""));
- return argc;
+          return argc;
         }
         continue;
       }
 
- // section delimiter detected; mark section
-	ftype[argc] = itype;
-    dstpos = fstart[argc] = chidx + 1;
+      // section delimiter detected; mark section
+      ftype[argc] = itype;
+      dstpos = fstart[argc] = chidx + 1;
       break;
 
     case CRM_ANGLES:

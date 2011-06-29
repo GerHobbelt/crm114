@@ -1,11 +1,13 @@
-#! /usr/bin/crm
+#!/usr/bin/crm
 #     
 #    Program to do 10-fold validation on N classes using various classifiers.
 #
-# 1)  the first user arg is the name of an index file, in TREC format, but with
-#     arbitrary classnames, eg:
-#        foo ./foos/file0001.txt
-#        bar ./bars/file0001.txt
+# 1)  the first user arg is the name of an index file, in TREC format, but 
+#     we allow arbitrary classnames and directories instead of just "ham"
+#     and "spam", eg:
+#
+#        arb_classname1 ./foos/file0001.txt
+#        arb_classname2 ./bars/file0001.txt
 #
 # 2)   The classnames are "skimmed" from the index file by doing a prepass,
 #     then the class files are created by learning a tiny text into each one.
@@ -17,14 +19,19 @@
 #     (and will keep our training classnames, which may or may not match
 #     work with the TREC analyzers.)  
 #
+# 4)  We consider the case of a result pR == 0.00 exactly to be WRONG for all
+#     classes, and train whenever it occurs.
+#
 #
 window
 isolate <default> (:verbose:) //
 isolate <default> (:clf:) /osb unique microgroom/
 isolate <default> (:regex:) //
+isolate <default> (:doublesided:) //
 isolate <default> (:thickness:) /5.0/
 isolate <default> (:show_partitions:) //
 isolate <default> (:decision_length:) /2048/
+isolate <default> (:results:) /results/
 #
 isolate <default> (:initial_text:) \
 	/The quick brown fox jumped over the lazy dog's back 012345679/
@@ -285,7 +292,7 @@ match [:cnames:] //
 	output /Deleting old :*:name:.stat\n/
 	syscall /rm -rf :*:name:.stat/
 	output /CREATING :*:name:.stat \n/
-	learn <:*:clf:> /:*:regex:/ [:initial_text:] ( :*:name:.stat )
+	learn <:*:clf:> /:*:regex:/ [:initial_text:] (:*:name:.stat)
 	liaf
 	{
 		match [:clf:] /svm|sks/
@@ -299,6 +306,7 @@ return
 #
 match [:file_list:] //
 {
+	# output /Cstatfiles: ":*:cstatfiles:" \n/
 	match <fromend nomultiline> [:file_list:] \
 		/([[:graph:]]+)[[:blank:]]+([[:graph:]]+)/ (:: :cnam: :fnam:)
 	#output /\nExample file: :*:fnam: (:*:cnam:) /
@@ -309,7 +317,7 @@ match [:file_list:] //
 	#   Did our classify result say we're good?
 	{
 		match [:s:] <nomultiline> (:L: :pr:) \
-			/^\#. \(:*:cnam:.*pR:[[:blank:]]+([[:graph:]]+)/
+		   /^\#. \(:*:cnam:.*pR:[[:blank:]]+([[:graph:]]+)/
 		{
 			output /./
 			eval /:@: :*:pr: < :*:thickness: :/
@@ -318,9 +326,30 @@ match [:file_list:] //
 				output /X/
 			}
 			output /\nExample file: :*:fnam: (:*:cnam:) /
-			output /learning into :*:cnam:.stat/
-			learn <:*:clf:> [:ftext:] /:*:regex:/ ( :*:cnam:.stat )
+			output /(pR: :*:pr:) learning into :*:cnam:.stat .../
+			learn <:*:clf:> [:ftext:] /:*:regex:/ (:*:cnam:.stat)
 			{
+				#  if doublesided, go through the list of all 
+				#   classfiles and anti-learn if it's not
+				#    our class.
+				match [:doublesided:] /./
+				match [:cstatfiles:] /.*/ (:cs_alt:)
+				{
+					match <fromend> [:cs_alt:] \
+					      /[[:graph:]]+/ (:csfil:)
+					{
+						match <absent> [:csfil:] \
+						      /:*:cnam:/ 
+						output \
+						   /learn-out: :*:csfil:\n/
+						learn <:*:clf: refute> \
+					[:ftext:] (:*:csfil:) /:*:regex:/
+					}
+					liaf
+				}
+			}
+			{
+                                #  fixup for versus-file anomaly in svm/sks 
 				match [:clf:] /svm|sks/
 				learn <:*:clf:> /:*:regex:/ \
 				   	 (:*:cstatfiles: )  
@@ -335,19 +364,22 @@ match [:file_list:] //
 }
 return
 
+
 :check_files: (:file_list:)
 #
+output /\nNow the final testing 10%: /
+output <append> [:*:results:] /=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=\n/
 match [:file_list:] //
 {
 	match <fromend nomultiline> [:file_list:] \
 		/([[:graph:]]+)[[:blank:]]+([[:graph:]]+)/ (:: :cnam: :fnam:)
-	output <append> [results] /File: :*:fnam: class: :*:cnam: /
+	output <append> [:*:results:] /File: :*:fnam: class: :*:cnam: /
 	input [:*:fnam: 0 :*:decision_length:] (:ftext:)
 	{
 		classify <:*:clf:> /:*:regex:/ [:ftext:] (:*:cstatfiles:) (:s:)
 		# output /:*:s:\n/
 	}
-	#    Get our results back
+	#    Get our :*:results: back
 	{
 		{
 			match [:s:] <nomultiline> (:: :pr:) \
@@ -361,14 +393,14 @@ match [:file_list:] //
 	{
 		{
 			eval /:@: :*:pr: > 0.0 :/
-			output /./
-			output <append> [results] \
+			output /-/
+			output <append> [:*:results:] \
 				/ pR: :*:pr: CORRECT.\n/
 		}
 		alius
 		{
 			output /X/
-			output <append> [results] \
+			output <append> [:*:results:] \
 				/ pR: :*:pr: WRONG.\n/
 		}
 	}

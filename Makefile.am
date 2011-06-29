@@ -98,7 +98,7 @@ distribution: distdir dist-diff
 	$(am__remove_distdir)
 
 
-.PHONY: reindent depend dist-7z-all dist-diff dist-maint dist-msvc
+.PHONY: reindent depend dist-7z dist-diff dist-maint dist-msvc distribution
 
 
 reindent:

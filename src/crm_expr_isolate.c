@@ -215,7 +215,7 @@ no_isolate_action:
 //      value is in the TDW, it may need to be reclaimed, otherwise it
 //      doesn't reclaim.)
 //
-//      Note - this routine will malloc and then free a spare buffer if
+//      Note - this routine will calloc and then free a spare buffer if
 //      it gets handed data that's already in the TDW.  Best not to do
 //      that if you can avoid it; that is an efficiency speedup
 //

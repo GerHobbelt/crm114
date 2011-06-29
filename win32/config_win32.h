@@ -7,6 +7,45 @@
 /* DISable ASSERT/VERIFY checks */
 /* #undef CRM_DONT_ASSERT */
 
+/* do not include the Bit-Entropy classifier in the build */
+/* #undef CRM_WITHOUT_BIT_ENTROPY */
+
+/* do not include the Correlate classifier in the build */
+/* #undef CRM_WITHOUT_CORRELATE */
+
+/* do not include experimental classifiers in the build */
+/* #undef CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS */
+
+/* do not include the FSCM classifier in the build */
+/* #undef CRM_WITHOUT_FSCM */
+
+/* do not include the Markov classifier in the build */
+/* #undef CRM_WITHOUT_MARKOV */
+
+/* do not include the Neural-Net classifier in the build */
+/* #undef CRM_WITHOUT_NEURAL_NET */
+
+/* do not include the OSBF classifier in the build */
+/* #undef CRM_WITHOUT_OSBF */
+
+/* do not include the OSB-Bayes classifier in the build */
+/* #undef CRM_WITHOUT_OSB_BAYES */
+
+/* do not include the OSB-Hyperspace classifier in the build */
+/* #undef CRM_WITHOUT_OSB_HYPERSPACE */
+
+/* do not include the OSB-Winnow classifier in the build */
+/* #undef CRM_WITHOUT_OSB_WINNOW */
+
+/* do not include the SCM classifier in the build */
+/* #undef CRM_WITHOUT_SCM */
+
+/* do not include the SKS classifier in the build */
+/* #undef CRM_WITHOUT_SKS */
+
+/* do not include the SVM classifier in the build */
+/* #undef CRM_WITHOUT_SVM */
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
@@ -487,13 +526,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20070815-BlameBadData"
+#define PACKAGE_STRING "CRM114 20070830-BlameGerHobbelt"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20070815-BlameBadData"
+#define PACKAGE_VERSION "20070830-BlameGerHobbelt"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -525,13 +564,13 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-190"
+#define TAR_FILENAME_POSTFIX "Ger-352"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
-#define VERSION "20070815-BlameBadData"
+#define VERSION "20070830-BlameGerHobbelt"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

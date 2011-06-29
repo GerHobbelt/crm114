@@ -251,6 +251,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\crm_expr_clump.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\crm_expr_clump_nn.c"
 				>
 			</File>
@@ -304,6 +308,10 @@
 			</File>
 			<File
 				RelativePath="..\src\crm_math_exec.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\crm_neural_net.c"
 				>
 			</File>
 			<File
@@ -463,7 +471,15 @@
 			Name="Documentation"
 			>
 			<File
+				RelativePath="..\docs\classify_details.txt"
+				>
+			</File>
+			<File
 				RelativePath="..\src\COLOPHON.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\docs\COLOPHON.txt"
 				>
 			</File>
 			<File
@@ -471,11 +487,31 @@
 				>
 			</File>
 			<File
+				RelativePath="..\docs\CRM114_Mailfilter_HOWTO.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\docs\CRM114_Revealed_20061010.pdf"
+				>
+			</File>
+			<File
+				RelativePath="..\docs\crmpaper - CRM114 versus Mr.X.pdf"
+				>
+			</File>
+			<File
 				RelativePath="..\src\FAQ.txt"
 				>
 			</File>
 			<File
+				RelativePath="..\docs\FAQ.txt"
+				>
+			</File>
+			<File
 				RelativePath="..\src\GPL-License.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\docs\INTRO.txt"
 				>
 			</File>
 			<File
@@ -487,6 +523,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\docs\knownbugs.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\docs\QUICKREF.txt"
+				>
+			</File>
+			<File
 				RelativePath="..\src\QUICKREF.txt"
 				>
 			</File>
@@ -495,11 +539,31 @@
 				>
 			</File>
 			<File
+				RelativePath="..\docs\regex-submatch.pdf"
+				>
+			</File>
+			<File
+				RelativePath="..\docs\spire2000-tnfa.pdf"
+				>
+			</File>
+			<File
+				RelativePath="..\docs\spire2000-tnfa.ps"
+				>
+			</File>
+			<File
 				RelativePath="..\src\things_to_do.txt"
 				>
 			</File>
 			<File
+				RelativePath="..\docs\TR2004-091.pdf"
+				>
+			</File>
+			<File
 				RelativePath="..\src\VERSION.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\docs\winnow-spam.pdf"
 				>
 			</File>
 		</Filter>

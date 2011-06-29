@@ -5,11 +5,13 @@
 # under the terms of the GNU GPL.  See the file COPYING.
 #
 # Copyright (C) 2003, 2004 Joost van Baal
+# Copyright (C) 2007 Ger Hobbelt
+#
 # Process this file with autoconf to produce a configure script.
 
 
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT(CRM114, 20070815-BlameBadData, crm114-general@lists.sourceforge.net)
+AC_INIT(CRM114, 20070917-BlameGerHobbelt, crm114-general@lists.sourceforge.net)
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR(m4)
@@ -43,11 +45,6 @@ AC_DEFINE_UNQUOTED(TAR_FILENAME_POSTFIX, "$TAR_FILENAME_POSTFIX", [distribution 
 AC_SUBST(TAR_FILENAME_POSTFIX)
 
 
-# AC_DEFINE_UNQUOTED(SILENT, "@", [silent mode for make])
-SILENT="@"
-AC_SUBST(SILENT)
-
-
 
 
 AC_PREFIX_DEFAULT(/usr/local)
@@ -63,6 +60,119 @@ Copyright (C) Copyright 2001-2007  William S. Yerazunis
 
 AM_MAINTAINER_MODE
 
+# ##################################################################
+#
+# include/exclude specific sections of CRM114 (e.g. experimental classifiers)
+#
+#
+AC_ARG_ENABLE([experimental-classifiers],
+  AC_HELP_STRING([--disable-experimental-classifiers],
+    [do not include any experimental classifiers.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use these experimental classifiers.
+(default: experimental classifiers are ENABLED)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_EXPERIMENTAL_CLASSIFIERS, 1, [do not include experimental classifiers in the build])
+  )
+
+AC_ARG_ENABLE([OSB-Bayes],
+  AC_HELP_STRING([--disable-OSB-Bayes],
+    [do not include the OSB-Bayes classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: OSB-Bayes classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_BAYES, 1, [do not include the OSB-Bayes classifier in the build])
+  )
+AC_ARG_ENABLE([OSB-Winnow],
+  AC_HELP_STRING([--disable-OSB-Winnow],
+    [do not include the OSB-Winnow classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: OSB-Winnow classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_WINNOW, 1, [do not include the OSB-Winnow classifier in the build])
+  )
+AC_ARG_ENABLE([OSBF],
+  AC_HELP_STRING([--disable-OSBF],
+    [do not include the OSBF classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: OSBF classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSBF, 1, [do not include the OSBF classifier in the build])
+  )
+AC_ARG_ENABLE([OSB-Hyperspace],
+  AC_HELP_STRING([--disable-OSB-Hyperspace],
+    [do not include the OSB-Hyperspace classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: OSB-Hyperspace classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_OSB_HYPERSPACE, 1, [do not include the OSB-Hyperspace classifier in the build])
+  )
+AC_ARG_ENABLE([Correlate],
+  AC_HELP_STRING([--disable-Correlate],
+    [do not include the Correlate classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: Correlate classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_CORRELATE, 1, [do not include the Correlate classifier in the build])
+  )
+AC_ARG_ENABLE([Bit-Entropy],
+  AC_HELP_STRING([--disable-Bit-Entropy],
+    [do not include the Bit-Entropy classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: Bit-Entropy classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_BIT_ENTROPY, 1, [do not include the Bit-Entropy classifier in the build])
+  )
+AC_ARG_ENABLE([SVM],
+  AC_HELP_STRING([--disable-SVM],
+    [do not include the SVM classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: SVM classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_SVM, 1, [do not include the SVM classifier in the build])
+  )
+AC_ARG_ENABLE([SKS],
+  AC_HELP_STRING([--disable-SKS],
+    [do not include the SKS classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: SKS classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_SKS, 1, [do not include the SKS classifier in the build])
+  )
+AC_ARG_ENABLE([FSCM],
+  AC_HELP_STRING([--disable-FSCM],
+    [do not include the FSCM classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: FSCM classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_FSCM, 1, [do not include the FSCM classifier in the build])
+  )
+AC_ARG_ENABLE([SCM],
+  AC_HELP_STRING([--disable-SCM],
+    [do not include the SCM classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: SCM classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_SCM, 1, [do not include the SCM classifier in the build])
+  )
+AC_ARG_ENABLE([Neural-Net],
+  AC_HELP_STRING([--disable-Neural-Net],
+    [do not include the Neural-Net classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: Neural-Net classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_NEURAL_NET, 1, [do not include the Neural-Net classifier in the build])
+  )
+AC_ARG_ENABLE([Markov],
+  AC_HELP_STRING([--disable-Markov],
+    [do not include the Markov classifier.
+This will produce a smaller executable, which will report an error
+when your scripts attempt to use this classifier.
+(default: Markov classifier is build-in)]),
+  AC_DEFINE_UNQUOTED(CRM_WITHOUT_MARKOV, 1, [do not include the Markov classifier in the build])
+  )
+
+# ##################################################################
+#
 # Checks for programs.
 AC_PROG_CC(gcc egcs cl cc lcc)
 AC_GNU_SOURCE
@@ -146,6 +256,7 @@ within the CRM114 trap handler. Can't say you haven't been warned!
   AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 0, [TRAPPABLE(!) ASSERT/VERIFY checks - (this is dangerous!)]),
   AC_DEFINE_UNQUOTED(CRM_ASSERT_IS_UNTRAPPABLE, 1, [untrappable ASSERT/VERIFY checks])
   )
+
 
 
 
@@ -499,6 +610,12 @@ AC_DEFUN([AC_DEFINE_DIR], [
 ])
 AC_DEFINE_DIR([BIN_PATH], [bindir])
 # usage: set ``#! @BIN_PATH@/crm'' in top of foo.crm.in
+
+
+# AC_DEFINE_UNQUOTED(SILENT, "@", [silent mode for make])
+SILENT="@"
+AC_SUBST(SILENT)
+
 
 AC_SUBST(AM_CFLAGS)
 AC_SUBST(AM_CPPFLAGS)

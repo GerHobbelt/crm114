@@ -117,7 +117,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
                 rlen_temp   = regex_len;
                 cflags_temp = cflags;
                 status_temp = regex_cache[i].status;
-                found_it = i;
+                found_it = 1; /* [i_a] bugfix for special case where i == 0 here */
             }
         }
 #elif defined(REGEX_CACHE_RANDOM_ACCESS)
@@ -138,7 +138,7 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
             rlen_temp   = regex_len;
             cflags_temp = cflags;
             status_temp = regex_cache[i].status;
-            found_it = i;
+            found_it = 1; /* [i_a] bugfix for special case where i == 0 here */
         }
 #else
 #error "Must have #define'd ONE of these: REGEX_CACHE_RANDOM_ACCESS, REGEX_CACHE_LINEAR_SEARCH"
@@ -147,23 +147,25 @@ int crm_regcomp(regex_t *preg, char *regex, long regex_len, int cflags)
         //    note that on exit, i now is the index where we EITHER found
         //     the good data, or failed to do so, and found_it tells us which.
         //
-        if (!(found_it))
+        if (!found_it)
         {
             //  We didn't find it.  Do the compilation instead, putting
             //   the results into the _temp vars.
             if (internal_trace) fprintf(stderr, "couldn't find it\n");
             regex_temp = (char *)calloc((regex_len + 1), sizeof(regex_temp[0]));
             memcpy(regex_temp, regex, regex_len);
+            CRM_ASSERT(regex_temp[regex_len] == 0);
             rlen_temp = regex_len;
             cflags_temp = cflags;
             if (internal_trace)
                 fprintf(stderr, "Compiling %s (len %ld).\n", regex_temp, rlen_temp);
             ppreg_temp = (regex_t *)calloc(rtsize, sizeof(ppreg_temp[0]));
             if (ppreg_temp == NULL)
+			{
                 fatalerror("Unable to allocate a pattern register buffer header.  ",
                            "This is hopeless.  ");
-            status_temp =
-                regncomp(ppreg_temp, regex_temp, rlen_temp, cflags_temp);
+			}
+			status_temp = regncomp(ppreg_temp, regex_temp, rlen_temp, cflags_temp);
 
             //  We will always stuff the _temps in at 0
             //   and pretend that this was at the last index, so it
@@ -309,7 +311,7 @@ int crm_regexec(regex_t *preg, char *string, long string_len,
         //  now we can run the actual match
         i = reganexec(preg, string, string_len, &mblock, pblock, eflags);
         if (user_trace)
-            fprintf(stderr, "approximate Regex match returned %d .\n", i);
+            fprintf(stderr, "approximate Regex match returned %d.\n", i);
         return i;
     }
 }

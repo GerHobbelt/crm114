@@ -338,7 +338,7 @@ long crm_zexpandvar(char *buf,
         inlen = id - 1;
 
         if (internal_trace)
-            fprintf(stderr, "backslash expansion yields: =%s= len %ld \n", buf, inlen);
+            fprintf(stderr, "backslash expansion yields: =%s= len %ld\n", buf, inlen);
     }
     //    END OF ANSI \-EXPANSIONS
 

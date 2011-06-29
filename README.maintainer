@@ -41,6 +41,8 @@ to see the available distro packaging methods):
         make dist-bzip2
         make dist-all
         make dist-7z
+        make distribution
+
 
 
 
@@ -102,7 +104,7 @@ as obtained through 'cvs checkout'):
 - Big Bang: checkin all changed files in the current directory (NO
   recursion!):
 
-   cvs -d:ext:i_a@crm114.cvs.sourceforge.net:/cvsroot/crm114 -z3 ci -F ../../cvs-entry.txt ` find -maxdepth 1 -type f `
+  cvs -d:ext:i_a@crm114.cvs.sourceforge.net:/cvsroot/crm114 -z3 ci -F ../../cvs-entry.txt ` find -maxdepth 1 -type f `
 
 
 

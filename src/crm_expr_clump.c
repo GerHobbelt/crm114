@@ -1,20 +1,20 @@
 //  crm_expr_clump.c
 
 //  by Joe Langeway derived from crm_bit_entropy.c and produced for the crm114 so:
-//  
+//
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
 //  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
+//  www.fsf.org, and a copy is included in this distribution.
 //
-//  Other licenses may be negotiated; contact Bill for details.  
+//  Other licenses may be negotiated; contact Bill for details.
 //
 /////////////////////////////////////////////////////////////////////
 //
 //     crm_expr_clump.c - automatically cluster unlabelled documents.
-//    
+//
 //     Original spec by Bill Yerazunis, original code by Joe Langeway,
-//     recode for CRM114 use by Bill Yerazunis. 
+//     recode for CRM114 use by Bill Yerazunis.
 //
 //     This code section (crm_expr_clump and subsidiary routines) is
 //     dual-licensed to both William S. Yerazunis and Joe Langeway,
@@ -25,22 +25,22 @@
 //////////////////////////////////////////////////////////////////////
 
 /*
-  This file is part of on going research and should not be considered
-  a finished product, a reliable tool, an example of good software
-  engineering, or a reflection of any quality of Joe's besides his
-  tendancy towards long hours. 
-  
-  
-  Here's what's going on:
-
-  Documents are fed in with calls to "clump" and the distance between each
-  document is recorded in a matrix. We then find clusters for automatic 
-  classification without the need for a gold standard judgement ahead of time.
-
-  Cluster assignments start at index 1 and negative numbers indicate perma
-assignments made by crm.
-
-*/
+ * This file is part of on going research and should not be considered
+ * a finished product, a reliable tool, an example of good software
+ * engineering, or a reflection of any quality of Joe's besides his
+ * tendancy towards long hours.
+ *
+ *
+ * Here's what's going on:
+ *
+ * Documents are fed in with calls to "clump" and the distance between each
+ * document is recorded in a matrix. We then find clusters for automatic
+ * classification without the need for a gold standard judgement ahead of time.
+ *
+ * Cluster assignments start at index 1 and negative numbers indicate perma
+ * assignments made by crm.
+ *
+ */
 
 //  include some standard files
 #include "crm114_sysincludes.h"
@@ -54,19 +54,8 @@ assignments made by crm.
 //  and include the routine declarations file
 #include "crm114.h"
 
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
 
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
 
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-// do not mut these or random binary shall be shat upon thee
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
 
 #define MAX_CLUSTERS 4096
 #define CLUSTER_LABEL_LEN 32
@@ -74,252 +63,315 @@ extern char *tempbuf;
 
 typedef struct mythical_clumper_header
 {
-  long max_documents, n_documents;
-  long document_offsets_offset;//list of offsets to documents
-  long clusters_offset; //cluster assignments of documents
-  long distance_matrix_offset;
-  long cluster_labels_offset;
-  long document_tags_offset;
-  long n_perma_clusters;
-  long file_length; //is the offset of new files when learning
-  long last_action; //0 = made clumps, non-zero means make clumps if you've got
-                        // a chance and we're told not to
-  long n_clusters;
+  int32_t max_documents;
+  int32_t n_documents;
+  int32_t document_offsets_offset;   //list of offsets to documents
+  int32_t clusters_offset;           //cluster assignments of documents
+  int32_t distance_matrix_offset;
+  int32_t cluster_labels_offset;
+  int32_t document_tags_offset;
+  int32_t n_perma_clusters;
+  int32_t file_length;   //is the offset of new files when learning
+  int32_t last_action;   //0 = made clumps, non-zero means make clumps if you've got
+  // a chance and we're told not to
+  int32_t n_clusters;
 } CLUMPER_HEADER_STRUCT;
 
 typedef struct mythical_clumper_state
 {
-  char *file_origin;
+  char                  *file_origin;
   CLUMPER_HEADER_STRUCT *header;
-  long *document_offsets;
-  long *cluster_assignments;
-  float *distance_matrix;
+  int32_t               *document_offsets;
+  int32_t               *cluster_assignments;
+  float                 *distance_matrix;
   char (*cluster_labels)[CLUSTER_LABEL_LEN];
   char (*document_tags)[DOCUMENT_TAG_LEN];
 } CLUMPER_STATE_STRUCT;
 
-// tracing for this module
-int joe_trace = 0;
+// long max_documents = 1000;
 
-long max_documents = 1000;
-
-static void make_new_clumper_backing_file(char *filename)
+static int make_new_clumper_backing_file(char *filename, int max_docs)
 {
-  CLUMPER_HEADER_STRUCT H, *h = &H;
+  CLUMPER_HEADER_STRUCT h = {0};
   FILE *f;
   long i;
-  h->max_documents = max_documents;
-  h->n_documents = 0;
-  h->document_offsets_offset = sizeof(CLUMPER_HEADER_STRUCT);
-  h->clusters_offset = h->document_offsets_offset +
-                          sizeof(long) * max_documents;
-  h->distance_matrix_offset = h->clusters_offset +
-                          sizeof(long) * max_documents;
-  h->cluster_labels_offset = h->distance_matrix_offset + ( sizeof(float) *
-               max_documents * (max_documents + 1) / 2);
-  h->document_tags_offset = h->cluster_labels_offset + 
-                           ( sizeof(char) * max_documents * CLUSTER_LABEL_LEN);
-  h->file_length = h->document_tags_offset + 
-                           ( sizeof(char) * max_documents * DOCUMENT_TAG_LEN);
-  h->n_perma_clusters = 0;
-  h->n_clusters = 0;
+
+  h.max_documents = max_docs;
+  h.n_documents = 0;
+  h.document_offsets_offset = sizeof(CLUMPER_HEADER_STRUCT);
+  h.clusters_offset = h.document_offsets_offset +
+                      sizeof(int32_t) * h.max_documents;
+  h.distance_matrix_offset = h.clusters_offset +
+                             sizeof(int32_t) * h.max_documents;
+  h.cluster_labels_offset = h.distance_matrix_offset +
+                            (sizeof(float) * h.max_documents * (h.max_documents + 1) / 2);
+  h.document_tags_offset = h.cluster_labels_offset +
+                           (sizeof(char) * h.max_documents * CLUSTER_LABEL_LEN);
+  h.file_length = h.document_tags_offset +
+                  (sizeof(char) * h.max_documents * DOCUMENT_TAG_LEN);
+  h.n_perma_clusters = 0;
+  h.n_clusters = 0;
   crm_force_munmap_filename(filename);
   f = fopen(filename, "wb");
-  fwrite(h, 1, sizeof(CLUMPER_HEADER_STRUCT), f);
-  i = h->file_length - sizeof(CLUMPER_HEADER_STRUCT);
-  if(joe_trace)
+  if (!f)
+  {
+    int fev = fatalerror_ex(SRC_LOC(),
+                            "\n Couldn't open your clumper backing file %s for writing; errno=%d(%s)\n",
+                            filename,
+                            errno,
+                            errno_descr(errno));
+    return 0;
+  }
+  if (1 != fwrite(&h, sizeof(h), 1, f))
+  {
+    int fev = fatalerror_ex(SRC_LOC(),
+                            "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                            filename, errno, errno_descr(errno));
+    fclose(f);
+    return 0;
+  }
+  i = h.file_length - sizeof(h);
+  if (internal_trace)
+  {
     fprintf(stderr, "about to write %ld zeros to backing file\n", i);
-  while(i--)
-    fputc('\0', f);
-  fflush(f);
+  }
+  if (file_memset(f, 0, i))
+  {
+    int fev = fatalerror_ex(SRC_LOC(),
+                            "\n Couldn't write filler to file %s; errno=%d(%s)\n",
+                            filename, errno, errno_descr(errno));
+    fclose(f);
+    return 0;
+  }
   fclose(f);
-  if(joe_trace)
-    fprintf(stderr, "Just wrote backing file for clumper size %ld\n",
-        h->file_length);
+  if (internal_trace)
+  {
+    fprintf(stderr, "Just wrote backing file for clumper size %ld\n", (long)h.file_length);
+  }
+  return 1;
 }
 
 static int map_file(CLUMPER_STATE_STRUCT *s, char *filename)
 {
-  struct stat statee; 
-  if(stat(filename, &statee))
+  struct stat statee;
+
+  memset(s, 0, sizeof(s));
+
+  if (stat(filename, &statee))
   {
     nonfatalerror("Couldn't stat file!", filename);
     return -1;
   }
- 
+
   s->file_origin = crm_mmap_file
-            (filename,
-             0, statee.st_size,
-             PROT_READ | PROT_WRITE,
-             MAP_SHARED,
-             NULL);
-  if(s->file_origin == MAP_FAILED)
+                   (filename,
+                    0, statee.st_size,
+                    PROT_READ | PROT_WRITE,
+                    MAP_SHARED,
+                    NULL);
+  if (s->file_origin == MAP_FAILED)
   {
     nonfatalerror("Couldn't mmap file!", filename);
     return -1;
   }
-  if(joe_trace)
-    fprintf(stderr,"Definately think I've mapped a file.\n");
-  
+  if (internal_trace)
+    fprintf(stderr, "Definitely think I've mapped a file.\n");
+
   s->header = (CLUMPER_HEADER_STRUCT *)(s->file_origin);
   s->document_offsets =
-      (void *)( s->file_origin + s->header->document_offsets_offset );
+    (void *)(s->file_origin + s->header->document_offsets_offset);
   s->cluster_assignments =
-      (void *)( s->file_origin + s->header->clusters_offset );
+    (void *)(s->file_origin + s->header->clusters_offset);
   s->distance_matrix =
-      (void *)( s->file_origin + s->header->distance_matrix_offset );
-  s->cluster_labels = 
-      (void *)( s->file_origin + s->header->cluster_labels_offset );
+    (void *)(s->file_origin + s->header->distance_matrix_offset);
+  s->cluster_labels =
+    (void *)(s->file_origin + s->header->cluster_labels_offset);
   s->document_tags =
-      (void *)( s->file_origin + s->header->document_tags_offset );
+    (void *)(s->file_origin + s->header->document_tags_offset);
   return 0;
 }
 
 static void unmap_file(CLUMPER_STATE_STRUCT *s)
 {
-  crm_munmap_file ((void *) s->file_origin);
+  crm_munmap_file((void *)s->file_origin);
 }
 
 static float *aref_dist_mat(float *m, int j, int i)
 {
-  if(i < j) {int t = i; i = j; j = t;}
+  if (i < j)
+  {
+    int t = i;
+    i = j;
+    j = t;
+  }
   return m + i * (i - 1) / 2 + j;
 }
 
-static float get_document_affinity(long *doc1, long *doc2)
+static float get_document_affinity(crmhash_t *doc1, crmhash_t *doc2)
 {
   int u = 0, l1 = 0, l2 = 0;
-  for(;;)
-    if(doc1[l1] == 0)
+
+  for (;;)
+  {
+    if (doc1[l1] == 0)
     {
-        while(doc2[l2] != 0) l2++;
-        break;
-    }
-    else if(doc2[l2] == 0)
-    {
-        while(doc1[l1] != 0) l1++;
-        break;
-    }
-    else if(doc1[l1] == doc2[l2])
-    {
-      u++; l1++; l2++;
-    }
-    else if(doc1[l1] < doc2[l2])
-        l1++;
-    else if(doc1[l1] > doc2[l2])
+      while (doc2[l2] != 0)
         l2++;
-    else
-    {
-      fprintf(stderr, "panic in the disco!  ");
       break;
     }
-  if(joe_trace)
-        fprintf(stderr, "Just compared two documents u=%d l1=%d l2=%d\n",
-                 u, l1, l2);
-  return pow((double)(1.0 + u * u) / (double)(1.0 + l1 * l2), 0.2);
+    else if (doc2[l2] == 0)
+    {
+      while (doc1[l1] != 0)
+        l1++;
+      break;
+    }
+    else if (doc1[l1] == doc2[l2])
+    {
+      u++;
+      l1++;
+      l2++;
+    }
+    else if (doc1[l1] < doc2[l2])
+    {
+      l1++;
+    }
+    else if (doc1[l1] > doc2[l2])
+    {
+      l2++;
+    }
+    else
+    {
+      fprintf(stderr, "panic in the disco!\n");
+      break;
+    }
+  }
+  if (internal_trace)
+  {
+    fprintf(stderr, "Just compared two documents u=%d l1=%d l2=%d\n", u, l1, l2);
+  }
+  return pow((1.0 + u * u) / (1.0 + l1 * l2), 0.2);
 }
 
-static int compare_longs(const void *a, const void *b)
+static int compare_features(const void *a, const void *b)
 {
-  if(*(long *)a < *(long *)b)
+  if (*(crmhash_t *)a < *(crmhash_t *)b)
     return -1;
-  if(*(long *)a > *(long *)b)
+
+  if (*(crmhash_t *)a > *(crmhash_t *)b)
     return 1;
+
   return 0;
 }
 
-static int eat_document
-        (       char *text, long text_len, long *ate,
-                regex_t *regee,
-                long *feature_space, long max_features,
-                long long flags)
+static int eat_document(ARGPARSE_BLOCK *apb,
+                        char *text, long text_len, long *ate,
+                        regex_t *regee,
+                        crmhash_t *feature_space, long max_features,
+                        uint64_t flags)
 {
-  long n_features = 0, i, j;
-  long hash_pipe[OSB_BAYES_WINDOW_LEN];
-  long hash_coefs[] = { 1, 3, 5, 11, 23, 47};
+  int n_features = 0;
+  int i, j;
+  crmhash_t hash_pipe[OSB_BAYES_WINDOW_LEN];
+  crmhash_t hash_coefs[] = { 1, 3, 5, 11, 23, 47 };
   regmatch_t match[1];
   char *t_start;
   long t_len;
-  long f;
   int unigram, unique, string;
-   
-  unique = apb->sflags & CRM_UNIQUE;
-  unigram = apb->sflags & CRM_UNIGRAM;
-  string = apb->sflags & CRM_STRING;
-  
-  if(string)
+
+  unique = !!(apb->sflags & CRM_UNIQUE);
+  unigram = !!(apb->sflags & CRM_UNIGRAM);
+  string = !!(apb->sflags & CRM_STRING);
+
+  if (string)
     unique = 1;
-  
+
   *ate = 0;
-  
-  for(i = 0; i < OSB_BAYES_WINDOW_LEN; i++)
+
+  for (i = 0; i < OSB_BAYES_WINDOW_LEN; i++)
     hash_pipe[i] = 0xdeadbeef;
-  while(text_len > 0 && n_features < max_features - 1)
+  while (text_len > 0 && n_features < max_features - 1)
   {
-    if(crm_regexec (regee, text, text_len, 1, match, 0, NULL))
-      //no match or regex error, we're done
+    if (crm_regexec(regee, text, text_len, 1, match, 0, NULL))
+    {
+      // no match or regex error, we're done
       break;
+    }
     else
     {
       t_start = text + match->rm_so;
       t_len = match->rm_eo - match->rm_so;
-      if(string)
+      if (string)
       {
         text += match->rm_so + 1;
         text_len -= match->rm_so + 1;
         *ate += match->rm_so + 1;
-      }else
+      }
+      else
       {
         text += match->rm_eo;
         text_len -= match->rm_eo;
         *ate += match->rm_eo;
       }
 
-      for(i = OSB_BAYES_WINDOW_LEN - 1; i > 0; i--)
+      for (i = OSB_BAYES_WINDOW_LEN - 1; i > 0; i--)
         hash_pipe[i] = hash_pipe[i - 1];
       hash_pipe[0] = strnhash(t_start, t_len);
-    }  
-    f = 0;
-    if(unigram)
+    }
+    if (unigram)
+    {
       feature_space[n_features++] = hash_pipe[0];
+    }
     else
-      for(i = 1; i < OSB_BAYES_WINDOW_LEN && hash_pipe[i] != 0xdeadbeef; i++)
-        feature_space[n_features++] = 
-                hash_pipe[0] + hash_pipe[i] * hash_coefs[i];
-
+    {
+      for (i = 1; i < OSB_BAYES_WINDOW_LEN && hash_pipe[i] != 0xdeadbeef && n_features < max_features - 1; i++)
+      {
+        feature_space[n_features++] =
+          hash_pipe[0] + hash_pipe[i] * hash_coefs[i];
+      }
+    }
   }
-  qsort(feature_space, n_features, sizeof(long), compare_longs);
-  
-  if(unique)
+  qsort(feature_space, n_features, sizeof(feature_space[0]), compare_features);
+
+  if (unique)
   {
-    i = 0; j = 0;
-    for(j = 0; j < n_features; j++)
-      if(feature_space[i] != feature_space[j])
+    i = 0;
+    j = 0;
+    for (j = 0; j < n_features; j++)
+    {
+      if (feature_space[i] != feature_space[j])
         feature_space[++i] = feature_space[j];
-  feature_space[++i] = 0;
-  n_features = i + 1; //the zero counts
-  } else
+    }
+    feature_space[++i] = 0;
+    n_features = i + 1;     //the zero counts
+  }
+  else
+  {
     feature_space[n_features++] = 0;
+  }
   return n_features;
 }
 
 
-static long find_closest_document
-          (CLUMPER_STATE_STRUCT *s,
-          char *text, long text_len,
-          regex_t *regee,
-         long long flags)
+static long find_closest_document(ARGPARSE_BLOCK *apb,
+                                  CLUMPER_STATE_STRUCT *s,
+                                  char *text, long text_len,
+                                  regex_t *regee,
+                                  uint64_t flags)
 {
-  long feature_space[32768], n, i, b = -1;
-  float b_s = 0.0, n_s;
-  n = eat_document(text, text_len, &i,
-                    regee, feature_space, 32768,
-                    flags);
-  for(i = 0; i < s->header->n_documents; i++)
+  crmhash_t feature_space[32768];
+  long n, i;
+  long b = -1;
+  float b_s = 0.0;
+  float n_s;
+
+  n = eat_document(apb,
+                   text, text_len, &i,
+                   regee, feature_space, WIDTHOF(feature_space),
+                   flags);
+  for (i = 0; i < s->header->n_documents; i++)
   {
-    n_s = get_document_affinity
-           (feature_space, (long *)(s->file_origin + s->document_offsets[i]));
-    if(n_s > b_s)
+    n_s = get_document_affinity(feature_space, (crmhash_t *)(s->file_origin + s->document_offsets[i]));
+    if (n_s > b_s)
     {
       b = i;
       b_s = n_s;
@@ -330,44 +382,64 @@ static long find_closest_document
 
 typedef struct mythical_cluster_head
 {
-  struct mythical_cluster_head *head, *next_head, *prev_head, *next;
-  long count;
+  struct mythical_cluster_head *head;
+  struct mythical_cluster_head *next_head;
+  struct mythical_cluster_head *prev_head;
+  struct mythical_cluster_head *next;
+  int32_t count;
 } CLUSTER_HEAD_STRUCT;
 
 static void join_clusters(CLUSTER_HEAD_STRUCT *a, CLUSTER_HEAD_STRUCT *b)
 {
-  if(joe_trace)
+  if (internal_trace)
+  {
     fprintf(stderr, "Joining clusters of sizes %ld and %ld\n,",
-        a->head->count, b->head->count);
-  
-  while(a->next) a = a->next;
+            (long)a->head->count, (long)b->head->count);
+  }
+
+  while (a->next)
+    a = a->next;
   b = b->head;
   a->next = b;
   a->head->count += b->count;
-  b->count = 0; //though we wont actually touch this value anymore
-  if(b->prev_head)
+  b->count = 0;   // though we wont actually touch this value anymore
+  if (b->prev_head)
     b->prev_head->next_head = b->next_head;
-  if(b->next_head)
+  if (b->next_head)
     b->next_head->prev_head = b->prev_head;
   b->next_head = NULL;
   b->prev_head = NULL;
   do
+  {
     b->head = a->head;
-  while( (b = b->next) );
+  } while ((b = b->next));
 }
 
 static void agglomerative_averaging_cluster(CLUMPER_STATE_STRUCT *s, long goal)
 {
-  long i, j, k, l, n = s->header->n_documents;
-  CLUSTER_HEAD_STRUCT *clusters = malloc(n * sizeof(CLUSTER_HEAD_STRUCT)),
-                        *a, *b, *c, first_head_ptr;
-  float *M = malloc( (n * (n + 1) / 2 - 1) * sizeof(float)), d, e;
+  long i, j, k, l;
+  long n = s->header->n_documents;
+  CLUSTER_HEAD_STRUCT *clusters = calloc(n, sizeof(clusters[0]));
+  CLUSTER_HEAD_STRUCT *a, *b, *c;
+  CLUSTER_HEAD_STRUCT first_head_ptr = {0};
+  int m_size = (n * (n + 1) / 2 - 1);
+  float *M = calloc(m_size, sizeof(M[0]));
+  float d, e;
   long ck, cl, ckl;
 
-  if(joe_trace)
+  if (internal_trace)
     fprintf(stderr, "agglomerative averaging clustering...\n");
-  
-  for(i = 1; i < s->header->n_documents - 1; i++)
+
+  if (!clusters)
+  {
+    untrappableerror("Cannot allocate cluster block", "");
+  }
+  if (!M)
+  {
+    untrappableerror("Cannot allocate distance matrix M[]", "");
+  }
+
+  for (i = 1; i < n - 1; i++)
   {
     clusters[i].head = &clusters[i];
     clusters[i].prev_head = &clusters[i - 1];
@@ -380,69 +452,78 @@ static void agglomerative_averaging_cluster(CLUMPER_STATE_STRUCT *s, long goal)
   clusters[0].next_head = &clusters[1];
   clusters[0].next = NULL;
   clusters[0].count = 1;
-  if(s->header->n_documents > 1) //don't muck the first one!
+  if (n > 1)   //don't muck the first one!
   {
-    clusters[s->header->n_documents-1].head = 
-                                &clusters[s->header->n_documents - 1];
-    clusters[s->header->n_documents - 1].prev_head =
-                                &clusters[s->header->n_documents - 2];
-    clusters[s->header->n_documents - 1].next = NULL;
-    clusters[s->header->n_documents - 1].count = 1;
+    clusters[n - 1].head = &clusters[n - 1];
+    clusters[n - 1].prev_head = &clusters[n - 2];
+    clusters[n - 1].next = NULL;
+    clusters[n - 1].count = 1;
   }
   //always make sure the chain ends
-  clusters[s->header->n_documents - 1].next_head = NULL;
-  
+  clusters[n - 1].next_head = NULL;
+
   first_head_ptr.next_head = &clusters[0];
 
-  j = (n * (n + 1) / 2 - 1);
-  for(i = 0; i < j; i++)
+  for (i = 0; i < m_size; i++)
     M[i] = s->distance_matrix[i];
 
-  for(a = first_head_ptr.next_head; a; a = a->next_head)
-    if(s->cluster_assignments[a - clusters] < 0)
-      for(b = a->next_head; b; b = b->next_head)
-        if(s->cluster_assignments[a - clusters]
-            == s->cluster_assignments[b - clusters])
+  for (a = first_head_ptr.next_head; a; a = a->next_head)
+  {
+    if (s->cluster_assignments[a - clusters] < 0)
+    {
+      for (b = a->next_head; b; b = b->next_head)
+      {
+        if (s->cluster_assignments[a - clusters] == s->cluster_assignments[b - clusters])
         {
           k = a - clusters;
           l = b - clusters;
           ck = clusters[k].count;
           cl = clusters[l].count;
           ckl = ck + cl;
-      
-          for(c = &clusters[0]; c; c = c->next_head)
+
+          for (c = &clusters[0]; c; c = c->next_head)
           {
+            float *m_k_i;
+            float *m_l_i;
+
             i = c - clusters;
-            if(i == k || i == l)
+            if (i == k || i == l)
               continue;
-            *aref_dist_mat(M, k, i) = (ck * *aref_dist_mat(M, k, i) +
-                                      cl * *aref_dist_mat(M, l, i) ) / ckl;
-            *aref_dist_mat(M, l, i) = 0.0;
+            m_k_i = aref_dist_mat(M, k, i);
+            m_l_i = aref_dist_mat(M, l, i);
+            m_k_i[0] = (ck * m_k_i[0] + cl * m_l_i[0]) / ckl;
+            m_l_i[0] = 0.0;
           }
           join_clusters(&clusters[k], &clusters[l]);
           n--;
         }
-    
-  while(n > goal)
+      }
+    }
+  }
+
+  while (n > goal)
   {
-    l = 0; k = 0;
+    l = 0;
+    k = 0;
     d = -1.0;
-    for(a = first_head_ptr.next_head; a; a = a->next_head)
-      for(b = a->next_head; b; b = b->next_head)
+    for (a = first_head_ptr.next_head; a; a = a->next_head)
+    {
+      for (b = a->next_head; b; b = b->next_head)
       {
         i = a - clusters;
         j = b - clusters;
-        if(s->cluster_assignments[i] < 0 && s->cluster_assignments[j] < 0)
+        if (s->cluster_assignments[i] < 0 && s->cluster_assignments[j] < 0)
           e = *aref_dist_mat(M, i, j) = -1000000000.0;
         else
           e = *aref_dist_mat(M, i, j);
-        if( e > d )
+        if (e > d)
         {
-          if(s->cluster_assignments[j] < 0)
+          if (s->cluster_assignments[j] < 0)
           {
             k = j;
             l = i;
-          } else
+          }
+          else
           {
             k = i;
             l = j;
@@ -450,7 +531,8 @@ static void agglomerative_averaging_cluster(CLUMPER_STATE_STRUCT *s, long goal)
           d = e;
         }
       }
-    if(l == 0 && k == 0)
+    }
+    if (l == 0 && k == 0)
     {
       fprintf(stderr, "CLUMP FAILED TO JOIN ENOUGH CLUMPS!\n");
       break;
@@ -459,63 +541,84 @@ static void agglomerative_averaging_cluster(CLUMPER_STATE_STRUCT *s, long goal)
     cl = clusters[l].count;
     ckl = ck + cl;
 
-    for(a = &clusters[0]; a; a = a->next_head)
+    for (a = &clusters[0]; a; a = a->next_head)
     {
+      float *m_k_i;
+      float *m_l_i;
+
       i = a - clusters;
-      if(i == k || i == l)
+      if (i == k || i == l)
         continue;
-      *aref_dist_mat(M, k, i) = (ck * *aref_dist_mat(M, k, i) +
-                                 cl * *aref_dist_mat(M, l, i) ) / ckl;
-      *aref_dist_mat(M, l, i) = 0.0;
+      m_k_i = aref_dist_mat(M, k, i);
+      m_l_i = aref_dist_mat(M, l, i);
+      m_k_i[0] = (ck * m_k_i[0] + cl * m_l_i[0]) / ckl;
+      m_l_i[0] = 0.0;
     }
     join_clusters(&clusters[k], &clusters[l]);
     n--;
   }
 
   i = s->header->n_perma_clusters + 1;
-  for(a = &clusters[0]; a; a = a->next_head)
+  for (a = &clusters[0]; a; a = a->next_head)
   {
-    if(s->cluster_assignments[a - clusters] < 0)
+    if (s->cluster_assignments[a - clusters] < 0)
       j = -s->cluster_assignments[a - clusters];
     else
       j = i++;
-    for(b = a; b; b = b->next)
+    for (b = a; b; b = b->next)
       s->cluster_assignments[b - clusters] = j;
   }
-  
+
   s->header->n_clusters = n;
   free(M);
+  free(clusters);
 }
 
 static void index_to_pair(long t, long *i, long *j)
 {
   long p = 2 * t;
+
   *i = (long)sqrt(p);
-  if(*i * *i + *i > p)
+  if (*i * *i + *i > p)
     (*i)--;
   *j = t - (*i * (*i + 1) / 2);
 }
 
 static int compare_float_ptrs(const void *a, const void *b)
 {
-  if(**(float **)a > **(float **)b)
+  if (**(float **)a > **(float **)b)
     return 1;
-  if(**(float **)a < **(float **)b)
+
+  if (**(float **)a < **(float **)b)
     return -1;
+
   return 0;
 }
 
 static void agglomerative_nearest_cluster(CLUMPER_STATE_STRUCT *s, long goal)
 {
-  long i, j, k, l, m, n = s->header->n_documents;
-  CLUSTER_HEAD_STRUCT *clusters = malloc(n * sizeof(CLUSTER_HEAD_STRUCT)),
-                        *a, *b, first_head_ptr;
-  float **M = malloc( (n * (n + 1) / 2 - 1) * sizeof(float *));
+  long i, j, k, l, m;
+  long n = s->header->n_documents;
+  CLUSTER_HEAD_STRUCT *clusters = calloc(n, sizeof(clusters[0]));
+  CLUSTER_HEAD_STRUCT *a, *b;
+  CLUSTER_HEAD_STRUCT first_head_ptr = {0};
+  int m_size = (n * (n + 1) / 2 - 1);
+  float **M = calloc(m_size, sizeof(M[0]));
 
-  if(joe_trace)
+  if (internal_trace)
     fprintf(stderr, "agglomerative nearest clustering...\n");
-  
-  for(i = 1; i < s->header->n_documents - 1; i++)
+
+
+  if (!clusters)
+  {
+    untrappableerror("Cannot allocate cluster block", "");
+  }
+  if (!M)
+  {
+    untrappableerror("Cannot allocate distance matrix M[]", "");
+  }
+
+  for (i = 1; i < n - 1; i++)
   {
     clusters[i].head = &clusters[i];
     clusters[i].prev_head = &clusters[i - 1];
@@ -528,81 +631,109 @@ static void agglomerative_nearest_cluster(CLUMPER_STATE_STRUCT *s, long goal)
   clusters[0].next_head = &clusters[1];
   clusters[0].next = NULL;
   clusters[0].count = 1;
-  if(s->header->n_documents > 1) //don't muck the first one!
+  if (n > 1)   //don't muck the first one!
   {
-    clusters[s->header->n_documents - 1].head = 
-                                &clusters[s->header->n_documents - 1];
-    clusters[s->header->n_documents - 1].prev_head =
-                                &clusters[s->header->n_documents - 2];
-    clusters[s->header->n_documents - 1].next = NULL;
-    clusters[s->header->n_documents - 1].count = 1;
+    clusters[n - 1].head = &clusters[n - 1];
+    clusters[n - 1].prev_head = &clusters[n - 2];
+    clusters[n - 1].next = NULL;
+    clusters[n - 1].count = 1;
   }
   //always make sure the chain ends
-  clusters[s->header->n_documents - 1].next_head = NULL;
-  
+  clusters[n - 1].next_head = NULL;
+
   first_head_ptr.next_head = &clusters[0];
 
-  j = (n * (n + 1) / 2 - 1);
-  for(i = 0; i < j; i++)
+  for (i = 0; i < m_size; i++)
     M[i] = &s->distance_matrix[i];
-  qsort(M, j, sizeof(float *), compare_float_ptrs);
-  
-  for(a = first_head_ptr.next_head; a; a = a->next_head)
-    if(s->cluster_assignments[a - clusters] < 0)
-      for(b = a->next_head; b; b = b->next_head)
-        if(s->cluster_assignments[a - clusters]
-            == s->cluster_assignments[b - clusters])
+  qsort(M, m_size, sizeof(M[0]), compare_float_ptrs);
+
+  for (a = first_head_ptr.next_head; a; a = a->next_head)
+  {
+    if (s->cluster_assignments[a - clusters] < 0)
+    {
+      for (b = a->next_head; b; b = b->next_head)
+      {
+        if (s->cluster_assignments[a - clusters] == s->cluster_assignments[b - clusters])
         {
           k = a - clusters;
           l = b - clusters;
           join_clusters(&clusters[k], &clusters[l]);
           n--;
         }
-  i = j;  
-  while(n > goal)
+      }
+    }
+  }
+  i = m_size;
+  while (n > goal)
   {
     do
     {
       k = M[--i] - s->distance_matrix;
       index_to_pair(k, &l, &m);
-    } while(clusters[m].head == clusters[l].head);
-    
+    } while (clusters[m].head == clusters[l].head);
+
     join_clusters(&clusters[m], &clusters[l]);
     n--;
   }
 
   i = s->header->n_perma_clusters + 1;
-  for(a = &clusters[0]; a; a = a->next_head)
+  for (a = &clusters[0]; a; a = a->next_head)
   {
-    if(s->cluster_assignments[a - clusters] < 0)
+    if (s->cluster_assignments[a - clusters] < 0)
+    {
       j = -s->cluster_assignments[a - clusters];
+    }
     else
+    {
       j = i++;
-    for(b = a; b; b = b->next)
+    }
+    for (b = a; b; b = b->next)
+    {
       s->cluster_assignments[b - clusters] = j;
+    }
   }
-  free(M);
   s->header->n_clusters = n;
+  free(M);
+  free(clusters);
 }
 
-double square(double a) {return a * a;}
-double minf(double a, double b) {return a < b ? a : b;}
+double square(double a)
+{
+  return a * a;
+}
 
 #define H_BUCKETS 50
+
 static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
 {
-  long i, j, k, l, ck, cl, ckl, n = s->header->n_documents;
-  CLUSTER_HEAD_STRUCT *clusters = malloc(n * sizeof(CLUSTER_HEAD_STRUCT)),
-                        *a, *b, *c, first_head_ptr;
-  long H[H_BUCKETS], C[H_BUCKETS];
-  float A[H_BUCKETS], t_A, t, t_score, scoro,gM;
+  long i, j, k, l, ck, cl, ckl;
+  long n = s->header->n_documents;
+  CLUSTER_HEAD_STRUCT *clusters = calloc(n, sizeof(clusters[0]));
+  CLUSTER_HEAD_STRUCT *a, *b, *c;
+  CLUSTER_HEAD_STRUCT first_head_ptr = {0};
+  long H[H_BUCKETS];
+  long C[H_BUCKETS];
+  float A[H_BUCKETS];
+  float t_A, t, t_score, scoro, gM;
   float min, max, scale;
-  float *M = malloc( (n * (n + 1) / 2 - 1) * sizeof(float)), d, e;
+  int m_size = (n * (n + 1) / 2 - 1);
+  float *M = calloc(m_size, sizeof(M[0]));
+  float d, e;
 
-  if(joe_trace)
+  if (internal_trace)
     fprintf(stderr, "threshold average clustering...\n");
 
-  for(i = 1; i < s->header->n_documents - 1; i++)
+
+  if (!clusters)
+  {
+    untrappableerror("Cannot allocate cluster block", "");
+  }
+  if (!M)
+  {
+    untrappableerror("Cannot allocate distance matrix M[]", "");
+  }
+
+  for (i = 1; i < n - 1; i++)
   {
     clusters[i].head = &clusters[i];
     clusters[i].prev_head = &clusters[i - 1];
@@ -615,125 +746,147 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
   clusters[0].next_head = &clusters[1];
   clusters[0].next = NULL;
   clusters[0].count = 1;
-  if(s->header->n_documents > 1) //don't muck the first one!
+  if (n > 1)   //don't muck the first one!
   {
-    clusters[s->header->n_documents-1].head = 
-                                &clusters[s->header->n_documents - 1];
-    clusters[s->header->n_documents - 1].prev_head =
-                                &clusters[s->header->n_documents - 2];
-    clusters[s->header->n_documents - 1].next = NULL;
-    clusters[s->header->n_documents - 1].count = 1;
+    clusters[n - 1].head = &clusters[n - 1];
+    clusters[n - 1].prev_head = &clusters[n - 2];
+    clusters[n - 1].next = NULL;
+    clusters[n - 1].count = 1;
   }
-  //always make sure the chain ends
-  clusters[s->header->n_documents - 1].next_head = NULL;
-  
+  // always make sure the chain ends
+  clusters[n - 1].next_head = NULL;
+
   first_head_ptr.next_head = &clusters[0];
-  
-  j = (n * (n + 1) / 2 - 1);
-  for(i = 0; i < j; i++)
+
+  for (i = 0; i < m_size; i++)
     M[i] = s->distance_matrix[i];
 
-  
-  for(i = 0; i < H_BUCKETS; i++)
-    H[i] = 0.0;
-  j = n * (n - 1) / 2;
+  for (i = 0; i < H_BUCKETS; i++)
+    H[i] = 0;
+  // j = n * (n - 1) / 2;
+  j = m_size; // [i_a] shouldn't that be j = (n * (n + 1) / 2 - 1) in previous line (a.k.a. m_size) ???
   min = 1000000000.0;
   max = -1000000000.0;
-  
-  for(i = 0; i < j; i++)
+
+  for (i = 0; i < j; i++)
   {
-    if(M[i] < min)
+    if (M[i] < min)
       min = s->distance_matrix[i];
-    if(M[i] > max)
+    if (M[i] > max)
       max = s->distance_matrix[i];
   }
-  scale = (max - min) / ((float)H_BUCKETS - 0.1);
+  scale = (max - min) / (H_BUCKETS - 0.1);
   t = -1.0;
-  for(i = 0; i < j; i++)
-    H[ (int)( (M[i] - min) / scale ) ]++;
-  if(joe_trace)
+  for (i = 0; i < j; i++)
   {
-    fprintf(stderr, "Historgram of document distances:\n");
-    for(i = 0; i < H_BUCKETS; i++)
+    int index = (int)((M[i] - min) / scale);
+    CRM_ASSERT(index >= 0);
+    CRM_ASSERT(index < WIDTHOF(H));
+    H[index]++;
+  }
+  if (internal_trace)
+  {
+    fprintf(stderr, "Histogram of document distances:\n");
+    for (i = 0; i < H_BUCKETS; i++)
     {
-      for(k = 0; k < H[i]; k += 100)
+      for (k = 0; k < H[i]; k += 100)
         fputc('*', stderr);
       fputc('\n', stderr);
     }
-  }    
-  
+  }
+
   k = 0;
   t_A = 0.0;
-  for(i = 0; i < H_BUCKETS; i++)
+  for (i = 0; i < H_BUCKETS; i++)
   {
     k = C[i] = H[i] + k;
     t_A = A[i] = H[i] * (min + (i + 0.5) * scale) + t_A;
   }
   gM = t_A / (float)j;
   t_score = 0.0;
-  for(i = 2; i < H_BUCKETS - 2; i++)
+  for (i = 2; i < H_BUCKETS - 2; i++)
   {
     scoro = square(gM - (t_A - A[i]) / (k - C[i])) * (k - C[i])
-          + square(gM - A[i] / C[i]) * C[i];
-    if(scoro > t_score)
+            + square(gM - A[i] / C[i]) * C[i];
+    if (scoro > t_score)
     {
       t_score = scoro;
-      t = min + scale * (float)(i );
+      t = min + scale * (float)i;
     }
   }
-  if(joe_trace)
+  if (internal_trace)
+  {
     fprintf(stderr, "min = %f, max = %f, t = %f\n", min, max, t);
-  for(a = first_head_ptr.next_head; a; a = a->next_head)
-    if(s->cluster_assignments[a - clusters] < 0)
-      for(b = a->next_head; b; b = b->next_head)
-        if(s->cluster_assignments[a - clusters]
-            == s->cluster_assignments[b - clusters])
+  }
+  for (a = first_head_ptr.next_head; a; a = a->next_head)
+  {
+    if (s->cluster_assignments[a - clusters] < 0)
+    {
+      for (b = a->next_head; b; b = b->next_head)
+      {
+        if (s->cluster_assignments[a - clusters] == s->cluster_assignments[b - clusters])
         {
           k = a - clusters;
           l = b - clusters;
           ck = clusters[k].count;
           cl = clusters[l].count;
           ckl = ck + cl;
-      
-          for(c = &clusters[0]; c; c = c->next_head)
+
+          for (c = &clusters[0]; c; c = c->next_head)
           {
+            float *m_k_i;
+            float *m_l_i;
+
             i = c - clusters;
-            if(i == k || i == l)
+            if (i == k || i == l)
               continue;
-            //*aref_dist_mat(M, k, i) = (ck * *aref_dist_mat(M, k, i) +
-            //                         cl * *aref_dist_mat(M, l, i) ) / ckl;
-            *aref_dist_mat(M, k, i) =
-                minf(*aref_dist_mat(M, k, i), *aref_dist_mat(M, l, i));
-            *aref_dist_mat(M, l, i) = 0.0;
+            m_k_i = aref_dist_mat(M, k, i);
+            m_l_i = aref_dist_mat(M, l, i);
+            // m_k_i[0] = (ck * m_k_i[0] + cl * m_l_i[0]) / ckl;
+
+            // m_k_i[0] = CRM_MIN(m_k_i[0], m_l_i[0]);  -->
+            if (m_k_i[0] > m_l_i[0])
+            {
+              m_k_i[0] = m_l_i[0];
+            }
+            m_l_i[0] = 0.0;
           }
           join_clusters(&clusters[k], &clusters[l]);
           n--;
         }
-    
-  for(;;)
+      }
+    }
+  }
+
+  for (;;)
   {
-    l = 0; k = 0;
+    l = 0;
+    k = 0;
     d = -1.0;
-    for(a = first_head_ptr.next_head; a; a = a->next_head)
-      for(b = a->next_head; b; b = b->next_head)
+    for (a = first_head_ptr.next_head; a; a = a->next_head)
+    {
+      for (b = a->next_head; b; b = b->next_head)
       {
         i = a - clusters;
         j = b - clusters;
-        if(s->cluster_assignments[i] < 0 && s->cluster_assignments[j] < 0)
+        if (s->cluster_assignments[i] < 0 && s->cluster_assignments[j] < 0)
         {
           e = *aref_dist_mat(M, i, j) = -1000000000.0;
-          if(joe_trace)
-            fprintf(stderr, rand() & 0x1 ? "wonk!\n" : " wonk!\n");
+          if (internal_trace)
+            fprintf(stderr, " wonk!\n");
         }
         else
-          e = *aref_dist_mat(M, i, j);
-        if( e > d )
         {
-          if(s->cluster_assignments[j] < 0)
+          e = *aref_dist_mat(M, i, j);
+        }
+        if (e > d)
+        {
+          if (s->cluster_assignments[j] < 0)
           {
             k = j;
             l = i;
-          } else
+          }
+          else
           {
             k = i;
             l = j;
@@ -741,357 +894,416 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
           d = e;
         }
       }
-    if(joe_trace)
+    }
+    if (internal_trace)
+    {
       fprintf(stderr, "l = %ld, k = %ld, d = %f\n", l, k, d);
-    if( (l == 0 && k == 0) || d < t) //we're done
+    }
+    if ((l == 0 && k == 0) || d < t)  //we're done
       break;
-    
+
     ck = clusters[k].count;
     cl = clusters[l].count;
     ckl = ck + cl;
 
-    for(a = &clusters[0]; a; a = a->next_head)
+    for (a = &clusters[0]; a; a = a->next_head)
     {
+      float *m_k_i;
+      float *m_l_i;
+
       i = a - clusters;
-      if(i == k || i == l)
+      if (i == k || i == l)
         continue;
-      *aref_dist_mat(M, k, i) = (ck * *aref_dist_mat(M, k, i) +
-                                 cl * *aref_dist_mat(M, l, i) ) / ckl;
-      *aref_dist_mat(M, l, i) = 0.0;
+      m_k_i = aref_dist_mat(M, k, i);
+      m_l_i = aref_dist_mat(M, l, i);
+      m_k_i[0] = (ck * m_k_i[0] + cl * m_l_i[0]) / ckl;
+      m_l_i[0] = 0.0;
     }
     join_clusters(&clusters[k], &clusters[l]);
     n--;
   }
 
   i = s->header->n_perma_clusters + 1;
-  for(a = &clusters[0]; a; a = a->next_head)
+  for (a = &clusters[0]; a; a = a->next_head)
   {
-    if(s->cluster_assignments[a - clusters] < 0)
+    if (s->cluster_assignments[a - clusters] < 0)
       j = -s->cluster_assignments[a - clusters];
     else
       j = i++;
-    for(b = a; b; b = b->next)
+    for (b = a; b; b = b->next)
       s->cluster_assignments[b - clusters] = j;
   }
-  
+
   s->header->n_clusters = n;
   free(M);
-
+  free(clusters);
 }
 
 static void assign_perma_cluster(CLUMPER_STATE_STRUCT *s,
-                                long doc,
-                                char *lab)
+                                 long                  doc,
+                                 char                 *lab)
 {
   long i;
-  for(i = 1; i <= s->header->n_perma_clusters; i++)
-    if(0 == strcmp(s->cluster_labels[i], lab))
-      break;
-  if(i > s->header->n_perma_clusters)
+
+  for (i = 1; i <= s->header->n_perma_clusters; i++)
   {
-    i = ++(s->header->n_perma_clusters);
+    if (0 == strcmp(s->cluster_labels[i], lab))
+      break;
+  }
+  if (i > s->header->n_perma_clusters)
+  {
+    i = ++ (s->header->n_perma_clusters);
     strcpy(s->cluster_labels[i], lab);
   }
   s->cluster_assignments[doc] = -i;
 }
 
-long max(long a, long b) {return a > b ? a : b;}
-
 int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-
   char htext[MAX_PATTERN];
   char filename[MAX_PATTERN];
   long htext_len;
-  
-  char regex_text[MAX_PATTERN];  //  the regex pattern
+
+  char regex_text[MAX_PATTERN];   //  the regex pattern
   long regex_text_len;
   char param_text[MAX_PATTERN];
   long param_text_len;
-  int unique, unigram, bychunk, n_clusters = 0;
-  
+  int unique, unigram, bychunk;
+  int n_clusters = 0;
+
   char tag[DOCUMENT_TAG_LEN];
-  char class[CLUSTER_LABEL_LEN];
-  
+  char classv[CLUSTER_LABEL_LEN];
+
   struct stat statbuf;
-  
-  CLUMPER_STATE_STRUCT S, *s = &S;
-  
+
+  CLUMPER_STATE_STRUCT s = {0};
+
   regex_t regee;
   regmatch_t matchee[2];
-  
+
   long i, j, k, l;
-  
+
   char *txtptr;
   long txtstart;
   long txtlen;
   char box_text[MAX_PATTERN];
-  char errstr [MAX_PATTERN];
+  char errstr[MAX_PATTERN];
 
-  crm_get_pgm_arg (box_text, MAX_PATTERN, apb->b1start, apb->b1len);
+  int max_documents = 1000;
+
+  crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
   //  Use crm_restrictvar to get start & length to look at.
-  i = crm_restrictvar(box_text, apb->b1len, 
-          NULL,
-          &txtptr,
-          &txtstart,
-          &txtlen,
-          errstr);
-  if ( i < 0)
-    {
-      long curstmt;
-      long fev;
-      fev = 0;
-      curstmt = csl->cstmt;
-      if (i == -1)
-  fev = nonfatalerror (errstr, "");
-      if (i == -2)
-  fev = fatalerror (errstr, "");
-      //
-      //     did the FAULT handler change the next statement to execute?
-      //     If so, continue from there, otherwise, we FAIL.
-      if (curstmt == csl->cstmt)
+  i = crm_restrictvar(box_text, apb->b1len,
+                      NULL,
+                      &txtptr,
+                      &txtstart,
+                      &txtlen,
+                      errstr);
+  if (i < 0)
   {
-    csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-    csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
-  };
-      return (fev);
-    };
+    long curstmt;
+    long fev;
+    fev = 0;
+    curstmt = csl->cstmt;
+    if (i == -1)
+      fev = nonfatalerror(errstr, "");
+    if (i == -2)
+      fev = fatalerror(errstr, "");
+    //
+    //     did the FAULT handler change the next statement to execute?
+    //     If so, continue from there, otherwise, we FAIL.
+    if (curstmt == csl->cstmt)
+    {
+      csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+      csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
+    }
+    return fev;
+  }
 
-  
-  crm_get_pgm_arg (htext, MAX_PATTERN, apb->p1start, apb->p1len);
+
+  crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
   htext_len = apb->p1len;
-  htext_len = crm_nexpandvar (htext, htext_len, MAX_PATTERN);
+  htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
   i = 0;
   while (htext[i] < 0x021) i++;
   j = i;
   while (htext[j] >= 0x021) j++;
-  htext[j] = '\000';
-  strcpy (filename, &htext[i]);
+  htext[j] = 0;
+  strcpy(filename, &htext[i]);
 
   //use regex_text and regee to grab parameters
-  crm_get_pgm_arg (param_text, MAX_PATTERN, apb->s2start, apb->s2len);
+  crm_get_pgm_arg(param_text, MAX_PATTERN, apb->s2start, apb->s2len);
   param_text_len = apb->s2len;
-  param_text_len = crm_nexpandvar (param_text, param_text_len, MAX_PATTERN);
-  
-  param_text[ param_text_len ] = '\0';
-  if(joe_trace)
-    fprintf( stderr, "param_text = %s\n", param_text );
-  
+  param_text_len = crm_nexpandvar(param_text, param_text_len, MAX_PATTERN);
+
+  param_text[param_text_len] = 0;
+  if (internal_trace)
+    fprintf(stderr, "param_text = %s\n", param_text);
+
   strcpy(regex_text, "n_clusters[[:space:]]*=[[:space:]]*([0-9]+)");
-  if( crm_regcomp (&regee, regex_text, strlen(regex_text), REG_EXTENDED) )
+  if (crm_regcomp(&regee, regex_text, strlen(regex_text), REG_EXTENDED))
   {
     nonfatalerror("Problem compiling regex to grab params:", regex_text);
     return 0;
   }
-  if(!crm_regexec (&regee, param_text, param_text_len, 2, matchee, 0, NULL))
+  if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
   {
-    param_text[matchee[1].rm_eo + 1] = '\0';
-    if(joe_trace)
+    param_text[matchee[1].rm_eo + 1] = 0;
+    if (internal_trace)
+    {
       fprintf(stderr, "&param_text[matchee[1].rm_so] = %s\n",
-                &param_text[matchee[1].rm_so]);
+              &param_text[matchee[1].rm_so]);
+    }
     n_clusters = atol(&param_text[matchee[1].rm_so]);
-    if(joe_trace)
+    if (internal_trace)
       fprintf(stderr, "n_clusters = %d\n", n_clusters);
   }
   strcpy(regex_text, "tag[[:space:]]*=[[:space:]]*([[:graph:]]+)");
-  if( crm_regcomp (&regee, regex_text, strlen(regex_text), REG_EXTENDED) )
+  if (crm_regcomp(&regee, regex_text, strlen(regex_text), REG_EXTENDED))
   {
     nonfatalerror("Problem compiling regex to grab params:", regex_text);
     return 0;
   }
-  if(!crm_regexec (&regee, param_text, param_text_len, 2, matchee, 0, NULL))
+  if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
   {
-    param_text[matchee[1].rm_eo] = '\0';
+    param_text[matchee[1].rm_eo] = 0;
     strcpy(tag, &param_text[matchee[1].rm_so]);
-  } else
-    tag[0] = '\0';
+  }
+  else
+  {
+    tag[0] = 0;
+  }
   strcpy(regex_text, "clump[[:space:]]*=[[:space:]]*([[:graph:]]+)");
-  if( crm_regcomp (&regee, regex_text, strlen(regex_text), REG_EXTENDED) )
+  if (crm_regcomp(&regee, regex_text, strlen(regex_text), REG_EXTENDED))
   {
     nonfatalerror("Problem compiling regex to grab params:", regex_text);
     return 0;
   }
-  if(!crm_regexec (&regee, param_text, param_text_len, 2, matchee, 0, NULL))
+  if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
   {
-    param_text[matchee[1].rm_eo] = '\0';
-    strcpy(class, &param_text[matchee[1].rm_so]);
-  } else
-    class[0] = '\0';
+    param_text[matchee[1].rm_eo] = 0;
+    strcpy(classv, &param_text[matchee[1].rm_so]);
+  }
+  else
+  {
+    classv[0] = 0;
+  }
 
   strcpy(regex_text, "max_documents[[:space:]]*=[[:space:]]*([[:graph:]]+)");
-  if( crm_regcomp (&regee, regex_text, strlen(regex_text), REG_EXTENDED) )
+  if (crm_regcomp(&regee, regex_text, strlen(regex_text), REG_EXTENDED))
   {
     nonfatalerror("Problem compiling regex to grab params:", regex_text);
     return 0;
   }
-  if(!crm_regexec (&regee, param_text, param_text_len, 2, matchee, 0, NULL))
+  if (!crm_regexec(&regee, param_text, param_text_len, 2, matchee, 0, NULL))
   {
-    param_text[matchee[1].rm_eo] = '\0';
+    param_text[matchee[1].rm_eo] = 0;
     max_documents = atol(&param_text[matchee[1].rm_so]);
   }
   //we've already got a default max_documents
-  
-  crm_get_pgm_arg (regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
+
+  crm_get_pgm_arg(regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
   regex_text_len = apb->s1len;
-  if(regex_text_len == 0)
+  if (regex_text_len == 0)
   {
-    strcpy(regex_text, "[[:graph:]]+"); 
-    regex_text_len = strlen( regex_text );
+    strcpy(regex_text, "[[:graph:]]+");
+    regex_text_len = strlen(regex_text);
   }
-  regex_text[regex_text_len] = '\0';
-  regex_text_len = crm_nexpandvar (regex_text, regex_text_len, MAX_PATTERN);
-  if( crm_regcomp (&regee, regex_text, regex_text_len, REG_EXTENDED) )
+  regex_text[regex_text_len] = 0;
+  regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
+  if (crm_regcomp(&regee, regex_text, regex_text_len, REG_EXTENDED))
   {
     nonfatalerror("Problem compiling this regex:", regex_text);
     return 0;
   }
-  
-  unique = apb->sflags & CRM_UNIQUE;
-  unigram = apb->sflags & CRM_UNIGRAM;
-  bychunk = apb->sflags & CRM_BYCHUNK;
+
+  unique = !!(apb->sflags & CRM_UNIQUE);
+  unigram = !!(apb->sflags & CRM_UNIGRAM);
+  bychunk = !!(apb->sflags & CRM_BYCHUNK);
 
   if (apb->sflags & CRM_REFUTE)
   {
-    if(map_file(s, filename))
+    if (map_file(&s, filename))
+    {
       //we already nonfatalerrored
       return 0;
-    if(tag[0])
-      for(i = s->header->n_documents; i >= 0; i--)
-        if(0 == strcmp(tag, s->document_tags[i]))
-          break;
-    else
-      i = find_closest_document(s, txtptr + txtstart, txtlen,
-                                      &regee, apb->sflags);
-    if(i < 0)
+    }
+    if (tag[0])
     {
-      unmap_file(s);
+      for (i = s.header->n_documents; i >= 0; i--)
+      {
+        if (0 == strcmp(tag, s.document_tags[i]))
+          break;
+      }
+    }
+    else
+    {
+      i = find_closest_document(apb, &s, txtptr + txtstart, txtlen,
+                                &regee, apb->sflags);
+    }
+    if (i < 0)
+    {
+      unmap_file(&s);
       return 0;
     }
-    memmove(s->file_origin + s->document_offsets[i],
-            s->file_origin + s->document_offsets[i + 1],
-            (s->header->file_length - s->document_offsets[i + 1]) );
-    memmove(&s->document_tags[i],
-            &s->document_tags[i + 1],
-            sizeof(char) * DOCUMENT_TAG_LEN *(s->header->n_documents - i - 1 ));
-    memmove(&s->cluster_labels[i],
-            &s->cluster_labels[i + 1],
-            sizeof(char) * CLUSTER_LABEL_LEN*(s->header->n_documents - i - 1 ));
-    s->header->n_documents--;
-    j = s->document_offsets[i + 1] - s->document_offsets[i];
-    for(k = i; k < s->header->n_documents; k++)
+    memmove(s.file_origin + s.document_offsets[i],
+            s.file_origin + s.document_offsets[i + 1],
+            (s.header->file_length - s.document_offsets[i + 1]));
+    memmove(&s.document_tags[i],
+            &s.document_tags[i + 1],
+            sizeof(char) * DOCUMENT_TAG_LEN * (s.header->n_documents - i - 1));
+    memmove(&s.cluster_labels[i],
+            &s.cluster_labels[i + 1],
+            sizeof(char) * CLUSTER_LABEL_LEN * (s.header->n_documents - i - 1));
+    s.header->n_documents--;
+    j = s.document_offsets[i + 1] - s.document_offsets[i];
+    for (k = i; k < s.header->n_documents; k++)
     {
-      s->document_offsets[k] = s->document_offsets[k + 1] - j;
-      s->cluster_assignments[k] = s->cluster_assignments[k + 1];
+      s.document_offsets[k] = s.document_offsets[k + 1] - j;
+      s.cluster_assignments[k] = s.cluster_assignments[k + 1];
     }
-    s->header->file_length -= j;
-    for(k = 0; k < s->header->n_documents; k++)
-      for(l = max(k + 1, i); l < s->header->n_documents; l++)
-        *aref_dist_mat(s->distance_matrix, k, l) =
-            *aref_dist_mat(s->distance_matrix, k, l + 1);
-    if(n_clusters > 0)
+    s.header->file_length -= j;
+    for (k = 0; k < s.header->n_documents; k++)
     {
-      if(bychunk)
-        agglomerative_averaging_cluster(s, n_clusters);
+      for (l = CRM_MAX(k + 1, i); l < s.header->n_documents; l++)
+      {
+        *aref_dist_mat(s.distance_matrix, k, l) = *aref_dist_mat(s.distance_matrix, k, l + 1);
+      }
+    }
+    if (n_clusters > 0)
+    {
+      if (bychunk)
+        agglomerative_averaging_cluster(&s, n_clusters);
       else
-        agglomerative_nearest_cluster(s, n_clusters);
+        agglomerative_nearest_cluster(&s, n_clusters);
     }
-    else if(n_clusters == 0)
+    else if (n_clusters == 0)
     {
-      if(bychunk)
-        thresholding_average_cluster(s);
+      if (bychunk)
+        thresholding_average_cluster(&s);
       else
-        thresholding_average_cluster(s);
+        thresholding_average_cluster(&s);
     }
-    l = s->header->file_length;
-    
-    unmap_file(s);
+    l = s.header->file_length;
+
+    unmap_file(&s);
     crm_force_munmap_filename(filename);
     truncate(filename, l);
     return 0;
-  } else
-  { //LEARNIN'!
-    long n, feature_space[32768];
+  }
+  else
+  {
+    //LEARNIN'!
+    long n;
+    crmhash_t feature_space[32768];
     FILE *f;
-    if(stat(filename, &statbuf))
-      make_new_clumper_backing_file(filename);
-    if(txtlen == 0)
+    if (stat(filename, &statbuf))
     {
-      if(tag[0] && class[0]) //is not null
+      if (!make_new_clumper_backing_file(filename, max_documents))
       {
-        if(map_file(s, filename))
-        //we already nonfatalerrored
+        return 0;
+      }
+    }
+    if (txtlen == 0)
+    {
+      if (tag[0] && classv[0])       //is not null
+      {
+        if (map_file(&s, filename))
+        {
+          //we already nonfatalerrored
           return 0;
-        for(i = s->header->n_documents - 1; i >= 0; i++)
-          if(0 == strcmp(tag, s->document_tags[i]))
+        }
+        for (i = s.header->n_documents - 1; i >= 0; i++ /* [i_a] should this REALLY be 'i++' instead of 'i--' ??? */ )
+        {
+          if (0 == strcmp(tag, s.document_tags[i]))
             break;
-        if(i >= 0)
-          assign_perma_cluster(s, i, class);
-        unmap_file(s);
+        }
+        if (i >= 0)
+          assign_perma_cluster(&s, i, classv);
+        unmap_file(&s);
       }
       return 0;
     }
-      
-    n = eat_document
-        (       txtptr + txtstart, txtlen, &i,
-                &regee,
-                feature_space, 32768,
-                apb->sflags );
+
+    n = eat_document(apb,
+                     txtptr + txtstart, txtlen, &i,
+                     &regee,
+                     feature_space, WIDTHOF(feature_space),
+                     apb->sflags);
     crm_force_munmap_filename(filename);
     f = fopen(filename, "ab+");
-    fwrite(feature_space, n, sizeof(long), f);
+    if (!f)
+    {
+      int fev = fatalerror_ex(SRC_LOC(),
+                              "\n Couldn't open your new clumper file %s for writing; errno=%d(%s)\n",
+                              filename,
+                              errno,
+                              errno_descr(errno));
+      return fev;
+    }
+    if (n != fwrite(feature_space, sizeof(feature_space[0]), n, f))
+    {
+      fatalerror("Cannot write feature space to the clump backing file", filename);
+      fclose(f);
+      return 0;
+    }
     fclose(f);
-    if(map_file(s, filename))
+    if (map_file(&s, filename))
+    {
       //we already nonfatalerrored
       return 0;
-    if(s->header->n_documents >= s->header->max_documents)
+    }
+    if (s.header->n_documents >= s.header->max_documents)
     {
       nonfatalerror("This clump backing file is full and cannot"
-                    " assimelate new documents!", filename);
-      unmap_file(s);
+                    " assimilate new documents!", filename);
+      unmap_file(&s);
       return 0;
     }
-    i = s->header->n_documents++;
-    
-    s->document_offsets[i] = s->header->file_length;
-    s->header->file_length += sizeof(long) * n;
-    for(j = 0; j < i; j++)
-      *aref_dist_mat(s->distance_matrix, j, i) = get_document_affinity(
-            (void *)( s->file_origin + s->document_offsets[i]),
-            (void *)( s->file_origin + s->document_offsets[j]) );
-    strcpy(s->document_tags[i], tag);
-    if(class[0])
-      assign_perma_cluster(s, i, class);
-    else
-      s->cluster_assignments[i] = 0;
+    i = s.header->n_documents++;
 
-    if(n_clusters > 0)
+    s.document_offsets[i] = s.header->file_length;
+    s.header->file_length += sizeof(crmhash_t) * n;
+    for (j = 0; j < i; j++)
     {
-      if(bychunk)
-        agglomerative_averaging_cluster(s, n_clusters);
-      else
-        agglomerative_nearest_cluster(s, n_clusters);
+      *aref_dist_mat(s.distance_matrix, j, i) = get_document_affinity(
+        (void *)(s.file_origin + s.document_offsets[i]),
+        (void *)(s.file_origin + s.document_offsets[j]));
     }
-    else if(n_clusters == 0)
+    strcpy(s.document_tags[i], tag);
+    if (classv[0])
+      assign_perma_cluster(&s, i, classv);
+    else
+      s.cluster_assignments[i] = 0;
+
+    if (n_clusters > 0)
     {
-      if(bychunk)
-        thresholding_average_cluster(s);
+      if (bychunk)
+        agglomerative_averaging_cluster(&s, n_clusters);
       else
-        thresholding_average_cluster(s);
+        agglomerative_nearest_cluster(&s, n_clusters);
     }
-    unmap_file(s);
+    else if (n_clusters == 0)
+    {
+      if (bychunk)
+        thresholding_average_cluster(&s);
+      else
+        thresholding_average_cluster(&s);
+    }
+    unmap_file(&s);
     return 0;
   }
 }
 
 int sprint_lab(CLUMPER_STATE_STRUCT *s, char *b, int l)
 {
-  if(l == 0)
+  if (l == 0)
   {
     strcpy(b, "unassigned");
     return strlen("unassigned");
   }
-  if(s->cluster_labels[l][0] != '\0')
+  if (s->cluster_labels[l][0] != 0)
     return sprintf(b, "%s", s->cluster_labels[l]);
   else
     return sprintf(b, "clump_#%d", l);
@@ -1099,7 +1311,7 @@ int sprint_lab(CLUMPER_STATE_STRUCT *s, char *b, int l)
 
 int sprint_tag(CLUMPER_STATE_STRUCT *s, char *b, int d)
 {
-  if(s->document_tags[d][0] != '\0')
+  if (s->document_tags[d][0] != 0)
     return sprintf(b, "%s", s->document_tags[d]);
   else
     return sprintf(b, "document_#%d", d);
@@ -1110,182 +1322,197 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   char htext[MAX_PATTERN];
   char filename[MAX_PATTERN];
   long htext_len;
-  
-  char regex_text[MAX_PATTERN];  //  the regex pattern
+
+  char regex_text[MAX_PATTERN];   //  the regex pattern
   long regex_text_len;
   int unique, unigram, bychunk;
-  
+
   char out_var[MAX_PATTERN];
   long out_var_len;
 
-  float A[MAX_CLUSTERS], T;
+  float A[MAX_CLUSTERS];
+  float T;
   long N[MAX_CLUSTERS];
-  double p[MAX_CLUSTERS], pR[MAX_CLUSTERS];
-  
-  long feature_space[32768];
+  double p[MAX_CLUSTERS];
+  double pR[MAX_CLUSTERS];
+
+  crmhash_t feature_space[32768];
   long n;
-  
+
   long closest_doc = -1;
   float closest_doc_affinity;
-  
+
   long out_len = 0;
-  
-  CLUMPER_STATE_STRUCT S, *s = &S;
-  
+
+  CLUMPER_STATE_STRUCT s = {0};
+
   regex_t regee;
-    
+
   long i, j;
-  
+
   char *txtptr;
   long txtstart;
   long txtlen;
   char box_text[MAX_PATTERN];
-  char errstr [MAX_PATTERN];
+  char errstr[MAX_PATTERN];
 
-  crm_get_pgm_arg (box_text, MAX_PATTERN, apb->b1start, apb->b1len);
+  crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
   //  Use crm_restrictvar to get start & length to look at.
-  i = crm_restrictvar(box_text, apb->b1len, 
-          NULL,
-          &txtptr,
-          &txtstart,
-          &txtlen,
-          errstr);
-  if ( i < 0)
-    {
-      long curstmt;
-      long fev;
-      fev = 0;
-      curstmt = csl->cstmt;
-      if (i == -1)
-  fev = nonfatalerror (errstr, "");
-      if (i == -2)
-  fev = fatalerror (errstr, "");
-      //
-      //     did the FAULT handler change the next statement to execute?
-      //     If so, continue from there, otherwise, we FAIL.
-      if (curstmt == csl->cstmt)
+  i = crm_restrictvar(box_text, apb->b1len,
+                      NULL,
+                      &txtptr,
+                      &txtstart,
+                      &txtlen,
+                      errstr);
+  if (i < 0)
   {
-    csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-    csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
-  };
-      return (fev);
-    };
+    long curstmt;
+    long fev;
+    fev = 0;
+    curstmt = csl->cstmt;
+    if (i == -1)
+      fev = nonfatalerror(errstr, "");
+    if (i == -2)
+      fev = fatalerror(errstr, "");
+    //
+    //     did the FAULT handler change the next statement to execute?
+    //     If so, continue from there, otherwise, we FAIL.
+    if (curstmt == csl->cstmt)
+    {
+      csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
+      csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
+    }
+    return fev;
+  }
 
-  
-  crm_get_pgm_arg (htext, MAX_PATTERN, apb->p1start, apb->p1len);
+
+  crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
   htext_len = apb->p1len;
-  htext_len = crm_nexpandvar (htext, htext_len, MAX_PATTERN);
+  htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
   i = 0;
   while (htext[i] < 0x021) i++;
   j = i;
   while (htext[j] >= 0x021) j++;
-  htext[j] = '\000';
-  strcpy (filename, &htext[i]);
+  htext[j] = 0;
+  strcpy(filename, &htext[i]);
 
   //grab output variable name
-  crm_get_pgm_arg (out_var, MAX_PATTERN, apb->p2start, apb->p2len);
+  crm_get_pgm_arg(out_var, MAX_PATTERN, apb->p2start, apb->p2len);
   out_var_len = apb->p2len;
-  out_var_len = crm_nexpandvar (out_var, out_var_len, MAX_PATTERN);
+  out_var_len = crm_nexpandvar(out_var, out_var_len, MAX_PATTERN);
 
-  crm_get_pgm_arg (regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
+  crm_get_pgm_arg(regex_text, MAX_PATTERN, apb->s1start, apb->s1len);
   regex_text_len = apb->s1len;
-  if(regex_text_len == 0)
+  if (regex_text_len == 0)
   {
-    strcpy(regex_text, "[[:graph:]]+"); 
-    regex_text_len = strlen( regex_text );
+    strcpy(regex_text, "[[:graph:]]+");
+    regex_text_len = strlen(regex_text);
   }
-  regex_text[regex_text_len] = '\0';
-  regex_text_len = crm_nexpandvar (regex_text, regex_text_len, MAX_PATTERN);
-  if( crm_regcomp (&regee, regex_text, regex_text_len, REG_EXTENDED) )
+  regex_text[regex_text_len] = 0;
+  regex_text_len = crm_nexpandvar(regex_text, regex_text_len, MAX_PATTERN);
+  if (crm_regcomp(&regee, regex_text, regex_text_len, REG_EXTENDED))
   {
     nonfatalerror("Problem compiling this regex:", regex_text);
     return 0;
   }
 
-  unique = apb->sflags & CRM_UNIQUE;
-  unigram = apb->sflags & CRM_UNIGRAM;
-  bychunk = apb->sflags & CRM_BYCHUNK;
+  unique = !!(apb->sflags & CRM_UNIQUE);
+  unigram = !!(apb->sflags & CRM_UNIGRAM);
+  bychunk = !!(apb->sflags & CRM_BYCHUNK);
 
-  if(map_file(s, filename))
-  //we already nonfatalerrored
-    return 0;
-  
-  if(txtlen == 0)
+  if (map_file(&s, filename))
   {
-    for(i = 0; i < s->header->n_documents; i++)
+    //we already nonfatalerrored
+    return 0;
+  }
+
+  if (txtlen == 0)
+  {
+    for (i = 0; i < s.header->n_documents; i++)
     {
       A[0] = 0.0;
       N[0] = 1;
-      for(j = 0; j < s->header->n_documents; j++)
-        if(i != j && s->cluster_assignments[i] == s->cluster_assignments[j])
+      for (j = 0; j < s.header->n_documents; j++)
+      {
+        if (i != j && s.cluster_assignments[i] == s.cluster_assignments[j])
         {
-          N[0]++;
-          if(bychunk)
-            A[0] += *aref_dist_mat(s->distance_matrix, i, j);
-          else
-            if(*aref_dist_mat(s->distance_matrix, i, j) > A[0])
-              A[0] = *aref_dist_mat(s->distance_matrix, i, j);
-        }
-      if(bychunk)
-        A[0] /= (float)N[0];
-      out_len += sprintf(outbuf + out_len, "%ld (", i);
-      out_len += sprint_tag(s, outbuf + out_len, i);
-      out_len += sprintf(outbuf + out_len,
-        ") clump: %ld (", s->cluster_assignments[i]);
-      out_len += sprint_lab(s, outbuf + out_len, s->cluster_assignments[i]);
-      out_len += sprintf(outbuf + out_len, ") affinity: %0.4f\n", A[0]);
+          float *m_i_j;
 
+          m_i_j = aref_dist_mat(s.distance_matrix, i, j);
+
+          N[0]++;
+          if (bychunk)
+          {
+            A[0] += *m_i_j;
+          }
+          else if (*m_i_j > A[0])
+          {
+            A[0] = *m_i_j;
+          }
+        }
+      }
+      if (bychunk)
+      {
+        A[0] /= N[0];
+      }
+      out_len += sprintf(outbuf + out_len, "%ld (", i);
+      out_len += sprint_tag(&s, outbuf + out_len, i);
+      out_len += sprintf(outbuf + out_len, ") clump: %ld (", (long)s.cluster_assignments[i]);
+      out_len += sprint_lab(&s, outbuf + out_len, s.cluster_assignments[i]);
+      out_len += sprintf(outbuf + out_len, ") affinity: %0.4f\n", A[0]);
     }
-    outbuf[out_len] = '\0';
-    if(out_var_len)
+    outbuf[out_len] = 0;
+    if (out_var_len)
       crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_len);
-    unmap_file(s);
+    unmap_file(&s);
     return 0;
-  } else
+  }
+  else
   {
-    if(joe_trace)
+    if (internal_trace)
       fprintf(stderr, "pmulcing!\n");
-    n = eat_document
-        (       txtptr + txtstart, txtlen, &i,
-                &regee,
-                feature_space, 32768,
-                apb->sflags );
+    n = eat_document(apb,
+                     txtptr + txtstart, txtlen, &i,
+                     &regee,
+                     feature_space, WIDTHOF(feature_space),
+                     apb->sflags);
     closest_doc_affinity = -1.0;
-    for(i = 0; i <= s->header->n_clusters; i++)
+    for (i = 0; i <= s.header->n_clusters; i++)
     {
       A[i] = 0.0;
       N[i] = 0;
     }
-    if(bychunk)
+    if (bychunk)
     {
-      for(i = 0; i < s->header->n_documents; i++)
+      for (i = 0; i < s.header->n_documents; i++)
       {
-        j = s->cluster_assignments[i];
-        if(j == 0)
+        j = s.cluster_assignments[i];
+        if (j == 0)
           continue;
-        T = get_document_affinity(feature_space, (void *)(s->file_origin +
-                    s->document_offsets[i]));
+        T = get_document_affinity(feature_space, (void *)(s.file_origin +
+                                                          s.document_offsets[i]));
         A[j] += T;
-        if(T > closest_doc_affinity)
+        if (T > closest_doc_affinity)
         {
           closest_doc = i;
           closest_doc_affinity = T;
         }
         N[j]++;
       }
-      for(i = 1; i <= s->header->n_clusters; i++)
+      for (i = 1; i <= s.header->n_clusters; i++)
         T += A[i] /= N[i];
-    } else
+    }
+    else
     {
-      for(i = 0; i < s->header->n_documents; i++)
+      for (i = 0; i < s.header->n_documents; i++)
       {
-        j = s->cluster_assignments[i];
-        T = get_document_affinity(feature_space, (void *)(s->file_origin +
-                    s->document_offsets[i]));
-        if(T > A[j])
+        j = s.cluster_assignments[i];
+        T = get_document_affinity(feature_space, (void *)(s.file_origin +
+                                                          s.document_offsets[i]));
+        if (T > A[j])
           A[j] = T;
-        if(T > closest_doc_affinity)
+        if (T > closest_doc_affinity)
         {
           closest_doc = i;
           closest_doc_affinity = T;
@@ -1293,90 +1520,75 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         N[j]++;
       }
     }
-    T = 0.0000001;  
+    T = 0.0000001;
     j = 1;
-    for(i = 1; i <= s->header->n_clusters; i++)
+    for (i = 1; i <= s.header->n_clusters; i++)
     {
-      if(A[i] > A[j])
+      if (A[i] > A[j])
         j = i;
-      if(A[i] == 0.0)
+      if (A[i] == 0.0)
         p[i] = 0.0;
       else
         p[i] = normalized_gauss(1.0 / A[i] - 1.0, 0.5);
       //p[i] = A[i];
       T += p[i];
     }
-    if(s->header->n_clusters < 2)
+    if (s.header->n_clusters < 2)
       p[j = 1] = 0.0;
-    for(i = 1; i <= s->header->n_clusters; i++)
+    for (i = 1; i <= s.header->n_clusters; i++)
     {
       p[i] /= T;
-      pR[i] = 10 * ( log10(0.0000001 + p[i])
-                        - log10(1.0000001 - p[i]) );
+      pR[i] = 10 * (log10(0.0000001 + p[i]) - log10(1.0000001 - p[i]));
     }
-    
-    if(joe_trace)
+
+    if (internal_trace)
       fprintf(stderr, "generating output...\n");
-      
-    if(p[j] > 0.5)
-      out_len += sprintf(outbuf + out_len,
-          "PMULC succeeds; success probabilty: %0.4f pR: %0.4f\n", p[j], pR[j]);
-    else
-      out_len += sprintf(outbuf + out_len,
-          "PMULC fails; success probabilty: %0.4f pR: %0.4f\n", p[j], pR[j]);
-    out_len += sprintf(outbuf + out_len,
-          "Best match to clump #%ld (", j);
-    out_len += sprint_lab(s, outbuf + out_len, j);
-    out_len += sprintf(outbuf + out_len,
-          ") prob: %0.4f  pR: %0.4f\n", p[j], pR[j]);
-    out_len += sprintf(outbuf + out_len,
-          "Closest document: #%ld (", closest_doc);
-    out_len += sprint_tag(s, outbuf + out_len, closest_doc);
-    out_len += sprintf(outbuf + out_len,
-          ") affinity: %0.4f\n", closest_doc_affinity);
-    out_len += sprintf(outbuf + out_len,
-          "Total features in input file: %ld\n", n);
-    for(i = 1; i <= s->header->n_clusters; i++)
+
+    if (p[j] > 0.5)
     {
-      out_len += sprintf(outbuf + out_len,
-          "%ld: (", i);
-      out_len += sprint_lab(s, outbuf + out_len, i);
-      out_len += sprintf(outbuf + out_len,
-          "): documents: %ld  affinity: %0.4f  prob: %0.4f  pR: %0.4f\n",
-          N[i], A[i], p[i], pR[i]);
+      out_len += sprintf(outbuf + out_len, "PMULC succeeds; success probability: %0.4f pR: %0.4f\n", p[j], pR[j]);
     }
-      
-    if (p[j] > 0.5000)
+    else
+    {
+      out_len += sprintf(outbuf + out_len, "PMULC fails; success probability: %0.4f pR: %0.4f\n", p[j], pR[j]);
+    }
+    out_len += sprintf(outbuf + out_len, "Best match to clump #%ld (", j);
+    out_len += sprint_lab(&s, outbuf + out_len, j);
+    out_len += sprintf(outbuf + out_len, ") prob: %0.4f  pR: %0.4f\n", p[j], pR[j]);
+    out_len += sprintf(outbuf + out_len, "Closest document: #%ld (", closest_doc);
+    out_len += sprint_tag(&s, outbuf + out_len, closest_doc);
+    out_len += sprintf(outbuf + out_len, ") affinity: %0.4f\n", closest_doc_affinity);
+    out_len += sprintf(outbuf + out_len, "Total features in input file: %ld\n", n);
+    for (i = 1; i <= s.header->n_clusters; i++)
+    {
+      out_len += sprintf(outbuf + out_len, "%ld: (", i);
+      out_len += sprint_lab(&s, outbuf + out_len, i);
+      out_len += sprintf(outbuf + out_len, "): documents: %ld  affinity: %0.4f  prob: %0.4f  pR: %0.4f\n",
+                         N[i], A[i], p[i], pR[i]);
+    }
+
+    if (p[j] > 0.5)
     {
       if (user_trace)
-        fprintf (stderr, "CLUMP was a SUCCESS, continuing execution.\n");
+        fprintf(stderr, "CLUMP was a SUCCESS, continuing execution.\n");
     }
     else
     {
       if (user_trace)
-        fprintf (stderr, "CLUMP was a FAIL, skipping forward.\n");
+        fprintf(stderr, "CLUMP was a FAIL, skipping forward.\n");
       //    and do what we do for a FAIL here
       csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-      csl->aliusstk [csl->mct[csl->cstmt]->nest_level] = -1;
-    };
-    outbuf[out_len] = '\0';
-    if(joe_trace)
+      csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = -1;
+    }
+    outbuf[out_len] = 0;
+    if (internal_trace)
       fprintf(stderr, "JOE_TRACE:\n%s", outbuf);
-    if(out_var_len)
+    if (out_var_len)
       crm_destructive_alter_nvariable(out_var, out_var_len, outbuf, out_len);
-    unmap_file(s);
+    unmap_file(&s);
     return 0;
   }
-
 }
-
-
-
-
-
-
-
-
 
 
 

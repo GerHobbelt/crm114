@@ -16,7 +16,7 @@
 /* [i_a] unsure if totalhits[] and hits[] should be floating point or integer count arrays ... */
 #if 10
 // from OSBF Hayes: hmmm, unsigned long gives better precision than float...
-typedef long long hitcount_t;
+typedef int64_t hitcount_t;
 #else
 typedef double hitcount_t;
 #endif
@@ -280,8 +280,8 @@ typedef struct mythical_entropy_cell
 #define CRM_ALIUS 28
 #define CRM_TRANSLATE 29
 #define CRM_DEBUG 30
-#define CRM_CLUMP 31         // make clusters out of tokens  // [i_a] NOT IMPLEMENTED
-#define CRM_PMULC 32         // pmulc translates tokens to cluster names  // [i_a] NOT IMPLEMENTED
+#define CRM_CLUMP 31         // make clusters out of tokens
+#define CRM_PMULC 32         // pmulc translates tokens to cluster names
 #define CRM_UNIMPLEMENTED 33
 
 
@@ -309,6 +309,7 @@ typedef struct mythical_entropy_cell
 //         input/output/window flags
 #define CRM_BYLINE        (1 << 10)      //  Should be merged with nomultiline
 #define CRM_BYCHAR        (1 << 11)
+#define CRM_STRING        CRM_BYCHAR     // string is bychar.  I think...
 #define CRM_BYCHUNK       (1 << 12)
 #define CRM_BYEOF         (1 << 13)
 #define CRM_EOFACCEPTS    (1 << 14)
@@ -348,16 +349,18 @@ typedef struct mythical_entropy_cell
 #define CRM_FSCM          (1LL << 36)
 //           SCM classifier
 #define CRM_SCM           (1LL << 37)
+//           Neural Net classifier
+#define CRM_NEURAL_NET    (1LL << 38)
 
-#define CRM_FLAT          (1LL << 38)
+#define CRM_FLAT          (1LL << 39)
 
 
 //
 //     and a struct to put them in.
 typedef struct
 {
-    char               *string;
-    unsigned long long  value;
+    char     *string;
+    uint64_t  value;
 } FLAG_DEF;
 
 

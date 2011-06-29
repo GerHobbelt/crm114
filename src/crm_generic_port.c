@@ -52,7 +52,6 @@ void *crm_memmove(void *dst, const void *src, size_t len)
 #if defined (HAVE_BCOPY)
     bcopy(src, dst, len);
     return dst;
-
 #else
 #error "provide a proper memmove() implementation, please"
 #endif

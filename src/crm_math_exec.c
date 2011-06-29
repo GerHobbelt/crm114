@@ -440,8 +440,8 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
                     }
                     else
                     {
-                        long long intpart;
-                        intpart = ((long long)stack[sp]) / 1;
+                        int64_t intpart;
+                        intpart = (int64_t)stack[sp];
                         snprintf(tempstring, WIDTHOF(tempstring), outformat, intpart);
                         tempstring[WIDTHOF(tempstring) - 1] = 0;
                         if (internal_trace)
@@ -538,10 +538,10 @@ int math_formatter(double value, char *format, char *buf, long buflen)
         if (format[strlen(format) - 1] == 'x'
             || format[strlen(format) - 1] == 'X')
         {
-            long long equiv;
+            int64_t equiv;
             if (internal_trace)
                 fprintf(stderr, "Final hex format: %s\n", format);
-            equiv = (long long)value;
+            equiv = (int64_t)value;
             outlen = snprintf(buf, buflen, format, equiv);
             /*
              *    [i_a] taken from MSVC2005 documentation (and why it's dangerous to simply return outlen)
@@ -652,7 +652,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
     long opstack[DEFAULT_MATHSTK_LIMIT];          // operand
     double rightarg;                              // right float arg
     long validstack[DEFAULT_MATHSTK_LIMIT];       // validity markers
-    long sp;                                      // stack pointer
+    int sp;                                      // stack pointer
     long ip, op;                                  // input and output pointer
     long errstat;                                 //  error status
     char *frejected;                              //  done loc. for a strtod.
@@ -684,7 +684,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
         //   Debugging trace
         if (internal_trace)
             fprintf(stderr,
-                    "ip = %ld, sp = %ld, L=%f, Op=%c, R=%f, V=%x next='%c'\n",
+                    "ip = %ld, sp = %d, L=%f, Op=%c, R=%f, V=%x next='%c'\n",
                     ip, sp,
                     leftarg[sp], (short)opstack[sp],
                     rightarg, (short)validstack[sp],
@@ -796,9 +796,11 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                     opstack[sp] = (buf[ip] & 0xFF);
                     validstack[sp] = LEFTVALID | OPVALID;
                     //   is the next char also an op?  If so, gobble it up?
-                    switch (buf[ip + 1])
+                    switch ((opstack[sp] << 8) | buf[ip + 1])
                     {
-                    case '=':
+            case (('<' << 8) + '='): /* [i_a] */
+            case (('>' << 8) + '='):
+            case (('!' << 8) + '='):
                         if (internal_trace)
                             fprintf(stderr, "two-char operator\n");
                         opstack[sp] = ((opstack[sp] << 8) | buf[ip + 1]);
@@ -903,19 +905,19 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
             {
                 //    Math operators
             case '+':
-                leftarg[sp] = leftarg[sp] + rightarg;
+                leftarg[sp] += rightarg;
                 break;
 
             case '-':
-                leftarg[sp] = leftarg[sp] - rightarg;
+                leftarg[sp] -= rightarg;
                 break;
 
             case '*':
-                leftarg[sp] = leftarg[sp] * rightarg;
+                leftarg[sp] *= rightarg;
                 break;
 
             case '/':
-                leftarg[sp] = leftarg[sp] / rightarg;
+                leftarg[sp] /= rightarg;
                 break;
 
             case '%':
@@ -933,7 +935,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                     && ((long long)(leftarg[sp])) > leftarg[sp] - FLT_EPSILON
                     && ((long long)(leftarg[sp])) < leftarg[sp] + FLT_EPSILON)
                 {
-                    leftarg[sp] = leftarg[sp] / 0.0;
+                    leftarg[sp] /= 0.0;
                 }
                 else
                 {
@@ -947,7 +949,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                 //      Negative bases on logarithms?  Not for us!  force NaN
                 if (leftarg[sp] <= 0.0)
                 {
-                    leftarg[sp] = leftarg[sp] / 0.0;
+                    leftarg[sp] /= 0.0;
                 }
                 else
                     leftarg[sp] = log(rightarg) / log(leftarg[sp]);
@@ -1093,12 +1095,12 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                         //    results of octal conversion; the only
                         //    effect is to set the final format
                         //    string.
-                        long long equiv;
+                        int64_t equiv;
                         if (internal_trace)
                             fprintf(stderr, "Oct/Hex Convert ");
-                        equiv = (long long)leftarg[sp];
+                        equiv = (int64_t)leftarg[sp];
                         if (internal_trace)
-                            fprintf(stderr, "equiv -->%10lld<-- \n", equiv);
+                            fprintf(stderr, "equiv -->%10lld<-- \n", (long long int)equiv);
                         snprintf(tempstring, WIDTHOF(tempstring), outformat, equiv);
                         tempstring[WIDTHOF(tempstring) - 1] = 0;
                     }
@@ -1127,7 +1129,7 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
     }
     //      We made it all the way through.  Now return the math formatter result
     if (internal_trace)
-        fprintf(stderr, "Returning at sp= %ld and value %f\n", sp, leftarg[sp]);
+        fprintf(stderr, "Returning at sp= %d and value %f\n", sp, leftarg[sp]);
     if (retstat) *retstat = state;
 
     //      Check that we made it all the way down the stack
@@ -1141,11 +1143,11 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
 
     //    All's good, return with a value.
     {
-        long return_length;
-        return_length = (math_formatter(leftarg[sp], outformat, buf, maxlen));
+        int return_length;
+        return_length = math_formatter(leftarg[sp], outformat, buf, maxlen);
         CRM_ASSERT(return_length >= 0);
         CRM_ASSERT(return_length < WIDTHOF(outformat));
-        outformat[return_length] = '\000';
+        outformat[return_length] = 0;
         return return_length;
     }
 }

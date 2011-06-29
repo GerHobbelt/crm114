@@ -29,7 +29,8 @@
 #include "crm114_osbf.h"
 
 /* Version names */
-char *CSS_version_name[] = {
+char *CSS_version_name[] = 
+{
     "SBPH-Markovian",
     "OSB-Bayes",
     "Correlate",
@@ -98,8 +99,8 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
         fprintf(stderr, " %ld ", microgroom_count);
     }
 
-//   micropack - start at initial chain start, move to back of
-//   chain that overflowed, then scale just that chain.
+ //   micropack - start at initial chain start, move to back of
+ //   chain that overflowed, then scale just that chain.
 
     i = j = hindex % header->buckets;
     min_value = OSBF_FEATUREBUCKET_VALUE_MAX;
@@ -150,75 +151,75 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
     else
         packlen = header->buckets + i - packstart;
 
-//   This pruning method zeroes buckets with minimum count in the chain.
-//   It tries first buckets with minimum distance to their right position,
-//   to increase the chance of zeroing older buckets first. If none with
-//   distance 0 is found, the distance is increased until at least one
-//   bucket is zeroed.
-//
-//   We keep track of how many buckets we've zeroed and we stop
-//   zeroing additional buckets after that point.   NO!  BUG!  That
-//   messes up the tail length, and if we don't repack the tail, then
-//   features in the tail can become permanently inaccessible!   Therefore,
-//   we really can't stop in the middle of the tail (well, we could
-//   stop zeroing, but we need to pass the full length of the tail in.
-//
-//   Note that we can't do this "adaptively" in packcss, because zeroes
-//   there aren't necessarily overflow chain terminators (because -we-
-//   might have inserted them here.
-//
-//   GROT GROT GROT  Note that the following algorithm does multiple
-//   passes to find the lowest-valued features.  In fact, that's
-//   actually rather slow; a better algorithm would keep track of
-//   the N least-valued features in the chain in ONE pass and zero
-//   those.
-//
-//   --
-//   I'm not sure if it's worth working on a better algorithm for this:
-//
-//   This is a statistics report of microgroomings for 4147 messages
-//   of the SpamAssassin corpus. It shows that 77% is done in a single
-//   pass, 95.2% in 1 or 2 passes and 99% in at most 3 passes.
-//
-//   # microgrommings   passes   %    accum. %
-//        232584           1    76.6   76.6
-//         56396           2    18.6   95.2
-//         11172           3     3.7   98.9
-//          2502           4     0.8   99.7
-//           726           5     0.2   99.9
-//           ...
-//   -----------
-//        303773
-//
-//   If we consider only the last 100 microgroomings, when the css
-//   file is full, we'll have the following numbers showing that most
-//   microgroomings (61%) are still done in a single pass, almost 90%
-//   is done in 1 or 2 passes and 97% are done in at most 3 passes:
-//
-//   # microgrommings   passes   %    accum. %
-//          61             1    61      61
-//          27             2    27      88
-//           9             3     9      97
-//           3             4     3     100
-//         ---
-//         100
-//
-//   So, it's not so slow. Anyway, a better algorithm could be
-//   implemented using 2 additional arrays, with MICROGROOM_STOP_AFTER
-//   positions each, to store the indexes of the candidate buckets
-//   found with distance equal to 1 or 2 while we scan for distance 0.
-//   Those with distance 0 are zeroed immediatelly. If none with
-//   distance 0 is found, we'll zero the indexes stored in the first
-//   array. Again, if none is found in the first array, we'll try the
-//   second one. Finally, if none is found in both arrays, the loop
-//   will continue until one bucket is zeroed.
-//
-//   But now comes the question: do the numbers above justify the
-//   additional code/work? I'll try to find out the answer
-//   implementing it :), but this has low priority for now.
-//
-//   -- Fidelis Assis
-//
+	//   This pruning method zeroes buckets with minimum count in the chain.
+	//   It tries first buckets with minimum distance to their right position,
+	//   to increase the chance of zeroing older buckets first. If none with
+	//   distance 0 is found, the distance is increased until at least one
+	//   bucket is zeroed.
+	//
+	//   We keep track of how many buckets we've zeroed and we stop
+	//   zeroing additional buckets after that point.   NO!  BUG!  That
+	//   messes up the tail length, and if we don't repack the tail, then
+	//   features in the tail can become permanently inaccessible!   Therefore,
+	//   we really can't stop in the middle of the tail (well, we could
+	//   stop zeroing, but we need to pass the full length of the tail in.
+	//
+	//   Note that we can't do this "adaptively" in packcss, because zeroes
+	//   there aren't necessarily overflow chain terminators (because -we-
+	//   might have inserted them here.
+	//
+	//   GROT GROT GROT  Note that the following algorithm does multiple
+	//   passes to find the lowest-valued features.  In fact, that's
+	//   actually rather slow; a better algorithm would keep track of
+	//   the N least-valued features in the chain in ONE pass and zero
+	//   those.
+	//
+	//   --
+	//   I'm not sure if it's worth working on a better algorithm for this:
+	//
+	//   This is a statistics report of microgroomings for 4147 messages
+	//   of the SpamAssassin corpus. It shows that 77% is done in a single
+	//   pass, 95.2% in 1 or 2 passes and 99% in at most 3 passes.
+	//
+	//   # microgrommings   passes   %    accum. %
+	//        232584           1    76.6   76.6
+	//         56396           2    18.6   95.2
+	//         11172           3     3.7   98.9
+	//          2502           4     0.8   99.7
+	//           726           5     0.2   99.9
+	//           ...
+	//   -----------
+	//        303773
+	//
+	//   If we consider only the last 100 microgroomings, when the css
+	//   file is full, we'll have the following numbers showing that most
+	//   microgroomings (61%) are still done in a single pass, almost 90%
+	//   is done in 1 or 2 passes and 97% are done in at most 3 passes:
+	//
+	//   # microgrommings   passes   %    accum. %
+	//          61             1    61      61
+	//          27             2    27      88
+	//           9             3     9      97
+	//           3             4     3     100
+	//         ---
+	//         100
+	//
+	//   So, it's not so slow. Anyway, a better algorithm could be
+	//   implemented using 2 additional arrays, with MICROGROOM_STOP_AFTER
+	//   positions each, to store the indexes of the candidate buckets
+	//   found with distance equal to 1 or 2 while we scan for distance 0.
+	//   Those with distance 0 are zeroed immediatelly. If none with
+	//   distance 0 is found, we'll zero the indexes stored in the first
+	//   array. Again, if none is found in the first array, we'll try the
+	//   second one. Finally, if none is found in both arrays, the loop
+	//   will continue until one bucket is zeroed.
+	//
+	//   But now comes the question: do the numbers above justify the
+	//   additional code/work? I'll try to find out the answer
+	//   implementing it :), but this has low priority for now.
+	//
+	//   -- Fidelis Assis
+	//
 
     // try features in their right place first
     max_distance = 1;
@@ -259,8 +260,8 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
                 i = 0;
         }
 
-//  if none was zeroed, increase the allowed distance between the
-//  candidade's position and its right place.
+ //  if none was zeroed, increase the allowed distance between the
+ //  candidade's position and its right place.
 
         if (zeroed_countdown == max_zeroed_buckets)
             max_distance++;
@@ -501,12 +502,13 @@ void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
     }
     else if (delta < 0 && GET_BUCKET_VALUE(hashes[bindex]) <= -delta)
     {
-        BUCKET_RAW_VALUE(hashes[bindex]) = 0;
+		long i, j, packlen;
+
+		BUCKET_RAW_VALUE(hashes[bindex]) = 0;
         BUCKET_HASH(hashes[bindex]) = 0;
         BUCKET_KEY(hashes[bindex]) = 0;
         /* pack chain */
-        {
-            long i, j, packlen;
+    
             i = crm_osbf_next_bindex(header, bindex);
             j = crm_osbf_last_in_chain(header, i);
 
@@ -519,7 +521,6 @@ void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
                     packlen = header->buckets + 1 - (i - j);
                 crm_osbf_packcss(header, i, packlen);
             }
-        }
     }
     else
     {
@@ -546,6 +547,7 @@ void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
     distance = (bindex >= hindex) ? bindex - hindex :
                header->buckets - (hindex - bindex);
     if ((osbf_microgroom != 0) && (value > 0))
+	{
         while (distance > microgroom_chain_length)
         {
             /*
@@ -558,6 +560,7 @@ void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
             distance = (bindex >= hindex) ? bindex - hindex :
                        header->buckets - (hindex - bindex);
         }
+	}
 
     /*
      * fprintf(stderr, "new bucket at %lu, hash: %lu, key: %lu, distance: %lu\n",
@@ -569,7 +572,7 @@ void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
     BUCKET_KEY(hashes[bindex]) = key;
 }
 
-static OSBF_HEADER_UNION hu = { { { 0 } } };
+static OSBF_HEADER_UNION hu = {{{0}}};
 
 int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets,
                             unsigned long major, unsigned long minor,
@@ -577,7 +580,8 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets,
 {
     FILE *f;
     long i;
-    OSBF_FEATUREBUCKET_STRUCT feature = {
+    OSBF_FEATUREBUCKET_STRUCT feature = 
+	{
         0, 0, 0
     };
 

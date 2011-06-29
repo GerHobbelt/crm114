@@ -461,8 +461,7 @@ int crm_create_winnow_cssfile(char *cssfile, long buckets,
 {
     FILE *f;
     long i;
-    FEATUREBUCKET_STRUCT feature = {
-        0 };
+    FEATUREBUCKET_STRUCT feature = {0};
 
     if (user_trace)
         fprintf(stderr, "Opening file %s for writing\n", cssfile);
