@@ -1166,7 +1166,7 @@ not considered in relation to each word, but get considered when the window
 slides over to them).  
 
 The Markovian classifier is quite fast; more than fast enough for a 
-single user or even a small office.  Filtering speed varies- with no
+single user or even a small office.  Filtering speed varies - with no
 optimization and overflow safegaurding (that is, with <microgroom> 
 enabled) filtering speed is usually in excess of what a fractional
 T1 line can downlink.

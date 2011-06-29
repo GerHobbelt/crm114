@@ -43,7 +43,7 @@ long user_trace = 0;
 
 long internal_trace = 0;
 
-long debug_countdown = 0;
+int debug_countdown = 0;
 
 long cmdline_break = 0;
 
@@ -418,10 +418,14 @@ int main(int argc, char **argv)
                             "         file as '-err'. Note also that '-out' and '-err' may specify the standard\n"
                             "         handle values '1' for stdout and '2' for stderr. This implies that '-out 1'\n"
                             "         is essentially identical to the UNIX shell '2>&1' redirection.\n");
-            fprintf(stderr, " -dbg    direct developer support: trigger the debugger when an internal\n"
+#ifndef CRM_DONT_ASSERT
+            fprintf(stderr, " -Cdbg   direct developer support: trigger the C/IDE debugger when an internal\n"
                             "         error is hit.\n");
+#endif
+#if defined (WIN32) && defined (_DEBUG)
             fprintf(stderr, " -memdump\n"
                             "         direct developer support: dump all detected memory leaks\n");
+#endif
 
             if (openparen > 0)
             {
@@ -462,12 +466,12 @@ int main(int argc, char **argv)
             if (user_trace == 0)
             {
                 user_trace = 1;
-                fprintf(stderr, "User tracing on");
+                fprintf(stderr, "User tracing on\n");
             }
             else
             {
                 user_trace = 0;
-                fprintf(stderr, "User tracing off");
+                fprintf(stderr, "User tracing off\n");
             }
             goto end_command_line_parse_loop;
         }
@@ -477,12 +481,12 @@ int main(int argc, char **argv)
             if (internal_trace == 0)
             {
                 internal_trace = 1;
-                fprintf(stderr, "Internal tracing on");
+                fprintf(stderr, "Internal tracing on\n");
             }
             else
             {
                 internal_trace = 0;
-                fprintf(stderr, "Internal tracing off");
+                fprintf(stderr, "Internal tracing off\n");
             }
             goto end_command_line_parse_loop;
         }
@@ -491,7 +495,7 @@ int main(int argc, char **argv)
         {
             profile_execution = 1;
             if (user_trace)
-                fprintf(stderr, "Setting profile_execution to 1");
+                fprintf(stderr, "Setting profile_execution to 1\n");
             goto end_command_line_parse_loop;
         }
 
@@ -554,17 +558,23 @@ int main(int argc, char **argv)
                 {
                     untrappableerror("Failed to decode the numeric -q argument [expansion mode]: ", argv[i]);
                 }
+		if (q_expansion_mode < 0 || q_expansion_mode > 3)
+                {
+                    untrappableerror("You've specified an invalid -q argument.\n"
+			"     (accepted: 0=algebra-eval, 1=RPN-eval, 2=algebra-all, 3=RPN-all)\n"
+			"     You specified -q [expansion mode]: ", argv[i]);
+                }
             }
             if (user_trace)
             {
                 fprintf(stderr, "Setting math mode to %ld ", q_expansion_mode);
                 if (q_expansion_mode == 0)
                     fprintf(stderr, "(algebraic, only in EVAL\n");
-                if (q_expansion_mode == 1)
+                else if (q_expansion_mode == 1)
                     fprintf(stderr, "(RPN, only in EVAL\n");
-                if (q_expansion_mode == 2)
+                else if (q_expansion_mode == 2)
                     fprintf(stderr, "(algebraic, in all expressions)\n");
-                if (q_expansion_mode == 3)
+                else if (q_expansion_mode == 3)
                     fprintf(stderr, "(RPN, in all expressions)\n");
             }
             goto end_command_line_parse_loop;
@@ -583,7 +593,7 @@ int main(int argc, char **argv)
             }
             if (data_window_size < 8192)
             {
-                fprintf(stderr, "Sorry, but the min data window is 8192 bytes");
+                fprintf(stderr, "Sorry, but the min data window is 8192 bytes\n");
                 data_window_size = 8192;
             }
             if (user_trace)
@@ -680,18 +690,18 @@ int main(int argc, char **argv)
             debug_countdown = 0;
             if (i < argc)
             {
-                if (1 != sscanf(argv[i], "%ld", &debug_countdown))
+                if (1 != sscanf(argv[i], "%d", &debug_countdown))
                 {
                     untrappableerror("Failed to decode the numeric -d argument [debug statement countdown]: ", argv[i]);
+			//  if next arg wasn't numeric, back up
+				i--;
                 }
             }
             if (user_trace)
             {
-                fprintf(stderr, "Setting debug countdown to %ld statements\n"
+                fprintf(stderr, "Setting debug countdown to %d statements\n"
                        , debug_countdown);
             }
-            if (debug_countdown == 0)  //  if next arg wasn't numeric, back up
-                i--;
             goto end_command_line_parse_loop;
         }
 
@@ -712,7 +722,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Setting WD to %s\n", argv[i]);
             if (i >= argc)
             {
-                fprintf(stderr, "The -u working-directory change needs an arg");
+                fprintf(stderr, "The -u working-directory change needs an arg\n");
                 goto end_command_line_parse_loop;
             }
             if (chdir(argv[i]))
@@ -1136,29 +1146,24 @@ int main(int argc, char **argv)
             goto end_command_line_parse_loop;
         }
 
-        if (strncmp(argv[i], "-dbg", 4) == 0 && strlen(argv[i]) == 4)
-        {
 #ifndef CRM_DONT_ASSERT
+        if (strncmp(argv[i], "-Cdbg", 5) == 0 && strlen(argv[i]) == 5)
+        {
             trigger_debugger = 1;
             if (user_trace)
                 fprintf(stderr, "Debugger trigger turned ON.\n");
-#else
-            nonfatalerror_ex(SRC_LOC(), "Debugger support is not included in this binary. "
-                                        "Please rebuild with debugger support if you require such.");
-#endif
             goto end_command_line_parse_loop;
         }
+#endif
+#if defined (WIN32) && defined (_DEBUG)
         if (strncmp(argv[i], "-memdump", 8) == 0 && strlen(argv[i]) == 8)
         {
-#if defined (WIN32) && defined (_DEBUG)
             trigger_memdump = 1;
             if (user_trace)
                 fprintf(stderr, "memory leak dump turned ON.\n");
-#else
-            untrappableerror_ex(SRC_LOC(), "Memory leak dump support is not included in this binary.");
-#endif
             goto end_command_line_parse_loop;
         }
+#endif
 
         //  that's all of the flags.  Anything left must be
         //  the name of the file we want to use as a program

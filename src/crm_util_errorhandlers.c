@@ -74,15 +74,15 @@ const char *skip_path(const char *srcfile)
  *      (TODO: may even support multiple formats for easy debugging/code jumping)
  */
 static void generate_err_reason_msg(
-        char       *reason
-                                   , int reason_bufsize
-                                   , int lineno
-                                   , const char *srcfile_full
-                                   , const char *funcname
-                                   , const char *errortype_str
-                                   , const char *encouraging_msg
-                                   , const char *fmt
-                                   , va_list args
+        char       *reason,
+        int         reason_bufsize,
+        int         lineno,
+        const char *srcfile_full,
+        const char *funcname,
+        const char *errortype_str,
+        const char *encouraging_msg,
+        const char *fmt,
+        va_list     args
                                    )
 {
     int widthleft = reason_bufsize;
@@ -280,10 +280,10 @@ void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *funcnam
             *p = 0;
         }
     }
-    CRM_ASSERT_MESSENGER(lineno, srcfile, funcname
-                        , "\nBetter start screaming, guv', since the software's just gone critical:\n"
-                          "assertion '%s' failed!%s%s\n"
-                        , msg, (extra_msg ? "\n" : ""), (extra_msg ? extra_msg : ""));
+    CRM_ASSERT_MESSENGER(lineno, srcfile, funcname,
+            "\nBetter start screaming, guv', since the software's just gone critical:\n"
+            "assertion '%s' failed!%s%s\n",
+            msg, (extra_msg ? "\n" : ""), (extra_msg ? extra_msg : ""));
 }
 
 #endif
@@ -341,8 +341,8 @@ const char *Win32_syserr_descr(DWORD errorcode)
     DWORD fmtret;
     LPSTR dstbuf = NULL;
 
-    fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER
-                           , NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
+    fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+            NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
     if (dstbuf != NULL && fmtret > 0 && *dstbuf)
     {
         strncpy(errstr, dstbuf, WIDTHOF(errstr));
@@ -368,11 +368,11 @@ const char *Win32_syserr_descr(DWORD errorcode)
 //     exit, not a prayer of survival.
 void untrappableerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
-    untrappableerror_ex(lineno, srcfile, funcname
-                       , (text2 && strlen(text2) <= 1024
-                          ? " %.1024s %.1024s\n"
-                          : " %.1024s %.1024s(...truncated)\n")
-                       , text1, text2);
+    untrappableerror_ex(lineno, srcfile, funcname,
+            (text2 && strlen(text2) <= 1024
+             ? " %.1024s %.1024s\n"
+             : " %.1024s %.1024s(...truncated)\n"),
+            text1, text2);
 }
 
 void untrappableerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -389,15 +389,15 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
     char reason[MAX_PATTERN];
 
     generate_err_reason_msg(
-            reason
-                           , WIDTHOF(reason)
-                           , lineno
-                           , srcfile
-                           , funcname
-                           , " *UNTRAPPABLE ERROR*"
-                           , NULL
-                           , fmt
-                           , args);
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            " *UNTRAPPABLE ERROR*",
+            NULL,
+            fmt,
+            args);
     fputs(reason, stderr);
 
     if (engine_exit_base != 0)
@@ -419,11 +419,11 @@ long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const
     //   long, so we put out only the first 1024 characters
     //
 
-    return fatalerror_ex(lineno, srcfile, funcname
-                        , (text2 && strlen(text2) <= 1024 ?
-                           " %.1024s %.1024s\n" :
-                           " %.1024s %.1024s(...truncated)\n")
-                        , text1, text2);
+    return fatalerror_ex(lineno, srcfile, funcname,
+            (text2 && strlen(text2) <= 1024 ?
+             " %.1024s %.1024s\n" :
+             " %.1024s %.1024s(...truncated)\n"),
+            text1, text2);
 }
 
 long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -442,15 +442,15 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
     char reason[MAX_PATTERN];
 
     generate_err_reason_msg(
-            reason
-                           , WIDTHOF(reason)
-                           , lineno
-                           , srcfile
-                           , funcname
-                           , " *ERROR*"
-                           , NULL
-                           , fmt
-                           , args);
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            " *ERROR*",
+            NULL,
+            fmt,
+            args);
 
 
     fputs(reason, stderr);
@@ -467,11 +467,11 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
 
 long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
-    return nonfatalerror_ex(lineno, srcfile, funcname
-                           , (text2 && strlen(text2) <= 1024 ?
-                              " %.1024s %.1024s\n" :
-                              " %.1024s %.1024s(...truncated)\n")
-                           , text1, text2);
+    return nonfatalerror_ex(lineno, srcfile, funcname,
+            (text2 && strlen(text2) <= 1024 ?
+             " %.1024s %.1024s\n" :
+             " %.1024s %.1024s(...truncated)\n"),
+            text1, text2);
 }
 
 long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -493,15 +493,15 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, con
     char reason[MAX_PATTERN];
 
     generate_err_reason_msg(
-            reason
-                           , WIDTHOF(reason)
-                           , lineno
-                           , srcfile
-                           , funcname
-                           , " *WARNING*"
-                           , "I'll try to keep working.\n"
-                           , fmt
-                           , args);
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            " *WARNING*",
+            "I'll try to keep working.\n",
+            fmt,
+            args);
 
     fputs(reason, stderr);
 
@@ -511,9 +511,9 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, con
     {
         if (!nonfatalerrorcount_max_reported)
         {
-            fatalerror_ex(lineno, srcfile, funcname
-                         , "Too many untrapped warnings; your program is very likely unrecoverably broken.\n"
-                           "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
+            fatalerror_ex(lineno, srcfile, funcname,
+                    "Too many untrapped warnings; your program is very likely unrecoverably broken.\n"
+                    "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
             nonfatalerrorcount_max_reported = 1; /* don't keep on yakking about too many whatever... */
         }
     }

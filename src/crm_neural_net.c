@@ -191,9 +191,9 @@ static int make_new_backing_file(const char *filename)
 
     if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
     {
-        fatalerror_ex(SRC_LOC()
-                     , "\n Couldn't write header to file %s; errno=%d(%s)\n"
-                     , filename, errno, errno_descr(errno));
+        fatalerror_ex(SRC_LOC(),
+                "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                filename, errno, errno_descr(errno));
         fclose(f);
         return -1;
     }
@@ -203,18 +203,18 @@ static int make_new_backing_file(const char *filename)
     h.hidden_layer_size = hidden_layer_size;
     if (1 != fwrite(&h, sizeof(NEURAL_NET_HEAD_STRUCT), 1, f))
     {
-        fatalerror_ex(SRC_LOC()
-                     , "\n Couldn't write Neural Net header to file %s; errno=%d(%s)\n"
-                     , filename, errno, errno_descr(errno));
+        fatalerror_ex(SRC_LOC(),
+                "\n Couldn't write Neural Net header to file %s; errno=%d(%s)\n",
+                filename, errno, errno_descr(errno));
         fclose(f);
         return -1;
     }
 
     if (file_memset(f, 0, HEADER_SIZE - sizeof(NEURAL_NET_HEAD_STRUCT)))
     {
-        fatalerror_ex(SRC_LOC()
-                     , "\n Couldn't write to file %s; errno=%d(%s)\n"
-                     , filename, errno, errno_descr(errno));
+        fatalerror_ex(SRC_LOC(),
+                "\n Couldn't write to file %s; errno=%d(%s)\n",
+                filename, errno, errno_descr(errno));
         fclose(f);
         return -1;
     }
@@ -228,9 +228,9 @@ static int make_new_backing_file(const char *filename)
         float a = ((0.2 * rand()) / RAND_MAX) - 0.1;
         if (1 != fwrite(&a, sizeof(a), 1, f))
         {
-            fatalerror_ex(SRC_LOC()
-                         , "\n Couldn't write Neural Net Coefficients to file %s; errno=%d(%s)\n"
-                         , filename, errno, errno_descr(errno));
+            fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't write Neural Net Coefficients to file %s; errno=%d(%s)\n",
+                    filename, errno, errno_descr(errno));
             fclose(f);
             return -1;
         }
@@ -253,13 +253,13 @@ static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
         return -1;
     }
     filesize_on_disk = statee.st_size;
-    nn->file_origin = crm_mmap_file(filename
-                                   , 0
-                                   , filesize_on_disk
-                                   , PROT_READ | PROT_WRITE
-                                   , MAP_SHARED
-                                   , CRM_MADV_RANDOM
-                                   , &filesize_on_disk);
+    nn->file_origin = crm_mmap_file(filename,
+            0,
+            filesize_on_disk,
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED,
+            CRM_MADV_RANDOM,
+            &filesize_on_disk);
     if (nn->file_origin == MAP_FAILED)
     {
         nonfatalerror("unable to map neural network backing file", "filename");
@@ -297,8 +297,8 @@ static int map_file(NEURAL_NET_STRUCT *nn, char *filename)
     if (!nn->Win || !nn->Whid || !nn->Wout)
     {
         nonfatalerror("unable to malloc, tell Joe to make the NN use macros"
-                      " instead of caching easily computable addresses"
-                     , "filename");
+                      " instead of caching easily computable addresses",
+                "filename");
         return -1;
     }
 
@@ -454,15 +454,15 @@ static void do_net
     output_layer[1] = logistic(nn->output_layer[1]);
     if (0 && internal_trace)
     {
-        fprintf(stderr, "ran do_net on doc at %p and got (%f, %f)\n", bag
-               , output_layer[0], output_layer[1]);
+        fprintf(stderr, "ran do_net on doc at %p and got (%f, %f)\n", bag,
+                output_layer[0], output_layer[1]);
     }
 }
 
 
-static int do_net_learn_back_prop_with_noise(NEURAL_NET_STRUCT *nn
-                                            , crmhash_t  *bag, long n
-                                            , long in_class)
+static int do_net_learn_back_prop_with_noise(NEURAL_NET_STRUCT *nn,
+        crmhash_t  *bag, long n,
+        long in_class)
 {
     long i, j, k, absent_shift;
     double scoro;
@@ -568,8 +568,8 @@ static int do_net_learn_back_prop_with_noise(NEURAL_NET_STRUCT *nn
 
     if (user_trace && internal_trace)
     {
-        fprintf(stderr, "learning doc at %p and scored %f\t%f\t%f\n", bag
-               , scoro, nn->output_layer[0], nn->output_layer[1]);
+        fprintf(stderr, "learning doc at %p and scored %f\t%f\t%f\n", bag,
+                scoro, nn->output_layer[0], nn->output_layer[1]);
     }
 
 
@@ -619,8 +619,8 @@ static int do_net_learn_back_prop_with_noise(NEURAL_NET_STRUCT *nn
     {
         if (0 && internal_trace)
         {
-            fprintf(stderr, "not learning doc at %p which scored %f\t%f\t%f\n"
-                   , bag, scoro, nn->output_layer[0], nn->output_layer[1]);
+            fprintf(stderr, "not learning doc at %p which scored %f\t%f\t%f\n",
+                    bag, scoro, nn->output_layer[0], nn->output_layer[1]);
         }
         return 0;
     }
@@ -770,11 +770,11 @@ static int compare_hash_vals(const void *a, const void *b)
 //      can and should be replaced by the vector tokenizer soon.
 //         GROT GROT GROT
 //
-static int eat_document(ARGPARSE_BLOCK *apb
-                       , char *text, long text_len, long *ate
-                       , regex_t *regee
-                       , crmhash_t *feature_space, long max_features
-                       , uint64_t flags, crmhash_t *sum)
+static int eat_document(ARGPARSE_BLOCK *apb,
+        char *text, long text_len, long *ate,
+        regex_t *regee,
+        crmhash_t *feature_space, long max_features,
+        uint64_t flags, crmhash_t *sum)
 {
     long n_features = 0, i, j;
     crmhash_t /* unsigned long */ hash_pipe[OSB_BAYES_WINDOW_LEN];
@@ -919,8 +919,8 @@ static void print_doc_info(NEURAL_NET_STRUCT *nn)
         while (*k++)
             ;
         do_net(nn, start + 3, k - start - 3, o);
-        fprintf(stderr, "document #%d @ %p is %d long\t(%d,%d,%d)\t(%f,%f)\n"
-               , i, start, (int)(k - start), in_class, good, hash, o[0], o[1]);
+        fprintf(stderr, "document #%d @ %p is %d long\t(%d,%d,%d)\t(%f,%f)\n",
+                i, start, (int)(k - start), in_class, good, hash, o[0], o[1]);
         start = k;
         i++;
     }
@@ -928,8 +928,8 @@ static void print_doc_info(NEURAL_NET_STRUCT *nn)
 
 
 //entry point for learning
-int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                        , char *txtptr, long txtstart, long txtlen)
+int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     NEURAL_NET_STRUCT NN, *nn = &NN;
     char *filename;
@@ -981,12 +981,22 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     htext_len = apb->p1len;
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
 
+#if 10
     i = 0;
     while (htext[i] < 0x021)
         i++;
+    CRM_ASSERT(i < htext_len);
     j = i;
     while (htext[j] >= 0x021)
         j++;
+    CRM_ASSERT(j <= htext_len);
+#else
+ crm_nextword(htext, 0, htext_len, &i, &j);
+ j += i;
+    CRM_ASSERT(i < htext_len);
+    CRM_ASSERT(j <= htext_len);
+#endif
+
     htext[j] = 0;
     filename = strdup(&htext[i]);
 
@@ -1005,8 +1015,8 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         free(filename);
         return 0;
     }
-    n = eat_document(apb, txtptr + txtstart, txtlen, &i
-                    , &regee, bag, WIDTHOF(bag), apb->sflags, &sum);
+    n = eat_document(apb, txtptr + txtstart, txtlen, &i,
+            &regee, bag, WIDTHOF(bag), apb->sflags, &sum);
 
     //    Now we've got features, save them in the backing file.
     //
@@ -1066,8 +1076,8 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         {
             if (internal_trace)
             {
-                fprintf(stderr
-                       , "NN: not going to train the network on a null string, thank you.\n");
+                fprintf(stderr,
+                        "NN: not going to train the network on a null string, thank you.\n");
             }
         }
         else
@@ -1077,11 +1087,11 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             f = fopen(filename, "ab+");
             if (f == NULL)
             {
-                int fev = fatalerror_ex(SRC_LOC()
-                                       , "\n Couldn't open your new CSS file %s for append; errno=%d(%s)\n"
-                                       , filename
-                                       , errno
-                                       , errno_descr(errno));
+                int fev = fatalerror_ex(SRC_LOC(),
+                        "\n Couldn't open your new CSS file %s for append; errno=%d(%s)\n",
+                        filename,
+                        errno,
+                        errno_descr(errno));
                 free(filename);
                 return fev;
             }
@@ -1102,8 +1112,8 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
                     if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
                     {
-                        fatalerror("Couldn't write the header to the .hypsvm file named "
-                                  , filename);
+                        fatalerror("Couldn't write the header to the .hypsvm file named ",
+                                filename);
                         fclose(f);
                         free(filename);
                         return -1;
@@ -1125,8 +1135,8 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                 retv += fwrite(ret, sizeof(ret[0]), rn, f); // the actual data
                 if (retv != 1 + 1 + 1 + rn)
                 {
-                    fatalerror("Couldn't write the solution to the .hypsvm file named "
-                              , filename);
+                    fatalerror("Couldn't write the solution to the .hypsvm file named ",
+                            filename);
                     fclose(f);
                     free(filename);
                     return -1;
@@ -1228,8 +1238,8 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         {
             if (internal_trace)
             {
-                fprintf(stderr, "neural: failed to converge after %d training cycles\n"
-                       , NN_MAX_TRAINING_CYCLES);
+                fprintf(stderr, "neural: failed to converge after %d training cycles\n",
+                        NN_MAX_TRAINING_CYCLES);
             }
         }
 
@@ -1288,8 +1298,8 @@ int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     return 0;
 }
 
-int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                           , char *txtptr, long txtstart, long txtlen)
+int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     char filenames_field[MAX_PATTERN];
     long filenames_field_len;
@@ -1391,20 +1401,20 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
     if (internal_trace)
     {
-        fprintf(stderr, "Diagnostic: fail_on = %ld n_classifiers = %ld\n"
-               , fail_on, n_classifiers);
+        fprintf(stderr, "Diagnostic: fail_on = %ld n_classifiers = %ld\n",
+                fail_on, n_classifiers);
         for (i = 0; i < n_classifiers; i++)
             fprintf(stderr, "filenames[%ld] = >%s<\n", i, filenames[i]);
     }
 
-    n = eat_document(apb, txtptr + txtstart, txtlen, &j
-                    , &regee, bag, WIDTHOF(bag), apb->sflags, &sum);
+    n = eat_document(apb, txtptr + txtstart, txtlen, &j,
+            &regee, bag, WIDTHOF(bag), apb->sflags, &sum);
 
     if (internal_trace)
     {
-        fprintf(stderr
-               , "files: %ld, Filename0: >%s<  Filename1: >%s<  Filename2: >%s<\n"
-               , n_classifiers, filenames[0], filenames[1], filenames[2]);
+        fprintf(stderr,
+                "files: %ld, Filename0: >%s<  Filename1: >%s<  Filename2: >%s<\n",
+                n_classifiers, filenames[0], filenames[1], filenames[2]);
     }
 
     //loop over classifiers and calc scores
@@ -1412,8 +1422,8 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     {
         if (internal_trace)
         {
-            fprintf(stderr,  "Now running filenames[%ld] = >%s<\n"
-                   , i, filenames[i]);
+            fprintf(stderr,  "Now running filenames[%ld] = >%s<\n",
+                    i, filenames[i]);
         }
         if (map_file(nn, filenames[i]))
         {
@@ -1429,8 +1439,8 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         unmap_file(nn, filenames[i]);
         if (internal_trace)
         {
-            fprintf(stderr, "%s:\t%f\t%f\n"
-                   , filenames[i], output[i][0], output[i][1]);
+            fprintf(stderr, "%s:\t%f\t%f\n",
+                    filenames[i], output[i][0], output[i][1]);
         }
     }
     tot = 0.0;
@@ -1463,32 +1473,32 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     if (suc_p > 0.5)
     {
         //test for nan as well
-        out_pos += sprintf(outbuf + out_pos
-                          , "CLASSIFY succeeds; success probability: %f  pR: %6.4f\n"
-                          , suc_p, suc_pR);
+        out_pos += sprintf(outbuf + out_pos,
+                "CLASSIFY succeeds; success probability: %f  pR: %6.4f\n",
+                suc_p, suc_pR);
     }
     else
     {
-        out_pos += sprintf(outbuf + out_pos
-                          , "CLASSIFY fails; success probability: %f  pR: %6.4f\n"
-                          , suc_p, suc_pR);
+        out_pos += sprintf(outbuf + out_pos,
+                "CLASSIFY fails; success probability: %f  pR: %6.4f\n",
+                suc_p, suc_pR);
     }
 
-    out_pos += sprintf(outbuf + out_pos
-                      , "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f  \n"
-                      , j
-                      , filenames[j]
-                      , p[j], pR[j]);
+    out_pos += sprintf(outbuf + out_pos,
+            "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f  \n",
+            j,
+            filenames[j],
+            p[j], pR[j]);
 
-    out_pos += sprintf(outbuf + out_pos
-                      , "Total features in input file: %ld\n"
-                      , n);
+    out_pos += sprintf(outbuf + out_pos,
+            "Total features in input file: %ld\n",
+            n);
 
     for (i = 0; i < n_classifiers; i++)
     {
-        out_pos += sprintf(outbuf + out_pos
-                          , "#%ld (%s): prob: %3.2e, pR: %6.2f\n"
-                          , i, filenames[i], p[i], pR[i]);
+        out_pos += sprintf(outbuf + out_pos,
+                "#%ld (%s): prob: %3.2e, pR: %6.2f\n",
+                i, filenames[i], p[i], pR[i]);
     }
 
     if (out_var_len)
@@ -1504,24 +1514,96 @@ int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
 #else /* CRM_WITHOUT_NEURAL_NET */
 
-int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                        , char *txtptr, long txtstart, long txtlen)
+int crm_neural_net_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "FSCM");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Neural Net");
 }
 
 
-int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                           , char *txtptr, long txtstart, long txtlen)
+int crm_neural_net_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "FSCM");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Neural Net");
 }
 
 #endif /* CRM_WITHOUT_NEURAL_NET */
+
+
+
+
+int crm_neural_net_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Neural Net");
+}
+
+
+int crm_neural_net_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Neural Net");
+}
+
+
+int crm_neural_net_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Neural Net");
+}
+
+
+int crm_neural_net_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Neural Net");
+}
+
+
+int crm_neural_net_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Neural Net");
+}
+
+
+int crm_neural_net_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Neural Net");
+}
+
+
+int crm_neural_net_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Neural Net");
+}
 

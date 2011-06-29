@@ -43,16 +43,16 @@
 //
 static const long hctable[] =
 {
-    1, 7
-    , 3, 13
-    , 5, 29
-    , 11, 51
-    , 23, 101
-    , 47, 203
-    , 97, 407
-    , 197, 817
-    , 397, 1637
-    , 797, 3277
+    1, 7,
+    3, 13,
+    5, 29,
+    11, 51,
+    23, 101,
+    47, 203,
+    97, 407,
+    197, 817,
+    397, 1637,
+    797, 3277
 };
 
 //          Where does the nominative data start?
@@ -83,8 +83,8 @@ static int get_next_token(struct token_search *pts)
 
         if (pts->ptok < pts->max_ptok)
         {
-            error = crm_regexec(pts->regcb, (char *)pts->ptok
-                               , pts->max_ptok - pts->ptok, 5, match, 0, NULL);
+            error = crm_regexec(pts->regcb, (char *)pts->ptok,
+                    pts->max_ptok - pts->ptok, 5, match, 0, NULL);
             if (error == REG_NOMATCH)
             {
                 match[0].rm_so = 0;
@@ -186,8 +186,8 @@ static unsigned long get_next_hash(struct token_search *pts)
 //    word terms that may not strictly be necessary.
 //
 
-int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                             , char *txtptr, long txtstart, long txtlen)
+int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     //     learn the osb_bayes transform spectrum of this input window as
     //     belonging to a particular type.
@@ -286,12 +286,21 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
+#if 10
     i = 0;
     while (htext[i] < 0x021)
         i++;
+    CRM_ASSERT(i < hlen);
     j = i;
     while (htext[j] >= 0x021)
         j++;
+    CRM_ASSERT(j <= hlen);
+#else
+ crm_nextword(htext, 0, hlen, &i, &j);
+ j += i;
+    CRM_ASSERT(i < hlen);
+    CRM_ASSERT(j <= hlen);
+#endif
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
@@ -303,18 +312,18 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     //             quick check- does the file even exist?
     if (k != 0)
     {
-        if (crm_osbf_create_cssfile(learnfilename
-                                   , ((sparse_spectrum_file_length != 0) ?
-                                      sparse_spectrum_file_length :
-                                      OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH)
-                                   , OSBF_VERSION, 0
-                                   , OSBF_CSS_SPECTRA_START) != EXIT_SUCCESS)
+        if (crm_osbf_create_cssfile(learnfilename,
+                    ((sparse_spectrum_file_length != 0) ?
+                     sparse_spectrum_file_length :
+                     OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH),
+                    OSBF_VERSION, 0,
+                    OSBF_CSS_SPECTRA_START) != EXIT_SUCCESS)
         {
-            fev = fatalerror_ex(SRC_LOC()
-                               , "\n Couldn't create file %s; errno=%d(%s)\n"
-                               , learnfilename
-                               , errno
-                               , errno_descr(errno));
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't create file %s; errno=%d(%s)\n",
+                    learnfilename,
+                    errno,
+                    errno_descr(errno));
             // return fev;
             exit(EXIT_FAILURE);
         }
@@ -327,13 +336,13 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     //
     //         open the hash file into memory so we can bitwhack it
     //
-    header = crm_mmap_file(learnfilename
-                          , 0
-                          , statbuf.st_size
-                          , PROT_READ | PROT_WRITE
-                          , MAP_SHARED
-                          , CRM_MADV_RANDOM
-                          , NULL);
+    header = crm_mmap_file(learnfilename,
+            0,
+            statbuf.st_size,
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED,
+            CRM_MADV_RANDOM,
+            NULL);
 
     if (header == MAP_FAILED)
     {
@@ -346,9 +355,9 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     //
     if (user_trace)
     {
-        fprintf(stderr
-               , "Sparse spectra file %s has length %ld bins\n"
-               , learnfilename, header->buckets);
+        fprintf(stderr,
+                "Sparse spectra file %s has length %ld bins\n",
+                learnfilename, header->buckets);
     }
 
     hashes = (OSBF_FEATUREBUCKET_STRUCT *)header + header->buckets_start;
@@ -358,8 +367,8 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     if (*((unsigned long *)header->version) != OSBF_VERSION
         || header->flags != 0)
     {
-        fprintf(stderr, "Version was: %ld, flags was %ld\n"
-               , *((unsigned long *)header->version), header->flags);
+        fprintf(stderr, "Version was: %ld, flags was %ld\n",
+                *((unsigned long *)header->version), header->flags);
         fev =
             fatalerror
             ("The .cfc file is the wrong type!  We're expecting "
@@ -457,13 +466,13 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         {
             memmove(tempbuf, ts.ptok, ts.toklen);
             tempbuf[ts.toklen] = 0;
-            fprintf(stderr
-                   , "  Learn #%ld t.o. %ld strt %ld end %ld len %lu is -%s-\n"
-                   , i
-                   , textoffset
-                   , (long)(ts.ptok - (unsigned char *)&(txtptr[textoffset]))
-                   , (long)((ts.ptok + ts.toklen) - (unsigned char *)&(txtptr[textoffset]))
-                   , ts.toklen, tempbuf);
+            fprintf(stderr,
+                    "  Learn #%ld t.o. %ld strt %ld end %ld len %lu is -%s-\n",
+                    i,
+                    textoffset,
+                    (long)(ts.ptok - (unsigned char *)&(txtptr[textoffset])),
+                    (long)((ts.ptok + ts.toklen) - (unsigned char *)&(txtptr[textoffset])),
+                    ts.toklen, tempbuf);
         }
 
         //      Shift the hash pipe down one
@@ -511,8 +520,8 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
                 if (internal_trace)
                 {
-                    fprintf(stderr
-                           , "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n", j, (unsigned long)h1, (unsigned long)h2);
+                    fprintf(stderr,
+                            "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n", j, (unsigned long)h1, (unsigned long)h2);
                 }
 
                 //
@@ -531,8 +540,8 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                             crm_osbf_update_bucket(header, bindex, sense);
                             if (internal_trace)
                             {
-                                fprintf(stderr, "Updated feature at %ld\n"
-                                       , hindex);
+                                fprintf(stderr, "Updated feature at %ld\n",
+                                        hindex);
                             }
                         }
                     }
@@ -549,9 +558,9 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     ("Your program is stuffing too many "
                      "features into this size .cfc file.  "
                      "Adding any more features is "
-                     "impossible in this file."
-                    , "You are advised to build a larger "
-                      ".cfc file and merge your data into it.");
+                     "impossible in this file.",
+                            "You are advised to build a larger "
+                            ".cfc file and merge your data into it.");
                     goto learn_end_regex_loop;
                 }
             }
@@ -575,9 +584,9 @@ learn_end_regex_loop:
                 BUCKET_RAW_VALUE(hashes[i]) = BUCKET_RAW_VALUE(hashes[i]) >> 1;
             nonfatalerror
             ("You have managed to LEARN so many documents that"
-             " you have forced rescaling of the entire database."
-            , " If you are the first person to do this, Fidelis "
-              " owes you a bottle of good singlemalt scotch");
+             " you have forced rescaling of the entire database.",
+                    " If you are the first person to do this, Fidelis "
+                    " owes you a bottle of good singlemalt scotch");
         }
     }
     else if (header->learnings >= (unsigned long)(-sense))
@@ -613,8 +622,8 @@ regcomp_failed:
 
 //      How to do a Osb_Bayes CLASSIFY some text.
 //
-int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                                , char *txtptr, long txtstart, long txtlen)
+int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -901,8 +910,8 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                 if (vbar_seen)
                 {
                     nonfatalerror
-                    ("Only one ' | ' allowed in a CLASSIFY. \n"
-                    , "We'll ignore it for now.");
+                    ("Only one ' | ' allowed in a CLASSIFY. \n",
+                            "We'll ignore it for now.");
                 }
                 else
                 {
@@ -926,13 +935,13 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     //
                     hashlens[maxhash] = statbuf.st_size;
                     //  mmap the hash file into memory so we can bitwhack it
-                    header[maxhash] = crm_mmap_file(fname
-                                                   , 0
-                                                   , hashlens[maxhash]
-                                                   , PROT_READ | PROT_WRITE
-                                                   , MAP_SHARED
-                                                   , CRM_MADV_RANDOM
-                                                   , &hashlens[maxhash]);
+                    header[maxhash] = crm_mmap_file(fname,
+                            0,
+                            hashlens[maxhash],
+                            PROT_READ | PROT_WRITE,
+                            MAP_SHARED,
+                            CRM_MADV_RANDOM,
+                            &hashlens[maxhash]);
                     if (header[maxhash] == MAP_FAILED)
                     {
                         nonfatalerror("Couldn't memory-map the table file", fname);
@@ -950,8 +959,8 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                         {
                             fev =
                                 fatalerror
-                                ("The .cfc file is the wrong version!  Filename is: "
-                                , fname);
+                                ("The .cfc file is the wrong version!  Filename is: ",
+                                        fname);
                             return fev;
                         }
 
@@ -976,8 +985,8 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                         hashname[maxhash] = (char *)calloc((fnlen + 10), sizeof(hashname[maxhash][0]));
                         if (!hashname[maxhash])
                         {
-                            untrappableerror("Couldn't alloc hashname[maxhash]\n"
-                                            , "We need that part later, so we're stuck. Sorry.");
+                            untrappableerror("Couldn't alloc hashname[maxhash]\n",
+                                    "We need that part later, so we're stuck. Sorry.");
                         }
                         strncpy(hashname[maxhash], fname, fnlen);
                         hashname[maxhash][fnlen] = 0;
@@ -987,8 +996,8 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             }
             if (maxhash > MAX_CLASSIFIERS - 1)
             {
-                nonfatalerror("Too many classifier files."
-                             , "Some may have been disregarded");
+                nonfatalerror("Too many classifier files.",
+                        "Some may have been disregarded");
             }
         }
     }
@@ -998,8 +1007,8 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         seen_features[i] = calloc(header[i]->buckets, sizeof(seen_features[i][0]));
         if (!seen_features[i])
         {
-            untrappableerror("Couldn't alloc seen features array\n"
-                            , "We need that part later, so we're stuck.  Sorry.");
+            untrappableerror("Couldn't alloc seen features array\n",
+                    "We need that part later, so we're stuck.  Sorry.");
         }
         memset(seen_features[i], 0, header[i]->buckets);
 
@@ -1023,9 +1032,9 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         return 0;
 
     if (user_trace)
-        fprintf(stderr
-               , "Running with %ld files for success out of %ld files\n"
-               , succhash, maxhash);
+        fprintf(stderr,
+                "Running with %ld files for success out of %ld files\n",
+                succhash, maxhash);
     // sanity checks...  Uncomment for super-strict CLASSIFY.
     //
     //    do we have at least 1 valid .cfc files?
@@ -1108,15 +1117,15 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         {
             memmove(tempbuf, ts.ptok, ts.toklen);
             tempbuf[ts.toklen] = 0;
-            fprintf(stderr
-                   , "  Classify #%ld t.o. %ld strt %ld end %ld len %lu is -%s-\n"
-                   , i
-                   , textoffset
-                   , (long)(ts.ptok -
-                            (unsigned char *)&(txtptr[textoffset]))
-                   , (long)((ts.ptok + ts.toklen) -
-                            (unsigned char *)&(txtptr[textoffset]))
-                   , ts.toklen, tempbuf);
+            fprintf(stderr,
+                    "  Classify #%ld t.o. %ld strt %ld end %ld len %lu is -%s-\n",
+                    i,
+                    textoffset,
+                    (long)(ts.ptok -
+                           (unsigned char *)&(txtptr[textoffset])),
+                    (long)((ts.ptok + ts.toklen) -
+                           (unsigned char *)&(txtptr[textoffset])),
+                    ts.toklen, tempbuf);
         }
 
         //  slide previous hashes up 1
@@ -1164,8 +1173,8 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
                 if (internal_trace)
                 {
-                    fprintf(stderr
-                           , "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n", j, (unsigned long)h1, (unsigned long)h2);
+                    fprintf(stderr,
+                            "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n", j, (unsigned long)h1, (unsigned long)h2);
                 }
                 //
                 //    Note - a strict interpretation of Bayesian
@@ -1429,16 +1438,16 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                         confidence_factor =
                             pow((diff_hits * diff_hits +
                                  hits_max_p * hits_min_p -
-                                 K1 / sum_hits) / (sum_hits * sum_hits)
-                               , K2) / (1.0 + K3 / (sum_hits * feature_weight[j]));
+                                 K1 / sum_hits) / (sum_hits * sum_hits),
+                                    K2) / (1.0 + K3 / (sum_hits * feature_weight[j]));
                     }
 
                     if (internal_trace)
                     {
-                        fprintf(stderr
-                               , "CF: %.4f, max_hits = %3ld, min_hits = %3ld, "
-                                 "weight: %5.1f\n", confidence_factor
-                               , (long)hits_max_p, (long)hits_min_p, feature_weight[j]);
+                        fprintf(stderr,
+                                "CF: %.4f, max_hits = %3ld, min_hits = %3ld, "
+                                "weight: %5.1f\n", confidence_factor,
+                                (long)hits_max_p, (long)hits_min_p, feature_weight[j]);
                     }
                 }
 
@@ -1462,12 +1471,12 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
                     if (internal_trace)
                     {
-                        fprintf(stderr
-                               , "CF: %.4f, totalhits[k]: %lu, missedfeatures[k]: %lu, "
-                                 "uniquefeatures[k]: %lu, totalfeatures: %lu, "
-                                 "weight: %5.1f\n", confidence_factor
-                               , (long)totalhits[k], missedfeatures[k]
-                               , uniquefeatures[k], totalfeatures, feature_weight[j]);
+                        fprintf(stderr,
+                                "CF: %.4f, totalhits[k]: %lu, missedfeatures[k]: %lu, "
+                                "uniquefeatures[k]: %lu, totalfeatures: %lu, "
+                                "weight: %5.1f\n", confidence_factor,
+                                (long)totalhits[k], missedfeatures[k],
+                                uniquefeatures[k], totalfeatures, feature_weight[j]);
                     }
                 }
 
@@ -1479,11 +1488,11 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                 {
                     for (k = 0; k < maxhash; k++)
                     {
-                        fprintf(stderr
-                               , " poly: %d  filenum: %d, HTF: %7ld, "
-                                 "learnings: %7lu, hits: %7ld, "
-                                 "Pc: %6.4e\n", j, k, (long)htf
-                               , header[k]->learnings, (long)hits[k], ptc[k]);
+                        fprintf(stderr,
+                                " poly: %d  filenum: %d, HTF: %7ld, "
+                                "learnings: %7lu, hits: %7ld, "
+                                "Pc: %6.4e\n", j, k, (long)htf,
+                                header[k]->learnings, (long)hits[k], ptc[k]);
                     }
                 }
                 //
@@ -1526,8 +1535,8 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     if (user_trace)
     {
         for (k = 0; k < maxhash; k++)
-            fprintf(stderr
-                   , "Probability of match for file %ld: %f\n", k, ptc[k]);
+            fprintf(stderr,
+                    "Probability of match for file %ld: %f\n", k, ptc[k]);
     }
     //
     tprob = 0.0;
@@ -1565,16 +1574,16 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             // if a pR offset was given, print it together with the real pR
             if (oslen > 0)
             {
-                sprintf(buf
-                       , "CLASSIFY succeeds; success probability: "
-                         "%6.4f  pR: %6.4f/%6.4f\n"
-                       , tprob, overall_pR, pR_offset);
+                sprintf(buf,
+                        "CLASSIFY succeeds; success probability: "
+                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        tprob, overall_pR, pR_offset);
             }
             else
             {
-                sprintf(buf
-                       , "CLASSIFY succeeds; success probability: "
-                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+                sprintf(buf,
+                        "CLASSIFY succeeds; success probability: "
+                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
         else
@@ -1582,16 +1591,16 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             // if a pR offset was given, print it together with the real pR
             if (oslen > 0)
             {
-                sprintf(buf
-                       , "CLASSIFY fails; success probability: "
-                         "%6.4f  pR: %6.4f/%6.4f\n"
-                       , tprob, overall_pR, pR_offset);
+                sprintf(buf,
+                        "CLASSIFY fails; success probability: "
+                        "%6.4f  pR: %6.4f/%6.4f\n",
+                        tprob, overall_pR, pR_offset);
             }
             else
             {
-                sprintf(buf
-                       , "CLASSIFY fails; success probability: "
-                         "%6.4f  pR: %6.4f\n", tprob, overall_pR);
+                sprintf(buf,
+                        "CLASSIFY fails; success probability: "
+                        "%6.4f  pR: %6.4f\n", tprob, overall_pR);
             }
         }
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
@@ -1611,10 +1620,10 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             }
         }
         snprintf(buf, WIDTHOF(buf), "Best match to file #%ld (%s) "
-                                    "prob: %6.4f  pR: %6.4f\n"
-                , bestseen
-                , hashname[bestseen]
-                , ptc[bestseen], (log10(ptc[bestseen]) - log10(remainder)));
+                                    "prob: %6.4f  pR: %6.4f\n",
+                bestseen,
+                hashname[bestseen],
+                ptc[bestseen], (log10(ptc[bestseen]) - log10(remainder)));
         buf[WIDTHOF(buf) - 1] = 0;
         if (strlen(stext) + strlen(buf) <= stext_maxlen)
             strcat(stext, buf);
@@ -1632,14 +1641,14 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     remainder = remainder + ptc[m];
                 }
             }
-            snprintf(buf, WIDTHOF(buf)
-                    , "#%ld (%s):"
-                      " hits: %ld, ufeats: %ld, prob: %3.2e, pR: %6.2f\n"
-                    , k
-                    , hashname[k]
-                    , (long)totalhits[k]
-                    , uniquefeatures[k]
-                    , ptc[k], (log10(ptc[k]) - log10(remainder)));
+            snprintf(buf, WIDTHOF(buf),
+                    "#%ld (%s):"
+                    " hits: %ld, ufeats: %ld, prob: %3.2e, pR: %6.2f\n",
+                    k,
+                    hashname[k],
+                    (long)totalhits[k],
+                    uniquefeatures[k],
+                    ptc[k], (log10(ptc[k]) - log10(remainder)));
             buf[WIDTHOF(buf) - 1] = 0;
             // strcat (stext, buf);
             if (strlen(stext) + strlen(buf) <= stext_maxlen)
@@ -1686,24 +1695,96 @@ regcomp_failed:
 
 #else /* CRM_WITHOUT_OSBF */
 
-int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                             , char *txtptr, long txtstart, long txtlen)
+int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "OSBF");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSBF");
 }
 
 
-int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                                , char *txtptr, long txtstart, long txtlen)
+int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "OSBF");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSBF");
 }
 
 #endif /* CRM_WITHOUT_OSBF */
+
+
+
+
+int crm_expr_osbf_bayes_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSBF");
+}
+
+
+int crm_expr_osbf_bayes_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSBF");
+}
+
+
+int crm_expr_osbf_bayes_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSBF");
+}
+
+
+int crm_expr_osbf_bayes_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSBF");
+}
+
+
+int crm_expr_osbf_bayes_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSBF");
+}
+
+
+int crm_expr_osbf_bayes_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSBF");
+}
+
+
+int crm_expr_osbf_bayes_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSBF");
+}
 

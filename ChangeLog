@@ -1,7 +1,7 @@
 2008-01-28 Ger Hobbelt
 
-	* Added VT (Vector Tokenization) to the Hyperspace classifier. The others
-	  will follow its lead in this. (BillY)
+	* (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The others
+	  will follow its lead in this.
 	
 	* Included qsort implementation by Michael Tokarev 
 	  (http://www.corpit.ru/mjt/qsort.html) for a bit of improved performance as
@@ -40,6 +40,19 @@
 	   	   fix' ONLY and are NOT meant to replace the available ./configure-driven
 		   build/install available in this or future GerXXXX crm distro/builds!
 	
+        * Made initial provisions to merge the crm tools with crm itself: added the
+          statements cssmerge / cssdiff / cssinfo / cssanalyze / cssbackup / cssrestore / csscreate.
+          
+          These statements should suffice to cover the functionality found in the 
+          cssutil / osbf_util / cssmerge / cssdiff tools.
+
+        * Improved the indent.sh shell script and src/Makefile a bit; the included uncrustify.cfg
+          config file is compatible with the latest uncrustify version today (jan/2008): v0.42
+
+        * KNOWN BUG: 'make reindent': uncrustify will not format the last few lines of crm_mjt_qsort.h
+                     in a suitable layout. The code will compile, but correct this one by hand
+                     to undo the damage there (until I find what's wrong with uncrustify :-( ).
+
 	* KNOWN BUG for clump/pmulc still applies! :-(
 	
 	

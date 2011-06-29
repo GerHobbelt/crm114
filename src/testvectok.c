@@ -46,7 +46,7 @@ long user_trace = 0;
 
 long internal_trace = 0;
 
-long debug_countdown = 0;
+int debug_countdown = 0;
 
 long cmdline_break = 0;
 

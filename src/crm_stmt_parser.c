@@ -30,51 +30,53 @@
 
 const FLAG_DEF crm_flags[] =
 {
-    { "fromstart", CRM_FROMSTART }  /* bit 0 */
-    , { "fromnext", CRM_FROMNEXT }
-    , { "fromend", CRM_FROMEND }
-    , { "newend", CRM_NEWEND }
-    , { "fromcurrent", CRM_FROMCURRENT }
-    , { "nocase", CRM_NOCASE }
-    , { "absent", CRM_ABSENT }
-    , { "basic", CRM_BASIC }
-    , { "backwards", CRM_BACKWARDS }
-    , { "literal", CRM_LITERAL }
-    , { "nomultiline", CRM_BYLINE } /* bit 10 */
-    , { "byline", CRM_BYLINE }    /* bit 10 */
-    , { "bychar", CRM_BYCHAR }
-    , { "string", CRM_BYCHAR }
-    , { "bychunk", CRM_BYCHUNK }
-    , { "byeof", CRM_BYEOF }
-    , { "eofaccepts", CRM_EOFACCEPTS }
-    , { "eofretry", CRM_EOFRETRY }
-    , { "append", CRM_APPEND }
-    , { "keep", CRM_KEEP }
-    , { "async", CRM_ASYNC }
-    , { "refute", CRM_REFUTE }
-    , { "microgroom", CRM_MICROGROOM } /* bit 20 */
-    , { "markovian", CRM_MARKOVIAN }
-    , { "markov", CRM_MARKOVIAN }
-    , { "osb", CRM_OSB_BAYES }
-    , { "correlate", CRM_CORRELATE }
-    , { "winnow", CRM_OSB_WINNOW }
-    , { "chi2", CRM_CHI2 }      /* bit 25 */
-    , { "unique", CRM_UNIQUE }  /* bit 26 */
-    , { "entropy", CRM_ENTROPY }  /* bit 27 */
-    , { "entropic", CRM_ENTROPY } /* bit 27 */
-    , { "osbf", CRM_OSBF }
-    , { "hyperspace", CRM_HYPERSPACE }
-    , { "unigram", CRM_UNIGRAM } /* bit 30 */
-    , { "crosslink", CRM_CROSSLINK }
-    , { "lineedit", CRM_READLINE } /* bit 32! */
-    , { "default", CRM_DEFAULT }   /* bit 33! */
-    , { "sks", CRM_SKS }
-    , { "svm", CRM_SVM }
-    , { "fscm", CRM_FSCM }
-    , { "scm", CRM_SCM }
-    , { "neural", CRM_NEURAL_NET }
-    , { "flat", CRM_FLAT }
-    , { NULL, 0 } /* [i_a] sentinel */
+    { "fromstart", CRM_FROMSTART }, /* bit 0 */
+    { "fromnext", CRM_FROMNEXT },
+    { "fromend", CRM_FROMEND },
+    { "newend", CRM_NEWEND },
+    { "fromcurrent", CRM_FROMCURRENT },
+    { "nocase", CRM_NOCASE },
+    { "absent", CRM_ABSENT },
+    { "basic", CRM_BASIC },
+    { "backwards", CRM_BACKWARDS },
+    { "literal", CRM_LITERAL },
+    { "nomultiline", CRM_BYLINE }, /* bit 10 */
+    { "byline", CRM_BYLINE },      /* bit 10 */
+    { "bychar", CRM_BYCHAR },
+    { "string", CRM_BYCHAR },
+    { "bychunk", CRM_BYCHUNK },
+    { "byeof", CRM_BYEOF },
+    { "eofaccepts", CRM_EOFACCEPTS },
+    { "eofretry", CRM_EOFRETRY },
+    { "append", CRM_APPEND },
+    { "keep", CRM_KEEP },
+    { "async", CRM_ASYNC },
+    { "refute", CRM_REFUTE },
+    { "microgroom", CRM_MICROGROOM }, /* bit 20 */
+    { "markovian", CRM_MARKOVIAN },
+    { "markov", CRM_MARKOVIAN },
+    { "osb", CRM_OSB_BAYES },
+    { "correlate", CRM_CORRELATE },
+    { "winnow", CRM_OSB_WINNOW },
+    { "chi2", CRM_CHI2 },        /* bit 25 */
+    { "unique", CRM_UNIQUE },    /* bit 26 */
+    { "entropy", CRM_ENTROPY },  /* bit 27 */
+    { "entropic", CRM_ENTROPY }, /* bit 27 */
+    { "osbf", CRM_OSBF },
+    { "hyperspace", CRM_HYPERSPACE },
+    { "unigram", CRM_UNIGRAM }, /* bit 30 */
+    { "crosslink", CRM_CROSSLINK },
+    { "lineedit", CRM_READLINE }, /* bit 32! */
+    { "default", CRM_DEFAULT },   /* bit 33! */
+    { "sks", CRM_SKS },
+    { "svm", CRM_SVM },
+    { "fscm", CRM_FSCM },
+    { "scm", CRM_SCM },
+    { "neural", CRM_NEURAL_NET },
+    { "flat", CRM_FLAT },
+    { "auto", CRM_AUTODETECT },
+    { "autodetect", CRM_AUTODETECT },
+    { NULL, 0 }   /* [i_a] sentinel */
 };
 
 /* #define CRM_MAXFLAGS 42   [i_a] unused in the new code */
@@ -134,8 +136,8 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
             wtext = &(remtext[wstart]);
             if (internal_trace)
             {
-                fprintf(stderr, "found flag, len %ld: %.*s\n"
-                       , wlen, (int)wlen, wtext);
+                fprintf(stderr, "found flag, len %ld: %.*s\n",
+                        wlen, (int)wlen, wtext);
             }
 
             //    find sch in our table, squalk a nonfatal/fatal if necessary.
@@ -161,9 +163,9 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
                     outcode |= crm_flags[j].value;
                     if (user_trace)
                     {
-                        fprintf(stderr, "Mode #%d, '%s' turned on. \n"
-                               , j
-                               , crm_flags[j].string);
+                        fprintf(stderr, "Mode #%d, '%s' turned on. \n",
+                                j,
+                                crm_flags[j].string);
                     }
                 }
             }
@@ -205,17 +207,17 @@ uint64_t crm_flagparse(char *input, long inlen)  //  the user input
 //     The returned value is 0/1 as to whether we found
 //     a valid word, and *start and *length, which give it's position.
 //
-long crm_nextword(const char *input
-                 , long inlen
-                 , long starthere
-                 , long       *start
-                 , long       *len)
+int crm_nextword(const char *input,
+        long                  inlen,
+        long                  starthere,
+        long                 *start,
+        long                 *len)
 {
     *start = starthere;
     *len = 0;
     //   find start of string (if it exists)
     while (*start < inlen && input[*start] <= 0x20)
-        *start = *start + 1;
+        *start += 1;
 
     //  check - did we hit the end and still be invalid?  If so, return 0
     if (*start == inlen)
@@ -225,7 +227,7 @@ long crm_nextword(const char *input
     *len = 0;
     while ((*start + *len) < inlen
            && input[*start + *len] > 0x20)
-        *len = *len + 1;
+        *len += 1;
 
     return (*len) > 0;
 }
@@ -237,13 +239,13 @@ long crm_nextword(const char *input
 //   Not in use yet... but someday... goal is to provide better error
 //   detection.
 
-int crm_profiled_statement_parse(char *in
-                                , long slen
-                                , ARGPARSE_BLOCK *apb
-                                , long amin, long amax
-                                , long pmin, long pmax
-                                , long bmin, long bmax
-                                , long smin, long smax)
+int crm_profiled_statement_parse(char *in,
+        long slen,
+        ARGPARSE_BLOCK *apb,
+        long amin, long amax,
+        long pmin, long pmax,
+        long bmin, long bmax,
+        long smin, long smax)
 {
     return 0;
 }
@@ -251,9 +253,9 @@ int crm_profiled_statement_parse(char *in
 //      parse a CRM114 statement; this is mostly a setup routine for
 //     the generic parser.
 
-int crm_statement_parse(char           *in
-                       , long slen
-                       , ARGPARSE_BLOCK *apb)
+int crm_statement_parse(char           *in,
+        long                            slen,
+        ARGPARSE_BLOCK                 *apb)
 {
 #define CRM_STATEMENT_PARSE_MAXARG 10
     int i,  k;
@@ -264,12 +266,12 @@ int crm_statement_parse(char           *in
 
     //     we call the generic parser with the right args to slice and
     //     dice the incoming statement into declension-delimited parts
-    k = crm_generic_parse_line(in
-                              , slen
-                              , CRM_STATEMENT_PARSE_MAXARG
-                              , ftype
-                              , fstart
-                              , flen);
+    k = crm_generic_parse_line(in,
+            slen,
+            CRM_STATEMENT_PARSE_MAXARG,
+            ftype,
+            fstart,
+            flen);
 
     //   now we have all these nice chunks... we split them up into the
     //   various allowed categories.
@@ -307,8 +309,8 @@ int crm_statement_parse(char           *in
                 else
                 {
                     nonfatalerror(
-                            "There are multiple flag sets on this line."
-                                 , " ignoring all but the first");
+                            "There are multiple flag sets on this line.",
+                            " ignoring all but the first");
                 }
             }
             break;
@@ -334,8 +336,8 @@ int crm_statement_parse(char           *in
                 else
                 {
                     nonfatalerror(
-                            "Too many parenthesized varlists."
-                                 , "ignoring the excess varlists.");
+                            "Too many parenthesized varlists.",
+                            "ignoring the excess varlists.");
                 }
             }
             break;
@@ -351,8 +353,8 @@ int crm_statement_parse(char           *in
                 else
                 {
                     nonfatalerror(
-                            "There are multiple domain limits on this line."
-                                 , " ignoring all but the first");
+                            "There are multiple domain limits on this line.",
+                            " ignoring all but the first");
                 }
             }
             break;
@@ -373,17 +375,17 @@ int crm_statement_parse(char           *in
                 else
                 {
                     nonfatalerror(
-                            "There are too many regex sets in this statement,"
-                                 , " ignoring all but the first.");
+                            "There are too many regex sets in this statement,",
+                            " ignoring all but the first.");
                 }
             }
             break;
 
         default:
-            fatalerror_ex(SRC_LOC()
-                         , "Declensional parser returned an undefined typecode %d@%d/%d! "
-                           "What the HECK did you do to cause this?"
-                         , ftype[i], i, k);
+            fatalerror_ex(SRC_LOC(),
+                    "Declensional parser returned an undefined typecode %d@%d/%d! "
+                    "What the HECK did you do to cause this?",
+                    ftype[i], i, k);
             break;
         }
     }
@@ -408,12 +410,12 @@ int crm_statement_parse(char           *in
 //          than MAX_PATTERN), so make sure you (the caller) can cope with this.
 //
 int crm_generic_parse_line(
-        char *txt                        //   the start of the program line
-                          , int len      //   how long is the line
-                          , int maxargs  //   howm many things to search for (max)
-                          , int  *ftype  //   type of thing found (index by schars)
-                          , int  *fstart //   starting location of found arg
-                          , int  *flen)  //   length of found arg
+        char *txt,                       //   the start of the program line
+        int   len,                       //   how long is the line
+        int   maxargs,                   //   howm many things to search for (max)
+        int  *ftype,                     //   type of thing found (index by schars)
+        int  *fstart,                    //   starting location of found arg
+        int  *flen)                      //   length of found arg
 {
     //    the general algorithm here is to move along the input line,
     //    looking for one of the characters in schars.  When we find it,
@@ -454,11 +456,11 @@ int crm_generic_parse_line(
 
     if (internal_trace)
     {
-        fprintf(stderr, " declensional parsing for %d chars on: %.*s%s\n"
-               , len
-               , (len > 1024 ? 1024 : len)
-               , txt
-               , (len > 1024 ? "(truncated...)" : ""));
+        fprintf(stderr, " declensional parsing for %d chars on: %.*s%s\n",
+                len,
+                (len > 1024 ? 1024 : len),
+                txt,
+                (len > 1024 ? "(truncated...)" : ""));
     }
 
     for (dstpos = chidx = 0; chidx < len && argc < maxargs; chidx++)
@@ -491,11 +493,11 @@ int crm_generic_parse_line(
                     if (!crm_isspace(txt[chidx]))
                     {
                         nonfatalerror_ex(SRC_LOC(
-                                                )
-                                        , " Curly braces delineate code sections. Is a action/command missing here?\n Bug in statement?\n --> %.*s%s"
-                                        , (len > 1024 ? 1024 : len)
-                                        , txt
-                                        , (len > 1024 ? "(...truncated)" : ""));
+                                                ),
+                                " Curly braces delineate code sections. Is a action/command missing here?\n Bug in statement?\n --> %.*s%s",
+                                (len > 1024 ? 1024 : len),
+                                txt,
+                                (len > 1024 ? "(...truncated)" : ""));
                         return 0;
                     }
                 }
@@ -515,13 +517,13 @@ int crm_generic_parse_line(
                 }
                 else
                 {
-                    nonfatalerror_ex(SRC_LOC()
-                                    , " Unidentified action/command '%c'(HEX:%02X) in statement.\n Bug in statement?\n --> %.*s%s"
-                                    , (crm_isprint(curchar) ? curchar : '.')
-                                    , (int)curchar
-                                    , (len > 1024 ? 1024 : len)
-                                    , txt
-                                    , (len > 1024 ? "(...truncated)" : ""));
+                    nonfatalerror_ex(SRC_LOC(),
+                            " Unidentified action/command '%c'(HEX:%02X) in statement.\n Bug in statement?\n --> %.*s%s",
+                            (crm_isprint(curchar) ? curchar : '.'),
+                            (int)curchar,
+                            (len > 1024 ? 1024 : len),
+                            txt,
+                            (len > 1024 ? "(...truncated)" : ""));
                     return 0;
                 }
                 break;
@@ -566,13 +568,13 @@ int crm_generic_parse_line(
                 }
                 else if (!crm_isalpha(curchar))
                 {
-                    nonfatalerror_ex(SRC_LOC()
-                                    , " Unidentified action/command '%.*s' in statement.\n Bug in statement?\n --> %.*s%s"
-                                    , (chidx + 1)
-                                    , txt
-                                    , (len > 1024 ? 1024 : len)
-                                    , txt
-                                    , (len > 1024 ? "(...truncated)" : ""));
+                    nonfatalerror_ex(SRC_LOC(),
+                            " Unidentified action/command '%.*s' in statement.\n Bug in statement?\n --> %.*s%s",
+                            (chidx + 1),
+                            txt,
+                            (len > 1024 ? 1024 : len),
+                            txt,
+                            (len > 1024 ? "(...truncated)" : ""));
                     return 0;
                 }
                 continue;
@@ -611,14 +613,14 @@ int crm_generic_parse_line(
             default:
                 if (!crm_isspace(curchar))
                 {
-                    nonfatalerror_ex(SRC_LOC()
-                                    , " The statement contains an unidentified operand delimiter '%c'(HEX:%02X). "
-                                      "Only these are currently supported: <>()[]//\n Bug in statement?\n --> %.*s%s"
-                                    , (crm_isprint(curchar) ? curchar : '.')
-                                    , (int)curchar
-                                    , (len > 1024 ? 1024 : len)
-                                    , txt
-                                    , (len > 1024 ? "(...truncated)" : ""));
+                    nonfatalerror_ex(SRC_LOC(),
+                            " The statement contains an unidentified operand delimiter '%c'(HEX:%02X). "
+                            "Only these are currently supported: <>()[]//\n Bug in statement?\n --> %.*s%s",
+                            (crm_isprint(curchar) ? curchar : '.'),
+                            (int)curchar,
+                            (len > 1024 ? 1024 : len),
+                            txt,
+                            (len > 1024 ? "(...truncated)" : ""));
                     return argc;
                 }
                 continue;
@@ -755,12 +757,12 @@ int crm_generic_parse_line(
 
                     if (internal_trace)
                     {
-                        fprintf(stderr, " close %c at %d/(unescaped:%d) -- %.*s%s -- len %d\n"
-                               , curchar, dstpos, chidx
-                               , CRM_MIN(flen[argc], 1024)
-                               , &txt[fstart[argc]]
-                               , (flen[argc] > 1024 ? "(truncated...)" : "")
-                               , flen[argc]);
+                        fprintf(stderr, " close %c at %d/(unescaped:%d) -- %.*s%s -- len %d\n",
+                                curchar, dstpos, chidx,
+                                CRM_MIN(flen[argc], 1024),
+                                &txt[fstart[argc]],
+                                (flen[argc] > 1024 ? "(truncated...)" : ""),
+                                flen[argc]);
                     }
 
                     itype = CRM_FIND_ARG_SECTION;
@@ -786,13 +788,13 @@ int crm_generic_parse_line(
         // CRM_ASSERT(chidx >= 0);
         CRM_ASSERT(dstpos >= 0);
         statement_len = dstpos;
-        nonfatalerror_ex(SRC_LOC()
-                        , " The operand '%.*s'%s doesn't seem to end.  Bug in statement?\n --> %.*s"
-                        , (operand_len > 1024 ? 1024 : operand_len)
-                        , &txt[fstart[argc]]
-                        , (operand_len > 1024 ? "(...truncated)" : "")
-                        , statement_len
-                        , txt);
+        nonfatalerror_ex(SRC_LOC(),
+                " The operand '%.*s'%s doesn't seem to end.  Bug in statement?\n --> %.*s",
+                (operand_len > 1024 ? 1024 : operand_len),
+                &txt[fstart[argc]],
+                (operand_len > 1024 ? "(...truncated)" : ""),
+                statement_len,
+                txt);
         argc++;
     }
     return argc;

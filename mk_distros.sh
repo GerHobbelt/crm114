@@ -14,9 +14,10 @@ if [ ! -e src/megatest_knowngood.orginal.log ]
 then 
   cp src/megatest_knowngood.log src/megatest_knowngood.orginal.log
 fi
-./autogen.sh
+./bootstrap
 ./configure
 make
 make megatest
 # cp src/megatest_test.log src/megatest_knowngood.log
 make distribution
+

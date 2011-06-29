@@ -119,11 +119,11 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
     f = fopen(filename, "wb");
     if (!f)
     {
-        fatalerror_ex(SRC_LOC()
-                     , "\n Couldn't open your clumper backing file %s for writing; errno=%d(%s)\n"
-                     , filename
-                     , errno
-                     , errno_descr(errno));
+        fatalerror_ex(SRC_LOC(),
+                "\n Couldn't open your clumper backing file %s for writing; errno=%d(%s)\n",
+                filename,
+                errno,
+                errno_descr(errno));
         return 0;
     }
 
@@ -131,18 +131,18 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
 
     if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
     {
-        fatalerror_ex(SRC_LOC()
-                     , "\n Couldn't write header to file %s; errno=%d(%s)\n"
-                     , filename, errno, errno_descr(errno));
+        fatalerror_ex(SRC_LOC(),
+                "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                filename, errno, errno_descr(errno));
         fclose(f);
         return 0;
     }
 
     if (1 != fwrite(&h, sizeof(h), 1, f))
     {
-        fatalerror_ex(SRC_LOC()
-                     , "\n Couldn't write header to file %s; errno=%d(%s)\n"
-                     , filename, errno, errno_descr(errno));
+        fatalerror_ex(SRC_LOC(),
+                "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                filename, errno, errno_descr(errno));
         fclose(f);
         return 0;
     }
@@ -154,9 +154,9 @@ static int make_new_clumper_backing_file(char *filename, int max_docs)
     }
     if (file_memset(f, 0, i))
     {
-        fatalerror_ex(SRC_LOC()
-                     , "\n Couldn't write filler to file %s; errno=%d(%s)\n"
-                     , filename, errno, errno_descr(errno));
+        fatalerror_ex(SRC_LOC(),
+                "\n Couldn't write filler to file %s; errno=%d(%s)\n",
+                filename, errno, errno_descr(errno));
         fclose(f);
         return 0;
     }
@@ -181,13 +181,13 @@ static int map_file(CLUMPER_STATE_STRUCT *s, char *filename)
         return -1;
     }
 
-    s->file_origin = crm_mmap_file(filename
-                                  , 0
-                                  , statbuf.st_size
-                                  , PROT_READ | PROT_WRITE
-                                  , MAP_SHARED
-                                  , CRM_MADV_RANDOM
-                                  , NULL);
+    s->file_origin = crm_mmap_file(filename,
+            0,
+            statbuf.st_size,
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED,
+            CRM_MADV_RANDOM,
+            NULL);
     if (s->file_origin == MAP_FAILED)
     {
         nonfatalerror("Couldn't mmap file!", filename);
@@ -292,11 +292,11 @@ static int compare_features(const void *a, const void *b)
 #endif
 
 
-static int eat_document(ARGPARSE_BLOCK *apb
-                       , char *text, long text_len, long *ate
-                       , regex_t *regee
-                       , crmhash_t *feature_space, int max_features
-                       , uint64_t flags)
+static int eat_document(ARGPARSE_BLOCK *apb,
+        char *text, long text_len, long *ate,
+        regex_t *regee,
+        crmhash_t *feature_space, int max_features,
+        uint64_t flags)
 {
     int n_features = 0;
     int i, j;
@@ -387,11 +387,11 @@ static int eat_document(ARGPARSE_BLOCK *apb
 }
 
 
-static long find_closest_document(ARGPARSE_BLOCK *apb
-                                 , CLUMPER_STATE_STRUCT *s
-                                 , char *text, long text_len
-                                 , regex_t *regee
-                                 , uint64_t flags)
+static long find_closest_document(ARGPARSE_BLOCK *apb,
+        CLUMPER_STATE_STRUCT *s,
+        char *text, long text_len,
+        regex_t *regee,
+        uint64_t flags)
 {
     crmhash_t feature_space[32768];
     long n, i;
@@ -399,10 +399,10 @@ static long find_closest_document(ARGPARSE_BLOCK *apb
     float b_s = 0.0;
     float n_s;
 
-    n = eat_document(apb
-                    , text, text_len, &i
-                    , regee, feature_space, WIDTHOF(feature_space)
-                    , flags);
+    n = eat_document(apb,
+            text, text_len, &i,
+            regee, feature_space, WIDTHOF(feature_space),
+            flags);
     for (i = 0; i < s->header->n_documents; i++)
     {
         n_s = get_document_affinity(feature_space, (crmhash_t *)(s->file_origin + s->document_offsets[i]));
@@ -428,8 +428,8 @@ static void join_clusters(CLUSTER_HEAD_STRUCT *a, CLUSTER_HEAD_STRUCT *b)
 {
     if (internal_trace)
     {
-        fprintf(stderr, "Joining clusters of sizes %ld and %ld\n,"
-               , (long)a->head->count, (long)b->head->count);
+        fprintf(stderr, "Joining clusters of sizes %ld and %ld\n,",
+                (long)a->head->count, (long)b->head->count);
     }
 
     while (a->next)
@@ -811,11 +811,15 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
 
     for (i = 0; i < H_BUCKETS; i++)
         H[i] = 0;
+
 #if 01
+    CRM_ASSERT(n >= 2);
     j = n * (n - 1) / 2;
+    CRM_ASSERT(j > 0);
 #else
     j = m_size; // [i_a] shouldn't that be j = (n * (n + 1) / 2 - 1) in previous line (a.k.a. m_size) ???
     // NOPE! Discussed this on the ML and Joe told me the other one is the correct count [i_a]
+    CRM_ASSERT(j > 0);
 #endif
     CRM_ASSERT(j <= m_size);
     min = 1000000000.0;
@@ -1001,9 +1005,9 @@ static void thresholding_average_cluster(CLUMPER_STATE_STRUCT *s)
     free(clusters);
 }
 
-static void assign_perma_cluster(CLUMPER_STATE_STRUCT *s
-                                , long doc
-                                , char                 *lab)
+static void assign_perma_cluster(CLUMPER_STATE_STRUCT *s,
+        long                                           doc,
+        char                                          *lab)
 {
     long i;
 
@@ -1056,12 +1060,12 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
     //  Use crm_restrictvar to get start & length to look at.
-    i = crm_restrictvar(box_text, apb->b1len
-                       , NULL
-                       , &txtptr
-                       , &txtstart
-                       , &txtlen
-                       , errstr);
+    i = crm_restrictvar(box_text, apb->b1len,
+            NULL,
+            &txtptr,
+            &txtstart,
+            &txtlen,
+            errstr);
     if (i < 0)
     {
         long curstmt;
@@ -1087,12 +1091,21 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     htext_len = apb->p1len;
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
+#if 10
     i = 0;
     while (htext[i] < 0x021)
         i++;
+    CRM_ASSERT(i < htext_len);
     j = i;
     while (htext[j] >= 0x021)
         j++;
+    CRM_ASSERT(j <= htext_len);
+#else
+ crm_nextword(htext, 0, htext_len, &i, &j);
+ j += i;
+    CRM_ASSERT(i < htext_len);
+    CRM_ASSERT(j <= htext_len);
+#endif
     htext[j] = 0;
     strcpy(filename, &htext[i]);
 
@@ -1116,8 +1129,8 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         param_text[matchee[1].rm_eo + 1] = 0;
         if (internal_trace)
         {
-            fprintf(stderr, "&param_text[matchee[1].rm_so] = %s\n"
-                   , &param_text[matchee[1].rm_so]);
+            fprintf(stderr, "&param_text[matchee[1].rm_so] = %s\n",
+                    &param_text[matchee[1].rm_so]);
         }
         n_clusters = atol(&param_text[matchee[1].rm_so]);
         if (internal_trace)
@@ -1205,23 +1218,23 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         }
         else
         {
-            i = find_closest_document(apb, &s, txtptr + txtstart, txtlen
-                                     , &regee, apb->sflags);
+            i = find_closest_document(apb, &s, txtptr + txtstart, txtlen,
+                    &regee, apb->sflags);
         }
         if (i < 0)
         {
             unmap_file(&s);
             return 0;
         }
-        memmove(s.file_origin + s.document_offsets[i]
-               , s.file_origin + s.document_offsets[i + 1]
-               , (s.header->file_length - s.document_offsets[i + 1]));
-        memmove(&s.document_tags[i]
-               , &s.document_tags[i + 1]
-               , sizeof(char) * DOCUMENT_TAG_LEN * (s.header->n_documents - i - 1));
-        memmove(&s.cluster_labels[i]
-               , &s.cluster_labels[i + 1]
-               , sizeof(char) * CLUSTER_LABEL_LEN * (s.header->n_documents - i - 1));
+        memmove(s.file_origin + s.document_offsets[i],
+                s.file_origin + s.document_offsets[i + 1],
+                (s.header->file_length - s.document_offsets[i + 1]));
+        memmove(&s.document_tags[i],
+                &s.document_tags[i + 1],
+                sizeof(char) * DOCUMENT_TAG_LEN * (s.header->n_documents - i - 1));
+        memmove(&s.cluster_labels[i],
+                &s.cluster_labels[i + 1],
+                sizeof(char) * CLUSTER_LABEL_LEN * (s.header->n_documents - i - 1));
         s.header->n_documents--;
         j = s.document_offsets[i + 1] - s.document_offsets[i];
         for (k = i; k < s.header->n_documents; k++)
@@ -1294,22 +1307,22 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             return 0;
         }
 
-        n = eat_document(apb
-                        , txtptr + txtstart, txtlen, &i
-                        , &regee
-                        , feature_space, WIDTHOF(feature_space)
-                        , apb->sflags);
+        n = eat_document(apb,
+                txtptr + txtstart, txtlen, &i,
+                &regee,
+                feature_space, WIDTHOF(feature_space),
+                apb->sflags);
 
         crm_force_munmap_filename(filename);
 
         f = fopen(filename, "ab");
         if (!f)
         {
-            int fev = fatalerror_ex(SRC_LOC()
-                                   , "\n Couldn't open your new clumper file %s for writing; errno=%d(%s)\n"
-                                   , filename
-                                   , errno
-                                   , errno_descr(errno));
+            int fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't open your new clumper file %s for writing; errno=%d(%s)\n",
+                    filename,
+                    errno,
+                    errno_descr(errno));
             return fev;
         }
 
@@ -1324,9 +1337,9 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
             if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
             {
-                fatalerror_ex(SRC_LOC()
-                             , "\n Couldn't write header to file %s; errno=%d(%s)\n"
-                             , filename, errno, errno_descr(errno));
+                fatalerror_ex(SRC_LOC(),
+                        "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                        filename, errno, errno_descr(errno));
                 fclose(f);
                 return 0;
             }
@@ -1359,8 +1372,8 @@ int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         for (j = 0; j < i; j++)
         {
             *aref_dist_mat(s.distance_matrix, j, i) = get_document_affinity(
-                    (void *)(s.file_origin + s.document_offsets[i])
-                                                                           , (void *)(s.file_origin + s.document_offsets[j]));
+                    (void *)(s.file_origin + s.document_offsets[i]),
+                    (void *)(s.file_origin + s.document_offsets[j]));
         }
         strcpy(s.document_tags[i], tag);
         if (classv[0])
@@ -1450,12 +1463,12 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
     //  Use crm_restrictvar to get start & length to look at.
-    i = crm_restrictvar(box_text, apb->b1len
-                       , NULL
-                       , &txtptr
-                       , &txtstart
-                       , &txtlen
-                       , errstr);
+    i = crm_restrictvar(box_text, apb->b1len,
+            NULL,
+            &txtptr,
+            &txtstart,
+            &txtlen,
+            errstr);
     if (i < 0)
     {
         long curstmt;
@@ -1481,12 +1494,21 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(htext, MAX_PATTERN, apb->p1start, apb->p1len);
     htext_len = apb->p1len;
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
+#if 10
     i = 0;
     while (htext[i] < 0x021)
         i++;
+    CRM_ASSERT(i < htext_len);
     j = i;
     while (htext[j] >= 0x021)
         j++;
+    CRM_ASSERT(j <= htext_len);
+#else
+ crm_nextword(htext, 0, htext_len, &i, &j);
+ j += i;
+    CRM_ASSERT(i < htext_len);
+    CRM_ASSERT(j <= htext_len);
+#endif
     htext[j] = 0;
     strcpy(filename, &htext[i]);
 
@@ -1565,11 +1587,11 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         if (internal_trace)
             fprintf(stderr, "pmulcing!\n");
-        n = eat_document(apb
-                        , txtptr + txtstart, txtlen, &i
-                        , &regee
-                        , feature_space, WIDTHOF(feature_space)
-                        , apb->sflags);
+        n = eat_document(apb,
+                txtptr + txtstart, txtlen, &i,
+                &regee,
+                feature_space, WIDTHOF(feature_space),
+                apb->sflags);
         closest_doc_affinity = -1.0;
         for (i = 0; i <= s.header->n_clusters; i++)
         {
@@ -1661,8 +1683,8 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         {
             out_len += sprintf(outbuf + out_len, "%ld: (", i);
             out_len += sprint_lab(&s, outbuf + out_len, i);
-            out_len += sprintf(outbuf + out_len, "): documents: %ld  affinity: %0.4f  prob: %0.4f  pR: %0.4f\n"
-                              , N[i], A[i], p[i], pR[i]);
+            out_len += sprintf(outbuf + out_len, "): documents: %ld  affinity: %0.4f  prob: %0.4f  pR: %0.4f\n",
+                    N[i], A[i], p[i], pR[i]);
         }
 
         if (p[j] > 0.5)
@@ -1693,21 +1715,93 @@ int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
 int crm_expr_clump(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "CLUMP");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "CLUMP");
 }
 
 
 int crm_expr_pmulc(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "CLUMP");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "CLUMP");
 }
 
 #endif /* !CRM_WITHOUT_CLUMP */
+
+
+
+int crm_expr_clump_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "CLUMP");
+}
+
+
+int crm_expr_clump_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "CLUMP");
+}
+
+
+int crm_expr_clump_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "CLUMP");
+}
+
+
+int crm_expr_clump_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "CLUMP");
+}
+
+
+int crm_expr_clump_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "CLUMP");
+}
+
+
+int crm_expr_clump_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "CLUMP");
+}
+
+
+int crm_expr_clump_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "CLUMP");
+}
+
 
 

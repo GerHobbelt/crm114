@@ -89,6 +89,8 @@ dist-msvc: distdir
 	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).Win32.project.zip $(distdir) )
 
 
+dist-all: distribution
+
 distribution: distdir dist-diff
 	$(SILENT) echo "Creating src archives"; 
 	-rm -f $(ARCHIVE_BASE_NAME).src.7z
@@ -102,7 +104,7 @@ distribution: distdir dist-diff
 	$(am__remove_distdir)
 
 
-.PHONY: reindent depend dist-7z dist-diff dist-maint dist-msvc distribution
+.PHONY: reindent depend dist-7z dist-diff dist-maint dist-msvc distribution dist-all
 
 
 reindent:

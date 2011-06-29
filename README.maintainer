@@ -27,7 +27,21 @@ Rebuild from scratch / After editing the .am/.in files
 To regenerate the configure script, proper Makefile.in, et al, execute the
 sequence:
 
+        ./bootstrap
+	./configure
+
+and you may wish to run the suggested
+
+        make distcheck
+
+command to ensure the distribution is self contained/complete.
+Alternatively (WARNING: this is the _old_ way) you may run
+
         ./autogen.sh
+
+(which remains with this package as several UIs/editors recognize this script
+to simplify regenerating the configuration setup scripts)
+
 
 To generate the man and html documentation follow up with these:
 
@@ -43,6 +57,13 @@ to see the available distro packaging methods):
         make dist-7z
         make distribution
 
+where the latter creates them all and then some: a separate 'diff only'
+archive is also produced 
+
+(diff archive will 'work', assuming you have both the 'old/original'
+CRM114 source code and your own tree in the apropriate directories:
+../../1original/crm114/src/crm114.sourceforge.org/src
+and this dir is: ../../3actual/crm114 )
 
 
 

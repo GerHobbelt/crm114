@@ -31,13 +31,13 @@
 /* Version names */
 char *CSS_version_name[] =
 {
-    "SBPH-Markovian"
-    , "OSB-Bayes"
-    , "Correlate"
-    , "Neural"
-    , "OSB-Winnow"
-    , "OSBF-Bayes"
-    , "Unknown"
+    "SBPH-Markovian",
+    "OSB-Bayes",
+    "Correlate",
+    "Neural",
+    "OSB-Winnow",
+    "OSBF-Bayes",
+    "Unknown"
 };
 
 
@@ -66,8 +66,8 @@ void crm_osbf_set_microgroom(int value)
 //     There are two steps to microgrooming - first, since we know we're
 //     already too full, we execute a 'zero unity bins'.
 //
-void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header
-                        , unsigned long hindex)
+void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long                                hindex)
 {
     long i, j, k;
     static long microgroom_count = 0;
@@ -275,8 +275,8 @@ void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *header
     crm_osbf_packcss(header, packstart, packlen);
 }
 
-void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *header
-                     , unsigned long packstart, unsigned long packlen)
+void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long packstart, unsigned long packlen)
 {
 //    How we pack...
 //
@@ -304,8 +304,8 @@ void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *header
     }
 }
 
-void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *header
-                     , unsigned long packstart, unsigned long packlen)
+void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long packstart, unsigned long packlen)
 {
     unsigned long ifrom, ito;
     crmhash_t thash, tkey;
@@ -376,8 +376,8 @@ void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *header
 }
 
 /* get next bucket index */
-unsigned long crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header
-                                  , unsigned long hindex)
+unsigned long crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long                                          hindex)
 {
     hindex++;
     if (hindex >= header->buckets)
@@ -386,8 +386,8 @@ unsigned long crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header
 }
 
 /* get index of the last bucket in a chain */
-unsigned long crm_osbf_last_in_chain(OSBF_FEATURE_HEADER_STRUCT *header
-                                    , unsigned long hindex)
+unsigned long crm_osbf_last_in_chain(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long                                            hindex)
 {
     unsigned long wraparound;
     OSBF_FEATUREBUCKET_STRUCT *hashes;
@@ -419,8 +419,8 @@ unsigned long crm_osbf_last_in_chain(OSBF_FEATURE_HEADER_STRUCT *header
 
 
 /* get previous bucket index */
-unsigned long crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header
-                                  , unsigned long hindex)
+unsigned long crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long                                          hindex)
 {
     if (hindex == 0)
         hindex = header->buckets - 1;
@@ -430,8 +430,8 @@ unsigned long crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header
 }
 
 /* get index of the first bucket in a chain */
-unsigned long crm_osbf_first_in_chain(OSBF_FEATURE_HEADER_STRUCT *header
-                                     , unsigned long hindex)
+unsigned long crm_osbf_first_in_chain(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long                                             hindex)
 {
     unsigned long wraparound;
     OSBF_FEATUREBUCKET_STRUCT *hashes;
@@ -461,8 +461,8 @@ unsigned long crm_osbf_first_in_chain(OSBF_FEATURE_HEADER_STRUCT *header
     return crm_osbf_next_bindex(header, hindex);
 }
 
-unsigned long crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header
-                                  , unsigned long hash, unsigned long key)
+unsigned long crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long hash, unsigned long key)
 {
     OSBF_FEATUREBUCKET_STRUCT *hashes;
     unsigned long hindex, start;
@@ -485,8 +485,8 @@ unsigned long crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header
     return hindex;
 }
 
-void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header
-                           , unsigned long bindex, int delta)
+void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long bindex, int delta)
 {
     OSBF_FEATUREBUCKET_STRUCT *hashes;
 
@@ -524,14 +524,14 @@ void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header
     }
     else
     {
-        SETL_BUCKET_VALUE(hashes[bindex]
-                         , GET_BUCKET_VALUE(hashes[bindex]) + delta);
+        SETL_BUCKET_VALUE(hashes[bindex],
+                GET_BUCKET_VALUE(hashes[bindex]) + delta);
     }
 }
 
-void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header
-                           , unsigned long bindex, unsigned long hash
-                           , unsigned long key, int value)
+void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long bindex, unsigned long hash,
+        unsigned long key, int value)
 {
     unsigned long hindex, distance;
     OSBF_FEATUREBUCKET_STRUCT *hashes;
@@ -574,9 +574,9 @@ void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header
 
 static OSBF_HEADER_UNION hu = { { { 0 } } };
 
-int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets
-                           , unsigned long major, unsigned long minor
-                           , unsigned long spectrum_start)
+int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets,
+        unsigned long major, unsigned long minor,
+        unsigned long spectrum_start)
 {
     FILE *f;
     long i;
@@ -588,8 +588,8 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets
     if (!f)
     {
         long q;
-        q = fatalerror("Couldn't open the new .cfc file for writing; file = "
-                      , cssfile);
+        q = fatalerror("Couldn't open the new .cfc file for writing; file = ",
+                cssfile);
         return q;
     }
     else
@@ -600,8 +600,8 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
-            fatalerror("For some reason, I was unable to write the header to the .cfc file named "
-                      , cssfile);
+            fatalerror("For some reason, I was unable to write the header to the .cfc file named ",
+                    cssfile);
         }
 
         // Set the header.
@@ -613,8 +613,8 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets
         // Write header
         if (fwrite(&hu, sizeof(hu), 1, f) != 1)
         {
-            fatalerror(" Couldn't initialize the .cfc file header; file = "
-                      , cssfile);
+            fatalerror(" Couldn't initialize the .cfc file header; file = ",
+                    cssfile);
         }
 
         //  Initialize CSS hashes - zero all buckets
@@ -623,8 +623,8 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets
             // Write buckets
             if (fwrite(&feature, sizeof(feature), 1, f) != 1)
             {
-                fatalerror(" Couldn't initialize the .cfc buckets; file = "
-                          , cssfile);
+                fatalerror(" Couldn't initialize the .cfc buckets; file = ",
+                        cssfile);
             }
             memset(&feature, 0, sizeof(feature));
         }

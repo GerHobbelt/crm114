@@ -6854,7 +6854,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
  ac_save_CFLAGS="$CFLAGS"
  ac_save_c_werror_flag=$ac_c_werror_flag
  ac_c_werror_flag=yes
-for ac_arg in "-pass-exit-codes -pedantic -Werror % -Wall -Wextra "       "-pass-exit-codes -pedantic -Werror % -Wall"                "-xstrconst % -v"             "-std1      % -verbose -w0 -warnprotos"    "-qlanglvl=ansi % -qsrcmsg -qinfo=all:noppt:noppc:noobs:nocnd"    "-ansi -ansiE % -fullwarn"    "+ESlit     % +w1"            "-Xc        % -pvctl,fullmsg"    "-h conform % -h msglevel 2"    #
+for ac_arg in "-pass-exit-codes -pedantic -Werror -Wno-unused-parameter -Wno-missing-field-initializers % -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers"       "-pass-exit-codes -pedantic -Werror % -Wall"                "-xstrconst % -v"             "-std1      % -verbose -w0 -warnprotos"    "-qlanglvl=ansi % -qsrcmsg -qinfo=all:noppt:noppc:noobs:nocnd"    "-ansi -ansiE % -fullwarn"    "+ESlit     % +w1"            "-Xc        % -pvctl,fullmsg"    "-h conform % -h msglevel 2"    #
 do CFLAGS="$ac_save_CFLAGS "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,%,,'`
    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -6970,7 +6970,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
  ac_save_CFLAGS="$CFLAGS"
  ac_save_c_werror_flag=$ac_c_werror_flag
  ac_c_werror_flag=yes
-for ac_arg in "-pass-exit-codes -pedantic -Werror % -Wall -Wextra "       "-pass-exit-codes -pedantic -Werror % -Wall"                "-xstrconst % -v"             "-std1      % -verbose -w0 -warnprotos"    "-qlanglvl=ansi % -qsrcmsg -qinfo=all:noppt:noppc:noobs:nocnd"    "-ansi -ansiE % -fullwarn"    "+ESlit     % +w1"            "-Xc        % -pvctl,fullmsg"    "-h conform % -h msglevel 2"    #
+for ac_arg in "-pass-exit-codes -pedantic -Werror -Wno-unused-parameter -Wno-missing-field-initializers % -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers"       "-pass-exit-codes -pedantic -Werror % -Wall"                "-xstrconst % -v"             "-std1      % -verbose -w0 -warnprotos"    "-qlanglvl=ansi % -qsrcmsg -qinfo=all:noppt:noppc:noobs:nocnd"    "-ansi -ansiE % -fullwarn"    "+ESlit     % +w1"            "-Xc        % -pvctl,fullmsg"    "-h conform % -h msglevel 2"    #
 do CFLAGS="$ac_save_CFLAGS "`echo $ac_arg | sed -e 's,%%.*,,' -e 's,%,,'`
    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */

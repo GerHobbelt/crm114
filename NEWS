@@ -5,7 +5,7 @@ copied from that file).
 
 Version 20071201-BlameLittleStevie_VT  
 
-* Added VT (Vector Tokenization) to the Hyperspace classifier. The others
+* (BillY) Added VT (Vector Tokenization) to the Hyperspace classifier. The others
   will follow its lead in this. (BillY)
 
 * Included qsort implementation by Michael Tokarev 
@@ -44,6 +44,12 @@ Version 20071201-BlameLittleStevie_VT
   WARNING: src/make_BillY.sh et al are provided as a 'backwards compatible build
            fix' ONLY and are NOT meant to replace the available ./configure-driven
            build/install available in this or future GerXXXX crm distro/builds!
+
+* Made initial provisions to merge the crm tools with crm itself: added the
+  statements cssmerge / cssdiff / cssinfo / cssanalyze / cssbackup / cssrestore / csscreate.
+
+  These statements should suffice to cover the functionality found in the 
+  cssutil / osbf_util / cssmerge / cssdiff tools.
 
 * KNOWN BUG for clump/pmulc still applies! :-(
 

@@ -205,8 +205,8 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         f = fopen(filename, "wb");
         if (f == NULL)
         {
-            fatalerror("For some reason, I was unable to write-open the file named "
-                      , filename);
+            fatalerror("For some reason, I was unable to write-open the file named ",
+                    filename);
             return;
         }
         else
@@ -217,18 +217,18 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
 
             if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
             {
-                fatalerror_ex(SRC_LOC()
-                             , "\n Couldn't write header to file %s; errno=%d(%s)\n"
-                             , filename, errno, errno_descr(errno));
+                fatalerror_ex(SRC_LOC(),
+                        "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                        filename, errno, errno_descr(errno));
                 fclose(f);
                 return;
             }
 
             if (file_memset(f, 0, filesize))
             {
-                fatalerror_ex(SRC_LOC()
-                             , "\n Couldn't write to file %s; errno=%d(%s)\n"
-                             , filename, errno, errno_descr(errno));
+                fatalerror_ex(SRC_LOC(),
+                        "\n Couldn't write to file %s; errno=%d(%s)\n",
+                        filename, errno, errno_descr(errno));
                 fclose(f);
                 return;
             }
@@ -236,18 +236,18 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         }
         if (stat(filename, &statbuf))
         {
-            fatalerror("For some reason, I was unable to determine the file properties after creating the file! "
-                      , filename);
+            fatalerror("For some reason, I was unable to determine the file properties after creating the file! ",
+                    filename);
             return;
         }
 
-        space = crm_mmap_file(filename
-                             , 0
-                             , statbuf.st_size
-                             , PROT_READ | PROT_WRITE
-                             , MAP_SHARED
-                             , CRM_MADV_RANDOM
-                             , &filesize);
+        space = crm_mmap_file(filename,
+                0,
+                statbuf.st_size,
+                PROT_READ | PROT_WRITE,
+                MAP_SHARED,
+                CRM_MADV_RANDOM,
+                &filesize);
         if (space == MAP_FAILED)
         {
             nonfatalerror("failed to do mmap of freshly created file", filename);
@@ -260,13 +260,13 @@ static void map_file(SCM_STATE_STRUCT *s, char *filename)
         char *o;
         SCM_HEADER_STRUCT *h;
 
-        s->header = crm_mmap_file(filename
-                                 , 0
-                                 , statbuf.st_size
-                                 , PROT_READ | PROT_WRITE
-                                 , MAP_SHARED
-                                 , CRM_MADV_RANDOM
-                                 , NULL);
+        s->header = crm_mmap_file(filename,
+                0,
+                statbuf.st_size,
+                PROT_READ | PROT_WRITE,
+                MAP_SHARED,
+                CRM_MADV_RANDOM,
+                NULL);
         if (s->header == MAP_FAILED)
         {
             nonfatalerror("failed to do mmap of existing file", filename);
@@ -563,11 +563,11 @@ static void delete_prefix(SCM_STATE_STRUCT *s, long p)
 }
 
 //find the longest match of contiguous characters to *text in stored text
-static void find_longest_match(SCM_STATE_STRUCT *s
-                              , char             *text
-                              , long max_len
-                              , long             *prefix
-                              , long             *len)
+static void find_longest_match(SCM_STATE_STRUCT *s,
+        char                                    *text,
+        long                                     max_len,
+        long                                    *prefix,
+        long                                    *len)
 {
     crmhash_t key;
     long i, j, k;
@@ -760,8 +760,8 @@ static void refute_document(SCM_STATE_STRUCT *s, char *doc, long len)
 }
 
 //entry point for learning
-int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                       , char *txtptr, long txtstart, long txtlen)
+int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     char filename[MAX_PATTERN];
     char htext[MAX_PATTERN];
@@ -780,12 +780,21 @@ int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     htext_len = apb->p1len;
     htext_len = crm_nexpandvar(htext, htext_len, MAX_PATTERN);
 
+#if 10
     i = 0;
     while (htext[i] < 0x021)
         i++;
+    CRM_ASSERT(i < htext_len);
     j = i;
     while (htext[j] >= 0x021)
         j++;
+    CRM_ASSERT(j <= htext_len);
+#else
+ crm_nextword(htext, 0, htext_len, &i, &j);
+ j += i;
+    CRM_ASSERT(i < htext_len);
+    CRM_ASSERT(j <= htext_len);
+#endif
     htext[j] = 0;
     strcpy(filename, &htext[i]);
 
@@ -880,8 +889,8 @@ static double calc_pR(double p)
 
 
 //entry point for classifying
-int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                          , char *txtptr, long txtstart, long txtlen)
+int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     SCM_STATE_STRUCT S, *s = &S;
 
@@ -902,10 +911,10 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
     long fail_on = MAX_CLASSIFIERS; //depending on where the vbar is
 
-    double scores[MAX_CLASSIFIERS]
-    , probs[MAX_CLASSIFIERS]
-    , norms[MAX_CLASSIFIERS]
-    , bn, pR[MAX_CLASSIFIERS];
+    double scores[MAX_CLASSIFIERS],
+           probs[MAX_CLASSIFIERS],
+           norms[MAX_CLASSIFIERS],
+           bn, pR[MAX_CLASSIFIERS];
     long n_features[MAX_CLASSIFIERS];
     long out_pos;
 
@@ -928,8 +937,8 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     params_len = apb->s2len;
     params_len = crm_nexpandvar(params, params_len, MAX_PATTERN);
     params[params_len] = 0;
-    if (crm_regcomp(&regee, "n_bytes[[:space:]]*=[[:space:]]*([0-9]+)"
-                   , 40, REG_EXTENDED))
+    if (crm_regcomp(&regee, "n_bytes[[:space:]]*=[[:space:]]*([0-9]+)",
+                40, REG_EXTENDED))
     {
         //This should never ever happen
         fprintf(stderr, "regex compilation problem! I'm about to segfault!\n");
@@ -1075,37 +1084,37 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
     if (suc_prob > 0.5)  //test for nan as well
     {
-        out_pos += sprintf(outbuf + out_pos
-                          , "CLASSIFY succeeds; success probability: %f  pR: %6.4f\n"
-                          , suc_prob, suc_pR);
+        out_pos += sprintf(outbuf + out_pos,
+                "CLASSIFY succeeds; success probability: %f  pR: %6.4f\n",
+                suc_prob, suc_pR);
     }
     else
     {
-        out_pos += sprintf(outbuf + out_pos
-                          , "CLASSIFY fails; success probability: %f  pR: %6.4f\n"
-                          , suc_prob, suc_pR);
+        out_pos += sprintf(outbuf + out_pos,
+                "CLASSIFY fails; success probability: %f  pR: %6.4f\n",
+                suc_prob, suc_pR);
     }
 
     /* [i_a] GROT GROT GROT: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
-    out_pos += sprintf(outbuf + out_pos
-                      , "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f\n"
-                      , max_scorer
-                      , filenames[max_scorer]
-                      , probs[max_scorer], pR[max_scorer]);
+    out_pos += sprintf(outbuf + out_pos,
+            "Best match to file #%ld (%s) prob: %6.4f  pR: %6.4f\n",
+            max_scorer,
+            filenames[max_scorer],
+            probs[max_scorer], pR[max_scorer]);
 
-    out_pos += sprintf(outbuf + out_pos
-                      , "Total features in input file: %ld\n"
-                      , txtlen);
+    out_pos += sprintf(outbuf + out_pos,
+            "Total features in input file: %ld\n",
+            txtlen);
 
     for (i = 0; i < n_classifiers; i++)
     {
         /* [i_a] GROT GROT GROT: %s in sprintf may cause buffer overflow. not fixed in this review/scan */
-        out_pos += sprintf(outbuf + out_pos
-                          , "#%ld (%s): features: %ld, score:%3.2e, prob: %3.2e,"
-                            "pR: %6.2f\n"
-                          , i, filenames[i]
-                          , n_features[i], scores[i]
-                          , probs[i], pR[i]);
+        out_pos += sprintf(outbuf + out_pos,
+                "#%ld (%s): features: %ld, score:%3.2e, prob: %3.2e,"
+                "pR: %6.2f\n",
+                i, filenames[i],
+                n_features[i], scores[i],
+                probs[i], pR[i]);
     }
 
     if (out_var_len)
@@ -1122,24 +1131,96 @@ int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
 #else /* CRM_WITHOUT_FSCM */
 
-int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                       , char *txtptr, long txtstart, long txtlen)
+int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "FSCM");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
 }
 
 
-int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                          , char *txtptr, long txtstart, long txtlen)
+int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "FSCM");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
 }
 
 #endif
+
+
+
+
+int crm_expr_fscm_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
+}
+
+
+int crm_expr_fscm_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
+}
+
+
+int crm_expr_fscm_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
+}
+
+
+int crm_expr_fscm_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
+}
+
+
+int crm_expr_fscm_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
+}
+
+
+int crm_expr_fscm_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
+}
+
+
+int crm_expr_fscm_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "FSCM");
+}
 

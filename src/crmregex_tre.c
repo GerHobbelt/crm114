@@ -68,8 +68,8 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
     if (internal_trace)
     {
         int i;
-        fprintf(stderr, "\ncompiling regex '%s', len %d, in hex: "
-               , regex, regex_len);
+        fprintf(stderr, "\ncompiling regex '%s', len %d, in hex: ",
+                regex, regex_len);
         for (i = 0; i < regex_len; i++)
         {
             fprintf(stderr, "%02X", (unsigned char)regex[i]);
@@ -93,8 +93,8 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
         int status_temp = 0;
 
         if (internal_trace)
-            fprintf(stderr, "Checking the regex cache for %s\n"
-                   , regex);
+            fprintf(stderr, "Checking the regex cache for %s\n",
+                    regex);
         j = 0;
 #if defined (REGEX_CACHE_LINEAR_SEARCH)
         //
@@ -165,8 +165,8 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
             ppreg_temp = (regex_t *)calloc(rtsize, sizeof(ppreg_temp[0]));
             if (ppreg_temp == NULL)
             {
-                fatalerror("Unable to allocate a pattern register buffer header.  "
-                          , "This is hopeless.  ");
+                fatalerror("Unable to allocate a pattern register buffer header.  ",
+                        "This is hopeless.  ");
             }
             status_temp = regncomp(ppreg_temp, regex_temp, rlen_temp, cflags_temp);
 
@@ -272,14 +272,14 @@ int crm_regcomp(regex_t *preg, const char *regex, int regex_len, int cflags)
 //
 //       How to do a regex execution from the compiled register
 //
-int crm_regexec(regex_t *preg, const char *string, int string_len
-               , size_t nmatch, regmatch_t pmatch[], int eflags
-               , const char *aux_string)
+int crm_regexec(regex_t *preg, const char *string, int string_len,
+        size_t nmatch, regmatch_t pmatch[], int eflags,
+        const char *aux_string)
 {
     if (!string)
     {
-        nonfatalerror("crm_regexec - Regular Expression Execution Problem:\n"
-                     , "NULL pointer to the string to match .");
+        nonfatalerror("crm_regexec - Regular Expression Execution Problem:\n",
+                "NULL pointer to the string to match .");
         return REG_NOMATCH;
     }
     if (aux_string == NULL
@@ -299,21 +299,21 @@ int crm_regexec(regex_t *preg, const char *string, int string_len
         pblock.cost_ins = 0;
         pblock.max_cost = 0;
         pblock.cost_del = 0;
-        if (4 != sscanf(aux_string, "%d %d %d %d"
-                       , &pblock.cost_subst
-                       , &pblock.cost_ins
-                       , &pblock.max_cost
-                       , &pblock.cost_del))
+        if (4 != sscanf(aux_string, "%d %d %d %d",
+                    &pblock.cost_subst,
+                    &pblock.cost_ins,
+                    &pblock.max_cost,
+                    &pblock.cost_del))
         {
             fatalerror("Failed to decode 4 numeric cost parameters for approximate matching ", aux_string);
         }
         if (user_trace)
-            fprintf(stderr
-                   , "Using approximate match.  Costs: Subst %d Ins %d Max %d Del %d\n"
-                   , pblock.cost_subst
-                   , pblock.cost_ins
-                   , pblock.max_cost
-                   , pblock.cost_del);
+            fprintf(stderr,
+                    "Using approximate match.  Costs: Subst %d Ins %d Max %d Del %d\n",
+                    pblock.cost_subst,
+                    pblock.cost_ins,
+                    pblock.max_cost,
+                    pblock.cost_del);
 
         //  now we can run the actual match
         i = reganexec(preg, string, string_len, &mblock, pblock, eflags);
@@ -324,8 +324,8 @@ int crm_regexec(regex_t *preg, const char *string, int string_len
 }
 
 
-size_t crm_regerror(int errorcode, regex_t *preg, char *errbuf
-                   , size_t errbuf_size)
+size_t crm_regerror(int errorcode, regex_t *preg, char *errbuf,
+        size_t errbuf_size)
 {
     return regerror(errorcode, preg, errbuf, errbuf_size);
 }

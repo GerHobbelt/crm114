@@ -73,7 +73,7 @@ VAR,[VAR="no, unknown"
  ac_save_c_werror_flag=$ac_c_werror_flag
  ac_c_werror_flag=yes
 for ac_arg dnl
-in "-pass-exit-codes -pedantic -Werror % -Wall -Wextra "    dnl   GCC
+in "-pass-exit-codes -pedantic -Werror -Wno-unused-parameter -Wno-missing-field-initializers % -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers"    dnl   GCC 3/4 - NOTE that I explicitly DISABLE two 'extra' warnings here as I find those annoying most of the time
    "-pass-exit-codes -pedantic -Werror % -Wall"             dnl   GCC
    "-xstrconst % -v"          dnl Solaris C
    "-std1      % -verbose -w0 -warnprotos" dnl Digital Unix

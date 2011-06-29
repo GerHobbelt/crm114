@@ -183,9 +183,9 @@
  * --------------------------------------------------------------------
  */
 uint32_t hashword(
-        const uint32_t *k             /* the key, an array of uint32_t values */
-                 , size_t length      /* the length of the key, in uint32_ts */
-                 , uint32_t initval)  /* the previous hash, or an arbitrary value */
+        const uint32_t *k,            /* the key, an array of uint32_t values */
+        size_t          length,       /* the length of the key, in uint32_ts */
+        uint32_t        initval)      /* the previous hash, or an arbitrary value */
 {
     uint32_t a, b, c;
 
@@ -233,10 +233,10 @@ uint32_t hashword(
  * --------------------------------------------------------------------
  */
 void hashword2(
-        const uint32_t *k                /* the key, an array of uint32_t values */
-              , size_t length            /* the length of the key, in uint32_ts */
-              , uint32_t       *pc       /* IN: seed OUT: primary hash value */
-              , uint32_t       *pb)      /* IN: more seed OUT: secondary hash value */
+        const uint32_t *k,               /* the key, an array of uint32_t values */
+        size_t          length,          /* the length of the key, in uint32_ts */
+        uint32_t       *pc,              /* IN: seed OUT: primary hash value */
+        uint32_t       *pb)              /* IN: more seed OUT: secondary hash value */
 {
     uint32_t a, b, c;
 
@@ -627,10 +627,10 @@ uint32_t hashlittle(const void *key, size_t length, uint32_t initval)
  * a 64-bit value do something like "*pc + (((uint64_t)*pb)<<32)".
  */
 void hashlittle2(
-        const void *key           /* the key to hash */
-                , size_t length   /* length of the key */
-                , uint32_t   *pc  /* IN: primary initval, OUT: primary hash */
-                , uint32_t   *pb) /* IN: secondary initval, OUT: secondary hash */
+        const void *key,          /* the key to hash */
+        size_t      length,       /* length of the key */
+        uint32_t   *pc,           /* IN: primary initval, OUT: primary hash */
+        uint32_t   *pb)           /* IN: secondary initval, OUT: secondary hash */
 {
     uint32_t a, b, c;                                      /* internal state */
 
@@ -1282,8 +1282,8 @@ void driver2()
                     if (k == MAXPAIR)
                     {
                         fprintf(stdout, "Some bit didn't change: ");
-                        fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x  "
-                               , e[0], f[0], g[0], h[0], x[0], y[0]);
+                        fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x  ",
+                                e[0], f[0], g[0], h[0], x[0], y[0]);
                         fprintf(stdout, "i %d j %d m %d len %d\n", i, j, m, hlen);
                     }
                     if (z == MAXPAIR)
@@ -1317,42 +1317,42 @@ void driver3()
     uint8_t *p;
 
     fprintf(stdout, "Endianness.  These lines should all be the same (for values filled in):\n");
-    fprintf(stdout, "%.8x                            %.8x                            %.8x\n"
-           , hashword((const uint32_t *)q, (sizeof(q) - 1) / 4, 13)
-           , hashword((const uint32_t *)q, (sizeof(q) - 5) / 4, 13)
-           , hashword((const uint32_t *)q, (sizeof(q) - 9) / 4, 13));
+    fprintf(stdout, "%.8x                            %.8x                            %.8x\n",
+            hashword((const uint32_t *)q, (sizeof(q) - 1) / 4, 13),
+            hashword((const uint32_t *)q, (sizeof(q) - 5) / 4, 13),
+            hashword((const uint32_t *)q, (sizeof(q) - 9) / 4, 13));
     p = q;
-    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n"
-           , hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13)
-           , hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13)
-           , hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13)
-           , hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13)
-           , hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13)
-           , hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
+    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
+            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
+            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
+            hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13),
+            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
+            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     p = &qq[1];
-    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n"
-           , hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13)
-           , hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13)
-           , hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13)
-           , hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13)
-           , hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13)
-           , hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
+    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
+            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
+            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
+            hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13),
+            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
+            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     p = &qqq[2];
-    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n"
-           , hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13)
-           , hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13)
-           , hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13)
-           , hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13)
-           , hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13)
-           , hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
+    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
+            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
+            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
+            hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13),
+            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
+            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     p = &qqqq[3];
-    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n"
-           , hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13)
-           , hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13)
-           , hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13)
-           , hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13)
-           , hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13)
-           , hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
+    fprintf(stdout, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
+            hashlittle(p, sizeof(q) - 1, 13), hashlittle(p, sizeof(q) - 2, 13),
+            hashlittle(p, sizeof(q) - 3, 13), hashlittle(p, sizeof(q) - 4, 13),
+            hashlittle(p, sizeof(q) - 5, 13), hashlittle(p, sizeof(q) - 6, 13),
+            hashlittle(p, sizeof(q) - 7, 13), hashlittle(p, sizeof(q) - 8, 13),
+            hashlittle(p, sizeof(q) - 9, 13), hashlittle(p, sizeof(q) - 10, 13),
+            hashlittle(p, sizeof(q) - 11, 13), hashlittle(p, sizeof(q) - 12, 13));
     fprintf(stdout, "\n");
 
     /* check that hashlittle2 and hashlittle produce the same results */
@@ -1367,8 +1367,8 @@ void driver3()
     i = 47, j = 0;
     hashword2(&len, 1, &i, &j);
     if (hashword(&len, 1, 47) != i)
-        fprintf(stdout, "hashword2 and hashword mismatch %x %x\n"
-               , i, hashword(&len, 1, 47));
+        fprintf(stdout, "hashword2 and hashword mismatch %x %x\n",
+                i, hashword(&len, 1, 47));
 
     /* check hashlittle doesn't read before or after the ends of the string */
     for (h = 0, b = buf + 1; h < 8; ++h, ++b)
@@ -1387,8 +1387,8 @@ void driver3()
             y = hashlittle(b, len, (uint32_t)1);
             if ((ref != x) || (ref != y))
             {
-                fprintf(stdout, "alignment error: %.8x %.8x %.8x %d %d\n", ref, x, y
-                       , h, i);
+                fprintf(stdout, "alignment error: %.8x %.8x %.8x %d %d\n", ref, x, y,
+                        h, i);
             }
         }
     }
@@ -1751,9 +1751,9 @@ static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
         {
             if (internal_trace)
             {
-                fprintf(stderr
-                       , "The file found by calc_file_mtime_hash() is '%s'\n"
-                       , fdata.cFileName);
+                fprintf(stderr,
+                        "The file found by calc_file_mtime_hash() is '%s'\n",
+                        fdata.cFileName);
             }
             buf[2] = (time_t)fdata.ftCreationTime.dwHighDateTime;
             buf[3] = (time_t)fdata.ftCreationTime.dwLowDateTime;
@@ -1789,11 +1789,11 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
         munmap_status = msync(map->addr, map->actual_len, MS_SYNC /* | MS_INVALIDATE */);
         if (munmap_status != 0)
         {
-            nonfatalerror_ex(SRC_LOC()
-                            , "mmapped file sync failed for file '%s': error %d(%s)"
-                            , map->name
-                            , errno
-                            , errno_descr(errno)
+            nonfatalerror_ex(SRC_LOC(),
+                    "mmapped file sync failed for file '%s': error %d(%s)",
+                    map->name,
+                    errno,
+                    errno_descr(errno)
                             );
         }
     }
@@ -1801,11 +1801,11 @@ static void crm_unmap_file_internal(CRM_MMAP_CELL *map)
     munmap_status = munmap(map->addr, map->actual_len);
     if (munmap_status != 0)
     {
-        fatalerror_ex(SRC_LOC()
-                     , "Failed to release (unmap) the mmapped file '%s': error %d(%s)"
-                     , map->name
-                     , errno
-                     , errno_descr(errno)
+        fatalerror_ex(SRC_LOC(),
+                "Failed to release (unmap) the mmapped file '%s': error %d(%s)",
+                map->name,
+                errno,
+                errno_descr(errno)
                      );
     }
     //  fprintf(stderr, "Munmap_status is %ld\n", munmap_status);
@@ -1919,8 +1919,8 @@ void crm_force_munmap_addr(void *addr)
     if (!p)
     {
         nonfatalerror("Internal fault - this code has tried to force unmap memory "
-                      "that it never mapped in the first place.  "
-                     , "Please file a bug report. ");
+                      "that it never mapped in the first place.  ",
+                "Please file a bug report. ");
         return;
     }
 
@@ -1953,8 +1953,8 @@ void crm_munmap_file(void *addr)
     if (!p)
     {
         nonfatalerror("Internal fault - this code has tried to unmap memory "
-                      "that it never mapped in the first place.  "
-                     , "Please file a bug report. ");
+                      "that it never mapped in the first place.  ",
+                "Please file a bug report. ");
         return;
     }
 
@@ -1997,11 +1997,11 @@ void crm_munmap_file(void *addr)
             int ret = msync(p->addr, p->actual_len, MS_SYNC /* | MS_INVALIDATE */);
             if (ret != 0)
             {
-                nonfatalerror_ex(SRC_LOC()
-                                , "mmapped file sync failed for file '%s': error %d(%s)"
-                                , p->name
-                                , errno
-                                , errno_descr(errno)
+                nonfatalerror_ex(SRC_LOC(),
+                        "mmapped file sync failed for file '%s': error %d(%s)",
+                        p->name,
+                        errno,
+                        errno_descr(errno)
                                 );
             }
 
@@ -2011,13 +2011,13 @@ void crm_munmap_file(void *addr)
             FlushViewOfFile(p->addr, 0);
             UnmapViewOfFile(p->addr);
             //and remap so we still have it open
-            p->addr = MapViewOfFile(p->mapping
-                                   , ((p->mode & MAP_PRIVATE)
-                                      ? FILE_MAP_COPY
-                                      : ((p->prot & PROT_WRITE)
-                                         ? FILE_MAP_WRITE
-                                         : FILE_MAP_READ))
-                                   , 0, 0, 0);
+            p->addr = MapViewOfFile(p->mapping,
+                    ((p->mode & MAP_PRIVATE)
+                     ? FILE_MAP_COPY
+                     : ((p->prot & PROT_WRITE)
+                        ? FILE_MAP_WRITE
+                        : FILE_MAP_READ)),
+                    0, 0, 0);
             //if the remap failed for some reason, just free everything
             //  and get rid of this cached mmap entry.
             if (p->addr == NULL)
@@ -2093,19 +2093,19 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
 
     if ((start % pagesize) != 0 || start < 0)
     {
-        untrappableerror_ex(SRC_LOC()
-                           , "The system cannot memory map (mmap) any file when "
-                             "the requested offset %ld is not on a system page "
-                             "boundary.   Tough luck for file '%s'."
-                           , start
-                           , filename);
+        untrappableerror_ex(SRC_LOC(),
+                "The system cannot memory map (mmap) any file when "
+                "the requested offset %ld is not on a system page "
+                "boundary.   Tough luck for file '%s'.",
+                start,
+                filename);
     }
     if (requested_len <= 0)
     {
-        untrappableerror_ex(SRC_LOC()
-                           , "The system cannot memory map (mmap) an empty "
-                             "file.   Tough luck for file '%s'."
-                           , filename);
+        untrappableerror_ex(SRC_LOC(),
+                "The system cannot memory map (mmap) an empty "
+                "file.   Tough luck for file '%s'.",
+                filename);
     }
 
     //    Search for the file - if it's already mmaped, just return it.
@@ -2142,8 +2142,8 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
     p = (void *)calloc(1, sizeof(p[0]));
     if (p == NULL)
     {
-        untrappableerror(" Unable to alloc enough memory for mmap cache.  "
-                        , " This is unrecoverable.  Sorry.");
+        untrappableerror(" Unable to alloc enough memory for mmap cache.  ",
+                " This is unrecoverable.  Sorry.");
         return MAP_FAILED; /* [i_a] unreachable code */
     }
     p->name = strdup(filename);
@@ -2205,12 +2205,12 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
 #endif
 
     //  fprintf(stderr, "m");
-    p->addr = mmap(NULL
-                  , p->actual_len
-                  , p->prot
-                  , p->mode
-                  , p->fd
-                  , p->start);
+    p->addr = mmap(NULL,
+            p->actual_len,
+            p->prot,
+            p->mode,
+            p->fd,
+            p->start);
     //fprintf(stderr, "M");
 
     //     we can't close the fd now (the docs say yes, testing says no,
@@ -2316,8 +2316,8 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
     if (user_trace)
         fprintf(stderr, "MMAPping file %s for direct memory access.\n", filename);
 
-    p->fd = CreateFile(filename, open_flags, 0
-                      , NULL, OPEN_EXISTING, 0, NULL);
+    p->fd = CreateFile(filename, open_flags, 0,
+            NULL, OPEN_EXISTING, 0, NULL);
     if (p->fd == INVALID_HANDLE_VALUE)
     {
         free(p->name);
@@ -2329,10 +2329,10 @@ void *crm_mmap_file(char *filename, long start, long requested_len, long prot, l
     if (p->actual_len < 0)
         p->actual_len = statbuf.st_size - p->start;
 
-    p->mapping = CreateFileMapping(p->fd
-                                  , NULL
-                                  , createmap_flags, 0, requested_len
-                                  , NULL);
+    p->mapping = CreateFileMapping(p->fd,
+            NULL,
+            createmap_flags, 0, requested_len,
+            NULL);
     if (p->mapping == NULL)
     {
         CloseHandle(p->fd);
@@ -2462,9 +2462,9 @@ void *crm_get_header_for_mmap_file(void *addr)
 //   REMEMBER TO FREE() THE RESULT OR ELSE YOU WILL LEAK MEMORY!!!
 
 
-unsigned char *crm_strntrn_invert_string(unsigned char *str
-                                        , long len
-                                        , long          *rlen)
+unsigned char *crm_strntrn_invert_string(unsigned char *str,
+        long                                            len,
+        long                                           *rlen)
 {
     unsigned char *outstr;
     long i, j;
@@ -2532,9 +2532,9 @@ unsigned char *crm_strntrn_invert_string(unsigned char *str
 //   expand those hyphenated string ranges - input is str, of length len.
 //    We return the new string, and the new length in rlen.
 //
-unsigned char *crm_strntrn_expand_hyphens(unsigned char *str
-                                         , long len
-                                         , long          *rlen)
+unsigned char *crm_strntrn_expand_hyphens(unsigned char *str,
+        long                                             len,
+        long                                            *rlen)
 {
     long j, k, adj;
     unsigned char *r;
@@ -2626,14 +2626,14 @@ unsigned char *crm_strntrn_expand_hyphens(unsigned char *str
 //        and a negative number on failure.
 
 long strntrn(
-        unsigned char *datastr
-            , long          *datastrlen
-            , long maxdatastrlen
-            , unsigned char *fromstr
-            , long fromstrlen
-            , unsigned char *tostr
-            , long tostrlen
-            , long flags)
+        unsigned char *datastr,
+        long          *datastrlen,
+        long           maxdatastrlen,
+        unsigned char *fromstr,
+        long           fromstrlen,
+        unsigned char *tostr,
+        long           tostrlen,
+        long           flags)
 {
     long len = *datastrlen;
     long flen, tlen;

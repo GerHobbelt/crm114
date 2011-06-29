@@ -46,7 +46,7 @@ extern long user_trace;
 
 extern long internal_trace;
 
-extern long debug_countdown;
+extern int debug_countdown;
 
 extern long cmdline_break;
 
@@ -285,18 +285,27 @@ typedef struct mythical_entropy_cell
 #define CRM_PMULC 32         // pmulc translates tokens to cluster names
 #define CRM_LAZY 33          // makes a "lazy" variable.  // [i_a] NOT IMPLEMENTED
 #define CRM_REDUCE 34
-#define CRM_UNIMPLEMENTED 35
+#define CRM_CSS_MERGE 35
+#define CRM_CSS_DIFF 36
+#define CRM_CSS_BACKUP 37
+#define CRM_CSS_RESTORE 38
+#define CRM_CSS_INFO 39
+#define CRM_CSS_ANALYZE 40
+#define CRM_CSS_CREATE 41
+
+#define CRM_UNIMPLEMENTED 42
+
 
 
 //      FLAGS FLAGS FLAGS
-//       all of the valid CRM114 flags are listed here
+//      all of the valid CRM114 flags are listed here
 //
 //      GROT GROT GROT - You must keep this in synchrony with the
 //      definitions of the keywords in crm_stmt_parser!!!  Yes, I'd
 //      love to define it in one place and one place only, but I haven't
 //      figured out a way to do that well.
 
-//     match searchstart flags
+//      match searchstart flags
 #define CRM_FROMSTART     (1 << 0)
 #define CRM_FROMNEXT      (1 << 1)
 #define CRM_FROMEND       (1 << 2)
@@ -356,6 +365,8 @@ typedef struct mythical_entropy_cell
 #define CRM_NEURAL_NET    (1LL << 38)
 
 #define CRM_FLAT          (1LL << 39)
+
+#define CRM_AUTODETECT    (1LL << 40)
 
 
 //

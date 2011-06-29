@@ -96,32 +96,55 @@ extern char *CSS_version_name[];
 /* accumulate hashes up to this many long tokens */
 #define OSBF_MAX_LONG_TOKENS 1000
 
-extern int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                                    , char *txtptr, long txtoffset, long txtlen);
-extern int crm_expr_osbf_bayes_classify(CSL_CELL *csl
-                                       , ARGPARSE_BLOCK *apb
-                                       , char *txtptr, long txtoffset, long txtlen);
+extern int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtoffset, long txtlen);
+extern int crm_expr_osbf_bayes_classify(CSL_CELL *csl,
+        ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtoffset, long txtlen);
+
+extern int crm_expr_osbf_bayes_css_merge(CSL_CELL *csl,
+        ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtoffset, long txtlen);
+extern int crm_expr_osbf_bayes_css_diff(CSL_CELL *csl,
+        ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtoffset, long txtlen);
+extern int crm_expr_osbf_bayes_css_backup(CSL_CELL *csl,
+        ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtoffset, long txtlen);
+extern int crm_expr_osbf_bayes_css_restore(CSL_CELL *csl,
+        ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtoffset, long txtlen);
+extern int crm_expr_osbf_bayes_css_info(CSL_CELL *csl,
+        ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtoffset, long txtlen);
+extern int crm_expr_osbf_bayes_css_analyze(CSL_CELL *csl,
+        ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtoffset, long txtlen);
+extern int crm_expr_osbf_bayes_css_create(CSL_CELL *csl,
+        ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtoffset, long txtlen);
+
 extern void crm_osbf_set_microgroom(int value);
-extern void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *h
-                               , unsigned long hindex);
-extern void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *h
-                            , unsigned long packstart, unsigned long packlen);
-extern void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *h
-                            , unsigned long packstart, unsigned long packlen);
-extern unsigned long crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header
-                                         , unsigned long index);
-extern unsigned long crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header
-                                         , unsigned long index);
-extern unsigned long crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header
-                                         , unsigned long hash, unsigned long key);
-extern void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header
-                                  , unsigned long bindex, int delta);
-extern void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header
-                                  , unsigned long bindex, unsigned long hash
-                                  , unsigned long key, int value);
-extern int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets
-                                  , unsigned long major, unsigned long minor
-                                  , unsigned long spectrum_start);
+extern void crm_osbf_microgroom(OSBF_FEATURE_HEADER_STRUCT *h,
+        unsigned long                                       hindex);
+extern void crm_osbf_packcss(OSBF_FEATURE_HEADER_STRUCT *h,
+        unsigned long packstart, unsigned long packlen);
+extern void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *h,
+        unsigned long packstart, unsigned long packlen);
+extern unsigned long crm_osbf_next_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long                                                 index);
+extern unsigned long crm_osbf_prev_bindex(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long                                                 index);
+extern unsigned long crm_osbf_find_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long hash, unsigned long key);
+extern void crm_osbf_update_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long bindex, int delta);
+extern void crm_osbf_insert_bucket(OSBF_FEATURE_HEADER_STRUCT *header,
+        unsigned long bindex, unsigned long hash,
+        unsigned long key, int value);
+extern int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets,
+        unsigned long major, unsigned long minor,
+        unsigned long spectrum_start);
 
 
 

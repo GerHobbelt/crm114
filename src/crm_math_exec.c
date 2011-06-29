@@ -39,8 +39,8 @@ long strmath(char *buf, long inlen, long maxlen, long *retstat)
 
     if (inlen < 0)
     {
-        fatalerror("Bug in caller to strmath() - it makes no sense to"
-                  , " have a negative length string!  \n");
+        fatalerror("Bug in caller to strmath() - it makes no sense to",
+                " have a negative length string!  \n");
         internal_trace = old_internal_trace;
         return 0;
     }
@@ -107,27 +107,27 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
     //      all initialized... let's begin.
 
     if (internal_trace)
-        fprintf(stderr, "Math on '%s' len %ld retstat %p\n"
-               , buf, inlen, (void *)retstat);
+        fprintf(stderr, "Math on '%s' len %ld retstat %p\n",
+                buf, inlen, (void *)retstat);
 
     for (ip = 0; ip < inlen; ip++)
     {
         if (internal_trace)
-            fprintf(stderr, "ip = %ld, sp = %ld, stack[sp] = %f, ch='%c'\n"
-                   , ip, sp, stack[sp], buf[ip]);
+            fprintf(stderr, "ip = %ld, sp = %ld, stack[sp] = %f, ch='%c'\n",
+                    ip, sp, stack[sp], buf[ip]);
 
         if (sp < 0)
         {
-            errstat = nonfatalerror("Stack Underflow in math evaluation"
-                                   , "");
+            errstat = nonfatalerror("Stack Underflow in math evaluation",
+                    "");
             return 0;
         }
 
         if (sp >= DEFAULT_MATHSTK_LIMIT)
         {
             errstat = nonfatalerror("Stack Overflow in math evaluation.\n "
-                                    "CRM114 Barbie says 'This math is too hard'."
-                                   , buf);
+                                    "CRM114 Barbie says 'This math is too hard'.",
+                    buf);
             return 0;
         }
 
@@ -421,8 +421,8 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
                     //  to the format string so we get integer output.
                     if (buf[ip] == 'x' || buf[ip] == 'X')
                     {
-                        snprintf(outformat, WIDTHOF(outformat), "%%%g.0ll%c"
-                                , stack[sp + 1], (short)buf[ip]);
+                        snprintf(outformat, WIDTHOF(outformat), "%%%g.0ll%c",
+                                stack[sp + 1], (short)buf[ip]);
                         outformat[WIDTHOF(outformat) - 1] = 0;
                     }
                     else
@@ -446,9 +446,9 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
                         snprintf(tempstring, WIDTHOF(tempstring), outformat, stack[sp]);
                         tempstring[WIDTHOF(tempstring) - 1] = 0;
                         if (internal_trace)
-                            fprintf(stderr
-                                   , "Intermediate result string -->%s<-- \n"
-                                   , tempstring);
+                            fprintf(stderr,
+                                    "Intermediate result string -->%s<-- \n",
+                                    tempstring);
                     }
                     else
                     {
@@ -457,9 +457,9 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
                         snprintf(tempstring, WIDTHOF(tempstring), outformat, intpart);
                         tempstring[WIDTHOF(tempstring) - 1] = 0;
                         if (internal_trace)
-                            fprintf(stderr
-                                   , "Intermediate hex result string -->%s<-- \n"
-                                   , tempstring);
+                            fprintf(stderr,
+                                    "Intermediate hex result string -->%s<-- \n",
+                                    tempstring);
                     }
                     //   And now do the back conversion of the result.
                     //   Note that X formatting (hexadecimal) does NOT do the
@@ -488,8 +488,8 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
         case ')':
             //         why are you using parenthesis in RPN code??
             {
-                nonfatalerror("It's just silly to use parenthesis in RPN!"
-                             , " Perhaps you should check your setups?");
+                nonfatalerror("It's just silly to use parenthesis in RPN!",
+                        " Perhaps you should check your setups?");
                 sinc = 1;
             }
             break;
@@ -509,9 +509,9 @@ long strpnmath(char *buf, long inlen, long maxlen, long *retstat)
 
     if (internal_trace)
     {
-        fprintf(stderr
-               , "Final qexpand state:  ip = %ld, sp = %ld, stack[sp] = %f, ch='%c'\n"
-               , ip, sp, stack[sp], buf[ip]);
+        fprintf(stderr,
+                "Final qexpand state:  ip = %ld, sp = %ld, stack[sp] = %f, ch='%c'\n",
+                ip, sp, stack[sp], buf[ip]);
         if (retstat)
             fprintf(stderr, "retstat = %ld\n", *retstat);
     }
@@ -688,27 +688,27 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
 
     //  initialization done... begin the work.
     if (internal_trace)
-        fprintf(stderr, "Starting Algebraic Math on '%s' (len %ld)\n"
-               , buf, inlen);
+        fprintf(stderr, "Starting Algebraic Math on '%s' (len %ld)\n",
+                buf, inlen);
 
     for (ip = 0; ip < inlen; ip++)
     {
         //   Debugging trace
         if (internal_trace)
-            fprintf(stderr
-                   , "ip = %ld, sp = %d, L=%f, Op=%c, R=%f, V=%x next='%c'\n"
-                   , ip, sp
-                   , leftarg[sp], (short)opstack[sp]
-                   , rightarg, (short)validstack[sp]
-                   , buf[ip]);
+            fprintf(stderr,
+                    "ip = %ld, sp = %d, L=%f, Op=%c, R=%f, V=%x next='%c'\n",
+                    ip, sp,
+                    leftarg[sp], (short)opstack[sp],
+                    rightarg, (short)validstack[sp],
+                    buf[ip]);
 
         //    Top of the loop- we're a state machine driven by the top of
         //    the stack's validity.
 
         if (sp >= DEFAULT_MATHSTK_LIMIT)
         {
-            errstat = nonfatalerror("Stack Overflow in math evaluation. "
-                                   , "CRM114 Barbie says 'This math is too hard'.");
+            errstat = nonfatalerror("Stack Overflow in math evaluation. ",
+                    "CRM114 Barbie says 'This math is too hard'.");
             if (retstat)
                 *retstat = 0;
             return 0;
@@ -753,8 +753,8 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
             case '(':
                 {
                     if (internal_trace)
-                        fprintf(stderr
-                               , "Open Paren - start new math stack level\n");
+                        fprintf(stderr,
+                                "Open Paren - start new math stack level\n");
                     sp++;
                     leftarg[sp] = 0.0;
                     rightarg = 0.0;
@@ -768,8 +768,8 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                 break;
 
             default:
-                errstat = nonfatalerror("Math expression makes no sense"
-                                       , " (need to have a number here).");
+                errstat = nonfatalerror("Math expression makes no sense",
+                        " (need to have a number here).");
                 if (retstat)
                     *retstat = 0;
                 return 0;
@@ -845,8 +845,8 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                 break;
 
             default:
-                errstat = nonfatalerror("Math needs an operator in: "
-                                       , buf);
+                errstat = nonfatalerror("Math needs an operator in: ",
+                        buf);
                 if (retstat)
                     *retstat = 0;
                 return 0;
@@ -863,8 +863,8 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
             case '(':
                 {
                     if (internal_trace)
-                        fprintf(stderr
-                               , "Open Paren - start new math stack level\n");
+                        fprintf(stderr,
+                                "Open Paren - start new math stack level\n");
                     sp++;
                     leftarg[sp] = 0.0;
                     rightarg = 0.0;
@@ -900,8 +900,8 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                 break;
 
             default:
-                errstat = nonfatalerror("Math is missing a number in: "
-                                       , buf);
+                errstat = nonfatalerror("Math is missing a number in: ",
+                        buf);
                 if (retstat)
                     *retstat = 0;
                 return 0;
@@ -1063,28 +1063,28 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                     char tempstring[2048];
 
                     if (internal_trace)
-                        fprintf(stderr, "Formatting operator %c \n"
-                               , (short)opstack[sp]);
+                        fprintf(stderr, "Formatting operator %c \n",
+                                (short)opstack[sp]);
                     // char tempstring [2048];
                     //     Do we have a float or an int format?
                     if (opstack[sp] == 'x' || opstack[sp] == 'X')
                     {
-                        snprintf(outformat, WIDTHOF(outformat), "%%%g.0ll%c"
-                                , rightarg, (short)opstack[sp]);
+                        snprintf(outformat, WIDTHOF(outformat), "%%%g.0ll%c",
+                                rightarg, (short)opstack[sp]);
                         outformat[WIDTHOF(outformat) - 1] = 0;
                     }
                     else
                     {
                         if (((long)rightarg) / 1 == rightarg)
                         {
-                            snprintf(outformat, WIDTHOF(outformat), "%%%g.0%c"
-                                    , rightarg, (short)opstack[sp]);
+                            snprintf(outformat, WIDTHOF(outformat), "%%%g.0%c",
+                                    rightarg, (short)opstack[sp]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                         else
                         {
-                            snprintf(outformat, WIDTHOF(outformat), "%%%g%c"
-                                    , rightarg, (short)opstack[sp]);
+                            snprintf(outformat, WIDTHOF(outformat), "%%%g%c",
+                                    rightarg, (short)opstack[sp]);
                             outformat[WIDTHOF(outformat) - 1] = 0;
                         }
                     }
@@ -1124,8 +1124,8 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
                 break;
 
             default:
-                errstat = nonfatalerror("Math operator makes no sense in: "
-                                       , buf);
+                errstat = nonfatalerror("Math operator makes no sense in: ",
+                        buf);
                 if (retstat)
                     *retstat = 0;
                 return 0;
@@ -1138,8 +1138,8 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
         //   Check to see that the stack is still valid.
         if (sp < 0)
         {
-            errstat = nonfatalerror("Too many close parenthesis in this math: "
-                                   , buf);
+            errstat = nonfatalerror("Too many close parenthesis in this math: ",
+                    buf);
             if (retstat)
                 *retstat = 0;
             return 0;
@@ -1154,8 +1154,8 @@ long stralmath(char *buf, long inlen, long maxlen, long *retstat)
     //      Check that we made it all the way down the stack
     if (sp != 0)
     {
-        errstat = nonfatalerror("Not enough close parenthesis in this math: "
-                               , buf);
+        errstat = nonfatalerror("Not enough close parenthesis in this math: ",
+                buf);
         if (retstat)
             *retstat = 0;
         return 0;

@@ -148,15 +148,15 @@ const char *skip_path(const char *srcfile)
  *      (TODO: may even support multiple formats for easy debugging/code jumping)
  */
 static void generate_err_reason_msg(
-        char       *reason
-                                   , int reason_bufsize
-                                   , int lineno
-                                   , const char *srcfile_full
-                                   , const char *funcname
-                                   , const char *errortype_str
-                                   , const char *encouraging_msg
-                                   , const char *fmt
-                                   , va_list args
+        char       *reason,
+        int         reason_bufsize,
+        int         lineno,
+        const char *srcfile_full,
+        const char *funcname,
+        const char *errortype_str,
+        const char *encouraging_msg,
+        const char *fmt,
+        va_list     args
                                    )
 {
     int widthleft = reason_bufsize;
@@ -318,8 +318,8 @@ static void generate_err_reason_msg(
     {
         int len;
 
-        snprintf(dst, widthleft, "This happened at line %ld of file %s\n"
-                , csl->cstmt, csl->filename);
+        snprintf(dst, widthleft, "This happened at line %ld of file %s\n",
+                csl->cstmt, csl->filename);
         dst[widthleft - 1] = 0;
         len = strlen(dst);
         dst += len;
@@ -358,8 +358,8 @@ static long check_for_trap_handler(CSL_CELL *csl, const char *reason)
         char *rbuf = strdup(reason);
         if (!rbuf)
         {
-            fprintf(stderr
-                   , "Couldn't alloc rbuf in 'fatalerror()'!\nIt's really bad when the error fixup routine gets an error!\n");
+            fprintf(stderr,
+                    "Couldn't alloc rbuf in 'fatalerror()'!\nIt's really bad when the error fixup routine gets an error!\n");
             if (engine_exit_base != 0)
             {
                 exit(engine_exit_base + 3);
@@ -406,10 +406,10 @@ void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *funcnam
             *p = 0;
         }
     }
-    CRM_ASSERT_MESSENGER(lineno, srcfile, funcname
-                        , "\nBetter start screaming, guv', since the software's just gone critical:\n"
-                          "assertion '%s' failed!%s%s\n"
-                        , msg, (extra_msg ? "\n" : ""), (extra_msg ? extra_msg : ""));
+    CRM_ASSERT_MESSENGER(lineno, srcfile, funcname,
+            "\nBetter start screaming, guv', since the software's just gone critical:\n"
+            "assertion '%s' failed!%s%s\n",
+            msg, (extra_msg ? "\n" : ""), (extra_msg ? extra_msg : ""));
 }
 
 #endif
@@ -467,8 +467,8 @@ const char *Win32_syserr_descr(DWORD errorcode)
     DWORD fmtret;
     LPSTR dstbuf = NULL;
 
-    fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER
-                           , NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
+    fmtret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+            NULL, errorcode, 0, (LPSTR)&dstbuf, 0, NULL);
     if (dstbuf != NULL && fmtret > 0 && *dstbuf)
     {
         strncpy(errstr, dstbuf, WIDTHOF(errstr));
@@ -494,11 +494,11 @@ const char *Win32_syserr_descr(DWORD errorcode)
 //     exit, not a prayer of survival.
 void untrappableerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
-    untrappableerror_ex(lineno, srcfile, funcname
-                       , (text2 && strlen(text2) <= 1024
-                          ? " %.1024s %.1024s\n"
-                          : " %.1024s %.1024s(...truncated)\n")
-                       , text1, text2);
+    untrappableerror_ex(lineno, srcfile, funcname,
+            (text2 && strlen(text2) <= 1024
+             ? " %.1024s %.1024s\n"
+             : " %.1024s %.1024s(...truncated)\n"),
+            text1, text2);
 }
 
 void untrappableerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -515,15 +515,15 @@ void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, 
     char reason[MAX_PATTERN];
 
     generate_err_reason_msg(
-            reason
-                           , WIDTHOF(reason)
-                           , lineno
-                           , srcfile
-                           , funcname
-                           , " *UNTRAPPABLE ERROR*"
-                           , NULL
-                           , fmt
-                           , args);
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            " *UNTRAPPABLE ERROR*",
+            NULL,
+            fmt,
+            args);
     fputs(reason, stderr);
     dump_error_script_line(csl, csl->cstmt);
 
@@ -546,11 +546,11 @@ long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const
     //   long, so we put out only the first 1024 characters
     //
 
-    return fatalerror_ex(lineno, srcfile, funcname
-                        , (text2 && strlen(text2) <= 1024 ?
-                           " %.1024s %.1024s\n" :
-                           " %.1024s %.1024s(...truncated)\n")
-                        , text1, text2);
+    return fatalerror_ex(lineno, srcfile, funcname,
+            (text2 && strlen(text2) <= 1024 ?
+             " %.1024s %.1024s\n" :
+             " %.1024s %.1024s(...truncated)\n"),
+            text1, text2);
 }
 
 long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -571,15 +571,15 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
     long original_statement_line = (csl != NULL ? csl->cstmt : -1);
 
     generate_err_reason_msg(
-            reason
-                           , WIDTHOF(reason)
-                           , lineno
-                           , srcfile
-                           , funcname
-                           , " *ERROR*"
-                           , NULL
-                           , fmt
-                           , args);
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            " *ERROR*",
+            NULL,
+            fmt,
+            args);
 
     trap_catch = check_for_trap_handler(csl, reason);
     if (trap_catch == 0)
@@ -603,11 +603,11 @@ long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const 
 
 long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *text1, const char *text2)
 {
-    return nonfatalerror_ex(lineno, srcfile, funcname
-                           , (text2 && strlen(text2) <= 1024 ?
-                              " %.1024s %.1024s\n" :
-                              " %.1024s %.1024s(...truncated)\n")
-                           , text1, text2);
+    return nonfatalerror_ex(lineno, srcfile, funcname,
+            (text2 && strlen(text2) <= 1024 ?
+             " %.1024s %.1024s\n" :
+             " %.1024s %.1024s(...truncated)\n"),
+            text1, text2);
 }
 
 long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *fmt, ...)
@@ -631,15 +631,15 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, con
     long original_statement_line = (csl != NULL ? csl->cstmt : -1);
 
     generate_err_reason_msg(
-            reason
-                           , WIDTHOF(reason)
-                           , lineno
-                           , srcfile
-                           , funcname
-                           , " *WARNING*"
-                           , "I'll try to keep working.\n"
-                           , fmt
-                           , args);
+            reason,
+            WIDTHOF(reason),
+            lineno,
+            srcfile,
+            funcname,
+            " *WARNING*",
+            "I'll try to keep working.\n",
+            fmt,
+            args);
 
     trap_catch = check_for_trap_handler(csl, reason);
     if (trap_catch == 0)
@@ -657,9 +657,9 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, con
     {
         if (!nonfatalerrorcount_max_reported)
         {
-            trap_catch = fatalerror_ex(lineno, srcfile, funcname
-                                      , "Too many untrapped warnings; your program is very likely unrecoverably broken.\n"
-                                        "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
+            trap_catch = fatalerror_ex(lineno, srcfile, funcname,
+                    "Too many untrapped warnings; your program is very likely unrecoverably broken.\n"
+                    "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
             nonfatalerrorcount_max_reported = 1; /* don't keep on yakking about too many whatever... */
         }
     }
@@ -681,24 +681,24 @@ void crm_output_profile(CSL_CELL *csl)
 {
     long i;
 
-    fprintf(stderr
-           , "\n         Execution Profile Results\n");
-    fprintf(stderr
-           , "\n  Memory usage at completion: %10ld window, %10ld isolated\n"
-           , cdw->nchars, tdw->nchars);
-    fprintf(stderr
-           , "\n  Statement Execution Time Profiling (0 times suppressed)");
-    fprintf(stderr
-           , "\n  line:      usertime   systemtime    totaltime\n");
+    fprintf(stderr,
+            "\n         Execution Profile Results\n");
+    fprintf(stderr,
+            "\n  Memory usage at completion: %10ld window, %10ld isolated\n",
+            cdw->nchars, tdw->nchars);
+    fprintf(stderr,
+            "\n  Statement Execution Time Profiling (0 times suppressed)");
+    fprintf(stderr,
+            "\n  line:      usertime   systemtime    totaltime\n");
     for (i = 0; i < csl->nstmts; i++)
     {
         if (csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime > 0)
         {
-            fprintf(stderr, " %5ld:   %10ld   %10ld   %10ld\n"
-                   , i
-                   , csl->mct[i]->stmt_utime
-                   , csl->mct[i]->stmt_stime
-                   , csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime);
+            fprintf(stderr, " %5ld:   %10ld   %10ld   %10ld\n",
+                    i,
+                    csl->mct[i]->stmt_utime,
+                    csl->mct[i]->stmt_stime,
+                    csl->mct[i]->stmt_utime + csl->mct[i]->stmt_stime);
         }
     }
 }
@@ -745,10 +745,10 @@ long crm_trigger_fault(char *reason)
     //  Non null fault_text rstring -we'll take the trap
     if (user_trace)
     {
-        fprintf(stderr, "Catching FAULT generated on line %ld\n"
-               , csl->cstmt);
-        fprintf(stderr, "FAULT reason:\n%s\n"
-               , reason);
+        fprintf(stderr, "Catching FAULT generated on line %ld\n",
+                csl->cstmt);
+        fprintf(stderr, "FAULT reason:\n%s\n",
+                reason);
     }
 
     original_statement = csl->cstmt;
@@ -783,9 +783,9 @@ long crm_trigger_fault(char *reason)
                - (csl->mct[trapline]->fchar);
 
         i = crm_statement_parse(
-                &(csl->filetext[csl->mct[trapline]->fchar])
-                               , slen
-                               , &apb);
+                &(csl->filetext[csl->mct[trapline]->fchar]),
+                slen,
+                &apb);
         if (user_trace)
         {
             fprintf(stderr, "Trying trap at line %ld:\n", trapline);
@@ -799,8 +799,8 @@ long crm_trigger_fault(char *reason)
         }
 
         //  Get the trap pattern and  see if we match.
-        crm_get_pgm_arg(trap_pat, MAX_PATTERN
-                       , apb.s1start, apb.s1len);
+        crm_get_pgm_arg(trap_pat, MAX_PATTERN,
+                apb.s1start, apb.s1len);
         //
         //      Do variable substitution on the pattern
         pat_len = crm_nexpandvar(trap_pat, apb.s1len, MAX_PATTERN);
@@ -808,17 +808,17 @@ long crm_trigger_fault(char *reason)
         //
         if (user_trace)
         {
-            fprintf(stderr, "This TRAP will trap anything matching =%s= .\n"
-                   , trap_pat);
+            fprintf(stderr, "This TRAP will trap anything matching =%s= .\n",
+                    trap_pat);
         }
         //       compile the regex
         i = crm_regcomp(&preg, trap_pat, pat_len, REG_EXTENDED);
         if (i == 0)
         {
-            i = crm_regexec(&preg
-                           , reason
-                           , strlen(reason)
-                           , 0, NULL, 0, NULL);
+            i = crm_regexec(&preg,
+                    reason,
+                    strlen(reason),
+                    0, NULL, 0, NULL);
             crm_regfree(&preg);
         }
         else
@@ -827,10 +827,10 @@ long crm_trigger_fault(char *reason)
             // CRM_ASSERT(csl->cstmt == trapline); previous code can have called fatalerror[_ex] multiple times,
             // causing the traphandler line to move forward multiple times. So reassign the traphandler and
             // go from there:
-            fatalerror_ex(SRC_LOC()
-                         , "Regular Expression Compilation Problem in TRAP pattern '%s' while processing the trappable error '%s'"
-                         , tempbuf
-                         , reason);
+            fatalerror_ex(SRC_LOC(),
+                    "Regular Expression Compilation Problem in TRAP pattern '%s' while processing the trappable error '%s'",
+                    tempbuf,
+                    reason);
             // trapline = csl->cstmt; // [i_a] the call to fatalerror[_ex] will have found a new trapline!
         }
 
@@ -844,8 +844,8 @@ long crm_trigger_fault(char *reason)
             if (user_trace)
             {
                 fprintf(stderr, "TRAP matched.\n");
-                fprintf(stderr, "Next statement will be %ld\n"
-                       , trapline);
+                fprintf(stderr, "Next statement will be %ld\n",
+                        trapline);
             }
             //
             //   set the next statement to execute to be
@@ -868,9 +868,9 @@ long crm_trigger_fault(char *reason)
                     rnlen = crm_nexpandvar(reasonname, apb.p1len, MAX_VARNAME);
                     //   crm_nexpandvar null-terminates for us so we can be
                     //   8-bit-unclean here
-                    crm_set_temp_nvar(reasonname
-                                     , reason
-                                     , strlen(reason));
+                    crm_set_temp_nvar(reasonname,
+                            reason,
+                            strlen(reason));
                 }
                 done = 1;
             }
@@ -881,8 +881,8 @@ long crm_trigger_fault(char *reason)
             //   the surrounding trap (if it exists)
             if (user_trace)
             {
-                fprintf(stderr
-                       , "TRAP didn't match - trying next trap in line.\n");
+                fprintf(stderr,
+                        "TRAP didn't match - trying next trap in line.\n");
             }
         }
         //      and note that we haven't set "done" == 1 yet, so

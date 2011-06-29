@@ -72,38 +72,38 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (varnamelen < 3)
         {
             nonfatalerror(
-                    "The variable you're asking me to alter has an utterly bogus name\n"
-                         , "so I'll pretend it has no output variable.");
+                    "The variable you're asking me to alter has an utterly bogus name\n",
+                    "so I'll pretend it has no output variable.");
             has_output_var = 0;
         }
     }
     //     get the new pattern, and expand it.
     crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
 
-//  ihash = 0;
-//  itercount = 0;
-//  for (ahindex = 0; ahindex < MAX_EVAL_ITERATIONS; ahindex++)
-//    ahash[ahindex] = 0;
+ //  ihash = 0;
+ //  itercount = 0;
+ //  for (ahindex = 0; ahindex < MAX_EVAL_ITERATIONS; ahindex++)
+ //    ahash[ahindex] = 0;
     ahindex = 0;
-//  loop_abort = 0;
-//
-//     Now, a loop - while it continues to change, keep looping.
-//     But to try and detect infinite loops, we keep track of the
-//     previous values (actually, their hashes) and if one of those
-//     values recur, we stop evaluating and throw an error.
-//
-// Note: also take into account the condition where the _calculated_
-// hash may be zero: since all possible values of the crmhash64_t
-// type can be produced (at least theoretically) by the hash function,
-// we must check against the actual, i.e. current hash value, no
-// matter what it's value is.
-//
+ //  loop_abort = 0;
+ //
+ //     Now, a loop - while it continues to change, keep looping.
+ //     But to try and detect infinite loops, we keep track of the
+ //     previous values (actually, their hashes) and if one of those
+ //     values recur, we stop evaluating and throw an error.
+ //
+ // Note: also take into account the condition where the _calculated_
+ // hash may be zero: since all possible values of the crmhash64_t
+ // type can be produced (at least theoretically) by the hash function,
+ // we must check against the actual, i.e. current hash value, no
+ // matter what it's value is.
+ //
     newvallen = apb->s1len;
     for (itercount = 0; itercount < MAX_EVAL_ITERATIONS; itercount++)
     {
         int i;
-
         crmhash64_t ihash = strnhash64(tempbuf, newvallen);
+
         ahash[itercount] = ihash;
         if (internal_trace)
             fprintf(stderr, "Eval ihash = %016llX\n", (unsigned long long)ihash);
@@ -134,24 +134,24 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (i >= 0)
             break;
 
-        newvallen = crm_qexpandvar(tempbuf, newvallen
-                                  , data_window_size, &qex_stat);
+        newvallen = crm_qexpandvar(tempbuf, newvallen,
+                data_window_size, &qex_stat);
     }
 
     if (itercount == MAX_EVAL_ITERATIONS)
     {
         nonfatalerror("The variable you're attempting to EVAL seems to eval "
                       "infinitely, and hence I cannot compute it.  I did try "
-                      "a lot, though.  I got this far before I gave up: "
-                     , tempbuf);
+                      "a lot, though.  I got this far before I gave up: ",
+                tempbuf);
         return 0;
     }
 
     //     and shove it out to wherever it needs to be shoved.
     //
     if (has_output_var)
-        crm_destructive_alter_nvariable(varname, varnamelen
-                                       , tempbuf, newvallen);
+        crm_destructive_alter_nvariable(varname, varnamelen,
+                tempbuf, newvallen);
 
     if (internal_trace)
         fprintf(stderr, "Final qex_stat was %ld\n", qex_stat);
@@ -192,8 +192,8 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (apb->p1len < 3)
     {
         nonfatalerror(
-                "This statement is missing the variable to alter,\n"
-                     , "so I'll ignore the whole statement.");
+                "This statement is missing the variable to alter,\n",
+                "so I'll ignore the whole statement.");
         return 0;
     }
 
@@ -203,8 +203,8 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (varnamelen - varnamestart < 3)
     {
         nonfatalerror(
-                "The variable you're asking me to alter has an utterly bogus name\n"
-                     , "so I'll ignore the whole statement.");
+                "The variable you're asking me to alter has an utterly bogus name\n",
+                "so I'll ignore the whole statement.");
         return 0;
     }
 
@@ -212,8 +212,8 @@ int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(tempbuf, data_window_size, apb->s1start, apb->s1len);
     newvallen = crm_nexpandvar(tempbuf, apb->s1len, data_window_size);
 
-    crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen
-                                   , tempbuf, newvallen);
+    crm_destructive_alter_nvariable(&varname[varnamestart], varnamelen,
+            tempbuf, newvallen);
     return 0;
 }
 

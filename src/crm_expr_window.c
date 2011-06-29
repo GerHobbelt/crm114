@@ -248,12 +248,12 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         wvnamelen = strlen(":_dw:");
     }
 
-    vmidx = crm_vht_lookup(vht, wvname
-                          , strlen(wvname));
+    vmidx = crm_vht_lookup(vht, wvname,
+            strlen(wvname));
     if (vht[vmidx] == NULL)
     {
-        nonfatalerror("We seem to be windowing a nonexistent variable."
-                     , "How very bizarre.");
+        nonfatalerror("We seem to be windowing a nonexistent variable.",
+                "How very bizarre.");
         goto invoke_bailout;
     }
 
@@ -264,8 +264,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         mdw = tdw;
     if (mdw == NULL)
     {
-        nonfatalerror("We seem to have lost the windowed var buffer"
-                     , "This is just plain sick.");
+        nonfatalerror("We seem to have lost the windowed var buffer",
+                "This is just plain sick.");
         goto invoke_bailout;
     }
 
@@ -275,10 +275,10 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //       of the old data.  So, let's do the cut.
     //
     //       execute the regex.
-    i = crm_regexec(&preg
-                   , &(vht[vmidx]->valtxt[vht[vmidx]->vstart])
-                   , vht[vmidx]->vlen
-                   , 1, matches, 0, NULL);
+    i = crm_regexec(&preg,
+            &(vht[vmidx]->valtxt[vht[vmidx]->vstart]),
+            vht[vmidx]->vlen,
+            1, matches, 0, NULL);
     crm_regfree(&preg);
 
     //       starting offset of the "keep section" is at matches[0].rm.eo
@@ -287,23 +287,23 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (i == 0)
     {
         //     delete everything up to and including the delimiter
-        crm_slice_and_splice_window(mdw
-                                   , vht[vmidx]->vstart
-                                   , -matches[0].rm_eo);
+        crm_slice_and_splice_window(mdw,
+                vht[vmidx]->vstart,
+                -matches[0].rm_eo);
     }
     else
     {
         //  didn't find the terminator pattern at all, which means we
         //  flush the input window completely.
 
-        crm_slice_and_splice_window(mdw
-                                   , vht[vmidx]->vstart
-                                   , -vht[vmidx]->vlen);
+        crm_slice_and_splice_window(mdw,
+                vht[vmidx]->vstart,
+                -vht[vmidx]->vlen);
     }
 
     if (user_trace)
-        fprintf(stderr, "  cut completed, variable length after cut is %ld\n"
-               , vht[vmidx]->vlen);
+        fprintf(stderr, "  cut completed, variable length after cut is %ld\n",
+                vht[vmidx]->vlen);
 
     //**************************************************************
     //       OK, part one is done- we've windowed off the first
@@ -393,10 +393,10 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //   diagnostic - what was in the newinputbuf before this stmt?
                 if (user_trace)
                 {
-                    fprintf(stderr, " Using input source from variable %s\n"
-                           , inputsrcname);
-                    fprintf(stderr, "   prior newinput buf --%s--\n"
-                           , newinputbuf);
+                    fprintf(stderr, " Using input source from variable %s\n",
+                            inputsrcname);
+                    fprintf(stderr, "   prior newinput buf --%s--\n",
+                            newinputbuf);
                 }
 
                 //  Get the source input stuff
@@ -417,24 +417,24 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 calloc((32 + newbuflen), sizeof(savedinputtxt[0]));
                 if (savedinputtxt == NULL)
                 {
-                    fatalerror("Malloc in WINDOW failed.  Aw, crud."
-                              , "Can't WINDOW this way");
+                    fatalerror("Malloc in WINDOW failed.  Aw, crud.",
+                            "Can't WINDOW this way");
                     goto invoke_bailout;
                 }
 
                 //
                 //    save our newinputbuf txt
-                strncpy(savedinputtxt
-                       , newinputbuf
-                       , newbuflen);
+                strncpy(savedinputtxt,
+                        newinputbuf,
+                        newbuflen);
                 savedinputtxt[newbuflen] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
                 savedinputtxtlen = newbuflen;
                 //
                 //     and push the contents of the variable into newinputbuf
                 //     (we know it's no bigger than data_window_len)
-                strncpy(newinputbuf
-                       , &vht[srcidx]->valtxt[vht[srcidx]->vstart]
-                       , vht[srcidx]->vlen);
+                strncpy(newinputbuf,
+                        &vht[srcidx]->valtxt[vht[srcidx]->vstart],
+                        vht[srcidx]->vlen);
                 newinputbuf[vht[srcidx]->vlen] = 0;
                 newbuflen = vht[srcidx]->vlen;
                 //
@@ -485,9 +485,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     {
                     case BYLINE:
                         {
-                            fatalerror(" Sorry, but BYLINE input is not supported;"
-                                      , " we recommend using '\\n' in your match "
-                                        "pattern");
+                            fatalerror(" Sorry, but BYLINE input is not supported;",
+                                    " we recommend using '\\n' in your match "
+                                    "pattern");
                         }
                         break;
 
@@ -500,9 +500,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                 fprintf(stderr, "  bigchunk BYEOF read starting \n");
                             //
                             //        fread doesn't stop on pipe empty, while
-                            icount = fread(&(newinputbuf[newbuflen]), 1
-                                          , data_window_size - (newbuflen + 256)
-                                          , stdin);
+                            icount = fread(&(newinputbuf[newbuflen]), 1,
+                                    data_window_size - (newbuflen + 256),
+                                    stdin);
                             if (feof(stdin))
                                 saweof = 1;
                         }
@@ -520,9 +520,9 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //        fread (stdin) doesn't return on pipe
                             //        empty, while read on STDIN_FILENO does.
                             //        So, for reading by chunks, we use read(STDIN)
-                            icount = read(fileno(stdin)
-                                         , &(newinputbuf[newbuflen])
-                                         , data_window_size / 4);
+                            icount = read(fileno(stdin),
+                                    &(newinputbuf[newbuflen]),
+                                    data_window_size / 4);
                             saweof = 1;
                         }
                         break;
@@ -552,8 +552,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 if (icount < 0)
                 {
                     nonfatalerror(" Something went wrong in WINDOW "
-                                  "while trying to read"
-                                 , "I will keep trying. ");
+                                  "while trying to read",
+                            "I will keep trying. ");
                 }
                 if (feof(stdin))
                     saweof = 1;
@@ -570,10 +570,10 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //     So, we run the paste regex on it, and depending on the outcome,
         //     set "done" or not.
 
-        i = crm_regexec(&preg
-                       , newinputbuf
-                       , newbuflen
-                       , 1, matches, 0, NULL);
+        i = crm_regexec(&preg,
+                newinputbuf,
+                newbuflen,
+                1, matches, 0, NULL);
 
         //
         //        Now we deal with the result of the regex matching (or not
@@ -654,23 +654,23 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //
     //     start by making some space at the end of the input buffer
 
-    crm_slice_and_splice_window(mdw
-                               , vht[vmidx]->vstart + vht[vmidx]->vlen
-                               , matches[0].rm_eo);
+    crm_slice_and_splice_window(mdw,
+            vht[vmidx]->vstart + vht[vmidx]->vlen,
+            matches[0].rm_eo);
 
     //     copy the pertinent part of newinputbuf into the space
     //     we just made.
     memmove(&(vht[vmidx]->valtxt[vht[vmidx]->vstart
                                  + vht[vmidx]->vlen
-                                 - matches[0].rm_eo])
-           , newinputbuf
-           , matches[0].rm_eo);
+                                 - matches[0].rm_eo]),
+            newinputbuf,
+            matches[0].rm_eo);
 
     //     and get rid of the same characters out of newinputbuf
     if (newbuflen > 0)
-        memmove(newinputbuf
-               , &(newinputbuf[matches[0].rm_eo])
-               , newbuflen - matches[0].rm_eo + 1);
+        memmove(newinputbuf,
+                &(newinputbuf[matches[0].rm_eo]),
+                newbuflen - matches[0].rm_eo + 1);
     newbuflen = newbuflen - matches[0].rm_eo;
     newinputbuf[newbuflen] = 0;
 
@@ -708,14 +708,14 @@ invoke_bailout:
         if (user_trace)
             fprintf(stderr, " restoring remains of input src variable.\n");
 
-        crm_destructive_alter_nvariable(inputsrcname, inputsrclen
-                                       , newinputbuf
-                                       , newbuflen);
+        crm_destructive_alter_nvariable(inputsrcname, inputsrclen,
+                newinputbuf,
+                newbuflen);
 
         //      and restore the old stdin buffer
-        strncpy(newinputbuf
-               , savedinputtxt
-               , savedinputtxtlen);          /* [i_a] we'll add the NUL below, son */
+        strncpy(newinputbuf,
+                savedinputtxt,
+                savedinputtxtlen);           /* [i_a] we'll add the NUL below, son */
         newinputbuf[savedinputtxtlen] = 0;   /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
         newbuflen = savedinputtxtlen;
     }

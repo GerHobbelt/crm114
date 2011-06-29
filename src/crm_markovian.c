@@ -37,24 +37,24 @@
 //
 static const long hctable[] =
 {
-    1, 7
-    , 3, 13
-    , 5, 29
-    , 11, 51
-    , 23, 101
-    , 47, 203
-    , 97, 407
-    , 197, 817
-    , 397, 1637
-    , 797, 3277
+    1, 7,
+    3, 13,
+    5, 29,
+    11, 51,
+    23, 101,
+    47, 203,
+    97, 407,
+    197, 817,
+    397, 1637,
+    797, 3277
 };
 
 
 
 //    How to learn Markovian style.
 //
-int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                         , char *txtptr, long txtstart, long txtlen)
+int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     //     learn the sparse spectrum of this input window as
     //     belonging to a particular type.
@@ -162,6 +162,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
+#if 10
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -169,9 +170,15 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     j = i;
     while (htext[j] >= 0x021)
         j++;
+    CRM_ASSERT(j <= hlen);
+#else
+ crm_nextword(htext, 0, hlen, &i, &j);
+ j += i;
+    CRM_ASSERT(i < hlen);
+    CRM_ASSERT(j <= hlen);
+#endif
 
     //             filename starts at i,  ends at j. null terminate it.
-    CRM_ASSERT(j <= hlen);
     htext[j] = 0;
     learnfilename = strdup(&htext[i]);
 
@@ -192,11 +199,11 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         f = fopen(learnfilename, "wb");
         if (!f)
         {
-            fev = fatalerror_ex(SRC_LOC()
-                               , "\n Couldn't open your new CSS file %s for writing; errno=%d(%s)\n"
-                               , learnfilename
-                               , errno
-                               , errno_descr(errno));
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't open your new CSS file %s for writing; errno=%d(%s)\n",
+                    learnfilename,
+                    errno,
+                    errno_descr(errno));
             free(learnfilename);
             return fev;
         }
@@ -211,21 +218,21 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
         if (0 != fwrite_crm_headerblock(f, &classifier_info, NULL))
         {
-            fev = fatalerror_ex(SRC_LOC()
-                               , "\n Couldn't write header to file %s; errno=%d(%s)\n"
-                               , learnfilename, errno, errno_descr(errno));
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't write header to file %s; errno=%d(%s)\n",
+                    learnfilename, errno, errno_descr(errno));
             fclose(f);
             free(learnfilename);
             return fev;
         }
 
         //       put in sparse_spectrum_file_length entries of NULL
-        if (file_memset(f, 0
-                       , sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
+        if (file_memset(f, 0,
+                    sparse_spectrum_file_length * sizeof(FEATUREBUCKET_TYPE)))
         {
-            fev = fatalerror_ex(SRC_LOC()
-                               , "\n Couldn't write to file %s; errno=%d(%s)\n"
-                               , learnfilename, errno, errno_descr(errno));
+            fev = fatalerror_ex(SRC_LOC(),
+                    "\n Couldn't write to file %s; errno=%d(%s)\n",
+                    learnfilename, errno, errno_descr(errno));
             fclose(f);
             free(learnfilename);
             return fev;
@@ -243,25 +250,25 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     //
     //         mmap the hash file into memory so we can bitwhack it
     //
-    hashes = crm_mmap_file(learnfilename
-                          , 0
-                          , hfsize
-                          , PROT_READ | PROT_WRITE
-                          , MAP_SHARED
-                          , CRM_MADV_RANDOM
-                          , &hfsize);
+    hashes = crm_mmap_file(learnfilename,
+            0,
+            hfsize,
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED,
+            CRM_MADV_RANDOM,
+            &hfsize);
     if (hashes == MAP_FAILED)
     {
-        fev = fatalerror("Couldn't get access to the statistics file named: "
-                        , learnfilename);
+        fev = fatalerror("Couldn't get access to the statistics file named: ",
+                learnfilename);
         free(learnfilename);
         return fev;
     }
 
     if (user_trace)
     {
-        fprintf(stderr, "Sparse spectra file %s has length %ld bins\n"
-               , learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
+        fprintf(stderr, "Sparse spectra file %s has length %ld bins\n",
+                learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
     }
 
     //
@@ -334,8 +341,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                 }
                 if (user_trace)
                 {
-                    fprintf(stderr, "This file has had %lu documents learned!\n"
-                           , hashes[h1].value);
+                    fprintf(stderr, "This file has had %lu documents learned!\n",
+                            hashes[h1].value);
                 }
             }
         }
@@ -381,8 +388,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                 }
                 if (user_trace)
                 {
-                    fprintf(stderr, "This file has had %lu features learned!\n"
-                           , hashes[h1].value);
+                    fprintf(stderr, "This file has had %lu features learned!\n",
+                            hashes[h1].value);
                 }
             }
         }
@@ -396,8 +403,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         seen_features = calloc(hfsize, sizeof(seen_features[0]));
         if (seen_features == NULL)
         {
-            untrappableerror(" Couldn't allocate enough memory to keep track"
-                            , "of nonunique features.  This is deadly");
+            untrappableerror(" Couldn't allocate enough memory to keep track",
+                    "of nonunique features.  This is deadly");
         }
     }
 
@@ -437,8 +444,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     if (vht[vhtindex] == NULL)
     {
         long q;
-        q = fatalerror(" Attempt to LEARN from a nonexistent variable "
-                      , ltext);
+        q = fatalerror(" Attempt to LEARN from a nonexistent variable ",
+                ltext);
         free(learnfilename);
         return q;
     }
@@ -486,8 +493,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         // directly ([[graph]]+) instead of calling regexec (8% faster!)
         if (ptext[0] != 0)
         {
-            k = crm_regexec(&regcb, &(txtptr[textoffset])
-                           , slen, 5, match, 0, NULL);
+            k = crm_regexec(&regcb, &(txtptr[textoffset]),
+                    slen, 5, match, 0, NULL);
         }
         else
         {
@@ -509,26 +516,26 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             goto learn_end_regex_loop;
 
         wlen = match[0].rm_eo - match[0].rm_so;
-        memmove(tempbuf
-               , &(txtptr[textoffset + match[0].rm_so])
-               , wlen);
+        memmove(tempbuf,
+                &(txtptr[textoffset + match[0].rm_so]),
+                wlen);
         tempbuf[wlen] = 0;
 
         if (internal_trace)
         {
-            fprintf(stderr
-                   , "  Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n"
-                   , i
-                   , textoffset
-                   , (long)match[0].rm_so
-                   , (long)match[0].rm_eo
-                   , wlen
-                   , tempbuf);
+            fprintf(stderr,
+                    "  Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
+                    i,
+                    textoffset,
+                    (long)match[0].rm_so,
+                    (long)match[0].rm_eo,
+                    wlen,
+                    tempbuf);
         }
         if (match[0].rm_eo == 0)
         {
-            nonfatalerror("The LEARN pattern matched zero length! "
-                         , "\n Forcing an increment to avoid an infinite loop.");
+            nonfatalerror("The LEARN pattern matched zero length! ",
+                    "\n Forcing an increment to avoid an infinite loop.");
             match[0].rm_eo = 1;
         }
 
@@ -729,8 +736,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 #endif
                 if (internal_trace)
                 {
-                    fprintf(stderr, "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n"
-                           , j, (unsigned long)h1, (unsigned long)h2);
+                    fprintf(stderr, "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
+                            j, (unsigned long)h1, (unsigned long)h2);
                 }
 
                 //
@@ -776,10 +783,10 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                         nonfatalerror("Your program is stuffing too many "
                                       "features into this size .css file.  "
                                       "Adding any more features is "
-                                      "impossible in this file."
-                                     , "You are advised to build a larger "
-                                       ".css file and merge your data into "
-                                       "it.");
+                                      "impossible in this file.",
+                                "You are advised to build a larger "
+                                ".css file and merge your data into "
+                                "it.");
                         goto learn_end_regex_loop;
                     }
                     hindex++;
@@ -870,8 +877,8 @@ regcomp_failed:
 
 //      How to Markovian CLASSIFY some text.
 //
-int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                            , char *txtptr, long txtstart, long txtlen)
+int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -1155,9 +1162,9 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
-        crm_nextword(htext
-                    , hlen, fn_start_here
-                    , &fnstart, &fnlen);
+        crm_nextword(htext,
+                hlen, fn_start_here,
+                &fnstart, &fnlen);
         if (fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
@@ -1166,14 +1173,14 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             fn_start_here = fnstart + fnlen + 1;
             if (user_trace)
                 fprintf(stderr, "Classifying with file -%s- "
-                                "succhash=%ld, maxhash=%ld\n"
-                       , fname, succhash, maxhash);
+                                "succhash=%ld, maxhash=%ld\n",
+                        fname, succhash, maxhash);
             if (fname[0] == '|' && fname[1] == 0)
             {
                 if (vbar_seen)
                 {
-                    nonfatalerror("Only one '|' allowed in a CLASSIFY.\n"
-                                 , "We'll ignore it for now.");
+                    nonfatalerror("Only one '|' allowed in a CLASSIFY.\n",
+                            "We'll ignore it for now.");
                 }
                 else
                 {
@@ -1191,8 +1198,8 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                 //             quick check- does the file even exist?
                 if (k != 0)
                 {
-                    nonfatalerror("Nonexistent Classify table named: "
-                                 , fname);
+                    nonfatalerror("Nonexistent Classify table named: ",
+                            fname);
                 }
                 else
                 {
@@ -1200,19 +1207,19 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     //
                     hashlens[maxhash] = statbuf.st_size;
                     //  mmap the hash file into memory so we can bitwhack it
-                    hashes[maxhash] = crm_mmap_file(fname
-                                                   , 0
-                                                   , hashlens[maxhash]
-                                                   , PROT_READ | PROT_WRITE
-                                                   , MAP_SHARED
-                                                   , CRM_MADV_RANDOM
-                                                   , &hashlens[maxhash]);
+                    hashes[maxhash] = crm_mmap_file(fname,
+                            0,
+                            hashlens[maxhash],
+                            PROT_READ | PROT_WRITE,
+                            MAP_SHARED,
+                            CRM_MADV_RANDOM,
+                            &hashlens[maxhash]);
 
                     if (hashes[maxhash] == MAP_FAILED)
                     {
                         nonfatalerror("Couldn't get access to the "
-                                      "statistics file named: "
-                                     , fname);
+                                      "statistics file named: ",
+                                fname);
                     }
                     else
                     {
@@ -1258,8 +1265,8 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             }
 
             if (maxhash > MAX_CLASSIFIERS - 1)
-                nonfatalerror("Too many classifier files."
-                             , "Some may have been disregarded");
+                nonfatalerror("Too many classifier files.",
+                        "Some may have been disregarded");
         }
     }
 
@@ -1270,8 +1277,8 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
     //    now, set up the normalization factor fcount[]
     if (user_trace)
-        fprintf(stderr, "Running with %ld files for success out of %ld files\n"
-               , succhash, maxhash);
+        fprintf(stderr, "Running with %ld files for success out of %ld files\n",
+                succhash, maxhash);
 
     // sanity checks...  Uncomment for super-strict CLASSIFY.
     //
@@ -1303,8 +1310,8 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                 seen_features[ifile] = calloc(hashlens[ifile] + 1, sizeof(seen_features[ifile][0]));
                 if (seen_features[ifile] == NULL)
                     untrappableerror(" Couldn't allocate enough memory to keep "
-                                     " track of nonunique features.  "
-                                    , "This is deadly. ");
+                                     " track of nonunique features.  ",
+                            "This is deadly. ");
             }
             else
                 seen_features[ifile] = NULL;
@@ -1364,8 +1371,8 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     }
     if (vht[vhtindex] == NULL)
     {
-        return fatalerror(" Attempt to CLASSIFY from a nonexistent variable "
-                         , ltext);
+        return fatalerror(" Attempt to CLASSIFY from a nonexistent variable ",
+                ltext);
     }
     mdw = NULL;
     if (tdw->filetext == vht[vhtindex]->valtxt)
@@ -1416,8 +1423,8 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             // directly ([[graph]]+) instead of calling regexec  (8% faster!)
             if (ptext[0] != 0)
             {
-                k = crm_regexec(&regcb, &(txtptr[textoffset])
-                               , slen, 5, match, 0, NULL);
+                k = crm_regexec(&regcb, &(txtptr[textoffset]),
+                        slen, 5, match, 0, NULL);
             }
             else
             {
@@ -1439,26 +1446,26 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                 goto classify_end_regex_loop;
 
             wlen = match[0].rm_eo - match[0].rm_so;
-            memmove(tempbuf
-                   , &(txtptr[textoffset + match[0].rm_so])
-                   , wlen);
+            memmove(tempbuf,
+                    &(txtptr[textoffset + match[0].rm_so]),
+                    wlen);
             tempbuf[wlen] = 0;
 
             if (internal_trace)
             {
-                fprintf(stderr
-                       , "  Classify #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n"
-                       , i
-                       , textoffset
-                       , (long)match[0].rm_so
-                       , (long)match[0].rm_eo
-                       , wlen
-                       , tempbuf);
+                fprintf(stderr,
+                        "  Classify #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
+                        i,
+                        textoffset,
+                        (long)match[0].rm_so,
+                        (long)match[0].rm_eo,
+                        wlen,
+                        tempbuf);
             }
             if (match[0].rm_eo == 0)
             {
-                nonfatalerror("The CLASSIFY pattern matched zero length! "
-                             , "\n Forcing an increment to avoid an infinite loop.");
+                nonfatalerror("The CLASSIFY pattern matched zero length! ",
+                        "\n Forcing an increment to avoid an infinite loop.");
                 match[0].rm_eo = 1;
             }
 
@@ -1678,22 +1685,22 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     {
                         const long ew[16] = // Jval
                         {
-                            1   // 0
-                            , 2 // 1
-                            , 2 // 2
-                            , 3 // 3
-                            , 2 // 4
-                            , 3 // 5
-                            , 3 // 6
-                            , 4 // 7
-                            , 2 // 8
-                            , 3 // 9
-                            , 3 // 10
-                            , 4 // 11
-                            , 3 // 12
-                            , 4 // 13
-                            , 4 // 14
-                            , 5
+                            1,  // 0
+                            2,  // 1
+                            2,  // 2
+                            3,  // 3
+                            2,  // 4
+                            3,  // 5
+                            3,  // 6
+                            4,  // 7
+                            2,  // 8
+                            3,  // 9
+                            3,  // 10
+                            4,  // 11
+                            3,  // 12
+                            4,  // 13
+                            4,  // 14
+                            5
                         };      // 15
 
                         feature_weight = ew[j];
@@ -1708,22 +1715,22 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     {
                         const long ew[16] = // Jval
                         {
-                            1   // 0
-                            , 2 // 1
-                            , 2 // 2
-                            , 4 // 3
-                            , 2 // 4
-                            , 4 // 5
-                            , 4 // 6
-                            , 8 // 7
-                            , 2 // 8
-                            , 4 // 9
-                            , 4 // 10
-                            , 8 // 11
-                            , 4 // 12
-                            , 8 // 13
-                            , 8 // 14
-                            , 16
+                            1,  // 0
+                            2,  // 1
+                            2,  // 2
+                            4,  // 3
+                            2,  // 4
+                            4,  // 5
+                            4,  // 6
+                            8,  // 7
+                            2,  // 8
+                            4,  // 9
+                            4,  // 10
+                            8,  // 11
+                            4,  // 12
+                            8,  // 13
+                            8,  // 14
+                            16
                         };       // 15
 
                         feature_weight = ew[j];
@@ -1743,38 +1750,38 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     {
                         const long ew[32] = // Jval
                         {
-                            1      // 0
-                            , 4    // 1
-                            , 4    // 2
-                            , 16   // 3
-                            , 4    // 4
-                            , 16   // 5
-                            , 16   // 6
-                            , 64   // 7
-                            , 4    // 8
-                            , 16   // 9
-                            , 16   // 10  - A
-                            , 64   // 11  - B
-                            , 16   // 12  - C
-                            , 64   // 13  - D
-                            , 64   // 14  - E
-                            , 256  // 15 -  F
-                            , 4    // 16 - 10
-                            , 16   // 17 - 11
-                            , 16   // 18 - 12
-                            , 64   // 19 - 13
-                            , 16   // 20 - 14
-                            , 64   // 21 - 15
-                            , 64   // 22 - 16
-                            , 256  // 23 - 17
-                            , 16   // 24 - 18
-                            , 64   // 25 - 19
-                            , 64   // 26 - 1A
-                            , 256  // 27 - 1B
-                            , 64   // 28 - 1C
-                            , 256  // 29 - 1D
-                            , 256  // 30 - 1E
-                            , 1024 // 31 - 1F
+                            1,     // 0
+                            4,     // 1
+                            4,     // 2
+                            16,    // 3
+                            4,     // 4
+                            16,    // 5
+                            16,    // 6
+                            64,    // 7
+                            4,     // 8
+                            16,    // 9
+                            16,    // 10  - A
+                            64,    // 11  - B
+                            16,    // 12  - C
+                            64,    // 13  - D
+                            64,    // 14  - E
+                            256,   // 15 -  F
+                            4,     // 16 - 10
+                            16,    // 17 - 11
+                            16,    // 18 - 12
+                            64,    // 19 - 13
+                            16,    // 20 - 14
+                            64,    // 21 - 15
+                            64,    // 22 - 16
+                            256,   // 23 - 17
+                            16,    // 24 - 18
+                            64,    // 25 - 19
+                            64,    // 26 - 1A
+                            256,   // 27 - 1B
+                            64,    // 28 - 1C
+                            256,   // 29 - 1D
+                            256,   // 30 - 1E
+                            1024   // 31 - 1F
                         };
                         feature_weight = ew[j];
                     }
@@ -1789,22 +1796,22 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     {
                         const long ew[16] = // Jval
                         {
-                            1    // 0
-                            , 3  // 1
-                            , 3  // 2
-                            , 13 // 3
-                            , 3  // 4
-                            , 13 // 5
-                            , 13 // 6
-                            , 75 // 7
-                            , 3  // 8
-                            , 13 // 9
-                            , 13 // 10
-                            , 75 // 11
-                            , 13 // 12
-                            , 75 // 13
-                            , 75 // 14
-                            , 541
+                            1,   // 0
+                            3,   // 1
+                            3,   // 2
+                            13,  // 3
+                            3,   // 4
+                            13,  // 5
+                            13,  // 6
+                            75,  // 7
+                            3,   // 8
+                            13,  // 9
+                            13,  // 10
+                            75,  // 11
+                            13,  // 12
+                            75,  // 13
+                            75,  // 14
+                            541
                         };        // 15
 
                         feature_weight = ew[j];
@@ -1820,38 +1827,38 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     {
                         const long ew[] = // Jval
                         {
-                            1      // 0
-                            , 3    // 1
-                            , 3    // 2
-                            , 13   // 3
-                            , 3    // 4
-                            , 13   // 5
-                            , 13   // 6
-                            , 75   // 7
-                            , 3    // 8
-                            , 13   // 9
-                            , 13   // 10  - A
-                            , 75   // 11  - B
-                            , 13   // 12  - C
-                            , 75   // 13  - D
-                            , 75   // 14  - E
-                            , 541  // 15 -  F
-                            , 3    // 16 - 10
-                            , 13   // 17 - 11
-                            , 13   // 18 - 12
-                            , 75   // 19 - 13
-                            , 13   // 20 - 14
-                            , 75   // 21 - 15
-                            , 75   // 22 - 13
-                            , 541  // 23 - 17
-                            , 13   // 24 - 18
-                            , 75   // 25 - 19
-                            , 75   // 26 - 1A
-                            , 541  // 27 - 1B
-                            , 75   // 28 - 1C
-                            , 541  // 29 - 1D
-                            , 541  // 30 - 1E
-                            , 4683 // 31 - 1F
+                            1,     // 0
+                            3,     // 1
+                            3,     // 2
+                            13,    // 3
+                            3,     // 4
+                            13,    // 5
+                            13,    // 6
+                            75,    // 7
+                            3,     // 8
+                            13,    // 9
+                            13,    // 10  - A
+                            75,    // 11  - B
+                            13,    // 12  - C
+                            75,    // 13  - D
+                            75,    // 14  - E
+                            541,   // 15 -  F
+                            3,     // 16 - 10
+                            13,    // 17 - 11
+                            13,    // 18 - 12
+                            75,    // 19 - 13
+                            13,    // 20 - 14
+                            75,    // 21 - 15
+                            75,    // 22 - 13
+                            541,   // 23 - 17
+                            13,    // 24 - 18
+                            75,    // 25 - 19
+                            75,    // 26 - 1A
+                            541,   // 27 - 1B
+                            75,    // 28 - 1C
+                            541,   // 29 - 1D
+                            541,   // 30 - 1E
+                            4683   // 31 - 1F
                         };
                         feature_weight = ew[j];
                     }
@@ -1866,38 +1873,38 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     {
                         const long ew[] = // Jval
                         {
-                            1       // 0
-                            , 8     // 1
-                            , 8     // 2
-                            , 64    // 3
-                            , 8     // 4
-                            , 64    // 5
-                            , 64    // 6
-                            , 512   // 7
-                            , 8     // 8
-                            , 64    // 9
-                            , 64    // 10  - A
-                            , 512   // 11  - B
-                            , 64    // 12  - C
-                            , 512   // 13  - D
-                            , 512   // 14  - E
-                            , 4096  // 15 -  F
-                            , 8     // 16 - 10
-                            , 64    // 17 - 11
-                            , 64    // 18 - 12
-                            , 512   // 19 - 13
-                            , 64    // 20 - 14
-                            , 512   // 21 - 15
-                            , 512   // 22 - 13
-                            , 4096  // 23 - 17
-                            , 64    // 24 - 18
-                            , 512   // 25 - 19
-                            , 512   // 26 - 1A
-                            , 4096  // 27 - 1B
-                            , 512   // 28 - 1C
-                            , 4096  // 29 - 1D
-                            , 4096  // 30 - 1E
-                            , 32768 // 31 - 1F
+                            1,      // 0
+                            8,      // 1
+                            8,      // 2
+                            64,     // 3
+                            8,      // 4
+                            64,     // 5
+                            64,     // 6
+                            512,    // 7
+                            8,      // 8
+                            64,     // 9
+                            64,     // 10  - A
+                            512,    // 11  - B
+                            64,     // 12  - C
+                            512,    // 13  - D
+                            512,    // 14  - E
+                            4096,   // 15 -  F
+                            8,      // 16 - 10
+                            64,     // 17 - 11
+                            64,     // 18 - 12
+                            512,    // 19 - 13
+                            64,     // 20 - 14
+                            512,    // 21 - 15
+                            512,    // 22 - 13
+                            4096,   // 23 - 17
+                            64,     // 24 - 18
+                            512,    // 25 - 19
+                            512,    // 26 - 1A
+                            4096,   // 27 - 1B
+                            512,    // 28 - 1C
+                            4096,   // 29 - 1D
+                            4096,   // 30 - 1E
+                            32768   // 31 - 1F
                         };
                         feature_weight = ew[j];
                     }
@@ -1912,22 +1919,22 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     {
                         const long ew[16] = // Jval
                         {
-                            1     // 0
-                            , 7   // 1
-                            , 7   // 2
-                            , 49  // 3
-                            , 7   // 4
-                            , 49  // 5
-                            , 49  // 6
-                            , 343 // 7
-                            , 7   // 8
-                            , 49  // 9
-                            , 343 // 10
-                            , 343 // 11
-                            , 49  // 12
-                            , 343 // 13
-                            , 343 // 14
-                            , 2401
+                            1,    // 0
+                            7,    // 1
+                            7,    // 2
+                            49,   // 3
+                            7,    // 4
+                            49,   // 5
+                            49,   // 6
+                            343,  // 7
+                            7,    // 8
+                            49,   // 9
+                            343,  // 10
+                            343,  // 11
+                            49,   // 12
+                            343,  // 13
+                            343,  // 14
+                            2401
                         };         // 15
 
                         feature_weight = ew[j];
@@ -1961,7 +1968,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                                 if (lh >= hashlens[k])
                                     lh = 1;
                                 if (lh == lh0)
-                                    break;            // wraparound
+                                    break; // wraparound
                             }
                             if (hashes[k][lh].hash == h1 && hashes[k][lh].key == h2)
                             {
@@ -2151,9 +2158,9 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                             for (k = 0; k < maxhash; k++)
                             {
                                 // fprintf(stderr, "ZZZ\n");
-                                fprintf(stderr
-                                       , " poly: %d  filenum: %ld, HTF: %7ld, hits: %7ld, Pl: %6.4e, Pc: %6.4e\n"
-                                       , j, k, (long)htf, (long)hits[k], pltc[k], ptc[k]);
+                                fprintf(stderr,
+                                        " poly: %d  filenum: %ld, HTF: %7ld, hits: %7ld, Pl: %6.4e, Pc: %6.4e\n",
+                                        j, k, (long)htf, (long)hits[k], pltc[k], ptc[k]);
                             }
                         }
                         //
@@ -2274,11 +2281,11 @@ classify_end_regex_loop:
             if (bestseen < maxhash)
             {
                 snprintf(buf, WIDTHOF(buf), "Best match to file #%ld (%s) "
-                                            "prob: %6.4f  pR: %6.4f  \n"
-                        , bestseen
-                        , hashname[bestseen]
-                        , ptc[bestseen]
-                        , (log10(ptc[bestseen]) - log10(remainder)));
+                                            "prob: %6.4f  pR: %6.4f  \n",
+                        bestseen,
+                        hashname[bestseen],
+                        ptc[bestseen],
+                        (log10(ptc[bestseen]) - log10(remainder)));
                 buf[WIDTHOF(buf) - 1] = 0;
             }
             if (strlen(stext) + strlen(buf) <= stext_maxlen)
@@ -2302,15 +2309,15 @@ classify_end_regex_loop:
                 }
                 CRM_ASSERT(k >= 0);
                 CRM_ASSERT(k < maxhash);
-                snprintf(buf, WIDTHOF(buf)
-                        , "#%ld (%s):"
-                          " features: %ld, hits: %ld, prob: %3.2e, pR: %6.2f\n"
-                        , k
-                        , hashname[k]
-                        , fcounts[k]
-                        , (long)totalhits[k]
-                        , ptc[k]
-                        , (log10(ptc[k]) - log10(remainder)));
+                snprintf(buf, WIDTHOF(buf),
+                        "#%ld (%s):"
+                        " features: %ld, hits: %ld, prob: %3.2e, pR: %6.2f\n",
+                        k,
+                        hashname[k],
+                        fcounts[k],
+                        (long)totalhits[k],
+                        ptc[k],
+                        (log10(ptc[k]) - log10(remainder)));
                 buf[WIDTHOF(buf) - 1] = 0;
                 // strcat (stext, buf);
                 if (strlen(stext) + strlen(buf) <= stext_maxlen)
@@ -2323,13 +2330,13 @@ classify_end_regex_loop:
             {
                 nonfatalerror("WARNING: not enough room in the buffer to create "
                               "the statistics text.  Perhaps you could try bigger "
-                              "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?"
-                             , " ");
+                              "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+                        " ");
             }
             if (svlen > 0)
             {
-                crm_destructive_alter_nvariable(svrbl, svlen
-                                               , stext, strlen(stext));
+                crm_destructive_alter_nvariable(svrbl, svlen,
+                        stext, strlen(stext));
             }
         }
 
@@ -2360,24 +2367,105 @@ regcomp_failed:
 
 #else /* CRM_WITHOUT_MARKOV */
 
-int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                         , char *txtptr, long txtstart, long txtlen)
+int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "Markov");
+    fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
 }
 
 
-int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                            , char *txtptr, long txtstart, long txtlen)
+int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "Markov");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
+}
+
+
+int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
 }
 
 #endif /* CRM_WITHOUT_MARKOV */
+
+
+
+int crm_expr_markov_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
+}
+
+
+int crm_expr_markov_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
+}
+
+
+int crm_expr_markov_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
+}
+
+
+int crm_expr_markov_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
+}
+
+
+int crm_expr_markov_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
+}
+
+
+int crm_expr_markov_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
+}
+
+
+int crm_expr_markov_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "Markov");
+}
 

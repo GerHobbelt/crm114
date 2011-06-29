@@ -298,13 +298,13 @@
                         _hold = *_trav;                                                   \
                                                                                           \
                         for (_hi = _lo = _trav; --_lo >= _tmp_ptr; _hi = _lo)             \
-                        {                \
-                            *_hi = *_lo; \
-                        }                \
-                        *_hi = _hold;    \
-                    }                \
-                }                \
-            }                \
-        }                \
-    }
+                                                                         {                \
+                                                                             *_hi = *_lo; \
+                                                                         }                \
+                                                                         *_hi = _hold;    \
+                                                                         }                \
+                                                                         }                \
+                                                                         }                \
+                                                                         }                \
+                                                                         }
 

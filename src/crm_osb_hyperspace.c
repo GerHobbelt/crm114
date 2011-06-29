@@ -160,16 +160,16 @@ typedef struct mythical_hyperspace_cell
 
 static const long hctable[] =
 {
-    1, 7
-    , 3, 13
-    , 5, 29
-    , 11, 51
-    , 23, 101
-    , 47, 203
-    , 97, 407
-    , 197, 817
-    , 397, 1637
-    , 797, 3277
+    1, 7,
+    3, 13,
+    5, 29,
+    11, 51,
+    23, 101,
+    47, 203,
+    97, 407,
+    197, 817,
+    397, 1637,
+    797, 3277
 };
 
 #endif
@@ -209,8 +209,8 @@ static int hash_compare(void const *a, void const *b)
 //    the single word terms that may not strictly be necessary.
 //
 
-int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                                 , char *txtptr, long txtstart, long txtlen)
+int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     //     learn the osb_hyperspace transform  of this input window as
     //     belonging to a particular type.
@@ -321,6 +321,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     //             grab the filename, and stat the file
     //      note that neither "stat", "fopen", nor "open" are
     //      fully 8-bit or wchar clean...
+#if 10
     i = 0;
     while (htext[i] < 0x021)
         i++;
@@ -329,6 +330,12 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     while (htext[j] >= 0x021)
         j++;
     CRM_ASSERT(j <= hlen);
+#else
+ crm_nextword(htext, 0, hlen, &i, &j);
+ j += i;
+    CRM_ASSERT(i < hlen);
+    CRM_ASSERT(j <= hlen);
+#endif
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = 0;
@@ -337,8 +344,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
     //   Note that during a LEARN in hyperspace, we do NOT use the mmap of
     //    pre-existing memory.  We just write to the end of the file instead.
     //    malloc up the unsorted hashbucket space
-    hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT
-                   , sizeof(hashes[0]));
+    hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
+            sizeof(hashes[0]));
     hashcounts = 0;
     //  put in a zero as the start marker.
     hashes[hashcounts].hash = 0;
@@ -401,8 +408,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         // directly ([[graph]]+) instead of calling regexec  (8% faster)
         if (ptext[0] != 0)
         {
-            k = crm_regexec(&regcb, &(txtptr[textoffset])
-                           , slen, 5, match, 0, NULL);
+            k = crm_regexec(&regcb, &(txtptr[textoffset]),
+                    slen, 5, match, 0, NULL);
         }
         else
         {
@@ -424,26 +431,26 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             goto learn_end_regex_loop;
 
         wlen = match[0].rm_eo - match[0].rm_so;
-        memmove(tempbuf
-               , &(txtptr[textoffset + match[0].rm_so])
-               , wlen);
+        memmove(tempbuf,
+                &(txtptr[textoffset + match[0].rm_so]),
+                wlen);
         tempbuf[wlen] = 0;
 
         if (internal_trace)
         {
-            fprintf(stderr
-                   , "  Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n"
-                   , i
-                   , textoffset
-                   , (long)match[0].rm_so
-                   , (long)match[0].rm_eo
-                   , wlen
-                   , tempbuf);
+            fprintf(stderr,
+                    "  Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
+                    i,
+                    textoffset,
+                    (long)match[0].rm_so,
+                    (long)match[0].rm_eo,
+                    wlen,
+                    tempbuf);
         }
         if (match[0].rm_eo == 0)
         {
-            nonfatalerror("The LEARN pattern matched zero length! "
-                         , "\n Forcing an increment to avoid an infinite loop.");
+            nonfatalerror("The LEARN pattern matched zero length! ",
+                    "\n Forcing an increment to avoid an infinite loop.");
             match[0].rm_eo = 1;
         }
 
@@ -511,8 +518,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     //if (h2 == 0) h2 = 0xdeadbeef;
                     h2 = 0xdeadbeef;
                     if (internal_trace)
-                        fprintf(stderr, "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n"
-                               , j, (unsigned long)h1, (unsigned long)h2);
+                        fprintf(stderr, "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n",
+                                j, (unsigned long)h1, (unsigned long)h2);
 
                     hashes[hashcounts].hash = h1;
                     //          hashes[hashcounts].key = h2;
@@ -561,17 +568,17 @@ regcomp_failed:
 
         //   Compile up the regex to find the vector tokenizer weights
         crm_regcomp
-        (&regcb, vt_weight_regex, strlen(vt_weight_regex)
-        , REG_ICASE | REG_EXTENDED);
+        (&regcb, vt_weight_regex, strlen(vt_weight_regex),
+                REG_ICASE | REG_EXTENDED);
 
         //   Use the regex to find the vector tokenizer weights
-        regex_status =  crm_regexec(&regcb
-                                   , s2text
-                                   , s2len
-                                   , 5
-                                   , match
-                                   , REG_EXTENDED
-                                   , NULL);
+        regex_status =  crm_regexec(&regcb,
+                s2text,
+                s2len,
+                5,
+                match,
+                REG_EXTENDED,
+                NULL);
 
         //   Did we actually get a match for the extended parameters?
         // if (regex_status == 0)
@@ -593,19 +600,19 @@ regcomp_failed:
         }
 
         crm_vector_tokenize_selector
-        (apb                              // the APB
-        , txtptr                          // intput string
-        , txtlen                          // how many bytes
-        , txtstart                        // starting offset
-        , ptext                           // parser regex
-        , plen                            // parser regex len
-        , ca                              // tokenizer coeff array
-        , pipelen                         // tokenizer pipeline len
-        , pipe_iters                      // tokenizer pipeline iterations
-        , (crmhash_t *)hashes             // where to put the hashed results
-        , HYPERSPACE_MAX_FEATURE_COUNT    //  max number of hashes
-        , &hashcounts                     // how many hashes we actually got
-        , &next_offset);                  // where to start again for more hashes
+        (apb,                                 // the APB
+                txtptr,                       // intput string
+                txtlen,                       // how many bytes
+                txtstart,                     // starting offset
+                ptext,                        // parser regex
+                plen,                         // parser regex len
+                ca,                           // tokenizer coeff array
+                pipelen,                      // tokenizer pipeline len
+                pipe_iters,                   // tokenizer pipeline iterations
+                (crmhash_t *)hashes,          // where to put the hashed results
+                HYPERSPACE_MAX_FEATURE_COUNT, //  max number of hashes
+                &hashcounts,                  // how many hashes we actually got
+                &next_offset);                // where to start again for more hashes
     }
 #endif
 
@@ -617,19 +624,19 @@ regcomp_failed:
 
     //   Use the flagged vector tokenizer
     crm_vector_tokenize_selector
-    (apb                                   // the APB
-    , txtptr                               // intput string
-    , txtlen                               // how many bytes
-    , txtstart                             // starting offset
-    , ptext                                // parser regex
-    , plen                                 // parser regex len
-    , NULL                                 // tokenizer coeff array
-    , 0                                    // tokenizer pipeline len
-    , 0                                    // tokenizer pipeline iterations
-    , (crmhash_t *)hashes                  // where to put the hashed results
-    , HYPERSPACE_MAX_FEATURE_COUNT         //  max number of hashes
-    , &hashcounts                          // how many hashes we actually got
-    , &next_offset);                       // where to start again for more hashes
+    (apb,                                  // the APB
+            txtptr,                        // intput string
+            txtlen,                        // how many bytes
+            txtstart,                      // starting offset
+            ptext,                         // parser regex
+            plen,                          // parser regex len
+            NULL,                          // tokenizer coeff array
+            0,                             // tokenizer pipeline len
+            0,                             // tokenizer pipeline iterations
+            (crmhash_t *)hashes,           // where to put the hashed results
+            HYPERSPACE_MAX_FEATURE_COUNT,  //  max number of hashes
+            &hashcounts,                   // how many hashes we actually got
+            &next_offset);                 // where to start again for more hashes
 
 #endif
 
@@ -642,8 +649,8 @@ regcomp_failed:
 
     //   Now sort the hashes array.
     //
-    QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts
-         , hash_compare);
+    QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
+            hash_compare);
 
     if (user_trace)
         fprintf(stderr, "Total hashes generated: %d\n", hashcounts);
@@ -682,8 +689,8 @@ regcomp_failed:
 
     //   Now sort the hashes array.
     //
-    QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts
-         , hash_compare);
+    QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, hashes, hashcounts,
+            hash_compare);
 
     hashcounts--;
     if (user_trace)
@@ -731,13 +738,13 @@ regcomp_failed:
         crm_force_munmap_filename(hashfilename);
 
         if (user_trace)
-            fprintf(stderr, "Opening hyperspace file %s for append.\n"
-                   , hashfilename);
+            fprintf(stderr, "Opening hyperspace file %s for append.\n",
+                    hashfilename);
         hashf = fopen(hashfilename, "ab+");
         if (hashf == 0)
         {
-            fatalerror("For some reason, I was unable to append-open the file named "
-                      , hashfilename);
+            fatalerror("For some reason, I was unable to append-open the file named ",
+                    hashfilename);
         }
         else
         {
@@ -757,19 +764,19 @@ regcomp_failed:
 
                 if (0 != fwrite_crm_headerblock(hashf, &classifier_info, NULL))
                 {
-                    fatalerror("For some reason, I was unable to write the header to the file named "
-                              , hashfilename);
+                    fatalerror("For some reason, I was unable to write the header to the file named ",
+                            hashfilename);
                 }
             }
 
             //    and write the sorted hashes out.
-            ret = fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT)
-                        , hashcounts /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
-                        , hashf);
+            ret = fwrite(hashes, sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT),
+                    hashcounts,      /* [i_a] GROT GROT GROT shouldn't this be 'hashcounts+1', just like SVM/SKS? */
+                    hashf);
             if (ret != hashcounts)
             {
-                fatalerror("For some reason, I was unable to append a hash series to the file named "
-                          , hashfilename);
+                fatalerror("For some reason, I was unable to append a hash series to the file named ",
+                        hashfilename);
             }
             fclose(hashf);
         }
@@ -818,20 +825,20 @@ regcomp_failed:
             if (k != 0)
             {
                 nonfatalerror("Refuting from nonexistent data cannot be done!"
-                              " More specifically, this data file doesn't exist: "
-                             , hashfilename);
+                              " More specifically, this data file doesn't exist: ",
+                        hashfilename);
                 return 0;
             }
             else
             {
                 file_hashlens = statbuf.st_size;
-                file_hashes = crm_mmap_file(hashfilename
-                                           , 0
-                                           , file_hashlens
-                                           , PROT_READ | PROT_WRITE
-                                           , MAP_SHARED
-                                           , CRM_MADV_RANDOM
-                                           , &file_hashlens);
+                file_hashes = crm_mmap_file(hashfilename,
+                        0,
+                        file_hashlens,
+                        PROT_READ | PROT_WRITE,
+                        MAP_SHARED,
+                        CRM_MADV_RANDOM,
+                        &file_hashlens);
                 file_hashlens = file_hashlens
                                 / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
             }
@@ -853,10 +860,10 @@ regcomp_failed:
             u = 0;
             thisstart = k;
             if (internal_trace)
-                fprintf(stderr
-                       , "At featstart, looking at %ld (next bucket value is %ld)\n"
-                       , (long)file_hashes[thisstart].hash
-                       , (long)file_hashes[thisstart + 1].hash);
+                fprintf(stderr,
+                        "At featstart, looking at %ld (next bucket value is %ld)\n",
+                        (long)file_hashes[thisstart].hash,
+                        (long)file_hashes[thisstart + 1].hash);
             while (wrapup == 0)
             {
                 //    it's an in-class feature.
@@ -868,19 +875,19 @@ regcomp_failed:
                     unotk++;
                     u++;
                 }
-		else if (hashes[u].hash > file_hashes[k].hash)
+                else if (hashes[u].hash > file_hashes[k].hash)
                 {
-  // unknown is greater, step k forward
+                    // unknown is greater, step k forward
                     //  increment on k, because maybe u will match next time.
                     knotu++;
                     k++;
                 }
-       else
-                           {
-                  // features matched.
-                //   These aren't the features you're looking for.
-                //   Move along, move along....
-         u++;
+                else
+                {
+                    // features matched.
+                    //   These aren't the features you're looking for.
+                    //   Move along, move along....
+                    u++;
                     k++;
                     kandu++;
                 }
@@ -920,10 +927,10 @@ regcomp_failed:
             thisend = k - 2;
             thislen = thisend - thisstart;
             if (internal_trace)
-                fprintf(stderr
-                       , "At featend, looking at %ld (next bucket value is %ld)\n"
-                       , (long)file_hashes[thisend].hash
-                       , (long)file_hashes[thisend + 1].hash);
+                fprintf(stderr,
+                        "At featend, looking at %ld (next bucket value is %ld)\n",
+                        (long)file_hashes[thisend].hash,
+                        (long)file_hashes[thisend + 1].hash);
 
             //  end of a document- process accumulations
 
@@ -944,8 +951,8 @@ regcomp_failed:
             //radiance = radiance * kandu;
 
             if (user_trace)
-                fprintf(stderr, "Feature Radiance %f at %ld to %ld\n"
-                       , radiance, thisstart, thisend);
+                fprintf(stderr, "Feature Radiance %f at %ld to %ld\n",
+                        radiance, thisstart, thisend);
             if (radiance >= bestrad)
             {
                 beststart = thisstart;
@@ -957,9 +964,9 @@ regcomp_failed:
         //  file between beststart and bestend.
 
         //      if (user_trace)
-        fprintf(stderr
-               , "Deleting feature from %ld to %ld (rad %f) of file %s\n"
-               , beststart, bestend, bestrad, hashfilename);
+        fprintf(stderr,
+                "Deleting feature from %ld to %ld (rad %f) of file %s\n",
+                beststart, bestend, bestrad, hashfilename);
 
         //   Deletion time - move the remaining stuff in the file
         //   up to fill the hole, then msync the file, munmap it, and
@@ -969,21 +976,21 @@ regcomp_failed:
             newhashlen = file_hashlens - (bestend + 1 - beststart);
             newhashlenbytes = newhashlen * sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
 
-            memmove(&file_hashes[beststart]
-                   , &file_hashes[bestend + 1]
-                   , sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT)
+            memmove(&file_hashes[beststart],
+                    &file_hashes[bestend + 1],
+                    sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT)
                     * (file_hashlens - bestend));
-            memset(&file_hashes[file_hashlens - (bestend - beststart)]
-                  , 0
-                  , sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
+            memset(&file_hashes[file_hashlens - (bestend - beststart)],
+                    0,
+                    sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
             crm_force_munmap_filename(hashfilename);
 
             if (internal_trace)
-                fprintf(stderr, "Truncating file to %ld cells ( %ld bytes)\n"
-                       , newhashlen
-                       , newhashlenbytes);
-            k = truncate(hashfilename
-                        , newhashlenbytes);
+                fprintf(stderr, "Truncating file to %ld cells ( %ld bytes)\n",
+                        newhashlen,
+                        newhashlenbytes);
+            k = truncate(hashfilename,
+                    newhashlenbytes);
             //      fprintf(stderr, "Return from truncate is %ld\n", k);
         }
     }
@@ -994,8 +1001,8 @@ regcomp_failed:
 
 //      How to do a Osb_Bayes CLASSIFY some text.
 //
-int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                                    , char *txtptr, long txtstart, long txtlen)
+int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
     //      classify the sparse spectrum of this input window
     //      as belonging to a particular type.
@@ -1174,8 +1181,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         fprintf(stderr, "executing a CLASSIFY\n");
 
     //        make the space for the unknown text's hashes
-    unk_hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT
-                       , sizeof(unk_hashes[0]));
+    unk_hashes = calloc(HYPERSPACE_MAX_FEATURE_COUNT,
+            sizeof(unk_hashes[0]));
     unk_hashcount = 0;
 #ifndef VECTOR_TOKENIZER
 #if defined (GER)
@@ -1212,8 +1219,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         svrbl[vlen] = 0;
     }
     if (user_trace)
-        fprintf(stderr, "Status out var %s (len %ld)\n"
-               , svrbl, svlen);
+        fprintf(stderr, "Status out var %s (len %ld)\n",
+                svrbl, svlen);
 
     //     status variable's text (used for output stats)
     //
@@ -1291,9 +1298,9 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
 
     while (fnlen > 0 && ((maxhash < MAX_CLASSIFIERS - 1)))
     {
-        crm_nextword(htext
-                    , hlen, fn_start_here
-                    , &fnstart, &fnlen);
+        crm_nextword(htext,
+                hlen, fn_start_here,
+                &fnstart, &fnlen);
         if (fnlen > 0)
         {
             strncpy(fname, &htext[fnstart], fnlen);
@@ -1302,14 +1309,14 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             fn_start_here = fnstart + fnlen + 1;
             if (user_trace)
                 fprintf(stderr, "Classifying with file -%s- "
-                                "succhash=%ld, maxhash=%ld\n"
-                       , fname, succhash, maxhash);
+                                "succhash=%ld, maxhash=%ld\n",
+                        fname, succhash, maxhash);
             if (fname[0] == '|' && fname[1] == 0)
             {
                 if (vbar_seen)
                 {
-                    nonfatalerror("Only one ' | ' allowed in a CLASSIFY. \n"
-                                 , "We'll ignore it for now.");
+                    nonfatalerror("Only one ' | ' allowed in a CLASSIFY. \n",
+                            "We'll ignore it for now.");
                 }
                 else
                 {
@@ -1325,8 +1332,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                 //             quick check- does the file even exist?
                 if (k != 0)
                 {
-                    nonfatalerror("Nonexistent Classify table named: "
-                                 , fname);
+                    nonfatalerror("Nonexistent Classify table named: ",
+                            fname);
                 }
                 else
                 {
@@ -1334,18 +1341,18 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     //
                     hashlens[maxhash] = statbuf.st_size;
 
-                    hashes[maxhash] = crm_mmap_file(fname
-                                                   , 0
-                                                   , hashlens[maxhash]
-                                                   , PROT_READ
-                                                   , MAP_SHARED
-                                                   , CRM_MADV_RANDOM
-                                                   , &hashlens[maxhash]);
+                    hashes[maxhash] = crm_mmap_file(fname,
+                            0,
+                            hashlens[maxhash],
+                            PROT_READ,
+                            MAP_SHARED,
+                            CRM_MADV_RANDOM,
+                            &hashlens[maxhash]);
 
                     if (hashes[maxhash] == MAP_FAILED)
                     {
-                        nonfatalerror("Couldn't memory-map the table file :"
-                                     , fname);
+                        nonfatalerror("Couldn't memory-map the table file :",
+                                fname);
                     }
                     else
                     {
@@ -1370,8 +1377,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                             hashf = fopen(fname, "rb");
                             if (hashf == 0)
                             {
-                                fatalerror("For some reason, I was unable to read-open the file named "
-                                          , fname);
+                                fatalerror("For some reason, I was unable to read-open the file named ",
+                                        fname);
                             }
                             else
                             {
@@ -1379,8 +1386,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                                 {
                                     if (fseek(hashf, CRM114_HEADERBLOCK_SIZE, SEEK_SET))
                                     {
-                                        fatalerror("For some reason, I was unable to skip the CRM header for the file named "
-                                                  , fname);
+                                        fatalerror("For some reason, I was unable to skip the CRM header for the file named ",
+                                                fname);
                                     }
                                 }
 
@@ -1412,8 +1419,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             }
 
             if (maxhash > MAX_CLASSIFIERS - 1)
-                nonfatalerror("Too many classifier files."
-                             , "Some may have been disregarded");
+                nonfatalerror("Too many classifier files.",
+                        "Some may have been disregarded");
         }
     }
 
@@ -1425,8 +1432,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         succhash = maxhash;
 
     if (user_trace)
-        fprintf(stderr, "Running with %ld files for success out of %ld files\n"
-               , succhash, maxhash);
+        fprintf(stderr, "Running with %ld files for success out of %ld files\n",
+                succhash, maxhash);
 
     // sanity checks...  Uncomment for super-strict CLASSIFY.
     //
@@ -1489,8 +1496,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
         // directly ([[graph]]+) instead of calling regexec  (8% faster)
         if (ptext[0] != 0)
         {
-            k = crm_regexec(&regcb, &(txtptr[textoffset])
-                           , slen, 5, match, 0, NULL);
+            k = crm_regexec(&regcb, &(txtptr[textoffset]),
+                    slen, 5, match, 0, NULL);
         }
         else
         {
@@ -1512,26 +1519,26 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
             goto classify_end_regex_loop;
 
         wlen = match[0].rm_eo - match[0].rm_so;
-        memmove(tempbuf
-               , &(txtptr[textoffset + match[0].rm_so])
-               , wlen);
+        memmove(tempbuf,
+                &(txtptr[textoffset + match[0].rm_so]),
+                wlen);
         tempbuf[wlen] = 0;
 
         if (internal_trace)
         {
-            fprintf(stderr
-                   , "  Classify #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n"
-                   , i
-                   , textoffset
-                   , (long)match[0].rm_so
-                   , (long)match[0].rm_eo
-                   , wlen
-                   , tempbuf);
+            fprintf(stderr,
+                    "  Classify #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n",
+                    i,
+                    textoffset,
+                    (long)match[0].rm_so,
+                    (long)match[0].rm_eo,
+                    wlen,
+                    tempbuf);
         }
         if (match[0].rm_eo == 0)
         {
-            nonfatalerror("The CLASSIFY pattern matched zero length! "
-                         , "\n Forcing an increment to avoid an infinite loop.");
+            nonfatalerror("The CLASSIFY pattern matched zero length! ",
+                    "\n Forcing an increment to avoid an infinite loop.");
             match[0].rm_eo = 1;
         }
         //  slide previous hashes up 1
@@ -1590,8 +1597,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
                     hindex = h1;
 
                     if (internal_trace)
-                        fprintf(stderr, "Polynomial %d has h1:0x%08lX\n"
-                               , j, (unsigned long)h1);
+                        fprintf(stderr, "Polynomial %d has h1:0x%08lX\n",
+                                j, (unsigned long)h1);
 
                     unk_hashes[unk_hashcount].hash = h1;
                     unk_hashcount++;
@@ -1611,19 +1618,19 @@ classify_end_regex_loop:
 
 
     //   Use the flagged vector tokenizer
-    crm_vector_tokenize_selector(apb                              // the APB
-    , txtptr                          // intput string
-    , txtlen                          // how many bytes
-    , txtstart                        // starting offset
-    , ptext                           // parser regex
-    , plen                            // parser regex len
-    , NULL                            // tokenizer coeff array
-    , 0                               // tokenizer pipeline len
-    , 0                               // tokenizer pipeline iterations
-    , (crmhash_t *)unk_hashes         // where to put the hashed results
-    , HYPERSPACE_MAX_FEATURE_COUNT    //  max number of hashes
-    , &unk_hashcount                  // how many hashes we actually got
-    , &next_offset);                  // where to start again for more hashes
+    crm_vector_tokenize_selector(apb,                             // the APB
+            txtptr,                                               // intput string
+            txtlen,                                               // how many bytes
+            txtstart,                                             // starting offset
+            ptext,                                                // parser regex
+            plen,                                                 // parser regex len
+            NULL,                                                 // tokenizer coeff array
+            0,                                                    // tokenizer pipeline len
+            0,                                                    // tokenizer pipeline iterations
+            (crmhash_t *)unk_hashes,                              // where to put the hashed results
+            HYPERSPACE_MAX_FEATURE_COUNT,                         //  max number of hashes
+            &unk_hashcount,                                       // how many hashes we actually got
+            &next_offset);                                        // where to start again for more hashes
 
 #endif
 
@@ -1641,8 +1648,8 @@ classify_end_regex_loop:
     unk_hashes[unk_hashcount].hash = 0;
 
 
-    QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, unk_hashes, unk_hashcount
-         , hash_compare);
+    QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, unk_hashes, unk_hashcount,
+            hash_compare);
 
     if (user_trace)
         fprintf(stderr, "Total hashes in the unknown text: %d\n", unk_hashcount);
@@ -1659,7 +1666,7 @@ classify_end_regex_loop:
         CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
         while (i < unk_hashcount)
         {
-            if (unk_hashes[i].hash != unk_hashes[i+1].hash)
+            if (unk_hashes[i].hash != unk_hashes[i + 1].hash)
             {
                 unk_hashes[j] = unk_hashes[i];
                 j++;
@@ -1676,8 +1683,8 @@ classify_end_regex_loop:
     CRM_ASSERT(unk_hashcount < HYPERSPACE_MAX_FEATURE_COUNT);
     CRM_ASSERT(unk_hashes[unk_hashcount].hash == 0);
 #else
-    QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, unk_hashes, unk_hashcount
-         , hash_compare);
+    QSORT(HYPERSPACE_FEATUREBUCKET_STRUCT, unk_hashes, unk_hashcount,
+            hash_compare);
 
     unk_hashcount--;
     if (user_trace)
@@ -1750,8 +1757,8 @@ classify_end_regex_loop:
 #endif
 
         if (internal_trace)
-            fprintf(stderr, "About to run classify loop with %ld files\n"
-                   , maxhash);
+            fprintf(stderr, "About to run classify loop with %ld files\n",
+                    maxhash);
 
         //    Now run through each of the classifier maps
         for (cls = 0; cls < maxhash; cls++)
@@ -1814,21 +1821,21 @@ classify_end_regex_loop:
                         ufeats++;
                         collapse_vec_diff[(unk_hashes[u].hash & 0xFF)]++;
                     }
-else if (unk_hashes[u].hash > hashes[cls][k].hash)
-                
+                    else if (unk_hashes[u].hash > hashes[cls][k].hash)
+
                     {
-                // unknown is greater, step k forward
-        //  increment on k, because maybe u will match next time.
+                        // unknown is greater, step k forward
+                        //  increment on k, because maybe u will match next time.
                         knotu++;
                         k++;
                         kfeats++;
                         collapse_vec_diff[(hashes[cls][k].hash & 0xFF)]++;
                     }
-    else
+                    else
                     {
-    // features matched.
-                    //   These aren't the features you're looking for.
-                    //   Move along, move along....
+                        // features matched.
+                        //   These aren't the features you're looking for.
+                        //   Move along, move along....
                         u++;
                         k++;
                         kandu++;
@@ -2080,18 +2087,18 @@ else if (unk_hashes[u].hash > hashes[cls][k].hash)
         {
             for (i = 0; i < maxhash; i++)
             {
-                fprintf(stderr
-                       , "f: %ld  dist %f %f\n"
-                         "dom: %f %f  equ: %f %f sub: %f %f\n"
-                         "DES: %f %f\nrad: %f %f  flux: %f %f\n\n"
-                       , i
-                       , closest_dist[i], closest_normalized[i]
-                       , max_dominance[i], dominance_normalized[i]
-                       , max_equivalence[i], equivalence_normalized[i]
-                       , max_submission[i], submission_normalized[i]
-                       , max_des[i], des_normalized[i]
-                       , class_radiance[i], class_radiance_normalized[i]
-                       , class_flux[i], class_flux_normalized[i]);
+                fprintf(stderr,
+                        "f: %ld  dist %f %f\n"
+                        "dom: %f %f  equ: %f %f sub: %f %f\n"
+                        "DES: %f %f\nrad: %f %f  flux: %f %f\n\n",
+                        i,
+                        closest_dist[i], closest_normalized[i],
+                        max_dominance[i], dominance_normalized[i],
+                        max_equivalence[i], equivalence_normalized[i],
+                        max_submission[i], submission_normalized[i],
+                        max_des[i], des_normalized[i],
+                        class_radiance[i], class_radiance_normalized[i],
+                        class_flux[i], class_flux_normalized[i]);
             }
         }
     }
@@ -2147,8 +2154,8 @@ else if (unk_hashes[u].hash > hashes[cls][k].hash)
         {
             for (k = 0; k < maxhash; k++)
             {
-                fprintf(stderr, "Match for file %ld:  radiance: %f  prob: %f\n"
-                       , k, class_radiance[k], ptc[k]);
+                fprintf(stderr, "Match for file %ld:  radiance: %f  prob: %f\n",
+                        k, class_radiance[k], ptc[k]);
             }
         }
     }
@@ -2232,11 +2239,11 @@ else if (unk_hashes[u].hash > hashes[cls][k].hash)
         if (bestseen < maxhash)
         {
             snprintf(buf, WIDTHOF(buf), "Best match to file #%ld (%s) "
-                                        "prob: %6.4f  pR: %6.4f  \n"
-                    , bestseen
-                    , hashname[bestseen]
-                    , ptc[bestseen]
-                    , 10 * (log10(ptc[bestseen]) - log10(remainder))
+                                        "prob: %6.4f  pR: %6.4f  \n",
+                    bestseen,
+                    hashname[bestseen],
+                    ptc[bestseen],
+                    10 * (log10(ptc[bestseen]) - log10(remainder))
                     //   Rescaled for +/- 10.0 thick training threshold optimal
                     //250 * (log10(ptc[bestseen]) - log10(remainder))
                     // 10 * (ptc[bestseen] - remainder)
@@ -2266,16 +2273,16 @@ else if (unk_hashes[u].hash > hashes[cls][k].hash)
             }
             CRM_ASSERT(k >= 0);
             CRM_ASSERT(k < maxhash);
-            snprintf(buf, WIDTHOF(buf)
-                    , "#%ld (%s):"
-                      " features: %ld, hits: %ld, radiance: %3.2e, prob: %3.2e, pR: %6.2f\n"
-                    , k
-                    , hashname[k]
-                    , hashlens[k]
-                    , (long)totalhits[k]
-                    , class_radiance[k]
-                    , ptc[k]
-                    , 10.0 * (log10(ptc[k]) - log10(remainder)));
+            snprintf(buf, WIDTHOF(buf),
+                    "#%ld (%s):"
+                    " features: %ld, hits: %ld, radiance: %3.2e, prob: %3.2e, pR: %6.2f\n",
+                    k,
+                    hashname[k],
+                    hashlens[k],
+                    (long)totalhits[k],
+                    class_radiance[k],
+                    ptc[k],
+                    10.0 * (log10(ptc[k]) - log10(remainder)));
             buf[WIDTHOF(buf) - 1] = 0;
             //  Rescaled for +/- 10 pR units optimal thick threshold
             //250 * (log10 (ptc[k]) - log10 (remainder) )  );
@@ -2293,13 +2300,13 @@ else if (unk_hashes[u].hash > hashes[cls][k].hash)
         {
             nonfatalerror("WARNING: not enough room in the buffer to create "
                           "the statistics text.  Perhaps you could try bigger "
-                          "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?"
-                         , " ");
+                          "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
+                    " ");
         }
         if (svlen > 0)
         {
-            crm_destructive_alter_nvariable(svrbl, svlen
-                                           , stext, strlen(stext));
+            crm_destructive_alter_nvariable(svrbl, svlen,
+                    stext, strlen(stext));
         }
     }
 
@@ -2370,24 +2377,96 @@ regcomp_failed:
 
 #else /* CRM_WITHOUT_OSB_HYPERSPACE */
 
-int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                                 , char *txtptr, long txtstart, long txtlen)
+int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "OSB-Bayes");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
 }
 
 
-int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb
-                                    , char *txtptr, long txtstart, long txtlen)
+int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
 {
-    fatalerror_ex(SRC_LOC()
-                 , "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
-                   "You may want to run 'crm -v' to see which classifiers are available.\n"
-                 , "OSB-Bayes");
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier has not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
 }
 
 #endif /* CRM_WITHOUT_OSB_HYPERSPACE */
+
+
+
+
+int crm_expr_osb_hyperspace_css_merge(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
+}
+
+
+int crm_expr_osb_hyperspace_css_diff(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
+}
+
+
+int crm_expr_osb_hyperspace_css_backup(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
+}
+
+
+int crm_expr_osb_hyperspace_css_restore(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
+}
+
+
+int crm_expr_osb_hyperspace_css_info(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
+}
+
+
+int crm_expr_osb_hyperspace_css_analyze(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
+}
+
+
+int crm_expr_osb_hyperspace_css_create(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
+        char *txtptr, long txtstart, long txtlen)
+{
+    return fatalerror_ex(SRC_LOC(),
+            "ERROR: the %s classifier tools have not been incorporated in this CRM114 build.\n"
+            "You may want to run 'crm -v' to see which classifiers are available.\n",
+            "OSB-Hyperspace");
+}
 

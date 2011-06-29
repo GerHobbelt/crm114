@@ -52,8 +52,8 @@ int crm_invoke(void)
     //    Sanity check - don't try to execute a file before compilation
     if (csl->mct == NULL)
     {
-        untrappableerror("Can't execute a file without compiling first.\n"
-                        , "This means that CRM114 is somehow broken.");
+        untrappableerror("Can't execute a file without compiling first.\n",
+                "This means that CRM114 is somehow broken.");
     }
 
     //    empty out the alius stack (nothing FAILed yet.)
@@ -72,8 +72,8 @@ int crm_invoke(void)
     }
 
     if (user_trace)
-        fprintf(stderr, "Starting to execute %s at line %ld\n"
-               , csl->filename, csl->cstmt);
+        fprintf(stderr, "Starting to execute %s at line %ld\n",
+                csl->filename, csl->cstmt);
 
 invoke_top:
 
@@ -102,8 +102,8 @@ invoke_top:
         fprintf(stderr, "\nParsing line %ld :\n", csl->cstmt);
         fprintf(stderr, " -->  ");
         for (i = 0; i < slen; i++)
-            fprintf(stderr, "%c"
-                   , csl->filetext[csl->mct[csl->cstmt]->fchar + i]);
+            fprintf(stderr, "%c",
+                    csl->filetext[csl->mct[csl->cstmt]->fchar + i]);
         fprintf(stderr, "\n");
     }
 
@@ -137,16 +137,16 @@ invoke_top:
             if (!csl->mct[csl->cstmt]->apb)
             {
                 untrappableerror("Couldn't alloc the space to incrementally "
-                                 "compile a statement.  "
-                                , "Stick a fork in us; we're _done_.\n");
+                                 "compile a statement.  ",
+                        "Stick a fork in us; we're _done_.\n");
             }
             //  we now have the statement's apb allocated; we point the generic
             //  apb at the same place and run with it.
             apb = csl->mct[csl->cstmt]->apb;
             i = crm_statement_parse(
-                    &(csl->filetext[csl->mct[csl->cstmt]->fchar])
-                                   , slen
-                                   , apb);
+                    &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
+                    slen,
+                    apb);
         }
         else
         {
@@ -214,8 +214,8 @@ invoke_top:
     case CRM_LABEL:
         {
             if (user_trace)
-                fprintf(stderr, "Statement %ld is non-executable, continuing.\n"
-                       , csl->cstmt);
+                fprintf(stderr, "Statement %ld is non-executable, continuing.\n",
+                        csl->cstmt);
         }
         break;
 
@@ -224,16 +224,16 @@ invoke_top:
             //  the nest_level+1 is because the statements in front are at +1 depth
             csl->aliusstk[csl->mct[csl->cstmt]->nest_level + 1] = 1;
             if (user_trace)
-                fprintf(stderr, "Statement %ld is an openbracket. depth now %d.\n"
-                       , csl->cstmt, 1 + csl->mct[csl->cstmt]->nest_level);
+                fprintf(stderr, "Statement %ld is an openbracket. depth now %d.\n",
+                        csl->cstmt, 1 + csl->mct[csl->cstmt]->nest_level);
         }
         break;
 
     case CRM_CLOSEBRACKET:
         {
             if (user_trace)
-                fprintf(stderr, "Statement %ld is a closebracket. depth now %d.\n"
-                       , csl->cstmt, csl->mct[csl->cstmt]->nest_level);
+                fprintf(stderr, "Statement %ld is a closebracket. depth now %d.\n",
+                        csl->cstmt, csl->mct[csl->cstmt]->nest_level);
         }
         break;
 
@@ -241,14 +241,14 @@ invoke_top:
         {
             int width = CRM_MIN(1024, csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start);
 
-            fatalerror_ex(SRC_LOC()
-                         , "Statement %ld is bogus!!!  Here's the text:\n%.*s%s"
-                         , csl->cstmt
-                         , width
-                         , &csl->filetext[csl->mct[csl->cstmt]->start]
-                         , (csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start > width
-                            ? "(...truncated)"
-                            : "")
+            fatalerror_ex(SRC_LOC(),
+                    "Statement %ld is bogus!!!  Here's the text:\n%.*s%s",
+                    csl->cstmt,
+                    width,
+                    &csl->filetext[csl->mct[csl->cstmt]->start],
+                    (csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start > width
+                     ? "(...truncated)"
+                     : "")
                          );
             goto invoke_bailout;
         }
@@ -272,8 +272,8 @@ invoke_top:
                 }
             }
             if (user_trace)
-                fprintf(stderr, "Exiting at statement %ld with value %d\n"
-                       , csl->cstmt, retval);
+                fprintf(stderr, "Exiting at statement %ld with value %d\n",
+                        csl->cstmt, retval);
             //if (profile_execution)
             //  crm_output_profile (csl);
             //      exit (retval);
@@ -290,8 +290,8 @@ invoke_top:
             char *namestart;
             unsigned long namelen;
             if (user_trace)
-                fprintf(stderr, "Returning to caller at statement %ld\n"
-                       , csl->cstmt);
+                fprintf(stderr, "Returning to caller at statement %ld\n",
+                        csl->cstmt);
             //
             //    Is this the toplevel csl call frame?  If so, return!
             if (csl->caller == NULL)
@@ -300,8 +300,8 @@ invoke_top:
             //    Nope!  We can now pop back up to the previous context
             //    just by popping the most recent csl off.
             if (internal_trace)
-                fprintf(stderr, "Return - popping CSL back to %p\n"
-                       , csl->caller);
+                fprintf(stderr, "Return - popping CSL back to %p\n",
+                        csl->caller);
 
             //     Do the argument transfer here.
             //     Evaluate the "subject", and return that.
@@ -328,8 +328,7 @@ invoke_top:
                     //fprintf(stderr, "idx: %lu  vht[idx]: %lu", idx, vht[idx] );
                     noffset = vht[idx]->nstart;
                     //fprintf(stderr, " idx: %lu noffset: %lu\n/", idx, noffset);
-                    namestart
-                    = &(vht[idx]->nametxt[noffset]);
+                    namestart = &(vht[idx]->nametxt[noffset]);
                     namelen = vht[idx]->nlen;
 
                     if (user_trace)
@@ -341,8 +340,8 @@ invoke_top:
                     }
                     //     stuff the return value into that variable.
                     //
-                    crm_destructive_alter_nvariable(namestart, namelen
-                                                   , outbuf, retlen);
+                    crm_destructive_alter_nvariable(namestart, namelen,
+                            outbuf, retlen);
                 }
             }
             //
@@ -375,12 +374,12 @@ invoke_top:
             crm_get_pgm_arg(target, MAX_VARNAME, apb->s1start, apb->s1len);
             if (apb->s1len < 2)
                 nonfatalerror
-                ("This program has a GOTO without a place to 'go' to."
-                , " By any chance, did you leave off the '/' delimiters? ");
+                ("This program has a GOTO without a place to 'go' to.",
+                        " By any chance, did you leave off the '/' delimiters? ");
             tarlen = apb->s1len;
             if (internal_trace)
-                fprintf(stderr, "\n    untranslated label %s , "
-                       , target);
+                fprintf(stderr, "\n    untranslated label %s , ",
+                        target);
 
             //   do indirection if needed.
             tarlen = crm_qexpandvar(target, tarlen, MAX_VARNAME, NULL);
@@ -392,8 +391,8 @@ invoke_top:
             if (k > 0)
             {
                 if (user_trace)
-                    fprintf(stderr, "GOTO from line %ld to line %ld\n"
-                           , csl->cstmt,  k);
+                    fprintf(stderr, "GOTO from line %ld to line %ld\n",
+                            csl->cstmt,  k);
                 csl->cstmt = k; // this gets autoincremented
                 //  and going here didn't fail...
                 csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
@@ -405,8 +404,8 @@ invoke_top:
                 if (conv_count == 1)
                 {
                     if (user_trace)
-                        fprintf(stderr, "GOTO from line %ld to line %ld\n"
-                               , csl->cstmt, k);
+                        fprintf(stderr, "GOTO from line %ld to line %ld\n",
+                                csl->cstmt, k);
                     csl->cstmt = k - 1; // this gets autoincremented, so we must --
                     //  and going here didn't fail...
                     csl->aliusstk[csl->mct[csl->cstmt]->nest_level] = 1;
@@ -415,8 +414,8 @@ invoke_top:
                 {
                     //  this is recoverable if we have a trap... so we continue
                     //   execution right to the BREAK.
-                    fatalerror(" Can't GOTO the nonexistent label/line: "
-                              , target);
+                    fatalerror(" Can't GOTO the nonexistent label/line: ",
+                            target);
                     goto invoke_bailout;
                 }
             }
@@ -511,17 +510,17 @@ invoke_top:
             if (!reason)
             {
                 untrappableerror(
-                        "Couldn't alloc 'reason' in CRM_FAULT - out of memory.\n"
-                                , "Don't you just HATE it when the error fixup routine gets"
-                                  "an error?!?!");
+                        "Couldn't alloc 'reason' in CRM_FAULT - out of memory.\n",
+                        "Don't you just HATE it when the error fixup routine gets"
+                        "an error?!?!");
             }
             strncpy(reason, rbuf, rlen + 1);
             reason[rlen + 1] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
             fresult = crm_trigger_fault(reason);
             if (fresult != 0)
             {
-                fatalerror("Your program has no TRAP for the user defined fault:"
-                          , reason);
+                fatalerror("Your program has no TRAP for the user defined fault:",
+                        reason);
                 free(reason);
                 goto invoke_bailout;
             }
@@ -547,16 +546,16 @@ invoke_top:
             if (varidx == 0
                 || vht[varidx] == NULL)
             {
-                fatalerror("This is very strange... there is no data window!"
-                          , "As such, death is our only option.");
+                fatalerror("This is very strange... there is no data window!",
+                        "As such, death is our only option.");
                 goto invoke_bailout;
             }
             else
             {
-                fwrite(&(vht[varidx]->valtxt[vht[varidx]->vstart])
-                      , vht[varidx]->vlen
-                      , 1
-                      , stdout);
+                fwrite(&(vht[varidx]->valtxt[vht[varidx]->vstart]),
+                        vht[varidx]->vlen,
+                        1,
+                        stdout);
                 fflush(stdout);
             }
             //    WE USED TO DO CHARACTER I/O.  OUCH!!!
@@ -620,6 +619,7 @@ invoke_top:
             {
                 strcpy(varname, ":_dw:");
                 vnl = strlen(varname);
+		vns = 0;
             }
 
             //     get the to-be-hashed pattern, and expand it.
@@ -640,14 +640,14 @@ invoke_top:
 
             if (internal_trace)
             {
-                fprintf(stderr, "String: '%s'\n hashed to: %08lX\n"
-                       , tempbuf
-                       , (unsigned long)hval);
+                fprintf(stderr, "String: '%s'\n hashed to: %08lX\n",
+                        tempbuf,
+                        (unsigned long)hval);
             }
 
             //    and stuff the new value in.
-            crm_destructive_alter_nvariable(&varname[vns], vnl
-                                           , newstr, strlen(newstr));
+            crm_destructive_alter_nvariable(&varname[vns], vnl,
+                    newstr, strlen(newstr));
         }
         break;
 
@@ -668,6 +668,30 @@ invoke_top:
         //   we had to split out classify- it was just too big.
     case CRM_CLASSIFY:
         crm_expr_classify(csl, apb);
+        break;
+
+    case CRM_CSS_MERGE:
+        crm_expr_css_merge(csl, apb);
+        break;
+
+    case CRM_CSS_DIFF:
+        crm_expr_css_diff(csl, apb);
+        break;
+
+    case CRM_CSS_BACKUP:
+        crm_expr_css_backup(csl, apb);
+        break;
+
+    case CRM_CSS_RESTORE:
+        crm_expr_css_restore(csl, apb);
+        break;
+
+    case CRM_CSS_INFO:
+        crm_expr_css_info(csl, apb);
+        break;
+
+    case CRM_CSS_CREATE:
+        crm_expr_css_create(csl, apb);
         break;
 
     case CRM_ISOLATE:
@@ -706,8 +730,8 @@ invoke_top:
             crm_get_pgm_arg(target, MAX_VARNAME, apb->s1start, apb->s1len);
             tarlen = apb->s1len;
             if (internal_trace)
-                fprintf(stderr, "\n    untranslated label %s , "
-                       , target);
+                fprintf(stderr, "\n    untranslated label %s , ",
+                        target);
 
             //   do indirection if needed.
             tarlen = crm_nexpandvar(target, tarlen, MAX_VARNAME);
@@ -787,15 +811,15 @@ invoke_top:
                 {
                     unsigned long ret_idx;
                     long retname_start, retnamelen;
-                    crm_get_pgm_arg(outbuf, data_window_size
-                                   , apb->p1start, apb->p1len);
+                    crm_get_pgm_arg(outbuf, data_window_size,
+                            apb->p1start, apb->p1len);
                     retnamelen = apb->p1len;
-                    retnamelen = crm_nexpandvar(outbuf
-                                               , retnamelen, data_window_size);
+                    retnamelen = crm_nexpandvar(outbuf,
+                            retnamelen, data_window_size);
                     crm_nextword(outbuf, retnamelen, 0, &retname_start, &retnamelen);
-                    ret_idx = crm_vht_lookup(vht
-                                            , &outbuf[retname_start]
-                                            , retnamelen);
+                    ret_idx = crm_vht_lookup(vht,
+                            &outbuf[retname_start],
+                            retnamelen);
                     if (vht[ret_idx] == NULL)
                     {
                         // nonfatalerror
@@ -804,15 +828,15 @@ invoke_top:
                         //"isolated one.  Hope that's OK. Varname was",
                         //             outbuf);
                         if (user_trace)
-                            fprintf(stderr
-                                   , "No such return value var, creating var %s\n"
-                                   , outbuf);
+                            fprintf(stderr,
+                                    "No such return value var, creating var %s\n",
+                                    outbuf);
                         crm_set_temp_var(outbuf, "");
                     }
                     ret_idx = crm_vht_lookup(vht, outbuf, retnamelen);
                     if (user_trace)
-                        fprintf(stderr, " Setting return value to VHT cell %lu"
-                               , ret_idx);
+                        fprintf(stderr, " Setting return value to VHT cell %lu",
+                                ret_idx);
                     newcsl->return_vht_cell = ret_idx;
                 }
 
@@ -845,17 +869,17 @@ invoke_top:
                     if (!csl->mct[csl->cstmt]->apb)
                     {
                         untrappableerror("Couldn't alloc the space to incrementally "
-                                         "compile a statement.  "
-                                        , "Stick a fork in us; we're _done_.\n");
+                                         "compile a statement.  ",
+                                "Stick a fork in us; we're _done_.\n");
                     }
                     else
                     {
                         //  we now have the statement's apb allocated; we point
                         //  the generic apb at the same place and run with it.
                         i = crm_statement_parse(
-                                &(csl->filetext[csl->mct[csl->cstmt]->fchar])
-                                               , slen
-                                               , csl->mct[csl->cstmt]->apb);
+                                &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
+                                slen,
+                                csl->mct[csl->cstmt]->apb);
                     }
                 }
                 //    and start using the JITted apb
@@ -866,8 +890,8 @@ invoke_top:
                 //
                 //            get the paren arg of this routine
                 CRM_ASSERT(apb != NULL);
-                crm_get_pgm_arg(outbuf, data_window_size
-                               , apb->p1start, apb->p1len);
+                crm_get_pgm_arg(outbuf, data_window_size,
+                        apb->p1start, apb->p1len);
                 argnamelen = apb->p1len;
                 argnamelen = crm_nexpandvar(outbuf, argnamelen, data_window_size);
                 //
@@ -893,9 +917,9 @@ invoke_top:
                         oldvlen = vht[vmidx]->vlen;
                         vht[vmidx]->vstart = tdw->nchars++;
                         vht[vmidx]->vlen   = 0;
-                        crm_compress_tdw_section(vht[vmidx]->valtxt
-                                                , oldvstart
-                                                , oldvstart + oldvlen);
+                        crm_compress_tdw_section(vht[vmidx]->valtxt,
+                                oldvstart,
+                                oldvstart + oldvlen);
                     }
                     //
                     //      finally, we can put the variable in.  (this is
@@ -958,6 +982,7 @@ invoke_top:
             i_index = -1;
             while (!done)
             {
+#if 10
                 while (temp_vars[vstart] < 0x021
                        && vstart < tvlen)  //  was temp_vars[vstart] != 0)
                     vstart++;
@@ -965,6 +990,9 @@ invoke_top:
                 while (temp_vars[vstart + vlen] >= 0x021
                        && vstart + vlen < tvlen)
                     vlen++;
+#else
+ crm_nextword(temp_vars, vstart, tvlen, &vstart, &vlen);
+#endif
                 if (vlen == 0)
                 {
                     done = 1;
@@ -980,8 +1008,8 @@ invoke_top:
                         char varname[MAX_VARNAME];
                         strncpy(varname, &temp_vars[vstart], vlen);
                         varname[vlen] = 0;
-                        nonfatalerror("can't intersection a nonexistent variable."
-                                     , varname);
+                        nonfatalerror("can't intersection a nonexistent variable.",
+                                varname);
                         goto invoke_bailout;
                     }
                     else
@@ -993,8 +1021,8 @@ invoke_top:
                             char varname[MAX_VARNAME];
                             strncpy(varname, &temp_vars[vstart], vlen);
                             varname[vlen] = 0;
-                            nonfatalerror("can't intersect isolated variable."
-                                         , varname);
+                            nonfatalerror("can't intersect isolated variable.",
+                                    varname);
                             goto invoke_bailout;
                         }
                         else
@@ -1019,9 +1047,9 @@ invoke_top:
             if (vlen < 0)
                 vlen = 0;
             crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen);
-            crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext
-                                 , istart, vlen
-                                 , csl->cstmt);
+            crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
+                    istart, vlen,
+                    csl->cstmt);
         }
         break;
 
@@ -1071,6 +1099,7 @@ invoke_top:
             i_index = -1;
             while (!done)
             {
+#if 10
                 while (temp_vars[vstart] < 0x021
                        && vstart < tvlen)  //  was temp_vars[vstart] != 0)
                     vstart++;
@@ -1078,6 +1107,9 @@ invoke_top:
                 while (temp_vars[vstart + vlen] >= 0x021
                        && vstart + vlen < tvlen)
                     vlen++;
+#else
+ crm_nextword(temp_vars, vstart, tvlen, &vstart, &vlen);
+#endif
                 if (vlen == 0)
                 {
                     done = 1;
@@ -1093,8 +1125,8 @@ invoke_top:
                         char varname[MAX_VARNAME];
                         strncpy(varname, &temp_vars[vstart], vlen);
                         varname[vlen] = 0;
-                        nonfatalerror("can't intersect a nonexistent variable."
-                                     , varname);
+                        nonfatalerror("can't intersect a nonexistent variable.",
+                                varname);
                         goto invoke_bailout;
                     }
                     else
@@ -1106,8 +1138,8 @@ invoke_top:
                             char varname[MAX_VARNAME];
                             strncpy(varname, &temp_vars[vstart], vlen);
                             varname[vlen] = 0;
-                            nonfatalerror("can't intersect isolated variable."
-                                         , varname);
+                            nonfatalerror("can't intersect isolated variable.",
+                                    varname);
                             goto invoke_bailout;
                         }
                         else
@@ -1132,20 +1164,18 @@ invoke_top:
             if (vlen < 0)
                 vlen = 0;
             crm_nextword(out_var, ovlen, 0, &ovstart, &ovlen);
-            crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext
-                                 , istart, vlen
-                                 , csl->cstmt);
+            crm_set_windowed_nvar(&out_var[ovstart], ovlen, cdw->filetext,
+                    istart, vlen,
+                    csl->cstmt);
         }
         break;
 
 
     case CRM_DEBUG:
-        {
-            // turn on the debugger - NOW!
-            if (user_trace)
-                fprintf(stderr, "executing a DEBUG statement - drop to debug\n");
-            debug_countdown = 0;
-        }
+        // turn on the debugger - NOW!
+        if (user_trace)
+            fprintf(stderr, "executing a DEBUG statement - drop to debug\n");
+        debug_countdown = 0;
         break;
 
     case CRM_CLUMP:
@@ -1160,15 +1190,15 @@ invoke_top:
         {
             int width = CRM_MIN(1024, csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start);
 
-            fatalerror_ex(SRC_LOC()
-                         , "Statement %ld NOT YET IMPLEMENTED !!!"
-                           "Here's the text:\n%.*s%s"
-                         , csl->cstmt
-                         , width
-                         , &csl->filetext[csl->mct[csl->cstmt]->start]
-                         , (csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start > width
-                            ? "(...truncated)"
-                            : "")
+            fatalerror_ex(SRC_LOC(),
+                    "Statement %ld NOT YET IMPLEMENTED !!!"
+                    "Here's the text:\n%.*s%s",
+                    csl->cstmt,
+                    width,
+                    &csl->filetext[csl->mct[csl->cstmt]->start],
+                    (csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start > width
+                     ? "(...truncated)"
+                     : "")
                          );
             goto invoke_bailout;
         }
@@ -1178,14 +1208,14 @@ invoke_top:
         {
             int width = CRM_MIN(1024, csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start);
 
-            fatalerror_ex(SRC_LOC()
-                         , "Statement %ld way, way bizarre!!!  Here's the text:\n%.*s%s"
-                         , csl->cstmt
-                         , width
-                         , &csl->filetext[csl->mct[csl->cstmt]->start]
-                         , ((csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start) > width
-                            ? "(...truncated)"
-                            : "")
+            fatalerror_ex(SRC_LOC(),
+                    "Statement %ld way, way bizarre!!!  Here's the text:\n%.*s%s",
+                    csl->cstmt,
+                    width,
+                    &csl->filetext[csl->mct[csl->cstmt]->start],
+                    ((csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start) > width
+                     ? "(...truncated)"
+                     : "")
                          );
             goto invoke_bailout;
         }

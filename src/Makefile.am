@@ -257,7 +257,8 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 bin_PROGRAMS = crm114 cssutil osbf-util cssdiff cssmerge testvectok
 
 
-crm114_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) crm_main.c
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt \
+		merge-results-29-oct-2007.txt x.bak
 
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \

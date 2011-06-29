@@ -181,7 +181,7 @@ long crm_debugger(void)
         case 'c':
         case 'C':
             debug_countdown = 0;
-            if (1 != sscanf(&inbuf[1], "%ld", &debug_countdown))
+            if (1 != sscanf(&inbuf[1], "%d", &debug_countdown))
             {
                 fprintf(stderr, "Failed to decode the debug 'C' "
                                 "command countdown number '%s'. "
@@ -194,7 +194,7 @@ long crm_debugger(void)
             }
             else
             {
-                fprintf(stderr, "continuing %ld cycles...\n", debug_countdown);
+                fprintf(stderr, "continuing %d cycles...\n", debug_countdown);
             }
             return 0;
 
@@ -264,13 +264,13 @@ long crm_debugger(void)
                     show_expr_list[j + 1] = NULL;
 
                     fprintf(stderr, "'e' expression added to the watch list:\n"
-                                    "    %s\n"
-                           , last_e_expression);
+                                    "    %s\n",
+                            last_e_expression);
                 }
                 else
                 {
-                    fprintf(stderr
-                           , "expression not added to watch list: expression already exists in watch list!\n");
+                    fprintf(stderr,
+                            "expression not added to watch list: expression already exists in watch list!\n");
                 }
             }
             else
@@ -307,8 +307,8 @@ long crm_debugger(void)
                         {
                             if (j == expr_number)
                             {
-                                fprintf(stderr, "removed watched expression #%d: %s\n"
-                                       , j + 1, show_expr_list[j]);
+                                fprintf(stderr, "removed watched expression #%d: %s\n",
+                                        j + 1, show_expr_list[j]);
                                 free(show_expr_list[j]);
                             }
                             // shift other expressions one down in the list to close the gap:
@@ -320,16 +320,16 @@ long crm_debugger(void)
                         // barf if user supplied a bogus expression #
                         if (j <= expr_number)
                         {
-                            fprintf(stderr
-                                   , "cannot remove watched expression #%d as there are only %d expressions.\n"
-                                   , expr_number + 1
-                                   , j);
+                            fprintf(stderr,
+                                    "cannot remove watched expression #%d as there are only %d expressions.\n",
+                                    expr_number + 1,
+                                    j);
                         }
                     }
                     else
                     {
-                        fprintf(stderr, "You specified an illegal watched expression #%d; command ignored.\n"
-                               , expr_number + 1);
+                        fprintf(stderr, "You specified an illegal watched expression #%d; command ignored.\n",
+                                expr_number + 1);
                     }
                 }
             }
@@ -345,18 +345,54 @@ long crm_debugger(void)
                 int i, j;
                 int stmtnum;
                 int endstmtnum;
-                i = sscanf(&inbuf[1], "%d.%d", &stmtnum, &endstmtnum);
-                if (i == 0)
+
+                i = sscanf(&inbuf[1], " %d.%d", &stmtnum, &endstmtnum);
+                if (i <= 0)
                 {
-                    csl->cstmt = stmtnum;
+                    stmtnum = csl->cstmt;
 
                     endstmtnum = stmtnum;
+
+                    // +N = show current + N subsequent statements
+                    i = sscanf(&inbuf[1], " >%d", &j);
+                    if (i == 1)
+                    {
+                        endstmtnum = stmtnum + j;
+
+                        // sanity check: do not print beyond end of statement range; no need
+                        // to report an error message in the loop below...
+                        if (endstmtnum > csl->nstmts)
+                        {
+                            endstmtnum = csl->nstmts;
+                        }
+                    }
+                    else
+                    {
+                        // ~N: show a 'context' of +/- N statements around the current statement
+                        i = sscanf(&inbuf[1], " ~%d", &j);
+                        if (i == 1)
+                        {
+                            endstmtnum = stmtnum + j;
+                            stmtnum -= j;
+
+                            // sanity check: do not print beyond end of statement range; no need
+                            // to report an error message in the loop below...
+                            if (endstmtnum > csl->nstmts)
+                            {
+                                endstmtnum = csl->nstmts;
+                            }
+                            if (stmtnum < 0)
+                            {
+                                stmtnum = 0;
+                            }
+                        }
+                    }
                 }
-                if (i == 1)
+                else if (i == 1)
                 {
                     endstmtnum = stmtnum;
                 }
-                if (i == 2)
+                else if (i == 2)
                 {
                     // sanity check: do not print beyond end of statement range; no need
                     // to report an error message in the loop below...
@@ -409,8 +445,8 @@ long crm_debugger(void)
                     //    maybe the user put in a label?
                     long tstart;
                     long tlen;
-                    crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0
-                                , &tstart, &tlen);
+                    crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
+                            &tstart, &tlen);
                     memmove(inbuf, &inbuf[1 + tstart], tlen);
                     inbuf[tlen] = 0;
                     vindex = crm_vht_lookup(vht, inbuf, tlen);
@@ -432,8 +468,8 @@ long crm_debugger(void)
                 if (nextstmt >= csl->nstmts)
                 {
                     nextstmt = csl->nstmts;
-                    fprintf(stderr, "last statement is %ld, assume you meant that.\n"
-                           , csl->nstmts);
+                    fprintf(stderr, "last statement is %ld, assume you meant that.\n",
+                            csl->nstmts);
                 }
                 if (csl->cstmt != nextstmt)
                 {
@@ -456,8 +492,8 @@ long crm_debugger(void)
                     //    maybe the user put in a label?
                     long tstart;
                     long tlen;
-                    crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0
-                                , &tstart, &tlen);
+                    crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
+                            &tstart, &tlen);
                     memmove(inbuf, &inbuf[1 + tstart], tlen);
                     inbuf[tlen] = 0;
                     vindex = crm_vht_lookup(vht, inbuf, tlen);
@@ -479,19 +515,19 @@ long crm_debugger(void)
                 if (breakstmt >= csl->nstmts)
                 {
                     breakstmt = csl->nstmts;
-                    fprintf(stderr, "last statement is %ld, assume you meant that.\n"
-                           , csl->nstmts);
+                    fprintf(stderr, "last statement is %ld, assume you meant that.\n",
+                            csl->nstmts);
                 }
                 csl->mct[breakstmt]->stmt_break = 1 - csl->mct[breakstmt]->stmt_break;
                 if (csl->mct[breakstmt]->stmt_break == 1)
                 {
-                    fprintf(stderr, "Setting breakpoint at statement %ld\n"
-                           , breakstmt);
+                    fprintf(stderr, "Setting breakpoint at statement %ld\n",
+                            breakstmt);
                 }
                 else
                 {
-                    fprintf(stderr, "Clearing breakpoint at statement %ld\n"
-                           , breakstmt);
+                    fprintf(stderr, "Clearing breakpoint at statement %ld\n",
+                            breakstmt);
                 }
             }
             return 1;
@@ -503,8 +539,8 @@ long crm_debugger(void)
                 long vstart, vlen;
                 long vindex;
                 long ostart, oend, olen;
-                crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0
-                            , &vstart, &vlen);
+                crm_nextword(&inbuf[1], strlen(&inbuf[1]), 0,
+                        &vstart, &vlen);
                 memmove(inbuf, &inbuf[1 + vstart], vlen);
                 inbuf[vlen] = 0;
                 vindex = crm_vht_lookup(vht, inbuf, vlen);
@@ -523,9 +559,9 @@ long crm_debugger(void)
                 while (inbuf[oend] != '/' && inbuf[oend] != 0)
                     oend++;
 
-                memmove(outbuf
-                       , &inbuf[ostart]
-                       , oend - ostart);
+                memmove(outbuf,
+                        &inbuf[ostart],
+                        oend - ostart);
 
                 outbuf[oend - ostart] = 0;
                 olen = crm_nexpandvar(outbuf, oend - ostart, data_window_size);
@@ -547,6 +583,7 @@ long crm_debugger(void)
             return 1;
 
         case 'h':
+        case '?':
             fprintf(stderr, "a :var: /value/ - alter :var: to /value/\n");
             fprintf(stderr, "b <n> - toggle breakpoint on line <n>\n");
             fprintf(stderr, "b <label> - toggle breakpoint on <label>\n");
@@ -565,8 +602,11 @@ long crm_debugger(void)
             fprintf(stderr, "q     - quit the program and exit\n");
             fprintf(stderr, "t     - toggle user-level tracing\n");
             fprintf(stderr, "T     - toggle system-level tracing\n");
-            fprintf(stderr, "v <n> - view source code statement <n>.\n"
-                            "        No <n> given: show current statement\n");
+            fprintf(stderr, "v <n>.<m> - view source code statement <n> till <m>.\n"
+                            "        No <n> given: show current statement\n"
+                            "        Alternatives: 'v >5' (type '>' char!) = show\n"
+                            "        current and 5 extra; 'v ~3' = show context of\n"
+                            "        3 lines before till 3 lines after\n");
             break;
 
         default:

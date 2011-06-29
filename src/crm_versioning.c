@@ -732,12 +732,12 @@ int fwrite_crm_headerblock(FILE *f, CRM_PORTA_HEADER_INFO *classifier_info, cons
         class_id = "OSB-BAYES";
     }
 
-    ret = fprintf(f, "%s%-10.10s:%-35.35s:%04d:%-20.20s:\ncat <<-EOF\n"
-                 , CRM_PORTABILITY_HEADER_SEQUENCE
-                 , class_id
-                 , VERSION
-                 , 1
-                 , HOSTTYPE);
+    ret = fprintf(f, "%s%-10.10s:%-35.35s:%04d:%-20.20s:\ncat <<-EOF\n",
+            CRM_PORTABILITY_HEADER_SEQUENCE,
+            class_id,
+            VERSION,
+            1,
+            HOSTTYPE);
     if (ret <= 0)
         return -1;
 
@@ -908,8 +908,8 @@ int crm_correct_for_version_header(void **ptr, long *len)
         {
             if (*len < CRM114_HEADERBLOCK_SIZE)
             {
-                fatalerror("The CRM114 'headered' CSS file is corrupt: file size is too small."
-                          , "Please recover a backup with a correct version/portability header or seek help.");
+                fatalerror("The CRM114 'headered' CSS file is corrupt: file size is too small.",
+                        "Please recover a backup with a correct version/portability header or seek help.");
                 return -1;
             }
             else
@@ -919,8 +919,8 @@ int crm_correct_for_version_header(void **ptr, long *len)
         }
         *ptr = s;
 #else
-        fatalerror("This CRM114 build cannot cope with the new 'headered' CSS file format."
-                  , "Please rebuild with version/portability header support or seek a prebuild CRM114 binary that can.");
+        fatalerror("This CRM114 build cannot cope with the new 'headered' CSS file format.",
+                "Please rebuild with version/portability header support or seek a prebuild CRM114 binary that can.");
         ret = -1;   /* cannot cope with version-headered files */
 #endif
     }

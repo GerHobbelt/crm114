@@ -23,10 +23,10 @@
 
 
 
-static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h
-                              , unsigned long hs
-                              , unsigned long start
-                              , unsigned long end);
+static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
+        unsigned long                                       hs,
+        unsigned long                                       start,
+        unsigned long                                       end);
 
 //     How to microgroom a .css file that's getting full
 //
@@ -44,10 +44,10 @@ static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h
 //     how the file looks, and if necessary, we get rid of some data.
 //     R is the "MICROGROOM_RESCALE_FACTOR"
 //
-long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h
-                          , unsigned char               *seen_features
-                          , unsigned long hs
-                          , unsigned long hindex)
+long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h,
+        unsigned char                                  *seen_features,
+        unsigned long                                   hs,
+        unsigned long                                   hindex)
 {
     long i, j, k;
     static long microgroom_count = 0;
@@ -74,8 +74,8 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h
     {
         if (microgroom_count == 1)
             fprintf(stderr, "CSS Winnow file too full: microgrooming chain: ");
-        fprintf(stderr, " %ld "
-               , microgroom_count);
+        fprintf(stderr, " %ld ",
+                microgroom_count);
     }
 
     //       We have two different algorithms for amnesia - stochastic
@@ -115,7 +115,7 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h
         if (i < 1)
             i = hs - 1;
         if (i == j)
-            break;         // don't hang if we have a 100% full .css file
+            break; // don't hang if we have a 100% full .css file
         // fprintf(stderr, "-");
     }
 
@@ -169,7 +169,7 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h
         if (i < 1)
             i = hs - 1;
         if (i == j)
-            break;         // don't hang if we have a 100% full .css file
+            break; // don't hang if we have a 100% full .css file
         // fprintf(stderr, "-");
     }
 
@@ -189,7 +189,7 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h
         if (j >= hs)
             j = 1;
         if (j == k)
-            break;         //   don't hang on 100% full .css file
+            break; //   don't hang on 100% full .css file
     }
     j--;
     if (j == 0)
@@ -259,10 +259,10 @@ long crm_winnow_microgroom(WINNOW_FEATUREBUCKET_STRUCT *h
 //
 //      crm_zap_winnow_css - the distance-heuristic microgroomer core.
 
-static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h
-                              , unsigned long hs
-                              , unsigned long start
-                              , unsigned long end)
+static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
+        unsigned long                                       hs,
+        unsigned long                                       start,
+        unsigned long                                       end)
 {
     //     A question- what's the ratio deprecation ratio between
     //     "distance from original" vs. low point value?  The original
@@ -348,9 +348,9 @@ static long crm_zap_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h
     return actually_zeroed;
 }
 
-void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h
-                        , unsigned char *seen_features
-                        , long hs, long packstart, long packlen)
+void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h,
+        unsigned char *seen_features,
+        long hs, long packstart, long packlen)
 {
     //    How we pack...
     //
@@ -376,9 +376,9 @@ void crm_pack_winnow_css(WINNOW_FEATUREBUCKET_STRUCT *h
     }
 }
 
-void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h
-                        , unsigned char *seen_features
-                        , long hs, long packstart, long packlen)
+void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
+        unsigned char *seen_features,
+        long hs, long packstart, long packlen)
 {
     unsigned long ifrom, ito;
     crmhash_t thash, tkey;
@@ -482,8 +482,8 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h
     }
 }
 
-int crm_create_winnow_cssfile(char *cssfile, long buckets
-                             , long major, long minor, long spectrum_start)
+int crm_create_winnow_cssfile(char *cssfile, long buckets,
+        long major, long minor, long spectrum_start)
 {
     FILE *f;
     long i;
@@ -494,8 +494,8 @@ int crm_create_winnow_cssfile(char *cssfile, long buckets
     f = fopen(cssfile, "wb");
     if (!f)
     {
-        fprintf(stderr, "\n Couldn't open file %s for writing; errno=%d .\n"
-               , cssfile, errno);
+        fprintf(stderr, "\n Couldn't open file %s for writing; errno=%d .\n",
+                cssfile, errno);
         return EXIT_FAILURE;
     }
     else
@@ -509,9 +509,9 @@ int crm_create_winnow_cssfile(char *cssfile, long buckets
             if (fwrite(&feature, sizeof(feature), 1, f) != 1)
             {
                 fprintf(stderr, "\n Couldn't initialize Winnow .CSS file %s, "
-                                "errno=%d.\n"
-                       , cssfile
-                       , errno);
+                                "errno=%d.\n",
+                        cssfile,
+                        errno);
                 return EXIT_FAILURE;
             }
             memset(&feature, 0, sizeof(feature));

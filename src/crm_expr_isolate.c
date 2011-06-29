@@ -91,16 +91,16 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             }
             if (strcmp(vname, ":_dw:") == 0)
             {
-                nonfatalerror("You can't ISOLATE the :_dw: data window! "
-                             , "We'll just ignore that for now");
+                nonfatalerror("You can't ISOLATE the :_dw: data window! ",
+                        "We'll just ignore that for now");
             }
             else  //  OK- isolate this variable
             {
                 vmidx = crm_vht_lookup(vht, vname, vlen);
                 //
                 //        get initial value - that's the slashed value.
-                crm_get_pgm_arg(tempbuf, data_window_size
-                               , apb->s1start, apb->s1len);
+                crm_get_pgm_arg(tempbuf, data_window_size,
+                        apb->s1start, apb->s1len);
                 //
                 //     Now, check these cases in order:
                 //
@@ -133,10 +133,10 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         //  not preexisting, has a /value/, use it.
                         if (internal_trace)
                             fprintf(stderr, "using the slash-value given.\n");
-                        crm_get_pgm_arg(tempbuf, data_window_size
-                                       , apb->s1start, apb->s1len);
-                        vallen = crm_nexpandvar(tempbuf, apb->s1len
-                                               , data_window_size - tdw->nchars);
+                        crm_get_pgm_arg(tempbuf, data_window_size,
+                                apb->s1start, apb->s1len);
+                        vallen = crm_nexpandvar(tempbuf, apb->s1len,
+                                data_window_size - tdw->nchars);
                     }
                 }
                 else
@@ -163,11 +163,11 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         //    get the /value/
                         if (internal_trace)
                             fprintf(stderr, "Using the provided slash-val.\n");
-                        crm_get_pgm_arg(tempbuf, data_window_size
-                                       , apb->s1start, apb->s1len);
+                        crm_get_pgm_arg(tempbuf, data_window_size,
+                                apb->s1start, apb->s1len);
                         vallen =
-                            crm_nexpandvar(tempbuf, apb->s1len
-                                          , data_window_size - tdw->nchars);
+                            crm_nexpandvar(tempbuf, apb->s1len,
+                                    data_window_size - tdw->nchars);
                     }
                     else
                     {
@@ -178,8 +178,8 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         strcpy(tempbuf, ":*");
                         strncat(tempbuf, vname, vlen);
                         vallen =
-                            crm_nexpandvar(tempbuf, vlen + 2
-                                          , data_window_size - tdw->nchars);
+                            crm_nexpandvar(tempbuf, vlen + 2,
+                                    data_window_size - tdw->nchars);
                     }
                 }
                 //
@@ -188,9 +188,9 @@ int crm_expr_isolate(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 //    isolate it with crm_isolate_this, which always does
                 //    the right thing (pretty much).  :-)
                 //
-                iso_status = crm_isolate_this(&vmidx
-                                             , vname, 0, vlen
-                                             , tempbuf, 0, vallen);
+                iso_status = crm_isolate_this(&vmidx,
+                        vname, 0, vlen,
+                        tempbuf, 0, vallen);
                 if (iso_status > 0)
                     return iso_status;
             }
@@ -219,9 +219,9 @@ no_isolate_action:
 //      it gets handed data that's already in the TDW.  Best not to do
 //      that if you can avoid it; that is an efficiency speedup
 //
-int crm_isolate_this(long *vptr
-                    , char *nametext, long namestart, long namelen
-                    , char *valuetext, long valuestart, long valuelen)
+int crm_isolate_this(long *vptr,
+        char *nametext, long namestart, long namelen,
+        char *valuetext, long valuestart, long valuelen)
 
 {
     long is_old;
@@ -294,8 +294,8 @@ int crm_isolate_this(long *vptr
     if (tdw->nchars + neededlen > data_window_size)
     {
         char vname[129];
-        strncpy(vname, &nametext[namestart]
-               , ((128 < namelen) ? 128 : namelen));
+        strncpy(vname, &nametext[namestart],
+                ((128 < namelen) ? 128 : namelen));
         vname[128] = 0; /* [i_a] boundary bug */
         fatalerror("You have blown the memory-storage gaskets while trying"
                    "to store the ISOLATEd variable ", vname);
@@ -334,10 +334,10 @@ int crm_isolate_this(long *vptr
         tdw->nchars++;
 
         //      now, we whack the actual VHT.
-        crm_setvar(NULL, 0
-                  , tdw->filetext, nstart, namelen
-                  , tdw->filetext, vstart, valuelen
-                  , csl->cstmt, 0);
+        crm_setvar(NULL, 0,
+                tdw->filetext, nstart, namelen,
+                tdw->filetext, vstart, valuelen,
+                csl->cstmt, 0);
         //     that's it.    It's now in the TDW and in the VHT
         return 0;
     }
@@ -352,8 +352,8 @@ int crm_isolate_this(long *vptr
         fprintf(stderr, "Resetting valtxt to point at tdw.\n");
     vht[vmidx]->valtxt = tdw->filetext;
     if (internal_trace)
-        fprintf(stderr, "Fresh start: offset %ld length %ld.\n"
-               , tdw->nchars, valuelen);
+        fprintf(stderr, "Fresh start: offset %ld length %ld.\n",
+                tdw->nchars, valuelen);
     //
     //
     //   If we have a zero-length string, followed by a
@@ -376,9 +376,9 @@ int crm_isolate_this(long *vptr
     vht[vmidx]->vlen   = valuelen;
     if (internal_trace)
         fprintf(stderr, "Memmoving the value in.\n");
-    memmove(&(tdw->filetext[tdw->nchars])
-           , tempbuf
-           , valuelen);
+    memmove(&(tdw->filetext[tdw->nchars]),
+            tempbuf,
+            valuelen);
     tdw->nchars = tdw->nchars + valuelen;
     //
     // trailing separator
@@ -402,9 +402,9 @@ int crm_isolate_this(long *vptr
                             "do a reclamation on the old space.\n");
         //  vstart==0 means "ignore this value" to reclamation
         //
-        crm_compress_tdw_section(vht[vmidx]->valtxt
-                                , oldvstart
-                                , oldvstart + oldvlen);
+        crm_compress_tdw_section(vht[vmidx]->valtxt,
+                oldvstart,
+                oldvstart + oldvlen);
     }
 
     return 0;

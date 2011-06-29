@@ -89,7 +89,7 @@ am__objects_1 = crm_compiler.$(OBJEXT) crm_errorhandlers.$(OBJEXT) \
 	crm_generic_port.$(OBJEXT) crm_stdio_port.$(OBJEXT) \
 	crm_versioning.$(OBJEXT)
 am__objects_2 =
-am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) $(am__objects_2) \
+am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	crm_main.$(OBJEXT)
 crm114_OBJECTS = $(am_crm114_OBJECTS)
 crm114_LDADD = $(LDADD)
@@ -160,7 +160,7 @@ AMTAR = ${SHELL} /home/ger/prj/3actual/crm114/m4/missing --run tar
 #  and warn on all warnable things "-Wall".  Someday add -Wextra for
 #  really picayune stuff.
 #  
-AM_CFLAGS =  -Wall -Wextra
+AM_CFLAGS =  -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
 # AM_CFLAGS += -g -O3
 #     turn this one on for no optimization, but debugging and time profiling.
 #AM_CFLAGS += -g -O0 -Wall -pg -CB
@@ -233,7 +233,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2008-01-30
+ISODATE = 2008-01-31
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -282,7 +282,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-1509
+TAR_FILENAME_POSTFIX = Ger-1515
 TRE_CONFIG = no
 
 #
@@ -461,7 +461,9 @@ EXTRA_DIST = indent.sh.in diff_em.sh.in \
 	$(CRMFILES) \
 	$(TEXTFILES)
 
-crm114_SOURCES = $(CFILES) $(HFILES) $(EXTRA_DEPS) crm_main.c
+crm114_SOURCES = $(CFILES) $(HFILES) crm_main.c 1010-megatest-diff.txt \
+		merge-results-29-oct-2007.txt x.bak
+
 cssutil_SOURCES = cssutil.c \
 	crm_css_maintenance.c crm_util_errorhandlers.c crm_str_funcs.c crm_generic_port.c crm_stdio_port.c \
 	crm_versioning.c \

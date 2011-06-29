@@ -187,18 +187,18 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_get_pgm_arg(box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
     //  Use crm_restrictvar to get start & length to look at.
-    i = crm_restrictvar(box_text, apb->b1len
-                       , &vmidx
-                       , &mdwptr
-                       , &source_start
-                       , &source_len
-                       , errstr);
+    i = crm_restrictvar(box_text, apb->b1len,
+            &vmidx,
+            &mdwptr,
+            &source_start,
+            &source_len,
+            errstr);
 
     if (internal_trace)
     {
-        fprintf(stderr
-               , "restricted: vmidx: %ld  mdw: %p   start: %ld  len: %ld\n"
-               , vmidx, mdwptr, source_start, source_len);
+        fprintf(stderr,
+                "restricted: vmidx: %ld  mdw: %p   start: %ld  len: %ld\n",
+                vmidx, mdwptr, source_start, source_len);
     }
     if (i < 0)
     {
@@ -231,8 +231,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     pchlen = crm_nexpandvar(pch, apb->s1len, MAX_PATTERN);
 
     if (user_trace)
-        fprintf(stderr, " match pattern expands to =%s= len %ld flags %x %x \n"
-               , pch, pchlen, cflags, eflags);
+        fprintf(stderr, " match pattern expands to =%s= len %ld flags %x %x \n",
+                pch, pchlen, cflags, eflags);
 
     //    regcomp the pattern
     i = crm_regcomp(&preg, pch, pchlen, cflags);
@@ -268,8 +268,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //
         long curstmt;
         curstmt = csl->cstmt;
-        nonfatalerror(" Attempt to match inside nonexistent variable ( always fails!) "
-                     , svname);
+        nonfatalerror(" Attempt to match inside nonexistent variable ( always fails!) ",
+                svname);
         //
         //     did the FAULT handler change the next statement to execute?
         //     If so, continue from there, otherwise, we FAIL.
@@ -292,8 +292,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         && vht[vmidx]->valtxt != cdw->filetext)
     {
         long q;
-        q = fatalerror("Bogus text block (neither cdw nor tdw) on var "
-                      , box_text);
+        q = fatalerror("Bogus text block (neither cdw nor tdw) on var ",
+                box_text);
         if (q != 0)
         {
             if (engine_exit_base != 0)
@@ -373,8 +373,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     vtextstartlimit = source_start;
     if (internal_trace)
     {
-        fprintf(stderr, "    start matchable zone: %ld, begin search %ld, length %ld\n"
-               , vtextstartlimit, textoffset, mtextlen);
+        fprintf(stderr, "    start matchable zone: %ld, begin search %ld, length %ld\n",
+                vtextstartlimit, textoffset, mtextlen);
     }
 
     //       Here is the crux.  Do the REGEX match, maybe in a loop
@@ -400,8 +400,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 textoffset++;
                 mtextlen--;
                 mtext = &mdw->filetext[textoffset];
-                i = crm_regexec(&preg, mtext, mtextlen
-                               , nmatches, matches, eflags, NULL);
+                i = crm_regexec(&preg, mtext, mtextlen,
+                        nmatches, matches, eflags, NULL);
                 j = matches[0].rm_eo;
                 if (((textoffset + j) > oldend) && (i == 0))
                     done = 1;
@@ -424,8 +424,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 textoffset--;
                 mtextlen++;
                 mtext = &mdw->filetext[textoffset];
-                i = crm_regexec(&preg, mtext, mtextlen
-                               , nmatches, matches, eflags, NULL);
+                i = crm_regexec(&preg, mtext, mtextlen,
+                        nmatches, matches, eflags, NULL);
                 j = matches[0].rm_so;
             }
         }
@@ -433,8 +433,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     default:
         {
             mtext = &mdw->filetext[textoffset];
-            i = crm_regexec(&preg, mtext, mtextlen
-                           , nmatches, matches, eflags, NULL);
+            i = crm_regexec(&preg, mtext, mtextlen,
+                    nmatches, matches, eflags, NULL);
         }
     }
 
@@ -480,8 +480,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         if (bindable_vars_len > 0 && absentp)
             nonfatalerror("This program specifies an 'absent' match, and also "
                           "tries to bind variables that, by the above, aren't "
-                          "matched!  "
-                         , "We'll ignore these variable bindings for now.");
+                          "matched!  ",
+                    "We'll ignore these variable bindings for now.");
 
         if (bindable_vars_len > 0 && !absentp)
         {
@@ -494,8 +494,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //              reclamation on them later on.
             //
             char *index_texts[MAX_SUBREGEX];
-            long index_starts[MAX_SUBREGEX]
-            , index_lengths[MAX_SUBREGEX];
+            long index_starts[MAX_SUBREGEX],
+                 index_lengths[MAX_SUBREGEX];
 
             done = 0;        //  loop till we've captured all the vars
             mc = 0;
@@ -527,11 +527,11 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         for (k = 0; k < vlen; k++)
                             fprintf(stderr, "%c", bindable_vars[vstart + k]);
                         fprintf(stderr, "- will be assigned from var offsets %ld to %ld "
-                                        "(origin offsets %ld to %ld), value "
-                               , (long)matches[mc].rm_so
-                               , (long)matches[mc].rm_eo
-                               , matches[mc].rm_so + textoffset
-                               , matches[mc].rm_eo + textoffset);
+                                        "(origin offsets %ld to %ld), value ",
+                                (long)matches[mc].rm_so,
+                                (long)matches[mc].rm_eo,
+                                matches[mc].rm_so + textoffset,
+                                matches[mc].rm_eo + textoffset);
                         for (k = matches[mc].rm_so + textoffset;
                              k < matches[mc].rm_eo + textoffset;
                              k++)
@@ -579,22 +579,22 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //     of a|(b(c)) regexes.  These have .rm_so offsets
                             //      of < 0 .
                             if (matches[mc].rm_so >= 0)
-                                crm_set_windowed_nvar(vn
-                                                     , vlen
-                                                     , mdw->filetext
-                                                     , matches[mc].rm_so
-                                        + textoffset
-                                                     , matches[mc].rm_eo
-                                        - matches[mc].rm_so
-                                                     , csl->cstmt);
+                                crm_set_windowed_nvar(vn,
+                                        vlen,
+                                        mdw->filetext,
+                                        matches[mc].rm_so
+                                        + textoffset,
+                                        matches[mc].rm_eo
+                                        - matches[mc].rm_so,
+                                        csl->cstmt);
                         }
                         else
                         {
                             nonfatalerror("This program tried to re-define the "
                                           "data window!  That's very deep and "
-                                          "profound, but not acceptable.  "
-                                         , "Therefore, I'm ignoring this "
-                                           "re-definition.");
+                                          "profound, but not acceptable.  ",
+                                    "Therefore, I'm ignoring this "
+                                    "re-definition.");
                         }
                         free(vn);
                     }
@@ -603,8 +603,8 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     mc++;
                     if (mc >= MAX_SUBREGEX)
                         nonfatalerror(
-                                "Exceeded MAX_SUBREGEX limit-too many parens in match"
-                                     , " Looks like you blew the gaskets on 'er.\n");
+                                "Exceeded MAX_SUBREGEX limit-too many parens in match",
+                                " Looks like you blew the gaskets on 'er.\n");
                 }
             }
             //
@@ -657,15 +657,15 @@ int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (j > tdw->nchars - 1)
                             j = tdw->nchars;
                         reclaimed = crm_compress_tdw_section
-                                    (index_texts[maxi]
-                                    , index_starts[maxi]
-                                    , j);
+                                    (index_texts[maxi],
+                                index_starts[maxi],
+                                j);
                         // WAS index_starts[maxi] + index_lengths[maxi] );
                         if (internal_trace)
-                            fprintf(stderr
-                                   , " [ MatchVar #%ld (s: %ld l: %ld) reclaimed %ld. ]\n"
-                                   , maxi, index_starts[maxi], index_lengths[maxi]
-                                   , reclaimed);
+                            fprintf(stderr,
+                                    " [ MatchVar #%ld (s: %ld l: %ld) reclaimed %ld. ]\n",
+                                    maxi, index_starts[maxi], index_lengths[maxi],
+                                    reclaimed);
                         //   and zap out the reclaimed entry, so other entries
                         //   can also be reclaimed in the proper order.
                         index_starts[maxi] = -1;

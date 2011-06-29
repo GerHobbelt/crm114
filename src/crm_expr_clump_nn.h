@@ -112,8 +112,8 @@ typedef struct mythical_NNclusteror_header
     long                    cooccurences_offset;
     long                    graph_offset;
     long                    clusters_offset;
-    COOCCURRENCE_SCORE_TYPE tot_occ        //total occurrances recorded, to normalize
-    , normal_factor;                       //when tot_occ is huge divide everything down
+    COOCCURRENCE_SCORE_TYPE tot_occ,       //total occurrances recorded, to normalize
+                            normal_factor; //when tot_occ is huge divide everything down
     //then when we add we nult by normal_factor to make everything work out
 } NNCLUSTEROR_HEADER_STRUCT;
 
