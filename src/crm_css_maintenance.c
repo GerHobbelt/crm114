@@ -30,7 +30,7 @@ static long crm_zapcss(FEATUREBUCKET_TYPE *h,
 //
 //     NOTA BENE NOTA BENE NOTA BENE NOTA BENE
 //
-//         This whole section of code is under intense develoment; right now
+//         This whole section of code is under intense development; right now
 //         it "works" but not any better than nothing at all.  Be warned
 //         that any patches issued on it may well never see the light of
 //         day, as intense testing and comparison may show that the current
@@ -132,7 +132,7 @@ long crm_microgroom(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
              || ((h[i].key + randy) & MICROGROOM_STOCHASTIC_MASK)
              == MICROGROOM_STOCHASTIC_KEY))
         {
-            h[i].value = h[i].value * MICROGROOM_RESCALE_FACTOR;
+            h[i].value *= MICROGROOM_RESCALE_FACTOR;
         }
         if (h[i].value == 0) zeroed_countdown--;
         i++;
@@ -222,12 +222,9 @@ long crm_microgroom(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
     {
         //fprintf (stderr, "Z");
         actually_zeroed = crm_zapcss(h, hs, packstart, hs - 1);
-        actually_zeroed = actually_zeroed
-                          + crm_zapcss(h, hs, 1,   (packlen - (hs - packstart)));
+        actually_zeroed += crm_zapcss(h, hs, 1, (packlen - (hs - packstart)));
     }
 #endif
-
-
 
     //   now we pack the buckets
     crm_packcss(h, seen_features, hs, packstart, packlen);
@@ -288,11 +285,14 @@ static long crm_zapcss(FEATUREBUCKET_TYPE *h,
                 //      fprintf (stderr, "a");
                 if (h[k].value > 0)    //  can't zero it if it's already zeroed
                 {
+					double hk_value = h[k].value; // make sure we don't get into integer overflow issues here ever
+					double k_minus_hk_hash = k - h[k].hash % hs;
+
                     //  fprintf (stderr, "b");
-                    if ((VWEIGHT * h[k].value) +
-                        (VWEIGHT2 * h[k].value * h[k].value) +
-                        (DWEIGHT * (k - h[k].hash % hs)) +
-                        (DWEIGHT2 * (k - h[k].hash % hs) * (k - h[k].hash % hs))
+                    if ((VWEIGHT * hk_value) +
+                        (VWEIGHT2 * hk_value * hk_value) +
+                        (DWEIGHT * k_minus_hk_hash) +
+                        (DWEIGHT2 * k_minus_hk_hash * k_minus_hk_hash)
                         <= vcut)
                     {
                         //  fprintf (stderr, "*");
@@ -339,7 +339,8 @@ void crm_packseg(FEATUREBUCKET_TYPE *h, unsigned char *seen_features,
                  long hs, long packstart, long packlen)
 {
     unsigned long ifrom, ito;
-    unsigned long thash, tkey, tvalue;
+    crmhash_t thash, tkey;
+    unsigned long tvalue;
     unsigned char tseen;
 
     //  keep the compiler quiet - tseen is used only if seen_features
@@ -434,16 +435,15 @@ int crm_create_cssfile(char *cssfile, long buckets,
 {
     FILE *f;
     long i;
-    FEATUREBUCKET_STRUCT feature = {
-        0 };
+    FEATUREBUCKET_STRUCT feature = {0};
 
     if (user_trace)
         fprintf(stderr, "Opening file %s for writing.\n", cssfile);
     f = fopen(cssfile, "wb");
     if (!f)
     {
-        fprintf(stderr, "\n Couldn't open file %s for writing; errno=%d .\n",
-                cssfile, errno);
+        fprintf(stderr, "\n Couldn't open file %s for writing; errno=%d(%s).\n",
+                cssfile, errno, errno_descr(errno));
         return EXIT_FAILURE;
     }
     else
@@ -457,9 +457,10 @@ int crm_create_cssfile(char *cssfile, long buckets,
             if (fwrite(&feature, sizeof(feature), 1, f) != 1)
             {
                 fprintf(stderr, "\n Couldn't initialize .CSS file %s, "
-                                "errno=%d.\n",
+                                "errno=%d(%s).\n",
                         cssfile,
-                        errno);
+                        errno,
+						errno_descr(errno));
                 return EXIT_FAILURE;
             }
             memset(&feature, 0, sizeof(feature));

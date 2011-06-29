@@ -202,7 +202,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 ecsl->nchars = 0;
                 //   OK, we now have a buffer.  Read the file in...
 
-                fd = open(insertfilename, O_RDONLY);
+                fd = open(insertfilename, O_RDONLY | O_BINARY);
                 if (fd < 0)
                 {
                     rlen = 0;
@@ -234,7 +234,7 @@ int crm_preprocessor(CSL_CELL *csl, int flags)
                 ecsl->nchars = rlen; /* [i_a] not: statbuf.st_size; -- as the MSVC documentation says:
                                       * read returns the number of bytes read, which might be less than count
                                       * if there are fewer than count bytes left in the file or if the file
-                                      * was opened in text mode, in which case each carriage return�line feed (CR-LF) pair
+                                      * was opened in text mode, in which case each carriage return / line feed (CR-LF) pair
                                       * is replaced with a single linefeed character. Only the single
                                       * linefeed character is counted in the return value.
                                       */

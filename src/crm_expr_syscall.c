@@ -26,17 +26,19 @@
 #ifdef WIN32
 typedef struct
 {
-    HANDLE to_minion;
+    HANDLE  to_minion;
     char   *inbuf;
-    long   inlen;
-    long   internal_trace;
-    long   keep_proc;
+    long    inlen;
+    long    internal_trace;
+    long    keep_proc;
 } pusherparams;
 
 typedef struct
 {
     HANDLE from_minion;
     int    timeout;
+    long   internal_trace;
+    long   keep_proc;
 } suckerparams;
 
 
@@ -73,8 +75,11 @@ unsigned int WINAPI pusher_proc(void *lpParameter)
     }
     if (p->internal_trace)
         fprintf(stderr, "pusher: exiting pusher\n");
+    _endthreadex(0);
     return 0;
 }
+
+
 
 unsigned int WINAPI sucker_proc(void *lpParameter)
 {
@@ -97,6 +102,24 @@ unsigned int WINAPI sucker_proc(void *lpParameter)
         }
         if (bytesRead == 0) break;
     }
+    if (p->internal_trace)
+        fprintf(stderr, "sucker: output fetched from minion.\n");
+
+    //    if we don't want to keep this proc, we close it's output, and
+    //    wait for it to exit.
+    if (!p->keep_proc)
+    {
+        if (!CloseHandle(p->from_minion))
+        {
+            fprintf(stderr, "The sucker failed to close the minion output pipe.\n");
+        }
+
+        if (internal_trace)
+            fprintf(stderr, "minion output pipe closed\n");
+    }
+    if (p->internal_trace)
+        fprintf(stderr, "sucker: exiting sucker\n");
+    _endthreadex(0);
     return 0;
 
 #undef OUTBUF_SIZE
@@ -144,11 +167,6 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     pid_t minion;
     int status;
     long timeout;
-
-#ifdef WIN32
-    SECURITY_ATTRIBUTES pipeSecAttr;
-    HANDLE hminion;
-#endif
 
 #if defined (HAVE_WAITPID)
     if (user_trace)
@@ -254,8 +272,8 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     strncat(exp_keep_buf, keep_buf, keep_len);
     exp_keep_len = crm_nexpandvar(exp_keep_buf, keep_len + 2, MAX_PATTERN);
 
-#if defined (HAVE_DUP2) && defined (HAVE_WORKING_FORK) && defined (HAVE_FORK) && defined (HAVE_PIPE) && defined (HAVE_WAITPID) &&\
-    defined (HAVE_SYSTEM)
+#if defined (HAVE_DUP2) && defined (HAVE_WORKING_FORK) && defined (HAVE_FORK) && defined (HAVE_PIPE) && defined (HAVE_WAITPID)   \
+    && defined (HAVE_SYSTEM)
     if (3 != sscanf(exp_keep_buf, "MINION PROC PID: %d from-pipe: %d to-pipe: %d",
                     &minion,
                     &from_minion[0],
@@ -312,7 +330,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
             //
             close(to_minion[1]);
             close(from_minion[0]);
-            dup2(to_minion[0], fileno(stdin));
+            dup2(to_minion[0], fileno(crm_stdin));
             dup2(from_minion[1], fileno(stdout));
 
             //     Are we a syscall to a :label:, or should we invoke the
@@ -360,7 +378,7 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         if (user_trace)
                             fprintf(stderr, "Redirecting minion stdin to %s\n",
                                     filename);
-                        freopen(filename, "rb", stdin);
+                        freopen(filename, "rb", crm_stdin);
                     }
                     if (sys_cmd[vstart] == '>')
                     {
@@ -426,7 +444,9 @@ int crm_expr_syscall(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         exit(engine_exit_base + 11);
                     }
                     else
+                    {
                         exit(WEXITSTATUS(retcode));
+                    }
                 }
                 exit(WEXITSTATUS(retcode));
             }
@@ -610,20 +630,27 @@ readloop:
         }
     }
 #elif defined (WIN32)
-    if (01)
+    if (0)
     {
         fatalerror(" Sorry, syscall is completely b0rked in this version", "");
         return 0;
     }
     else
     {
+        HANDLE hminion;
+        HANDLE hminion_thread_pi;
+        HANDLE pusher_thread_handle;
+        HANDLE sucker_thread_handle;
+
         if (3 != sscanf(exp_keep_buf, "MINION PROC PID: %ld from-pipe: %p to-pipe: %p",
                         &minion,
                         &from_minion[0],
                         &to_minion[1]))
         {
-//                        nonfatalerror("Failed to decode the minion setup: ", exp_keep_buf);
+            // nonfatalerror("Failed to decode the minion setup: ", exp_keep_buf);
         }
+
+        status = 1;
 
         //      if, no minion already existing, we create
         //      communications pipes and launch the subprocess.  This
@@ -632,74 +659,61 @@ readloop:
         //
         if (minion == 0)
         {
-            int retcode;
             long vstart2, vlen2;
             long varline;
 
             if (user_trace)
                 fprintf(stderr, "  Must start a new minion.\n");
 
-            pipeSecAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-            pipeSecAttr.bInheritHandle = TRUE;
-            pipeSecAttr.lpSecurityDescriptor = NULL;
-
-            status = CreatePipe(&to_minion[0], &to_minion[1], &pipeSecAttr, 2 ^ 10 * 32);
-            if (!status)
-            {
-                fatalerror_Win32("Failed to create minion pipe #1");
-            }
-            status = CreatePipe(&from_minion[0], &from_minion[1], &pipeSecAttr, 2 ^ 10 * 32);
-            if (!status)
-            {
-                fatalerror_Win32("Failed to create minion pipe #2");
-            }
-
             crm_nextword(sys_cmd, strlen(sys_cmd), 0, &vstart2, &vlen2);
             varline = crm_lookupvarline(vht, sys_cmd, vstart2, vlen2);
             if (varline > 0)
             {
                 fatalerror(" Sorry, syscall to a label isn't implemented in this version", "");
+                status = 0;
             }
             else
             {
+                SECURITY_ATTRIBUTES pipeSecAttr;
                 STARTUPINFO si;
-                PROCESS_INFORMATION pi = {
-                    0 };
+                PROCESS_INFORMATION pi = { 0 };
                 HANDLE stdout_save, stdin_save;
                 HANDLE to_minion_write, from_minion_read;
                 DWORD error = 0;
 
+                pipeSecAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+                pipeSecAttr.bInheritHandle = TRUE;
+                pipeSecAttr.lpSecurityDescriptor = NULL;
+
+
+                // Get the handle to the current STDOUT.
                 stdout_save = GetStdHandle(STD_OUTPUT_HANDLE);
-                if (!SetStdHandle(STD_OUTPUT_HANDLE, from_minion[1]))
-                {
-                    fatalerror_Win32("Failed to redirect stdout for minion");
-                }
-
                 stdin_save = GetStdHandle(STD_INPUT_HANDLE);
-                if (!SetStdHandle(STD_INPUT_HANDLE, to_minion[0]))
+
+                // Create a pipe for the child process's STDOUT: read+write handles
+                status = CreatePipe(&from_minion[0], &from_minion[1], &pipeSecAttr, 0 /* 2 ^ 10 * 32 */);
+                if (!status)
                 {
-                    fatalerror_Win32("Failed to redirect stdin for minion");
+                    fatalerror_Win32("Failed to create minion pipe #1");
+                }
+                // Ensure the read handle to the pipe for STDOUT is not inherited.
+                status = SetHandleInformation(from_minion[0], HANDLE_FLAG_INHERIT, 0);
+                if (!status)
+                {
+                    fatalerror_Win32("Failed to minion pipe #1 attributes");
                 }
 
-                if (!DuplicateHandle(GetCurrentProcess(), from_minion[0], GetCurrentProcess(), &from_minion_read, 0, FALSE, DUPLICATE_SAME_ACCESS))
+                status = CreatePipe(&to_minion[0], &to_minion[1], &pipeSecAttr, 0 /* 2 ^ 10 * 32 */);
+                if (!status)
                 {
-                    fatalerror_Win32("Failed to dup the read handle for minion");
+                    fatalerror_Win32("Failed to create minion pipe #2");
                 }
-                if (!CloseHandle(from_minion[0]))
+                // Ensure the write handle to the pipe for STDIN is not inherited.
+                status = SetHandleInformation(to_minion[1], HANDLE_FLAG_INHERIT, 0);
+                if (!status)
                 {
-                    fatalerror_Win32("Failed to close the read handle after dup for minion");
+                    fatalerror_Win32("Failed to minion pipe #1 attributes");
                 }
-                from_minion[0] = from_minion_read;
-
-                if (!DuplicateHandle(GetCurrentProcess(), to_minion[1], GetCurrentProcess(), &to_minion_write, 0, FALSE, DUPLICATE_SAME_ACCESS))
-                {
-                    fatalerror_Win32("Failed to dup the write handle for minion");
-                }
-                if (!CloseHandle(to_minion[1]))
-                {
-                    fatalerror_Win32("Failed to close the write handle after dup for minion");
-                }
-                to_minion[1] = to_minion_write;
 
                 if (user_trace)
                     fprintf(stderr, "systemcalling on shell command %s\n",
@@ -707,16 +721,30 @@ readloop:
 
                 ZeroMemory(&si, sizeof(si));
                 si.cb = sizeof(si);
+                si.cb = sizeof(STARTUPINFO);
+                si.hStdError = from_minion[1];
+                si.hStdOutput = from_minion[1];
+                si.hStdInput = to_minion[0];
+                si.dwFlags |= STARTF_USESTDHANDLES;
 
                 ZeroMemory(&pi, sizeof(pi));
 
-                /* MSVC spec says 'sys_cmd' will be edited inside CreateProcess. Keep the original around for
-                 * the second attempt: */
+                // MSVC spec says 'sys_cmd' will be edited inside CreateProcess. Keep the original around for
+                // the second attempt:
                 strcpy(sys_cmd_2nd, sys_cmd);
 
-                retcode = CreateProcess(NULL, sys_cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
-
-                if (!retcode)
+                // Create the child process.
+                status = CreateProcess("crm114 child process",
+                                       sys_cmd,         // command line
+                                       NULL,            // process security attributes
+                                       NULL,            // primary thread security attributes
+                                       TRUE,            // handles are inherited
+                                       0,               // creation flags
+                                       NULL,            // use parent's environment
+                                       NULL,            // use parent's current directory
+                                       &si,             // STARTUPINFO pointer
+                                       &pi);            // receives PROCESS_INFORMATION
+                if (!status)
                 {
                     error = GetLastError();
 
@@ -726,49 +754,70 @@ readloop:
                         strcpy(sys_cmd, "cmd /c ");
                         strncat(sys_cmd, sys_cmd_2nd, WIDTHOF(sys_cmd) - WIDTHOF("cmd /c "));
 
-                        retcode = CreateProcess(NULL, sys_cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
-
-                        error = GetLastError();
+                        status = CreateProcess("crm114 child process",
+                                               sys_cmd, // command line
+                                               NULL,    // process security attributes
+                                               NULL,    // primary thread security attributes
+                                               TRUE,    // handles are inherited
+                                               0,       // creation flags
+                                               NULL,    // use parent's environment
+                                               NULL,    // use parent's current directory
+                                               &si,     // STARTUPINFO pointer
+                                               &pi);    // receives PROCESS_INFORMATION
+                        if (!status)
+                        {
+                            error = GetLastError();
+                        }
                     }
-                }
 
-                if (!retcode)
-                {
-                    char *errmsg = Win32_syserr_descr(error);
-
-                    // use the undamaged sys_cmd entry for error reporting...
-                    fatalerror_ex(SRC_LOC(), "This program tried a shell command that "
-                                             "didn't run correctly.\n"
-                                             "command >>%s<< - CreateProcess returned %ld($%lx:%s)\n",
-                                  sys_cmd_2nd,
-                                  (long)error,
-                                  (long)error,
-                                  errmsg);
-
-                    if (engine_exit_base != 0)
+                    if (!status)
                     {
-                        exit(engine_exit_base + 13);
+                        const char *errmsg = Win32_syserr_descr(error);
+
+                        // use the undamaged sys_cmd entry for error reporting...
+                        nonfatalerror_ex(SRC_LOC(), "This program tried a shell command that "
+                                                    "didn't run correctly.\n"
+                                                    "command >>%s<< - CreateProcess returned %ld($%lx:%s)\n",
+                                         sys_cmd_2nd,
+                                         (long)error,
+                                         (long)error,
+                                         errmsg);
+/*
+ *                  if (engine_exit_base != 0)
+ *                  {
+ *                      exit(engine_exit_base + 13);
+ *                  }
+ *                  else
+ *                  {
+ *                      exit(EXIT_FAILURE);
+ *                  }
+ */
                     }
                     else
                     {
-                        exit(EXIT_FAILURE);
-                    }
-                }
-                else
-                {
-                    minion = pi.dwProcessId;
-                    hminion = pi.hProcess;
-                    if (!SetStdHandle(STD_OUTPUT_HANDLE, stdout_save))
-                    {
-                        fatalerror_Win32("Failed to reset stdout for minion");
-                    }
-                    if (!SetStdHandle(STD_INPUT_HANDLE, stdin_save))
-                    {
-                        fatalerror_Win32("Failed to reset stdin for minion");
-                    }
-                    if (!CloseHandle(pi.hThread))
-                    {
-                        fatalerror_Win32("Failed to close the execution thread handle for minion");
+                        //      CloseHandle(pi.hProcess);
+                        //     CloseHandle(pi.hThread);
+
+                        minion = pi.dwProcessId;
+                        hminion = pi.hProcess;
+                        hminion_thread_pi = pi.hThread;
+
+#if 0
+                        if (!SetStdHandle(STD_OUTPUT_HANDLE, stdout_save))
+                        {
+                            fatalerror_Win32("Failed to reset stdout for crm114");
+                        }
+                        if (!SetStdHandle(STD_INPUT_HANDLE, stdin_save))
+                        {
+                            fatalerror_Win32("Failed to reset stdin for crm114");
+                        }
+#endif
+#if 0
+                        if (!CloseHandle(pi.hThread))
+                        {
+                            fatalerror_Win32("Failed to close the execution thread handle for minion");
+                        }
+#endif
                     }
                 }
             }
@@ -781,197 +830,249 @@ readloop:
             if (hminion == NULL)
             {
                 fatalerror_Win32("Couldn't open the existing minion process");
+                status = 0;
             }
-        }
-        //      Now, we're out of the minion for sure.
-        //    so we close the pipe ends we know we won't be using.
-        if (to_minion[0] != 0)
-        {
-            if (!CloseHandle(to_minion[0]))
-            {
-                fatalerror_Win32("Failed to close read pipe for minion");
-            }
-            if (!CloseHandle(from_minion[1]))
-            {
-                fatalerror_Win32("Failed to close write pipe for minion");
-            }
-        }
-        //
-        //   launch "pusher" process to send the buffer to the minion
-        //    (this hint from Dave Soderberg). This avoids the deadly
-        //   embrace situation where both processes are waiting to read
-        //   (or, equally, both processes have written and filled up
-        //   their buffers, and are now held up waiting for the other
-        //   process to empty some space in the output buffer)
-        //
-        if (strlen(inbuf) > 0)
-        {
-            unsigned int hThread;
-            pusherparams pp = {
-                0 };
-            char *inbuf_copy = calloc((inlen + 1), sizeof(inbuf_copy[0]));
-            int i;
-            //Since the pusher thread may continue executing after the
-            //syscall statement has finished, we need to make a copy of
-            //inbuf for the pusher thread to use. The pusher process will
-            //free the memory.
-            for (i = 0; i < inlen; i++)
-                inbuf_copy[i] = inbuf[i];
-            inbuf_copy[inlen] = 0;
-            pp.inbuf = inbuf_copy;
-            pp.inlen = inlen;
-            pp.internal_trace = internal_trace;
-            pp.keep_proc = keep_proc;
-            pp.to_minion = to_minion[1];
-            if (!_beginthreadex(NULL, 0, pusher_proc, &pp, 0, &hThread))
-            {
-                fatalerror_ex(SRC_LOC(),
-                              "Failed to start the pusher thread: "
-                              "error code %d (%s)",
-                              errno,
-                              errno_descr(errno));
-            }
+            hminion_thread_pi = 0;
         }
 
-        //   and see what is in the pipe for us.
-        outbuf[0] = '\000';
-        done = 0;
-        outlen = 0;
-        //   grot grot grot this only works if varnames are not widechars
-        if (strlen(from_var) > 0)
+        if (status)
         {
-            if (async_mode == 0)
+#if 0
+            //      Now, we're out of the minion for sure.
+            //    so we close the pipe ends we know we won't be using.
+            if (to_minion[0] != 0)
             {
-                Sleep(timeout);
-                //   synchronous read- read till we hit EOF, which is read
-                //   returning a char count of zero.
-readloop:
-                if (internal_trace) fprintf(stderr, "SYNCH READ ");
-                Sleep(timeout);
-                charsread = 0;
-
-                if (!ReadFile(from_minion[0],
-                              outbuf + done,
-                              (data_window_size >> SYSCALL_WINDOW_RATIO) - done - 2,
-                              &charsread, NULL))
+                if (!CloseHandle(to_minion[0]))
                 {
-                    fatalerror_Win32("Failed to sync-read any data from the minion");
+                    fatalerror_Win32("Failed to close read pipe for minion");
                 }
-
-                done = done + charsread;
-                if (charsread > 0 && done + 2 < (data_window_size >> SYSCALL_WINDOW_RATIO))
-                    goto readloop;
-                if (done < 0) done = 0;
-                outbuf[done] = '\000';
-                outlen = done;
-            }
-            else
-            {
-                //   we're in 'async' mode. Just grab what we can
-                if (!ReadFile(from_minion[0],
-                              &outbuf[done],
-                              (data_window_size >> SYSCALL_WINDOW_RATIO), &charsread, NULL))
+                if (!CloseHandle(from_minion[1]))
                 {
-                    fatalerror_Win32("Failed to async read any data from the minion");
+                    fatalerror_Win32("Failed to close write pipe for minion");
                 }
+            }
+#endif
 
-                done = charsread;
-                if (done < 0) done = 0;
-                outbuf[done] = '\000';
-                outlen = done;
+            // Ensure the read handle to the pipe for STDOUT is inheritable.
+            status = SetHandleInformation(from_minion[0], HANDLE_FLAG_INHERIT, 1);
+            if (!status)
+            {
+                fatalerror_Win32("Failed to minion pipe #1 attributes");
             }
 
-            //   If the minion process managed to fill our buffer, and we
-            //   aren't "keep"ing it around, OR if the process is "async",
-            //   then we should also launch a sucker process to
-            //   asynchronously eat all of the stuff we couldn't get into
-            //   the buffer.  The sucker proc just reads stuff and throws it
-            //   away asynchronously... and exits when it gets EOF.
+            // Ensure the write handle to the pipe for STDIN is inheritable.
+            status = SetHandleInformation(to_minion[1], HANDLE_FLAG_INHERIT, 1);
+            if (!status)
+            {
+                fatalerror_Win32("Failed to minion pipe #1 attributes");
+            }
+
+
             //
-            if (async_mode || (outlen >= ((data_window_size >> SYSCALL_WINDOW_RATIO) - 2)
-                               && keep_proc == 0))
+            //   launch "pusher" process to send the buffer to the minion
+            //    (this hint from Dave Soderberg). This avoids the deadly
+            //   embrace situation where both processes are waiting to read
+            //   (or, equally, both processes have written and filled up
+            //   their buffers, and are now held up waiting for the other
+            //   process to empty some space in the output buffer)
+            //
+            if (strlen(inbuf) > 0)
             {
                 unsigned int hThread;
-                suckerparams sp = {
-                    0 };
-                sp.from_minion = from_minion[0];
-                sp.timeout = timeout;
-                if (!_beginthreadex(NULL, 0, sucker_proc, &sp, 0, &hThread))
+                pusherparams pp = { 0 };
+                char *inbuf_copy = calloc((inlen + 1), sizeof(inbuf_copy[0]));
+                int i;
+
+                // Since the pusher thread may continue executing after the
+                // syscall statement has finished, we need to make a copy of
+                // inbuf for the pusher thread to use. The pusher process will
+                // free the memory.
+                for (i = 0; i < inlen; i++)
+                    inbuf_copy[i] = inbuf[i];
+                inbuf_copy[inlen] = 0;
+
+                pp.inbuf = inbuf_copy;
+                pp.inlen = inlen;
+                pp.internal_trace = internal_trace;
+                pp.keep_proc = keep_proc;
+                pp.to_minion = to_minion[1];
+                pusher_thread_handle = (HANDLE)_beginthreadex(NULL, 0, pusher_proc, &pp, CREATE_SUSPENDED, &hThread);
+                if (pusher_thread_handle == 0)
                 {
                     fatalerror_ex(SRC_LOC(),
-                                  "Failed to start the sucker thread: "
+                                  "Failed to init the pusher thread: "
                                   "error code %d (%s)",
                                   errno,
                                   errno_descr(errno));
                 }
+                else
+                {
+                    DWORD ret = ResumeThread(pusher_thread_handle);
+                    if (ret < 0)
+                    {
+                        fatalerror_Win32("Failed to start the pusher thread");
+                    }
+                    else
+                    {
+                        // wait until all data has been sent to the child process.
+                        WaitForSingleObject(pusher_thread_handle, INFINITE);
+                    }
+                }
             }
 
-            //  and set the returned value into from_var.
-            if (user_trace)
-                fprintf(stderr, "SYSCALL output: %ld chars ---%s---.\n ",
-                        outlen, outbuf);
-            if (internal_trace)
-                fprintf(stderr, "  storing return str in var %s\n", from_var);
+            //   and see what is in the pipe for us.
+            outbuf[0] = '\000';
+            done = 0;
+            outlen = 0;
 
-            crm_destructive_alter_nvariable(from_var, vlen, outbuf, outlen);
-        }
-
-        //  Record useful minion data, if possible.
-        if (strlen(keep_buf) > 0)
-        {
-            sprintf(exp_keep_buf,
-                    "MINION PROC PID: %ld from-pipe: %p to-pipe: %p",
-                    minion,
-                    from_minion[0],
-                    to_minion[1]);
-            if (internal_trace)
-                fprintf(stderr, "   saving minion state: %s\n", exp_keep_buf);
-            crm_destructive_alter_nvariable(keep_buf, keep_len,
-                                            exp_keep_buf,
-                                            strlen(exp_keep_buf));
-        }
-
-        //      If we're keeping this minion process around, record the useful
-        //      information, like pid, in and out pipes, etc.
-        if (!keep_proc && !async_mode)
-        {
-            DWORD exit_code;
-            if (internal_trace)
-                fprintf(stderr, "No keep, no async, so not keeping minion, closing everything.\n");
-
-            //   no, we're not keeping it around, so close the pipe.
-            //
-            if (!CloseHandle(from_minion[0]))
+            //   grot grot grot this only works if varnames are not widechars
+            if (strlen(from_var) > 0)
             {
-                fatalerror_Win32("Failed to close the read pipe for non-async minion");
-            }
+                if (async_mode == 0)
+                {
+                    Sleep(timeout);
+                    //   synchronous read- read till we hit EOF, which is read
+                    //   returning a char count of zero.
+    readloop:
+                    if (internal_trace) fprintf(stderr, "SYNCH READ ");
+                    Sleep(timeout);
+                    charsread = 0;
 
-            if (WAIT_FAILED == WaitForSingleObject(hminion, INFINITE))
-            {
-                fatalerror_Win32("Failed while waiting for the minion to terminate");
-            }
+                    if (!ReadFile(from_minion[0],
+                                  outbuf + done,
+                                  (data_window_size >> SYSCALL_WINDOW_RATIO) - done - 2,
+                                  &charsread, NULL))
+                    {
+                        fatalerror_Win32("Failed to sync-read any data from the minion");
+                    }
 
-            if (!GetExitCodeProcess(hminion, &exit_code))
-            {
-                fatalerror_Win32("Failed to grab the exit code from the system call");
-            }
-            if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf)))
-            {
-                char exit_value_string[MAX_VARNAME];
+                    done = done + charsread;
+                    if (charsread > 0 && done + 2 < (data_window_size >> SYSCALL_WINDOW_RATIO))
+                        goto readloop;
+                    if (done < 0) done = 0;
+                    outbuf[done] = '\000';
+                    outlen = done;
+                }
+                else
+                {
+                    //   we're in 'async' mode. Just grab what we can
+                    if (!ReadFile(from_minion[0],
+                                  &outbuf[done],
+                                  (data_window_size >> SYSCALL_WINDOW_RATIO), &charsread, NULL))
+                    {
+                        fatalerror_Win32("Failed to async read any data from the minion");
+                    }
+
+                    done = charsread;
+                    if (done < 0) done = 0;
+                    outbuf[done] = '\000';
+                    outlen = done;
+                }
+
+                //   If the minion process managed to fill our buffer, and we
+                //   aren't "keep"ing it around, OR if the process is "async",
+                //   then we should also launch a sucker process to
+                //   asynchronously eat all of the stuff we couldn't get into
+                //   the buffer.  The sucker proc just reads stuff and throws it
+                //   away asynchronously... and exits when it gets EOF.
+                //
+                if (async_mode || (outlen >= ((data_window_size >> SYSCALL_WINDOW_RATIO) - 2)
+                                   && keep_proc == 0))
+                {
+                    unsigned int hThread;
+                    suckerparams sp = { 0 };
+                    sp.from_minion = from_minion[0];
+                    sp.timeout = timeout;
+                    sp.internal_trace = internal_trace;
+                    sp.keep_proc = keep_proc;
+                    sucker_thread_handle = (HANDLE)_beginthreadex(NULL, 0, sucker_proc, &sp, CREATE_SUSPENDED, &hThread);
+                    if (sucker_thread_handle == 0)
+                    {
+                        fatalerror_ex(SRC_LOC(),
+                                      "Failed to start the sucker thread: "
+                                      "error code %d (%s)",
+                                      errno,
+                                      errno_descr(errno));
+                    }
+                    else
+                    {
+                        DWORD ret = ResumeThread(sucker_thread_handle);
+                        if (ret < 0)
+                        {
+                            fatalerror_Win32("Failed to start the sucker thread");
+                        }
+                        else
+                        {
+                            // wait until all data has been fetched from the child process.
+                            WaitForSingleObject(sucker_thread_handle, INFINITE);
+                        }
+                    }
+                }
+
+                //  and set the returned value into from_var.
+                if (user_trace)
+                    fprintf(stderr, "SYSCALL output: %ld chars ---%s---.\n ",
+                            outlen, outbuf);
                 if (internal_trace)
-                    fprintf(stderr, "minion exit code :%d; whacking %s\n",
-                            exit_code,
-                            keep_buf);
-                sprintf(exit_value_string, "DEAD MINION, EXIT CODE: %d",
-                        exit_code);
-                if (keep_len > 0)
-                    crm_destructive_alter_nvariable(keep_buf, keep_len,
-                                                    exit_value_string,
-                                                    strlen(exit_value_string));
+                    fprintf(stderr, "  storing return str in var %s\n", from_var);
+
+                crm_destructive_alter_nvariable(from_var, vlen, outbuf, outlen);
             }
-            if (!CloseHandle(hminion))
+
+            //  Record useful minion data, if possible.
+            if (strlen(keep_buf) > 0)
             {
-                fatalerror_Win32("Failed to close the system call minion handle");
+                sprintf(exp_keep_buf,
+                        "MINION PROC PID: %ld from-pipe: %p to-pipe: %p",
+                        minion,
+                        from_minion[0],
+                        to_minion[1]);
+                if (internal_trace)
+                    fprintf(stderr, "   saving minion state: %s\n", exp_keep_buf);
+                crm_destructive_alter_nvariable(keep_buf, keep_len,
+                                                exp_keep_buf,
+                                                strlen(exp_keep_buf));
+            }
+
+            //      If we're keeping this minion process around, record the useful
+            //      information, like pid, in and out pipes, etc.
+            if (!keep_proc && !async_mode)
+            {
+                DWORD exit_code;
+                if (internal_trace)
+                    fprintf(stderr, "No keep, no async, so not keeping minion, closing everything.\n");
+
+                if (WAIT_FAILED == WaitForSingleObject(hminion, INFINITE))
+                {
+                    fatalerror_Win32("Failed while waiting for the minion to terminate");
+                }
+
+                if (!GetExitCodeProcess(hminion, &exit_code))
+                {
+                    fatalerror_Win32("Failed to grab the exit code from the system call");
+                }
+                if (crm_vht_lookup(vht, keep_buf, strlen(keep_buf)))
+                {
+                    char exit_value_string[MAX_VARNAME];
+                    if (internal_trace)
+                        fprintf(stderr, "minion exit code :%d; whacking %s\n",
+                                exit_code,
+                                keep_buf);
+                    sprintf(exit_value_string, "DEAD MINION, EXIT CODE: %d",
+                            exit_code);
+                    if (keep_len > 0)
+                        crm_destructive_alter_nvariable(keep_buf, keep_len,
+                                                        exit_value_string,
+                                                        strlen(exit_value_string));
+                }
+                if (!CloseHandle(hminion))
+                {
+                    fatalerror_Win32("Failed to close the system call minion handle");
+                }
+                if (hminion_thread_pi != NULL && !CloseHandle(hminion_thread_pi))
+                {
+                    fatalerror_Win32("Failed to close the system call minion handle");
+                }
             }
         }
     }
@@ -980,4 +1081,10 @@ readloop:
 #endif
     return 0;
 }
+
+
+
+
+
+
 

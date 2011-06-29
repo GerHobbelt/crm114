@@ -49,6 +49,7 @@ extern char *inbuf;
 extern char *outbuf;
 extern char *tempbuf;
 
+extern FILE *crm_stdin;
 
 
 
@@ -60,12 +61,12 @@ int crm_microcompiler(CSL_CELL *csl,
 
 //  hash function for variable tables
 #if defined(CRM_WITH_OLD_HASH_FUNCTION)
-unsigned long strnhash(char *str, long len);
+crmhash_t strnhash(const char *str, long len);
 #else
-crmhash_t strnhash(char *str, size_t len);
+crmhash_t strnhash(const char *str, size_t len);
 #endif
 
-crmhash64_t strnhash64(char *str, size_t len);
+crmhash64_t strnhash64(const char *str, size_t len);
 
 //  string translate function - for the TRANSLATE function
 long strntrn(
@@ -177,7 +178,7 @@ long crm_expandvar(char *buf, long maxlen);
 //   it's either stored in, or ought to be stored in (i.e. check for a NULL
 //   VHT cell before use).
 
-long crm_vht_lookup(VHT_CELL **vht, char *vname, long vlen);
+long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen);
 
 
 //     crm_extractflag - given an arbitrary string cmd (start/len)
@@ -251,11 +252,14 @@ unsigned long long crm_flagparse(char *input, long inlen); //  the user input
 
 //     get the next word in the input.  (note- the regex stops only when
 //     one hits a NULL, which may yield a slightly bogus result.
-long crm_nextword(char *input,
+long crm_nextword(const char *input,
                   long inlen,
                   long starthere,
                   long *start,
                   long *len);
+
+int crm_expr_clump_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
+int crm_expr_pmulc_nn(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
 //   The big one - matching...
 int crm_expr_match(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -284,8 +288,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                        char *txt, long start, long len);
 int crm_expr_fscm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         char *txt, long start, long len);
-
-
+int crm_expr_scm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
+                       long txtstart, long txtlen);
 
 //   The bigger one - classifying...
 int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
@@ -303,16 +307,14 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                      char *txt, long start, long len);
 int crm_expr_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                                   char *txt, long start, long len);
-int crm_expr_alt_bit_entropy_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
-                                      char *txt, long start, long len);
 int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           char *txt, long start, long len);
 int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                           char *txt, long start, long len);
 int crm_expr_fscm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                            char *txt, long start, long len);
-
-
+int crm_expr_scm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb, char *txtptr,
+                          long txtstart, long txtlen);
 //  surgically alter a variable
 int crm_expr_alter(CSL_CELL *csl, ARGPARSE_BLOCK *apb);
 
@@ -350,7 +352,7 @@ int crm_statement_parse(char           *in,
                         ARGPARSE_BLOCK *apb);
 
 
-//    and a genric parser routine for parsing a line according
+//    and a generic parser routine for parsing a line according
 //    to the type of qoting done.
 int crm_generic_parse_line(
     char *txt,                       //   the start of the program line
@@ -483,7 +485,7 @@ double normalized_gauss(double x, double s);
 
 
 /* for use with vxxxxerror_ex et al */
-#define SRC_LOC()               __LINE__, __FILE__
+#define SRC_LOC()               __LINE__, __FILE__, __FUNCTION__
 
 #ifdef HAVE_STRINGIZE
 #define CRM_STRINGIFY(e)        # e
@@ -497,28 +499,41 @@ double normalized_gauss(double x, double s);
 
 //  helper routine for untrappable errors
 #define untrappableerror(msg1, msg2)    \
-    untrappableerror_std(__LINE__, __FILE__, msg1, msg2)
+    untrappableerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
 
-void untrappableerror_std(int lineno, const char *srcfile, const char *msg1, const char *msg2);
-void untrappableerror_ex(int lineno, const char *srcfile, const char *msg, ...);
-void untrappableerror_va(int lineno, const char *srcfile, const char *msg, va_list args);
+void untrappableerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2)
+    __attribute__((__noreturn__));
+void untrappableerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
+    __attribute__((__noreturn__, __format__(__printf__, 4, 5)));
+void untrappableerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
+    __attribute__((__noreturn__, __format__(__printf__, 4, 0)));
 
 //  helper routine for fatal errors
 #define fatalerror(msg1, msg2)  \
-    fatalerror_std(__LINE__, __FILE__, msg1, msg2)
+    fatalerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
 
-long fatalerror_std(int lineno, const char *srcfile, const char *msg1, const char *msg2);
-long fatalerror_ex(int lineno, const char *srcfile, const char *msg, ...);
-long fatalerror_va(int lineno, const char *srcfile, const char *msg, va_list args);
+long fatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2);
+long fatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
+    __attribute__((__format__(__printf__, 4, 5)));
+long fatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
+    __attribute__((__format__(__printf__, 4, 0)));
 
 //  helper routine for nonfatal errors
 #define nonfatalerror(msg1, msg2)       \
-    nonfatalerror_std(__LINE__, __FILE__, msg1, msg2)
+    nonfatalerror_std(__LINE__, __FILE__, __FUNCTION__, msg1, msg2)
 
-long nonfatalerror_std(int lineno, const char *srcfile, const char *msg1, const char *msg2);
-long nonfatalerror_ex(int lineno, const char *srcfile, const char *msg, ...);
-long nonfatalerror_va(int lineno, const char *srcfile, const char *msg, va_list args);
+long nonfatalerror_std(int lineno, const char *srcfile, const char *funcname, const char *msg1, const char *msg2);
+long nonfatalerror_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, ...)
+    __attribute__((__format__(__printf__, 4, 5)));
+long nonfatalerror_va(int lineno, const char *srcfile, const char *funcname, const char *msg, va_list args)
+    __attribute__((__format__(__printf__, 4, 0)));
 
+
+/* 
+   Reset the nonfatalerror counters/handlers. This is useful when you run multiple scripts
+   one after the other from within a single crm app, such as crm_test.
+ */
+void reset_nonfatalerrorreporting(void);
 
 
 
@@ -527,34 +542,37 @@ long nonfatalerror_va(int lineno, const char *srcfile, const char *msg, va_list 
 
 extern int trigger_debugger;
 
-void crm_show_assert_msg(int lineno, const char *srcfile, const char *msg);
-void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *msg, const char *extra_msg);
+void crm_show_assert_msg(int lineno, const char *srcfile, const char *funcname, const char *msg);
+void crm_show_assert_msg_ex(int lineno, const char *srcfile, const char *funcname, const char *msg, const char *extra_msg);
 
 #define CRM_ASSERT(expr)                                                        \
-    do                                                                            \
-    {                                                                             \
-        if (!(expr))                                                                \
-        {                                                                           \
-            crm_show_assert_msg(__LINE__, __FILE__, CRM_STRINGIFY(expr));             \
-        }                                                                           \
+    do                                                                          \
+    {                                                                           \
+        if (!(expr))                                                            \
+        {                                                                       \
+            crm_show_assert_msg(__LINE__, __FILE__, __FUNCTION__,               \
+                CRM_STRINGIFY(expr));                                           \
+        }                                                                       \
     } while (0)
 
 #define CRM_ASSERT_EX(expr, msg)                                                \
-    do                                                                            \
-    {                                                                             \
-        if (!(expr))                                                                \
-        {                                                                           \
-            crm_show_assert_msg_ex(__LINE__, __FILE__, CRM_STRINGIFY(expr), (msg));   \
-        }                                                                           \
+    do                                                                          \
+    {                                                                           \
+        if (!(expr))                                                            \
+        {                                                                       \
+            crm_show_assert_msg_ex(__LINE__, __FILE__, __FUNCTION__,            \
+                CRM_STRINGIFY(expr), (msg));                                    \
+        }                                                                       \
     } while (0)
 
 #define CRM_VERIFY(expr)                                                        \
-    do                                                                            \
-    {                                                                             \
-        if (!(expr))                                                                \
-        {                                                                           \
-            crm_show_assert_msg(__LINE__, __FILE__, CRM_STRINGIFY(expr));             \
-        }                                                                           \
+    do                                                                          \
+    {                                                                           \
+        if (!(expr))                                                            \
+        {                                                                       \
+            crm_show_assert_msg(__LINE__, __FILE__, __FUNCTION__,               \
+                CRM_STRINGIFY(expr));                                           \
+        }                                                                       \
     } while (0)
 
 #else
@@ -601,12 +619,12 @@ const char *Win32_syserr_descr(DWORD errorcode);
 #define fatalerror_Win32(msg)                                                                                   \
     fatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
 
-static inline void fatalerror_Win32_(int lineno, const char *file, const char *msg)
+static inline void fatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg)
 {
     DWORD error = GetLastError();
     const char *errmsg = Win32_syserr_descr(error);
 
-    fatalerror_ex(lineno, file, msg,
+    fatalerror_ex(lineno, file, funcname, msg,
                   (long)error,
                   (long)error,
                   errmsg);
@@ -616,12 +634,12 @@ static inline void fatalerror_Win32_(int lineno, const char *file, const char *m
 #define nonfatalerror_Win32(msg)                                                                                        \
     nonfatalerror_Win32_(SRC_LOC(), msg ": system error %ld(%lx:%s)")
 
-static inline void nonfatalerror_Win32_(int lineno, const char *file, const char *msg)
+static inline void nonfatalerror_Win32_(int lineno, const char *file, const char *funcname, const char *msg)
 {
     DWORD error = GetLastError();
     const char *errmsg = Win32_syserr_descr(error);
 
-    nonfatalerror_ex(lineno, file, msg,
+    nonfatalerror_ex(lineno, file, funcname, msg,
                      (long)error,
                      (long)error,
                      errmsg);
@@ -667,6 +685,8 @@ void free_regex_cache(void);
 
 // write count bytes of val val to file dst
 int file_memset(FILE *dst, unsigned char val, size_t count);
+
+const char *skip_path(const char *srcfile);
 
 
 

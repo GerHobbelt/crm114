@@ -7254,10 +7254,12 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
+m4_include([m4/ac___function___c99_vpredef_vars.m4])
 m4_include([m4/ac_c_long_long.m4])
 m4_include([m4/ac_environ.m4])
 m4_include([m4/ac_func_memmove.m4])
 m4_include([m4/ac_func_snprintf.m4])
+m4_include([m4/ac_nsec_stat_fields.m4])
 m4_include([m4/ax_cflags_gcc_option.m4])
 m4_include([m4/ax_cflags_warn_all.m4])
 m4_include([m4/ax_diff_option.m4])

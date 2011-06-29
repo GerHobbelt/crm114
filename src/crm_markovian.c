@@ -69,7 +69,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     struct stat statbuf;        //  for statting the hash file
     long hfsize;                //  size of the hash file
     FEATUREBUCKET_TYPE *hashes; //  the text of the hash file
-    unsigned long hashpipe[MARKOVIAN_WINDOW_LEN + 1];
+    crmhash_t hashpipe[MARKOVIAN_WINDOW_LEN + 1];
     //
     regex_t regcb;
     regmatch_t match[5];    //  we only care about the outermost match
@@ -79,8 +79,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long microgroom;
     long max_feature_terms;   //  how many terms do we actually get per word?
     long fev;
-    long learns_index;
-    long features_index;
+    crmhash_t learns_index;
+    crmhash_t features_index;
 
     //    seen_features - for UNIQUEness tests
     long unique_mode;
@@ -185,8 +185,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                              "\n Couldn't open your new CSS file %s for writing; errno=%d(%s)\n",
                              learnfilename,
                              errno,
-                             errno_descr(errno)
-            );
+                             errno_descr(errno)            );
 		free(learnfilename);
 		return fev;
 /*
@@ -229,8 +228,10 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //
     hfsize = statbuf.st_size;
     if (user_trace)
+	{
         fprintf(stderr, "Sparse spectra file %s has length %ld bins\n",
                 learnfilename, hfsize / sizeof(FEATUREBUCKET_TYPE));
+	}
 
     //
     //         mmap the hash file into memory so we can bitwhack it
@@ -273,9 +274,9 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //       We use the reserved h2 == 0 setup for the learncount.
     //
     {
-        char *litf = "Learnings in this file";
-        char *fitf = "Features in this file";
-        unsigned long hcode, h1, h2;
+        const char *litf = "Learnings in this file";
+        const char *fitf = "Features in this file";
+        crmhash_t hcode, h1, h2;
         //
         hcode = strnhash(litf, strlen(litf));
         h1 = hcode % hfsize;
@@ -304,7 +305,9 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 learns_index = h1;
                 if (sense > 0)
-                    hashes[h1].value = hashes[h1].value + sense;
+				{
+                    hashes[h1].value += sense;
+				}
                 else
                 {
                     if (hashes[h1].value + sense > 0)
@@ -313,8 +316,10 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         hashes[h1].value = 0;
                 }
                 if (user_trace)
-                    fprintf(stderr, "This file has had %ld documents learned!\n",
+				{
+                    fprintf(stderr, "This file has had %lu documents learned!\n",
                             hashes[h1].value);
+				}
             }
         }
         hcode = strnhash(fitf, strlen(fitf));
@@ -344,8 +349,10 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 features_index = h1;
                 if (user_trace)
-                    fprintf(stderr, "This file has had %ld features learned!\n",
+				{
+                    fprintf(stderr, "This file has had %lu features learned!\n",
                             hashes[h1].value);
+				}
             }
         }
     }
@@ -357,8 +364,10 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
         seen_features = calloc(hfsize, sizeof(seen_features[0]));
         if (seen_features == NULL)
+		{
             untrappableerror(" Couldn't allocate enough memory to keep track",
                              "of nonunique features.  This is deadly");
+		}
     }
 
 
@@ -414,7 +423,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     textmaxoffset = textoffset + vht[vhtindex]->vlen;
 #endif
 
-    //  No need to do any parsing of a box restriciton, as those
+    //  No need to do any parsing of a box restriction, as those
     //   are passed in to us from the caller.
     textoffset = txtstart;
     textmaxoffset = txtstart + txtlen;
@@ -506,7 +515,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 fprintf(stderr, "  Hashpipe contents: ");
                 for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
-                    fprintf(stderr, " %ld", hashpipe[h]);
+                    fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
                 fprintf(stderr, "\n");
             }
 
@@ -519,8 +528,8 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (1) //  we always run the hashpipe now, even if it's
                  //  just full of 0xDEADBEEF.  (was i >=5)
             {
-                unsigned long hindex;
-                unsigned long h1, h2;
+                crmhash_t hindex;
+                crmhash_t h1, h2;
                 long th = 0;     // a counter used for TSS tokenizing
                 unsigned long incrs;
                 long j;
@@ -549,7 +558,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                     //   this is the secondary (crosscut) hash, used for
                     //   confirmation of the key value.
-                    h2 =   hashpipe[0]
+                    h2 = hashpipe[0]
                          + (hashpipe[1] * ((j >> 0) & 0x0001))
                          + (hashpipe[2] * ((j >> 1) & 0x0001))
                          + (hashpipe[3] * ((j >> 2) & 0x0001))
@@ -572,7 +581,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                     //   this is the secondary (crosscut) hash, used for
                     //   confirmation of the key value.
-                    h2 =   hashpipe[0] * hashpipe[0]
+                    h2 = hashpipe[0] * hashpipe[0]
                          + (hashpipe[1] * hashpipe[1] * ((j >> 0) & 0x0001))
                          + (hashpipe[2] * hashpipe[2] * ((j >> 1) & 0x0001))
                          + (hashpipe[3] * hashpipe[3] * ((j >> 2) & 0x0001))
@@ -597,7 +606,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     //   this is the secondary (crosscut) hash, used for
                     //   confirmation of the key value.
                     th = 2;
-                    h2 =   hashpipe[0];
+                    h2 = hashpipe[0];
                     if ((j >> 0) & 0x0001)
                     {
                         h2 = h2 + hashpipe[1] * th;
@@ -637,7 +646,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     //   this is the secondary (crosscut) hash, used for
                     //   confirmation of the key value.  Note that it shares
                     //   no common coefficients with the previous hash.
-                    h2 =    7 * hashpipe[0]
+                    h2 = 7 * hashpipe[0]
                          + (13 * hashpipe[1] * ((j >> 0) & 0x0001))
                          + (29 * hashpipe[2] * ((j >> 1) & 0x0001))
                          + (51 * hashpipe[3] * ((j >> 2) & 0x0001))
@@ -655,7 +664,7 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     //     2nd and onward terms are variable.
                     for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
                     {
-                        h1 = h1 + hashpipe[h] * hctable[h * 2] * ((j >> (h - 1)) & 0x0001);
+                        h1 += hashpipe[h] * hctable[h * 2] * ((j >> (h - 1)) & 0x0001);
                     }
                     hindex = h1;
                     hindex = hindex % hfsize;
@@ -666,14 +675,16 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     //     terms 1 through N are variable
                     for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
                     {
-                        h2 = h2 + hashpipe[h] * hctable[h * 2 + 1] * ((j >> (h - 1)) & 0x0001);
+                        h2 += hashpipe[h] * hctable[h * 2 + 1] * ((j >> (h - 1)) & 0x0001);
                     }
                     if (h2 == 0) h2 = 0xDEADBEEF;
 
 #endif
                     if (internal_trace)
-                        fprintf(stderr, "Polynomial %ld has h1:%ld  h2: %ld\n",
-                                j, h1, h2);
+					{
+                        fprintf(stderr, "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
+                                j, (unsigned long)h1, (unsigned long)h2);
+					}
 
                     //
                     //   we now look at both the primary (h1) and
@@ -731,11 +742,11 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     {
                         if (hashes[hindex].value == 0)
                         {
-                            fprintf(stderr, "New feature at %ld\n", hindex);
+                            fprintf(stderr, "New feature at %ld\n", (long)hindex);
                         }
                         else
                         {
-                            fprintf(stderr, "Old feature at %ld\n", hindex);
+                            fprintf(stderr, "Old feature at %ld\n", (long)hindex);
                         }
                     }
                     //      always rewrite hash and key, as they may be incorrect
@@ -750,15 +761,22 @@ int crm_expr_markov_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (!seen_features || (seen_features[hindex] == 0))
                     {
                         if (seen_features)
-                            seen_features[hindex]++;
+						{
+							seen_features[hindex]++;
+						}
                         if (sense > 0
-                            && hashes[hindex].value + sense >=
-                            FEATUREBUCKET_VALUE_MAX - 1)
+                            && hashes[hindex].value + sense >= FEATUREBUCKET_VALUE_MAX - 1)
+						{
                             hashes[hindex].value = FEATUREBUCKET_VALUE_MAX - 1;
+						}
                         else if (sense < 0 && hashes[hindex].value <= -sense)
-                            hashes[hindex].value = 0;
-                        else
-                            hashes[hindex].value += sense;
+						{
+							hashes[hindex].value = 0;
+						}
+						else
+						{
+							hashes[hindex].value += sense;
+						}
                     }
                 }
             }
@@ -837,7 +855,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     struct stat statbuf;    //  for statting the hash file
                             //  longest association set in the hashing
-    unsigned long hashpipe[MARKOVIAN_WINDOW_LEN + 1];
+    crmhash_t hashpipe[MARKOVIAN_WINDOW_LEN + 1];
     regex_t regcb;
     regmatch_t match[5];    //  we only care about the outermost match
 
@@ -845,10 +863,17 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     unsigned long totalcount = 0;
 
     double cpcorr[MAX_CLASSIFIERS];        // corpus correction factors
+#if defined(GER)
     hitcount_t hits[MAX_CLASSIFIERS];      // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
     long totalfeatures;                    //  total features
     hitcount_t htf;                        // hits this feature got.
+#else
+  double hits[MAX_CLASSIFIERS];  // actual hits per feature per classifier
+  long totalhits[MAX_CLASSIFIERS];  // actual total hits per classifier
+  long totalfeatures;   //  total features
+  double htf;             // hits this feature got.
+#endif
     double tprob;                          //  total probability in the "success" domain.
 
     //  double textlen;    //  text length  - rougly corresponds to
@@ -1384,7 +1409,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 fprintf(stderr, "  Hashpipe contents: ");
                 for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
-                    fprintf(stderr, " %ld", hashpipe[h]);
+                    fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
                 fprintf(stderr, "\n");
             }
 
@@ -1396,10 +1421,10 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (1) //  we init with 0xDEADBEEF, so the pipe is always full (i >=5)
             {
                 int j;
-                long l;
-                unsigned th = 0;  //  a counter used only in TSS hashing
-                unsigned long hindex;
-                unsigned long h1, h2;
+                int l;
+                unsigned int th = 0;  //  a counter used only in TSS hashing
+                crmhash_t hindex;
+                crmhash_t h1, h2;
                 int skip_this_feature = 0;
                 //unsigned long good, evil;
                 //
@@ -2011,7 +2036,7 @@ int crm_expr_markov_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 #define ARNE_OPTIMIZATION
 #ifdef ARNE_OPTIMIZATION
-                        if (not_microgroom && ((long)htf) == 0 && j == 0)
+                        if (not_microgroom && ( /* dangerous, should have (long) cast */ htf) == 0 && j == 0)
                             j = 999999;
 #endif
 
@@ -2153,6 +2178,7 @@ classify_end_regex_loop:
                 strcat(stext, buf);
             for (k = 0; k < maxhash; k++)
             {
+	  long m;
                 remainder = 10 * DBL_MIN;
                 for (m = 0; m < maxhash; m++)
                     if (k != m)

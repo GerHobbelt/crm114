@@ -9,7 +9,7 @@
 
 
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT(CRM114, 20070807-BlameTheInterns, crm114-general@lists.sourceforge.net)
+AC_INIT(CRM114, 20070815-BlameBadData, crm114-general@lists.sourceforge.net)
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR(m4)
@@ -408,6 +408,7 @@ AC_CHECK_HEADERS(crt_externs.h)
 
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_PREDEF___FUNCTION__
 AC_C_CONST
 AC_C_INLINE
 AC_C_VOLATILE
@@ -423,6 +424,8 @@ AC_C_CHAR_UNSIGNED
 AC_C_LONG_LONG
 AC_C_STRINGIZE
 AC_CHECK_SIZEOF([long int])
+AC_CHECK_SIZEOF([int])
+AC_CHECK_SIZEOF([long long int])
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
 AC_TYPE_INT64_T
@@ -438,6 +441,8 @@ AC_TYPE_UINT8_T
 AC_CHECK_TYPES(clock_t)
 AC_CHECK_TYPES(pid_t)
 AC_CHECK_TYPES(mode_t)
+AC_CHECK_TYPES([struct stat])
+AC_NSEC_STAT_FIELDS
 
 # check for a environ/__environ global var
 AC_ENVIRON

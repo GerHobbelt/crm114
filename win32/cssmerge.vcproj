@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="cssutil"
-	ProjectGUID="{4A077629-8590-434C-9486-0D069DF341A3}"
-	RootNamespace="cssutil"
+	Name="cssmerge"
+	ProjectGUID="{4A077629-8590-434C-9486-0D069DF341A5}"
+	RootNamespace="cssmerge"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\libtre\tre\lib;..\..\libtre\tre\win32"
+				AdditionalIncludeDirectories="..\..\libtre\tre\lib;..\..\libtre\tre\win32;..\src;."
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -70,11 +70,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies=" msvcprtd.lib"
-				OutputFile="$(OutDir)/cssutil.exe"
+				OutputFile="$(OutDir)/cssmerge.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
-				ProgramDatabaseFile="$(OutDir)/cssutil.pdb"
+				ProgramDatabaseFile="$(OutDir)/cssmerge.pdb"
 				SubSystem="1"
 				TargetMachine="1"
 				Profile="true"
@@ -137,7 +137,7 @@
 				FavorSizeOrSpeed="1"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\..\libtre\tre\lib;..\..\libtre\tre\win32"
+				AdditionalIncludeDirectories="..\..\libtre\tre\lib;..\..\libtre\tre\win32;..\src;."
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -162,7 +162,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies=" msvcprt.lib"
-				OutputFile="$(OutDir)/cssutil.exe"
+				OutputFile="$(OutDir)/cssmerge.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -208,19 +208,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\crm_css_maintenance.c"
+				RelativePath="..\src\crm_generic_port.c"
 				>
 			</File>
 			<File
-				RelativePath=".\crm_generic_port.c"
+				RelativePath="..\src\crm_str_funcs.c"
 				>
 			</File>
 			<File
-				RelativePath=".\crm_str_funcs.c"
-				>
-			</File>
-			<File
-				RelativePath=".\crm_util_errorhandlers.c"
+				RelativePath="..\src\crm_util_errorhandlers.c"
 				>
 			</File>
 			<File
@@ -228,7 +224,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\cssutil.c"
+				RelativePath="..\src\cssmerge.c"
 				>
 			</File>
 			<File
@@ -246,23 +242,23 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\crm114.h"
+				RelativePath="..\src\crm114.h"
 				>
 			</File>
 			<File
-				RelativePath=".\crm114_config.h"
+				RelativePath="..\src\crm114_config.h"
 				>
 			</File>
 			<File
-				RelativePath=".\crm114_osbf.h"
+				RelativePath="..\src\crm114_osbf.h"
 				>
 			</File>
 			<File
-				RelativePath=".\crm114_structs.h"
+				RelativePath="..\src\crm114_structs.h"
 				>
 			</File>
 			<File
-				RelativePath=".\crm114_sysincludes.h"
+				RelativePath="..\src\crm114_sysincludes.h"
 				>
 			</File>
 			<File

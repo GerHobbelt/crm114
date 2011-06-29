@@ -242,7 +242,6 @@ invoke_top:
                           csl->cstmt,
                           width,
                           &csl->filetext[csl->mct[csl->cstmt]->start],
-                          width,
                           (csl->mct[csl->cstmt + 1]->start - csl->mct[csl->cstmt]->start > width
                            ? "(...truncated)"
                            : "")
@@ -562,15 +561,11 @@ invoke_top:
         break;
 
     case CRM_MATCH:
-        {
             crm_expr_match(csl, apb);
-        }
         break;
 
     case CRM_OUTPUT:
-        {
             crm_expr_output(csl, apb);
-        }
         break;
 
     case CRM_WINDOW:
@@ -582,15 +577,11 @@ invoke_top:
         break;
 
     case CRM_ALTER:
-        {
             crm_expr_alter(csl, apb);
-        }
         break;
 
     case CRM_EVAL:
-        {
             crm_expr_eval(csl, apb);
-        }
         break;
 
     case CRM_HASH:
@@ -606,7 +597,7 @@ invoke_top:
             long vns, vnl;
             char newstr[MAX_VARNAME];
             long newstrlen;
-            unsigned long hval;     //   hash value
+            crmhash_t hval;     //   hash value
 
             if (user_trace)
                 fprintf(stderr, "Executing a HASHing\n");
@@ -639,13 +630,13 @@ invoke_top:
 
             //    The pattern is now expanded, we can hash it to obscure meaning.
             hval = strnhash(tempbuf, newstrlen);
-            sprintf(newstr, "%08lX", hval);
+            sprintf(newstr, "%08lX", (unsigned long)hval);
 
             if (internal_trace)
             {
                 fprintf(stderr, "String: '%s'\n hashed to: %08lX\n",
                         tempbuf,
-                        hval);
+                        (unsigned long)hval);
             }
 
             //    and stuff the new value in.
@@ -655,20 +646,24 @@ invoke_top:
         break;
 
     case CRM_TRANSLATE:
-        {
             crm_expr_translate(csl, apb);
-        }
         break;
 
     case CRM_LEARN:
-        {
             crm_expr_learn(csl, apb);
-        }
         break;
 
         //   we had to split out classify- it was just too big.
     case CRM_CLASSIFY:
         crm_expr_classify(csl, apb);
+        break;
+
+    case CRM_CLUMP:
+		crm_expr_clump_nn(csl, apb);
+        break;
+
+    case CRM_PMULC:
+		crm_expr_pmulc_nn(csl, apb);
         break;
 
     case CRM_ISOLATE:

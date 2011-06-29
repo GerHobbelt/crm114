@@ -10,8 +10,7 @@
 #elif defined (WIN32)
 #include "config_win32.h"
 #else
-#error\
-    "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."
+#error "please run ./configure in the crm114 root directory. You should have a config.h by then or you're on an unsupported system where you've got to roll your own."
 #endif
 
 #ifdef WIN32
@@ -216,17 +215,17 @@
 #else
 #include "getopt.h"
 #endif
+
 #ifdef HAVE_GETOPT_EX_H
 #include <getopt_ex.h>
-#else
+#elif defined(WIN32)
 #include "getopt_ex.h"
 #endif
 
 
 /* REs support */
 #ifndef HAVE_REGEX
-#error\
-    "crm114 MUST be compiled with regex support. It's a regex mutilator, remember? Try to run './configure --disable-extended-compile-checks --with-regex=tre' and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+#error "crm114 MUST be compiled with regex support. It's a regex mutilator, remember? Try to run './configure --disable-extended-compile-checks --with-regex=tre' and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 #if defined (HAVE_TRE_REGEX)
@@ -236,8 +235,7 @@
 #elif defined (HAVE_REGEX_H)
 #include <regex.h>
 #else
-#error\
-    "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+#error "the TRE regex library doesn't seem to come with any known headerfile?  :-S   Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 #else
@@ -245,19 +243,44 @@
 #if defined (HAVE_REGEX_H)
 #include <regex.h>
 #else
-#error\
-    "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
+#error "your regex library of choice doesn't seem to come with any known headerfile?  :-S       Try to add '--with-regex-includes=DIR' to your ./configure and run make clean && make again. Please report your findings at the developer mailing list: crm114-developers@lists.sourceforge.net"
 #endif
 
 #endif
 
+
+
+
+/* This feature is available in gcc versions 2.5 and later.  */
+#ifndef __attribute__
+#if defined(__GNUC__)
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 5) || __STRICT_ANSI__
+#define __attribute__(spec) /* empty */
+#endif
+/* The __-protected variants of `format' and `printf' attributes
+   are accepted by gcc versions 2.6.4 (effectively 2.7) and later.  */
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#define __format__    format
+#define __printf__    printf
+#define __noreturn__  noreturn
+#endif
+#else
+#define __attribute__(spec) /* empty */
+#endif /*  defined(__GNUC__) */
+#endif /* __attribute__ */
 
 
 
 /* this is for non-MS systems; goes with O_RDWR, O_RDONLY, etc. */
 #ifndef O_BINARY
+#ifndef _O_BINARY
 #define O_BINARY 0
+#else
+#define O_BINARY _O_BINARY
 #endif
+#endif
+
+
 
 #if defined (HAVE__SNPRINTF) && !defined (HAVE_SNPRINTF)
 #undef snprintf

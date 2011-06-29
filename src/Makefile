@@ -47,10 +47,13 @@ DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in $(srcdir)/diff_em.sh.in \
 	$(srcdir)/indent.sh.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ac_c_long_long.m4 \
+am__aclocal_m4_deps =  \
+	$(top_srcdir)/m4/ac___function___c99_vpredef_vars.m4 \
+	$(top_srcdir)/m4/ac_c_long_long.m4 \
 	$(top_srcdir)/m4/ac_environ.m4 \
 	$(top_srcdir)/m4/ac_func_memmove.m4 \
 	$(top_srcdir)/m4/ac_func_snprintf.m4 \
+	$(top_srcdir)/m4/ac_nsec_stat_fields.m4 \
 	$(top_srcdir)/m4/ax_cflags_gcc_option.m4 \
 	$(top_srcdir)/m4/ax_cflags_warn_all.m4 \
 	$(top_srcdir)/m4/ax_diff_option.m4 \
@@ -66,21 +69,23 @@ PROGRAMS = $(bin_PROGRAMS)
 am__objects_1 = crm_compiler.$(OBJEXT) crm_errorhandlers.$(OBJEXT) \
 	crm_math_exec.$(OBJEXT) crm_var_hash_table.$(OBJEXT) \
 	crm_expandvar.$(OBJEXT) crm_stmt_parser.$(OBJEXT) \
-	crm_expr_alter.$(OBJEXT) crm_expr_match.$(OBJEXT) \
-	crm_css_maintenance.$(OBJEXT) crm_markovian.$(OBJEXT) \
-	crm_osb_bayes.$(OBJEXT) crm_osb_hyperspace.$(OBJEXT) \
-	crm_correlate.$(OBJEXT) crm_osb_winnow.$(OBJEXT) \
-	crm_winnow_maintenance.$(OBJEXT) crm_osbf_bayes.$(OBJEXT) \
-	crm_osbf_maintenance.$(OBJEXT) crm_bit_entropy.$(OBJEXT) \
-	crm_expr_window.$(OBJEXT) crm_expr_isolate.$(OBJEXT) \
-	crm_expr_file_io.$(OBJEXT) crm_expr_syscall.$(OBJEXT) \
-	crm_expr_classify.$(OBJEXT) crm_expr_translate.$(OBJEXT) \
-	crm_exec_engine.$(OBJEXT) crm_debugger.$(OBJEXT) \
-	crm_str_funcs.$(OBJEXT) crm_preprocessor.$(OBJEXT) \
-	crmregex_gnu.$(OBJEXT) crmregex_tre.$(OBJEXT) \
-	crm_util_errorhandlers.$(OBJEXT) crm_stats.$(OBJEXT) \
-	crm_expr_sks.$(OBJEXT) crm_expr_svm.$(OBJEXT) \
-	crm_expr_fscm.$(OBJEXT) crm_generic_port.$(OBJEXT)
+	crm_vector_tokenize.$(OBJEXT) crm_expr_alter.$(OBJEXT) \
+	crm_expr_match.$(OBJEXT) crm_css_maintenance.$(OBJEXT) \
+	crm_markovian.$(OBJEXT) crm_osb_bayes.$(OBJEXT) \
+	crm_osb_hyperspace.$(OBJEXT) crm_correlate.$(OBJEXT) \
+	crm_osb_winnow.$(OBJEXT) crm_winnow_maintenance.$(OBJEXT) \
+	crm_osbf_bayes.$(OBJEXT) crm_osbf_maintenance.$(OBJEXT) \
+	crm_bit_entropy.$(OBJEXT) crm_expr_window.$(OBJEXT) \
+	crm_expr_isolate.$(OBJEXT) crm_expr_file_io.$(OBJEXT) \
+	crm_expr_syscall.$(OBJEXT) crm_expr_classify.$(OBJEXT) \
+	crm_expr_translate.$(OBJEXT) crm_exec_engine.$(OBJEXT) \
+	crm_debugger.$(OBJEXT) crm_str_funcs.$(OBJEXT) \
+	crm_preprocessor.$(OBJEXT) crmregex_gnu.$(OBJEXT) \
+	crmregex_tre.$(OBJEXT) crm_util_errorhandlers.$(OBJEXT) \
+	crm_stats.$(OBJEXT) crm_expr_sks.$(OBJEXT) \
+	crm_expr_svm.$(OBJEXT) crm_expr_fscm.$(OBJEXT) \
+	crm_strcompress.$(OBJEXT) crm_expr_clump_nn.$(OBJEXT) \
+	crm_generic_port.$(OBJEXT)
 am__objects_2 =
 am_crm114_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	crm_main.$(OBJEXT)
@@ -211,7 +216,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-ISODATE = 2007-08-12
+ISODATE = 2007-08-16
 LDFLAGS = 
 LIBOBJS = 
 LIBS = -lm  -ltre -lreadline
@@ -225,9 +230,9 @@ OBJEXT = o
 PACKAGE = crm114
 PACKAGE_BUGREPORT = crm114-general@lists.sourceforge.net
 PACKAGE_NAME = CRM114
-PACKAGE_STRING = CRM114 20070807-BlameTheInterns
+PACKAGE_STRING = CRM114 20070815-BlameBadData
 PACKAGE_TARNAME = crm114
-PACKAGE_VERSION = 20070807-BlameTheInterns
+PACKAGE_VERSION = 20070815-BlameBadData
 PATH_SEPARATOR = :
 PCRE_CONFIG = 
 POW_LIB = 
@@ -235,6 +240,7 @@ RANLIB = ranlib
 SED = /usr/bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
+#PREV_VERSION = 20070807-BlameTheInterns
 #PREV_VERSION = 20070505-BlameIdiocy
 #PREV_VERSION = 20070428-BlameSpamConf
 #PREV_VERSION = 20061103-BlameDalkey
@@ -253,7 +259,7 @@ SHELL = /bin/sh
 # VERSION += [$(TRE_TARFILE)]
 SILENT = @
 STRIP = 
-TAR_FILENAME_POSTFIX = Ger-138
+TAR_FILENAME_POSTFIX = Ger-170
 TRE_CONFIG = no
 
 #
@@ -264,7 +270,7 @@ TRE_CONFIG = no
 #     What version is this software (PLEASE don't change this just 
 #     to mess with my brain. - wsy)
 #
-VERSION = 20070807-BlameTheInterns
+VERSION = 20070815-BlameBadData
 
 # VER_SUFFIX defines a version suffix for our installed executables, 
 # handy when you want many versions of CRM114 coexisting.
@@ -324,6 +330,7 @@ zip = /usr/bin/zip
 DISTCLEANFILES = 
 CLEANFILES = *.o *~ *.bak
 ARCHIVE_BASE_NAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-$(TAR_FILENAME_POSTFIX)
+PREV_VERSION = 20070810-BlameTheSegfault
 #        uncomment the next line if you want to "strip" the debugger info 
 #        from the binaries when installing.  This speeds up load, but 
 #        you won't be able to submit meaningful CRM114 engine bug reports.
@@ -343,7 +350,7 @@ E = $(SILENT) $(ECHO)
 #
 CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_math_exec.c crm_var_hash_table.c crm_expandvar.c \
-	crm_stmt_parser.c \
+	crm_stmt_parser.c crm_vector_tokenize.c \
 	crm_expr_alter.c crm_expr_match.c crm_css_maintenance.c \
 	crm_markovian.c crm_osb_bayes.c crm_osb_hyperspace.c \
 	crm_correlate.c crm_osb_winnow.c crm_winnow_maintenance.c \
@@ -354,14 +361,15 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
 	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
 	crm_expr_svm.c crm_expr_fscm.c \
+	crm_strcompress.c crm_expr_clump_nn.c \
 	crm_generic_port.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
-	crm114.h crm114_osbf.h config.h
+	crm114.h crm114_osbf.h crm_expr_clump_nn.h config.h 
 
 OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
-	crm_stmt_parser.o \
+	crm_stmt_parser.o crm_vector_tokenize.o \
 	crm_expr_alter.o crm_expr_match.o crm_css_maintenance.o \
 	crm_markovian.o crm_osb_bayes.o crm_osb_hyperspace.o \
 	crm_correlate.o crm_osb_winnow.o crm_winnow_maintenance.o \
@@ -371,6 +379,7 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
 	crm_preprocessor.o \
 	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
+	crm_strcompress.o crm_expr_clump_nn.o \
 	crm_generic_port.o
 
 UTILFILES = crm_main.c osbf-util.c cssutil.c cssdiff.c cssmerge.c 
@@ -415,11 +424,6 @@ TEXTFILES = COLOPHON.txt pad.dat \
 	megatest.sh megatest_knowngood.log megatest_knowngood.orginal.log 
 
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
-	config_win32.h crm114.sln crm114.vcproj cssdiff.vcproj osbf-util.vcproj \
-	resource.h crm114.ico cssmerge.vcproj cssutil.vcproj \
-	getopt.h getopt_ex.h getopt.c getopt_ex.c \
-	crm_win32_port.c \
-	megatest.bat crm114rc.h crm114rc.rc \
 	$(UTILFILES) \
 	$(CRMFILES) \
 	$(TEXTFILES)
@@ -537,6 +541,7 @@ include ./$(DEPDIR)/crm_exec_engine.Po
 include ./$(DEPDIR)/crm_expandvar.Po
 include ./$(DEPDIR)/crm_expr_alter.Po
 include ./$(DEPDIR)/crm_expr_classify.Po
+include ./$(DEPDIR)/crm_expr_clump_nn.Po
 include ./$(DEPDIR)/crm_expr_file_io.Po
 include ./$(DEPDIR)/crm_expr_fscm.Po
 include ./$(DEPDIR)/crm_expr_isolate.Po
@@ -559,8 +564,10 @@ include ./$(DEPDIR)/crm_preprocessor.Po
 include ./$(DEPDIR)/crm_stats.Po
 include ./$(DEPDIR)/crm_stmt_parser.Po
 include ./$(DEPDIR)/crm_str_funcs.Po
+include ./$(DEPDIR)/crm_strcompress.Po
 include ./$(DEPDIR)/crm_util_errorhandlers.Po
 include ./$(DEPDIR)/crm_var_hash_table.Po
+include ./$(DEPDIR)/crm_vector_tokenize.Po
 include ./$(DEPDIR)/crm_winnow_maintenance.Po
 include ./$(DEPDIR)/crmregex_gnu.Po
 include ./$(DEPDIR)/crmregex_tre.Po
@@ -866,6 +873,9 @@ crm_expr_syscall.o: crm_expr_syscall.c \
 crm_expr_classify.o: crm_expr_classify.c \
 	$(HFILES)
 
+crm_expr_clump_nn.o: crm_expr_clump_nn.c \
+	$(HFILES)
+
 crm_expr_translate.o: crm_expr_translate.c \
 	$(HFILES)
 
@@ -896,6 +906,9 @@ crm_osbf_bayes.o: crm_osbf_bayes.c \
 crm_osb_hyperspace.o: crm_osb_hyperspace.c \
 	$(HFILES)
 
+crm_strcompress.o: crm_strcompress.c \
+	$(HFILES)
+
 crm_expr_sks.o: crm_expr_sks.c \
 	$(HFILES)
 
@@ -924,6 +937,9 @@ crm_debugger.o: crm_debugger.c \
 	$(HFILES)
 
 crm_str_funcs.o: crm_str_funcs.c \
+	$(HFILES)
+
+crm_vector_tokenize.o: crm_vector_tokenize.c \
 	$(HFILES)
 
 crmregex_tre.o: crmregex_tre.c \
@@ -1210,15 +1226,31 @@ diff: diff_em.sh
 	-(sh ./diff_em.sh );
 
 dist-diff: diff
-	-rm -f $(ARCHIVE_BASE_NAME).diff.7z
-	-rm -f $(ARCHIVE_BASE_NAME).diff.tar.gz
-	-rm -f $(ARCHIVE_BASE_NAME).diff.tar.bz2
-	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).diff.7z diff/ )
-	( test "X$(tar)" != "X" && $(tar) -c diff/ | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.gz )
-	( test "X$(tar)" != "X" && $(tar) -c diff/ | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.bz2 )
-	-rm -f $(ARCHIVE_BASE_NAME).diff.zip
-	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).diff.zip diff/ )
-	mv $(ARCHIVE_BASE_NAME).diff.* ../
+	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.7z
+	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
+	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).unified.diff.7z diff/*.unified.* )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.unified.* | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).unified.diff.tar.gz )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.unified.* | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).unified.diff.tar.bz2 )
+	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.zip
+	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).unified.diff.zip diff/*.unified.* )
+	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.7z
+	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.tar.bz2
+	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).normal.diff.7z diff/*.normal.* )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.normal.* | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).normal.diff.tar.gz )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.normal.* | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).normal.diff.tar.bz2 )
+	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.zip
+	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).normal.diff.zip diff/*.normal.* )
+	-rm -f $(ARCHIVE_BASE_NAME).context.diff.7z
+	-rm -f $(ARCHIVE_BASE_NAME).context.diff.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).context.diff.tar.bz2
+	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).context.diff.7z diff/*.context.* )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.context.* | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).context.diff.tar.gz )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.context.* | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).context.diff.tar.bz2 )
+	-rm -f $(ARCHIVE_BASE_NAME).context.diff.zip
+	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).context.diff.zip diff/*.context.* )
+	mv $(ARCHIVE_BASE_NAME).*.diff.* ../
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h
 # indent -bad -bap -bl -bli0 -bls -cbi4 -cdw -cli0 -di8 -hnl -i4 -l80 -lp -nbc -nce -ncs -npcs -nprs -npsl -nsaf -nsai -nsaw -nsob -nut -pi4 -sc -ss -T index_t -T hitcount_t -T regex_t -T regmatch_t -T regamatch_t -T regaparams_t -T Qitem_t -T regoff_t -T tre_char_t -T COOCCURRENCE_SCORE_TYPE *.c *.h

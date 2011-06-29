@@ -37,6 +37,8 @@ VER_SUFFIX = @VER_SUFFIX@
 #     to mess with my brain. - wsy)
 #
 VERSION = @VERSION@
+PREV_VERSION = 20070810-BlameTheSegfault
+#PREV_VERSION = 20070807-BlameTheInterns
 #PREV_VERSION = 20070505-BlameIdiocy
 #PREV_VERSION = 20070428-BlameSpamConf
 #PREV_VERSION = 20061103-BlameDalkey
@@ -144,7 +146,7 @@ E = $(SILENT) $(ECHO)
 #
 CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_math_exec.c crm_var_hash_table.c crm_expandvar.c \
-	crm_stmt_parser.c \
+	crm_stmt_parser.c crm_vector_tokenize.c \
 	crm_expr_alter.c crm_expr_match.c crm_css_maintenance.c \
 	crm_markovian.c crm_osb_bayes.c crm_osb_hyperspace.c \
 	crm_correlate.c crm_osb_winnow.c crm_winnow_maintenance.c \
@@ -155,14 +157,15 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_preprocessor.c crmregex_gnu.c crmregex_tre.c \
 	crm_util_errorhandlers.c crm_stats.c crm_expr_sks.c \
 	crm_expr_svm.c crm_expr_fscm.c \
+	crm_strcompress.c crm_expr_clump_nn.c \
 	crm_generic_port.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
-	crm114.h crm114_osbf.h config.h
+	crm114.h crm114_osbf.h crm_expr_clump_nn.h config.h 
 
 OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
-	crm_stmt_parser.o \
+	crm_stmt_parser.o crm_vector_tokenize.o \
 	crm_expr_alter.o crm_expr_match.o crm_css_maintenance.o \
 	crm_markovian.o crm_osb_bayes.o crm_osb_hyperspace.o \
 	crm_correlate.o crm_osb_winnow.o crm_winnow_maintenance.o \
@@ -172,6 +175,7 @@ OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_exec_engine.o crm_debugger.o crm_str_funcs.o \
 	crm_preprocessor.o \
 	crm_expr_sks.o crm_stats.o crm_expr_svm.o crm_expr_fscm.o \
+	crm_strcompress.o crm_expr_clump_nn.o \
 	crm_generic_port.o
 
 
@@ -222,11 +226,6 @@ TEXTFILES = COLOPHON.txt pad.dat \
 
 
 EXTRA_DIST = indent.sh.in diff_em.sh.in \
-	config_win32.h crm114.sln crm114.vcproj cssdiff.vcproj osbf-util.vcproj \
-	resource.h crm114.ico cssmerge.vcproj cssutil.vcproj \
-	getopt.h getopt_ex.h getopt.c getopt_ex.c \
-	crm_win32_port.c \
-	megatest.bat crm114rc.h crm114rc.rc \
 	$(UTILFILES) \
 	$(CRMFILES) \
 	$(TEXTFILES)
@@ -379,6 +378,9 @@ crm_expr_syscall.o: crm_expr_syscall.c \
 crm_expr_classify.o: crm_expr_classify.c \
 	$(HFILES)
 
+crm_expr_clump_nn.o: crm_expr_clump_nn.c \
+	$(HFILES)
+
 crm_expr_translate.o: crm_expr_translate.c \
 	$(HFILES)
 
@@ -409,6 +411,9 @@ crm_osbf_bayes.o: crm_osbf_bayes.c \
 crm_osb_hyperspace.o: crm_osb_hyperspace.c \
 	$(HFILES)
 
+crm_strcompress.o: crm_strcompress.c \
+	$(HFILES)
+
 crm_expr_sks.o: crm_expr_sks.c \
 	$(HFILES)
 
@@ -437,6 +442,9 @@ crm_debugger.o: crm_debugger.c \
 	$(HFILES)
 
 crm_str_funcs.o: crm_str_funcs.c \
+	$(HFILES)
+
+crm_vector_tokenize.o: crm_vector_tokenize.c \
 	$(HFILES)
 
 crmregex_tre.o: crmregex_tre.c \
@@ -740,15 +748,31 @@ diff: diff_em.sh
 	-(sh ./diff_em.sh );
 
 dist-diff: diff
-	-rm -f $(ARCHIVE_BASE_NAME).diff.7z
-	-rm -f $(ARCHIVE_BASE_NAME).diff.tar.gz
-	-rm -f $(ARCHIVE_BASE_NAME).diff.tar.bz2
-	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).diff.7z diff/ )
-	( test "X$(tar)" != "X" && $(tar) -c diff/ | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.gz )
-	( test "X$(tar)" != "X" && $(tar) -c diff/ | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).diff.tar.bz2 )
-	-rm -f $(ARCHIVE_BASE_NAME).diff.zip
-	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).diff.zip diff/ )
-	mv $(ARCHIVE_BASE_NAME).diff.* ../
+	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.7z
+	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.tar.bz2
+	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).unified.diff.7z diff/*.unified.* )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.unified.* | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).unified.diff.tar.gz )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.unified.* | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).unified.diff.tar.bz2 )
+	-rm -f $(ARCHIVE_BASE_NAME).unified.diff.zip
+	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).unified.diff.zip diff/*.unified.* )
+	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.7z
+	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.tar.bz2
+	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).normal.diff.7z diff/*.normal.* )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.normal.* | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).normal.diff.tar.gz )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.normal.* | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).normal.diff.tar.bz2 )
+	-rm -f $(ARCHIVE_BASE_NAME).normal.diff.zip
+	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).normal.diff.zip diff/*.normal.* )
+	-rm -f $(ARCHIVE_BASE_NAME).context.diff.7z
+	-rm -f $(ARCHIVE_BASE_NAME).context.diff.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).context.diff.tar.bz2
+	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).context.diff.7z diff/*.context.* )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.context.* | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).context.diff.tar.gz )
+	( test "X$(tar)" != "X" && $(tar) -c diff/*.context.* | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).context.diff.tar.bz2 )
+	-rm -f $(ARCHIVE_BASE_NAME).context.diff.zip
+	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).context.diff.zip diff/*.context.* )
+	mv $(ARCHIVE_BASE_NAME).*.diff.* ../
 
 
 # original: indent -npcs -nprs -npsl -nsaf -nsai -nsaw -nut -bli0 -nlp *.c *.h

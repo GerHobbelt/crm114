@@ -16,8 +16,8 @@
 
 typedef struct
 {
-    unsigned long hash;
-    unsigned long key;
+    crmhash_t hash;
+    crmhash_t key;
     unsigned long value;
 } OSBF_FEATUREBUCKET_STRUCT;
 

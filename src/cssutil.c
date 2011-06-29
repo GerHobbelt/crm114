@@ -299,7 +299,7 @@ int main(int argc, char **argv)
         if (hashes == MAP_FAILED)
         {
             fprintf(stderr,
-                    "\n Couldn't open RW file %s; errno=%d .\n", cssfile, errno);
+                    "\n Couldn't open RW file %s; errno=%d(%s).\n", cssfile, errno, errno_descr(errno));
             exit(EXIT_FAILURE);
         }
 
@@ -312,9 +312,9 @@ int main(int argc, char **argv)
         //       We use the reserved h2 == 0 setup for the learncount.
         //
         {
-            char *litf = "Learnings in this file";
-            char *fitf = "Features in this file";
-            unsigned long hcode, h1, h2;
+            const char *litf = "Learnings in this file";
+            const char *fitf = "Features in this file";
+            crmhash_t hcode, h1, h2;
             //
             hcode = strnhash(litf, strlen(litf));
             h1 = hcode % hfsize;
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
             for (i = 0; i < hfsize; i++)
             {
                 printf("%lu;%lu;%lu\n",
-                       hashes[i].key, hashes[i].hash, hashes[i].value);
+                       (unsigned long)hashes[i].key, (unsigned long)hashes[i].hash, hashes[i].value);
             }
         }
 
@@ -389,16 +389,26 @@ int main(int argc, char **argv)
             //
             if ((f = fopen(csvfile, "rb")) == NULL)
             {
-                fprintf(stderr, "\n Couldn't open csv file %s; errno=%d.\n",
-                        csvfile, errno);
+                fprintf(stderr, "\n Couldn't open csv file %s; errno=%d(%s).\n",
+                        csvfile, errno, errno_descr(errno));
                 exit(EXIT_FAILURE);
             }
             else
             {
                 for (i = 0; i < hfsize; i++)
                 {
-                    fscanf(f, "%lu;%lu;%lu\n",
-                           &(hashes[i].key), &(hashes[i].hash), &(hashes[i].value));
+			unsigned long k;
+unsigned long h;
+unsigned long v;
+                    if (3 != fscanf(f, "%lu;%lu;%lu\n", &k, &h, &v))
+			{
+                fprintf(stderr, "\n Couldn't parse csv file %s at line %ld\n",
+                        csvfile, i);
+                exit(EXIT_FAILURE);
+}			
+			hashes[i].key = k;
+			hashes[i].hash = h;
+			hashes[i].value = v;
                 }
                 fclose(f);
             }

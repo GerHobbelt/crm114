@@ -1377,12 +1377,12 @@ int hash_selftest(void)
 
 #if defined(CRM_WITH_OLD_HASH_FUNCTION)
 
-unsigned long strnhash (char *str, long len)
+crmhash_t strnhash (const char *str, long len)
 {
   long i;
   // unsigned long hval;
   int32_t hval;
-  unsigned long tmp;
+  crmhash_t tmp;
 
   // initialize hval
   hval= len;
@@ -1415,7 +1415,7 @@ unsigned long strnhash (char *str, long len)
 
 #else
 
-crmhash_t strnhash(char *str, size_t len)
+crmhash_t strnhash(const char *str, size_t len)
 {
     size_t i;
     crmhash_t hval;
@@ -1453,7 +1453,7 @@ crmhash_t strnhash(char *str, size_t len)
 
 #endif
 
-crmhash64_t strnhash64(char *str, size_t len)
+crmhash64_t strnhash64(const char *str, size_t len)
 {
     crmhash64_t ihash = strnhash(str, len);
 
@@ -1470,7 +1470,7 @@ crmhash64_t strnhash64(char *str, size_t len)
 
 #else
 
-crmhash_t strnhash(char *str, size_t len)
+crmhash_t strnhash(const char *str, size_t len)
 {
     uint32_t a = 0;
     uint32_t b = 0;
@@ -1479,7 +1479,7 @@ crmhash_t strnhash(char *str, size_t len)
     return a;
 }
 
-crmhash64_t strnhash64(char *str, size_t len)
+crmhash64_t strnhash64(const char *str, size_t len)
 {
     uint32_t a = 0;
     uint32_t b = 0;
@@ -1530,7 +1530,7 @@ typedef struct prototype_crm_mmap_cell
     long   start;
     long   requested_len;
     long   actual_len;
-    time_t modification_time; // st_mtime - time last modified
+  crmhash64_t modification_time_hash;  // st_mtime - time last modified
     void   *addr;
     long   prot;        //    prot flags to be used, in the mmap() form
                         //    that is, PROT_*, rather than O_*
@@ -1551,6 +1551,99 @@ typedef struct prototype_crm_mmap_cell
 
 static CRM_MMAP_CELL *cache = NULL;
 
+
+
+///////////////////////////////////////
+//
+// Calculate a 64-bit hash of the create+modify timestamps
+// for future comparison.
+// If the OS/file system supports nanosecond timestamp parts,
+// include those in the hash.
+//
+// Q: Why the hash?
+// A: For easier OS/platform independent timestamp comparison.
+//    This way, we can keep all the OS/fs dependent stuff
+//    in a single place: right here.
+//
+// Of course, the assumption here is that that 64-bit hash
+// is 'good enough' to always deliver different hashes for
+// files which have different timestamps on the same OS/fs
+// within say, a day, apart.
+//
+static crmhash64_t calc_file_mtime_hash(struct stat *fs, const char *filename)
+{
+	time_t buf[6] = {0};
+
+	buf[0] = fs->st_ctime;
+	buf[1] = fs->st_mtime;
+#if defined(HAVE_NSEC_STAT_TIME_NSEC)
+	buf[2] = (time_t)fs->st_ctime_nsec;
+	buf[3] = (time_t)fs->st_mtime_nsec;
+#elif defined(HAVE_NSEC_STAT_TIM_TV_NSEC)
+	buf[2] = (time_t)fs->st_ctim.tv_nsec;
+	buf[3] = (time_t)fs->st_mtim.tv_nsec;
+#elif defined(HAVE_NSEC_STAT_TIMENSEC)
+	buf[2] = (time_t)fs->st_ctimensec;
+	buf[3] = (time_t)fs->st_mtimensec;
+#elif defined(WIN32)
+	/*
+	   From the MSVC docs:
+
+	   File Times and Daylight Saving Time
+
+	You must take care when using file times if the user has 
+	set the system to automatically adjust for daylight saving 
+	time.
+
+	To convert a file time to local time, use the 
+	FileTimeToLocalFileTime function. However, 
+	FileTimeToLocalFileTime uses the current settings for the 
+	time zone and daylight saving time. Therefore, if it is 
+	daylight saving time, it takes daylight saving time into 
+	account, even if the file time you are converting is 
+	in standard time.
+
+	The FAT file system records times on disk in local time. 
+	GetFileTime retrieves cached UTC times from the FAT file 
+	system. When it becomes daylight saving time, the time 
+	retrieved by GetFileTime is off an hour, because the cache 
+	is not updated. When you restart the computer, the cached 
+	time that GetFileTime retrieves is correct. FindFirstFile 
+	retrieves the local time from the FAT file system and 
+	converts it to UTC by using the current settings for the 
+	time zone and daylight saving time. Therefore, if it is 
+	daylight saving time, FindFirstFile takes daylight saving 
+	time into account, even if the file time you are converting 
+	is in standard time.
+
+	The NTFS file system records times on disk in UTC. 
+*/
+	if (filename != NULL)
+	{
+  HANDLE handle;
+  WIN32_FIND_DATA fdata;
+
+  handle = FindFirstFile(filename, &fdata);
+  if (handle != INVALID_HANDLE_VALUE) 
+  {
+	  if (internal_trace)
+	  {
+		fprintf(stderr, 
+			"The file found by calc_file_mtime_hash() is '%s'\n", 
+            fdata.cFileName);
+	  }
+	  buf[2] = (time_t)fdata.ftCreationTime.dwHighDateTime;
+	  buf[3] = (time_t)fdata.ftCreationTime.dwLowDateTime;
+	  buf[4] = (time_t)fdata.ftLastWriteTime.dwHighDateTime;
+	  buf[5] = (time_t)fdata.ftLastWriteTime.dwLowDateTime;
+
+		FindClose(handle);
+  }
+  }
+#endif
+
+	return strnhash64((const char *)buf, sizeof(buf));
+}
 
 //////////////////////////////////////
 //
@@ -1878,8 +1971,8 @@ void *crm_mmap_file(char *filename,
 		"The system cannot memory map (mmap) any file when "
 	        "the requested offset %ld is not on a system page "
 		"boundary.   Tough luck for file '%s'.",
-		filename
-		);
+		start,
+		filename		);
 }
 
     //    Search for the file - if it's already mmaped, just return it.
@@ -1891,30 +1984,25 @@ void *crm_mmap_file(char *filename,
             && p->start == start
             && p->requested_len == requested_len)
         {
-            // check the mtime; if this differs between cache and stat
-            // val, then someone outside our process has played with the
-            // file and we need to unmap it and remap it again.
-            int k = stat(filename, &statbuf);
-            if (k != 0 || p->modification_time != statbuf.st_mtime)
-            {
-                // yep, someone played with it. unmap and remap
-                crm_force_munmap_filename(filename);
-                // when you get here, anything pointed at by p is damaged: free()d memory in function call above.
-                p = cache;
-				if (!p)
-					break;
-                continue;
-            }
-            else
-            {
-                //  nope, it looks clean.  We'll reuse it.
+	  // check the mtime; if this differs between cache and stat
+	  // val, then someone outside our process has played with the
+	  // file and we need to unmap it and remap it again.
+	  struct stat statbuf;
+	  int k = stat(filename, &statbuf);
+	  if (k != 0 || p->modification_time_hash != calc_file_mtime_hash(&statbuf, filename))
+	    {
+	      // yep, someone played with it. unmap and remap
+	      crm_force_munmap_filename (filename);
+	    }
+	  else
+	    {
+	      //  nope, it looks clean.  We'll reuse it.
                 if (actual_len)
                     *actual_len = p->actual_len;
                 return p->addr;
-            }
         }
     }
-
+    }
     //    No luck - we couldn't find the matching file/start/len/prot/mode
     //    We need to add an mmap cache cell, and mmap the file.
     //
@@ -1941,11 +2029,13 @@ void *crm_mmap_file(char *filename,
     if (internal_trace)
         fprintf(stderr, "MMAP file open mode: %ld\n", (long)open_flags);
 
-    //   if we need to, we stat the file
-    //if (p->requested_len < 0)
+	CRM_ASSERT(strcmp(p->name, filename) == 0);
+
+	//   if we need to, we stat the file
+    //if (p->requested_len < 0) -- [i_a] we ALWAYS need this stat() call: for the modified time below!
     {
         int k;
-        k = stat(p->name, &statbuf);
+        k = stat(filename, &statbuf);
         if (k != 0)
         {
             free(p->name);
@@ -1955,6 +2045,9 @@ void *crm_mmap_file(char *filename,
             return MAP_FAILED;
         }
     }
+
+  //  and put in the mtime as well; make sure we call the calc routine before re-opening the file, just in case...
+  p->modification_time_hash = calc_file_mtime_hash(&statbuf, filename);
 
     if (user_trace)
         fprintf(stderr, "MMAPping file %s for direct memory access.\n", filename);
@@ -1972,9 +2065,6 @@ void *crm_mmap_file(char *filename,
     p->actual_len = p->requested_len;
     if (p->actual_len < 0)
         p->actual_len = statbuf.st_size - p->start;
-
-    //  and put in the mtime as well
-    p->modification_time = statbuf.st_mtime;
 
     //  fprintf (stderr, "m");
     p->addr = mmap(NULL,
@@ -2027,11 +2117,13 @@ void *crm_mmap_file(char *filename,
     if (internal_trace)
         fprintf(stderr, "MMAP file open mode: %ld\n", (long)open_flags);
 
-    //  If we need to, we stat the file.
-    if (p->requested_len < 0)
+	CRM_ASSERT(strcmp(p->name, filename) == 0);
+
+	//  If we need to, we stat the file.
+    //if (p->requested_len < 0) -- [i_a] we ALWAYS need this stat() call: for the modified time below!
     {
-        long k;
-        k = stat(p->name, &statbuf);
+        int k;
+        k = stat(filename, &statbuf);
         if (k != 0)
         {
             free(p->name);
@@ -2041,6 +2133,9 @@ void *crm_mmap_file(char *filename,
             return MAP_FAILED;
         }
     }
+
+  //  and put in the mtime as well; make sure we call the calc routine before re-opening the file, just in case...
+  p->modification_time_hash = calc_file_mtime_hash(&statbuf, filename);
 
     if (user_trace)
         fprintf(stderr, "MMAPping file %s for direct memory access.\n", filename);

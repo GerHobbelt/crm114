@@ -58,7 +58,7 @@ struct token_search
 {
     unsigned char *ptok;
     unsigned long toklen;
-    unsigned long hash;
+    crmhash_t hash;
     unsigned char *max_ptok;
     const char    *pattern;
     regex_t       *regcb;
@@ -136,7 +136,7 @@ static int get_next_token(struct token_search *pts)
 
 static unsigned long get_next_hash(struct token_search *pts)
 {
-    unsigned long hash_acc = 0;
+    crmhash_t hash_acc = 0;
     unsigned long count_long_tokens = 0;
     int error;
 
@@ -201,7 +201,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     OSBF_FEATUREBUCKET_STRUCT *hashes;  //  the text of the hash file
     OSBF_FEATURE_HEADER_STRUCT *header; //  header of the hash file
     //char *seen_features;
-    unsigned long hashpipe[OSB_BAYES_WINDOW_LEN + 1];
+    crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
 
     regex_t regcb;
     long textoffset;
@@ -298,11 +298,9 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     if (k != 0)
     {
         if (crm_osbf_create_cssfile(learnfilename,
-                                    (sparse_spectrum_file_length
-                                     !=
-                                     0) ?
+                                    ((sparse_spectrum_file_length != 0) ?
                                     sparse_spectrum_file_length :
-                                    OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH,
+                                    OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH),
                                     OSBF_VERSION, 0,
                                     OSBF_CSS_SPECTRA_START) != EXIT_SUCCESS)
         {
@@ -473,7 +471,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             fprintf(stderr, "  Hashpipe contents: ");
             for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " %ld", hashpipe[h]);
+                fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
             fprintf(stderr, "\n");
         }
 
@@ -484,7 +482,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
         {
             unsigned long hindex, bindex;
-            unsigned long h1, h2;
+            crmhash_t h1, h2;
             long th = 0;        // a counter used for TSS tokenizing
             long j;
             //
@@ -505,7 +503,7 @@ int crm_expr_osbf_bayes_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 if (internal_trace)
                 {
                     fprintf(stderr,
-                            "Polynomial %ld has h1:%ld  h2: %ld\n", j, h1, h2);
+                            "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n", j, (unsigned long)h1, (unsigned long)h2);
                 }
 
                 //
@@ -643,17 +641,25 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long not_microgroom = 1;
 
     struct stat statbuf;        //  for statting the hash file
-    unsigned long hashpipe[OSB_BAYES_WINDOW_LEN + 1];
     regex_t regcb;
+#if defined(GER)
+    crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
 
     hitcount_t hits[MAX_CLASSIFIERS];           // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS];      // actual total hits per classifier
+    hitcount_t htf;                                     // hits this feature got.
+#else
+  unsigned long hashpipe[OSB_BAYES_WINDOW_LEN + 1];
+
+  double hits[MAX_CLASSIFIERS];	// actual hits per feature per classifier
+  unsigned long totalhits[MAX_CLASSIFIERS];	// actual total hits per classifier
+  double htf;			// hits this feature got.
+#endif
     unsigned long learnings[MAX_CLASSIFIERS];   // total learnings per classifier
     unsigned long total_learnings = 0;
     unsigned long totalfeatures;                        //  total features
     unsigned long uniquefeatures[MAX_CLASSIFIERS];      //  found features per class
     unsigned long missedfeatures[MAX_CLASSIFIERS];      //  missed features per class
-    hitcount_t htf;                                     // hits this feature got.
     double tprob;                                       //  total probability in the "success" domain.
     double min_success = 0.5;                           // minimum probability to be considered success
 
@@ -683,9 +689,15 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     //const float feature_weight[] = { 0,   125,   64,  27,  8, 1, 0 }; // cubic
     // these empirical weights give better accuracy with
     // the CF * unique/totalfeatures used in this code - Fidelis
-    const double feature_weight[] = {
-        0, 3125, 256, 27, 4, 1 };
+    const double feature_weight[] = 
+{
+        0, 3125, 256, 27, 4, 1 
+};
+#if defined(GER)
     double confidence_factor;
+#else
+  float confidence_factor;
+#endif
     int asymmetric = 0;         /* for testings */
     int voodoo = 1;             /* default */
 
@@ -1108,7 +1120,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             fprintf(stderr, "  Hashpipe contents: ");
             for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " %ld", hashpipe[h]);
+                fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
             fprintf(stderr, "\n");
         }
 
@@ -1121,7 +1133,7 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             int j, k;
             unsigned th = 0;    //  a counter used only in TSS hashing
             unsigned long hindex;
-            unsigned long h1, h2;
+            crmhash_t h1, h2;
             // remember indexes of classes with min and max local probabilities
             int i_min_p, i_max_p;
             // remember min and max local probabilities of a feature
@@ -1139,8 +1151,10 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 hindex = h1;
 
                 if (internal_trace)
+{
                     fprintf(stderr,
-                            "Polynomial %d has h1:%ld  h2: %ld\n", j, h1, h2);
+                            "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n", j, (unsigned long)h1, (unsigned long)h2);
+}
                 //
                 //    Note - a strict interpretation of Bayesian
                 //    chain probabilities should use 0 as the initial
@@ -1163,7 +1177,11 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 for (k = 0; k < maxhash; k++)
                 {
                     long lh, lh0;
+#if defined(GER)
                     double p_feat = 0;
+#else
+		float p_feat = 0;
+#endif
 
                     lh = hindex % (hashlens[k]);
                     lh0 = lh;
@@ -1361,18 +1379,22 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     //unsigned long hits_max_p, hits_min_p, sum_hits, diff_hits;
                     hitcount_t hits_max_p, hits_min_p, sum_hits;
                     hitcount_t diff_hits;
-                    float K1, K2, K3;
+                    double K1, K2, K3;
 
                     hits_min_p = hits[i_min_p];
                     hits_max_p = hits[i_max_p];
 
                     // normalize hits to max learnings
                     if (learnings[i_min_p] < learnings[i_max_p])
+{
                         hits_min_p *=
-                            (hitcount_t)learnings[i_max_p] / (hitcount_t)learnings[i_min_p];
+                            (hitcount_t)(learnings[i_max_p] / (0.0 + learnings[i_min_p]));
+}
                     else
+{
                         hits_max_p *=
-                            (hitcount_t)learnings[i_min_p] / (hitcount_t)learnings[i_max_p];
+                            (hitcount_t)(learnings[i_min_p] / (0.0 + learnings[i_max_p]));
+}
 
                     sum_hits = hits_max_p + hits_min_p;
                     diff_hits = hits_max_p - hits_min_p;
@@ -1387,18 +1409,25 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                     // calculate confidence factor (CF)
                     if (voodoo == 0)/* || min_local_p > 0) */
+{
                         confidence_factor = 1 - DBL_MIN;
+}
                     else
+{
                         confidence_factor =
                             pow((diff_hits * diff_hits +
                                  hits_max_p * hits_min_p -
                                  K1 / sum_hits) / (sum_hits * sum_hits),
                                 K2) / (1.0 + K3 / (sum_hits * feature_weight[j]));
+}
 
                     if (internal_trace)
-                        printf("CF: %.4f, max_hits = %3ld, min_hits = %3ld, "
+{
+                        fprintf(stderr,
+                        "CF: %.4f, max_hits = %3ld, min_hits = %3ld, "
                                "weight: %5.1f\n", confidence_factor,
                                (long)hits_max_p, (long)hits_min_p, feature_weight[j]);
+}
                 }
 
                 // calculate the numerators P(F|C) * P(C)
@@ -1420,12 +1449,14 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     renorm += ptc[k];
 
                     if (internal_trace)
-                        printf
-                        ("CF: %.4f, totalhits[k]: %lu, missedfeatures[k]: %lu, "
+{
+                        fprintf(stderr,
+                        "CF: %.4f, totalhits[k]: %lu, missedfeatures[k]: %lu, "
                          "uniquefeatures[k]: %lu, totalfeatures: %lu, "
                          "weight: %5.1f\n", confidence_factor,
                          (long)totalhits[k], missedfeatures[k],
                          uniquefeatures[k], totalfeatures, feature_weight[j]);
+}
                 }
 
                 // renormalize probabilities
@@ -1505,10 +1536,12 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         }
         remainder = 10 * DBL_MIN;
         for (m = succhash; m < maxhash; m++)
+{
             if (bestseen != m)
             {
                 remainder = remainder + ptc[m];
             }
+}
         overall_pR = log10(accumulator) - log10(remainder);
 
         //  note also that strcat _accumulates_ in stext.
@@ -1553,14 +1586,18 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             strcat(stext, buf);
         bestseen = 0;
         for (k = 0; k < maxhash; k++)
+{
             if (ptc[k] > ptc[bestseen])
                 bestseen = k;
+}
         remainder = 10 * DBL_MIN;
         for (m = 0; m < maxhash; m++)
+{
             if (bestseen != m)
             {
                 remainder = remainder + ptc[m];
             }
+}
         snprintf(buf, WIDTHOF(buf), "Best match to file #%ld (%s) "
                                     "prob: %6.4f  pR: %6.4f\n",
                  bestseen,
@@ -1577,10 +1614,12 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             long m;
             remainder = 10 * DBL_MIN;
             for (m = 0; m < maxhash; m++)
+{
                 if (k != m)
                 {
                     remainder = remainder + ptc[m];
                 }
+}
             snprintf(buf, WIDTHOF(buf),
                      "#%ld (%s):"
                      " hits: %ld, ufeats: %ld, prob: %3.2e, pR: %6.2f\n",
@@ -1592,7 +1631,9 @@ int crm_expr_osbf_bayes_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             buf[WIDTHOF(buf) - 1] = 0;
             // strcat (stext, buf);
             if (strlen(stext) + strlen(buf) <= stext_maxlen)
+{
                 strcat(stext, buf);
+}
         }
         // check here if we got enough room in stext to stuff everything
         // perhaps we'd better rise a nonfatalerror, instead of just

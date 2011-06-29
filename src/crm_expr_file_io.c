@@ -39,10 +39,10 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     long offset, iolen;
     long vstart;
     long vlen;
-    long mc;
-    long done;
-    long till_eof;
-    long use_readline;
+    int done;
+    int till_eof;
+    int use_readline;
+	int is_crm_stdin;
 
     //         a couple of vars to bash upon
     long i, j;
@@ -91,7 +91,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_nextword(filename, apb->b1len, 0, &i, &j);
     memmove(ifn, &filename[i], j);
     fnlen = crm_nexpandvar(ifn, j, MAX_FILE_NAME_LEN);
-    ifn[fnlen] = '\0';
+    ifn[fnlen] = 0;
     if (user_trace)
         fprintf(stderr, "  from filename >>>%s<<<\n", ifn);
 
@@ -101,7 +101,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_nextword(filename, apb->b1len, i + j, &i, &j);
     memmove(fileoffset, &filename[i], j);
     fileoffsetlen = crm_qexpandvar(fileoffset, j, MAX_FILE_NAME_LEN, NULL);
-    fileoffset[fileoffsetlen] = '\0';
+    fileoffset[fileoffsetlen] = 0;
     if (1 != sscanf(fileoffset, "%ld", &offset))
     {
         if (user_trace)
@@ -117,13 +117,14 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     crm_nextword(filename, apb->b1len, i + j, &i, &j);
     memmove(fileiolen, &filename[i], j);
     fileiolenlen = crm_qexpandvar(fileiolen, j, MAX_FILE_NAME_LEN, NULL);
-    fileiolen[fileiolenlen] = '\0';
+    fileiolen[fileiolenlen] = 0;
     if (1 != sscanf(fileiolen, "%ld", &iolen))
     {
         if (user_trace)
             nonfatalerror("Failed to decode the input expression number of bytes to read: ", fileiolen);
     }
-    if (fileiolenlen == 0 || iolen > data_window_size) iolen = data_window_size;
+    if (fileiolenlen == 0 || iolen > data_window_size) 
+		iolen = data_window_size;
     if (user_trace)
         fprintf(stderr, "  and maximum length IO of >>>%s<<< --> %ld\n",
                 fileiolen, iolen);
@@ -131,9 +132,16 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     if (user_trace)
         fprintf(stderr, "Opening file %s for file I/O (reading)\n", ifn);
 
-    fp = stdin;
-    if (fnlen  > 0 && strncmp("stdin", ifn, 6) != 0)
-    {
+    fp = crm_stdin;
+	is_crm_stdin = 1;
+    if (fnlen > 0)
+	{
+		if (!(strcmp(ifn, "stdin") == 0
+			|| strcmp(ifn, "/dev/stdin") == 0
+			|| strcmp(ifn, "con:") == 0
+			|| strcmp(ifn, "/dev/tty") == 0))
+		{
+	is_crm_stdin = 0;
         fp = fopen(ifn, "rb");
         if (fp == NULL)
         {
@@ -142,10 +150,10 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 filename);
             goto input_no_open_bailout;
         }
+		}
     }
 
     done = 0;
-    mc = 0;
 
     //   get the variable name
     crm_nextword(temp_vars, tvlen, 0,  &vstart, &vlen);
@@ -167,13 +175,13 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         //        If we have a seek requested, do an fseek.
         //        (Annoying But True: fseek on stdin does NOT error, it's
         //        silently _ignored_.  Who knew?
-        if (fp == stdin && offset != 0)
+        if (is_crm_stdin /* fp == stdin  -- hm, what to do here... */ && offset != 0)
         {
             nonfatalerror("Hmmm, a file offset on stdin won't do much. ",
                           "I'll ignore it for now. ");
         }
-        else
-        if (offset != 0)
+        else if (offset != 0)
+		{
             if (0 != fseek(fp, offset, SEEK_SET))
             {
                 if (errno == EBADF)
@@ -183,15 +191,18 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 }
                 else
                 {
-                    /* [i_a] GROT GROT GROT    fix this by having the errno+errno-string reported too! */
-                    nonfatalerror("Dang, seems that this file isn't fseek()able: ",
-                                  filename);
+                    nonfatalerror_ex(SRC_LOC(),
+						"Dang, seems that this file '%s' isn't fseek()able: error = %d(%s)",
+                                  filename,
+								  errno,
+								  errno_descr(errno));
                 }
             }
+		}
 
         //    are we supposed to use readline?
 #ifdef HAVE_LIBREADLINE
-        if (use_readline)
+        if (use_readline && fp == stdin)
         {
             char *chartemp;
             chartemp = readline("");
@@ -241,7 +252,7 @@ int crm_expr_input(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     }
 
     //     and close the input file if it's not stdin.
-    if (fp != stdin) fclose(fp);
+    if (!is_crm_stdin) fclose(fp);
 
 input_no_open_bailout:
     return 0;

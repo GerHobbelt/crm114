@@ -223,9 +223,9 @@ int main(int argc, char **argv)
      */
     if (new_outfile)
     {
-        char *litf = "Learnings in this file";
-        char *fitf = "Features in this file";
-        unsigned long litf_hash, fitf_hash;
+        const char *litf = "Learnings in this file";
+        const char *fitf = "Features in this file";
+        crmhash_t litf_hash, fitf_hash;
 
         litf_hash = strnhash(litf, strlen(litf));
         h1[litf_hash % hfsize1].hash = litf_hash;
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
     //    Note we start at 1, not at 0, because 0 is the version #
     for (i = 1; i < hfsize2; i++)
     {
-        unsigned long hash;
+        crmhash_t hash;
         unsigned long key;
         unsigned long value;
         unsigned long incrs;
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
         {
             long hindex;
 
-            if (verbose) fprintf(stderr, "%lud:%lud ", hash, value);
+            if (verbose) fprintf(stderr, "0x%08lX:%lud ", (unsigned long)hash, value);
             //
             //  this bucket has real data!  :)
             hindex = hash % hfsize1;
@@ -279,7 +279,7 @@ int main(int argc, char **argv)
                 {
                     fprintf(stdout, "\n\n ****** FATAL ERROR ******\n");
                     fprintf(stdout,
-                            "There are too many features to fit into a css file of this size. \n");
+                            "There are too many features to fit into a css file of this size.\n");
                     fprintf(stdout,
                             "Operation aborted at input bucket offset %lud .\n",
                             i);

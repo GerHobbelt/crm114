@@ -3,6 +3,20 @@ Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
 
+Version 20070815-BlameBadData
+
+* merged with latest from BillY again
+
+* #ifdef GER  for all the changes which _might_ have caused changed in megatest output.
+  We'll revisit these later on.
+
+* Code changes to make 32- and 64-bit boxes produce the same results in megatest
+
+* A few Win32 changes/fixes.
+
+* preliminary 're-issue' of syscall support on Win32. It's still flaky.
+
+
 Version 20070807-BlameTheInterns
 
 * merged fixes by Bill Y.

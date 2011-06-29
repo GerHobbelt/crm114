@@ -797,12 +797,14 @@ int main(int argc, char **argv)
                 crm_stdin = fopen(argv[i], "rb"); // open in BINARY mode!
                 if (crm_stdin == NULL)
                 {
-                    untrappableerror("Failed to open stdin input replacement file:", argv[i]);
+                    untrappableerror("Failed to open stdin input replacement file: ", argv[i]);
                 }
             }
             if (user_trace)
+			{
                 fprintf(stderr, "Setting stdin replacement file '%s'\n",
                         argv[i]);
+			}
             goto end_command_line_parse_loop;
         }
         if (strncmp(argv[i], "-dbg", 4) == 0 && strlen(argv[i]) == 4)
@@ -935,8 +937,8 @@ end_command_line_parse_loop:
         csl->nchars = strlen(csl->filetext);
         csl->hash = strnhash(csl->filetext, csl->nchars);
         if (user_trace)
-            fprintf(stderr, "Hash of program: %lX, length is %ld bytes: %s\n-->\n%s",
-                    csl->hash, csl->nchars, csl->filename, csl->filetext);
+            fprintf(stderr, "Hash of program: 0x%08lX, length is %ld bytes: %s\n-->\n%s",
+                    (unsigned long)csl->hash, csl->nchars, csl->filename, csl->filetext);
     }
 
     //  We get another csl-like data structure,
@@ -1018,23 +1020,23 @@ end_command_line_parse_loop:
 #if defined (WIN32)
         readsize = CRM_MIN(16384, readsize);   // WIN32 doesn't like those big sizes AT ALL! (core dump of executable!) :-(
 #endif
-        while (!feof(stdin) && i < data_window_size - 1)
+        while (!feof(crm_stdin) && i < data_window_size - 1)
         {
             //i += fread (cdw->filetext + i, 1, readsize-1, stdin);
             int rs;
             rs = i + readsize < data_window_size - 1 ?
                  readsize : data_window_size - i - 1;
-            i += fread(cdw->filetext + i, 1, rs, stdin);
-            if (feof(stdin))
+            i += fread(cdw->filetext + i, 1, rs, crm_stdin);
+            if (feof(crm_stdin))
             {
                 break;
             }
-            if (ferror(stdin))
+            if (ferror(crm_stdin))
             {
                 if (errno == ENOMEM && readsize > 1) //  insufficient memory?
                 {
                     readsize = readsize / 2; //  try a smaller block
-                    clearerr(stdin);
+                    clearerr(crm_stdin);
                 }
                 else
                 {

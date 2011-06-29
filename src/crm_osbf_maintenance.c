@@ -307,7 +307,7 @@ void crm_osbf_packseg(OSBF_FEATURE_HEADER_STRUCT *header,
                       unsigned long packstart, unsigned long packlen)
 {
     unsigned long ifrom, ito;
-    unsigned long thash, tkey;
+  crmhash_t thash, tkey;
     OSBF_FEATUREBUCKET_STRUCT *h;
 
     // make h point to the first feature bucket
@@ -615,6 +615,7 @@ int crm_osbf_create_cssfile(char *cssfile, unsigned long buckets,
                 fatalerror(" Couldn't initialize the .cfc buckets; file = ",
                            cssfile);
             }
+        memset(&feature, 0, sizeof(feature));
         }
         fclose(f);
     }

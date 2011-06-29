@@ -202,6 +202,18 @@
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #undef HAVE_NETINET_IN_H
 
+/* Define if run-time library offers nanosecond time interval in struct
+   stat:c/m/atimensec. */
+#undef HAVE_NSEC_STAT_TIMENSEC
+
+/* Define if run-time library offers nanosecond time interval in struct
+   stat:c/m/atime_nsec. */
+#undef HAVE_NSEC_STAT_TIME_NSEC
+
+/* Define if run-time library offers nanosecond time interval in struct
+   stat:c/m/atim.tv_nsec. */
+#undef HAVE_NSEC_STAT_TIM_TV_NSEC
+
 /* PCRE REs */
 #undef HAVE_PCRE_REGEX
 
@@ -282,6 +294,9 @@
 /* Define to 1 if you have the `strchr' function. */
 #undef HAVE_STRCHR
 
+/* Define to 1 if you have the `strcmp' function. */
+#undef HAVE_STRCMP
+
 /* Define to 1 if you have the `strcspn' function. */
 #undef HAVE_STRCSPN
 
@@ -320,6 +335,9 @@
 
 /* Define to 1 if you have the `strstr' function. */
 #undef HAVE_STRSTR
+
+/* Define to 1 if the system has the type `struct stat'. */
+#undef HAVE_STRUCT_STAT
 
 /* Define to 1 if you have the `sysconf' function. */
 #undef HAVE_SYSCONF
@@ -434,6 +452,12 @@
 /* Define if you have the '__environ' global environment variable */
 #undef HAVE___ENVIRON
 
+/* Define if compiler implements __FUNCTION__. */
+#undef HAVE___FUNCTION__
+
+/* Define if compiler implements __func__. */
+#undef HAVE___FUNC__
+
 /* Set host type */
 #undef HOSTTYPE
 
@@ -481,8 +505,14 @@
    release 3. */
 #undef SETVBUF_REVERSED
 
+/* The size of `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
 /* The size of `long int', as computed by sizeof. */
 #undef SIZEOF_LONG_INT
+
+/* The size of `long long int', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG_INT
 
 /* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
 #undef STAT_MACROS_BROKEN

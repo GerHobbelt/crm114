@@ -1,5 +1,5 @@
 //  crm_var_hash_table.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
+//  Copyright 2001-2007  William S. Yerazunis, all rights reserved.
 //
 //  This software is licensed to the public under the Free Software
 //  Foundation's GNU GPL, version 2.  You may obtain a copy of the
@@ -1247,9 +1247,9 @@ while (delta + mdw->nchars > data_window_size - 1)
 //    or the index of the appropriate NULL slot to put
 //    the var in, if not found.
 
-long crm_vht_lookup(VHT_CELL **vht, char *vname, long vlen)
+long crm_vht_lookup(VHT_CELL **vht, const char *vname, long vlen)
 {
-    unsigned long hc;
+    crmhash_t hc;
     unsigned long i, j, k;
     int done;
     long vsidx;
@@ -1304,7 +1304,7 @@ long crm_vht_lookup(VHT_CELL **vht, char *vname, long vlen)
         fprintf(stderr, "- .\n");
     }
 
-    hc = (strnhash(&vname[vsidx], vslen)) % vht_size;
+    hc = strnhash(&vname[vsidx], vslen) % vht_size;
 
     //  go exploring - find either an empty cell (meaning that this
     //  is the first time this variable name has been entered into the

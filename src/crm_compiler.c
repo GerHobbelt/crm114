@@ -72,8 +72,8 @@ static STMT_TABLE_TYPE stmt_table[] =
     { "routine",  CRM_ROUTINE,  0,  1,       0,  0,  0,  0,  0,  0,  0 },
     { "return",   CRM_RETURN,   0,  1,       0,  1,  0,  0,  0,  0,  0 },
     { "debug",    CRM_DEBUG,   0,  0,       0,  0,  0,  0,  0,  0,  0 },
-    { "clump",    CRM_CLUMP,    0,  1,       0,  1,  1,  1,  0,  1,  0 },
-    { "pmulc",    CRM_PMULC,    0,  1,       0,  1,  0,  0,  0,  1,  0 },
+    { "clump",    CRM_CLUMP,    0,  1,       0,  1,  1,  1,  0,  1,  CRM_FLAT | CRM_REFUTE },
+    { "pmulc",    CRM_PMULC,    0,  1,       0,  1,  0,  0,  0,  1,  CRM_FLAT | CRM_REFUTE },
     /* { "NoMoreStmts",CRM_UNIMPLEMENTED,0,0,   0,  0,  0,  0,  0,  0,  0}, */
     { NULL } /* [i_a] sentinel */
 };
@@ -274,8 +274,8 @@ int crm_load_csl(CSL_CELL *csl)
 
         csl->hash = strnhash(csl->filetext, csl->nchars);
         if (user_trace)
-            fprintf(stderr, "Hash of program: %lX, length %ld bytes: (%s)\n-->\n%s",
-                    csl->hash, csl->nchars, csl->filename, csl->filetext);
+            fprintf(stderr, "Hash of program: 0x%08lX, length %ld bytes: (%s)\n-->\n%s",
+                    (unsigned long)csl->hash, csl->nchars, csl->filename, csl->filetext);
     }
 
     return 0;
@@ -705,7 +705,7 @@ int crm_microcompiler(CSL_CELL *csl, VHT_CELL **vht)
     //  check to be sure that the brackets close!
 
     if (bracketlevel != 0)
-        nonfatalerror("\nDang!  The brackets don't match up!\n",
+    nonfatalerror ("\nDang!  The curly braces don't match up!\n",
                       "Check your source code. ");
 
 

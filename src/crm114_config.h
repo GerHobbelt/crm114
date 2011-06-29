@@ -149,7 +149,9 @@
 //
 #define UNIFIED_BAYES_WINDOW_LEN 5
 //
-//
+//      Unified tokenization pipeline length.
+#define UNIFIED_WINDOW_LEN 32
+////   
 //         Winnow algorithm parameters here...
 //
 #define OSB_WINNOW_WINDOW_LEN 5

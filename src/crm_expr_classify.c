@@ -57,6 +57,7 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
         long curstmt;
         long fev;
+        CRM_ASSERT(i == -1 || i == -2);
         fev = 0;
         curstmt = csl->cstmt;
         if (i == -1)
@@ -86,51 +87,48 @@ int crm_expr_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     //     Joe thinks that this should be a table or a loop.
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM);
+                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+						 | CRM_SCM);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
         retval = crm_expr_osb_bayes_learn(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_CORRELATE)
+    else    if (classifier_flags & CRM_CORRELATE)
     {
         retval = crm_expr_correlate_learn(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_OSB_WINNOW)
+    else    if (classifier_flags & CRM_OSB_WINNOW)
     {
         retval = crm_expr_osb_winnow_learn(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_OSBF)
+    else    if (classifier_flags & CRM_OSBF)
     {
         retval = crm_expr_osbf_bayes_learn(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_HYPERSPACE)
+    else    if (classifier_flags & CRM_HYPERSPACE)
     {
         retval = crm_expr_osb_hyperspace_learn(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_ENTROPY)
+    else    if (classifier_flags & CRM_ENTROPY)
     {
         retval = crm_expr_bit_entropy_learn(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_SVM)
+    else    if (classifier_flags & CRM_SVM)
     {
         retval = crm_expr_svm_learn(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_SKS)
+    else if (classifier_flags & CRM_SKS)
     {
         retval = crm_expr_sks_learn(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_FSCM)
+    else if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_learn(csl, apb, txt, start, len);
+    }
+    else if (classifier_flags & CRM_SCM)
+    {
+        retval = crm_expr_scm_learn(csl, apb, txt, start, len);
     }
     else
     {
@@ -195,54 +193,51 @@ int crm_expr_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
     classifier_flags = classifier_flags &
                        (CRM_OSB_BAYES | CRM_CORRELATE | CRM_OSB_WINNOW | CRM_OSBF
-                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM);
+                        | CRM_HYPERSPACE | CRM_ENTROPY | CRM_SVM | CRM_SKS | CRM_FSCM
+						 | CRM_SCM);
 
     if (classifier_flags & CRM_OSB_BAYES)
     {
         retval = crm_expr_osb_bayes_classify(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_CORRELATE)
+    else    if (classifier_flags & CRM_CORRELATE)
     {
         retval = crm_expr_correlate_classify(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_OSB_WINNOW)
+    else    if (classifier_flags & CRM_OSB_WINNOW)
     {
         retval = crm_expr_osb_winnow_classify(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_OSBF)
+    else    if (classifier_flags & CRM_OSBF)
     {
         retval = crm_expr_osbf_bayes_classify(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_HYPERSPACE)
+    else    if (classifier_flags & CRM_HYPERSPACE)
     {
         retval = crm_expr_osb_hyperspace_classify(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_ENTROPY)
+    else    if (classifier_flags & CRM_ENTROPY)
     {
         retval = crm_expr_bit_entropy_classify(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_SVM)
+    else    if (classifier_flags & CRM_SVM)
     {
         retval = crm_expr_svm_classify(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_SKS)
+    else    if (classifier_flags & CRM_SKS)
     {
         retval = crm_expr_sks_classify(csl, apb, txt, start, len);
     }
-    else
-    if (classifier_flags & CRM_FSCM)
+    else    if (classifier_flags & CRM_FSCM)
     {
         retval = crm_expr_fscm_classify(csl, apb, txt, start, len);
     }
-    else
+    else    if (classifier_flags & CRM_SCM)
     {
+        retval = crm_expr_scm_classify(csl, apb, txt, start, len);
+    }
+    else
+	{
         retval = crm_expr_markov_classify(csl, apb, txt, start, len);
     }
     return 0;

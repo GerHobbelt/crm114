@@ -94,7 +94,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 //
 // Note also take into account the condition where the _calculated_
 // hash may be zero: since all possible values of the crmhash64_t
-// type can be produced (at lerast theoretically) by the hash function,
+// type can be produced (at least theoretically) by the hash function,
 // we must check against the actual, i.e. current hash value, no
 // matter what it's value is.
 //
@@ -106,7 +106,7 @@ int crm_expr_eval(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
         crmhash64_t ihash = strnhash64(tempbuf, newvallen);
         ahash[itercount] = ihash;
         if (internal_trace)
-            fprintf(stderr, "Eval ihash = %llu\n", (uint64_t)ihash);
+            fprintf(stderr, "Eval ihash = %016llX\n", (unsigned long long)ihash);
 
         // scan down to see if we see any change: faster than up.
         //

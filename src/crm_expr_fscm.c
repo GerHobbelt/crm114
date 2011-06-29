@@ -294,7 +294,7 @@ static int match_prefix(SCM_STATE_STRUCT *s, long a, char *b)
 }
 
 //whats the hashcode of the three characters at spot a in the stored text
-static unsigned long get_text_hash(SCM_STATE_STRUCT *s, long a)
+static crmhash_t get_text_hash(SCM_STATE_STRUCT *s, long a)
 {
     char b[3];
 
@@ -525,7 +525,7 @@ static void find_longest_match
  long         *prefix,
  long         *len)
 {
-    unsigned long key;
+    crmhash_t key;
     long i, j, k;
 
     if (max_len < 3)

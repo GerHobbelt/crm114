@@ -203,6 +203,18 @@
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #define HAVE_NETINET_IN_H 1
 
+/* Define if run-time library offers nanosecond time interval in struct
+   stat:c/m/atimensec. */
+/* #undef HAVE_NSEC_STAT_TIMENSEC */
+
+/* Define if run-time library offers nanosecond time interval in struct
+   stat:c/m/atime_nsec. */
+/* #undef HAVE_NSEC_STAT_TIME_NSEC */
+
+/* Define if run-time library offers nanosecond time interval in struct
+   stat:c/m/atim.tv_nsec. */
+#define HAVE_NSEC_STAT_TIM_TV_NSEC 1
+
 /* PCRE REs */
 /* #undef HAVE_PCRE_REGEX */
 
@@ -283,6 +295,9 @@
 /* Define to 1 if you have the `strchr' function. */
 #define HAVE_STRCHR 1
 
+/* Define to 1 if you have the `strcmp' function. */
+#define HAVE_STRCMP 1
+
 /* Define to 1 if you have the `strcspn' function. */
 #define HAVE_STRCSPN 1
 
@@ -321,6 +336,9 @@
 
 /* Define to 1 if you have the `strstr' function. */
 #define HAVE_STRSTR 1
+
+/* Define to 1 if the system has the type `struct stat'. */
+#define HAVE_STRUCT_STAT 1
 
 /* Define to 1 if you have the `sysconf' function. */
 #define HAVE_SYSCONF 1
@@ -435,6 +453,12 @@
 /* Define if you have the '__environ' global environment variable */
 #define HAVE___ENVIRON 1
 
+/* Define if compiler implements __FUNCTION__. */
+#define HAVE___FUNCTION__ 1
+
+/* Define if compiler implements __func__. */
+#define HAVE___FUNC__ 1
+
 /* Set host type */
 #define HOSTTYPE "linux-gnu"
 
@@ -460,13 +484,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20070807-BlameTheInterns"
+#define PACKAGE_STRING "CRM114 20070815-BlameBadData"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20070807-BlameTheInterns"
+#define PACKAGE_VERSION "20070815-BlameBadData"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -482,8 +506,14 @@
    release 3. */
 /* #undef SETVBUF_REVERSED */
 
+/* The size of `int', as computed by sizeof. */
+#define SIZEOF_INT 4
+
 /* The size of `long int', as computed by sizeof. */
 #define SIZEOF_LONG_INT 8
+
+/* The size of `long long int', as computed by sizeof. */
+#define SIZEOF_LONG_LONG_INT 8
 
 /* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
 /* #undef STAT_MACROS_BROKEN */
@@ -492,13 +522,13 @@
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-138"
+#define TAR_FILENAME_POSTFIX "Ger-170"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "20070807-BlameTheInterns"
+#define VERSION "20070815-BlameBadData"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""

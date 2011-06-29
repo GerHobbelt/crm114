@@ -29,6 +29,13 @@ doc_DATA = AUTHORS COPYING ChangeLog HACKING README TODO NEWS README.1st
 DISTCLEANFILES = 
 CLEANFILES = *~ *.bak
 
+MSVC_PRJ_FILES = win32/config_win32.h \
+	win32/crm114.sln win32/crm114.vcproj win32/cssdiff.vcproj win32/osbf-util.vcproj \
+	win32/resource.h win32/crm114.ico win32/cssmerge.vcproj win32/cssutil.vcproj \
+	win32/getopt.h win32/getopt_ex.h win32/getopt.c win32/getopt_ex.c \
+	win32/crm_win32_port.c \
+	win32/megatest.bat win32/crm114rc.h win32/crm114rc.rc 
+
 EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
 	stamp.year stamp.day stamp.month \
 	distribute_files_from_src_dir.sh fix_crlf.sh \
@@ -36,10 +43,13 @@ EXTRA_DIST = bootstrap crm114.lsm.in HACKING README.1st setversion \
 	m4/ac_func_snprintf.m4 m4/ax_cflags_warn_all_ansi.m4 \
 	m4/ax_cflags_warn_all.m4 m4/vl_lib_readline.m4 \
 	m4/ax_cflags_gcc_option.m4 m4/ax_diff_option.m4 \
+	m4/ac___function___c99_vpredef_vars.m4 \
+	m4/ac_nsec_stat_fields.m4 \
 	mk_distros.sh \
 	uncrustify.cfg \
 	cleanup.bat autogen.sh CREDITS README.win32 BUGS \
-	README.maintainer MAILINGLIST 
+	README.maintainer MAILINGLIST \
+	$(MSVC_PRJ_FILES)
 
 
 if MAINTAINER_MODE
@@ -63,6 +73,18 @@ dist-diff:
 	$(SILENT) echo "Creating diff archives"; 
 	(cd src && $(MAKE) $(AM_MAKEFLAGS) dist-diff);
 
+dist-msvc: distdir
+	$(SILENT) echo "Creating MSVC project archives"; 
+	-rm -f $(ARCHIVE_BASE_NAME).Win32.project.7z
+	-rm -f $(ARCHIVE_BASE_NAME).Win32.project.tar.gz
+	-rm -f $(ARCHIVE_BASE_NAME).Win32.project.tar.bz2
+	( test "X$(sevenzip)" != "X" && $(sevenzip) a -t7z -m0=lzma -mx=9 -mfb=273 -md=64m -ms=on $(ARCHIVE_BASE_NAME).Win32.project.7z $(distdir) )
+	( test "X$(tar)" != "X" && $(tar) -c $(distdir) | GZIP=$(GZIP_ENV) gzip -9 -c > $(ARCHIVE_BASE_NAME).Win32.project.tar.gz )
+	( test "X$(tar)" != "X" && $(tar) -c $(distdir) | bzip2 -9 -c > $(ARCHIVE_BASE_NAME).Win32.project.tar.bz2 )
+	-rm -f $(ARCHIVE_BASE_NAME).Win32.project.zip
+	( test "X$(zip)" != "X" && $(zip) -rq $(ARCHIVE_BASE_NAME).Win32.project.zip $(distdir) )
+
+
 distribution: distdir dist-diff
 	$(SILENT) echo "Creating src archives"; 
 	-rm -f $(ARCHIVE_BASE_NAME).src.7z
@@ -76,7 +98,7 @@ distribution: distdir dist-diff
 	$(am__remove_distdir)
 
 
-.PHONY: reindent depend dist-7z-all dist-diff dist-maint
+.PHONY: reindent depend dist-7z-all dist-diff dist-maint dist-msvc
 
 
 reindent:

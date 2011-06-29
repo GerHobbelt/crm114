@@ -460,7 +460,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                 int icount;
                 icount = 0;
                 //
-                //         the reason we _don't_ do this on te first interation
+                //         the reason we _don't_ do this on the first interation
                 //       is that we may already have data in the temp
                 //      buffer, and we should use that data up first.
                 if (!firsttime)
@@ -468,14 +468,14 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                     //  If we're reading from stdin, then we have three options:
                     //   read a character, read up to (and including) the newline,
                     //   or read till EOF.  After each one, we set
-                    if (feof(stdin))
+                    if (feof(crm_stdin))
                         saweof = 1;
                     if (inputretryEOF == EOFRETRY
-                        && (feof(stdin) || ferror(stdin)))
+                        && (feof(crm_stdin) || ferror(crm_stdin)))
                     {
                         if (user_trace)
                             fprintf(stderr, "  resetting the stdin stream\n");
-                        clearerr(stdin);
+                        clearerr(crm_stdin);
                     }
                     if (user_trace)
                         fprintf(stderr, "  getting window input from STDIN\n");
@@ -500,8 +500,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //        fread doesn't stop on pipe empty, while
                             icount = fread(&(newinputbuf[newbuflen]), 1,
                                            data_window_size - (newbuflen + 256),
-                                           stdin);
-                            if (feof(stdin)) saweof = 1;
+                                           crm_stdin);
+                            if (feof(crm_stdin)) saweof = 1;
                         }
                         break;
 
@@ -516,8 +516,8 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //
                             //        fread (stdin) doesn't return on pipe
                             //        empty, while read on STDIN_FILENO does.
-                            //        So, for reading by chunks, we use read (STDIN
-                            icount = read(fileno(stdin),
+                            //        So, for reading by chunks, we use read(STDIN)
+                            icount = read(fileno(crm_stdin),
                                           &(newinputbuf[newbuflen]),
                                           data_window_size / 4);
                             saweof = 1;
@@ -532,7 +532,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                             //
                             if (user_trace)
                                 fprintf(stderr, "   single character BYCHAR read\n");
-                            icount = fread(&(newinputbuf[newbuflen]), 1, 1, stdin);
+                            icount = fread(&(newinputbuf[newbuflen]), 1, 1, crm_stdin);
                         }
                         break;
                     }
@@ -552,7 +552,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                                   "while trying to read",
                                   "I will keep trying. ");
                 }
-                if (feof(stdin))
+                if (feof(crm_stdin))
                     saweof = 1;
             }
         }      // END OF SWITCH ON INPUTSRC
@@ -619,7 +619,7 @@ int crm_expr_window(CSL_CELL *csl, ARGPARSE_BLOCK *apb)
                         //      try again.
                         if (inputretryEOF == EOFRETRY)
                         {
-                            clearerr(stdin);
+                            clearerr(crm_stdin);
                             done = 0;
                             failout = 0;
                         }

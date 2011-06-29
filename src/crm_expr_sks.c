@@ -120,7 +120,7 @@ typedef float Qitem_t;
 //    We use the same old hyperspace structures for the intermediate storage.
 typedef struct mythical_hyperspace_cell
 {
-    unsigned long hash;
+    crmhash_t hash;
 } HYPERSPACE_FEATUREBUCKET_STRUCT;
 
 
@@ -185,15 +185,11 @@ typedef struct mythical_solver
 
 //   And a few file-wide static globals:
 //
-static SVM_PARAM param = {
-    0 };
-static SVM_PROBLEM svm_prob = {
-    0 };
-static CACHE svmcache = {
-    0 };
+static SVM_PARAM param = {0};
+static SVM_PROBLEM svm_prob = {0};
+static CACHE svmcache = {0};
 static Qitem_t *DiagQ = NULL; //diagonal Qmatrix
-static SOLVER solver = {
-    0 };
+static SOLVER solver = {0};
 
 ////////////////////////////////////////////////////////////////////
 //
@@ -483,9 +479,9 @@ static Qitem_t *get_rowQ(int i, int length)
             if (param.svm_type == C_SVC)
                 //   multiply by the +1/-1 labels (in the .y structures) to
                 //   face the kernel result in the right direction.
-                rowQ[temp] = (Qitem_t)svm_prob.y[i]
+                rowQ[temp] = (Qitem_t)(svm_prob.y[i]
                              * svm_prob.y[temp]
-                             *kernel(svm_prob.x[i], svm_prob.x[temp]);
+                             * kernel(svm_prob.x[i], svm_prob.x[temp]));
             else if (param.svm_type == ONE_CLASS)
                 rowQ[temp] = (Qitem_t)kernel(svm_prob.x[i], svm_prob.x[temp]);
         }
@@ -502,7 +498,7 @@ static Qitem_t *get_DiagQ()
 
     for (i = 0; i < svm_prob.l; i++)
     {
-        DiagQ[i] = kernel(svm_prob.x[i], svm_prob.x[i]);
+        DiagQ[i] = (Qitem_t)kernel(svm_prob.x[i], svm_prob.x[i]);
     }
     return DiagQ;
 }
@@ -849,7 +845,7 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
     fval = 0.0;
     hiTarget = (posn + 1.0) / (posn + 2.0);
     loTarget = 1 / (negn + 2.0);
-    t = (double *)calloc(svm_prob.l, sizeof(double));
+    t = calloc(svm_prob.l, sizeof(t[0]));
     for (i = 0; i < svm_prob.l; i++)
     {
         if (svm_prob.y[i] > 0)
@@ -1079,29 +1075,27 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
     //    if (|Text|>0) hide the text into the .svm file
 
-  #ifdef GET_RID_OF_PUNCTUATION
+#ifdef GET_RID_OF_PUNCTUATION
     //get rid of all punctuation
-    // strcpy(ptext, "[^[:punct:]]+");
-    //plen = strlen(ptext);
-    //     get the "this is a word" regex
     crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
     plen = apb->s1len;
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
-
+    if (plen == 0)    {     strcpy(ptext, "[^[:punct:]]+");
+    plen = strlen(ptext);
+        //strcpy(ptext, "[[:graph:]]+");        //plen = strlen(ptext);    }
     //   compile the word regex
     //
     if (internal_trace)
         fprintf(stderr, "\nWordmatch pattern is %s", ptext);
 
     i = crm_regcomp(&regcb, ptext, plen, cflags);
-
     if (i > 0)
     {
         crm_regerror(i, &regcb, tempbuf, data_window_size);
         nonfatalerror("Regular Expression Compilation Problem:", tempbuf);
         goto regcomp_failed;
     }
-  #endif
+#endif
 
     file_string = calloc((txtlen + 10), sizeof(file_string[0]));
     CRM_ASSERT(file_string[0] == 0);
@@ -1119,7 +1113,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     // if [Text]>0 hide it and append to the file1
     if (txtlen > 0)
     {
-      #ifdef GET_RID_OF_PUNCTUATION
+#ifdef GET_RID_OF_PUNCTUATION
         while (k == 0 && textoffset <= textmaxoffset
                && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT)
         {
@@ -1184,10 +1178,10 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 k = 1;
             }
         }   //   end the while k==0
-      #else
+#else
         strncpy(file_string, &txtptr[txtstart], txtlen);
         file_string[txtlen] = 0;
-      #endif
+#endif
 
         if (strlen(file_string) > 0)
         {
@@ -1209,7 +1203,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 fprintf(stderr, "sorted hashes:\n");
                 for (i = 0; i < hashcounts; i++)
                 {
-                    fprintf(stderr, "hashes[%ld]=%lud\n", i, hashes[i].hash);
+                    fprintf(stderr, "hashes[%ld]=0x%08lX\n", i, (unsigned long)hashes[i].hash);
                 }
                 fprintf(stderr, "Total hashes generated: %ld\n", hashcounts);
             }
@@ -1352,9 +1346,9 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     thisstart = k;
                     if (internal_trace)
                         fprintf(stderr,
-                                "At featstart, looking at %ld (next bucket value is %ld)\n",
-                                file_hashes[thisstart].hash,
-                                file_hashes[thisstart + 1].hash);
+                                "At featstart, looking at 0x%08lX (next bucket value is 0x%08lX)\n",
+                                (unsigned long)file_hashes[thisstart].hash,
+                                (unsigned long)file_hashes[thisstart + 1].hash);
                     while (wrapup == 0)
                     {
                         //    it's an in-class feature.
@@ -1418,9 +1412,9 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     thislen = thisend - thisstart + 1;
                     if (internal_trace)
                         fprintf(stderr,
-                                "At featend, looking at %ld (next bucket value is %ld)\n",
-                                file_hashes[thisend].hash,
-                                file_hashes[thisend + 1].hash);
+                                "At featend, looking at 0x%08lX (next bucket value is 0x%08lX)\n",
+                                (unsigned long)file_hashes[thisend].hash,
+                                (unsigned long)file_hashes[thisend + 1].hash);
 
                     //  end of a document- process accumulations
 
@@ -1556,20 +1550,23 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             file1_hashlens = file1_hashlens
                              / sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT);
             //find out how many documents in file1
-            for (i = 0; i < file1_hashlens; i++){
+            for (i = 0; i < file1_hashlens; i++)
+{
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file1 is %lud",
-                            i, file1_hashes[i].hash);
+                            "\nThe %ldth hash value in file1 is 0x%08lX",
+                            i, (unsigned long)file1_hashes[i].hash);
                 if (file1_hashes[i].hash == 0)
                 {
                     k1++;
                 }
             }
             if (internal_trace)
+{
                 fprintf(stderr,
                         "\nThe total number of documents in file1 is %d\n",
                         k1);
+}
 
             //initialize the svm_prob.x, svm_prob.y
             svm_prob.l = k1;
@@ -1592,7 +1589,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 for (i = 0; i < k; i++)
                 {
-                    fprintf(stderr, "\nx[%ld]=%lud\n", i, x[i][1].hash);
+                    fprintf(stderr, "\nx[%ld]=0x%08lX\n", i, (unsigned long)x[i][1].hash);
                 }
             }
             Q_init();
@@ -1655,8 +1652,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file1 is %lud",
-                            i, file1_hashes[i].hash);
+                            "\nThe %ldth hash value in file1 is 0x%08lX",
+                            i, (unsigned long)file1_hashes[i].hash);
                 if (file1_hashes[i].hash == 0)
                 {
                     k1++;
@@ -1672,8 +1669,8 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file2 is %lud",
-                            i, file2_hashes[i].hash);
+                            "\nThe %ldth hash value in file2 is 0x%08lX",
+                            i, (unsigned long)file2_hashes[i].hash);
                 if (file2_hashes[i].hash == 0)
                 {
                     k2++;
@@ -1741,7 +1738,7 @@ int crm_expr_sks_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 end_timer = time(NULL);
                 run_time = difftime(end_timer, start_timer);
                 if (user_trace)
-                    fprintf(stderr, "run_time =  %f seconds\n", run_time);
+                    fprintf(stderr, "run_time = %f seconds\n", run_time);
                 free(deci_array);
 
                 //  write solver to file3
@@ -1952,13 +1949,12 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   #ifdef GET_RID_OF_PUNCTUATION
     //get rid of all punctuation
-    //strcpy(ptext, "[^[:punct:]]+");
-    //plen = strlen(ptext);
-    //     get the "this is a word" regex
     crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s1start, apb->s1len);
     plen = apb->s1len;
     plen = crm_nexpandvar(ptext, plen, MAX_PATTERN);
-
+    if (plen == 0)    {     strcpy(ptext, "[^[:punct:]]+");
+    plen = strlen(ptext);
+        //strcpy(ptext, "[[:graph:]]+");        //plen = strlen(ptext);    }
     //   compile the word regex
     //
     if (internal_trace)
@@ -2064,7 +2060,7 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, "sorted hashes:\n");
             for (i = 0; i < hashcounts; i++)
             {
-                fprintf(stderr, "hashes[%ld]=%lud\n", i, hashes[i].hash);
+                fprintf(stderr, "hashes[%ld]=0x%08lX\n", i, (unsigned long)hashes[i].hash);
             }
             fprintf(stderr, "Total hashes generated: %ld\n", hashcounts);
         }
@@ -2207,8 +2203,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file1 is %lud",
-                            i, file1_hashes[i].hash);
+                            "\nThe %ldth hash value in file1 is 0x%08lX",
+                            i, (unsigned long)file1_hashes[i].hash);
                 if (file1_hashes[i].hash == 0)
                 {
                     k1++;
@@ -2222,8 +2218,8 @@ int crm_expr_sks_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file2 is %lud",
-                            i, file2_hashes[i].hash);
+                            "\nThe %ldth hash value in file2 is 0x%08lX",
+                            i, (unsigned long)file2_hashes[i].hash);
                 if (file2_hashes[i].hash == 0)
                 {
                     k2++;

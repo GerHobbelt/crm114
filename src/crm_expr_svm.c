@@ -102,7 +102,7 @@ typedef float Qitem_t;
 //    We use the same old hyperspace structures for the intermediate storage.
 typedef struct mythical_hyperspace_cell
 {
-    unsigned long hash;
+    crmhash_t hash;
 } HYPERSPACE_FEATUREBUCKET_STRUCT;
 
 
@@ -990,7 +990,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     regmatch_t match[5];
     struct stat statbuf1;    //  for statting the hash file1
     struct stat statbuf2;    //  for statting the hash file2
-    unsigned long hashpipe[OSB_BAYES_WINDOW_LEN + 1];
+    crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
     time_t start_timer;
     time_t end_timer;
     double run_time;
@@ -1198,7 +1198,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     fprintf(stderr, "  Hashpipe contents: ");
                     for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                        fprintf(stderr, " %lud", hashpipe[h]);
+                        fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
                     fprintf(stderr, "\n");
                 }
 
@@ -1211,8 +1211,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 //  just full of 0xDEADBEEF.  (was i >=5)
                 if (1)
                 {
-                    unsigned long h1;
-                    unsigned long h2;
+                    crmhash_t h1;
+                    crmhash_t h2;
                     long th = 0;       // a counter used for TSS tokenizing
                     long j;
                     //
@@ -1228,7 +1228,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         if (h1 == 0) h1 = 0xdeadbeef;
                         h2 = 0xdeadbeef;
                         if (internal_trace)
-                            fprintf(stderr, "Singleton feature : %lud\n", h1);
+                            fprintf(stderr, "Singleton feature: 0x%08lX\n", (unsigned long)h1);
                         CRM_ASSERT(hashcounts >= 0);
                         CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
                         hashes[hashcounts].hash = h1;
@@ -1246,8 +1246,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             h2 = 0xdeadbeef;
                             if (internal_trace)
                                 fprintf(stderr,
-                                        "Polynomial %ld has h1:%lud  h2: %lud\n",
-                                        j, h1, h2);
+                                        "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
+                                        j, (unsigned long)h1, (unsigned long)h2);
 
                             CRM_ASSERT(hashcounts >= 0);
                             CRM_ASSERT(hashcounts < HYPERSPACE_MAX_FEATURE_COUNT);
@@ -1280,7 +1280,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, "sorted hashes:\n");
             for (i = 0; i < hashcounts; i++)
             {
-                fprintf(stderr, "hashes[%ld]=%lud\n", i, hashes[i].hash);
+                fprintf(stderr, "hashes[%ld]=0x%08lX\n", i, (unsigned long)hashes[i].hash);
             }
             fprintf(stderr, "Total hashes generated: %ld\n", hashcounts);
         }
@@ -1423,9 +1423,9 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 thisstart = k;
                 if (internal_trace)
                     fprintf(stderr,
-                            "At featstart, looking at %ld (next bucket value is %ld)\n",
-                            file_hashes[thisstart].hash,
-                            file_hashes[thisstart + 1].hash);
+                            "At featstart, looking at 0x%08lX (next bucket value is 0x%08lX)\n",
+                            (unsigned long)file_hashes[thisstart].hash,
+                            (unsigned long)file_hashes[thisstart + 1].hash);
                 while (wrapup == 0)
                 {
                     //    it's an in-class feature.
@@ -1489,9 +1489,9 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 thislen = thisend - thisstart + 1;
                 if (internal_trace)
                     fprintf(stderr,
-                            "At featend, looking at %ld (next bucket value is %ld)\n",
-                            file_hashes[thisend].hash,
-                            file_hashes[thisend + 1].hash);
+                            "At featend, looking at 0x%08lX (next bucket value is 0x%08lX)\n",
+                            (unsigned long)file_hashes[thisend].hash,
+                            (unsigned long)file_hashes[thisend + 1].hash);
 
                 //  end of a document- process accumulations
 
@@ -1631,8 +1631,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             for (i = 0; i < file1_hashlens; i++){
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file1 is %lud",
-                            i, file1_hashes[i].hash);
+                            "\nThe %ldth hash value in file1 is 0x%08lX",
+                            i, (unsigned long)file1_hashes[i].hash);
                 if (file1_hashes[i].hash == 0)
                 {
                     k1++;
@@ -1640,7 +1640,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
             if (internal_trace)
                 fprintf(stderr,
-                        "\nThe total number of documents in file1 is %d\n",
+                        "\nThe total number of documents in file1 is %u\n",
                         k1);
 
             //initialize the svm_prob.x, svm_prob.y
@@ -1668,7 +1668,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 for (i = 0; i < k; i++)
                 {
-                    fprintf(stderr, "\nx[%ld]=%lud\n", i, x[i][1].hash);
+                    fprintf(stderr, "\nx[%ld]=0x%08lX\n", i, (unsigned long)x[i][1].hash);
                 }
             }
             Q_init();
@@ -1731,8 +1731,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file1 is %lud",
-                            i, file1_hashes[i].hash);
+                            "\nThe %ldth hash value in file1 is 0x%08lX",
+                            i, (unsigned long)file1_hashes[i].hash);
                 if (file1_hashes[i].hash == 0)
                 {
                     k1++;
@@ -1741,15 +1741,15 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (user_trace)
             {
                 fprintf(stderr,
-                        "\nThe total number of documents in file1 is %d\n", k1);
+                        "\nThe total number of documents in file1 is %u\n", k1);
             }
 
             for (i = 0; i < file2_hashlens; i++)
             {
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file2 is %lud",
-                            i, file2_hashes[i].hash);
+                            "\nThe %ldth hash value in file2 is 0x%08lX",
+                            i, (unsigned long)file2_hashes[i].hash);
                 if (file2_hashes[i].hash == 0)
                 {
                     k2++;
@@ -1758,7 +1758,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (user_trace)
             {
                 fprintf(stderr,
-                        "\nThe total number of documents in file2 is %d\n", k2);
+                        "\nThe total number of documents in file2 is %u\n", k2);
             }
 
             if (!(k1 > 0 && k2 > 0))
@@ -1817,7 +1817,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 {
                     for (i = 0; i < k; i++)
 					{
-                        fprintf(stderr, "\nx[%ld]=%lud\n", i, x[i][1].hash);
+                        fprintf(stderr, "\nx[%ld]=0x%08lX\n", i, (unsigned long)x[i][1].hash);
                     }
                 }
                 Q_init();
@@ -2213,7 +2213,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     FILE *hashf;
     long textoffset;
     long textmaxoffset;
-    unsigned long hashpipe[OSB_BAYES_WINDOW_LEN + 1];
+    crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
     HYPERSPACE_FEATUREBUCKET_STRUCT *hashes; //  the hashes we'll sort
     long hashcounts;
     long cflags, eflags;
@@ -2371,7 +2371,6 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         fprintf(stderr, "\nWordmatch pattern is %s", ptext);
 
     i = crm_regcomp(&regcb, ptext, plen, cflags);
-
     if (i > 0)
     {
         crm_regerror(i, &regcb, tempbuf, data_window_size);
@@ -2469,7 +2468,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     int j;
                     unsigned th = 0; //  a counter used only in TSS hashing
                     unsigned long hindex;
-                    unsigned long h1; //, h2;
+                    crmhash_t h1; //, h2;
                     //
                     th = 0;
                     //
@@ -2478,7 +2477,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         h1 = hashpipe[0];
                         if (h1 == 0) h1 = 0xdeadbeef;
                         if  (internal_trace)
-                            fprintf(stderr, "Singleton feature : %lud\n", h1);
+                            fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned long)h1);
                         hashes[hashcounts].hash = h1;
                         hashcounts++;
                     }
@@ -2494,8 +2493,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             hindex = h1;
 
                             if (internal_trace)
-                                fprintf(stderr, "Polynomial %d has h1:%lud \n",
-                                        j, h1);
+                                fprintf(stderr, "Polynomial %d has h1:0x%08lX\n",
+                                        j, (unsigned long)h1);
 
                             hashes[hashcounts].hash = h1;
                             hashcounts++;
@@ -2524,7 +2523,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             fprintf(stderr, "sorted hashes:\n");
             for (i = 0; i < hashcounts; i++)
             {
-                fprintf(stderr, "hashes[%ld]=%lud\n", i, hashes[i].hash);
+                fprintf(stderr, "hashes[%ld]=0x%08lX\n", i, (unsigned long)hashes[i].hash);
             }
             fprintf(stderr, "Total hashes generated: %ld\n", hashcounts);
         }
@@ -2672,8 +2671,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file1 is %lud",
-                            i, file1_hashes[i].hash);
+                            "\nThe %ldth hash value in file1 is 0x%08lX",
+                            i, (unsigned long)file1_hashes[i].hash);
                 if (file1_hashes[i].hash == 0)
                 {
                     k1++;
@@ -2681,14 +2680,14 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             }
             if (user_trace)
                 fprintf(stderr,
-                        "\nThe total number of documents in file1 is %d\n", k1);
+                        "\nThe total number of documents in file1 is %u\n", k1);
 
             for (i = 0; i < file2_hashlens; i++)
             {
                 if (internal_trace)
                     fprintf(stderr,
-                            "\nThe %ldth hash value in file2 is %lud",
-                            i, file2_hashes[i].hash);
+                            "\nThe %ldth hash value in file2 is 0x%08lX",
+                            i, (unsigned long)file2_hashes[i].hash);
                 if (file2_hashes[i].hash == 0)
                 {
                     k2++;
@@ -2823,7 +2822,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             for (i = 0; i < k; i++)
                             {
                                 fprintf(stderr,
-                                        "\nx[%ld]=%lud\n", i, svm_prob.x[i][1].hash);
+                                        "\nx[%ld]=0x%08lX\n", i, (unsigned long)svm_prob.x[i][1].hash);
                             }
                         }
                         Q_init();
@@ -2879,8 +2878,8 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                             do
                             {
                                 fprintf(stderr,
-                                        "x[%ld][%ld]=%lud\n",
-                                        i, j, svm_prob.x[i][j].hash);
+                                        "x[%ld][%ld]=0x%08lX\n",
+                                        i, j, (unsigned long)svm_prob.x[i][j].hash);
                             } while (svm_prob.x[i][j++].hash != 0);
                         }
                     }

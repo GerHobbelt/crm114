@@ -364,7 +364,7 @@ void crm_pack_winnow_seg(WINNOW_FEATUREBUCKET_STRUCT *h,
                          long hs, long packstart, long packlen)
 {
     unsigned long ifrom, ito;
-    unsigned long thash, tkey;
+  crmhash_t thash, tkey;
     unsigned char tseen;
     float tvalue;
 
@@ -473,6 +473,8 @@ int crm_create_winnow_cssfile(char *cssfile, long buckets,
                 cssfile, errno);
         return EXIT_FAILURE;
     }
+    else
+    {
     //  Initialize CSS file - zero all buckets
     feature.hash =  major;
     feature.key = minor;
@@ -490,6 +492,7 @@ int crm_create_winnow_cssfile(char *cssfile, long buckets,
         memset(&feature, 0, sizeof(feature));
     }
     fclose(f);
+    }
     return EXIT_SUCCESS;
 }
 

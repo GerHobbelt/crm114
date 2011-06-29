@@ -199,7 +199,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     struct stat statbuf;                     //  for statting the hash file
     HYPERSPACE_FEATUREBUCKET_STRUCT *hashes; //  the hashes we'll sort
     long hashcounts;
-    unsigned long hashpipe[OSB_BAYES_WINDOW_LEN + 1];
+    crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
     //
     regex_t regcb;
     regmatch_t match[5];    //  we only care about the outermost match
@@ -380,7 +380,6 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         if (k != 0 || textoffset > textmaxoffset)
             goto learn_end_regex_loop;
 
-        {
             wlen = match[0].rm_eo - match[0].rm_so;
             memmove(tempbuf,
                     &(txtptr[textoffset + match[0].rm_so]),
@@ -421,7 +420,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             {
                 fprintf(stderr, "  Hashpipe contents: ");
                 for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                    fprintf(stderr, " %ld", hashpipe[h]);
+                    fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
                 fprintf(stderr, "\n");
             }
 
@@ -434,8 +433,8 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             if (1) //  we always run the hashpipe now, even if it's
                  //  just full of 0xDEADBEEF.  (was i >=5)
             {
-                unsigned long h1;
-                unsigned long h2;
+                crmhash_t h1;
+                crmhash_t h2;
                 long th = 0;     // a counter used for TSS tokenizing
                 long j;
                 //
@@ -451,7 +450,7 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     if (h1 == 0) h1 = 0xdeadbeef;
                     h2 = 0xdeadbeef;
                     if (internal_trace)
-                        fprintf(stderr, "Singleton feature : %ld\n", h1);
+                        fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned long)h1);
                     hashes[hashcounts].hash = h1;
                     hashcounts++;
                 }
@@ -467,15 +466,14 @@ int crm_expr_osb_hyperspace_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //if (h2 == 0) h2 = 0xdeadbeef;
                         h2 = 0xdeadbeef;
                         if (internal_trace)
-                            fprintf(stderr, "Polynomial %ld has h1:%ld  h2: %ld\n",
-                                    j, h1, h2);
+                            fprintf(stderr, "Polynomial %ld has h1:0x%08lX  h2:0x%08lX\n",
+                                    j, (unsigned long)h1, (unsigned long)h2);
 
                         hashes[hashcounts].hash = h1;
                         //          hashes[hashcounts].key = h2;
                         hashcounts++;
                     }
                 }
-            }
         }
     }   //   end the while k==0
 
@@ -556,13 +554,13 @@ regcomp_failed:
 	    //	    || hashes[i].key != hashes[i+1].key )
 	    )
 	  {
-	    hashes[j]= hashes[i];
+	    hashes[j] = hashes[i];
 	    j++;
-	  };
+	  }
 	i++;
-      };
+      }
       hashcounts = j;
-    };
+    }
 #endif
     if (user_trace)
         fprintf(stderr, "Unique hashes generated: %ld\n", hashcounts);
@@ -864,7 +862,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long unk_hashcount;
 
     struct stat statbuf;    //  for statting the hash file
-    unsigned long hashpipe[OSB_BAYES_WINDOW_LEN + 1];
+    crmhash_t hashpipe[OSB_BAYES_WINDOW_LEN + 1];
     regex_t regcb;
     regmatch_t match[5];    //  we only care about the outermost match
 
@@ -1345,7 +1343,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             fprintf(stderr, "  Hashpipe contents: ");
             for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-                fprintf(stderr, " %ld", hashpipe[h]);
+                fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
             fprintf(stderr, "\n");
         }
 
@@ -1358,8 +1356,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             int j;
             unsigned th = 0;      //  a counter used only in TSS hashing
-            unsigned long hindex;
-            unsigned long h1; //, h2;
+            crmhash_t hindex;
+            crmhash_t h1;
             //
             th = 0;
             //
@@ -1368,7 +1366,7 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 h1 = hashpipe[0];
                 if (h1 == 0) h1 = 0xdeadbeef;
                 if  (internal_trace)
-                    fprintf(stderr, "Singleton feature : %ld\n", h1);
+                    fprintf(stderr, "Singleton feature : 0x%08lX\n", (unsigned long)h1);
                 unk_hashes[unk_hashcount].hash = h1;
                 unk_hashcount++;
             }
@@ -1385,8 +1383,8 @@ int crm_expr_osb_hyperspace_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                     hindex = h1;
 
                     if (internal_trace)
-                        fprintf(stderr, "Polynomial %d has h1:%ld \n",
-                                j, h1);
+                        fprintf(stderr, "Polynomial %d has h1:0x%08lX\n",
+                                j, (unsigned long)h1);
 
                     unk_hashes[unk_hashcount].hash = h1;
                     unk_hashcount++;
@@ -1466,9 +1464,9 @@ classify_end_regex_loop:
 	    {
 	    unk_hashes[j] = unk_hashes[i];
 	    j++;
-	    };
+	    }
 	  i++;
-	};
+	}
       j--;
       unk_hashcount = j;
     }
@@ -1841,6 +1839,7 @@ classify_end_regex_loop:
         //    TURN THIS ON IF YOU WANT TO SEE ALL OF THE HUMILIATING DEAD
         //    ENDS OF EVALUATIONS THAT DIDN'T WORK OUT WELL....
         if (internal_trace)
+            {
             //if (1)
             for (i = 0; i < maxhash; i++)
             {
@@ -1856,6 +1855,7 @@ classify_end_regex_loop:
                         max_des[i], des_normalized[i],
                         class_radiance[i], class_radiance_normalized[i],
                         class_flux[i], class_flux_normalized[i]);
+            }
             }
     }
 

@@ -74,7 +74,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     char *learnfilename;
     WINNOW_FEATUREBUCKET_STRUCT *hashes; //  the text of the hash file
     unsigned char *xhashes;              //  and the mask of what we've seen
-    unsigned long hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
+    crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
     //
     regex_t regcb;
     regmatch_t match[5];    //  we only care about the outermost match
@@ -132,7 +132,7 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         //  GROT GROT GROT Learning would be symmetrical
         //  if this were
         //       sense = 1.0 / sense;
-        //  but that's inferior, because thenn the weights are
+        //  but that's inferior, because then the weights are
         // limited to the values of sense^n.
         if (user_trace)
             fprintf(stderr, " refuting learning\n");
@@ -166,8 +166,8 @@ int crm_expr_osb_winnow_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
     //             filename starts at i,  ends at j. null terminate it.
     htext[j] = '\000';
-
     learnfilename = strdup(&htext[i]);
+
     //             and stat it to get it's length
     k = stat(learnfilename, &statbuf);
 
@@ -269,7 +269,7 @@ sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
     //
 #ifdef CSS_VERSION_CHECK
     if (hashes[0].hash != 1
-        || hashes[0].key  != 0)
+        || hashes[0].key != 0)
     {
     if (internal_trace)
         fprintf(stderr, "Hash was: %ld, key was %ld\n", hashes[0].hash, hashes[0].key);
@@ -386,7 +386,7 @@ sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
         slen = textmaxoffset - textoffset;
 
         // if pattern is empty, extract non graph delimited tokens
-        // directly ([[graph]]+) instead of calling regexec
+        // directly ([[graph]]+) instead of calling regexec  (8% faster)
         if (ptext[0] != '\0')
         {
             k = crm_regexec(&regcb, &(txtptr[textoffset]),
@@ -452,7 +452,7 @@ sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
         {
             fprintf(stderr, "  Hashpipe contents: ");
             for (h = 0; h < OSB_WINNOW_WINDOW_LEN; h++)
-                fprintf(stderr, " %ld", hashpipe[h]);
+                fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
             fprintf(stderr, "\n");
         }
 
@@ -465,8 +465,8 @@ sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
         if (1)   //  we always run the hashpipe now, even if it's
                  //  just full of 0xDEADBEEF.  (was i >=5)
         {
-            unsigned long hindex;
-            unsigned long h1, h2;
+                crmhash_t hindex;
+            crmhash_t h1, h2;
             long th = 0;         // a counter used for TSS tokenizing
             unsigned long incrs;
             long j;
@@ -503,8 +503,8 @@ sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
 
                 if (internal_trace)
                 {
-                    fprintf(stderr, "Polynomial %ld has h1:%ld  h2: %ld\n",
-                            j, h1, h2);
+                    fprintf(stderr, "Polynomial %ld has h1: 0x%08lX  h2: 0x%08lX\n",
+                            j, (unsigned long)h1, (unsigned long)h2);
                 }
 
                 //
@@ -578,11 +578,11 @@ sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
                 {
                     if (hashes[hindex].value == 0)
                     {
-                        fprintf(stderr, "New feature at %ld\n", hindex);
-                    }
-                    else
-                    {
-                        fprintf(stderr, "Old feature at %ld\n", hindex);
+                            fprintf(stderr, "New feature at %ld\n", (long)hindex);
+                        }
+                        else
+                        {
+                            fprintf(stderr, "Old feature at %ld\n", (long)hindex);
                     }
                 }
 
@@ -593,9 +593,9 @@ sparse_spectrum_file_length * sizeof(WINNOW_FEATUREBUCKET_STRUCT)))
                     hashes[hindex].hash = h1;
                     hashes[hindex].key  = h2;
                     xhashes[hindex] = 1;
-                    if (hashes[hindex].value > 0.0)
+                    if (hashes[hindex].value > 0)
                     {
-                        hashes[hindex].value = hashes[hindex].value * sense;
+                        hashes[hindex].value *= sense;
                     }
                     else
                     {
@@ -673,14 +673,15 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     long use_unigrams;
 
     struct stat statbuf;    //  for statting the hash file
-    unsigned long hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
+    crmhash_t hashpipe[OSB_WINNOW_WINDOW_LEN + 1];
     regex_t regcb;
     regmatch_t match[5];    //  we only care about the outermost match
 
     double fcounts[MAX_CLASSIFIERS]; // total counts for feature normalize
-    hitcount_t totalcount = 0;
 
     double cpcorr[MAX_CLASSIFIERS];        // corpus correction factors
+#if defined(GER)
+    hitcount_t totalcount = 0;
     hitcount_t hits[MAX_CLASSIFIERS];      // actual hits per feature per classifier
     hitcount_t totalhits[MAX_CLASSIFIERS]; // actual total hits per classifier
     double totalweights[MAX_CLASSIFIERS];  //  total of hits * weights
@@ -688,6 +689,16 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     double classifierprs[MAX_CLASSIFIERS]; //  pR's of each class
     long totalfeatures;                    //  total features
     hitcount_t htf;                        // hits this feature got.
+#else
+  unsigned long totalcount = 0;
+  double hits[MAX_CLASSIFIERS];  // actual hits per feature per classifier
+  long totalhits[MAX_CLASSIFIERS];  // actual total hits per classifier
+  double totalweights[MAX_CLASSIFIERS];  //  total of hits * weights
+  double unseens[MAX_CLASSIFIERS]; //  total unseen features.
+  double classifierprs[MAX_CLASSIFIERS]; //  pR's of each class
+  long totalfeatures;   //  total features
+  double htf;             // hits this feature got.
+#endif
     double tprob = 0;                      //  total probability in the "success" domain.
 
     //double textlen;    //  text length  - rougly corresponds to
@@ -1072,7 +1083,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         slen = textmaxoffset - textoffset;
 
         // if pattern is empty, extract non graph delimited tokens
-        // directly ([[graph]]+) instead of calling regexec
+        // directly ([[graph]]+) instead of calling regexec  (8% faster)
         if (ptext[0] != '\0')
         {
             k = crm_regexec(&regcb, &(txtptr[textoffset]),
@@ -1134,7 +1145,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             fprintf(stderr, "  Hashpipe contents: ");
             for (h = 0; h < OSB_WINNOW_WINDOW_LEN; h++)
-                fprintf(stderr, " %ld", hashpipe[h]);
+                fprintf(stderr, " 0x%08lX", (unsigned long)hashpipe[h]);
             fprintf(stderr, "\n");
         }
 
@@ -1147,8 +1158,8 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         {
             int j, k;
             unsigned th = 0;      //  a counter used only in TSS hashing
-            unsigned long hindex;
-            unsigned long h1, h2;
+            crmhash_t hindex;
+            crmhash_t h1, h2;
             //unsigned long good, evil;
             //
             //
@@ -1182,8 +1193,8 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
                 hindex = h1;
                 if (internal_trace)
-                    fprintf(stderr, "Polynomial %d has h1:%ld  h2: %ld\n",
-                            j, h1, h2);
+                    fprintf(stderr, "Polynomial %d has h1:0x%08lX  h2:0x%08lX\n",
+                            j, (unsigned long)h1, (unsigned long)h2);
 
                 //    Now, for each of the feature files, what are
                 //    the statistics (found, not found, whatever)
@@ -1193,7 +1204,7 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                 for (k = 0; k < maxhash; k++)
                 {
                     long lh, lh0;
-                    float z;
+
                     lh = hindex % (hashlens[k]);
                     if (lh < spectra_start) lh = spectra_start;
                     lh0 = lh;
@@ -1216,14 +1227,20 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         //    Have we seen it before?
                         if (xhashes[k][lh] == 0)
                         {
-                            // remember totalhits
-                            htf = htf + 1;          // and hits-this-feature
+#if defined(GER)
+							double z;
+#else
+							float z;
+#endif
+
+							// remember totalhits
+                            htf++;          // and hits-this-feature
                             hits[k]++;              // increment hits.
                             z = hashes[k][lh].value;
                             //                  fprintf (stdout, "L: %f  ", z);
                             // and weight sum
-                            totalweights[k] = totalweights[k] + z;
-                            totalhits[k] = totalhits[k] + 1;
+                            totalweights[k] += z;
+                            totalhits[k]++;
                             //
                             //  and mark the feature as seen.
                             xhashes[k][lh] = 1;
@@ -1234,8 +1251,8 @@ int crm_expr_osb_winnow_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                         // unseens score 1.0, which is totally ambivalent; seen
                         //  and accepted score more, seen and refuted score less
                         //
-                        unseens[k] = unseens[k] + 1.0;
-                        totalweights[k] = totalweights[k] + 1.0;
+                        unseens[k] += 1.0;
+                        totalweights[k] += 1.0;
                     }
                 }
 

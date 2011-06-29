@@ -69,6 +69,8 @@ const FLAG_DEF crm_flags[] =
     { "sks", CRM_SKS },
     { "svm", CRM_SVM },
     { "fscm", CRM_FSCM },
+    { "scm", CRM_SCM },
+    { "flat", CRM_FLAT },
     { NULL, 0 }   /* [i_a] sentinel */
 };
 
@@ -196,7 +198,7 @@ unsigned long long crm_flagparse(char *input, long inlen)  //  the user input
 //     The returned value is 0/1 as to whether we found
 //     a valid word, and *start and *length, which give it's position.
 //
-long crm_nextword(char *input,
+long crm_nextword(const char *input,
                   long inlen,
                   long starthere,
                   long *start,
