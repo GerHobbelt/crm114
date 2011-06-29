@@ -52,6 +52,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 
   //    set up the flags (if any)
   //
+  CRM_ASSERT(apb != NULL);
   till_eof = 1;
   if (apb->sflags & CRM_BYLINE)
     {
@@ -277,6 +278,7 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //
   //   What file name?
   //
+  CRM_ASSERT(apb != NULL);
   crm_get_pgm_arg (filename, MAX_FILE_NAME_LEN, apb->b1start,apb->b1len);
   crm_nextword (filename, apb->b1len, 0, &i, &j);
   memmove (fnam, &filename[i], j);

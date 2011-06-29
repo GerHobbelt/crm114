@@ -736,6 +736,7 @@ static double stats_2_entropy (long count, long total)
 
 
 //  Helper functions for dealing with the FIRlat
+//    Given a FIR value, what slot would this reside in?
 static long fir_2_slot (double fir, long firlatlen)
 {
   long ifir;
@@ -887,13 +888,20 @@ static long firlat_find_smallest_larger
   long step_count;
 
   //  Start out with FIRlat option.
+  if (my_fir < 0.00 || my_fir >= 1.00 || firlatlen < 10 || firlatlen > 200000)
+    fprintf (stderr, "My FIR is outrageous (value: %e, firlatlen %ld)\n", 
+	     my_fir,
+	     firlatlen);
   firlat_entry = fir_2_slot ( my_fir, firlatlen);
   if (internal_trace)
     fprintf (stderr, "FFSL: Searching for FIR: %f slot %ld\n",
              my_fir, firlat_entry);
 
-  if (firlat_entry < 0 || firlat_entry >= firlatlen)
-    fprintf (stderr, "FIRLAT is very hosed!\n");
+  if ((firlat_entry < 0) || (firlat_entry >= firlatlen))
+    fprintf (stderr, 
+	     "FIRLAT is very hosed (myfir: %e, entry number %ld)!\n",
+	     my_fir,
+	     firlat_entry);
   if (internal_trace)
     fprintf
       (stderr,
@@ -1410,7 +1418,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //             filename starts at i,  ends at j. null terminate it.
   htext[j] = '\000';
-  learnfilename = &(htext[i]);
+  learnfilename = strdup(&(htext[i]));
 
   //             and stat it to get it's length
   k = stat (learnfilename, &statbuf);
@@ -1428,22 +1436,26 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           fprintf (stderr, "\nHad to create new BEN file %s\n", learnfilename);
           fprintf (stderr, "Opening %s for BEN file creation\n", learnfilename);
         }
-      f = fopen (learnfilename, "wb");
 
+	  f = fopen(learnfilename, "wb");
       if (!f)
         {
-          fprintf (stderr,
-                   "\n Couldn't open your new BEN file %s for writing; errno=%d\n",
-                   learnfilename, errno);
+          fev = nonfatalerror_ex(SRC_LOC(),
+                   "\n Couldn't open your new BEN file %s for writing; errno=%d(%s)\n",
+                   learnfilename, 
+				   errno,
+				   errno_descr(errno)
+				   );
           if (engine_exit_base != 0)
-            {
-              exit (engine_exit_base + 23);
-            }
-          else
-            exit (EXIT_FAILURE);
-        }
-          else
           {
+            exit(engine_exit_base + 23);
+          }
+          else
+		  {
+            exit(EXIT_FAILURE);
+		  }
+        }
+          
       //       did we get a value for sparse_spectrum_file_length?
       //      (yes, even though we aren't using "sparse spectra", we'll
       //      use the same -S or -s  parameter.  If we're in unique_states
@@ -1483,16 +1495,19 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                nodebytes,
                firlatbytes);
 
+      if (!f)
+      {
       //       Write them bytes, all NULs.  (the 1024 is just some padding)
       //
       for (j = 0; j < (1024 + firlatbytes + nodebytes +
                        (ENTROPY_RESERVED_HEADER_LEN * sizeof (long))); j++)
-        fputc ('\000', f);
-
+	  {
+        fputc(0, f);
+	  }
 
       made_new_file = 1;
       fclose (f);
-          }
+      }
 
           //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
@@ -1660,14 +1675,10 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
   //    If this isn't a new file, grab stuff out of the header:
-  //firlat = & headers[headers[0]];
   firlat = & fmap [headers->firlatstart];
-  //firlatlen = headers[1];
   firlatlen = headers->firlatlen;
   firlatbytes = firlatlen * (sizeof (long));
-  //nodes = (ENTROPY_FEATUREBUCKET_STRUCT *) & (headers[headers[2]]);
   nodes = (ENTROPY_FEATUREBUCKET_STRUCT *) & (fmap[headers->nodestart]);
-  //nodeslen = headers[3];
   nodeslen = headers->nodeslen;
   nodebytes = nodeslen * (sizeof (ENTROPY_FEATUREBUCKET_STRUCT));
 
@@ -1986,13 +1997,11 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
                   && nodes[further_node].abet[nextalph^0x1].count == 0
                   && nodes[further_node].abet[nextalph].nextcell > 0
                   //     Two nodes lookahead
-                  // *INDENT-OFF*
                   && nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].count > 0
                   && nodes [nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph^0x1].count == 0
                   //     THREE nodes lookahead
                   && nodes[nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].nextcell].abet[nextnextnextalph].count > 0
                   && nodes[nodes[nodes[further_node].abet[nextalph].nextcell].abet[nextnextalph].nextcell].abet[nextnextnextalph^0x1].count == 0
-                  // *INDENT-ON*
                   )
                 {
                   do_crosslink = 1;
@@ -2109,7 +2118,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //    Time to clean up and go home.
 
   //  and remember to let go of the mmap and the pattern bufffer
-  crm_munmap_file ((void *) headers);
+  crm_force_munmap_addr ((void *) fmap);
 
 #if 0  /* now touch-fixed inside the munmap call already! */
 #if defined(HAVE_MMAP) || defined(HAVE_MUNMAP)
@@ -2123,7 +2132,7 @@ int crm_expr_bit_entropy_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   crm_touch(learnfilename);
 #endif
 #endif
-
+  free (learnfilename);
   return (0);
 }
 

@@ -63,6 +63,9 @@ process_file	tests		unionintersecttest.crm		.in
 process_file	tests		userdirtest.crm			.in
 process_file	tests		windowtest.crm			.in
 process_file	tests		windowtest_fromvar.crm		.in
+process_file	tests		tenfold_validate.crm		.in
+process_file	tests		tokendelimiterbugtest.crm	.in
+process_file	tests		bracesbugtest.crm		.in
 
 check_file	docs		classify_details.txt
 check_file	docs		COLOPHON.txt

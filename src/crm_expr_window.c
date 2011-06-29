@@ -143,6 +143,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //      check for the flags
   //
   //   default is BYCHAR
+  CRM_ASSERT(apb != NULL);
   inputsrc = 0;
   inputEOFaccept = EOFFAILS;
   inputsize = BYCHAR;

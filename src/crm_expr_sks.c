@@ -35,7 +35,7 @@
 
 
 
-#define GET_RID_OF_PUNCTUATION
+#undef GET_RID_OF_PUNCTUATION
 
 
 

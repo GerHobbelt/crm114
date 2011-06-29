@@ -3,6 +3,24 @@ Refer to ChangeLog for detailed per-file info.  Refer to README for news about
 changes in the non-autoconfiscated CRM114 core (some of the contents here is
 copied from that file).
 
+Version 20070807-BlameTheInterns
+
+* merged fixes by Bill Y.
+
+* added preliminary fix for braces matching issue in crm compiler.
+  This fix is NOT complete (only works for alius statements now).
+
+* added atexit() handler for memory allocation cleanup. The hunt
+  for mem leaks is still on.
+
+* added Win32 debug code for memory allocation analysis/reporting in debug builds.
+
+* re-added the explanatory texts to the Makefiles a la Makefile as used by Bill.
+
+* KNOWN BUG: SKS is b0rked in my version of the code (I've been messing around with some
+  #define's, that's probably why, but no time to find out how to revert that.)
+
+
 Version 20070805-BlameTheInterns
 
 * merged changes/fixes by Paolo
@@ -10,7 +28,7 @@ Version 20070805-BlameTheInterns
 * added sourcefile+line reporting for all error and warning messages.
 
 * Moved assert() usage to CRM_ASSERT usage so we can determine when and if to shot
-  down those checks. Bill (and probably others) think these should remian in there
+  down those checks. Bill (and probably others) think these should remain in there
   forever. I (Ger) think of them more along the lines of 'only for testing now' but
   I see the point.
 

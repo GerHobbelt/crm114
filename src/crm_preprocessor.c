@@ -197,6 +197,7 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
                   }
 
               ecsl->filetext = insert_buf;
+			  ecsl->filetext_allocated = 1;
               ecsl->nchars = 0;
               //   OK, we now have a buffer.  Read the file in...
 
@@ -230,18 +231,20 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
                 }
 
                 ecsl->nchars = rlen; /* [i_a] not: statbuf.st_size; -- as the MSVC documentation says:
-                                                         read returns the number of bytes read, which might be less than count
-                                                         if there are fewer than count bytes left in the file or if the file
-                                                         was opened in text mode, in which case each carriage return–line feed (CR-LF) pair
-                                                         is replaced with a single linefeed character. Only the single
-                                                         linefeed character is counted in the return value.
-                                                         */
+                                     read returns the number of bytes read, which might be less than count
+                                     if there are fewer than count bytes left in the file or if the file
+                                     was opened in text mode, in which case each carriage return–line feed (CR-LF) pair
+                                     is replaced with a single linefeed character. Only the single
+                                     linefeed character is counted in the return value.
+                                     */
                 //
                 //   file's read in, put in a trailing newline. And add a NUL sentinel too when we're at it! But DON'T count that one too!
                 ecsl->filetext[ecsl->nchars++] = '\n';
                 CRM_ASSERT(ecsl->nchars < max_pgmsize);
                 ecsl->filetext[ecsl->nchars] = 0;
-                ecsl->filename = insertfilename;
+                ecsl->filename = strdup(insertfilename); // [i_a] insertfilename will get out of scope soon and we need to keep this around till the end
+				ecsl->filename_allocated = 1;
+
                 //
                 //   now do the statement-break thing on this file
                 crm_break_statements (0, ecsl->nchars, ecsl);
@@ -293,8 +296,9 @@ int crm_preprocessor (CSL_CELL *csl, int flags)
                   fprintf (stderr, "new length: %ld\n ", csl->nchars);
 
                 //    Now we clean up (de-malloc all that memory)
-                free (ecsl->filetext);
-                free (ecsl);
+				free_stack_item(ecsl);
+                //free (ecsl->filetext);
+                //free (ecsl);
             }
           else
             {

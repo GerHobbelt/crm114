@@ -34,6 +34,9 @@ int crm_invoke (void)
   long status;
   long done;
   long slen;
+	//    a pointer to the current statement argparse block.  This gets whacked
+	//    on every new statement.
+  ARGPARSE_BLOCK *apb;
 
   //     timer1, timer2, and tstmt are for time profiling.
   //
@@ -153,6 +156,8 @@ int crm_invoke (void)
       {
         char flagz[MAX_PATTERN];
         long fl;
+
+		CRM_ASSERT(apb != NULL);
         fl = MAX_PATTERN;
         crm_get_pgm_arg (flagz, fl, apb->a1start, apb->a1len);
         fl = crm_nexpandvar (flagz, apb->a1len, MAX_PATTERN);
@@ -194,6 +199,8 @@ int crm_invoke (void)
   //  do, otherwise we make a nasty little noise and continue onward.
   //  Dispatch is done on a big SWITCH statement
 
+  CRM_ASSERT(csl->mct[csl->cstmt] != NULL);
+  CRM_ASSERT(csl->mct[csl->cstmt+1] != NULL);
   switch ( csl->mct[csl->cstmt]->stmt_type )
     {
     case CRM_NOOP:
@@ -225,17 +232,18 @@ int crm_invoke (void)
 
     case CRM_BOGUS:
       {
-        char bogusbuffer[1024];
-        char bogusstmt [1024];
-                size_t width = CRM_MIN(WIDTHOF(bogusstmt) - 1, csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
+        int width = CRM_MIN(1024, csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
 
-        sprintf (bogusbuffer, "Statement %ld is bogus!!!  Here's the text:\n",
-                 csl->cstmt);
-        memmove (bogusstmt,
+        fatalerror_ex(SRC_LOC(),
+			"Statement %ld is bogus!!!  Here's the text:\n%.*s%s",
+                 csl->cstmt,
+				 width,
                 &csl->filetext[csl->mct[csl->cstmt]->start],
-                width);
-        bogusstmt[width] = 0;
-        fatalerror (bogusbuffer, bogusstmt);
+                width,
+				(csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start > width
+				? "(...truncated)"
+				: "")
+				);
         goto invoke_bailout;
       }
       break;
@@ -244,6 +252,7 @@ int crm_invoke (void)
       {
         int retval; long retlen;
         char retstr [MAX_PATTERN];
+		CRM_ASSERT(apb != NULL);
         crm_get_pgm_arg (retstr, MAX_PATTERN, apb->s1start, apb->s1len);
         retlen = apb->s1len;
         retlen = crm_nexpandvar (retstr, retlen, MAX_PATTERN);
@@ -289,6 +298,7 @@ int crm_invoke (void)
 
         //     Do the argument transfer here.
         //     Evaluate the "subject", and return that.
+		CRM_ASSERT(apb != NULL);
         if (apb->s1len > 0)
           {
             long idx;
@@ -332,7 +342,10 @@ int crm_invoke (void)
         //     release the current csl cell back to the free memory pool.
         old_csl = csl;
         csl = csl->caller;
-        free (old_csl);
+		if (csl->filename == old_csl->filename)
+			csl->filename_allocated = old_csl->filename_allocated;
+		free_stack_item(old_csl);
+        /* free (old_csl); */
         {
           //   properly set :_cd: as well - note that this can be delayed
           //   since the vht index of the return location was actually
@@ -351,6 +364,7 @@ int crm_invoke (void)
         //  look up the variable name in the vht.  If it's not there, or
         //  not in our file, call a fatal error.
 
+		CRM_ASSERT(apb != NULL);
         crm_get_pgm_arg ( target, MAX_VARNAME, apb->s1start, apb->s1len);
         if (apb->s1len < 2)
           nonfatalerror
@@ -479,6 +493,7 @@ int crm_invoke (void)
         //
         if (user_trace)
           fprintf (stderr, "Forcing a FAULT at line %ld\n", csl->cstmt);
+		CRM_ASSERT(apb != NULL);
         crm_get_pgm_arg ( rbuf, MAX_PATTERN, apb->s1start, apb->s1len );
         rlen = crm_nexpandvar (rbuf, apb->s1len, MAX_PATTERN);
 
@@ -494,6 +509,7 @@ int crm_invoke (void)
         strncpy (reason, rbuf, rlen+1);
         reason[rlen+1] = 0; /* [i_a] strncpy will NOT add a NUL sentinel when the boundary was reached! */
         fresult = crm_trigger_fault (reason);
+		free(reason);
         if (fresult != 0)
           {
             fatalerror("Your program has no TRAP for the user defined fault:",
@@ -573,7 +589,7 @@ int crm_invoke (void)
 
     case CRM_HASH:
       {
-        //      here's where we surgiclly alter a variable to a hash.
+        //      here's where we surgically alter a variable to a hash.
         //      We have to watch out in case a variable is not in the
         //      cdw (it might be in tdw; that's legal as well.  syntax
         //      is to replace the contents of the variable in the
@@ -590,6 +606,7 @@ int crm_invoke (void)
           fprintf (stderr, "Executing a HASHing\n");
 
         //     get the variable name
+		CRM_ASSERT(apb != NULL);
         crm_get_pgm_arg (varname, MAX_VARNAME, apb->p1start, apb->p1len);
         varlen = apb->p1len;
         varlen = crm_nexpandvar (varname, varlen, MAX_VARNAME);
@@ -681,6 +698,7 @@ int crm_invoke (void)
         //  look up the variable name in the vht.  If it's not there, or
         //  not in our file, call a fatal error.
 
+		CRM_ASSERT(apb != NULL);
         crm_get_pgm_arg ( target, MAX_VARNAME, apb->s1start, apb->s1len);
         tarlen = apb->s1len;
         if (internal_trace)
@@ -745,6 +763,7 @@ int crm_invoke (void)
           long vmidx, oldvstart, oldvlen;
           //
           //    First, get the argument string into full expansion
+  		  CRM_ASSERT(apb != NULL);
           crm_get_pgm_arg(tempbuf, data_window_size, apb->b1start, apb->b1len);
           argvallen = apb->b1len;
           argvallen = crm_nexpandvar (tempbuf, argvallen, data_window_size);
@@ -820,15 +839,20 @@ int crm_invoke (void)
             {
               csl->mct[csl->cstmt]->apb = calloc (1, sizeof (csl->mct[csl->cstmt]->apb[0]));
               if ( ! csl->mct[csl->cstmt]->apb )
+			  {
                 untrappableerror ( "Couldn't malloc the space to incrementally "
                                    "compile a statement.  ",
                                    "Stick a fork in us; we're _done_.\n");
+			  }
+			  else
+			  {
               //  we now have the statement's apb allocated; we point
               //  the generic apb at the same place and run with it.
               i = crm_statement_parse(
                        &(csl->filetext[csl->mct[csl->cstmt]->fchar]),
                        slen,
                        csl->mct[csl->cstmt]->apb);
+			  }
             }
           //    and start using the JITted apb
           apb = csl->mct[csl->cstmt]->apb;
@@ -837,6 +861,7 @@ int crm_invoke (void)
           //     flag variables.
           //
           //            get the paren arg of this routine
+		  CRM_ASSERT(apb != NULL);
           crm_get_pgm_arg (outbuf, data_window_size,
                            apb->p1start, apb->p1len);
           argnamelen = apb->p1len;
@@ -903,6 +928,7 @@ int crm_invoke (void)
 
         //    get the output variable (the one we're gonna whack)
         //
+		CRM_ASSERT(apb != NULL);
         crm_get_pgm_arg (out_var, MAX_VARNAME, apb->p1start, apb->p1len);
         ovstart = 0;
         ovlen = crm_nexpandvar (out_var, apb->p1len, MAX_VARNAME);
@@ -1016,6 +1042,7 @@ int crm_invoke (void)
 
         //    get the output variable (the one we're gonna whack)
         //
+		CRM_ASSERT(apb != NULL);
         crm_get_pgm_arg (out_var, MAX_VARNAME, apb->p1start, apb->p1len);
         ovstart = 0;
         ovlen = crm_nexpandvar (out_var, apb->p1len, MAX_VARNAME);
@@ -1117,36 +1144,35 @@ int crm_invoke (void)
 
     case CRM_UNIMPLEMENTED:
       {
-        char bogusbuffer[1024];
-        char bogusstmt [1024];
-        size_t width = CRM_MIN(WIDTHOF(bogusstmt) - 1, csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
-        sprintf (bogusbuffer, "Statement %ld NOT YET IMPLEMENTED !!!"
-                 "Here's the text:\n",
-                 csl->cstmt);
-        memmove(bogusstmt,
+        int width = CRM_MIN(1024, csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
+        
+		fatalerror_ex(SRC_LOC(), 
+			     "Statement %ld NOT YET IMPLEMENTED !!!"
+                 "Here's the text:\n%.*s%s",
+                 csl->cstmt,
+				 width,
                 &csl->filetext[csl->mct[csl->cstmt]->start],
-                width);
-        bogusstmt[width] = 0;
-        fatalerror (bogusbuffer, bogusstmt);
+				(csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start > width
+				? "(...truncated)"
+				: "")
+                );
         goto invoke_bailout;
-
       }
       break;
 
     default:
       {
-        char bogusbuffer[1024];
-        char bogusstmt [1024];
-        size_t width = CRM_MIN(WIDTHOF(bogusstmt) - 1, csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
+        int width = CRM_MIN(1024, csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start);
 
-                sprintf (bogusbuffer,
-                 "Statement %ld way, way bizarre !!!  Here's the text:\n",
-                 csl->cstmt);
-        memmove (bogusstmt,
+		fatalerror_ex(SRC_LOC(), 
+                 "Statement %ld way, way bizarre!!!  Here's the text:\n%.*s%s",
+                 csl->cstmt,
+				 width,
                 &csl->filetext[csl->mct[csl->cstmt]->start],
-                width);
-        bogusstmt[width] = 0;
-        fatalerror (bogusbuffer, bogusstmt);
+				(csl->mct[csl->cstmt+1]->start - csl->mct[csl->cstmt]->start
+				? "(...truncated)"
+				: "")
+                );
         goto invoke_bailout;
       }
     }

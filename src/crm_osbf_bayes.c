@@ -291,7 +291,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 
   //             filename starts at i,  ends at j. null terminate it.
   htext[j] = '\000';
-  learnfilename = &htext[i];
+  learnfilename = strdup(&htext[i]);
 
   //             and stat it to get it's length
   k = stat (learnfilename, &statbuf);
@@ -308,9 +308,13 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
                                    OSBF_VERSION, 0,
                                    OSBF_CSS_SPECTRA_START) != EXIT_SUCCESS)
         {
-          fprintf (stderr,
-                   "\n Couldn't create file %s; errno=%d .\n",
-                   learnfilename, errno);
+          fev = fatalerror_ex(SRC_LOC(),
+                   "\n Couldn't create file %s; errno=%d(%s)\n",
+                   learnfilename, 
+				   errno,
+				   errno_descr(errno)
+				   );
+		  // return fev;
           exit (EXIT_FAILURE);
         }
 
@@ -330,6 +334,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
     {
       fev =
         fatalerror ("Couldn't memory-map the .cfc file named: ", learnfilename);
+      free(learnfilename);
       return (fev);
     }
 
@@ -355,6 +360,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
         ("The .cfc file is the wrong type!  We're expecting "
          "a OSBF_Bayes-spectrum file.  The filename is: ", learnfilename);
 
+      free(learnfilename);
       return (fev);
     }
 
@@ -596,6 +602,7 @@ regcomp_failed:
 
   if (ptext[0] != '\0')
     crm_regfree (&regcb);
+  free(learnfilename);
   return (0);
 }
 

@@ -9,7 +9,7 @@
 
 
 # AC_INIT(CRM114, [20031219-RC12.6], crm114-general@lists.sourceforge.net)
-AC_INIT(CRM114, 20070805-BlameTheInterns, crm114-general@lists.sourceforge.net)
+AC_INIT(CRM114, 20070807-BlameTheInterns, crm114-general@lists.sourceforge.net)
 
 # Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR(m4)
@@ -90,7 +90,6 @@ AC_PATH_PROG([sevenzip], [7z])
 AC_PATH_PROG([zip], [zip])
 AC_PATH_PROG([tar], [tar])
 
-AX_DIFF_OPTION([Z])
 AX_DIFF_OPTION([E])
 AX_DIFF_OPTION([b])
 AX_DIFF_OPTION([w])
@@ -500,6 +499,7 @@ AC_CONFIG_FILES([Makefile
                  man/Makefile
                  man/include.zmm
                  src/Makefile
+                 src/diff_em.sh
                  tests/Makefile
                  tests/aliustest.crm
                  tests/approxtest.crm
@@ -533,6 +533,9 @@ AC_CONFIG_FILES([Makefile
                  tests/userdirtest.crm
                  tests/windowtest.crm
                  tests/windowtest_fromvar.crm
+                 tests/tenfold_validate.crm
+                 tests/tokendelimiterbugtest.crm
+                 tests/bracesbugtest.crm
                  examples/pad.crm
                  examples/shroud.crm
                  mailfilter/classifymail.crm

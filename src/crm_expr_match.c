@@ -74,6 +74,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   //       Go through the flags
   //      is the ignore case flag set?
+  CRM_ASSERT(apb != NULL);
   if (apb->sflags & CRM_NOCASE)
     {
       if (user_trace)

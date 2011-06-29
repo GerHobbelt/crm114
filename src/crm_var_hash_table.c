@@ -42,8 +42,10 @@ void crm_vht_init (int argc, char **argv)
   if (!vht)
     untrappableerror("Couldn't malloc VHT cell.\n",
                      "No VHT cells, no variables, so no can run.  Sorry.");
+#ifndef CRM_DONT_ASSERT
   for (i = 0; i < vht_size; i++)
-    vht[i] = NULL;
+    CRM_ASSERT(vht[i] == NULL);
+#endif
 
 
   //    initialize the temporary (non-data-window) area...
@@ -56,6 +58,7 @@ void crm_vht_init (int argc, char **argv)
   tdw->rdwr = 1;
   tdw->filedes = -1;
   tdw->filetext = calloc (data_window_size, sizeof (tdw->filetext[0]) );
+  tdw->filetext_allocated = 1;
   if (!tdw->filetext)
       untrappableerror("Couldn't malloc tdw->filetext.\n"
                        "Without this space, you can't have any isolated "
@@ -1765,4 +1768,25 @@ int crm_buffer_gc ( CSL_CELL *zdw)
   fprintf (stderr, "Sorry, GC is not yet implemented");
   exit (EXIT_FAILURE);
   return (0);
+}
+
+
+
+
+void free_hash_table(VHT_CELL **vht, size_t vht_size)
+{
+	size_t i;
+
+	if (!vht)
+		return;
+
+	for (i = 0; i < vht_size; i++)
+	{
+		if (vht[i] == NULL)
+			continue;
+
+		free(vht[i]->filename);
+		free(vht[i]);
+	}
+	free(vht);
 }

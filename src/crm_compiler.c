@@ -24,7 +24,7 @@
 
 //     Here's the real statement description table.
 //
-static STMT_TABLE_TYPE stmt_table[39] =
+static STMT_TABLE_TYPE stmt_table[] =
   {
     /* *INDENT-OFF* */
 
@@ -76,9 +76,95 @@ static STMT_TABLE_TYPE stmt_table[39] =
     { "debug",    CRM_DEBUG ,   0,  0,       0,  0,  0,  0,  0,  0,  0},
     { "clump",    CRM_CLUMP,    0,  1,       0,  1,  1,  1,  0,  1,  0},
     { "pmulc",    CRM_PMULC,    0,  1,       0,  1,  0,  0,  0,  1,  0},
-    { "NoMoreStmts",CRM_UNIMPLEMENTED,0,0,   0,  0,  0,  0,  0,  0,  0}
+    /* { "NoMoreStmts",CRM_UNIMPLEMENTED,0,0,   0,  0,  0,  0,  0,  0,  0}, */
+    { NULL } /* [i_a] sentinel */
     /* *INDENT-ON* */
   };
+
+
+
+int skip_blanks(const char *buf, int start, int bufsize)
+{
+	CRM_ASSERT(buf != NULL);
+	CRM_ASSERT(start >= 0);
+	CRM_ASSERT(bufsize >= 0);
+
+	for ( ; start < bufsize && buf[start]; start++)
+	{
+		if (!crm_iscntrl(buf[start])
+			&& !crm_isblank(buf[start])
+			&& !crm_isspace(buf[start]))
+		{
+				break;
+		}
+	}
+	return start;
+}
+
+int skip_command_token(const char *buf, int start, int bufsize)
+{
+	CRM_ASSERT(buf != NULL);
+	CRM_ASSERT(start >= 0);
+	CRM_ASSERT(bufsize >= 0);
+
+	// commands must start with a letter:
+	if (start < bufsize)
+	{
+		if (crm_isalpha(buf[start]) || buf[start] == '_')
+	{
+		start++;
+	for ( ; start < bufsize && buf[start]; start++)
+	{
+		if (!crm_isalnum(buf[start]) 
+			&& buf[start] != '_')
+		{
+				break;
+		}
+	}
+		}
+		else
+		{
+			switch (buf[start])
+			{
+			case '{':
+			case '}':
+				return start + 1;
+
+			case '#':
+				return start + 1;
+
+			case ':':
+				// probably a label - scan till next ':'
+	for (start++; start < bufsize && buf[start]; start++)
+	{
+		if (buf[start] == ':') 
+		{
+			return start + 1;
+		}
+	}
+	break;
+
+			default:
+				// panic! just return till whitespace comes. This is bad anyway
+				for (start++; start < bufsize && buf[start]; start++)
+				{
+					if (crm_iscntrl(buf[start])
+						|| crm_isblank(buf[start])
+						|| crm_isspace(buf[start]))
+					{
+						return start;
+					}
+				}
+				break;
+			}
+		}
+	}
+	return start;
+}
+
+
+
+
 //   Get a file into a memory buffer.  We can either prep to execute
 //    it, or use it as read-only data, or as read-write data.
 //
@@ -139,6 +225,7 @@ int crm_load_csl (CSL_CELL *csl)
 
   //   and read in the source file
   csl->filetext = (char *) calloc ( max_pgmsize , sizeof (csl->filetext[0]));
+  csl->filetext_allocated = 1;
   if (csl->filetext == NULL)
   {
           CRM_ASSERT(csl->filedes >= 0);
@@ -163,7 +250,7 @@ int crm_load_csl (CSL_CELL *csl)
      From the MS docs: If fd is invalid, the file is not open for reading,
          or the file is locked, the invalid parameter handler is invoked, as
          described in Parameter Validation. If execution is allowed to continue,
-         the function returns �1 and sets errno to EBADF.
+         the function returns -1 and sets errno to EBADF.
   */
   if (i < 0)
   {
@@ -185,7 +272,7 @@ int crm_load_csl (CSL_CELL *csl)
   i++;
   csl->filetext[i] = '\n';
   i++;
-  csl->filetext[i] = '\000';
+  csl->filetext[i] = 0;
   CRM_ASSERT(i < max_pgmsize);
   csl->nchars = i;
 
@@ -199,7 +286,7 @@ int crm_load_csl (CSL_CELL *csl)
 }
 
 
-//      The CRM114 microcompiler.  It takes in a paritally completed
+//      The CRM114 microcompiler.  It takes in a partially completed
 //      csl struct which is the program, the program length, and
 //      returns a completed microcompile table for that particular
 //      program.  Side effect: it also sets some variables in the
@@ -274,7 +361,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 
   //   counters for looking through the statemt archetype table.
   long stab_idx;
-  long stab_max;
+  /* long stab_max; */
 
   if (internal_trace)
     fprintf (stderr, "Starting phase 1 of microcompile.\n");
@@ -305,6 +392,7 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
              j, pgmlength);
 
   csl->mct = (MCT_CELL **) calloc ((csl->nstmts + 10), sizeof(csl->mct[0]) );
+  csl->mct_allocated = 1;
   if (!csl->mct)
     untrappableerror("Couldn't malloc MCT table.\n"
                      "This is where your compilation results go, "
@@ -342,40 +430,33 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
   bracketlevel = 0;
 
 
-  // #define STAB_TEST
-  // #ifdef STAB_TEST
   //    Since we don't know how big the stmt_table actually is,
   //    we go through it once, looking for the "NoMoreStmts" statement,
   //    with operation code of CRM_BOGUS.  This tells us how many
   //    entries there are; we also set up the namelens for the
   //    statement types.
   //
-  stab_idx = 0;
-  while ( strncmp (stmt_table[stab_idx].stmt_name,
-                   "NoMoreStmts",
-                   strlen ("NoMoreStmts")) != 0)
+  for (stab_idx = 0; stmt_table[stab_idx].stmt_name != NULL; stab_idx++)
     {
       if (stmt_table[stab_idx].namelen == 0)
         stmt_table[stab_idx].namelen = strlen (stmt_table[stab_idx].stmt_name);
-      stab_idx++;
     }
-  stab_max = stab_idx;
+  /* stab_max = stab_idx; */
+
   //
   //    now the statement table should be set up.
 
-  //  #endif
-
   while (stmtnum <= csl->nstmts && sindex < pgmlength)
     {
-      long stab_stmtcode;
-      long stab_done;
+      int stab_stmtcode;
+      // long stab_done;
 
       //      the strcspan below will fail if there's an unescaped
       //      semicolon embedded in a string (or, for that matter, an
       //      explicit newline).  Fortunately, the preprocessor fixes the
       //      former and the latter is explicitly prohibited by the language.
       //
-      slength = strcspn (&pgmtext[sindex], "\n");
+      slength = strcspn(&pgmtext[sindex], "\n");
 
       // allocate and fill in the mct table entry for this line
       csl->mct[stmtnum]->hosttxt = pgmtext;
@@ -396,8 +477,9 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
       //  GROT GROT GROT  which absolutely _sucks_ in terms of coding
       //  GROT GROT GROT  portability, but it's what we have.
       nbindex = sindex;
-      while (pgmtext[nbindex] < 0x021 && nbindex < slength + sindex)
-        nbindex++;
+#if 0
+	  while (pgmtext[nbindex] < 0x021 && nbindex < slength + sindex)
+		  nbindex++;
 
       //  save up the first nonblank char:
       csl->mct[stmtnum]->fchar = nbindex;
@@ -412,73 +494,162 @@ int crm_microcompiler ( CSL_CELL *csl, VHT_CELL ** vht )
 
       while (pgmtext[aindex] < 0x021 && aindex < slength + sindex )
         aindex++;
+#else
+	  nbindex = skip_blanks(pgmtext, nbindex, slength + sindex);
+
+      //  save up the first nonblank char:
+      csl->mct[stmtnum]->fchar = nbindex;
+
+      // and set up the start of arguments as well, they start at the first
+      // nonblank after the first blank after the command...
+
+	  aindex = skip_command_token(pgmtext, nbindex, slength + sindex);
+      nblength = aindex - nbindex;
+
+	  aindex = skip_blanks(pgmtext, aindex, slength + sindex);
+#endif
 
       csl->mct[stmtnum]->achar = aindex;
 
       //    We can now sweep thru the statement archetype table from 0
       //    to stab_max and compare the strlens and strings themselves.
       //
-      stab_done = 0;
+      //stab_done = 0;
       stab_stmtcode = 0;
 
-      //                    Empty lines are noops.
       if (nblength == 0)
         {
-          stab_done = 1;
+      //                    Empty lines are noops.
+
+			//stab_done = 1;
           stab_stmtcode = CRM_NOOP;
         }
-      //                            Comment lines are also NOOPS
-      if ( pgmtext[nbindex] == '#')
+      else if ( pgmtext[nbindex] == '#')
         {
-          stab_done = 1;
+      //                            Comment lines are also NOOPS
+
+			//stab_done = 1;
           stab_stmtcode = CRM_NOOP;
         }
-      //                             :LABEL: lines get special treatment
-      if ( pgmtext[nbindex] == ':'
+      else if ( pgmtext[nbindex] == ':'
            && pgmtext[nbindex + nblength - 1] == ':')
         {
-          stab_done = 1;
+      //                             :LABEL: lines get special treatment
+
+			//stab_done = 1;
           stab_stmtcode = CRM_LABEL;
           k = strcspn (&pgmtext[nbindex+1], ":");
           crm_setvar ( NULL, -1, pgmtext, nbindex, k+2,
                        NULL, 0, 0,  stmtnum);
         }
-
-      //                 INSERTs get special handling (NOOPed..)
-      if ( strncasecmp ( &pgmtext[nbindex], "insert=", 7) == 0)
+      else if ( strncasecmp ( &pgmtext[nbindex], "insert=", 7) == 0)
         {
-          stab_done = 1;
+      //                 INSERTs get special handling (NOOPed..)
+
+			//stab_done = 1;
           stab_stmtcode = CRM_NOOP;
         }
-      i = -1;
+	  else
+	  {
+      /* i = -1; */
+
+		  // make sure we can detect/fail if we hit some unidentified/unsupported command
+		  stab_stmtcode = CRM_UNIMPLEMENTED; 
 
       //                      Now a last big loop for the rest of the stmts.
-      while (! stab_done)
+      for (i = 0; stmt_table[i].stmt_name != NULL; i++)
         {
-          i++;
           if ( nblength == stmt_table[i].namelen
                &&  strncasecmp (&pgmtext[nbindex],
                                 stmt_table[i].stmt_name,
                                 nblength) == 0)
             {
-              stab_done = 1;
+              /* stab_done = 1; */
               stab_stmtcode = stmt_table[i].stmt_code;
               //   Deal with executable statements and WINDOW
               if (stab_stmtcode == CRM_WINDOW && !seenaction)
                 csl->preload_window = 0;
               //   and mark off the executable statements
               if (stmt_table[i].is_executable) seenaction = 1;
+			  break;
             }
-          if (i >= stab_max)
-            stab_done = 1;
+          //if (i >= stab_max)
+          //  stab_done = 1;
         }
+
+	    // GROT GROT GROT [i_a] this parser should really be adapted so it
+	    // can better check for syntax errors at the location where such happen.
+	    //
+	    // Here's an example which could use some additional checks.
+	    // I wonder if CRM really is an LR(1) language -- don't think so as
+	    // comments are treated as opcodes so that means it's LR(k) or LL(k)
+	    // after all. (--> not YACC/LEX but use PCCTS or ANTLR instead. Trouble 
+	    // there is that ANTLR is very nice but doesn't have a 'C' target yet, IIRC
+		if (stab_stmtcode == CRM_ALIUS)
+		{
+			// make sure a {} precedes this opcode
+			int previdx;
+			int hit_closing_brace = 0;
+			
+			for (previdx = stmtnum - 1; previdx >= 0; previdx--)
+			{
+				// accept any preceding comments before we've got to hit the mandatory closing brace before this statement
+				switch (csl->mct[previdx]->stmt_type)
+				{
+				case CRM_CLOSEBRACKET:
+					hit_closing_brace = 1;
+					break;
+
+				default:
+					// do NOT accept any other opcodes, except a very few special ones...
+					break;
+
+				case CRM_NOOP:
+					// comment: that's OK
+					continue;
+
+				// case CRM_LABEL:  -- would that be acceptable too? I don't think so.
+				}
+				break;
+			}
+
+			if (!hit_closing_brace)
+			{
+				fatalerror_ex(SRC_LOC(),
+					"Your program doesn't have a { } bracket-group preceding the '%s' command. "
+					"Check your source code.",
+					stmt_table[i].stmt_name
+					);
+			}
+		}
+	  }
+
+	  // check for errors, don't wait until running the exec_engine to catch them!
+	  if (stab_stmtcode == CRM_UNIMPLEMENTED)
+      {
+        int width = CRM_MIN(1024, nblength);
+        
+		fatalerror_ex(SRC_LOC(), 
+			     "Statement %ld NOT YET IMPLEMENTED !!! Check your source code. "
+                 "Here's the text:\n%.*s%s",
+                 csl->cstmt,
+				 width,
+                &pgmtext[nbindex],
+				(nblength > width
+				? "(...truncated)"
+				: "")
+                );
+      }
+
 
       //            Fill in the MCT entry with what we've learned.
       //
-      csl->mct [stmtnum] -> stmt_type = stab_stmtcode;
+      csl->mct[stmtnum]->stmt_type = stab_stmtcode;
       if (stab_stmtcode == CRM_OPENBRACKET)
+	  {
         bracketlevel++;
-      if (stab_stmtcode == CRM_CLOSEBRACKET)
+	  }
+      else if (stab_stmtcode == CRM_CLOSEBRACKET)
         {
           bracketlevel--;
           // hack - reset the bracketlevel here, as a bracket is "outside"

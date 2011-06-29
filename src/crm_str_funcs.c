@@ -160,6 +160,7 @@ typedef struct prototype_crm_mmap_cell
   long start;
   long requested_len;
   long actual_len;
+  time_t modification_time;  // st_mtime - time last modified
   void *addr;
   long prot;            //    prot flags to be used, in the mmap() form
                           //    that is, PROT_*, rather than O_*
@@ -248,15 +249,31 @@ void crm_force_munmap_filename (char *filename)
   CRM_MMAP_CELL *p;
   //    Search for the file - if it's already mmaped, unmap it.
   //    Note that this is a while loop and traverses the list.
+#if 0 // this one worked too, but just in case when you have multiple mmap()s to the same file, use the latter:
   for (p = cache; p != NULL; p = p->next)
     {
       if (strcmp(p->name, filename) == 0)
         {
           //   found it... force an munmap.
           crm_force_munmap_addr (p->addr);
-          break;     //  because p may be clobbered during unmap.
+          break;     //  because p WILL be clobbered during unmap.
         }
     }
+#else
+  for (p = cache; p != NULL; )
+    {
+      CRM_MMAP_CELL *next = p->next;
+
+      if (strcmp(p->name, filename) == 0)
+        {
+          //   found it... force an munmap.
+          crm_force_munmap_addr (p->addr);
+          // because p WILL be clobbered during unmap:
+          // when you get here, anything pointed at by p is damaged: free()d memory in function call above.
+        }
+      p = next;
+    }
+#endif
 }
 
 
@@ -438,20 +455,38 @@ void *crm_mmap_file (char *filename,
 
   pagesize = 0;
   //    Search for the file - if it's already mmaped, just return it.
-  for (p = cache; p != NULL; p = p->next)
+  for (p = cache; p != NULL; )
     {
+      CRM_MMAP_CELL *next = p->next;
+
       if (strcmp(p->name, filename) == 0
           && p->prot == prot
           && p->mode == mode
           && p->start == start
           && p->requested_len == requested_len)
         {
+	  // check the mtime; if this differs between cache and stat
+	  // val, then someone outside our process has played with the
+	  // file and we need to unmap it and remap it again.
+	  struct stat statbuf;
+	  stat (filename, &statbuf);
+	  if (p->modification_time != statbuf.st_mtime)
+	    {
+	      // yep, someone played with it. unmap and remap
+	      crm_force_munmap_filename (filename);
+          // when you get here, anything pointed at by p is damaged: free()d memory in function call above.
+	    }
+	  else
+	    {
+	      //  nope, it looks clean.  We'll reuse it.
           if (actual_len)
             *actual_len = p->actual_len;
           return (p->addr);
         }
+      }
+      p = next;
     }
-
+  
   //    No luck - we couldn't find the matching file/start/len/prot/mode
   //    We need to add an mmap cache cell, and mmap the file.
   //
@@ -511,7 +546,8 @@ void *crm_mmap_file (char *filename,
   if (p->actual_len < 0)
     p->actual_len = statbuf.st_size - p->start;
 
-  //
+  //  and put in the mtime as well
+  p->modification_time = statbuf.st_mtime;
 
   //  fprintf (stderr, "m");
   p->addr = mmap (NULL,

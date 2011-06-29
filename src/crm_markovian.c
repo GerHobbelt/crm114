@@ -164,7 +164,7 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //             filename starts at i,  ends at j. null terminate it.
         CRM_ASSERT(j <= hlen);
   htext[j] = '\000';
-        learnfilename = &htext[i];
+        learnfilename = strdup(&htext[i]);
 
   //             and stat it to get it's length
   k = stat (learnfilename, &statbuf);
@@ -179,9 +179,12 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       f = fopen (learnfilename, "wb");
       if (!f)
         {
-          fprintf (stderr,
-                "\n Couldn't open your new CSS file %s for writing; errno=%d .\n",
-                 learnfilename, errno);
+          nonfatalerror_ex(SRC_LOC(),
+                "\n Couldn't open your new CSS file %s for writing; errno=%d(%s)\n",
+                 learnfilename, 
+				 errno,
+				 errno_descr(errno)
+				 );
           if (engine_exit_base != 0)
             {
               exit (engine_exit_base + 19);
@@ -196,6 +199,8 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         sparse_spectrum_file_length =
           DEFAULT_MARKOVIAN_SPARSE_SPECTRUM_FILE_LENGTH ;
       }
+	  if (f)
+	  {
       //       put in sparse_spectrum_file_length entries of NULL
       for (j = 0;
            j < sparse_spectrum_file_length
@@ -205,6 +210,7 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       //        fprintf (f,"%c", '\000');
 
       fclose (f);
+	  }
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
           CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
@@ -227,6 +233,7 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       fev = fatalerror ("Couldn't get access to the statistics file named: ",
                         learnfilename);
+      free(learnfilename);
       return (fev);
     }
 
@@ -505,243 +512,243 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
             unsigned long h1, h2;
             long th = 0;         // a counter used for TSS tokenizing
             unsigned long incrs;
-            long j2;
-            //
-            //     old Hash polynomial: h0 + 3h1 + 5h2 +11h3 +23h4
-            //     (coefficients chosen by requiring superincreasing,
-            //     as well as prime)
-            //
-            th = 0;
-            //      for ( j2 = 0; j2 <= 15 ; j2++)
-            for (j2 = 0; j2 < max_feature_terms; j2++)
-              {
+	    long j;
+	    //
+	    //     old Hash polynomial: h0 + 3h1 + 5h2 +11h3 +23h4
+	    //     (coefficients chosen by requiring superincreasing,
+	    //     as well as prime)
+	    //
+	    th = 0;
+	    //	    for ( j = 0; j <= 15 ; j++)
+	    for (j = 0; j < max_feature_terms; j++)
+	      {
 #ifdef TGB
-                //
-                //   Token Grab Bag - ignore sequence, distance. alias
-                //
-                hindex = hashpipe [0]
-                  + ( hashpipe[1] * ((j2>>0) & 0x0001))
-                  + ( hashpipe[2] * ((j2>>1) & 0x0001))
-                  + ( hashpipe[3] * ((j2>>2) & 0x0001))
-                  + ( hashpipe[4] * ((j2>>3) & 0x0001));
-                if (hindex == 0) hindex = 1;
-                h1 = hindex;
-                hindex = hindex % hfsize;
-                if (hindex == 0) hindex = 1;
-
-                //   this is the secondary (crosscut) hash, used for
-                //   confirmation of the key value.
-                h2 =   hashpipe[0]
-                  + (  hashpipe[1] * ((j2>>0) & 0x0001))
-                  + (  hashpipe[2] * ((j2>>1) & 0x0001))
-                  + (  hashpipe[3] * ((j2>>2) & 0x0001))
-                  + (  hashpipe[4] * ((j2>>3) & 0x0001));
-                if (h2 == 0) h2 = 0xdeadbeef;
+		//
+		//   Token Grab Bag - ignore sequence, distance. alias
+		//
+		hindex = hashpipe [0] 
+		  + ( hashpipe[1] * ((j>>0) & 0x0001))
+		  + ( hashpipe[2] * ((j>>1) & 0x0001))
+		  + ( hashpipe[3] * ((j>>2) & 0x0001))
+		  + ( hashpipe[4] * ((j>>3) & 0x0001));
+		if (hindex == 0) hindex = 1;
+		h1 = hindex;
+		hindex = hindex % hfsize;
+		if (hindex == 0) hindex = 1;
+		
+		//   this is the secondary (crosscut) hash, used for
+		//   confirmation of the key value.
+		h2 =   hashpipe[0] 
+		  + (  hashpipe[1] * ((j>>0) & 0x0001))
+		  + (  hashpipe[2] * ((j>>1) & 0x0001))
+		  + (  hashpipe[3] * ((j>>2) & 0x0001))
+		  + (  hashpipe[4] * ((j>>3) & 0x0001));
+		if (h2 == 0) h2 = 0xdeadbeef;
 #endif
 #ifdef TGB2
-                //
-                //   Token Grab Bag - ignore sequence, distance.
-                //
-                hindex = hashpipe [0]
-                  + ( hashpipe[1] * ((j2>>0) & 0x0001))
-                  + ( hashpipe[2] * ((j2>>1) & 0x0001))
-                  + ( hashpipe[3] * ((j2>>2) & 0x0001))
-                  + ( hashpipe[4] * ((j2>>3) & 0x0001));
-                if (hindex == 0) hindex = 1;
-                h1 = hindex;
-                hindex = hindex % hfsize;
-                if (hindex == 0) hindex = 1;
-
-                //   this is the secondary (crosscut) hash, used for
-                //   confirmation of the key value.
-                h2 =   hashpipe[0] * hashpipe[0]
-                  + (  hashpipe[1] * hashpipe[1] * ((j2>>0) & 0x0001))
-                  + (  hashpipe[2] * hashpipe[2] * ((j2>>1) & 0x0001))
-                  + (  hashpipe[3] * hashpipe[3] * ((j2>>2) & 0x0001))
-                  + (  hashpipe[4] * hashpipe[4] * ((j2>>3) & 0x0001));
-                if (h2 == 0) h2 = 0xdeadbeef;
+		//
+		//   Token Grab Bag - ignore sequence, distance.
+		//
+		hindex = hashpipe [0] 
+		  + ( hashpipe[1] * ((j>>0) & 0x0001))
+		  + ( hashpipe[2] * ((j>>1) & 0x0001))
+		  + ( hashpipe[3] * ((j>>2) & 0x0001))
+		  + ( hashpipe[4] * ((j>>3) & 0x0001));
+		if (hindex == 0) hindex = 1;
+		h1 = hindex;
+		hindex = hindex % hfsize;
+		if (hindex == 0) hindex = 1;
+		
+		//   this is the secondary (crosscut) hash, used for
+		//   confirmation of the key value.
+		h2 =   hashpipe[0] * hashpipe[0]
+		  + (  hashpipe[1] * hashpipe[1] * ((j>>0) & 0x0001))
+		  + (  hashpipe[2] * hashpipe[2] * ((j>>1) & 0x0001))
+		  + (  hashpipe[3] * hashpipe[3] * ((j>>2) & 0x0001))
+		  + (  hashpipe[4] * hashpipe[4] * ((j>>3) & 0x0001));
+		if (h2 == 0) h2 = 0xdeadbeef;
 #endif
 #ifdef TSS
-              //
-              //   Token Grab Bag - ignore sequence, distance, prevent
-              //   aliasing (quadratic H2)
-              //
-              hindex = hashpipe [0]
-                + ( hashpipe[1] * ((j2>>0) & 0x0001))
-                + ( hashpipe[2] * ((j2>>1) & 0x0001))
-                + ( hashpipe[3] * ((j2>>2) & 0x0001))
-                + ( hashpipe[4] * ((j2>>3) & 0x0001));
-              if (hindex == 0) hindex = 1;
-              h1 = hindex;
-              hindex = hindex % hfsize;
-              if (hindex == 0) hindex = 1;
-
-              //   this is the secondary (crosscut) hash, used for
-              //   confirmation of the key value.
-              th = 2;
-              h2 =   hashpipe[0];
-              if ((j2>>0) & 0x0001)
-                {
-                  h2 = h2 + hashpipe[1] * th;
-                  th++;
-                }
-              if ((j2>>1) & 0x0001)
-                {
-                  h2 = h2 + hashpipe[2] * th;
-                  th++;
-                }
-              if ((j2>>2) & 0x0001)
-                {
-                  h2 = h2 + hashpipe[3] * th;
-                  th++;
-                }
-              if ((j2>>3) & 0x0001)
-                {
-                  h2 = h2 + hashpipe[4] * th;
-                  th++;
-                }
-              if (h2 == 0) h2 = 0xdeadbeef;
+	      //
+	      //   Token Grab Bag - ignore sequence, distance, prevent
+	      //   aliasing (quadratic H2)
+	      //
+	      hindex = hashpipe [0] 
+		+ ( hashpipe[1] * ((j>>0) & 0x0001))
+		+ ( hashpipe[2] * ((j>>1) & 0x0001))
+		+ ( hashpipe[3] * ((j>>2) & 0x0001))
+		+ ( hashpipe[4] * ((j>>3) & 0x0001));
+	      if (hindex == 0) hindex = 1;
+	      h1 = hindex;
+	      hindex = hindex % hfsize;
+	      if (hindex == 0) hindex = 1;
+	      
+	      //   this is the secondary (crosscut) hash, used for
+	      //   confirmation of the key value.
+	      th = 2;
+	      h2 =   hashpipe[0]; 
+	      if ((j>>0) & 0x0001) 
+		{
+		  h2 = h2 + hashpipe[1] * th;
+		  th++;
+		}
+	      if ((j>>1) & 0x0001) 
+		{
+		  h2 = h2 + hashpipe[2] * th;
+		  th++;
+		}
+	      if ((j>>2) & 0x0001) 
+		{
+		  h2 = h2 + hashpipe[3] * th;
+		  th++;
+		}
+	      if ((j>>3) & 0x0001) 
+		{
+		  h2 = h2 + hashpipe[4] * th;
+		  th++;
+		}
+	      if (h2 == 0) h2 = 0xdeadbeef;
 #endif
 #ifdef SBPH
-                hindex = hashpipe [0]
-                  + (  3 * hashpipe[1] * ((j2>>0) & 0x0001))
-                  + (  5 * hashpipe[2] * ((j2>>1) & 0x0001))
-                  + ( 11 * hashpipe[3] * ((j2>>2) & 0x0001))
-                  + ( 23 * hashpipe[4] * ((j2>>3) & 0x0001));
-                h1 = hindex;
+		hindex = hashpipe [0] 
+		  + (  3 * hashpipe[1] * ((j>>0) & 0x0001))
+		  + (  5 * hashpipe[2] * ((j>>1) & 0x0001))
+		  + ( 11 * hashpipe[3] * ((j>>2) & 0x0001))
+		  + ( 23 * hashpipe[4] * ((j>>3) & 0x0001));
+		h1 = hindex;
 
-                //   and what's our primary hash index?  Note that
-                //   hindex = 0 is reserved for our version and
-                //   usage flags, so we autobump those to hindex=1
-                hindex = hindex % hfsize;
-                if (hindex == 0) hindex = 1;
+		//   and what's our primary hash index?  Note that
+		//   hindex = 0 is reserved for our version and 
+		//   usage flags, so we autobump those to hindex=1
+		hindex = hindex % hfsize;
+		if (hindex == 0) hindex = 1;
 
-                //   this is the secondary (crosscut) hash, used for
-                //   confirmation of the key value.  Note that it shares
-                //   no common coefficients with the previous hash.
-                h2 =    7 * hashpipe [0]
-                  + (  13 * hashpipe[1] * ((j2>>0) & 0x0001))
-                  + (  29 * hashpipe[2] * ((j2>>1) & 0x0001))
-                  + (  51 * hashpipe[3] * ((j2>>2) & 0x0001))
-                  + ( 101 * hashpipe[4] * ((j2>>3) & 0x0001));
-                if (h2 == 0) h2 = 0xdeadbeef;
+		//   this is the secondary (crosscut) hash, used for
+		//   confirmation of the key value.  Note that it shares
+		//   no common coefficients with the previous hash.
+		h2 =    7 * hashpipe [0] 
+		  + (  13 * hashpipe[1] * ((j>>0) & 0x0001))
+		  + (  29 * hashpipe[2] * ((j>>1) & 0x0001))
+		  + (  51 * hashpipe[3] * ((j>>2) & 0x0001))
+		  + ( 101 * hashpipe[4] * ((j>>3) & 0x0001));
+		if (h2 == 0) h2 = 0xdeadbeef;
 #endif
 
 #ifdef ARBITRARY_WINDOW_LENGTH
-                //////////////////////////////////////////////////
-                //
-                //     Generic N-length hashing.
-                //
-                //     first term (0th) is always on
-                h1 = hashpipe[0] * hctable [0];
-                //     2nd and onward terms are variable.
-                for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
-                  {
-                    h1 = h1 + hashpipe[h] * hctable[h*2] * ((j2>>(h-1))&0x0001);
-                  }
-                hindex = h1;
-                hindex = hindex % hfsize;
-                if (hindex == 0) hindex = 1;
+		//////////////////////////////////////////////////
+		//   
+		//     Generic N-length hashing.  
+		//
+		//     first term (0th) is always on
+		h1 = hashpipe[0] * hctable [0];
+		//     2nd and onward terms are variable. 
+		for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
+		  {
+		    h1 = h1 + hashpipe[h] * hctable[h*2] * ((j>>(h-1))&0x0001);
+		  }
+		hindex = h1;
+		hindex = hindex % hfsize;
+		if (hindex == 0) hindex = 1;
 
-                //     0th term is always turned on.
-                h2 = hashpipe[0] * hctable[1];
-                //     terms 1 through N are variable
-                for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
-                  {
-                    h2 = h2 +hashpipe[h] * hctable[h*2+1]*((j2>>(h-1))&0x0001);
-                  }
-                if (h2 == 0) h2 = 0xDEADBEEF;
+		//     0th term is always turned on.
+		h2 = hashpipe[0] * hctable[1];
+		//     terms 1 through N are variable
+		for (h = 0; h < MARKOVIAN_WINDOW_LEN; h++)
+		  {
+		    h2 = h2 +hashpipe[h] * hctable[h*2+1]*((j>>(h-1))&0x0001);
+		  }
+		if (h2 == 0) h2 = 0xDEADBEEF;
 
 #endif
-                if (internal_trace)
-                  fprintf (stderr, "Polynomial %ld has h1:%ld  h2: %ld\n",
-                           j2, h1, h2);
+		if (internal_trace)
+		  fprintf (stderr, "Polynomial %ld has h1:%ld  h2: %ld\n",
+			   j, h1, h2);
 
-                //
-                //   we now look at both the primary (h1) and
-                //   crosscut (h2) indexes to see if we've got
-                //   the right bucket or if we need to look further
-                //
-                incrs = 0;
-                while ( hashes[hindex].key != 0
-                        &&  ( hashes[hindex].hash != h1
-                              || hashes[hindex].key  != h2 ))
-                  {
-                    //
-                    incrs++;
-                    //
-                    //       If microgrooming is enabled, and we've found a
-                    //       chain that's too long, we groom it down.
-                    //
-                    if (microgroom && (incrs > MICROGROOM_CHAIN_LENGTH))
-                      {
-                        //     set the random number generator up...
-                        //     note that this is repeatable for a
-                        //     particular test set, yet dynamic.  That
-                        //     way, we don't always autogroom away the
-                        //     same feature; we depend on the previous
-                        //     feature's key.
-                        srand ( (unsigned int) h2);
-                        //
-                        //   and do the groom.
-                        crm_microgroom (hashes, seen_features, hfsize, hindex);
-                        //  since things may have moved after a
-                        //  microgroom, restart our search
-                        hindex = h1 % hfsize;
-                        if (hindex == 0) hindex = 1;
-                        incrs = 0;
-                      }
-                    //      check to see if we've incremented ourself all the
-                    //      way around the .css file.  If so, we're full, and
-                    //      can hold no more features (this is unrecoverable)
-                    if (incrs > hfsize - 3)
-                      {
-                        nonfatalerror ("Your program is stuffing too many "
-                                       "features into this size .css file.  "
-                                       "Adding any more features is "
-                                       "impossible in this file.",
-                                       "You are advised to build a larger "
-                                       ".css file and merge your data into "
-                                       "it.");
-                        goto learn_end_regex_loop;
-                      }
-                    hindex++;
-                    if (hindex >= hfsize) hindex = 1;
-                  }
-
-                if (internal_trace)
-                  {
-                    if (hashes[hindex].value == 0)
-                      {
-                        fprintf (stderr,"New feature at %ld\n", hindex);
-                      }
-                    else
-                      {
-                        fprintf (stderr, "Old feature at %ld\n", hindex);
-                      }
-                  }
-                //      always rewrite hash and key, as they may be incorrect
-                //    (on a reused bucket) or zero (on a fresh one)
-                //
-                hashes[hindex].hash = h1;
-                hashes[hindex].key  = h2;
-
-                //      watch out - sense may be both + or -, so check before
-                //      adding it...
-                //
-                if ( !seen_features || ( seen_features[hindex]== 0) )
-                  {
-                    if (seen_features)
-                      seen_features[hindex]++;
-                    if (sense > 0 &&
-                        hashes[hindex].value + sense >=
-                        FEATUREBUCKET_VALUE_MAX-1)
-                      hashes[hindex].value = FEATUREBUCKET_VALUE_MAX - 1;
-                    else if ( sense < 0 && hashes[hindex].value <= -sense )
-                      hashes[hindex].value = 0;
-                    else
-                      hashes[hindex].value += sense;
-                  }
+		//
+		//   we now look at both the primary (h1) and 
+		//   crosscut (h2) indexes to see if we've got
+		//   the right bucket or if we need to look further
+		//
+		incrs = 0;
+		while ( hashes[hindex].key != 0
+			&&  ( hashes[hindex].hash != h1
+			      || hashes[hindex].key  != h2 ))
+		  {
+		    //
+		    incrs++;
+		    //  
+		    //       If microgrooming is enabled, and we've found a 
+		    //       chain that's too long, we groom it down.
+		    //
+		    if (microgroom && (incrs > MICROGROOM_CHAIN_LENGTH))
+		      {
+			//     set the random number generator up...
+			//     note that this is repeatable for a
+			//     particular test set, yet dynamic.  That
+			//     way, we don't always autogroom away the
+			//     same feature; we depend on the previous
+			//     feature's key.
+			srand ( (unsigned int) h2);
+			//
+			//   and do the groom.
+			crm_microgroom (hashes, seen_features, hfsize, hindex);
+			//  since things may have moved after a
+			//  microgroom, restart our search
+			hindex = h1 % hfsize;
+			if (hindex == 0) hindex = 1;
+			incrs = 0;
+		      }
+		    //      check to see if we've incremented ourself all the
+		    //      way around the .css file.  If so, we're full, and
+		    //      can hold no more features (this is unrecoverable)
+		    if (incrs > hfsize - 3)
+		      {
+			nonfatalerror ("Your program is stuffing too many "
+				       "features into this size .css file.  "
+				       "Adding any more features is "
+				       "impossible in this file.",
+				       "You are advised to build a larger "
+				       ".css file and merge your data into "
+				       "it.");
+			goto learn_end_regex_loop;
+		      }
+		    hindex++;
+		    if (hindex >= hfsize) hindex = 1;
+		  }
+		
+		if (internal_trace)
+		  {
+		    if (hashes[hindex].value == 0)
+		      {
+			fprintf (stderr,"New feature at %ld\n", hindex);
+		      }
+		    else
+		      {
+			fprintf (stderr, "Old feature at %ld\n", hindex);
+		      }
+		  }
+		//      always rewrite hash and key, as they may be incorrect
+		//    (on a reused bucket) or zero (on a fresh one)
+		//
+		hashes[hindex].hash = h1;
+		hashes[hindex].key  = h2;
+		
+		//      watch out - sense may be both + or -, so check before 
+		//      adding it...
+		//
+		if ( !seen_features || ( seen_features[hindex]== 0) )
+		  {
+		    if (seen_features)
+		      seen_features[hindex]++;
+		    if (sense > 0 && 
+			hashes[hindex].value + sense >= 
+			FEATUREBUCKET_VALUE_MAX-1)
+		      hashes[hindex].value = FEATUREBUCKET_VALUE_MAX - 1;
+		    else if ( sense < 0 && hashes[hindex].value <= -sense ) 
+		      hashes[hindex].value = 0;
+		    else 
+		      hashes[hindex].value += sense;
+		  }
               }
           }
       }
@@ -756,7 +763,8 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 
   //  and remember to let go of all the mmaps (full flush)
-  crm_munmap_all();
+  //  crm_munmap_all ();
+  crm_force_munmap_addr (hashes);
 
   //   and let go of the seen_features array
   if (seen_features) free (seen_features);
@@ -775,6 +783,7 @@ int crm_expr_markov_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #endif
 #endif
 
+  free(learnfilename);
   return (0);
 }
 

@@ -46,6 +46,7 @@ int crm_expr_isolate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   //    get the list of variable names
   //
+  CRM_ASSERT(apb != NULL);
   crm_get_pgm_arg (temp_vars, MAX_VARNAME, apb->p1start, apb->p1len);
   tvlen = crm_nexpandvar (temp_vars, apb->p1len, MAX_VARNAME);
   if (tvlen == 0)

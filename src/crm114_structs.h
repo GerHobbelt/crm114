@@ -153,6 +153,8 @@ typedef struct mythical_mct_cell {
 //   mct pointer is a pointer to the compiled MCT table, else the mct
 //   pointer is a NULL and the file is not executable.
 //
+struct mythical_csl_cell;
+
 typedef struct mythical_csl_cell {
   char *filename;        //filename if any
   long rdwr;             // 0=readonly, 1=rdwr
@@ -164,10 +166,14 @@ typedef struct mythical_csl_cell {
   long nstmts;           //  how many statements in the microcompile
   long preload_window;   //  do we preload the window or not?
   long cstmt;            //  current executing statement of this file
-  void *caller;          //  pointer to this file's caller (if any)
+  struct mythical_csl_cell *caller;      //  pointer to this file's caller (if any)
   long return_vht_cell;  //  index into the VHT to stick the return value
   long calldepth;        //  how many calls deep is this stack frame
   long aliusstk[MAX_BRACKETDEPTH]; // the status stack for ALIUS
+
+  unsigned int filename_allocated : 1; // if the filename was allocated on the heap.
+  unsigned int filetext_allocated : 1; // if the filename was allocated on the heap.
+  unsigned int mct_allocated : 1; // if the filename was allocated on the heap.
 } CSL_CELL;
 
 typedef struct {

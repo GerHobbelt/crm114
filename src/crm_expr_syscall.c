@@ -169,6 +169,7 @@ int crm_expr_syscall ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   //    get the flags
   //
+  CRM_ASSERT(apb != NULL);
   keep_proc = 0;
   if (apb->sflags & CRM_KEEP)
     {

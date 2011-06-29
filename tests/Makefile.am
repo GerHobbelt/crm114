@@ -53,7 +53,10 @@ test_SCRIPTS = \
  unionintersecttest.crm \
  userdirtest.crm \
  windowtest.crm \
- windowtest_fromvar.crm
+ windowtest_fromvar.crm \
+ tenfold_validate.crm \
+ tokendelimiterbugtest.crm \
+ bracesbugtest.crm
 
 
 test_UBERSCRIPTS = megatest.sh \

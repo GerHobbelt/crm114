@@ -33,7 +33,7 @@ extern CSL_CELL *mdw;
 
 //    a pointer to the current statement argparse block.  This gets whacked
 //    on every new statement.
-extern ARGPARSE_BLOCK *apb;
+//extern ARGPARSE_BLOCK *apb;
 
 
 //    the command line argc, argv
@@ -637,6 +637,17 @@ int crm_dbg_report_function(int reportType, char *userMessage, int *retVal);
 void crm_report_mem_analysis(void);
 
 #endif
+
+
+
+/*
+   Memory cleanup
+ */
+void free_hash_table(VHT_CELL **vht, size_t vht_size);
+void free_arg_parseblock(ARGPARSE_BLOCK *apb);
+void free_stack_item(CSL_CELL *csl);
+void free_stack(CSL_CELL *csl);
+
 
 
 #endif /* __CRM114_H__ */

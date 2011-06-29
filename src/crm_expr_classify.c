@@ -42,6 +42,7 @@ int crm_expr_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   //            get start/length of the text we're going to learn:
   //
+  CRM_ASSERT(apb != NULL);
   crm_get_pgm_arg (box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
   //  Use crm_restrictvar to get start & length to look at.
@@ -156,6 +157,7 @@ int crm_expr_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   //            get start/length of the text we're going to classify:
   //
+  CRM_ASSERT(apb != NULL);
   crm_get_pgm_arg (box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
   //  Use crm_restrictvar to get start & length to look at.

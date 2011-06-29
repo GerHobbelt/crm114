@@ -97,9 +97,9 @@ CSL_CELL *tdw = NULL;
 //    it's own data, unlike cdw and tdw.
 CSL_CELL *mdw = NULL;
 
-//    a pointer to the current statement argparse block.  This gets whacked
-//    on every new statement.
-ARGPARSE_BLOCK *apb = NULL;
+////    a pointer to the current statement argparse block.  This gets whacked
+////    on every new statement.
+//ARGPARSE_BLOCK *apb = NULL;
 
 
 
@@ -119,6 +119,108 @@ char *tempbuf = NULL;
 
 
 FILE *crm_stdin = NULL;
+
+
+
+
+void free_arg_parseblock(ARGPARSE_BLOCK *apb)
+{
+	if (!apb)
+		return;
+
+	free(apb);
+}
+
+void free_stack_item(CSL_CELL *csl)
+{
+	if (!csl)
+		return;
+
+	if (csl->mct && csl->mct_allocated)
+	{
+		long i;
+
+		for (i = 0; i < csl->nstmts + 10; i++)
+		{
+			MCT_CELL *cp = csl->mct[i];
+
+			if (cp != NULL)
+			{
+				free(cp->apb);
+				cp->apb = NULL;
+				// free(cp->hosttxt);
+				free(cp);
+				csl->mct[i] = NULL;
+			}
+		}
+		free(csl->mct);
+		csl->mct = NULL;
+	}
+
+	if (csl->filename_allocated)
+	{
+	free(csl->filename);
+	}
+	csl->filename = NULL;
+	if (csl->filetext_allocated)
+	{
+	free(csl->filetext);
+	}
+	csl->filetext = NULL;
+	free(csl);
+}
+
+
+
+void free_stack(CSL_CELL *csl)
+{
+	CSL_CELL *caller;
+
+	for( ; csl != NULL; csl = caller)
+	{
+		caller = csl->caller;
+
+		free_stack_item(csl);
+	}
+}
+
+
+
+/*
+   memory cleanup routine which is called at the end of the crm114 run.
+
+   Note: this routine *also* called when an error occurred (e.g. out of memory)
+      so tread carefully here: do not assume all these pointers are filled.
+ */
+static void crm_final_cleanup(void)
+{
+	// GROT GROT GROT
+	//
+	// move every malloc/free to use xmalloc/xcalloc/xrealloc/xfree, so we can be sure 
+	// [x]free() will be able to cope with NULL pointers as it is.
+
+	free_hash_table(vht, vht_size);
+	vht = NULL;
+	free_stack(csl);
+	csl = NULL;
+	free_stack(cdw);
+	cdw = NULL;
+	free_stack(tdw);
+	tdw = NULL;
+	//free_stack(mdw);
+	//mdw = NULL;
+	//free_arg_parseblock(apb);
+	//apb = NULL;
+
+	free(newinputbuf);
+	newinputbuf = NULL;
+	free(inbuf);
+	inbuf = NULL;
+	free(outbuf);
+	outbuf = NULL;
+	free(tempbuf);
+	tempbuf = NULL;
+}
 
 
 int main(int argc, char **argv)
@@ -172,7 +274,9 @@ int main(int argc, char **argv)
    //i |= _CRTDBG_LEAK_CHECK_DF;
 
         // Clear the upper 16 bits and OR in the desired freqency
-        i = (i & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_16_DF;
+        //i = (i & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_16_DF;
+
+		i |= _CRTDBG_CHECK_ALWAYS_DF;
 
         // Set the new bits
         _CrtSetDbgFlag(i);
@@ -185,6 +289,7 @@ int main(int argc, char **argv)
   //  for (i = 0; i < argc; i++)
   //    fprintf (stderr, " argi: %d, argv: %s \n", i, argv[i]);
 
+  atexit(crm_final_cleanup);
   crm_stdin = stdin;
 
   //   copy argc and argv into global statics...
@@ -220,25 +325,25 @@ int main(int argc, char **argv)
   {
     untrappableerror ("Couldn't malloc the csl.  Big problem!\n","");
   }
-  csl -> filename = NULL;
-  csl -> filedes = -1;
-  csl -> rdwr = 0;   //  0 means readonly, 1 means read/write
-  csl -> nchars = 0;
-  csl -> mct = 0;
-  csl -> cstmt = 0;
-  csl -> nstmts = 0;
-  csl -> preload_window = 1;
-  csl -> caller = NULL;
-  csl -> calldepth = 0;
-  csl -> aliusstk[0]  = 0;  // this gets initted later.
+  csl->filename = NULL;
+  csl->filedes = -1;
+  csl->rdwr = 0;   //  0 means readonly, 1 means read/write
+  csl->nchars = 0;
+  csl->mct = 0;
+  csl->cstmt = 0;
+  csl->nstmts = 0;
+  csl->preload_window = 1;
+  csl->caller = NULL;
+  csl->calldepth = 0;
+  csl->aliusstk[0]  = 0;  // this gets initted later.
 
   openbracket = -1;
   openparen = -1;
 
-  //   and allocate the argparse block
-  apb = (ARGPARSE_BLOCK *) calloc (1, sizeof (apb[0]));
-  if (!apb)
-    untrappableerror ("Couldn't malloc apb.  This is very bad.\n","");
+//  //   and allocate the argparse block
+//  apb = (ARGPARSE_BLOCK *) calloc (1, sizeof (apb[0]));
+//  if (!apb)
+//    untrappableerror ("Couldn't malloc apb.  This is very bad.\n","");
 
   //   Parse the input command arguments
 
@@ -728,6 +833,7 @@ int main(int argc, char **argv)
           if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
             untrappableerror ("Invalid filename, ", "filename too long.");
           csl->filename = argv[i];
+		  csl->filename_allocated = 0;
           if (user_trace)
             fprintf (stderr, "Using program file %s\n", csl->filename);
         }
@@ -753,6 +859,7 @@ int main(int argc, char **argv)
              untrappableerror ("Couldn't open the file, ",
                                "filename too long.");
            csl->filename = argv[i];
+		   csl->filename_allocated = 0;
            i = argc;
           }
       if (user_trace)
@@ -807,7 +914,9 @@ int main(int argc, char **argv)
         untrappableerror ("The command line program is too big.\n",
                           "Try increasing the max program size with -P.\n");
       csl->filename = "(from command line)";
+	  csl->filename_allocated = 0;
       csl->filetext = (char *) calloc (max_pgmsize, sizeof (csl->filetext[0]) );
+	  csl->filetext_allocated = 1;
       if (!csl->filetext)
         untrappableerror ("Couldn't malloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.","");
 
@@ -835,8 +944,10 @@ int main(int argc, char **argv)
   cdw->rdwr = 1;
   cdw->filedes = -1;
   cdw->filetext = calloc (data_window_size, sizeof (cdw->filetext[0]) );
+  cdw->filetext_allocated = 1;
   if (!cdw->filetext)
     untrappableerror ("Couldn't malloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.","");
+  
   //      also allocate storage for the windowed data input
   newinputbuf = calloc (data_window_size, sizeof (newinputbuf[0]) );
 
@@ -864,7 +975,7 @@ int main(int argc, char **argv)
   status = crm_preprocessor (csl, 0);
 
   //    Now, call the microcompiler on the program file.
-  status = crm_microcompiler ( csl, vht);
+  status = crm_microcompiler (csl, vht);
   //    Great - program file is now mapped via csl->mct
 
   //    Put a copy of the preprocessor-result text into

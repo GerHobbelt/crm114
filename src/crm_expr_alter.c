@@ -55,6 +55,7 @@ int crm_expr_eval (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   has_output_var = 1;
 
   //     get the variable name
+  CRM_ASSERT(apb != NULL);
   crm_get_pgm_arg (varname, MAX_VARNAME, apb->p1start, apb->p1len);
   if (apb->p1len < 3)
     {
@@ -185,6 +186,7 @@ int crm_expr_alter (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
           fprintf (stderr, "Executing an ALTERation\n");
 
         //     get the variable name
+        CRM_ASSERT(apb != NULL);
         crm_get_pgm_arg (varname, MAX_VARNAME, apb->p1start, apb->p1len);
         if (apb->p1len < 3)
           {

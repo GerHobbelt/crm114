@@ -52,6 +52,7 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //
   //       UNIQUE flag set?
   //
+  CRM_ASSERT(apb != NULL);
   if (apb->sflags & CRM_UNIQUE)
     {
       if (user_trace)

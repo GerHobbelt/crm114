@@ -118,7 +118,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //             filename starts at i,  ends at j. null terminate it.
   htext[j] = 0;
-  learnfilename = &(htext[i]);
+  learnfilename = strdup(&(htext[i]));
 
 
   //             and stat it to get it's length
@@ -139,22 +139,30 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       f = fopen (learnfilename, "wb");
       if (!f)
         {
-          fprintf (stderr,
-                "\n Couldn't open your new correlate file %s for writing; errno=%d .\n",
-                 learnfilename, errno);
+          fev = nonfatalerror_ex(SRC_LOC(),
+                "\n Couldn't open your new correlate file %s for writing; errno=%d(%s)\n",
+                 learnfilename, 
+				 errno,
+				 errno_descr(errno)
+				 );
 
           if (engine_exit_base != 0)
-            {
-              exit (engine_exit_base + 1);
-            }
+          {
+            exit (engine_exit_base + 1);
+          }
           else
+		  {
             exit (EXIT_FAILURE);
-
+		  }
         }
+	    
       //      fputc ('\001', f); don't do any output at all.
       made_new_file = 1;
       //
+	    if (f)
+		{
       fclose (f);
+		}
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
           CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
@@ -175,6 +183,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       fev = fatalerror ("Couldn't open the correlation file named: ",
                         learnfilename);
+      free(learnfilename);
       return (fev);
     }
 
@@ -202,6 +211,7 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           close(hfd);
       q = fatalerror (" Attempt to LEARN from a nonexistent variable ",
                   ltext);
+      free(learnfilename);
       return (q);
     }
   mdw = NULL;
@@ -215,8 +225,11 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           CRM_ASSERT(hfd >= 0);
           close(hfd);
       q = fatalerror (" Bogus text block containing variable ", ltext);
+      free(learnfilename);
       return (q);
     }
+  else
+  {
   textoffset = vht[vhtindex]->vstart;
   textlen = vht[vhtindex]->vlen;
 
@@ -238,12 +251,15 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           close(hfd);
           q = fatalerror("Failed to append the 'learn' text to the correlation file '%s'\n",
                   learnfilename);
+          free(learnfilename);
           return q;
+  }
   }
 
   CRM_ASSERT(hfd >= 0);
   close (hfd);
 
+  free(learnfilename);
   return (0);
 }
 

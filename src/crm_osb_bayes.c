@@ -148,7 +148,7 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //             filename starts at i,  ends at j. null terminate it.
   htext[j] = '\000';
-  learnfilename = &(htext[i]);
+  learnfilename = strdup(&htext[i]);
 
   //             and stat it to get it's length
   k = stat (learnfilename, &statbuf);
@@ -165,9 +165,12 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       f = fopen (learnfilename, "wb");
       if (!f)
         {
-          fprintf (stderr,
-                "\n Couldn't open your new CSS file %s for writing; errno=%d .\n",
-                 learnfilename, errno);
+          nonfatalerror_ex(SRC_LOC(),
+                "\n Couldn't open your new CSS file %s for writing; errno=%d(%s)\n",
+                 learnfilename, 
+				 errno,
+				 errno_descr(errno)
+				 );
           if (engine_exit_base != 0)
             {
               exit (engine_exit_base + 20);
@@ -183,6 +186,8 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           DEFAULT_OSB_BAYES_SPARSE_SPECTRUM_FILE_LENGTH;
       }
 
+	  if (f)
+	  {
       //       put in sparse_spectrum_file_length entries of NULL
       for (j = 0;
            j < sparse_spectrum_file_length
@@ -192,6 +197,7 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       made_new_file = 1;
       //
       fclose (f);
+	  }
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
           CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
@@ -214,6 +220,7 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       fev = fatalerror ("Couldn't get to the statistic file named: ",
                         learnfilename);
+      free(learnfilename);
       return (fev);
     }
 
@@ -687,7 +694,9 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
  regcomp_failed:
 
   //  and remember to let go of the mmap and the pattern bufffer
-  crm_munmap_file ((void *) hashes);
+  //  (we force the munmap, because otherwise we still have a link
+  //  to the file which stays around until program exit)
+  crm_force_munmap_addr ((void *) hashes);
 
   //
   //     If we had the seen_features array, we let go of it.
@@ -707,6 +716,7 @@ int crm_expr_osb_bayes_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 #endif
 #endif
 
+  free(learnfilename);
   return (0);
 }
 

@@ -165,7 +165,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //             filename starts at i,  ends at j. null terminate it.
   htext[j] = '\000';
 
-  learnfilename = &htext[i];
+  learnfilename = strdup(&htext[i]);
   //             and stat it to get it's length
   k = stat (learnfilename, &statbuf);
 
@@ -181,9 +181,12 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       f = fopen (learnfilename, "wb");
       if (!f)
         {
-          fprintf (stderr,
-                "\n Couldn't open your new COW file %s for writing; errno=%d .\n",
-                 learnfilename, errno);
+          nonfatalerror_ex(SRC_LOC(),
+                "\n Couldn't open your new COW file %s for writing; errno=%d(%s)\n",
+                 learnfilename, 
+				 errno,
+				 errno_descr(errno)
+				 );
           if (engine_exit_base != 0)
             {
               exit (engine_exit_base + 21);
@@ -199,6 +202,8 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
           DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH;
       }
 
+	  if (f)
+	  {
       //       put in sparse_spectrum_file_length entries of NULL
       for (j = 0;
            j < sparse_spectrum_file_length
@@ -208,6 +213,8 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       made_new_file = 1;
       //
       fclose (f);
+	  }
+
       //    and reset the statbuf to be correct
       k = stat (learnfilename, &statbuf);
           CRM_ASSERT_EX(k == 0, "We just created/wrote to the file, stat shouldn't fail!");
@@ -232,6 +239,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       fev = fatalerror ("Couldn't memory-map the .cow file named: ",
                         learnfilename);
+      free(learnfilename);
       return (fev);
     }
 
@@ -253,6 +261,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       fev =fatalerror ("The .cow file is the wrong type!  We're expecting "
                        "a Osb_Winnow-spectrum file.  The filename is: ",
                        learnfilename);
+      free(learnfilename);
       return (fev);
     }
 #endif
@@ -329,6 +338,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       long q;
       q = fatalerror (" Bogus text block containing variable ", ltext);
+      free(learnfilename);
       return (q);
     }
   textoffset = vht[vhtindex]->vstart;
@@ -609,6 +619,7 @@ int crm_expr_osb_winnow_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   if (ptext[0] != '\0') crm_regfree (&regcb);
 
+  free(learnfilename);
   return (0);
 }
 

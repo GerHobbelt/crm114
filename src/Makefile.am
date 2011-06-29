@@ -158,7 +158,7 @@ CFILES = crm_compiler.c crm_errorhandlers.c \
 	crm_generic_port.c
 
 HFILES = Makefile crm114_sysincludes.h crm114_structs.h crm114_config.h \
-	crm114.h regex.h crm114_osbf.h config.h
+	crm114.h crm114_osbf.h config.h
 
 OFILES = crm_compiler.o crm_errorhandlers.o \
 	crm_math_exec.o crm_var_hash_table.o crm_expandvar.o \
@@ -200,9 +200,11 @@ CRMFILES = mailfilter.crm mailfilter.cf \
 	statustest.crm windowtest_fromvar.crm paolo_overvars.crm \
 	paolo_ov2.crm paolo_ov3.crm paolo_ov4.crm paolo_ov5.crm \
 	pad.crm calc.crm \
-	gatlingsort.crm \
+	gatlingsort.crm tenfold_validate.crm \
 	test_svm.crm \
-	classifymail.crm 
+	classifymail.crm \
+	tokendelimiterbugtest.crm bracesbugtest.crm
+
 
 TEXTFILES = COLOPHON.txt pad.dat \
 	QUICKREF.txt INTRO.txt knownbugs.txt FAQ.txt things_to_do.txt \
@@ -264,7 +266,7 @@ done_all:
 	$(E) "   ***  Type \"make help\" to see what else you can make."
 	$(E) ""
 
-help: FORCE
+help:
 	$(E) ""
 	$(E) "    You can make the following things:"
 	$(E) ""
@@ -295,8 +297,8 @@ crm114_gnu: $(OFILES) crmregex_gnu.o crm_main.o
 	$(E) ""
 	$(E) "   Note:  You've chosen to make a GNU regex library CRM114."
 	$(E) "       Although CRM114 will work mostly correctly when"
-	$(E) "	linked against the GNU regex library, a lot of functionality"
-	$(E) "       won't be available, and "make megatest" will fail."
+	$(E) "       linked against the GNU regex library, a lot of functionality"
+	$(E) "       won't be available, and \"make megatest\" will fail."
 	$(E) ""
 	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
 	  crmregex_gnu.o \
@@ -312,17 +314,17 @@ crm114_gnu: $(OFILES) crmregex_gnu.o crm_main.o
 #
 crm114: $(OFILES) crmregex_tre.o crm_main.o
 	$(E) ""
-	$(E) "  Now building the TRE regex version of CRM114.  If you don't have"
-	$(E) "  TRE already, you will need to fetch it from the website and"
-	$(E) "  then ./configure --enable-static to get the static TRE libs,"
-	$(E) "  then build it, add /usr/local/lib to /etc/ld.so.conf, then"
-	$(E) "  to set the library up."
+	$(E) "   Now building the TRE regex version of CRM114.  If you don't have"
+	$(E) "   TRE already, you will need to fetch it from the website and"
+	$(E) "   then ./configure --enable-static to get the static TRE libs,"
+	$(E) "   then build it, add /usr/local/lib to /etc/ld.so.conf, then"
+	$(E) "   to set the library up."
 	$(E) ""
 	$(CC) $(LDFLAGS) $(LIBS) crm_main.o $(OFILES) \
 	  crmregex_tre.o \
 	  -o crm114
 	$(E) ""
-	$(E) "   Done.  Type "make help" to see what else you can make."
+	$(E) "   Done.  Type \"make help\" to see what else you can make."
 	$(E) ""
 
 
@@ -471,6 +473,9 @@ cssutil: cssutil.o crm_css_maintenance.o crm_util_errorhandlers.o crm_str_funcs.
 		crm_str_funcs.o \
 		crm_generic_port.o \
 		-o cssutil
+	$(E) ""
+	$(E) "   Done.  Type \"make help\" to see what else you can make."
+	$(E) ""
 
 osbfutil: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(CC) $(LDFLAGS) $(LIBS) osbf-util.o \
@@ -479,6 +484,9 @@ osbfutil: osbf-util.o crm_osbf_maintenance.o crm_util_errorhandlers.o crm_str_fu
 		crm_osbf_maintenance.o \
 		crm_generic_port.o \
 		-o osbfutil
+	$(E) ""
+	$(E) "   Done.  Type \"make help\" to see what else you can make."
+	$(E) ""
 
 cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(CC) $(LDFLAGS) $(LIBS) cssdiff.o \
@@ -486,6 +494,9 @@ cssdiff: cssdiff.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 		crm_str_funcs.o \
 		crm_generic_port.o \
 		-o cssdiff
+	$(E) ""
+	$(E) "   Done.  Type \"make help\" to see what else you can make."
+	$(E) ""
 
 cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 	$(CC) $(LDFLAGS) $(LIBS) cssmerge.o \
@@ -493,6 +504,9 @@ cssmerge: cssmerge.o crm_util_errorhandlers.o crm_str_funcs.o crm_generic_port.o
 		crm_util_errorhandlers.o \
 		crm_generic_port.o \
 		-o cssmerge
+	$(E) ""
+	$(E) "   Done.  Type \"make help\" to see what else you can make."
+	$(E) ""
 
 
 clean:
@@ -507,11 +521,11 @@ clean:
 	-rm -f crm114_tre
 	-rm -f *.o
 	$(E) "   if the next line doesn't work in your version of make,"
-	$(E) "    don't worry.  cd down into the TRE directory and 'make clean' manually"
+	$(E) "   don't worry.  cd down into the TRE directory and 'make clean' manually"
 	-( [ "$(TRE_TARFILE)" ] && cd $(TRE_TARFILE) && make clean )
 
 
-install: FORCE
+install:
 	$(MAKE) install_engine install_utils
 	$(E) ""
 	$(E) "    Done.  Type "make help" to see what else you can make."
@@ -521,11 +535,10 @@ install: FORCE
 #
 #    Installing Utilities
 #	
-install_utils:
+install_utils: cssmerge cssutil cssdiff osbfutil
 	$(E) ""
 	$(E) "    Installing Utilities"
 	$(E) ""
-	$(MAKE) cssmerge cssutil cssdiff osbfutil
 	install $(INSTALLFLAGS) cssdiff $(bindir)/cssdiff$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssmerge $(bindir)/cssmerge$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssutil $(bindir)/cssutil$(VER_SUFFIX)
@@ -546,7 +559,7 @@ install_engine: crm114
 	install $(INSTALLFLAGS) crm114 $(bindir)/crm$(VER_SUFFIX)
 
 
-install_binary_only: FORCE
+install_binary_only: crm114 cssdiff cssmerge cssutil osbfutil
 	install $(INSTALLFLAGS) crm114 $(bindir)/crm$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssdiff $(bindir)/cssdiff$(VER_SUFFIX)
 	install $(INSTALLFLAGS) cssmerge $(bindir)/cssmerge$(VER_SUFFIX)
@@ -555,7 +568,7 @@ install_binary_only: FORCE
 	-install $(INSTALLFLAGS) crm114-mode.el $(prefix)/share/emacs/site-lisp/crm114-mode.el$(VER_SUFFIX)
 
 
-install-exec-hook:
+install-exec-hook: crm114
 	cd $(DESTDIR)$(bindir) && $(LN_S) crm114 crm
 
 
@@ -563,7 +576,7 @@ uninstall-hook:
 	rm $(DESTDIR)$(bindir)/crm
 
 
-uninstall: FORCE
+uninstall:
 	-rm -rf $(bindir)/crm$(VER_SUFFIX)
 	-rm -rf $(bindir)/crmg$(VER_SUFFIX)
 	-rm -rf $(bindir)/crma$(VER_SUFFIX)
@@ -588,19 +601,19 @@ uninstall: FORCE
 #       do change, either your kit isn't quite right or your
 #       install is broken (or you've found a bug).
 #
-megatest: FORCE
+megatest:
 	$(E) ""
-	$(E) "        This runs a moderately interesting set of base tests"
-	$(E) "        to exercise much of CRM114 under TRE.  This takes about"
-	$(E) "        1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
-	$(E) "        be patient; you (hopefully) won't see anything till the"
-	$(E) "        full set of tests complete.  If you didn't use TRE, all"
-	$(E) "        bets are off."
+	$(E) "   This runs a moderately interesting set of base tests"
+	$(E) "   to exercise much of CRM114 under TRE.  This takes about"
+	$(E) "   1 minute to run on a 1.6 GHz Pentium-M laptop.  Please"
+	$(E) "   be patient; you (hopefully) won't see anything till the"
+	$(E) "   full set of tests complete.  If you didn't use TRE, all"
+	$(E) "   bets are off."
 	$(E) ""
-	$(E) "       Lines of output that start with OK_IF_mumble are allowed"
-	$(E) "       to change values.  No other lines should.  If other lines"
-	$(E) "       do change, either your kit isn't quite right or your"
-	$(E) "       install is broken (or you've found a bug)."
+	$(E) "   Lines of output that start with OK_IF_mumble are allowed"
+	$(E) "   to change values.  No other lines should.  If other lines"
+	$(E) "   do change, either your kit isn't quite right or your"
+	$(E) "   install is broken (or you've found a bug)."
 	$(E) ""
 	-cp $(srcdir)/*.crm ./           2> /dev/null
 	-cp $(srcdir)/*.mfp ./           2> /dev/null
@@ -609,11 +622,17 @@ megatest: FORCE
 	-cp $(srcdir)/INTRO.txt ./       2> /dev/null
 	-cp $(srcdir)/COLOPHON.txt ./    2> /dev/null
 	-cp $(srcdir)/FAQ.txt ./         2> /dev/null
-	$(srcdir)/megatest.sh > megatest_test.log 2>&1
-	$(E) "=========================================================================="
-	$(diff) -U3 $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
-	$(E) "=========================================================================="
-	$(diff) -U3 $(DIFF_FLAGS) $(srcdir)/megatest_test.original.log megatest_test.log & sleep 1
+	$(srcdir)/megatest.sh | sed -e 's/ 1\.00e+00/ 1.00e-00/g' > megatest_test.log 2>&1
+	$(E) "=============================================================="
+	$(E) "=================== MEGATEST DIFF REPORT ====================="
+	$(E) "===================      (unified)       ====================="
+	$(E) "=============================================================="
+	$(diff) -u $(DIFF_FLAGS) $(srcdir)/megatest_knowngood.log megatest_test.log & sleep 1
+	$(E) "=============================================================="
+	$(E) "=================== MEGATEST DIFF REPORT ====================="
+	$(E) "===================      (regular)       ===================="
+	$(E) "=============================================================="
+	$(diff) $(DIFF_FLAGS) $(srcdir)/megatest_test.original.log megatest_test.log & sleep 1
 
 
 cssfiles: spam.dir good.dir
@@ -621,10 +640,10 @@ cssfiles: spam.dir good.dir
 	$(E) "   This may take a LONG TIME to run, up to 10 minutes per megabyte"
 	$(E) "   of text.  Please adjust your expectations accordingly."
 	$(E) ""
-	$(E) "    Also, be advised that relearning the same text more than once"
-	$(E) "    can be ill-advised.  Remove the .css files first if you are"
-	$(E) "    relearning your entire corpus (new .css files will be created"
-	$(E) "    if they don't already exist)"
+	$(E) "   Also, be advised that relearning the same text more than once"
+	$(E) "   can be ill-advised.  Remove the .css files first if you are"
+	$(E) "   relearning your entire corpus (new .css files will be created"
+	$(E) "   if they don't already exist)"
 	$(E) ""
 	$(E) "   If your text corpi are very large, you may need to rebuild"
 	$(E) "   crm114 with a larger default window size - or alter the commands"
@@ -636,22 +655,22 @@ cssfiles: spam.dir good.dir
 	$(E) "   Here we go..."
 	$(E) ""
 	export DATE $(date +%Y_%m_%d_%H_%M_%S)
-	$(E) "  MUCH STUFF DEPRECATED!!!  Use mailtrainer.crm instead..."
+	$(E) "   MUCH STUFF DEPRECATED!!!  Use mailtrainer.crm instead..."
 	cssutil -b -r spam.css
 	cssutil -b -r nonspam.css
 	cp spam.css spam__$(DATE).txt
 	cp nonspam.css nonspam__$(DATE).txt
 	$(E) ""
-	$(E) "    run mailtrainer.crm on the spam.dir and good.dir directories."
+	$(E) "   run mailtrainer.crm on the spam.dir and good.dir directories."
 	mailtrainer.crm \
 		--good=./good.dir/ \
 		--spam=./spam.dir/ \
 		--repeat=5 \
 		--random
-	$(E) "    If all went well with the above, you will have backup copies of"
-	$(E) "    your spam and nonspam .css files."
-	$(E) "    You may now delete these files with impunity, or you may "
-	$(E) "    choose to keep them around as backup."
+	$(E) "   If all went well with the above, you will have backup copies of"
+	$(E) "   your spam and nonspam .css files."
+	$(E) "   You may now delete these files with impunity, or you may "
+	$(E) "   choose to keep them around as backup."
 
 
 
@@ -709,15 +728,15 @@ css_gzip: css_tarfile
 	rm -rf crm114-$(VERSION).css.tar.gz
 	gzip crm114-$(VERSION).css.tar
 
-#distribution: install src_gzip i386_gzip css_gzip
-#	md5sum crm114-$(VERSION).*.tar.gz
+distribution: install src_gzip i386_gzip css_gzip
+	md5sum crm114-$(VERSION).*.tar.gz
 
-rsync:  FORCE
+rsync:
 	rsync -zrltDv \
 	  $(CFILES) $(HFILES) $(UTILFILES) $(CRMFILES) $(TEXTFILES) \
 	  wsy@crm114.sourceforge.net:/home/groups/c/cr/crm114/htdocs/src/
 
-diff: FORCE
+diff: diff_em.sh
 	-(sh diff_em.sh );
 
 dist-diff: diff
@@ -743,7 +762,9 @@ reindent:
 
 FORCE:
 
-.PHONY: FORCE reindent depend diff rsync done_all
+.PHONY: reindent depend rsync done_all megatest help clean install uninstall-hook uninstall
+
+
 
 
 depend:

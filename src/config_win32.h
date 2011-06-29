@@ -1,11 +1,14 @@
 /* src/config.h.  Generated from config.h.in by configure.  */
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* untrappable ASSERT/VERIFY checks */
+/* #undef CRM_ASSERT_IS_UNTRAPPABLE */
+
+/* DISable ASSERT/VERIFY checks */
+/* #undef CRM_DONT_ASSERT */
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
-
-/* Define to 1 if you have the <assert.h> header file. */
-#define HAVE_ASSERT_H 1
 
 /* Define to 1 if you have the `bcopy' function. */
 #undef HAVE_BCOPY
@@ -440,13 +443,13 @@
 #define PACKAGE_NAME "CRM114"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "CRM114 20070731-BlameTheInterns"
+#define PACKAGE_STRING "CRM114 20070807-BlameTheInterns"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "crm114"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "20070731-BlameTheInterns"
+#define PACKAGE_VERSION "20070807-BlameTheInterns"
 
 /* "enable replacement memmove if system memmove is broken or missing" */
 /* #undef PREFER_PORTABLE_MEMMOVE */
@@ -465,17 +468,20 @@
 /* The size of `long int', as computed by sizeof. */
 #define SIZEOF_LONG_INT 8
 
+/* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
+/* #undef STAT_MACROS_BROKEN */
+
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* distribution archive filename postfix code of the software */
-#define TAR_FILENAME_POSTFIX "Ger-0805T10"
+#define TAR_FILENAME_POSTFIX "Ger-104"
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
-#define VERSION "20070731-BlameTheInterns"
+#define VERSION "20070807-BlameTheInterns"
 
 /* version suffix code of the software */
 #define VER_SUFFIX ""
