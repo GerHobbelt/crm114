@@ -1,9 +1,15 @@
 #! /usr/bin/crm
- {                 
-        {
-                match   < fromend >  ( :word: )   /[[:graph:]]+/
-                hash  ( :word:)   /:*:word:/
-                liaf          # Loop Iterate Awaiting Failure of match
-        }
-        accept            # so we accept it to stdout and we're done.
- }
+#
+#	shoud.crm - loop iterate awaiting failure script
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
+{
+    {
+        match   < fromend >  ( :word: )   /[[:graph:]]+/
+        hash  ( :word:)   /:*:word:/
+        liaf          # Loop Iterate Awaiting Failure of match
+    }
+    accept            # so we accept it to stdout and we're done.
+}

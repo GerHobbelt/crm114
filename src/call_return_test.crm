@@ -1,7 +1,10 @@
-#!/usr/bin/crm
+#! /usr/bin/crm
 #
-#        test the call-return statements.
-#
+#	call_return_test.crm - test the call-return statements
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 #
 alter (:_dw:) /This is the original data window.  It shouldn't change/
@@ -36,7 +39,7 @@ output / \nand now do some fully isolated forking calls \n/
 isolate (:out: :status:)
 syscall /:my_fork:/ ( this string is your input ) (:out:) (:status:)
 output /Returned output = :*:out: (level :*:_cd:)\n/
-output /Returned status:  \n:*:status:\n/  
+output /Returned status:  \n:*:status:\n/
 output /And the data window is now: :*:_dw:\n/
 
 #######################
@@ -47,7 +50,6 @@ exit /0/
 
 
 ########################################
-#
 #      Start of the callable routines
 ########################################
 
@@ -74,7 +76,7 @@ return /z y x w v/
 #     this routine uses a global :out: to capture the
 #     accumulated result
 #
-#     Yes, I know it's dirtylooking, but most routines don't need 
+#     Yes, I know it's dirtylooking, but most routines don't need
 #     to be recursive, and of those that do, most really are changing
 #     a data structure in-place, and hence don't really need to
 #     do this twitchy magic.
@@ -83,7 +85,7 @@ return /z y x w v/
 {
 	output / arglist return factorial call entry, args = :*:arg: (level :*:_cd:)\n/
 	isolate (:nm1: :out:)
-	match [:arg:] (:: :n: :out:) /([0-9]+) ([0-9]+)/		
+	match [:arg:] (:: :n: :out:) /([0-9]+) ([0-9]+)/
 	{
 		eval /:@: :*:n: > 1 :/
 		eval (:nm1:) /:@: :*:n: - 1 :/
@@ -104,13 +106,13 @@ return /z y x w v/
 #     Here's factorial again, but we're treating :arg: as a known data
 #     structure (that we MATCH into) and then we just ALTER fields within it.
 #
-#     Other than the fact that we mutilate :arg: , this is not a bad way 
+#     Other than the fact that we mutilate :arg: , this is not a bad way
 #     to write code.
 
 :factorial_inplace: (:arg:)
 {
 	output / downward recurse call entry, args = :*:arg: (level :*:_cd:)\n/
-	match [:arg:] (:: :n: :out:) /([0-9]+) ([0-9]+)/		
+	match [:arg:] (:: :n: :out:) /([0-9]+) ([0-9]+)/
 	{
 		eval /:@: :*:n: > 1 :/
 		eval (:out:) /:@::*:out: * :*:n::/
@@ -132,8 +134,8 @@ return /z y x w v/
 #      Here's factorial yet again, with an incoming transfer arg AND
 #      an output transfer arg.  This is also a good way to write code.
 #
-#      Because we don't have local variables (yet- I haven't figured out 
-#      a way to reconcile the overlapped-strings principle with local 
+#      Because we don't have local variables (yet- I haven't figured out
+#      a way to reconcile the overlapped-strings principle with local
 #      variables) note that:
 #
 #       FOR A RECURSIVE ROUTINE, _ALL_ OF THE STATE MUST MOVE DOWN AND UP
@@ -145,7 +147,7 @@ return /z y x w v/
 #      5
 #      4 5
 #      3 4 5
-#      2 3 4 5 
+#      2 3 4 5
 #      1 2 3 4 5
 #
 #               then like this coming back up.
@@ -158,14 +160,14 @@ return /z y x w v/
 {
 	output / Call factorial_returnarg entry, arg = :*:arg: (level :*:_cd:)\n/
 	isolate (:nm1: :out: )
-	match [:arg:] (:: :n: ) /([0-9]+)/		
+	match [:arg:] (:: :n: ) /([0-9]+)/
 	{
 		eval /:@: :*:n: > 1 :/
 		eval (:nm1:) /:@: :*:n: - 1 :/
 		output / N is :*:n: NM1 is :*:nm1: \n/
 		call /:factorial_returnarg:/ [ :*:nm1: :*:arg:] (:out:)
 		output / Call returned, return value was :*:out: (level :*:_cd:)\n /
-		{ 
+		{
 			#   Do we have at least two things to multiply?
 			match [:out:] (:: :p1: :p2: :rest:) \
 				/([0123456789]+)  ([0123456789]+) (.*)/
@@ -201,6 +203,3 @@ output /Changing the data window in this fork. \n/
 alter (:_dw:) /This is a _changed_ data window, local to this SYSCALLed fork./
 output /Now the data window is: :*:_dw:\n/
 exit /123/
-
-
-

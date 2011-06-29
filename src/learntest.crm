@@ -1,6 +1,12 @@
 #! /usr/bin/crm
+#
+#	learntest.crm - learn old .css data into new .css files
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 {
 	match (:data:) /.*/
 	output /learning to file :*:_arg2: :*:_nl:/
-	learn <microgroom> (:*:_arg2:) [:data:] /[[:graph:]]+/  
+	learn <microgroom> (:*:_arg2:) [:data:] /[[:graph:]]+/
 }

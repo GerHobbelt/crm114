@@ -1,4 +1,10 @@
 #! /usr/bin/crm
+#
+#	windowtest.crm - testing windonwing on windows nad variables
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 {
 	output /:*:_nl: CRM114: testing windowing on windows and variables :*:_nl: :*:_nl:/
@@ -23,5 +29,3 @@ window
 	accept
 	output /:*:_nl:/
 }
-
-

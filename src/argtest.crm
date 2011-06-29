@@ -1,8 +1,14 @@
 #! /usr/bin/crm -( agent=smith target=neo target=trinity ) --
+#
+#	argtest.crm - test argument numbering and handling
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
-{ 
-	output /:*:_nl: :_argc: =:*:_argc:= / 
-	output /:*:_nl: :_arg0: =:*:_arg0:= / 
+{
+	output /:*:_nl: :_argc: =:*:_argc:= /
+	output /:*:_nl: :_arg0: =:*:_arg0:= /
 	output /:*:_nl: :_arg1: =:*:_arg1:= /
 	output /:*:_nl: :_arg2: =:*:_arg2:= /
 	output /:*:_nl: :_arg3: =:*:_arg3:= /

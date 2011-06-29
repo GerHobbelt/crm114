@@ -1,6 +1,7 @@
+#
 #   Comments are anything with a # in front, accept with +, reject with -
 #
 #   Accept anything from my friends at MIT
-+mit.edu
++mit\.edu
 #   Reject anything from those idiots at WeAreIdiotSpammers.com
--weareidiotspammers.com
+-weareidiotspammers\.com

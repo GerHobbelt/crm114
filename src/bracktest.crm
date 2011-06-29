@@ -1,15 +1,21 @@
-#!/usr/bin/crm
+#! /usr/bin/crm
+#
+#	bracktest.crm - test brackets, escapes, and \#
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 output /:*:_nl: CRM114 testing brackets, escapes and \#'s :*:_nl:/
 output /:*:_nl: If you don't see any compiler error messages, that means the test passed. :*:_nl:/
 
-{ 
+{
 	}
-	# are you annoyed?  I am.  
+	# are you annoyed?  I am.
 	{
-        { { { } } } 
+        { { { } } }
 }
 { #  these brackets should never be seen.... {  and }
-# nor these { ; } 
+# nor these { ; }
 }
 output /:*:_nl:/

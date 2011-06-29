@@ -1,8 +1,14 @@
 #! /usr/bin/crm
-#   test the alius statement 
+#
+#	uncaughttraptest.crm - test for uncaught traps
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
+#   test the alius statement
 {
 	{
-		{	
+		{
 			output /checking for a foo.../
 			match /foo/
 			output /Found a foo :*:_nl:/
@@ -37,12 +43,12 @@
 			match /wugga/
 			output /Found a wugga.  :*:_nl:/
 		}
-		alius 
+		alius
 		fault / cork /
 		output /found neither baz nor wugga :*:_nl:/
 	}
 	{
 		output / on the next line, "fault" should be empty.:*:_nl:/
-		output / thrice damned  - fault was ->:*:_fault:<- :*:_nl:/ 
+		output / thrice damned  - fault was ->:*:_fault:<- :*:_nl:/
 	}
 }

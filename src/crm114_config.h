@@ -1,23 +1,19 @@
-//  crm114_config.h  - Controllable Regex Mutilator base config, version X0.1
-//  Copyright 2001-2006 William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm114_config.h -- Configuration for CRM114.
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 ///////////////////////////////////////////////////////////////////
-//
-//    Configuration for CRM114.  Some things here you can change
-//    with relative impunity.  Other things, not so much.  Where 
-//    there are limiting factors noted, please obey them or you 
-//    may break something important.  And, of course, realize that
-//    this is GPLed software with NO WARRANTY - make any changes 
-//    and that goes double. 
-//
+//	Some things here you can change with relative impunity.
+//	Other things, not so much.  Where there are limiting factors
+//	noted, please obey them or you may break something important.
+//	And, of course, realize that this is GPLed software with
+//	NO WARRANTY - make any changes and that goes double.
 ///////////////////////////////////////////////////////////////////
-//
+
+#ifndef	__CRM114_CONFIG_H__
+#define	__CRM114_CONFIG_H__
+
 //     Do you want all the classifiers?  Or just the "production
 //     ready ones"?   Comment the next line out if you want everything.
 //#define PRODUCTION_CLASSIFIERS_ONLY
@@ -25,12 +21,12 @@
 //
 //   default size of the variables hashtable (a.k.a. the VHT)
 #define DEFAULT_VHT_SIZE 4095
- 
+
 //   default limit on the control stack (for catching infinite loops,
 //   not a preallocated variable)
 #define DEFAULT_CSTK_LIMIT 1024
 
-//   how many levels (pending operations) will we allow in 
+//   how many levels (pending operations) will we allow in
 //   math evaluations.  We _could_ have it be unlimited, but
 //   this serves as an error catcher in runaway programs.
 #define DEFAULT_MATHSTK_LIMIT 1024
@@ -49,10 +45,10 @@
 
 //    mmap cacheing length - only actually write out this often.
 //     set to 0 to disable mmap cacheing and release files faster.
-//      However, this has a negative speed impact. 
-//#define UNMAP_COUNT_MAX 0
+//      However, this has a negative speed impact.
+#define UNMAP_COUNT_MAX 0
 //#define UNMAP_COUNT_MAX 2
-#define UNMAP_COUNT_MAX 1000
+//#define UNMAP_COUNT_MAX 1000
 
 //    What's the smallest chunk we actually want to bother reclaiming
 //    on the fly out of the isolated data area "tdw".  Set this to 1
@@ -74,9 +70,9 @@
 //    actual regex will share the same cache slot, which is pretty
 //    cool.
 //
-//    For programs that don't loop, or reuse the same regex a lot, 
-//    performance is slightly better with cacheing disabled.  But if you 
-//    do reuse the same regexes tens or hundreds of times (say, lots of 
+//    For programs that don't loop, or reuse the same regex a lot,
+//    performance is slightly better with cacheing disabled.  But if you
+//    do reuse the same regexes tens or hundreds of times (say, lots of
 //    LIAF-loops) then cacheing can accelerate your program significantly.
 //
 //#define CRM_REGEX_CACHESIZE 0
@@ -96,6 +92,13 @@
 //#define REGEX_CACHE_LINEAR_SEARCH
 
 
+//    How big a space in a "standard header" (which is relatively new
+//    and most classifiers don't support yet) do we want to use?  Note
+//    that changing this will break all previously generated statistics
+//    files that use this standard header.
+#define STATISTICS_FILE_NCHUNKS 1024
+#define STATISTICS_FILE_IDENT_STRING_MAX 1024
+
 //    do we use Sparse Binary Polynomial Hashing (sensitive to both
 //    sequence and spacing of individual words), Token Grab Bag, or
 //    Token Sequence Sensitive?  Testing against the SpamAssassin
@@ -106,9 +109,9 @@
 //
 //    Choose ONE of the following:
 //          SBPH, TGB2, TGB, TSS, or ARBITRARY_WINDOW_LEN:
-//   
+//
 //    *** DANGER, WILL ROBINSON ***  You MUST rebuild your .css files from
-//    samples of text if you change this.  
+//    samples of text if you change this.
 //
 //
 //     Sparse Binary Polynomial Hashing
@@ -146,14 +149,14 @@
 #define UNIFIED_BAYES_WINDOW_LEN 5
 //
 //      Unified tokenization pipeline length.
-//          maximum window length _ever_.  
+//          maximum window length _ever_.
 #define UNIFIED_WINDOW_LEN 32
-//          
+//
 //          maximum number of weight vectors to be applied to the pipeline
 #define UNIFIED_VECTOR_LIMIT 256
 
-////   
-//         Winnow algorithm parameters here...  
+////
+//         Winnow algorithm parameters here...
 //
 #define OSB_WINNOW_WINDOW_LEN 5
 #define OSB_WINNOW_PROMOTION 1.23
@@ -164,13 +167,13 @@
 //     for SBPH and much better for TSS, the "new" one works slightly
 //     better for TGB and TGB2, and _much_ better for FOO
 //
-//     The current default (not necessarily optimal) 
-//     is Markovian SBPH, STATIC_LOCAL_PROBABILITIES, 
+//     The current default (not necessarily optimal)
+//     is Markovian SBPH, STATIC_LOCAL_PROBABILITIES,
 //     LOCAL_PROB_DENOM = 16, and SUPER_MARKOV
 //
-//#define LOCAL_PROB_DENOM 2.0 
-#define LOCAL_PROB_DENOM 16.0 
-//#define LOCAL_PROB_DENOM 256.0 
+//#define LOCAL_PROB_DENOM 2.0
+#define LOCAL_PROB_DENOM 16.0
+//#define LOCAL_PROB_DENOM 256.0
 #define STATIC_LOCAL_PROBABILITIES
 //#define LENGTHBASED_LOCAL_PROBABILITIES
 //
@@ -180,27 +183,11 @@
 //#define BREYER_CHHABRA_SIEFKES_WEIGHTS
 //#define BREYER_CHHABRA_SIEFKES_BASE7_WEIGHTS
 //#define BCS_MWS_WEIGHTS
-//#define BCS_EXP_WEIGHTS 
+//#define BCS_EXP_WEIGHTS
 //
 //
 //    Do we use learncount-based normalization in calculating probabilities?
 #define OSB_LEARNCOUNTS
-//
-//    Do we want "compatibility mode" between .css files LEARNed under
-//    Markovian versus those LEARNed with OSB or OSB/Unique?  Note that
-//    the default is NOT compatible with Markov; the reason for this is
-//    that Bill Y. screwed up his subscripts and caused an unintentional
-//    yet hard to fix fork in the .css table hashing formula.  Both work,
-//    both work exactly equally well, yet they are incompatible and you
-//    must choose one or the other.  If you turn on OLD_MARKOV_COMPATIBILITY,
-//    you can flip (mostly) back and forth between <microgroom> and
-//    <osb microgroom>.  But if you've already built any OSB .css files,
-//    you can't do this flip.  But if you have older OSB .css files,
-//    you can't turn this on without having the data become inaccessible.
-//    And there's no easy way to translate (due to the hashing obfuscation)
-//    Anyway, it's better to rebuild from fresh spam anyway, so blame Bill.
-//             - Bill
-// #define OLD_MARKOV_COMPATIBILITY
 //
 //    Do we take only the maximum probability feature?
 //
@@ -211,10 +198,17 @@
 //    Make sure ONE of these is turned on.
 //#define STOCHASTIC_AMNESIA
 #define WEIGHT_DISTANCE_AMNESIA
+
+#if (! defined (STOCHASTIC_AMNESIA) && ! defined (WEIGHT_DISTANCE_AMNESIA))
+#error Neither STOCHASTIC_AMNESIA nor WEIGHT_DISTANCE_AMNESIA defined
+#elif (defined (STOCHASTIC_AMNESIA) && defined (WEIGHT_DISTANCE_AMNESIA))
+#error Both STOCHASTIC_AMNESIA and WEIGHT_DISTANCE_AMNESIA defined
+#endif
+
 //
 //    define the default max chain length in a .css file that triggers
 //    autogrooming, the rescale factor when we rescale, and how often
-//    we rescale, and what chance (mask and key) for any particular 
+//    we rescale, and what chance (mask and key) for any particular
 //    slot to get rescaled when a rescale is triggered for that slot chain.
 //#define MICROGROOM_CHAIN_LENGTH 1024
 #define MICROGROOM_CHAIN_LENGTH 256
@@ -223,7 +217,7 @@
 #define MICROGROOM_STOCHASTIC_MASK 0x0000000F
 #define MICROGROOM_STOCHASTIC_KEY  0x00000001
 #define MICROGROOM_STOP_AFTER 32    //  maximum number of buckets groom-zeroed
-                                    
+
 #define FEATURE_HIT_INCREMENT_SIZE 7
 
 //    define the "block ratio" of how of a memory data window we're
@@ -257,8 +251,8 @@
 //    and how long can a variable name be
 #define MAX_VARNAME 2048
 
-//   define the default number of bytes in a learning file hash table
-//   (note that this should be a prime number, or at least one with a 
+//   define the default number of buckets in a learning file hash table
+//   (note that this should be a prime number, or at least one with a
 //    lot of big factors)
 //
 //       this value (2097153) is one more than 2 megs, for a .css of 24 megs
@@ -272,6 +266,12 @@
 #define DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH 1048577
 //#define DEFAULT_BIT_ENTROPY_FILE_LENGTH 2000000
 #define DEFAULT_BIT_ENTROPY_FILE_LENGTH 1000000
+
+
+// ???
+#define OSB_BAYES_MAX_FEATURE_COUNT DEFAULT_OSB_BAYES_SPARSE_SPECTRUM_FILE_LENGTH
+
+#define WINNOW_MAX_FEATURE_COUNT DEFAULT_WINNOW_SPARSE_SPECTRUM_FILE_LENGTH
 
 //    For the hyperspace matcher, we need to define a few things.
 #define HYPERSPACE_MAX_FEATURE_COUNT 500000
@@ -325,25 +325,51 @@
 //     cookies on a fatal error
 #define MAX_NONFATAL_ERRORS 100
 
-//     How big is a feature bucket?  Is it a byte, a short, a long, 
+//     How big is a feature bucket?  Is it a byte, a short, a long,
 //     a float, whatever.  :)
-#define FEATUREBUCKET_TYPE FEATUREBUCKET_STRUCT
 //#define FEATUREBUCKET_VALUE_MAX 32767
 #define FEATUREBUCKET_VALUE_MAX 1000000000
 #define FEATUREBUCKET_HISTOGRAM_MAX 4096
-//#define FEATUREBUCKET_TYPE unsigned short
 
 
+////////////////////////////////////////////
+//
+//      Improved FSCM-specific parameters
+//
+/////////////////////////////////////////////
+
+//   this is 2^18 + 1
+//   This determines the tradeoff in memory vs. speed/accuracy.
+//define FSCM_DEFAULT_HASH_TABLE_SIZE 262145
+//
+//   This is 1 meg + 1
+#define FSCM_DEFAULT_HASH_TABLE_SIZE 1048577
+
+//   How long are our prefixes?  Original prefix was 3 but that's
+//   rather suboptimal for best speed.  6 looks pretty good for speed and
+//   accuracy.
+//   prefix length 6 and thickness 10 (200 multiplier) yields 29 / 4147
+//
+//#define FSCM_DEFAULT_CODE_PREFIX_LEN 3
+#define FSCM_DEFAULT_CODE_PREFIX_LEN 6
+
+//  The chain cache is a speedup for the FSCM match
+//  It's indexed modulo the chainstart, with associativity 1.0
+#define FSCM_CHAIN_CACHE_SIZE 1048577
+
+////////////////////////////////////////////
+//
 //     Neural Net parameters
 //
+////////////////////////////////////////////
 #define NN_RETINA_SIZE 8192
 #define NN_FIRST_LAYER_SIZE 8
-#define NN_HIDDEN_LAYER_SIZE 16
+#define NN_HIDDEN_LAYER_SIZE 8
 #define NN_MAX_FEATURES 65536
 
 //     Neural Net training setups
 //
-//     Note- convergence seems to work well at 
+//     Note- convergence seems to work well at
 //    alpha 0.2 init_noise 0.5 stoch_noise 0.1 gain_noise 0.00000001
 //    alpha 0.2 init_noise 0.2 stoch_noise 0.1 gain_noise 0.00000001
 //    alpha 0.2 init_noise 0.2 stoch_noise 0.05 gain_noise 0.00000001
@@ -362,20 +388,21 @@
 #define NN_ZERO_TRACKING 0.9999
 //   Threshold for back propagation
 #define NN_INTERNAL_TRAINING_THRESHOLD 0.1
-//  Just use 1 neuron excitation per token coming in. 
+//  Just use 1 neuron excitation per token coming in.
 #define NN_N_PUMPS 1
-//  How many training cycles before we punt out 
+//  How many training cycles before we punt out
 #define NN_MAX_TRAINING_CYCLES 500
 //  When doing a "nuke and retry", allow this many training cycles.
 #define NN_MAX_TRAINING_CYCLES_FROMSTART 5000
-//  How many times to allow a punt?
-#define NN_FROMSTART_PUNTING 1000000
+//  How often do we cause a punt (we punt every 0th epoch modulo this number)
+#define NN_FROMSTART_PUNTING 10000000
 //  After how many "not needed" cycles do we microgroom this doc away?
-#define NN_MICROGROOM_THRESHOLD 1000000      
+#define NN_MICROGROOM_THRESHOLD 1000000
 //  use the sparse retina design?  No, it's not good.
-#define NN_SPARSE_RETINA 0 
+#define NN_SPARSE_RETINA 0
 
 //    End of configurable parameters.
 
 
 
+#endif	// !_CRM114_CONFIG_H_

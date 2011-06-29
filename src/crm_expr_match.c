@@ -1,14 +1,8 @@
-//  crm_expr_match.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_expr_match.c - expression match
+
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -21,23 +15,14 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
+//    the globals used when we need a big buffer  - allocated once, used
 //    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
 extern char *tempbuf;
 
 //        And the match routine.  What a humungous mess...
 int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
-  long i; 
+  long i;
   long j;
   long k;
   long mc;
@@ -51,7 +36,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   char *mtext;
   long mtextlen;
   long textoffset;
-  char bindable_vars[MAX_PATTERN]; 
+  char bindable_vars[MAX_PATTERN];
   long bindable_vars_len;
   char box_text[MAX_PATTERN];
   regmatch_t matches [MAX_SUBREGEX];
@@ -105,7 +90,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	fprintf (stderr, "  nomultiline turned on...\n");
       nomultilinep = 1;
     };
-  
+
   if (apb->sflags & CRM_ABSENT)
     {
       if (user_trace)
@@ -120,7 +105,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       literal_pattern_p = 1;
     };
 
-  
+
   //  default is NO special fromming...
   fromp = 0;
 
@@ -137,14 +122,14 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	fprintf (stderr, "  fromnext turned on...\n");
       fromp = CRM_FROMNEXT;
     };
-  
+
   if (apb->sflags & CRM_FROMEND)
     {
       if (user_trace)
 	fprintf (stderr, "  fromend turned on...\n");
       fromp = CRM_FROMEND;
     };
-  
+
   if (apb->sflags & CRM_NEWEND)
     {
       if (user_trace)
@@ -158,22 +143,22 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	fprintf (stderr, "  backwards search turned on...\n");
       fromp = CRM_BACKWARDS;
     };
-  
+
   if (apb->sflags & CRM_FROMCURRENT)
     {
       if (user_trace)
 	fprintf (stderr, "  from-current search turned on...\n");
       fromp = CRM_FROMCURRENT;
     };
-  
+
   //   Now, from the flags, calculate the cflags and eflags
-  cflags = casep * REG_ICASE 
-    + nomultilinep * REG_NEWLINE 
+  cflags = casep * REG_ICASE
+    + nomultilinep * REG_NEWLINE
     + extended_regex_p * REG_EXTENDED
     + literal_pattern_p * REG_LITERAL;
-  
-  eflags = 0; //  
-  
+
+  eflags = 0; //
+
   //    get the bound values out of the () parenthesis
   //
   //   DANGER WILL ROBINSON!!  TAKE COVER, DOCTOR SMITH!!!  We
@@ -182,29 +167,29 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //   expandvar'ed variable doesn't have that durable text
   //   string somewhere.  So, we have to stuff the variable name
   //   in as a temp var and then immediately reassign it.
-  //    
+  //
   crm_get_pgm_arg (bindable_vars, MAX_PATTERN, apb->p1start, apb->p1len);
   if (internal_trace)
     fprintf (stderr, " bindable vars: ***%s***\n", bindable_vars);
   bindable_vars_len = crm_nexpandvar (bindable_vars, apb->p1len, MAX_PATTERN);
-  
-  
+
+
   //     here's where we look for a [] var-restriction
   //
-  //     Experimentally, we're adding [ :foo: 123 456 ] to 
+  //     Experimentally, we're adding [ :foo: 123 456 ] to
   //     allow an externally specified start and length.
   crm_get_pgm_arg (box_text, MAX_PATTERN, apb->b1start, apb->b1len);
 
   //  Use crm_restrictvar to get start & length to look at.
-  i = crm_restrictvar(box_text, apb->b1len, 
+  i = crm_restrictvar(box_text, apb->b1len,
 		      &vmidx,
 		      &mdwptr,
-		      &source_start, 
+		      &source_start,
 		      &source_len,
 		      errstr);
 
   if (internal_trace)
-    fprintf (stderr, 
+    fprintf (stderr,
 	     "restricted: vmidx: %ld  mdw: %ld   start: %ld  len: %ld\n",
 	     vmidx, (long) mdwptr, source_start, source_len);
   if ( i < 0)
@@ -225,7 +210,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	};
       goto nonfatal_route_outwards;
     };
-  
+
   //    get the regex pattern out of the // slashes
   crm_get_pgm_arg (pch, MAX_PATTERN, apb->s1start, apb->s1len);
   if (internal_trace)
@@ -235,7 +220,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if (user_trace)
     fprintf (stderr, " match pattern expands to =%s= len %ld flags %x %x \n",
 	     pch, pchlen, cflags, eflags);
-  
+
   //    regcomp the pattern
   i = crm_regcomp (&preg, pch, pchlen, cflags);
   if ( i > 0)
@@ -243,7 +228,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       long curstmt;
       curstmt = csl->cstmt;
       crm_regerror ( i, &preg, tempbuf, data_window_size);
-      fatalerror5 ("Regular Expression Compilation Problem:", 
+      fatalerror5 ("Regular Expression Compilation Problem:",
 		   tempbuf, CRM_ENGINE_HERE);
       //
       //     did the FAULT handler change the next statement to execute?
@@ -255,35 +240,6 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	};
       goto nonfatal_route_outwards;
     };
-
-
-  //     Get the string to be matched upon...
-#ifdef SUPERCEDED_BY_CRM_RESTRICTVAR
-  vmidx = crm_vht_lookup (vht, svname, svnamelen);
-  if (vht[vmidx] == NULL)
-    {
-      //   
-      //     There was no such variable, so we need to fail.  First,
-      //     we'll save the current and fail locations, then we'll let
-      //     the error handler attempt fixup.  If the handler exists,
-      //     and changes the FAIL location, the handler's result
-      //     stands, otherwise the match does a FAIL.
-      //
-      long curstmt;
-      curstmt = csl->cstmt;
-      nonfatalerror5 (" Attempt to match inside nonexistent variable ( always fails!) ",
-		      svname, CRM_ENGINE_HERE);
-      //
-      //     did the FAULT handler change the next statement to execute?
-      //     If so, continue from there, otherwise, we FAIL.
-      if (curstmt == csl->cstmt)
-	{
-	  csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
-	  csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
-	};
-      goto nonfatal_route_outwards;
-    }
-#endif 
 
   //    do a check- if the vht->valtxt points into the
   //    cdw, or the tdw?
@@ -307,28 +263,22 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    exit (EXIT_FAILURE);
 	};
     };
-#ifdef SUPERCEDED
-  vtextoffset = vht[vmidx]->vstart;
-  vtextend = vtextoffset + vht[vmidx]->vlen;
-  vpmstart = vht[vmidx]->mstart;
-  vpmend =  vpmstart + vht[vmidx]->mlen; 
-#endif
 
   vtextoffset = source_start;
   vtextend = source_start + source_len;
   vpmstart = vht[vmidx]->mstart;
   vpmend = vpmstart + vht[vmidx]->mlen;
-  
+
   //    set up the start/end of the text we're matching against
-  
-  //       default is CRM_FROMSTART 
+
+  //       default is CRM_FROMSTART
   textoffset = vtextoffset;
   if (fromp == CRM_FROMSTART)
     {
       textoffset = vtextoffset;
     }
   if (fromp == CRM_FROMCURRENT)
-    {    
+    {
       textoffset = vpmstart;
     };
   if (fromp == CRM_NEWEND)
@@ -344,29 +294,13 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       textoffset = vpmend ;
     };
   if (fromp == CRM_BACKWARDS)
-    { 
-      if ( vpmstart > 0) 
+    {
+      if ( vpmstart > 0)
 	{ textoffset = vpmstart - 1; } else {textoffset = vpmstart; };
     };
 
   mtextlen = vtextend - textoffset;
 
-#ifdef  SUPERCEDED_BY_CRM_RESTRICTVAR
-  //
-  //    did the user box-specify a different start?  Combine the restrictions!
-  //
-  //     1) start of search - must be inside vtextoffset + box_start
-  if (textoffset < vtextoffset + box_start) 
-    textoffset = box_start + vtextoffset;
-  //
-  //     2) the area searched must be <= box_start+box_len + vtextoffset
-  if (mtextlen+textoffset > box_start+box_length+vtextoffset) 
-    mtextlen = box_start + box_length +vtextoffset - textoffset;
-  //
-  //    3) the earliest point we'll allow a search to go is the start of
-  //       the variable + box_start
-  vtextstartlimit = vtextoffset + box_start;
-#endif
   vtextstartlimit = source_start;
   if (internal_trace)
     {
@@ -375,7 +309,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     };
 
   //       Here is the crux.  Do the REGEX match, maybe in a loop
-  //       if we're iterating to find a result with a different end 
+  //       if we're iterating to find a result with a different end
   //       point than previous matches.
   nmatches = MAX_SUBREGEX;
   matches[0].rm_so = 0;
@@ -388,10 +322,10 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	long done;
 	oldend = vpmend;
 	done = 0;
-	//        loop until we either get a match that goes 
-	//        past the previous match, or until we are 
+	//        loop until we either get a match that goes
+	//        past the previous match, or until we are
 	//        at the end of the matchable text.
-	while (textoffset <= vtextend - 1 
+	while (textoffset <= vtextend - 1
 	       && done == 0)
 	  {
 	    textoffset++;
@@ -427,21 +361,21 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     default:
       {
 	mtext = &mdw->filetext[textoffset];
-	i = crm_regexec ( &preg, mtext, mtextlen, 
+	i = crm_regexec ( &preg, mtext, mtextlen,
 			  nmatches, matches, eflags, NULL);
       };
     };
-  
+
   crm_regfree (&preg);
-  
+
   //    and now we FAIL or not...
 
 
   if ((absentp == 0 && i != 0) || (absentp == 1 && i == 0))
     {
-      if (user_trace && !absentp) 
+      if (user_trace && !absentp)
 	fprintf (stderr, "Regex did not match, no absent flag, failing.\n");
-      if (user_trace && absentp) 
+      if (user_trace && absentp)
 	fprintf (stderr, "Regex matched but with absent flag, failing.\n");
       csl->cstmt = csl->mct[csl->cstmt]->fail_index - 1;
       csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = -1;
@@ -450,23 +384,23 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
       if (user_trace)
 	fprintf (stderr, "Regex matched.\n");
-      //     if the match was succcessful, we may need to 
-      //     bind some variables, so see if there's a () 
+      //     if the match was succcessful, we may need to
+      //     bind some variables, so see if there's a ()
       //     (note that we cannot use the grab_delimited_string
-      //     routine results here, because crm_setvar uses 
+      //     routine results here, because crm_setvar uses
       //     indices into the program to define variable names,
       //     not char * strings.   We _could_ cheat and malloc
       //     the variable name (perhaps we should!) and then
       //     clean up when we're done, but this at least will
       //     work for now.
-      
+
       //   CAREFUL HERE - we need to correct due to offsets
       //   from the front of the text
 
       //    Double careful- if some of the regex wasn't used
       //    (such as submatches) the indices and lengths will be -1.
-      //    Don't bind those.  
-      
+      //    Don't bind those.
+
       //     set the "last match was here" data...
       vht[vmidx]-> mstart = matches[0].rm_so + textoffset;
       vht[vmidx]-> mlen = matches[0].rm_eo - matches[0].rm_so;
@@ -477,7 +411,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		       "matched!  ",
 			"We'll ignore these variable bindings for now.",
 			CRM_ENGINE_HERE);
-      
+
       if ( bindable_vars_len > 0 && !absentp )
 	{
 	  long vstart;
@@ -487,11 +421,11 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  //              a place to put pre-rebind
 	  //              text/starts/lengths, so we can run
 	  //              reclamation on them later on.
-	  //   
+	  //
 	  char *index_texts[MAX_SUBREGEX];
-	  long index_starts[MAX_SUBREGEX], 
+	  long index_starts[MAX_SUBREGEX],
 	    index_lengths[MAX_SUBREGEX];
-	  
+
 	  done = 0;          //  loop till we've captured all the vars
 	  mc = 0;
 	  vstart = 0;
@@ -499,7 +433,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    {              // bind each variable
 	      //    find the start of the variable
 	      while (bindable_vars[vstart] > 0x0
-		     && bindable_vars[vstart] < 0x021 
+		     && bindable_vars[vstart] < 0x021
 		     && bindable_vars[vstart] != ')' )
 		vstart++;
 	      if (bindable_vars[vstart] == ')'
@@ -509,10 +443,10 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		}
 	      else
 		{
-		  
+
 		  //    Now, the next space or ) ends the variable
 		  vlen = 0;
-		  while (bindable_vars[vstart+vlen] >=0x21 
+		  while (bindable_vars[vstart+vlen] >=0x21
 			 && bindable_vars[vstart+vlen] != ')' )
 		    vlen++;
 		  //    have the next variable name, put out debug info.
@@ -523,12 +457,12 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			fprintf (stderr, "%c", bindable_vars[vstart+k]);
 		      fprintf (stderr, "- will be assigned from var offsets %ld to %ld "
 			       "(origin offsets %ld to %ld), value ",
-			       (long) matches[mc].rm_so, 
+			       (long) matches[mc].rm_so,
 			       (long) matches[mc].rm_eo,
 			       matches[mc].rm_so + textoffset,
 			       matches[mc].rm_eo + textoffset );
-		      for (k = matches[mc].rm_so + textoffset; 
-			   k < matches[mc].rm_eo + textoffset; 
+		      for (k = matches[mc].rm_so + textoffset;
+			   k < matches[mc].rm_eo + textoffset;
 			   k++)
 			fprintf (stderr, "%c", mdw->filetext[k]);
 		      fprintf (stderr, "\n");
@@ -541,7 +475,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		  //  var, and then can reassign it with impunity.
 		  {
 		    static char *vn;
-		    
+
 		    //   DANGER here - we malloc the var, use it
 		    //   in crm_set_windowed_nvar, and then free it.
 		    //   Otherwise, we'd have a memory leak.
@@ -577,10 +511,10 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 			//     of a|(b(c)) regexes.  These have .rm_so offsets
 			//      of < 0 .
 			if (matches[mc].rm_so >= 0)
-			  crm_set_windowed_nvar (vn, 
+			  crm_set_windowed_nvar (vn,
 						 vlen,
-						 mdw->filetext, 
-						 matches[mc].rm_so 
+						 mdw->filetext,
+						 matches[mc].rm_so
 						 + textoffset,
 						 matches[mc].rm_eo
 						 -matches[mc].rm_so,
@@ -590,7 +524,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		      {
 			nonfatalerror5 ("This program tried to re-define the "
 				       "data window!  That's very deep and "
-				       "profound, but not acceptable.  ", 
+				       "profound, but not acceptable.  ",
 				       "Therefore, I'm ignoring this "
 					"re-definition.", CRM_ENGINE_HERE);
 		      };
@@ -600,11 +534,11 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		  vstart = vnext;
 		  mc++;
 		  if (mc >= MAX_SUBREGEX)
-		    nonfatalerror5 
+		    nonfatalerror5
 		      ( "Exceeded MAX_SUBREGEX limit-too many parens in match",
 			" Looks like you blew the gaskets on 'er.\n",
-			CRM_ENGINE_HERE); 
-		  
+			CRM_ENGINE_HERE);
+
 		};
 	    };
 	  //
@@ -621,7 +555,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  //      reclamation.
           //
 	  //      Note that we don't have to worry about a reclaim on
-	  //      a var that was "non-participating", as the var will 
+	  //      a var that was "non-participating", as the var will
           //      still be in use in the VHT and thus won't be reclaimed.
 	  {
 	    long i;
@@ -651,7 +585,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		    long j;
 		    if (internal_trace)
 		      fprintf (stderr," crm_comprss_tdw_section from match\n");
-		    // because the prev shortening, current index_starts[maxi] 
+		    // because the prev shortening, current index_starts[maxi]
 		    // + index_lengths[maxi] may go past the end of tdw->nchars
 		    j = index_starts[maxi] + index_lengths[maxi];
 		    if (j > tdw->nchars - 1) j = tdw->nchars;
@@ -663,7 +597,7 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		    if (internal_trace)
 		      fprintf (stderr,
 			       " [ MatchVar #%ld (s: %ld l: %ld) reclaimed %ld. ]\n",
-			       maxi, index_starts[maxi], index_lengths[maxi], 
+			       maxi, index_starts[maxi], index_lengths[maxi],
 			       reclaimed);
 		    //   and zap out the reclaimed entry, so other entries
 		    //   can also be reclaimed in the proper order.
@@ -685,4 +619,4 @@ int crm_expr_match (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     };
 
   return (0);
-};  
+};

@@ -1,4 +1,11 @@
 #! /usr/bin/crm
+#
+#	rewritetest.mfp - rewrite test with rewrites.mfp
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
 #   do rewriting, based on rewrite rules in rewrites.mfp
 #
 #   Start with some data in the :_dw:
@@ -15,8 +22,8 @@ output /------------------------:*:_nl:/
 	#    reset matching on rewrites to start of string
 	match [:rewrites:] //
 }
+
 #
-#     
 {
     #    Grab the next regexturn the one-per-line patterns into a regex
     #    First, do the line-spanning regexes.
@@ -32,12 +39,10 @@ output /------------------------:*:_nl:/
     #   Nope, didn't match... grab the next regex and try again,
     liaf
 }
-#
-#     reset back to the start of the rewrites.
-#
+
+#   reset back to the start of the rewrites.
 match [:rewrites:] //
-#
-#      and do it again for non-line-spanners
+#   and do it again for non-line-spanners
 {
     #    Go through and do it again, except this time do it for
     #    the non-line-spanning regexes.

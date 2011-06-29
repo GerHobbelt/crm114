@@ -1,4 +1,10 @@
-#!/usr/bin/crm 
+#! /usr/bin/crm
+#
+#	unionintersecttest.crm - Testing union and intersection
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 window
 output /:*:_nl: CRM114: Testing union and intersection :*:_nl: :*:_nl:/
 {

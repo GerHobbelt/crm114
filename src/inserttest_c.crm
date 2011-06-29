@@ -1,3 +1,8 @@
+#! /usr/bin/crm
+#
+#	inserttest_c.crm - test insert processor
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
 
 output / the really middle-middle bit .../
-

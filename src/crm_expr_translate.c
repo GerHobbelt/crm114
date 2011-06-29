@@ -1,14 +1,8 @@
-//  crm_expr_translate.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_expr_translate.c - translate routine
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -21,18 +15,8 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
+//    the globals used when we need a big buffer  - allocated once, used
 //    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
 extern char *tempbuf;
 
 //        And the translate routine.  We use strntrn to do the hard work;
@@ -57,7 +41,7 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //   the "to" charset
   char toset[MAX_PATTERN];
   long toset_len;
-  //   
+  //
   strntrn_flags = 0;
   //       Go through the flags
   //
@@ -79,7 +63,7 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     };
 
   //      Get the destination for the translation
-  //    
+  //
   crm_get_pgm_arg (destination, MAX_VARNAME, apb->p1start, apb->p1len);
   destination_len = crm_nexpandvar (destination, apb->p1len, MAX_VARNAME);
   //if (destination_len == 0)
@@ -99,23 +83,23 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       destination_len = 5;
     }
 
-  
+
   //     here's where we look for a [] var-restriction source
   //
-  //     Experimentally, we're adding [ :foo: 123 456 ] to 
+  //     Experimentally, we're adding [ :foo: 123 456 ] to
   //     allow an externally specified start and length.
   crm_get_pgm_arg (tempbuf, data_window_size, apb->b1start, apb->b1len);
 
   //  Use crm_restrictvar to get start & length to look at.
-  i = crm_restrictvar(tempbuf, apb->b1len, 
+  i = crm_restrictvar(tempbuf, apb->b1len,
 		      &vmidx,
 		      &mdwptr,
-		      &offset, 
+		      &offset,
 		      &len,
 		      errstr);
 
   if (internal_trace)
-    fprintf (stderr, 
+    fprintf (stderr,
 	     "restriction out: vmidx: %ld  mdw: %ld   start: %ld  len: %ld\n",
 	     vmidx, (long) mdwptr, offset, len);
   if ( i < 0)
@@ -136,7 +120,7 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	};
       goto nonfatal_route_outwards;
     };
-  
+
   //    No problems then.  We can just memmove the result into tempbuf
   memmove (tempbuf, &mdwptr[offset], len);
 
@@ -170,10 +154,10 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	     toset, toset_len);
 
   //    We have it all now - the [expanded] input in tempbuf, the
-  //     from-charset, the to-charset, and the flags.  We can now  
+  //     from-charset, the to-charset, and the flags.  We can now
   //      make the big call to strntrn and get the new (in-place) string.
 
-  retlen = strntrn ((unsigned char *)tempbuf, &len, data_window_size, 
+  retlen = strntrn ((unsigned char *)tempbuf, &len, data_window_size,
 		    (unsigned char *)fromset, fromset_len,
 		    (unsigned char *)toset, toset_len,
 		    strntrn_flags);
@@ -194,14 +178,14 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //  fprintf (stderr, "Result of TRANSLATE: %s len %ld\n",
   //	     tempbuf, retlen);
 
-  if (user_trace) 
+  if (user_trace)
     {
       long i;
       fprintf (stderr, "Result of TRANSLATE: -");
       for(i=0;i<retlen;i++) fputc(tempbuf[i],stderr);
       fprintf (stderr, "- len %ld\n", retlen);
     };
-  crm_destructive_alter_nvariable (destination, destination_len, 
+  crm_destructive_alter_nvariable (destination, destination_len,
 				   tempbuf, retlen);
 
   //  All done - return to caller.
@@ -213,4 +197,4 @@ int crm_expr_translate (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	fprintf (stderr, "The TRANSLATE FAULTed and we're taking the TRAP out");
     };
   return (0);
-};  
+};

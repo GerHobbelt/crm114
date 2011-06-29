@@ -1,4 +1,10 @@
 #! /usr/bin/crm
+#
+#	classifytest.crm - test classifying between files
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 {
 	match (:data:) /.*/
 	isolate (:stats:)

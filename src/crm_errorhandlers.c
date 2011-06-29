@@ -1,14 +1,8 @@
-//  crm_errorhandlers.c  - Controllable Regex Mutilator,  version v1.0
-// Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_errorhandlers.c - error handlers for CRM114 engine
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -22,19 +16,17 @@
 #include "crm114.h"
 
 //    the command line argc, argv
-extern int prog_argc;
 extern char **prog_argv;
 
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
+//    the globals used when we need a big buffer  - allocated once, used
 //    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
 extern char *tempbuf;
-//     Helper routines 
-//    
+
+//    accumulated non-fatal errors
+static int nonfatalerrorcount = 0;
+
+//     Helper routines
+//
 
 //     apocalyptic eerror - an error that can't be serviced on a TRAP - forces
 //     exit, not a prayer of survival.
@@ -45,12 +37,12 @@ void untrappableerror (char *text1, char *text2)
   char reason[MAX_PATTERN];
   //
   //   Create our reason string.
-  snprintf (reason, MAX_PATTERN, 
-	    "\n%s: *UNTRAPPABLE ERROR* \n %s %s\nSorry, but I can't recover from that.\nThis happened at line %ld of file %s\n", 
+  snprintf (reason, MAX_PATTERN,
+	    "\n%s: *UNTRAPPABLE ERROR* \n %s %s\nSorry, but I can't recover from that.\nThis happened at line %ld of file %s\n",
 	   prog_argv[0], text1, text2, csl->cstmt, csl->filename);
   fprintf (stderr, "%s", reason);
 
-  //     Check to see - is there a trap available or is this a non-trap 
+  //     Check to see - is there a trap available or is this a non-trap
   //     program?
   //
   if (csl && csl->mct)
@@ -58,7 +50,7 @@ void untrappableerror (char *text1, char *text2)
       fprintf (stderr, "The line was: \n--> ");
       iline = csl->cstmt;
       maxchar = csl->mct[iline+1]->fchar;
-      if (maxchar > csl->mct[iline]->fchar + 255) 
+      if (maxchar > csl->mct[iline]->fchar + 255)
 	maxchar = csl->mct[iline]->fchar + 255;
       if (iline > 0)
 	for (ichar = csl->mct[iline]->fchar;
@@ -78,7 +70,7 @@ void untrappableerror (char *text1, char *text2)
 }
 
 
-//     fatalerror - print a fatal error on stdout, trap if we can, else exit  
+//     fatalerror - print a fatal error on stdout, trap if we can, else exit
 long fatalerror ( char *text1, char *text2 )
 {
   int iline, ichar;
@@ -86,17 +78,17 @@ long fatalerror ( char *text1, char *text2 )
   char *rbuf;
   char reason[MAX_PATTERN];
   //
-  //   Create our reason string.  Note that some reason text2's can be VERY 
+  //   Create our reason string.  Note that some reason text2's can be VERY
   //   long, so we put out only the first 1024 characters
   //
   if (strlen (text2) < 1023)
-    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n", 
+    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n",
 	   prog_argv[0], text1, text2, csl->cstmt, csl->filename);
   else
-    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s(...truncated)\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n", 
+    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s(...truncated)\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n",
 	   prog_argv[0], text1, text2, csl->cstmt, csl->filename);
 
-  //     Check to see - is there a trap available or is this a non-trap 
+  //     Check to see - is there a trap available or is this a non-trap
   //     program?
   //
   //   if (csl->mct[csl->cstmt]->trap_index <  csl->nstmts)
@@ -127,7 +119,7 @@ long fatalerror ( char *text1, char *text2 )
       fprintf (stderr, "The line was: \n--> ");
       iline = csl->cstmt;
       maxchar = csl->mct[iline+1]->fchar;
-      if (maxchar > csl->mct[iline]->fchar + 255) 
+      if (maxchar > csl->mct[iline]->fchar + 255)
 	maxchar = csl->mct[iline]->fchar + 255;
       for (ichar = csl->mct[iline]->fchar;
 	   ichar < maxchar;
@@ -151,22 +143,21 @@ long nonfatalerror ( char *text1, char *text2 )
 {
   int iline, ichar;
   int maxchar;
-  static int nonfatalerrorcount = 0;
   char *rbuf;
   char reason[MAX_PATTERN];
 
   //
-  //   Create our reason string.  Note that some reason text2's can be VERY 
+  //   Create our reason string.  Note that some reason text2's can be VERY
   //   long, so we put out only the first 1024 characters
   //
   if (strlen (text2) < 1023)
-    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s\nI'll try to keep working.\nThis happened at line %ld of file %s\n", 
+    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s\nI'll try to keep working.\nThis happened at line %ld of file %s\n",
 	   prog_argv[0], text1, text2, csl->cstmt, csl->filename);
   else
-    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s(...truncated)\nI'll try to keep working.\nThis happened at line %ld of file %s\n", 
+    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s(...truncated)\nI'll try to keep working.\nThis happened at line %ld of file %s\n",
 	   prog_argv[0], text1, text2, csl->cstmt, csl->filename);
 
-  //     Check to see - is there a trap available or is this a non-trap 
+  //     Check to see - is there a trap available or is this a non-trap
   //     program?
   //
 
@@ -179,7 +170,7 @@ long nonfatalerror ( char *text1, char *text2 )
 	{
           fprintf(stderr,
 	    "Couldn't malloc rbuf in 'nonfatalerror()'! \nIt's really bad when the error fixup routine gets an error ! \n");
-          
+
 	  if (engine_exit_base != 0)
             {
               exit (engine_exit_base + 5);
@@ -194,12 +185,12 @@ long nonfatalerror ( char *text1, char *text2 )
     };
 
   fprintf (stderr, "%s", reason);
-  if (csl->nstmts > 0) 
+  if (csl->nstmts > 0)
     {
-      fprintf (stderr, "The line was: \n--> "); 
+      fprintf (stderr, "The line was: \n--> ");
       iline = csl->cstmt;
       maxchar = csl->mct[iline+1]->fchar;
-      if (maxchar > csl->mct[iline]->fchar + 255) 
+      if (maxchar > csl->mct[iline]->fchar + 255)
 	maxchar = csl->mct[iline]->fchar + 255;
       for (ichar = csl->mct[iline]->fchar;
 	   ichar < maxchar;
@@ -207,12 +198,12 @@ long nonfatalerror ( char *text1, char *text2 )
 	fprintf (stderr, "%c", csl->filetext[ichar]);
       fprintf (stderr, "<--");
     }
-  else 
+  else
     fprintf (stderr, "<<< no compiled statements yet >>>");
   fprintf (stderr, "\n");
   nonfatalerrorcount++;
-  if (nonfatalerrorcount > MAX_NONFATAL_ERRORS) 
-    fatalerror 
+  if (nonfatalerrorcount > MAX_NONFATAL_ERRORS)
+    fatalerror
       ("Too many untrapped warnings; your program is very likely unrecoverably broken.\n",
        "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
     return (0);
@@ -226,8 +217,8 @@ long nonfatalerror ( char *text1, char *text2 )
 /////////////////////////////////////////////////////////////////////////
 //     apocalyptic eerror - an error that can't be serviced on a TRAP - forces
 //     exit, not a prayer of survival.
-void untrappableerror5 (char *text1, char *text2, 
-			char *filename, 
+void untrappableerror5 (char *text1, char *text2,
+			char *filename,
 			char *function,
 			unsigned lineno )
 {
@@ -236,12 +227,12 @@ void untrappableerror5 (char *text1, char *text2,
   char reason[MAX_PATTERN];
   //
   //   Create our reason string.
-  snprintf (reason, MAX_PATTERN, 
-	    "\n%s: *UNTRAPPABLE ERROR* \n %s %s\nSorry, but I can't recover from that.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u), in routine: %s)\n", 
+  snprintf (reason, MAX_PATTERN,
+	    "\n%s: *UNTRAPPABLE ERROR* \n %s %s\nSorry, but I can't recover from that.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u), in routine: %s)\n",
 	    prog_argv[0], text1, text2, csl->cstmt, csl->filename, filename, lineno, function);
   fprintf (stderr, "%s", reason);
 
-  //     Check to see - is there a trap available or is this a non-trap 
+  //     Check to see - is there a trap available or is this a non-trap
   //     program?
   //
   if (csl && csl->mct)
@@ -249,7 +240,7 @@ void untrappableerror5 (char *text1, char *text2,
       fprintf (stderr, "The line was: \n--> ");
       iline = csl->cstmt;
       maxchar = csl->mct[iline+1]->fchar;
-      if (maxchar > csl->mct[iline]->fchar + 255) 
+      if (maxchar > csl->mct[iline]->fchar + 255)
 	maxchar = csl->mct[iline]->fchar + 255;
       if (iline > 0)
 	for (ichar = csl->mct[iline]->fchar;
@@ -269,9 +260,10 @@ void untrappableerror5 (char *text1, char *text2,
 }
 
 
-//     fatalerror - print a fatal error on stdout, trap if we can, else exit  
-long fatalerror5 ( char *text1, char *text2, 
-		   char *filename, 
+//     fatalerror - print a fatal error on stdout, trap if we can, else exit
+long fatalerror5 ( char *text1,
+		   char *text2,
+		   char *filename,
 		   char *function,
 		   unsigned lineno )
 {
@@ -280,17 +272,17 @@ long fatalerror5 ( char *text1, char *text2,
   char *rbuf;
   char reason[MAX_PATTERN];
   //
-  //   Create our reason string.  Note that some reason text2's can be VERY 
+  //   Create our reason string.  Note that some reason text2's can be VERY
   //   long, so we put out only the first 1024 characters
   //
   if (strlen (text2) < 1023)
-    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) in routine: %s)\n", 
+    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) in routine: %s)\n",
 	     prog_argv[0], text1, text2, csl->cstmt, csl->filename, filename, lineno, function);
   else
-    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s(...truncated)\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) in routine: %s)\n", 
+    sprintf (reason, "\n%s: *ERROR* \n %.1024s %.1024s(...truncated)\n Sorry, but this program is very sick and probably should be killed off.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) in routine: %s)\n",
 	     prog_argv[0], text1, text2, csl->cstmt, csl->filename, filename, lineno, function);
 
-  //     Check to see - is there a trap available or is this a non-trap 
+  //     Check to see - is there a trap available or is this a non-trap
   //     program?
   //
   //   if (csl->mct[csl->cstmt]->trap_index <  csl->nstmts)
@@ -322,7 +314,7 @@ long fatalerror5 ( char *text1, char *text2,
       fprintf (stderr, "The line was: \n--> ");
       iline = csl->cstmt;
       maxchar = csl->mct[iline+1]->fchar;
-      if (maxchar > csl->mct[iline]->fchar + 255) 
+      if (maxchar > csl->mct[iline]->fchar + 255)
 	maxchar = csl->mct[iline]->fchar + 255;
       for (ichar = csl->mct[iline]->fchar;
 	   ichar < maxchar;
@@ -346,22 +338,21 @@ long nonfatalerror5 ( char *text1, char *text2, char *filename, char *function, 
 {
   int iline, ichar;
   int maxchar;
-  static int nonfatalerrorcount = 0;
   char *rbuf;
   char reason[MAX_PATTERN];
 
   //
-  //   Create our reason string.  Note that some reason text2's can be VERY 
+  //   Create our reason string.  Note that some reason text2's can be VERY
   //   long, so we put out only the first 1024 characters
   //
   if (strlen (text2) < 1023)
-    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s\nI'll try to keep working.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) in routine: %s)\n", 
+    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s\nI'll try to keep working.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) in routine: %s)\n",
 	     prog_argv[0], text1, text2, csl->cstmt, csl->filename, filename, lineno, function);
   else
-    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s(...truncated)\nI'll try to keep working.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) function %s)\n", 
+    sprintf (reason, "\n%s: *WARNING* \n %.1024s %.1024s(...truncated)\nI'll try to keep working.\nThis happened at line %ld of file %s\n(runtime system location: %s(%u) function %s)\n",
 	     prog_argv[0], text1, text2, csl->cstmt, csl->filename, filename, lineno, function);
 
-  //     Check to see - is there a trap available or is this a non-trap 
+  //     Check to see - is there a trap available or is this a non-trap
   //     program?
   //
 
@@ -374,7 +365,7 @@ long nonfatalerror5 ( char *text1, char *text2, char *filename, char *function, 
 	{
           fprintf(stderr,
 	    "Couldn't malloc rbuf in 'nonfatalerror()'! \nIt's really bad when the error fixup routine gets an error ! \n");
-          
+
 	  if (engine_exit_base != 0)
             {
               exit (engine_exit_base + 5);
@@ -389,12 +380,12 @@ long nonfatalerror5 ( char *text1, char *text2, char *filename, char *function, 
     };
 
   fprintf (stderr, "%s", reason);
-  if (csl->nstmts > 0) 
+  if (csl->nstmts > 0)
     {
-      fprintf (stderr, "The line was: \n--> "); 
+      fprintf (stderr, "The line was: \n--> ");
       iline = csl->cstmt;
       maxchar = csl->mct[iline+1]->fchar;
-      if (maxchar > csl->mct[iline]->fchar + 255) 
+      if (maxchar > csl->mct[iline]->fchar + 255)
 	maxchar = csl->mct[iline]->fchar + 255;
       for (ichar = csl->mct[iline]->fchar;
 	   ichar < maxchar;
@@ -402,12 +393,12 @@ long nonfatalerror5 ( char *text1, char *text2, char *filename, char *function, 
 	fprintf (stderr, "%c", csl->filetext[ichar]);
       fprintf (stderr, "<--");
     }
-  else 
+  else
     fprintf (stderr, "<<< no compiled statements yet >>>");
   fprintf (stderr, "\n");
   nonfatalerrorcount++;
-  if (nonfatalerrorcount > MAX_NONFATAL_ERRORS) 
-    fatalerror 
+  if (nonfatalerrorcount > MAX_NONFATAL_ERRORS)
+    fatalerror
       ("Too many untrapped warnings; your program is very likely unrecoverably broken.\n",
        "\n\n  'Better shut her down, Scotty.  She's sucking mud again.'\n");
     return (0);
@@ -419,12 +410,12 @@ void crm_output_profile ( CSL_CELL *csl)
   long i;
   fprintf (stderr,
 	   "\n         Execution Profile Results \n");
-  fprintf (stderr, 
+  fprintf (stderr,
 	   "\n  Memory usage at completion: %10ld window, %10ld isolated\n",
 	   cdw->nchars, tdw->nchars);
-  fprintf (stderr, 
+  fprintf (stderr,
 	   "\n  Statement Execution Time Profiling (0 times suppressed)");
-  fprintf (stderr, 
+  fprintf (stderr,
 	   "\n  line:      usertime   systemtime    totaltime\n");
   for (i = 0; i < csl->nstmts; i++)
     {
@@ -442,7 +433,7 @@ void crm_output_profile ( CSL_CELL *csl)
 // crm_trigger_fault - whenever there's a fault, this routine Does The
 //  Right Thing, in terms of looking up the next TRAP statement and
 //  turning control over to it.
-//  
+//
 //  Watch out, this routine must return cleanly with the CSL top set up
 //  appropriately so execution can continue at the chosen statement.
 //  That next statement executed will be a TRAP statement whose regex
@@ -456,10 +447,10 @@ void crm_output_profile ( CSL_CELL *csl)
 //  Routines that get here must be careful to NOT trash the constructed
 //  csl frame that causes the next statement to be the TRAP statement.
 //  In particular, we act like the MATCH and CLASSIFY and FAIL statments
-//  and branch to the chosen location -1 (due to the increment in the 
+//  and branch to the chosen location -1 (due to the increment in the
 //  main invocation loop)
 
-long crm_trigger_fault ( char *reason) 
+long crm_trigger_fault ( char *reason)
 {
   //
   //    and if the fault is correctly trapped, this is the fixup.
@@ -473,10 +464,10 @@ long crm_trigger_fault ( char *reason)
   long done;
   long trapline;
 
-  //  Non null fault_text rstring -we'll take the trap 
+  //  Non null fault_text rstring -we'll take the trap
   if (user_trace)
     {
-      fprintf (stderr, "Catching FAULT generated on line %ld\n", 
+      fprintf (stderr, "Catching FAULT generated on line %ld\n",
 	       csl->cstmt);
       fprintf (stderr, "FAULT reason: \n %s \n",
 	       reason );
@@ -497,18 +488,18 @@ long crm_trigger_fault ( char *reason)
 	    }
 	  return (1);
 	};
-	      
+
       //      trapline = csl->mct[trapline]->trap_index;
-      //      
+      //
       //        make sure we're really on a trap statement.
       //
       if (csl->mct[trapline]->stmt_type != CRM_TRAP)
 	return (1);
 
-      //       OK, we're here, with a live trap.  
-      slen = (csl->mct[trapline+1]->fchar) 
+      //       OK, we're here, with a live trap.
+      slen = (csl->mct[trapline+1]->fchar)
 	- (csl->mct[trapline ]->fchar);
-      
+
       i = crm_statement_parse(
 		      &(csl->filetext[csl->mct[trapline]->fchar]),
 		      slen,
@@ -522,25 +513,25 @@ long crm_trigger_fault ( char *reason)
 	    fprintf (stderr, "%c", csl->filetext[j]);
 	  fprintf (stderr, "\n");
 	};
-      
+
       //  Get the trap pattern and  see if we match.
       crm_get_pgm_arg (trap_pat, MAX_PATTERN,
 		       apb.s1start, apb.s1len);
       //
       //      Do variable substitution on the pattern
       pat_len = crm_nexpandvar (trap_pat, apb.s1len, MAX_PATTERN);
-      
+
       //
       if (user_trace)
 	{
-	  fprintf (stderr, "This TRAP will trap anything matching =%s= . \n", 
+	  fprintf (stderr, "This TRAP will trap anything matching =%s= . \n",
 		   trap_pat);
 	};
       //       compile the regex
       i = crm_regcomp (&preg, trap_pat, pat_len, REG_EXTENDED);
       if ( i == 0)
 	{
-	  i = crm_regexec (&preg, 
+	  i = crm_regexec (&preg,
 			   reason,
 			   strlen (reason),
 			   0, NULL, 0, NULL);
@@ -550,11 +541,11 @@ long crm_trigger_fault ( char *reason)
 	{
 	  crm_regerror ( i, &preg, tempbuf, data_window_size);
 	  csl->cstmt = trapline;
-	  fatalerror ("Regular Expression Compilation Problem in TRAP pattern:", 
+	  fatalerror ("Regular Expression Compilation Problem in TRAP pattern:",
 		      tempbuf);
 	};
-      
-            
+
+
       //    trap_regcomp_error:
 
 
@@ -571,7 +562,7 @@ long crm_trigger_fault ( char *reason)
 	  //   set the next statement to execute to be
 	  //   the TRAP statement itself.
 
-	  
+
 	  csl->cstmt = trapline;
 	  csl->aliusstk [ csl->mct[csl->cstmt]->nest_level ] = 1;
 	  //
@@ -585,7 +576,7 @@ long crm_trigger_fault ( char *reason)
 		rnlen = crm_nexpandvar (reasonname, apb.p1len, MAX_VARNAME);
 		//   crm_nexpandvar null-terminates for us so we can be
 		//   8-bit-unclean here
-		crm_set_temp_nvar (reasonname, 
+		crm_set_temp_nvar (reasonname,
 				   reason,
 				   strlen (reason));
 	      };
@@ -594,11 +585,11 @@ long crm_trigger_fault ( char *reason)
 	}
       else
 	{
-	  //   The trap pattern didn't match - move outward to 
+	  //   The trap pattern didn't match - move outward to
 	  //   the surrounding trap (if it exists)
 	  if (user_trace)
 	    {
-	      fprintf (stderr, 
+	      fprintf (stderr,
 		       "TRAP didn't match- trying next trap in line.\n");
 	    };
 	};
@@ -607,5 +598,3 @@ long crm_trigger_fault ( char *reason)
     };
   return (0);
 }
-
-

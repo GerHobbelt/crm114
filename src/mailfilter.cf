@@ -1,21 +1,21 @@
 #  mailfilter.cf  -- Config file for mailfilter, mailreaver, mailtrainer
-#  
+#
 #    You MUST edit the fileds for "Secret Password", "mime decoder", and
-#    "cache_dupe_command".  Just those THREE things.  
+#    "cache_dupe_command".  Just those THREE things.
 #
 #     Changes to all other values are optional.
 #
 #    Many of the options here have two or three alternatives; for your
-#     convenience, we have put all of the reasonable alternatives 
+#     convenience, we have put all of the reasonable alternatives
 #      on sequential lines.  Uncomment the one you want, and leave the
 #       others commented out.  If you leave more than one uncommented, the
 #       last one is the one that's used.  Don't do that; it's ugly.
 #
-#   After you edit this file, don't forget to edit 'rewrites.mfp' 
+#   After you edit this file, don't forget to edit 'rewrites.mfp'
 
 #     --------->>>  You MUST set the following correctly! <<<-------
 #
-#    If you leave it as "DEFAULT-PASSWORD", you will not be able to 
+#    If you leave it as "DEFAULT-PASSWORD", you will not be able to
 #    access the mail-to-myself commanding system, as "DEFAULT-PASSWORD"
 #    is specifically _disabled_ as a legal password.  Just pick something, eh?
 #
@@ -23,7 +23,7 @@
 
 # ----- If you want a verbose startup, turn this on.  Note that this is
 #  ----- intentionally _after_ the password is set, so a verbose startup
-#   ----- will not reveal your password.  
+#   ----- will not reveal your password.
 #
 #:verbose_startup: /SET/
 :verbose_startup: //
@@ -53,9 +53,9 @@
 
 #     --------->>>  You MUST set the following correctly! <<<-------
 #
-#    --- Linux (and Unix) systems use "hardlinks" to make a file 
-#    --- appear in more than one place, while not actually using up 
-#    --- extra disk space.  Sadly, it is the case that most 
+#    --- Linux (and Unix) systems use "hardlinks" to make a file
+#    --- appear in more than one place, while not actually using up
+#    --- extra disk space.  Sadly, it is the case that most
 #    --- Windows systems have no such feature.  So, you must set the
 #    --- following for what kind of system you are actually using.
 #    --  Note to other developers: here's where to put other system-dependent
@@ -83,17 +83,17 @@
 
 ###########################################################################
 #
-#             START of things you might likely want to set.  These 
+#             START of things you might likely want to set.  These
 #            are probably OK for you, but many users change these things.
 #
 ##########################################################################
-          
+
 #  ----------- define an optional target for where to send spam (that is,
 #   ------------ emails that we want to "fail", or reject to another
 #    ------------ address.  Note that this is NOT a "program fault" address,
 #     ------------ but where to send "bad" email to in the general case.
 #      ------------ You can specify tightly controlled conditions too,
-#       ------------ (see the next stanza)  
+#       ------------ (see the next stanza)
 #   ----------- To NOT forward this to another account, just leave the
 #    ----------- address as the empty string, which is '//'.
 #     ----------- This works fine especially if your mail reader program
@@ -106,7 +106,7 @@
 :general_fails_to: //
 
 
-#   -------- If you would prefer to send specific kinds of spam to 
+#   -------- If you would prefer to send specific kinds of spam to
 #    -------- different mailboxes, here's where to do it.
 #     -------- (be sure to uncomment the line!).  Again, these are
 #      --------- not "program fault" conditions, just different filter results.
@@ -117,10 +117,10 @@
 # :fail_classify_mail_to: /where_classifier_fails_go_for_mailREAVER/
 
 
-#  ---------  Do we give nonspam, spam, and unsure an exitcode of 0 
+#  ---------  Do we give nonspam, spam, and unsure an exitcode of 0
 #  ---------   	(for most standalone apps) or something else?
 #  ---------     Usually we use an exit code of 1 for "program fault",
-#  ---------      but change it if you need to use 0/1 for good/spam 
+#  ---------      but change it if you need to use 0/1 for good/spam
 #  ---------       Don't use an exit code greater than 128 (it breaks BASH!)
 #  ---------     If you use exit codes (procmail doesn't) change it here.
 :rejected_mail_exit_code: /0/
@@ -130,7 +130,7 @@
 
 #######################################################################
 #
-#         END of things you are likely to want to change.  
+#         END of things you are likely to want to change.
 #
 #         Anything following is starting to approach true customization.
 #        Feel free to explore and poke around.
@@ -164,7 +164,7 @@
 # :add_extra_stuff: /attachment/
 
 
-#  ---------  Do we want to insert a "flagging" string on the subject line, 
+#  ---------  Do we want to insert a "flagging" string on the subject line,
 #  ---------  perhaps to insert an 'ADV:'  ?  Whatever string we put here
 #  ---------  will be inserted at the front of the subject if we think the
 #  ---------  mail is spam.
@@ -177,7 +177,7 @@
 #  ---------  null string - that is, //
 :good_flag_subject_string: //
 
-#  ------------Similarly, do we want to insert a "flagging" string on 
+#  ------------Similarly, do we want to insert a "flagging" string on
 #  -------------the subject line of an "unsure" email?  This way we know
 #  --------------we need to train it even if "headers" is turned off.
 # :unsure_flag_subject_string: //
@@ -207,8 +207,8 @@
 
 #   -------  Another logging option - log all mail to somewhere else
 #    -------  entirely.  Whatever pathname is given here will be prefixed
-#     -------  by :fileprefix: 
-#      -------  To not use this, set it to the null string .. //   
+#     -------  by :fileprefix:
+#      -------  To not use this, set it to the null string .. //
 #       -------  Remember to backslash-escape path slashes!
 :log_all_mail_to_file: //
 #:log_all_mail_to_file: /my_personal_mail_log_file_name.txt/
@@ -222,7 +222,7 @@
 #    ---------- messages we've classified recently "in the wild" as retrain
 #   ---------- texts?  This uses up some disk space, but means that we can
 #  ---------- use mailtrainer.crm on these messages to autotune the classifier.
-# ---------- Default is to cache into the directory reaver_cache ; 
+# ---------- Default is to cache into the directory reaver_cache ;
 #  ---------- if you don't want this, set it to // .  If you don't use this,
 #   ---------- you can't really use mailtrainer.crm, and you must keep your
 #    ---------- headers scrupulously clean in all train messages.  Recommended
@@ -232,14 +232,14 @@
 # :text_cache: //
 
 
-#   ----- How do we invoke the trainer (as in, just the invocation 
+#   ----- How do we invoke the trainer (as in, just the invocation
 #   ------ of CRM114 on mailtrainer.crm.  Usually this is just obvious,
 #   ------- but if you don't have CRM114 installed in the search path, here's
 #   -------- where you can set trainer invocation to be via whatever path
 #   --------- you want it (the second example is if you haven't installed
 #   ---------- CRM114 at all, but are running the crm114_tre static binary
 #   ----------- right out of the local directory.)
-#      
+#
 #     -- use this next one if you have installed CRM114 with "make install"
 #     -- (This is preferred and is the default)
 :trainer_invoke_command: /.\/mailtrainer.crm/
@@ -266,8 +266,8 @@
 
 
 #  ---------  Do we log rejected mail to a file?  default yes, but most
-#   ---------  users should set this to no after testing their 
-#    ---------  configuration to verify that rejected mail goes to the 
+#   ---------  users should set this to no after testing their
+#    ---------  configuration to verify that rejected mail goes to the
 #     ---------  reject address.  Only works in mailfilter.crm
 #
 :log_rejections: /yes/
@@ -278,7 +278,7 @@
 #    -----   Set to NULL ( // ) to turn this off.
 :log_rejections_to_file: //
 #:log_rejections_to_file /this_is_my_rejected_email_log_file.txt/
- 
+
 
 #   ----------Do we want to enable "inoculation by email"?
 #   --------(leave this off unless you want RFC inoculations)
@@ -287,10 +287,10 @@
 #:inoculations_enabled: /yes/
 
 
-#  --------- How many characters of the input do we really trust to be 
+#  --------- How many characters of the input do we really trust to be
 #  ---------- worthy of classification?  Usually the first few thousand
-#  ----------- bytes of the message tell more than enough (though we've 
-#  ------------ been "noticed" by spammers, who are now packing 4K of 
+#  ----------- bytes of the message tell more than enough (though we've
+#  ------------ been "noticed" by spammers, who are now packing 4K of
 #  ------------- innocuous text into their headers.  No problemo... :) )
 #
 #:decision_length: /4096/
@@ -304,11 +304,11 @@
 #  ------------ Do we want to expand URLs (that is, fetching the contents
 #  ------------- of a URL and inserting that after the url itself?)
 #  -------------- By default this is off, but turn it on if you want
-#  --------------- to experiment.  
+#  --------------- to experiment.
 :expand_urls: /no/
 # :expand_urls: /yes/
-#                 
-#         WGET options - 30-second timeout, output to stdout. 
+#
+#         WGET options - 30-second timeout, output to stdout.
 #         HACK - use the proper --user-agent="IEblahblah" for max effect!
 :url_fetch_cmd:  /wget -T 30 -O -  /
 #         and trim the URL text to not more than 16bytes of text.
@@ -318,13 +318,13 @@
 #######################################################################
 #
 #   -------------------  YOU REALLY SHOULD STOP HERE -------------------
-#   ---------  values below this line are usually OK for almost all 
+#   ---------  values below this line are usually OK for almost all
 #   ---------  users to use unchanged - Gurus only beyond this point.
 #
 #######################################################################
 #
 #   If you want to change things here, go ahead, but realize you are
-#   playing with things that can really hurt accuracy.  
+#   playing with things that can really hurt accuracy.
 #
 #   This being open source, if you don't *think* about changing it,
 #   what would be the use of it being open source?  That said, this
@@ -333,15 +333,15 @@
 #
 #   ------------ CLF - The Classifier Flags ----------
 #
-#   ---------  Which classifier flags do we use?  Default for 20060101 has 
-#   ---------  been changed to OSB UNIQUE MICROGROOM.  
+#   ---------  Which classifier flags do we use?  Default for 20060101 has
+#   ---------  been changed to OSB UNIQUE MICROGROOM.
 #
 #   ---------  A null setting gets you straight Markovian, without
 #   ---------  microgrooming.   OSB uses less memory, is faster,
-#   ---------  and is usually more accurate.  Correlative matching is 
+#   ---------  and is usually more accurate.  Correlative matching is
 #   ---------  100x - 1000x slower, but can match anything (binaries,
 #   ---------  wide chars, unicode, virii, _anything_.  Winnow is a
-#   ---------  non-statistical learning classificer with very nice 
+#   ---------  non-statistical learning classificer with very nice
 #   ---------  accuracy (up to 2x SBPH).  Hyperspace is a pseudogaussian
 #   ---------  KNN (K-nearest-neighbor) matcher.
 #
@@ -370,7 +370,7 @@
 #     --------Thresholds for GOOD/UNSURE/SPAM thick-threshold training
 #     -------
 #     ------ A very small thick threshold (or zero!) works for Markovian.
-#     ----- A thick threshold of 5 to 20 seems good for OSB, OSBF, 
+#     ----- A thick threshold of 5 to 20 seems good for OSB, OSBF,
 #     ---- Hyperspace, Bit-Entropy, and Winnow.  If you want an asymmetric
 #     --- threshold system, you can do that by having :good_threshold:
 #     -- be different from :spam_threshold:.  The defaults are +/- 10.0
@@ -387,7 +387,7 @@
 :spam_threshold: /-5.0/
 #:spam_threshold: /-10.0/
 #:spam_threshold: /-20.0/
-  
+
 #   ---- mailfilter uses a single threshold and operates symmetrically.
 #   --- (this is only to provide backward compatibility)
 :thick_threshold: /5.0/
@@ -416,7 +416,7 @@
 #     Expansions for antispamming.  You almost _always_ want these on,
 #     unless you're debugging something really bizarre.
 
-#  ---------  Do we enable spammus interruptus undo?  
+#  ---------  Do we enable spammus interruptus undo?
 :undo_interruptus: /no/
 #:undo_interruptus: /yes/
 #
@@ -432,6 +432,6 @@
 #            you should also set the following to point to an address that
 #            will get read on a quick basis, becuause this is where autotrain
 #            verifications will go.
-# 
+#
 #:autotrain_address: /root/
 #

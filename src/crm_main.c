@@ -1,14 +1,8 @@
-//  crm_main.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_main.c - main interface
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 //  include any local crm114 configuration file
@@ -23,14 +17,13 @@
 //  and include OSBF declarations
 #include "crm114_osbf.h"
 
-//    the command line argc, argv
-int prog_argc;
+//    the command line argv
 char **prog_argv;
 
 //    the auxilliary input buffer (for WINDOW input)
 char *newinputbuf;
 
-//    the globals used when we need a big buffer  - allocated once, used 
+//    the globals used when we need a big buffer  - allocated once, used
 //    wherever needed.  These are sized to the same size as the data window.
 char *inbuf;
 char *outbuf;
@@ -40,18 +33,17 @@ int main (int argc, char **argv)
 {
   int i;    //  some random counters, when we need a loop
   int status;
-  int openbracket;  //  if there's a command-line program... 
+  int openbracket;  //  if there's a command-line program...
   int openparen = -1;     //  if there's a list of acceptable arguments
   int user_cmd_line_vars = 0;  // did the user specify --vars on cmdline?
-  
+
   //  printf (" args: %d \n", argc);
   //  for (i = 0; i < argc; i++)
   //    fprintf (stderr, " argi: %d, argv: %s \n", i, argv[i]);
-  
-  //   copy argc and argv into global statics...
-  prog_argc = argc;
+
+  //   copy argv into global statics...
   prog_argv = argv;
-  
+
   vht_size = DEFAULT_VHT_SIZE;
   cstk_limit = DEFAULT_CSTK_LIMIT;
   max_pgmlines = DEFAULT_MAX_PGMLINES;
@@ -75,13 +67,13 @@ int main (int argc, char **argv)
   //    allcate and initialize the initial root csl (control stack
   //    level) cell.  We do this first, before command-line parsing,
   //    because the command line parse fills in a lot of the first level csl.
-  
+
   csl = (CSL_CELL *) malloc (sizeof (CSL_CELL));
   if (!csl)
     untrappableerror5 ("Couldn't malloc the csl.  Big problem!\n",
 		       "", CRM_ENGINE_HERE);
   csl -> filename = NULL;
-  csl -> filedes = -1; 
+  csl -> filedes = -1;
   csl -> rdwr = 0;   //  0 means readonly, 1 means read/write
   csl -> nchars = 0;
   csl -> mct = 0;
@@ -90,11 +82,11 @@ int main (int argc, char **argv)
   csl -> preload_window = 1;
   csl -> caller = NULL;
   csl -> calldepth = 0;
-  csl -> aliusstk[0]  = 0;  // this gets initted later. 
-  
+  csl -> aliusstk[0]  = 0;  // this gets initted later.
+
   openbracket = -1;
   openparen = -1;
-  
+
   //   and allocate the argparse block
   apb = (ARGPARSE_BLOCK *) malloc (sizeof (ARGPARSE_BLOCK));
   if (!apb)
@@ -102,12 +94,12 @@ int main (int argc, char **argv)
 		       "", CRM_ENGINE_HERE);
 
   //   Parse the input command arguments
-  
+
   //  user_trace = 1;
   //internal_trace = 1;
-  
+
   for (i = 1; i < argc; i++)
-    { 
+    {
       // fprintf (stderr, "Arg %d = '%s' \n", i, argv[i]);
       //   is this a plea for help?
       if (
@@ -115,10 +107,10 @@ int main (int argc, char **argv)
 	  || (strncmp (argv[i], "-h", 2) == 0)
 	  || (argc == 1) )
 	{
-	  fprintf (stderr, " CRM114 version %s (regex engine: %s)\n ", 
+	  fprintf (stderr, " CRM114 version %s (regex engine: %s)\n ",
 		   VERSION,
 		   crm_regversion());
-	  fprintf (stderr, " Copyright 2001-2006 William S. Yerazunis\n");
+	  fprintf (stderr, " Copyright 2001-2009 William S. Yerazunis\n");
 	  fprintf (stderr, " This software is licensed under the GPL "
 		   "with ABSOLUTELY NO WARRANTY\n");
 	  fprintf (stderr, "     For language help, RTFRM. \n");
@@ -135,7 +127,7 @@ int main (int argc, char **argv)
 	  fprintf (stderr, " -p      profile statement times \n");
 	  fprintf (stderr, " -P nn   max program lines @ 128 chars/line\n");
 	  fprintf (stderr, " -q m    mathmode (0,1 alg/RPN in EVAL,"
-		   "2,3 alg/RPN everywhere)\n"); 
+		   "2,3 alg/RPN everywhere)\n");
 	  fprintf (stderr, " -r nn   set OSBF min pmax/pmin ratio (default=9)\n");
 	  fprintf (stderr, " -s nn   sparse spectra (.css) featureslots \n");
 	  fprintf (stderr, " -S nn   round up to 2^N+1 .css featureslots \n");
@@ -146,7 +138,7 @@ int main (int argc, char **argv)
 	  fprintf (stderr, " -v      print version ID and exit \n");
 	  fprintf (stderr, " -w nn   max data window size ( bytes ) \n");
 	  fprintf (stderr, " --      end of CRM114 flags; start of user args\n");
-	  fprintf (stderr, " --foo   creates var :foo: with value 'SET'\n"); 
+	  fprintf (stderr, " --foo   creates var :foo: with value 'SET'\n");
 	  fprintf (stderr, " --x=y   creates var :x: with value 'y'\n");
 	  if (openparen > 0)
 	    {
@@ -161,7 +153,7 @@ int main (int argc, char **argv)
 	    exit (EXIT_SUCCESS);
 	}
 
-      //  -- means "end of crm114 flags" - remainder of args goes to 
+      //  -- means "end of crm114 flags" - remainder of args goes to
       //  the program alone.
       if (strncmp (argv[i], "--", 2) == 0  && strlen (argv[i]) == 2)
 	{
@@ -188,7 +180,7 @@ int main (int argc, char **argv)
 	    };
 	  goto end_command_line_parse_loop;
 	};
-      
+
       if (strncmp (argv[i], "-T", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  internal_trace++;
@@ -196,7 +188,7 @@ int main (int argc, char **argv)
 	  fprintf (stderr, "Setting internaltrace to %ld\n", internal_trace);
 	  goto end_command_line_parse_loop;
 	};
-      
+
       if (strncmp (argv[i], "-p", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  profile_execution = 1;
@@ -204,7 +196,7 @@ int main (int argc, char **argv)
 	    fprintf (stderr, "Setting profile_execution to 1" );
 	  goto end_command_line_parse_loop;
 	};
-      
+
       //   is this a change to the maximum number of program lines?
       if (strncmp (argv[i], "-P", 2) == 0 && strlen(argv[i]) == 2)
 	{
@@ -215,7 +207,7 @@ int main (int argc, char **argv)
 	      max_pgmsize = 128 * max_pgmlines;
 	    }
 	  if (user_trace > 0)
-	    fprintf (stderr, "Setting max prog lines to %ld (%ld bytes)\n", 
+	    fprintf (stderr, "Setting max prog lines to %ld (%ld bytes)\n",
 		     max_pgmlines, max_pgmsize);
 	  goto end_command_line_parse_loop;
 	};
@@ -229,7 +221,7 @@ int main (int argc, char **argv)
 	      sscanf (argv[i], "%ld", &prettyprint_listing);
 	    }
 	  if (user_trace > 0)
-	    fprintf (stderr, "Setting listing level to %ld \n", 
+	    fprintf (stderr, "Setting listing level to %ld \n",
 		     prettyprint_listing);
 	  goto end_command_line_parse_loop;
 	};
@@ -242,7 +234,7 @@ int main (int argc, char **argv)
 	  setlocale (LC_ALL, "");
 	  goto end_command_line_parse_loop;
 	};
-      
+
       //   is this a change to the math mode (0,1 for alg/RPN but only in EVAL,
       //   2,3 for alg/RPN everywhere.
       if (strncmp (argv[i], "-q", 2) == 0 && strlen(argv[i]) == 2)
@@ -253,13 +245,13 @@ int main (int argc, char **argv)
 	  if (user_trace > 0)
 	    {
 	      fprintf (stderr, "Setting math mode to %ld ", q_expansion_mode);
-	      if (q_expansion_mode == 0) 
+	      if (q_expansion_mode == 0)
 		fprintf (stderr, "(algebraic, only in EVAL\n");
-	      if (q_expansion_mode == 1) 
+	      if (q_expansion_mode == 1)
 		fprintf (stderr, "(RPN, only in EVAL\n");
-	      if (q_expansion_mode == 2) 
+	      if (q_expansion_mode == 2)
 		fprintf (stderr, "(algebraic, in all expressions)\n");
-	      if (q_expansion_mode == 3) 
+	      if (q_expansion_mode == 3)
 		fprintf (stderr, "(RPN, in all expressions)\n");
 	    };
 	  goto end_command_line_parse_loop;
@@ -281,7 +273,7 @@ int main (int argc, char **argv)
                     data_window_size);
          goto end_command_line_parse_loop;
        };
-       
+
       //   change the size of the sparse spectrum file default.
       if (strncasecmp (argv[i], "-s", 2) == 0 && strlen(argv[i]) == 2)
         {
@@ -292,7 +284,7 @@ int main (int argc, char **argv)
 	      if (strcmp (argv[i-1], "-S") == 0)
 		{
 		  long k;
-		  
+
 		  k=(long) floor(log10(sparse_spectrum_file_length-1)
 				 / log10(2));
 		  while ( (2<<k)+1 < sparse_spectrum_file_length)
@@ -313,13 +305,13 @@ int main (int argc, char **argv)
 	      else
 		exit (EXIT_FAILURE);
 	    };
-	  
+
 	  if (user_trace > 0)
-	    fprintf (stderr, "Setting sparse spectrum length to %ld bins\n", 
+	    fprintf (stderr, "Setting sparse spectrum length to %ld bins\n",
 		     sparse_spectrum_file_length );
 	  goto end_command_line_parse_loop;
 	};
-      
+
       //   set a break from the command line
       if (strncmp (argv[i], "-b", 2) == 0 && strlen(argv[i]) == 2)
 	{
@@ -327,7 +319,7 @@ int main (int argc, char **argv)
 	  if (i < argc)
 	    sscanf (argv[i], "%ld", &cmdline_break);
 	  if (user_trace > 0)
-	    fprintf (stderr, "Setting the command-line break to line %ld\n", 
+	    fprintf (stderr, "Setting the command-line break to line %ld\n",
 		     cmdline_break);
 	  goto end_command_line_parse_loop;
 	};
@@ -339,11 +331,11 @@ int main (int argc, char **argv)
 	  if (i < argc)
 	    sscanf (argv[i], "%ld", &engine_exit_base);
 	  if (user_trace > 0)
-	    fprintf (stderr, "Setting the engine exit base value to %ld\n", 
+	    fprintf (stderr, "Setting the engine exit base value to %ld\n",
 		     engine_exit_base);
 	  goto end_command_line_parse_loop;
 	};
-      
+
       //   set countdown cycles before dropping to debugger
       if (strncmp (argv[i], "-d", 2) == 0 && strlen(argv[i]) == 2)
 	{
@@ -352,13 +344,13 @@ int main (int argc, char **argv)
 	  if (i < argc)
 	    sscanf (argv[i], "%ld", &debug_countdown);
 	  if (user_trace > 0)
-	    fprintf (stderr, "Setting debug countdown to %ld statements\n", 
+	    fprintf (stderr, "Setting debug countdown to %ld statements\n",
 		     debug_countdown);
 	  if (debug_countdown == 0)   //  if next arg wasn't numeric, back up
-	    i-- ;  
+	    i-- ;
 	  goto end_command_line_parse_loop;
 	};
-      
+
       //   ignore environment variables?
       if (strncmp (argv[i], "-e", 2) == 0 && strlen(argv[i]) == 2)
 	{
@@ -367,31 +359,31 @@ int main (int argc, char **argv)
 	    fprintf (stderr, "Ignoring environment variables\n");
 	  goto end_command_line_parse_loop;
 	};
-      
-      // is this to set the cwd? 
-      if (strncmp (argv[i], "-u", 2) == 0 && strlen(argv[i]) == 2) 
-	{ 
-	  i++;    // move to the next arg 
-          if (user_trace) 
-	    fprintf (stderr, "Setting WD to %s\n",argv[i]); 
+
+      // is this to set the cwd?
+      if (strncmp (argv[i], "-u", 2) == 0 && strlen(argv[i]) == 2)
+	{
+	  i++;    // move to the next arg
+          if (user_trace)
+	    fprintf (stderr, "Setting WD to %s\n",argv[i]);
           if ( i >= argc )
 	    {
 	      fprintf (stderr, "The -u working-directory change needs an arg");
 	      goto end_command_line_parse_loop;
 	    };
 	  if ( chdir(argv[i] ))
-	    { 
-	      fprintf (stderr, "Sorry, couldn't chdir to %s \n", argv[i]); 
+	    {
+	      fprintf (stderr, "Sorry, couldn't chdir to %s \n", argv[i]);
 	    };
 	  goto end_command_line_parse_loop;
 	};
-      
+
       if (strncmp (argv[i], "-v", 2) == 0 && strlen(argv[i]) == 2)
 	{
 	  //   NOTE - version info goes to stdout, not stderr, just like GCC does
-	  fprintf (stdout, 
-		   " This is CRM114, version %s (%s)\n", 
-		   VERSION, 
+	  fprintf (stdout,
+		   " This is CRM114, version %s (%s)\n",
+		   VERSION,
 		   crm_regversion());
 	  fprintf (stdout, " Copyright 2001-2006 William S. Yerazunis\n");
 	  fprintf (stdout, " This software is licensed under the GPL with ABSOLUTELY NO WARRANTY\n");
@@ -402,7 +394,7 @@ int main (int argc, char **argv)
 	  else
 	    exit( EXIT_SUCCESS );
 	};
-      
+
       if (strncmp (argv[i], "-{", 2) == 0)  //  don't care about the "}"
 	{
 	  if (user_trace)
@@ -410,7 +402,7 @@ int main (int argc, char **argv)
 	  openbracket = i;
 	  goto end_command_line_parse_loop;
 	};
-      
+
       //
       //      What about -( var var var ) cmdline var restrictions?
       if (strncmp (argv[i], "-(", 2) == 0 )
@@ -419,7 +411,7 @@ int main (int argc, char **argv)
 	    fprintf (stderr, "Allowed command line arg list at arg %d\n", i);
 	  openparen = i;
 	  //
-	  //      If there's a -- at the end of the arg, lock out system 
+	  //      If there's a -- at the end of the arg, lock out system
 	  //      flags as though we hit a '--' flag.
 	  //      (i.e. no debugger.  Minimal security. No doubt this is
 	  //      circumventable by a sufficiently skilled user, but
@@ -440,10 +432,10 @@ int main (int argc, char **argv)
 	  if (i < argc)
 	    sscanf (argv[i], "%ld", &microgroom_stop_after);
 	  if (user_trace > 0)
-	    fprintf (stderr, "Setting microgroom_stop_after to %ld\n", 
+	    fprintf (stderr, "Setting microgroom_stop_after to %ld\n",
 		     microgroom_stop_after);
 	  if (microgroom_stop_after <= 0)   //  if value <= 0 set it to default
-	    microgroom_stop_after = MICROGROOM_STOP_AFTER;  
+	    microgroom_stop_after = MICROGROOM_STOP_AFTER;
 	  goto end_command_line_parse_loop;
 	};
 
@@ -454,10 +446,10 @@ int main (int argc, char **argv)
 	  if (i < argc)
 	    sscanf (argv[i], "%ld", &microgroom_chain_length);
 	  if (user_trace > 0)
-	    fprintf (stderr, "Setting microgroom_chain_length to %ld\n", 
+	    fprintf (stderr, "Setting microgroom_chain_length to %ld\n",
 		     microgroom_chain_length);
 	  if (microgroom_chain_length < 5)   //  if value <= 5 set it to default
-	    microgroom_chain_length = MICROGROOM_CHAIN_LENGTH;  
+	    microgroom_chain_length = MICROGROOM_CHAIN_LENGTH;
 	  goto end_command_line_parse_loop;
 	};
 
@@ -468,22 +460,22 @@ int main (int argc, char **argv)
 	  if (i < argc)
 	    sscanf (argv[i], "%f", &min_pmax_pmin_ratio);
 	    if (user_trace > 0)
-	      fprintf (stderr, "Setting min pmax/pmin of a feature to %f\n", 
+	      fprintf (stderr, "Setting min pmax/pmin of a feature to %f\n",
 		min_pmax_pmin_ratio);
 	  if (min_pmax_pmin_ratio < 0)   //  if value < 0 set it to 0
 	    min_pmax_pmin_ratio = OSBF_MIN_PMAX_PMIN_RATIO ;
 	  goto end_command_line_parse_loop;
         };
-      
+
       //  that's all of the flags.  Anything left must be
       //  the name of the file we want to use as a program
       //  BOGOSITUDE - only the FIRST such thing is the name of the
-      //  file we want to use as a program.  The rest of the args 
-      //  should just be passed along 
+      //  file we want to use as a program.  The rest of the args
+      //  should just be passed along
       if (csl->filename == NULL)
 	{
           if (strlen(argv[i]) > MAX_FILE_NAME_LEN)
-	    untrappableerror5 ("Invalid filename, ", 
+	    untrappableerror5 ("Invalid filename, ",
 			       "filename too long.", CRM_ENGINE_HERE);
 	  csl->filename = argv[i];
 	  if (user_trace > 0)
@@ -494,9 +486,9 @@ int main (int argc, char **argv)
 	fprintf (stderr, "End of pass %d through cmdline parse loop\n",
 		 i);
     }
-  
+
   //  main2 ();
-  
+
   //
   //     Did we get a program filename?  If not, look for one.
   //     At this point, accept any arg that doesn't start with a - sign
@@ -531,7 +523,7 @@ int main (int argc, char **argv)
       else
 	exit (EXIT_SUCCESS);
     };
-  
+
   //     open, stat and load the program file
   if (openbracket < 0 )
     {
@@ -559,7 +551,7 @@ int main (int argc, char **argv)
   else
     {
       //   if we got here, then it's a command-line program, and
-      //   we should just assemble the proggie from the argv [openbracket] 
+      //   we should just assemble the proggie from the argv [openbracket]
       if (strlen (&(argv[openbracket][1])) + 2048 > max_pgmsize)
 	untrappableerror5 ("The command line program is too big. \n",
 			   "Try increasing the max program size with -P. \n",
@@ -567,7 +559,7 @@ int main (int argc, char **argv)
       csl->filename = "(from command line)";
       csl->filetext = (char *) malloc (sizeof (char) * max_pgmsize);
       if (!csl->filetext)
-	untrappableerror5 
+	untrappableerror5
 	  ("Couldn't malloc csl->filetext space (where I was going to put your program.\nWithout program space, we can't run.  Sorry.",
 	   "", CRM_ENGINE_HERE);
       strcpy (csl->filetext, "\n");
@@ -578,18 +570,18 @@ int main (int argc, char **argv)
       csl->nchars = strlen (csl->filetext);
       csl->hash = strnhash (csl->filetext, csl->nchars);
       if (user_trace)
-	fprintf (stderr, "Hash of program: %lX, length is %ld bytes\n",
+	fprintf (stderr, "Hash of program: %X, length is %ld bytes\n",
 		 csl->hash, csl->nchars);
     };
-  
+
   //  We get another csl-like data structure,
   //  which we'll call the cdw, which has all the fields we need, and
   //  simply allocate the data window of "adequate size" and read
   //  stuff in on stdin.
-  
+
   cdw = malloc (sizeof (CSL_CELL));
   if (!cdw)
-    untrappableerror5 ("Couldn't malloc cdw.\nThis is very bad.","", 
+    untrappableerror5 ("Couldn't malloc cdw.\nThis is very bad.","",
 		       CRM_ENGINE_HERE);
   cdw->filename = NULL;
   cdw->rdwr = 1;
@@ -599,7 +591,7 @@ int main (int argc, char **argv)
     untrappableerror5 ("Couldn't malloc cdw->filetext.\nWithout this space, you have no place for data.  Thus, we cannot run.","", CRM_ENGINE_HERE);
   //      also allocate storage for the windowed data input
   newinputbuf = malloc (sizeof (char) * data_window_size);
-  
+
   //      and our three big work buffers - these are used ONLY inside
   //      of a single statement's execution and do NOT ever contain state
   //      that has to exist across statements.
@@ -616,7 +608,7 @@ int main (int argc, char **argv)
   //     Initialize the VHT, add in a few predefined variables
   //
   crm_vht_init(argc, argv);
-  
+
   //    Call the pre-processor on the program
   //
   status = crm_preprocessor (csl, 0);
@@ -624,20 +616,20 @@ int main (int argc, char **argv)
   //    Now, call the microcompiler on the program file.
   status = crm_microcompiler ( csl, vht);
   //    Great - program file is now mapped via csl->mct
-  
-  //    Put a copy of the preprocessor-result text into 
+
+  //    Put a copy of the preprocessor-result text into
   //    the isolated variable ":_pgm_text:"
   crm_set_temp_var (":_pgm_text:", csl->filetext);
 
   //  If the windowflag == 0, we should preload the data window.  Now,
-  //  let's get some data in.  
-  
+  //  let's get some data in.
+
   //    and preload the data window with stdin until we hit EOF
   i = 0;
   if (csl->preload_window)
     {
       //     GROT GROT GROT  This is slow
-      //   
+      //
       //while (!feof (stdin) && i < data_window_size - 1)
       //	{
       //	  cdw->filetext[i] = fgetc (stdin);
@@ -646,11 +638,11 @@ int main (int argc, char **argv)
       //i-- ;  //     get rid of the extra ++ on i from the loop; this is the
       //            EOF "character" which prints like an umlauted-Y.
       //
-      //     
+      //
       //         This is the much faster way.
       //
       //      i = fread (cdw->filetext, 1, data_window_size -1, stdin);
-      //       
+      //
       //          JesusFreke suggests this instead- retry with successively
       //          smaller readsizes on systems that can't handle full
       //          POSIX-style massive block transfers.
@@ -659,7 +651,7 @@ int main (int argc, char **argv)
 	{
 	  //i += fread (cdw->filetext + i, 1, readsize-1, stdin);
 	  int rs;
-	  rs = i + readsize < data_window_size - 1 ? 
+	  rs = i + readsize < data_window_size - 1 ?
 	    readsize : data_window_size - i - 1;
 	  i+= fread (cdw->filetext + i, 1, rs, stdin);
 	  if (feof (stdin))
@@ -693,9 +685,9 @@ int main (int argc, char **argv)
   cdw->nstmts = -1;
   cdw->cstmt = -1;
   cdw->caller = NULL;
-  
-  // and put the initial data window suck-in contents into the vht 
-  //  with the special name :_dw: 
+
+  // and put the initial data window suck-in contents into the vht
+  //  with the special name :_dw:
   //
   //   GROT GROT GROT  will have to change this when we get rid of separate
   //   areas for the data window and the temporary area.  In particular, the
@@ -708,17 +700,17 @@ int main (int argc, char **argv)
     long dwname;
     long dwlen;
     tdw->filetext[tdw->nchars] = '\n';
-    tdw->nchars++;  
+    tdw->nchars++;
     dwlen = strlen (":_dw:");
     dwname = tdw->nchars;
-    //strcat (tdw->filetext, ":_dw:"); 
+    //strcat (tdw->filetext, ":_dw:");
     memmove (&tdw->filetext[dwname], ":_dw:", dwlen);
     tdw->nchars = tdw->nchars + dwlen;
     //    strcat (tdw->filetext, "\n");
     memmove (&tdw->filetext[tdw->nchars], "\n", strlen ("\n"));
     tdw->nchars++;
-    crm_setvar ( NULL, 
-		 0, 
+    crm_setvar ( NULL,
+		 0,
 		 tdw->filetext,
 		 dwname,
 		 dwlen,
@@ -731,10 +723,10 @@ int main (int argc, char **argv)
   //
   //    We also set up the :_iso: to hold the isolated variables.
   //    Note that we must specifically NOT use this var during reclamation
-  //    or GCing the isolated var storage area.  
+  //    or GCing the isolated var storage area.
   //
   //    HACK ALERT HACK ALERT - note that :_iso: starts out with a zero
-  //    length and must be updated 
+  //    length and must be updated
   //
 #define USE_COLON_ISO_COLON
 #ifdef USE_COLON_ISO_COLON
@@ -743,14 +735,14 @@ int main (int argc, char **argv)
     long isolen;
     isolen = strlen (":_iso:");
     isoname = tdw->nchars;
-    //strcat (tdw->filetext, ":_dw:"); 
+    //strcat (tdw->filetext, ":_dw:");
     memmove (&tdw->filetext[isoname], ":_iso:", isolen);
     tdw->nchars = tdw->nchars + isolen;
     //    strcat (tdw->filetext, "\n");
     memmove (&tdw->filetext[tdw->nchars], "\n", strlen ("\n"));
     tdw->nchars++;
-    crm_setvar ( NULL, 
-		 0, 
+    crm_setvar ( NULL,
+		 0,
 		 tdw->filetext,
 		 isoname,
 		 isolen,
@@ -760,15 +752,14 @@ int main (int argc, char **argv)
 		 -1,
 		 0);
   };
-#endif
+#endif	// USE_COLON_ISO_COLON
   //    Now we're here, we can actually run!
   //    set up to start at the 0'th statement (the start)
   csl->cstmt = 0;
-  
+
   status = crm_invoke ();
-  
+
   //     This is the *real* exit from the engine, so we do not override
   // the engine's exit status with an engine_exit_base value.
   exit ( (char) status);
  }
-

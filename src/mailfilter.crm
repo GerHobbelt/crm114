@@ -1,27 +1,25 @@
 #! /usr/bin/crm
-#    -- bangline args removed for system portability --
-# -( learnspam learnnonspam learnfile stats_only config spamcss nonspamcss fileprefix force unlearn cache )
+# -(learnspam learnnonspam learnfile stats_only config spamcss nonspamcss fileprefix force unlearn cache)
 #
+#	mailfilter.crm - Statistical mail sorter
+#
+#   Note to SunOS and FreeBSD users - do not place command arguments of
+#   "-([arguments])" format on the first line of this program
+#   or you will not get  what you expect. This is due to a kernel
+#   difference in how a bangline should be dealt with.
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 #        A statistical mail sorter with mail-to-yourself commanding
 #
-#    Copyright (C) 2002-2006 William S. Yerazunis; licensed under the 
-#    GNU Public License (GPL) version 2.  A copy of this license is included 
-#    in the distribution media, or obtain one from www.fsf.org .
+# --->>>     Design Philosophy ( do these IN ORDER )
 #
-#   Note to SunOS and FreeBSD users - you MUST remove EVERYTHING on
-#   the first line of this program from the first "-" to the end of
-#   the first line (including the "-" sign itself) or you will not get
-#   what you expect.  This is due to "differences of opinion" on how 
-#   a bangline should be dealt with. 
-#
-#
-# --->>>     Design Philosophy ( do these IN ORDER )	
-#
-#       *  if --fileprefix is specified, all filenames EXCEPT --config 
-#            are prefixed with that (You need a trailing slash on the prefix 
+#       *  if --fileprefix is specified, all filenames EXCEPT --config
+#            are prefixed with that (You need a trailing slash on the prefix
 #            if it is a directory name.)
 #       *  if --config , grab the config file from the specified place.
-#       *  Load the mailfilter.cf config file from wherever config or 
+#       *  Load the mailfilter.cf config file from wherever config or
 #            fileprefix points (--config overrides --fileprefix).
 #       *  If --spamcss is specified, use that as the spam.css file
 #       *  If --nonspamcss is specified, use that as the nonspam.css file
@@ -29,13 +27,13 @@
 #	*  If --learnnonspam, learn as nonspam and exit
 #       *  If --force, force-feed the learning
 #       *  If --learnfile, use :learnfile:.css and :learnfile:text.txt
-#       *  If --stats_only, do normal classification but don't do any 
+#       *  If --stats_only, do normal classification but don't do any
 #                forwarding, only output the status on stdout and return
 #                the exit code.
 #
 #	*  check for the "command word", if present, execute the command
-# 
-#	*  check to see if any of the whitelist patterns apply.  If so, 
+#
+#	*  check to see if any of the whitelist patterns apply.  If so,
 #	accept the mail to /var/spool/the_user (which is actually to
 #       be found at /var/spool/mail/:*:_env_USER:
 #
@@ -43,16 +41,16 @@
 #       flush the mail to the "blacklisted" file.
 #
 #       *  check to see if it's commanded to be learned as a spam or a
-#       nonspam model.  If so, learn it to the appropriate .css (Crm 
+#       nonspam model.  If so, learn it to the appropriate .css (Crm
 #       Sparse Spectra) file
 #
 #	*  run the email through the classifier.  If the classifier thinks
-#  	it's good, send it to the /var/spool/mail/the_user file, else 
+#  	it's good, send it to the /var/spool/mail/the_user file, else
 #	send it to the "doubtful" file.
 #
 ##############################################################
 #
-#    ---  uncomment this if you want to include a "forced" 
+#    ---  uncomment this if you want to include a "forced"
 #         configuration file  ---
 # insert mailfilterconfig.crm
 #
@@ -85,7 +83,7 @@ isolate <default> (:learnfile:)
 isolate <default> (:stats_only:)
 isolate <default> (:automatic_training:)
 #
-#      Isolate these email addresses, and give them values, 
+#      Isolate these email addresses, and give them values,
 #      in case the user doesn't.
 isolate (:reject_address:) //
 isolate (:fail_priority_mail_to:) //
@@ -98,7 +96,7 @@ isolate (:log_rejections:) //
 isolate (:fileprefix:)
 #
 #       This ISOLATE will guarantee that :force: will exist, and keep the
-#       commandline value ("SET") , or the null string if the user doesn't 
+#       commandline value ("SET") , or the null string if the user doesn't
 #       use --force on the command line.
 isolate (:force:)
 #
@@ -107,7 +105,7 @@ isolate (:force:)
 #       use --unlearn on the command line.
 isolate (:unlearn:)
 #
-#       now, :clf: is the classify & learn flags; note that we have two 
+#       now, :clf: is the classify & learn flags; note that we have two
 #       separate flags here in a bizarre chain.  The reason is that :unlearn:
 #       can have the value "SET", whereas :rft: needs "refute"
 isolate (:clf:) //
@@ -125,9 +123,9 @@ isolate (:mailtrainer_output:) //
     isolate (:ev:)
     isolate (:verbose_startup:)
     isolate (:config:)
-    #   
+    #
     #    Part 1  - read in the options/configuration file
-    #	
+    #
     {
         {
                 match [:config:] /.+/
@@ -150,7 +148,7 @@ isolate (:mailtrainer_output:) //
 		match < fromend nomultiline > (:line: :name: :value:) \
 		  [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
 		{
-			#    don't execute the assign if there's 
+			#    don't execute the assign if there's
 			#    a # at the start of the line.
 			match <absent> [:name:] /^\x23/
 			{
@@ -161,13 +159,13 @@ isolate (:mailtrainer_output:) //
 			isolate (:*:name:) /:*:value:/
 		}
 		liaf
-	} 
+	}
 }
 #
-#     Now, a tricky bit - we need to add "unlearn" to the :clf: 
+#     Now, a tricky bit - we need to add "unlearn" to the :clf:
 #     if it was in the line params - but we have to append, not replace,
 #     because :clf: (CLassfier Flags) also contains the classifier we use.
-#  
+#
 {
 	match [:unlearn:] /SET/
 	alter (:clf:) /:*:clf: refute/
@@ -181,14 +179,14 @@ isolate (:mailtrainer_output:) //
 #    (esp. since it will contain recieved headers that the sender cannot
 #    see nor control.)
 {
-	match [:spw:] /DEFAULT-PASSWORD/
+	match [:spw:] /DEFAULT_PASSWORD/
 	#  yes, it's the same as default.  So we scramble it just so
-	#  nobody can hack in 
+	#  nobody can hack in
 	hash (:spw:) /:*:_env_string::*:_dw:/
 }
 
 #############################################################
-#            
+#
 #         Set up the addresses that we might need to mail to
 #
 isolate (:reject_address:) /:*:general_fails_to:/
@@ -219,13 +217,13 @@ isolate (:reject_address:) /:*:general_fails_to:/
 	match [:text_cache:] /./
 	{
 		###       If the text_cache dir isn't there, create it
-		#         and it's subdirectories. 
+		#         and it's subdirectories.
 		#
 		isolate (:tmp:) //
 		syscall () (:tmp:) /ls :*:text_cache: 2>&1 /
 		match [:tmp:] <absent> /texts/
 		syscall () () /mkdir -p :*:text_cache: /
-		syscall () () /mkdir -p :*:text_cache:\/texts /		
+		syscall () () /mkdir -p :*:text_cache:\/texts /
 		syscall () () /mkdir :*:text_cache:\/prob_good /
 		syscall () () /mkdir :*:text_cache:\/prob_spam /
 		syscall () () /mkdir :*:text_cache:\/known_good /
@@ -242,35 +240,35 @@ isolate (:reject_address:) /:*:general_fails_to:/
 	alter (:cacheid:) /sfid-:*:cacheid:_:*:msg_hash:/
 	#  As long as this isn't a "learn" run, nor a "stats-only" run,
 	#  we should save the text of this message in the text cache directory.
-	#   Note to self: eventually this should also work with the 
+	#   Note to self: eventually this should also work with the
 	#    command <password> spam nonspam stuff
 	{
 		match <absent> [:stats_only:] /SET/
                 match <absent> [:learnspam:] /SET/
                 match <absent> [:learnnonspam:] /SET/
 		output [:*:text_cache:\/texts\/:*:cacheid:] /:*:_dw:/
-	}		
+	}
 }
 
 
 ##############################################################
 #
 #      Grab the text that we're going to actually work with.
-#    
-#      We copy this into m_text - the "mutilated text".  It 
-#      will become an annotated _copy_  of the incoming text, 
+#
+#      We copy this into m_text - the "mutilated text".  It
+#      will become an annotated _copy_  of the incoming text,
 #      with whatever changes we think will help us classify better.
 #
 #      We clip m_text to be the first :decision_length: characters of
 #      the incoming mail.
 #
 match (:m_text:) [:_dw: 0 :*:decision_length:] /.*/
-isolate (:m_text:) 
+isolate (:m_text:)
 #
 #      :b_text: is the text with base64's expanded.
 isolate (:b_text:) /:*:m_text:/
 #
-#      :i_text: is the text with Hypertextus Interruptus removed. 
+#      :i_text: is the text with Hypertextus Interruptus removed.
 isolate (:i_text:) /:*:m_text:/
 #
 #
@@ -303,7 +301,7 @@ isolate (:i_text:) /:*:m_text:/
                     #    expanded, no matter what the type.  Maybe
                     #    someday someone will put in a lockout for
                     #    things like .jpg files, .doc files, etc.
-                    # 
+                    #
                     isolate (:exp_text:)
                     match [:b_text:] <nocase> (:a: :h: :b:) \
                         /(Content-Transfer-Encoding): base64(.*)/
@@ -316,17 +314,17 @@ isolate (:i_text:) /:*:m_text:/
                     alter (:c:) /:*:exp_text:/
                     #   and mark this piece of mime as "prior".
                     alter (:h:) /Content-Transfer-Prior-Encoding/
-                    #   repeat till no more Mime base64 encodings 
+                    #   repeat till no more Mime base64 encodings
                     liaf
                 }
         }
         alius
         {
             #   if no base64 expansions enabled, empty out :b_text:
-            #            
+            #
             alter (:b_text:) //
         }
-    } 
+    }
     #
     #   If we had expansions, bust the html contents out of them, otherwise
     #   ignore b_text as it's redundant
@@ -341,7 +339,7 @@ isolate (:i_text:) /:*:m_text:/
             alter (:b_text:) //
         }
     }
-    #   expansion 2 :  do we bust HTML comments ( a.k.a. 
+    #   expansion 2 :  do we bust HTML comments ( a.k.a.
     #    hypertextus interruptus) out?
     {
         match [:undo_interruptus:] /yes/
@@ -367,17 +365,17 @@ isolate (:i_text:) /:*:m_text:/
     }
 }
 #    and reassemble the mucked-over text into the :m_text: var, always
-#    with the base64's expanded, then a second decommented copy 
+#    with the base64's expanded, then a second decommented copy
 #
 {
     isolate (:m_text:) \
       /:*:m_text: :*:_nl: :*:b_text: :*:_nl: :*:i_text: :*:_nl:/
 }
 
-#########################################################   
+#########################################################
 #
-#   Do we want to do any rewrites before running?  
-#    
+#   Do we want to do any rewrites before running?
+#
 {
    match [:rewrites_enabled:] /yes/
    isolate (:rewrites:)
@@ -388,7 +386,7 @@ isolate (:i_text:) /:*:m_text:/
    #
    #
    {
-       #    Grab the next regex; turn the one-per-line patterns into a 
+       #    Grab the next regex; turn the one-per-line patterns into a
        #    regex and a replacement string.
        #    First, do the line-spanning regexes.
        match <fromend nomultiline> (:ch: :fr: :to:) [:rewrites:]  /(.+)>-->(.*)/
@@ -451,10 +449,10 @@ isolate ( :spamcss: :nonspamcss: )
 	match [:learnnonspam:] /SET/
 	goto /:learnnonspamhere:/
 }
-{	
+{
 	match (:trash: :file:) [:learnfile:] /(.+)/
 	goto /:learntofilehere:/
-} 	
+}
 
 #
 #
@@ -480,10 +478,10 @@ isolate ( :spamcss: :nonspamcss: )
 	/:*:sender: :*:type: (.*)/ (:x: :secret:)
   #
   #    We now have the shared secret, calculate the checksum we should have
-  # 
+  #
   #     grab the body...
   match /\n\n(.*)/ (:x: :body:)
-  #   
+  #
   #     and calculate the hash.
   isolate (:md5out:)
   syscall (:*:secret::*:_nl::*:body:) (:md5out:) /md5sum/
@@ -491,11 +489,11 @@ isolate ( :spamcss: :nonspamcss: )
   #
   #     does this hash match with the given hash?
   match [:auth:] /:*:md5out:/
-  #   
+  #
   #   	Yes, it matched.  It's a real innoculation.
-  #  
+  #
   #     grab the text we want to actually learn (this is the payload)
-  match [:m_text:] (:x: :text:) /\n\n(.*)/		
+  match [:m_text:] (:x: :text:) /\n\n(.*)/
   #
   #     and learn it appropriately
   {
@@ -506,7 +504,7 @@ isolate ( :spamcss: :nonspamcss: )
   {
         match [:type:] /spam/
 	goto /:learnspamhere:/
-  }	
+  }
 }
 #
 # -------------check for the COMMAND WORD ----------
@@ -519,7 +517,7 @@ isolate ( :spamcss: :nonspamcss: )
     #
     #    check the password.  If it's invalid, FAIL out of this bracket set
     #    and just treat this as ordinary (non-command) mail.
-    match [:pw:] /:*:spw:/			
+    match [:pw:] /:*:spw:/
     {
 	#    was it a command to add something to the whitelist?
 	match <nomultiline> (:q: :a:) [:c:] /whitelist (.*)/
@@ -559,13 +557,13 @@ isolate ( :spamcss: :nonspamcss: )
    #     Now, if :unlearn: is set, by either bashline or command, we
    #     set the :clf: flag to be "refute".   Otherwise, we set it to
    #     be what it was before.
-   #	
+   #
     {
         match [:unlearn:] /SET/
 	alter (:clf:) /:*:clf: refute/
-    }	
+    }
 
-   #   
+   #
    #     Now, the big mahonka.  Learn as nonspam, or as spam
    #      (note the three subpaths - one each for non-forced, forced, and
    #      non-forced error messages)
@@ -576,7 +574,7 @@ isolate ( :spamcss: :nonspamcss: )
 	match [:c:] /nonspam/
 	match (:z: :text:) [:m_text:] /:*:_nl:command [[:graph:]]+ nonspam(.*)/
 	#      and learn it as nonspam
- :learnnonspamhere:		
+ :learnnonspamhere:
 	{
 		#     Are we supposed to use the cached version?
 		{
@@ -604,16 +602,16 @@ isolate ( :spamcss: :nonspamcss: )
 		    #      now it's trained; put in a marker in the headers
 		    call /:mungmail_delete:/ [X-CRM114-Status: ]
 		    call /:mungmail_delete:/ [X-CRM114-Unsure: ]
-		    call /:mungmail_add:/ [X-CRM114-Action: LEARNED AND CACHED NONSPAM ] 
+		    call /:mungmail_add:/ [X-CRM114-Action: LEARNED AND CACHED NONSPAM ]
 		    #   Insert the training report into the msgbody if desired
-		    {   
-			match [:add_mailtrainer_report:] /yes/	
+		    {
+			match [:add_mailtrainer_report:] /yes/
 			match (:: :firstline:) /.*(.)/
 			match (:: :firstline:) /\n\n()/
 			alter (:firstline:) / :*:mailtrainer_output:\n-----\n/
 		    }
 		    accept
-		    exit /:*:accepted_mail_exit_code:/	
+		    exit /:*:accepted_mail_exit_code:/
 		}
 		{
 		    #   No, it didn't exist.  Add an error message header.
@@ -633,7 +631,7 @@ isolate ( :spamcss: :nonspamcss: )
 		eval /:@: :*:pr: < :*:thick_threshold: :/
 		output [:*:fileprefix:nonspamtext.txt] \
 			<append> /\n\n:*:cmd_txt:\n/
-		#    
+		#
 		#     write out the pre-mutilation text, with newlines
 		#
 		learn <:*:clf:> (:*:fileprefix::*:nonspamcss:) [:text:] /:*:lcr:/
@@ -651,7 +649,7 @@ isolate ( :spamcss: :nonspamcss: )
 		#    Did the user specify "--force" on the command line?
 		match [:force:] /SET/
 		output [:*:fileprefix:nonspamtext.txt] <append> /\n\n:*:cmd_txt:\n/
-		#    
+		#
 		#     write out the pre-mutilation text, with newlines
 		#
 		learn < :*:clf: > (:*:fileprefix::*:nonspamcss:) [:text:] /:*:lcr:/
@@ -664,18 +662,18 @@ isolate ( :spamcss: :nonspamcss: )
 	}
 	alius
 	{
-	    call /:mungmail_add:/ [X-CRM114-Action: LEARN AS NONSPAM UNNECESSARY- ALREADY CLASSIFIED CORRECTLY - NO ACTION TAKEN]   
+	    call /:mungmail_add:/ [X-CRM114-Action: LEARN AS NONSPAM UNNECESSARY- ALREADY CLASSIFIED CORRECTLY - NO ACTION TAKEN]
 	    accept
 	    exit /:*:accepted_mail_exit_code:/
-	}		
+	}
     }
     {
 	#     was it a command to learn something as spam?
 	match [:c:] /spam/
 	match (:z: :text:) [:m_text:] /:*:_nl:command [[:graph:]]+ spam(.*)/
 	#      and learn it as spam
-	:learnspamhere: 
-	{  
+	:learnspamhere:
+	{
 	    #     Are we supposed to use the cached version?
 	    {
 		match [:c:] /cache/
@@ -701,9 +699,9 @@ isolate ( :spamcss: :nonspamcss: )
 		#      now it's trained; put in a marker in the headers
 		call /:mungmail_delete:/ [X-CRM114-Status: ]
 		call /:mungmail_delete:/ [X-CRM114-Unsure: ]
-		call /:mungmail_add:/ [X-CRM114-Action: LEARNED AND CACHED SPAM] 
+		call /:mungmail_add:/ [X-CRM114-Action: LEARNED AND CACHED SPAM]
 		#   Insert the training report in the msgbody, if desired
-		{   
+		{
 		    match [:add_mailtrainer_report:] /yes/
 		    match (:: :firstline:) /.*(.)/
 		    match (:: :firstline:) /\n\n()/
@@ -729,7 +727,7 @@ isolate ( :spamcss: :nonspamcss: )
 	    match [:classify_status:] <nomultiline> \
 		    /^#0.* pR: ([-. 0-9]+)/ (:: :pr:)
 	    eval /:@: :*:pr: < :*:thick_threshold: : /
-	    #    
+	    #
 	    #     write out the pre-mutilation text, with newlines
 	    #
 	    output [:*:fileprefix:spamtext.txt] <append> /\n\n:*:cmd_txt: \n/
@@ -743,7 +741,7 @@ isolate ( :spamcss: :nonspamcss: )
 	{
 		#    Did the user specify "--force" on the command line?
 		match [:force:] /SET/
-		#    
+		#
 		#     write out the pre-mutilation text, with newlines
 		#
 		output [:*:fileprefix:spamtext.txt] <append> /\n\n:*:cmd_txt: \n/
@@ -755,12 +753,12 @@ isolate ( :spamcss: :nonspamcss: )
 	}
 	alius
 	{
-	    call /:mungmail_add:/ [X-CRM114-Action: LEARN AS SPAM UNNECESSARY- ALREADY CLASSIFIED CORRECTLY - NO ACTION TAKEN]   
+	    call /:mungmail_add:/ [X-CRM114-Action: LEARN AS SPAM UNNECESSARY- ALREADY CLASSIFIED CORRECTLY - NO ACTION TAKEN]
 		call /:mungmail_unique:/ [X-CRM114-Status: Good (Spam Learn)]
 
 	    accept
 	    exit /:*:accepted_mail_exit_code:/
-	}		
+	}
     }
     {
 	#     was it a command to learn something as an arbitrary type?
@@ -789,8 +787,8 @@ isolate ( :spamcss: :nonspamcss: )
 #     George's Circuit Breaker - if the mail has already been processed
 #     by CRM114, then send it directly to output, without further
 #     processing.
-#   
-#     WE DON'T RISK THIS ANY MORE - WITH ~ A MILLION USERS, WE'RE NOW 
+#
+#     WE DON'T RISK THIS ANY MORE - WITH ~ A MILLION USERS, WE'RE NOW
 #     A TARGET FOR SPAMMERS TO USE THIS HACK.
 #{
 #	match /X-CRM114/
@@ -805,10 +803,10 @@ isolate ( :spamcss: :nonspamcss: )
 #     then according to whitelist,
 #     then according to blacklist,
 #     then according to the CRM sparse spectral classifier.
-#   
-#     check it against the priority action list- this list is 
+#
+#     check it against the priority action list- this list is
 #     of the form of a + or -, then a pattern.  + means accept,
-#     - means reject.  These are executed in order (which is 
+#     - means reject.  These are executed in order (which is
 #     different from whitelist or blacklist in that they occur
 #     in order given, not whitelist-then-blacklist.  The priority
 #     action list is tried before whitelist or blacklist.
@@ -818,7 +816,7 @@ input (:priolist:) [:*:fileprefix:priolist.mfp]
 #    reset matching on :priolist: to the start of the string
 match [:priolist:] //
 #
-#     
+#
 {
 	#... Grab the next regexturn the one-per-line patterns into a regex
 	match <fromend nomultiline> (:w: :pm: :pat:) [:priolist:]  /(.)(.+)/
@@ -833,7 +831,7 @@ match [:priolist:] //
 			alter (:classifier_reason:) /** ACCEPT: CRM114 Priority Whitelisted by: :*:reason: **:*:_nl:/
 			alter (:stats:) / pR: 999.99 /
 			goto /:looks_good:/
-		}	
+		}
 		#   No, we didn't have a +, was it a '-'?
 		{
 			match [:pm:] /[-]/
@@ -860,7 +858,7 @@ match [:priolist:] //
 	match [:whitelist:] //
 }
 #
-#     
+#
 {
     #... Grab the next regexturn the one-per-line patterns into a regex
     match <fromend nomultiline> (:waste: :whregex:) [:whitelist:]  /(.+)/
@@ -889,7 +887,7 @@ match [:priolist:] //
 	#    reset matching on blacklist to start of string
 	match [:blacklist:] //
 }
-#     
+#
 {
 	#... Grab the next regexturn the one-per-line patterns into a regex
 	match <fromend nomultiline> (:waste: :blregex:) [:blacklist:]  /(.+)/
@@ -914,7 +912,7 @@ match [:priolist:] //
 #
 #
 #
-#    End of blacklist processing.  
+#    End of blacklist processing.
 #
 #
 #      All else has failed- we now run our CLASSIFY algorithm
@@ -929,7 +927,7 @@ match [:priolist:] //
 	{
 		classify <:*:clf:> ( :*:fileprefix::*:nonspamcss: | :*:fileprefix::*:spamcss: ) ( :stats: ) [:m_text:] /:*:lcr:/
 	}
-	#       Now we grab the pR and if it's greater than the minus 
+	#       Now we grab the pR and if it's greater than the minus
 	#       threshold, we send it to "good".  Otherwise, it goes to bad.
 	{
                 match <nomultiline> [:stats:] (:d: :pval:) /pR: (.*)/
@@ -967,8 +965,8 @@ match [:priolist:] //
 		match [:text_cache:] /./
 		syscall () () /ln :*:text_cache:\/texts\/:*:cacheid: :*:text_cache:\/prob_spam\/:*:cacheid:/
 	}
-		
-	#     and write out the long-form message too.	
+
+	#     and write out the long-form message too.
 	{
 	   {
 		match [:add_headers:] /yes/
@@ -984,7 +982,7 @@ match [:priolist:] //
   	   {
 		{
 		    match (:subject_line: :subj_text:) <nocase nomultiline> \
-			 /^Subject: (.*)/	
+			 /^Subject: (.*)/
 		}
 		alius
 		{
@@ -1033,7 +1031,7 @@ match [:priolist:] //
 			alter (:f:) />:*:f:/
 			liaf
 		}
-	       	alter (:_dw:) /:*:_dw:-=-Extra Stuff-=-\n\n:*:m_text: -0-0-0- :*:_nl:/		
+	       	alter (:_dw:) /:*:_dw:-=-Extra Stuff-=-\n\n:*:m_text: -0-0-0- :*:_nl:/
 	  }
     	  {
 		match [:add_extra_stuff:] /attachment/
@@ -1061,31 +1059,31 @@ Content-Type: text\/plain :*:_nl:\
 Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 \n--Attachment_Quote_Boundary_1234567890--\n/
 	    }
-	    
+
 #
-# 
+#
 #     Decide if we forward or if we just output it.
-	   {      
+	   {
 	       {
-		#   if this match succeeds, we should forward-to-an-address? 
+		#   if this match succeeds, we should forward-to-an-address?
 		# Yes, but only if we _have_ a forward-to address.
-	        match [:reject_address:]  /[a-zA-Z0-9]/	   
+	        match [:reject_address:]  /[a-zA-Z0-9]/
  	        {
 		  #  -- put the classifier reason in as the first thing!
 		  match [:add_verbose_stats:] /yes/
 		  alter (:_dw:) /:*:_nl: :*:classifier_reason::*:_nl: :*:_dw: /
 	        }
-	        syscall (:*:_dw:) /mail :*:reject_address: -s ':*:subj_text:'/ 
+	        syscall (:*:_dw:) /mail :*:reject_address: -s ':*:subj_text:'/
 	     }
 	     alius
              {
  	       {
-	         # -- put the classifier reason in at the end of the headers 
+	         # -- put the classifier reason in at the end of the headers
 		 match [:add_verbose_stats:] /yes/
 		 match (:start_of_data:) /\n\n/
 		 alter (:start_of_data:) /\n\n :*:classifier_reason: \n /
 	       }
-               accept		
+               accept
              }
            }
         }
@@ -1116,7 +1114,7 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 
     #    and generate up a pretty mail-out report.
     {
-	match [:add_verbose_stats:] /yes/	
+	match [:add_verbose_stats:] /yes/
         alter (:_dw:)  /:*:_dw: :*:_nl: :*:classifier_reason: :*:_nl:/
     }
     {
@@ -1180,10 +1178,10 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 }
 #
 #         Here's where we finish up processing in all the paths.
-#         
+#
 :finish_up:
 {
-#    ---- should we consider automatic training?	
+#    ---- should we consider automatic training?
 	match [:automatic_training:] /yes/
 	# bounce out if we've already auto-trained this email
 	match <absent> /AUTO-TRAINED/
@@ -1194,8 +1192,8 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 	#
 	# out put autotraining...
 	#       Yep... we should use this for autotraining
-	#       do we auto-train on acceptance? 
-	{ 
+	#       do we auto-train on acceptance?
+	{
 		match [:classifier_reason:] /ACCEPT/
 		#   it wasn't spam... autotrain it "nonspam"
 		output [:*:fileprefix:nonspamtext.txt] <append> /:*:text:/
@@ -1203,8 +1201,8 @@ Content-Transfer-Encoding: quoted-printable \n\n\n:*:m_text:\
 		goto /:autotrain_finish:/
 	}
 
-	#      or do we autotran on rejection       
-	{ 
+	#      or do we autotran on rejection
+	{
 		match [:classifier_reason:] /REJECT/
 		#   it was spam... autotrain it "spam"
 		output [:*:fileprefix:spamtext.txt] <append> /:*:text:/
@@ -1237,8 +1235,8 @@ exit /:*:our_exit_code:/
 #     distribution
 #
 #
-# Add a new header 
-:mungmail_add: (:new_header:) 
+# Add a new header
+:mungmail_add: (:new_header:)
 {
     #     Grab the current headers
     call /:mungmail_grab_current_headers:/
@@ -1252,7 +1250,7 @@ exit /:*:our_exit_code:/
 {
     #      Extract the header with the given field type, and
     #      return that.  Note that we add the colon here; don't
-    #      put it into the desired_header string. 
+    #      put it into the desired_header string.
     #
     call /:mungmail_grab_current_headers:/
     {
@@ -1272,7 +1270,7 @@ exit /:*:our_exit_code:/
 	match (:new_header_type:) [:new_header:] /[[:graph:]]+/
     }
     #
-    # a  LIAF-loop to delete any header (including continuations) that 
+    # a  LIAF-loop to delete any header (including continuations) that
     #  has a type that matches the new_header_type.
     {
 	match [:current_headers:] (:kill_this_line:) \
@@ -1280,7 +1278,7 @@ exit /:*:our_exit_code:/
 	alter (:kill_this_line:) //
 	liaf
     }
-    return 
+    return
 }
 
 #          delete all current headers of this type, insert ours instead.
@@ -1339,7 +1337,3 @@ trap (:broken_program_message:) /.*/
 	output [stderr] /ERROR: :*:broken_program_message:/
 }
 exit /:*:program_fault_exit_code:/
-
-
-
-

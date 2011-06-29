@@ -1,14 +1,8 @@
-//  crm114_.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_debugger.c - debugging utilities
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -21,21 +15,10 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
+//    the globals used when we need a big buffer  - allocated once, used
 //    wherever needed.  These are sized to the same size as the data window.
 extern char *inbuf;
 extern char *outbuf;
-extern char *tempbuf;
-
-
-
 
 //         If we got to here, we need to run some user-interfacing
 //         (i.e. debugging).
@@ -59,12 +42,11 @@ long crm_debugger ()
       firsttime = 0;
       if (user_trace)
 	fprintf (stderr, "Opening the user terminal for debugging I/O\n");
-#ifdef POSIX
+#ifndef CRM_WINDOWS
       mytty = fopen ("/dev/tty", "rb");
-#endif
-#ifdef WIN32
+#else	// CRM_WINDOWS
       mytty = fopen ("CON", "rb");
-#endif
+#endif	// CRM_WINDOWS
       clearerr (mytty);
     };
 
@@ -79,16 +61,16 @@ long crm_debugger ()
   //
   ichar = 0;
 
-  while (!feof (mytty) 
-	 && ichar < data_window_size - 1 
-	 && (inbuf [ichar-1] != '\n' ) )	    
+  while (!feof (mytty)
+	 && ichar < data_window_size - 1
+	 && (inbuf [ichar-1] != '\n' ) )
     {
       inbuf[ichar] = fgetc (mytty);
       ichar++;
-    };  
+    };
   inbuf [ichar] = '\000';
 
-  if (feof (mytty) )  
+  if (feof (mytty) )
     {
       fprintf (stderr, "Quitting\n");
       if (engine_exit_base != 0)
@@ -128,7 +110,7 @@ long crm_debugger ()
     case 'C':
      {
        sscanf (&inbuf[1], "%ld", &debug_countdown);
-       if (debug_countdown <= 0) 
+       if (debug_countdown <= 0)
 	 {
 	   debug_countdown = -1;
 	   fprintf (stderr, "continuing execution...\n");
@@ -141,7 +123,7 @@ long crm_debugger ()
      };
      break;
     case 't':
-      if (user_trace == 0 ) 
+      if (user_trace == 0 )
 	{
 	  user_trace = 1 ;
 	  fprintf (stderr, "User tracing on");
@@ -153,7 +135,7 @@ long crm_debugger ()
 	};
       break;
     case 'T':
-      if (internal_trace == 0 ) 
+      if (internal_trace == 0 )
 	{
 	  internal_trace = 1 ;
 	  fprintf (stderr, "Internal tracing on");
@@ -198,7 +180,7 @@ long crm_debugger ()
 		  {
 		    fprintf (stderr, "%c", csl->filetext[j]);
 		  };
-		
+
 	      };
 	  }
 	else
@@ -234,7 +216,7 @@ long crm_debugger ()
 		nextstmt = vht[vindex]->linenumber;
 	      };
 	  };
-	if (nextstmt <= 0) 
+	if (nextstmt <= 0)
 	  {
 	    nextstmt = 0;
 	  }
@@ -278,7 +260,7 @@ long crm_debugger ()
 		breakstmt = vht[vindex]->linenumber;
 	      };
 	  };
-	if (breakstmt  <= -1) 
+	if (breakstmt  <= -1)
 	  {
 	    breakstmt = 0;
 	  }
@@ -291,12 +273,12 @@ long crm_debugger ()
 	csl->mct[breakstmt]->stmt_break = 1 - csl->mct[breakstmt]->stmt_break;
 	if (csl->mct[breakstmt]->stmt_break == 1)
 	  {
-	    fprintf (stderr, "Setting breakpoint at statement %ld\n", 
+	    fprintf (stderr, "Setting breakpoint at statement %ld\n",
 		     breakstmt);
 	  }
 	else
 	  {
-	    fprintf (stderr, "Clearing breakpoint at statement %ld\n", 
+	    fprintf (stderr, "Clearing breakpoint at statement %ld\n",
 		     breakstmt);
 	  };
       }
@@ -308,7 +290,7 @@ long crm_debugger ()
 	long vstart, vlen;
 	long vindex;
 	long ostart, oend, olen;
-	crm_nextword (&inbuf[1], strlen (&inbuf[1]), 0, 
+	crm_nextword (&inbuf[1], strlen (&inbuf[1]), 0,
 		      &vstart, &vlen);
 	memmove (inbuf, &inbuf[1+vstart], vlen);
 	inbuf[vlen] = '\000';
@@ -317,7 +299,7 @@ long crm_debugger ()
 	  {
 	    fprintf (stderr, "No variable '%s' in this program.  ", inbuf);
 	  }
-	
+
 	//     now grab what's left of the input as the value to set
 	//
 	ostart = vlen + 1;
@@ -326,7 +308,7 @@ long crm_debugger ()
 	oend = ostart + 1;
 	while (inbuf[oend] != '/' && inbuf[oend] != '\000') oend++;
 
-	memmove (outbuf, 
+	memmove (outbuf,
 		 &inbuf[ostart],
 		 oend - ostart);
 
@@ -376,4 +358,3 @@ long crm_debugger ()
     };
   goto debug_top;
 }
-

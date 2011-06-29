@@ -1,8 +1,12 @@
-#!/usr/bin/crm
+#! /usr/bin/crm
 #
+#	isolate_reclaim_test.crm - test reclamation of ISOLATEd variables
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
+
 #     Test the reclamation of ISOLATEd variables.
-#
-#
 window
 isolate (:l:) //
 alter (:_dw:) /foo bar baz/

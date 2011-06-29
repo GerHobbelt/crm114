@@ -9,7 +9,7 @@ Source0: http://crm114.sourceforge.net/%{name}-%{version}.src.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 BuildPreReq: tre-devel
 
-%description 
+%description
 
 CRM114 is a system to examine incoming e-mail, system log streams,
 data files or other data streams, and to sort, filter, or alter the
@@ -25,7 +25,7 @@ Rule evaluator, or by other means.
 %build
 make INSTALL_DIR=$RPM_BUILD_ROOT%{_bindir}
 
-%clean 
+%clean
 rm -rf $RPM_BUILD_ROOT
 
 %install
@@ -47,10 +47,10 @@ make BINDIR=${RPM_BUILD_ROOT}%{_bindir} install
 - License is GPL, not Artistic, so I corrected that.
 
 * Sat Dec 13 2003 Kevin Fenzi <kevin-crm114@tummy.com>
-- Converted line endings from dos format to unix. 
-- Changed BuildPreReq to be 'tre-devel' 
-- Fixed install to install into rpm build root. 
-- tested on redhat 9 with latest tre. 
+- Converted line endings from dos format to unix.
+- Changed BuildPreReq to be 'tre-devel'
+- Fixed install to install into rpm build root.
+- tested on redhat 9 with latest tre.
 
 * Tue Oct 22 2003 Nico Kadel-Garcia <nkadel@merl.com>
 - Created RedHat compatible .spec file

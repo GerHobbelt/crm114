@@ -1,29 +1,32 @@
-#!/usr/bin/crm
+#! /usr/bin/crm
 #
-#          gatlingsort.crm - Copyright W. S. Yerazunis, 2006
-#
-#   Usage:  
+#	gatlingsort.crm - composite text classifier
+
+# Copyright 2006-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
+#   Usage:
 #        gatlingsort.crm < text                     = classifies
 #        gatlingsort.crm --class=classname < text   = learn
 #
-#     Gatlingsort is a composite text classifier.  It combines a user-chosen 
+#     Gatlingsort is a composite text classifier.  It combines a user-chosen
 #     set of filters to form a composite filter which is (hopefully) more
 #     accurate than any of the individual filters, and also a user-chosen
-#     set of output possibilities rather than just the two of "good" and 
-#     "spam".  
+#     set of output possibilities rather than just the two of "good" and
+#     "spam".
 #
 #     The controlling data is two strings: one is the list of different
-#     categories (without file extensions) and their usage parameters, 
-#     the other is the list of classifier parameter sets to use 
+#     categories (without file extensions) and their usage parameters,
+#     the other is the list of classifier parameter sets to use
 #     (classifier flags, regexes, and output weights).
 #
-#     The algorithm is simple: each of the filters in filterset is 
+#     The algorithm is simple: each of the filters in filterset is
 #     invoked with each of the N class possibilities.  The resulting
-#     pRs are then weighted by the output weights of each classifier, 
+#     pRs are then weighted by the output weights of each classifier,
 #     and the weighted votes tallied.  There are separate votes for
 #     "best match" and "positive pR" - the difference being
 #     that there is always one class that has the best pR, but may not
-#     be any class with positive pR.  
+#     be any class with positive pR.
 #
 #     In any case, the class with the highest total votes wins.
 #
@@ -63,7 +66,7 @@ isolate <default> (:class:) //
 		#output /\n\nFirst Pass Done, now Learning \n\n/
 
 		#    Now use :classifier_outputs: to control learning.
-		call /:gatlinglearn:/ 
+		call /:gatlinglearn:/
 	}
 	{
 		call /:gatlingsort:/  (:h_results:)
@@ -88,10 +91,10 @@ exit
 #
 #  What classifiers to use.  This is a struct - each parenthesized grouping
 #   must contain the <flags> in angle brackets, then the weighting, then
-#    the training thickness, and then finally the files including the 
+#    the training thickness, and then finally the files including the
 #     vertical bar, one per line.
 
-#   Classifier Flags          Weight     Thresh   File Ext. 
+#   Classifier Flags          Weight     Thresh   File Ext.
 isolate <default> (:classifiers:) / \
    < hyperspace  >               0.7       0.5      .hyp    \
    < hyperspace unique >         0.7       0.25     .hypu   \
@@ -105,20 +108,20 @@ isolate <default> (:classifiers:) / \
    /
 
 #     To take a classifier offline, cut and paste it's line here.
-#     These classifiers are ignored.  The reason to cut and paste 
+#     These classifiers are ignored.  The reason to cut and paste
 #     the line here, rather than just deleting the line, is that way
 #     it's easy to undo your changes.
 isolate <default> (:unused_classifiers:) /\
    /
 
 #    Winnow needs DSTTTR and that's harder to code just now.
-#  ( < winnow unique microgroom > .win 0.3 ) 
+#  ( < winnow unique microgroom > .win 0.3 )
 
 
 #   What classes to sort into.  This is also a parenthesized list.
 #   Each group contains four elements - the class name WITHOUT
 #   any file extension (we add the file extensions from the classifiers
-#   list to form statistics filenames), then the subject title tag to 
+#   list to form statistics filenames), then the subject title tag to
 #   add, the decimal exit code to exit with (usually zero), the initial
 #   bias for this class (again, usually zero).
 
@@ -127,8 +130,8 @@ isolate <default> (:classes:) / \
    ( spam      ADV:    0  0.0 ) \n \
    /
 
-#     To take a class 'offline', you can just move it's line here, 
-#     into :unused_classes: .  These classes are totally ignored, 
+#     To take a class 'offline', you can just move it's line here,
+#     into :unused_classes: .  These classes are totally ignored,
 #     but by keeping them here, you can cut and paste them up into
 #     :classes: or back down here easily.
 isolate <default> (:unused_classes:) / \
@@ -139,13 +142,13 @@ isolate <default> (:unused_classes:) / \
    ( business  WORK:   0  0.0 ) \n \
    ( emergency MAYDAY: 0  0.0 ) \n \
    /
-   
+
 #    What's our limit beyond which we don't run any other classifiers?
-#    
+#
 #    Use these to tradeoff for speed:
 #isolate <default> (:gatling_limit:) /6.0/
 #isolate <default> (:gatling_margin:) /5.0/
-#     
+#
 #    Use these to tradeoff for maximum accuracy:
 isolate <default> (:gatling_limit:) /100/
 isolate <default> (:gatling_margin:) /100/
@@ -155,7 +158,7 @@ isolate <default> (:gatling_margin:) /100/
 isolate (:co:) /:/
 # output /starting\n/
 
-#    Now do the cross product of classifiers and classes, with 
+#    Now do the cross product of classifiers and classes, with
 #    "classify" as an operator.
 isolate (:classifier_outputs:) //
 isolate (:clout:)
@@ -167,7 +170,7 @@ match [:classifiers:] //  # reset to start of classifiers
 	    /<([^>]+)>[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)[[:space:]]+([[:graph:]]+)/
 	 # output /Classifier :*:lclf: with ext ":*:lext:" weight :*:lwt:\n /
 	 #output / across classes: :*:classes: \n/
-    match [ :classes: ] // 
+    match [ :classes: ] //
     isolate (:statfiles:) //
     {
 	#    Iterate over the classnames
@@ -182,7 +185,7 @@ match [:classifiers:] //  # reset to start of classifiers
 	{
 	    isolate (:filetoucher:)
 	    syscall /ls -la :*:classname::*:lext:/ () (:filetoucher:)
-	    match <absent> [:filetoucher:] /:*:classname:/ 
+	    match <absent> [:filetoucher:] /:*:classname:/
 	    input [:*:classname:.txt] (:filetoucher:)
 	    output /Initialize: creating :*:classname::*:lext: from .txtfile\n/
 	    learn < :*:lclf: > ( :*:classname::*:lext: ) [:filetoucher:]
@@ -212,7 +215,7 @@ match [:classifiers:] //  # reset to start of classifiers
 	#    Get the vote-weight of this classifier
 	match [:classifiers_doppelganger:] (:: :voteweight: )  \
 	 /([[:graph:]]+)[[:space:]]+[[:graph:]]+[[:space:]]+\.:*:ext:/
-	#output / classifier :*:ext: has weight :*:voteweight: \n/       
+	#output / classifier :*:ext: has weight :*:voteweight: \n/
 	eval (:curvotes:) /:@: :*:curvotes: + :*:voteweight: :/
 	#output /  class :*:classname: now has :*:curvotes: votes.\n/
 	{
@@ -224,7 +227,7 @@ match [:classifiers:] //  # reset to start of classifiers
     }
     #
     #      And now check to see if the leading class is over :gatling_limit:
-    #      worth of votes and above :gatling_margin: over the nearest 
+    #      worth of votes and above :gatling_margin: over the nearest
     #      competitor:
     {
 	match [:classes:] //
@@ -286,7 +289,7 @@ isolate (:besttag:)  //
 	alter (:besttag:) /:*:tag:/
     }
     liaf
-}	
+}
 
 alter (:classes:) /Best match is to class :*:bestclass: with score: :*:bestscore: headertag: :*:besttag: retcode: :*:retcode: \n:*:classes:/
 return /:*:classes:/
@@ -298,17 +301,17 @@ return /:*:classes:/
 #                Gatling Learner
 #
 :gatlinglearn: (:gatlinglearn_args:)
-{		
+{
     # go through each set of classifier results and if the
     # winner of a class wasn't the trained class, we train it
-    # in.  		
+    # in.
     match // [:classifier_outputs:]   #  restart matching
     #output /:*:classifier_outputs:\n/
     #output /Learn mode.\n/
     {
 	match <fromend nomultiline> [:classifier_outputs:] \
 		( :: :bestfile: :pr: ) \
-		/^Best match to file \#[0-9]+ \(([[:print:]]+)\) prob: [-+.0-9e]+  pR: ([-+.0-9]+)/ 
+		/^Best match to file \#[0-9]+ \(([[:print:]]+)\) prob: [-+.0-9e]+  pR: ([-+.0-9]+)/
 
 	#output /Best match was to: :*:bestfile: at pR :*:pr:\n/
 	{
@@ -326,14 +329,14 @@ return /:*:classes:/
 		}
 		goto /:no_retrain:/
 	    }
-	    #   No, it wasn't right at all.  Train it in.  
+	    #   No, it wasn't right at all.  Train it in.
 	    #   first, find the classifier params for this file ext.
             alius
 	    {
 		match [:bestfile:] /.*\.(.*)/ (:: :file_ext:)
 		match [:classifiers:] \
 		/<([^>]+)>[[:space:]]+[[:graph:]]+[[:space:]]+([[:graph:]]+)[[:space:]]+\.:*:file_ext: / \
-		(:: :training_flags: :thresh:) 
+		(:: :training_flags: :thresh:)
 		output /***WRONGCLASS LEARN*** ":*:file_ext:" <:*:training_flags:> \n/
                 goto /:retrain:/
 	    }
@@ -344,7 +347,7 @@ return /:*:classes:/
  		learn <:*:training_flags:> (:*:class:.:*:file_ext:)
 	    }
 	   :no_retrain:
-	}		
+	}
 	liaf
     }
 }

@@ -1,6 +1,10 @@
+#
+#	things_to_do.txt - Things To Do in CRM114 (rough priority list)
+#
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 		Things To Do in CRM114 (rough priority list)
-
-
 
 1) redirect OUTPUT  (DONE!)  "output <flags> (filename) /interp_val/
 
@@ -14,7 +18,7 @@
 
 4) write ALTER  ( DONE!!)
 
-12) make <flags> and (vars) optional, rather than having matches 
+12) make <flags> and (vars) optional, rather than having matches
     wierdly succeed if they aren't present.  ( DONE! )
 
 3) write LEARN and CLASSIFY  (DONE!)
@@ -26,10 +30,10 @@
     do the work. (  DONE!!!)
 
 16) let WINDOW check for match by character, newline, or eof (flags
-    (with flags "bychar", "byline", and "byeof").  (DONE except for 
+    (with flags "bychar", "byline", and "byeof").  (DONE except for
      some skankyness when doing bychar on a TTY)
 
-5) allow MATCH on variables or other files.  (: means var, otherwise 
+5) allow MATCH on variables or other files.  (: means var, otherwise
    it's a file?  Or should we have an explicit flag for other-than-input?)
    ( DONE!!! )
 
@@ -58,12 +62,12 @@
 10) allow command-line program input {execute anything inside curly braces}
     ( DONE!!! )
 
-17) fix memory leak in INPUT...  make it an ALTER.  ( DONE!!! )  
+17) fix memory leak in INPUT...  make it an ALTER.  ( DONE!!! )
 
 * Make a reasonable way to to keep an "SYSCALL" process around, so the exec
   process retains useful state.  (DONE!!!)
 
-* Fix bug in output so that a /'ed filename isn't taken as the output 
+* Fix bug in output so that a /'ed filename isn't taken as the output
   pattern.  ( DONE !!!!)
 
 * Fix bug in output to allow appending to a file with a  " +" on the filename.
@@ -74,10 +78,10 @@
 ***** FRESHMEAT release here *****
 
 * have previous match start and end points be part of the variable being
-  matched against, not against the buffer (cdw or tdw) being matched 
+  matched against, not against the buffer (cdw or tdw) being matched
   against. ( DONE!!!)
 
-* maybe make a builtin variable for the entire data window, maybe 
+* maybe make a builtin variable for the entire data window, maybe
   call it :_dw: ?  Make :_dw: the default matched
   variable.   ( DONE !!!)
 
@@ -100,7 +104,7 @@
 * let INPUT specify a file, rather than the kludge of "cat myfile.txt",
   which is also a kludge.  (DONE!!!)
 
-* Add "union" and "intersection" operators (partially as a workaround of 
+* Add "union" and "intersection" operators (partially as a workaround of
   the bug in the Gnu Regex library that causes patterns of the form
   ".*literal" to fail when line-spanning is turned on and the searched
   string is more than 20479 characters long (ask how I found that bug!)
@@ -111,7 +115,7 @@
 * Make a real Bison-type parser (optional).  (SORTA DONE!)
 
 8) come up with generalized flag finder for match, output, etc.
-   (nonpositional parser?)  Issue: what about giving an error on a 
+   (nonpositional parser?)  Issue: what about giving an error on a
    nonrecognized flag?  The current nonpositional finder just ignores them.
    ( DONE!!! )
 
@@ -146,7 +150,7 @@
 
 34) Decide to change #insert to just plain "insert" .  (***DONE***)
 
-39) add "kalman-belly-gaze" mode to autotrain on some fraction of the 
+39) add "kalman-belly-gaze" mode to autotrain on some fraction of the
 processed but unverified text.  Definitely need to flag this forward
 to the user so the user can detrain.  (***DONE***)
 
@@ -173,7 +177,7 @@ the actual is way below the expected, throw a fault.  (*** SUBSUMED *** -
 the :stat: variable now has the actual feature counts, and so the user
 can make their own decision)
 
-49) have the preprocessor set the line number so that sometnhing more 
+49) have the preprocessor set the line number so that sometnhing more
 than "line 0" can be reported.  (if possible).   (***DONE***)
 
 51) upgrade the .css files to have 32-bit ceilings and crosscut hashing to
@@ -185,7 +189,7 @@ armoring, so features can be seen in CLASSIFY. (*** DONE *** via rewrites.mfp)
 
 50) fix TRAP so that it doesn't run the trap statement until
 it's sure that it can catch the trap.  (in other words, don't run the statement
-evaluator.  The reason for this is that nonfatals which would have been 
+evaluator.  The reason for this is that nonfatals which would have been
 simply continued from the current statement now don't trap right.)
 (*** DONE ***)
 
@@ -214,14 +218,14 @@ does the assignment)  (***DONE***)
 file?  from a variable?)  (***DONE***)
 
 58) WINDOW should take an input (:var:) as source and modify a [:var:].
-See #54  (***DONE***) 
+See #54  (***DONE***)
 
-23) let INPUT keep around a file that's already been partially read. 
+23) let INPUT keep around a file that's already been partially read.
     (*** DONE *** - well, obviated, because you can now do random access
     reads and writes)
 
 59) Put in "fseek" operators into INPUT and OUTPUT - but this needs
-a design - how do you delineate the fseeks?  How do you have them 
+a design - how do you delineate the fseeks?  How do you have them
 compatible with substring operators in EVAL? (***DONE***)
 
 61) Come up with useful semantics of CALL, ROUTINE, and RETURN.  Should
@@ -235,7 +239,7 @@ a contributor)
 69) refactor crm_expandvar.c into a single stream  (***DONE***)
 
 70) incorporate ** or $ or % or somesuch double-dereference (i.e. this
-var holds the name of the var that holds the actual data - needed for 
+var holds the name of the var that holds the actual data - needed for
 subroutines to have call-by-name work right)  (***DONE***  - the :+:
 now does this)
 
@@ -251,14 +255,14 @@ to retarget to other OSes.  (***DONE***)
 *********************************************************************
 
 
-14) write PERM (for now though, you can just exec cat >> them into a file, 
+14) write PERM (for now though, you can just exec cat >> them into a file,
     then suck 'em back in again.. so this isn't really all that much more
     powerful.)    (Held in consideration...)
 
 26) consider making the sizes of data windows and pattern buffers autosizing,
     so you can never "run out".
 
-27) let INPUT use regexes to determine "end of input". 
+27) let INPUT use regexes to determine "end of input".
 
 28)  Add the proper hooks so that GDB et al can look at the executing process.
 
@@ -273,7 +277,7 @@ to retarget to other OSes.  (***DONE***)
 36) 8-bit-safe the program variable names
 
 38) Mailfilter: send bounce messages when mailfilter rejects something???
- 
+
 40)  use 1/tokencount and 1-(1/tokencount) for probabilities.
 (or something from the Gary Robinson article)
 
@@ -298,7 +302,7 @@ this on. (trade off longer compile time for faster run time).
 
 63) Add -vv to print out compile-time configuration information.
 
-64) modify crm_setvar so it takes an optional VHT index, to save 
+64) modify crm_setvar so it takes an optional VHT index, to save
 double lookups.
 
 65) Abstract out mapping files & add cacheing.

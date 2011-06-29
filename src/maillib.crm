@@ -1,10 +1,9 @@
-#  maillib.crm - handy library for mail whacking - wsy 2006
-#   
-#    Copyright (C) 2002-2006 William S. Yerazunis; licensed under the
-#    GNU Public License (GPL) version 2.  A copy of this license is included
-#    in the distribution media, or obtain one from www.fsf.org .
+#! /usr/bin/crm
 #
+#	maillib.crm - handy library for mail whacking
 
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
 
 ##########################################################
 #
@@ -16,7 +15,7 @@
 #        nothing.  This routine ONLY sets up variables from the .cf file
 #
 ###########################################################
-#  
+#
 #       Load in the specified .cf file.  The .cf file needs
 #      to be in the format
 #      :varname: /value/
@@ -32,9 +31,9 @@
     isolate (:option_txt:)
     isolate (:ev:)
     isolate (:verbose_startup:)
-    #   
+    #
     #    Part 1  - read in the options/configuration file
-    #	
+    #
     {
         {
                 match <absent> [:cf_filename:] /.+/
@@ -53,7 +52,7 @@
 		match < fromend nomultiline > (:line: :name: :value:) \
 		  [:option_txt:]  /^[ ]*(:[[:graph:]]+:)[ \t]+\/(.*)\//
 		{
-			#    don't execute the assign if there's 
+			#    don't execute the assign if there's
 			#    a # at the start of the line.
 			match <absent> [:name:] /^\x23/
 			{
@@ -64,7 +63,7 @@
 			isolate (:*:name:) /:*:value:/
 		}
 		liaf
-	} 
+	}
 }
 #    All done, return.
 return
@@ -87,11 +86,11 @@ return
 
 :mail_preprocess:  (:mutilation_input:)
 
-#    
+#
 #      We take the input and create a mutilated, annotated copy
-#      of the incoming text.  The mutilations are defined by 
+#      of the incoming text.  The mutilations are defined by
 #      whatever the .cf file has set up.
-#      will become an annotated _copy_  of the incoming text, 
+#      will become an annotated _copy_  of the incoming text,
 #      with whatever changes we think will help us classify better.
 #
 #      We clip m_text to be the first :decision_length: characters of
@@ -103,7 +102,7 @@ isolate (:m_text:)
 #      :b_text: is the text with base64's expanded.
 isolate (:b_text:) /:*:m_text:/
 #
-#      :i_text: is the text with Hypertextus Interruptus removed. 
+#      :i_text: is the text with Hypertextus Interruptus removed.
 isolate (:i_text:) /:*:m_text:/
 #
         isolate (:commentbin:) //
@@ -127,20 +126,20 @@ isolate (:i_text:) /:*:m_text:/
 	    #    expanded, no matter what the type.  Maybe
 	    #    someday someone will put in a lockout for
 	    #    things like .jpg files, .doc files, etc.
-	    # 
+	    #
 	    match [:m_text:] <nocase> (:a: :h: :b:) \
 		    /(Content-Transfer-Encoding): base64(.*)/
 	    match (:c:) [:b:]  \
 		    /([a-zA-Z0-9+=!\/]+:*:_nl:){2,200}/
 	    isolate (:exp_text:) //
 	    syscall (:*:c:) (:exp_text:) /:*:mime_decoder: /
-	    
+
 	    #   and stuff the result back into m_text for
 	    #   classification right in context.
 	    alter (:c:) /:*:exp_text:/
 	    #   and mark this piece of mime as "prior".
 	    alter (:h:) /Content-Transfer-Prior-Encoding/
-	    #   repeat till no more Mime base64 encodings 
+	    #   repeat till no more Mime base64 encodings
 	    liaf
 	}
     }
@@ -149,7 +148,7 @@ isolate (:i_text:) /:*:m_text:/
     #   Expansion 2 - fetch and insert URLs into the stream for further
     #   analysis.  BUG NOTE: as originally written, this was fully recursive
     #   without limit, and might concieveably spider the entire web.  The
-    #   EVAL statement limits total fetched length to not more than 
+    #   EVAL statement limits total fetched length to not more than
     #   one fetch more than :decision_length:
 
     {
@@ -160,12 +159,12 @@ isolate (:i_text:) /:*:m_text:/
 	    syscall /:*:url_fetch_cmd: :*:url: | :*:url_trim_cmd: / \
 		    () (:wget_output:)
 	    alter (:url:) /:*:url:\n  :*:wget_output:  \n/
-	    eval /:@: :#:m_text: < (:*:decision_length: / 4) :/
+	    eval /:@: :#:m_text: < (:*:decision_length: \/ 4) :/
 	    liaf
 	}
     }
 
-    #   expansion 3 :  do we bust HTML comments ( a.k.a. 
+    #   expansion 3 :  do we bust HTML comments ( a.k.a.
     #    hypertextus interruptus) out?
     {
 	match [:undo_interruptus:] /yes/
@@ -198,10 +197,10 @@ isolate (:i_text:) /:*:m_text:/
       /:*:m_text: \n :*:commentbin: \n\n/
 }
 
-#########################################################   
+#########################################################
 #
-#   Do we want to do any rewrites before running?  
-#    
+#   Do we want to do any rewrites before running?
+#
 {
    match [:rewrites_enabled:] /yes/
 #
@@ -216,7 +215,7 @@ isolate (:i_text:) /:*:m_text:/
    #
    #
    {
-       #    Grab the next regex; turn the one-per-line patterns into a 
+       #    Grab the next regex; turn the one-per-line patterns into a
        #    regex and a replacement string.
        #    First, do the line-spanning regexes.
        match <fromend nomultiline> (:ch: :fr1: :to:) [:rewrites:] /(.+)>-->(.*)/
@@ -377,7 +376,7 @@ return
 	#    no such header.  make one.
 	call /:mungmail_add:/ [:*:header: (:*:comment:)]
     }
-}	
+}
 return
 
 #
@@ -466,7 +465,7 @@ return
 return
 
 #
-#      Put some text into the cache; 
+#      Put some text into the cache;
 #      side effect:
 #      variable :reaver_cacheid: to the filename (no directory)
 #      variable :long_cacheid: is set to the file alone (no directory) name
@@ -500,7 +499,3 @@ trap (:broken_program_message:) /.*/
         output [stderr] /ERROR: :*:broken_program_message:/
 }
 exit /:*:program_fault_exit_code:/
-
-
-
-

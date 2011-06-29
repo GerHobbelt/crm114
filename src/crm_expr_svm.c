@@ -1,27 +1,19 @@
-//  crm_svm.c  - version v1.0
-//
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-///////////////////////////////////////////////////////////////////////////
-//
+//	crm_svm.c - Support Vector Machine
+
+////////////////////////////////////////////////////////////////////////
 //    This code is originally copyright and owned by William
 //    S. Yerazunis.  In return for addition of significant derivative
 //    work, Yimin Wu is hereby granted a full unlimited license to use
 //    this code, includng license to relicense under other licenses.
+////////////////////////////////////////////////////////////////////////
 //
-///////////////////////////////////////////////////////////////////////
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
-//
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
-#include <math.h>
+
+//  crm_expr_sks.c specific system include file
 #include <time.h>
 
 //  include any local crm114 configuration file
@@ -33,68 +25,49 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-
-#include <stdlib.h>
-#include <stdio.h>
-
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
+//    the globals used when we need a big buffer  - allocated once, used
 //    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
 extern char *tempbuf;
 
-//    The following sqrtf mumbojumbo because ppc_osx doesn't define sqrtf
-//    like it should.
-#ifndef sqrtf
-#define sqrtf(x) sqrt((x))
-#endif
-
-//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 //
-//                  Support Vector Machine (SVM) Classification 
+//                  Support Vector Machine (SVM) Classification
 //
 //    This is an implementation of a support vector machine classification.
-//    The current version only implement one type of SVM called C-Support 
-//    Vector Classification (C-SVC, Boser et al., 1992; Cortes and Vapnik, 
-//    1995). 
+//    The current version only implement one type of SVM called C-Support
+//    Vector Classification (C-SVC, Boser et al., 1992; Cortes and Vapnik,
+//    1995).
 //
-//    The dual formulation of C-SVC is to find  
+//    The dual formulation of C-SVC is to find
 //
 //	      min     0.5 ( \alpha^T Q \alpha) - e^T \alpha
 //
 //	subject to    y^T \alpha = 0
 //		      y_i = +1 or -1
-//		      0 <= alpha_i <= C, i=1,...,sizeof(corpus). 
-//          	       
-//    Where "e" is the vector of all ones, 
-//       Q is the sizeof(corpus) by sizeof(corpus) matrix containing the
-//         calculated distances between any two documents (that is, 
-//           Q_ij = y_i * y_j * kernel(x_i, x_j) which may be HUGE and so
-//           we only calculate part of it at any one time.  
-//       x_i is the feature vector of document i.      
+//		      0 <= alpha_i <= C, i=1,...,sizeof(corpus).
 //
-//    The decision function is 
-//             
+//    Where "e" is the vector of all ones,
+//       Q is the sizeof(corpus) by sizeof(corpus) matrix containing the
+//         calculated distances between any two documents (that is,
+//           Q_ij = y_i * y_j * kernel(x_i, x_j) which may be HUGE and so
+//           we only calculate part of it at any one time.
+//       x_i is the feature vector of document i.
+//
+//    The decision function is
+//
 //           sgn (sum(y_i * \alpha_i * kernel(x_i, x)) + b)
-// 
+//
 //     In the optimization, we set the kernel parameters at the start and
 //     then modify only the weighting parameters till it (hopefully) converges.
 
-////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 //
 //                   SMO-type Decomposition Method
 //
-//    Here we used SMO-type decomposition method ( Platt, 1998) to solve 
+//    Here we used SMO-type decomposition method ( Platt, 1998) to solve
 //    the quadratic optimization problem --dual formulation of C-SVC, using
-//    the method of Fan, Chen, and Lin ("Working Set Selection using Second 
-//    Order Information for Training Support Vector Machines", 2005) 
+//    the method of Fan, Chen, and Lin ("Working Set Selection using Second
+//    Order Information for Training Support Vector Machines", 2005)
 //    to select the working set.
 //
 
@@ -110,14 +83,8 @@ extern char *tempbuf;
 //    Tau is a small minimum positive number (divide-by-zero noodge)
 #define TAU 1e-12
 
-//    We use the same old hyperspace structures for the intermediate storage.
-typedef struct mythical_hyperspace_cell {
-  unsigned long hash;
-  // unsigned long key;
-} HYPERSPACE_FEATUREBUCKET_STRUCT;
-  
 
-//     Parameter block to control the SVM solver.  
+//     Parameter block to control the SVM solver.
 //
 typedef struct mythical_svm_param {
   int svm_type;
@@ -127,9 +94,9 @@ typedef struct mythical_svm_param {
   double C;                   // parameter in C_SVC
   double nu;                  // parameter for One-class SVM
   double max_run_time;        // time control for microgroom (in seconds).
-                              // If computing time exceeds max_run_time, 
-                              // then start microgrooming to delete the 
-                              //  documents far away from the hyperplane. 
+                              // If computing time exceeds max_run_time,
+                              // then start microgrooming to delete the
+                              //  documents far away from the hyperplane.
   int shrinking;        // use the shrinking heuristics, isn't available now
 } SVM_PARAM;
 
@@ -139,8 +106,8 @@ typedef struct mythical_svm_param {
 typedef struct mythical_svm_problem {
   int l;          //number of documents
   int *y;         //label of documents -1/+1
-  HYPERSPACE_FEATUREBUCKET_STRUCT **x;   //  x[i] is the ith document's 
-                                         //  feature vector
+  unsigned int **x;   //  x[i] is the ith document's
+                      //  feature vector
 } SVM_PROBLEM;
 
 //    A structure to hold the cache node - these hold one row worth of
@@ -162,7 +129,7 @@ typedef struct mythical_cache {
 } CACHE;
 
 //   This stores the result - alpha is the weighting vector (what we are
-//   searching for) and 
+//   searching for) and
 //
 typedef struct mythical_solver{
   double *alpha;
@@ -178,42 +145,11 @@ static CACHE svmcache;
 static float *DiagQ;     //diagonal Qmatrix
 static SOLVER solver;
 
-////////////////////////////////////////////////////////////////////
-//
-//     the hash coefficient table (hctable) should be full of relatively
-//     prime numbers, and preferably superincreasing, though both of those
-//     are not strict requirements.
-//
-static long hctable[] =
-    { 1, 7,
-      3, 13,
-      5, 29,
-      11, 51,
-      23, 101,
-      47, 203,
-      97, 407,
-      197, 817,
-      397, 1637,
-      797, 3277 };
-
 static int hash_compare (void const *a, void const *b)
 {
-  HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
-  pa = (HYPERSPACE_FEATUREBUCKET_STRUCT *) a;
-  pb = (HYPERSPACE_FEATUREBUCKET_STRUCT *) b;
-  if (pa->hash < pb->hash)
-    return (-1);
-  if (pa->hash > pb->hash)
-    return (1);
-  return (0);
-}
-
-//   Compare two integers when all we have are void* pointers to them
-static int int_compare (void const *a, void const *b)
-{
-  int *pa, *pb;
-  pa = (int *) a;
-  pb = (int *) b;
+  unsigned int *pa, *pb;
+  pa = (unsigned int *) a;
+  pb = (unsigned int *) b;
   if (*pa < *pb)
     return (-1);
   if (*pa > *pb)
@@ -221,7 +157,16 @@ static int int_compare (void const *a, void const *b)
   return (0);
 }
 
-//  Compare ids of documents according to its decision value (decending 
+//   Compare two integers when all we have are void* pointers to them
+static int int_compare (void const *a, void const *b)
+{
+  // We can do this because the data types all match.
+  // The two numbers being compared, the value of this expression,
+  // and the return value of this function are all int.
+  return (*(int *)a - *(int *)b);
+}
+
+//  Compare ids of documents according to its decision value (decending
 //  absolute value), which is used for microgrooming
 static int descend_int_decision_compare(void const *a, void const *b)
 {
@@ -235,27 +180,28 @@ static int descend_int_decision_compare(void const *a, void const *b)
   return (0);
 }
 
-///////////////////////////////////////////////////////////////////////////
-// 
+////////////////////////////////////////////////////////////////////////
+//
 //     Cache with least-recent-use strategy
 //     This will be used to store the part of the Q matrix that we know
 //     about.  We recalculate parts as needed... this lets us solve the
-//     problem without requiring enough memory to build the entire Q 
+//     problem without requiring enough memory to build the entire Q
 //     matrix.
 //
 
-static void cache_init ( int len, long size, CACHE *svmcache) 
+static void cache_init ( int len, long size, CACHE *svmcache)
 {
   svmcache->l = len;
   svmcache->size = size;
   svmcache->head = (CACHE_NODE *)calloc(len, sizeof(CACHE_NODE));
+  // ??? size is local (arg) and not used again, so why mess with it?
   size /= sizeof(float);
-  size -= len * (sizeof(CACHE_NODE)/sizeof(float));
-  if(size < (2 * len)) 
-    size = 2 * len;       //   cache size must at least 
+  size -= len * (sizeof(CACHE_NODE)/sizeof(float));	// ???
+  if(size < (2 * len))
+    size = 2 * len;       //   cache size must at least
                           //   as large as two columns of Qmatrix
-  (svmcache->lru_headnode).prev 
-    = (svmcache->lru_headnode).next 
+  (svmcache->lru_headnode).prev
+    = (svmcache->lru_headnode).next
     = &(svmcache->lru_headnode);
 }
 
@@ -265,8 +211,8 @@ static void cache_init ( int len, long size, CACHE *svmcache)
 static void cache_free(CACHE *svmcache)
 {
   CACHE_NODE *temp;
-  for(temp = (svmcache->lru_headnode).next; 
-      temp != &(svmcache->lru_headnode); 
+  for(temp = (svmcache->lru_headnode).next;
+      temp != &(svmcache->lru_headnode);
       temp = temp->next)
     free(temp->data);
   free(svmcache->head);
@@ -281,7 +227,7 @@ static void lru_delete(CACHE_NODE *h){
 }
 
 // Insert to the last position in the cache node list
-// 
+//
 static void lru_insert(CACHE_NODE *h, CACHE *svmcache)
 {
   h->next = &(svmcache->lru_headnode);
@@ -294,15 +240,15 @@ static void lru_insert(CACHE_NODE *h, CACHE *svmcache)
 //  length of cached data.  If it is smaller than the request length,
 //  then we need to fill in the uncached data.
 
-static int get_data (CACHE *svmcache, 
-		     const int doc_index, 
-		     float **data, 
+static int get_data (CACHE *svmcache,
+		     const int doc_index,
+		     float **data,
 		     int length)
 {
   int result = length;
   CACHE_NODE *doc = svmcache->head + doc_index;
   if(doc->len) lru_delete(doc); //least-recent-use strategy
-  
+
   //need to allocate more space
   if ( length > (doc->len))
     {
@@ -333,15 +279,15 @@ static int get_data (CACHE *svmcache,
 //
 static double dot(void const *a, void const *b)
 {
-  HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
+  unsigned int *pa, *pb;
   int j = 0;
   int i = 0;
   double sum = 0;
-  pa = (HYPERSPACE_FEATUREBUCKET_STRUCT *) a;
-  pb = (HYPERSPACE_FEATUREBUCKET_STRUCT *) b;
-  while(pa[i].hash != 0 && pb[j].hash != 0)
+  pa = (unsigned int *) a;
+  pb = (unsigned int *) b;
+  while(pa[i] != 0 && pb[j] != 0)
   {
-    if(pa[i].hash == pb[j].hash && pa[i].hash != 0)
+    if(pa[i] == pb[j] && pa[i] != 0)
       {
 	sum ++;
 	i++;
@@ -349,7 +295,7 @@ static double dot(void const *a, void const *b)
       }
     else
       {
-	if(pa[i].hash > pb[j].hash)
+	if(pa[i] > pb[j])
 	  j++;
 	else
 	  i++;
@@ -362,20 +308,20 @@ static double dot(void const *a, void const *b)
 //
 static double rbf ( void const *a, void const *b )
 {
-  HYPERSPACE_FEATUREBUCKET_STRUCT *pa, *pb;
+  unsigned int *pa, *pb;
   int j = 0;
   int i = 0;
   double sum = 0;
-  pa = (HYPERSPACE_FEATUREBUCKET_STRUCT *) a;
-  pb = (HYPERSPACE_FEATUREBUCKET_STRUCT *) b;
-  while(pa[i].hash != 0 && pb[j].hash != 0)
+  pa = (unsigned int *) a;
+  pb = (unsigned int *) b;
+  while(pa[i] != 0 && pb[j] != 0)
     {
-      if(pa[i].hash > pb[j].hash)
+      if(pa[i] > pb[j])
 	{
 	  sum ++;
 	  j++;
 	}
-      else if(pa[i].hash < pb[j].hash)
+      else if(pa[i] < pb[j])
 	{
 	  sum ++;
 	  i++;
@@ -386,12 +332,12 @@ static double rbf ( void const *a, void const *b )
 	  j++;
 	}
     }
-  while(pa[i].hash != 0)
+  while(pa[i] != 0)
     {
       sum ++;
       i++;
     }
-  while(pb[j].hash != 0)
+  while(pb[j] != 0)
     {
       sum ++;
       j++;
@@ -420,7 +366,7 @@ static double kernel(void const *a, void const *b)
     case RBF:
       return rbf(a,b);
     case POLY:
-      return poly(a,b);  
+      return poly(a,b);
     default:
       return 0;
     }
@@ -441,10 +387,10 @@ static float *get_rowQ(int i, int length)
       for (temp = cached; temp < length; temp++)
 	{
 	  if (param.svm_type == C_SVC)
-	    //   multiply by the +1/-1 labels (in the .y structures) to 
+	    //   multiply by the +1/-1 labels (in the .y structures) to
 	    //   face the kernel result in the right direction.
-	    rowQ[temp] = (float)svm_prob.y[i] 
-	      * svm_prob.y[temp] 
+	    rowQ[temp] = (float)svm_prob.y[i]
+	      * svm_prob.y[temp]
 	      * kernel(svm_prob.x[i],svm_prob.x[temp] ) ;
 	  else if(param.svm_type == ONE_CLASS)
 	    rowQ[temp] = (float)kernel(svm_prob.x[i],svm_prob.x[temp]);
@@ -484,7 +430,7 @@ static void Q_init()
 //		y^T \alpha = \delta
 //		y_i = +1 or -1
 //		0 <= alpha <= C
-//	       
+//
 //
 // Given:
 //
@@ -518,8 +464,8 @@ static void selectB(int workset[], int *select_times)
   G_max = - HUGE_VAL;
   for (t = 0; t < svm_prob.l; t++)
     {
-      if((((svm_prob.y[t] == 1) && (solver.alpha[t] < param.C)) 
-	  || ((svm_prob.y[t] == -1) && (solver.alpha[t] > 0))) 
+      if((((svm_prob.y[t] == 1) && (solver.alpha[t] < param.C))
+	  || ((svm_prob.y[t] == -1) && (solver.alpha[t] > 0)))
 	 && select_times[t] < 10)
 	{
 	  if(-svm_prob.y[t] * solver.G[t] >= G_max)
@@ -530,13 +476,13 @@ static void selectB(int workset[], int *select_times)
 	}
     }
   //  select j as second member of working set;
-  j = -1; 
+  j = -1;
   obj_min = HUGE_VAL;
   G_min = HUGE_VAL;
   for (t = 0; t< svm_prob.l; t++)
     {
-      if((((svm_prob.y[t] == -1) && (solver.alpha[t] < param.C)) 
-	  || ((svm_prob.y[t] == 1) && (solver.alpha[t] > 0))) 
+      if((((svm_prob.y[t] == -1) && (solver.alpha[t] < param.C))
+	  || ((svm_prob.y[t] == 1) && (solver.alpha[t] > 0)))
 	 && select_times[t] < 10)
 	{
 	  b = G_max + svm_prob.y[t] * solver.G[t];
@@ -547,17 +493,17 @@ static void selectB(int workset[], int *select_times)
 	      if(i != -1)
 		{
 		  Qi = get_rowQ(i,svm_prob.l);
-		  a = Qi[i] + DiagQ[t] 
+		  a = Qi[i] + DiagQ[t]
 		    - 2 * svm_prob.y[i] * svm_prob.y[t] * Qi[t];
 		  if (a <= 0)
 		    a = TAU;
 		  if(-(b * b) / a <= obj_min)
 		    {
 		      j = t;
-		      obj_min = -(b * b) / a;  
+		      obj_min = -(b * b) / a;
 		    }
 		}
-	      
+
 	    }
 	}
     }
@@ -578,9 +524,9 @@ static void selectB(int workset[], int *select_times)
 static void solve()
 {
   int t,workset[2],i,j, n;
-  double a, b, oldi, oldj, sum; 
+  double a, b, oldi, oldj, sum;
   float *Qi, *Qj;
-  
+
   //  Array for storing how many times a particular document has been
   //  selected in working set.
   int select_times[svm_prob.l];
@@ -600,12 +546,12 @@ static void solve()
 	solver.G[t] = -1;
       }
     }
-  else 
+  else
     if
       (param.svm_type == ONE_CLASS)
       {
 	//initialize the first nu*l elements of alpha to have the value one;
-	n = (int)(param.nu * svm_prob.l);  
+	n = (int)(param.nu * svm_prob.l);
 	for(i = 0; i < n; i++)
 	  solver.alpha[i] = 1;
 	if(n < svm_prob.l)
@@ -629,22 +575,22 @@ static void solve()
       if(j == -1)
 	break;
       //fprintf(stderr, "i=%d\tj=%d\t",i,j);
-      
+
       Qi = get_rowQ(i, svm_prob.l);
       Qj = get_rowQ(j, svm_prob.l);
-      
+
       //  Calculate the incremental step forward.
       a = Qi[i] + DiagQ[j] - 2 * svm_prob.y[i] * svm_prob.y[j] * Qi[j];
       if(a <= 0)
 	a = TAU;
       b = -svm_prob.y[i] * solver.G[i] + svm_prob.y[j] * solver.G[j];
-      
+
       //  update alpha (weight vector)
       oldi = solver.alpha[i];
       oldj = solver.alpha[j];
       solver.alpha[i] += svm_prob.y[i] * b/a;
       solver.alpha[j] -= svm_prob.y[j] * b/a;
-      
+
       //  project alpha back to the feasible region (that is, where
       //  where 0 <= alpha <= C )
       sum = svm_prob.y[i] * oldi + svm_prob.y[j] * oldj;
@@ -652,26 +598,35 @@ static void solve()
 	solver.alpha[i] = param.C;
       if (solver.alpha[i] < 0 )
 	solver.alpha[i] = 0;
-      solver.alpha[j] = svm_prob.y[j] 
+      solver.alpha[j] = svm_prob.y[j]
 	* (sum - svm_prob.y[i] * (solver.alpha[i]));
       if (solver.alpha[j] > param.C)
 	solver.alpha[j] = param.C;
       if (solver.alpha[j] < 0 )
 	solver.alpha[j] = 0;
-      solver.alpha[i] = svm_prob.y[i] 
-	* (sum - svm_prob.y[j] * (solver.alpha[j]));    
-      
+      solver.alpha[i] = svm_prob.y[i]
+	* (sum - svm_prob.y[j] * (solver.alpha[j]));
+
       //  update gradient array
       for(t = 0; t < svm_prob.l; t++)
-	{  
-	  solver.G[t] += Qi[t] * (solver.alpha[i] - oldi) 
+	{
+	  solver.G[t] += Qi[t] * (solver.alpha[i] - oldi)
 	    + Qj[t] * (solver.alpha[j] - oldj);
 	}
     }
+
+  //#define PRINT_OUT_ALPHAS 
+#ifdef PRINT_OUT_ALPHAS
+    {
+      fprintf (stderr, "Order of SVM: %d\n Weight vector: \n", svm_prob.l);
+      for (i = 0; i < svm_prob.l; i++)
+	fprintf (stderr, "   example %d weight %f\n", i, solver.alpha[i]);
+    };
+#endif
 }
 
-//    Calculate b (hyperplane offset in 
-//      SUM (y[i] alpha[i] kernel (x[i],x)) + b form) 
+//    Calculate b (hyperplane offset in
+//      SUM (y[i] alpha[i] kernel (x[i],x)) + b form)
 //       after calculating error margin alpha
 static double calc_b()
 {
@@ -736,8 +691,8 @@ static double calc_b()
 }
 
 //   Calculate the decision function
-static double calc_decision (HYPERSPACE_FEATUREBUCKET_STRUCT *x, 
-			     double *alpha, 
+static double calc_decision (unsigned int *x,
+			     double *alpha,
 			     double b)
 {
   int i;
@@ -799,7 +754,7 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
       else
 	fval += (t[i] - 1) * fApB + log(1 + exp(fApB));
     }
-  
+
   for(j = 0; j < maxiter; j++)
     {
       h11 = h22 = sigma;
@@ -823,7 +778,7 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
 	  h21 += deci_array[i] * d2;
 	  d1 = t[i] - p;
 	  g1 += deci_array[i] * d1;
-	  g2 += d1; 
+	  g2 += d1;
 	}
       // Stopping Criterion
       if ((fabs(g1) < 1e-5) && (fabs(g2) < 1e-5))
@@ -869,7 +824,7 @@ static void calc_AB(double *AB, double *deci_array, int posn, int negn)
     }
   if (j >= maxiter)
     if(user_trace)
-      fprintf(stderr, 
+      fprintf(stderr,
 	      "Reaching maximal iterations in  probability estimates\n");
   free(t);
 }
@@ -886,36 +841,33 @@ static double sigmoid_predict(double decision_value, double A, double B)
 }
 
 
-int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		       char *txtptr, long txtstart, long txtlen)
 {
-  long i, j, k, h;
+  long i, j, k;
   char ftext[MAX_PATTERN];
   long flen;
   char file1[MAX_PATTERN];
   char file2[MAX_PATTERN];
   char file3[MAX_PATTERN];
-  FILE *hashf; 
+  FILE *hashf;
   long textoffset;
-  long textmaxoffset;
-  HYPERSPACE_FEATUREBUCKET_STRUCT *hashes;  //  the hashes we'll sort 
-  long hashcounts; 
-  long cflags, eflags;
+  unsigned int *hashes;  //  the hashes we'll sort
+  long hashcounts;
+  long cflags;
   long sense;
   long microgroom;
   long unique;
-  long use_unigram_features;
   char ptext[MAX_PATTERN]; //the regrex pattern
   long plen;
   regex_t regcb;
-  regmatch_t match[5]; 
+  regmatch_t match[5];
   struct stat statbuf1;      //  for statting the hash file1
   struct stat statbuf2;      //  for statting the hash file2
-  unsigned long hashpipe[OSB_BAYES_WINDOW_LEN+1]; 
   time_t start_timer;
   time_t end_timer;
   double run_time;
-  
+
   i = 0;
   j = 0;
   k = 0;
@@ -925,14 +877,12 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //            "case" and "affirm", (both zero valued).
   //            and "microgroom" disabled.
   cflags = REG_EXTENDED;
-  eflags = 0;
   sense = +1;
   if (apb->sflags & CRM_NOCASE)
     {
       cflags = cflags | REG_ICASE;
-      eflags = 1;
       if (user_trace)
-	fprintf (stderr, "turning oncase-insensitive match\n");
+	fprintf (stderr, "turning on case-insensitive match of filenames\n");
     };
   if (apb->sflags & CRM_REFUTE)
     {
@@ -954,32 +904,22 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       if (user_trace)
 	fprintf (stderr, " enabling uniqueifying features.\n");
     };
-  
-  use_unigram_features = 0;
-  if (apb->sflags & CRM_UNIGRAM)
-    {
-      use_unigram_features = 1;
-      if (user_trace)
-	fprintf (stderr, " using only unigram features.\n");
-    };
-   
+
   //   Note that during a LEARN in hyperspace, we do NOT use the mmap of
   //    pre-existing memory.  We just write to the end of the file instead.
-  //    malloc up the unsorted hashbucket space 
-  hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, 
-		   sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT));
+  //    malloc up the unsorted hashbucket space
+  hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, sizeof (unsigned int));
   hashcounts = 0;
- 
+
   //  Extract the file names for storing svm solver.( file1.svm |
   //  file2.svm | 1vs2_solver.svm )
   crm_get_pgm_arg (ftext, MAX_PATTERN, apb->p1start, apb->p1len);
   flen = apb->p1len;
   flen = crm_nexpandvar (ftext, flen, MAX_PATTERN);
- 
+
   strcpy (ptext,
-	  "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
-  plen = strlen(ptext);   
-  plen = crm_nexpandvar (ptext, plen, MAX_PATTERN);
+	  "[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*\\|[[:space:]]*([[:graph:]]+)[[:space:]]*");
+  plen = strlen(ptext);
   i = crm_regcomp (&regcb, ptext, plen, cflags);
   if ( i > 0){
     crm_regerror ( i, &regcb, tempbuf, data_window_size);
@@ -1002,232 +942,78 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
   else
     {
-      if (ptext[0] != '\0') crm_regfree (&regcb);
       i = 0;
       while(ftext[i] < 0x021) i++;
       j = i;
       while(ftext[j] >= 0x021) j++;
       ftext[j] = '\000';
-      strcpy(file1, &ftext[i]); 
+      strcpy(file1, &ftext[i]);
       file2[0] = '\000';
       file3[0] = '\000';
     }
+  crm_regfree (&regcb);
   //    if (|Text|>0) hide the text into the .svm file
-  
+
   //     get the "this is a word" regex
   crm_get_pgm_arg (ptext, MAX_PATTERN, apb->s1start, apb->s1len);
   plen = apb->s1len;
   plen = crm_nexpandvar (ptext, plen, MAX_PATTERN);
-  
-  //   compile the word regex
-  //
-  if ( internal_trace)
-    fprintf (stderr, "\nWordmatch pattern is %s", ptext);
-  
-  i = crm_regcomp (&regcb, ptext, plen, cflags);
-  
-  if ( i > 0)
-    {
-      crm_regerror ( i, &regcb, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
-      goto regcomp_failed;
-    };
-  
-  //   Now tokenize the input text
-  //   We got txtptr, txtstart, and txtlen from the caller.
-  //
-  textoffset = txtstart;
-  textmaxoffset = txtstart + txtlen;
-  i = 0;
-  j = 0;
-  k = 0;
-  
-   //   init the hashpipe with 0xDEADBEEF 
-  for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-    {
-      hashpipe[h] = 0xDEADBEEF;
-    };
-  
-  // if [Text]>0 hide it and append to the file1
+
   if (txtlen > 0)
     {
-      while (k == 0 && textoffset <= textmaxoffset 
-	     && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT  )
-	{
-	  long wlen;
-	  long slen = textmaxoffset - textoffset;
-	  // if pattern is empty, extract non graph delimited tokens
-	  // directly ([[graph]]+) instead of calling regexec  (8% faster)
-	  if (ptext[0] != '\0')
-	    {
-	      k = crm_regexec (&regcb, &(txtptr[textoffset]),
-			       slen, 5, match, 0, NULL);
-	    }
-	  else
-	    {
-	      k = 0;
-	      //         skip non-graphical characthers
-	      match[0].rm_so = 0;
-	      while (!isgraph (txtptr[textoffset + match[0].rm_so])
-		     && textoffset + match[0].rm_so < textmaxoffset)
-		match[0].rm_so ++;
-	      match[0].rm_eo = match[0].rm_so;
-	      while (isgraph (txtptr [textoffset + match[0].rm_eo])
-		     && textoffset + match[0].rm_eo < textmaxoffset)
-		match[0].rm_eo ++;
-	      if ( match[0].rm_so == match[0].rm_eo)
-		k = 1;
-	    };
-	  if (!(k != 0 || textoffset > textmaxoffset))
-	    {
-	      wlen = match[0].rm_eo - match[0].rm_so;
-	      memmove (tempbuf, 
-		       &(txtptr[textoffset + match[0].rm_so]),
-		       wlen);
-	      tempbuf[wlen] = '\000';
-	      if (internal_trace)
-		{
-		  fprintf (stderr, 
-		   "  Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n", 
-			   i, 
-			   textoffset,
-			   (long) match[0].rm_so, 
-			   (long) match[0].rm_eo,
-			   wlen,
-			   tempbuf);
-		};
-	      if (match[0].rm_eo == 0)
-		{
-		  nonfatalerror ( "The LEARN pattern matched zero length! ",
-		       "\n Forcing an increment to avoid an infinite loop.");
-		  match[0].rm_eo = 1;
-		};
-	      
-	      //      Shift the hash pipe down one
-	      //
-	      for (h = OSB_BAYES_WINDOW_LEN-1; h > 0; h--)
-		{
-		  hashpipe [h] = hashpipe [h-1];
-		};
-	      //  and put new hash into pipeline
-	      hashpipe[0] = strnhash (tempbuf, wlen);
-	      if (internal_trace)
-		{
-		  fprintf (stderr, "  Hashpipe contents: ");
-		  for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-		    fprintf (stderr, " %lud", hashpipe[h]);
-		  fprintf (stderr, "\n");
-		};
-	      
-	      //  and account for the text used up.
-	      textoffset = textoffset + match[0].rm_eo;
-	      i++;
-	      
-	      //        is the pipe full enough to do the hashing?
-	      //  we always run the hashpipe now, even if it's
-	      //  just full of 0xDEADBEEF.  (was i >=5)
-	      if(1)
-		{
-		  unsigned long h1;
-		  unsigned long h2;
-		  long th = 0;         // a counter used for TSS tokenizing
-		  long j;
-		  //
-		  //     old Hash polynomial: h0 + 3h1 + 5h2 +11h3 +23h4
-		  //     (coefficients chosen by requiring superincreasing,
-		  //     as well as prime)
-		  //
-		  th = 0;
-		  //
-		  if (use_unigram_features == 1)
-		    {
-		      h1 = hashpipe[0];
-		      if (h1 == 0) h1 = 0xdeadbeef;
-		      h2 = 0xdeadbeef;
-		      if (internal_trace)
-			fprintf (stderr, "Singleton feature : %lud\n", h1);
-		      hashes[hashcounts].hash = h1;
-		      hashcounts++;
-		    }
-		  else
-		    {
-		      for (j = 1; 
-			   j < OSB_BAYES_WINDOW_LEN;  // OSB_BAYES_WINDOW_LEN;
-			   j++)
-			{
-			  h1 = hashpipe[0]*hctable[0] + 
-			    hashpipe[j] * hctable[j<<1];
-			  if (h1 ==0 ) h1 = 0xdeadbeef;
-			  h2 = 0xdeadbeef;
-			  if (internal_trace)
-			    fprintf (stderr, 
-				     "Polynomial %ld has h1:%lud  h2: %lud\n",
-				     j, h1, h2);
-			  
-			  hashes[hashcounts].hash = h1;
-			  hashcounts++;
-			};
-		    };
-		};
-	    } 
-	  else
-	    {
-	      if (ptext[0] != '\0') crm_regfree (&regcb);
-	      k = 1;
-	    }
-	};   //   end the while k==0
-      
+      // hack: assume stride 1
+      (void)crm_vector_tokenize_selector(apb,
+					 txtptr, txtstart, txtlen,
+					 ptext, plen,
+					 NULL, 0, 0,
+					 hashes, HYPERSPACE_MAX_FEATURE_COUNT,
+					 &hashcounts,
+					 &textoffset);
+      // ??? error?
+
       //   Now sort the hashes array.
       //
-      qsort (hashes, hashcounts, 
-	     sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT),
-	     &hash_compare);
-      
+      qsort (hashes, hashcounts, sizeof (unsigned int), &hash_compare);
+
       if (user_trace)
 	{
 	  fprintf(stderr,"sorted hashes:\n");
 	  for(i=0;i<hashcounts;i++)
 	    {
-	      fprintf(stderr, "hashes[%ld]=%lud\n",i,hashes[i].hash);
+	      fprintf(stderr, "hashes[%ld]=%ud\n",i,hashes[i]);
 	    }
 	  fprintf (stderr, "Total hashes generated: %ld\n", hashcounts);
 	}
 
       //   And uniqueify the hashes array
       //
-      i = 0;
-      j = 0;
-      
       if (unique)
 	{
-	  while ( i < hashcounts ){
-	    if (hashes[i].hash != hashes[i+1].hash)
-	      {
-		hashes[j]= hashes[i];
-		j++;
-	      };
-	    i++;
-	  };
-	  hashcounts = j;
+	  i = 0;
+	  for (j = 1; j < hashcounts; j++)
+	    if (hashes[j] != hashes[i])
+	      hashes[++i] = hashes[j];
+	  if (hashcounts > 0)
+	    hashcounts = i + 1;
+
+	  if (user_trace)
+	    fprintf (stderr, "Unique hashes generated: %ld\n", hashcounts);
 	};
-      
+
       //mark the end of a feature vector
-      hashes[hashcounts].hash = 0;
-      
-      if (user_trace)
-	fprintf (stderr, "Unique hashes generated: %ld\n", hashcounts);
-      
+      hashes[hashcounts] = 0;
+
       if(hashcounts > 0 && sense > 0)
 	{
 	  //append the hashed text to file1
-	  
-	  //  Because there are probably retained hashes of the 
+
+	  //  Because there are probably retained hashes of the
 	  //  file, we need to force an unmap-by-name which will allow a remap
 	  //  with the new file length later on.
 	  crm_force_munmap_filename (file1);
 	  if (user_trace)
 	    fprintf (stderr, "Opening a svm file %s for append.\n", file1);
-	  
+
 	  if ((hashf = fopen ( file1 , "ab+")) == NULL)
 	    {
 	      nonfatalerror("Sorry, couldn't open the .svm file", "");
@@ -1236,15 +1022,15 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  if (user_trace)
 	    fprintf (stderr, "Writing to a svm file %s\n", file1);
 	  //    and write the sorted hashes out.
-	  fwrite (hashes, 1, 
-		  sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT) * (hashcounts + 1), 
+	  dontcare = fwrite (hashes, 1,
+		  sizeof (unsigned int) * (hashcounts + 1),
 		  hashf);
 	  fclose (hashf);
 	}
       /////////////////////////////////////////////////////////////////////
       //     Start refuting........
       //     What we have to do here is find the set of hashes that matches
-      //     the input most closely - and then remove it.  
+      //     the input most closely - and then remove it.
       //
       //     For this, we want the single closest set of hashes.  That
       //     implies highest radiance, so we use the same bit of code
@@ -1260,38 +1046,37 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  double kandu, unotk, knotu, dist, radiance;
 	  long k, u;
 	  long file_hashlens;
-	  HYPERSPACE_FEATUREBUCKET_STRUCT *file_hashes;
-	  
+	  unsigned int *file_hashes;
+
 	  //   Get the file mmapped so we can find the closest match
 	  //
-	 
+
 	  struct stat statbuf;      //  for statting the hash file
-	  
+
 	  //             stat the file to get it's length
 	  k = stat (file1, &statbuf);
-	  
+
 	  //              does the file really exist?
-	  if (k != 0) 
-	    { 
+	  if (k != 0)
+	    {
 	      nonfatalerror ("Refuting from nonexistent data cannot be done!"
-			 " More specifically, this data file doesn't exist: ",
+			     " More specifically, this data file doesn't exist: ",
 			     file1);
 	      return (0);
 	    }
 	  else
 	    {
 	      file_hashlens = statbuf.st_size;
-	      file_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
+	      file_hashes = (unsigned int *)
 		crm_mmap_file (file1,
 			       0, file_hashlens,
 			       PROT_READ | PROT_WRITE,
 			       MAP_SHARED,
 			       NULL);
-	      file_hashlens = file_hashlens 
-		/ sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT );
+	      file_hashlens = file_hashlens / sizeof (unsigned int );
 	    };
 	  wrapup = 0;
-	  
+
 	  k = u = 0;
 	  beststart = bestend = 0;
 	  bestrad = 0.0;
@@ -1305,10 +1090,10 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      u = 0;
 	      thisstart = k;
 	      if (internal_trace)
-		fprintf (stderr, 
-		   "At featstart, looking at %ld (next bucket value is %ld)\n",
-			 file_hashes[thisstart].hash,
-			 file_hashes[thisstart+1].hash);
+		fprintf (stderr,
+			 "At featstart, looking at %u (next bucket value is %u)\n",
+			 file_hashes[thisstart],
+			 file_hashes[thisstart+1]);
 	      while (wrapup == 0)
 		{
 		  //    it's an in-class feature.
@@ -1319,8 +1104,8 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      unotk++;
 		      u++;
 		    }
-		  if (cmp == 0)  // features matched.  
-		    //   These aren't the features you're looking for.  
+		  if (cmp == 0)  // features matched.
+		    //   These aren't the features you're looking for.
 		    //   Move along, move along....
 		    {
 		      u++;
@@ -1335,26 +1120,26 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    };
 		  //   End of the U's?  If so, skip k to the end marker
 		  //    and finish.
-		  if ( u >= hashcounts )  
+		  if ( u >= hashcounts )
 		    {
-		      while ( k < file_hashlens 
-			      && file_hashes[k].hash != 0)
+		      while ( k < file_hashlens
+			      && file_hashes[k] != 0)
 			{
 			  k++;
 			  knotu++;
 			};
 		    };
 		  //   End of the K's?  If so, skip U to the end marker
-		  if ( k >= file_hashlens - 1 
-		       || file_hashes[k].hash == 0  )  //  end of doc features
+		  if ( k >= file_hashlens - 1
+		       || file_hashes[k] == 0  )  //  end of doc features
 		    {
 		      unotk += hashcounts - u;
 		    };
-		  
+
 		  //  end of the U's or end of the K's?  If so, end document.
 		  if (u >= hashcounts
 		      || k >= file_hashlens - 1
-		     || file_hashes[k].hash == 0)  // this sets end-of-document
+		      || file_hashes[k] == 0)  // this sets end-of-document
 		    {
 		      wrapup = 1;
 		      k++;
@@ -1362,32 +1147,32 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		};
 	      //  Now the per-document wrapup...
 	      wrapup = 0;                     // reset wrapup for next file
-	  
+
 	      //   drop our markers for this particular document.  We are now
 	      //   looking at the next 0 (or end of file).
 	      thisend = k - 1;
 	      thislen = thisend - thisstart + 1;
-	      if (internal_trace) 
-		fprintf (stderr, 
-		     "At featend, looking at %ld (next bucket value is %ld)\n",
-			 file_hashes[thisend].hash,
-			 file_hashes[thisend+1].hash);
-	      
+	      if (internal_trace)
+		fprintf (stderr,
+			 "At featend, looking at %u (next bucket value is %u)\n",
+			 file_hashes[thisend],
+			 file_hashes[thisend+1]);
+
 	      //  end of a document- process accumulations
-	      
+
 	      //    Proper pythagorean (Euclidean) distance - best in
 	      //   SpamConf 2006 paper
 	      dist = sqrtf (unotk + knotu) ;
-	      
+
 	      // PREV RELEASE VER --> radiance = 1.0 / ((dist * dist )+ 1.0);
 	      //
 	      //  This formula was the best found in the MIT `SC 2006 paper.
 	      radiance = 1.0 / (( dist * dist) + .000001);
 	      radiance = radiance * kandu;
 	      radiance = radiance * kandu;
-	      
+
 	      if (user_trace)
-		fprintf (stderr, "Feature Radiance %f at %ld to %ld\n", 
+		fprintf (stderr, "Feature Radiance %f at %ld to %ld\n",
 			 radiance, thisstart, thisend);
 	      if (radiance >= bestrad)
 		{
@@ -1395,38 +1180,37 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		  bestend = thisend;
 		  bestrad = radiance;
 		}
-	    };  
-	  //  end of the per-document stuff - now chop out the part of the 
+	    };
+	  //  end of the per-document stuff - now chop out the part of the
 	  //  file between beststart and bestend.
-	  
+
 	  if (user_trace)
-	    fprintf (stderr, 
+	    fprintf (stderr,
 		     "Deleting feature from %ld to %ld (rad %f) of file %s\n",
 		     beststart, bestend, bestrad, file1);
-   
+
 	  //   Deletion time - move the remaining stuff in the file
 	  //   up to fill the hole, then msync the file, munmap it, and
 	  //   then truncate it to the new, correct length.
 	  {
 	    long newhashlen, newhashlenbytes;
 	    newhashlen = file_hashlens - (bestend + 1 - beststart);
-	    newhashlenbytes=newhashlen 
-	      * sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT);
-	    memmove (&file_hashes[beststart], 
-		     &file_hashes[bestend+1], 
-		     sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT) 
-		     * (file_hashlens - bestend) );
+	    newhashlenbytes=newhashlen * sizeof (unsigned int);
+	    memmove (&file_hashes[beststart],
+		     &file_hashes[bestend+1],
+		     sizeof (unsigned int) * (file_hashlens - bestend) );
 	    crm_force_munmap_filename (file1);
-	    
+
 	    if (internal_trace)
 	      fprintf (stderr, "Truncating file to %ld cells ( %ld bytes)\n",
 		       newhashlen,
 		       newhashlenbytes);
-	    k = truncate (file1,  
+	    k = truncate (file1,
 			  newhashlenbytes);
 	  }
 	};
-    };
+    }
+
   //  let go of the hashes.
   free (hashes);
   if ( sense < 0 )
@@ -1434,22 +1218,22 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       // finish refuting....
       return (0);
     }
-  
-  //           extract parameters for svm 
+
+  //           extract parameters for svm
   crm_get_pgm_arg(ptext, MAX_PATTERN, apb->s2start, apb->s2len);
   plen = apb->s2len;
   plen = crm_nexpandvar (ptext, plen, MAX_PATTERN);
   if(plen)
     {
-      sscanf(ptext, 
+      sscanf(ptext,
 	     "%d %d %lf %lf %lf %lf %lf %d",
-	     &(param.svm_type), 
-	     &(param.kernel_type), 
-	     &(param.cache_size), 
-	     &(param.eps), 
-	     &(param.C), 
-	     &(param.nu), 
-	     &(param.max_run_time) , 
+	     &(param.svm_type),
+	     &(param.kernel_type),
+	     &(param.cache_size),
+	     &(param.eps),
+	     &(param.C),
+	     &(param.nu),
+	     &(param.max_run_time) ,
 	     &(param.shrinking));
     }
   else
@@ -1463,40 +1247,39 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       param.max_run_time = 1;
       param.shrinking = 1;       //  not available right now
     }
-  
+
   //if svm_type is ONE_CLASS, then do one class svm
   if(param.svm_type == ONE_CLASS)
     {
       long file1_hashlens;
-      HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
-      HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
+      unsigned int *file1_hashes;
+      unsigned int **x = NULL;
       int *y = NULL;
       int k1;
       k1 = stat (file1, &statbuf1);
       file1_hashlens = statbuf1.st_size;
-      file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
+      file1_hashes = (unsigned int *)
 	crm_mmap_file (file1,
 		       0, file1_hashlens,
 		       PROT_READ | PROT_WRITE,
 		       MAP_SHARED,
 		       NULL);
-      file1_hashlens = file1_hashlens 
-	/ sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT );
+      file1_hashlens = file1_hashlens / sizeof (unsigned int );
       //find out how many documents in file1
       for(i = 0;i< file1_hashlens;i++){
 	if(internal_trace)
-	  fprintf (stderr, 
-		   "\nThe %ldth hash value in file1 is %lud", 
-		   i, file1_hashes[i].hash);
-	if(file1_hashes[i].hash == 0){
+	  fprintf (stderr,
+		   "\nThe %ldth hash value in file1 is %ud",
+		   i, file1_hashes[i]);
+	if(file1_hashes[i] == 0){
 	  k1 ++;
 	}
       }
       if(internal_trace)
-	fprintf (stderr, 
+	fprintf (stderr,
 		 "\nThe total number of documents in file1 is %d\n",
 		 k1);
-      
+
       //initialize the svm_prob.x, svm_prob.y
       svm_prob.l = k1;
       y = calloc(svm_prob.l , sizeof(y[0]));
@@ -1508,7 +1291,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       k = 1;
       for(i = 1;i< file1_hashlens - 1;i++)
 	{
-	  if(file1_hashes[i].hash == 0)
+	  if(file1_hashes[i] == 0)
 	    {
 	      x[k++] = &(file1_hashes[i+1]);
 	    }
@@ -1518,30 +1301,30 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	{
 	  for(i = 0;i< k;i++)
 	    {
-	      fprintf(stderr, "\nx[%ld]=%lud\n",i,x[i][1].hash);
-	    }       
+	      fprintf(stderr, "\nx[%ld]=%ud\n",i,x[i][1]);
+	    }
 	}
       Q_init();
       solve(); //result is in solver
-      
+
       //free cache
       cache_free(&svmcache);
     }
-  
-  
-  //if file2 is not empty, open file1 and file2, calculate hyperplane, 
+
+
+  //if file2 is not empty, open file1 and file2, calculate hyperplane,
   //and write the solution to file3
   if(file2[0] != '\000')
     {
       long file1_hashlens;
-      HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
+      unsigned int *file1_hashes;
       long file2_hashlens;
-      HYPERSPACE_FEATUREBUCKET_STRUCT *file2_hashes;
+      unsigned int *file2_hashes;
       int k1, k2;
       k1 = stat (file1, &statbuf1);
       k2 = stat (file2, &statbuf2);
-      if (k1 != 0) 
-	{ 
+      if (k1 != 0)
+	{
 	  nonfatalerror ("Sorry, there has no enough data to calculate the hyperplane"
 			 "", file1);
 	  return (0);
@@ -1557,45 +1340,43 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  k1 = 0;
 	  k2 = 0;
 	  file1_hashlens = statbuf1.st_size;
-	  file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
+	  file1_hashes = (unsigned int *)
 	    crm_mmap_file (file1,
 			   0, file1_hashlens,
 			   PROT_READ | PROT_WRITE,
 			   MAP_SHARED,
 			   NULL);
-	  file1_hashlens = file1_hashlens 
-	    / sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT );
+	  file1_hashlens = file1_hashlens / sizeof (unsigned int );
 	  file2_hashlens = statbuf2.st_size;
-	  file2_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
+	  file2_hashes = (unsigned int *)
 	    crm_mmap_file (file2,
 			   0, file2_hashlens,
 			   PROT_READ | PROT_WRITE,
 			   MAP_SHARED,
 			   NULL);
-	  file2_hashlens = file2_hashlens 
-	    / sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT );
+	  file2_hashlens = file2_hashlens / sizeof (unsigned int );
 	  for(i = 0;i< file1_hashlens;i++)
 	    {
 	      if( internal_trace)
-		fprintf(stderr, 
-			"\nThe %ldth hash value in file1 is %lud", 
-			i, file1_hashes[i].hash);
-	      if(file1_hashes[i].hash == 0)
+		fprintf(stderr,
+			"\nThe %ldth hash value in file1 is %ud",
+			i, file1_hashes[i]);
+	      if(file1_hashes[i] == 0)
 		{
 		  k1 ++;
 		}
 	    }
 	  if(internal_trace)
-	    fprintf (stderr, 
+	    fprintf (stderr,
 		     "\nThe total number of documents in file1 is %d\n", k1);
-	  
+
 	  for(i = 0;i< file2_hashlens;i++)
 	    {
 	      if(internal_trace)
-		fprintf (stderr, 
-			 "\nThe %ldth hash value in file2 is %lud",
-			 i, file2_hashes[i].hash);
-	      if(file2_hashes[i].hash == 0)
+		fprintf (stderr,
+			 "\nThe %ldth hash value in file2 is %ud",
+			 i, file2_hashes[i]);
+	      if(file2_hashes[i] == 0)
 		{
 		  k2 ++;
 		}
@@ -1603,16 +1384,16 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  if(internal_trace)
 	    fprintf (stderr,
 		     "\nThe total number of documents in file2 is %d\n", k2);
-	  
+
 	  if((k1 > 0) && (k2 >0))
-	    {  
+	    {
 	      //initialize the svm_prob.x, svm_prob.y
 	      int *y = NULL;
 	      double b;
 	      double *deci_array = NULL;
 	      double AB[2];
-	      HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
-	      
+	      unsigned int **x = NULL;
+
 	      svm_prob.l = k1 + k2;
 	      y = calloc(svm_prob.l , sizeof(y[0]));
 	      x = calloc(svm_prob.l , sizeof(x[0]));
@@ -1625,7 +1406,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      k = 1;
 	      for(i = 1;i< file1_hashlens - 1;i++)
 		{
-		  if(file1_hashes[i].hash == 0)
+		  if(file1_hashes[i] == 0)
 		    {
 		      x[k++] = &(file1_hashes[i+1]);
 		    }
@@ -1633,7 +1414,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      x[k++] = &(file2_hashes[0]);
 	      for(i = 1;i< file2_hashlens - 1;i++)
 		{
-		  if(file2_hashes[i].hash == 0)
+		  if(file2_hashes[i] == 0)
 		    {
 		      x[k++] = &(file2_hashes[i+1]);
 		    }
@@ -1642,15 +1423,15 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      if(internal_trace)
 		{
 		  for(i = 0;i< k;i++){
-		    fprintf(stderr, "\nx[%ld]=%lud\n",i,x[i][1].hash);
-		  }       
+		    fprintf(stderr, "\nx[%ld]=%ud\n",i,x[i][1]);
+		  }
 		}
 	      Q_init();
 	      solve(); //result is in solver
 	      b = calc_b();
 	      deci_array = (double*) malloc(svm_prob.l*sizeof(double));
-	      
-	      //compute decision values for all training documents 
+
+	      //compute decision values for all training documents
 	      for(i = 0; i < svm_prob.l; i++){
 		deci_array[i] = calc_decision(svm_prob.x[i], solver.alpha, b);
 	      }
@@ -1661,7 +1442,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      run_time = difftime(end_timer, start_timer);
 	      if(user_trace)
 		fprintf(stderr, "run_time =  %lf seconds\n", run_time);
-	      
+
 	      //IF MICROGROOMING IS ENABLED, WE'LL GET RID OF LESS THAN
 	      //10% DOCUMENTS THAT ARE FAR AWAY FROM THE HYPERPLANE
 	      //(WITH HIGH ABSOLUTE DECISION VALUE). HERE HAVE TWO
@@ -1683,9 +1464,9 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		  if(user_trace)
 		    fprintf(stderr, "\nStart microgrooming......\n");
 		  solver.deci_array = deci_array;
-		  // set an upper bound of delete fraction 
-		  delete_fraction = pow(param.max_run_time/run_time, 
-					      1.0/3.0); 
+		  // set an upper bound of delete fraction
+		  delete_fraction = pow(param.max_run_time/run_time,
+					      1.0/3.0);
 		  for (i = 0; i < svm_prob.l; i++)
 		    {
 		      id_desc[i] = i;
@@ -1693,35 +1474,35 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			{
 			  average1 += solver.deci_array[i];
 			}
-		      else 
+		      else
 			average2 += solver.deci_array[i];
 		    }
 		  average1 /= k1;
 		  average2 /= k2;
-		  qsort (id_desc, svm_prob.l, sizeof (int), 
+		  qsort (id_desc, svm_prob.l, sizeof (int),
 			 &descend_int_decision_compare );
 		  if(user_trace)
-		    fprintf(stderr, 
+		    fprintf(stderr,
 			   "average1=%lf\taverage2=%lf\n", average1, average2);
-		  
+
 		  //  if decision[i] > 1.5 * average decision value, then
 		  //  get rid of it.
 		  i = 0;
 		  j = svm_prob.l - 1;
-		  while (((delete_num1 + delete_num2) 
-			  < floor(delete_fraction * svm_prob.l)) 
+		  while (((delete_num1 + delete_num2)
+			  < floor(delete_fraction * svm_prob.l))
 			 && (i < svm_prob.l) && (j >= 0))
 		    {
 		      if((k1 - delete_num1) > (k2 - delete_num2))
 			{
 			  //delete the farest document from the first class
-			  if (svm_prob.y[id_desc[i]] == 1 
-			      && fabs(solver.deci_array[id_desc[i]]) 
+			  if (svm_prob.y[id_desc[i]] == 1
+			      && fabs(solver.deci_array[id_desc[i]])
 			      > distance_fraction * fabs(average1))
 			    {
 			      if(user_trace)
-				fprintf(stderr, 
-				    "delete document %d!decision value=%lf\n", 
+				fprintf(stderr,
+				    "delete document %d!decision value=%lf\n",
 				    id_desc[i],solver.deci_array[id_desc[i]]);
 			      id_desc[i] = -1;
 			      delete_num1 ++;
@@ -1731,12 +1512,12 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      else if((k1 - delete_num1) < (k2 - delete_num2))
 			{
 			  //delete the farest document from the second class
-			  if(svm_prob.y[id_desc[j]] == -1 
+			  if(svm_prob.y[id_desc[j]] == -1
 			     && fabs(solver.deci_array[id_desc[j]]) > distance_fraction * fabs(average2))
 			    {
 			      if(user_trace)
-				fprintf(stderr, 
-				    "delete document %d!decision value=%lf\n", 
+				fprintf(stderr,
+				    "delete document %d!decision value=%lf\n",
 				     id_desc[j],solver.deci_array[id_desc[j]]);
 			      id_desc[j] = -1;
 			      delete_num2 ++;
@@ -1746,40 +1527,40 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      else
 			{
 			  //delete the farest document from both classes
-			  if(svm_prob.y[id_desc[i]] == 1  
+			  if(svm_prob.y[id_desc[i]] == 1
 		       && fabs(solver.deci_array[id_desc[i]]) > distance_fraction * fabs(average1))
 			    {
 			      if(user_trace)
-				fprintf(stderr, 
-				    "delete document %d!decision value=%lf\n", 
+				fprintf(stderr,
+				    "delete document %d!decision value=%lf\n",
 				     id_desc[i],solver.deci_array[id_desc[i]]);
 			      id_desc[i] = -1;
 			      delete_num1 ++;
 			    }
 			  i++;
-			  if(svm_prob.y[id_desc[j]] == -1 
+			  if(svm_prob.y[id_desc[j]] == -1
                             && fabs(solver.deci_array[id_desc[j]]) > distance_fraction * fabs(average2))
 			    {
 			      if(user_trace)
-				fprintf(stderr, 
-				    "delete document %d!decision value=%lf\n", 
+				fprintf(stderr,
+				    "delete document %d!decision value=%lf\n",
 				    id_desc[j],solver.deci_array[id_desc[j]]);
 			      id_desc[j] = -1;
 			      delete_num2 ++;
 			    }
 			  j--;
-			}	    
+			}
 		    }
 		  if(user_trace)
-		    fprintf(stderr, 
-			    "delete_num1 = %d\t delete_num2 = %d\n", 
+		    fprintf(stderr,
+			    "delete_num1 = %d\t delete_num2 = %d\n",
 			    delete_num1, delete_num2);
-		  
+
 		  if(delete_num1 != 0 || delete_num2 != 0)
 		    {
-		      HYPERSPACE_FEATUREBUCKET_STRUCT *new_x[k1 + k2 - delete_num1 - delete_num2];
+		      unsigned int *new_x[k1 + k2 - delete_num1 - delete_num2];
 		      qsort (id_desc, svm_prob.l, sizeof (int), &int_compare );
-		      //now start deleting documents and write the 
+		      //now start deleting documents and write the
 		      //remain documents to file1, this is unrecoverable.
 		      j = 0;
 		      for(i = 0; i < svm_prob.l; i++)
@@ -1790,14 +1571,13 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			      int temp_count = 0;
 			      //newalpha[j] = solver.alpha[id_desc[i]];
 			      svm_prob.y[j] = svm_prob.y[id_desc[i]];
-			      while(svm_prob.x[id_desc[i]][temp_count].hash!=0)
+			      while(svm_prob.x[id_desc[i]][temp_count]!=0)
 				temp_count ++;
-			      new_x[j] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-				malloc((temp_count + 1) 
-				    * sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
+			      new_x[j] = (unsigned int *)
+				malloc((temp_count + 1) * sizeof(unsigned int));
 			      for(temp_i = 0; temp_i<temp_count; temp_i++)
 				new_x[j][temp_i] = svm_prob.x[id_desc[i]][temp_i];
-			      new_x[j][temp_count].hash = 0 ;
+			      new_x[j][temp_count] = 0 ;
 			      j++;
 			    }
 			  else if((id_desc[i] != -1) && (id_desc[i] >= k1))
@@ -1806,14 +1586,13 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			      int temp_i;
 			      //newalpha[j] = solver.alpha[id_desc[i]];
 			      svm_prob.y[j] = svm_prob.y[id_desc[i]];
-			      while(svm_prob.x[id_desc[i]][temp_count].hash != 0)
+			      while(svm_prob.x[id_desc[i]][temp_count] != 0)
 				temp_count ++;
-			      new_x[j] = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
-				malloc((temp_count + 1)
-				    * sizeof(HYPERSPACE_FEATUREBUCKET_STRUCT));
+			      new_x[j] = (unsigned int *)
+				malloc((temp_count + 1) * sizeof(unsigned int));
 			      for(temp_i = 0; temp_i<temp_count; temp_i++)
 				new_x[j][temp_i] = svm_prob.x[id_desc[i]][temp_i];
-			      new_x[j][temp_count].hash = 0 ;
+			      new_x[j][temp_count] = 0 ;
 			      j++;
 			    }
 			}
@@ -1823,24 +1602,23 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			{
 			  crm_force_munmap_filename (file1);
 			  if (user_trace)
-			    fprintf (stderr, 
-				     "Opening a svm file %s for rewriting.\n", 
+			    fprintf (stderr,
+				     "Opening a svm file %s for rewriting.\n",
 				     file1);
 			  hashf = fopen ( file1 , "wb+");
 			  if (user_trace)
-			    fprintf (stderr, 
-				     "Writing to a svm file %s\n", 
+			    fprintf (stderr,
+				     "Writing to a svm file %s\n",
 				     file1);
 			  for(i = 0; i < k1 - delete_num1; i++)
 			    {
 			      int temp_count = 0;
-			      while(svm_prob.x[i][temp_count].hash != 0)
+			      while(svm_prob.x[i][temp_count] != 0)
 				{
 				  temp_count ++;
 				}
-			      fwrite (svm_prob.x[i], 1, 
-				      sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT) 
-				      * (temp_count+1), 
+			      dontcare = fwrite (svm_prob.x[i], 1,
+				      sizeof (unsigned int) * (temp_count+1),
 				      hashf);
 			    }
 			  fclose (hashf);
@@ -1849,29 +1627,28 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			{
 			  crm_force_munmap_filename (file2);
 			  if (user_trace)
-			    fprintf (stderr, 
-				     "Opening a svm file %s for rewriting.\n", 
+			    fprintf (stderr,
+				     "Opening a svm file %s for rewriting.\n",
 				     file2);
 			  hashf = fopen ( file2 , "wb+");
 			  if (user_trace)
-			    fprintf (stderr, 
+			    fprintf (stderr,
 				     "Writing to a svm file %s\n", file2);
 			  for(i = k1 - delete_num1; i < svm_prob.l; i++)
 			    {
 			      int temp_count = 0;
-			      while(svm_prob.x[i][temp_count].hash != 0)
+			      while(svm_prob.x[i][temp_count] != 0)
 				temp_count ++;
-			      fwrite (svm_prob.x[i], 1, 
-				      sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT) 
-				      * (temp_count+1), 
+			      dontcare = fwrite (svm_prob.x[i], 1,
+				      sizeof (unsigned int) * (temp_count+1),
 				      hashf);
 			    }
 			  fclose (hashf);
 			}
-		      
+
 		      k1 -= delete_num1;
 		      k2 -= delete_num2;
-		      
+
 		      //recalculate the hyperplane
 		      //
 		      //free cache
@@ -1885,20 +1662,20 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		      if(internal_trace)
 			fprintf(stderr, "b=%lf\n",b);
 		      if (user_trace)
-			fprintf(stderr, 
+			fprintf(stderr,
 				"Finishing calculate the hyperplane\n");
-		     
+
 		      //compute A,B for sigmoid prediction
-		      deci_array = (double*) realloc(deci_array, svm_prob.l 
+		      deci_array = (double*) realloc(deci_array, svm_prob.l
 						     * sizeof(double));
 		      for(i = 0; i < svm_prob.l; i++)
 			{
-			  deci_array[i] = calc_decision (svm_prob.x[i], 
+			  deci_array[i] = calc_decision (svm_prob.x[i],
 							 solver. alpha, b);
 			}
 		      calc_AB(AB, deci_array, k1, k2);
 		      if (internal_trace)
-			fprintf(stderr, 
+			fprintf(stderr,
 			       "Finished calculating probability parameter\n");
 		      for(i = 0; i < svm_prob.l; i++)
 			{
@@ -1908,40 +1685,40 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		  free(id_desc);
 		}
 	      free(deci_array);
-	      
+
 	      //  write solver to file3
 	      if (user_trace)
 		fprintf (stderr,
-		      "Opening a solution file %s for writing alpha and b.\n", 
+		      "Opening a solution file %s for writing alpha and b.\n",
 			 file3);
 	      hashf = fopen ( file3 , "w+");
 	      if (user_trace)
 		fprintf (stderr, "Writing to a svm solution file %s\n", file3);
-	      
-	      fwrite(&k1, sizeof(int), 1, hashf);
-	      fwrite(&k2, sizeof(int), 1, hashf);
+
+	      dontcare = fwrite(&k1, sizeof(int), 1, hashf);
+	      dontcare = fwrite(&k2, sizeof(int), 1, hashf);
 	      for (i = 0; i < svm_prob.l; i++)
-		fwrite(&(solver.alpha[i]), sizeof(double), 1, hashf);
-	      fwrite(&b, sizeof(double), 1, hashf);
-	      fwrite(&AB[0], sizeof(double), 1, hashf);
-	      fwrite(&AB[1], sizeof(double), 1, hashf);
-	      
+		dontcare = fwrite(&(solver.alpha[i]), sizeof(double), 1, hashf);
+	      dontcare = fwrite(&b, sizeof(double), 1, hashf);
+	      dontcare = fwrite(&AB[0], sizeof(double), 1, hashf);
+	      dontcare = fwrite(&AB[1], sizeof(double), 1, hashf);
+
 	      fclose (hashf);
-	      
+
 	      //free cache
 	      cache_free(&svmcache);
 	      free(solver.G);
 	      free(DiagQ);
 	      free(solver.alpha);
 	      if(user_trace)
-		fprintf(stderr, 
+		fprintf(stderr,
 	      "Finish calculating SVM hyperplane, store the solution to %s!\n",
 			file3);
 	    }
 	  else
 	    {
 	      if (user_trace)
-		fprintf(stderr, 
+		fprintf(stderr,
 	     "There hasn't enough documents to calculate a svm hyperplane!\n");
 	    }
 	  crm_force_munmap_filename (file1);
@@ -1955,7 +1732,7 @@ int crm_expr_svm_learn(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
 int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			  char *txtptr, long txtstart, long txtlen){
-  long i,j, k, h;
+  long i,j, k;
   char ftext[MAX_PATTERN];
   long flen;
   char ptext[MAX_PATTERN]; //the regrex pattern
@@ -1967,15 +1744,11 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   regmatch_t match[5];
   FILE *hashf;
   long textoffset;
-  long textmaxoffset;
-  unsigned long hashpipe[OSB_BAYES_WINDOW_LEN+1]; 
-  HYPERSPACE_FEATUREBUCKET_STRUCT *hashes;  //  the hashes we'll sort 
-  long hashcounts; 
-  long cflags, eflags;
-  long sense;
+  unsigned int *hashes;  //  the hashes we'll sort
+  long hashcounts;
+  long cflags;
   long microgroom;
   long unique;
-  long use_unigram_features;
   struct stat statbuf1;      //  for statting the hash file1
   struct stat statbuf2;      //  for statting the hash file2
   struct stat statbuf3;      //  for statting the hash file3
@@ -1986,58 +1759,44 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   char svrbl[MAX_PATTERN];  //  the match statistics text buffer
   long svlen;
   //  the match statistics variable
-  char stext [MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100)]; 
+  char stext [MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100)];
   long stext_maxlen = MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100);
   double decision = 0;
-  
+
   long totalfeatures = 0;   //  total features
   long bestseen;
   double ptc[MAX_CLASSIFIERS]; // current running probability of this class
   long hashlens[MAX_CLASSIFIERS];
   char *hashname[MAX_CLASSIFIERS];
   long doc_num[MAX_CLASSIFIERS];
-  
+
   //            extract the optional "match statistics" variable
   //
   crm_get_pgm_arg (svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
   svlen = apb->p2len;
   svlen = crm_nexpandvar (svrbl, svlen, MAX_PATTERN);
-  { 
+  {
     long vstart, vlen;
     crm_nextword (svrbl, svlen, 0, &vstart, &vlen);
     memmove (svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
     svrbl[vlen] = '\000';
   };
-  
+
   //     status variable's text (used for output stats)
-  //    
+  //
   stext[0] = '\000';
   slen = 0;
-  
+
   //            set our cflags, if needed.  The defaults are
   //            "case" and "affirm", (both zero valued).
   //            and "microgroom" disabled.
   cflags = REG_EXTENDED;
-  eflags = 0;
-  sense = +1;
   if (apb->sflags & CRM_NOCASE)
     {
       cflags = cflags | REG_ICASE;
-      eflags = 1;
       if (user_trace)
-	fprintf (stderr, "turning oncase-insensitive match\n");
-    };
-  if (apb->sflags & CRM_REFUTE)
-    {
-      sense = -sense;
-      /////////////////////////////////////
-      //    Take this out when we finally support refutation
-      ////////////////////////////////////
-      //      fprintf (stderr, "Hyperspace Refute is NOT SUPPORTED YET\n");
-      //return (0);
-      if (user_trace)
-	fprintf (stderr, " refuting learning\n");
+	fprintf (stderr, "turning on case-insensitive match\n");
     };
   microgroom = 0;
   if (apb->sflags & CRM_MICROGROOM)
@@ -2054,240 +1813,95 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	fprintf (stderr, " enabling uniqueifying features.\n");
     };
 
-  use_unigram_features = 0;
-  if (apb->sflags & CRM_UNIGRAM)
-    {
-      use_unigram_features = 1;
-      if (user_trace)
-	fprintf (stderr, " using only unigram features.\n");
-    };
-	
-  //   Note that during a LEARN in hyperspace, we do NOT use the mmap of
-  //    pre-existing memory.  We just write to the end of the file instead.
-  //    malloc up the unsorted hashbucket space 
-  hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, 
-		   sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT));
+  //    malloc up the unsorted hashbucket space
+  hashes = calloc (HYPERSPACE_MAX_FEATURE_COUNT, sizeof (unsigned int));
   hashcounts = 0;
-  
+
   //     get the "this is a word" regex
   crm_get_pgm_arg (ptext, MAX_PATTERN, apb->s1start, apb->s1len);
   plen = apb->s1len;
   plen = crm_nexpandvar (ptext, plen, MAX_PATTERN);
-  
-  //   compile the word regex
-  //
-  if ( internal_trace)
-    fprintf (stderr, "\nWordmatch pattern is %s", ptext);
-  
-  i = crm_regcomp (&regcb, ptext, plen, cflags);
-  
-  if ( i > 0)
-    {
-      crm_regerror ( i, &regcb, tempbuf, data_window_size);
-      nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
-      goto regcomp_failed;
-    };
-  
+
   //   Now tokenize the input text
   //   We got txtptr, txtstart, and txtlen from the caller.
   //
-  textoffset = txtstart;
-  textmaxoffset = txtstart + txtlen;
-  
-  //   init the hashpipe with 0xDEADBEEF 
-  for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-    {
-      hashpipe[h] = 0xDEADBEEF;
-    };
-  
-  i = 0;
-  j = 0;
-  k = 0;
-  //generate the sorted hashes of input text
-  if(txtlen > 0)
-    {
-      while (k == 0 && textoffset <= textmaxoffset 
-	     && hashcounts < HYPERSPACE_MAX_FEATURE_COUNT  )
-	{
-	  long wlen;
-	  long slen = textmaxoffset - textoffset;
-	  // if pattern is empty, extract non graph delimited tokens
-	  // directly ([[graph]]+) instead of calling regexec  (8% faster)
-	  if (ptext[0] != '\0')
-	    {
-	      k = crm_regexec (&regcb, &(txtptr[textoffset]),
-			       slen, 5, match, 0, NULL);
-	    }
-	  else
-	    {
-	      k = 0;
-	      //         skip non-graphical characthers
-	      match[0].rm_so = 0;
-	      while (!isgraph (txtptr[textoffset + match[0].rm_so])
-		     && textoffset + match[0].rm_so < textmaxoffset)
-		match[0].rm_so ++;
-	      match[0].rm_eo = match[0].rm_so;
-	      while (isgraph (txtptr [textoffset + match[0].rm_eo])
-		     && textoffset + match[0].rm_eo < textmaxoffset)
-		match[0].rm_eo ++;
-	      if ( match[0].rm_so == match[0].rm_eo)
-		k = 1;
-	    };
-	  if (!(k != 0 || textoffset > textmaxoffset))
-	    {
-	      wlen = match[0].rm_eo - match[0].rm_so;
-	      
-	      memmove (tempbuf, 
-		       &(txtptr[textoffset + match[0].rm_so]),
-		       wlen);
-	      tempbuf[wlen] = '\000';
-	      if (internal_trace)
-		{
-		  fprintf (stderr, 
-		     "Learn #%ld t.o. %ld strt %ld end %ld len %ld is -%s-\n", 
-			   i, 
-			   textoffset,
-			   (long) match[0].rm_so, 
-			   (long) match[0].rm_eo,
-			   wlen,
-			   tempbuf);
-		};
-	      if (match[0].rm_eo == 0)
-		{
-		  nonfatalerror ( "The LEARN pattern matched zero length! ",
-			 "\n Forcing an increment to avoid an infinite loop.");
-		  match[0].rm_eo = 1;
-		};
-	      //  slide previous hashes up 1
-	      for (h = OSB_BAYES_WINDOW_LEN-1; h > 0; h--){
-		hashpipe [h] = hashpipe [h-1];
-	      };
-	      
-	        //  and put new hash into pipeline
-	      hashpipe[0] = strnhash ( tempbuf, wlen);
 
-	      //  and account for the text used up.
-	      textoffset = textoffset + match[0].rm_eo;
-	      i++;
-	      //        is the pipe full enough to do the hashing?
-	       //  we init with 0xDEADBEEF, so the pipe is always full (i >=5)
-	      if (1)  
-		{
-		  int j;
-		  unsigned th=0;    //  a counter used only in TSS hashing
-		  unsigned long hindex;
-		  unsigned long h1; //, h2;
-		  //
-		  th = 0;
-		  //
-		  if (use_unigram_features == 1)
-		    {
-		      h1 = hashpipe[0];
-		      if (h1 == 0) h1 = 0xdeadbeef;
-		      if  (internal_trace)
-			fprintf (stderr, "Singleton feature : %lud\n", h1);
-		      hashes[hashcounts].hash = h1;
-		      hashcounts++;
-		    }
-		  else
-		    {
-		      for (j = 1; 
-			   j < OSB_BAYES_WINDOW_LEN; //OSB_BAYES_WINDOW_LEN;
-			   j++)
-			{
-			  h1 = hashpipe[0] * hctable[0] 
-			    + hashpipe[j] * hctable[j<<1];
-			  if (h1 == 0) h1 = 0xdeadbeef;
-			  hindex = h1;
-			  
-			  if (internal_trace)
-			    fprintf (stderr, "Polynomial %d has h1:%lud \n",
-				     j, h1);
-			  
-			  hashes[hashcounts].hash = h1;
-			  hashcounts++;
-			};
-		    };
-		};  
-	    } 
-	  else
-	    {
-	      if (ptext[0] != '\0') crm_regfree (&regcb);
-	      k = 1;
-	    }
-	};   //   end the while k==0
+  if (txtlen > 0)
+    {
+      // hack: assume stride 1
+      (void)crm_vector_tokenize_selector(apb,
+					 txtptr, txtstart, txtlen,
+					 ptext, plen,
+					 NULL, 0, 0,
+					 hashes, HYPERSPACE_MAX_FEATURE_COUNT,
+					 &hashcounts,
+					 &textoffset);
+      // ??? error?
+
       //   Now sort the hashes array.
       //
-      //hashcounts--;
-      
-      qsort (hashes, hashcounts, 
-	     sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT),
-	     &hash_compare);
-      //mark the end of a feature vector
-      hashes[hashcounts].hash = 0;
+
+      qsort (hashes, hashcounts, sizeof (unsigned int), &hash_compare);
       if (user_trace)
 	fprintf (stderr, "Total hashes generated: %ld\n", hashcounts);
-      
+
       //   And uniqueify the hashes array
       //
-      i = 0;
-      j = 0;
-      
+      totalfeatures = hashcounts;
       if (unique)
 	{
-	  while ( i <= hashcounts )
-	    {
-	      if (hashes[i].hash != hashes[i+1].hash)
-		{
-		  hashes[j]= hashes[i];
-		  j++;
-		};
-	      i++;
-	    };
-	  hashcounts = j;
-	};
-      if (user_trace)
-	fprintf (stderr, "Unique hashes generated: %ld\n", hashcounts);
-      totalfeatures = hashcounts;
+	  i = 0;
+	  for (j = 1; j < hashcounts; j++)
+	    if (hashes[j] != hashes[i])
+	      hashes[++i] = hashes[j];
+	  if (hashcounts > 0)
+	    hashcounts = i + 1;
+	  if (user_trace)
+	    fprintf (stderr, "Unique hashes generated: %ld\n", hashcounts);
+	  totalfeatures = hashcounts;
+	}
+
+      //mark the end of a feature vector
+      hashes[hashcounts] = 0;
     }
   else
     {
       nonfatalerror ("Sorry, but I can't classify the null string.", "");
       return 0;
     }
-  
+
   if (user_trace)
     {
       fprintf(stderr,"sorted hashes:\n");
       for (i=0;i<hashcounts;i++)
 	{
-	  fprintf(stderr, "hashes[%ld]=%lud\n",i,hashes[i].hash);
+	  fprintf(stderr, "hashes[%ld]=%ud\n",i,hashes[i]);
 	}
       fprintf (stderr, "Total hashes generated: %ld\n", hashcounts);
     }
-  
+
   // extract the file names.( file1.svm | file2.svm | 1vs2_solver.svm )
   crm_get_pgm_arg (ftext, MAX_PATTERN, apb->p1start, apb->p1len);
   flen = apb->p1len;
   flen = crm_nexpandvar (ftext, flen, MAX_PATTERN);
   strcpy (ptext,
 	  "[[:space:]]*([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]+\\|[[:space:]]+([[:graph:]]+)[[:space:]]*");
-  plen = strlen(ptext);   
+  plen = strlen(ptext);
   i = crm_regcomp (&regcb, ptext, plen, cflags);
   if ( i > 0)
     {
       crm_regerror ( i, &regcb, tempbuf, data_window_size);
       nonfatalerror ("Regular Expression Compilation Problem:", tempbuf);
       goto regcomp_failed;
-    };  
+    };
   k = crm_regexec (&regcb, ftext,
 		   flen, 5, match, 0, NULL);
   if( k==0 )
     {
       long file1_hashlens;
-      HYPERSPACE_FEATUREBUCKET_STRUCT *file1_hashes;
+      unsigned int *file1_hashes;
       long file2_hashlens;
-      HYPERSPACE_FEATUREBUCKET_STRUCT *file2_hashes;
+      unsigned int *file2_hashes;
       int k1, k2, k3;
       //get three input files.
       memmove(file1,&ftext[match[1].rm_so],(match[1].rm_eo-match[1].rm_so));
@@ -2298,15 +1912,15 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       file3[match[3].rm_eo-match[3].rm_so]='\000';
       if(internal_trace)
 	fprintf(stderr, "file1=%s\tfile2=%s\tfile3=%s\n", file1, file2, file3);
-      
+
       // open all files,
       // first check whether file3 is the current version solution.
       k1 = stat (file1, &statbuf1);
       k2 = stat (file2, &statbuf2);
       k3 = stat (file3, &statbuf3);
-      
-      if (k1 != 0) 
-	{ 
+
+      if (k1 != 0)
+	{
 	  nonfatalerror ("Refuting from nonexistent data cannot be done!"
 			 " More specifically, this data file doesn't exist: ",
 			 file1);
@@ -2323,85 +1937,83 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	{
 	  int temp_k1 = 0, temp_k2 = 0;
 	  int *y = NULL;
-	  HYPERSPACE_FEATUREBUCKET_STRUCT **x = NULL;
+	  unsigned int **x = NULL;
 
 	  k1 = 0;
 	  k2 = 0;
-	  
+
 	  file1_hashlens = statbuf1.st_size;
 	  crm_force_munmap_filename (file1);
 	  crm_force_munmap_filename (file2);
-	  
-	  file1_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
+
+	  file1_hashes = (unsigned int *)
 	    crm_mmap_file (file1,
 			   0, file1_hashlens,
 			   PROT_READ | PROT_WRITE,
 			   MAP_SHARED,
 			   NULL);
-	  file1_hashlens = file1_hashlens 
-	    / sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT );
-	  
+	  file1_hashlens = file1_hashlens / sizeof (unsigned int );
+
 	  hashlens[0] = file1_hashlens;
 	  hashname[0] = (char *) malloc (strlen(file1)+10);
 	  if (!hashname[0])
 	    untrappableerror( "Couldn't malloc hashname[0]\n",
 			  "We need that part later, so we're stuck.  Sorry.");
 	  strcpy(hashname[0],file1);
-	  
-	  
+
+
 	  file2_hashlens = statbuf2.st_size;
-	  file2_hashes = (HYPERSPACE_FEATUREBUCKET_STRUCT *)
+	  file2_hashes = (unsigned int *)
 	    crm_mmap_file (file2,
 			   0, file2_hashlens,
 			   PROT_READ | PROT_WRITE,
 			   MAP_SHARED,
 			   NULL);
-	  file2_hashlens = file2_hashlens 
-	    / sizeof (HYPERSPACE_FEATUREBUCKET_STRUCT );
+	  file2_hashlens = file2_hashlens / sizeof (unsigned int );
 	  hashlens[1] = file2_hashlens;
 	  hashname[1] = (char *) malloc (strlen(file2)+10);
 	  if (!hashname[1])
 	    untrappableerror("Couldn't malloc hashname[1]\n",
 			  "We need that part later, so we're stuck.  Sorry.");
 	  strcpy(hashname[1],file2);
-	  
+
 	  //find out how many documents in file1 and file2 separately
 	  for(i = 0;i< file1_hashlens;i++)
 	    {
 	      if(internal_trace)
-		fprintf (stderr, 
-			 "\nThe %ldth hash value in file1 is %lud", 
-			 i, file1_hashes[i].hash);
-	      if(file1_hashes[i].hash == 0)
+		fprintf (stderr,
+			 "\nThe %ldth hash value in file1 is %ud",
+			 i, file1_hashes[i]);
+	      if(file1_hashes[i] == 0)
 		{
 		  k1 ++;
 		}
 	    }
 	  if(internal_trace)
-	    fprintf (stderr, 
+	    fprintf (stderr,
 		     "\nThe total number of documents in file1 is %d\n", k1);
-	  
+
 	  for(i = 0;i< file2_hashlens;i++)
 	    {
 	      if(internal_trace)
-		fprintf (stderr, 
-			 "\nThe %ldth hash value in file2 is %lud", 
-			 i, file2_hashes[i].hash);
-	      if(file2_hashes[i].hash == 0)
+		fprintf (stderr,
+			 "\nThe %ldth hash value in file2 is %ud",
+			 i, file2_hashes[i]);
+	      if(file2_hashes[i] == 0)
 		{
 		  k2 ++;
 		}
 	    }
-	  
+
 	  if(internal_trace)
-	    fprintf (stderr, 
+	    fprintf (stderr,
 		     "\nThe total number of documents in file2 is %d\n", k2);
 	  hashf = fopen ( file3 , "r+");
 	  if(k3 == 0)
-	    { 
+	    {
 	      //hashf = fopen ( file3 , "r+");
-	      fread(&temp_k1, sizeof(int), 1, hashf);
-	      fread(&temp_k2, sizeof(int), 1, hashf);
+	      dontcare = fread(&temp_k1, sizeof(int), 1, hashf);
+	      dontcare = fread(&temp_k2, sizeof(int), 1, hashf);
 	      //fscanf(hashf,"%d\t%d", &temp_k1, &temp_k2);
 	      if (internal_trace)
 		fprintf(stderr, "temp_k1=%d\ttemp_k2=%d\n",temp_k1,temp_k2);
@@ -2421,7 +2033,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  k = 1;
 	  for(i = 1;i< file1_hashlens - 1;i++)
 	    {
-	      if(file1_hashes[i].hash == 0)
+	      if(file1_hashes[i] == 0)
 		{
 		  x[k++] = &(file1_hashes[i+1]);
 		}
@@ -2429,39 +2041,39 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  x[k++] = &(file2_hashes[0]);
 	  for(i = 1;i< file2_hashlens - 1;i++)
 	    {
-	      if(file2_hashes[i].hash == 0)
+	      if(file2_hashes[i] == 0)
 	 	{
 		  x[k++] = &(file2_hashes[i+1]);
 		}
 	    }
 	  svm_prob.x = x;
-	  
+
 	  alpha = (double *)malloc(svm_prob.l * sizeof(double));
-	  
+
 	  if((k3 != 0) || (temp_k1 != k1) || (temp_k2 != k2))
 	    {
 	      if(user_trace)
-		fprintf(stderr, 
-			"temp_k1=%d\ttemp_k2=%d\tSVM solution file is not up-to-date! we'll recalculate it!\n", 
+		fprintf(stderr,
+			"temp_k1=%d\ttemp_k2=%d\tSVM solution file is not up-to-date! we'll recalculate it!\n",
 			temp_k1, temp_k2);
 	      //recalculate the svm solution
 	      if((k1 > 0) && (k2 >0))
 		{
 		  double *deci_array = NULL;
-		  //           extract parameters for svm 
+		  //           extract parameters for svm
 		  crm_get_pgm_arg(ptext, MAX_PATTERN,apb->s2start, apb->s2len);
 		  plen = apb->s2len;
 		  plen = crm_nexpandvar (ptext, plen, MAX_PATTERN);
 		  if(plen)
 		    {
-		      sscanf(ptext, 
-			     "%d %d %lf %lf %lf %lf %lf %d",&(param.svm_type), 
-			     &(param.kernel_type), 
-			     &(param.cache_size), 
-			     &(param.eps), 
-			     &(param.C), 
-			     &(param.nu), 
-			     &(param.max_run_time) , 
+		      sscanf(ptext,
+			     "%d %d %lf %lf %lf %lf %lf %d",&(param.svm_type),
+			     &(param.kernel_type),
+			     &(param.cache_size),
+			     &(param.eps),
+			     &(param.C),
+			     &(param.nu),
+			     &(param.max_run_time) ,
 			     &(param.shrinking));
 		    }
 		  else
@@ -2479,9 +2091,9 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    {
 		      for(i = 0;i< k;i++)
 			{
-			  fprintf(stderr, 
-			    "\nx[%ld]=%lud\n",i,svm_prob.x[i][1].hash);
-			};       
+			  fprintf(stderr,
+			    "\nx[%ld]=%ud\n",i,svm_prob.x[i][1]);
+			};
 		    };
 		  Q_init();
 		  solve(); //result is in solver
@@ -2492,7 +2104,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    }
 		  for(i = 0; i < svm_prob.l; i++)
 		    alpha[i] = solver.alpha[i];
-		  
+
 		  //compute A,B for sigmoid prediction
 		  deci_array = (double*) malloc(svm_prob.l * sizeof(double));
 		  for(i = 0; i < svm_prob.l; i++)
@@ -2516,7 +2128,7 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		    fprintf(stderr,
 			    "There hasn't enough documents to recalculate a svm hyperplane!\n");
 		  return (0);
-		}	
+		}
 	    }
 	  else
 	    {
@@ -2525,22 +2137,22 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		  for(i=0;i<svm_prob.l;i++)
 		    {
 		      j = 0;
-		      do 
+		      do
 			{
-			  fprintf (stderr, 
-				   "x[%ld][%ld]=%lud\n",
-				   i,j,svm_prob.x[i][j].hash);
+			  fprintf (stderr,
+				   "x[%ld][%ld]=%ud\n",
+				   i,j,svm_prob.x[i][j]);
 			}
-		      while(svm_prob.x[i][j++].hash!=0);
+		      while(svm_prob.x[i][j++]!=0);
 		    }
 		}
 	      for(i = 0; i<svm_prob.l; i++)
 		{
-		  fread(&alpha[i], sizeof(double), 1, hashf);     
+		  dontcare = fread(&alpha[i], sizeof(double), 1, hashf);
 		}
-	      fread(&b, sizeof(double), 1, hashf);
-	      fread(&AB[0], sizeof(double), 1, hashf);
-	      fread(&AB[1], sizeof(double), 1, hashf);
+	      dontcare = fread(&b, sizeof(double), 1, hashf);
+	      dontcare = fread(&AB[0], sizeof(double), 1, hashf);
+	      dontcare = fread(&AB[1], sizeof(double), 1, hashf);
 	      fclose(hashf);
 	    }
 	  decision = calc_decision(hashes,alpha,b);
@@ -2558,37 +2170,37 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       return (0);
   };
   free(hashes);
-  
-  
+
+
   if(svlen > 0)
     {
     char buf [4096];
     double pr;
     char fname[MAX_FILE_NAME_LEN];
     buf [0] = '\000';
-    
+
     //   put in standard CRM114 result standard header:
     ptc[0] = decision;
     ptc[1] = 1 - decision;
     if(decision >= 0.5)
       {
 	pr = 10 *(log10 (decision + 1e-300) - log10 (1.0 - decision +1e-300 ));
-	sprintf(buf, 
-		"CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", 
+	sprintf(buf,
+		"CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n",
 		decision, pr);
 	bestseen = 0;
       }
-    else 
-      {      
+    else
+      {
 	pr = 10 *(log10 (decision + 1e-300) - log10 (1.0 - decision +1e-300 ));
-	sprintf(buf, 
-		"CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n", 
+	sprintf(buf,
+		"CLASSIFY fails; success probability: %6.4f  pR: %6.4f\n",
 		decision, pr);
 	bestseen = 1;
       }
     if (strlen (stext) + strlen(buf) <= stext_maxlen)
       strcat (stext, buf);
-    
+
     //   Second line of the status report is the "best match" line:
     //
     if(bestseen)
@@ -2603,37 +2215,37 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	     10 * (log10 (ptc[bestseen] + 1e-300) - log10 (1.0 - ptc[bestseen] +1e-300 )));
     if (strlen (stext) + strlen(buf) <= stext_maxlen)
       strcat (stext, buf);
-    
-    sprintf (buf, "Total features in input file: %ld\n", totalfeatures); 
+
+    sprintf (buf, "Total features in input file: %ld\n", totalfeatures);
     if (strlen (stext) + strlen(buf) <= stext_maxlen)
       strcat (stext, buf);
     for(k = 0; k < 2; k++)
       {
-	sprintf (buf, 
+	sprintf (buf,
 		 "#%ld (%s):"						\
-		 " documents: %ld, features: %ld,  prob: %3.2e, pR: %6.2f \n", 
+		 " documents: %ld, features: %ld,  prob: %3.2e, pR: %6.2f \n",
 		 k,
 		 hashname[k],
 		 doc_num[k],
 		 hashlens[k],
-		 ptc[k], 
+		 ptc[k],
 		 10*(log10 (ptc[k] + 1e-300) - log10 (1.0 - ptc[k] + 1e-300)));
-	
+
 	if (strlen(stext)+strlen(buf) <= stext_maxlen)
 	  strcat (stext, buf);
       }
-    
+
     for(k = 0; k < 2; k++)
       {
 	free(hashname[k]);
       }
-    
+
     //   finally, save the status output
     //
-    crm_destructive_alter_nvariable (svrbl, svlen, 
+    crm_destructive_alter_nvariable (svrbl, svlen,
 				     stext, strlen (stext));
     }
-  
+
   //    Return with the correct status, so an actual FAIL or not can occur.
   if (decision >= 0.5 )
     {
@@ -2652,7 +2264,6 @@ int crm_expr_svm_classify(CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       return (0);
     }
  regcomp_failed:
-  return (0); 
-  
-}
+  return (0);
 
+}

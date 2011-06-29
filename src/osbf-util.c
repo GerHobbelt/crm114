@@ -1,18 +1,14 @@
-//  osbf-util.c - utility for munging css files, version X0.1
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.0.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	osbf-util.c - utility for munging css files, version X0.1
+
+// Copyright 2004 Fidelis Assis
+// Copyright 2004-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  OBS: This program is a modified version of the original cssutil,
 //       specific for the new osbf format. It is not compatible with
 //       the original css format. -- Fidelis Assis
-//
-//  include some standard files
 
+//  include some standard files
 #include "crm114_sysincludes.h"
 
 //  include any local crm114 configuration file
@@ -58,7 +54,7 @@ main (int argc, char **argv)
   long sparse_spectrum_file_length = OSBF_DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
   long user_set_css_length = 0;
   long hfsize;
-  long long sum;		// sum of the hits... can be _big_.  
+  long long sum;		// sum of the hits... can be _big_.
   int brief = 0, quiet = 0, dump = 0, restore = 0;
   int opt, fields;
   int report_only = 0;
@@ -268,9 +264,9 @@ main (int argc, char **argv)
 	k = stat (cssfile, &statbuf);
 	hfsize = statbuf.st_size;
       }
-    //    
+    //
     //   mmap the hash file into memory so we can bitwhack it
-    header = crm_mmap_file ( cssfile, 
+    header = crm_mmap_file ( cssfile,
 			     0, hfsize,
 			     PROT_READ | PROT_WRITE,
 			     MAP_SHARED,
@@ -290,7 +286,7 @@ main (int argc, char **argv)
 	crm_munmap_file ((void *) header);
 	exit (EXIT_FAILURE);
       }
-    
+
     hashes = (OSBF_FEATUREBUCKET_STRUCT *) header + header->buckets_start;
     if (hashes == MAP_FAILED)
       {
@@ -335,7 +331,7 @@ main (int argc, char **argv)
 	for (i = 0; i < hfsize; i++)
 	  {
 	    p = (unsigned long *) &bucket[i];
-	    fscanf (f, "%lu;%lu;%lu\n", &p[0], &p[1], &p[2]);
+	    dontcare = fscanf (f, "%lu;%lu;%lu\n", &p[0], &p[1], &p[2]);
 	  }
 	fclose (f);
       }
@@ -383,8 +379,8 @@ main (int argc, char **argv)
 		 CSS_version_name[version_index]);
 	fprintf (stdout, "\n Header size (bytes)              : %12ld",
 		 header->buckets_start * sizeof (OSBF_FEATUREBUCKET_STRUCT));
-	fprintf (stdout, "\n Bucket size (bytes)              : %12d",
-		 sizeof (OSBF_FEATUREBUCKET_STRUCT));
+	fprintf (stdout, "\n Bucket size (bytes)              : %12lu",
+		 (unsigned long)sizeof(OSBF_FEATUREBUCKET_STRUCT));
 	fprintf (stdout, "\n Total available buckets          : %12ld",
 		 header->buckets);
 	fprintf (stdout, "\n Total buckets in use             : %12ld",
@@ -437,8 +433,8 @@ main (int argc, char **argv)
 	    fprintf (stdout, "   Q - quit\n");
 	    fprintf (stdout, ">>> ");
 	    clearerr (stdin);
-	    fscanf (stdin, "%[^\n]", cmdstr);
-	    fscanf (stdin, "%c", crapchr);
+	    dontcare = fscanf (stdin, "%[^\n]", cmdstr);
+	    dontcare = fscanf (stdin, "%c", crapchr);
 	    fields = sscanf (cmdstr, "%s %f", cmdchr, &cmdval);
 	    if (strlen ( (char *)cmdchr) != 1)
 	      {
@@ -520,4 +516,3 @@ main (int argc, char **argv)
   }
   return 0;
 }
-

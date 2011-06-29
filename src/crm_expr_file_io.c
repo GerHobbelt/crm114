@@ -1,14 +1,8 @@
-//  crm_file_io.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_file_io.c - file I/O routines
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -21,29 +15,19 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-//  and for READLINE - only this file uses it (it may not be portable
-// #define HAVE_READLINE
-#ifdef HAVE_READLINE
-#include <readline/readline.h>
-#include <readline/history.h>
-#endif
+//  required for READLINE - only this source file uses it
+//  it may not be portable
+//#include <readline/readline.h>
+//#include <readline/history.h>
 
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
+//    the globals used when we need a big buffer  - allocated once, used
 //    wherever needed.  These are sized to the same size as the data window.
 extern char *inbuf;
 extern char *outbuf;
-extern char *tempbuf;
 
 int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 {
-  //           Allow input of text from stdin.  
+  //           Allow input of text from stdin.
   FILE *fp;
   char temp_vars [MAX_PATTERN];
   long tvlen;
@@ -64,10 +48,10 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 
   //         a couple of vars to bash upon
   long i, j;
-  
+
   if (user_trace)
     fprintf (stderr, "executing an INPUT statement\n");
-  
+
   //    set up the flags (if any)
   //
   till_eof = 1;
@@ -85,7 +69,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
       if (user_trace)
 	fprintf (stderr, " Using READLINE input line editing\n ");
     };
-  
+
   //    get the list of variable names
   //
   crm_get_pgm_arg (temp_vars, MAX_PATTERN, apb->p1start, apb->p1len);
@@ -101,7 +85,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 
   if (internal_trace)
     fprintf (stderr, "  inputting to var: >>>%s<<<\n", temp_vars);
-  
+
   //   and what file to get it from...
   //
   crm_get_pgm_arg (filename, MAX_FILE_NAME_LEN, apb->b1start,apb->b1len);
@@ -121,10 +105,10 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
   fileoffset [fileoffsetlen] = '\0';
   sscanf (fileoffset, "%ld", &offset);
   if (user_trace)
-    fprintf (stderr, "  pre-IO seek to >>>%s<<< --> %ld \n", 
+    fprintf (stderr, "  pre-IO seek to >>>%s<<< --> %ld \n",
 	     fileoffset, offset);
 
-  //   and how many bytes to read 
+  //   and how many bytes to read
   //
   iolen = 0;
   crm_nextword (filename, apb->b1len, i+j, &i, &j);
@@ -134,12 +118,12 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
   sscanf (fileiolen, "%ld", &iolen);
   if (fileiolenlen == 0 || iolen > data_window_size) iolen = data_window_size;
   if (user_trace)
-    fprintf (stderr, "  and maximum length IO of >>>%s<<< --> %ld\n", 
+    fprintf (stderr, "  and maximum length IO of >>>%s<<< --> %ld\n",
 	     fileiolen, iolen);
-  
+
   if (user_trace)
     fprintf (stderr, "Opening file %s for file I/O (reading)\n", ifn);
-  
+
   fp = stdin;
   if ( fnlen  > 0 && strncmp ("stdin", ifn, 6) != 0)
     {
@@ -152,14 +136,14 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 	  goto input_no_open_bailout;
 	};
     };
-  
+
   done = 0;
   mc = 0;
-  
+
   //   get the variable name
   crm_nextword( temp_vars, tvlen, 0,  &vstart, &vlen);
-  
-  if (vlen == 0) 
+
+  if (vlen == 0)
     {
       done = 1;
     }
@@ -174,7 +158,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 
       //        If we have a seek requested, do an fseek.
       //        (Annoying But True: fseek on stdin does NOT error, it's
-      //        silently _ignored_.  Who knew? 
+      //        silently _ignored_.  Who knew?
       if (fp == stdin && offset != 0 )
 	{
 	  nonfatalerror5 ("Hmmm, a file offset on stdin won't do much. ",
@@ -186,12 +170,12 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 	  if (EBADF == fseek (fp, offset, SEEK_SET))
 	    nonfatalerror5 ("Dang, seems that this file isn't fseek()able: ",
 			    filename, CRM_ENGINE_HERE);
-      
-      //    are we supposed to use readline?
+
+      //    are we supposed to use readline (the <readline> flag) ?
 #ifdef HAVE_READLINE
       if (use_readline)
 	{
-	  char *chartemp; 
+	  char *chartemp;
 	  chartemp = readline ("");
 	  strncpy (inbuf, chartemp, data_window_size);
 	  free (chartemp);
@@ -204,10 +188,10 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 	    //    grab characters in a loop, terminated by EOF or newline
 	    ichar = 0;
 	    if (feof (fp) ) clearerr (fp);
-	    while (!feof (fp) 
+	    while (!feof (fp)
 		   && ichar < (data_window_size >> SYSCALL_WINDOW_RATIO)
 		   && ( till_eof || ( ichar == 0 || inbuf [ichar-1] != '\n'))
-		   && ichar <= iolen )	    
+		   && ichar <= iolen )
 	      {
 		inbuf[ichar] = fgetc (fp);
 		ichar++;
@@ -226,7 +210,7 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 	  };
       crm_set_temp_nvar (vname, inbuf, ichar);
     };
-  
+
   //     and close the input file if it's not stdin.
   if (fp != stdin) fclose (fp);
 
@@ -241,10 +225,10 @@ int crm_expr_input ( CSL_CELL *csl, ARGPARSE_BLOCK *apb )
 int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
   long i, j;
-  
-  //    output a string, usually to stdout unless otherwise 
+
+  //    output a string, usually to stdout unless otherwise
   //    specified in the output statement.
-  //    
+  //
   //    We do variable substitutions here....
   //  char outfile[MAX_VARNAME];
   //long outfilelen;
@@ -261,12 +245,12 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   long fileiolenlen;
   long offset, iolen;
 
-  
+
   if (user_trace)
     fprintf (stderr," Executing an OUTPUT statement\n");
 
   //    get the output file name
-  //  
+  //
   //   What file name?
   //
   crm_get_pgm_arg (filename, MAX_FILE_NAME_LEN, apb->b1start,apb->b1len);
@@ -286,10 +270,10 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   fileoffset [fileoffsetlen] = '\0';
   sscanf (fileoffset, "%ld", &offset);
   if (user_trace)
-    fprintf (stderr, "  pre-IO seek to >>>%s<<< --> %ld \n", 
+    fprintf (stderr, "  pre-IO seek to >>>%s<<< --> %ld \n",
 	     fileoffset, offset);
 
-  //   and how many bytes to read 
+  //   and how many bytes to read
   //
   iolen = 0;
   crm_nextword (filename, apb->b1len, i+j, &i, &j);
@@ -299,9 +283,9 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   sscanf (fileiolen, "%ld", &iolen);
   if (fileiolenlen == 0 || iolen > data_window_size) iolen = data_window_size;
   if (user_trace)
-    fprintf (stderr, "  and maximum length IO of >>>%s<<< --> %ld\n", 
+    fprintf (stderr, "  and maximum length IO of >>>%s<<< --> %ld\n",
 	     fileiolen, iolen);
-  
+
 
   outf = stdout;
   if ( fnlen > 0)
@@ -316,30 +300,30 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	{
 	  if (apb->sflags & CRM_APPEND
 	      || fileoffsetlen > 0 )
-	    { 
+	    {
 	      outf = fopen (fnam, "r+b");
-	      //  
+	      //
 	      //    If the file didn't exist already, that open would fail.
 	      //     so we retry with "w+".
-	      if (!outf) outf = fopen (fnam, "w+b");  
+	      if (!outf) outf = fopen (fnam, "w+b");
 	      //
 	      //     And make sure the file pointer is at EOF.
-	      if ( outf != 0 ) 
+	      if ( outf != 0 )
 		fseek (outf, 0, SEEK_END);
 	    }
 	  else
-	    { 
-	      outf = fopen (fnam, "wb"); 
+	    {
+	      outf = fopen (fnam, "wb");
 	    };
 	};
     };
-  
+
   //
   //   could we open the file?
   //
-  if ( outf == 0 ) 
-    { 
-      fatalerror5 
+  if ( outf == 0 )
+    {
+      fatalerror5
 	("For some reason, I was unable to write-open the file named",
 	 fnam,
 	 CRM_ENGINE_HERE);
@@ -353,10 +337,10 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       outtextlen = apb->s1len;
       if (internal_trace)
 	fprintf (stderr, "  outputting with pattern %s\n", outbuf);
-      
+
       //      Do variable substitution on outbuf.
       outtextlen = crm_nexpandvar (outbuf, outtextlen, data_window_size);
-      
+
       //      Do the seek if necessary
       //
       if ( fileoffsetlen > 0)
@@ -369,16 +353,15 @@ int crm_expr_output ( CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       //      Write at most iolen bytes
       //
       if (fileiolenlen > 0)
-	if (iolen < outtextlen) 
+	if (iolen < outtextlen)
 	  outtextlen = iolen;
 
       //   and send it to outf
       //
-      fwrite (outbuf, outtextlen, 1, outf);
+      dontcare = fwrite (outbuf, outtextlen, 1, outf);
       fflush (outf);
       if (outf != stdout && outf != stderr ) fclose (outf);
     };
 
   return (0);
 }
-

@@ -1,3 +1,9 @@
+#
+#	FAQ.txt - The CRM114 and CRM114 Mailfilter FAQ
+#
+# Copyright 2006-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+#
 		The CRM114 and CRM114 Mailfilter FAQ
 
              (last update - 2006-06-06 by WSY)
@@ -29,9 +35,9 @@ all_", that is, unless the message is properly authenticated.  That
 was the original goal of CRM114 - to discriminate between authentic
 messages of importance, and get rid of the rest.
 
-Note the emphasis on "get rid of".  Unlike many other "filters", 
+Note the emphasis on "get rid of".  Unlike many other "filters",
 CRM114's default action is to read all of input, and put NOTHING onto
-output.  The simplest possible CRM114 program does exactly that, 
+output.  The simplest possible CRM114 program does exactly that,
 read all of stdin, and throw it away.  With vigor.
 
 
@@ -41,7 +47,7 @@ read all of stdin, and throw it away.  With vigor.
 
 - Ahhh... you've got a mail delivery or mail reading program that
 changed the headers just a little bit, so what was spam is now
-nonspam, or vice versa.  The fix is to tell the system to 
+nonspam, or vice versa.  The fix is to tell the system to
 override this "safety valve", either by:
 
   1) Switching over to mailreaver.crm  :)
@@ -61,9 +67,9 @@ Either will do it for you.
 *** I've got a bug!  What do I do?
 
 - First, read the _whole_ HOWTO, which will tell you a few useful
-tricks and diagnostics.  You can +probably+ fix the bug yourself. 
+tricks and diagnostics.  You can +probably+ fix the bug yourself.
 
-Then, read the rest of this document (the FAQ).  
+Then, read the rest of this document (the FAQ).
 
 If it's not clear at this point, and you _really_ have read both
 the FAQ and the HOWTO, then you have a choice:
@@ -73,11 +79,11 @@ the FAQ and the HOWTO, then you have a choice:
     file to see how it all works.  Then they might try debugging
     themselves.
 
-    2) Less computer-savvy types at this point might want to 
+    2) Less computer-savvy types at this point might want to
     put their question onto the crm114 mailing list.  Hint: the
     location of the mailing list is hidden somewhere in the
     documents available from the CRM114 webpage, which includes
-    the above - the HOWTO, the FAQ, the QUICKREF, and the INTRO.  
+    the above - the HOWTO, the FAQ, the QUICKREF, and the INTRO.
 
 So, there's a good reason to read the docs.  :-)
 
@@ -86,10 +92,10 @@ So, there's a good reason to read the docs.  :-)
 
 - Okay, that's bad.  It shouldn't do that.
 
-You should still read this document, the HOWTO, the QUICKREF, and 
+You should still read this document, the HOWTO, the QUICKREF, and
 known-bugs.txt, as the bug may already be known and a workaround
 developed (or it may be a problem with some external system that's
-also known). 
+also known).
 
 Of course, if you've managed to SEGFAULT the CRM114 system, then
 try to reduce your program and data right down to the minimum
@@ -159,7 +165,7 @@ considerable accuracy by training in the wrong things!
 
 
 
-*** I want to change classifiers.  Can I just change it in the 
+*** I want to change classifiers.  Can I just change it in the
     mailfilter :clf: setup?
 
 - Sorry, NO.  That's not the way it works.  You pick a classifier in
@@ -177,7 +183,7 @@ utilities like cssutil *think* they can work on them all.
 Boy, are they _wrong_.  Except for Markovian, OSB, and OSB-Unique,
 they are NOT interchangeable.  Switching between Markovian, OSB, and
 OSB-Unique classifiers is permitted if you set a flag in the file
-crm114_config.h.  This flag was supposed to be default on, but 
+crm114_config.h.  This flag was supposed to be default on, but
 several releases were made with it off, and now it's basically
 "stuck" as a historical artifact and thus although you can use
 the same utility for statistics operations on Markov, OSB, and
@@ -256,12 +262,12 @@ reflects one or more of:
 	    waitresses did _not_ send in a patch).
 
 Generally speaking, it is an _honor_ to be blamed for a particular
-release of CRM114, and recipients of that honor should wear it 
+release of CRM114, and recipients of that honor should wear it
 proudly.  :-)
 
 
 
-*** I've got a _ton_ of spam in my library.  Why shouldn't I just 
+*** I've got a _ton_ of spam in my library.  Why shouldn't I just
     load it into CRM114 and get a head start on training?
 
 - This used to be a bad idea, and unless you use a special tool
@@ -276,7 +282,7 @@ Only Errors.  When CRM114's mailfilter makes a mistake, you train in
 the right result and it will do better next time.
 
 But say you bulk-load all of your good and spam email.  You will end up
-with bloated overflowing classifier files and they won't be very 
+with bloated overflowing classifier files and they won't be very
 accurate, because they contain a lot of extraneous information.
 
 I've tested this _exhaustively_, spending a few CPU-weeks in the
@@ -288,15 +294,15 @@ The actual numbers work out something like this: I used a torture-test
 corpus of 4147 messages, split roughly 60/40 between nonspam and spam.
 Running TOE, with the 5th order polynomial and entropic correction,
 the error rate curve showed a nice exponential approach to zero errors.
-Reshuffling the corpus of 4147 messages ten different ways, the final 
+Reshuffling the corpus of 4147 messages ten different ways, the final
 error rate (that is, the error rate in the last 500 messages) was just
 about 6.9 errors per 500 final messages, or 1.3% (very good on such
 a difficult corpus.  I _personally_, when hand-scoring these messages,
 get about a 30% error rate).
 
-Training _every_ sample yielded about 14.9 errors in the final 500 
+Training _every_ sample yielded about 14.9 errors in the final 500
 messages, or an error rate of about 2.9 %.  Interestingly, the error
-curve or training every sample dove more quickly initially, but 
+curve or training every sample dove more quickly initially, but
 then _rose_ again as new items were trained.
 
 The relative runtimes were 14 minutes (roughly) for TOE and training
@@ -316,7 +322,7 @@ train only errors, as you encounter them.
 - Intuitively, here's how you can understand it:
 
 If you train in only on an error, that's close to the minimal change
-necessary to obtain correct behavior from the filter.  
+necessary to obtain correct behavior from the filter.
 
 If you train in something that would have been classified correctly
 anyway, you have now set up a prejudice (an inappropriately strong
@@ -330,7 +336,7 @@ converge on the right answer as fast as never getting these unwarranted
 prejudices in the first place.
 
 In filters as in people, prejudices are generalizations that are best
-avoided.  
+avoided.
 
 -----
 
@@ -398,7 +404,7 @@ business model)
 
 
 
-*** It was working fine, then I trained one thing and it started making 
+*** It was working fine, then I trained one thing and it started making
     mistakes again!  Did I break it?
 
 - Ah, you've encountered what we've termed an "error shower", (or, depending
@@ -407,7 +413,7 @@ verge of accuracy; it made an error, you retrained it, but the retrain went
 too far.
 
 Don't worry.  Keep training, and the error shower will damp out and you'll
-quickly converge on an even more accurate filter.  
+quickly converge on an even more accurate filter.
 
 Error showers are most common for me in the third to sixth month of
 use; and usually they occur in groups of four to six related errors.  Then
@@ -433,7 +439,7 @@ would do it differently now that I've done it this way.
 - No, CRM114 is actually a language that makes it easy to write filters
 of any sort.  The most useful of these so far is for mail filtering;
 the CRM114 distribution pack contains a pretty reasonable mail filter
-for people who want it to "just work".  
+for people who want it to "just work".
 
 Other people have written Usenet filters, Web content filters, and
 (in a spree of creative hackery) a "cheater seeker" to find people
@@ -464,16 +470,16 @@ Minor Update- by altering the weightings of different lengths of short
 phrases, it's possible to change the behavior of SBPH/BCR from a
 strict Bayesian, to an entropically-corrected Bayesian, to a
 Markovian matcher.   Releases since roughly 20040101 have all had this
-improved Markovian matcher as the default configuration as this 
+improved Markovian matcher as the default configuration as this
 has been tested and demonstrated to provide the best performance.
 
 
 
 *** So that's it?
 
-- Mathematically, yes.  But since about 2003-11-xx, the chain 
-rule function has been updated with entropic correction; this puts 
-more weight on longer chains.  
+- Mathematically, yes.  But since about 2003-11-xx, the chain
+rule function has been updated with entropic correction; this puts
+more weight on longer chains.
 
 In effect, this is a Markov model of the data stream with lots
 of hidden states.  So, SBPH/BCR is really not SBPH/BCR, its more
@@ -482,7 +488,7 @@ of Sparse Binary Polynomial Hashing / Bayesian-Markov Model (SBPH/BMM).
 The really nice thing about SBPH/BMM is that it's slightly more
 accurate than the previous SBPH/BCR and it's 100% upward compatible
 with /BCR data files.  All the information was there, it just needed
-to be used properly.  
+to be used properly.
 
 
 
@@ -545,7 +551,7 @@ days 98%, and three days > 99%.
 - Not a lot.  At 99.67% accuracy, I only had 84K of nonspam and 185K of
 spam text.  Interestingly, because spam contains a lot of run-on HTML,
 the total number of hashed datapoint features is roughly equal.
- 
+
 
 
 *** I tried training in a huge amount of spam or nonspam, and it hung!
@@ -555,12 +561,12 @@ anyway.  Read up on mailtrainer.crm
 
 
 *** I trained in (some huge amount) of spam and nonspam, and it
-    doesn't work any more!!!	    
+    doesn't work any more!!!
 
 - As noted above, you can overflow the buckets in the .css files
 if you train in too much spam or nonspam.  You should get very good
 results with less than 100K each of spam and nonspam text
-(roughly equal numbers of messages is good too).  
+(roughly equal numbers of messages is good too).
 
 Use the most recent spam and nonspam you can get your hands on.
 Don't use spam more than a few months old for training.
@@ -625,7 +631,7 @@ or classify at horrendously slow rates- the results are still correct
 and accurate, but it's very annoying.  We have a workaround plan (to
 do sorted access, or use a tree structure) in consideration.
 
-We're now a comfortable two orders of magnitude faster than 
+We're now a comfortable two orders of magnitude faster than
 SpamAssassin- but in the honorable spirit of Open Source Software,
 I doubt that the SpamAssassin folks will take this lying down.  :)
 
@@ -687,7 +693,7 @@ then create two files of spam and nonspam "spamtext.txt" and
 "nonspamtext.txt".  Run the "make cssfiles" command and new .css files
 will be built.
 
-Even better, delete the .css files, type 
+Even better, delete the .css files, type
 
      cssutil -b -s spam.css
      cssutil -b -s nonspam.css
@@ -701,7 +707,7 @@ of spam you get.
 
 ***  When will CRM114 go to full Bayesian?
 
-As of Nov 1 2002, it has.  :-)  See the file "classify_details.txt" for 
+As of Nov 1 2002, it has.  :-)  See the file "classify_details.txt" for
 the full scoop.
 
 We may change the Bayesian Chain Rule at some point in the future; the
@@ -711,5 +717,3 @@ Unfortunately, spam features and nonspam features are NOT independent
 and so BCR is really quite incorrect to use.  I'm working on better
 alternatives and they will appear as they are found, tested, and
 proven to work better than BCR.
-
-	

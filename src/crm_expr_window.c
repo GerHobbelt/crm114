@@ -1,14 +1,8 @@
-//  crm_expr_window.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_expr_window.c - window operation
+
+// Copyright 2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -21,17 +15,11 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
 //    the auxilliary input buffer (for WINDOW input)
 extern char *newinputbuf;
 
-//    the globals used when we need a big buffer  - allocated once, used 
+//    the globals used when we need a big buffer  - allocated once, used
 //    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
 extern char *tempbuf;
 
 //    a helper function that should be in the C runtime lib but isn't.
@@ -48,7 +36,7 @@ char *my_strnchr (const char *str, long len, int c)
   return (NULL);
 }
 
-  
+
 int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 {
   //       a window operation - two steps...first is to discard
@@ -59,9 +47,9 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //       when we get a read completes.
   //
   //       Yes, there are more efficient, less memory-intensive ways
-  //       to do this, but this is simple and unlikely to be broken in 
+  //       to do this, but this is simple and unlikely to be broken in
   //       subtle ways.
-  
+
   static long newbuflen = 0;
   char pch [MAX_PATTERN];
 
@@ -92,21 +80,21 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 
   inputsrcname[0] = '\000';
   inputsrclen = 0;
-  
+
   //	wvname[0] = '\000';
   //wvnamelen = 0;
-  
+
   srcidx = 0;
   savedinputtxt = NULL;
   savedinputtxtlen = 0;
   failout = 0;
 
-  if (user_trace) 
+  if (user_trace)
     fprintf (stderr, "Executing a 'window' operation\n");
 
-  //       there's the choice of input from a 
+  //       there's the choice of input from a
   //       variable, or input from stdin.  This is controlled strictly
-  //       by whether there's a [] in the statement (someday it may 
+  //       by whether there's a [] in the statement (someday it may
   //       allow other files than stdin, but not yet.)  So right now, it's-
   //          1) read from the variable [:foo:] if supplied, else
   //          2) read from STDIN (default)
@@ -114,11 +102,11 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #define FROM_STDIN 0
 #define FROM_VAR 1
 #define FROM_VAR_DONE 2
-  //      
+  //
   //       Second, there's how much to read "preemptively", that is,
   //       to read ahead, but with the possibility of reading ahead too
   //       much (and thereby messing up a script or other typeahead that
-  //       another program sharing stdin was meant to actually read.  
+  //       another program sharing stdin was meant to actually read.
   //       The three choices we support are:
   //          1) read everything available (BYEOF), else
   //          3) read one character at a time (BYCHAR) (default)
@@ -129,11 +117,11 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 #define BYLINE 999   //  DANGER - BYLINE IS NOT SUPPORTED ANY MORE!!!
   //
   //       Third, there's the question of what to do if the read doesn't
-  //       have enough material to satisfy the second regex (i.e. we hit 
-  //       end of variable or EOF first). 
-  //  
-  //       Our options are 
-  //  
+  //       have enough material to satisfy the second regex (i.e. we hit
+  //       end of variable or EOF first).
+  //
+  //       Our options are
+  //
   //       1) just fail.  (the default)
   //       2) just accept what we got, even though it doesn't fulfill
   //          the paste regex (accepteof).
@@ -150,7 +138,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //              these are denoted by inputretryEOF = ...
 #define EOFSTAYS 0
 #define EOFRETRY 1
-  
+
   //      check for the flags
   //
   //   default is BYCHAR
@@ -209,30 +197,30 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	fprintf (stderr, "  no case matching turned on\n ");
       regexflags = regexflags | REG_LITERAL;
     };
-  
+
   //    part 1: dispose of old window worth of data.  If no match,
   //    dispose of all of the old window.
-  //  
-  //     get the disposal pattern	
+  //
+  //     get the disposal pattern
   //
   crm_get_pgm_arg (pch, MAX_PATTERN, apb->s1start, apb->s1len);
-  
+
   //     null window check - if no cut or paste patterns, then we
   //     just skip to the end of the WINDOW statement code
   //     which is how a WINDOW statement can be used to have a
   //     program "come out running" before reading stdin.
   if (apb->s1len == 0 && apb->s2len == 0)
     goto crm_window_no_changes_made;
-  
+
   //     We have the first pattern in pch.  We ought to look for the
   //     appropriate flags here (common code, anyone?) but for now,
   //     we'll just do a brutally straightforward expansion and then
   //     matching.
-  
+
   if (internal_trace)
     fprintf (stderr, " window cut pattern ---%s---\n", pch);
   flen = apb->s1len;
-  
+
   //       expand the match pattern
   flen = crm_nexpandvar (pch, apb->s1len, MAX_PATTERN);
   //
@@ -241,14 +229,14 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   if ( i > 0)
     {
       crm_regerror ( i, &preg, tempbuf, data_window_size);
-      nonfatalerror5 ("Regular Expression Compilation Problem:", 
+      nonfatalerror5 ("Regular Expression Compilation Problem:",
 		      tempbuf, CRM_ENGINE_HERE);
       goto invoke_bailout;
     };
-  
+
   //    Get the variable we're windowing.  If there's no such
   //    variable, we default to :_dw:
-  
+
   crm_get_pgm_arg (wvname, MAX_PATTERN, apb->p1start, apb->p1len);
   wvnamelen = crm_nexpandvar (wvname, apb->p1len, MAX_PATTERN);
   //    if no svname, then we're defaulted to :_dw:
@@ -257,8 +245,8 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       strcat (wvname, ":_dw:");
       wvnamelen = strlen (":_dw:");
     };
-  
-  vmidx = crm_vht_lookup (vht, wvname, 
+
+  vmidx = crm_vht_lookup (vht, wvname,
 			  strlen (wvname));
   if (vht[vmidx] == NULL)
     {
@@ -266,7 +254,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		     "How very bizarre.", CRM_ENGINE_HERE);
       goto invoke_bailout;
     }
-  
+
   mdw = NULL;
   if (vht[vmidx]->valtxt == cdw->filetext) mdw = cdw;
   if (vht[vmidx]->valtxt == tdw->filetext) mdw = tdw;
@@ -282,14 +270,14 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //
   //       OK, we've got the arguments for part 1 - the cutting out
   //       of the old data.  So, let's do the cut.
-  //     
+  //
   //       execute the regex.
-  i = crm_regexec ( &preg, 
+  i = crm_regexec ( &preg,
 		    &(vht[vmidx]->valtxt[vht[vmidx]->vstart]),
-		    vht[vmidx]->vlen, 
+		    vht[vmidx]->vlen,
 		    1, matches, 0, NULL);
   crm_regfree (&preg);
-  
+
   //       starting offset of the "keep section" is at matches[0].rm.eo
   //       so we use crm_slice_and_splice_window to get rid of it.
   //
@@ -297,7 +285,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
     {
       //     delete everything up to and including the delimiter
       crm_slice_and_splice_window (mdw,
-				   vht[vmidx]->vstart, 
+				   vht[vmidx]->vstart,
 				   -matches[0].rm_eo);
     }
   else
@@ -306,19 +294,19 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       //  flush the input window completely.
 
       crm_slice_and_splice_window (mdw,
-				   vht[vmidx]->vstart, 
+				   vht[vmidx]->vstart,
 				   -vht[vmidx]->vlen);
     };
-  
-  if (user_trace) 
-    fprintf (stderr, "  cut completed, variable length after cut is %ld\n", 
+
+  if (user_trace)
+    fprintf (stderr, "  cut completed, variable length after cut is %ld\n",
 	     vht[vmidx]->vlen);
 
-  //**************************************************************  
+  //**************************************************************
   //       OK, part one is done- we've windowed off the first
-  //       part of the input.  
+  //       part of the input.
   //
-  //       Now we put the new 
+  //       Now we put the new
   //
   //        Now we get the "put" half of the regex.
 
@@ -329,24 +317,24 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   flen = apb->s2len;
   if (user_trace)
     fprintf (stderr, "adding input with terminator of --%s--,", pch);
-  
+
   //       expand the match pattern
   flen = crm_nexpandvar (pch, flen, MAX_PATTERN);
-  
+
   if (user_trace)
     fprintf (stderr, " which expands to --%s--", pch);
-  
+
   //
-  //       compile the paste match regex 
+  //       compile the paste match regex
   i = crm_regcomp (&preg, pch, flen, regexflags);
   if ( i > 0)
     {
       crm_regerror ( i, &preg, tempbuf, data_window_size);
-	    nonfatalerror5 ("Regular Expression Compilation Problem:", 
+	    nonfatalerror5 ("Regular Expression Compilation Problem:",
 			   tempbuf, CRM_ENGINE_HERE);
 	    goto invoke_bailout;
     };
-  
+
   //    decide - do we suck input from stdin, or from
   //    a variable that's already here?
   //
@@ -363,17 +351,17 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       if (user_trace)
 	fprintf (stderr, "  getting input from var %s\n", inputsrcname);
     };
-  
+
   //
   //    Now, depending on inputmode, we set up the final pasting
-  //    to do the right thing (the final pasting params are in 
-  //     matches[0] ).  
+  //    to do the right thing (the final pasting params are in
+  //     matches[0] ).
   //
   //     we'll set up dummy limits for now though...
   //
   matches[0].rm_so = 0;
   matches[0].rm_eo = 0;
-  
+
   //   Now, the WHILE loop to find satisfaction for the second
   //   regex, within the boundaries of from_var vs from_stdin, and
   //   byline vs bychar vs byeof.  So it's really a read/test/maybe_loop
@@ -397,26 +385,26 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    //     so we fake it as though it came from a file.
 	    //
 	    //    Later on, we have to undo the faking, and also modify
-	    //    the length of the input variable (cutting out the stuff 
+	    //    the length of the input variable (cutting out the stuff
 	    //    that went into the WINDOW).
-	
+
 	    //   diagnostic - what was in the newinputbuf before this stmt?
 	    if (user_trace)
 	      {
 		fprintf (stderr, " Using input source from variable %s\n",
 			 inputsrcname);
-		fprintf (stderr, "   prior newinput buf --%s--\n", 
+		fprintf (stderr, "   prior newinput buf --%s--\n",
 			 newinputbuf);
 	      }
-	    
+
 	    //  Get the source input stuff
-	    // 
+	    //
 	    srcidx = crm_vht_lookup (vht, inputsrcname, inputsrclen);
-	    if (vht[srcidx] == NULL) 
+	    if (vht[srcidx] == NULL)
 	      {
 		nonfatalerror5 ("Trying to take WINDOW input from"
 			       "nonexistent variables doesn't work,"
-				"in this case, from :", 
+				"in this case, from :",
 				inputsrcname, CRM_ENGINE_HERE);
 		goto invoke_bailout;
 	      };
@@ -424,15 +412,15 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    //
 	    //    malloc up some temporary space to keep the static input
 	    //   buffer's stored text
-	    savedinputtxt = (char *) 
+	    savedinputtxt = (char *)
 	      malloc (sizeof (char) * (32 + newbuflen ));
 	    if (savedinputtxt == NULL)
 	      {
-		fatalerror5 ("Malloc in WINDOW failed.  Aw, crud.", 
+		fatalerror5 ("Malloc in WINDOW failed.  Aw, crud.",
 			     "Can't WINDOW this way", CRM_ENGINE_HERE);
 		goto invoke_bailout;
 	      };
-	    
+
 	    //
 	    //    save our newinputbuf txt
 	    strncpy (savedinputtxt,
@@ -442,15 +430,15 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    //
 	    //     and push the contents of the variable into newinputbuf
 	    //     (we know it's no bigger than data_window_len)
-	    strncpy (newinputbuf, 
-		     &vht[srcidx]->valtxt[vht[srcidx]->vstart], 
+	    strncpy (newinputbuf,
+		     &vht[srcidx]->valtxt[vht[srcidx]->vstart],
 		     vht[srcidx]->vlen );
 	    newinputbuf[vht[srcidx]->vlen] = '\000';
 	    newbuflen = vht[srcidx]->vlen;
 	    //
 	    //    and there we have it - newintputbuf has all we will
-	    //    get from this variable.  
-	    //  
+	    //    get from this variable.
+	    //
 	    //    Mark the fact that we're done with this variable by
 	    //    setting inputsrc to FROM_VAR_DONE;
 	    inputsrc = FROM_VAR_DONE;
@@ -471,16 +459,16 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	    icount = 0;
 	    //
 	    //         the reason we _don't_ do this on te first interation
-	    //       is that we may already have data in the temp 
+	    //       is that we may already have data in the temp
 	    //      buffer, and we should use that data up first.
 	    if (!firsttime )
 	      {
 		//  If we're reading from stdin, then we have three options:
 		//   read a character, read up to (and including) the newline,
-		//   or read till EOF.  After each one, we set 
-		if (feof(stdin)) 
+		//   or read till EOF.  After each one, we set
+		if (feof(stdin))
 		  saweof = 1;
-		if (inputretryEOF == EOFRETRY 
+		if (inputretryEOF == EOFRETRY
 		    && (feof (stdin) || ferror (stdin) ) )
 		    {
 		      if (user_trace)
@@ -506,8 +494,8 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		      if (user_trace)
 			fprintf (stderr, "  bigchunk BYEOF read starting \n");
 		      //
-		      //        fread doesn't stop on pipe empty, while 
-		      icount = fread (&(newinputbuf[newbuflen]), 1, 
+		      //        fread doesn't stop on pipe empty, while
+		      icount = fread (&(newinputbuf[newbuflen]), 1,
 				      data_window_size - (newbuflen + 256),
 				      stdin);
 		      if (feof (stdin)) saweof = 1;
@@ -526,7 +514,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		      //        empty, while read on STDIN_FILENO does.
 		      //        So, for reading by chunks, we use read (STDIN
 		      icount = read ( fileno (stdin),
-				     &(newinputbuf[newbuflen]), 
+				     &(newinputbuf[newbuflen]),
 				     data_window_size / 4 );
 		      saweof = 1;
 		    }
@@ -535,7 +523,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		  default:
 		    {
 		      //   if BYCHAR, read one character and we're done
-		      //	  icount = read (0, &(newinputbuf[newbuflen]), 1); 
+		      //	  icount = read (0, &(newinputbuf[newbuflen]), 1);
 		      //
 		      if (user_trace)
 			fprintf (stderr, "   single character BYCHAR read \n");
@@ -544,7 +532,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		    break;
 		  };
 	      }
-	    //      
+	    //
 	    //     end of major part of BYCHAR / BYEOF specialized code.
 	    //
 	    if (icount > 0)
@@ -573,20 +561,20 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
       //
       //     So, we run the paste regex on it, and depending on the outcome,
       //     set "done" or not.
-	  
-      i = crm_regexec ( &preg, 
-			newinputbuf, 
-			newbuflen, 
+
+      i = crm_regexec ( &preg,
+			newinputbuf,
+			newbuflen,
 			1, matches, 0, NULL);
-      
+
       //
       //        Now we deal with the result of the regex matching (or not
       //        matching.  i== 0 for success, i > 0 for failure.
       //
-      if (i == 0) 
+      if (i == 0)
 	{
-	  //   we found the regex; do the cut/paste 
-	  //   
+	  //   we found the regex; do the cut/paste
+	  //
 	  done = 1;
 	  if (user_trace)
 	    fprintf (stderr, "  Found the paste pattern\n");
@@ -598,7 +586,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 	  //    Nope, the regex was not found.  But if we had inputEOFaccept=
 	  //    EOFACCEPTS, then we accept it anyway.
 	  if (saweof)
-	    {	
+	    {
 	      done = 1;
 	      failout = 1;
 	      if (user_trace)
@@ -620,7 +608,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		default:
 		  {
 		    //      Nope - got an EOF, and we aren't supposed to
-		    //      accept it.  So we MIGHT be done.  Or maybe not... 
+		    //      accept it.  So we MIGHT be done.  Or maybe not...
 		    //      if we have EOFRETRY set then we clear it and
 		    //      try again.
 		    if (inputretryEOF == EOFRETRY)
@@ -640,38 +628,38 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
 		  break;
 		};
 	    };
-	};        
-    };  // end of the (!done) loop... 
-  //    
+	};
+    };  // end of the (!done) loop...
+  //
   //    It's just use the computed values from here on.
 
   crm_regfree (&preg);
-  
+
   if (internal_trace)
     fprintf (stderr, "   now newinput buf --%s--\n", newinputbuf);
 
   //     Once we get to here, we have the new input in newinputbuf, and
   //     matches[0].rm_eo is the length.  So, we copy the new data onto
   //     the end of the cdw window, and slide the new input up.
-  //     
+  //
   //     start by making some space at the end of the input buffer
-  
+
   crm_slice_and_splice_window (mdw,
 			       vht[vmidx]->vstart+vht[vmidx]->vlen,
 			       matches[0].rm_eo);
-  
+
   //     copy the pertinent part of newinputbuf into the space
   //     we just made.
-  memmove (&(vht[vmidx]->valtxt[vht[vmidx]->vstart 
+  memmove (&(vht[vmidx]->valtxt[vht[vmidx]->vstart
 				+ vht[vmidx]->vlen
 				- matches[0].rm_eo]),
-	   newinputbuf, 
+	   newinputbuf,
 	   matches[0].rm_eo);
-  
+
   //     and get rid of the same characters out of newinputbuf
   if (newbuflen > 0 )
-    memmove (newinputbuf, 
-	     &(newinputbuf[matches[0].rm_eo]), 
+    memmove (newinputbuf,
+	     &(newinputbuf[matches[0].rm_eo]),
 	     newbuflen - matches[0].rm_eo + 1);
   newbuflen = newbuflen - matches[0].rm_eo;
   newinputbuf[newbuflen] = '\000';
@@ -681,7 +669,7 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //       we have to set up the CSL so that it will continue execution
   //       in the "right" place.
 
-  if (failout == 1) 
+  if (failout == 1)
     {
       if (user_trace)
 	fprintf (stderr, "  CUT match failed so we're going to fail.\n");
@@ -696,10 +684,10 @@ int crm_expr_window (CSL_CELL *csl, ARGPARSE_BLOCK *apb)
   //
 
   //
-  //    Last little bit of cleanup is that IF we fetched from a 
+  //    Last little bit of cleanup is that IF we fetched from a
   //    variable (not a file) we have to undo our fakery of stuffing
   //    the var's contents into newinputbuf.
-  //   
+  //
   //    This cleanup is two parts - stuffing the remains of inputsrcname
   //    back into inputsrcname, and then restoring the old stdin buffer
   //    contents from savedinputtxt and freeing the temporary

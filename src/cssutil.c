@@ -1,15 +1,9 @@
-//  cssutil.c - utility for munging css files, version X0.1
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.0.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	cssutil.c - utility for munging css files, version X0.1
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
 
 //  include some standard files
-
 #include "crm114_sysincludes.h"
 
 //  include any local crm114 configuration file
@@ -53,7 +47,7 @@ main (int argc, char **argv)
   long sparse_spectrum_file_length = DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
   long user_set_css_length = 0;
   long hfsize;
-  long long sum;		// sum of the hits... can be _big_.  
+  long long sum;		// sum of the hits... can be _big_.
   // int hfd;
   int brief = 0, quiet = 0, dump = 0, restore = 0;
   int opt, fields;
@@ -87,13 +81,13 @@ main (int argc, char **argv)
   newinputbuf = (char *) &hfsize;
 
   histbins = FEATUREBUCKET_VALUE_MAX;
-  if (histbins > FEATUREBUCKET_HISTOGRAM_MAX) 
+  if (histbins > FEATUREBUCKET_HISTOGRAM_MAX)
     histbins = FEATUREBUCKET_HISTOGRAM_MAX;
   bcounts = malloc (sizeof (unsigned long) * (histbins + 2) );
 
   {
-    struct stat statbuf;	//  filestat buffer
-    FEATUREBUCKET_TYPE *hashes;	//  the text of the hash file
+    struct stat statbuf;		//  filestat buffer
+    FEATUREBUCKET_STRUCT *hashes;	//  the text of the hash file
 
     // parse cmdline options
     while ((opt = getopt (argc, argv, "bDhR:rqs:S:v")) != -1)
@@ -223,13 +217,13 @@ main (int argc, char **argv)
 	k = stat (cssfile, &statbuf);
 	hfsize = statbuf.st_size;
       }
-    //    
+    //
     //   mmap the hash file into memory so we can bitwhack it
-    hashes = (FEATUREBUCKET_TYPE *) crm_mmap_file (cssfile, 
-						   0, hfsize,
-						   PROT_READ | PROT_WRITE,
-						   MAP_SHARED,
-						   NULL);
+    hashes = (FEATUREBUCKET_STRUCT *) crm_mmap_file (cssfile,
+						     0, hfsize,
+						     PROT_READ | PROT_WRITE,
+						     MAP_SHARED,
+						     NULL);
     if (hashes == MAP_FAILED)
       {
 	fprintf (stderr,
@@ -239,16 +233,16 @@ main (int argc, char **argv)
 
     //   from now on, hfsize is buckets, not bytes.
     hfsize = statbuf.st_size / sizeof (FEATUREBUCKET_STRUCT);
-    
+
 #ifdef OSB_LEARNCOUNTS
     //       If LEARNCOUNTS is enabled, we normalize with documents-learned.
     //
     //       We use the reserved h2 == 0 setup for the learncount.
-    //  
+    //
     {
       char* litf = "Learnings in this file";
       char* fitf = "Features in this file";
-      unsigned long hcode, h1, h2;
+      unsigned int hcode, h1, h2;
       //
       hcode = strnhash (litf, strlen ( litf ));
       h1 = hcode % hfsize;
@@ -256,7 +250,7 @@ main (int argc, char **argv)
       if (hashes[h1].hash != hcode)
 	{
 	  // initialize the file?
-	  if (hashes[h1].hash == 0 && hashes[h1].key == 0) 
+	  if (hashes[h1].hash == 0 && hashes[h1].key == 0)
 	    {
 	      hashes[h1].hash = hcode;
 	      hashes[h1].key = 0;
@@ -264,11 +258,11 @@ main (int argc, char **argv)
 	      learns_index = h1;
 	    }
 	  else
-	    { 
+	    {
 	      //fatalerror (" This file should have learncounts, but doesn't!",
 	      //  " The slot is busy, too.  It's hosed.  Time to die.");
 	      //goto regcomp_failed;
-	      fprintf (stderr, "\n Minor Caution - this file has the learncount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");  
+	      fprintf (stderr, "\n Minor Caution - this file has the learncount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");
 	    };
 	}
       //      fprintf (stderr, "This file has had %ld documents learned!\n",
@@ -280,7 +274,7 @@ main (int argc, char **argv)
       if (hashes[h1].hash != hcode)
 	{
 	  // initialize the file?
-	  if (hashes[h1].hash == 0 && hashes[h1].key == 0) 
+	  if (hashes[h1].hash == 0 && hashes[h1].key == 0)
 	    {
 	      hashes[h1].hash = hcode;
 	      hashes[h1].key = 0;
@@ -288,11 +282,11 @@ main (int argc, char **argv)
 	      features_index = h1;
 	    }
 	  else
-	    { 
+	    {
 	      //fatalerror (" This file should have learncounts, but doesn't!",
 	      //  " The slot is busy, too.  It's hosed.  Time to die.");
 	      //goto regcomp_failed ;
-	      fprintf (stderr, "\n Minor Caution - this file has the featurecount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");  
+	      fprintf (stderr, "\n Minor Caution - this file has the featurecount slot in use.\n This is not a problem for Markovian classification, but it will have some\n issues with an OSB classfier.\n");
 	    };
 	}
       //fprintf (stderr, "This file has had %ld features learned!\n",
@@ -300,14 +294,14 @@ main (int argc, char **argv)
       features_learned = hashes[h1].value;
     };
 
-#endif 
+#endif	// OSB_LEARNCOUNTS
 
     if (dump)
       {
 	// dump the css file
 	for (i = 0; i < hfsize; i++)
 	  {
-	    printf ("%lu;%lu;%lu\n", 
+	    printf ("%u;%u;%u\n",
 		    hashes[i].key, hashes[i].hash, hashes[i].value);
 	  }
       }
@@ -327,7 +321,7 @@ main (int argc, char **argv)
 	  }
 	for (i = 0; i < hfsize; i++)
 	  {
-	    fscanf (f, "%lu;%lu;%lu\n", 
+	    dontcare = fscanf (f, "%u;%u;%u\n",
 		    &(hashes[i].key), &(hashes[i].hash), &(hashes[i].value));
 	  }
 	fclose (f);
@@ -445,8 +439,8 @@ main (int argc, char **argv)
 	    fprintf (stdout, "   Q - quit\n");
 	    fprintf (stdout, ">>> ");
 	    clearerr (stdin);
-	    fscanf (stdin, "%[^\n]", cmdstr);
-	    fscanf (stdin, "%c", crapchr);
+	    dontcare = fscanf (stdin, "%[^\n]", cmdstr);
+	    dontcare = fscanf (stdin, "%c", crapchr);
 	    fields = sscanf (cmdstr, "%s %f", cmdchr, &cmdval);
 	    if (strlen ( (char *) cmdchr) != 1)
 	      {

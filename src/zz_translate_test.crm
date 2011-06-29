@@ -1,5 +1,11 @@
-window
+#! /usr/bin/crm
+#
+#	zz_translate_test.crm - test whitespace processing
 
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
+window
 output /version: :*:_crm_version:\n\n/
 
 isolate (:noSpaces:) //
@@ -13,4 +19,3 @@ alter ( :withSpaces: ) /Nuclear Combat Toe To Toe With The Rooskies !/
 output /withSpaces before: :*:withSpaces:\n/
 translate ( :withSpaces: ) [ :withSpaces: ] / / //
 output /withSpaces after : :*:withSpaces:\n\n/
-

@@ -1,7 +1,10 @@
-#!/usr/bin/crm
+#! /usr/bin/crm
 #
-#        Program to test match/isolate memory reclamation
-#
+#	match_isolate_reclaim.crm - test match/isolate memory reclamation
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 {
 	window
 	output /\nMatch-Isolate reclamation test.  If this program doesn't \n/
@@ -10,7 +13,7 @@
 	output /alternately are allocated and become reclaimable) \n/
 
 	alter (:_dw:) /foo/
-	isolate (:bytes: :s:) 
+	isolate (:bytes: :s:)
 	syscall () (:bytes:) /cat \/usr\/share\/dict\/words/
 	eval (:s:) /:#:bytes:/
 	isolate (:startbytes:) //
@@ -22,7 +25,7 @@
 	isolate (:ihead:) /X/
 
 	eval (:startbytes:)  /:#:_iso:/
-	output /OK_IF_SIZE_CHANGES: Size of isolation at start: :*:startbytes:\n/ 
+	output /OK_IF_SIZE_CHANGES: Size of isolation at start: :*:startbytes:\n/
 
 	{
 		isolate (:b2:) /:*:bytes:/

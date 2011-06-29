@@ -1,15 +1,9 @@
-//  cssmerge.c - utility for merging one css file onto another
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 1.0.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org .  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	cssmerge.c - utility for merging one css file onto another
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
 
 //  include some standard files
-
 #include "crm114_sysincludes.h"
 
 //  include any local crm114 configuration file
@@ -33,7 +27,7 @@ int main (int argc, char **argv)
   long sparse_spectrum_file_length = DEFAULT_SPARSE_SPECTRUM_FILE_LENGTH;
 
   struct stat statbuf;    //  filestat buffer
-  FEATUREBUCKET_TYPE *h1, *h2;              //  the text of the hash file
+  FEATUREBUCKET_STRUCT *h1, *h2;              //  the text of the hash file
 
   verbose = 0;
   f1 = f2 = -1;
@@ -54,28 +48,28 @@ int main (int argc, char **argv)
 	    fprintf (stderr, "\nOverriding new-create length to %ld\n",
 		     sparse_spectrum_file_length);
 	  }
-	else 
+	else
 	  if (f1 == -1)
 	    {
 	      f1 = i;
 	    }
-	  else 
+	  else
 	    if (f2 == -1)
 	      {
 		f2 = i;
 	      };
     };
-  
+
   if(!argv[1] || !argv[2])
     {
       fprintf (stdout, "Usage: cssmerge <out-cssfile> <in-cssfile> [-v] [-s]\n");
       fprintf (stdout, " <out-cssfile> will be created if it doesn't exist.\n");
       fprintf (stdout, " <in-cssfile> must already exist.\n");
       fprintf (stdout, "  -v           -verbose reporting\n");
-      fprintf (stdout, "  -s NNNN      -new file length, if needed\n"); 
+      fprintf (stdout, "  -s NNNN      -new file length, if needed\n");
       exit (EXIT_SUCCESS);
     };
-  
+
 
   //             quick check- does the file even exist?
   k = stat (argv[f2], &statbuf);
@@ -85,10 +79,10 @@ int main (int argc, char **argv)
       fprintf (stderr, "\nCan't continue\n");
       exit (EXIT_FAILURE);
     };
-  //    
+  //
   hfsize2 = statbuf.st_size;
   //         mmap the hash file into memory so we can bitwhack it
-  h2 = crm_mmap_file ( argv[f2], 
+  h2 = crm_mmap_file ( argv[f2],
 		       0, hfsize2,
 		       PROT_READ | PROT_WRITE,
 		       MAP_SHARED,
@@ -112,23 +106,23 @@ int main (int argc, char **argv)
       f = fopen (argv[f1], "wb");
       if (!f)
 	{
-	  fprintf (stderr, 
+	  fprintf (stderr,
 		   "\n Couldn't open file %s for writing; errno=%d .\n",
 		   argv[f1], errno);
 	  exit (EXIT_FAILURE);
         };
       //       put in  bytes of NULL
       for (j = 0; j < sparse_spectrum_file_length
-	     * sizeof (FEATUREBUCKET_TYPE); j++) 
+	     * sizeof (FEATUREBUCKET_STRUCT); j++)
 	fprintf (f,"%c", '\000');
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (argv[f1], &statbuf);
     };
-  //    
+  //
   hfsize1 = statbuf.st_size;
   //         mmap the hash file into memory so we can bitwhack it
-  h1 = crm_mmap_file (argv[f1], 
+  h1 = crm_mmap_file (argv[f1],
 		      0, hfsize1,
 		      PROT_READ | PROT_WRITE,
 		      MAP_SHARED,
@@ -139,17 +133,17 @@ int main (int argc, char **argv)
 	       argv[f1], errno);
       exit (EXIT_FAILURE);
     };
-  
+
   //
-  hfsize1 = hfsize1 / sizeof (FEATUREBUCKET_TYPE);
+  hfsize1 = hfsize1 / sizeof (FEATUREBUCKET_STRUCT);
   fprintf (stderr, "\nOutput sparse spectra file %s has %ld bins total\n",
 	   argv[f1], hfsize1);
-  
-  hfsize2 = hfsize2 / sizeof (FEATUREBUCKET_TYPE);
+
+  hfsize2 = hfsize2 / sizeof (FEATUREBUCKET_STRUCT);
   fprintf (stderr, "\nInput sparse spectra file %s has %ld bins total\n",
 	   argv[f2], hfsize2);
-  
-  
+
+
 #ifdef OSB_LEARNCOUNTS
   /*
     The hash slots for litf and fitf are special and MUST be assigned
@@ -167,18 +161,16 @@ int main (int argc, char **argv)
     {
       char* litf = "Learnings in this file";
       char* fitf = "Features in this file";
-      unsigned long litf_hash, fitf_hash;
-      
+      unsigned int litf_hash, fitf_hash;
+
       litf_hash = strnhash (litf, strlen ( litf ));
       h1[litf_hash % hfsize1].hash = litf_hash;
-      
+
       fitf_hash = strnhash (fitf, strlen ( fitf ));
       h1[fitf_hash % hfsize1].hash = fitf_hash;
     }
-#endif
-  
+#endif	// OSB_LEARNCOUNTS
 
-  
   //
   //    Note we start at 1, not at 0, because 0 is the version #
   for (i = 1; i < hfsize2; i++)
@@ -192,16 +184,16 @@ int main (int argc, char **argv)
       hash = h2[i].hash;
       key  = h2[i].key;
       value= h2[i].value;
-      
+
       //    If it's an empty bucket, do nothing, otherwise
       //    insert it into h1
-      
+
       if ( value != 0)
 	{
 	  long hindex;
 
 	  if (verbose) fprintf (stderr, "%lud:%lud ", hash, value );
-	  //   
+	  //
 	  //  this bucket has real data!  :)
 	  hindex = hash % hfsize1;
 	  if (hindex == 0) hindex = 1;
@@ -220,9 +212,9 @@ int main (int argc, char **argv)
 	      if (incrs > hfsize1 - 3)
 		{
 		  fprintf (stdout, "\n\n ****** FATAL ERROR ******\n");
-		  fprintf (stdout, 
+		  fprintf (stdout,
 			   "There are too many features to fit into a css file of this size. \n");
-		  fprintf (stdout, 
+		  fprintf (stdout,
 			   "Operation aborted at input bucket offset %lud .\n",
 			   i);
 		  exit (EXIT_FAILURE);

@@ -1,35 +1,34 @@
-#!/usr/bin/crm 
-#  **** bangline argument config commented out for better system portability
-# -( spam good cache dontstore stats_only outbound undo verbose maxprio minprio delprio fileprefix config)
+#! /usr/bin/crm
+# -(spam good cache dontstore stats_only outbound undo verbose maxprio minprio delprio fileprefix config)
 #
-#    Copyright (C) 2002-2006 William S. Yerazunis; licensed under the
-#    GNU Public License (GPL) version 2.  A copy of this license is included
-#    in the distribution media, or obtain one from www.fsf.org .
+#	mailreaver.crm - 3rd Generation mail filter "standard script"
 #
-#   Note to SunOS and FreeBSD users - you MUST remove EVERYTHING on
-#   the first line of this program from the first "-" to the end of
-#   the first line (including the "-" sign itself) or you will not get
-#   what you expect.  This is due to "differences of opinion" on how
-#   a bangline should be dealt with.
-#
-#     This is MailReaver, the 3rd Generation mail filter "standard script" 
+#   Note to SunOS and FreeBSD users - do not place command arguments of
+#   "-([arguments])" format on the first line of this program
+#   or you will not get  what you expect. This is due to a kernel
+#   difference in how a bangline should be dealt with.
+
+# Copyright 2002-2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
+#     This is MailReaver, the 3rd Generation mail filter "standard script"
 #     for CRM114.  The goal is to make a more maintainable, understandable,
 #     and easier-to-customize mail filter.
 #
 #    1) we use the consolidated library "maillib.crm" for most shareable
 #       things like parsing the .cf file, munging text, cacheing text, etc.
 #
-#    2) we always use the CacheIDs and the Reaver (maildir-like) format 
-#       for storing incoming email in unaltered form if there is 
-#       any possibility of training it. 
-# 
-#    3) We always train using mailtrainer.crm rather than training 
+#    2) we always use the CacheIDs and the Reaver (maildir-like) format
+#       for storing incoming email in unaltered form if there is
+#       any possibility of training it.
+#
+#    3) We always train using mailtrainer.crm rather than training
 #       internally.  Thus, if you want to change the way things are
 #       trained, you need to look at mailtrainer.crm as well.
 #
 #
 #     We support the following commands, on both the command line
-#     in the form "--blahblah --blahblah"  and 
+#     in the form "--blahblah --blahblah"  and
 #     by using the "command {secretpassword} word word" method
 #
 #       spam		- this is spam.  Treat appropriately.[*]
@@ -38,10 +37,10 @@
 #                         process it normally and put it in the cache.
 #       dontstore         - do NOT store this text into the cache.  Use
 #                         this for text that you never want to train.
-#	stats_only	- output ONLY the status.  Nothing else.  
-#			Since this means there's no output of the 
+#	stats_only	- output ONLY the status.  Nothing else.
+#			Since this means there's no output of the
 #                       CacheIDs, we don't store the text for later training.
-#       report_only     - output ONLY the headers that would have 
+#       report_only     - output ONLY the headers that would have
 #                       been added, not the entire text.
 #	outbound	- this is an "outbound" message and hence can
 #			assumed to be nonspam.  Train if necessary.
@@ -54,17 +53,17 @@
 #       config=filename - use filename as the .cf file
 #
 #     [*]  - meaning that if it's a command line flag, the entire
-#     standard input is the example text and if it's an inline 
+#     standard input is the example text and if it's an inline
 #     command, then the example text follows the inline commandline.
-#  
+#
 #     Overall Design:
 #
 #	1) Read in the parameter file
 #
 #       2) Check for commands.  Set flags as appropriate
 #
-#	3) Are any command flags set?  
-#          
+#	3) Are any command flags set?
+#
 #          3a) run those commands
 #
 #          3b) report the results and exit
@@ -126,13 +125,13 @@ isolate <default> (:config:) /:*:fileprefix:mailfilter.cf/
 call /:load_cf_file:/ [:*:config:]
 
 #######################################################################
-#     
+#
 #    Do a quick check- has the password been changed or not?  If it's
 #    still the default, put in something that will be well-nigh unguessable
 #    (esp. since it will contain recieved headers that the sender cannot
 #    see nor control.)
 {
-    match [:spw:] /DEFAULT-PASSWORD/
+    match [:spw:] /DEFAULT_PASSWORD/
     #  yes, it's the same as default.  So we scramble it just so
     #  nobody can hack in without major trickery.
     hash (:spw:) /:*:_env_string::*:_dw:/
@@ -140,7 +139,7 @@ call /:load_cf_file:/ [:*:config:]
 
 ######################################################################
 #
-#     if a particular "fail" category hasn't been assigned, but 
+#     if a particular "fail" category hasn't been assigned, but
 #     the :general_fails_to: category has, then send there instead
 {
     match [:fail_priority_mail_to:] /./ <absent>
@@ -196,21 +195,21 @@ call /:load_cf_file:/ [:*:config:]
 #	outbound
 #	undo
 #	verbose
-#  
+#
 #
 #    Start our searching at the start of our input.
-#        If nothing else requires it, we use the current input as the 
+#        If nothing else requires it, we use the current input as the
 #        text to be operated upon.
 {
-    isolate (:spam: :good: :cache: :dontstore: :stats_only: ) 
+    isolate (:spam: :good: :cache: :dontstore: :stats_only: )
     isolate (:outbound: :undo: :verbose:)
-    isolate (:in_text:)  /:*:_dw:/ 
+    isolate (:in_text:)  /:*:_dw:/
     #   now find the command, and set the cmdline insert point.
     match (:: :cmdline:) /.*(.)/
     match (:cmdline:) /\n\n/
-    match <nomultiline> (:cmdline: :cmds:) /^command :*:spw: (.*)$/ 
+    match <nomultiline> (:cmdline: :cmds:) /^command :*:spw: (.*)$/
     {
-	#    Yep, found a command.  Grab remaining text in case 
+	#    Yep, found a command.  Grab remaining text in case
 	#     we aren't using the cached version
 	match <fromend> (:in_text:) /.*/
 	#
@@ -304,7 +303,7 @@ call /:load_cf_file:/ [:*:config:]
     }
 }
 
-#######  Inter-flag dependencies fixed up here.  
+#######  Inter-flag dependencies fixed up here.
 
 {
     match [:stats_only:] /SET/
@@ -322,15 +321,15 @@ isolate (:cacheid:) //
     {
 	match [:in_text:] <nomultiline> (:: :cacheid:)  \
 		/X-CRM114-CacheID:.*sfid-([[:graph:]]+)/
-	isolate (:cacheid:) 
+	isolate (:cacheid:)
 	isolate (:long_cacheid:) /:*:text_cache:\/texts\/:*:cacheid:/
     }
-    alius    #  nope, not in the explicit headers.  Check for it as a 
+    alius    #  nope, not in the explicit headers.  Check for it as a
     #           comment in the Message-Id: header.
     {
 	match [:in_text:] <nomultiline> (:: :cacheid:)  \
 		/Message-Id:.*\(sfid-([[:graph:]]+)\)/
-	isolate (:cacheid:) 
+	isolate (:cacheid:)
 	isolate (:long_cacheid:) /:*:text_cache:\/texts\/:*:cacheid:/
     }
     #      ADD OTHER PLACES TO CHECK HERE
@@ -349,12 +348,12 @@ isolate (:cacheid:) //
 #
 {
     match <absent> [:cacheid:] /./
-    match <absent> [:dontstore:] /SET/ 
+    match <absent> [:dontstore:] /SET/
     #      yes - so the text to be worked follows the command line.
-    #      which is already in :in_text:   This also calculates the 
+    #      which is already in :in_text:   This also calculates the
     #      new cacheids named :cacheid: and :long_cacheid: .
     call /:reavercache_init:/
-    call /:reavercache_store:/ [:*:_dw:]  
+    call /:reavercache_store:/ [:*:_dw:]
 }
 
 #####################################################################
@@ -424,7 +423,7 @@ isolate (:cacheid:) //
     }
     alius
     {
-	#  GROT GROT GROT  We should make a better attempt at finding 
+	#  GROT GROT GROT  We should make a better attempt at finding
 	#  the file, like looking in known_spam and known_good.
 	#
 	match (:: :firstline:) /.*(.)/
@@ -476,7 +475,7 @@ isolate (:cacheid:) //
     }
     alius
     {
-	#  GROT GROT GROT  We should make a better attempt at finding 
+	#  GROT GROT GROT  We should make a better attempt at finding
 	#  the file, like looking in known_spam and known_good.
 	#
 	match (:: :firstline:) /.*(.)/
@@ -489,7 +488,7 @@ isolate (:cacheid:) //
 
 ##########################################################################
 #
-#      Not a learn, so it's a CLASSIFY job.  Maybe full, maybe stats_only.  
+#      Not a learn, so it's a CLASSIFY job.  Maybe full, maybe stats_only.
 #      We try the Priolist first (eventually) then fall back on the
 #      classifiers.   Priolist patterns start in column 1, and are a + or
 #      a - immediately followed by a regex.
@@ -539,7 +538,7 @@ input (:priolist:) [:*:fileprefix:priolist.mfp]
 {
     isolate (:stats:) //
     classify [:in_text:] <:*:clf:> /:*:lcr:/ \
-	    (:*:fileprefix:nonspam.css :*:fileprefix:spam.css) (:stats:) 
+	    (:*:fileprefix:nonspam.css :*:fileprefix:spam.css) (:stats:)
     match [:stats:] <nomultiline> \
 	    /^#0.* pR: ([-. 0-9]+)/ (:: :pr:)
     {
@@ -594,7 +593,7 @@ input (:priolist:) [:*:fileprefix:priolist.mfp]
 	match [:spam_flag_subject_string:] /./
 	call /:mungmail_mung_subject:/ [:*:spam_flag_subject_string:]
     }
-    isolate (:subj_text:) 
+    isolate (:subj_text:)
     alter (:our_exit_code:) /:*:rejected_mail_exit_code:/
     alter (:reject_address:) /:*:fail_classify_mail_to:/
     {
@@ -602,12 +601,12 @@ input (:priolist:) [:*:fileprefix:priolist.mfp]
 	call /:mungmail_unique:/ \
 		[X-CRM114-Version: :*:_crm_version: MR-:*:_pgm_hash: ]
 	call /:mungmail_add_cache_info:/ [:*:cacheid:]
-	call /:mungmail_unique:/ [X-CRM114-Status: SPAM  ( :*:pr: )] 
+	call /:mungmail_unique:/ [X-CRM114-Status: SPAM  ( :*:pr: )]
 	call /:mungmail_delete:/ [X-CRM114-Notice: ]
-    }  
+    }
     #
     #    Since sending mail needs complicated args, we do it here rather
-    #    than in a mungmail routine - and if we send mail, we exit here 
+    #    than in a mungmail routine - and if we send mail, we exit here
     #    rather than in the usual finish-up routine.
     {
 	match [:reject_address:] /.../
@@ -669,13 +668,13 @@ goto /:finish_up:/
 :finish_up:
 {
     {
-	#   If :report_only: is SET then delete everything that's 
+	#   If :report_only: is SET then delete everything that's
 	#    not a X-CRM114 header
 	match [:report_only:] /SET/
 	match [:_dw:] //
-	{	
+	{
 		match [:_dw:] <fromend> /.*?\n/ (:z:)
-                {     
+                {
 		      match [:z:] <absent> /^X-CRM114/
 		      # output /Deleting :*:z:\n/
                       alter (:z:) //
@@ -706,4 +705,3 @@ exit /:*:program_fault_exit_code:/
 #
 #              Library insertions start here.
 insert maillib.crm
-

@@ -1,14 +1,8 @@
-//  crm_correlate.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_correlate.c - correlation learning and classifying
+
+// Copyright 2001-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -21,25 +15,11 @@
 //  and include the routine declarations file
 #include "crm114.h"
 
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-
-
-//    How to learn correlation-style- just append the text to be 
+//    How to learn correlation-style- just append the text to be
 //    learned to the target file.  We don't care about the /regexes/
 //
 
-int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb, 
+int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			      char *txtptr, long txtstart, long txtlen)
 {
   //     learn the given text as correlative text
@@ -49,8 +29,6 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long i, j, k;
   char ptext[MAX_PATTERN];  //  the regex pattern
   long plen;
-  char ltext[MAX_PATTERN];  //  the variable to learn
-  long llen;
   char htext[MAX_PATTERN];  //  the hash name
   long hlen;
   long cflags, eflags;
@@ -59,37 +37,26 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long hfsize;              //  size of the hash file
   //
   //regex_t regcb;
-  long textoffset;
-  long textlen;
   long sense;
-  long vhtindex;
   long microgroom;
   long fev;
-  long made_new_file; 
-  
-  
+  long made_new_file;
+
+
 
   if (internal_trace)
     fprintf (stderr, "executing a LEARN (correlation format) \n");
-
-  //   Keep the gcc compiler from complaining about unused variables
-  //  i = hctable[0];
 
   //           extract the hash file name
   crm_get_pgm_arg (htext, MAX_PATTERN, apb->p1start, apb->p1len);
   hlen = apb->p1len;
   hlen = crm_nexpandvar (htext, hlen, MAX_PATTERN);
-  //
-  //           extract the variable name (if present)
-  crm_get_pgm_arg (ltext, MAX_PATTERN, apb->b1start, apb->b1len);
-  llen = apb->b1len;
-  llen = crm_nexpandvar (ltext, llen, MAX_PATTERN);
-  
+
   //     get the "this is a word" regex
   crm_get_pgm_arg (ptext, MAX_PATTERN, apb->s1start, apb->s1len);
   plen = apb->s1len;
   plen = crm_nexpandvar (ptext, plen, MAX_PATTERN);
-  
+
   //            set our cflags, if needed.  The defaults are
   //            "case" and "affirm", (both zero valued).
   //            and "microgroom" disabled.
@@ -147,11 +114,11 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       f = fopen (&htext[i], "wb");
       if (!f)
 	{
-	  fprintf (stderr, 
+	  fprintf (stderr,
 		"\n Couldn't open your new correlate file %s for writing; errno=%d .\n",
 		 &htext[i], errno);
 
-	  if (engine_exit_base != 0) 
+	  if (engine_exit_base != 0)
 	    {
 	      exit (engine_exit_base + 1);
 	    }
@@ -161,22 +128,22 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
         };
       //      fputc ('\001', f); don't do any output at all.
       made_new_file = 1;
-      //      
+      //
       fclose (f);
       //    and reset the statbuf to be correct
       k = stat (&htext[i], &statbuf);
     };
-  //    
+  //
   hfsize = statbuf.st_size;
-  if (user_trace) 
+  if (user_trace)
     fprintf (stderr, "Correlation text file %s has length %ld characters\n",
-	     &htext[i], hfsize / sizeof (FEATUREBUCKET_TYPE));
-  
+	     &htext[i], hfsize);
+
   //
   //         open the text file into memory so we can bitwhack it
   //
   hfd = open (&(htext[i]), O_RDWR);
-  if (hfd < 0) 
+  if (hfd < 0)
     {
       fev = fatalerror5 ("Couldn't open the correlation file named: ",
 			 &htext[i], CRM_ENGINE_HERE);
@@ -190,49 +157,19 @@ int crm_expr_correlate_learn (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   k = 0;
   j = 0;
   i = 0;
-  if (llen > 0)
-    {
-      vhtindex = crm_vht_lookup (vht, ltext, llen);
-    }
-  else
-    {
-      vhtindex = crm_vht_lookup (vht, ":_dw:", 5);
-    };
-  
-  if (vht[vhtindex] == NULL)
-    {
-      long q;
-      q = fatalerror5 (" Attempt to LEARN from a nonexistent variable ",
-		       ltext, CRM_ENGINE_HERE);
-      return (q);
-    };
-  mdw = NULL;
-  if (tdw->filetext == vht[vhtindex]->valtxt)
-    mdw = tdw;
-  if (cdw->filetext == vht[vhtindex]->valtxt)
-    mdw = cdw;
-  if (mdw == NULL)
-    {
-      long q;
-      q = fatalerror5 (" Bogus text block containing variable ", 
-		       ltext, CRM_ENGINE_HERE);  
-      return (q);
-    }
-  textoffset = vht[vhtindex]->vstart;
-  textlen = vht[vhtindex]->vlen;
 
   if (user_trace)
     {
-      fprintf (stderr, "learning the text (len %ld) :", textlen);
-      fwrite (&(mdw->filetext[textoffset]), 
-	      ((textlen < 128) ? textlen : 128),1,stderr);
+      fprintf (stderr, "learning the text (len %ld) :", txtlen);
+      dontcare = fwrite (&txtptr[txtstart],
+			 ((txtlen < 128) ? txtlen : 128), 1, stderr);
       fprintf (stderr, "\n");
     };
 
   //      append the "learn" text to the end of the file.
   //
   lseek (hfd, 0, SEEK_END);
-  write (hfd, &(mdw->filetext[textoffset]), textlen);
+  dontcare = write (hfd, &txtptr[txtstart], txtlen);
   close (hfd);
 
   return (0);
@@ -245,7 +182,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 				 char *txtptr, long txtstart, long txtlen)
 {
 
-  //      classify the sparse spectrum of this input window 
+  //      classify the sparse spectrum of this input window
   //      as belonging to a particular type.
   //
   //       This code should look very familiar- it's cribbed from
@@ -255,12 +192,12 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   char ptext[MAX_PATTERN];  //  the regex pattern
   long plen;
   //  the hash file names
-  char htext[MAX_PATTERN+MAX_CLASSIFIERS*MAX_FILE_NAME_LEN];  
+  char htext[MAX_PATTERN+MAX_CLASSIFIERS*MAX_FILE_NAME_LEN];
   long htext_maxlen = MAX_PATTERN+MAX_CLASSIFIERS*MAX_FILE_NAME_LEN;
   long hlen;
   //  the match statistics variable
-  char stext[MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100)]; 
-  long stext_maxlen = MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100); 
+  char stext[MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100)];
+  long stext_maxlen = MAX_PATTERN+MAX_CLASSIFIERS*(MAX_FILE_NAME_LEN+100);
   long slen;
   char svrbl[MAX_PATTERN];  //  the match statistics text buffer
   long svlen;
@@ -292,10 +229,10 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   double textlen;    //  text length  - rougly corresponds to
                         //  information content of the text to classify
-  
+
   double ptc[MAX_CLASSIFIERS]; // current running probability of this class
   double renorm = 0.0;
-  
+
   char *hashes[MAX_CLASSIFIERS];
   long hashlens[MAX_CLASSIFIERS];
   char *hashname[MAX_CLASSIFIERS];
@@ -304,47 +241,43 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   long maxhash;
   long fnstart, fnlen;
   long fn_start_here;
-  long textoffset;
   long bestseen;
   long thistotal;
 
   if (internal_trace)
     fprintf (stderr, "executing a CLASSIFY\n");
-  
-  //          we use the main line txtptr, txtstart, and txtlen now,
-  //          so we don't need to extract anything from the b1start stuff.
 
   //           extract the hash file names
   crm_get_pgm_arg (htext, htext_maxlen, apb->p1start, apb->p1len);
   hlen = apb->p1len;
   hlen = crm_nexpandvar (htext, hlen, htext_maxlen);
-  
+
   //           extract the "this is a word" regex
   //
   crm_get_pgm_arg (ptext, MAX_PATTERN, apb->s1start, apb->s1len);
   plen = apb->s1len;
   plen = crm_nexpandvar (ptext, plen, MAX_PATTERN);
-  
+
   //            extract the optional "match statistics" variable
   //
   crm_get_pgm_arg (svrbl, MAX_PATTERN, apb->p2start, apb->p2len);
   svlen = apb->p2len;
   svlen = crm_nexpandvar (svrbl, svlen, MAX_PATTERN);
-  { 
+  {
     long vstart, vlen;
     crm_nextword (svrbl, svlen, 0, &vstart, &vlen);
     memmove (svrbl, &svrbl[vstart], vlen);
     svlen = vlen;
     svrbl[vlen] = '\000';
   };
-  
+
   //     status variable's text (used for output stats)
-  //    
+  //
   stext[0] = '\000';
   slen = 0;
-  
+
   //            set our flags, if needed.  The defaults are
-  //            "case" 
+  //            "case"
   cflags = REG_EXTENDED;
   eflags = 0;
 
@@ -354,15 +287,15 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       eflags = 1;
     };
 
-  
-  //       Now, the loop to open the files.  
+
+  //       Now, the loop to open the files.
   bestseen = 0;
   thistotal = 0;
 
   //      initialize our arrays for N .css files
-  for (i = 0; i < MAX_CLASSIFIERS; i++) 
+  for (i = 0; i < MAX_CLASSIFIERS; i++)
     {
-      fcounts[i] = 0;    // check later to prevent a divide-by-zero 
+      fcounts[i] = 0;    // check later to prevent a divide-by-zero
     			 // error on empty .css file
       cpcorr[i] = 0.0;   // corpus correction factors
       linear_hits[i] = 0;     // linear hits
@@ -370,12 +303,12 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       cube_hits[i] = 0;       // cube of the runlength
       quad_hits[i] = 0;       // quad of the runlength
       incr_hits[i] = 0;      // 1+2+3... hits hits
-      totalhits[i] = 0.0;     // absolute hit counts 
+      totalhits[i] = 0.0;     // absolute hit counts
       ptc[i] = 0.5;      // priori probability
     };
 
-  // 
-  
+  //
+
   vbar_seen = 0;
   maxhash = 0;
   succhash = 0;
@@ -394,7 +327,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     {
       crm_nextword (htext,
 		    hlen, fn_start_here,
-		    &fnstart, &fnlen); 
+		    &fnstart, &fnlen);
       if (fnlen > 0)
 	{
 	  strncpy (fname, &htext[fnstart], fnlen);
@@ -420,7 +353,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    }
 	  else
 	    {
-	      //  be sure the file exists 
+	      //  be sure the file exists
 	      //             stat the file to get it's length
 	      k = stat (fname, &statbuf);
 	      //             quick check- does the file even exist?
@@ -432,10 +365,10 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      else
 		{
 		  //  file exists - do the mmap
-		  //    
+		  //
 		  hashlens[maxhash] = statbuf.st_size;
 		  hashes[maxhash] = (char *)
-		      crm_mmap_file( fname, 
+		      crm_mmap_file( fname,
 				     0, hashlens[maxhash],
 				     PROT_READ,
 				     MAP_SHARED,
@@ -453,9 +386,9 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			  //     FIXME : for now, there's no version number
 			  //     associated with a .correllation file
 			  long fev;
-			  if (0) 
+			  if (0)
 			    //(hashes[maxhash][0].hash != 1 ||
-			    //  hashes[maxhash][0].key  != 0) 
+			    //  hashes[maxhash][0].key  != 0)
 			    {
 			      fev =fatalerror5 ("The .css file is the wrong version!  Filename is: ",
 						&htext[i], CRM_ENGINE_HERE);
@@ -485,8 +418,8 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     };
 
   //
-  //    If there is no '|', then all files are "success" files.  
-  if (succhash == 0) 
+  //    If there is no '|', then all files are "success" files.
+  if (succhash == 0)
     succhash = maxhash;
 
   //    a CLASSIFY with no arguments is always a "success".
@@ -498,11 +431,11 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     fprintf (stderr, "Running with %ld files for success out of %ld files\n",
 	     succhash, maxhash );
   // sanity checks...  Uncomment for super-strict CLASSIFY.
-  // 
+  //
   //	do we have at least 1 valid .css files?
   if (maxhash == 0)
     {
-      fatalerror5 ("Couldn't open at least 1 .css files for classify().", 
+      fatalerror5 ("Couldn't open at least 1 .css files for classify().",
 		   "", CRM_ENGINE_HERE);
     };
   //	do we have at least 1 valid .css file at both sides of '|'?
@@ -521,8 +454,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   k = 0;
   thistotal = 0;
 
-  //     put in the ptr/start/len values we got from the outside caller
-  textoffset = txtstart;
+  //     convert the length we got from the outside caller
   textlen = txtlen;
 
   //
@@ -534,7 +466,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 
   //   Now we do the actual correllation.
   //   for each file...
-  //    slide the incoming text (mdw->filetext[textofset])
+  //    slide the incoming text
   //     across the corpus text (hashes[] from 0 to hashlens[])
   //      and count the bytes that are the same, the runlengths,
   //       etc.
@@ -542,11 +474,11 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   for (k = 0; k < maxhash; k++)
     {
       long it;    // it is the start index into the tested text
-      long ik;    // ik is the start index into the known corpus text 
+      long ik;    // ik is the start index into the known corpus text
       long ilm;   // ilm is the "local" matches (N in a row)
 
       //    for each possible displacement of the known  (ik) text...
-      for (ik = 0; 
+      for (ik = 0;
 	   ik < hashlens[k];
 	   ik++)
 	{
@@ -561,7 +493,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	       it++)
 	    {
 	      //   do the characters in this position match?
-	      if ( hashes[k][ik+it] == txtptr[textoffset+it])
+	      if ( hashes[k][ik+it] == txtptr[txtstart+it])
 		{
 		  // yes they matched
 		  linear_hits[k]++;
@@ -572,7 +504,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		}
 	      else
 		{
-		  //   nope, they didn't match. 
+		  //   nope, they didn't match.
 		  //   So, we do the end-of-runlength stuff:
 		  ilm = 0;
 		};
@@ -580,7 +512,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		fprintf (stderr, "ik: %ld  it: %ld  chars %c %c lin: %lld  sqr: %lld cube: %lld quad: %lld\n",
 			 ik, it,
 			 hashes[k][ik+it],
-			 txtptr[textoffset+it],
+			 txtptr[txtstart+it],
 			 linear_hits[k],
 			 square_hits[k],
 			 cube_hits[k],
@@ -588,7 +520,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	    };
 	};
     };
-  
+
 
   //   Now we have the total hits for each text corpus.  We can then
   //  turn that into a vague probability measure, and then renormalize
@@ -599,10 +531,10 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //   and another corpus that is nominally uncorrellated.
   //
   //   The uncorrellated text will have an average match rate of 1/256'th
-  //   in the linear domain (well, for random bytes; english text will match 
+  //   in the linear domain (well, for random bytes; english text will match
   //   a lot more often, due to the fact that ASCII only uses the low 7
   //   bits, most text is written in lower case, Zipf's law, etc.
-  // 
+  //
   //   We can calculate a predicted total on a per-character basis for all
   //   of the corpi, then use that as an average expectation.
 
@@ -633,11 +565,11 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	  //     .00397 is not a magic number - it's the random coincidence
 	  //     rate for 1 chance in 256, with run-length-squared boost.
 	  //     .00806 is the random coincidence rate for 7-bit characters.
-	  //     
+	  //
 	  //ptc[k] = ((0.0+square_hits[k] - (.00397 * hashlens[k] )));
 	  //	  ptc[k] = ((0.0+square_hits[k] - (.00806 * hashlens[k] )))
 	  //	    / hashlens[k];
-	  
+
 	  //	  ptc[k] = (0.0+square_hits[k] ) / hashlens[k];
 	  //	  ptc[k] = (0.0+ quad_hits[k] ) / hashlens[k];
 	  ptc[k] = (0.0+ quad_hits[k] ) / linear_hits[k];
@@ -651,27 +583,27 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
     }
 
 
-  //    ptc[k] = (sqrt (0.0 + square_hits[k])-linear_hits[k] ) / hashlens[k] ; 
-  //    ptc[k] =  (0.0 + square_hits[k] - linear_hits[k] ) ; 
-  //    ptc[k] =  ((0.0 + square_hits[k]) / hashlens[k]) ; 
-  //    ptc[k] = sqrt ((0.0 + square_hits[k]) / hashlens[k]) ; 
-  //    ptc[k] = ((0.0 + linear_hits[k]) / hashlens[k]) ; 
-  
-  
+  //    ptc[k] = (sqrt (0.0 + square_hits[k])-linear_hits[k] ) / hashlens[k] ;
+  //    ptc[k] =  (0.0 + square_hits[k] - linear_hits[k] ) ;
+  //    ptc[k] =  ((0.0 + square_hits[k]) / hashlens[k]) ;
+  //    ptc[k] = sqrt ((0.0 + square_hits[k]) / hashlens[k]) ;
+  //    ptc[k] = ((0.0 + linear_hits[k]) / hashlens[k]) ;
+
+
   //   calculate renormalizer (the Bayesian formula's denomenator)
   renorm = 0.0;
-  
+
   //   now calculate the per-ptc numerators
   for (k = 0; k < maxhash; k++)
     renorm = renorm + (ptc[k]);
 
   //   check for a zero normalizer
   if (renorm == 0) renorm = 1.0;
-  
+
   //  and renormalize
   for (k = 0; k < maxhash; k++)
     ptc[k] = ptc[k] / renorm;
-  
+
   //   if we have underflow (any probability == 0.0 ) then
   //   bump the probability back up to 10^-308, or
   //   whatever a small multiple of the minimum double
@@ -679,30 +611,30 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
   //
   for (k = 0; k < maxhash; k++)
     if (ptc[k] < 10*DBL_MIN) ptc[k] = 10 * DBL_MIN;
-  
-    if (internal_trace) 
+
+    if (internal_trace)
     {
       for (k = 0; k < maxhash; k++)
 	{
-	  fprintf (stderr, 
+	  fprintf (stderr,
 		   " file: %ld  linear: %lld  square: %lld  RMS: %6.4e  ptc[%ld] = %6.4e \n",
-		   k, linear_hits[k], square_hits[k], 
+		   k, linear_hits[k], square_hits[k],
 		   sqrt(0.0+square_hits[k]), k, ptc[k]);
 	};
     };
-  //    
+  //
 
   ;      //  end of repeat-the-regex loop
 
-  
+
   //  cleanup time!
   //  remember to let go of the fd's and mmaps
   for (k = 0; k < maxhash; k++)
     {
 	crm_munmap_file(hashes[k]);
     };
-  
-  if (user_trace) 
+
+  if (user_trace)
     {
       for (k = 0; k < maxhash; k++)
 	fprintf (stderr, "Probability of match for file %ld: %f\n", k, ptc[k]);
@@ -726,16 +658,15 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	};
       remainder = 10 * DBL_MIN;
       for (m = succhash; m < maxhash; m++)
-	if (bestseen != m)
-	  {
-	    remainder = remainder + ptc[m];
-	  };
+	{
+	  remainder = remainder + ptc[m];
+	};
       overall_pR = log10 (accumulator) - log10 (remainder);
-      
+
       //   note also that strcat _accumulates_ in stext.
       //  There would be a possible buffer overflow except that _we_ control
       //   what gets written here.  So it's no biggie.
-      
+
       if (tprob > 0.5000)
 	{
 	  sprintf (buf, "CLASSIFY succeeds; success probability: %6.4f  pR: %6.4f\n", tprob, overall_pR );
@@ -775,9 +706,9 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 	      {
 		remainder = remainder + ptc[m];
 	      };
-	  sprintf (buf, 
+	  sprintf (buf,
 		   "#%ld (%s):"\
-		   " features: %ld, L1: %lld L2: %lld L3: %lld, l4: %lld prob: %3.2e, pR: %6.2f \n", 
+		   " features: %ld, L1: %lld L2: %lld L3: %lld, l4: %lld prob: %3.2e, pR: %6.2f \n",
 		   k,
 		   hashname[k],
 		   hashlens[k],
@@ -785,7 +716,7 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 		   square_hits[k],
 		   cube_hits[k],
 		   quad_hits[k],
-		   ptc[k], 
+		   ptc[k],
 		   (log10 (ptc[k]) - log10 (remainder) )  );
 	  // strcat (stext, buf);
 	  if (strlen(stext)+strlen(buf) <= stext_maxlen)
@@ -801,10 +732,10 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
 			 "values for MAX_CLASSIFIERS or MAX_FILE_NAME_LEN?",
 			  " ", CRM_ENGINE_HERE);
 	};
-      crm_destructive_alter_nvariable (svrbl, svlen, 
+      crm_destructive_alter_nvariable (svrbl, svlen,
 				       stext, strlen (stext));
     };
-  
+
   //
   //  Free the hashnames, to avoid a memory leak.
   //
@@ -819,9 +750,9 @@ int crm_expr_correlate_classify (CSL_CELL *csl, ARGPARSE_BLOCK *apb,
       csl->aliusstk [csl->mct[csl->cstmt]->nest_level] = -1;
       return (0);
     };
-  
-  
-  //    
+
+
+  //
   //   all done... if we got here, we should just continue execution
   if (user_trace)
     fprintf (stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");

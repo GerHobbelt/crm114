@@ -1,11 +1,16 @@
-#!/usr/bin/crm
+#! /usr/bin/crm
 #
+#	mathrpntest.crm - Test demo program for extended eval
+
+# Copyright 2009 William S. Yerazunis.
+# This file is under GPLv3, as described in COPYING.
+
 #	Test demo program for extended eval (can do string lengths,
-#       RPN math, and inequalities. 
+#       RPN math, and inequalities.
 window
 output /\n     Testing RPN mode math \n/
-{ 
-	isolate (:z:) 
+{
+	isolate (:z:)
 	isolate (:x:) /12345/
 	isolate (:pi:) /3.14159/
 	output / string value of x is :*:x:, string value of pi is :*:pi:\n/
@@ -28,4 +33,3 @@ output /\n     Testing RPN mode math \n/
 	eval (:z:) /  and adding 3.14159 to that is :@: :*:z: 3.14159 +:\n/
 	output /:*:z:/
 }
-

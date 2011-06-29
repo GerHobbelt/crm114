@@ -1,19 +1,14 @@
-//  crm_osbf_bayes.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2001-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_osbf_bayes.c - OSBF Bayes classifier
+
+// Copyright 2004 Fidelis Assis
+// Copyright 2004-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  This is the OSBF-Bayes classifier. It differs from SBPH-Markovian
 //  and OSB-Bayes in the way P(F|C) is estimated.  See function
 //  crm_expr_osbf_bayes_classify, below, for details.
 //  -- Fidelis Assis - 2004/10/20
-//  
+
 //  include some standard files
 #include "crm114_sysincludes.h"
 
@@ -29,17 +24,8 @@
 //  include OSBF structures
 #include "crm114_osbf.h"
 
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
+//    the globals used when we need a big buffer  - allocated once, used
 //    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
 extern char *tempbuf;
 
 ////////////////////////////////////////////////////////////////////
@@ -60,7 +46,7 @@ static long hctable[] = { 1, 7,
   797, 3277
 };
 
-//          Where does the nominative data start?     
+//          Where does the nominative data start?
 static unsigned long spectra_start;
 
 /* structure for token searching */
@@ -129,8 +115,8 @@ get_next_token (struct token_search *pts)
     }
 
   /* return error status */
-  
-  
+
+
   /*
   {
     unsigned long i = 0;
@@ -139,7 +125,7 @@ get_next_token (struct token_search *pts)
     fprintf (stderr, " %lu", pts->toklen);
   }
   */
-   
+
   return error;
 }
 
@@ -197,7 +183,7 @@ int
 crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 			   char *txtptr, long txtstart, long txtlen)
 {
-  //     learn the osb_bayes transform spectrum of this input window as 
+  //     learn the osb_bayes transform spectrum of this input window as
   //     belonging to a particular type.
   //     learn <flags> (classname) /word/
   //
@@ -205,8 +191,6 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   long h;			//  h is our counter in the hashpipe;
   char ptext[MAX_PATTERN];	//  the regex pattern
   long plen;
-  //  char ltext[MAX_PATTERN];	//  the variable to learn
-  //long llen;
   char htext[MAX_PATTERN];	//  the hash name
   long hlen;
   long cflags, eflags;
@@ -214,7 +198,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   OSBF_FEATUREBUCKET_STRUCT *hashes;	//  the text of the hash file
   OSBF_FEATURE_HEADER_STRUCT *header;	//  header of the hash file
   //char *seen_features;
-  unsigned long hashpipe[OSB_BAYES_WINDOW_LEN + 1];
+  unsigned int hashpipe[OSB_BAYES_WINDOW_LEN + 1];
 
   regex_t regcb;
   long textoffset;
@@ -238,11 +222,6 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   crm_get_pgm_arg (htext, MAX_PATTERN, apb->p1start, apb->p1len);
   hlen = apb->p1len;
   hlen = crm_nexpandvar (htext, hlen, MAX_PATTERN);
-  //
-  //           extract the variable name (if present)
-  //crm_get_pgm_arg (ltext, MAX_PATTERN, apb->b1start, apb->b1len);
-  //llen = apb->b1len;
-  //llen = crm_nexpandvar (ltext, llen, MAX_PATTERN);
 
   //     get the "this is a word" regex
   ptext[0] = '\0';		// start with empty regex
@@ -367,7 +346,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
     };
 
   //
-  //  
+  //
   spectra_start = header->buckets_start;
 
   //   compile the word regex
@@ -394,42 +373,11 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   k = 0;
   j = 0;
   i = 0;
-#ifdef STUPID_OLD_VAR_RESTRICTION
-  if (llen > 0)
-    {
-      vhtindex = crm_vht_lookup (vht, ltext, llen);
-    }
-  else
-    {
-      vhtindex = crm_vht_lookup (vht, ":_dw:", 5);
-    };
 
-  if (vht[vhtindex] == NULL)
-    {
-      long q;
-      q =
-	fatalerror (" Attempt to LEARN from a nonexistent variable ", ltext);
-      return (q);
-    };
-  mdw = NULL;
-  if (tdw->filetext == vht[vhtindex]->valtxt)
-    mdw = tdw;
-  if (cdw->filetext == vht[vhtindex]->valtxt)
-    mdw = cdw;
-  if (mdw == NULL)
-    {
-      long q;
-      q = fatalerror (" Bogus text block containing variable ", ltext);
-      return (q);
-    }
-  textoffset = vht[vhtindex]->vstart;
-  textmaxoffset = textoffset + vht[vhtindex]->vlen;
-#endif
-  
   textoffset = txtstart;
   textmaxoffset = txtstart + txtlen;
 
-  //   init the hashpipe with 0xDEADBEEF 
+  //   init the hashpipe with 0xDEADBEEF
   for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
     {
       hashpipe[h] = 0xDEADBEEF;
@@ -453,7 +401,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	  memmove (tempbuf, ts.ptok, ts.toklen);
 	  tempbuf[ts.toklen] = '\000';
 	  fprintf (stderr,
-		   "  Learn #%ld t.o. %ld strt %d end %d len %lu is -%s-\n",
+		   "  Learn #%ld t.o. %ld strt %ld end %ld len %lu is -%s-\n",
 		   i,
 		   textoffset,
 		   ts.ptok - (unsigned char *) &(txtptr[textoffset]),
@@ -475,7 +423,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	{
 	  fprintf (stderr, "  Hashpipe contents: ");
 	  for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-	    fprintf (stderr, " %ld", hashpipe[h]);
+	    fprintf (stderr, " %u", hashpipe[h]);
 	  fprintf (stderr, "\n");
 	};
 
@@ -509,7 +457,7 @@ crm_expr_osbf_bayes_learn (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 		       "Polynomial %ld has h1:%ld  h2: %ld\n", j, h1, h2);
 
 	    //
-	    //   we now look at both the primary (h1) and 
+	    //   we now look at both the primary (h1) and
 	    //   crosscut (h2) indexes to see if we've got
 	    //   the right bucket or if we need to look further
 	    //
@@ -583,7 +531,7 @@ regcomp_failed:
   //  crm_munmap_all ();
   crm_munmap_file ((void *) header);
 
-#ifdef POSIX
+#ifndef CRM_WINDOWS
   //    Because mmap/munmap doesn't set atime, nor set the "modified"
   //    flag, some network filesystems will fail to mark the file as
   //    modified and so their cacheing will make a mistake.
@@ -595,12 +543,13 @@ regcomp_failed:
     int hfd;			//  hashfile fd
     OSBF_FEATURE_HEADER_STRUCT foo;
     hfd = open (fname, O_RDWR);
-    read (hfd, &foo, sizeof (foo));
+    dontcare = read (hfd, &foo, sizeof (foo));
     lseek (hfd, 0, SEEK_SET);
-    write (hfd, &foo, sizeof (foo));
+    dontcare = write (hfd, &foo, sizeof (foo));
     close (hfd);
   }
-#endif 
+#endif	// !CRM_WINDOWS
+
   if (ptext[0] != '\0')
     crm_regfree (&regcb);
   return (0);
@@ -609,10 +558,10 @@ regcomp_failed:
 //      How to do a Osb_Bayes CLASSIFY some text.
 //
 int
-crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb, 
+crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 			      char *txtptr, long txtstart, long txtlen)
 {
-  //      classify the sparse spectrum of this input window 
+  //      classify the sparse spectrum of this input window
   //      as belonging to a particular type.
   //
   //       This code should look very familiar- it's cribbed from
@@ -622,8 +571,6 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   long h;			//  we use h for our hashpipe counter, as needed.
   char ptext[MAX_PATTERN];	//  the regex pattern
   long plen;
-  //  char ltext[MAX_PATTERN];	//  the variable to classify
-  //long llen;
   char ostext[MAX_PATTERN];	//  optional pR offset
   long oslen;
   double pR_offset;
@@ -631,7 +578,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   char htext[MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN];
   long htext_maxlen = MAX_PATTERN + MAX_CLASSIFIERS * MAX_FILE_NAME_LEN;
   long hlen;
-  //  the match statistics variable 
+  //  the match statistics variable
   char stext[MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100)];
   long stext_maxlen =
     MAX_PATTERN + MAX_CLASSIFIERS * (MAX_FILE_NAME_LEN + 100);
@@ -646,7 +593,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   long not_microgroom = 1;
 
   struct stat statbuf;		//  for statting the hash file
-  unsigned long hashpipe[OSB_BAYES_WINDOW_LEN + 1];
+  unsigned int hashpipe[OSB_BAYES_WINDOW_LEN + 1];
   regex_t regcb;
 
   double hits[MAX_CLASSIFIERS];	// actual hits per feature per classifier
@@ -702,12 +649,6 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   if (internal_trace)
     fprintf (stderr, "executing a CLASSIFY\n");
 
-  //          We get the var start/len info from the caller now.
-  //
-  // crm_get_pgm_arg (ltext, MAX_PATTERN, apb->b1start, apb->b1len);
-  // llen = apb->b1len;
-  // llen = crm_nexpandvar (ltext, llen, MAX_PATTERN);
-
   //           extract the hash file names
   crm_get_pgm_arg (htext, htext_maxlen, apb->p1start, apb->p1len);
   hlen = apb->p1len;
@@ -747,12 +688,12 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   };
 
   //     status variable's text (used for output stats)
-  //    
+  //
   stext[0] = '\000';
   slen = 0;
 
   //            set our flags, if needed.  The defaults are
-  //            "case" 
+  //            "case"
   cflags = REG_EXTENDED;
   eflags = 0;
 
@@ -785,7 +726,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
     }
 
 
-  //       Now, the loop to open the files.  
+  //       Now, the loop to open the files.
   bestseen = 0;
   thistotal = 0;
 
@@ -803,7 +744,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   //                   P(A|S) P(S)
   //  P (S|A) =   -------------------------
   //             P(A|S) P(S) + P(A|NS) P(NS)
-  //    
+  //
   //     and we apply it repeatedly to evaluate the final prob.  For
   //     the initial a-priori probability, we use 0.5.  The output
   //     value (here, P(S|A) ) becomes the new a-priori for the next
@@ -824,9 +765,9 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   //
   //     Cg = (Rg / Tg)
   //     Ce = (Re / Te)
-  //    
+  //
   //     or  Ci = (Ri / Ti)
-  //    
+  //
   //     Cg and Ce can now be used as "corrected" relative counts
   //     to calculate the naive Bayesian probabilities.
   //
@@ -841,16 +782,16 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   //     assume that any finite number of samples can appropriately
   //     represent an infinite continuum of spewage, so we can bound
   //     the certainty of any meausre to be in the range:
-  //   
-  //        limit: [ 1/featurecount+2 , 1 - 1/featurecount+2].  
+  //
+  //        limit: [ 1/featurecount+2 , 1 - 1/featurecount+2].
   //
   //     The prior bound is strictly made-up-on-the-spot and has NO
   //     strong theoretical basis.  It does have the nice behavior
-  //     that for feature counts of 0 the probability is clipped to 
+  //     that for feature counts of 0 the probability is clipped to
   //     [0.5, 0.5], for feature counts of 1 to [0.333, 0.666]
   //     for feature counts of 2 to [0.25, 0.75], for 3 to
   //     [0.2, 0.8], for 4 to [0.166, 0.833] and so on.
-  // 
+  //
 
   vbar_seen = 0;
   maxhash = 0;
@@ -892,7 +833,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	    }
 	  else
 	    {
-	      //  be sure the file exists 
+	      //  be sure the file exists
 	      //             stat the file to get it's length
 	      k = stat (fname, &statbuf);
 	      //             quick check- does the file even exist?
@@ -902,12 +843,12 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 		}
 	      else
 		{
-		  //  file exists - do the open/process/close      
-		  //    
+		  //  file exists - do the open/process/close
+		  //
 		  hashlens[maxhash] = statbuf.st_size;
 		  //  mmap the hash file into memory so we can bitwhack it
 		  header[maxhash] = (OSBF_FEATURE_HEADER_STRUCT *)
-		    crm_mmap_file ( fname, 
+		    crm_mmap_file ( fname,
 				    0, hashlens[maxhash],
 				    PROT_READ | PROT_WRITE,
 				    MAP_SHARED,
@@ -934,7 +875,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 			     fname);
 			  return (fev);
 			};
-		      
+
 		      //     grab the start of the actual spectrum data.
 		      //
 		      hashes[maxhash] =
@@ -946,10 +887,10 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 		      //   increment learnings to avoid division by 0
 		      if (learnings[maxhash] == 0)
 			learnings[maxhash]++;
-		      
+
 		      // update total learnings
 		      total_learnings += learnings[maxhash];
-		      
+
 		      // set this hashlens to the length in features instead
 		      // of the length in bytes.
 		      hashlens[maxhash] = header[maxhash]->buckets;
@@ -969,7 +910,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 			   "Some may have been disregarded");
 	};
     };
-  
+
   for (i = 0; i < maxhash; i++)
     {
       seen_features[i] = malloc (header[i]->buckets);
@@ -980,8 +921,8 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
       memset (seen_features[i], 0, header[i]->buckets);
 
       //  initialize our arrays for N .cfc files
-      hits[i] = 0.0;		// absolute hit counts 
-      totalhits[i] = 0;		// absolute hit counts 
+      hits[i] = 0.0;		// absolute hit counts
+      totalhits[i] = 0;		// absolute hit counts
       uniquefeatures[i] = 0;	// features counted per class
       missedfeatures[i] = 0;	// missed features per class
       // a priori probability
@@ -990,7 +931,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
     }
 
   //
-  //    If there is no '|', then all files are "success" files.  
+  //    If there is no '|', then all files are "success" files.
   if (succhash == 0)
     succhash = maxhash;
 
@@ -1003,7 +944,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	     "Running with %ld files for success out of %ld files\n",
 	     succhash, maxhash);
   // sanity checks...  Uncomment for super-strict CLASSIFY.
-  // 
+  //
   //    do we have at least 1 valid .cfc files?
   if (maxhash == 0)
     {
@@ -1025,39 +966,11 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
   k = 0;
   thistotal = 0;
 
-#ifdef OLD_STUPID_VAR_RESTRICTION
-  if (llen > 0)
-    {
-      vhtindex = crm_vht_lookup (vht, ltext, llen);
-    }
-  else
-    {
-      vhtindex = crm_vht_lookup (vht, ":_dw:", 5);
-    }
-  if (vht[vhtindex] == NULL)
-    {
-      return (fatalerror
-	      (" Attempt to CLASSIFY from a nonexistent variable ", ltext));
-    };
-  mdw = NULL;
-  if (tdw->filetext == vht[vhtindex]->valtxt)
-    mdw = tdw;
-  if (cdw->filetext == vht[vhtindex]->valtxt)
-    mdw = cdw;
-  if (mdw == NULL)
-    return (fatalerror (" Bogus text block containing variable ", ltext));
-  textoffset = vht[vhtindex]->vstart;
-  textmaxoffset = textoffset + vht[vhtindex]->vlen;
-  textlen = (vht[vhtindex]->vlen);
-  if (textlen < 1.0)
-    textlen = 1.0;
-#endif
-
   textoffset = txtstart;
   textmaxoffset = txtstart + txtlen;
 
 
-  //   init the hashpipe with 0xDEADBEEF 
+  //   init the hashpipe with 0xDEADBEEF
   for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
     {
       hashpipe[h] = 0xDEADBEEF;
@@ -1085,7 +998,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	  memmove (tempbuf, ts.ptok, ts.toklen);
 	  tempbuf[ts.toklen] = '\000';
 	  fprintf (stderr,
-		   "  Classify #%ld t.o. %ld strt %d end %d len %lu is -%s-\n",
+		   "  Classify #%ld t.o. %ld strt %ld end %ld len %lu is -%s-\n",
 		   i,
 		   textoffset,
 		   ts.ptok -
@@ -1108,7 +1021,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	{
 	  fprintf (stderr, "  Hashpipe contents: ");
 	  for (h = 0; h < OSB_BAYES_WINDOW_LEN; h++)
-	    fprintf (stderr, " %ld", hashpipe[h]);
+	    fprintf (stderr, " %u", hashpipe[h]);
 	  fprintf (stderr, "\n");
 	};
 
@@ -1271,7 +1184,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	    // count only the first ocurrence of each feature in a
 	    // message (repetitions are ignored), both when learning
 	    // and when classifying.
-	    // 
+	    //
 	    // Advantages of this method, compared to the original:
 	    //
 	    // - First of all, and the most important: accuracy is
@@ -1312,7 +1225,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	    // calculated value is adjusted using the following
 	    // formula:
 	    //
-	    //  CP(Feature|Class) = 0.5 + 
+	    //  CP(Feature|Class) = 0.5 +
 	    //             CF(Feature) * (P(Feature|Class) - 0.5)
 	    //
 	    // Where CF(Feature) is the confidence factor and
@@ -1443,7 +1356,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 			     header[k]->learnings, hits[k], ptc[k]);
 		  };
 	      };
-	    //    
+	    //
 	    //    avoid the fencepost error for window=1
 	    if (OSB_BAYES_WINDOW_LEN == 1)
 	      {
@@ -1502,7 +1415,6 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
 	};
       remainder = 10 * DBL_MIN;
       for (m = succhash; m < maxhash; m++)
-	if (bestseen != m)
 	  {
 	    remainder = remainder + ptc[m];
 	  };
@@ -1618,7 +1530,7 @@ crm_expr_osbf_bayes_classify (CSL_CELL * csl, ARGPARSE_BLOCK * apb,
     }
 
 
-  //    
+  //
   //   all done... if we got here, we should just continue execution
   if (user_trace)
     fprintf (stderr, "CLASSIFY was a SUCCESS, continuing execution.\n");

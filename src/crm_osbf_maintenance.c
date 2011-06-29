@@ -1,20 +1,14 @@
-//  crm_osbf_maintenance_.c  - Controllable Regex Mutilator,  version v1.0
-//  Copyright 2004-2006  William S. Yerazunis, all rights reserved.
-//  
-//  This software is licensed to the public under the Free Software
-//  Foundation's GNU GPL, version 2.  You may obtain a copy of the
-//  GPL by visiting the Free Software Foundations web site at
-//  www.fsf.org, and a copy is included in this distribution.  
-//
-//  Other licenses may be negotiated; contact the 
-//  author for details.  
-//
+//	crm_osbf_maintenance.c  - OSBF microgrooming utilities
+
+// Copyright 2004 Fidelis Assis
+// Copyright 2004-2009 William S. Yerazunis.
+// This file is under GPLv3, as described in COPYING.
+
 //  OBS: CSS header structure and pruning method modified for OSBF classifier.
 //       See functions crm_osbf_microgroom and crm_osbf_create_cssfile, below,
 //       for details.  -- Fidelis Assis - 2004/10/20
-//
-//  include some standard files
 
+//  include some standard files
 #include "crm114_sysincludes.h"
 
 //  include any local crm114 configuration file
@@ -39,19 +33,6 @@ char *CSS_version_name[] = {
   "Unknown"
 };
 
-//    the command line argc, argv
-extern int prog_argc;
-extern char **prog_argv;
-
-//    the auxilliary input buffer (for WINDOW input)
-extern char *newinputbuf;
-
-//    the globals used when we need a big buffer  - allocated once, used 
-//    wherever needed.  These are sized to the same size as the data window.
-extern char *inbuf;
-extern char *outbuf;
-extern char *tempbuf;
-
 //    microgroom flag for osbf
 static int osbf_microgroom;
 // turn microgroom on (1) or off (0)
@@ -65,7 +46,7 @@ void crm_osbf_set_microgroom(int value)
 //     How to microgroom a .css file that's getting full
 //
 //     NOTA BENE NOTA BENE NOTA BENE NOTA BENE
-//      
+//
 //         This whole section of code is under intense develoment; right now
 //         it "works" but not any better than nothing at all.  Be warned
 //         that any patches issued on it may well never see the light of
@@ -110,7 +91,7 @@ crm_osbf_microgroom (OSBF_FEATURE_HEADER_STRUCT * header,
       fprintf (stderr, " %ld ", microgroom_count);
     };
 
-//   micropack - start at initial chain start, move to back of 
+//   micropack - start at initial chain start, move to back of
 //   chain that overflowed, then scale just that chain.
 
   i = j = hindex % header->buckets;
@@ -157,7 +138,7 @@ crm_osbf_microgroom (OSBF_FEATURE_HEADER_STRUCT * header,
 
   /* if there was a wraparound, full .cfc file,    */
   /* i == packstart and packlen == header->buckets */
-  if (i > packstart) 
+  if (i > packstart)
   packlen = i - packstart;
   else
     packlen = header->buckets + i - packstart;
@@ -169,22 +150,22 @@ crm_osbf_microgroom (OSBF_FEATURE_HEADER_STRUCT * header,
 //   bucket is zeroed.
 //
 //   We keep track of how many buckets we've zeroed and we stop
-//   zeroing additional buckets after that point.   NO!  BUG!  That 
+//   zeroing additional buckets after that point.   NO!  BUG!  That
 //   messes up the tail length, and if we don't repack the tail, then
 //   features in the tail can become permanently inaccessible!   Therefore,
-//   we really can't stop in the middle of the tail (well, we could 
+//   we really can't stop in the middle of the tail (well, we could
 //   stop zeroing, but we need to pass the full length of the tail in.
-// 
+//
 //   Note that we can't do this "adaptively" in packcss, because zeroes
 //   there aren't necessarily overflow chain terminators (because -we-
 //   might have inserted them here.
 //
-//   GROT GROT GROT  Note that the following algorithm does multiple 
-//   passes to find the lowest-valued features.  In fact, that's 
+//   GROT GROT GROT  Note that the following algorithm does multiple
+//   passes to find the lowest-valued features.  In fact, that's
 //   actually rather slow; a better algorithm would keep track of
-//   the N least-valued features in the chain in ONE pass and zero 
+//   the N least-valued features in the chain in ONE pass and zero
 //   those.
-//  
+//
 //   --
 //   I'm not sure if it's worth working on a better algoritm for this:
 //
@@ -231,7 +212,7 @@ crm_osbf_microgroom (OSBF_FEATURE_HEADER_STRUCT * header,
 //
 //   -- Fidelis Assis
 //
-  
+
   // try features in their right place first
   max_distance = 1;
 
@@ -293,7 +274,7 @@ crm_osbf_packcss (OSBF_FEATURE_HEADER_STRUCT * header,
 {
 
 //    How we pack...
-//   
+//
 //    We look at each bucket, and attempt to reinsert it at the "best"
 //    place.  We know at worst it will end up where it already is, and
 //    at best it will end up lower (at a lower index) in the file, except
@@ -339,7 +320,7 @@ crm_osbf_packseg (OSBF_FEATURE_HEADER_STRUCT * header,
 
   for (ifrom = packstart; ifrom < packstart + packlen; ifrom++)
     {
-      //    Now find the next bucket to place somewhere 
+      //    Now find the next bucket to place somewhere
       thash = BUCKET_HASH (h[ifrom]);
       tkey = BUCKET_KEY (h[ifrom]);
 
@@ -619,10 +600,10 @@ crm_osbf_create_cssfile (char *cssfile, unsigned long buckets,
   hu.header.buckets_start = OSBF_CSS_SPECTRA_START;
   // Write header
   if (fwrite (&hu, sizeof (hu), 1, f) != 1)
-    {           
+    {
       fatalerror (" Couldn't initialize the .cfc file header; file = ",
                   cssfile);
-    }  
+    }
 
   //  Initialize CSS hashes - zero all buckets
   for (i = 0; i < buckets; i++)
